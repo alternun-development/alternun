@@ -11,12 +11,12 @@ const config: Config = {
   url: 'https://alternun-development.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/docs/',
+  baseUrl: '/alternun/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'alternun-development', // Usually your GitHub org/user name.
-  projectName: 'docs', // Usually your repo name.
+  projectName: 'alternun', // Usually your repo name.
   trailingSlash: false,
 
   onBrokenLinks: 'throw',
