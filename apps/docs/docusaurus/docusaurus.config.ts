@@ -16,7 +16,7 @@ const config: Config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'alternun-development', // Usually your GitHub org/user name.
-  projectName: 'alternun', // Usually your repo name.
+  projectName: 'alternun-development.github.io', // Usually your repo name.
   trailingSlash: false,
 
   onBrokenLinks: 'throw',
