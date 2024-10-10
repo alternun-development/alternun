@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./apps/docs/docusaurus
+        working-directory: ./apps/docs
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,7 +32,7 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./build
+          path: build
 
   deploy:
     name: Deploy to GitHub Pages
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./apps/docs/docusaurus
+        working-directory: ./apps/docs
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
