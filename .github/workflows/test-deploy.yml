@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./apps/docs/docusaurus
+        working-directory: ./apps/docs
     steps:
       - uses: actions/checkout@v4
         with:
