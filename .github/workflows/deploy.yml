@@ -29,6 +29,9 @@ jobs:
       - name: Build website
         run: npm run build
 
+      - name: Ensure build directory exists
+        run: mkdir -p build # Ensure the build directory exists
+
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3
         with:
