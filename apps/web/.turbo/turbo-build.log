@@ -1,0 +1,16 @@
+
+> @alternun/web@0.1.0 build
+> next build
+
+
+> Build error occurred
+Error: > Couldn't find any `pages` or `app` directory. Please create one under the project root
+    at findPagesDir (/home/ed/Documents/alternun/alternun-monorepo/node_modules/[4mnext[24m/dist/lib/find-pages-dir.js:94:15)
+    at /home/ed/Documents/alternun/alternun-monorepo/node_modules/[4mnext[24m/dist/build/index.js:192:75
+    at async Span.traceAsyncFn (/home/ed/Documents/alternun/alternun-monorepo/node_modules/[4mnext[24m/dist/trace/trace.js:103:20)
+    at async build (/home/ed/Documents/alternun/alternun-monorepo/node_modules/[4mnext[24m/dist/build/index.js:145:29)
+[37;40mnpm[0m [0m[31;40mERR![0m [0m[35mLifecycle script `build` failed with error:[0m 
+[0m[37;40mnpm[0m [0m[31;40mERR![0m [0m[35mError: command failed[0m 
+[0m[37;40mnpm[0m [0m[31;40mERR![0m [0m[35m  in workspace: @alternun/web@0.1.0[0m 
+[0m[37;40mnpm[0m [0m[31;40mERR![0m [0m[35m  at location: /home/ed/Documents/alternun/alternun-monorepo/apps/web[0m 
+[0m
