@@ -21,3 +21,19 @@ slorber:
     linkedin: sebastienlorber
     github: slorber
     newsletter: https://thisweekinreact.com
+
+noach-kettler:
+  name: Noach Kettler Yakowitz
+  title: Alternun Chief Operating Officer 
+  url: https://alternun.io
+  image_url: https://media.licdn.com/dms/image/v2/D5603AQGRno7eLPeWIg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1680049626358?e=1733961600&v=beta&t=Jl-ZPnt5r4rqPlNiTDe3119SDK0f9A5S6MfBuI7qBnw
+  socials:
+    linkedin: noach-kettler-yakowitz
+
+jose-santiago:
+  name: José Santiago Gómez Piedrahita
+  title: Alternun Chief Executive Officer 
+  url: https://alternun.io
+  image_url: https://media.licdn.com/dms/image/v2/D4E03AQGa2I9X9mmcWA/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1725036848682?e=1733961600&v=beta&t=FEt_obdBMIy2BuMd7MKTu-O1zufYm8Zm1E0XVzpnFLE
+  socials:
+    linkedin: jose-santiago-gomez-piedrahita
