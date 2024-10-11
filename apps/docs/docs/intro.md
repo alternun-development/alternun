@@ -2,46 +2,92 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# Introduction
 
-Let's discover **Docusaurus in less than 5 minutes**.
+⚡️ Alternun is a pioneering project aimed at tokenizing Real World Assets (RWAs) and minting gold-backed assets, providing a seamless bridge between traditional assets and the digital economy.
 
-## Getting Started
+💸 Instead of just building a software solution, Alternun focuses on creating a robust framework that allows users to leverage the value of physical assets in a tokenized form.
 
-Get started by **creating a new site**.
+💥 Ready for more? Explore advanced features like asset tokenization, secure transactions, and integration with blockchain technology.
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+🧐 Alternun is not just a static assets generator; it is a transformative project that empowers users to manage and invest in RWAs through innovative tokenization methods.
 
-### What you'll need
+## Fast Track ⏱️
 
-- [Node.js](https://nodejs.org/en/download/) version 18.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+Understand Alternun in 5 minutes by exploring our project!
 
-## Generate a new site
+Learn how to tokenize your assets and participate in the gold-backed asset market:
 
-Generate a new Docusaurus site using the **classic template**.
+1. **Tokenize Your Assets**: Follow our simple guide to convert your RWAs into digital tokens.
+2. **Mint Gold-Backed Assets**: Discover how to create assets backed by gold for stability and security.
 
-The classic template will automatically be added to your project after you run the command:
+**Tip:** Visit our platform to start tokenizing your assets immediately!
 
-```bash
-npm init docusaurus@latest my-website classic
-```
+Or see the detailed guides available online.
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+[![alternun](https://markdown-videos-api.jorgenkh.no/url?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DbvbtFvBZ1sk%26t%3D5s)](https://www.youtube.com/watch?v=bvbtFvBZ1sk&t=5s)
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+## Alternun: Tokenization Made Easy
 
-## Start your site
+In this presentation at the Alternun Community Event, the Alternun team shared insights on how to get started with asset tokenization, the benefits of gold-backed assets, and the future of digital investments.
 
-Run the development server:
+## Migrating from Traditional Assets
 
-```bash
-cd my-website
-npm run start
-```
+Alternun offers a modern approach to asset management, encouraging users to transition from traditional asset handling to a more efficient, tokenized system. After understanding the benefits, we highly encourage you to explore how Alternun can enhance your asset management strategy.
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
+A lot of users are already leveraging Alternun for their asset tokenization needs.
 
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
+Use Alternun if:
 
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+    ✅ You want to tokenize your Real World Assets
+    ✅ You seek a secure and efficient way to manage your investments
+    ✅ You want the stability of gold-backed assets
+    ✅ You are ready to embrace the future of digital finance
+
+For those transitioning from traditional asset management, our guides will help you navigate the process.
+
+## Features
+
+Alternun is built with a focus on user experience and security.
+
+    🔒 Secure Transactions:
+        Ensure your asset transactions are safe and reliable.
+    🌐 Blockchain Integration:
+        Leverage blockchain technology for transparency and trust.
+    📈 Investment Opportunities:
+        Access a new realm of investment possibilities through tokenization.
+
+Our shared goal is to help users unlock the value of their assets and participate in the digital economy. We provide best practices to help you navigate the world of asset tokenization effectively.
+
+    🎯 Transparency:
+        All transactions are recorded on the blockchain for full accountability.
+    📝 User-Friendly Guides:
+        Comprehensive resources to help you understand and utilize our platform.
+    🔍 Asset Management: 
+        Tools to help you track and manage your tokenized assets efficiently.
+
+Alternun is designed to be accessible and user-friendly, making it easy for everyone to participate in the tokenization of RWAs.
+
+## Design principles
+
+    Simple to Use: Alternun should be intuitive, allowing users to tokenize their assets without a steep learning curve.
+    Clear Structure: The project is organized to facilitate easy navigation and understanding of asset tokenization.
+    Flexible Options: Users can choose how to manage their tokenized assets, with various tools and features available.
+
+We believe that understanding how asset tokenization works will empower users to make informed decisions and maximize their investments.
+
+## Comparison with other projects
+
+Alternun stands out in the asset tokenization space, offering unique features tailored for RWAs.
+
+We've analyzed other tokenization projects and would like to share insights to help you choose the right platform for your needs.
+
+### Other Tokenization Projects
+
+While many projects focus on digital assets, Alternun specifically targets RWAs, providing a comprehensive solution for those looking to tokenize physical assets.
+
+### Conclusion
+
+If you find issues with the documentation or have suggestions on how to improve the project, please file an issue or reach out to us.
+
+For new feature requests, you can create a post on our feature requests board, which helps us prioritize development based on user demand.
