@@ -28,7 +28,16 @@ const config: Config = {
   
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'es'], // Added 'es' for Spanish
+    locales: ['en', 'es'],
+    localeConfigs: {
+      en: {
+        htmlLang: 'en-GB',
+      },
+      // You can omit a locale (e.g. fr) if you don't need to override the defaults
+      fa: {
+        direction: 'rtl',
+      },
+    },
   },
 
   presets: [
@@ -84,6 +93,10 @@ const config: Config = {
         {
           href: 'https://github.com/Alternun-io',
           label: 'GitHub',
+          position: 'right',
+        },
+        {
+          type: 'localeDropdown',
           position: 'right',
         },
       ],

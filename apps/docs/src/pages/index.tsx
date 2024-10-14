@@ -7,6 +7,9 @@ import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
 
+import Translate, {translate} from '@docusaurus/Translate';
+
+
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
