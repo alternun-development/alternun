@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# General
+# General-internal
 
 ## Contest Objective
 Promote the creation of unique art pieces that graphically explain the mission and operation of Alternun, generating interest in the tokenization of real assets.
@@ -17,32 +17,33 @@ Promote the creation of unique art pieces that graphically explain the mission a
 | Public Voting Week         | November 4 -  November 8 |
 | Announcement of Winners    | November 11              |
 
+
 ```mermaid
 gantt
-    title NFT Contest at Alternun
+    title Craft the Future NFT Contest by Alternun
     dateFormat  YYYY-MM-DD
     section Week 1
-    Call for Entries and Start     :a1, 2024-10-15, 1d
+    'Call for Entries and Start'     :a1, 2024-10-15, 1d
     section Week 2
-    Reception of Participants       :a2, 2024-10-15, 19d
+    Reception of Participants      :a2, 2024-10-15, 19d
     section Week 3
     Public Voting Week             :a3, 2024-11-04, 5d
     section Week 4
     Announcement of Winners        :a4, 2024-11-11, 1d
-
 ```
+
 
 ## Prizes
 
 
-| Position                       | Artist Selected by the Community    | Amount(USD) |
+| Position                       | Artist Selected                     | Amount(USD) |
 | ------------------------------ | ----------------------------------- | ----------- |
 | 1st place                      | 1 artist selected by community      | $200        |
 | 2nd place                      | 1 artists selected by the community | $100        |
 | 3rd place                      | 1 artists selected by the community | $50         |
-| Criteria for social engagement | Top 20 participants                 | $10 each    |
+| Criteria for social engagement | Top 17 artist                       | $10 each    |
 
-*All participants will gain valuable experience that will be taken into account in TGE.
+*All participants will gain valuable experience that will be taken into account in TGE via Zealy.
 
 ## Detailed Plan
 
