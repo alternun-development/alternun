@@ -9,12 +9,13 @@ Promover la creación de piezas de arte únicas que expliquen gráficamente la m
 
 ## Cronograma del Concurso
 
-| Fase                      | Fechas                    |
-| ------------------------- | ------------------------ |
-| Convocatoria y Inicio     | 15 de octubre            |
-| Recepción de Participantes | 15 de octubre - 3 de noviembre |
+| Fase                       | Fechas                          |
+| -------------------------- | ------------------------------- |
+| Convocatoria y Inicio      | 15 de octubre                   |
+| Recepción de Participantes | 15 de octubre - 3 de noviembre  |
 | Semana de Votación Pública | 4 de noviembre - 8 de noviembre |
-| Anuncio de Ganadores      | 11 de noviembre          |
+| Anuncio de Ganadores       | 11 de noviembre                 |
+
 
 ```mermaid
 gantt
@@ -23,34 +24,44 @@ gantt
     section Semana 1
     'Convocatoria y Inicio'     :a1, 2024-10-15, 1d
     section Semana 2
-    Recepción de Participantes   :a2, 2024-10-15, 19d
+    Recepción de Participantes      :a2, 2024-10-15, 19d
     section Semana 3
-    Semana de Votación Pública   :a3, 2024-11-04, 5d
+    Semana de Votación Pública     :a3, 2024-11-04, 5d
     section Semana 4
-    Anuncio de Ganadores        :a4, 2024-11-11, 1d
+    Anuncio de Ganadores          :a4, 2024-11-11, 1d
 ```
+
 
 ## Premios
 
-| Posición                     | Artista Seleccionado                     | Monto(USD) |
-| ---------------------------- | ---------------------------------------- | ----------- |
-| 1er lugar                   | 1 artista seleccionado por la comunidad  | $200        |
-| 2do lugar                   | 1 artista seleccionado por la comunidad  | $100        |
-| 3er lugar                   | 1 artista seleccionado por la comunidad  | $50         |
-| Criterios de participación social | Top 17 artistas                       | $10 cada uno |
+| Posición                            | Artista Seleccionado                    | Monto(USD)     |
+| ----------------------------------- | --------------------------------------- | -------------- |
+| 1er lugar                           | 1 artista seleccionado por la comunidad | $200           |
+| 2do lugar                           | 1 artista seleccionado por la comunidad | $100           |
+| 3er lugar                           | 1 artista seleccionado por la comunidad | $50            |
+| Criterios para el compromiso social | Top 17 artistas                         | $10 (Cada uno) |
 
-*Todos los participantes obtendrán experiencia valiosa que se tendrá en cuenta en el TGE a través de Zealy.
-
+:::info
+Todos los participantes ganarán experiencia valiosa que se tendrá en cuenta en el TGE a través de Zealy.
+:::
 # Guía de Registro
 
-## Proceso de Registro Paso a Paso
+## Criterios de Elegibilidad
+- Los participantes deben tener al menos 18 años.
+- Los participantes deben tener una cuenta válida de Zealy.
+- Todas las presentaciones deben ser obras de arte originales creadas por el participante.
+- Los participantes deben completar el formulario de registro para ser elegibles para la selección.
 
-**Tip:** Please ensure you log in to Zealy before submitting the form to prevent data deletion upon login.
+## Proceso de Registro Paso a Paso
+:::tip
+Asegúrate de iniciar sesión en Zealy antes de enviar el formulario para evitar la eliminación de datos al iniciar sesión.
+:::
 
 1. **Completa el Formulario en Zealy**
    - Visita la plataforma Zealy.
    - Completa el formulario proporcionando tu **nombre** y **dirección de correo electrónico**.
-
+   - Para información adicional, puedes usar este [enlace de invitación a Zealy](https://zealy.io/cw/alternun/invite/TTVWe--hMN2Y3N-ibl-XV).
+   
 <details>
   <summary>Formulario de Registro</summary>
 
@@ -58,37 +69,40 @@ gantt
 
 </details>
 
-2. **Recibe la Guía en tu Correo Electrónico**
+1. **Recibe la Guía en tu Correo Electrónico**
    - Después de enviar el formulario, revisa tu correo electrónico.
-   - Recibirás un correo con instrucciones sobre cómo montar el enlace a tu NFT en la galería y en la blockchain de tu elección.
+   - Recibirás un correo con instrucciones sobre cómo montar el enlace a tu NFT en la galería y en tu blockchain preferido.
 
-3. **Monta tu NFT**
+2. **Monta tu NFT**
    - Sigue las instrucciones proporcionadas en el correo para subir tu obra de arte a la galería y vincularla a la blockchain de tu elección.
 
-4. **Campaña de Selección de Artistas**
-   - Participa en la campaña de Zealy, donde los **20 mejores artistas** serán seleccionados a través de votación pública.
+3. **Campaña de Selección de Artistas**
+   - Participa en la campaña de Zealy, donde los **17 mejores artistas** serán seleccionados a través de votación pública.
 
-5. **Mantente Informado sobre las Fechas**
-   - Asegúrate de cumplir con los plazos de presentación (del 15 de octubre al 3 de noviembre) y la semana de votación (del 4 de noviembre al 8 de noviembre).
-
-## Guía de Estilo Artístico
-- No hay restricciones sobre el tipo de arte que puedes enviar; puedes usar video, GIF o imágenes.
-- Sin embargo, por favor no incluyas isótopos o logotipos de Alternun en tu obra de arte.
-- Todo el arte enviado debe publicarse en una galería, como OpenSea u otra galería de blockchain.
+4. **Mantente Informado sobre las Fechas**
+   - Asegúrate de cumplir con los plazos de presentación (
+## Art Style Guide
+- No hay restricciones sobre el tipo de arte que puedes presentar; puedes usar video, GIF o imágenes.
+- Sin embargo, por favor no incluyas ningún isotipo o logotipo de Alternun en tu obra de arte.
+- Todas las obras de arte presentadas deben estar publicadas en una galería, como OpenSea o otra galería de blockchain.
+:::warning
+- Todas las presentaciones deben ser respetuosas y no contener contenido racista, violento o explícitamente sexual. Alentamos la creatividad mientras nos aseguramos de un ambiente respetuoso e inclusivo para todos los participantes.
+:::
 
 ## ¡Buena Suerte!
 
-Esperamos ver tu arte en el concurso y cómo contribuyes a redefinir el futuro de la minería digital y los proyectos DeFi a través del arte NFT.
+Esperamos ver tu arte en el concurso y cómo contribuyes a redefinir el futuro de la minería digital y los proyectos DeFi a través de la arte de NFT.
+
 
 ### Semana de Votación Pública (4 de noviembre - 1 de noviembre)
-- **Votación**:
-  - Publicar las 3 mejores obras recibidas en una galería virtual en el sitio web de Alternun.
-  - sistema de votación a través de Alternun
+- **Proceso de Votación**:
+  - Publica las obras de arte top3 en una galería virtual en el sitio web de Alternun.
+  - sistema de votación a través de DAO Alternun
   
 - **Promoción de la Votación**:
   - Publicaciones diarias en Instagram y Twitter para recordar a la comunidad que vote.
-  - Crear una campaña de hashtag para fomentar la participación.
+  - Crea una campaña de hashtag para fomentar la participación.
 
 ### Anuncio de Ganadores
 
-11 de noviembre
+11 de noviembre A través de Alternun X
