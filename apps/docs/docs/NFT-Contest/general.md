@@ -34,11 +34,12 @@ gantt
 
 ## Prizes
 
-| Position                    | Artist Selected by the Community    | Amount      |
-| --------------------------- | ----------------------------------- | ----------- |
-| 1st place                  | 1 artist selected by community      | $300        |
-| 2nd place                  | 2 artists selected by the community | $200 (each) |
-| 3rd place                  | 3 artists selected by the community | $100 (each) |
+
+| Position                       | Artist Selected by the Community    | Amount(USD) |
+| ------------------------------ | ----------------------------------- | ----------- |
+| 1st place                      | 1 artist selected by community      | $200        |
+| 2nd place                      | 1 artists selected by the community | $100        |
+| 3rd place                      | 1 artists selected by the community | $50         |
 | Criteria for social engagement | Top 20 participants                 | $10 each    |
 
 *All participants will gain valuable experience that will be taken into account in TGE.
