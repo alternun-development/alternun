@@ -6,6 +6,7 @@ sidebar_position: 1
 
 ⚡️ Alternun is a pioneering project aimed at tokenizing Real World Assets (RWAs) and minting gold-backed assets, providing a seamless bridge between traditional assets and the digital economy.
 
+
 💸 Instead of just building a software solution, Alternun focuses on creating a robust framework that allows users to leverage the value of physical assets in a tokenized form.
 
 💥 Ready for more? Explore advanced features like asset tokenization, secure transactions, and integration with blockchain technology.
