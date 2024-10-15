@@ -18,7 +18,7 @@ Nuestro objetivo es democratizar el acceso a inversiones en reservas de oro a tr
 - **Semana de Votación Pública**: 4 de noviembre - 8 de noviembre
 - **Anuncio de Ganadores**: 11 de noviembre
 
-Tenemos un presupuesto total de $350 USD para recompensar a tres artistas, y $100 USD para recompensar a 17 artistas de la comunidad a través de la participación social vía Zealy.
+Tenemos un presupuesto total de $350 USD para recompensar a tres artistas, y $170 USD para recompensar a 17 artistas de la comunidad a través de la participación social vía Zealy.
 
 ¡Únete a nosotros en esta emocionante iniciativa y deja brillar tu creatividad!
 
