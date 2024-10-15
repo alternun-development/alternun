@@ -36,8 +36,8 @@ gantt
 
 | Artista                          | Monto  |
 |----------------------------------|--------|
-| 1 artista seleccionado por Alternun | $400   |
-| 2 artistas seleccionados por la comunidad | $300 (cada uno) |
+| 1 artista seleccionado por Alternun | $300   |
+| 2 artistas seleccionados por la comunidad | $100 (cada uno) |
 
 ## Plan Detallado
 
