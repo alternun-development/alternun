@@ -33,12 +33,12 @@ gantt
 
 ## Premios
 
-| Posición                            | Artista Seleccionado por la Comunidad     | Monto           |
-| ----------------------------------- | ----------------------------------------- | --------------- |
-| 1er lugar                           | 1 artista seleccionado por la comunidad   | $300            |
-| 2do lugar                           | 2 artistas seleccionados por la comunidad | $200 (cada uno) |
-| 3er lugar                           | 3 artistas seleccionados por la comunidad | $100 (cada uno) |
-| Criterios para el compromiso social | 20 mejores participantes                  | $10 cada uno    |
+| Posición                            | Artista Seleccionado por la Comunidad   | Monto (USD)  |
+| ----------------------------------- | --------------------------------------- | ------------ |
+| 1er lugar                           | 1 artista seleccionado por la comunidad | $200         |
+| 2do lugar                           | 1 artista seleccionado por la comunidad | $100         |
+| 3er lugar                           | 1 artista seleccionado por la comunidad | $50          |
+| Criterios para el compromiso social | Top 20 participantes                    | $10 cada uno |
 
 *Todos los participantes obtendrán experiencia valiosa que se tendrá en cuenta en el TGE.
 
