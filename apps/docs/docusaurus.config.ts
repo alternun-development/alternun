@@ -22,13 +22,27 @@ const config: Config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
+
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
   
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'es'], // Added 'es' for Spanish
+    locales: ['en', 'es'],
+    localeConfigs: {
+      en: {
+        htmlLang: 'en-GB',
+      },
+      // You can omit a locale (e.g. fr) if you don't need to override the defaults
+      fa: {
+        direction: 'rtl',
+      },
+    },
   },
 
   presets: [
@@ -67,6 +81,9 @@ const config: Config = {
   themeConfig: {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
+    mermaid: {
+      theme: {light: 'neutral', dark: 'forest'},
+    },
     navbar: {
       title: '',
       logo: {
@@ -84,6 +101,10 @@ const config: Config = {
         {
           href: 'https://github.com/Alternun-io',
           label: 'GitHub',
+          position: 'right',
+        },
+        {
+          type: 'localeDropdown',
           position: 'right',
         },
       ],
