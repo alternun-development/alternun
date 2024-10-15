@@ -45,6 +45,8 @@ gantt
 
 ## Proceso de Registro Paso a Paso
 
+**Tip:** Please ensure you log in to Zealy before submitting the form to prevent data deletion upon login.
+
 1. **Completa el Formulario en Zealy**
    - Visita la plataforma Zealy.
    - Completa el formulario proporcionando tu **nombre** y **dirección de correo electrónico**.
