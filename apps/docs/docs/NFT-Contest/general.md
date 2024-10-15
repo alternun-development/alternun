@@ -4,90 +4,88 @@ sidebar_position: 2
 
 # General
 
-## Objetivo del Concurso
-Promover la creación de piezas de arte únicas que expliquen gráficamente la misión y operación de Alternun, generando interés en la tokenización de activos reales.
+## Contest Objective
+Promote the creation of unique art pieces that graphically explain the mission and operation of Alternun, generating interest in the tokenization of real assets.
 
-## Cronograma del Concurso
+## Contest Schedule
 
-| Fase                          | Fechas                          |
-|-------------------------------|---------------------------------|
-| Convocatoria e Inicio         | 15 de octubre                   |
-| Recepción de Participantes     | 15 de octubre - 25 de octubre   |
-| Semana de Votación Pública    | 28 de octubre - 1 de noviembre  |
-| Anuncio de Ganadores          | 11 de noviembre                 |
+
+| Phase                      | Dates                    |
+| -------------------------- | ------------------------ |
+| Call for Entries and Start | October 15               |
+| Reception of Participants  | October 15 - November 3  |
+| Public Voting Week         | November 4 -  November 8 |
+| Announcement of Winners    | November 11              |
 
 ```mermaid
 gantt
-    title Concurso de NFT en Alternun
+    title NFT Contest at Alternun
     dateFormat  YYYY-MM-DD
-    section Semana 1
-    Convocatoria e Inicio           :a1, 2024-10-15, 1d
-    section Semana 2
-    Recepción de Participantes       :a2, 2024-10-15, 10d
-    section Semana 3
-    Semana de Votación Pública       :a3, 2024-10-28, 5d
-    section Semana 4
-    Anuncio de Ganadores             :a4, 2024-11-11, 1d
+    section Week 1
+    Call for Entries and Start     :a1, 2024-10-15, 1d
+    section Week 2
+    Reception of Participants       :a2, 2024-10-15, 19d
+    section Week 3
+    Public Voting Week             :a3, 2024-11-04, 5d
+    section Week 4
+    Announcement of Winners        :a4, 2024-11-11, 1d
 
 ```
 
+## Prizes
 
-## Presupuesto
+| Position                    | Artist Selected by the Community    | Amount      |
+| --------------------------- | ----------------------------------- | ----------- |
+| 1st place                  | 1 artist selected by community      | $300        |
+| 2nd place                  | 2 artists selected by the community | $200 (each) |
+| 3rd place                  | 3 artists selected by the community | $100 (each) |
+| Criteria for social engagement | Top 20 participants                 | $10 each    |
 
-| Artista                          | Monto  |
-|----------------------------------|--------|
-| 1 artista seleccionado por Alternun | $300   |
-| 2 artistas seleccionados por la comunidad | $100 (cada uno) |
+*All participants will gain valuable experience that will be taken into account in TGE.
 
-## Plan Detallado
+## Detailed Plan
 
-### 1. Preparación (Antes del 15 de octubre)
-- **Definir el mensaje clave**: Elaborar una descripción clara de la misión y operación de Alternun que los artistas deben reflejar en sus obras.
-- **Crear un brief**: Incluir requisitos de diseño, tamaño del NFT, formato, y temas a abordar.
-- **Diseñar imágenes gráficas**: Crear gráficos promocionales para redes sociales.
+### 1. Preparation (Before October 15)
+- **Define the key message**: Develop a clear description of the mission and operation of Alternun that artists should reflect in their works.
+- **Create a brief**: Include design requirements, NFT size, format, and themes to be addressed.
+- **Design promotional graphics**: Create promotional graphics for social media.
 
-### 2. Lanzamiento de la Convocatoria (15 de octubre)
+### 2. Launch of the Call for Entries (October 15)
 - **Instagram**:
-  - Publicación de un post atractivo con gráficos.
-  - Historias interactivas (encuestas sobre qué piensan los seguidores de la tokenización de activos).
-  - Uso de hashtags relevantes (#NFTArt, #TokenizacionDeActivos, #AlternunArt).
+  - Post an attractive post with graphics.
+  - Interactive stories (polls about what followers think of the tokenization of assets).
+  - Use relevant hashtags (#NFTArt, #TokenizationOfAssets, #AlternunArt).
   
 - **Twitter**:
-  - Tweet inicial con un hilo explicando el concurso.
-  - Compartir el post de Instagram y un enlace al sitio de Alternun.
-  - Tweet diario con recordatorios y tips para participar.
+  - Initial tweet with a thread explaining the contest.
+  - Share the Instagram post and a link to the Alternun site.
+  - Daily tweet with reminders and tips for participation.
   
 - **LinkedIn**:
-  - Publicación detallada sobre la misión de Alternun y cómo el arte puede ayudar a comunicarla.
-  - Invitar a la comunidad a participar y compartir sus obras.
+  - Detailed post about the mission of Alternun and how art can help communicate it.
+  - Invite the community to participate and share their works.
 
-### 3. Recepción de Participantes (15 de octubre - 25 de octubre)
-- **Canales de Recepción**:
-  - Crear un formulario de Google para que los artistas envíen sus obras.
-  - Indicar que las obras deben ser enviadas como enlaces a NFT o archivos digitales.
+### 3. Reception of Participants (October 15 - October 25)
+- **Reception Channels**:
+  - Create a Google form for artists to submit their works.
+  - Indicate that works must be submitted as links to NFTs or digital files.
   
-- **Promoción Continua**:
-  - Recordatorios semanales en redes sociales.
-  - Historias y tweets que muestren obras destacadas (si es posible).
+- **Ongoing Promotion**:
+  - Weekly reminders on social media.
+  - Stories and tweets showcasing highlighted works (if possible).
 
-### 4. Semana de Votación Pública (28 de octubre - 1 de noviembre)
-- **Votación**:
-  - Publicar las obras recibidas en una galería virtual en el sitio web de Alternun.
-  - Crear un sistema de votación (Google Forms o herramientas de votación online).
+### 4. Public Voting Week (October 28 - November 1)
+- **Voting**:
+  - Publish the received works in a virtual gallery on the Alternun website.
+  - Create a voting system (Google Forms or online voting tools).
   
-- **Promoción de la Votación**:
-  - Post diario en Instagram y Twitter para recordar a la comunidad que vote.
-  - Crear una campaña de hashtags para fomentar la participación.
+- **Promotion of Voting**:
+  - Daily posts on Instagram and Twitter to remind the community to vote.
+  - Create a hashtag campaign to encourage participation.
 
-### 5. Anuncio de Ganadores (11 de noviembre)
-- **Publicación**:
-  - Anunciar los ganadores en todas las plataformas sociales.
-  - Compartir las obras ganadoras y explicar brevemente por qué fueron seleccionadas.
-  
-- **Celebración**:
-  - Realizar un live en Instagram o un evento en línea donde se muestren las obras y se hable de la tokenización de activos.
+### 5. Announcement of Winners
 
-## Consideraciones Adicionales
+## Considerations Adicionales
 - **Colaboraciones**: Considerar colaborar con influencers del mundo del arte y NFT para mayor visibilidad.
 - **Comunicaciones**: Mantener una comunicación constante con los participantes durante todo el proceso.
 - **Feedback**: Pedir feedback de los participantes y votantes después del concurso para mejorar futuras ediciones.
