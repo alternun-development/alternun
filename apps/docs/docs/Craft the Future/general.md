@@ -31,7 +31,7 @@ gantt
     section Week 4
     Announcement of Winners        :a4, 2024-11-11, 1d
 ```
-[Full Screen](https://www.mermaidchart.com/raw/e4f8f7fb-7732-473a-b72a-2a5ddc6f1acf?theme=light&version=v0.1&format=svg)
+
 ## Prizes
 
 
