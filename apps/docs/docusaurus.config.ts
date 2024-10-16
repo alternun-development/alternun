@@ -54,7 +54,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/alternun-development/alternun',
+            'https://github.com/alternun-development/alternun/tree/master/apps/docs',
         },
         blog: {
           showReadingTime: true,
@@ -65,7 +65,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/alternun-development/alternun',
+            'https://github.com/alternun-development/alternun/tree/master/apps/docs',
           // Useful options to enforce blogging best practices
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
@@ -80,7 +80,7 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'img/alternun-socials.png',
     mermaid: {
       theme: {light: 'neutral', dark: 'forest'},
     },
@@ -99,7 +99,7 @@ const config: Config = {
         },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
-          href: 'https://github.com/Alternun-io',
+          href: 'https://github.com/alternun-development',
           label: 'GitHub',
           position: 'right',
         },
@@ -126,7 +126,7 @@ const config: Config = {
           items: [
             {
               label: 'Discord',
-              href: 'https://discordapp.com/invite/alternun',
+              href: 'https://discord.gg/DQmQbzcbER',
             },
             {
               label: 'Twitter',
@@ -143,7 +143,7 @@ const config: Config = {
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/Alternun-io',
+              href: 'https://github.com/alternun-development',
             },
           ],
         },
