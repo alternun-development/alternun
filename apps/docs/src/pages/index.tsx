@@ -4,10 +4,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
-
 import styles from './index.module.css';
-
-import Translate, {translate} from '@docusaurus/Translate';
 
 
 function HomepageHeader() {
@@ -36,7 +33,7 @@ export default function Home(): JSX.Element {
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      description="#ReDeFine the future with us">
       <HomepageHeader />
       <main>
         <HomepageFeatures />
