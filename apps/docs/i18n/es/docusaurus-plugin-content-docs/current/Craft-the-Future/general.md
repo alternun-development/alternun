@@ -58,7 +58,7 @@ Asegúrate de iniciar sesión en Zealy antes de enviar el formulario para evitar
 :::
 
 1. **Completa el Formulario de Registro**
-   - Únete a nuestra comunidad en [🔗](https://zealy.io/cw/alternun/invite/TTVWe--hMN2Y3N-ibl-XV).
+   - Únete a nuestra comunidad en [Zealy 🔗](https://zealy.io/cw/alternun/invite/TTVWe--hMN2Y3N-ibl-XV).
    - Completa la misión de X (seguir en Twitter) en el módulo de soporte social. [🔗](https://zealy.io/cw/alternun/questboard/08729b66-f66a-4364-8691-6fbcffff4f0a/469c1245-ab3b-406c-8e9d-5c8e8c82a9cc)
    - Encuentra el módulo Craft the Future. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2)
    - Completa el formulario de registro de artistas. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2/1a7427e2-4ac4-4d0f-abb2-23ad8e19e456)
