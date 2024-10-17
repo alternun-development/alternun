@@ -69,7 +69,7 @@ The token presents the following utilities:
 ## Useful links
 
 * [Sustainability goals and ESG.](/)
-* [ALTERNUN Gold Backed tokens (GBT).](/
+* [ALTERNUN Gold Backed tokens (GBT).](/docs/tutorial-basics/gold-backed-tokens)
 * [Projects election and profits distribution.](https://hackmd.io/@sgomezp/H15K2hWAR)
 * [Alternun Roadmap.](/)
 * [ALTERNUN team.](/)
