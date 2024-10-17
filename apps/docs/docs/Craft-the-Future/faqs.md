@@ -54,6 +54,7 @@ During the Public Voting Week, the top 3 works will be published in a virtual ga
 
 ### 8. Are there any restrictions on the type of art I can submit?
 There are no restrictions on the type of art; however, do not include any isotypes or logos from Alternun. Submissions must not contain any racist, violent, or sexually explicit content.
+---
 
 ### 9. Can I use AI tools to create my artwork?
 Yes, the use of AI tools is allowed, but you should ensure that your personal style and creativity are reflected in the final piece.
