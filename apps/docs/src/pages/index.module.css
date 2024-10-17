@@ -35,3 +35,34 @@
   align-items: center;
   justify-content: center;
 }
+
+.craftButton {
+  background: linear-gradient(45deg, #00a3ff, #00ff8f);
+  color: #ffffff;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.craftButton::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(45deg);
+  transition: all 0.3s ease;
+}
+
+.craftButton:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 163, 255, 0.5);
+}
+
+.craftButton:hover::before {
+  left: -100%;
+  top: -100%;
+}
