@@ -88,7 +88,7 @@ const config: Config = {
       title: '',
       logo: {
         alt: 'Alternun Logo',
-        src: 'img/logo.png',
+        src: 'img/logosimbolo-morado.png',
       },
       items: [
         {
