@@ -66,3 +66,38 @@
   left: -100%;
   top: -100%;
 }
+
+.rainbowText {
+  display: inline-block;
+  animation: rainbow 3s infinite;
+  background: linear-gradient(270deg, red, orange, yellow, green, blue, indigo, violet);
+  -webkit-background-clip: text;
+  background-clip: text; /* Added standard property for compatibility */
+  -webkit-text-fill-color: transparent;
+  animation: waterFlow 1.5s infinite alternate;
+}
+
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+@keyframes waterFlow {
+  0% {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 1);
+  }
+}
+
+@keyframes flash {
+  0%, 100% { color: black; }
+  50% { color: white; }
+}
+
+#ReDeFine {
+  display: inline-block;
+  animation: flash 1s infinite;
+}
+

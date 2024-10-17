@@ -17,7 +17,9 @@ function HomepageHeader() {
         <Heading as="h1" className="hero__title">
           {siteConfig.title}
         </Heading>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
+        <p className="hero__subtitle">
+          <a href="https://x.com/search?q=%23ReDeFi&src=typed_query" id="ReDeFine"className={styles.rainbowText}>#ReDeFine</a> the future with us
+        </p>
         
         <div className={styles.buttons}>
           <Link
