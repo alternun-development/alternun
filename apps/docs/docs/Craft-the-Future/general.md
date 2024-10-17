@@ -86,7 +86,7 @@ Please ensure you log in to Zealy before submitting the form to prevent data del
 - The use of AI tools for generating art is allowed, but make sure to infuse your soul into the process.
 - Submission format must be 1:1 with a minimum resolution of 2400px.
 - You must submit a minimum of one graphic piece and a maximum of 3 as an NFT series.
-- For inspiration, visit the contest landing page at [https://craft-the-future.alternun.io/es](https://craft-the-future.alternun.io).
+- For inspiration, visit the contest landing page at [craft-the-future.alternun.io](https://craft-the-future.alternun.io).
 
 :::warning
 - All submissions must not contain any racist, violent, or sexually explicit content. We encourage creativity while ensuring a respectful and inclusive environment for all participants.
@@ -97,9 +97,11 @@ Please ensure you log in to Zealy before submitting the form to prevent data del
 - The artist grants Alternun authorization to use the work in Alternun's own publications and on our sites, always acknowledging the author.
 
 ## Wallet Recommendation
-To receive prizes on the Stellar blockchain, we recommend installing the LOBSTR wallet:
+To receive prizes on the Stellar blockchain, we recommend installing the LOBSTR wallet
 
-[LOBSTR Wallet on Google Play](https://play.google.com/store/apps/details?id=com.lobstr.client&hl=es_VE&pli=1)
+:::info
+[⏬ LOBSTR Wallet ](https://lobstr.co/)
+:::
 
 LOBSTR is a user-friendly and secure wallet for managing your Stellar assets, including XLM. It offers features such as:
 - Simple and intuitive interface
