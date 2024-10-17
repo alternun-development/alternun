@@ -86,7 +86,7 @@ Please ensure you log in to Zealy before submitting the form to prevent data del
 - The use of AI tools for generating art is allowed, but make sure to infuse your soul into the process.
 - Submission format must be 1:1 with a minimum resolution of 2400px.
 - You must submit a minimum of one graphic piece and a maximum of 3 as an NFT series.
-- For inspiration, visit the contest landing page at [https://craft-the-future.alternun.io/es](https://craft-the-future.alternun.io/es).
+- For inspiration, visit the contest landing page at [https://craft-the-future.alternun.io/es](https://craft-the-future.alternun.io).
 
 :::warning
 - All submissions must not contain any racist, violent, or sexually explicit content. We encourage creativity while ensuring a respectful and inclusive environment for all participants.

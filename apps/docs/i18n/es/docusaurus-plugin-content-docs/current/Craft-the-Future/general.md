@@ -82,7 +82,7 @@ Asegúrate de iniciar sesión en Zealy antes de enviar el formulario para evitar
 - Se permite el uso de herramientas de IA para generar arte, pero asegúrate de infundir tu alma en el proceso.
 - El formato de presentación debe ser 1:1 con una resolución mínima de 2400px.
 - Debes presentar un mínimo de una pieza gráfica y un máximo de 3 como una serie de NFT.
-- Para inspiración, visita la página de aterrizaje del concurso en [https://craft-the-future.alternun.io/es](https://craft-the-future.alternun.io/es).
+- Para inspiración, visita la página de aterrizaje del concurso en [https://craft-the-future.alternun.io/es](https://craft-the-future.alternun.io).
 
 :::warning
 - Todas las presentaciones no deben contener contenido racista, violento o sexualmente explícito. Fomentamos la creatividad mientras aseguramos un entorno respetuoso e inclusivo para todos los participantes.
