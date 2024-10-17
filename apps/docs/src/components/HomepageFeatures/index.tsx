@@ -15,11 +15,11 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Innovative Solutions',
+    title: 'DIGITAL GOLD MINING', // Updated title
     Svg: innovative, // Updated to use My3DComponent
     description: (
       <>
-        At Alternun, we strive to provide innovative solutions that empower our clients to achieve their goals.
+        Transforming gold reserves into a secure store of value that generates liquidity while preventing environmental harm applying regenerative finance. {/* Updated description */}
       </>
     ),
   },
@@ -28,7 +28,7 @@ const FeatureList: FeatureItem[] = [
     Svg: sustainable, // Updated to use My3DComponent
     description: (
       <>
-        We are committed to sustainability, ensuring that our practices benefit both our clients and the environment.
+        Stopping the environmental damage caused by traditional gold mining by developing regenerative projects in areas susceptible to exploitation. {/* Updated description */}
       </>
     ),
   },
