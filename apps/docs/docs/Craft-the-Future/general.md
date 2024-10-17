@@ -60,26 +60,21 @@ All prizes will be distributed in $XLM Stellar Blockchain native cryptocurrency 
 Please ensure you log in to Zealy before submitting the form to prevent data deletion upon login.
 :::
 
-1. **Fill Out the Form on Zealy**
-   - Visit the Zealy platform.
-   - Complete the form by providing your **name** and **email address**.
-   - For additional information, you can use this [Zealy invite link](https://zealy.io/cw/alternun/invite/TTVWe--hMN2Y3N-ibl-XV).
+1. **Fill Out the Registration Form**
+   - Join our community at [🔗](https://zealy.io/cw/alternun/invite/TTVWe--hMN2Y3N-ibl-XV).
+   - Complete the X (Twitter follow) quest on the social support module. [🔗](https://zealy.io/cw/alternun/questboard/08729b66-f66a-4364-8691-6fbcffff4f0a/469c1245-ab3b-406c-8e9d-5c8e8c82a9cc)
+   - Find the Craft the Future module. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2)
+   - Complete the artist registry form. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2/1a7427e2-4ac4-4d0f-abb2-23ad8e19e456)
    
-<details>
-  <summary>Register Form</summary>
 
-  https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2/1a7427e2-4ac4-4d0f-abb2-23ad8e19e456
-
-</details>
-
-1. **Receive the Guide in Your Email**
+2. **Receive the Guide in Your Email**
    - After submitting the form, check your email.
    - You will receive an email with instructions on how to mount the link to your NFT in the gallery and on your preferred blockchain.
 
-2. **Mount Your NFT**
+3. **Mount Your NFT**
    - Follow the instructions provided in the email to upload your artwork to the gallery and link it to the blockchain of your choice.
 
-3. **Artist Selection Campaign**
+4. **Artist Selection Campaign**
    - Participate in the Zealy campaign, where the **top 17 artists** will be selected through public voting.
    - The community selection process involves completing Zealy quests that encourage social media engagement. Participants can earn points by sharing their artwork and engaging with the community on various platforms.
    - Additionally, artists are encouraged to learn from the Alternun documentation and complete process quizzes to better understand the project and enhance their submissions.
