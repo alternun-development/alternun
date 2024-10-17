@@ -93,8 +93,8 @@ Please ensure you log in to Zealy before submitting the form to prevent data del
 :::
 
 ## Intellectual Property and Rights
-- Alternun will retain the intellectual property rights for the selected artworks.
-- However, all economic exploitation rights will remain with the artist.
+- the intellectual and commercial rights of the NFT are the property of the artist. 
+- The artist grants Alternun authorization to use the work in Alternun's own publications and on our sites, always acknowledging the author.
 
 ## Wallet Recommendation
 To receive prizes on the Stellar blockchain, we recommend installing the LOBSTR wallet:

@@ -11,9 +11,9 @@ Promover la creación de piezas de arte únicas que expliquen gráficamente la m
 
 | Fase                      | Fechas                    |
 | -------------------------- | ------------------------ |
-| Convocatoria y Inicio     | 15 de octubre            |
-| Recepción de Participantes | 15 de octubre - 3 de noviembre |
-| Semana de Votación Pública | 4 de noviembre - 8 de noviembre |
+| Convocatoria y Inicio      | 15 de octubre            |
+| Recepción de Participantes  | 15 de octubre - 3 de noviembre  |
+| Semana de Votación Pública  | 4 de noviembre - 8 de noviembre |
 | Anuncio de Ganadores      | 11 de noviembre          |
 
 ```mermaid
@@ -23,11 +23,11 @@ gantt
     section Semana 1
     'Convocatoria y Inicio'     :a1, 2024-10-15, 1d
     section Semana 2
-    Recepción de Participantes   :a2, 2024-10-15, 19d
+    Recepción de Participantes      :a2, 2024-10-15, 19d
     section Semana 3
-    Semana de Votación Pública   :a3, 2024-11-04, 5d
+    Semana de Votación Pública     :a3, 2024-11-04, 5d
     section Semana 4
-    Anuncio de Ganadores        :a4, 2024-11-11, 1d
+    Anuncio de Ganadores          :a4, 2024-11-11, 1d
 ```
 
 ## Premios
@@ -59,15 +59,15 @@ Asegúrate de iniciar sesión en Zealy antes de enviar el formulario para evitar
 
 1. **Completa el Formulario de Registro**
    - Únete a nuestra comunidad en [🔗](https://zealy.io/cw/alternun/invite/TTVWe--hMN2Y3N-ibl-XV).
-   - Completa la misión de X (seguir en Twitter) en el módulo de apoyo social. [🔗](https://zealy.io/cw/alternun/questboard/08729b66-f66a-4364-8691-6fbcffff4f0a/469c1245-ab3b-406c-8e9d-5c8e8c82a9cc)
+   - Completa la misión de X (seguir en Twitter) en el módulo de soporte social. [🔗](https://zealy.io/cw/alternun/questboard/08729b66-f66a-4364-8691-6fbcffff4f0a/469c1245-ab3b-406c-8e9d-5c8e8c82a9cc)
    - Encuentra el módulo Craft the Future. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2)
    - Completa el formulario de registro de artistas. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2/1a7427e2-4ac4-4d0f-abb2-23ad8e19e456)
 
-2. **Recibe la Guía en Tu Correo Electrónico**
+2. **Recibe la Guía en tu Correo Electrónico**
    - Después de enviar el formulario, revisa tu correo electrónico.
    - Recibirás un correo con instrucciones sobre cómo montar el enlace a tu NFT en la galería y en tu blockchain preferido.
 
-3. **Monta Tu NFT**
+3. **Monta tu NFT**
    - Sigue las instrucciones proporcionadas en el correo para subir tu obra de arte a la galería y vincularla a la blockchain de tu elección.
 
 4. **Campaña de Selección de Artistas**
@@ -77,7 +77,7 @@ Asegúrate de iniciar sesión en Zealy antes de enviar el formulario para evitar
 
 ## Guía de Estilo Artístico y Requisitos de Presentación
 - No hay restricciones sobre el tipo de arte que puedes presentar; puedes usar video, GIF o imágenes.
-- Sin embargo, por favor no incluyas ningún isotipo o logotipo de Alternun en tu obra de arte.
+- Sin embargo, no incluyas isótopos o logotipos de Alternun en tu obra de arte.
 - Todas las obras de arte presentadas deben publicarse en una galería, como OpenSea u otra galería de blockchain.
 - Se permite el uso de herramientas de IA para generar arte, pero asegúrate de infundir tu alma en el proceso.
 - El formato de presentación debe ser 1:1 con una resolución mínima de 2400px.
@@ -89,8 +89,8 @@ Asegúrate de iniciar sesión en Zealy antes de enviar el formulario para evitar
 :::
 
 ## Propiedad Intelectual y Derechos
-- Alternun retendrá los derechos de propiedad intelectual de las obras de arte seleccionadas.
-- Sin embargo, todos los derechos de explotación económica permanecerán con el artista.
+- Los derechos intelectuales y comerciales del NFT son propiedad del artista. 
+- El artista otorga a Alternun la autorización para usar la obra en las propias publicaciones de Alternun y en nuestros sitios, siempre reconociendo al autor.
 
 ## Recomendación de Billetera
 Para recibir premios en la blockchain Stellar, recomendamos instalar la billetera LOBSTR:
