@@ -55,6 +55,7 @@ Durante la Semana de Votación Pública, las 3 mejores obras se publicarán en u
 
 ### 8. ¿Hay restricciones sobre el tipo de arte que puedo presentar?
 No hay restricciones sobre el tipo de arte; sin embargo, no incluyas isótopos o logotipos de Alternun. Las presentaciones no deben contener contenido racista, violento o sexualmente explícito.
+---
 
 ### 9. ¿Puedo usar herramientas de IA para crear mi obra de arte?
 Sí, se permite el uso de herramientas de IA, pero debes asegurarte de que tu estilo personal y creatividad se reflejen en la pieza final.
