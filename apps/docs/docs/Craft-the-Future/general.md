@@ -84,20 +84,43 @@ Please ensure you log in to Zealy before submitting the form to prevent data del
    - The community selection process involves completing Zealy quests that encourage social media engagement. Participants can earn points by sharing their artwork and engaging with the community on various platforms.
    - Additionally, artists are encouraged to learn from the Alternun documentation and complete process quizzes to better understand the project and enhance their submissions.
 
-## Art Style Guide
+## Art Style Guide and Submission Requirements
 - There are no restrictions on the type of art you can submit; you may use video, GIF, or images.
 - However, please do not include any isotypes or logos from Alternun in your artwork.
 - All submitted art must be posted in a gallery, such as OpenSea or another blockchain gallery.
+- The use of AI tools for generating art is allowed, but make sure to infuse your soul into the process.
+- Submission format must be 1:1 with a minimum resolution of 2400px.
+- You must submit a minimum of one graphic piece and a maximum of 3 as an NFT series.
+- For inspiration, visit the contest landing page at [https://craft-the-future.alternun.io/es](https://craft-the-future.alternun.io/es).
+
 :::warning
 - All submissions must not contain any racist, violent, or sexually explicit content. We encourage creativity while ensuring a respectful and inclusive environment for all participants.
 :::
+
+## Intellectual Property and Rights
+- Alternun will retain the intellectual property rights for the selected artworks.
+- However, all economic exploitation rights will remain with the artist.
+
+## Wallet Recommendation
+To receive prizes on the Stellar blockchain, we recommend installing the LOBSTR wallet:
+
+[LOBSTR Wallet on Google Play](https://play.google.com/store/apps/details?id=com.lobstr.client&hl=es_VE&pli=1)
+
+LOBSTR is a user-friendly and secure wallet for managing your Stellar assets, including XLM. It offers features such as:
+- Simple and intuitive interface
+- Google 2FA
+- Support for Stellar assets
+- PIN and fingerprint security
+- Live charts
+- QR code support
+- Push notifications for transactions
+- Secure data storage
 
 ## Good Luck!
 
 We look forward to seeing your art in the contest and how you contribute to redefining the future of digital mining and DeFi projects through NFT art.
 
-
-### Public Voting Week (November 4 - November 1)
+### Public Voting Week ( November 4 - November 8)
 - **Voting Process**:
   - Publish top3 received works in a virtual gallery on the Alternun website.
   - voting system via Alternun DAO
