@@ -6,7 +6,7 @@ sidebar_position: 1
 
 ¡Bienvenido al concurso **Craft the Future** de Alternun! 🎨✨
 
-![Craft the Future](/img/craft-the-future.jpeg)
+![Craft the Future](/img/hero-es.jpg)
 
 En Alternun.io, una startup innovadora dedicada a la tokenización de activos reales, creemos en el poder del arte para contar historias y comunicar nuestra misión. Por eso lanzamos este concurso para invitar a los artistas a crear piezas únicas que reflejen de manera gráfica y sorprendente cómo operamos y qué nos motiva.
 

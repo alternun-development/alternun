@@ -1,3 +1,4 @@
+import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
@@ -9,6 +10,7 @@ import styles from './index.module.css';
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
+
   return (
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
@@ -16,13 +18,22 @@ function HomepageHeader() {
           {siteConfig.title}
         </Heading>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
+        
         <div className={styles.buttons}>
           <Link
-            className="button button--secondary button--lg"
+            className={clsx("button button--secondary button--lg", styles.exploreButton)}
             to="/docs/intro">
-            Explore - 5min ⏱️
+            Explore Docs - 5min ⏱️
+          </Link> &nbsp; &nbsp;
+          
+          <Link
+            className={clsx("button button--lg", styles.craftButton)}
+            to="/docs/Craft-the-Future/intro"
+          >
+            <span className={styles.defaultText}>Craft the Future 🎨</span>
+            <span className={styles.hoverText}> Join now!</span>
           </Link>
-        </div>
+        </div>       
       </div>
     </header>
   );
