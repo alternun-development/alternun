@@ -98,9 +98,15 @@ const config: Config = {
           label: 'Docs',
         },
         {to: '/blog', label: 'Blog', position: 'left'},
+        
         {
           href: 'https://github.com/alternun-development',
           label: 'GitHub',
+          position: 'right',
+        },
+        {
+          href: 'https://linktr.ee/Alternun',
+          label: 'Linktree',
           position: 'right',
         },
         {
@@ -144,6 +150,10 @@ const config: Config = {
             {
               label: 'GitHub',
               href: 'https://github.com/alternun-development',
+            },
+            {
+              label: 'Linktree',
+              href: 'https://linktr.ee/Alternun',
             },
           ],
         },
