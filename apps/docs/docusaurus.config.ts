@@ -110,6 +110,11 @@ const config: Config = {
           position: 'right',
         },
         {
+          href: 'https://alternun.io',
+          label: 'Website',
+          position: 'right',
+        },
+        {
           type: 'localeDropdown',
           position: 'right',
         },
@@ -154,6 +159,10 @@ const config: Config = {
             {
               label: 'Linktree',
               href: 'https://linktr.ee/Alternun',
+            },
+            {
+              label: 'Alternun Website',
+              href: 'https://alternun.io',
             },
           ],
         },
