@@ -70,7 +70,7 @@
 .rainbowText {
   display: inline-block;
   animation: rainbow 3s infinite;
-  background: linear-gradient(270deg, red, orange, yellow, green, blue, indigo, violet);
+  background: linear-gradient(270deg, #52c2ed, rgb(240, 237, 240));
   -webkit-background-clip: text;
   background-clip: text; /* Added standard property for compatibility */
   -webkit-text-fill-color: transparent;
