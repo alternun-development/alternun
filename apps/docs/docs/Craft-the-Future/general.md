@@ -65,7 +65,7 @@ Please ensure you log in to Zealy before submitting the form to prevent data del
    - Complete the X (Twitter follow) quest on the social support module. [🔗](https://zealy.io/cw/alternun/questboard/08729b66-f66a-4364-8691-6fbcffff4f0a/469c1245-ab3b-406c-8e9d-5c8e8c82a9cc)
    - Find the Craft the Future module. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2)
    - Complete the artist registry form. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2/1a7427e2-4ac4-4d0f-abb2-23ad8e19e456)
-   
+   - **Simplified Registration**: You can also register by providing your email at [this link](https://xozsu5eiys2.typeform.com/to/MuDsJSqh). Please note that to submit your artwork, you must also follow us on Twitter and Discord via Zealy.
 
 2. **Receive the Guide in Your Email**
    - After submitting the form, check your email.

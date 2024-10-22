@@ -9,12 +9,12 @@ Promover la creación de piezas de arte únicas que expliquen gráficamente la m
 
 ## Cronograma del Concurso
 
-| Fase                      | Fechas                    |
-| -------------------------- | ------------------------ |
-| Convocatoria y Inicio      | 15 de octubre            |
-| Recepción de Participantes  | 15 de octubre - 3 de noviembre  |
-| Semana de Votación Pública  | 4 de noviembre - 8 de noviembre |
-| Anuncio de Ganadores      | 11 de noviembre          |
+| Fase                       | Fechas                          |
+| -------------------------- | ------------------------------- |
+| Convocatoria y Inicio      | 15 de octubre                   |
+| Recepción de Participantes | 15 de octubre - 3 de noviembre  |
+| Semana de Votación Pública | 4 de noviembre - 8 de noviembre |
+| Anuncio de Ganadores       | 11 de noviembre                 |
 
 ```mermaid
 gantt
@@ -32,12 +32,12 @@ gantt
 
 ## Premios
 
-| Posición                       | Artista Seleccionado                     | Monto(USD) |
-| ------------------------------ | ----------------------------------- | ----------- |
-| 1er lugar                      | 1 artista seleccionado por la comunidad      | $200        |
-| 2do lugar                      | 1 artista seleccionado por la comunidad | $100        |
-| 3er lugar                      | 1 artista seleccionado por la comunidad | $50         |
-| Criterios para el compromiso social | Top 17 artistas                       | $10 (Cada uno)  |
+| Posición                            | Artista Seleccionado                    | Monto(USD)     |
+| ----------------------------------- | --------------------------------------- | -------------- |
+| 1er lugar                           | 1 artista seleccionado por la comunidad | $200           |
+| 2do lugar                           | 1 artista seleccionado por la comunidad | $100           |
+| 3er lugar                           | 1 artista seleccionado por la comunidad | $50            |
+| Criterios para el compromiso social | Top 17 artistas                         | $10 (Cada uno) |
 
 :::info
 Todos los participantes obtendrán experiencia valiosa que se tendrá en cuenta en el Evento de Generación de Tokens de Alternun (TGE Q1 2025) a través de Zealy. \
@@ -62,6 +62,7 @@ Asegúrate de iniciar sesión en Zealy antes de enviar el formulario para evitar
    - Completa la misión de X (seguir en Twitter) en el módulo de soporte social. [🔗](https://zealy.io/cw/alternun/questboard/08729b66-f66a-4364-8691-6fbcffff4f0a/469c1245-ab3b-406c-8e9d-5c8e8c82a9cc)
    - Encuentra el módulo Craft the Future. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2)
    - Completa el formulario de registro de artistas. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2/1a7427e2-4ac4-4d0f-abb2-23ad8e19e456)
+   - **Simplified Registration**: You can also register by providing your email at [this link](https://xozsu5eiys2.typeform.com/to/MuDsJSqh). Please note that to submit your artwork, you must also follow us on Twitter and Discord via Zealy.
 
 2. **Recibe la Guía en tu Correo Electrónico**
    - Después de enviar el formulario, revisa tu correo electrónico.
