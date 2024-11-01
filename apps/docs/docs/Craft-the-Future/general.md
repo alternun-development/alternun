@@ -13,9 +13,9 @@ Promote the creation of unique art pieces that graphically explain the mission a
 | Phase                      | Dates                    |
 | -------------------------- | ------------------------ |
 | Call for Entries and Start | October 15               |
-| Reception of Participants  | October 15 - November 3  |
-| Public Voting Week         | November 4 -  November 8 |
-| Announcement of Winners    | November 11              |
+| Reception of Participants  | October 15 - November 8  |
+| Public Voting Week         | November 8 - November 11 |
+| Announcement of Winners    | November 15              |
 
 
 ```mermaid
@@ -27,9 +27,9 @@ gantt
     section Week 2
     Reception of Participants      :a2, 2024-10-15, 19d
     section Week 3
-    Public Voting Week             :a3, 2024-11-04, 5d
+    Public Voting Week             :a3, 2024-11-08, 4d
     section Week 4
-    Announcement of Winners        :a4, 2024-11-11, 1d
+    Announcement of Winners        :a4, 2024-11-15, 1d
 ```
 
 ## Prizes
@@ -114,7 +114,7 @@ LOBSTR is a user-friendly and secure wallet for managing your Stellar assets, in
 
 We look forward to seeing your art in the contest and how you contribute to redefining the future of digital mining and DeFi projects through NFT art.
 
-### Public Voting Week ( November 4 - November 8)
+### Public Voting Week ( November 8 - November 11)
 - **Voting Process**:
   - Publish top3 received works in a virtual gallery on the Alternun website.
   - voting system via Alternun DAO
@@ -125,7 +125,7 @@ We look forward to seeing your art in the contest and how you contribute to rede
 
 ### Announcement of Winners
 
-November 11 Via Alternun X
+November 15 Via Alternun X
 
 
 

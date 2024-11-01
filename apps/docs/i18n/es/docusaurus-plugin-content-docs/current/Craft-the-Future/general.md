@@ -1,128 +1,125 @@
 ---
-sidebar_position: 2
+posición_en_sidebar: 2
 ---
 
 # General
 
-## Contest Objective
-Promote the creation of unique art pieces that graphically explain the mission and operation of Alternun, generating interest in the tokenization of real assets.
+## Objetivo del Concurso
+Promover la creación de piezas de arte únicas que expliquen gráficamente la misión y operación de Alternun, generando interés en la tokenización de activos reales.
 
-## Contest Schedule
+## Cronograma del Concurso
 
-
-| Phase                      | Dates                    |
+| Fase                      | Fechas                    |
 | -------------------------- | ------------------------ |
-| Call for Entries and Start | October 15               |
-| Reception of Participants  | October 15 - November 3  |
-| Public Voting Week         | November 4 -  November 8 |
-| Announcement of Winners    | November 11              |
-
+| Convocatoria y Inicio     | 15 de octubre            |
+| Recepción de Participantes  | 15 de octubre - 8 de noviembre  |
+| Semana de Votación Pública | 8 de noviembre - 11 de noviembre |
+| Anuncio de Ganadores      | 15 de noviembre          |
 
 ```mermaid
 gantt
-    title Craft the Future NFT Contest by Alternun.io
+    title Concurso NFT Craft the Future por Alternun.io
     dateFormat  YYYY-MM-DD
-    section Week 1
-    'Call for Entries and Start'     :a1, 2024-10-15, 1d
-    section Week 2
-    Reception of Participants      :a2, 2024-10-15, 19d
-    section Week 3
-    Public Voting Week             :a3, 2024-11-04, 5d
-    section Week 4
-    Announcement of Winners        :a4, 2024-11-11, 1d
+    section Semana 1
+    'Convocatoria y Inicio'     :a1, 2024-10-15, 1d
+    section Semana 2
+    Recepción de Participantes      :a2, 2024-10-15, 19d
+    section Semana 3
+    Semana de Votación Pública     :a3, 2024-11-08, 4d
+    section Semana 4
+    Anuncio de Ganadores          :a4, 2024-11-15, 1d
 ```
 
-## Prizes
+## Premios
 
-
-| Position                       | Artist Selected                     | Amount(USD) |
+| Posición                       | Artista Seleccionado                     | Monto(USD) |
 | ------------------------------ | ----------------------------------- | ----------- |
-| 1st place                      | 1 artist selected by community      | $200        |
-| 2nd place                      | 1 artists selected by the community | $100        |
-| 3rd place                      | 1 artists selected by the community | $50         |
-| Criteria for social engagement | Top 17 artist                       | $10 (Each)  |
+| 1er lugar                      | 1 artista seleccionado por la comunidad      | $200        |
+| 2do lugar                      | 1 artista seleccionado por la comunidad | $100        |
+| 3er lugar                      | 1 artista seleccionado por la comunidad | $50         |
+| Criterios para el compromiso social | Top 17 artistas                       | $10 (Cada uno)  |
 
 :::info
-All participants will gain valuable experience that will be taken into account in Alternun Token Generation Event (TGE Q1 2025) via Zealy. \
-All prizes will be distributed in $XLM Stellar Blockchain native cryptocurrency USD equivalent. \
-[Stellar Info](https://stellarchain.io/)
+Todos los participantes obtendrán experiencia valiosa que se tendrá en cuenta en el Evento de Generación de Tokens de Alternun (TGE Q1 2025) a través de Zealy. \
+Todos los premios se distribuirán en la criptomoneda nativa del blockchain Stellar, equivalente en USD. \
+[Información de Stellar](https://stellarchain.io/)
 :::
-# Registration Guide
+# Guía de Registro
 
-## Eligibility Criteria
-- Participants must be at least 18 years old.
-- Participants should have a valid Zealy account.
-- All submissions must be original artwork created by the participant.
-- Participants must complete the registration form to be eligible for selection.
+## Criterios de Elegibilidad
+- Los participantes deben tener al menos 18 años.
+- Los participantes deben tener una cuenta válida de Zealy.
+- Todas las presentaciones deben ser obras de arte originales creadas por el participante.
+- Los participantes deben completar el formulario de registro para ser elegibles para la selección.
 
-## Step-by-Step Registration Process
+## Proceso de Registro Paso a Paso
 :::tip
-Make sure to connect to Discord to fill out the registration form.
+Asegúrate de conectarte a Discord para llenar el formulario de registro.
 :::
 
-1. **Fill Out the Registration Form**
-   - Join our community at [Zealy 🔗](https://zealy.io/cw/alternun/invite/TTVWe--hMN2Y3N-ibl-XV).
-   - Complete the artist registry form. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2/1a7427e2-4ac4-4d0f-abb2-23ad8e19e456)
-   - **Simplified Registration**: You can also register by simply providing your email at [this link](https://xozsu5eiys2.typeform.com/to/MuDsJSqh). Please note that on the submition pashe of your artwork, you must also follow us on Twitter and Discord via Zealy.
-2. **Receive the Guide in Your Email**
-   - After submitting the form, check your email.
-   - You will receive an email with instructions on how to mount the link to your NFT in the gallery and on your preferred blockchain.
+1. **Completa el Formulario de Registro**
+   - Únete a nuestra comunidad en [Zealy 🔗](https://zealy.io/cw/alternun/invite/TTVWe--hMN2Y3N-ibl-XV).
+   - Completa el formulario de registro de artistas. [🔗](https://zealy.io/cw/alternun/questboard/c7da4780-1ad0-4ad8-8cb8-affbcff91ab2/1a7427e2-4ac4-4d0f-abb2-23ad8e19e456)
+   - **Registro Simplificado**: También puedes registrarte simplemente proporcionando tu correo electrónico en [este enlace](https://xozsu5eiys2.typeform.com/to/MuDsJSqh). Ten en cuenta que en la fase de presentación de tu obra de arte, también debes seguirnos en Twitter y Discord a través de Zealy.
+2. **Recibe la Guía en Tu Correo Electrónico**
+   - Después de enviar el formulario, revisa tu correo electrónico.
+   - Recibirás un correo con instrucciones sobre cómo montar el enlace a tu NFT en la galería y en la blockchain de tu elección.
 
-3. **Mount Your NFT**
-   - Follow the instructions provided in the email to upload your artwork to the gallery and link it to the blockchain of your choice.
+3. **Monta Tu NFT**
+   - Sigue las instrucciones proporcionadas en el correo para subir tu obra de arte a la galería y vincularla a la blockchain de tu elección.
 
-4. **Artist Selection Campaign**
-   - Participate in the Zealy campaign, where the **top 17 artists** will be selected through public voting.
-   - The community selection process involves completing Zealy quests that encourage social media engagement. Participants can earn points by sharing their artwork and engaging with the community on various platforms.
-   - Additionally, artists are encouraged to learn from the Alternun documentation and complete process quizzes to better understand the project and enhance their submissions.
+4. **Campaña de Selección de Artistas**
+   - Participa en la campaña de Zealy, donde los **17 mejores artistas** serán seleccionados a través de votación pública.
+   - El proceso de selección de la comunidad implica completar misiones de Zealy que fomentan el compromiso en redes sociales. Los participantes pueden ganar puntos compartiendo su obra de arte y participando con la comunidad en varias plataformas.
+   - Además, se anima a los artistas a aprender de la documentación de Alternun y completar cuestionarios de procesos para comprender mejor el proyecto y mejorar sus presentaciones.
 
-## Art Style Guide and Submission Requirements
-- There are no restrictions on the type of art you can submit; you may use video, GIF, or images.
-- However, please do not include any isotypes or logos from Alternun in your artwork.
-- All submitted art must be posted in a gallery, such as OpenSea or another blockchain gallery.
-- The use of AI tools for generating art is allowed, but make sure to infuse your soul into the process.
-- Submission format must be 1:1 with a minimum resolution of 2400px.
-- You must submit a minimum of one graphic piece and a maximum of 3 as an NFT series.
-- For inspiration, visit the contest landing page at [craft-the-future.alternun.io](https://craft-the-future.alternun.io).
+## Guía de Estilo Artístico y Requisitos de Presentación
+- No hay restricciones sobre el tipo de arte que puedes presentar; puedes usar video, GIF o imágenes.
+- Sin embargo, no incluyas ningún isotipo o logotipo de Alternun en tu obra de arte.
+- Todas las presentaciones deben estar publicadas en una galería, como OpenSea o en otra galería de blockchain.
+- El uso de herramientas de IA para generar arte está permitido, pero asegúrate de infundir tu alma en el proceso.
+- El formato de presentación debe ser 1:1 con una resolución mínima de 2400px.
+- Debes presentar al menos una pieza gráfica y un máximo de 3 como una serie NFT.
+- Para inspiración, visita la página de inicio del concurso en [craft-the-future.alternun.io](https://craft-the-future.alternun.io).
 
 :::warning
-- All submissions must not contain any racist, violent, or sexually explicit content. We encourage creativity while ensuring a respectful and inclusive environment for all participants.
+- Todas las presentaciones deben contener contenido respetuoso y inclusivo para todos los participantes.
 :::
 
-## Intellectual Property and Rights
-- the intellectual and commercial rights of the NFT are the property of the artist. 
-- The artist grants Alternun authorization to use the work in Alternun's own publications and on our sites, always acknowledging the author.
+## Propiedad Intelectual y Derechos
+- Los derechos intelectuales y comerciales de la NFT son propiedad del artista.
+- El artista concede a Alternun la autorización para usar la obra en las publicaciones propias de Alternun y en nuestros sitios, siempre reconociendo al autor.
 
-## Wallet Recommendation
-To receive prizes on the Stellar blockchain, we recommend installing the LOBSTR wallet
+## Recomendación de Wallet
+Para recibir premios en el blockchain Stellar, te recomendamos instalar la wallet LOBSTR
 
 :::info
 [⏬ LOBSTR Wallet ](https://lobstr.co/)
 :::
 
-LOBSTR is a user-friendly and secure wallet for managing your Stellar assets, including XLM. It offers features such as:
-- Simple and intuitive interface
+LOBSTR es una wallet amigable y segura para administrar tus activos Stellar, incluyendo XLM. Ofrece las siguientes características:
+- Interfaz simple y intuitiva
 - Google 2FA
-- Support for Stellar assets
-- PIN and fingerprint security
-- Live charts
-- QR code support
-- Push notifications for transactions
-- Secure data storage
+- Soporte para activos Stellar
+- Seguridad de PIN y huella digital
+- Gráficos en vivo
+- Soporte de código QR
+- Notificaciones push para transacciones
+- Almacenamiento de datos seguro
 
-## Good Luck!
+## ¡Buena Suerte!
 
-We look forward to seeing your art in the contest and how you contribute to redefining the future of digital mining and DeFi projects through NFT art.
+Nos encanta ver tu arte en el concurso y cómo contribuyes a redefinir el futuro de la minería digital y los proyectos DeFi a través del arte NFT.
 
-### Public Voting Week ( November 4 - November 8)
-- **Voting Process**:
-  - Publish top3 received works in a virtual gallery on the Alternun website.
-  - voting system via Alternun DAO
+### Semana de Votación Pública (8 de noviembre - 11 de noviembre)
+- **Proceso de Votación**:
+  - Publica las 3 mejores obras recibidas en una galería virtual en el sitio web de Alternun.
+  - Sistema de votación a través de Alternun DAO
   
-- **Promotion of Voting**:
-  - Daily posts on Instagram and Twitter to remind the community to vote.
-  - Create a hashtag campaign to encourage participation.
+- **Promoción de la Votación**:
+  - Publicaciones diarias en Instagram y Twitter para recordar a la comunidad que vote.
+  - Crea una campaña de hashtags para fomentar la participación.
 
-### Announcement of Winners
+### Anuncio de Ganadores
 
-November 11 Via Alternun X
+15 de noviembre a través de Alternun X
