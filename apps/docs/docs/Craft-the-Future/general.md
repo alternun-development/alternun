@@ -13,8 +13,8 @@ Promote the creation of unique art pieces that graphically explain the mission a
 | Phase                      | Dates                    |
 | -------------------------- | ------------------------ |
 | Call for Entries and Start | October 15               |
-| Reception of Participants  | October 15 - November 8  |
-| Public Voting Week         | November 8 - November 11 |
+| Reception of Participants  | October 15 - November 11  |
+| Public Voting Week         | November 11 - November 15 |
 | Announcement of Winners    | November 15              |
 
 
@@ -27,7 +27,7 @@ gantt
     section Week 2
     Reception of Participants      :a2, 2024-10-15, 19d
     section Week 3
-    Public Voting Week             :a3, 2024-11-08, 4d
+    Public Voting Week             :a3, 2024-11-11, 4d
     section Week 4
     Announcement of Winners        :a4, 2024-11-15, 1d
 ```

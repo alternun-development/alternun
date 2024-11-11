@@ -18,8 +18,8 @@ Participants must be at least 18 years old and should have a valid Zealy account
 
 ### 3. What are the important dates for the contest?
 - **Call for Entries and Start:** October 15
-- **Reception of Participants:** October 15 - November 8
-- **Public Voting Week:** November 8 - November 15
+- **Reception of Participants:** October 15 - November 11
+- **Public Voting Week:** November 11 - November 15
 - **Announcement of Winners:** November 15
 
 ---
