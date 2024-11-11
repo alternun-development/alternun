@@ -15,7 +15,7 @@ Our goal is to democratize access to investments in gold reserves through blockc
 
 ### Contest Details
 - **Call for Entries Start**: October 15 - November 8 
-- **Public Voting Week**: November 8 - November 15
+- **Public Voting Week**: November 11 - November 15
 - **Winners Announcement**: November 15
 
 We have a total budget of $350 USD to reward three artists, and $170 USD to reward 17 artists from the community through social engagement via Zealy.
