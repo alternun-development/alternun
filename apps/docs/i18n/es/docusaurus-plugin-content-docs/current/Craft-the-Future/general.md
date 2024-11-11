@@ -13,7 +13,7 @@ Promover la creación de piezas de arte únicas que expliquen gráficamente la m
 | -------------------------- | ------------------------ |
 | Convocatoria y Inicio     | 15 de octubre            |
 | Recepción de Participantes  | 15 de octubre - 8 de noviembre  |
-| Semana de Votación Pública | 8 de noviembre - 11 de noviembre |
+| Semana de Votación Pública | 11 de noviembre - 15 de noviembre |
 | Anuncio de Ganadores      | 15 de noviembre          |
 
 ```mermaid
@@ -25,7 +25,7 @@ gantt
     section Semana 2
     Recepción de Participantes      :a2, 2024-10-15, 19d
     section Semana 3
-    Semana de Votación Pública     :a3, 2024-11-08, 4d
+    Semana de Votación Pública     :a3, 2024-11-11, 4d
     section Semana 4
     Anuncio de Ganadores          :a4, 2024-11-15, 1d
 ```

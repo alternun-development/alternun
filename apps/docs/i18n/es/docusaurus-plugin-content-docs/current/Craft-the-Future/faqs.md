@@ -18,9 +18,9 @@ Los participantes deben tener al menos 18 años y contar con una cuenta válida 
 
 ### 3. ¿Cuáles son las fechas importantes para el concurso?
 - **Convocatoria y Inicio:** 15 de octubre
-- **Recepción de Participantes:** 15 de octubre - 3 de noviembre
-- **Semana de Votación Pública:** 4 de noviembre - 8 de noviembre
-- **Anuncio de Ganadores:** 11 de noviembre
+- **Recepción de Participantes:** 15 de octubre - 11 de noviembre
+- **Semana de Votación Pública:** 11 de noviembre - 15 de noviembre
+- **Anuncio de Ganadores:** 15 de noviembre
 
 ---
 
