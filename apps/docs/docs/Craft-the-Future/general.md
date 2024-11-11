@@ -48,6 +48,9 @@ All prizes will be distributed in $XLM Stellar Blockchain native cryptocurrency 
 [Stellar Info](https://stellarchain.io/)
 :::
 # Registration Guide
+:::danger
+**Important:** Registration for artists will close at **11:11 PM EST on November 11**. Make sure to complete your registration before this deadline!
+:::
 
 ## Eligibility Criteria
 - Participants must be at least 18 years old.
@@ -59,6 +62,8 @@ All prizes will be distributed in $XLM Stellar Blockchain native cryptocurrency 
 :::tip
 Make sure to connect to Discord to fill out the registration form.
 :::
+
+
 
 1. **Fill Out the Registration Form**
    - Join our community at [Zealy 🔗](https://zealy.io/cw/alternun/invite/TTVWe--hMN2Y3N-ibl-XV).
