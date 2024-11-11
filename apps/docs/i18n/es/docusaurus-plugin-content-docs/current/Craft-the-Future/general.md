@@ -1,5 +1,5 @@
 ---
-posición_en_sidebar: 2
+sidebar_position: 2
 ---
 
 # General
@@ -12,7 +12,7 @@ Promover la creación de piezas de arte únicas que expliquen gráficamente la m
 | Fase                      | Fechas                    |
 | -------------------------- | ------------------------ |
 | Convocatoria y Inicio     | 15 de octubre            |
-| Recepción de Participantes  | 15 de octubre - 8 de noviembre  |
+| Recepción de Participantes  | 15 de octubre - 11 de noviembre  |
 | Semana de Votación Pública | 11 de noviembre - 15 de noviembre |
 | Anuncio de Ganadores      | 15 de noviembre          |
 
@@ -41,10 +41,13 @@ gantt
 
 :::info
 Todos los participantes obtendrán experiencia valiosa que se tendrá en cuenta en el Evento de Generación de Tokens de Alternun (TGE Q1 2025) a través de Zealy. \
-Todos los premios se distribuirán en la criptomoneda nativa del blockchain Stellar, equivalente en USD. \
+Todos los premios se distribuirán en la criptomoneda nativa del blockchain Stellar USD equivalente. \
 [Información de Stellar](https://stellarchain.io/)
 :::
 # Guía de Registro
+:::danger
+**Importante:** ¡El registro para artistas cerrará a las **11:11 PM EST del 11 de noviembre**! Asegúrate de completar tu registro antes de esta fecha límite.
+:::
 
 ## Criterios de Elegibilidad
 - Los participantes deben tener al menos 18 años.
@@ -75,50 +78,50 @@ Asegúrate de conectarte a Discord para llenar el formulario de registro.
 
 ## Guía de Estilo Artístico y Requisitos de Presentación
 - No hay restricciones sobre el tipo de arte que puedes presentar; puedes usar video, GIF o imágenes.
-- Sin embargo, no incluyas ningún isotipo o logotipo de Alternun en tu obra de arte.
-- Todas las presentaciones deben estar publicadas en una galería, como OpenSea o en otra galería de blockchain.
-- El uso de herramientas de IA para generar arte está permitido, pero asegúrate de infundir tu alma en el proceso.
+- Sin embargo, por favor no incluyas ningún isotipo o logotipo de Alternun en tu obra de arte.
+- Todas las obras de arte presentadas deben publicarse en una galería, como OpenSea u otra galería de blockchain.
+- Se permite el uso de herramientas de IA para generar arte, pero asegúrate de infundir tu alma en el proceso.
 - El formato de presentación debe ser 1:1 con una resolución mínima de 2400px.
-- Debes presentar al menos una pieza gráfica y un máximo de 3 como una serie NFT.
-- Para inspiración, visita la página de inicio del concurso en [craft-the-future.alternun.io](https://craft-the-future.alternun.io).
+- Debes presentar un mínimo de una pieza gráfica y un máximo de 3 como una serie de NFT.
+- Para inspiración, visita la página de aterrizaje del concurso en [craft-the-future.alternun.io](https://craft-the-future.alternun.io).
 
 :::warning
-- Todas las presentaciones deben contener contenido respetuoso y inclusivo para todos los participantes.
+- Todas las presentaciones no deben contener contenido racista, violento o sexualmente explícito. Fomentamos la creatividad mientras aseguramos un entorno respetuoso e inclusivo para todos los participantes.
 :::
 
 ## Propiedad Intelectual y Derechos
-- Los derechos intelectuales y comerciales de la NFT son propiedad del artista.
-- El artista concede a Alternun la autorización para usar la obra en las publicaciones propias de Alternun y en nuestros sitios, siempre reconociendo al autor.
+- Los derechos intelectuales y comerciales del NFT son propiedad del artista. 
+- El artista otorga a Alternun la autorización para usar la obra en las propias publicaciones de Alternun y en nuestros sitios, siempre reconociendo al autor.
 
-## Recomendación de Wallet
-Para recibir premios en el blockchain Stellar, te recomendamos instalar la wallet LOBSTR
+## Recomendación de Billetera
+Para recibir premios en la blockchain Stellar, recomendamos instalar la billetera LOBSTR.
 
 :::info
-[⏬ LOBSTR Wallet ](https://lobstr.co/)
+[⏬ Billetera LOBSTR ](https://lobstr.co/)
 :::
 
-LOBSTR es una wallet amigable y segura para administrar tus activos Stellar, incluyendo XLM. Ofrece las siguientes características:
-- Interfaz simple y intuitiva
+LOBSTR es una billetera fácil de usar y segura para gestionar tus activos Stellar, incluyendo XLM. Ofrece características como:
+- Interfaz simple e intuitiva
 - Google 2FA
 - Soporte para activos Stellar
-- Seguridad de PIN y huella digital
+- Seguridad con PIN y huella dactilar
 - Gráficos en vivo
-- Soporte de código QR
+- Soporte para códigos QR
 - Notificaciones push para transacciones
-- Almacenamiento de datos seguro
+- Almacenamiento seguro de datos
 
 ## ¡Buena Suerte!
 
-Nos encanta ver tu arte en el concurso y cómo contribuyes a redefinir el futuro de la minería digital y los proyectos DeFi a través del arte NFT.
+Esperamos ver tu arte en el concurso y cómo contribuyes a redefinir el futuro de la minería digital y los proyectos DeFi a través del arte NFT.
 
-### Semana de Votación Pública (8 de noviembre - 11 de noviembre)
+### Semana de Votación Pública ( 8 de noviembre - 11 de noviembre)
 - **Proceso de Votación**:
-  - Publica las 3 mejores obras recibidas en una galería virtual en el sitio web de Alternun.
-  - Sistema de votación a través de Alternun DAO
+  - Publicar las 3 mejores obras recibidas en una galería virtual en el sitio web de Alternun.
+  - sistema de votación a través de Alternun DAO
   
 - **Promoción de la Votación**:
   - Publicaciones diarias en Instagram y Twitter para recordar a la comunidad que vote.
-  - Crea una campaña de hashtags para fomentar la participación.
+  - Crear una campaña de hashtag para fomentar la participación.
 
 ### Anuncio de Ganadores
 
