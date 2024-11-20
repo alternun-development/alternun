@@ -132,6 +132,16 @@ We look forward to seeing your art in the contest and how you contribute to rede
 
 November 15 Via Alternun X
 
+:::info
+## Top 3 Artist Winners
+1️⃣ @iledesignia - 52 likes  
+2️⃣ @SandRamp - 33 likes  
+3️⃣ @39eliens - 25 likes  
+
+## Congratulations to All Artists!
+A big thank you to all artists who submitted their artwork! Your creativity and effort are truly appreciated. Stay tuned for more updates and opportunities from the community!
+:::
+
 
 
 
