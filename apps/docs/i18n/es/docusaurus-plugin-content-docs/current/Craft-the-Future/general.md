@@ -126,3 +126,13 @@ Esperamos ver tu arte en el concurso y cómo contribuyes a redefinir el futuro d
 ### Anuncio de Ganadores
 
 15 de noviembre a través de Alternun X
+
+:::info
+## Ganadores de los 3 Top Artistas Public voting
+1️⃣ @iledesignia - 52 Me gusta  
+2️⃣ @SandRamp - 33 Me gusta  
+3️⃣ @39eliens - 25 Me gusta  
+
+## ¡Felicidades a todos los artistas!
+¡Gracias a todos los artistas que enviaron sus obras! Su creatividad y esfuerzo son realmente apreciados. ¡Estén atentos a más noticias y oportunidades de la comunidad!
+:::
