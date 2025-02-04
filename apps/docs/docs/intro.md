@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Introductions
+# Introduction
 
 ALTERNUN is revolutionizing the way we approach gold-backed assets, offering a sustainable, forward-thinking alternative to traditional mining. By tokenizing gold reserves and leaving the precious metal in the ground, we create value while protecting the environment and promoting social equity. Our approach leverages blockchain technology, smart contracts, and regenerative projects to redefine how wealth and natural resources can coexist in harmony.
 
