@@ -2,7 +2,7 @@
 posición_en_sidebar: 1
 ---
 
-# Introducción
+# Introducción  
 
 ALTERNUN está revolucionando la forma en que abordamos los activos respaldados por oro, ofreciendo una alternativa sostenible y con visión de futuro a la minería tradicional. Al tokenizar las reservas de oro y dejar el metal precioso en el suelo, creamos valor mientras protegemos el medio ambiente y promovemos la equidad social. Nuestro enfoque aprovecha la tecnología blockchain, los contratos inteligentes y los proyectos regenerativos para redefinir cómo la riqueza y los recursos naturales pueden coexistir en armonía.
 
