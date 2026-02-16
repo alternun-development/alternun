@@ -1,0 +1,32 @@
+name: Branch Protection
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+jobs:
+  protect-master:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if direct push to master
+        run: |
+          echo "❌ Direct pushes to master are not allowed!"
+          echo "📝 Please create a pull request to develop branch first"
+          echo "🔄 Then merge develop to master through a pull request"
+          exit 1
+
+  enforce-pr-flow:
+    if: github.event_name == 'pull_request' && github.base.ref == 'master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR source branch
+        run: |
+          if [[ "${{ github.head.ref }}" != "develop" ]]; then
+            echo "❌ PRs to master must come from develop branch!"
+            echo "📝 Please create PR to develop first, then merge develop to master"
+            exit 1
+          fi
+          echo "✅ PR from develop to master is allowed"
