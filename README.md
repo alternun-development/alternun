@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://github.com/alternun-development/alternun/workflows/CI/badge.svg)](https://github.com/alternun-development/alternun/actions)
 [![codecov](https://codecov.io/gh/alternun-development/alternun/branch/main/graph/badge.svg)](https://codecov.io/gh/alternun-development/alternun)
-[![Docs Status](https://github.com/alternun-development/alternun/workflows/Deploy-Docs/badge.svg)](https://github.com/alternun-development/alternun/actions/workflows/deploy.yml)
+[![Docs Status](https://github.com/alternun-development/alternun/actions/workflows/deploy.yml/badge.svg)](https://github.com/alternun-development/alternun/actions/workflows/deploy.yml)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://alternun-development.github.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Turbo](https://img.shields.io/badge/Turbo-1.9+-ff6d00.svg)](https://turbo.build/)
