@@ -89,6 +89,60 @@ pnpm test:coverage
 # Security audit
 pnpm audit
 
+## 🌿 Git Workflow
+
+### Branch Protection Rules
+
+This repository enforces a strict Git workflow to ensure code quality and proper review:
+
+#### � Master Branch Protection
+- **No direct pushes** to master branch are allowed
+- **All changes** must go through pull requests
+- **PRs to master** must come from develop branch only
+
+#### 📝 Required Workflow
+1. **Create feature branch** from develop
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make changes** and test locally
+   ```bash
+   # Make your changes
+   pnpm dev
+   pnpm test
+   pnpm lint
+   ```
+
+3. **Create PR to develop**
+   - Push feature branch: `git push origin feature/your-feature-name`
+   - Create pull request targeting develop branch
+   - Get code review and approval
+
+4. **Merge to develop**
+   - After approval, merge to develop branch
+   - This updates the development environment
+
+5. **Create PR to master**
+   - Create pull request from develop to master
+   - This is for production releases
+   - Requires additional review and testing
+
+#### 🔒 Enforcement Mechanisms
+- **GitHub Actions**: Block direct pushes to master
+- **Branch Protection**: Only allow PRs from develop to master
+- **Automated Checks**: CI/CD must pass before merging
+- **Code Review**: At least one approval required
+
+#### 🎯 Why This Workflow?
+- **🔍 Code Quality**: All changes get reviewed
+- **🚀 Stability**: Master branch always stable
+- **🧪 Testing**: Changes tested in develop first
+- **📊 Traceability**: Clear history of changes
+- **👥 Collaboration**: Team visibility into changes
+
 ## 🔄 Version Management
 
 This monorepo uses `@edcalderon/versioning` for comprehensive version control and release management.
