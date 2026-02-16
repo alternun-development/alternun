@@ -1,0 +1,23 @@
+name: Require PR to Develop
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  check-direct-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for direct push to develop
+        run: |
+          echo "⚠️ Direct push to develop detected"
+          echo "💡 Consider creating a pull request for better code review"
+          echo "📝 This is allowed but PRs are recommended"
+          echo ""
+          echo "🔍 Best practices:"
+          echo "  1. Create feature branch from develop"
+          echo "  2. Make changes and test"
+          echo "  3. Create PR to develop"
+          echo "  4. Get code review"
+          echo "  5. Merge to develop"
+          echo "  6. Create PR from develop to master"
