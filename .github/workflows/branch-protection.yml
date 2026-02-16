@@ -6,6 +6,8 @@ on:
   push:
     branches: [master, main]
 
+permissions: {}
+
 jobs:
   protect-master:
     if: (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'))
