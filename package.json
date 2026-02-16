@@ -42,9 +42,9 @@
   },
   "engines": {
     "node": ">=22.22.0",
-    "npm": ">=10.0.0"
+    "pnpm": ">=9.0.0"
   },
-  "packageManager": "npm@10.0.0",
+  "packageManager": "pnpm@9.0.0",
   "dependencies": {
     "three": "^0.169.0"
   },
