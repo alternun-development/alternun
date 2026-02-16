@@ -41,14 +41,14 @@ alternun/
 - **Documentation**: Docusaurus 3.5+ with i18n support
 - **Styling**: Tailwind CSS 3.3+
 - **3D Graphics**: Three.js 0.169+ with React Three Fiber
-- **Package Manager**: npm 10.0.0
+- **Package Manager**: pnpm 9.0.0
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Node.js 22.22.0 or higher
-- npm 10.0.0 or higher
+- pnpm 9.0.0 or higher
 - Git
 
 ### Installation
@@ -59,35 +59,35 @@ git clone https://github.com/alternun-development/alternun.git
 cd alternun
 
 # Install dependencies
-npm install
+pnpm install
 
 # Start development servers
-npm run dev
+pnpm dev
 ```
 
 ### Development Commands
 
 ````bash
 # Build all packages and applications
-npm run build
+pnpm build
 
 # Start all development servers
-npm run dev
+pnpm dev
 
 # Run linting across all packages
-npm run lint
+pnpm lint
 
 # Format code with Prettier
-npm run format
+pnpm format
 
 # Run tests
-npm run test
+pnpm test
 
 # Check code coverage
-npm run test:coverage
+pnpm test:coverage
 
 # Security audit
-npm run security:audit
+pnpm audit
 
 ## 🔄 Version Management
 
@@ -97,22 +97,22 @@ This monorepo uses `@edcalderon/versioning` for comprehensive version control an
 
 ```bash
 # Validate version sync across monorepo
-npm run version:validate
+pnpm version:validate
 
 # Sync versions across all packages
-npm run version:sync
+pnpm version:sync
 
 # Bump version (patch, minor, major)
-npm run version:bump
+pnpm version:bump
 
 # Generate changelog from commits
-npm run version:changelog
+pnpm version:changelog
 
 # Clean up repository and remove unused files
-npm run version:cleanup
+pnpm version:cleanup
 
 # Check for secrets in staged files
-npm run version:check-secrets
+pnpm version:check-secrets
 ````
 
 ### Versioning Features
