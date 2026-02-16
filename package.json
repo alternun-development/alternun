@@ -10,12 +10,30 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch",
+    "test:coverage": "turbo run test:coverage",
+    "security:audit": "npm audit",
+    "security:fix": "npm audit fix",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean",
+    "prepare": "husky install",
+    "version:check": "versioning check",
+    "version:cleanup": "versioning cleanup",
+    "version:private": "versioning private-check"
   },
   "devDependencies": {
     "@docusaurus/tsconfig": "^3.5.2",
+    "@edcalderon/versioning": "^1.0.0",
     "@types/three": "^0.169.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.40.0",
+    "eslint-plugin-security": "^1.7.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.3",
     "prettier": "^2.8.8",
     "turbo": "^1.9.8"
   },
@@ -25,5 +43,14 @@
   "packageManager": "npm@8.19.2",
   "dependencies": {
     "three": "^0.169.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{md,json}": [
+      "prettier --write"
+    ]
   }
 }
