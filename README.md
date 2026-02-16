@@ -67,7 +67,7 @@ npm run dev
 
 ### Development Commands
 
-```bash
+````bash
 # Build all packages and applications
 npm run build
 
@@ -89,14 +89,69 @@ npm run test:coverage
 # Security audit
 npm run security:audit
 
-# Version management
-npm run version:validate      # Validate version sync across monorepo
-npm run version:sync         # Sync versions across packages
-npm run version:bump         # Bump version (patch, minor, major)
-npm run version:changelog    # Generate changelog
-npm run version:cleanup      # Clean up repository
-npm run version:check-secrets # Check for secrets in staged files
-```
+## 🔄 Version Management
+
+This monorepo uses `@edcalderon/versioning` for comprehensive version control and release management.
+
+### Version Management Commands
+
+```bash
+# Validate version sync across monorepo
+npm run version:validate
+
+# Sync versions across all packages
+npm run version:sync
+
+# Bump version (patch, minor, major)
+npm run version:bump
+
+# Generate changelog from commits
+npm run version:changelog
+
+# Clean up repository and remove unused files
+npm run version:cleanup
+
+# Check for secrets in staged files
+npm run version:check-secrets
+````
+
+### Versioning Features
+
+- **🔄 Automatic Sync**: Keeps versions consistent across all packages
+- **🌿 Branch Awareness**: Different versioning strategies per branch
+  - `master`: Semantic versioning for production releases
+  - `develop`: Development builds with dev versions
+  - `feature/*`: Feature branch versioning
+  - `hotfix/*`: Hotfix versioning
+- **📝 Changelog Generation**: Automatic changelog from conventional commits
+- **🔒 Security Scanning**: Built-in secret detection
+- **🧹 Repository Cleanup**: Automated cleanup utilities
+
+### Versioning Workflow
+
+1. **Development**: Work on feature branches with automatic version tracking
+2. **Validation**: Pre-push hooks validate version consistency
+3. **Release**: Use semantic versioning for production releases
+4. **Documentation**: Auto-generated changelogs for releases
+
+### Security & Cleanup Guards
+
+The versioning system includes built-in protection:
+
+- **🔒 Secret Detection**: Scans for API keys, passwords, and sensitive data
+- **🧹 Cleanup Utilities**: Removes temporary files and unused dependencies
+- **✅ Validation**: Ensures all packages have consistent versions
+- **🚫 Private Package Check**: Prevents accidental publishing of private packages
+- **📊 Dependency Sync**: Maintains dependency consistency across monorepo
+
+### Configuration
+
+Versioning is configured in `versioning.config.json`:
+
+- Monorepo package patterns (`apps/*/package.json`, `packages/*/package.json`)
+- Branch-specific strategies
+- Conventional commit support
+- Automatic dependency synchronization
 
 ## 📱 Applications
 
