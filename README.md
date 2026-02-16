@@ -90,9 +90,12 @@ npm run test:coverage
 npm run security:audit
 
 # Version management
-npm run version:check      # Check version consistency
-npm run version:cleanup    # Clean up version issues
-npm run version:private     # Check for private package issues
+npm run version:validate      # Validate version sync across monorepo
+npm run version:sync         # Sync versions across packages
+npm run version:bump         # Bump version (patch, minor, major)
+npm run version:changelog    # Generate changelog
+npm run version:cleanup      # Clean up repository
+npm run version:check-secrets # Check for secrets in staged files
 ```
 
 ## 📱 Applications

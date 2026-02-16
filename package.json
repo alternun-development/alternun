@@ -20,9 +20,12 @@
     "type-check": "turbo run type-check",
     "clean": "turbo run clean",
     "prepare": "husky install",
-    "version:check": "versioning check",
+    "version:validate": "versioning validate",
+    "version:sync": "versioning sync",
+    "version:bump": "versioning bump",
+    "version:changelog": "versioning changelog",
     "version:cleanup": "versioning cleanup",
-    "version:private": "versioning private-check"
+    "version:check-secrets": "versioning check-secrets"
   },
   "devDependencies": {
     "@docusaurus/tsconfig": "^3.5.2",
