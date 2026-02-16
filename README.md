@@ -7,7 +7,7 @@
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://alternun-development.github.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Turbo](https://img.shields.io/badge/Turbo-1.9+-ff6d00.svg)](https://turbo.build/)
-[![Node.js](https://img.shields.io/badge/Node.js-14%2B-green.svg)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22.22.0+-green.svg)](https://nodejs.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 > **Alternun** - #ReDeFine the future with sustainable technology and innovation
@@ -41,14 +41,14 @@ alternun/
 - **Documentation**: Docusaurus 3.5+ with i18n support
 - **Styling**: Tailwind CSS 3.3+
 - **3D Graphics**: Three.js 0.169+ with React Three Fiber
-- **Package Manager**: npm 8.19.2
+- **Package Manager**: npm 10.0.0
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js 14.0.0 or higher
-- npm 8.19.2 or higher
+- Node.js 22.22.0 or higher
+- npm 10.0.0 or higher
 - Git
 
 ### Installation
@@ -123,6 +123,7 @@ npm run version:private     # Check for private package issues
 ### UI Components (`packages/ui`)
 
 Cross-platform React components compatible with:
+
 - React DOM (Web)
 - React Native (Mobile)
 - TypeScript definitions included
@@ -147,12 +148,14 @@ Cross-platform React components compatible with:
 ### Integration Guidelines
 
 #### Sub-modules Integration
+
 - Use workspace references (`@alternun/package-name`)
 - Maintain semantic versioning
 - Share types through TypeScript declaration files
 - Use peer dependencies for framework-specific packages
 
 #### Cross-package Dependencies
+
 ```json
 {
   "dependencies": {
