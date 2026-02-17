@@ -1,9 +1,69 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styles from './styles.module.css';
 
 const FuturisticFooter = () => {
+  const { i18n } = useDocusaurusContext();
   const currentYear = new Date().getFullYear();
+
+  // Translations
+  const t = {
+    en: {
+      product: 'Product',
+      community: 'Community',
+      legal: 'Legal',
+      documentation: 'Documentation',
+      blog: 'Blog',
+      website: 'Website',
+      github: 'GitHub',
+      linktree: 'Linktree',
+      support: 'Support',
+      privacy: 'Privacy Policy',
+      terms: 'Terms of Service',
+      cookies: 'Cookies Policy',
+      copyright: `© ${currentYear} Alternun. All rights reserved.`,
+      builtWith: 'Built with ❤️ using Docusaurus',
+      poweredBy: 'Powered by ReDeFi',
+    },
+    es: {
+      product: 'Producto',
+      community: 'Comunidad',
+      legal: 'Legal',
+      documentation: 'Documentación',
+      blog: 'Blog',
+      website: 'Sitio Web',
+      github: 'GitHub',
+      linktree: 'Linktree',
+      support: 'Soporte',
+      privacy: 'Política de Privacidad',
+      terms: 'Términos de Servicio',
+      cookies: 'Política de Cookies',
+      copyright: `© ${currentYear} Alternun. Todos los derechos reservados.`,
+      builtWith: 'Construido con ❤️ usando Docusaurus',
+      poweredBy: 'Impulsado por ReDeFi',
+    },
+    th: {
+      product: 'ผลิตภัณฑ์',
+      community: 'ชุมชุม',
+      legal: 'กฎหมาย',
+      documentation: 'เอกสาร',
+      blog: 'บล็อก',
+      website: 'เว็บไซต์',
+      github: 'GitHub',
+      linktree: 'Linktree',
+      support: 'สนับสนุน',
+      privacy: 'นโยบายความเป็นส่วนตัว',
+      terms: 'เงื่อนไขการให้บริการ',
+      cookies: 'นโยบายคุกกี้',
+      copyright: `© ${currentYear} Alternun. สงวนลิขสิทธิ์ทั้งหมด`,
+      builtWith: 'สร้างด้วย ❤️ โดยใช้ Docusaurus',
+      poweredBy: 'ขับเคลื่อนโดย ReDeFi',
+    },
+  };
+
+  const lang = i18n.currentLocale || 'en';
+  const translations = t[lang as keyof typeof t] || t.en;
 
   return (
     <footer className={styles.footer}>
@@ -50,16 +110,16 @@ const FuturisticFooter = () => {
                 viewport={{ once: true }}
               >
                 <div className={styles.linkSection}>
-                  <h4 className={styles.linkTitle}>Product</h4>
+                  <h4 className={styles.linkTitle}>{translations.product}</h4>
                   <ul className={styles.linkList}>
                     <li>
                       <motion.a whileHover={{ x: 5 }} href='/docs/category/basics'>
-                        Documentation
+                        {translations.documentation}
                       </motion.a>
                     </li>
                     <li>
                       <motion.a whileHover={{ x: 5 }} href='/blog'>
-                        Blog
+                        {translations.blog}
                       </motion.a>
                     </li>
                     <li>
@@ -69,14 +129,14 @@ const FuturisticFooter = () => {
                         target='_blank'
                         rel='noopener noreferrer'
                       >
-                        Website
+                        {translations.website}
                       </motion.a>
                     </li>
                   </ul>
                 </div>
 
                 <div className={styles.linkSection}>
-                  <h4 className={styles.linkTitle}>Community</h4>
+                  <h4 className={styles.linkTitle}>{translations.community}</h4>
                   <ul className={styles.linkList}>
                     <li>
                       <motion.a
@@ -85,7 +145,7 @@ const FuturisticFooter = () => {
                         target='_blank'
                         rel='noopener noreferrer'
                       >
-                        GitHub
+                        {translations.github}
                       </motion.a>
                     </li>
                     <li>
@@ -95,33 +155,33 @@ const FuturisticFooter = () => {
                         target='_blank'
                         rel='noopener noreferrer'
                       >
-                        Linktree
+                        {translations.linktree}
                       </motion.a>
                     </li>
                     <li>
                       <motion.a whileHover={{ x: 5 }} href='/docs'>
-                        Support
+                        {translations.support}
                       </motion.a>
                     </li>
                   </ul>
                 </div>
 
                 <div className={styles.linkSection}>
-                  <h4 className={styles.linkTitle}>Legal</h4>
+                  <h4 className={styles.linkTitle}>{translations.legal}</h4>
                   <ul className={styles.linkList}>
                     <li>
                       <motion.a whileHover={{ x: 5 }} href='/privacy'>
-                        Privacy Policy
+                        {translations.privacy}
                       </motion.a>
                     </li>
                     <li>
                       <motion.a whileHover={{ x: 5 }} href='/terms'>
-                        Terms of Service
+                        {translations.terms}
                       </motion.a>
                     </li>
                     <li>
-                      <motion.a whileHover={{ x: 5 }} href='/license'>
-                        License
+                      <motion.a whileHover={{ x: 5 }} href='/cookies'>
+                        {translations.cookies}
                       </motion.a>
                     </li>
                   </ul>
@@ -140,10 +200,10 @@ const FuturisticFooter = () => {
             <div className='row'>
               <div className='col col--12'>
                 <div className={styles.copyright}>
-                  <p>&copy; {currentYear} Alternun. All rights reserved.</p>
+                  <p>{translations.copyright}</p>
                   <div className={styles.footerTech}>
-                    <span className={styles.techBadge}>Built with ❤️ using Docusaurus</span>
-                    <span className={styles.techBadge}>Powered by ReDeFi</span>
+                    <span className={styles.techBadge}>{translations.builtWith}</span>
+                    <span className={styles.techBadge}>{translations.poweredBy}</span>
                   </div>
                 </div>
               </div>
