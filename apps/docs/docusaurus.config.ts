@@ -79,6 +79,7 @@ const config: Config = {
   themeConfig: {
     // Replace with your project's social card
     image: 'img/alternun-socials.png',
+    favicon: 'img/favicon.ico',
     mermaid: {
       theme: { light: 'neutral', dark: 'forest' },
     },
