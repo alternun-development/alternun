@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w"
+    "dev": "tsc -w",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "react": "18.2.0",
