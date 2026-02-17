@@ -18,14 +18,20 @@
 }
 
 .canvas {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   pointer-events: none;
   opacity: 0.95;
   z-index: 0;
+}
+
+/* Exclude footer from vortex animation */
+.footer {
+  position: relative;
+  z-index: 10;
 }
 
 .hero {
