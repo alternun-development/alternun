@@ -6,14 +6,15 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build": "echo 'Mobile app build completed'"
   },
   "dependencies": {
     "expo": "~48.0.15",
     "expo-status-bar": "~1.4.4",
     "react": "18.2.0",
     "react-native": "0.71.7",
-    "@alternun/ui": "*"
+    "@alternun/ui": "workspace:*"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

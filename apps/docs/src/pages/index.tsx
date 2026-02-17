@@ -7,46 +7,51 @@ import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
 import styles from './index.module.css';
 
-
 function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
 
   return (
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div className="container">
-        <Heading as="h1" className="hero__title">
+      <div className='container'>
+        <Heading as='h1' className='hero__title'>
           {siteConfig.title}
         </Heading>
-        <p className="hero__subtitle">
-          <a href="https://x.com/search?q=%23ReDeFi&src=typed_query" id="ReDeFine"className={styles.rainbowText}>#ReDeFine</a> the future with us
+        <p className='hero__subtitle'>
+          <a
+            href='https://x.com/search?q=%23ReDeFi&src=typed_query'
+            id='ReDeFine'
+            className={styles.rainbowText}
+          >
+            #ReDeFine
+          </a>{' '}
+          the future with us
         </p>
-        
+
         <div className={styles.buttons}>
           <Link
-            className={clsx("button button--secondary button--lg", styles.exploreButton)}
-            to="/docs/intro">
+            className={clsx('button button--secondary button--lg', styles.exploreButton)}
+            to='/docs/intro'
+          >
             Explore Docs - 5min ⏱️
-          </Link> &nbsp; &nbsp;
-          
+          </Link>{' '}
+          &nbsp; &nbsp;
           <Link
-            className={clsx("button button--lg", styles.craftButton)}
-            to="/docs/Craft-the-Future/intro"
+            className={clsx('button button--lg', styles.craftButton)}
+            to='/docs/Craft-the-Future/intro'
           >
             <span className={styles.defaultText}>Craft the Future 🎨</span>
             <span className={styles.hoverText}> Join now!</span>
           </Link>
-        </div>       
+        </div>
       </div>
     </header>
   );
 }
 
 export default function Home(): JSX.Element {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout
-      title={`${siteConfig.title}`}
-      description="#ReDeFine the future with us">
+    <Layout title={`${siteConfig.title}`} description='#ReDeFine the future with us'>
       <HomepageHeader />
       <main>
         <HomepageFeatures />

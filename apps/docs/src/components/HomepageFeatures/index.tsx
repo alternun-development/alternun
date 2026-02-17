@@ -1,9 +1,9 @@
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
-import innovative from './innovative.svg'
-import sustainable from './sustainable.svg'
-import community from './community.svg'
+import innovative from './innovative.svg';
+import sustainable from './sustainable.svg';
+import community from './community.svg';
 
 type FeatureItem = {
   title: string;
@@ -11,15 +11,14 @@ type FeatureItem = {
   description: JSX.Element;
 };
 
-
-
 const FeatureList: FeatureItem[] = [
   {
     title: 'DIGITAL GOLD MINING', // Updated title
     Svg: innovative, // Updated to use My3DComponent
     description: (
       <>
-        Transforming gold reserves into a secure store of value that generates liquidity while preventing environmental harm applying regenerative finance. {/* Updated description */}
+        Transforming gold reserves into a secure store of value that generates liquidity while
+        preventing environmental harm applying regenerative finance. {/* Updated description */}
       </>
     ),
   },
@@ -28,7 +27,8 @@ const FeatureList: FeatureItem[] = [
     Svg: sustainable, // Updated to use My3DComponent
     description: (
       <>
-        Stopping the environmental damage caused by traditional gold mining by developing regenerative projects in areas susceptible to exploitation. {/* Updated description */}
+        Stopping the environmental damage caused by traditional gold mining by developing
+        regenerative projects in areas susceptible to exploitation. {/* Updated description */}
       </>
     ),
   },
@@ -37,20 +37,21 @@ const FeatureList: FeatureItem[] = [
     Svg: community, // Updated to use My3DComponent
     description: (
       <>
-        Engaging with the community is at the heart of what we do, fostering collaboration and support.
+        Engaging with the community is at the heart of what we do, fostering collaboration and
+        support.
       </>
     ),
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({ title, Svg, description }: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
-      <div className="text--center">
-          <Svg className={styles.featureSvg} role="img" /> {/* Ensure Svg is a valid 3D component */}
+      <div className='text--center'>
+        <Svg className={styles.featureSvg} role='img' /> {/* Ensure Svg is a valid 3D component */}
       </div>
-      <div className="text--center padding-horiz--md">
-        <Heading as="h3">{title}</Heading>
+      <div className='text--center padding-horiz--md'>
+        <Heading as='h3'>{title}</Heading>
         <p>{description}</p>
       </div>
     </div>
@@ -60,8 +61,8 @@ function Feature({title, Svg, description}: FeatureItem) {
 export default function HomepageFeatures(): JSX.Element {
   return (
     <section className={styles.features}>
-      <div className="container">
-        <div className="row">
+      <div className='container'>
+        <div className='row'>
           {FeatureList.map((props, idx) => (
             <Feature key={idx} {...props} />
           ))}

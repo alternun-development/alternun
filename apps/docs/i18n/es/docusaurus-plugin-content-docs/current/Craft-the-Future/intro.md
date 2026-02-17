@@ -14,7 +14,8 @@ Alternun es una startup innovadora dedicada a la tokenización de activos del mu
 Nuestro objetivo es democratizar el acceso a inversiones en reservas de oro a través de la tecnología blockchain, haciendo que estas oportunidades sean accesibles para todos. Alternun transforma las reservas de minería de oro en un almacén seguro de valor que genera liquidez mientras previene daños ambientales mediante la aplicación de finanzas regenerativas. Al tokenizar reservas mineras no explotadas, Alternun promueve una economía sostenible que beneficia a los inversores, las comunidades y el planeta. Queremos que los artistas traduzcan este concepto en obras de arte digitales que no solo inspiren, sino que también eduquen sobre el potencial de la tokenización.
 
 ### Detalles del Concurso
-- **Inicio de la Convocatoria de Participaciones**: 15 de octubre - 11 de noviembre 
+
+- **Inicio de la Convocatoria de Participaciones**: 15 de octubre - 11 de noviembre
 - **Semana de Votación Pública**: 11 de noviembre - 15 de noviembre
 - **Anuncio de Ganadores**: 15 de noviembre
 

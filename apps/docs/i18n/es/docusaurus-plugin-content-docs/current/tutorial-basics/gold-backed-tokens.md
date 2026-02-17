@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
 ---
+
 # Tokens respaldados por oro (GBT)
 
 ## Entendiendo los problemas
@@ -16,7 +17,7 @@ Algunos de estos daños tienen consecuencias a gran escala, como el calentamient
 
 Como se ve en la imagen anterior, el modelo extractivo es un negocio finito donde, una vez que se agotan las reservas mineras, no hay más oportunidades para la comunidad, generando grandes problemas sociales mientras el medio ambiente sigue perturbado.
 
-> #### *"Hemos estado destruyendo nuestra naturaleza para sacar el oro de su bóveda natural, fundirlo y guardarlo en un lugar donde nadie lo verá de nuevo"*
+> #### _"Hemos estado destruyendo nuestra naturaleza para sacar el oro de su bóveda natural, fundirlo y guardarlo en un lugar donde nadie lo verá de nuevo"_
 
 ## ¿Qué proponemos?
 
@@ -26,17 +27,17 @@ Como se ve en la imagen anterior, el modelo extractivo es un negocio finito dond
 
 ![Asignación](https://i.postimg.cc/vB8hJcTW/CHART-ALiquidity-Pool.png)
 
-| Entidad               | Asignación (%) | Motivación |
-|----------------------|----------------|------------|
-| Minero               | 8              | Se convierte en un curador, protegiendo las reservas bajo tierra. |
-| Nación               | 2              | Ofrece una solución clara al conflicto de intereses; ahora la nación puede recaudar impuestos mientras protege el medio ambiente. |
-| Exploración          | 5              | Continúa la exploración para aumentar la certeza y, si es posible, las reservas. |
-| Comunidad/Marketing   | 2.5            | Reservado para los titulares de tokens de la comunidad** para intercambiar ATN por GBT y promover proyectos. |
-| Viabilidad de Proyectos | 2.5          | Financia estudios de viabilidad antes de comprometer liquidez, gestionando riesgos del proyecto. |
-| Pool de Recuperación  | 30             | Proporciona liquidez para la extracción si es necesario, también compra oro producido en exploración para fortalecer reservas. |
-| Proyectos            | 50             | Financia proyectos regenerativos; el 80% de las ganancias se comparten con los titulares de GBT. |
+| Entidad                 | Asignación (%) | Motivación                                                                                                                        |
+| ----------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Minero                  | 8              | Se convierte en un curador, protegiendo las reservas bajo tierra.                                                                 |
+| Nación                  | 2              | Ofrece una solución clara al conflicto de intereses; ahora la nación puede recaudar impuestos mientras protege el medio ambiente. |
+| Exploración             | 5              | Continúa la exploración para aumentar la certeza y, si es posible, las reservas.                                                  |
+| Comunidad/Marketing     | 2.5            | Reservado para los titulares de tokens de la comunidad\*\* para intercambiar ATN por GBT y promover proyectos.                    |
+| Viabilidad de Proyectos | 2.5            | Financia estudios de viabilidad antes de comprometer liquidez, gestionando riesgos del proyecto.                                  |
+| Pool de Recuperación    | 30             | Proporciona liquidez para la extracción si es necesario, también compra oro producido en exploración para fortalecer reservas.    |
+| Proyectos               | 50             | Financia proyectos regenerativos; el 80% de las ganancias se comparten con los titulares de GBT.                                  |
 
-** Aprende más sobre la comunidad y el token de recompensas [Aquí](https://hackmd.io/@sgomezp/HJy7mkovR).
+\*\* Aprende más sobre la comunidad y el token de recompensas [Aquí](https://hackmd.io/@sgomezp/HJy7mkovR).
 
 ---
 
@@ -52,7 +53,7 @@ Cada vez que se acepta una propuesta de proyecto, **ALTERNUN** llevará a cabo u
 
 ![Pool de liquidez](https://i.postimg.cc/h4sWQdVq/Resumida-CHARTs.png)
 
-> #### *Las ganancias de los proyectos van directamente a los stakers en un 80%. El 15% es para Alternun como gestor del proyecto y el 5% se envía de vuelta al pool de liquidez generando un ciclo virtuoso que generará más fondos para invertir.*
+> #### _Las ganancias de los proyectos van directamente a los stakers en un 80%. El 15% es para Alternun como gestor del proyecto y el 5% se envía de vuelta al pool de liquidez generando un ciclo virtuoso que generará más fondos para invertir._
 
 ---
 
@@ -93,13 +94,13 @@ Los hemos resumido en 5 pasos:
 
 Los recursos de oro subterráneos se categorizan según niveles de certeza calificados por el QP y expresados en el NI43-101. Estos recursos se tokenizan para proporcionar colateral a los titulares de GBT.
 
-| Nivel               | Descripción                                                | Colateral (%) |
-|---------------------|------------------------------------------------------------|----------------|
-| Recursos Inferidos  | Bajo nivel de certeza; datos mínimos                        | 15             |
-| Recursos Indicados  | Nivel de certeza medio; suficientes datos para un plan de minería | 30             |
-| Recursos Medidos     | Alto nivel de certeza; posible plan de minería detallado   | 60             |
-| Reservas Probables   | Nivel de certeza medio; potencial de recuperación del 50%-90% | 50             |
-| Reservas Probadas    | Alto nivel de certeza; más del 90% de potencial de recuperación | 70             |
+| Nivel              | Descripción                                                       | Colateral (%) |
+| ------------------ | ----------------------------------------------------------------- | ------------- |
+| Recursos Inferidos | Bajo nivel de certeza; datos mínimos                              | 15            |
+| Recursos Indicados | Nivel de certeza medio; suficientes datos para un plan de minería | 30            |
+| Recursos Medidos   | Alto nivel de certeza; posible plan de minería detallado          | 60            |
+| Reservas Probables | Nivel de certeza medio; potencial de recuperación del 50%-90%     | 50            |
+| Reservas Probadas  | Alto nivel de certeza; más del 90% de potencial de recuperación   | 70            |
 
 El cálculo de Gramos de Oro Colateral (CGG) se ajusta según los factores de margen de comercialización (CM) específicos de cada país.
 
@@ -110,8 +111,8 @@ El cálculo de Gramos de Oro Colateral (CGG) se ajusta según los factores de ma
 Mina de oro en Colombia.
 Recursos indicados: 2,100,000 gramos de oro.
 
-- CGG = Recursos * % de categoría * (1-CM)
-- CGG = (2,100,000 * 30%) * 0.8
+- CGG = Recursos _ % de categoría _ (1-CM)
+- CGG = (2,100,000 _ 30%) _ 0.8
 - CGG = 504,000
 
 ## Acuñación de GBT
@@ -135,11 +136,12 @@ Después de la exploración, el QP informa de nuevos recursos:
 
 - Recursos indicados: 2,800,000 gramos de oro.
 - Diferencia: 2,800,000 - 2,100,000 = 700,000g
-- CGG = (700,000 * 30%) * 0.8 
+- CGG = (700,000 _ 30%) _ 0.8
 - CGG = 168,000
 
 DAO aprueba aumentar la oferta total:
-- Reservas = 168,000 * 20% 
+
+- Reservas = 168,000 \* 20%
 - Reservas = 33,600
 - Oferta total adicional = 134,400
 - Nueva oferta total = 504,000 + 134,400 = 638,400 GBT
@@ -156,11 +158,12 @@ Si nuevos informes de exploración aumentan los recursos aún más, la DAO puede
 
 - Nuevos recursos: 3,500,000 gramos de oro (incluyendo los recursos indicados anteriores y los nuevos hallazgos).
 - Diferencia: 3,500,000 - 2,800,000 = 700,000g
-- CGG = (700,000 * 30%) * 0.8
+- CGG = (700,000 _ 30%) _ 0.8
 - CGG = 168,000
 
 DAO aprueba aumentar la oferta total:
-- Reservas = 168,000 * 20% 
+
+- Reservas = 168,000 \* 20%
 - Reservas = 33,600 + 33,600 (previamente reservadas) = 67,200
 - Oferta total adicional = 134,400
 - Nueva oferta total = 638,400 + 134,400 = 772,800 GBT
@@ -169,7 +172,8 @@ DAO aprueba aumentar la oferta total:
 Nuevo precio de acuñación: Gramos que respaldan cada token / Nueva oferta total
 Nuevo precio de acuñación: 840,000 / 772,800 = 1.0869 Gramos de oro.
 DAO approves to increase the total supply:
-- Reserves = 168,000 * 20% 
+
+- Reserves = 168,000 \* 20%
 - Reserves = 33,600 + 33,600 (previously reserved) = 67,200
 - Additional total supply = 134,400
 - New total supply = 638,400 + 134,400 = 772,800 GBT
@@ -180,24 +184,19 @@ New minting price: 840,000 / 772,800 = 1.0869 Gold grams.
 
 ## Token Uses or Benefits
 
-
 - Protection against inflation since the token is collateralized by gold mining reserves.
 - Governance: Holders will have the right to vote and decide which projects should be developed.
 - Staking: Holders can use their tokens to stake into projects to participate in regenerative projects.
-- Special Features: Holders will be allowed to claim special rewards according to the mine or area they are supporting such visits to the old mine tunnels, walks in the regenerated areas, among others. 
-
+- Special Features: Holders will be allowed to claim special rewards according to the mine or area they are supporting such visits to the old mine tunnels, walks in the regenerated areas, among others.
 
 ## Useful links
 
-* [Community and rewards token.](https://hackmd.io/@sgomezp/HJy7mkovR)
-* [Alternun's impact explained thru SDG's.](https://hackmd.io/@sgomezp/Bk57s9P3C)
-* [Projects election and profits distribution.](https://hackmd.io/@sgomezp/H15K2hWAR)
-* [Alternun Roadmap.](/)
-* [ALTERNUN team.](/)
-* [Our website.](https://linktr.ee/Alternun)
-* [Discord.](https://discord.gg/zqgQNxZx8a)
-* [Crypto altruism Podcast.](https://www.cryptoaltruism.org/blog/crypto-altruism-podcast-episode-169-alternun-creating-wealth-regenerating-the-environment-with-onchain-digital-gold-mining)
-* [10AM Podcast in spanish.](https://www.youtube.com/watch?v=O1W8NhtOaoQ&t=2s)
-
-
-
+- [Community and rewards token.](https://hackmd.io/@sgomezp/HJy7mkovR)
+- [Alternun's impact explained thru SDG's.](https://hackmd.io/@sgomezp/Bk57s9P3C)
+- [Projects election and profits distribution.](https://hackmd.io/@sgomezp/H15K2hWAR)
+- [Alternun Roadmap.](/)
+- [ALTERNUN team.](/)
+- [Our website.](https://linktr.ee/Alternun)
+- [Discord.](https://discord.gg/zqgQNxZx8a)
+- [Crypto altruism Podcast.](https://www.cryptoaltruism.org/blog/crypto-altruism-podcast-episode-169-alternun-creating-wealth-regenerating-the-environment-with-onchain-digital-gold-mining)
+- [10AM Podcast in spanish.](https://www.youtube.com/watch?v=O1W8NhtOaoQ&t=2s)
