@@ -115,5 +115,6 @@ module.exports = {
     '*.min.js',
     'coverage/',
     '.turbo/',
+    'apps/web/**',
   ],
 };
