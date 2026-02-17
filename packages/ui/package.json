@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc -w"
+    "build": "./build.sh",
+    "dev": "tsc -w",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "react": "18.2.0",

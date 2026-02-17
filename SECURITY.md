@@ -2,10 +2,10 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-|---------|--------------------|
-| 1.x.x   | ✅ Current         |
-| 0.x.x   | ❌ Unsupported     |
+| Version | Supported      |
+| ------- | -------------- |
+| 1.x.x   | ✅ Current     |
+| 0.x.x   | ❌ Unsupported |
 
 ## Reporting a Vulnerability
 
@@ -47,18 +47,21 @@ We take security vulnerabilities seriously. If you discover a security issue, pl
 ### Built-in Protections
 
 #### Input Validation
+
 - All user inputs are validated and sanitized
 - SQL injection prevention through parameterized queries
 - XSS protection through content security policies
 - CSRF protection on all state-changing operations
 
 #### Authentication & Authorization
+
 - Secure password hashing with bcrypt
 - JWT tokens with proper expiration
 - Role-based access control (RBAC)
 - Multi-factor authentication support
 
 #### Data Protection
+
 - Encryption at rest and in transit
 - Secure key management
 - Regular security audits
@@ -82,15 +85,10 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 
 ```typescript
 // ✅ Good: Parameterized queries
-const user = await db.query(
-  'SELECT * FROM users WHERE id = $1',
-  [userId]
-);
+const user = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
 
 // ❌ Bad: String concatenation
-const user = await db.query(
-  `SELECT * FROM users WHERE id = ${userId}`
-);
+const user = await db.query(`SELECT * FROM users WHERE id = ${userId}`);
 ```
 
 #### Environment Variables
@@ -111,7 +109,7 @@ import Joi from 'joi';
 
 const schema = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().min(8).required()
+  password: Joi.string().min(8).required(),
 });
 
 const { error, value } = schema.validate(req.body);
@@ -123,12 +121,14 @@ if (error) {
 ### For Users
 
 #### Password Security
+
 - Use strong, unique passwords
 - Enable two-factor authentication
 - Don't share credentials
 - Use password managers
 
 #### Data Protection
+
 - Keep software updated
 - Use secure networks
 - Be cautious with permissions
@@ -179,30 +179,35 @@ npm run security:audit
 ### Response Process
 
 #### Detection
+
 - Automated monitoring and alerting
 - Security scanning and penetration testing
 - User reports and community feedback
 - Third-party security services
 
 #### Analysis
+
 - Impact assessment
 - Root cause analysis
 - Affected systems identification
 - Timeline reconstruction
 
 #### Containment
+
 - Isolate affected systems
 - Implement temporary fixes
 - Prevent further damage
 - Preserve evidence
 
 #### Eradication
+
 - Remove malicious code
 - Patch vulnerabilities
 - Clean compromised systems
 - Update security controls
 
 #### Recovery
+
 - Restore services
 - Monitor for recurrence
 - Update documentation
@@ -211,12 +216,14 @@ npm run security:audit
 ### Communication
 
 #### Internal Communication
+
 - Incident response team coordination
 - Executive updates
 - Technical team briefings
 - Documentation updates
 
 #### External Communication
+
 - Security advisories
 - User notifications
 - Public statements (if needed)
@@ -234,12 +241,14 @@ npm run security:audit
 ### Data Handling
 
 #### Personal Data
+
 - Data minimization principles
 - Purpose limitation
 - Consent management
 - Data subject rights
 
 #### Security Controls
+
 - Access controls
 - Encryption standards
 - Audit logging
@@ -279,6 +288,7 @@ npm run security:audit
 ### Emergency Contacts
 
 For critical security incidents requiring immediate attention:
+
 - **Emergency Security Hotline**: +1-555-SECURITY
 - **Emergency Email**: emergency@alternun.io
 

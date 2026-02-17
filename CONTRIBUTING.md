@@ -14,6 +14,7 @@ Thank you for your interest in contributing to Alternun! This guide will help yo
 ### Setup
 
 1. **Fork the Repository**
+
    ```bash
    # Fork on GitHub and clone your fork
    git clone https://github.com/YOUR_USERNAME/alternun.git
@@ -21,11 +22,13 @@ Thank you for your interest in contributing to Alternun! This guide will help yo
    ```
 
 2. **Add Upstream Remote**
+
    ```bash
    git remote add upstream https://github.com/alternun-development/alternun.git
    ```
 
 3. **Install Dependencies**
+
    ```bash
    npm install
    ```
@@ -62,16 +65,19 @@ alternun/
 ### Git Workflow
 
 1. **Create Feature Branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 2. **Make Changes**
+
    - Follow the coding standards
    - Add tests if applicable
    - Update documentation
 
 3. **Commit Changes**
+
    ```bash
    git add .
    git commit -m "feat: add new feature description"
@@ -153,11 +159,7 @@ interface ButtonProps {
   onClick?: () => void;
 }
 
-export const Button: React.FC<ButtonProps> = ({
-  children,
-  variant = 'primary',
-  onClick,
-}) => {
+export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', onClick }) => {
   return (
     <button className={`btn btn-${variant}`} onClick={onClick}>
       {children}
@@ -201,7 +203,7 @@ describe('Button', () => {
   it('calls onClick when clicked', () => {
     const handleClick = jest.fn();
     render(<Button onClick={handleClick}>Click me</Button>);
-    
+
     fireEvent.click(screen.getByText('Click me'));
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
@@ -213,23 +215,27 @@ describe('Button', () => {
 ### Creating a New Package
 
 1. **Create Package Directory**
+
    ```bash
    mkdir packages/new-package
    cd packages/new-package
    ```
 
 2. **Initialize Package**
+
    ```bash
    npm init -y
    ```
 
 3. **Setup TypeScript**
+
    ```bash
    npm install --save-dev typescript @types/node
    npx tsc --init
    ```
 
 4. **Configure package.json**
+
    ```json
    {
      "name": "@alternun/new-package",
@@ -245,6 +251,7 @@ describe('Button', () => {
 
 5. **Update Root package.json**
    Add to workspaces array:
+
    ```json
    "workspaces": [
      "apps/*",
@@ -269,12 +276,14 @@ describe('Button', () => {
 ### Creating a New App
 
 1. **Create App Directory**
+
    ```bash
    mkdir apps/new-app
    cd apps/new-app
    ```
 
 2. **Initialize with Framework**
+
    ```bash
    # For Next.js
    npx create-next-app@latest . --typescript --tailwind --eslint
@@ -285,6 +294,7 @@ describe('Button', () => {
 
 3. **Update Dependencies**
    Add shared packages as needed:
+
    ```json
    {
      "dependencies": {
@@ -302,16 +312,19 @@ describe('Button', () => {
 ### Before Submitting
 
 1. **Run Tests**
+
    ```bash
    npm run test
    ```
 
 2. **Run Linting**
+
    ```bash
    npm run lint
    ```
 
 3. **Format Code**
+
    ```bash
    npm run format
    ```
@@ -324,11 +337,13 @@ describe('Button', () => {
 ### Pull Request Process
 
 1. **Create Pull Request**
+
    - Use descriptive title
    - Fill out the PR template
    - Link relevant issues
 
 2. **Code Review**
+
    - Address all review comments
    - Update tests if needed
    - Keep PRs focused and small
@@ -342,31 +357,39 @@ describe('Button', () => {
 ### Reporting Bugs
 
 1. **Search Existing Issues**
+
    - Check if bug is already reported
    - Add to existing issue if found
 
 2. **Create New Issue**
+
    - Use bug report template
    - Provide detailed information
    - Include reproduction steps
 
 3. **Bug Report Template**
+
    ```markdown
    ## Bug Description
+
    Brief description of the bug
-   
+
    ## Steps to Reproduce
+
    1. Go to...
    2. Click on...
    3. See error
-   
+
    ## Expected Behavior
+
    What should happen
-   
+
    ## Actual Behavior
+
    What actually happens
-   
+
    ## Environment
+
    - OS: [e.g. macOS 13.0]
    - Browser: [e.g. Chrome 108]
    - Node.js: [e.g. 18.0.0]
@@ -377,25 +400,32 @@ describe('Button', () => {
 ### Requesting Features
 
 1. **Discuss First**
+
    - Open an issue for discussion
    - Get team feedback
    - Consider impact and priority
 
 2. **Feature Request Template**
+
    ```markdown
    ## Feature Description
+
    Clear description of the feature
-   
+
    ## Problem Statement
+
    What problem does this solve?
-   
+
    ## Proposed Solution
+
    How should this be implemented?
-   
+
    ## Alternatives Considered
+
    What other approaches were considered?
-   
+
    ## Additional Context
+
    Any other relevant information
    ```
 
