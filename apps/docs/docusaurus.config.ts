@@ -118,55 +118,6 @@ const config: Config = {
         },
       ],
     },
-    footer: {
-      style: 'dark',
-      links: [
-        {
-          title: 'Docs',
-          items: [
-            {
-              label: 'Introduction',
-              to: '/docs/intro',
-            },
-          ],
-        },
-        {
-          title: 'Community',
-          items: [
-            {
-              label: 'Discord',
-              href: 'https://discord.gg/DQmQbzcbER',
-            },
-            {
-              label: 'Twitter',
-              href: 'https://twitter.com/alternun_io',
-            },
-          ],
-        },
-        {
-          title: 'More',
-          items: [
-            {
-              label: 'Blog',
-              to: '/blog',
-            },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/alternun-development',
-            },
-            {
-              label: 'Linktree',
-              href: 'https://linktr.ee/Alternun',
-            },
-            {
-              label: 'Alternun Website',
-              href: 'https://alternun.io',
-            },
-          ],
-        },
-      ],
-      copyright: `Copyright © ${new Date().getFullYear()} Alternun, Inc.`,
-    },
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
