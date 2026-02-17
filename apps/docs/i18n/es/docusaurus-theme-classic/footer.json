@@ -1,0 +1,17 @@
+{
+  "link.title.Product": "Producto",
+  "link.title.Community": "Comunidad",
+  "link.title.Legal": "Legal",
+  "link.item.Documentation": "Documentación",
+  "link.item.Blog": "Blog",
+  "link.item.Website": "Sitio Web",
+  "link.item.GitHub": "GitHub",
+  "link.item.Linktree": "Linktree",
+  "link.item.Support": "Soporte",
+  "link.item.Privacy Policy": "Política de Privacidad",
+  "link.item.Terms of Service": "Términos de Servicio",
+  "link.item.Cookies Policy": "Política de Cookies",
+  "copyright": "© {year} Alternun. Todos los derechos reservados.",
+  "tech.builtWith": "Construido con ❤️ usando Docusaurus",
+  "tech.poweredBy": "Impulsado por ReDeFi"
+}
