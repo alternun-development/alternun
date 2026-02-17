@@ -120,6 +120,11 @@ const FuturisticFooter = () => {
                       </motion.a>
                     </li>
                     <li>
+                      <motion.a whileHover={{ x: 5 }} href='/cookies'>
+                        Cookies Policy
+                      </motion.a>
+                    </li>
+                    <li>
                       <motion.a whileHover={{ x: 5 }} href='/license'>
                         License
                       </motion.a>
