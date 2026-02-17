@@ -6,8 +6,7 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "build/**"],
       "inputs": ["src/**", "public/**", "package.json"],
-      "env": ["NODE_ENV"],
-      "args": []
+      "env": ["NODE_ENV"]
     },
     "lint": {
       "outputs": [],
