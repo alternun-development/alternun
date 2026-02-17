@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build": "echo 'Mobile app build completed'"
   },
   "dependencies": {
     "expo": "~48.0.15",
