@@ -233,12 +233,11 @@ const InteractiveNeuralVortex = (): JSX.Element => {
           {/* Alternun Logo */}
           <div style={{ marginBottom: '2rem', position: 'relative', zIndex: 1 }}>
             <img
-              src='/img/logo.svg'
+              src='/img/alternun-white.svg'
               alt='Alternun Logo'
               style={{
                 height: '60px',
                 width: 'auto',
-                filter: 'brightness(0) invert(1)',
                 transition: 'filter 0.3s ease',
               }}
               className={styles.logo}
