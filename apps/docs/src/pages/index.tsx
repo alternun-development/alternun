@@ -1,7 +1,7 @@
 import React from 'react';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import AnimatedHero from '@site/src/components/AnimatedHero';
+import InteractiveNeuralVortex from '@site/src/components/InteractiveNeuralVortex';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 
 export default function Home(): JSX.Element {
@@ -11,7 +11,7 @@ export default function Home(): JSX.Element {
       title={`${siteConfig.title}`}
       description='Transforming Gold Reserves into Digital Value with Sustainable Mining'
     >
-      <AnimatedHero />
+      <InteractiveNeuralVortex />
       <main>
         <HomepageFeatures />
       </main>
