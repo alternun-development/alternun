@@ -63,12 +63,12 @@ sidebar_position: 2
 
 ## ลิงก์ที่มีประโยชน์
 
-* [โทเค็นชุมชนและรางวัล.](https://hackmd.io/@sgomezp/HJy7mkovR)
-* [โทเค็นที่ได้รับการสนับสนุนโดยทองคำจาก ALTERNUN (GBT).](/)
-* [การเลือกโครงการและการแจกจ่ายผลประโยชน์.](https://hackmd.io/@sgomezp/H15K2hWAR)
-* [แผนงานของ Alternun.](/)
-* [ทีมงานของ ALTERNUN.](/)
-* [เว็บไซต์ของเรา.](https://linktr.ee/Alternun)
-* [Discord.](https://discord.gg/zqgQNxZx8a)
-* [พอดแคสต์เกี่ยวกับการกุศลคริปโต.](https://www.cryptoaltruism.org/blog/crypto-altruism-podcast-episode-169-alternun-creating-wealth-regenerating-the-environment-with-onchain-digital-gold-mining)
-* [พอดแคสต์ 10AM ภาษาไทย.](https://www.youtube.com/watch?v=O1W8NhtOaoQ&t=2s)
+- [โทเค็นชุมชนและรางวัล.](https://hackmd.io/@sgomezp/HJy7mkovR)
+- [โทเค็นที่ได้รับการสนับสนุนโดยทองคำจาก ALTERNUN (GBT).](/)
+- [การเลือกโครงการและการแจกจ่ายผลประโยชน์.](https://hackmd.io/@sgomezp/H15K2hWAR)
+- [แผนงานของ Alternun.](/)
+- [ทีมงานของ ALTERNUN.](/)
+- [เว็บไซต์ของเรา.](https://linktr.ee/Alternun)
+- [Discord.](https://discord.gg/zqgQNxZx8a)
+- [พอดแคสต์เกี่ยวกับการกุศลคริปโต.](https://www.cryptoaltruism.org/blog/crypto-altruism-podcast-episode-169-alternun-creating-wealth-regenerating-the-environment-with-onchain-digital-gold-mining)
+- [พอดแคสต์ 10AM ภาษาไทย.](https://www.youtube.com/watch?v=O1W8NhtOaoQ&t=2s)

@@ -6,13 +6,13 @@ sidebar_position: 2
 
 ### How the Digital Gold Mining impacts the world?
 
-Thanks to its regenerative by design model, when we replace the traditional with **Digital Gold Mining**, we help to avoid part of the annual carbon footprint of gold estimated at around 125 million tons of CO² , not considering emissions caused by the industry’s supply chain. We protect our water resources and  promote conscious use of this non-renewable natural resource since only 7% of extracted gold is allocated for technological purposes, with the remaining 93% used as store of value.
+Thanks to its regenerative by design model, when we replace the traditional with **Digital Gold Mining**, we help to avoid part of the annual carbon footprint of gold estimated at around 125 million tons of CO² , not considering emissions caused by the industry’s supply chain. We protect our water resources and promote conscious use of this non-renewable natural resource since only 7% of extracted gold is allocated for technological purposes, with the remaining 93% used as store of value.
 
 ## Environmental criteria
 
 At ALTERNUN, our commitment to environmental stewardship goes beyond mere protection. We are dedicated to not only safeguarding water sources and terrestrial ecosystems but also to actively regenerating them. Our mission is to develop innovative projects that foster sustainable communities and advocate for clean, non-polluting energy solutions.
 
-Our environmental strategy is driven by decisive actions to combat climate change. We focus on both capturing and reducing CO₂ emissions, ensuring that our operations contribute to a healthier planet. Through our initiatives, we strive to preserve and enhance natural resources, setting a benchmark for environmental responsibility and sustainability. 
+Our environmental strategy is driven by decisive actions to combat climate change. We focus on both capturing and reducing CO₂ emissions, ensuring that our operations contribute to a healthier planet. Through our initiatives, we strive to preserve and enhance natural resources, setting a benchmark for environmental responsibility and sustainability.
 
 These are the environmental goals that we believe can be positively impacted thanks to the development of Digital Gold Mining
 
@@ -47,7 +47,6 @@ Our approach also bridges academia with real-world applications, driving the dev
   </tr>
 </table>
 
-
 ## Governance Criteria
 
 our governance model is built on the foundation of collaboration among a diverse range of stakeholders, including government bodies, corporations, institutions, communities, entrepreneurs, and innovators. This inclusive approach is designed to create shared value and enhance well-being across all sectors.
@@ -63,18 +62,14 @@ Our governance framework ensures that every action and decision is guided by pri
   </tr>
 </table>
 
-
 ## Useful links
 
-* [Community and rewards token.](https://hackmd.io/@sgomezp/HJy7mkovR)
-* [ALTERNUN Gold Backed tokens (GBT).](/)
-* [Projects election and profits distribution.](https://hackmd.io/@sgomezp/H15K2hWAR)
-* [Alternun Roadmap.](/)
-* [ALTERNUN team.](/)
-* [Our website.](https://linktr.ee/Alternun)
-* [Discord.](https://discord.gg/zqgQNxZx8a)
-* [Crypto altruism Podcast.](https://www.cryptoaltruism.org/blog/crypto-altruism-podcast-episode-169-alternun-creating-wealth-regenerating-the-environment-with-onchain-digital-gold-mining)
-* [10AM Podcast in spanish.](https://www.youtube.com/watch?v=O1W8NhtOaoQ&t=2s)
-
-
-
+- [Community and rewards token.](https://hackmd.io/@sgomezp/HJy7mkovR)
+- [ALTERNUN Gold Backed tokens (GBT).](/)
+- [Projects election and profits distribution.](https://hackmd.io/@sgomezp/H15K2hWAR)
+- [Alternun Roadmap.](/)
+- [ALTERNUN team.](/)
+- [Our website.](https://linktr.ee/Alternun)
+- [Discord.](https://discord.gg/zqgQNxZx8a)
+- [Crypto altruism Podcast.](https://www.cryptoaltruism.org/blog/crypto-altruism-podcast-episode-169-alternun-creating-wealth-regenerating-the-environment-with-onchain-digital-gold-mining)
+- [10AM Podcast in spanish.](https://www.youtube.com/watch?v=O1W8NhtOaoQ&t=2s)

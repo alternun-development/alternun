@@ -63,12 +63,12 @@ Nuestro marco de gobernanza asegura que cada acción y decisión esté guiada po
 
 ## Enlaces útiles
 
-* [Token de comunidad y recompensas.](https://hackmd.io/@sgomezp/HJy7mkovR)
-* [Tokens respaldados por oro de ALTERNUN (GBT).](/)
-* [Elección de proyectos y distribución de beneficios.](https://hackmd.io/@sgomezp/H15K2hWAR)
-* [Hoja de ruta de Alternun.](/)
-* [Equipo de ALTERNUN.](/)
-* [Nuestro sitio web.](https://linktr.ee/Alternun)
-* [Discord.](https://discord.gg/zqgQNxZx8a)
-* [Podcast de altruismo cripto.](https://www.cryptoaltruism.org/blog/crypto-altruism-podcast-episode-169-alternun-creating-wealth-regenerating-the-environment-with-onchain-digital-gold-mining)
-* [Podcast de 10AM en español.](https://www.youtube.com/watch?v=O1W8NhtOaoQ&t=2s)
+- [Token de comunidad y recompensas.](https://hackmd.io/@sgomezp/HJy7mkovR)
+- [Tokens respaldados por oro de ALTERNUN (GBT).](/)
+- [Elección de proyectos y distribución de beneficios.](https://hackmd.io/@sgomezp/H15K2hWAR)
+- [Hoja de ruta de Alternun.](/)
+- [Equipo de ALTERNUN.](/)
+- [Nuestro sitio web.](https://linktr.ee/Alternun)
+- [Discord.](https://discord.gg/zqgQNxZx8a)
+- [Podcast de altruismo cripto.](https://www.cryptoaltruism.org/blog/crypto-altruism-podcast-episode-169-alternun-creating-wealth-regenerating-the-environment-with-onchain-digital-gold-mining)
+- [Podcast de 10AM en español.](https://www.youtube.com/watch?v=O1W8NhtOaoQ&t=2s)

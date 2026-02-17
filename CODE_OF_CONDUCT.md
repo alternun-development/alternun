@@ -78,6 +78,7 @@ If you experience or witness unacceptable behavior, or have any other concerns, 
 ### What to Include
 
 When reporting, please include:
+
 - Your contact information (if you want a response)
 - Description of the incident
 - Any relevant screenshots, links, or other evidence
@@ -96,6 +97,7 @@ We will respond to all reports within 48 hours and provide an update on our inve
 ### Disagreements
 
 We understand that disagreements happen. When they do:
+
 - Focus on the issue, not the person
 - Listen to understand different perspectives
 - Seek common ground and compromise
@@ -104,6 +106,7 @@ We understand that disagreements happen. When they do:
 ### Mediation
 
 If you're involved in a conflict that you can't resolve:
+
 - Contact community leaders for mediation
 - Participate in good faith
 - Respect the mediation process
@@ -143,6 +146,7 @@ We are committed to creating a diverse and inclusive community where everyone fe
 ### Violations
 
 Violations of this code of conduct may result in:
+
 - Private warning from community leaders
 - Public warning
 - Temporary suspension from community spaces
@@ -152,6 +156,7 @@ Violations of this code of conduct may result in:
 ### Appeals
 
 If you believe you've been unfairly sanctioned:
+
 - Submit an appeal to conduct@alternun.io
 - Include all relevant context and evidence
 - Appeals will be reviewed by different community leaders
@@ -166,6 +171,7 @@ Community Impact Guidelines were inspired by [Mozilla's code of conduct enforcem
 ## Contact
 
 For questions about this code of conduct, please contact:
+
 - **Email**: conduct@alternun.io
 - **GitHub**: [Create an issue](https://github.com/alternun-development/alternun/issues)
 - **Discord**: Message any community moderator
