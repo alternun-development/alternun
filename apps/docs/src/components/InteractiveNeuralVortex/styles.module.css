@@ -3,7 +3,7 @@
 }
 
 [data-theme='light'] .logo {
-  filter: none;
+  content: url('/img/alternun-black.svg');
 }
 
 .container {
