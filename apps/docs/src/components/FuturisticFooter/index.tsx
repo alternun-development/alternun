@@ -28,7 +28,7 @@ const FuturisticFooter = () => {
                 transition={{ type: 'spring', stiffness: 300 }}
               >
                 <img
-                  src='/img/alternun-white.svg'
+                  src='/img/alternun-black.svg'
                   alt='Alternun Logo'
                   className={styles.footerLogoImg}
                 />
