@@ -86,7 +86,7 @@ const config: Config = {
       title: '',
       logo: {
         alt: 'Alternun Logo',
-        src: 'img/logosimbolo-morado.png',
+        src: 'img/alternun-white.svg',
       },
       items: [
         {
