@@ -1,0 +1,17 @@
+{
+  "link.title.Product": "ผลิตภัณฑ์",
+  "link.title.Community": "ชุมชุม",
+  "link.title.Legal": "กฎหมาย",
+  "link.item.Documentation": "เอกสาร",
+  "link.item.Blog": "บล็อก",
+  "link.item.Website": "เว็บไซต์",
+  "link.item.GitHub": "GitHub",
+  "link.item.Linktree": "Linktree",
+  "link.item.Support": "สนับสนุน",
+  "link.item.Privacy Policy": "นโยบายความเป็นส่วนตัว",
+  "link.item.Terms of Service": "เงื่อนไขการให้บริการ",
+  "link.item.Cookies Policy": "นโยบายคุกกี้",
+  "copyright": "© {year} Alternun. สงวนลิขสิทธิ์ทั้งหมด",
+  "tech.builtWith": "สร้างด้วย ❤️ โดยใช้ Docusaurus",
+  "tech.poweredBy": "ขับเคลื่อนโดย ReDeFi"
+}
