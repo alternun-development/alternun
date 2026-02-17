@@ -1,0 +1,155 @@
+.container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.95;
+  z-index: 0;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  padding: 0 1.5rem;
+  z-index: 10;
+  margin-top: 4rem;
+}
+
+.content {
+  max-width: 64rem;
+  width: 100%;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.5rem;
+  padding: 3.5rem 2rem;
+  text-align: center;
+  backdrop-filter: blur(12px);
+  animation: slideInUp 0.8s both;
+}
+
+.title {
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 0.5em;
+  font-size: 3rem;
+  line-height: 1.05;
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 4rem;
+  }
+}
+
+.subtitle {
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.25rem;
+  line-height: 1.2;
+  margin-bottom: 2.25rem;
+}
+
+@media (min-width: 768px) {
+  .subtitle {
+    font-size: 1.25rem;
+  }
+}
+
+.ctaContainer {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ctaButton {
+  display: inline-block;
+  padding: 1rem 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: none;
+}
+
+.ctaButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.secondaryButton {
+  display: inline-block;
+  padding: 1rem 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: none;
+}
+
+.secondaryButton:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 2rem 1rem;
+  }
+  
+  .title {
+    font-size: 2rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .ctaContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .ctaButton,
+  .secondaryButton {
+    width: 200px;
+    text-align: center;
+  }
+}
