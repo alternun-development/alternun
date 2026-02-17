@@ -1,4 +1,4 @@
-export default function HomePage() {
+export default function HomePage(): JSX.Element {
   return (
     <div>
       <h1>Alternun Web Application</h1>
