@@ -7,8 +7,8 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
-    '@typescript-eslint/recommended',
-    '@typescript-eslint/recommended-requiring-type-checking',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-requiring-type-checking',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -49,7 +49,7 @@ module.exports = {
     'prefer-template': 'error',
     'template-curly-spacing': 'error',
     'arrow-spacing': 'error',
-    'comma-dangle': ['error', 'es5'],
+    'comma-dangle': ['error', 'always'],
     'comma-spacing': 'error',
     'comma-style': 'error',
     'computed-property-spacing': 'error',
