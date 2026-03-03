@@ -94,9 +94,9 @@ importers:
 
   apps/mobile:
     dependencies:
-      '@edcalderon/auth':
-        specifier: 1.1.3
-        version: 1.1.3(@supabase/supabase-js@2.98.0)(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      '@alternun/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@expo/vector-icons':
         specifier: ^15.0.3
         version: 15.1.1(expo-font@14.0.11(expo@54.0.33(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(graphql@15.8.0)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -270,6 +270,34 @@ importers:
       typescript:
         specifier: 5.0.4
         version: 5.0.4
+
+  packages/auth:
+    dependencies:
+      '@edcalderon/auth':
+        specifier: 1.2.1
+        version: 1.2.1(@supabase/supabase-js@2.98.0)(firebase@12.10.0)(react-dom@18.2.0(react@18.2.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@18.2.0))(react@18.2.0)
+      '@supabase/supabase-js':
+        specifier: ^2.98.0
+        version: 2.98.0
+      react:
+        specifier: '>=18.2.0'
+        version: 18.2.0
+      react-dom:
+        specifier: '>=18.2.0'
+        version: 18.2.0(react@18.2.0)
+      react-native:
+        specifier: '>=0.73.0'
+        version: 0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@18.2.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.1.3
+        version: 20.1.3
+      '@types/react':
+        specifier: ^19.1.17
+        version: 19.1.17
+      typescript:
+        specifier: ~5.9.2
+        version: 5.9.3
 
   packages/ui:
     dependencies:
@@ -1387,8 +1415,8 @@ packages:
       '@docusaurus/types':
         optional: true
 
-  '@edcalderon/auth@1.1.3':
-    resolution: {integrity: sha512-rLTUbuSEi/AwRo56CVnlviqhi21FWlgyVvqflpOq8Cw46inerrZfJIxK+D8xTvUmQi0767D7xX0gc3WjnEkYNg==}
+  '@edcalderon/auth@1.2.1':
+    resolution: {integrity: sha512-27lbyoCnz+Em7HWGDy+wknQkSePPKiDvFkBHv5m9bwhCaAHuQJPbyYLJ80sygYMhhgfaGVIgBxJW40nFh5abbA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@supabase/supabase-js': ^2.0.0
@@ -11305,7 +11333,7 @@ snapshots:
 
   '@docusaurus/react-loadable@6.0.0(react@18.2.0)':
     dependencies:
-      '@types/react': 18.2.6
+      '@types/react': 19.1.17
       react: 18.2.0
 
   '@docusaurus/theme-classic@3.5.2(@types/react@19.1.17)(eslint@8.57.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.5.4)':
@@ -11364,7 +11392,7 @@ snapshots:
       '@docusaurus/utils': 3.5.2(@docusaurus/types@3.5.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(typescript@5.5.4)
       '@docusaurus/utils-common': 3.5.2(@docusaurus/types@3.5.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0))
       '@types/history': 4.7.11
-      '@types/react': 18.2.6
+      '@types/react': 19.1.17
       '@types/react-router-config': 5.0.11
       clsx: 2.1.1
       parse-numeric-range: 1.3.0
@@ -11540,14 +11568,14 @@ snapshots:
       - uglify-js
       - webpack-cli
 
-  '@edcalderon/auth@1.1.3(@supabase/supabase-js@2.98.0)(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)':
+  '@edcalderon/auth@1.2.1(@supabase/supabase-js@2.98.0)(firebase@12.10.0)(react-dom@18.2.0(react@18.2.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@18.2.0))(react@18.2.0)':
     dependencies:
-      react: 19.1.0
+      react: 18.2.0
     optionalDependencies:
       '@supabase/supabase-js': 2.98.0
       firebase: 12.10.0
-      react-dom: 19.1.0(react@19.1.0)
-      react-native: 0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@19.1.0)
+      react-dom: 18.2.0(react@18.2.0)
+      react-native: 0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@18.2.0)
 
   '@edcalderon/versioning@1.3.1':
     dependencies:
@@ -13533,7 +13561,6 @@ snapshots:
       react-native: 0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@18.2.0)
     optionalDependencies:
       '@types/react': 19.1.17
-    optional: true
 
   '@react-native/virtualized-lists@0.81.5(@types/react@19.1.17)(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)':
     dependencies:
@@ -14043,15 +14070,15 @@ snapshots:
 
   '@types/react-dom@18.2.4':
     dependencies:
-      '@types/react': 18.2.6
+      '@types/react': 19.1.17
 
   '@types/react-native@0.71.13':
     dependencies:
-      '@types/react': 18.2.6
+      '@types/react': 19.1.17
 
   '@types/react-reconciler@0.26.7':
     dependencies:
-      '@types/react': 18.2.6
+      '@types/react': 19.1.17
 
   '@types/react-reconciler@0.28.9(@types/react@19.1.17)':
     dependencies:
@@ -14060,19 +14087,19 @@ snapshots:
   '@types/react-router-config@5.0.11':
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 18.2.6
+      '@types/react': 19.1.17
       '@types/react-router': 5.1.20
 
   '@types/react-router-dom@5.3.3':
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 18.2.6
+      '@types/react': 19.1.17
       '@types/react-router': 5.1.20
 
   '@types/react-router@5.1.20':
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 18.2.6
+      '@types/react': 19.1.17
 
   '@types/react-test-renderer@18.3.1':
     dependencies:
@@ -21187,7 +21214,6 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
-    optional: true
 
   react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0))(@types/react@19.1.17)(react@19.1.0):
     dependencies:

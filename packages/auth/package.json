@@ -1,0 +1,27 @@
+{
+  "name": "@alternun/auth",
+  "version": "0.1.0",
+  "description": "Alternun auth wrapper package built on top of @edcalderon/auth",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "./build.sh",
+    "dev": "tsc -w",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@edcalderon/auth": "1.2.1",
+    "@supabase/supabase-js": "^2.98.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0",
+    "react-native": ">=0.73.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.1.3",
+    "@types/react": "^19.1.17",
+    "typescript": "~5.9.2"
+  }
+}

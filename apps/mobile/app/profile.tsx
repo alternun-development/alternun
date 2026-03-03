@@ -1,4 +1,4 @@
-import type { User } from '@edcalderon/auth';
+import type { User } from '../components/auth/AppAuthProvider';
 import { useRouter } from 'expo-router';
 import { LogOut, Settings, Shield, UserCircle2, Wallet } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';

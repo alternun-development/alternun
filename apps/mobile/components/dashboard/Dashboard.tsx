@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import type { User } from '@edcalderon/auth';
+import type { User } from '../auth/AppAuthProvider';
 import {
   View,
   ScrollView,

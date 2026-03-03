@@ -1,4 +1,4 @@
-import type { OAuthFlow } from '@edcalderon/auth';
+import type { OAuthFlow } from './AppAuthProvider';
 import { AlertCircle, Chrome, Lock, Mail, Wallet, X } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';
 import {
