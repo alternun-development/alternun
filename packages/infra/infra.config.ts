@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable comma-dangle */
+/* eslint-disable indent */
 /* eslint-disable security/detect-non-literal-fs-filename */
 /* eslint-disable security/detect-object-injection */
 // / <reference path="./sst-env.d.ts" />
@@ -9,6 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createExpoSite, createPipeline, resolveDomain } from '@lsts_tech/infra';
+import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
 
 type PipelineStage = 'production' | 'dev' | 'mobile';
 
@@ -44,6 +47,17 @@ interface LocalDeploymentConfig {
       output?: string;
     };
   };
+  redirects?: {
+    enableAirsToDev?: boolean;
+    enableDevToTestnet?: boolean;
+    devToTestnetSourceDomain?: string;
+    enableRootDomainRedirect?: boolean;
+    rootDomainTarget?: string;
+    certArns?: {
+      rootDomain?: string;
+      devToTestnet?: string;
+    };
+  };
 }
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -66,6 +80,11 @@ function readLocalDeploymentConfig(configPath: string): LocalDeploymentConfig {
 const localConfigPath = process.env.INFRA_CONFIG_PATH ?? defaultLocalConfigPath;
 const localConfig = readLocalDeploymentConfig(localConfigPath);
 
+function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
+  if (value === undefined) return defaultValue;
+  return !['0', 'false', 'no', 'off'].includes(value.toLowerCase());
+}
+
 const rootDomain = process.env.INFRA_ROOT_DOMAIN ?? localConfig.rootDomain ?? 'alternun.co';
 const appName = process.env.INFRA_APP_NAME ?? localConfig.appName ?? 'alternun-infra';
 const pipelineRepo =
@@ -82,10 +101,11 @@ const selectedPipelinesRaw =
 const expoAppPath =
   process.env.INFRA_EXPO_APP_PATH ?? localConfig.expo?.appPath ?? '../../apps/mobile';
 const expoSubdomain = process.env.INFRA_EXPO_SUBDOMAIN ?? localConfig.expo?.subdomain ?? 'airs';
+const legacyDevDomain = `dev.${expoSubdomain}.${rootDomain}`;
 
 const defaultExpoDomains = {
   production: `${expoSubdomain}.${rootDomain}`,
-  dev: `dev.${expoSubdomain}.${rootDomain}`,
+  dev: `testnet.${expoSubdomain}.${rootDomain}`,
   mobile: `preview.${expoSubdomain}.${rootDomain}`,
 };
 
@@ -120,9 +140,48 @@ const enableCustomDomainRaw =
     ? String(localConfig.expo.enableCustomDomain)
     : undefined) ??
   'true';
-const enableCustomDomain = !['0', 'false', 'no', 'off'].includes(
-  enableCustomDomainRaw.toLowerCase()
+const enableCustomDomain = parseBoolean(enableCustomDomainRaw, true);
+
+const enableAirsToDevRedirect = parseBoolean(
+  process.env.INFRA_REDIRECT_AIRS_TO_DEV ??
+    (localConfig.redirects?.enableAirsToDev !== undefined
+      ? String(localConfig.redirects.enableAirsToDev)
+      : undefined),
+  true
 );
+
+const enableDevToTestnetRedirect = parseBoolean(
+  process.env.INFRA_REDIRECT_DEV_TO_TESTNET ??
+    (localConfig.redirects?.enableDevToTestnet !== undefined
+      ? String(localConfig.redirects.enableDevToTestnet)
+      : undefined),
+  true
+);
+
+const devToTestnetSourceDomain =
+  process.env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE ??
+  localConfig.redirects?.devToTestnetSourceDomain ??
+  legacyDevDomain;
+
+const devToTestnetCertArn =
+  process.env.INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN ??
+  localConfig.redirects?.certArns?.devToTestnet;
+
+const enableRootDomainRedirect = parseBoolean(
+  process.env.INFRA_REDIRECT_ROOT_DOMAIN ??
+    (localConfig.redirects?.enableRootDomainRedirect !== undefined
+      ? String(localConfig.redirects.enableRootDomainRedirect)
+      : undefined),
+  true
+);
+
+const rootDomainRedirectTarget =
+  process.env.INFRA_REDIRECT_ROOT_TARGET ??
+  localConfig.redirects?.rootDomainTarget ??
+  'alternun.io';
+
+const rootDomainRedirectCertArn =
+  process.env.INFRA_REDIRECT_ROOT_CERT_ARN ?? localConfig.redirects?.certArns?.rootDomain;
 
 const commonBuildEnv = {
   INFRA_APP_NAME: appName,
@@ -206,7 +265,16 @@ export function createInfrastructure() {
   const expoSite = createExpoSite({
     appPath: expoAppPath,
     id: `expo-web-${stage}`,
-    domain: expoDomain?.domain,
+    domain:
+      enableCustomDomain && expoDomain
+        ? buildStageDomainConfig({
+            stage,
+            stageDomain: expoDomain.domainName,
+            productionDomain: expoStageMap.production,
+            stageCertificateArn: expoCerts[stage],
+            enableProductionToStageRedirect: enableAirsToDevRedirect,
+          })
+        : undefined,
     certificateArn: enableCustomDomain ? expoCerts[stage] : undefined,
     environment: {
       EXPO_PUBLIC_ENV: stage,
@@ -223,11 +291,49 @@ export function createInfrastructure() {
     },
   });
 
+  const shouldCreateRootDomainRedirect =
+    stage === 'dev' &&
+    enableCustomDomain &&
+    enableRootDomainRedirect &&
+    rootDomainRedirectTarget !== rootDomain;
+
+  if (shouldCreateRootDomainRedirect) {
+    createExternalDomainRedirect({
+      id: `root-domain-redirect-${stage}`,
+      sourceDomain: rootDomain,
+      targetDomain: rootDomainRedirectTarget,
+      certificateArn: rootDomainRedirectCertArn,
+    });
+  }
+
+  const shouldCreateDevToTestnetRedirect =
+    stage === 'dev' &&
+    enableCustomDomain &&
+    enableDevToTestnetRedirect &&
+    devToTestnetSourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase();
+
+  if (shouldCreateDevToTestnetRedirect) {
+    createExternalDomainRedirect({
+      id: `dev-domain-redirect-${stage}`,
+      sourceDomain: devToTestnetSourceDomain,
+      targetDomain: expoStageMap.dev,
+      certificateArn: devToTestnetCertArn,
+    });
+  }
+
   const outputs: Record<string, unknown> = {
     app: appName,
     siteUrl: expoSite.url,
     domain: expoDomain?.domainName ?? null,
     customDomainEnabled: enableCustomDomain,
+    redirects: {
+      airsToDevEnabled: enableAirsToDevRedirect,
+      devToTestnetEnabled: shouldCreateDevToTestnetRedirect,
+      devToTestnetSource: shouldCreateDevToTestnetRedirect ? devToTestnetSourceDomain : null,
+      devToTestnetTarget: shouldCreateDevToTestnetRedirect ? expoStageMap.dev : null,
+      rootDomainRedirectEnabled: shouldCreateRootDomainRedirect,
+      rootDomainRedirectTarget: shouldCreateRootDomainRedirect ? rootDomainRedirectTarget : null,
+    },
   };
 
   if (stage === 'production' && selectedPipelines.size > 0) {

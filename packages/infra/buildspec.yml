@@ -14,7 +14,7 @@ env:
     PROJECT_PREFIX: "alternun"
     PREFIX: "alternun"
     DOMAIN_PRODUCTION: "airs.alternun.co"
-    DOMAIN_DEV: "dev.airs.alternun.co"
+    DOMAIN_DEV: "testnet.airs.alternun.co"
     DOMAIN_MOBILE: "preview.airs.alternun.co"
 
     # Check controls
