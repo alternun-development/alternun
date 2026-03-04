@@ -8,12 +8,20 @@ export function AppAuthProvider({ children, options, }) {
     const supabaseKey = (_a = process.env.EXPO_PUBLIC_SUPABASE_KEY) !== null && _a !== void 0 ? _a : process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
     const walletBridge = options === null || options === void 0 ? void 0 : options.walletBridge;
     const allowMockWalletFallback = options === null || options === void 0 ? void 0 : options.allowMockWalletFallback;
+    const allowWalletOnlySession = options === null || options === void 0 ? void 0 : options.allowWalletOnlySession;
     const client = useMemo(() => new AlternunMobileAuthClient({
         supabaseUrl,
         supabaseKey,
         walletBridge,
         allowMockWalletFallback,
-    }), [allowMockWalletFallback, supabaseKey, supabaseUrl, walletBridge]);
+        allowWalletOnlySession,
+    }), [
+        allowMockWalletFallback,
+        allowWalletOnlySession,
+        supabaseKey,
+        supabaseUrl,
+        walletBridge,
+    ]);
     return (_jsx(UniversalAuthProvider, { client: client, children: children }));
 }
 export const useAuth = useUniversalAuth;

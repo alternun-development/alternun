@@ -1,0 +1,25 @@
+{
+  "name": "AIRS",
+  "short_name": "AIRS",
+  "description": "Ambient Impact & Regeneration Score platform by Alternun.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#050510",
+  "theme_color": "#004646",
+  "icons": [
+    {
+      "src": "/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

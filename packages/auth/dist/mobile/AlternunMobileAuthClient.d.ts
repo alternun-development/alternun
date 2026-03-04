@@ -17,6 +17,12 @@ export interface AlternunMobileAuthClientOptions {
     supabaseAnonKey?: string;
     walletBridge?: WalletConnectionBridge;
     allowMockWalletFallback?: boolean;
+    allowWalletOnlySession?: boolean;
+}
+export interface EmailSignUpResult {
+    needsEmailVerification: boolean;
+    emailAlreadyRegistered: boolean;
+    confirmationEmailSent: boolean;
 }
 export declare function isWalletProvider(provider?: string): provider is WalletProvider;
 export declare class AlternunMobileAuthClient implements AuthClient {
@@ -30,6 +36,7 @@ export declare class AlternunMobileAuthClient implements AuthClient {
     private unsubscribeBase;
     private walletBridge;
     private allowMockWalletFallback;
+    private allowWalletOnlySession;
     constructor(options: AlternunMobileAuthClientOptions);
     capabilities(): AuthCapabilities;
     private emit;
@@ -41,6 +48,10 @@ export declare class AlternunMobileAuthClient implements AuthClient {
     private safeGetBaseUser;
     private toLinkedWalletState;
     private hydrateWalletStateFromUser;
+    private buildWalletMetadataPayload;
+    private resolveWalletChain;
+    private upsertWalletRegistryEntry;
+    private persistLinkedWalletOnBaseUser;
     getUser(): Promise<User | null>;
     signInWithEmail(email: string, password: string): Promise<User>;
     private signInWalletWithBase;
@@ -48,9 +59,8 @@ export declare class AlternunMobileAuthClient implements AuthClient {
     private signInWalletWithFallback;
     signIn(options: SignInOptions): Promise<void>;
     signInWithGoogle(redirectTo?: string): Promise<void>;
-    signUpWithEmail(email: string, password: string): Promise<{
-        needsEmailVerification: boolean;
-    }>;
+    signUpWithEmail(email: string, password: string): Promise<EmailSignUpResult>;
+    resendEmailConfirmation(email: string): Promise<void>;
     signOut(): Promise<void>;
     onAuthStateChange(callback: (user: User | null) => void): () => void;
     getSessionToken(): Promise<string | null>;

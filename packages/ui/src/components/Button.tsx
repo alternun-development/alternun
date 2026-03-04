@@ -1,4 +1,3 @@
-import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 interface ButtonProps {
@@ -6,13 +5,13 @@ interface ButtonProps {
   onPress: () => void;
 }
 
-export const Button: React.FC<ButtonProps> = ({ title, onPress }) => {
+export function Button({ title, onPress }: ButtonProps): JSX.Element {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress}>
       <Text style={styles.text}>{title}</Text>
     </TouchableOpacity>
   );
-};
+}
 
 const styles = StyleSheet.create({
   button: {
