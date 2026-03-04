@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Block accidental secret commits before linting.
+pnpm -s version:check-secrets
+
 npx lint-staged

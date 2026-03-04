@@ -198,6 +198,16 @@ The versioning system includes built-in protection:
 - **🚫 Private Package Check**: Prevents accidental publishing of private packages
 - **📊 Dependency Sync**: Maintains dependency consistency across monorepo
 
+### Secret Scanning
+
+- Local pre-commit now runs staged secret checks: `pnpm version:check-secrets`
+- CI runs `.github/workflows/secret-scan.yml` using Gitleaks on push/PR to `develop`, `main`, and `master`
+- Run manually in local before push:
+
+```bash
+pnpm version:check-secrets
+```
+
 ### Configuration
 
 Versioning is configured in `versioning.config.json`:

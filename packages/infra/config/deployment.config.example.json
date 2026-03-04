@@ -1,0 +1,30 @@
+{
+  "appName": "alternun-infra",
+  "rootDomain": "alternun.co",
+  "pipeline": {
+    "repo": "alternun-development/alternun",
+    "prefix": "alternun",
+    "projectTag": "alternun",
+    "pipelines": "production,dev",
+    "branchProd": "master",
+    "branchDev": "develop"
+  },
+  "expo": {
+    "appPath": "../../apps/mobile",
+    "subdomain": "airs",
+    "domains": {
+      "production": "airs.alternun.co",
+      "dev": "dev.airs.alternun.co",
+      "mobile": "preview.airs.alternun.co"
+    },
+    "certArns": {
+      "production": "",
+      "dev": "",
+      "mobile": ""
+    },
+    "build": {
+      "command": "npx expo export -p web",
+      "output": "dist"
+    }
+  }
+}
