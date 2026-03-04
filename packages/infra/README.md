@@ -5,8 +5,26 @@ AWS/SST deployment wrapper for Alternun Expo Web using `@lsts_tech/infra`.
 ## Stage Domains
 
 - `production` -> `airs.alternun.co`
-- `dev` -> `dev.airs.alternun.co`
+- `dev` -> `testnet.airs.alternun.co`
 - `mobile` (optional) -> `preview.airs.alternun.co`
+
+## Redirects (Dev Stage)
+
+During `dev` deployments, infra can provision:
+
+- `airs.alternun.co` -> `testnet.airs.alternun.co`
+- `dev.airs.alternun.co` -> `testnet.airs.alternun.co`
+- `alternun.co` -> `alternun.io`
+
+Config knobs:
+
+- `INFRA_REDIRECT_AIRS_TO_DEV`
+- `INFRA_REDIRECT_DEV_TO_TESTNET`
+- `INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE`
+- `INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN` (optional)
+- `INFRA_REDIRECT_ROOT_DOMAIN`
+- `INFRA_REDIRECT_ROOT_TARGET`
+- `INFRA_REDIRECT_ROOT_CERT_ARN` (optional)
 
 ## Why This Package Exists
 
