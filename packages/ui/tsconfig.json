@@ -8,7 +8,9 @@
     "strict": true,
     "esModuleInterop": true,
     "jsx": "react-native",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["react", "react-native"],
+    "typeRoots": ["./node_modules/@types"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

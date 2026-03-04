@@ -8,6 +8,12 @@ import type {
 } from "@edcalderon/auth";
 import { SupabaseClient as UniversalSupabaseClient } from "@edcalderon/auth/supabase";
 import { createClient } from "@supabase/supabase-js";
+import {
+  getValidationErrorMessage,
+  parseEmailAddress,
+  parseSignInPassword,
+  parseSignUpPassword,
+} from "../validation/authInputValidation";
 
 const WALLET_PROVIDERS = ["metamask", "walletconnect"] as const;
 export type WalletProvider = (typeof WALLET_PROVIDERS)[number];
@@ -38,6 +44,25 @@ export interface AlternunMobileAuthClientOptions {
   supabaseAnonKey?: string;
   walletBridge?: WalletConnectionBridge;
   allowMockWalletFallback?: boolean;
+  allowWalletOnlySession?: boolean;
+}
+
+export interface EmailSignUpResult {
+  needsEmailVerification: boolean;
+  emailAlreadyRegistered: boolean;
+  confirmationEmailSent: boolean;
+}
+
+interface WalletMetadataEntry {
+  provider: WalletProvider;
+  address: string;
+  connectedAt: string;
+  [key: string]: unknown;
+}
+
+interface PostgrestLikeError {
+  message: string;
+  code?: string;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -46,6 +71,27 @@ function getErrorMessage(error: unknown): string {
   }
 
   return String(error);
+}
+
+function isEmailAlreadyRegisteredError(errorMessage: string): boolean {
+  const normalized = errorMessage.toLowerCase();
+  return (
+    normalized.includes("already registered") ||
+    normalized.includes("already been registered") ||
+    normalized.includes("user already exists")
+  );
+}
+
+function isObfuscatedExistingUserSignUpResult(data: any): boolean {
+  if (!data || data.session || !data.user) {
+    return false;
+  }
+
+  const identities = Array.isArray(data.user.identities)
+    ? data.user.identities.filter(Boolean)
+    : null;
+
+  return Array.isArray(identities) && identities.length === 0;
 }
 
 function isMissingSessionError(error: unknown): boolean {
@@ -144,12 +190,14 @@ export class AlternunMobileAuthClient implements AuthClient {
   private walletSessionToken: string | null = null;
   private unsubscribeBase: (() => void) | null = null;
   private walletBridge: WalletConnectionBridge | null = null;
-  private allowMockWalletFallback: boolean = true;
+  private allowMockWalletFallback: boolean = false;
+  private allowWalletOnlySession: boolean = false;
 
   constructor(options: AlternunMobileAuthClientOptions) {
     const supabaseKey = options.supabaseKey ?? options.supabaseAnonKey;
     this.walletBridge = options.walletBridge ?? null;
-    this.allowMockWalletFallback = options.allowMockWalletFallback ?? true;
+    this.allowMockWalletFallback = options.allowMockWalletFallback ?? false;
+    this.allowWalletOnlySession = options.allowWalletOnlySession ?? false;
 
     if (options.supabaseUrl && supabaseKey) {
       const supabase = createClient(options.supabaseUrl, supabaseKey, {
@@ -303,6 +351,146 @@ export class AlternunMobileAuthClient implements AuthClient {
     return this.toLinkedWalletState(provider, walletAddress);
   }
 
+  private buildWalletMetadataPayload(
+    baseUser: User,
+    linkedWallet: LinkedWalletState
+  ): Record<string, unknown> {
+    const baseMetadata =
+      baseUser.metadata && typeof baseUser.metadata === "object"
+        ? (baseUser.metadata as Record<string, unknown>)
+        : {};
+
+    const nextWallet: WalletMetadataEntry = {
+      provider: linkedWallet.provider,
+      address: linkedWallet.walletAddress,
+      connectedAt: linkedWallet.connectedAt,
+      ...linkedWallet.metadata,
+    };
+
+    const existingLinkedWalletsRaw = baseMetadata.linkedWallets;
+    const existingLinkedWallets = Array.isArray(existingLinkedWalletsRaw)
+      ? existingLinkedWalletsRaw.filter(
+          (entry): entry is WalletMetadataEntry =>
+            Boolean(entry && typeof entry === "object")
+        )
+      : [];
+
+    const filteredExisting = existingLinkedWallets.filter((entry) => {
+      const providerValue =
+        typeof entry.provider === "string" ? entry.provider.toLowerCase() : null;
+      const addressValue =
+        typeof entry.address === "string" ? entry.address.toLowerCase() : null;
+
+      return !(
+        providerValue === linkedWallet.provider &&
+        addressValue === linkedWallet.walletAddress.toLowerCase()
+      );
+    });
+
+    const walletObject =
+      typeof baseMetadata.wallet === "object" && baseMetadata.wallet !== null
+        ? (baseMetadata.wallet as Record<string, unknown>)
+        : {};
+
+    return {
+      ...baseMetadata,
+      walletProvider: linkedWallet.provider,
+      walletAddress: linkedWallet.walletAddress,
+      connectedAt: linkedWallet.connectedAt,
+      wallet: {
+        ...walletObject,
+        ...nextWallet,
+      },
+      linkedWallets: [nextWallet, ...filteredExisting].slice(0, 5),
+    };
+  }
+
+  private resolveWalletChain(linkedWallet: LinkedWalletState): string {
+    const chainCandidate = linkedWallet.metadata.chain;
+    if (typeof chainCandidate === "string" && chainCandidate.trim().length > 0) {
+      return chainCandidate.trim().toLowerCase();
+    }
+
+    if (
+      typeof linkedWallet.metadata.chainId === "string" ||
+      typeof linkedWallet.metadata.chainId === "number"
+    ) {
+      return "ethereum";
+    }
+
+    return "ethereum";
+  }
+
+  private async upsertWalletRegistryEntry(
+    baseUser: User,
+    linkedWallet: LinkedWalletState
+  ): Promise<void> {
+    if (!this.supabase) {
+      return;
+    }
+
+    const chain = this.resolveWalletChain(linkedWallet);
+    const walletAddressNormalized = linkedWallet.walletAddress.toLowerCase();
+    const { error } = await this.supabase.from("user_wallets").upsert(
+      {
+        user_id: baseUser.id,
+        chain,
+        wallet_provider: linkedWallet.provider,
+        wallet_address: linkedWallet.walletAddress,
+        wallet_address_normalized: walletAddressNormalized,
+        is_primary: true,
+        linked_at: linkedWallet.connectedAt,
+        last_used_at: new Date().toISOString(),
+        metadata: linkedWallet.metadata,
+      },
+      {
+        onConflict: "user_id,chain,wallet_address_normalized",
+      }
+    );
+
+    if (!error) {
+      return;
+    }
+
+    const typedError = error as PostgrestLikeError;
+    if (typedError.code === "42P01") {
+      throw new Error(
+        "CONFIG_ERROR: Missing public.user_wallets table. Run the wallet schema migration."
+      );
+    }
+
+    throw new Error(
+      `PROVIDER_ERROR: Failed to persist wallet registry record: ${typedError.message}`
+    );
+  }
+
+  private async persistLinkedWalletOnBaseUser(
+    baseUser: User,
+    linkedWallet: LinkedWalletState
+  ): Promise<User | null> {
+    if (!this.supabase) {
+      return this.applyLinkedWallet(baseUser);
+    }
+
+    await this.upsertWalletRegistryEntry(baseUser, linkedWallet);
+
+    const metadata = this.buildWalletMetadataPayload(baseUser, linkedWallet);
+    const { data, error } = await this.supabase.auth.updateUser({
+      data: metadata,
+    });
+
+    if (error) {
+      throw new Error(`PROVIDER_ERROR: Failed to link wallet: ${error.message}`);
+    }
+
+    if (!data?.user) {
+      return this.applyLinkedWallet(baseUser);
+    }
+
+    const mappedUser = this.mapSupabaseUser(data.user);
+    return this.applyLinkedWallet(mappedUser);
+  }
+
   async getUser(): Promise<User | null> {
     if (this.walletUser) {
       return this.walletUser;
@@ -321,10 +509,28 @@ export class AlternunMobileAuthClient implements AuthClient {
   }
 
   async signInWithEmail(email: string, password: string): Promise<User> {
+    let normalizedEmail: string;
+    let validatedPassword: string;
+
+    try {
+      normalizedEmail = parseEmailAddress(email);
+      validatedPassword = parseSignInPassword(password);
+    } catch (validationError) {
+      throw new Error(
+        `VALIDATION_ERROR: ${getValidationErrorMessage(
+          validationError,
+          "Email and password are required."
+        )}`
+      );
+    }
+
     this.walletUser = null;
     this.linkedWallet = null;
     this.walletSessionToken = null;
-    const user = await this.ensureBaseClient().signInWithEmail(email, password);
+    const user = await this.ensureBaseClient().signInWithEmail(
+      normalizedEmail,
+      validatedPassword
+    );
     this.emit(user);
     return user;
   }
@@ -341,12 +547,17 @@ export class AlternunMobileAuthClient implements AuthClient {
 
     const baseUser = await this.safeGetBaseUser();
     if (!baseUser) {
-      return true;
+      return false;
     }
 
     const linkedWallet =
-      this.hydrateWalletStateFromUser(baseUser) ??
-      this.toLinkedWalletState(provider, makeWalletAddress());
+      this.hydrateWalletStateFromUser(baseUser);
+
+    if (!linkedWallet) {
+      throw new Error(
+        "PROVIDER_ERROR: Wallet provider did not return a valid wallet identity."
+      );
+    }
 
     this.walletUser = null;
     this.linkedWallet = linkedWallet;
@@ -356,7 +567,10 @@ export class AlternunMobileAuthClient implements AuthClient {
     return true;
   }
 
-  private async signInWalletWithBridge(provider: WalletProvider): Promise<void> {
+  private async signInWalletWithBridge(
+    provider: WalletProvider,
+    existingBaseUser: User | null = null
+  ): Promise<void> {
     if (!this.walletBridge) {
       throw new Error(
         `UNSUPPORTED_FLOW: ${provider} requires wallet bridge configuration.`
@@ -372,13 +586,23 @@ export class AlternunMobileAuthClient implements AuthClient {
       result.metadata ?? {}
     );
 
-    const baseUser = await this.safeGetBaseUser();
+    const baseUser = existingBaseUser ?? (await this.safeGetBaseUser());
     if (baseUser) {
       this.walletUser = null;
       this.linkedWallet = linkedWallet;
       this.walletSessionToken = linkedWallet.sessionToken;
-      this.emit(this.applyLinkedWallet(baseUser));
+      const persistedUser = await this.persistLinkedWalletOnBaseUser(
+        baseUser,
+        linkedWallet
+      );
+      this.emit(persistedUser ?? this.applyLinkedWallet(baseUser));
       return;
+    }
+
+    if (!this.allowWalletOnlySession) {
+      throw new Error(
+        "UNSUPPORTED_FLOW: Wallet-only login is disabled. Sign in with email or Google first, then connect your wallet."
+      );
     }
 
     this.linkedWallet = null;
@@ -387,7 +611,10 @@ export class AlternunMobileAuthClient implements AuthClient {
     this.emit(this.walletUser);
   }
 
-  private signInWalletWithFallback(provider: WalletProvider): void {
+  private signInWalletWithFallback(
+    provider: WalletProvider,
+    existingBaseUser: User | null = null
+  ): void {
     if (!this.allowMockWalletFallback) {
       throw new Error(
         `UNSUPPORTED_FLOW: ${provider} is not configured. Add a wallet bridge or configure provider auth.`
@@ -403,6 +630,14 @@ export class AlternunMobileAuthClient implements AuthClient {
         previewWallet: true,
       }
     );
+
+    if (existingBaseUser) {
+      this.walletUser = null;
+      this.linkedWallet = linkedWallet;
+      this.walletSessionToken = linkedWallet.sessionToken;
+      this.emit(this.applyLinkedWallet(existingBaseUser));
+      return;
+    }
 
     this.linkedWallet = null;
     this.walletUser = this.getWalletUser(linkedWallet);
@@ -427,6 +662,27 @@ export class AlternunMobileAuthClient implements AuthClient {
     this.walletUser = null;
     this.linkedWallet = null;
     this.walletSessionToken = null;
+
+    const existingBaseUser = await this.safeGetBaseUser();
+    if (existingBaseUser) {
+      try {
+        await this.signInWalletWithBridge(provider, existingBaseUser);
+        return;
+      } catch (error) {
+        if (!this.walletBridge) {
+          this.signInWalletWithFallback(provider, existingBaseUser);
+          return;
+        }
+
+        throw error;
+      }
+    }
+
+    // Provider-specific wallet UX (MetaMask / WalletConnect) must be launched by the app bridge first.
+    if (this.walletBridge) {
+      await this.signInWalletWithBridge(provider);
+      return;
+    }
 
     let baseError: unknown = null;
 
@@ -471,19 +727,49 @@ export class AlternunMobileAuthClient implements AuthClient {
   async signUpWithEmail(
     email: string,
     password: string
-  ): Promise<{ needsEmailVerification: boolean }> {
+  ): Promise<EmailSignUpResult> {
+    let normalizedEmail: string;
+    let validatedPassword: string;
+    try {
+      normalizedEmail = parseEmailAddress(email);
+      validatedPassword = parseSignUpPassword(password);
+    } catch (validationError) {
+      throw new Error(
+        `VALIDATION_ERROR: ${getValidationErrorMessage(
+          validationError,
+          "Enter a valid email address and password."
+        )}`
+      );
+    }
+
     this.walletUser = null;
     this.linkedWallet = null;
     this.walletSessionToken = null;
     const supabase = this.ensureSupabase();
 
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+      email: normalizedEmail,
+      password: validatedPassword,
     });
 
     if (error) {
+      if (isEmailAlreadyRegisteredError(error.message)) {
+        return {
+          needsEmailVerification: true,
+          emailAlreadyRegistered: true,
+          confirmationEmailSent: false,
+        };
+      }
+
       throw new Error(`PROVIDER_ERROR: ${error.message}`);
+    }
+
+    if (isObfuscatedExistingUserSignUpResult(data)) {
+      return {
+        needsEmailVerification: true,
+        emailAlreadyRegistered: true,
+        confirmationEmailSent: false,
+      };
     }
 
     const hasSession = Boolean(data.session);
@@ -494,7 +780,33 @@ export class AlternunMobileAuthClient implements AuthClient {
 
     return {
       needsEmailVerification: !hasSession,
+      emailAlreadyRegistered: false,
+      confirmationEmailSent: !hasSession,
     };
+  }
+
+  async resendEmailConfirmation(email: string): Promise<void> {
+    let normalizedEmail: string;
+    try {
+      normalizedEmail = parseEmailAddress(email);
+    } catch (validationError) {
+      throw new Error(
+        `VALIDATION_ERROR: ${getValidationErrorMessage(
+          validationError,
+          "Enter a valid email address."
+        )}`
+      );
+    }
+
+    const supabase = this.ensureSupabase();
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: normalizedEmail,
+    });
+
+    if (error) {
+      throw new Error(`PROVIDER_ERROR: ${error.message}`);
+    }
   }
 
   async signOut(): Promise<void> {

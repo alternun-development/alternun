@@ -10,7 +10,7 @@ import {
 
 type MobileAuthOverrideOptions = Pick<
   AlternunMobileAuthClientOptions,
-  "walletBridge" | "allowMockWalletFallback"
+  "walletBridge" | "allowMockWalletFallback" | "allowWalletOnlySession"
 >;
 
 export interface AppAuthProviderProps extends PropsWithChildren {
@@ -27,6 +27,7 @@ export function AppAuthProvider({
     process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
   const walletBridge = options?.walletBridge;
   const allowMockWalletFallback = options?.allowMockWalletFallback;
+  const allowWalletOnlySession = options?.allowWalletOnlySession;
 
   const client = useMemo(
     () =>
@@ -35,8 +36,15 @@ export function AppAuthProvider({
         supabaseKey,
         walletBridge,
         allowMockWalletFallback,
+        allowWalletOnlySession,
       }),
-    [allowMockWalletFallback, supabaseKey, supabaseUrl, walletBridge]
+    [
+      allowMockWalletFallback,
+      allowWalletOnlySession,
+      supabaseKey,
+      supabaseUrl,
+      walletBridge,
+    ]
   );
 
   return (

@@ -5,10 +5,10 @@ import {
   ScrollView,
   StyleSheet,
   StatusBar,
-  SafeAreaView,
   Text,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import TopNav from './TopNav';
 import HeroStats from './HeroStats';
@@ -296,17 +296,17 @@ function getWalletProvider(user: User | null): string | null {
   return null;
 }
 
-function getAuthMethodLabel(user: User | null, walletConnected: boolean, walletProvider: string | null): string {
+function getAuthMethodLabel(user: User | null): string {
   if (!user) {
     return 'guest';
   }
 
-  if (walletConnected) {
-    return `wallet: ${walletProvider ?? 'connected'}`;
+  if (user.provider && !user.provider.startsWith('wallet:')) {
+    return `auth: ${user.provider}`;
   }
 
-  if (user.provider) {
-    return `auth: ${user.provider}`;
+  if (user.provider && user.provider.startsWith('wallet:')) {
+    return 'auth: wallet';
   }
 
   if (user.email) {
@@ -357,7 +357,7 @@ export default function Dashboard({
   const walletProvider = getWalletProvider(user);
   const walletConnected = Boolean(walletAddress || walletProvider);
   const atnEligible = walletConnected;
-  const authMethodLabel = getAuthMethodLabel(user, walletConnected, walletProvider);
+  const authMethodLabel = getAuthMethodLabel(user);
   const userStats = useMemo(() => getUserDashboardStats(user), [user]);
   const profileInfo = useMemo(() => getUserProfileInfo(user), [user]);
 
@@ -429,6 +429,7 @@ export default function Dashboard({
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={isDark ? '#050510' : '#f6f8fc'} />
       <View style={[styles.container, { backgroundColor: isDark ? '#050510' : '#f6f8fc' }]}>
         <TopNav
+          key={user ? 'topnav-signed-in' : 'topnav-signed-out'}
           signedIn={Boolean(user)}
           walletConnected={walletConnected}
           walletAddress={walletAddress}

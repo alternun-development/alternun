@@ -1,7 +1,6 @@
-import React from 'react';
 interface ButtonProps {
-  title: string;
-  onPress: () => void;
+    title: string;
+    onPress: () => void;
 }
-export declare const Button: React.FC<ButtonProps>;
+export declare function Button({ title, onPress }: ButtonProps): JSX.Element;
 export {};

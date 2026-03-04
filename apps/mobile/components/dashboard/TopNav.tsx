@@ -130,11 +130,6 @@ export default function TopNav({
   const triggerInitials = signedIn ? initials : 'U';
 
   useEffect(() => {
-    setMenuVisible(false);
-    setSettingsExpanded(false);
-  }, [signedIn]);
-
-  useEffect(() => {
     if (!menuVisible) {
       setSettingsExpanded(false);
     }
@@ -145,7 +140,7 @@ export default function TopNav({
       <View style={styles.logoContainer}>
         <Image source={require('../../assets/logo.png')} style={styles.logoImage} resizeMode="contain" />
         <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.logoText, { color: palette.logoText }]}>
-          AIRS | Alternun Impact & Regeneration Score
+          AIRS | Ambient Impact & Regeneration Score
         </Text>
       </View>
 
