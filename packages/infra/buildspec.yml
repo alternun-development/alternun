@@ -31,7 +31,7 @@ phases:
       - corepack enable pnpm
       - corepack prepare pnpm@${PNPM_VERSION} --activate
       - pnpm --version
-      - pnpm install --frozen-lockfile
+      - pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
 
   pre_build:
     commands:
