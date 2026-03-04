@@ -4,15 +4,15 @@
 /* deno-fmt-ignore-file */
 /* biome-ignore-all lint: auto-generated */
 
-declare module 'sst' {
+declare module "sst" {
   export interface Resource {
-    'expo-web-production': {
-      type: 'sst.aws.StaticSite';
-      url: string;
-    };
+    "expo-web-production": {
+      "type": "sst.aws.StaticSite"
+      "url": string
+    }
   }
 }
 /// <reference path="sst-env.d.ts" />
 
-import 'sst';
-export {};
+import "sst"
+export {}

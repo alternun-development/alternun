@@ -26,7 +26,7 @@ export default function WalletConnectModal({ visible, onClose, onConnect }: Wall
             </TouchableOpacity>
           </View>
           <Text style={styles.subtitle}>
-            Connect your wallet to access the full Alternun Impact Dashboard
+            Connect your wallet to access the full Ambient Impact Dashboard
           </Text>
           <View style={styles.walletList}>
             {WALLETS.map((wallet) => {

@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
-  Image,
   Linking,
   Platform,
   Pressable,
@@ -11,6 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import { Check, ChevronDown, ChevronRight, Languages, LogIn, Moon, PlayCircle, RotateCcw, Settings as SettingsIcon, Sun, Volume2, VolumeX } from 'lucide-react-native';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 
@@ -26,7 +26,11 @@ const INTRO_PREVIEW_SECONDS = 6;
 
 const AIRS_VIDEO_EN = require('../../assets/videos/AIRS-intro-videoplayback-EN.mp4');
 const AIRS_VIDEO_ES = require('../../assets/videos/AIRS-intro-videoplayback-ES.mp4');
-const AIRS_BRAND_LOGO = require('../../assets/images/alternun-logo.png');
+const AIRS_BRAND_LOGO_LIGHT = require('../../assets/AIRS-logo-light.svg');
+const AIRS_BRAND_LOGO_DARK = require('../../assets/AIRS-logo-dark.svg');
+const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png');
+const ALTERNUN_PILL_LOGO_LIGHT = require('../../assets/alternun-black.svg');
+const ALTERNUN_PILL_LOGO_DARK = require('../../assets/alternun-white.svg');
 //const AIRS_BG_DARK = require('../../assets/images/water_falls-alternun-digital-forge.png'); //TODO CRAFT a same resolutions BG imagen
 const AIRS_BG_DARK =
   'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS';
@@ -426,6 +430,7 @@ export default function AirsIntroExperience({
   }, [hasScrollActivatedPlayback, isMuted, videoUri]);
 
   const effectiveMuted = isMuted || !hasScrollActivatedPlayback;
+  const showVideoControls = Boolean(videoUri && hasScrollActivatedPlayback);
   const webVideoHtml = useMemo(
     () =>
       buildVideoHtml(
@@ -467,11 +472,19 @@ export default function AirsIntroExperience({
   const mediaTagTitleLineHeight = mediaTagTitleSize * 1.02;
   const mediaTagSubtitleSize = Math.min(Math.max(screenWidth * 0.056, 20), 52);
   const mediaTagSubtitleLineHeight = mediaTagSubtitleSize * 1.12;
-  const heroBrandColor = '#31d7b4';
+  const mediaTagPillWidth = Math.min(Math.max(screenWidth * 0.34, 150), 300);
+  const mediaTagPillHeight = Math.min(Math.max(screenWidth * 0.058, 34), 48);
+  const mediaTagPillLogoWidth = mediaTagPillWidth * 0.74;
+  const mediaTagPillLogoHeight = mediaTagPillHeight * 0.58;
+  const heroBrandPrimaryColor = isDark ? '#004646' : '#1ee6b5';
+  const heroBrandSecondaryColor = isDark ? '#1ee6b5' : '#004646';
   const heroTitleSize = Math.min(Math.max(screenWidth * 0.062, 34), 64);
   const heroTitleLineHeight = heroTitleSize * 0.94;
-  const heroBylineSize = Math.min(Math.max(screenWidth * 0.022, 13), 21);
-  const heroBylineLineHeight = heroBylineSize * 1.05;
+  const heroBylineSize = Math.min(Math.max(screenWidth * 0.016, 10), 15);
+  const heroBylineLineHeight = heroBylineSize * 1.03;
+  const heroBylineIndent = Math.max(3, Math.round(heroTitleSize * 0.16));
+  const heroBylineMaxWidth = heroTitleSize * 2.5;
+  const heroBylineLogoSize = Math.min(Math.max(screenWidth * 0.02, 11), 16);
   const heroLogoSize = Math.min(Math.max(screenWidth * 0.08, 46), 78);
 
   const cardWidth = scrollY.interpolate({
@@ -550,6 +563,7 @@ export default function AirsIntroExperience({
     new Animated.Value(26),
   );
   const mediaTagTitleFinalTranslateY = Animated.add(mediaTagTitleAnchorY, mediaTagTranslateY);
+  const mediaTagPillFinalTranslateY = Animated.add(mediaTagTitleFinalTranslateY, new Animated.Value(-76));
   const mediaTagSubtitleFinalTranslateY = Animated.add(mediaTagSubtitleAnchorY, mediaTagTranslateY);
 
   const palette = isDark
@@ -576,6 +590,11 @@ export default function AirsIntroExperience({
 
   const ThemeIcon = isDark ? Sun : Moon;
   const MuteIcon = effectiveMuted ? VolumeX : Volume2;
+  const heroBrandLogoSource = isDark ? AIRS_BRAND_LOGO_DARK : AIRS_BRAND_LOGO_LIGHT;
+  const mediaTagPillLogoSource = isDark ? ALTERNUN_PILL_LOGO_DARK : ALTERNUN_PILL_LOGO_LIGHT;
+  const mediaTagPillBackgroundColor = isDark ? 'rgba(0, 70, 70, 0.96)' : 'rgba(229, 245, 242, 0.96)';
+  const mediaTagPillBorderColor = isDark ? 'rgba(34, 248, 199, 0.34)' : 'rgba(0, 70, 70, 0.42)';
+  const mediaTagPillShadowColor = isDark ? 'rgba(0,0,0,0.48)' : 'rgba(0, 43, 61, 0.28)';
   const heroBackgroundSource = (isDark ? AIRS_BG_DARK : { uri: AIRS_BG_LIGHT_SRC }) as any;
   const heroFooterTextColor = isDark ? 'rgba(248,251,255,0.96)' : '#020617';
   const heroFooterShadowColor = isDark ? 'rgba(0,0,0,0.28)' : 'transparent';
@@ -668,7 +687,7 @@ export default function AirsIntroExperience({
               style={[
                 styles.heroTitle,
                 {
-                  color: heroBrandColor,
+                  color: heroBrandPrimaryColor,
                   fontSize: heroTitleSize,
                   lineHeight: heroTitleLineHeight,
                 },
@@ -676,23 +695,41 @@ export default function AirsIntroExperience({
             >
               AIRS
             </Text>
-            <Text
+            <View
               style={[
-                styles.heroBrandByline,
+                styles.heroBrandBylineRow,
                 {
-                  color: heroBrandColor,
-                  fontSize: heroBylineSize,
-                  lineHeight: heroBylineLineHeight,
+                  marginLeft: heroBylineIndent,
+                  maxWidth: heroBylineMaxWidth,
                 },
               ]}
             >
-              By Alternun
-            </Text>
+              <Text
+                style={[
+                  styles.heroBrandByline,
+                  {
+                    color: heroBrandSecondaryColor,
+                    fontSize: heroBylineSize,
+                    lineHeight: heroBylineLineHeight,
+                  },
+                ]}
+              >
+                Powered By
+              </Text>
+              <ExpoImage
+                source={ALTERNUN_POWERED_BY_LOGO}
+                style={[
+                  styles.heroBrandBylineLogo,
+                  { width: heroBylineLogoSize, height: heroBylineLogoSize },
+                ]}
+                contentFit='contain'
+              />
+            </View>
           </View>
-          <Image
-            source={AIRS_BRAND_LOGO}
+          <ExpoImage
+            source={heroBrandLogoSource}
             style={[styles.heroBrandLogo, { width: heroLogoSize, height: heroLogoSize }]}
-            resizeMode='contain'
+            contentFit='contain'
           />
         </View>
       </View>
@@ -879,7 +916,7 @@ export default function AirsIntroExperience({
                 </TouchableOpacity>
               )}
 
-              {videoUri ? (
+              {showVideoControls ? (
                 <TouchableOpacity
                   style={styles.restartControl}
                   onPress={restartVideo}
@@ -890,7 +927,7 @@ export default function AirsIntroExperience({
                 </TouchableOpacity>
               ) : null}
 
-              {videoUri ? (
+              {showVideoControls ? (
                 <TouchableOpacity
                   style={styles.muteControl}
                   onPress={toggleMute}
@@ -905,6 +942,40 @@ export default function AirsIntroExperience({
 
             {videoUri && (!hasScrollActivatedPlayback || isInTopZone || !isVideoPlaying) ? (
               <>
+                <Animated.View
+                  pointerEvents='none'
+                  style={[
+                    styles.mediaTagPillOverlay,
+                    {
+                      width: cardWidth,
+                      opacity: mediaTagOpacity,
+                      transform: [{ translateY: mediaTagPillFinalTranslateY }],
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.mediaTagPill,
+                      {
+                        width: mediaTagPillWidth,
+                        minHeight: mediaTagPillHeight,
+                        backgroundColor: mediaTagPillBackgroundColor,
+                        borderColor: mediaTagPillBorderColor,
+                        shadowColor: mediaTagPillShadowColor,
+                      },
+                    ]}
+                  >
+                    <ExpoImage
+                      source={mediaTagPillLogoSource}
+                      style={{
+                        width: mediaTagPillLogoWidth,
+                        height: mediaTagPillLogoHeight,
+                      }}
+                      contentFit='contain'
+                    />
+                  </View>
+                </Animated.View>
+
                 <Animated.View
                   pointerEvents='none'
                   style={[
@@ -925,7 +996,7 @@ export default function AirsIntroExperience({
                       },
                     ]}
                   >
-                    Alternun Impact & Reputation Score
+                    Ambient Impact & Regeneration Score
                   </Text>
                 </Animated.View>
 
@@ -964,12 +1035,14 @@ export default function AirsIntroExperience({
           >
             <View style={styles.heroMetaLeftBlock}>
               <Text
+                numberOfLines={1}
+                ellipsizeMode='tail'
                 style={[
                   styles.heroMetaLeft,
                   { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor },
                 ]}
               >
-                Alternun Protocol
+                Alternun Presents
               </Text>
             </View>
             <Text
@@ -994,7 +1067,7 @@ export default function AirsIntroExperience({
         >
           <Text style={[styles.contentTitle, { color: palette.textPrimary }]}>AIRS</Text>
           <Text style={[styles.contentText, { color: palette.textMuted }]}>
-            Alternun Impact & Regeneration Score.
+            Ambient Impact & Regeneration Score.
           </Text>
           <Text style={[styles.contentText, { color: palette.textMuted }]}>
             One surface for verified impact, compensation lifecycle, and wallet-linked modules.
@@ -1145,24 +1218,38 @@ const styles = StyleSheet.create({
   },
   heroBrandRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    alignItems: 'flex-end',
+    gap: 12,
   },
   heroBrandLogo: {
     width: 56,
     height: 56,
+    marginBottom: 2,
   },
   heroBrandTextBlock: {
-    justifyContent: 'center',
-    gap: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-start',
+    gap: 0,
   },
   heroTitle: {
     fontWeight: '900',
-    letterSpacing: 1.6,
+    letterSpacing: 0.35,
   },
   heroBrandByline: {
+    marginTop: 0,
     fontWeight: '700',
-    letterSpacing: 0.1,
+    letterSpacing: 0.12,
+  },
+  heroBrandBylineRow: {
+    marginTop: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  heroBrandBylineLogo: {
+    opacity: 0.96,
+    marginLeft: 0,
+    marginTop: 2,
   },
   heroMediaStage: {
     position: 'absolute',
@@ -1198,12 +1285,14 @@ const styles = StyleSheet.create({
   },
   heroMetaLeftBlock: {
     gap: 2,
+    flexShrink: 1,
+    paddingRight: 10,
   },
   heroMetaLeft: {
     color: 'rgba(248,251,255,0.96)',
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: '700',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
     textShadowColor: 'rgba(0,0,0,0.28)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
@@ -1266,6 +1355,26 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  mediaTagPillOverlay: {
+    position: 'absolute',
+    top: '50%',
+    zIndex: 7,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mediaTagPill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 18,
+    elevation: 10,
   },
   mediaTagSubtitleOverlay: {
     position: 'absolute',

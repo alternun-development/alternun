@@ -1,0 +1,10 @@
+{
+  "awsRegion": "us-east-1",
+  "domain": "example.com",
+  "fromEmail": "no-reply@example.com",
+  "senderName": "YOUR_APP",
+  "mailFromSubdomain": "mail",
+  "route53HostedZoneId": "Z1234567890EXAMPLE",
+  "supabaseProjectRef": "your-supabase-project-ref",
+  "supabaseSmtpMaxFrequencySeconds": 45
+}

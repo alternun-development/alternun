@@ -124,17 +124,17 @@ function getWalletProvider(user: User | null): string | null {
   return null;
 }
 
-function getAuthMethodLabel(user: User | null, walletConnected: boolean, walletProvider: string | null): string {
+function getAuthMethodLabel(user: User | null): string {
   if (!user) {
     return 'guest';
   }
 
-  if (walletConnected) {
-    return `wallet: ${walletProvider ?? 'connected'}`;
+  if (user.provider && !user.provider.startsWith('wallet:')) {
+    return `auth: ${user.provider}`;
   }
 
-  if (user.provider) {
-    return `auth: ${user.provider}`;
+  if (user.provider && user.provider.startsWith('wallet:')) {
+    return 'auth: wallet';
   }
 
   if (user.email) {
@@ -270,8 +270,8 @@ export default function ProfileRoute() {
   const walletProvider = useMemo(() => getWalletProvider(user), [user]);
   const walletConnected = Boolean(walletAddress || walletProvider);
   const authMethod = useMemo(
-    () => getAuthMethodLabel(user, walletConnected, walletProvider),
-    [user, walletConnected, walletProvider],
+    () => getAuthMethodLabel(user),
+    [user],
   );
   const roles = useMemo(() => getRoles(user), [user]);
 

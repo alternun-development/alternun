@@ -24,3 +24,13 @@ export {
   type WalletConnectionResult,
   type WalletProvider,
 } from "./mobile/AlternunMobileAuthClient";
+
+export {
+  emailAddressSchema,
+  signInPasswordSchema,
+  signUpPasswordSchema,
+  parseEmailAddress,
+  parseSignInPassword,
+  parseSignUpPassword,
+  getValidationErrorMessage,
+} from "./validation/authInputValidation";
