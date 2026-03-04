@@ -5,7 +5,7 @@ This repository deploys Expo Web through `packages/infra` using SST and `@lsts_t
 ## Targets
 
 - Production stage (`master`): `https://airs.alternun.co`
-- Dev stage (`develop`): `https://dev.airs.alternun.co`
+- Dev stage (`develop`): `https://testnet.airs.alternun.co`
 
 ## 1. Prepare Environment
 
@@ -49,3 +49,7 @@ APPROVE=true pnpm --filter @alternun/infra run ensure:pipelines
 - `packages/infra/infra.config.ts` is Expo-web-first (no Next.js site deploy).
 - Local business config can live in `packages/infra/config/deployment.config.json` (gitignored).
 - Environment variables override local JSON config values.
+- Dev-stage redirects are supported through infra config:
+  - `airs.alternun.co` -> `testnet.airs.alternun.co`
+  - `dev.airs.alternun.co` -> `testnet.airs.alternun.co`
+  - `alternun.co` -> `alternun.io`

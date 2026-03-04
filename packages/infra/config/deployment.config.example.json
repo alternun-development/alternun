@@ -14,7 +14,7 @@
     "subdomain": "airs",
     "domains": {
       "production": "airs.alternun.co",
-      "dev": "dev.airs.alternun.co",
+      "dev": "testnet.airs.alternun.co",
       "mobile": "preview.airs.alternun.co"
     },
     "certArns": {
@@ -25,6 +25,17 @@
     "build": {
       "command": "npx expo export -p web",
       "output": "dist"
+    }
+  },
+  "redirects": {
+    "enableAirsToDev": true,
+    "enableDevToTestnet": true,
+    "devToTestnetSourceDomain": "dev.airs.alternun.co",
+    "enableRootDomainRedirect": true,
+    "rootDomainTarget": "alternun.io",
+    "certArns": {
+      "rootDomain": "",
+      "devToTestnet": ""
     }
   }
 }
