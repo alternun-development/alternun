@@ -1,0 +1,83 @@
+# buildspec.yml — AWS CodeBuild specification for SST deployments
+
+version: 0.2
+
+env:
+  variables:
+    SST_STAGE: "dev"
+    NODE_VERSION: "22"
+    PNPM_VERSION: "9.15.0"
+    INFRA_PATH: "packages/infra"
+
+    # Domain defaults for Expo web deployment
+    DOMAIN_ROOT: "alternun.co"
+    PROJECT_PREFIX: "alternun"
+    PREFIX: "alternun"
+    DOMAIN_PRODUCTION: "airs.alternun.co"
+    DOMAIN_DEV: "dev.airs.alternun.co"
+    DOMAIN_MOBILE: "preview.airs.alternun.co"
+
+    # Check controls
+    SKIP_DNS_CHECK: "false"
+    AUTO_REMOVE_CONFLICTING_DNS: "true"
+    POLL_TIMEOUT: "600"
+    POLL_INTERVAL: "15"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 22
+    commands:
+      - corepack enable pnpm
+      - corepack prepare pnpm@${PNPM_VERSION} --activate
+      - pnpm --version
+      - pnpm install --frozen-lockfile
+
+  pre_build:
+    commands:
+      - echo "Stage    = ${SST_STAGE}"
+      - echo "Node     = $(node --version)"
+      - echo "pnpm     = $(pnpm --version)"
+      - echo "Infra    = ${INFRA_PATH}"
+      - echo "Running pre-deploy checks..."
+      - |
+        if [ -f "${INFRA_PATH}/scripts/predeploy-checks.sh" ]; then
+          chmod +x "${INFRA_PATH}/scripts/predeploy-checks.sh" || true
+          "${INFRA_PATH}/scripts/predeploy-checks.sh" ${SST_STAGE}
+        elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/predeploy-checks.sh" ]; then
+          chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/predeploy-checks.sh" || true
+          "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/predeploy-checks.sh" ${SST_STAGE}
+        elif [ -f "./node_modules/@lsts_tech/infra/scripts/predeploy-checks.sh" ]; then
+          chmod +x "./node_modules/@lsts_tech/infra/scripts/predeploy-checks.sh" || true
+          ./node_modules/@lsts_tech/infra/scripts/predeploy-checks.sh ${SST_STAGE}
+        else
+          echo "No predeploy checks script found; skipping"
+        fi
+
+  build:
+    commands:
+      - cd ${INFRA_PATH}
+      - npx sst deploy --stage ${SST_STAGE}
+
+  post_build:
+    commands:
+      - echo "SST deploy completed for stage ${SST_STAGE}"
+      - echo "Running post-deploy DNS sync"
+      - |
+        if [ -f "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" ]; then
+          chmod +x "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" || true
+          "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" ${SST_STAGE} || echo "post-deploy DNS sync failed"
+        elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh" ]; then
+          chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh" || true
+          "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh" ${SST_STAGE} || echo "post-deploy DNS sync failed"
+        elif [ -f "./node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh" ]; then
+          chmod +x "./node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh" || true
+          ./node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh ${SST_STAGE} || echo "post-deploy DNS sync failed"
+        else
+          echo "No post-deploy DNS sync script found; skipping"
+        fi
+
+cache:
+  paths:
+    - /root/.pnpm-store/**/*
+    - packages/infra/.sst/**/*
