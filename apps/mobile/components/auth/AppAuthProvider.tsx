@@ -13,12 +13,22 @@ function getAllowWalletOnlySession(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH === 'true';
 }
 
+function getSupabaseUrl(): string | undefined {
+  return process.env.EXPO_PUBLIC_SUPABASE_URL;
+}
+
+function getSupabaseKey(): string | undefined {
+  return process.env.EXPO_PUBLIC_SUPABASE_KEY ?? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+}
+
 export function AppAuthProvider({ children }: PropsWithChildren): any {
   const walletBridge = useMemo(() => createWeb3WalletBridge(), []);
 
   return (
     <AlternunAuthProvider
       options={{
+        supabaseUrl: getSupabaseUrl(),
+        supabaseKey: getSupabaseKey(),
         walletBridge,
         allowMockWalletFallback: getAllowMockWalletFallback(),
         allowWalletOnlySession: getAllowWalletOnlySession(),
