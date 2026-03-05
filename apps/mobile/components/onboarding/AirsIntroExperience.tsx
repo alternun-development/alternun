@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
+import { useIsFocused } from '@react-navigation/native';
 import { Check, ChevronDown, ChevronRight, Languages, LogIn, Moon, PlayCircle, RotateCcw, Settings as SettingsIcon, Sun, Volume2, VolumeX } from 'lucide-react-native';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 
@@ -212,6 +213,7 @@ export default function AirsIntroExperience({
   const [hasAutoUnmuted, setHasAutoUnmuted] = useState(false);
   const [hasScrollActivatedPlayback, setHasScrollActivatedPlayback] = useState(false);
   const [isInTopZone, setIsInTopZone] = useState(true);
+  const isScreenFocused = useIsFocused();
   const isDark = themeMode === 'dark';
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -222,6 +224,7 @@ export default function AirsIntroExperience({
   const hasAutoUnmutedRef = useRef(hasAutoUnmuted);
   const hasScrollActivatedPlaybackRef = useRef(hasScrollActivatedPlayback);
   const isInTopZoneRef = useRef(true);
+  const isScreenFocusedRef = useRef(isScreenFocused);
   const selectedVideoModule = language === 'es' ? AIRS_VIDEO_ES : AIRS_VIDEO_EN;
   const videoUri = useMemo(
     () => resolveLocalAssetUri(selectedVideoModule),
@@ -257,6 +260,10 @@ export default function AirsIntroExperience({
     hasAutoUnmutedRef.current = hasAutoUnmuted;
     hasScrollActivatedPlaybackRef.current = hasScrollActivatedPlayback;
   }, [hasAutoUnmuted, hasManualAudioChoice, hasScrollActivatedPlayback, isMuted]);
+
+  useEffect(() => {
+    isScreenFocusedRef.current = isScreenFocused;
+  }, [isScreenFocused]);
 
   const syncTopZoneState = useCallback((scrollOffset: number) => {
     const atTop = scrollOffset <= TOP_PAUSE_SCROLL_Y;
@@ -309,13 +316,20 @@ export default function AirsIntroExperience({
       return;
     }
 
-    const effectiveMuted = isMuted || !hasScrollActivatedPlayback;
+    const shouldPlayMainTrack = hasScrollActivatedPlayback && isScreenFocused;
+    const effectiveMuted = isMuted || !shouldPlayMainTrack;
     video.defaultMuted = effectiveMuted;
     video.muted = effectiveMuted;
     video.volume = effectiveMuted ? 0 : 1;
 
+    if (!isScreenFocused) {
+      video.pause?.();
+      setIsVideoPlaying(false);
+      return;
+    }
+
     const playResult = video.play?.();
-    if (!hasScrollActivatedPlayback) {
+    if (!shouldPlayMainTrack) {
       setIsVideoPlaying(false);
       return;
     }
@@ -337,7 +351,7 @@ export default function AirsIntroExperience({
     }
 
     setIsVideoPlaying(Boolean(!video.paused && !video.ended));
-  }, [hasScrollActivatedPlayback, isMuted, videoUri]);
+  }, [hasScrollActivatedPlayback, isMuted, isScreenFocused, videoUri]);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -378,7 +392,7 @@ export default function AirsIntroExperience({
     }
 
     const syncPlaybackState = () => {
-      if (!hasScrollActivatedPlaybackRef.current) {
+      if (!isScreenFocusedRef.current || !hasScrollActivatedPlaybackRef.current) {
         setIsVideoPlaying(false);
         return;
       }
@@ -411,36 +425,39 @@ export default function AirsIntroExperience({
     if (!webViewRef.current) {
       return;
     }
-    const effectiveMuted = isMuted || !hasScrollActivatedPlayback;
+    const shouldPlayMainTrack = hasScrollActivatedPlayback && isScreenFocused;
+    const effectiveMuted = isMuted || !shouldPlayMainTrack;
+    const shouldPreview = isScreenFocused && !hasScrollActivatedPlayback;
+    const shouldPlayAny = isScreenFocused;
     webViewRef.current.injectJavaScript(`
       if (window.__setPreviewMode) {
-        window.__setPreviewMode(${hasScrollActivatedPlayback ? 'false' : 'true'});
+        window.__setPreviewMode(${shouldPreview ? 'true' : 'false'});
       }
       if (window.__setMuted) {
         window.__setMuted(${effectiveMuted ? 'true' : 'false'});
       }
       if (window.__setPlayback) {
-        window.__setPlayback(true);
+        window.__setPlayback(${shouldPlayAny ? 'true' : 'false'});
       }
       true;
     `);
-    if (!hasScrollActivatedPlayback) {
+    if (!shouldPlayMainTrack) {
       setIsVideoPlaying(false);
     }
-  }, [hasScrollActivatedPlayback, isMuted, videoUri]);
+  }, [hasScrollActivatedPlayback, isMuted, isScreenFocused, videoUri]);
 
-  const effectiveMuted = isMuted || !hasScrollActivatedPlayback;
-  const showVideoControls = Boolean(videoUri && hasScrollActivatedPlayback);
+  const effectiveMuted = isMuted || !hasScrollActivatedPlayback || !isScreenFocused;
+  const showVideoControls = Boolean(videoUri && hasScrollActivatedPlayback && isScreenFocused);
   const webVideoHtml = useMemo(
     () =>
       buildVideoHtml(
         videoUri,
         AIRS_VIDEO_POSTER,
-        effectiveMuted,
-        !hasScrollActivatedPlayback,
+        true,
+        true,
         INTRO_PREVIEW_SECONDS,
       ),
-    [effectiveMuted, hasScrollActivatedPlayback, videoUri],
+    [videoUri],
   );
   const handleScroll = useMemo(
     () =>
@@ -627,7 +644,7 @@ export default function AirsIntroExperience({
       if (playResult && typeof playResult.catch === 'function') {
         playResult.catch(() => {});
       }
-      setIsVideoPlaying(hasScrollActivatedPlayback);
+      setIsVideoPlaying(hasScrollActivatedPlayback && isScreenFocused);
       return;
     }
 
@@ -643,11 +660,11 @@ export default function AirsIntroExperience({
       }
       true;
     `);
-    setIsVideoPlaying(hasScrollActivatedPlayback);
+    setIsVideoPlaying(hasScrollActivatedPlayback && isScreenFocused);
   };
 
   const handleWebVideoPlay = () => {
-    if (!hasScrollActivatedPlaybackRef.current) {
+    if (!isScreenFocusedRef.current || !hasScrollActivatedPlaybackRef.current) {
       setIsVideoPlaying(false);
       return;
     }
@@ -667,7 +684,7 @@ export default function AirsIntroExperience({
     try {
       const data = JSON.parse(payload) as { type?: string; isPlaying?: boolean };
       if (data.type === 'playback' && typeof data.isPlaying === 'boolean') {
-        if (!hasScrollActivatedPlaybackRef.current) {
+        if (!isScreenFocusedRef.current || !hasScrollActivatedPlaybackRef.current) {
           setIsVideoPlaying(false);
           return;
         }
@@ -891,6 +908,7 @@ export default function AirsIntroExperience({
                 </VideoTag>
               ) : WebView && videoUri ? (
                 <WebView
+                  key={videoUri}
                   ref={webViewRef}
                   originWhitelist={['*']}
                   source={{ html: webVideoHtml }}
