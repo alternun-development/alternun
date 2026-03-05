@@ -19,7 +19,7 @@ import {
   UIManager,
   View,
 } from 'react-native';
-import Constants from 'expo-constants';
+import AppInfoFooter from '../common/AppInfoFooter';
 import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAuth, } from './AppAuthProvider';
 
@@ -175,51 +175,6 @@ function createDefaultRequiredFieldState(): RequiredFieldState {
   };
 }
 
-function getVersionMetadata(): { version: string; source: string } {
-  const nativeVersion = Constants.nativeApplicationVersion;
-  const nativeBuild = Constants.nativeBuildVersion;
-  const expoConfigVersion = Constants.expoConfig?.version;
-
-  if (nativeVersion && nativeBuild) {
-    return {
-      version: `${nativeVersion} (${nativeBuild})`,
-      source: 'nativeApplicationVersion/nativeBuildVersion',
-    };
-  }
-
-  if (nativeVersion) {
-    return {
-      version: nativeVersion,
-      source: 'nativeApplicationVersion',
-    };
-  }
-
-  if (expoConfigVersion) {
-    return {
-      version: expoConfigVersion,
-      source: 'expoConfig.version',
-    };
-  }
-
-  return {
-    version: 'unknown',
-    source: 'unavailable',
-  };
-}
-
-function getAuthHostLabel(): string {
-  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-  if (!supabaseUrl) {
-    return 'not-configured';
-  }
-
-  try {
-    return new URL(supabaseUrl).host;
-  } catch {
-    return supabaseUrl.replace(/^https?:\/\//, '').split('/')[0] ?? supabaseUrl;
-  }
-}
-
 export default function AuthSignInScreen({
   onCancel,
   presentation = 'screen',
@@ -257,13 +212,6 @@ export default function AuthSignInScreen({
   const isBusy = loading || submitMode !== null;
   const isModal = presentation === 'modal';
   const hasEmailInputError = requiredFields.email || invalidEmail;
-  const versionMetadata = useMemo(() => getVersionMetadata(), []);
-  const runtimeEnv =
-    process.env.EXPO_PUBLIC_ENV ??
-    process.env.EXPO_PUBLIC_STAGE ??
-    process.env.NODE_ENV ??
-    'unknown';
-  const authHostLabel = useMemo(() => getAuthHostLabel(), []);
 
   useEffect(() => {
     if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -897,12 +845,7 @@ export default function AuthSignInScreen({
               </>
             )}
 
-            <View style={styles.systemFooter}>
-              <Text style={styles.systemFooterPrimary}>AIRS v{versionMetadata.version}</Text>
-              <Text style={styles.systemFooterSecondary}>
-                Source: {versionMetadata.source} | Env: {runtimeEnv} | Auth: {authHostLabel}
-              </Text>
-            </View>
+            <AppInfoFooter variant='card' />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -1198,22 +1141,5 @@ const styles = StyleSheet.create({
     color: 'rgba(232,232,255,0.65)',
     fontSize: 12,
     fontWeight: '600',
-  },
-  systemFooter: {
-    marginTop: 8,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.08)',
-    gap: 2,
-  },
-  systemFooterPrimary: {
-    color: 'rgba(232,232,255,0.78)',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  systemFooterSecondary: {
-    color: 'rgba(232,232,255,0.48)',
-    fontSize: 10,
-    lineHeight: 14,
   },
 },);
