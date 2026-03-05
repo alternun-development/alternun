@@ -6,8 +6,20 @@
 
 declare module "sst" {
   export interface Resource {
-    "expo-web-production": {
+    "airs-domain-redirect-dev": {
+      "type": "sst.aws.Router"
+      "url": string
+    }
+    "dev-domain-redirect-dev": {
+      "type": "sst.aws.Router"
+      "url": string
+    }
+    "expo-web-dev": {
       "type": "sst.aws.StaticSite"
+      "url": string
+    }
+    "root-domain-redirect-dev": {
+      "type": "sst.aws.Router"
       "url": string
     }
   }
