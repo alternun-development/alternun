@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+INFRA_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_load-infra-env.sh"
@@ -51,7 +52,10 @@ set_secret_if_present() {
   fi
 
   echo "Setting SST secret: ${key} (stage=${STAGE})"
-  npx --yes sst secret set "$key" "$value" --stage "$STAGE"
+  (
+    cd "$INFRA_DIR"
+    npx --yes sst secret set "$key" "$value" --stage "$STAGE"
+  )
 }
 
 set_secret_if_present "ExpoPublicSupabaseUrl" "$SUPABASE_URL"

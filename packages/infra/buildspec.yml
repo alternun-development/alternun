@@ -20,6 +20,7 @@ env:
     INFRA_AWS_ACCOUNT_ID: "124120088516"
     INFRA_REQUIRE_ROUTE53: "true"
     INFRA_REQUIRE_EXPO_PUBLIC_AUTH: "true"
+    INFRA_FAIL_ON_SECRET_SYNC: "false"
     INFRA_FORCE_ENV_AWS_CREDENTIALS: "false"
     INFRA_REQUIRE_ENV_AWS_CREDENTIALS: "false"
 
@@ -55,17 +56,31 @@ phases:
       - echo "Require Expo Auth Env = ${INFRA_REQUIRE_EXPO_PUBLIC_AUTH}"
       - echo "Ensuring infra SST secrets..."
       - |
+        set +e
+        SECRET_SYNC_EXIT=0
         if [ -f "${INFRA_PATH}/scripts/ensure-secrets.sh" ]; then
           chmod +x "${INFRA_PATH}/scripts/ensure-secrets.sh" || true
-          "${INFRA_PATH}/scripts/ensure-secrets.sh" ${SST_STAGE}
+          (cd "${INFRA_PATH}" && ./scripts/ensure-secrets.sh ${SST_STAGE})
+          SECRET_SYNC_EXIT=$?
         elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
           chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
-          "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ${SST_STAGE}
+          (cd "${INFRA_PATH}" && ./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh ${SST_STAGE})
+          SECRET_SYNC_EXIT=$?
         elif [ -f "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
           chmod +x "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
           ./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh ${SST_STAGE}
+          SECRET_SYNC_EXIT=$?
         else
           echo "No ensure-secrets script found; skipping"
+        fi
+        set -e
+
+        if [ "${SECRET_SYNC_EXIT}" -ne 0 ]; then
+          if [ "${INFRA_FAIL_ON_SECRET_SYNC}" = "true" ]; then
+            echo "ERROR: Secret sync failed and INFRA_FAIL_ON_SECRET_SYNC=true"
+            exit "${SECRET_SYNC_EXIT}"
+          fi
+          echo "WARN: Secret sync failed (exit ${SECRET_SYNC_EXIT}); continuing with deploy."
         fi
       - echo "Running pre-deploy checks..."
       - |
