@@ -22,8 +22,8 @@ env:
     INFRA_FAIL_ON_SECRET_SYNC: "false"
     # managed|explicit : managed clears cert ARN overrides coming from CodeBuild project env.
     INFRA_CERT_MODE: "managed"
-    INFRA_FORCE_ENV_AWS_CREDENTIALS: "false"
-    INFRA_REQUIRE_ENV_AWS_CREDENTIALS: "false"
+    INFRA_FORCE_ENV_AWS_CREDENTIALS: "true"
+    INFRA_REQUIRE_ENV_AWS_CREDENTIALS: "true"
 
     # Check controls
     SKIP_DNS_CHECK: "false"
@@ -49,6 +49,16 @@ phases:
 
   pre_build:
     commands:
+      - |
+        if [ -f "${INFRA_PATH}/scripts/_load-infra-env.sh" ]; then
+          # shellcheck source=/dev/null
+          source "${INFRA_PATH}/scripts/_load-infra-env.sh"
+          load_infra_env
+          echo "Infra environment loaded from .env"
+        else
+          echo "ERROR: Missing ${INFRA_PATH}/scripts/_load-infra-env.sh" >&2
+          exit 1
+        fi
       - echo "Stage    = ${SST_STAGE}"
       - echo "Node     = $(node --version)"
       - echo "pnpm     = $(pnpm --version)"
