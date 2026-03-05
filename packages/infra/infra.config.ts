@@ -32,6 +32,7 @@ interface LocalDeploymentConfig {
     appPath?: string;
     subdomain?: string;
     enableCustomDomain?: boolean;
+    requirePublicAuthEnv?: boolean;
     domains?: {
       production?: string;
       dev?: string;
@@ -46,14 +47,24 @@ interface LocalDeploymentConfig {
       command?: string;
       output?: string;
     };
+    publicEnv?: {
+      supabaseUrl?: string;
+      supabaseKey?: string;
+      walletConnectProjectId?: string;
+      walletConnectChainId?: string;
+      enableMockWalletAuth?: boolean;
+      enableWalletOnlyAuth?: boolean;
+    };
   };
   redirects?: {
     enableAirsToDev?: boolean;
+    airsToDevSourceDomain?: string;
     enableDevToTestnet?: boolean;
     devToTestnetSourceDomain?: string;
     enableRootDomainRedirect?: boolean;
     rootDomainTarget?: string;
     certArns?: {
+      airsToDev?: string;
       rootDomain?: string;
       devToTestnet?: string;
     };
@@ -141,6 +152,36 @@ const enableCustomDomainRaw =
     : undefined) ??
   'true';
 const enableCustomDomain = parseBoolean(enableCustomDomainRaw, true);
+const requireExpoPublicAuthEnv = parseBoolean(
+  process.env.INFRA_REQUIRE_EXPO_PUBLIC_AUTH ??
+    (localConfig.expo?.requirePublicAuthEnv !== undefined
+      ? String(localConfig.expo.requirePublicAuthEnv)
+      : undefined),
+  true
+);
+
+const expoPublicSupabaseUrl =
+  process.env.EXPO_PUBLIC_SUPABASE_URL ?? localConfig.expo?.publicEnv?.supabaseUrl;
+const expoPublicSupabaseKey =
+  process.env.EXPO_PUBLIC_SUPABASE_KEY ??
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
+  localConfig.expo?.publicEnv?.supabaseKey;
+const expoPublicWalletConnectProjectId =
+  process.env.EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID ??
+  localConfig.expo?.publicEnv?.walletConnectProjectId;
+const expoPublicWalletConnectChainId =
+  process.env.EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID ??
+  localConfig.expo?.publicEnv?.walletConnectChainId;
+const expoPublicEnableMockWalletAuth =
+  process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH ??
+  (localConfig.expo?.publicEnv?.enableMockWalletAuth !== undefined
+    ? String(localConfig.expo.publicEnv.enableMockWalletAuth)
+    : undefined);
+const expoPublicEnableWalletOnlyAuth =
+  process.env.EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH ??
+  (localConfig.expo?.publicEnv?.enableWalletOnlyAuth !== undefined
+    ? String(localConfig.expo.publicEnv.enableWalletOnlyAuth)
+    : undefined);
 
 const enableAirsToDevRedirect = parseBoolean(
   process.env.INFRA_REDIRECT_AIRS_TO_DEV ??
@@ -149,6 +190,14 @@ const enableAirsToDevRedirect = parseBoolean(
       : undefined),
   true
 );
+
+const airsToDevSourceDomain =
+  process.env.INFRA_REDIRECT_AIRS_TO_DEV_SOURCE ??
+  localConfig.redirects?.airsToDevSourceDomain ??
+  expoStageMap.production;
+
+const airsToDevCertArn =
+  process.env.INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN ?? localConfig.redirects?.certArns?.airsToDev;
 
 const enableDevToTestnetRedirect = parseBoolean(
   process.env.INFRA_REDIRECT_DEV_TO_TESTNET ??
@@ -206,6 +255,20 @@ const commonBuildEnv = {
   INFRA_EXPO_CERT_ARN_MOBILE: expoCerts.mobile ?? '',
   INFRA_EXPO_BUILD_COMMAND: expoBuildCommand,
   INFRA_EXPO_BUILD_OUTPUT: expoBuildOutput,
+  INFRA_REQUIRE_EXPO_PUBLIC_AUTH: String(requireExpoPublicAuthEnv),
+  EXPO_PUBLIC_SUPABASE_URL: expoPublicSupabaseUrl ?? '',
+  EXPO_PUBLIC_SUPABASE_KEY: expoPublicSupabaseKey ?? '',
+  EXPO_PUBLIC_SUPABASE_ANON_KEY: expoPublicSupabaseKey ?? '',
+  EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID: expoPublicWalletConnectProjectId ?? '',
+  EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: expoPublicWalletConnectChainId ?? '',
+  EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH: expoPublicEnableMockWalletAuth ?? '',
+  EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH: expoPublicEnableWalletOnlyAuth ?? '',
+  INFRA_REDIRECT_AIRS_TO_DEV_SOURCE: airsToDevSourceDomain,
+  INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN: airsToDevCertArn ?? '',
+  INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE: devToTestnetSourceDomain,
+  INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN: devToTestnetCertArn ?? '',
+  INFRA_REDIRECT_ROOT_TARGET: rootDomainRedirectTarget,
+  INFRA_REDIRECT_ROOT_CERT_ARN: rootDomainRedirectCertArn ?? '',
   DOMAIN_ROOT: rootDomain,
   DOMAIN_PRODUCTION: expoStageMap.production,
   DOMAIN_DEV: expoStageMap.dev,
@@ -213,6 +276,21 @@ const commonBuildEnv = {
   PROJECT_PREFIX: pipelinePrefix,
   PREFIX: pipelinePrefix,
 };
+
+function assertExpoPublicAuthEnvironment(stage: string): void {
+  if (!requireExpoPublicAuthEnv) return;
+  if (!['production', 'dev', 'mobile'].includes(stage)) return;
+
+  if (!expoPublicSupabaseUrl || !expoPublicSupabaseKey) {
+    throw new Error(
+      [
+        `Missing Expo auth env for stage "${stage}".`,
+        'Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_KEY',
+        'in packages/infra/.env or pipeline environment variables.',
+      ].join(' ')
+    );
+  }
+}
 
 function parsePipelineStage(value: string): PipelineStage | undefined {
   const normalized = value.trim().toLowerCase();
@@ -253,6 +331,7 @@ const pipelineSpecs: Record<
 
 export function createInfrastructure() {
   const stage = $app.stage;
+  assertExpoPublicAuthEnvironment(stage);
 
   const expoDomain = enableCustomDomain
     ? resolveDomain({
@@ -272,7 +351,8 @@ export function createInfrastructure() {
             stageDomain: expoDomain.domainName,
             productionDomain: expoStageMap.production,
             stageCertificateArn: expoCerts[stage],
-            enableProductionToStageRedirect: enableAirsToDevRedirect,
+            // AIRS -> testnet redirect is managed as an explicit router below.
+            enableProductionToStageRedirect: false,
           })
         : undefined,
     certificateArn: enableCustomDomain ? expoCerts[stage] : undefined,
@@ -280,6 +360,13 @@ export function createInfrastructure() {
       EXPO_PUBLIC_ENV: stage,
       EXPO_PUBLIC_STAGE: stage,
       EXPO_PUBLIC_ORIGIN: expoDomain ? `https://${expoDomain.domainName}` : undefined,
+      EXPO_PUBLIC_SUPABASE_URL: expoPublicSupabaseUrl,
+      EXPO_PUBLIC_SUPABASE_KEY: expoPublicSupabaseKey,
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: expoPublicSupabaseKey,
+      EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID: expoPublicWalletConnectProjectId,
+      EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: expoPublicWalletConnectChainId,
+      EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH: expoPublicEnableMockWalletAuth,
+      EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH: expoPublicEnableWalletOnlyAuth,
     },
     build: {
       command: expoBuildCommand,
@@ -306,6 +393,21 @@ export function createInfrastructure() {
     });
   }
 
+  const shouldCreateAirsToDevRedirect =
+    stage === 'dev' &&
+    enableCustomDomain &&
+    enableAirsToDevRedirect &&
+    airsToDevSourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase();
+
+  if (shouldCreateAirsToDevRedirect) {
+    createExternalDomainRedirect({
+      id: `airs-domain-redirect-${stage}`,
+      sourceDomain: airsToDevSourceDomain,
+      targetDomain: expoStageMap.dev,
+      certificateArn: airsToDevCertArn,
+    });
+  }
+
   const shouldCreateDevToTestnetRedirect =
     stage === 'dev' &&
     enableCustomDomain &&
@@ -327,7 +429,9 @@ export function createInfrastructure() {
     domain: expoDomain?.domainName ?? null,
     customDomainEnabled: enableCustomDomain,
     redirects: {
-      airsToDevEnabled: enableAirsToDevRedirect,
+      airsToDevEnabled: shouldCreateAirsToDevRedirect,
+      airsToDevSource: shouldCreateAirsToDevRedirect ? airsToDevSourceDomain : null,
+      airsToDevTarget: shouldCreateAirsToDevRedirect ? expoStageMap.dev : null,
       devToTestnetEnabled: shouldCreateDevToTestnetRedirect,
       devToTestnetSource: shouldCreateDevToTestnetRedirect ? devToTestnetSourceDomain : null,
       devToTestnetTarget: shouldCreateDevToTestnetRedirect ? expoStageMap.dev : null,
