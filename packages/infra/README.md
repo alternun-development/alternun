@@ -127,7 +127,6 @@ Minimum values to set in CI:
 - `AWS_REGION`
 - `INFRA_ROOT_DOMAIN`
 - `INFRA_ENFORCE_AWS_ACCOUNT=true`
-- `INFRA_AWS_ACCOUNT_ID`
 - `INFRA_REQUIRE_ROUTE53=true`
 - `INFRA_PIPELINE_REPO`
 - `INFRA_PIPELINES`
@@ -136,6 +135,7 @@ Minimum values to set in CI:
 
 Optional but recommended:
 
+- `INFRA_AWS_ACCOUNT_ID` (set this in CodeBuild/CodePipeline env or Secrets Manager; if omitted in buildspec it is derived from STS caller identity)
 - `INFRA_ROUTE53_HOSTED_ZONE_ID`
 - `INFRA_CODESTAR_CONNECTION_ARN`
 - `INFRA_EXPO_CERT_ARN_PRODUCTION`

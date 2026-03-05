@@ -17,7 +17,6 @@ env:
     DOMAIN_DEV: "testnet.airs.alternun.co"
     DOMAIN_MOBILE: "preview.airs.alternun.co"
     INFRA_ENFORCE_AWS_ACCOUNT: "true"
-    INFRA_AWS_ACCOUNT_ID: "124120088516"
     INFRA_REQUIRE_ROUTE53: "true"
     INFRA_REQUIRE_EXPO_PUBLIC_AUTH: "true"
     INFRA_FAIL_ON_SECRET_SYNC: "false"
@@ -52,7 +51,14 @@ phases:
       - echo "Node     = $(node --version)"
       - echo "pnpm     = $(pnpm --version)"
       - echo "Infra    = ${INFRA_PATH}"
-      - echo "Expected AWS Account = ${INFRA_AWS_ACCOUNT_ID}"
+      - |
+        if [ -z "${INFRA_AWS_ACCOUNT_ID:-}" ] || [ "${INFRA_AWS_ACCOUNT_ID}" = "auto" ]; then
+          INFRA_AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+          export INFRA_AWS_ACCOUNT_ID
+          echo "Expected AWS Account (derived) = ${INFRA_AWS_ACCOUNT_ID}"
+        else
+          echo "Expected AWS Account (env) = ${INFRA_AWS_ACCOUNT_ID}"
+        fi
       - echo "Require Expo Auth Env = ${INFRA_REQUIRE_EXPO_PUBLIC_AUTH}"
       - echo "Ensuring infra SST secrets..."
       - |
