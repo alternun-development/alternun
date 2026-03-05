@@ -996,7 +996,7 @@ export default function AirsIntroExperience({
                       },
                     ]}
                   >
-                    Ambient Impact & Regeneration Score
+                    Alternun Impact & Reputation Score
                   </Text>
                 </Animated.View>
 
@@ -1067,7 +1067,7 @@ export default function AirsIntroExperience({
         >
           <Text style={[styles.contentTitle, { color: palette.textPrimary }]}>AIRS</Text>
           <Text style={[styles.contentText, { color: palette.textMuted }]}>
-            Ambient Impact & Regeneration Score.
+            Alternun Impact & Reputation Score.
           </Text>
           <Text style={[styles.contentText, { color: palette.textMuted }]}>
             One surface for verified impact, compensation lifecycle, and wallet-linked modules.

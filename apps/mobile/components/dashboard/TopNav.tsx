@@ -140,7 +140,7 @@ export default function TopNav({
       <View style={styles.logoContainer}>
         <Image source={require('../../assets/logo.png')} style={styles.logoImage} resizeMode="contain" />
         <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.logoText, { color: palette.logoText }]}>
-          AIRS | Ambient Impact & Regeneration Score
+          AIRS | Alternun Impact & Reputation Score
         </Text>
       </View>
 

@@ -1,7 +1,7 @@
 {
   "name": "AIRS",
   "short_name": "AIRS",
-  "description": "Ambient Impact & Regeneration Score platform by Alternun.",
+  "description": "Alternun Impact & Reputation Score platform by Alternun.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
