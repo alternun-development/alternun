@@ -20,6 +20,8 @@ env:
     INFRA_REQUIRE_ROUTE53: "true"
     INFRA_REQUIRE_EXPO_PUBLIC_AUTH: "true"
     INFRA_FAIL_ON_SECRET_SYNC: "false"
+    # managed|explicit : managed clears cert ARN overrides coming from CodeBuild project env.
+    INFRA_CERT_MODE: "managed"
     INFRA_FORCE_ENV_AWS_CREDENTIALS: "false"
     INFRA_REQUIRE_ENV_AWS_CREDENTIALS: "false"
 
@@ -58,6 +60,18 @@ phases:
           echo "Expected AWS Account (derived) = ${INFRA_AWS_ACCOUNT_ID}"
         else
           echo "Expected AWS Account (env) = ${INFRA_AWS_ACCOUNT_ID}"
+        fi
+      - |
+        if [ "${INFRA_CERT_MODE}" = "managed" ]; then
+          export INFRA_EXPO_CERT_ARN_PRODUCTION=""
+          export INFRA_EXPO_CERT_ARN_DEV=""
+          export INFRA_EXPO_CERT_ARN_MOBILE=""
+          export INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN=""
+          export INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN=""
+          export INFRA_REDIRECT_ROOT_CERT_ARN=""
+          echo "Certificate mode = managed (INFRA_*_CERT_ARN cleared)"
+        else
+          echo "Certificate mode = explicit (INFRA_*_CERT_ARN preserved)"
         fi
       - echo "Require Expo Auth Env = ${INFRA_REQUIRE_EXPO_PUBLIC_AUTH}"
       - echo "Ensuring infra SST secrets..."
