@@ -5,8 +5,8 @@
   "type": "module",
   "description": "Alternun AWS/SST infrastructure wrapper for Expo web deployments.",
   "scripts": {
-    "deploy:dev": "sst deploy --stage dev",
-    "deploy:production": "sst deploy --stage production",
+    "deploy:dev": "APPROVE=true STACK=dev bash scripts/sst-deploy.sh",
+    "deploy:production": "APPROVE=true STACK=production bash scripts/sst-deploy.sh",
     "diff:dev": "sst diff --stage dev",
     "diff:production": "sst diff --stage production",
     "remove:dev": "sst remove --stage dev",
@@ -16,7 +16,7 @@
     "sync:develop-master": "bash scripts/sync-develop-master.sh"
   },
   "dependencies": {
-    "@lsts_tech/infra": "1.0.1",
+    "@lsts_tech/infra": "1.0.2",
     "sst": "^3.19.3"
   },
   "devDependencies": {

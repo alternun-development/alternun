@@ -29,11 +29,13 @@
   },
   "redirects": {
     "enableAirsToDev": true,
+    "airsToDevSourceDomain": "airs.alternun.co",
     "enableDevToTestnet": true,
     "devToTestnetSourceDomain": "dev.airs.alternun.co",
     "enableRootDomainRedirect": true,
     "rootDomainTarget": "alternun.io",
     "certArns": {
+      "airsToDev": "",
       "rootDomain": "",
       "devToTestnet": ""
     }

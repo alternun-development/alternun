@@ -16,12 +16,24 @@ env:
     DOMAIN_PRODUCTION: "airs.alternun.co"
     DOMAIN_DEV: "testnet.airs.alternun.co"
     DOMAIN_MOBILE: "preview.airs.alternun.co"
+    INFRA_ENFORCE_AWS_ACCOUNT: "true"
+    INFRA_AWS_ACCOUNT_ID: "124120088516"
+    INFRA_REQUIRE_ROUTE53: "true"
+    INFRA_REQUIRE_EXPO_PUBLIC_AUTH: "true"
+    INFRA_FORCE_ENV_AWS_CREDENTIALS: "false"
+    INFRA_REQUIRE_ENV_AWS_CREDENTIALS: "false"
 
     # Check controls
     SKIP_DNS_CHECK: "false"
     AUTO_REMOVE_CONFLICTING_DNS: "true"
+    INFRA_REMOVE_ACM_VALIDATION_CNAME: "true"
     POLL_TIMEOUT: "600"
     POLL_INTERVAL: "15"
+    EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: "1"
+  secrets-manager:
+    EXPO_PUBLIC_SUPABASE_URL: "alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_URL"
+    EXPO_PUBLIC_SUPABASE_KEY: "alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_KEY"
+    EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID: "alternun/ci/infra/expo-public:EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID"
 
 phases:
   install:
@@ -39,6 +51,22 @@ phases:
       - echo "Node     = $(node --version)"
       - echo "pnpm     = $(pnpm --version)"
       - echo "Infra    = ${INFRA_PATH}"
+      - echo "Expected AWS Account = ${INFRA_AWS_ACCOUNT_ID}"
+      - echo "Require Expo Auth Env = ${INFRA_REQUIRE_EXPO_PUBLIC_AUTH}"
+      - echo "Ensuring infra SST secrets..."
+      - |
+        if [ -f "${INFRA_PATH}/scripts/ensure-secrets.sh" ]; then
+          chmod +x "${INFRA_PATH}/scripts/ensure-secrets.sh" || true
+          "${INFRA_PATH}/scripts/ensure-secrets.sh" ${SST_STAGE}
+        elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
+          chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
+          "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ${SST_STAGE}
+        elif [ -f "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
+          chmod +x "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
+          ./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh ${SST_STAGE}
+        else
+          echo "No ensure-secrets script found; skipping"
+        fi
       - echo "Running pre-deploy checks..."
       - |
         if [ -f "${INFRA_PATH}/scripts/predeploy-checks.sh" ]; then
