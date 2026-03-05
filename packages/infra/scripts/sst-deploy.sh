@@ -82,6 +82,11 @@ remove_cloudfront_alias() {
       .DistributionConfig
       | .Aliases.Items = ((.Aliases.Items // []) | map(select(. != $alias)))
       | .Aliases.Quantity = (.Aliases.Items | length)
+      | if .Aliases.Quantity == 0 then
+          .ViewerCertificate = { "CloudFrontDefaultCertificate": true }
+        else
+          .
+        end
     ' "$cfg_json" > "$cfg_mod"
 
     if aws cloudfront update-distribution --id "$dist_id" --if-match "$etag" --distribution-config "file://${cfg_mod}" >/dev/null 2>&1; then
