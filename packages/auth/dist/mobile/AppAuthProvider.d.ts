@@ -1,7 +1,7 @@
 import { useAuth as useUniversalAuth } from "@edcalderon/auth";
 import { type PropsWithChildren } from "react";
 import { type AlternunMobileAuthClientOptions } from "./AlternunMobileAuthClient";
-type MobileAuthOverrideOptions = Pick<AlternunMobileAuthClientOptions, "walletBridge" | "allowMockWalletFallback" | "allowWalletOnlySession">;
+type MobileAuthOverrideOptions = Pick<AlternunMobileAuthClientOptions, "walletBridge" | "allowMockWalletFallback" | "allowWalletOnlySession" | "supabaseUrl" | "supabaseKey">;
 export interface AppAuthProviderProps extends PropsWithChildren {
     options?: MobileAuthOverrideOptions;
 }
