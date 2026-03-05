@@ -44,6 +44,7 @@ load_env_file() {
 
 load_infra_env() {
   local script_dir infra_dir repo_root infra_env_file
+  local force_env_credentials require_env_credentials
 
   script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
   infra_dir=$(cd "$script_dir/.." && pwd)
@@ -73,12 +74,18 @@ load_infra_env() {
     export AWS_SESSION_TOKEN="${AWS_SESSION}"
   fi
 
-  if is_truthy "${INFRA_FORCE_ENV_AWS_CREDENTIALS:-false}"; then
+  force_env_credentials=${INFRA_FORCE_ENV_AWS_CREDENTIALS:-true}
+  require_env_credentials=${INFRA_REQUIRE_ENV_AWS_CREDENTIALS:-true}
+
+  export INFRA_FORCE_ENV_AWS_CREDENTIALS="$force_env_credentials"
+  export INFRA_REQUIRE_ENV_AWS_CREDENTIALS="$require_env_credentials"
+
+  if is_truthy "$force_env_credentials"; then
     unset AWS_PROFILE AWS_DEFAULT_PROFILE
     export AWS_SDK_LOAD_CONFIG=0
   fi
 
-  if is_truthy "${INFRA_REQUIRE_ENV_AWS_CREDENTIALS:-false}"; then
+  if is_truthy "$require_env_credentials"; then
     if [ -z "${AWS_ACCESS_KEY_ID:-}" ] || [ -z "${AWS_SECRET_ACCESS_KEY:-}" ]; then
       echo "ERROR: INFRA_REQUIRE_ENV_AWS_CREDENTIALS=true but AWS credentials were not loaded from env." >&2
       echo "Set AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY (or legacy AWS_KEY_ID/AWS_SECRET_KEY) in .env." >&2

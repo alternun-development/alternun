@@ -12,12 +12,9 @@ set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 INFRA_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 
-if [ -f "$INFRA_DIR/.env" ]; then
-  set -a
-  # shellcheck disable=SC1091
-  source "$INFRA_DIR/.env"
-  set +a
-fi
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/_load-infra-env.sh"
+load_infra_env
 
 DOMAIN_ROOT=${DOMAIN_ROOT:-${INFRA_ROOT_DOMAIN:-}}
 if [ -z "$DOMAIN_ROOT" ]; then
