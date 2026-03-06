@@ -36,6 +36,14 @@ env:
     # Disabled by default: this fallback can add ~10m waiting for CloudFront alias discovery.
     # Enable only for recovery/manual DNS sync runs.
     INFRA_ENABLE_POSTDEPLOY_DNS_SYNC: "false"
+    # Fail the pipeline if deployed endpoints are not reachable.
+    INFRA_ENABLE_REACHABILITY_CHECK: "true"
+    INFRA_REACHABILITY_ATTEMPTS: "18"
+    INFRA_REACHABILITY_INTERVAL_SECONDS: "10"
+    INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS: "5"
+    INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS: "20"
+    # Refresh before deploy to reconcile manual drift (CloudFront aliases, DNS records).
+    INFRA_ENABLE_SST_REFRESH: "true"
     EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: "1"
   secrets-manager:
     EXPO_PUBLIC_SUPABASE_URL: "alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_URL"
@@ -137,6 +145,12 @@ phases:
   build:
     commands:
       - cd ${INFRA_PATH}
+      - |
+        if [ "${INFRA_ENABLE_SST_REFRESH}" = "true" ]; then
+          npx sst refresh --stage ${SST_STAGE}
+        else
+          echo "Skipping sst refresh (INFRA_ENABLE_SST_REFRESH=${INFRA_ENABLE_SST_REFRESH})"
+        fi
       - npx sst deploy --stage ${SST_STAGE}
 
   post_build:
@@ -159,6 +173,21 @@ phases:
           ./node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh ${SST_STAGE} || echo "post-deploy DNS sync failed"
         else
           echo "No post-deploy DNS sync script found; skipping"
+        fi
+      - |
+        if [ "${INFRA_ENABLE_REACHABILITY_CHECK}" != "true" ]; then
+          echo "Skipping reachability check (INFRA_ENABLE_REACHABILITY_CHECK=${INFRA_ENABLE_REACHABILITY_CHECK})"
+        elif [ -f "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ]; then
+          chmod +x "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" || true
+          "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ${SST_STAGE}
+        elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh" ]; then
+          chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh" || true
+          "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh" ${SST_STAGE}
+        elif [ -f "./node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh" ]; then
+          chmod +x "./node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh" || true
+          ./node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh ${SST_STAGE}
+        else
+          echo "No reachability check script found; skipping"
         fi
 
 cache:
