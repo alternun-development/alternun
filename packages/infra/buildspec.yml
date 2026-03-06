@@ -177,17 +177,12 @@ phases:
       - |
         if [ "${INFRA_ENABLE_REACHABILITY_CHECK}" != "true" ]; then
           echo "Skipping reachability check (INFRA_ENABLE_REACHABILITY_CHECK=${INFRA_ENABLE_REACHABILITY_CHECK})"
-        elif [ -f "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ]; then
+        elif [ ! -f "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ]; then
+          echo "ERROR: Missing ${INFRA_PATH}/scripts/postdeploy-reachability-check.sh while INFRA_ENABLE_REACHABILITY_CHECK=true" >&2
+          exit 1
+        else
           chmod +x "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" || true
           "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ${SST_STAGE}
-        elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh" ]; then
-          chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh" || true
-          "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh" ${SST_STAGE}
-        elif [ -f "./node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh" ]; then
-          chmod +x "./node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh" || true
-          ./node_modules/@lsts_tech/infra/scripts/postdeploy-reachability-check.sh ${SST_STAGE}
-        else
-          echo "No reachability check script found; skipping"
         fi
 
 cache:
