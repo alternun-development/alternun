@@ -98,7 +98,7 @@ const user = await db.query(`SELECT * FROM users WHERE id = ${userId}`);
 const apiKey = process.env.API_KEY;
 
 // ❌ Bad: Hardcoded secrets
-const apiKey = 'REDACTED_EXAMPLE_KEY';
+const apiKey = '<do-not-hardcode-secrets>';
 ```
 
 #### Input Validation
