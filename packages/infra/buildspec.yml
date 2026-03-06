@@ -30,8 +30,12 @@ env:
     SKIP_DNS_CHECK: "false"
     AUTO_REMOVE_CONFLICTING_DNS: "true"
     INFRA_REMOVE_ACM_VALIDATION_CNAME: "true"
-    POLL_TIMEOUT: "600"
+    # Optional post-deploy DNS sync poll tuning (used only when enabled).
+    POLL_TIMEOUT: "120"
     POLL_INTERVAL: "15"
+    # Disabled by default: this fallback can add ~10m waiting for CloudFront alias discovery.
+    # Enable only for recovery/manual DNS sync runs.
+    INFRA_ENABLE_POSTDEPLOY_DNS_SYNC: "false"
     EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: "1"
   secrets-manager:
     EXPO_PUBLIC_SUPABASE_URL: "alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_URL"
@@ -138,15 +142,19 @@ phases:
   post_build:
     commands:
       - echo "SST deploy completed for stage ${SST_STAGE}"
-      - echo "Running post-deploy DNS sync"
       - |
-        if [ -f "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" ]; then
+        if [ "${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC}" != "true" ]; then
+          echo "Skipping post-deploy DNS sync (INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC})"
+        elif [ -f "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" ]; then
+          echo "Running post-deploy DNS sync"
           chmod +x "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" || true
           "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" ${SST_STAGE} || echo "post-deploy DNS sync failed"
         elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh" ]; then
+          echo "Running post-deploy DNS sync"
           chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh" || true
           "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh" ${SST_STAGE} || echo "post-deploy DNS sync failed"
         elif [ -f "./node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh" ]; then
+          echo "Running post-deploy DNS sync"
           chmod +x "./node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh" || true
           ./node_modules/@lsts_tech/infra/scripts/postdeploy-update-dns.sh ${SST_STAGE} || echo "post-deploy DNS sync failed"
         else
