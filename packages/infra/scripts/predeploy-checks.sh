@@ -210,5 +210,9 @@ validate_expo_public_auth_env() {
 validate_expo_public_auth_env
 run_extra_redirect_dns_cleanup
 
-TARGET=$(bash "$SCRIPT_DIR/_resolve-infra-script.sh" "predeploy-checks.sh")
-exec "$TARGET" "$@"
+if is_truthy "${INFRA_RUN_UPSTREAM_PREDEPLOY_CHECKS:-false}"; then
+  TARGET=$(bash "$SCRIPT_DIR/_resolve-infra-script.sh" "predeploy-checks.sh")
+  exec "$TARGET" "$@"
+fi
+
+echo "Skipping upstream predeploy checks (INFRA_RUN_UPSTREAM_PREDEPLOY_CHECKS=false)."

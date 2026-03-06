@@ -20,6 +20,7 @@ env:
     INFRA_REQUIRE_ROUTE53: "true"
     INFRA_REQUIRE_EXPO_PUBLIC_AUTH: "true"
     INFRA_FAIL_ON_SECRET_SYNC: "false"
+    INFRA_RUN_UPSTREAM_PREDEPLOY_CHECKS: "false"
     # managed|explicit : managed clears cert ARN overrides coming from CodeBuild project env.
     INFRA_CERT_MODE: "managed"
     # CI should use CodeBuild IAM role (temporary creds), not static keys.
