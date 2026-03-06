@@ -4,11 +4,13 @@
 
 This issue proposes the production architecture for Alternun identity infrastructure using:
 
-- **Authentik** as the Identity Provider (IdP)
+- **Authentik** as the Identity Provider (IdP) — requires **version 2025.10 or later**
 - **Supabase** as the application database and authorization engine
 - **AWS EC2 + RDS** as the lean infrastructure layer
 
 Goal: keep infrastructure **low cost, portable, and infrastructure-as-code friendly**.
+
+> **Note on Redis:** Authentik 2025.8 migrated background tasks from Redis to PostgreSQL, and Authentik 2025.10 completed the removal by migrating caching, WebSocket, and the embedded outpost session store to PostgreSQL as well. As of **2025.10, Redis is no longer a dependency**. This architecture targets Authentik ≥ 2025.10 and therefore does not include Redis. See [Authentik 2025.10 release notes](https://docs.goauthentik.io/docs/releases/2025.10) for details.
 
 ---
 
@@ -48,7 +50,7 @@ Recommended instance:
 - 2 vCPU
 - 2GB RAM
 
-Services running via Docker:
+Services running via Docker (Authentik ≥ 2025.10, no Redis required):
 
 - Traefik / Reverse Proxy
 - Authentik Server
@@ -59,6 +61,8 @@ Services running via Docker:
 ### RDS PostgreSQL
 
 Database used **only for Authentik identity state**.
+
+> **Note:** Since Authentik 2025.10 removed Redis, all caching, tasks, WebSocket, and outpost session state are handled by PostgreSQL. Expect approximately 50% more database connections than older Authentik versions — still well within `db.t4g.micro` capacity for low-traffic deployments.
 
 Recommended configuration:
 
@@ -166,8 +170,8 @@ AWS
 EC2
 
 - Traefik
-- Authentik Server
-- Authentik Worker
+- Authentik Server (≥ 2025.10)
+- Authentik Worker (≥ 2025.10)
 
 RDS PostgreSQL
 
