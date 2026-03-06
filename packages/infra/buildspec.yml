@@ -22,8 +22,9 @@ env:
     INFRA_FAIL_ON_SECRET_SYNC: "false"
     # managed|explicit : managed clears cert ARN overrides coming from CodeBuild project env.
     INFRA_CERT_MODE: "managed"
-    INFRA_FORCE_ENV_AWS_CREDENTIALS: "true"
-    INFRA_REQUIRE_ENV_AWS_CREDENTIALS: "true"
+    # CI should use CodeBuild IAM role (temporary creds), not static keys.
+    INFRA_FORCE_ENV_AWS_CREDENTIALS: "false"
+    INFRA_REQUIRE_ENV_AWS_CREDENTIALS: "false"
 
     # Check controls
     SKIP_DNS_CHECK: "false"
@@ -33,9 +34,6 @@ env:
     POLL_INTERVAL: "15"
     EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: "1"
   secrets-manager:
-    AWS_ACCESS_KEY_ID: "alternun/ci/infra/aws:AWS_ACCESS_KEY_ID"
-    AWS_SECRET_ACCESS_KEY: "alternun/ci/infra/aws:AWS_SECRET_ACCESS_KEY"
-    AWS_SESSION_TOKEN: "alternun/ci/infra/aws:AWS_SESSION_TOKEN"
     EXPO_PUBLIC_SUPABASE_URL: "alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_URL"
     EXPO_PUBLIC_SUPABASE_KEY: "alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_KEY"
     EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID: "alternun/ci/infra/expo-public:EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID"
@@ -57,6 +55,8 @@ phases:
           # shellcheck source=/dev/null
           source "${INFRA_PATH}/scripts/_load-infra-env.sh"
           load_infra_env
+          # CI must rely on IAM role credentials; clear any injected static credentials.
+          unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
           echo "Infra environment loaded from .env"
         else
           echo "ERROR: Missing ${INFRA_PATH}/scripts/_load-infra-env.sh" >&2
