@@ -1,20 +1,16 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { AppAuthProvider } from "../components/auth/AppAuthProvider";
-import AppInfoFooter from "../components/common/AppInfoFooter";
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { Stack, useSegments } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { AppAuthProvider } from '../components/auth/AppAuthProvider';
+import AppInfoFooter from '../components/common/AppInfoFooter';
 import {
   AppPreferencesProvider,
   useAppPreferences,
-} from "../components/settings/AppPreferencesProvider";
-import { StyleSheet, View } from "react-native";
-import "../global.css";
+} from '../components/settings/AppPreferencesProvider';
+import { StyleSheet, View } from 'react-native';
+import '../global.css';
 
-export default function RootLayout() {
+export default function RootLayout(): any {
   return (
     <AppPreferencesProvider>
       <RootApp />
@@ -22,9 +18,11 @@ export default function RootLayout() {
   );
 }
 
-function RootApp() {
+function RootApp(): any {
   const { themeMode } = useAppPreferences();
-  const navigationTheme = themeMode === "dark" ? DarkTheme : DefaultTheme;
+  const navigationTheme = themeMode === 'dark' ? DarkTheme : DefaultTheme;
+  const segments = useSegments();
+  const showLayoutFooter = segments[0] !== 'auth';
 
   return (
     <AppAuthProvider>
@@ -33,38 +31,38 @@ function RootApp() {
           <View style={styles.stackContainer}>
             <Stack
               screenOptions={({ route }) => ({
-                headerShown: !route.name.startsWith("tempobook"),
+                headerShown: !route.name.startsWith('tempobook'),
               })}
             >
-              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name='index' options={{ headerShown: false }} />
               <Stack.Screen
-                name="auth"
+                name='auth'
                 options={{
                   headerShown: false,
-                  presentation: "transparentModal",
-                  animation: "fade",
-                  contentStyle: { backgroundColor: "transparent" },
+                  presentation: 'transparentModal',
+                  animation: 'fade',
+                  contentStyle: { backgroundColor: 'transparent' },
                 }}
               />
               <Stack.Screen
-                name="settings"
+                name='settings'
                 options={{
-                  title: "Settings",
-                  headerBackTitle: "Back",
+                  title: 'Settings',
+                  headerBackTitle: 'Back',
                 }}
               />
               <Stack.Screen
-                name="profile"
+                name='profile'
                 options={{
-                  title: "Profile",
-                  headerBackTitle: "Back",
+                  title: 'Profile',
+                  headerBackTitle: 'Back',
                 }}
               />
             </Stack>
           </View>
-          <AppInfoFooter variant="layout" />
+          {showLayoutFooter ? <AppInfoFooter variant='layout' /> : null}
         </View>
-        <StatusBar style={themeMode === "dark" ? "light" : "dark"} />
+        <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>
     </AppAuthProvider>
   );
