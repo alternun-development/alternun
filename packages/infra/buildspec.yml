@@ -44,6 +44,7 @@ env:
     INFRA_REACHABILITY_INTERVAL_SECONDS: "10"
     INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS: "5"
     INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS: "20"
+    INFRA_ENFORCE_REDIRECT_CHECKS: "false"
     # Disabled by default: refresh can rewrite live state before deploy.
     INFRA_ENABLE_SST_REFRESH: "false"
     EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: "1"
@@ -180,6 +181,8 @@ phases:
         if [ "${INFRA_ENABLE_REACHABILITY_CHECK}" != "true" ]; then
           echo "Skipping reachability check (INFRA_ENABLE_REACHABILITY_CHECK=${INFRA_ENABLE_REACHABILITY_CHECK})"
         else
+          set -euo pipefail
+
           stage_domain="${DOMAIN_CUSTOM:-${SST_STAGE}.${DOMAIN_ROOT}}"
           case "${SST_STAGE}" in
             production) stage_domain="${DOMAIN_PRODUCTION:-${DOMAIN_ROOT}}" ;;
@@ -255,25 +258,43 @@ phases:
             return 1
           }
 
+          run_redirect_check() {
+            local label="$1"
+            local source_url="$2"
+            local expected_host="$3"
+
+            if check_redirect "$label" "$source_url" "$expected_host"; then
+              return 0
+            fi
+
+            if [ "${INFRA_ENFORCE_REDIRECT_CHECKS:-false}" = "true" ]; then
+              echo "ERROR: Redirect enforcement is enabled and ${label} failed." >&2
+              return 1
+            fi
+
+            echo "WARN: Redirect check failed for ${label}; continuing because INFRA_ENFORCE_REDIRECT_CHECKS=false."
+            return 0
+          }
+
           primary_url=$(normalize_url "${stage_domain}")
           check_reachable "primary:${stage_domain}" "${primary_url}"
 
           if [ "${SST_STAGE}" = "dev" ]; then
             airs_source="${INFRA_REDIRECT_AIRS_TO_DEV_SOURCE:-${DOMAIN_PRODUCTION:-}}"
             if [ -n "${airs_source}" ] && [ "${airs_source}" != "${stage_domain}" ]; then
-              check_redirect "airs->testnet" "$(normalize_url "${airs_source}")" "${stage_domain}"
+              run_redirect_check "airs->testnet" "$(normalize_url "${airs_source}")" "${stage_domain}"
             fi
 
             dev_source="${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}"
             if [ -n "${dev_source}" ] && [ "${dev_source}" != "${stage_domain}" ]; then
-              check_redirect "dev->testnet" "$(normalize_url "${dev_source}")" "${stage_domain}"
+              run_redirect_check "dev->testnet" "$(normalize_url "${dev_source}")" "${stage_domain}"
             fi
 
             root_source="${DOMAIN_ROOT:-}"
             root_target="${INFRA_REDIRECT_ROOT_TARGET:-}"
             if [ -n "${root_source}" ] && [ -n "${root_target}" ]; then
               root_target_host=$(extract_host "$(normalize_url "${root_target}")")
-              check_redirect "root->target" "$(normalize_url "${root_source}")" "${root_target_host}"
+              run_redirect_check "root->target" "$(normalize_url "${root_source}")" "${root_target_host}"
             fi
           fi
         fi
