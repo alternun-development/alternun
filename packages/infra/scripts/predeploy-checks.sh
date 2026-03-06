@@ -56,8 +56,8 @@ delete_conflicting_dns_records() {
   echo "$existing"
 
   if ! is_truthy "$auto_remove"; then
-    echo "ERROR: AUTO_REMOVE_CONFLICTING_DNS is false and ${record_name} already exists." >&2
-    return 1
+    echo "WARN: AUTO_REMOVE_CONFLICTING_DNS=false; keeping existing DNS records for ${record_name}." >&2
+    return 0
   fi
 
   if ! command -v jq >/dev/null 2>&1; then
@@ -110,8 +110,8 @@ delete_acm_validation_cname_records() {
   echo "$existing"
 
   if ! is_truthy "$auto_remove"; then
-    echo "ERROR: AUTO_REMOVE_CONFLICTING_DNS is false; cannot delete ACM validation CNAME records for ${domain_name}." >&2
-    return 1
+    echo "WARN: AUTO_REMOVE_CONFLICTING_DNS=false; keeping ACM validation CNAME records for ${domain_name}." >&2
+    return 0
   fi
 
   if ! command -v jq >/dev/null 2>&1; then
