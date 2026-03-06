@@ -102,11 +102,13 @@ export function createExternalDomainRedirect(args: ExternalDomainRedirectArgs): 
   new sst.aws.Router(args.id, {
     domain: buildDomainConfig(sourceDomain, args.certificateArn),
     routes: {
-      '/*': targetUrl,
-    },
-    edge: {
-      viewerRequest: {
-        injection: buildRedirectInjection(targetUrl),
+      '/*': {
+        url: targetUrl,
+        edge: {
+          viewerRequest: {
+            injection: buildRedirectInjection(targetUrl),
+          },
+        },
       },
     },
   });
