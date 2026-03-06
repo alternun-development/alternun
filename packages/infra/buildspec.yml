@@ -28,8 +28,9 @@ env:
 
     # Check controls
     SKIP_DNS_CHECK: "false"
-    AUTO_REMOVE_CONFLICTING_DNS: "true"
-    INFRA_REMOVE_ACM_VALIDATION_CNAME: "true"
+    # Safety-first: never delete existing DNS automatically during deploy.
+    AUTO_REMOVE_CONFLICTING_DNS: "false"
+    INFRA_REMOVE_ACM_VALIDATION_CNAME: "false"
     # Optional post-deploy DNS sync poll tuning (used only when enabled).
     POLL_TIMEOUT: "120"
     POLL_INTERVAL: "15"
@@ -42,8 +43,8 @@ env:
     INFRA_REACHABILITY_INTERVAL_SECONDS: "10"
     INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS: "5"
     INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS: "20"
-    # Refresh before deploy to reconcile manual drift (CloudFront aliases, DNS records).
-    INFRA_ENABLE_SST_REFRESH: "true"
+    # Disabled by default: refresh can rewrite live state before deploy.
+    INFRA_ENABLE_SST_REFRESH: "false"
     EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: "1"
   secrets-manager:
     EXPO_PUBLIC_SUPABASE_URL: "alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_URL"
