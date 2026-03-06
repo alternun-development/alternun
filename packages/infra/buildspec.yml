@@ -33,6 +33,9 @@ env:
     POLL_INTERVAL: "15"
     EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: "1"
   secrets-manager:
+    AWS_ACCESS_KEY_ID: "alternun/ci/infra/aws:AWS_ACCESS_KEY_ID"
+    AWS_SECRET_ACCESS_KEY: "alternun/ci/infra/aws:AWS_SECRET_ACCESS_KEY"
+    AWS_SESSION_TOKEN: "alternun/ci/infra/aws:AWS_SESSION_TOKEN"
     EXPO_PUBLIC_SUPABASE_URL: "alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_URL"
     EXPO_PUBLIC_SUPABASE_KEY: "alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_KEY"
     EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID: "alternun/ci/infra/expo-public:EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID"
