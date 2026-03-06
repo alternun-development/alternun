@@ -179,12 +179,103 @@ phases:
       - |
         if [ "${INFRA_ENABLE_REACHABILITY_CHECK}" != "true" ]; then
           echo "Skipping reachability check (INFRA_ENABLE_REACHABILITY_CHECK=${INFRA_ENABLE_REACHABILITY_CHECK})"
-        elif [ ! -f "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ]; then
-          echo "ERROR: Missing ${INFRA_PATH}/scripts/postdeploy-reachability-check.sh while INFRA_ENABLE_REACHABILITY_CHECK=true" >&2
-          exit 1
         else
-          chmod +x "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" || true
-          "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ${SST_STAGE}
+          stage_domain="${DOMAIN_CUSTOM:-${SST_STAGE}.${DOMAIN_ROOT}}"
+          case "${SST_STAGE}" in
+            production) stage_domain="${DOMAIN_PRODUCTION:-${DOMAIN_ROOT}}" ;;
+            dev) stage_domain="${DOMAIN_DEV:-dev.${DOMAIN_ROOT}}" ;;
+            mobile) stage_domain="${DOMAIN_MOBILE:-mobile.${DOMAIN_ROOT}}" ;;
+          esac
+
+          attempts="${INFRA_REACHABILITY_ATTEMPTS:-18}"
+          interval="${INFRA_REACHABILITY_INTERVAL_SECONDS:-10}"
+          connect_timeout="${INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS:-5}"
+          request_timeout="${INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS:-20}"
+
+          normalize_url() {
+            local value="$1"
+            if echo "$value" | grep -Eq '^https?://'; then
+              echo "$value"
+            else
+              echo "https://${value}"
+            fi
+          }
+
+          extract_host() {
+            echo "$1" | sed -E 's#^[a-zA-Z]+://([^/:]+).*$#\1#'
+          }
+
+          is_2xx_3xx() {
+            local code="$1"
+            [ -n "$code" ] && [ "$code" -ge 200 ] && [ "$code" -lt 400 ]
+          }
+
+          curl_probe() {
+            local url="$1"
+            curl -sS -L --max-redirs 10 --connect-timeout "${connect_timeout}" --max-time "${request_timeout}" -o /dev/null -w "%{http_code} %{url_effective}" "$url" 2>/dev/null || true
+          }
+
+          check_reachable() {
+            local label="$1"
+            local url="$2"
+            local i result code effective
+            for i in $(seq 1 "${attempts}"); do
+              result=$(curl_probe "$url")
+              code=${result%% *}
+              effective=${result#* }
+              if is_2xx_3xx "$code"; then
+                echo "Reachability OK: ${label} code=${code} effective=${effective}"
+                return 0
+              fi
+              echo "Reachability pending (${i}/${attempts}): ${label} code=${code:-n/a}"
+              sleep "${interval}"
+            done
+            echo "ERROR: Reachability check failed for ${label}" >&2
+            return 1
+          }
+
+          check_redirect() {
+            local label="$1"
+            local source_url="$2"
+            local expected_host="$3"
+            local i result code effective actual
+            for i in $(seq 1 "${attempts}"); do
+              result=$(curl_probe "$source_url")
+              code=${result%% *}
+              effective=${result#* }
+              actual=$(extract_host "$effective")
+              if is_2xx_3xx "$code" && { [ "$actual" = "$expected_host" ] || [ "$actual" = "www.${expected_host}" ]; }; then
+                echo "Redirect OK: ${label} actual=${actual} expected=${expected_host}"
+                return 0
+              fi
+              echo "Redirect pending (${i}/${attempts}): ${label} actual=${actual:-n/a} expected=${expected_host} code=${code:-n/a}"
+              sleep "${interval}"
+            done
+            echo "ERROR: Redirect check failed for ${label}" >&2
+            return 1
+          }
+
+          primary_url=$(normalize_url "${stage_domain}")
+          check_reachable "primary:${stage_domain}" "${primary_url}"
+
+          if [ "${SST_STAGE}" = "dev" ]; then
+            airs_source="${INFRA_REDIRECT_AIRS_TO_DEV_SOURCE:-${DOMAIN_PRODUCTION:-}}"
+            if [ -n "${airs_source}" ] && [ "${airs_source}" != "${stage_domain}" ]; then
+              check_redirect "airs->testnet" "$(normalize_url "${airs_source}")" "${stage_domain}"
+            fi
+
+            dev_source="${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}"
+            if [ -n "${dev_source}" ] && [ "${dev_source}" != "${stage_domain}" ]; then
+              check_redirect "dev->testnet" "$(normalize_url "${dev_source}")" "${stage_domain}"
+            fi
+
+            root_source="${DOMAIN_ROOT:-}"
+            root_target="${INFRA_REDIRECT_ROOT_TARGET:-}"
+            if [ -n "${root_source}" ] && [ -n "${root_target}" ]; then
+              root_target_host=$(extract_host "$(normalize_url "${root_target}")")
+              check_redirect "root->target" "$(normalize_url "${root_source}")" "${root_target_host}"
+            fi
+          fi
         fi
 
 cache:
