@@ -56,23 +56,34 @@ function buildDomainConfig(
 
 function buildRedirectInjection(targetUrl: string): string {
   return `
-const redirectBase = ${JSON.stringify(targetUrl)};
-const uri = event.request.uri || "/";
-const queryParts = [];
+var redirectBase = ${JSON.stringify(targetUrl)};
+var uri = event.request.uri || "/";
+var querystring = event.request.querystring || {};
+var queryParts = [];
+var key;
 
-for (const [key, entry] of Object.entries(event.request.querystring || {})) {
-  if (entry && Array.isArray(entry.multiValue)) {
-    for (const item of entry.multiValue) {
-      if (item && typeof item.value === "string") queryParts.push(key + "=" + item.value);
+for (key in querystring) {
+  if (!Object.prototype.hasOwnProperty.call(querystring, key)) continue;
+
+  var entry = querystring[key];
+  var multiValue = entry && entry.multiValue;
+
+  if (entry && multiValue && multiValue.length) {
+    for (var i = 0; i < multiValue.length; i++) {
+      var item = multiValue[i];
+      if (item && typeof item.value === "string") {
+        queryParts.push(key + "=" + item.value);
+      }
     }
     continue;
   }
+
   if (entry && typeof entry.value === "string") {
     queryParts.push(key + "=" + entry.value);
   }
 }
 
-const query = queryParts.length > 0 ? "?" + queryParts.join("&") : "";
+var query = queryParts.length > 0 ? "?" + queryParts.join("&") : "";
 
 return {
   statusCode: 308,
