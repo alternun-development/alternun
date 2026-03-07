@@ -49,6 +49,7 @@ load_env_file() {
 load_infra_env() {
   local script_dir infra_dir repo_root infra_env_file
   local force_env_credentials require_env_credentials preserve_existing_env
+  local canonical_root_domain canonical_domain_production canonical_domain_dev canonical_domain_mobile
 
   script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
   infra_dir=$(cd "$script_dir/.." && pwd)
@@ -66,6 +67,27 @@ load_infra_env() {
       # Keep infra package values authoritative after loading root .env.
       load_env_file "$infra_env_file"
     fi
+  fi
+
+  canonical_root_domain=${INFRA_CANONICAL_ROOT_DOMAIN:-}
+  canonical_domain_production=${INFRA_CANONICAL_EXPO_DOMAIN_PRODUCTION:-}
+  canonical_domain_dev=${INFRA_CANONICAL_EXPO_DOMAIN_DEV:-}
+  canonical_domain_mobile=${INFRA_CANONICAL_EXPO_DOMAIN_MOBILE:-}
+
+  if [ -n "$canonical_root_domain" ]; then
+    export INFRA_ROOT_DOMAIN="$canonical_root_domain"
+  fi
+
+  if [ -n "$canonical_domain_production" ]; then
+    export INFRA_EXPO_DOMAIN_PRODUCTION="$canonical_domain_production"
+  fi
+
+  if [ -n "$canonical_domain_dev" ]; then
+    export INFRA_EXPO_DOMAIN_DEV="$canonical_domain_dev"
+  fi
+
+  if [ -n "$canonical_domain_mobile" ]; then
+    export INFRA_EXPO_DOMAIN_MOBILE="$canonical_domain_mobile"
   fi
 
   # Backward-compatible aliases for legacy .env naming.
