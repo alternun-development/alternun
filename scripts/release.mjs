@@ -23,12 +23,12 @@ function printUsage() {
   console.log(`Usage:
   pnpm release <patch|minor|major>
   pnpm release <version>
-  pnpm release <patch|minor|major> --push
   pnpm release --promote
 
 Options:
-  --push          Push the current release branch with tags after commit/tag creation.
-  --target-branch Branch to push when using --push. Defaults to the current branch.
+  --push          Explicitly enable direct push after commit/tag creation.
+  --no-push       Skip the default direct push for release targets.
+  --target-branch Branch to push when using direct push. Defaults to the current branch.
   --promote       Push and promote the current release using the active branch policy.
   --remote <name> Git remote to use. Defaults to origin.
   --no-tag        Do not create an annotated git tag.
@@ -42,7 +42,7 @@ Options:
 function parseArgs(argv) {
   const options = {
     promote: false,
-    push: false,
+    pushMode: 'default',
     targetBranch: null,
     remote: 'origin',
     createTag: true,
@@ -66,7 +66,12 @@ function parseArgs(argv) {
     }
 
     if (value === '--push') {
-      options.push = true;
+      options.pushMode = 'on';
+      continue;
+    }
+
+    if (value === '--no-push') {
+      options.pushMode = 'off';
       continue;
     }
 
@@ -127,7 +132,7 @@ function parseArgs(argv) {
     throw new Error('Provide a release type/version or use --promote.');
   }
 
-  if (options.push && options.promote) {
+  if (options.pushMode === 'on' && options.promote) {
     throw new Error('--push cannot be combined with --promote.');
   }
 
@@ -139,10 +144,6 @@ function parseArgs(argv) {
     throw new Error('--promote requires a committed release.');
   }
 
-  if (!options.createCommit && options.push) {
-    throw new Error('--push requires a committed release.');
-  }
-
   if (!options.remote) {
     throw new Error('A git remote name is required.');
   }
@@ -152,6 +153,18 @@ function parseArgs(argv) {
   }
 
   return { options, target };
+}
+
+function shouldDirectPush({ target, options }) {
+  if (!target) {
+    return false;
+  }
+
+  if (options.promote) {
+    return false;
+  }
+
+  return options.pushMode !== 'off';
 }
 
 function run(command, args, { dryRun = false, env = process.env, capture = false } = {}) {
@@ -456,6 +469,12 @@ function performVersionChange(target, options) {
 
 function main() {
   const { options, target } = parseArgs(process.argv.slice(2).filter((value) => value !== '--'));
+  const directPushEnabled = shouldDirectPush({ target, options });
+
+  if (!options.createCommit && directPushEnabled) {
+    throw new Error('--no-commit requires --no-push.');
+  }
+
   ensureCleanWorkingTree(options);
 
   const productionBranch = resolveProductionBranch();
@@ -469,7 +488,7 @@ function main() {
     createReleaseTag(version, options.dryRun);
   }
 
-  if (options.push) {
+  if (directPushEnabled) {
     pushRelease({
       remote: options.remote,
       dryRun: options.dryRun,
