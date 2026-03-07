@@ -15,6 +15,8 @@ env:
     INFRA_CANONICAL_ROOT_DOMAIN: 'alternun.co'
     PROJECT_PREFIX: 'alternun'
     PREFIX: 'alternun'
+    INFRA_EXPO_APP_PATH: '../../apps/mobile'
+    INFRA_CANONICAL_EXPO_APP_PATH: '../../apps/mobile'
     DOMAIN_PRODUCTION: 'airs.alternun.co'
     DOMAIN_DEV: 'testnet.airs.alternun.co'
     DOMAIN_MOBILE: 'preview.airs.alternun.co'

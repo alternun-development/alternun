@@ -140,7 +140,7 @@ function buildPublicAssetFile(
   relativePath: string,
   keyPrefix: string,
 ): PublicAssetFile {
-  const source = path.resolve(dirname, appPath, relativePath);
+  const source = path.resolve(appPath, relativePath);
   const content = fs.readFileSync(source);
   const hash = crypto.createHash('sha256').update(content).digest('hex').slice(0, 12);
   const extension = path.extname(relativePath).toLowerCase();
@@ -172,6 +172,28 @@ const selectedPipelinesRaw =
 
 const expoAppPath =
   process.env.INFRA_EXPO_APP_PATH ?? localConfig.expo?.appPath ?? '../../apps/mobile';
+const resolvedExpoAppPath = (() => {
+  const candidatePaths = [
+    expoAppPath,
+    path.resolve(dirname, expoAppPath),
+    path.resolve(dirname, '..', expoAppPath),
+    path.resolve(dirname, '../..', expoAppPath),
+    path.resolve(process.cwd(), expoAppPath),
+    path.resolve(process.cwd(), '..', expoAppPath),
+  ];
+
+  for (const candidatePath of candidatePaths) {
+    const resolvedPath = path.isAbsolute(candidatePath)
+      ? candidatePath
+      : path.resolve(candidatePath);
+
+    if (fs.existsSync(resolvedPath)) {
+      return resolvedPath;
+    }
+  }
+
+  return path.resolve(dirname, expoAppPath);
+})();
 const expoSubdomain = process.env.INFRA_EXPO_SUBDOMAIN ?? localConfig.expo?.subdomain ?? 'airs';
 const legacyDevDomain = `dev.${expoSubdomain}.${rootDomain}`;
 
@@ -404,13 +426,13 @@ export function createInfrastructure() {
   const assetBaseUrl = createAssetBaseUrl(assetBucketName);
   const introVideoAssets = {
     en: buildPublicAssetFile(
-      expoAppPath,
+      resolvedExpoAppPath,
       assetBaseUrl,
       'assets/videos/AIRS-intro-videoplayback-EN.mp4',
       'landing/videos',
     ),
     es: buildPublicAssetFile(
-      expoAppPath,
+      resolvedExpoAppPath,
       assetBaseUrl,
       'assets/videos/AIRS-intro-videoplayback-ES.mp4',
       'landing/videos',
@@ -441,7 +463,7 @@ export function createInfrastructure() {
     : undefined;
 
   const expoSite = createExpoSite({
-    appPath: expoAppPath,
+    appPath: resolvedExpoAppPath,
     id: `expo-web-${stage}`,
     domain:
       enableCustomDomain && expoDomain
