@@ -9,18 +9,9 @@ load_infra_env
 
 STACK=${1:-${STACK:-${SST_STAGE:-dev}}}
 INFRA_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
-REPO_ROOT=$(cd "$INFRA_DIR/../.." && pwd)
 APP_PATH=${INFRA_EXPO_APP_PATH:-../../apps/mobile}
-APP_DIR=$(cd "$INFRA_DIR/$APP_PATH" && pwd)
 PIPELINE_PREFIX=${INFRA_PIPELINE_PREFIX:-alternun}
 ROOT_DOMAIN=${INFRA_ROOT_DOMAIN:-alternun.co}
-
-is_truthy() {
-  case "${1:-}" in
-    1 | true | TRUE | yes | YES | on | ON) return 0 ;;
-    *) return 1 ;;
-  esac
-}
 
 sanitize_bucket_name() {
   printf '%s' "$1" \
@@ -34,6 +25,27 @@ sanitize_key_segment() {
   printf '%s' "$1" \
     | tr '[:upper:]' '[:lower:]' \
     | sed -E 's/[^a-z0-9-]+/-/g; s/-+/-/g; s/^-+//; s/-+$//'
+}
+
+resolve_app_dir() {
+  local candidate
+
+  for candidate in \
+    "$APP_PATH" \
+    "$INFRA_DIR/$APP_PATH" \
+    "$INFRA_DIR/../$APP_PATH" \
+    "$INFRA_DIR/../../$APP_PATH" \
+    "$(pwd)/$APP_PATH" \
+    "$(pwd)/../$APP_PATH"
+  do
+    if [ -d "$candidate" ]; then
+      cd "$candidate" && pwd
+      return 0
+    fi
+  done
+
+  echo "ERROR: Unable to resolve Expo app path from INFRA_EXPO_APP_PATH=${APP_PATH}" >&2
+  exit 1
 }
 
 compute_sha256() {
@@ -71,6 +83,7 @@ upload_asset() {
 }
 
 ASSET_BUCKET=$(sanitize_bucket_name "${PIPELINE_PREFIX}-${STACK}-public-assets-${ROOT_DOMAIN//./-}")
+APP_DIR=$(resolve_app_dir)
 
 echo "Syncing public assets for stage ${STACK} to bucket ${ASSET_BUCKET}"
 
