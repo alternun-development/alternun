@@ -21,7 +21,8 @@ env:
     INFRA_REQUIRE_EXPO_PUBLIC_AUTH: "true"
     INFRA_FAIL_ON_SECRET_SYNC: "false"
     INFRA_RUN_UPSTREAM_PREDEPLOY_CHECKS: "false"
-    # managed|explicit : managed clears cert ARN overrides coming from CodeBuild project env.
+    # managed|explicit : managed clears site cert ARN overrides, but preserves redirect cert ARN overrides
+    # so legacy redirect domains can reuse existing ACM certificates when needed.
     INFRA_CERT_MODE: "managed"
     # CI should use CodeBuild IAM role (temporary creds), not static keys.
     INFRA_FORCE_ENV_AWS_CREDENTIALS: "false"
@@ -32,6 +33,7 @@ env:
     # Safety-first: never delete existing DNS automatically during deploy.
     AUTO_REMOVE_CONFLICTING_DNS: "false"
     INFRA_REMOVE_ACM_VALIDATION_CNAME: "false"
+    INFRA_FAIL_ON_MANAGED_CERT_CNAME_CONFLICT: "true"
     # Optional post-deploy DNS sync poll tuning (used only when enabled).
     POLL_TIMEOUT: "120"
     POLL_INTERVAL: "15"
@@ -94,13 +96,12 @@ phases:
           export INFRA_EXPO_CERT_ARN_PRODUCTION=""
           export INFRA_EXPO_CERT_ARN_DEV=""
           export INFRA_EXPO_CERT_ARN_MOBILE=""
-          export INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN=""
-          export INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN=""
-          export INFRA_REDIRECT_ROOT_CERT_ARN=""
-          echo "Certificate mode = managed (INFRA_*_CERT_ARN cleared)"
+          echo "Certificate mode = managed (INFRA_EXPO_CERT_ARN_* cleared; redirect cert ARN overrides preserved if provided)"
         else
           echo "Certificate mode = explicit (INFRA_*_CERT_ARN preserved)"
         fi
+      - echo "Infra Expo Domains = production:${INFRA_EXPO_DOMAIN_PRODUCTION} dev:${INFRA_EXPO_DOMAIN_DEV} mobile:${INFRA_EXPO_DOMAIN_MOBILE}"
+      - echo "Resolved Domains   = production:${DOMAIN_PRODUCTION} dev:${DOMAIN_DEV} mobile:${DOMAIN_MOBILE}"
       - echo "Require Expo Auth Env = ${INFRA_REQUIRE_EXPO_PUBLIC_AUTH}"
       - echo "Ensuring infra SST secrets..."
       - |
