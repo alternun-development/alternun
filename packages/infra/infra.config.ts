@@ -15,6 +15,7 @@ import { createExpoSite, createPipeline, resolveDomain } from '@lsts_tech/infra'
 import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
 
 type PipelineStage = 'production' | 'dev' | 'mobile';
+type PipelineComputeType = 'BUILD_GENERAL1_SMALL' | 'BUILD_GENERAL1_MEDIUM' | 'BUILD_GENERAL1_LARGE';
 
 interface PublicAssetFile {
   cacheControl: string;
@@ -37,6 +38,8 @@ interface LocalDeploymentConfig {
     branchProd?: string;
     branchDev?: string;
     branchMobile?: string;
+    computeType?: PipelineComputeType;
+    timeoutMinutes?: number;
   };
   expo?: {
     appPath?: string;
@@ -169,6 +172,13 @@ const codestarConnectionArn =
   process.env.INFRA_CODESTAR_CONNECTION_ARN ?? localConfig.pipeline?.codestarConnectionArn;
 const selectedPipelinesRaw =
   process.env.INFRA_PIPELINES ?? localConfig.pipeline?.pipelines ?? 'production,dev';
+const pipelineComputeTypeDefault = (stage: PipelineStage): PipelineComputeType =>
+  stage === 'dev' ? 'BUILD_GENERAL1_LARGE' : 'BUILD_GENERAL1_MEDIUM';
+const parseTimeoutMinutes = (value: string | number | undefined, fallback: number): number => {
+  if (value === undefined) return fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
 
 const expoAppPath =
   process.env.INFRA_EXPO_APP_PATH ?? localConfig.expo?.appPath ?? '../../apps/mobile';
@@ -578,6 +588,18 @@ export function createInfrastructure() {
 
     for (const pipelineStage of selectedPipelines) {
       const spec = pipelineSpecs[pipelineStage];
+      const pipelineComputeType = (process.env[
+        `INFRA_PIPELINE_COMPUTE_TYPE_${pipelineStage.toUpperCase()}`
+      ] ??
+        process.env.INFRA_PIPELINE_COMPUTE_TYPE ??
+        localConfig.pipeline?.computeType ??
+        pipelineComputeTypeDefault(pipelineStage)) as PipelineComputeType;
+      const pipelineTimeoutMinutes = parseTimeoutMinutes(
+        process.env[`INFRA_PIPELINE_TIMEOUT_MINUTES_${pipelineStage.toUpperCase()}`] ??
+          process.env.INFRA_PIPELINE_TIMEOUT_MINUTES ??
+          localConfig.pipeline?.timeoutMinutes,
+        30,
+      );
       const pipeline = createPipeline({
         name: `${pipelinePrefix}-${spec.suffix}`,
         repo: pipelineRepo,
@@ -586,6 +608,8 @@ export function createInfrastructure() {
         projectTag: pipelineProjectTag,
         codestarConnectionArn,
         buildEnv: commonBuildEnv,
+        computeType: pipelineComputeType,
+        timeoutMinutes: pipelineTimeoutMinutes,
       });
 
       pipelineOutputs[`${pipelineStage}PipelineName`] = pipeline.pipelineName;

@@ -35,53 +35,36 @@ is_truthy() {
   esac
 }
 
-remove_state_resources_by_prefix() {
-  local prefix=$1
-  local state_file=${2:-}
+remove_state_resource() {
+  local target=$1
 
-  if [ -z "$prefix" ] || [ -z "$state_file" ] || [ ! -f "$state_file" ]; then
+  if [ -z "$target" ]; then
     return 0
   fi
 
-  if ! command -v jq >/dev/null 2>&1; then
-    echo "WARN: jq not found; cannot prune legacy state resources for ${prefix}." >&2
+  echo "Pruning legacy managed certificate state for ${target}..."
+
+  local remove_output
+  if remove_output=$(
+    printf 'y\n' | (
+      cd "$INFRA_DIR" &&
+        SST_TELEMETRY_DISABLED=1 npx sst state remove --stage "$STACK" "$target"
+    ) 2>&1
+  ); then
+    echo "Removed state resource: ${target}"
     return 0
   fi
 
-  local targets
-  targets=$(jq -r --arg prefix "$prefix" '
-    .latest.resources[]?
-    | .urn // empty
-    | select(contains($prefix))
-    | split("::")
-    | .[-1]
-  ' "$state_file" | awk 'NF { print length($0) "\t" $0 }' | sort -rn | cut -f2- | uniq)
-
-  if [ -z "$targets" ]; then
+  if printf '%s' "$remove_output" | grep -q "No changes made"; then
+    echo "No legacy state changes required for ${target}."
     return 0
   fi
 
-  echo "Pruning legacy managed certificate state for ${prefix}..."
-
-  while IFS= read -r target; do
-    [ -n "$target" ] || continue
-    local remove_output
-    if remove_output=$(
-      cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst state remove --stage "$STACK" "$target" 2>&1
-    ); then
-      echo "Removed state resource: ${target}"
-    else
-      echo "WARN: Failed to remove state resource ${target}; continuing. Output: ${remove_output}" >&2
-    fi
-  done <<< "$targets"
+  echo "WARN: Failed to remove state resource ${target}; continuing. Output: ${remove_output}" >&2
+  return 0
 }
 
 prune_legacy_managed_certificate_state() {
-  if ! command -v jq >/dev/null 2>&1; then
-    echo "WARN: jq not found; skipping legacy managed certificate state pruning." >&2
-    return 0
-  fi
-
   local prefixes=()
 
   if [ -n "${INFRA_EXPO_CERT_ARN_PRODUCTION:-}" ] && [ "$STACK" = "production" ]; then
@@ -114,21 +97,10 @@ prune_legacy_managed_certificate_state() {
     return 0
   fi
 
-  local state_file
-  state_file=$(mktemp)
-
-  if ! (cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst state export --stage "$STACK") > "$state_file"; then
-    echo "WARN: Failed to export SST state; skipping legacy managed certificate state pruning." >&2
-    rm -f "$state_file"
-    return 0
-  fi
-
   local prefix
   for prefix in "${prefixes[@]}"; do
-    remove_state_resources_by_prefix "$prefix" "$state_file"
+    remove_state_resource "$prefix"
   done
-
-  rm -f "$state_file"
 }
 
 remove_cloudfront_alias() {
