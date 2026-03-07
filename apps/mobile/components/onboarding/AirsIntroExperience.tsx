@@ -18,6 +18,7 @@ import { Check, ChevronDown, ChevronRight, Languages, LogIn, Moon, PlayCircle, R
 import AirsBrandMark from '../branding/AirsBrandMark';
 import LandingFooter from '../common/LandingFooter';
 import { useAppTranslation, } from '../i18n/useAppTranslation';
+import { getAirsIntroVideoUrl, } from './airsIntroVideoSource';
 import { useAppPreferences, } from '../settings/AppPreferencesProvider';
 
 const AIRS_VIDEO_POSTER =
@@ -30,8 +31,6 @@ const AUTO_UNMUTE_SCROLL_Y = 88;
 const TOP_PAUSE_SCROLL_Y = 6;
 const INTRO_PREVIEW_SECONDS = 6;
 
-const AIRS_VIDEO_EN = require('../../assets/videos/AIRS-intro-videoplayback-EN.mp4',);
-const AIRS_VIDEO_ES = require('../../assets/videos/AIRS-intro-videoplayback-ES.mp4',);
 const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg',);
 const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg',);
 const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png',);
@@ -40,51 +39,6 @@ const ALTERNUN_PILL_LOGO_DARK = require('../../assets/alternun-white.svg',);
 // const AIRS_BG_DARK = require('../../assets/images/water_falls-alternun-digital-forge.png'); //TODO CRAFT a same resolutions BG imagen
 const AIRS_BG_DARK =
   'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS';
-
-function resolveLocalAssetUri(assetModule: unknown,): string {
-  if (typeof assetModule === 'string') {
-    return assetModule;
-  }
-
-  if (assetModule && typeof assetModule === 'object') {
-    const source = assetModule as {
-      uri?: unknown;
-      src?: unknown;
-      default?: unknown;
-    };
-
-    if (typeof source.uri === 'string') {
-      return source.uri;
-    }
-
-    if (typeof source.src === 'string') {
-      return source.src;
-    }
-
-    if (typeof source.default === 'string') {
-      return source.default;
-    }
-
-    if (source.default && typeof source.default === 'object') {
-      const defaultSource = source.default as { uri?: unknown; src?: unknown };
-      if (typeof defaultSource.uri === 'string') {
-        return defaultSource.uri;
-      }
-      if (typeof defaultSource.src === 'string') {
-        return defaultSource.src;
-      }
-    }
-  }
-
-  try {
-    const resolver = require('react-native/Libraries/Image/resolveAssetSource',).default as (
-      source: unknown,
-    ) => { uri?: string } | null;
-    return resolver(assetModule,)?.uri ?? '';
-  } catch {
-    return '';
-  }
-}
 
 interface AirsIntroExperienceProps {
   onContinueToDashboard: (dontShowAgain: boolean) => void;
@@ -231,11 +185,7 @@ export default function AirsIntroExperience({
   const hasScrollActivatedPlaybackRef = useRef(hasScrollActivatedPlayback,);
   const isInTopZoneRef = useRef(true,);
   const isScreenFocusedRef = useRef(isScreenFocused,);
-  const selectedVideoModule = language === 'es' ? AIRS_VIDEO_ES : AIRS_VIDEO_EN;
-  const videoUri = useMemo(
-    () => resolveLocalAssetUri(selectedVideoModule,),
-    [selectedVideoModule,],
-  );
+  const videoUri = useMemo(() => getAirsIntroVideoUrl(language,), [language,]);
 
   const WebView = useMemo(() => {
     if (Platform.OS === 'web') {
@@ -258,7 +208,7 @@ export default function AirsIntroExperience({
     setIsInTopZone(true,);
     isInTopZoneRef.current = true;
     hasScrollActivatedPlaybackRef.current = false;
-  }, [selectedVideoModule,],);
+  }, [language,]);
 
   useEffect(() => {
     isMutedRef.current = isMuted;
