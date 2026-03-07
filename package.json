@@ -32,6 +32,8 @@
     "version:check-secrets": "versioning check-secrets",
     "release": "node scripts/release.mjs",
     "release:patch": "node scripts/release.mjs patch",
+    "release:patch:push": "node scripts/release.mjs patch --push",
+    "release:patch:develop": "node scripts/release.mjs patch --push --target-branch develop",
     "release:minor": "node scripts/release.mjs minor",
     "release:major": "node scripts/release.mjs major",
     "release:promote": "node scripts/release.mjs --promote"
