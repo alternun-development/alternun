@@ -1,7 +1,13 @@
+import {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES,
+  isSupportedLocale,
+  type AlternunLocale,
+} from '@alternun/i18n';
 import React, { createContext, useContext, useMemo, useState, type PropsWithChildren } from 'react';
 
 export type ThemeMode = 'dark' | 'light';
-export type AppLanguage = 'en' | 'es' | 'th';
+export type AppLanguage = AlternunLocale;
 
 const PREFERENCES_STORAGE_KEY = 'alternun.mobile.preferences.v1';
 
@@ -18,7 +24,7 @@ interface AppPreferencesContextValue {
 
 const AppPreferencesContext = createContext<AppPreferencesContextValue | undefined>(undefined);
 
-const LANGUAGE_ORDER: AppLanguage[] = ['en', 'es', 'th'];
+const LANGUAGE_ORDER: AppLanguage[] = [...SUPPORTED_LOCALES,];
 
 interface StoredPreferences {
   themeMode?: ThemeMode;
@@ -74,9 +80,7 @@ export function AppPreferencesProvider({ children }: PropsWithChildren) {
     stored?.themeMode === 'light' || stored?.themeMode === 'dark' ? stored.themeMode : 'dark',
   );
   const [language, setLanguage] = useState<AppLanguage>(
-    stored?.language === 'es' || stored?.language === 'th' || stored?.language === 'en'
-      ? stored.language
-      : 'en',
+    isSupportedLocale(stored?.language,) ? stored.language ?? DEFAULT_LOCALE : DEFAULT_LOCALE,
   );
   const [showAirsIntro, setShowAirsIntro] = useState<boolean>(
     typeof stored?.showAirsIntro === 'boolean' ? stored.showAirsIntro : true,

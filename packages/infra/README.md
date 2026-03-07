@@ -51,19 +51,29 @@ export INFRA_CONFIG_PATH=./packages/infra/config/deployment.config.json
 
 Environment variables always override local JSON values.
 
-## Branch Promotion (develop -> master)
+## Branch Sync
 
 Run only from a clean working tree:
+
+```bash
+pnpm --filter @alternun/infra run sync:master-develop
+```
+
+Current testnet mode uses `master -> develop` as the fast-forward direction.
+
+This script does a fast-forward-only sync:
+
+1. fetches `master` and `develop`
+2. fast-forwards `develop` from `master`
+3. pushes `develop`
+
+The legacy promotion helper still exists:
 
 ```bash
 pnpm --filter @alternun/infra run sync:develop-master
 ```
 
-This script does a fast-forward-only promotion:
-
-1. fetches `develop` and `master`
-2. fast-forwards `master` from `develop`
-3. pushes `master`
+Use it only when testnet mode is disabled and the traditional `develop -> master` release flow is restored.
 
 ## Deploy
 

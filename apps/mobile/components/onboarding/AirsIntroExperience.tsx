@@ -1,3 +1,4 @@
+import { getLocaleLabel, } from '@alternun/i18n';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -10,9 +11,13 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
 import { Image as ExpoImage } from 'expo-image';
 import { useIsFocused } from '@react-navigation/native';
 import { Check, ChevronDown, ChevronRight, Languages, LogIn, Moon, PlayCircle, RotateCcw, Settings as SettingsIcon, Sun, Volume2, VolumeX } from 'lucide-react-native';
+import AirsBrandMark from '../branding/AirsBrandMark';
+import LandingFooter from '../common/LandingFooter';
+import { useAppTranslation, } from '../i18n/useAppTranslation';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 
 const AIRS_VIDEO_POSTER =
@@ -27,8 +32,8 @@ const INTRO_PREVIEW_SECONDS = 6;
 
 const AIRS_VIDEO_EN = require('../../assets/videos/AIRS-intro-videoplayback-EN.mp4');
 const AIRS_VIDEO_ES = require('../../assets/videos/AIRS-intro-videoplayback-ES.mp4');
-const AIRS_BRAND_LOGO_LIGHT = require('../../assets/AIRS-logo-light.svg');
-const AIRS_BRAND_LOGO_DARK = require('../../assets/AIRS-logo-dark.svg');
+const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg');
+const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg');
 const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png');
 const ALTERNUN_PILL_LOGO_LIGHT = require('../../assets/alternun-black.svg');
 const ALTERNUN_PILL_LOGO_DARK = require('../../assets/alternun-white.svg');
@@ -204,6 +209,7 @@ export default function AirsIntroExperience({
   onSignIn,
 }: AirsIntroExperienceProps) {
   const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
+  const { t, } = useAppTranslation('mobile');
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(false);
@@ -493,16 +499,16 @@ export default function AirsIntroExperience({
   const mediaTagPillHeight = Math.min(Math.max(screenWidth * 0.058, 34), 48);
   const mediaTagPillLogoWidth = mediaTagPillWidth * 0.74;
   const mediaTagPillLogoHeight = mediaTagPillHeight * 0.58;
-  const heroBrandPrimaryColor = isDark ? '#004646' : '#1ee6b5';
-  const heroBrandSecondaryColor = isDark ? '#1ee6b5' : '#004646';
-  const heroTitleSize = Math.min(Math.max(screenWidth * 0.062, 34), 64);
-  const heroTitleLineHeight = heroTitleSize * 0.94;
+  const heroBrandSecondaryColor = isDark ? 'rgba(210,255,245,0.9)' : '#0f766e';
+  const heroWordmarkHeight = Math.min(Math.max(screenWidth * 0.066, 38), 66);
+  const heroWordmarkWidth = Math.round(heroWordmarkHeight * 2.68);
   const heroBylineSize = Math.min(Math.max(screenWidth * 0.016, 10), 15);
   const heroBylineLineHeight = heroBylineSize * 1.03;
-  const heroBylineIndent = Math.max(3, Math.round(heroTitleSize * 0.16));
-  const heroBylineMaxWidth = heroTitleSize * 2.5;
-  const heroBylineLogoSize = Math.min(Math.max(screenWidth * 0.02, 11), 16);
-  const heroLogoSize = Math.min(Math.max(screenWidth * 0.08, 46), 78);
+  const heroBylineWidth = heroWordmarkWidth * 0.34;
+  const heroBylineLogoSize = Math.min(Math.max(screenWidth * 0.022, 12), 18);
+  const heroLogoSize = Math.min(Math.max(screenWidth * 0.084, 50), 84);
+  const heroBrandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
+  const heroBrandMarkCutout = isDark ? '#03292f' : '#d8fff4';
 
   const cardWidth = scrollY.interpolate({
     inputRange: [0, HERO_EXPANSION_RANGE],
@@ -607,7 +613,7 @@ export default function AirsIntroExperience({
 
   const ThemeIcon = isDark ? Sun : Moon;
   const MuteIcon = effectiveMuted ? VolumeX : Volume2;
-  const heroBrandLogoSource = isDark ? AIRS_BRAND_LOGO_DARK : AIRS_BRAND_LOGO_LIGHT;
+  const heroWordmarkSource = isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK;
   const mediaTagPillLogoSource = isDark ? ALTERNUN_PILL_LOGO_DARK : ALTERNUN_PILL_LOGO_LIGHT;
   const mediaTagPillBackgroundColor = isDark ? 'rgba(0, 70, 70, 0.96)' : 'rgba(229, 245, 242, 0.96)';
   const mediaTagPillBorderColor = isDark ? 'rgba(34, 248, 199, 0.34)' : 'rgba(0, 70, 70, 0.42)';
@@ -615,12 +621,7 @@ export default function AirsIntroExperience({
   const heroBackgroundSource = (isDark ? AIRS_BG_DARK : { uri: AIRS_BG_LIGHT_SRC }) as any;
   const heroFooterTextColor = isDark ? 'rgba(248,251,255,0.96)' : '#020617';
   const heroFooterShadowColor = isDark ? 'rgba(0,0,0,0.28)' : 'transparent';
-  const languageLabel =
-    language === 'es'
-      ? 'Español'
-      : language === 'th'
-        ? 'ไทย'
-        : 'English';
+  const languageLabel = getLocaleLabel(language, language);
 
   const closeProfileMenu = () => {
     setProfileMenuVisible(false);
@@ -700,24 +701,16 @@ export default function AirsIntroExperience({
       <View pointerEvents='none' style={styles.floatingLeftTop}>
         <View style={styles.heroBrandRow}>
           <View style={styles.heroBrandTextBlock}>
-            <Text
-              style={[
-                styles.heroTitle,
-                {
-                  color: heroBrandPrimaryColor,
-                  fontSize: heroTitleSize,
-                  lineHeight: heroTitleLineHeight,
-                },
-              ]}
-            >
-              AIRS
-            </Text>
+            <ExpoImage
+              source={heroWordmarkSource}
+              style={{ width: heroWordmarkWidth, height: heroWordmarkHeight }}
+              contentFit='contain'
+            />
             <View
               style={[
                 styles.heroBrandBylineRow,
                 {
-                  marginLeft: heroBylineIndent,
-                  maxWidth: heroBylineMaxWidth,
+                  width: heroBylineWidth,
                 },
               ]}
             >
@@ -731,22 +724,25 @@ export default function AirsIntroExperience({
                   },
                 ]}
               >
-                Powered By
+                {t('labels.by')}
               </Text>
               <ExpoImage
                 source={ALTERNUN_POWERED_BY_LOGO}
                 style={[
                   styles.heroBrandBylineLogo,
-                  { width: heroBylineLogoSize, height: heroBylineLogoSize },
+                  {
+                    width: heroBylineLogoSize,
+                    height: heroBylineLogoSize,
+                  },
                 ]}
                 contentFit='contain'
               />
             </View>
           </View>
-          <ExpoImage
-            source={heroBrandLogoSource}
-            style={[styles.heroBrandLogo, { width: heroLogoSize, height: heroLogoSize }]}
-            contentFit='contain'
+          <AirsBrandMark
+            size={heroLogoSize}
+            fillColor={heroBrandMarkFill}
+            cutoutColor={heroBrandMarkCutout}
           />
         </View>
       </View>
@@ -774,7 +770,7 @@ export default function AirsIntroExperience({
               activeOpacity={0.82}
             >
               <LogIn size={14} color={palette.textPrimary} />
-              <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>Sign In</Text>
+              <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>{t('labels.signIn')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -783,7 +779,7 @@ export default function AirsIntroExperience({
               activeOpacity={0.82}
             >
               <SettingsIcon size={14} color={palette.textPrimary} />
-              <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>Settings</Text>
+              <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>{t('labels.settings')}</Text>
               <View style={styles.floatingMenuItemRight}>
                 {settingsExpanded ? (
                   <ChevronDown size={13} color={palette.textMuted} />
@@ -801,10 +797,10 @@ export default function AirsIntroExperience({
                   activeOpacity={0.82}
                 >
                   <ThemeIcon size={14} color={palette.textPrimary} />
-                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>Theme</Text>
+                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>{t('labels.theme')}</Text>
                   <View style={styles.floatingMenuItemRight}>
                     <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
-                      {isDark ? 'Dark' : 'Light'}
+                      {isDark ? t('labels.dark') : t('labels.light')}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -815,7 +811,7 @@ export default function AirsIntroExperience({
                   activeOpacity={0.82}
                 >
                   <Languages size={14} color={palette.textPrimary} />
-                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>Language</Text>
+                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>{t('labels.language')}</Text>
                   <View style={styles.floatingMenuItemRight}>
                     <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
                       {languageLabel}
@@ -846,7 +842,7 @@ export default function AirsIntroExperience({
                 <Check size={11} color={palette.accent} />
               </View>
               <Text style={[styles.floatingCaptionText, { color: palette.textMuted }]}>
-                Don&apos;t show intro again
+                {t('onboarding.dontShowIntroAgain')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -929,7 +925,7 @@ export default function AirsIntroExperience({
                 >
                   <PlayCircle size={20} color='#ffffff' />
                   <Text style={styles.videoFallbackText}>
-                    {videoUri ? 'Open AIRS Intro Video' : 'Loading AIRS Intro Video'}
+                    {videoUri ? t('landing.video.openIntro') : t('landing.video.loadingIntro')}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -941,7 +937,7 @@ export default function AirsIntroExperience({
                   activeOpacity={0.85}
                 >
                   <RotateCcw size={14} color='#f8fbff' />
-                  <Text style={styles.videoControlText}>Restart</Text>
+                  <Text style={styles.videoControlText}>{t('landing.video.restart')}</Text>
                 </TouchableOpacity>
               ) : null}
 
@@ -952,7 +948,9 @@ export default function AirsIntroExperience({
                   activeOpacity={0.85}
                 >
                   <MuteIcon size={14} color='#f8fbff' />
-                  <Text style={styles.videoControlText}>{effectiveMuted ? 'Muted' : 'Sound On'}</Text>
+                  <Text style={styles.videoControlText}>
+                    {effectiveMuted ? t('landing.video.muted') : t('landing.video.soundOn')}
+                  </Text>
                 </TouchableOpacity>
               ) : null}
 
@@ -1014,7 +1012,7 @@ export default function AirsIntroExperience({
                       },
                     ]}
                   >
-                    Alternun Impact & Reputation Score
+                    {t('landing.media.title')}
                   </Text>
                 </Animated.View>
 
@@ -1038,7 +1036,7 @@ export default function AirsIntroExperience({
                       },
                     ]}
                   >
-                    The definitive loyalty program for people protecting the planet.
+                    {t('landing.media.subtitle')}
                   </Text>
                 </Animated.View>
               </>
@@ -1060,7 +1058,7 @@ export default function AirsIntroExperience({
                   { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor },
                 ]}
               >
-                Alternun Presents
+                {t('landing.hero.presentedBy')}
               </Text>
             </View>
             <Text
@@ -1069,7 +1067,7 @@ export default function AirsIntroExperience({
                 { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor },
               ]}
             >
-              Scroll to interact
+              {t('landing.hero.scrollToInteract')}
             </Text>
           </Animated.View>
         </View>
@@ -1083,28 +1081,32 @@ export default function AirsIntroExperience({
             },
           ]}
         >
-          <Text style={[styles.contentTitle, { color: palette.textPrimary }]}>AIRS</Text>
+          <View style={styles.contentTitleWrap}>
+            <ExpoImage source={heroWordmarkSource} style={styles.contentTitleLogo} contentFit='contain' />
+          </View>
           <Text style={[styles.contentText, { color: palette.textMuted }]}>
-            Alternun Impact & Reputation Score.
+            {t('landing.info.scoreLine')}
           </Text>
           <Text style={[styles.contentText, { color: palette.textMuted }]}>
-            One surface for verified impact, compensation lifecycle, and wallet-linked modules.
+            {t('landing.info.summaryLine')}
           </Text>
           <View style={styles.minimalActions}>
             <TouchableOpacity
               activeOpacity={0.75}
               onPress={() => onContinueToDashboard(dontShowAgain)}
             >
-              <Text style={[styles.linkAction, { color: palette.accent }]}>Go to dashboard</Text>
+              <Text style={[styles.linkAction, { color: palette.accent }]}>{t('landing.actions.goToDashboard')}</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
+
+        <LandingFooter />
       </Animated.ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   page: {
     flex: 1,
   },
@@ -1236,22 +1238,13 @@ const styles = StyleSheet.create({
   },
   heroBrandRow: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 12,
-  },
-  heroBrandLogo: {
-    width: 56,
-    height: 56,
-    marginBottom: 2,
+    alignItems: 'flex-start',
+    gap: 8,
   },
   heroBrandTextBlock: {
     justifyContent: 'flex-end',
-    alignItems: 'flex-start',
+    alignItems: 'flex-end',
     gap: 0,
-  },
-  heroTitle: {
-    fontWeight: '900',
-    letterSpacing: 0.35,
   },
   heroBrandByline: {
     marginTop: 0,
@@ -1262,12 +1255,13 @@ const styles = StyleSheet.create({
     marginTop: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    justifyContent: 'flex-end',
+    gap: 4,
   },
   heroBrandBylineLogo: {
-    opacity: 0.96,
-    marginLeft: 0,
-    marginTop: 2,
+    borderRadius: 999,
+    opacity: 0.98,
+    marginTop: 1,
   },
   heroMediaStage: {
     position: 'absolute',
@@ -1448,9 +1442,13 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     gap: 6,
   },
-  contentTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+  contentTitleWrap: {
+    minHeight: 32,
+    justifyContent: 'center',
+  },
+  contentTitleLogo: {
+    width: 92,
+    height: 32,
   },
   contentText: {
     fontSize: 12,

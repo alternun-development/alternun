@@ -1,0 +1,17 @@
+{
+  "provider": "postmark",
+  "fromEmail": "no-reply@example.com",
+  "senderName": "YOUR_APP",
+  "supabaseProjectRef": "your-supabase-project-ref",
+  "supabaseSmtpMaxFrequencySeconds": 45,
+  "postmark": {
+    "smtpHost": "smtp-broadcasts.postmarkapp.com",
+    "smtpPort": 587,
+    "serverToken": ""
+  },
+  "ses": {
+    "awsRegion": "us-east-1",
+    "smtpHost": "email-smtp.us-east-1.amazonaws.com",
+    "smtpPort": 587
+  }
+}
