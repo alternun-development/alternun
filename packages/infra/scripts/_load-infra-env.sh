@@ -94,10 +94,11 @@ load_infra_env() {
   fi
 
   # Compatibility bridge for @lsts_tech/infra shell scripts.
-  export DOMAIN_ROOT="${DOMAIN_ROOT:-${INFRA_ROOT_DOMAIN:-}}"
-  export DOMAIN_PRODUCTION="${DOMAIN_PRODUCTION:-${INFRA_EXPO_DOMAIN_PRODUCTION:-}}"
-  export DOMAIN_DEV="${DOMAIN_DEV:-${INFRA_EXPO_DOMAIN_DEV:-}}"
-  export DOMAIN_MOBILE="${DOMAIN_MOBILE:-${INFRA_EXPO_DOMAIN_MOBILE:-}}"
-  export PROJECT_PREFIX="${PROJECT_PREFIX:-${INFRA_PIPELINE_PREFIX:-}}"
-  export PREFIX="${PREFIX:-${INFRA_PIPELINE_PREFIX:-${PROJECT_PREFIX:-}}}"
+  # Keep INFRA_* values authoritative so stale CodeBuild project variables do not override repo config.
+  export DOMAIN_ROOT="${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-}}"
+  export DOMAIN_PRODUCTION="${INFRA_EXPO_DOMAIN_PRODUCTION:-${DOMAIN_PRODUCTION:-}}"
+  export DOMAIN_DEV="${INFRA_EXPO_DOMAIN_DEV:-${DOMAIN_DEV:-}}"
+  export DOMAIN_MOBILE="${INFRA_EXPO_DOMAIN_MOBILE:-${DOMAIN_MOBILE:-}}"
+  export PROJECT_PREFIX="${INFRA_PIPELINE_PREFIX:-${PROJECT_PREFIX:-}}"
+  export PREFIX="${INFRA_PIPELINE_PREFIX:-${PREFIX:-${PROJECT_PREFIX:-}}}"
 }
