@@ -12,10 +12,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createExpoSite, createPipeline, resolveDomain } from '@lsts_tech/infra';
+import {
+  buildIdentitySettings,
+  resolveIdentityStageDomain,
+  type IdentityLocalConfig,
+} from './modules/identity.js';
 import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
 
 type PipelineStage = 'production' | 'dev' | 'mobile';
-type PipelineComputeType = 'BUILD_GENERAL1_SMALL' | 'BUILD_GENERAL1_MEDIUM' | 'BUILD_GENERAL1_LARGE';
+type PipelineComputeType =
+  | 'BUILD_GENERAL1_SMALL'
+  | 'BUILD_GENERAL1_MEDIUM'
+  | 'BUILD_GENERAL1_LARGE';
 
 interface PublicAssetFile {
   cacheControl: string;
@@ -82,6 +90,7 @@ interface LocalDeploymentConfig {
       devToTestnet?: string;
     };
   };
+  identity?: IdentityLocalConfig;
 }
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -141,7 +150,7 @@ function buildPublicAssetFile(
   appPath: string,
   bucketBaseUrl: string,
   relativePath: string,
-  keyPrefix: string,
+  keyPrefix: string
 ): PublicAssetFile {
   const source = path.resolve(appPath, relativePath);
   const content = fs.readFileSync(source);
@@ -162,6 +171,12 @@ function buildPublicAssetFile(
 
 const rootDomain = process.env.INFRA_ROOT_DOMAIN ?? localConfig.rootDomain ?? 'alternun.co';
 const appName = process.env.INFRA_APP_NAME ?? localConfig.appName ?? 'alternun-infra';
+const identitySettings = buildIdentitySettings({
+  appName,
+  rootDomain,
+  env: process.env,
+  localConfig: localConfig.identity,
+});
 const pipelineRepo =
   process.env.INFRA_PIPELINE_REPO ?? localConfig.pipeline?.repo ?? 'alternun-development/alternun';
 const pipelinePrefix =
@@ -429,25 +444,28 @@ const pipelineSpecs: Record<
 };
 
 export function createInfrastructure() {
-  const stage = $app.stage;
+  const stage = String($app.stage);
   assertExpoPublicAuthEnvironment(stage);
   const assetBucketName =
-    assetBucketNames[stage as PipelineStage] ?? createAssetBucketName(stage, pipelinePrefix, rootDomain);
+    assetBucketNames[stage as PipelineStage] ??
+    createAssetBucketName(stage, pipelinePrefix, rootDomain);
   const assetBaseUrl = createAssetBaseUrl(assetBucketName);
   const introVideoAssets = {
     en: buildPublicAssetFile(
       resolvedExpoAppPath,
       assetBaseUrl,
       'assets/videos/AIRS-intro-videoplayback-EN.mp4',
-      'landing/videos',
+      'landing/videos'
     ),
     es: buildPublicAssetFile(
       resolvedExpoAppPath,
       assetBaseUrl,
       'assets/videos/AIRS-intro-videoplayback-ES.mp4',
-      'landing/videos',
+      'landing/videos'
     ),
   } satisfies Record<'en' | 'es', PublicAssetFile>;
+  // SST's generated aws namespace is intentionally dynamic and not strongly typed here.
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   const publicAssetBucket = new sst.aws.Bucket(`expo-assets-${stage}`, {
     access: 'public',
     cors: {
@@ -457,7 +475,7 @@ export function createInfrastructure() {
       maxAge: '1 day',
     },
     transform: {
-      bucket: args => {
+      bucket: (args: { bucket?: string }) => {
         args.bucket = assetBucketName;
       },
     },
@@ -571,6 +589,16 @@ export function createInfrastructure() {
     siteUrl: expoSite.url,
     domain: expoDomain?.domainName ?? null,
     customDomainEnabled: enableCustomDomain,
+    identity: {
+      enabled: identitySettings.enabled,
+      domain: resolveIdentityStageDomain(identitySettings, stage),
+      stageDomains: identitySettings.stageDomains,
+      ec2: identitySettings.ec2,
+      rds: identitySettings.rds,
+      emailProvider: identitySettings.emailProvider,
+      jwt: identitySettings.jwt,
+      secrets: identitySettings.secrets,
+    },
     redirects: {
       airsToDevEnabled: shouldCreateAirsToDevRedirect,
       airsToDevSource: shouldCreateAirsToDevRedirect ? airsToDevSourceDomain : null,
@@ -586,19 +614,18 @@ export function createInfrastructure() {
   if (stage === 'production' && selectedPipelines.size > 0) {
     const pipelineOutputs: Record<string, string> = {};
 
-    for (const pipelineStage of selectedPipelines) {
+    for (const pipelineStage of [...selectedPipelines] as PipelineStage[]) {
       const spec = pipelineSpecs[pipelineStage];
-      const pipelineComputeType = (process.env[
-        `INFRA_PIPELINE_COMPUTE_TYPE_${pipelineStage.toUpperCase()}`
-      ] ??
+      const pipelineStageKey = pipelineStage.toUpperCase();
+      const pipelineComputeType = (process.env[`INFRA_PIPELINE_COMPUTE_TYPE_${pipelineStageKey}`] ??
         process.env.INFRA_PIPELINE_COMPUTE_TYPE ??
         localConfig.pipeline?.computeType ??
         pipelineComputeTypeDefault(pipelineStage)) as PipelineComputeType;
       const pipelineTimeoutMinutes = parseTimeoutMinutes(
-        process.env[`INFRA_PIPELINE_TIMEOUT_MINUTES_${pipelineStage.toUpperCase()}`] ??
+        process.env[`INFRA_PIPELINE_TIMEOUT_MINUTES_${pipelineStageKey}`] ??
           process.env.INFRA_PIPELINE_TIMEOUT_MINUTES ??
           localConfig.pipeline?.timeoutMinutes,
-        30,
+        30
       );
       const pipeline = createPipeline({
         name: `${pipelinePrefix}-${spec.suffix}`,
