@@ -48,30 +48,32 @@ remove_state_resources_by_prefix() {
     return 0
   fi
 
-  local urns
-  urns=$(jq -r --arg prefix "$prefix" '
+  local targets
+  targets=$(jq -r --arg prefix "$prefix" '
     .latest.resources[]?
     | .urn // empty
     | select(contains($prefix))
-  ' "$state_file" | awk '{ print length($0) "\t" $0 }' | sort -rn | cut -f2-)
+    | split("::")
+    | .[-1]
+  ' "$state_file" | awk 'NF { print length($0) "\t" $0 }' | sort -rn | cut -f2- | uniq)
 
-  if [ -z "$urns" ]; then
+  if [ -z "$targets" ]; then
     return 0
   fi
 
   echo "Pruning legacy managed certificate state for ${prefix}..."
 
-  while IFS= read -r urn; do
-    [ -n "$urn" ] || continue
+  while IFS= read -r target; do
+    [ -n "$target" ] || continue
     local remove_output
     if remove_output=$(
-      cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst state remove --stage "$STACK" "$urn" 2>&1
+      cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst state remove --stage "$STACK" "$target" 2>&1
     ); then
-      echo "Removed state resource: ${urn}"
+      echo "Removed state resource: ${target}"
     else
-      echo "WARN: Failed to remove state resource ${urn}; continuing. Output: ${remove_output}" >&2
+      echo "WARN: Failed to remove state resource ${target}; continuing. Output: ${remove_output}" >&2
     fi
-  done <<< "$urns"
+  done <<< "$targets"
 }
 
 prune_legacy_managed_certificate_state() {
@@ -243,11 +245,15 @@ prune_legacy_managed_certificate_state
 
 echo "Using SST stack/stage: ${STACK} (cwd: ${INFRA_DIR})"
 
-echo "Running SST diff (preview of infra changes)"
-(cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst diff --stage "$STACK") || true
+if is_truthy "${INFRA_ENABLE_SST_DIFF:-false}"; then
+  echo "Running SST diff (preview of infra changes)"
+  (cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst diff --stage "$STACK") || true
+else
+  echo "Skipping sst diff (INFRA_ENABLE_SST_DIFF=${INFRA_ENABLE_SST_DIFF:-false})"
+fi
 
 if ! is_truthy "${APPROVE:-false}"; then
-  echo "SST diff completed. Re-run with APPROVE=true to apply changes."
+  echo "Preview completed. Re-run with APPROVE=true to apply changes."
   exit 0
 fi
 

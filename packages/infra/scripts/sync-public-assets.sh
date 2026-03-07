@@ -75,6 +75,11 @@ upload_asset() {
   hash=$(compute_sha256 "$file_path")
   key="${key_prefix}/${basename}.${hash}${extension}"
 
+  if aws s3api head-object --bucket "$ASSET_BUCKET" --key "$key" >/dev/null 2>&1; then
+    echo "Skipping upload for $(basename "$file_path"); asset already exists at s3://${ASSET_BUCKET}/${key}"
+    return 0
+  fi
+
   echo "Uploading $(basename "$file_path") -> s3://${ASSET_BUCKET}/${key}"
   aws s3 cp "$file_path" "s3://${ASSET_BUCKET}/${key}" \
     --content-type "video/mp4" \

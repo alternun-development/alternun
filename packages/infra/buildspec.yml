@@ -64,6 +64,7 @@ env:
     INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS: '20'
     INFRA_ENFORCE_REDIRECT_CHECKS: 'false'
     INFRA_ENABLE_ALIAS_CLEANUP: 'false'
+    INFRA_ENABLE_SST_DIFF: 'false'
     # Disabled by default: refresh can rewrite live state before deploy.
     INFRA_ENABLE_SST_REFRESH: 'false'
     HUSKY: '0'
