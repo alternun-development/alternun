@@ -11,9 +11,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getRegionOutput, } from '@pulumi/aws';
 import { createExpoSite, createPipeline, resolveDomain } from '@lsts_tech/infra';
-import { BucketFiles, type BucketFile, } from './.sst/platform/src/components/aws/providers/bucket-files.js';
 import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
 
 type PipelineStage = 'production' | 'dev' | 'mobile';
@@ -433,23 +431,6 @@ export function createInfrastructure() {
     },
     versioning: true,
   });
-  const publicAssetFiles: BucketFile[] = Object.values(introVideoAssets).map(asset => ({
-    cacheControl: asset.cacheControl,
-    contentType: asset.contentType,
-    hash: asset.hash,
-    key: asset.key,
-    source: asset.source,
-  }));
-  new BucketFiles(
-    `expo-assets-${stage}-files`,
-    {
-      bucketName: publicAssetBucket.name,
-      files: publicAssetFiles,
-      purge: false,
-      region: getRegionOutput(undefined, { parent: publicAssetBucket }).name,
-    },
-    { parent: publicAssetBucket },
-  );
 
   const expoDomain = enableCustomDomain
     ? resolveDomain({

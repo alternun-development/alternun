@@ -202,6 +202,13 @@ phases:
           echo "ERROR: No sst-deploy script found." >&2
           exit 1
         fi
+      - |
+        if [ -f "${INFRA_PATH}/scripts/sync-public-assets.sh" ]; then
+          chmod +x "${INFRA_PATH}/scripts/sync-public-assets.sh" || true
+          "${INFRA_PATH}/scripts/sync-public-assets.sh" ${SST_STAGE}
+        else
+          echo "No public asset sync script found; skipping"
+        fi
 
   post_build:
     commands:
