@@ -7,13 +7,25 @@
 /* eslint-disable security/detect-object-injection */
 // / <reference path="./sst-env.d.ts" />
 
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getRegionOutput, } from '@pulumi/aws';
 import { createExpoSite, createPipeline, resolveDomain } from '@lsts_tech/infra';
+import { BucketFiles, type BucketFile, } from './.sst/platform/src/components/aws/providers/bucket-files.js';
 import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
 
 type PipelineStage = 'production' | 'dev' | 'mobile';
+
+interface PublicAssetFile {
+  cacheControl: string;
+  contentType: string;
+  hash: string;
+  key: string;
+  source: string;
+  url: string;
+}
 
 interface LocalDeploymentConfig {
   appName?: string;
@@ -94,6 +106,57 @@ const localConfig = readLocalDeploymentConfig(localConfigPath);
 function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
   if (value === undefined) return defaultValue;
   return !['0', 'false', 'no', 'off'].includes(value.toLowerCase());
+}
+
+function sanitizeBucketName(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '')
+    .slice(0, 63)
+    .replace(/-+$/, '');
+}
+
+function sanitizeAssetKeySegment(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+}
+
+function createAssetBucketName(stage: string, prefix: string, domain: string): string {
+  return sanitizeBucketName(`${prefix}-${stage}-public-assets-${domain.replace(/\./g, '-')}`);
+}
+
+function createAssetBaseUrl(bucketName: string): string {
+  return `https://${bucketName}.s3.amazonaws.com`;
+}
+
+function buildPublicAssetFile(
+  appPath: string,
+  bucketBaseUrl: string,
+  relativePath: string,
+  keyPrefix: string,
+): PublicAssetFile {
+  const source = path.resolve(dirname, appPath, relativePath);
+  const content = fs.readFileSync(source);
+  const hash = crypto.createHash('sha256').update(content).digest('hex').slice(0, 12);
+  const extension = path.extname(relativePath).toLowerCase();
+  const basename = sanitizeAssetKeySegment(path.basename(relativePath, extension));
+  const key = `${keyPrefix}/${basename}.${hash}${extension}`;
+
+  return {
+    cacheControl: 'public,max-age=31536000,immutable',
+    contentType: extension === '.mp4' ? 'video/mp4' : 'application/octet-stream',
+    hash,
+    key,
+    source,
+    url: `${bucketBaseUrl}/${key}`,
+  };
 }
 
 const rootDomain = process.env.INFRA_ROOT_DOMAIN ?? localConfig.rootDomain ?? 'alternun.co';
@@ -232,6 +295,12 @@ const rootDomainRedirectTarget =
 const rootDomainRedirectCertArn =
   process.env.INFRA_REDIRECT_ROOT_CERT_ARN ?? localConfig.redirects?.certArns?.rootDomain;
 
+const assetBucketNames: Record<PipelineStage, string> = {
+  production: createAssetBucketName('production', pipelinePrefix, rootDomain),
+  dev: createAssetBucketName('dev', pipelinePrefix, rootDomain),
+  mobile: createAssetBucketName('mobile', pipelinePrefix, rootDomain),
+};
+
 const commonBuildEnv = {
   INFRA_APP_NAME: appName,
   INFRA_ROOT_DOMAIN: rootDomain,
@@ -332,6 +401,55 @@ const pipelineSpecs: Record<
 export function createInfrastructure() {
   const stage = $app.stage;
   assertExpoPublicAuthEnvironment(stage);
+  const assetBucketName =
+    assetBucketNames[stage as PipelineStage] ?? createAssetBucketName(stage, pipelinePrefix, rootDomain);
+  const assetBaseUrl = createAssetBaseUrl(assetBucketName);
+  const introVideoAssets = {
+    en: buildPublicAssetFile(
+      expoAppPath,
+      assetBaseUrl,
+      'assets/videos/AIRS-intro-videoplayback-EN.mp4',
+      'landing/videos',
+    ),
+    es: buildPublicAssetFile(
+      expoAppPath,
+      assetBaseUrl,
+      'assets/videos/AIRS-intro-videoplayback-ES.mp4',
+      'landing/videos',
+    ),
+  } satisfies Record<'en' | 'es', PublicAssetFile>;
+  const publicAssetBucket = new sst.aws.Bucket(`expo-assets-${stage}`, {
+    access: 'public',
+    cors: {
+      allowHeaders: ['*'],
+      allowMethods: ['GET', 'HEAD'],
+      allowOrigins: ['*'],
+      maxAge: '1 day',
+    },
+    transform: {
+      bucket: args => {
+        args.bucket = assetBucketName;
+      },
+    },
+    versioning: true,
+  });
+  const publicAssetFiles: BucketFile[] = Object.values(introVideoAssets).map(asset => ({
+    cacheControl: asset.cacheControl,
+    contentType: asset.contentType,
+    hash: asset.hash,
+    key: asset.key,
+    source: asset.source,
+  }));
+  new BucketFiles(
+    `expo-assets-${stage}-files`,
+    {
+      bucketName: publicAssetBucket.name,
+      files: publicAssetFiles,
+      purge: false,
+      region: getRegionOutput(undefined, { parent: publicAssetBucket }).name,
+    },
+    { parent: publicAssetBucket },
+  );
 
   const expoDomain = enableCustomDomain
     ? resolveDomain({
@@ -367,6 +485,9 @@ export function createInfrastructure() {
       EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: expoPublicWalletConnectChainId,
       EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH: expoPublicEnableMockWalletAuth,
       EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH: expoPublicEnableWalletOnlyAuth,
+      EXPO_PUBLIC_ASSET_BASE_URL: assetBaseUrl,
+      EXPO_PUBLIC_AIRS_VIDEO_EN_URL: introVideoAssets.en.url,
+      EXPO_PUBLIC_AIRS_VIDEO_ES_URL: introVideoAssets.es.url,
     },
     build: {
       command: expoBuildCommand,
@@ -425,6 +546,15 @@ export function createInfrastructure() {
 
   const outputs: Record<string, unknown> = {
     app: appName,
+    assets: {
+      airsIntroVideoEn: introVideoAssets.en.url,
+      airsIntroVideoEs: introVideoAssets.es.url,
+    },
+    assetBucket: {
+      baseUrl: assetBaseUrl,
+      domain: publicAssetBucket.domain,
+      name: publicAssetBucket.name,
+    },
     siteUrl: expoSite.url,
     domain: expoDomain?.domainName ?? null,
     customDomainEnabled: enableCustomDomain,
