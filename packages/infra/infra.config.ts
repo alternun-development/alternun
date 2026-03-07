@@ -11,12 +11,14 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { Input } from '@pulumi/pulumi';
 import { createExpoSite, createPipeline, resolveDomain } from '@lsts_tech/infra';
 import {
   buildIdentitySettings,
   resolveIdentityStageDomain,
   type IdentityLocalConfig,
 } from './modules/identity.js';
+import { deployIdentityInfrastructure } from './modules/identity-resources.js';
 import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
 
 type PipelineStage = 'production' | 'dev' | 'mobile';
@@ -475,12 +477,26 @@ export function createInfrastructure() {
       maxAge: '1 day',
     },
     transform: {
-      bucket: (args: { bucket?: string }) => {
-        args.bucket = assetBucketName;
+      bucket: (
+        bucketArgs: { bucket?: Input<string> },
+        _opts: unknown,
+        _name: string
+      ): undefined => {
+        bucketArgs.bucket = assetBucketName;
+        return undefined;
       },
     },
     versioning: true,
   });
+  const identityInfrastructure = identitySettings.enabled
+    ? deployIdentityInfrastructure({
+        appName,
+        hostedZoneId: process.env.INFRA_ROUTE53_HOSTED_ZONE_ID,
+        rootDomain,
+        settings: identitySettings,
+        stage,
+      })
+    : undefined;
 
   const expoDomain = enableCustomDomain
     ? resolveDomain({
@@ -598,6 +614,22 @@ export function createInfrastructure() {
       emailProvider: identitySettings.emailProvider,
       jwt: identitySettings.jwt,
       secrets: identitySettings.secrets,
+      deployment: identityInfrastructure
+        ? {
+            dnsRecordFqdn: identityInfrastructure.dnsRecordFqdn,
+            instance: {
+              id: identityInfrastructure.instanceId,
+              instanceProfileName: identityInfrastructure.instanceProfileName,
+              privateIp: identityInfrastructure.privateIp,
+              publicIp: identityInfrastructure.publicIp,
+            },
+            route53RecordName: identityInfrastructure.route53RecordName,
+            securityGroupIds: identityInfrastructure.securityGroupIds,
+            secrets: identityInfrastructure.secrets,
+            vpc: identityInfrastructure.vpc,
+            database: identityInfrastructure.database,
+          }
+        : null,
     },
     redirects: {
       airsToDevEnabled: shouldCreateAirsToDevRedirect,

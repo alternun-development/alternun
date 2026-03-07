@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable comma-dangle */
 // / <reference path="./sst-env.d.ts" />
 
 /**
@@ -20,7 +22,7 @@ export default $config({
       home: 'aws',
       providers: {
         aws: {
-          region: process.env.AWS_REGION ?? 'us-east-1',
+          region: (process.env.AWS_REGION ?? 'us-east-1') as aws.Region,
         },
       },
     };

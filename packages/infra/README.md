@@ -8,18 +8,21 @@ AWS/SST deployment wrapper for Alternun Expo Web using `@lsts_tech/infra`.
 - `dev` -> `testnet.airs.alternun.co`
 - `mobile` (optional) -> `preview.airs.alternun.co`
 
-## Identity Infrastructure Scaffold
+## Identity Infrastructure
 
-The first Authentik infrastructure pass is wired into config, but disabled by default.
+Authentik infrastructure is wired into the stack and remains disabled by default.
 
-Current scaffold covers:
+When `INFRA_IDENTITY_ENABLED=true`, the stack now provisions:
 
-- identity stage domains
-- EC2 sizing defaults
-- RDS sizing defaults
-- JWT contract defaults
-- email-provider selection
-- secret-name conventions
+- a dedicated VPC for identity resources
+- a public EC2 host for Authentik runtime bootstrap
+- a PostgreSQL RDS instance in VPC subnets
+- Route53 DNS for the stage-specific identity domain
+- Secrets Manager entries for:
+  - Authentik secret key
+  - database credentials
+  - SMTP credentials placeholder
+  - JWT signing key
 
 Current default identity domains:
 
@@ -40,7 +43,12 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_JWT_ROLE_CLAIM`
 - `INFRA_IDENTITY_JWT_ROLES_CLAIM`
 
-The scaffold currently exposes these values in SST outputs so implementation can proceed in controlled steps before real EC2/RDS resources are attached.
+Important behavior:
+
+- secret names are automatically stage-scoped on creation to avoid dev/production collisions
+- the identity VPC does not create NAT by default, keeping the baseline cost lean
+- the EC2 host is prepared for Docker-based Authentik deployment, but the runtime compose/bootstrap step is still a separate implementation phase
+- SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
 
 ## Redirects (Dev Stage)
 
