@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+INFRA_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_load-infra-env.sh"
@@ -62,7 +63,7 @@ remove_state_resources_by_prefix() {
 
   while IFS= read -r urn; do
     [ -n "$urn" ] || continue
-    SST_TELEMETRY_DISABLED=1 npx sst state remove --stage "$STACK" "$urn" >/dev/null
+    (cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst state remove --stage "$STACK" "$urn" >/dev/null)
     echo "Removed state resource: ${urn}"
   done <<< "$urns"
 }
@@ -108,7 +109,7 @@ prune_legacy_managed_certificate_state() {
   local state_file
   state_file=$(mktemp)
 
-  if ! SST_TELEMETRY_DISABLED=1 npx sst state export --stage "$STACK" > "$state_file"; then
+  if ! (cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst state export --stage "$STACK") > "$state_file"; then
     echo "WARN: Failed to export SST state; skipping legacy managed certificate state pruning." >&2
     rm -f "$state_file"
     return 0

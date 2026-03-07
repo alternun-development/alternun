@@ -463,7 +463,7 @@ export function createInfrastructure() {
     : undefined;
 
   const expoSite = createExpoSite({
-    appPath: resolvedExpoAppPath,
+    appPath: expoAppPath,
     id: `expo-web-${stage}`,
     domain:
       enableCustomDomain && expoDomain
