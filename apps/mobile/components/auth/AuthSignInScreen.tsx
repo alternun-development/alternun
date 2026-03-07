@@ -1,5 +1,6 @@
 import type { OAuthFlow } from './AppAuthProvider';
-import { getValidationErrorMessage, parseEmailAddress, parseSignUpPassword } from '@alternun/auth';
+import { parseEmailAddress, parseSignUpPassword } from '@alternun/auth';
+import { Image as ExpoImage } from 'expo-image';
 import { AlertCircle, Chrome, Eye, EyeOff, Lock, Mail, Wallet, X } from 'lucide-react-native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -15,10 +16,14 @@ import {
   UIManager,
   View,
 } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
+import ShaderBackground from './ShaderBackground';
 import WalletConnectModal from '../dashboard/WalletConnectModal';
+import { useAppTranslation, } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
 
 const RESEND_COOLDOWN_SECONDS = 45;
+const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg');
 
 type SubmitMode = 'signin' | 'signup' | 'resend' | 'google' | 'wallet' | null;
 type AuthMode = 'signin' | 'signup';
@@ -133,8 +138,8 @@ function normalizeMessage(value: unknown): string | null {
   return null;
 }
 
-function getMessage(error: unknown): string {
-  return normalizeMessage(error) ?? 'Authentication failed. Please try again.';
+function getMessage(error: unknown, fallbackMessage: string,): string {
+  return normalizeMessage(error) ?? fallbackMessage;
 }
 
 function isEmailAuthCapable(client: unknown): client is EmailAuthCapableClient {
@@ -171,6 +176,7 @@ export default function AuthSignInScreen({
   presentation = 'screen',
 }: AuthSignInScreenProps) {
   const { signInWithEmail, signIn, loading, error, client } = useAuth();
+  const { t, } = useAppTranslation('mobile');
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -199,7 +205,9 @@ export default function AuthSignInScreen({
   );
 
   const rawEffectiveError = localError ?? error;
-  const effectiveError = rawEffectiveError ? getMessage(rawEffectiveError) : null;
+  const effectiveError = rawEffectiveError
+    ? getMessage(rawEffectiveError, t('authModal.errors.authenticationFailed'))
+    : null;
   const isBusy = loading || submitMode !== null;
   const isModal = presentation === 'modal';
   const hasEmailInputError = requiredFields.email || invalidEmail;
@@ -304,7 +312,7 @@ export default function AuthSignInScreen({
       if (authStep === 'form') {
         focusRequiredField('email');
       }
-      setLocalError(getValidationErrorMessage(validationError, 'Enter a valid email address.'));
+      setLocalError(t('authModal.validation.validEmail'));
       return null;
     }
   };
@@ -313,7 +321,7 @@ export default function AuthSignInScreen({
     resetMessages();
 
     if (!validateRequiredFields(['email', 'password'])) {
-      setLocalError('Email and password are required.');
+      setLocalError(t('authModal.validation.emailAndPasswordRequired'));
       return;
     }
 
@@ -326,10 +334,10 @@ export default function AuthSignInScreen({
     try {
       await signInWithEmail(normalizedEmail, password);
     } catch (authError) {
-      const message = getMessage(authError);
+      const message = getMessage(authError, t('authModal.errors.authenticationFailed'));
       if (normalizedEmail && isEmailNotConfirmedMessage(message)) {
         setConfirmationEmail(normalizedEmail);
-        setNotice('Your email is not verified yet. Confirm it to continue.');
+        setNotice(t('authModal.notices.unverifiedEmail'));
         transitionToStep('emailConfirmation');
       }
       setLocalError(message);
@@ -342,7 +350,7 @@ export default function AuthSignInScreen({
     resetMessages();
 
     if (!validateRequiredFields(['email', 'password', 'confirmPassword'])) {
-      setLocalError('Email, password, and confirmation are required.');
+      setLocalError(t('authModal.validation.emailPasswordConfirmationRequired'));
       return;
     }
 
@@ -353,20 +361,18 @@ export default function AuthSignInScreen({
 
     try {
       parseSignUpPassword(password);
-    } catch (validationError) {
-      setLocalError(
-        getValidationErrorMessage(validationError, 'Password must be at least 8 characters.')
-      );
+    } catch {
+      setLocalError(t('authModal.validation.passwordMin'));
       return;
     }
 
     if (password !== confirmPassword) {
-      setLocalError('Passwords do not match.');
+      setLocalError(t('authModal.validation.passwordMismatch'));
       return;
     }
 
     if (!isEmailAuthCapable(client) || !client.signUpWithEmail) {
-      setLocalError('CONFIG_ERROR: Sign-up is not available in this auth client.');
+      setLocalError(t('authModal.errors.signupUnavailable'));
       return;
     }
 
@@ -377,13 +383,11 @@ export default function AuthSignInScreen({
       if (result.needsEmailVerification) {
         setConfirmationEmail(normalizedEmail);
         if (result.emailAlreadyRegistered) {
-          setLocalError(
-            'An account with this email already exists. Sign in, or resend the confirmation email below.'
-          );
-          setNotice('If this account is unverified, request a new confirmation email.');
+          setLocalError(t('authModal.errors.accountExistsSignInOrResend'));
+          setNotice(t('authModal.notices.requestNewConfirmation'));
           setResendCooldown(0);
         } else {
-          setNotice(`Confirmation email sent to ${normalizedEmail}.`);
+          setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail }));
           if (result.confirmationEmailSent) {
             setResendCooldown(RESEND_COOLDOWN_SECONDS);
           }
@@ -401,9 +405,9 @@ export default function AuthSignInScreen({
 
       setConfirmationEmail(null);
       setResendCooldown(0);
-      setNotice('Account created successfully. Signing you in...');
+      setNotice(t('authModal.notices.accountCreatedSigningIn'));
     } catch (authError) {
-      setLocalError(getMessage(authError));
+      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
     } finally {
       setSubmitMode(null);
     }
@@ -414,7 +418,7 @@ export default function AuthSignInScreen({
 
     const emailCandidate = (confirmationEmail ?? email).trim();
     if (!emailCandidate) {
-      setLocalError('Enter your email first.');
+      setLocalError(t('authModal.errors.enterEmailFirst'));
       return;
     }
 
@@ -424,7 +428,7 @@ export default function AuthSignInScreen({
     }
 
     if (!supportsConfirmationResend(client) || !client.resendEmailConfirmation) {
-      setLocalError('CONFIG_ERROR: Resend confirmation is not available in this auth client.');
+      setLocalError(t('authModal.errors.resendUnavailable'));
       return;
     }
 
@@ -436,10 +440,10 @@ export default function AuthSignInScreen({
     try {
       await client.resendEmailConfirmation(normalizedEmail);
       setConfirmationEmail(normalizedEmail);
-      setNotice(`Confirmation email sent to ${normalizedEmail}.`);
+      setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail }));
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
     } catch (authError) {
-      setLocalError(getMessage(authError));
+      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
     } finally {
       setSubmitMode(null);
     }
@@ -454,7 +458,7 @@ export default function AuthSignInScreen({
         flow: googleFlow,
       });
     } catch (authError) {
-      setLocalError(getMessage(authError));
+      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
     } finally {
       setSubmitMode(null);
     }
@@ -470,7 +474,7 @@ export default function AuthSignInScreen({
         flow: 'native',
       });
     } catch (authError) {
-      setLocalError(getMessage(authError));
+      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
     } finally {
       setSubmitMode(null);
     }
@@ -497,6 +501,12 @@ export default function AuthSignInScreen({
 
   return (
     <View style={[styles.screen, isModal && styles.modalScreen]}>
+      {isModal ? (
+        <View pointerEvents='none' style={styles.shaderBackdrop}>
+          <ShaderBackground opacity={0.52} />
+        </View>
+      ) : null}
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardContainer}
@@ -508,9 +518,9 @@ export default function AuthSignInScreen({
         >
           <View style={[styles.card, isModal && styles.cardModal]}>
             <View style={styles.header}>
-              <View>
-                <Text style={styles.title}>AIRS Access</Text>
-                <Text style={styles.subtitle}>Secure sign in.</Text>
+              <View style={styles.titleLockup}>
+                <ExpoImage source={AIRS_LOGOTIPO_LIGHT} style={styles.titleWordmark} contentFit='contain' />
+                <Text style={styles.subtitle}>{t('authModal.notices.secureSignIn')}</Text>
               </View>
               {onCancel ? (
                 <TouchableOpacity activeOpacity={0.8} onPress={onCancel} style={styles.closeButton}>
@@ -533,7 +543,7 @@ export default function AuthSignInScreen({
                         mode === 'signin' && styles.modeButtonTextActive,
                       ]}
                     >
-                      Sign In
+                      {t('authModal.modes.signIn')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -547,7 +557,7 @@ export default function AuthSignInScreen({
                         mode === 'signup' && styles.modeButtonTextActive,
                       ]}
                     >
-                      Sign Up
+                      {t('authModal.modes.signUp')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -569,16 +579,16 @@ export default function AuthSignInScreen({
                       clearRequiredField('email');
                       setInvalidEmail(false);
                     }}
-                    placeholder='Email'
+                    placeholder={t('authModal.placeholders.email')}
                     placeholderTextColor='rgba(232,232,255,0.35)'
                     style={styles.input}
                     value={email}
                   />
                 </View>
                 {requiredFields.email ? (
-                  <Text style={styles.requiredFieldText}>Email is required.</Text>
+                  <Text style={styles.requiredFieldText}>{t('authModal.validation.emailRequired')}</Text>
                 ) : invalidEmail ? (
-                  <Text style={styles.requiredFieldText}>Enter a valid email address.</Text>
+                  <Text style={styles.requiredFieldText}>{t('authModal.validation.validEmail')}</Text>
                 ) : null}
 
                 <View
@@ -599,7 +609,7 @@ export default function AuthSignInScreen({
                       setPassword(value);
                       clearRequiredField('password');
                     }}
-                    placeholder='Password'
+                    placeholder={t('authModal.placeholders.password')}
                     placeholderTextColor='rgba(232,232,255,0.35)'
                     secureTextEntry={!showPassword}
                     style={styles.input}
@@ -618,7 +628,7 @@ export default function AuthSignInScreen({
                   </TouchableOpacity>
                 </View>
                 {requiredFields.password ? (
-                  <Text style={styles.requiredFieldText}>Password is required.</Text>
+                  <Text style={styles.requiredFieldText}>{t('authModal.validation.passwordRequired')}</Text>
                 ) : null}
 
                 {mode === 'signup' ? (
@@ -643,7 +653,7 @@ export default function AuthSignInScreen({
                           setConfirmPassword(value);
                           clearRequiredField('confirmPassword');
                         }}
-                        placeholder='Confirm Password'
+                        placeholder={t('authModal.placeholders.confirmPassword')}
                         placeholderTextColor='rgba(232,232,255,0.35)'
                         secureTextEntry={!showConfirmPassword}
                         style={styles.input}
@@ -662,7 +672,7 @@ export default function AuthSignInScreen({
                       </TouchableOpacity>
                     </View>
                     {requiredFields.confirmPassword ? (
-                      <Text style={styles.requiredFieldText}>Confirmation is required.</Text>
+                      <Text style={styles.requiredFieldText}>{t('authModal.validation.confirmPasswordRequired')}</Text>
                     ) : null}
                   </>
                 ) : null}
@@ -683,7 +693,9 @@ export default function AuthSignInScreen({
                     <ActivityIndicator color='#050510' size='small' />
                   ) : (
                     <Text style={styles.primaryButtonText}>
-                      {mode === 'signin' ? 'Continue with Email' : 'Create Account'}
+                      {mode === 'signin'
+                        ? t('authModal.actions.continueWithEmail')
+                        : t('authModal.actions.createAccount')}
                     </Text>
                   )}
                 </TouchableOpacity>
@@ -692,7 +704,7 @@ export default function AuthSignInScreen({
                   <>
                     <View style={styles.dividerRow}>
                       <View style={styles.dividerLine} />
-                      <Text style={styles.dividerText}>or</Text>
+                      <Text style={styles.dividerText}>{t('authModal.divider.or')}</Text>
                       <View style={styles.dividerLine} />
                     </View>
 
@@ -709,7 +721,7 @@ export default function AuthSignInScreen({
                       ) : (
                         <>
                           <Chrome size={16} color='#e8e8ff' />
-                          <Text style={styles.secondaryButtonText}>Continue with Google</Text>
+                          <Text style={styles.secondaryButtonText}>{t('authModal.actions.continueWithGoogle')}</Text>
                         </>
                       )}
                     </TouchableOpacity>
@@ -725,7 +737,7 @@ export default function AuthSignInScreen({
                       ) : (
                         <>
                           <Wallet size={16} color='#e8e8ff' />
-                          <Text style={styles.secondaryButtonText}>Connect Wallet</Text>
+                          <Text style={styles.secondaryButtonText}>{t('authModal.actions.connectWallet')}</Text>
                         </>
                       )}
                     </TouchableOpacity>
@@ -753,8 +765,8 @@ export default function AuthSignInScreen({
                 >
                   <Text style={styles.footerToggleText}>
                     {mode === 'signin'
-                      ? "Don't have an account? Sign Up"
-                      : 'Already have an account? Sign In'}
+                      ? t('authModal.footer.dontHaveAccount')
+                      : t('authModal.footer.alreadyHaveAccount')}
                   </Text>
                 </TouchableOpacity>
               </>
@@ -764,9 +776,9 @@ export default function AuthSignInScreen({
                   <View style={styles.confirmationIconWrap}>
                     <Mail size={18} color='#66e6c5' />
                   </View>
-                  <Text style={styles.confirmationTitle}>Check your email</Text>
-                  <Text style={styles.confirmationSubtitle}>We sent a confirmation link to:</Text>
-                  <Text style={styles.confirmationEmail}>{confirmationEmail ?? 'your email'}</Text>
+                  <Text style={styles.confirmationTitle}>{t('authModal.confirmation.checkEmail')}</Text>
+                  <Text style={styles.confirmationSubtitle}>{t('authModal.confirmation.linkSentTo')}</Text>
+                  <Text style={styles.confirmationEmail}>{confirmationEmail ?? t('authModal.confirmation.emailFallback')}</Text>
                 </View>
 
                 {notice ? (
@@ -783,9 +795,9 @@ export default function AuthSignInScreen({
                 ) : null}
 
                 <View style={styles.resendBox}>
-                  <Text style={styles.resendSectionTitle}>Not receiving the email?</Text>
+                  <Text style={styles.resendSectionTitle}>{t('authModal.resend.title')}</Text>
                   <Text style={styles.resendText}>
-                    Check spam/junk first, then request another confirmation email.
+                    {t('authModal.resend.body')}
                   </Text>
                   <TouchableOpacity
                     activeOpacity={0.8}
@@ -803,8 +815,8 @@ export default function AuthSignInScreen({
                     ) : (
                       <Text style={styles.resendButtonText}>
                         {resendCooldown > 0
-                          ? `Send again in ${resendCooldown}s`
-                          : 'Send confirmation again'}
+                          ? t('authModal.resend.sendAgainIn', { seconds: resendCooldown })
+                          : t('authModal.resend.sendAgain')}
                       </Text>
                     )}
                   </TouchableOpacity>
@@ -825,7 +837,7 @@ export default function AuthSignInScreen({
                   }}
                   style={[styles.primaryButton, isBusy && styles.buttonDisabled]}
                 >
-                  <Text style={styles.primaryButtonText}>I already confirmed, continue</Text>
+                  <Text style={styles.primaryButtonText}>{t('authModal.actions.alreadyConfirmedContinue')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -844,7 +856,7 @@ export default function AuthSignInScreen({
                   }}
                   style={styles.footerToggle}
                 >
-                  <Text style={styles.footerToggleText}>Use another email</Text>
+                  <Text style={styles.footerToggleText}>{t('authModal.actions.useAnotherEmail')}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -863,13 +875,16 @@ export default function AuthSignInScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   screen: {
     flex: 1,
     backgroundColor: '#050510',
   },
   modalScreen: {
     backgroundColor: 'rgba(5,5,16,0.82)',
+  },
+  shaderBackdrop: {
+    ...StyleSheet.absoluteFillObject,
   },
   keyboardContainer: {
     flex: 1,
@@ -907,16 +922,16 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 4,
   },
-  title: {
-    color: '#e8e8ff',
-    fontSize: 28,
-    fontWeight: '800',
-    letterSpacing: 0.2,
+  titleLockup: {
+    gap: 6,
+  },
+  titleWordmark: {
+    width: 96,
+    height: 34,
   },
   subtitle: {
     color: 'rgba(232,232,255,0.55)',
     fontSize: 13,
-    marginTop: 4,
   },
   closeButton: {
     width: 34,

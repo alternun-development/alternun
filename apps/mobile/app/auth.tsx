@@ -33,7 +33,7 @@ export default function AuthRoute() {
 const styles = StyleSheet.create({
   loadingScreen: {
     flex: 1,
-    backgroundColor: 'rgba(5,5,16,0.82)',
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
   },

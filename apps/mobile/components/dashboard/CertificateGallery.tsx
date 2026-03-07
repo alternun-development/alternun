@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
 import { Award, ExternalLink, X, Share2, Download } from 'lucide-react-native';
 import { SBTCertificate } from './types';
 
@@ -129,7 +130,7 @@ export default function CertificateGallery({ certificates }: CertificateGalleryP
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   section: {
     paddingBottom: 24,
   },

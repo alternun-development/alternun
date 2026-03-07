@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
 import { TrendingUp, Layers, Coins, CheckCircle } from 'lucide-react-native';
 
 interface HeroStatsProps {
@@ -46,7 +47,7 @@ export default function HeroStats({
 
   const stats = [
     {
-      label: 'Total AIRS Earned',
+      label: 'Total Airs Earned',
       value: formatMetric(totalAIRS),
       delta: deltaLabel,
       positive: !previewMode,
@@ -113,7 +114,7 @@ export default function HeroStats({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   container: {
     paddingHorizontal: 16,
     paddingVertical: 20,

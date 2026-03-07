@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
 import { DollarSign, X } from 'lucide-react-native';
 import { PoolPosition } from './types';
 
@@ -139,7 +140,7 @@ export default function PoolVault({ positions, onClaimProceeds }: PoolVaultProps
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   section: {
     paddingHorizontal: 16,
     paddingBottom: 24,

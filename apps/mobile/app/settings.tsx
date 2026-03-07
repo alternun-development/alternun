@@ -1,12 +1,9 @@
+import { getLocaleLabel, } from '@alternun/i18n';
+import { useAppTranslation, } from '../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
-function languageLabel(language: string): string {
-  if (language === 'es') return 'Español';
-  if (language === 'th') return 'ไทย';
-  return 'English';
-}
+import { createTypographyStyles, } from '../components/theme/typography';
 
 export default function SettingsScreen() {
   const {
@@ -17,58 +14,59 @@ export default function SettingsScreen() {
     cycleLanguage,
     setShowAirsIntro,
   } = useAppPreferences();
+  const { t, } = useAppTranslation('mobile');
   const isDark = themeMode === 'dark';
 
   return (
     <View style={[styles.screen, { backgroundColor: isDark ? '#050510' : '#f6f8fc' }]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.title, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>Settings</Text>
+        <Text style={[styles.title, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>{t('settingsScreen.title')}</Text>
         <Text style={[styles.subtitle, { color: isDark ? 'rgba(232,232,255,0.72)' : '#475569' }]}>
-          Manage interface preferences and account-level controls.
+          {t('settingsScreen.subtitle')}
         </Text>
 
         <View style={[styles.card, { backgroundColor: isDark ? '#0d0d1f' : '#ffffff', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.12)' }]}>
-          <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>Appearance</Text>
+          <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>{t('settingsScreen.sections.appearance')}</Text>
           <TouchableOpacity
             style={[styles.rowButton, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.12)', backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(15,23,42,0.03)' }]}
             onPress={toggleThemeMode}
             activeOpacity={0.85}
           >
-            <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>Theme</Text>
+            <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>{t('labels.theme')}</Text>
             <Text style={[styles.rowValue, { color: isDark ? '#66e6c5' : '#0f766e' }]}>
-              {themeMode === 'dark' ? 'Dark' : 'Light'}
+              {themeMode === 'dark' ? t('labels.dark') : t('labels.light')}
             </Text>
           </TouchableOpacity>
         </View>
 
         <View style={[styles.card, { backgroundColor: isDark ? '#0d0d1f' : '#ffffff', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.12)' }]}>
-          <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>Language</Text>
+          <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>{t('settingsScreen.sections.language')}</Text>
           <TouchableOpacity
             style={[styles.rowButton, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.12)', backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(15,23,42,0.03)' }]}
             onPress={cycleLanguage}
             activeOpacity={0.85}
           >
-            <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>Current Language</Text>
+            <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>{t('settingsScreen.currentLanguage')}</Text>
             <Text style={[styles.rowValue, { color: isDark ? '#66e6c5' : '#0f766e' }]}>
-              {languageLabel(language)}
+              {getLocaleLabel(language, language)}
             </Text>
           </TouchableOpacity>
         </View>
 
         <View style={[styles.card, { backgroundColor: isDark ? '#0d0d1f' : '#ffffff', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.12)' }]}>
-          <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>Onboarding</Text>
+          <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>{t('settingsScreen.sections.onboarding')}</Text>
           <TouchableOpacity
             style={[styles.rowButton, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.12)', backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(15,23,42,0.03)' }]}
             onPress={() => setShowAirsIntro(!showAirsIntro)}
             activeOpacity={0.85}
           >
-            <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>Don&apos;t Show Intro Again</Text>
+            <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>{t('settingsScreen.showIntroAgain')}</Text>
             <Text style={[styles.rowValue, { color: isDark ? '#66e6c5' : '#0f766e' }]}>
-              {showAirsIntro ? 'No' : 'Yes'}
+              {showAirsIntro ? t('labels.no') : t('labels.yes')}
             </Text>
           </TouchableOpacity>
           <Text style={[styles.rowHelpText, { color: isDark ? 'rgba(232,232,255,0.58)' : '#64748b' }]}>
-            Stored locally in your browser/app preferences.
+            {t('settingsScreen.localPreferenceHelp')}
           </Text>
         </View>
       </ScrollView>
@@ -76,7 +74,7 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   screen: {
     flex: 1,
   },

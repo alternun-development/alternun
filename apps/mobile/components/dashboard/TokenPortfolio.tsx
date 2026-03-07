@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, TextInput } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
 import { Plus, ArrowUpFromLine, Flame, ArrowRightLeft, X } from 'lucide-react-native';
 import { ImpactToken, TokenState } from './types';
 
@@ -200,7 +201,7 @@ export default function TokenPortfolio({
               </TouchableOpacity>
             </View>
             <Text style={styles.modalDesc}>
-              Retiring {retireModal?.tokenId} will permanently consume it and credit AIRS to your account. This action cannot be undone.
+              Retiring {retireModal?.tokenId} will permanently consume it and credit Airs to your account. This action cannot be undone.
             </Text>
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.ghostButton} onPress={() => setRetireModal(null)} activeOpacity={0.8}>
@@ -257,7 +258,7 @@ export default function TokenPortfolio({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   section: {
     paddingHorizontal: 16,
     paddingBottom: 24,

@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
 import { X, Smartphone, Globe } from 'lucide-react-native';
+import { useAppTranslation, } from '../i18n/useAppTranslation';
 
 interface WalletConnectModalProps {
   visible: boolean;
@@ -9,24 +11,26 @@ interface WalletConnectModalProps {
 }
 
 const WALLETS = [
-  { id: 'metamask', name: 'MetaMask', description: 'Most popular Web3 wallet', icon: Globe },
-  { id: 'walletconnect', name: 'WalletConnect', description: 'Connect via QR code', icon: Smartphone },
+  { id: 'metamask', name: 'MetaMask', descriptionKey: 'walletModal.wallets.metamask.description', icon: Globe },
+  { id: 'walletconnect', name: 'WalletConnect', descriptionKey: 'walletModal.wallets.walletconnect.description', icon: Smartphone },
 ];
 
 export default function WalletConnectModal({ visible, onClose, onConnect }: WalletConnectModalProps) {
+  const { t, } = useAppTranslation('mobile');
+
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <View style={styles.sheet}>
           <View style={styles.handle} />
           <View style={styles.header}>
-            <Text style={styles.title}>Connect Wallet</Text>
+            <Text style={styles.title}>{t('walletModal.title')}</Text>
             <TouchableOpacity onPress={onClose}>
               <X size={20} color="rgba(232,232,255,0.6)" />
             </TouchableOpacity>
           </View>
           <Text style={styles.subtitle}>
-            Connect your wallet to access the full Ambient Impact Dashboard
+            {t('walletModal.subtitle')}
           </Text>
           <View style={styles.walletList}>
             {WALLETS.map((wallet) => {
@@ -43,7 +47,7 @@ export default function WalletConnectModal({ visible, onClose, onConnect }: Wall
                   </View>
                   <View style={styles.walletInfo}>
                     <Text style={styles.walletName}>{wallet.name}</Text>
-                    <Text style={styles.walletDesc}>{wallet.description}</Text>
+                    <Text style={styles.walletDesc}>{t(wallet.descriptionKey)}</Text>
                   </View>
                   <Text style={styles.arrow}>›</Text>
                 </TouchableOpacity>
@@ -51,7 +55,7 @@ export default function WalletConnectModal({ visible, onClose, onConnect }: Wall
             })}
           </View>
           <Text style={styles.disclaimer}>
-            By connecting, you agree to our Terms of Service and Privacy Policy
+            {t('walletModal.disclaimer')}
           </Text>
         </View>
       </View>
@@ -59,7 +63,7 @@ export default function WalletConnectModal({ visible, onClose, onConnect }: Wall
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(5,5,16,0.85)',

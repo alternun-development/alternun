@@ -10,14 +10,26 @@ permissions: {}
 
 jobs:
   protect-master:
-    if: (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'))
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     steps:
-      - name: Check if direct push to master/main
+      - name: Check push policy for master/main
         run: |
-          echo "❌ Direct pushes to master/main are not allowed!"
-          echo "📝 Please create a pull request to develop branch first"
-          echo "🔄 Then merge develop to master/main through a pull request"
+          mode="${{ vars.ALTERNUN_TESTNET_MODE }}"
+          if [ -z "$mode" ]; then
+            mode="on"
+          fi
+
+          case "$mode" in
+            on|ON|true|TRUE|1|yes|YES)
+              echo "✅ Testnet mode enabled: direct pushes to master/main are allowed."
+              echo "🔄 master/main will be mirrored into develop by workflow."
+              exit 0
+              ;;
+          esac
+
+          echo "❌ Direct pushes to master/main are not allowed when testnet mode is off."
+          echo "📝 Push to develop first, then promote develop to master/main."
           exit 1
 
   enforce-pr-flow:
@@ -26,6 +38,18 @@ jobs:
     steps:
       - name: Check PR source branch
         run: |
+          mode="${{ vars.ALTERNUN_TESTNET_MODE }}"
+          if [ -z "$mode" ]; then
+            mode="on"
+          fi
+
+          case "$mode" in
+            on|ON|true|TRUE|1|yes|YES)
+              echo "✅ Testnet mode enabled: PR source restriction is skipped."
+              exit 0
+              ;;
+          esac
+
           if [[ "${{ github.head.ref }}" != "develop" ]]; then
             echo "❌ PRs to master/main must come from develop branch!"
             echo "📝 Please create PR to develop first, then merge develop to master/main"

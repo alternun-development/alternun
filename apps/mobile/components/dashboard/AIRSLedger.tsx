@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
 import { ShoppingCart, Layers, Leaf, Flame, DollarSign, Copy, Check } from 'lucide-react-native';
 import { AIRSEntry } from './types';
 
@@ -58,12 +59,12 @@ export default function AIRSLedger({ entries }: AIRSLedgerProps) {
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <View>
-          <Text style={styles.sectionTitle}>AIRS Ledger</Text>
+          <Text style={styles.sectionTitle}>Airs Ledger</Text>
           <Text style={styles.sectionSubtitle}>Impact activity rewards feed</Text>
         </View>
         <View style={styles.totalBadge}>
           <Text style={styles.totalBadgeText}>
-            +{entries.reduce((s, e) => s + e.amountAIRS, 0).toLocaleString()} AIRS
+            +{entries.reduce((s, e) => s + e.amountAIRS, 0).toLocaleString()} Airs
           </Text>
         </View>
       </View>
@@ -81,7 +82,7 @@ export default function AIRSLedger({ entries }: AIRSLedgerProps) {
               <View style={styles.entryContent}>
                 <View style={styles.entryTop}>
                   <Text style={styles.entryReason}>{entry.reason}</Text>
-                  <Text style={styles.entryAmount}>+{entry.amountAIRS} AIRS</Text>
+                  <Text style={styles.entryAmount}>+{entry.amountAIRS} Airs</Text>
                 </View>
                 <View style={styles.entryBottom}>
                   <View style={[styles.refTypePill, { backgroundColor: `${color}18`, borderColor: `${color}30` }]}>
@@ -111,7 +112,7 @@ export default function AIRSLedger({ entries }: AIRSLedgerProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   section: {
     paddingHorizontal: 16,
     paddingBottom: 24,
