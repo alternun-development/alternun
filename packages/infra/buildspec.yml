@@ -11,11 +11,17 @@ env:
 
     # Domain defaults for Expo web deployment
     DOMAIN_ROOT: 'alternun.co'
+    INFRA_ROOT_DOMAIN: 'alternun.co'
     PROJECT_PREFIX: 'alternun'
     PREFIX: 'alternun'
     DOMAIN_PRODUCTION: 'airs.alternun.co'
     DOMAIN_DEV: 'testnet.airs.alternun.co'
     DOMAIN_MOBILE: 'preview.airs.alternun.co'
+    INFRA_EXPO_DOMAIN_PRODUCTION: 'airs.alternun.co'
+    INFRA_EXPO_DOMAIN_DEV: 'testnet.airs.alternun.co'
+    INFRA_EXPO_DOMAIN_MOBILE: 'preview.airs.alternun.co'
+    INFRA_LOAD_ROOT_ENV: 'false'
+    INFRA_PRESERVE_EXISTING_ENV: 'true'
     INFRA_ENFORCE_AWS_ACCOUNT: 'true'
     INFRA_REQUIRE_ROUTE53: 'true'
     INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'true'

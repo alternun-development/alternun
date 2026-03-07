@@ -12,6 +12,7 @@ is_truthy() {
 
 load_env_file() {
   local env_file=$1
+  local preserve_existing=${2:-false}
   local line key value
 
   [ -f "$env_file" ] || return 0
@@ -37,6 +38,9 @@ load_env_file() {
     fi
 
     if [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+      if is_truthy "$preserve_existing" && [ "${!key+x}" = x ]; then
+        continue
+      fi
       export "$key=$value"
     fi
   done < "$env_file"
@@ -44,21 +48,24 @@ load_env_file() {
 
 load_infra_env() {
   local script_dir infra_dir repo_root infra_env_file
-  local force_env_credentials require_env_credentials
+  local force_env_credentials require_env_credentials preserve_existing_env
 
   script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
   infra_dir=$(cd "$script_dir/.." && pwd)
   repo_root=$(cd "$infra_dir/../.." && pwd)
   infra_env_file=${INFRA_ENV_FILE:-"$infra_dir/.env"}
+  preserve_existing_env=${INFRA_PRESERVE_EXISTING_ENV:-false}
 
   if [ -f "$infra_env_file" ]; then
-    load_env_file "$infra_env_file"
+    load_env_file "$infra_env_file" "$preserve_existing_env"
   fi
 
   if is_truthy "${INFRA_LOAD_ROOT_ENV:-false}" && [ -f "$repo_root/.env" ]; then
-    load_env_file "$repo_root/.env"
-    # Keep infra package values authoritative after loading root .env.
-    load_env_file "$infra_env_file"
+    load_env_file "$repo_root/.env" "$preserve_existing_env"
+    if ! is_truthy "$preserve_existing_env"; then
+      # Keep infra package values authoritative after loading root .env.
+      load_env_file "$infra_env_file"
+    fi
   fi
 
   # Backward-compatible aliases for legacy .env naming.
