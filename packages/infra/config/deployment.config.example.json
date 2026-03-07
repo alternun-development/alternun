@@ -39,5 +39,40 @@
       "rootDomain": "",
       "devToTestnet": ""
     }
+  },
+  "identity": {
+    "enabled": false,
+    "domains": {
+      "production": "auth.alternun.co",
+      "dev": "auth.testnet.alternun.co",
+      "mobile": "auth.preview.alternun.co"
+    },
+    "ec2": {
+      "instanceType": "t3.small",
+      "volumeSizeGiB": 20
+    },
+    "rds": {
+      "engineVersion": "16",
+      "instanceType": "db.t4g.micro",
+      "storageGiB": 20,
+      "multiAz": false,
+      "publicAccess": false,
+      "backupRetentionDays": 7,
+      "performanceInsights": false,
+      "enhancedMonitoring": false
+    },
+    "emailProvider": "ses",
+    "jwt": {
+      "audience": "alternun-app",
+      "roleClaim": "role",
+      "rolesClaim": "alternun_roles",
+      "accessTokenTtlMinutes": 15
+    },
+    "secrets": {
+      "authentikSecretKeyName": "alternun-infra/identity/authentik-secret-key",
+      "databaseCredentialsSecretName": "alternun-infra/identity/database-credentials",
+      "smtpCredentialsSecretName": "alternun-infra/identity/smtp-credentials",
+      "jwtSigningKeySecretName": "alternun-infra/identity/jwt-signing-key"
+    }
   }
 }

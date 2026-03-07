@@ -8,6 +8,40 @@ AWS/SST deployment wrapper for Alternun Expo Web using `@lsts_tech/infra`.
 - `dev` -> `testnet.airs.alternun.co`
 - `mobile` (optional) -> `preview.airs.alternun.co`
 
+## Identity Infrastructure Scaffold
+
+The first Authentik infrastructure pass is wired into config, but disabled by default.
+
+Current scaffold covers:
+
+- identity stage domains
+- EC2 sizing defaults
+- RDS sizing defaults
+- JWT contract defaults
+- email-provider selection
+- secret-name conventions
+
+Current default identity domains:
+
+- `production` -> `auth.alternun.co`
+- `dev` -> `auth.testnet.alternun.co`
+- `mobile` -> `auth.preview.alternun.co`
+
+Enable/configure through env or local config:
+
+- `INFRA_IDENTITY_ENABLED`
+- `INFRA_IDENTITY_DOMAIN_PRODUCTION`
+- `INFRA_IDENTITY_DOMAIN_DEV`
+- `INFRA_IDENTITY_DOMAIN_MOBILE`
+- `INFRA_IDENTITY_EC2_INSTANCE_TYPE`
+- `INFRA_IDENTITY_RDS_INSTANCE_TYPE`
+- `INFRA_IDENTITY_EMAIL_PROVIDER`
+- `INFRA_IDENTITY_JWT_AUDIENCE`
+- `INFRA_IDENTITY_JWT_ROLE_CLAIM`
+- `INFRA_IDENTITY_JWT_ROLES_CLAIM`
+
+The scaffold currently exposes these values in SST outputs so implementation can proceed in controlled steps before real EC2/RDS resources are attached.
+
 ## Redirects (Dev Stage)
 
 During `dev` deployments, infra can provision:
@@ -150,6 +184,28 @@ Optional but recommended:
 - `INFRA_CODESTAR_CONNECTION_ARN`
 - `INFRA_EXPO_CERT_ARN_PRODUCTION`
 - `INFRA_EXPO_CERT_ARN_DEV`
+
+Optional identity scaffold env:
+
+- `INFRA_IDENTITY_ENABLED`
+- `INFRA_IDENTITY_DOMAIN_PRODUCTION`
+- `INFRA_IDENTITY_DOMAIN_DEV`
+- `INFRA_IDENTITY_DOMAIN_MOBILE`
+- `INFRA_IDENTITY_EC2_INSTANCE_TYPE`
+- `INFRA_IDENTITY_EC2_VOLUME_SIZE_GIB`
+- `INFRA_IDENTITY_RDS_ENGINE_VERSION`
+- `INFRA_IDENTITY_RDS_INSTANCE_TYPE`
+- `INFRA_IDENTITY_RDS_STORAGE_GIB`
+- `INFRA_IDENTITY_RDS_MULTI_AZ`
+- `INFRA_IDENTITY_RDS_PUBLIC_ACCESS`
+- `INFRA_IDENTITY_RDS_BACKUP_RETENTION_DAYS`
+- `INFRA_IDENTITY_RDS_PERFORMANCE_INSIGHTS`
+- `INFRA_IDENTITY_RDS_ENHANCED_MONITORING`
+- `INFRA_IDENTITY_EMAIL_PROVIDER`
+- `INFRA_IDENTITY_JWT_AUDIENCE`
+- `INFRA_IDENTITY_JWT_ROLE_CLAIM`
+- `INFRA_IDENTITY_JWT_ROLES_CLAIM`
+- `INFRA_IDENTITY_JWT_ACCESS_TOKEN_TTL_MINUTES`
 
 Required for Expo auth-enabled deploys (`INFRA_REQUIRE_EXPO_PUBLIC_AUTH=true`):
 
