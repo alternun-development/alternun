@@ -50,6 +50,8 @@ load_infra_env() {
   local script_dir infra_dir repo_root infra_env_file
   local force_env_credentials require_env_credentials preserve_existing_env
   local canonical_root_domain canonical_domain_production canonical_domain_dev canonical_domain_mobile
+  local canonical_cert_production canonical_cert_dev canonical_cert_mobile
+  local canonical_redirect_cert_airs_to_dev canonical_redirect_cert_dev_to_testnet canonical_redirect_cert_root
 
   script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
   infra_dir=$(cd "$script_dir/.." && pwd)
@@ -73,6 +75,12 @@ load_infra_env() {
   canonical_domain_production=${INFRA_CANONICAL_EXPO_DOMAIN_PRODUCTION:-}
   canonical_domain_dev=${INFRA_CANONICAL_EXPO_DOMAIN_DEV:-}
   canonical_domain_mobile=${INFRA_CANONICAL_EXPO_DOMAIN_MOBILE:-}
+  canonical_cert_production=${INFRA_CANONICAL_EXPO_CERT_ARN_PRODUCTION:-}
+  canonical_cert_dev=${INFRA_CANONICAL_EXPO_CERT_ARN_DEV:-}
+  canonical_cert_mobile=${INFRA_CANONICAL_EXPO_CERT_ARN_MOBILE:-}
+  canonical_redirect_cert_airs_to_dev=${INFRA_CANONICAL_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}
+  canonical_redirect_cert_dev_to_testnet=${INFRA_CANONICAL_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}
+  canonical_redirect_cert_root=${INFRA_CANONICAL_REDIRECT_ROOT_CERT_ARN:-}
 
   if [ -n "$canonical_root_domain" ]; then
     export INFRA_ROOT_DOMAIN="$canonical_root_domain"
@@ -88,6 +96,30 @@ load_infra_env() {
 
   if [ -n "$canonical_domain_mobile" ]; then
     export INFRA_EXPO_DOMAIN_MOBILE="$canonical_domain_mobile"
+  fi
+
+  if [ -n "$canonical_cert_production" ]; then
+    export INFRA_EXPO_CERT_ARN_PRODUCTION="$canonical_cert_production"
+  fi
+
+  if [ -n "$canonical_cert_dev" ]; then
+    export INFRA_EXPO_CERT_ARN_DEV="$canonical_cert_dev"
+  fi
+
+  if [ -n "$canonical_cert_mobile" ]; then
+    export INFRA_EXPO_CERT_ARN_MOBILE="$canonical_cert_mobile"
+  fi
+
+  if [ -n "$canonical_redirect_cert_airs_to_dev" ]; then
+    export INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN="$canonical_redirect_cert_airs_to_dev"
+  fi
+
+  if [ -n "$canonical_redirect_cert_dev_to_testnet" ]; then
+    export INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN="$canonical_redirect_cert_dev_to_testnet"
+  fi
+
+  if [ -n "$canonical_redirect_cert_root" ]; then
+    export INFRA_REDIRECT_ROOT_CERT_ARN="$canonical_redirect_cert_root"
   fi
 
   # Backward-compatible aliases for legacy .env naming.
