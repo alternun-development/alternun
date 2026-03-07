@@ -34,6 +34,94 @@ is_truthy() {
   esac
 }
 
+remove_state_resources_by_prefix() {
+  local prefix=$1
+  local state_file=${2:-}
+
+  if [ -z "$prefix" ] || [ -z "$state_file" ] || [ ! -f "$state_file" ]; then
+    return 0
+  fi
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "WARN: jq not found; cannot prune legacy state resources for ${prefix}." >&2
+    return 0
+  fi
+
+  local urns
+  urns=$(jq -r --arg prefix "$prefix" '
+    .latest.resources[]?
+    | .urn // empty
+    | select(contains($prefix))
+  ' "$state_file" | awk '{ print length($0) "\t" $0 }' | sort -rn | cut -f2-)
+
+  if [ -z "$urns" ]; then
+    return 0
+  fi
+
+  echo "Pruning legacy managed certificate state for ${prefix}..."
+
+  while IFS= read -r urn; do
+    [ -n "$urn" ] || continue
+    SST_TELEMETRY_DISABLED=1 npx sst state remove --stage "$STACK" "$urn" >/dev/null
+    echo "Removed state resource: ${urn}"
+  done <<< "$urns"
+}
+
+prune_legacy_managed_certificate_state() {
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "WARN: jq not found; skipping legacy managed certificate state pruning." >&2
+    return 0
+  fi
+
+  local prefixes=()
+
+  if [ -n "${INFRA_EXPO_CERT_ARN_PRODUCTION:-}" ] && [ "$STACK" = "production" ]; then
+    prefixes+=("expo-web-${STACK}CdnSsl")
+  fi
+
+  if [ -n "${INFRA_EXPO_CERT_ARN_DEV:-}" ] && [ "$STACK" = "dev" ]; then
+    prefixes+=("expo-web-${STACK}CdnSsl")
+  fi
+
+  if [ -n "${INFRA_EXPO_CERT_ARN_MOBILE:-}" ] && [ "$STACK" = "mobile" ]; then
+    prefixes+=("expo-web-${STACK}CdnSsl")
+  fi
+
+  if [ "$STACK" = "dev" ]; then
+    if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" && [ -n "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}" ]; then
+      prefixes+=("airs-domain-redirect-${STACK}CdnSsl")
+    fi
+
+    if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" && [ -n "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}" ]; then
+      prefixes+=("dev-domain-redirect-${STACK}CdnSsl")
+    fi
+
+    if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}" && [ -n "${INFRA_REDIRECT_ROOT_CERT_ARN:-}" ]; then
+      prefixes+=("root-domain-redirect-${STACK}CdnSsl")
+    fi
+  fi
+
+  if [ "${#prefixes[@]}" -eq 0 ]; then
+    return 0
+  fi
+
+  local state_file
+  state_file=$(mktemp)
+
+  if ! SST_TELEMETRY_DISABLED=1 npx sst state export --stage "$STACK" > "$state_file"; then
+    echo "WARN: Failed to export SST state; skipping legacy managed certificate state pruning." >&2
+    rm -f "$state_file"
+    return 0
+  fi
+
+  local prefix
+  for prefix in "${prefixes[@]}"; do
+    remove_state_resources_by_prefix "$prefix" "$state_file"
+  done
+
+  rm -f "$state_file"
+}
+
 remove_cloudfront_alias() {
   local alias_domain=$1
 
@@ -139,6 +227,8 @@ if [ "${RUN_PREDEPLOY_CHECKS:-true}" != "false" ]; then
 fi
 
 cleanup_deploy_aliases
+
+prune_legacy_managed_certificate_state
 
 TARGET=$(bash "$SCRIPT_DIR/_resolve-infra-script.sh" "sst-deploy.sh")
 exec bash "$TARGET" "$@"
