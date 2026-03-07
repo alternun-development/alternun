@@ -14,7 +14,7 @@ import {
   StyleSheet,
   Text,
 } from 'react-native';
-import type { FooterPrimaryLink } from './AppInfoFooter.links';
+import type { FooterPrimaryLink, } from './AppInfoFooter.links';
 
 export type LinkIconProps = {
   size?: number | string;
@@ -164,12 +164,12 @@ export function FooterCopyright({
 }: {
   color: string;
 },): React.JSX.Element {
-  const { t, } = useAppTranslation('mobile');
+  const { t, } = useAppTranslation('mobile',);
   const footerYear = new Date().getFullYear();
 
   return (
     <Text style={[styles.copyrightText, { color, },]}>
-      {t('footer.copyright', { year: footerYear, }, `(c) ${footerYear} Alternun.`)}
+      {t('footer.copyright', { year: footerYear, }, `(c) ${footerYear} Alternun.`,)}
     </Text>
   );
 }

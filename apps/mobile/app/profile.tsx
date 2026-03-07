@@ -1,7 +1,7 @@
-import type { User } from '../components/auth/AppAuthProvider';
-import { useRouter } from 'expo-router';
-import { LogOut, Settings, Shield, UserCircle2, Wallet } from 'lucide-react-native';
-import React, { useMemo, useState } from 'react';
+import type { User, } from '../components/auth/AppAuthProvider';
+import { useRouter, } from 'expo-router';
+import { LogOut, Settings, Shield, UserCircle2, Wallet, } from 'lucide-react-native';
+import React, { useMemo, useState, } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
@@ -11,8 +11,8 @@ import {
   View,
 } from 'react-native';
 import { createTypographyStyles, } from '../components/theme/typography';
-import { useAuth } from '../components/auth/AppAuthProvider';
-import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import { useAuth, } from '../components/auth/AppAuthProvider';
+import { useAppPreferences, } from '../components/settings/AppPreferencesProvider';
 
 type UserMetadata = Record<string, unknown>;
 
@@ -21,20 +21,20 @@ interface ProfileInfo {
   email?: string;
 }
 
-function getMetadata(user: User | null): UserMetadata {
-  if (!user || !user.metadata || typeof user.metadata !== 'object') {
+function getMetadata(user: User | null,): UserMetadata {
+  if (!user?.metadata || typeof user.metadata !== 'object') {
     return {};
   }
 
   return user.metadata as UserMetadata;
 }
 
-function getProfileInfo(user: User | null): ProfileInfo {
+function getProfileInfo(user: User | null,): ProfileInfo {
   if (!user) {
-    return { displayName: 'Guest' };
+    return { displayName: 'Guest', };
   }
 
-  const metadata = getMetadata(user);
+  const metadata = getMetadata(user,);
   const firstName = typeof metadata.firstName === 'string'
     ? metadata.firstName
     : typeof metadata.first_name === 'string'
@@ -57,12 +57,12 @@ function getProfileInfo(user: User | null): ProfileInfo {
   ];
 
   const validName = nameCandidates.find(
-    (entry): entry is string => typeof entry === 'string' && entry.trim().length > 0,
+    (entry,): entry is string => typeof entry === 'string' && entry.trim().length > 0,
   );
 
   const emailLocalPart =
-    typeof user.email === 'string' && user.email.includes('@')
-      ? user.email.split('@')[0]
+    typeof user.email === 'string' && user.email.includes('@',)
+      ? user.email.split('@',)[0]
       : undefined;
 
   return {
@@ -71,12 +71,12 @@ function getProfileInfo(user: User | null): ProfileInfo {
   };
 }
 
-function getWalletAddress(user: User | null): string {
+function getWalletAddress(user: User | null,): string {
   if (!user) {
     return '';
   }
 
-  const metadata = getMetadata(user);
+  const metadata = getMetadata(user,);
   const walletObject = typeof metadata.wallet === 'object' && metadata.wallet !== null
     ? (metadata.wallet as UserMetadata)
     : undefined;
@@ -90,24 +90,24 @@ function getWalletAddress(user: User | null): string {
   ];
 
   for (const candidate of candidates) {
-    if (typeof candidate === 'string' && candidate.startsWith('0x') && candidate.length >= 10) {
+    if (typeof candidate === 'string' && candidate.startsWith('0x',) && candidate.length >= 10) {
       return candidate;
     }
   }
 
-  if (typeof user.providerUserId === 'string' && user.providerUserId.startsWith('0x')) {
+  if (typeof user.providerUserId === 'string' && user.providerUserId.startsWith('0x',)) {
     return user.providerUserId;
   }
 
   return '';
 }
 
-function getWalletProvider(user: User | null): string | null {
+function getWalletProvider(user: User | null,): string | null {
   if (!user) {
     return null;
   }
 
-  const metadata = getMetadata(user);
+  const metadata = getMetadata(user,);
   const provider = typeof metadata.walletProvider === 'string'
     ? metadata.walletProvider
     : typeof metadata.wallet_provider === 'string'
@@ -118,23 +118,23 @@ function getWalletProvider(user: User | null): string | null {
     return provider.toLowerCase();
   }
 
-  if (typeof user.provider === 'string' && user.provider.startsWith('wallet:')) {
-    return user.provider.replace('wallet:', '').toLowerCase();
+  if (typeof user.provider === 'string' && user.provider.startsWith('wallet:',)) {
+    return user.provider.replace('wallet:', '',).toLowerCase();
   }
 
   return null;
 }
 
-function getAuthMethodLabel(user: User | null): string {
+function getAuthMethodLabel(user: User | null,): string {
   if (!user) {
     return 'guest';
   }
 
-  if (user.provider && !user.provider.startsWith('wallet:')) {
+  if (user.provider && !user.provider.startsWith('wallet:',)) {
     return `auth: ${user.provider}`;
   }
 
-  if (user.provider && user.provider.startsWith('wallet:')) {
+  if (user.provider && user.provider.startsWith('wallet:',)) {
     return 'auth: wallet';
   }
 
@@ -145,64 +145,64 @@ function getAuthMethodLabel(user: User | null): string {
   return 'auth: session';
 }
 
-function getRoles(user: User | null): string[] {
+function getRoles(user: User | null,): string[] {
   if (!user) {
     return [];
   }
 
-  const metadata = getMetadata(user);
+  const metadata = getMetadata(user,);
   const roles = new Set<string>();
 
-  if (Array.isArray(user.roles)) {
+  if (Array.isArray(user.roles,)) {
     for (const role of user.roles) {
       if (typeof role === 'string' && role.trim().length > 0) {
-        roles.add(role.trim());
+        roles.add(role.trim(),);
       }
     }
   }
 
   const metadataRoles = metadata.roles;
-  if (Array.isArray(metadataRoles)) {
+  if (Array.isArray(metadataRoles,)) {
     for (const role of metadataRoles) {
       if (typeof role === 'string' && role.trim().length > 0) {
-        roles.add(role.trim());
+        roles.add(role.trim(),);
       }
     }
   } else if (typeof metadataRoles === 'string' && metadataRoles.trim().length > 0) {
-    roles.add(metadataRoles.trim());
+    roles.add(metadataRoles.trim(),);
   }
 
   const singleRole = metadata.role;
   if (typeof singleRole === 'string' && singleRole.trim().length > 0) {
-    roles.add(singleRole.trim());
+    roles.add(singleRole.trim(),);
   }
 
-  return Array.from(roles);
+  return Array.from(roles,);
 }
 
-function toInitials(name: string): string {
+function toInitials(name: string,): string {
   const parts = name
     .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+    .split(/\s+/,)
+    .filter(Boolean,);
 
   if (parts.length === 0) {
     return 'U';
   }
 
   if (parts.length === 1) {
-    return parts[0].slice(0, 1).toUpperCase();
+    return parts[0].slice(0, 1,).toUpperCase();
   }
 
-  return `${parts[0].slice(0, 1)}${parts[1].slice(0, 1)}`.toUpperCase();
+  return `${parts[0].slice(0, 1,)}${parts[1].slice(0, 1,)}`.toUpperCase();
 }
 
-function truncateMiddle(value: string, start = 6, end = 4): string {
+function truncateMiddle(value: string, start = 6, end = 4,): string {
   if (value.length <= start + end + 3) {
     return value;
   }
 
-  return `${value.slice(0, start)}...${value.slice(-end)}`;
+  return `${value.slice(0, start,)}...${value.slice(-end,)}`;
 }
 
 interface InfoRowProps {
@@ -214,15 +214,15 @@ interface InfoRowProps {
   valueStrong?: boolean;
 }
 
-function InfoRow({ label, value, labelColor, valueColor, borderColor, valueStrong = false }: InfoRowProps) {
+function InfoRow({ label, value, labelColor, valueColor, borderColor, valueStrong = false, }: InfoRowProps,) {
   return (
-    <View style={[styles.infoRow, { borderBottomColor: borderColor }]}>
-      <Text style={[styles.infoLabel, { color: labelColor }]}>{label}</Text>
+    <View style={[styles.infoRow, { borderBottomColor: borderColor, },]}>
+      <Text style={[styles.infoLabel, { color: labelColor, },]}>{label}</Text>
       <Text
         style={[
           styles.infoValue,
           valueStrong && styles.infoValueStrong,
-          { color: valueColor },
+          { color: valueColor, },
         ]}
       >
         {value}
@@ -233,62 +233,62 @@ function InfoRow({ label, value, labelColor, valueColor, borderColor, valueStron
 
 export default function ProfileRoute() {
   const router = useRouter();
-  const { user, loading, signOutUser } = useAuth();
-  const { themeMode } = useAppPreferences();
-  const [signingOut, setSigningOut] = useState(false);
+  const { user, loading, signOutUser, } = useAuth();
+  const { themeMode, } = useAppPreferences();
+  const [signingOut, setSigningOut,] = useState(false,);
   const isDark = themeMode === 'dark';
 
   const palette = isDark
     ? {
-        screenBg: '#050510',
-        cardBg: '#0d0d1f',
-        cardBorder: 'rgba(255,255,255,0.1)',
-        textPrimary: '#e8e8ff',
-        textMuted: 'rgba(232,232,255,0.72)',
-        textSubtle: 'rgba(232,232,255,0.58)',
-        accent: '#1ccba1',
-        pillBg: 'rgba(28,203,161,0.12)',
-        rowBorder: 'rgba(255,255,255,0.08)',
-        buttonSecondaryBg: 'rgba(255,255,255,0.03)',
-        buttonSecondaryBorder: 'rgba(255,255,255,0.16)',
-      }
+      screenBg: '#050510',
+      cardBg: '#0d0d1f',
+      cardBorder: 'rgba(255,255,255,0.1)',
+      textPrimary: '#e8e8ff',
+      textMuted: 'rgba(232,232,255,0.72)',
+      textSubtle: 'rgba(232,232,255,0.58)',
+      accent: '#1ccba1',
+      pillBg: 'rgba(28,203,161,0.12)',
+      rowBorder: 'rgba(255,255,255,0.08)',
+      buttonSecondaryBg: 'rgba(255,255,255,0.03)',
+      buttonSecondaryBorder: 'rgba(255,255,255,0.16)',
+    }
     : {
-        screenBg: '#f6f8fc',
-        cardBg: '#ffffff',
-        cardBorder: 'rgba(15,23,42,0.12)',
-        textPrimary: '#0f172a',
-        textMuted: '#334155',
-        textSubtle: '#64748b',
-        accent: '#0f766e',
-        pillBg: 'rgba(15,118,110,0.12)',
-        rowBorder: 'rgba(15,23,42,0.1)',
-        buttonSecondaryBg: 'rgba(15,23,42,0.02)',
-        buttonSecondaryBorder: 'rgba(15,23,42,0.16)',
-      };
+      screenBg: '#f6f8fc',
+      cardBg: '#ffffff',
+      cardBorder: 'rgba(15,23,42,0.12)',
+      textPrimary: '#0f172a',
+      textMuted: '#334155',
+      textSubtle: '#64748b',
+      accent: '#0f766e',
+      pillBg: 'rgba(15,118,110,0.12)',
+      rowBorder: 'rgba(15,23,42,0.1)',
+      buttonSecondaryBg: 'rgba(15,23,42,0.02)',
+      buttonSecondaryBorder: 'rgba(15,23,42,0.16)',
+    };
 
-  const profile = useMemo(() => getProfileInfo(user), [user]);
-  const walletAddress = useMemo(() => getWalletAddress(user), [user]);
-  const walletProvider = useMemo(() => getWalletProvider(user), [user]);
-  const walletConnected = Boolean(walletAddress || walletProvider);
+  const profile = useMemo(() => getProfileInfo(user,), [user,],);
+  const walletAddress = useMemo(() => getWalletAddress(user,), [user,],);
+  const walletProvider = useMemo(() => getWalletProvider(user,), [user,],);
+  const walletConnected = Boolean(walletAddress || walletProvider,);
   const authMethod = useMemo(
-    () => getAuthMethodLabel(user),
-    [user],
+    () => getAuthMethodLabel(user,),
+    [user,],
   );
-  const roles = useMemo(() => getRoles(user), [user]);
+  const roles = useMemo(() => getRoles(user,), [user,],);
 
   const handleSignOut = async () => {
-    setSigningOut(true);
+    setSigningOut(true,);
     try {
       await signOutUser();
-      router.replace('/');
+      router.replace('/',);
     } finally {
-      setSigningOut(false);
+      setSigningOut(false,);
     }
   };
 
   if (loading) {
     return (
-      <View style={[styles.centeredState, { backgroundColor: palette.screenBg }]}>
+      <View style={[styles.centeredState, { backgroundColor: palette.screenBg, },]}>
         <ActivityIndicator size='large' color='#1ccba1' />
       </View>
     );
@@ -296,15 +296,15 @@ export default function ProfileRoute() {
 
   if (!user) {
     return (
-      <View style={[styles.centeredState, { backgroundColor: palette.screenBg }]}>
-        <View style={[styles.centerCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder }]}>
-          <Text style={[styles.emptyTitle, { color: palette.textPrimary }]}>Sign in required</Text>
-          <Text style={[styles.emptySubtitle, { color: palette.textMuted }]}>
+      <View style={[styles.centeredState, { backgroundColor: palette.screenBg, },]}>
+        <View style={[styles.centerCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder, },]}>
+          <Text style={[styles.emptyTitle, { color: palette.textPrimary, },]}>Sign in required</Text>
+          <Text style={[styles.emptySubtitle, { color: palette.textMuted, },]}>
             You need an authenticated account to open profile details.
           </Text>
           <TouchableOpacity
             style={styles.primaryButton}
-            onPress={() => router.replace('/auth')}
+            onPress={() => router.replace('/auth',)}
             activeOpacity={0.85}
           >
             <Text style={styles.primaryButtonText}>Open Sign In</Text>
@@ -314,35 +314,35 @@ export default function ProfileRoute() {
     );
   }
 
-  const authUserId = user.providerUserId ? truncateMiddle(user.providerUserId, 10, 6) : 'Not available';
-  const walletDisplay = walletAddress ? truncateMiddle(walletAddress) : 'Not linked';
+  const authUserId = user.providerUserId ? truncateMiddle(user.providerUserId, 10, 6,) : 'Not available';
+  const walletDisplay = walletAddress ? truncateMiddle(walletAddress,) : 'Not linked';
   const providerDisplay = walletProvider ?? 'Not linked';
-  const rolesDisplay = roles.length > 0 ? roles.join(', ') : 'No roles assigned';
+  const rolesDisplay = roles.length > 0 ? roles.join(', ',) : 'No roles assigned';
 
   return (
-    <View style={[styles.screen, { backgroundColor: palette.screenBg }]}>
+    <View style={[styles.screen, { backgroundColor: palette.screenBg, },]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={[styles.heroCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder }]}>
-          <View style={[styles.avatar, { backgroundColor: palette.pillBg }]}>
-            <Text style={[styles.avatarText, { color: palette.accent }]}>{toInitials(profile.displayName)}</Text>
+        <View style={[styles.heroCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder, },]}>
+          <View style={[styles.avatar, { backgroundColor: palette.pillBg, },]}>
+            <Text style={[styles.avatarText, { color: palette.accent, },]}>{toInitials(profile.displayName,)}</Text>
           </View>
           <View style={styles.heroMain}>
-            <Text style={[styles.heroName, { color: palette.textPrimary }]}>{profile.displayName}</Text>
-            <Text style={[styles.heroEmail, { color: palette.textMuted }]}>
+            <Text style={[styles.heroName, { color: palette.textPrimary, },]}>{profile.displayName}</Text>
+            <Text style={[styles.heroEmail, { color: palette.textMuted, },]}>
               {profile.email ?? 'No email available'}
             </Text>
-            <View style={[styles.authPill, { backgroundColor: palette.pillBg }]}>
+            <View style={[styles.authPill, { backgroundColor: palette.pillBg, },]}>
               <Shield size={12} color={palette.accent} />
-              <Text style={[styles.authPillText, { color: palette.accent }]}>{authMethod}</Text>
+              <Text style={[styles.authPillText, { color: palette.accent, },]}>{authMethod}</Text>
             </View>
           </View>
         </View>
 
-        <View style={[styles.infoCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder }]}>
-          <Text style={[styles.cardTitle, { color: palette.textPrimary }]}>Account</Text>
+        <View style={[styles.infoCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder, },]}>
+          <Text style={[styles.cardTitle, { color: palette.textPrimary, },]}>Account</Text>
           <InfoRow
             label='User ID'
-            value={truncateMiddle(user.id, 12, 8)}
+            value={truncateMiddle(user.id, 12, 8,)}
             borderColor={palette.rowBorder}
             labelColor={palette.textSubtle}
             valueColor={palette.textPrimary}
@@ -364,8 +364,8 @@ export default function ProfileRoute() {
           />
         </View>
 
-        <View style={[styles.infoCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder }]}>
-          <Text style={[styles.cardTitle, { color: palette.textPrimary }]}>Wallet</Text>
+        <View style={[styles.infoCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder, },]}>
+          <Text style={[styles.cardTitle, { color: palette.textPrimary, },]}>Wallet</Text>
           <InfoRow
             label='Status'
             value={walletConnected ? 'Connected' : 'Not linked'}
@@ -390,8 +390,8 @@ export default function ProfileRoute() {
           />
         </View>
 
-        <View style={[styles.infoCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder }]}>
-          <Text style={[styles.cardTitle, { color: palette.textPrimary }]}>Access</Text>
+        <View style={[styles.infoCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder, },]}>
+          <Text style={[styles.cardTitle, { color: palette.textPrimary, },]}>Access</Text>
           <InfoRow
             label='Auth Method'
             value={authMethod}
@@ -410,16 +410,16 @@ export default function ProfileRoute() {
 
         <View style={styles.actionRow}>
           <TouchableOpacity
-            style={[styles.secondaryButton, { backgroundColor: palette.buttonSecondaryBg, borderColor: palette.buttonSecondaryBorder }]}
-            onPress={() => router.push('/settings')}
+            style={[styles.secondaryButton, { backgroundColor: palette.buttonSecondaryBg, borderColor: palette.buttonSecondaryBorder, },]}
+            onPress={() => router.push('/settings',)}
             activeOpacity={0.85}
           >
             <Settings size={16} color={palette.textPrimary} />
-            <Text style={[styles.secondaryButtonText, { color: palette.textPrimary }]}>Settings</Text>
+            <Text style={[styles.secondaryButtonText, { color: palette.textPrimary, },]}>Settings</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.secondaryButton, styles.dangerButton]}
+            style={[styles.secondaryButton, styles.dangerButton,]}
             onPress={() => {
               void handleSignOut();
             }}
@@ -431,10 +431,10 @@ export default function ProfileRoute() {
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.noteCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder }]}>
+        <View style={[styles.noteCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder, },]}>
           <UserCircle2 size={16} color={palette.accent} />
           <Wallet size={16} color={palette.accent} />
-          <Text style={[styles.noteText, { color: palette.textMuted }]}>
+          <Text style={[styles.noteText, { color: palette.textMuted, },]}>
             Profile values are loaded from your authenticated session and metadata.
           </Text>
         </View>
@@ -605,4 +605,4 @@ const styles = createTypographyStyles({
     fontSize: 12,
     lineHeight: 18,
   },
-});
+},);
