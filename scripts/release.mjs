@@ -14,14 +14,21 @@ const {
 } = require('./versioning/version-files.cjs');
 
 const VALID_BUMPS = new Set(['patch', 'minor', 'major']);
+const IGNORED_WORKTREE_PATHS = new Set([
+  'apps/web/.turbo/turbo-build.log',
+  'packages/ui/.turbo/turbo-build.log',
+]);
 
 function printUsage() {
   console.log(`Usage:
   pnpm release <patch|minor|major>
   pnpm release <version>
+  pnpm release <patch|minor|major> --push
   pnpm release --promote
 
 Options:
+  --push          Push the current release branch with tags after commit/tag creation.
+  --target-branch Branch to push when using --push. Defaults to the current branch.
   --promote       Push and promote the current release using the active branch policy.
   --remote <name> Git remote to use. Defaults to origin.
   --no-tag        Do not create an annotated git tag.
@@ -35,6 +42,8 @@ Options:
 function parseArgs(argv) {
   const options = {
     promote: false,
+    push: false,
+    targetBranch: null,
     remote: 'origin',
     createTag: true,
     createCommit: true,
@@ -53,6 +62,11 @@ function parseArgs(argv) {
 
     if (value === '--promote') {
       options.promote = true;
+      continue;
+    }
+
+    if (value === '--push') {
+      options.push = true;
       continue;
     }
 
@@ -82,8 +96,19 @@ function parseArgs(argv) {
       continue;
     }
 
+    if (value === '--target-branch') {
+      options.targetBranch = argv[index + 1] ?? '';
+      index += 1;
+      continue;
+    }
+
     if (value.startsWith('--remote=')) {
       options.remote = value.slice('--remote='.length);
+      continue;
+    }
+
+    if (value.startsWith('--target-branch=')) {
+      options.targetBranch = value.slice('--target-branch='.length);
       continue;
     }
 
@@ -102,6 +127,10 @@ function parseArgs(argv) {
     throw new Error('Provide a release type/version or use --promote.');
   }
 
+  if (options.push && options.promote) {
+    throw new Error('--push cannot be combined with --promote.');
+  }
+
   if (!options.createCommit && options.createTag) {
     throw new Error('--no-commit requires --no-tag.');
   }
@@ -110,8 +139,16 @@ function parseArgs(argv) {
     throw new Error('--promote requires a committed release.');
   }
 
+  if (!options.createCommit && options.push) {
+    throw new Error('--push requires a committed release.');
+  }
+
   if (!options.remote) {
     throw new Error('A git remote name is required.');
+  }
+
+  if (options.targetBranch !== null && options.targetBranch.length === 0) {
+    throw new Error('A target branch name is required.');
   }
 
   return { options, target };
@@ -173,13 +210,29 @@ function getCurrentBranch() {
   return run('git', ['branch', '--show-current'], { capture: true }).stdout.trim();
 }
 
+function parseStatusPath(line) {
+  const rawPath = line.slice(3).trim();
+
+  if (rawPath.includes(' -> ')) {
+    return rawPath.split(' -> ').at(-1)?.replace(/\\/g, '/') ?? '';
+  }
+
+  return rawPath.replace(/\\/g, '/');
+}
+
 function ensureCleanWorkingTree(options) {
   if (options.allowDirty) {
     return;
   }
 
-  const status = run('git', ['status', '--porcelain'], { capture: true }).stdout.trim();
-  if (status.length > 0) {
+  const statusLines = run('git', ['status', '--porcelain'], { capture: true }).stdout
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter(Boolean);
+
+  const relevantChanges = statusLines.filter((line) => !IGNORED_WORKTREE_PATHS.has(parseStatusPath(line)));
+
+  if (relevantChanges.length > 0) {
     throw new Error('Working tree is not clean. Commit or stash changes before running the release flow.');
   }
 }
@@ -248,6 +301,18 @@ function createReleaseCommit(version, dryRun) {
 
 function createReleaseTag(version, dryRun) {
   run('git', ['tag', '-a', `v${version}`, '-m', `Release v${version}`], { dryRun });
+}
+
+function pushRelease({ remote, dryRun, targetBranch }) {
+  const currentBranch = getCurrentBranch();
+  const branchToPush = targetBranch ?? currentBranch;
+
+  if (branchToPush !== currentBranch) {
+    throw new Error(`--push must target the current branch. Current branch: ${currentBranch}, requested: ${branchToPush}`);
+  }
+
+  run('git', ['push', remote, branchToPush, '--follow-tags'], { dryRun });
+  console.log(`Pushed ${branchToPush} with release tags.`);
 }
 
 function buildCompareUrl(remoteUrl, base, head) {
@@ -402,6 +467,14 @@ function main() {
 
   if (target && options.createTag) {
     createReleaseTag(version, options.dryRun);
+  }
+
+  if (options.push) {
+    pushRelease({
+      remote: options.remote,
+      dryRun: options.dryRun,
+      targetBranch: options.targetBranch,
+    });
   }
 
   if (options.promote) {
