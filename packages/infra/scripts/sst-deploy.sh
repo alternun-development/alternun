@@ -63,8 +63,14 @@ remove_state_resources_by_prefix() {
 
   while IFS= read -r urn; do
     [ -n "$urn" ] || continue
-    (cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst state remove --stage "$STACK" "$urn" >/dev/null)
-    echo "Removed state resource: ${urn}"
+    local remove_output
+    if remove_output=$(
+      cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst state remove --stage "$STACK" "$urn" 2>&1
+    ); then
+      echo "Removed state resource: ${urn}"
+    else
+      echo "WARN: Failed to remove state resource ${urn}; continuing. Output: ${remove_output}" >&2
+    fi
   done <<< "$urns"
 }
 
