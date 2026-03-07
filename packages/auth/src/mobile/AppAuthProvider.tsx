@@ -1,20 +1,20 @@
 import {
   AuthProvider as UniversalAuthProvider,
   useAuth as useUniversalAuth,
-} from "@edcalderon/auth";
-import { useMemo, type PropsWithChildren } from "react";
+} from '@edcalderon/auth';
+import { useMemo, type PropsWithChildren, } from 'react';
 import {
   AlternunMobileAuthClient,
   type AlternunMobileAuthClientOptions,
-} from "./AlternunMobileAuthClient";
+} from './AlternunMobileAuthClient';
 
 type MobileAuthOverrideOptions = Pick<
   AlternunMobileAuthClientOptions,
-  | "walletBridge"
-  | "allowMockWalletFallback"
-  | "allowWalletOnlySession"
-  | "supabaseUrl"
-  | "supabaseKey"
+  | 'walletBridge'
+  | 'allowMockWalletFallback'
+  | 'allowWalletOnlySession'
+  | 'supabaseUrl'
+  | 'supabaseKey'
 >;
 
 export interface AppAuthProviderProps extends PropsWithChildren {
@@ -24,7 +24,7 @@ export interface AppAuthProviderProps extends PropsWithChildren {
 export function AppAuthProvider({
   children,
   options,
-}: AppAuthProviderProps): any {
+}: AppAuthProviderProps,): any {
   const supabaseUrl =
     options?.supabaseUrl ??
     process.env.EXPO_PUBLIC_SUPABASE_URL ??
@@ -45,14 +45,14 @@ export function AppAuthProvider({
         walletBridge,
         allowMockWalletFallback,
         allowWalletOnlySession,
-      }),
+      },),
     [
       allowMockWalletFallback,
       allowWalletOnlySession,
       supabaseKey,
       supabaseUrl,
       walletBridge,
-    ]
+    ],
   );
 
   return (
