@@ -226,7 +226,11 @@ if [ "${RUN_PREDEPLOY_CHECKS:-true}" != "false" ]; then
   SKIP_CONTEXT_VALIDATION=true bash "$SCRIPT_DIR/predeploy-checks.sh" "$STACK"
 fi
 
-cleanup_deploy_aliases
+if is_truthy "${INFRA_ENABLE_ALIAS_CLEANUP:-false}"; then
+  cleanup_deploy_aliases
+else
+  echo "Skipping CloudFront alias cleanup (INFRA_ENABLE_ALIAS_CLEANUP=${INFRA_ENABLE_ALIAS_CLEANUP:-false})"
+fi
 
 prune_legacy_managed_certificate_state
 
