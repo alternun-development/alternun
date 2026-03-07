@@ -24,7 +24,7 @@ import {
 export default function AppInfoFooter(): React.JSX.Element {
   const { themeMode, language, } = useAppPreferences();
   const { width, } = useWindowDimensions();
-  const { t, } = useAppTranslation('mobile');
+  const { t, } = useAppTranslation('mobile',);
   const versionMetadata = useMemo(resolveVersionMetadata, [],);
   const isDark = themeMode === 'dark';
   const isMobile = width < 720;
@@ -81,7 +81,7 @@ export default function AppInfoFooter(): React.JSX.Element {
             {primaryLinks.map((link,) => (
               <FooterTextLink
                 key={link.labelKey}
-                label={t(link.labelKey, undefined, link.fallbackLabel)}
+                label={t(link.labelKey, undefined, link.fallbackLabel,)}
                 url={link.url}
                 textColor={palette.title}
                 compact

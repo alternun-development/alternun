@@ -73,23 +73,23 @@ function resolveCallbackSuccessToast(
   if (normalizedType === 'signup') {
     return {
       type: 'success',
-      title: t('authCallback.success.signup.title'),
-      message: t('authCallback.success.signup.message'),
+      title: t('authCallback.success.signup.title',),
+      message: t('authCallback.success.signup.message',),
     };
   }
 
   if (normalizedType === 'recovery') {
     return {
       type: 'info',
-      title: t('authCallback.success.recovery.title'),
-      message: t('authCallback.success.recovery.message'),
+      title: t('authCallback.success.recovery.title',),
+      message: t('authCallback.success.recovery.message',),
     };
   }
 
   return {
     type: 'success',
-    title: t('authCallback.success.default.title'),
-    message: t('authCallback.success.default.message'),
+    title: t('authCallback.success.default.title',),
+    message: t('authCallback.success.default.message',),
   };
 }
 
@@ -118,7 +118,7 @@ function stripAuthCallbackTokensFromUrl(urlValue: string,): void {
 
 function AuthCallbackBridge(): React.JSX.Element | null {
   const { client, } = useAlternunAuth();
-  const { t, } = useAppTranslation('mobile');
+  const { t, } = useAppTranslation('mobile',);
   const [toast, setToast,] = useState<CallbackToast | null>(null,);
 
   useEffect(() => {
@@ -173,10 +173,10 @@ function AuthCallbackBridge(): React.JSX.Element | null {
         callbackErrorDescription ??
         callbackError ??
         callbackErrorCode ??
-        t('authCallback.errors.failed');
+        t('authCallback.errors.failed',);
       setToast({
         type: 'error',
-        title: t('authCallback.errors.title'),
+        title: t('authCallback.errors.title',),
         message: errorMessage,
       },);
       return;
@@ -185,8 +185,8 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     if (!accessToken || !refreshToken) {
       setToast({
         type: 'error',
-        title: t('authCallback.errors.title'),
-        message: t('authCallback.errors.missingSession'),
+        title: t('authCallback.errors.title',),
+        message: t('authCallback.errors.missingSession',),
       },);
       return;
     }
@@ -197,8 +197,8 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     if (typeof setSession !== 'function') {
       setToast({
         type: 'error',
-        title: t('authCallback.errors.title'),
-        message: t('authCallback.errors.unsupportedClient'),
+        title: t('authCallback.errors.title',),
+        message: t('authCallback.errors.unsupportedClient',),
       },);
       return;
     }
@@ -216,7 +216,7 @@ function AuthCallbackBridge(): React.JSX.Element | null {
         if (result.error?.message) {
           setToast({
             type: 'error',
-            title: t('authCallback.errors.title'),
+            title: t('authCallback.errors.title',),
             message: result.error.message,
           },);
           return;
@@ -231,11 +231,11 @@ function AuthCallbackBridge(): React.JSX.Element | null {
 
         setToast({
           type: 'error',
-          title: t('authCallback.errors.title'),
+          title: t('authCallback.errors.title',),
           message:
             error instanceof Error
               ? error.message
-              : t('authCallback.errors.finalizeFailed'),
+              : t('authCallback.errors.finalizeFailed',),
         },);
       },);
 

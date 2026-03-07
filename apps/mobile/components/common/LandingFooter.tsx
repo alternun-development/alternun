@@ -28,7 +28,7 @@ import {
 export default function LandingFooter(): React.JSX.Element {
   const { themeMode, language, } = useAppPreferences();
   const { width, } = useWindowDimensions();
-  const { t, } = useAppTranslation('mobile');
+  const { t, } = useAppTranslation('mobile',);
   const isDark = themeMode === 'dark';
   const versionMetadata = useMemo(resolveVersionMetadata, [],);
 
@@ -117,7 +117,7 @@ export default function LandingFooter(): React.JSX.Element {
                   />
                 </View>
                 <View style={styles.bylineRow}>
-                  <Text style={[styles.bylineText, { color: palette.accent, },]}>{t('labels.by')}</Text>
+                  <Text style={[styles.bylineText, { color: palette.accent, },]}>{t('labels.by',)}</Text>
                   <ExpoImage source={ALTERNUN_POWERED_BY_LOGO} style={styles.bylineLogo} contentFit='contain' />
                 </View>
               </View>
@@ -127,7 +127,7 @@ export default function LandingFooter(): React.JSX.Element {
                   {primaryLinks.map((link,) => (
                     <FooterTextLink
                       key={link.labelKey}
-                      label={t(link.labelKey, undefined, link.fallbackLabel)}
+                      label={t(link.labelKey, undefined, link.fallbackLabel,)}
                       url={link.url}
                       textColor={palette.title}
                     />
@@ -160,7 +160,7 @@ export default function LandingFooter(): React.JSX.Element {
                 },
               ]}
             >
-              {t('footer.tagline')}
+              {t('footer.tagline',)}
             </Text>
           </>
         ) : (
@@ -179,20 +179,20 @@ export default function LandingFooter(): React.JSX.Element {
                 />
               </View>
               <View style={styles.bylineRow}>
-                <Text style={[styles.bylineText, styles.bylineTextCompact, { color: palette.accent, },]}>{t('labels.by')}</Text>
+                <Text style={[styles.bylineText, styles.bylineTextCompact, { color: palette.accent, },]}>{t('labels.by',)}</Text>
                 <ExpoImage source={ALTERNUN_POWERED_BY_LOGO} style={styles.bylineLogo} contentFit='contain' />
               </View>
             </View>
 
             <Text numberOfLines={isMobile ? 2 : 1} style={[styles.compactTagline, { color: palette.text, },]}>
-              {t('footer.tagline')}
+              {t('footer.tagline',)}
             </Text>
 
             <View style={styles.linkRow}>
               {primaryLinks.map((link,) => (
                 <FooterTextLink
                   key={link.labelKey}
-                  label={t(link.labelKey, undefined, link.fallbackLabel)}
+                  label={t(link.labelKey, undefined, link.fallbackLabel,)}
                   url={link.url}
                   textColor={palette.title}
                 />

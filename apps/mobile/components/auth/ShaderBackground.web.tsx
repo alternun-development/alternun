@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, } from 'react';
 
 const VS_SOURCE = `
   attribute vec4 aVertexPosition;
@@ -112,17 +112,17 @@ interface ShaderBackgroundProps {
   opacity?: number;
 }
 
-function loadShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
-  const shader = gl.createShader(type);
+function loadShader(gl: WebGLRenderingContext, type: number, source: string,): WebGLShader | null {
+  const shader = gl.createShader(type,);
   if (!shader) {
     return null;
   }
 
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
+  gl.shaderSource(shader, source,);
+  gl.compileShader(shader,);
 
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    gl.deleteShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS,)) {
+    gl.deleteShader(shader,);
     return null;
   }
 
@@ -132,18 +132,18 @@ function loadShader(gl: WebGLRenderingContext, type: number, source: string): We
 function initShaderProgram(
   gl: WebGLRenderingContext,
   vsSource: string,
-  fsSource: string
+  fsSource: string,
 ): ShaderProgramHandles | null {
-  const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
-  const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+  const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource,);
+  const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource,);
 
   if (!vertexShader || !fragmentShader) {
     if (vertexShader) {
-      gl.deleteShader(vertexShader);
+      gl.deleteShader(vertexShader,);
     }
 
     if (fragmentShader) {
-      gl.deleteShader(fragmentShader);
+      gl.deleteShader(fragmentShader,);
     }
 
     return null;
@@ -151,27 +151,27 @@ function initShaderProgram(
 
   const program = gl.createProgram();
   if (!program) {
-    gl.deleteShader(vertexShader);
-    gl.deleteShader(fragmentShader);
+    gl.deleteShader(vertexShader,);
+    gl.deleteShader(fragmentShader,);
     return null;
   }
 
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
+  gl.attachShader(program, vertexShader,);
+  gl.attachShader(program, fragmentShader,);
+  gl.linkProgram(program,);
 
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    gl.deleteProgram(program);
-    gl.deleteShader(vertexShader);
-    gl.deleteShader(fragmentShader);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS,)) {
+    gl.deleteProgram(program,);
+    gl.deleteShader(vertexShader,);
+    gl.deleteShader(fragmentShader,);
     return null;
   }
 
-  return { program, vertexShader, fragmentShader };
+  return { program, vertexShader, fragmentShader, };
 }
 
-export default function ShaderBackground({ opacity = 0.52 }: ShaderBackgroundProps) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+export default function ShaderBackground({ opacity = 0.52, }: ShaderBackgroundProps,) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null,);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -179,25 +179,25 @@ export default function ShaderBackground({ opacity = 0.52 }: ShaderBackgroundPro
       return;
     }
 
-    const gl = canvas.getContext('webgl', { alpha: true, antialias: true });
+    const gl = canvas.getContext('webgl', { alpha: true, antialias: true, },);
     if (!gl) {
       return;
     }
 
-    const shaderHandles = initShaderProgram(gl, VS_SOURCE, FS_SOURCE);
+    const shaderHandles = initShaderProgram(gl, VS_SOURCE, FS_SOURCE,);
     if (!shaderHandles) {
       return;
     }
 
     const positionBuffer = gl.createBuffer();
     if (!positionBuffer) {
-      gl.deleteProgram(shaderHandles.program);
-      gl.deleteShader(shaderHandles.vertexShader);
-      gl.deleteShader(shaderHandles.fragmentShader);
+      gl.deleteProgram(shaderHandles.program,);
+      gl.deleteShader(shaderHandles.vertexShader,);
+      gl.deleteShader(shaderHandles.fragmentShader,);
       return;
     }
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer,);
     gl.bufferData(
       gl.ARRAY_BUFFER,
       new Float32Array([
@@ -205,36 +205,36 @@ export default function ShaderBackground({ opacity = 0.52 }: ShaderBackgroundPro
         1.0, -1.0,
         -1.0, 1.0,
         1.0, 1.0,
-      ]),
-      gl.STATIC_DRAW
+      ],),
+      gl.STATIC_DRAW,
     );
 
-    const vertexPosition = gl.getAttribLocation(shaderHandles.program, 'aVertexPosition');
+    const vertexPosition = gl.getAttribLocation(shaderHandles.program, 'aVertexPosition',);
     if (vertexPosition < 0) {
-      gl.deleteBuffer(positionBuffer);
-      gl.deleteProgram(shaderHandles.program);
-      gl.deleteShader(shaderHandles.vertexShader);
-      gl.deleteShader(shaderHandles.fragmentShader);
+      gl.deleteBuffer(positionBuffer,);
+      gl.deleteProgram(shaderHandles.program,);
+      gl.deleteShader(shaderHandles.vertexShader,);
+      gl.deleteShader(shaderHandles.fragmentShader,);
       return;
     }
 
-    const resolution = gl.getUniformLocation(shaderHandles.program, 'iResolution');
-    const time = gl.getUniformLocation(shaderHandles.program, 'iTime');
+    const resolution = gl.getUniformLocation(shaderHandles.program, 'iResolution',);
+    const time = gl.getUniformLocation(shaderHandles.program, 'iTime',);
 
     const resizeCanvas = () => {
       const pixelRatio = window.devicePixelRatio || 1;
-      const width = Math.max(1, Math.floor(window.innerWidth * pixelRatio));
-      const height = Math.max(1, Math.floor(window.innerHeight * pixelRatio));
+      const width = Math.max(1, Math.floor(window.innerWidth * pixelRatio,),);
+      const height = Math.max(1, Math.floor(window.innerHeight * pixelRatio,),);
 
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;
       }
 
-      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.viewport(0, 0, canvas.width, canvas.height,);
     };
 
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas,);
     resizeCanvas();
 
     const startTime = performance.now();
@@ -243,40 +243,40 @@ export default function ShaderBackground({ opacity = 0.52 }: ShaderBackgroundPro
     const render = () => {
       const elapsedSeconds = (performance.now() - startTime) / 1000;
 
-      gl.clearColor(0.0, 0.0, 0.0, 0.0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.useProgram(shaderHandles.program);
+      gl.clearColor(0.0, 0.0, 0.0, 0.0,);
+      gl.clear(gl.COLOR_BUFFER_BIT,);
+      gl.useProgram(shaderHandles.program,);
 
       if (resolution) {
-        gl.uniform2f(resolution, canvas.width, canvas.height);
+        gl.uniform2f(resolution, canvas.width, canvas.height,);
       }
 
       if (time) {
-        gl.uniform1f(time, elapsedSeconds);
+        gl.uniform1f(time, elapsedSeconds,);
       }
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.vertexAttribPointer(vertexPosition, 2, gl.FLOAT, false, 0, 0);
-      gl.enableVertexAttribArray(vertexPosition);
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer,);
+      gl.vertexAttribPointer(vertexPosition, 2, gl.FLOAT, false, 0, 0,);
+      gl.enableVertexAttribArray(vertexPosition,);
 
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      frameHandle = window.requestAnimationFrame(render);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4,);
+      frameHandle = window.requestAnimationFrame(render,);
     };
 
-    frameHandle = window.requestAnimationFrame(render);
+    frameHandle = window.requestAnimationFrame(render,);
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('resize', resizeCanvas,);
       if (frameHandle) {
-        window.cancelAnimationFrame(frameHandle);
+        window.cancelAnimationFrame(frameHandle,);
       }
 
-      gl.deleteBuffer(positionBuffer);
-      gl.deleteProgram(shaderHandles.program);
-      gl.deleteShader(shaderHandles.vertexShader);
-      gl.deleteShader(shaderHandles.fragmentShader);
+      gl.deleteBuffer(positionBuffer,);
+      gl.deleteProgram(shaderHandles.program,);
+      gl.deleteShader(shaderHandles.vertexShader,);
+      gl.deleteShader(shaderHandles.fragmentShader,);
     };
-  }, []);
+  }, [],);
 
   return (
     <canvas

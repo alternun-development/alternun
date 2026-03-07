@@ -207,6 +207,25 @@ function ensureValidVersion(version) {
   }
 }
 
+function ensureChangelogFile(dryRun) {
+  const changelogPath = path.join(REPO_ROOT, 'CHANGELOG.md');
+
+  if (fs.existsSync(changelogPath)) {
+    return;
+  }
+
+  if (dryRun) {
+    console.log('[dry-run] create CHANGELOG.md');
+    return;
+  }
+
+  fs.writeFileSync(
+    changelogPath,
+    '# Changelog\n\nAll notable changes to this project will be documented in this file.\n',
+    'utf8',
+  );
+}
+
 function stageReleaseFiles(dryRun) {
   const managedPaths = new Set([
     ...getManagedPackageJsonPaths(),
@@ -347,6 +366,8 @@ function performVersionChange(target, options) {
   if (!target) {
     return readRootVersion();
   }
+
+  ensureChangelogFile(options.dryRun);
 
   if (VALID_BUMPS.has(target)) {
     run('pnpm', ['exec', 'versioning', target, '--no-commit', '--no-tag'], { dryRun: options.dryRun });

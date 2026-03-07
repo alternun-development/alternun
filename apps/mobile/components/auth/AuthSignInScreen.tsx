@@ -1,8 +1,8 @@
-import type { OAuthFlow } from './AppAuthProvider';
-import { parseEmailAddress, parseSignUpPassword } from '@alternun/auth';
-import { Image as ExpoImage } from 'expo-image';
-import { AlertCircle, Chrome, Eye, EyeOff, Lock, Mail, Wallet, X } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { OAuthFlow, } from './AppAuthProvider';
+import { parseEmailAddress, parseSignUpPassword, } from '@alternun/auth';
+import { Image as ExpoImage, } from 'expo-image';
+import { AlertCircle, Chrome, Eye, EyeOff, Lock, Mail, Wallet, X, } from 'lucide-react-native';
+import React, { useEffect, useMemo, useRef, useState, } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -20,10 +20,10 @@ import { createTypographyStyles, } from '../theme/typography';
 import ShaderBackground from './ShaderBackground';
 import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation, } from '../i18n/useAppTranslation';
-import { useAuth } from './AppAuthProvider';
+import { useAuth, } from './AppAuthProvider';
 
 const RESEND_COOLDOWN_SECONDS = 45;
-const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg');
+const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg',);
 
 type SubmitMode = 'signin' | 'signup' | 'resend' | 'google' | 'wallet' | null;
 type AuthMode = 'signin' | 'signup';
@@ -52,32 +52,32 @@ export interface AuthSignInScreenProps {
   presentation?: 'screen' | 'modal';
 }
 
-function resolveGoogleFlow(supportedFlows: OAuthFlow[]): OAuthFlow {
-  if (supportedFlows.includes('redirect')) {
+function resolveGoogleFlow(supportedFlows: OAuthFlow[],): OAuthFlow {
+  if (supportedFlows.includes('redirect',)) {
     return 'redirect';
   }
 
-  if (supportedFlows.includes('native')) {
+  if (supportedFlows.includes('native',)) {
     return 'native';
   }
 
   return 'popup';
 }
 
-function stripKnownErrorPrefix(message: string): string {
-  const prefixes = ['UNSUPPORTED_FLOW:', 'PROVIDER_ERROR:', 'VALIDATION_ERROR:'];
+function stripKnownErrorPrefix(message: string,): string {
+  const prefixes = ['UNSUPPORTED_FLOW:', 'PROVIDER_ERROR:', 'VALIDATION_ERROR:',];
   for (const prefix of prefixes) {
-    if (message.startsWith(prefix)) {
-      return message.replace(prefix, '').trim();
+    if (message.startsWith(prefix,)) {
+      return message.replace(prefix, '',).trim();
     }
   }
 
   return message.trim();
 }
 
-function normalizeMessage(value: unknown): string | null {
+function normalizeMessage(value: unknown,): string | null {
   if (typeof value === 'string') {
-    const normalized = stripKnownErrorPrefix(value);
+    const normalized = stripKnownErrorPrefix(value,);
     if (!normalized || normalized === '{}' || normalized === '[object Object]') {
       return null;
     }
@@ -86,12 +86,12 @@ function normalizeMessage(value: unknown): string | null {
   }
 
   if (value instanceof Error) {
-    return normalizeMessage(value.message);
+    return normalizeMessage(value.message,);
   }
 
-  if (Array.isArray(value)) {
+  if (Array.isArray(value,)) {
     for (const entry of value) {
-      const normalizedEntry = normalizeMessage(entry);
+      const normalizedEntry = normalizeMessage(entry,);
       if (normalizedEntry) {
         return normalizedEntry;
       }
@@ -113,16 +113,16 @@ function normalizeMessage(value: unknown): string | null {
     ];
 
     for (const candidate of candidates) {
-      const normalizedCandidate = normalizeMessage(candidate);
+      const normalizedCandidate = normalizeMessage(candidate,);
       if (normalizedCandidate) {
         return normalizedCandidate;
       }
     }
 
     try {
-      const serialized = JSON.stringify(value);
+      const serialized = JSON.stringify(value,);
       if (serialized && serialized !== '{}' && serialized !== '[]') {
-        return stripKnownErrorPrefix(serialized);
+        return stripKnownErrorPrefix(serialized,);
       }
     } catch {
       return null;
@@ -132,34 +132,34 @@ function normalizeMessage(value: unknown): string | null {
   }
 
   if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-    return String(value);
+    return String(value,);
   }
 
   return null;
 }
 
 function getMessage(error: unknown, fallbackMessage: string,): string {
-  return normalizeMessage(error) ?? fallbackMessage;
+  return normalizeMessage(error,) ?? fallbackMessage;
 }
 
-function isEmailAuthCapable(client: unknown): client is EmailAuthCapableClient {
+function isEmailAuthCapable(client: unknown,): client is EmailAuthCapableClient {
   return Boolean(
-    client && typeof (client as EmailAuthCapableClient).signUpWithEmail === 'function'
+    client && typeof (client as EmailAuthCapableClient).signUpWithEmail === 'function',
   );
 }
 
-function supportsConfirmationResend(client: unknown): client is EmailAuthCapableClient {
+function supportsConfirmationResend(client: unknown,): client is EmailAuthCapableClient {
   return Boolean(
-    client && typeof (client as EmailAuthCapableClient).resendEmailConfirmation === 'function'
+    client && typeof (client as EmailAuthCapableClient).resendEmailConfirmation === 'function',
   );
 }
 
-function isEmailNotConfirmedMessage(message: string): boolean {
+function isEmailNotConfirmedMessage(message: string,): boolean {
   const normalized = message.toLowerCase();
   return (
-    normalized.includes('email not confirmed') ||
-    normalized.includes('email is not confirmed') ||
-    normalized.includes('confirm your email')
+    normalized.includes('email not confirmed',) ||
+    normalized.includes('email is not confirmed',) ||
+    normalized.includes('confirm your email',)
   );
 }
 
@@ -174,39 +174,39 @@ function createDefaultRequiredFieldState(): RequiredFieldState {
 export default function AuthSignInScreen({
   onCancel,
   presentation = 'screen',
-}: AuthSignInScreenProps) {
-  const { signInWithEmail, signIn, loading, error, client } = useAuth();
-  const { t, } = useAppTranslation('mobile');
-  const [mode, setMode] = useState<AuthMode>('signin');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [walletModalVisible, setWalletModalVisible] = useState(false);
-  const [submitMode, setSubmitMode] = useState<SubmitMode>(null);
-  const [localError, setLocalError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [authStep, setAuthStep] = useState<AuthStep>('form');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [invalidEmail, setInvalidEmail] = useState(false);
-  const [requiredFields, setRequiredFields] = useState<RequiredFieldState>(() =>
-    createDefaultRequiredFieldState()
+}: AuthSignInScreenProps,) {
+  const { signInWithEmail, signIn, loading, error, client, } = useAuth();
+  const { t, } = useAppTranslation('mobile',);
+  const [mode, setMode,] = useState<AuthMode>('signin',);
+  const [email, setEmail,] = useState('',);
+  const [password, setPassword,] = useState('',);
+  const [confirmPassword, setConfirmPassword,] = useState('',);
+  const [walletModalVisible, setWalletModalVisible,] = useState(false,);
+  const [submitMode, setSubmitMode,] = useState<SubmitMode>(null,);
+  const [localError, setLocalError,] = useState<string | null>(null,);
+  const [notice, setNotice,] = useState<string | null>(null,);
+  const [confirmationEmail, setConfirmationEmail,] = useState<string | null>(null,);
+  const [resendCooldown, setResendCooldown,] = useState(0,);
+  const [authStep, setAuthStep,] = useState<AuthStep>('form',);
+  const [showPassword, setShowPassword,] = useState(false,);
+  const [showConfirmPassword, setShowConfirmPassword,] = useState(false,);
+  const [invalidEmail, setInvalidEmail,] = useState(false,);
+  const [requiredFields, setRequiredFields,] = useState<RequiredFieldState>(() =>
+    createDefaultRequiredFieldState(),
   );
 
-  const emailInputRef = useRef<TextInput>(null);
-  const passwordInputRef = useRef<TextInput>(null);
-  const confirmPasswordInputRef = useRef<TextInput>(null);
+  const emailInputRef = useRef<TextInput>(null,);
+  const passwordInputRef = useRef<TextInput>(null,);
+  const confirmPasswordInputRef = useRef<TextInput>(null,);
 
   const googleFlow = useMemo(
-    () => resolveGoogleFlow(client.capabilities().supportedFlows),
-    [client]
+    () => resolveGoogleFlow(client.capabilities().supportedFlows,),
+    [client,]
   );
 
   const rawEffectiveError = localError ?? error;
   const effectiveError = rawEffectiveError
-    ? getMessage(rawEffectiveError, t('authModal.errors.authenticationFailed'))
+    ? getMessage(rawEffectiveError, t('authModal.errors.authenticationFailed',))
     : null;
   const isBusy = loading || submitMode !== null;
   const isModal = presentation === 'modal';
@@ -214,9 +214,9 @@ export default function AuthSignInScreen({
 
   useEffect(() => {
     if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-      UIManager.setLayoutAnimationEnabledExperimental(true);
+      UIManager.setLayoutAnimationEnabledExperimental(true,);
     }
-  }, []);
+  }, [],);
 
   useEffect(() => {
     if (resendCooldown <= 0) {
@@ -224,29 +224,29 @@ export default function AuthSignInScreen({
     }
 
     const timeout = setTimeout(() => {
-      setResendCooldown(seconds => (seconds > 0 ? seconds - 1 : 0));
-    }, 1000);
+      setResendCooldown((seconds,) => (seconds > 0 ? seconds - 1 : 0),);
+    }, 1000,);
 
-    return () => clearTimeout(timeout);
-  }, [resendCooldown]);
+    return () => clearTimeout(timeout,);
+  }, [resendCooldown,]);
 
-  const transitionToStep = (step: AuthStep) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setAuthStep(step);
+  const transitionToStep = (step: AuthStep,) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut,);
+    setAuthStep(step,);
   };
 
   const resetMessages = () => {
-    setLocalError(null);
-    setNotice(null);
+    setLocalError(null,);
+    setNotice(null,);
   };
 
   const clearRequiredFields = () => {
-    setRequiredFields(createDefaultRequiredFieldState());
-    setInvalidEmail(false);
+    setRequiredFields(createDefaultRequiredFieldState(),);
+    setInvalidEmail(false,);
   };
 
-  const clearRequiredField = (field: RequiredField) => {
-    setRequiredFields(current => {
+  const clearRequiredField = (field: RequiredField,) => {
+    setRequiredFields((current,) => {
       if (!current[field]) {
         return current;
       }
@@ -255,10 +255,10 @@ export default function AuthSignInScreen({
         ...current,
         [field]: false,
       };
-    });
+    },);
   };
 
-  const focusRequiredField = (field: RequiredField) => {
+  const focusRequiredField = (field: RequiredField,) => {
     if (field === 'email') {
       emailInputRef.current?.focus();
       return;
@@ -272,7 +272,7 @@ export default function AuthSignInScreen({
     confirmPasswordInputRef.current?.focus();
   };
 
-  const validateRequiredFields = (fields: RequiredField[]): boolean => {
+  const validateRequiredFields = (fields: RequiredField[],): boolean => {
     const nextRequiredState = createDefaultRequiredFieldState();
     let firstMissingField: RequiredField | null = null;
 
@@ -281,8 +281,8 @@ export default function AuthSignInScreen({
         field === 'email'
           ? email.trim()
           : field === 'password'
-          ? password.trim()
-          : confirmPassword.trim();
+            ? password.trim()
+            : confirmPassword.trim();
       const isMissing = !value;
 
       nextRequiredState[field] = isMissing;
@@ -291,28 +291,28 @@ export default function AuthSignInScreen({
       }
     }
 
-    setRequiredFields(nextRequiredState);
+    setRequiredFields(nextRequiredState,);
 
     if (firstMissingField) {
-      focusRequiredField(firstMissingField);
+      focusRequiredField(firstMissingField,);
       return false;
     }
 
     return true;
   };
 
-  const normalizeEmailOrSetError = (rawEmail: string): string | null => {
+  const normalizeEmailOrSetError = (rawEmail: string,): string | null => {
     try {
-      const normalizedEmail = parseEmailAddress(rawEmail);
-      setInvalidEmail(false);
+      const normalizedEmail = parseEmailAddress(rawEmail,);
+      setInvalidEmail(false,);
       return normalizedEmail;
     } catch (validationError) {
-      setInvalidEmail(true);
-      clearRequiredField('email');
+      setInvalidEmail(true,);
+      clearRequiredField('email',);
       if (authStep === 'form') {
-        focusRequiredField('email');
+        focusRequiredField('email',);
       }
-      setLocalError(t('authModal.validation.validEmail'));
+      setLocalError(t('authModal.validation.validEmail',));
       return null;
     }
   };
@@ -320,96 +320,96 @@ export default function AuthSignInScreen({
   const handleEmailSignIn = async () => {
     resetMessages();
 
-    if (!validateRequiredFields(['email', 'password'])) {
-      setLocalError(t('authModal.validation.emailAndPasswordRequired'));
+    if (!validateRequiredFields(['email', 'password',])) {
+      setLocalError(t('authModal.validation.emailAndPasswordRequired',));
       return;
     }
 
-    const normalizedEmail = normalizeEmailOrSetError(email);
+    const normalizedEmail = normalizeEmailOrSetError(email,);
     if (!normalizedEmail) {
       return;
     }
 
-    setSubmitMode('signin');
+    setSubmitMode('signin',);
     try {
-      await signInWithEmail(normalizedEmail, password);
+      await signInWithEmail(normalizedEmail, password,);
     } catch (authError) {
-      const message = getMessage(authError, t('authModal.errors.authenticationFailed'));
-      if (normalizedEmail && isEmailNotConfirmedMessage(message)) {
-        setConfirmationEmail(normalizedEmail);
-        setNotice(t('authModal.notices.unverifiedEmail'));
-        transitionToStep('emailConfirmation');
+      const message = getMessage(authError, t('authModal.errors.authenticationFailed',));
+      if (normalizedEmail && isEmailNotConfirmedMessage(message,)) {
+        setConfirmationEmail(normalizedEmail,);
+        setNotice(t('authModal.notices.unverifiedEmail',));
+        transitionToStep('emailConfirmation',);
       }
-      setLocalError(message);
+      setLocalError(message,);
     } finally {
-      setSubmitMode(null);
+      setSubmitMode(null,);
     }
   };
 
   const handleEmailSignUp = async () => {
     resetMessages();
 
-    if (!validateRequiredFields(['email', 'password', 'confirmPassword'])) {
-      setLocalError(t('authModal.validation.emailPasswordConfirmationRequired'));
+    if (!validateRequiredFields(['email', 'password', 'confirmPassword',])) {
+      setLocalError(t('authModal.validation.emailPasswordConfirmationRequired',));
       return;
     }
 
-    const normalizedEmail = normalizeEmailOrSetError(email);
+    const normalizedEmail = normalizeEmailOrSetError(email,);
     if (!normalizedEmail) {
       return;
     }
 
     try {
-      parseSignUpPassword(password);
+      parseSignUpPassword(password,);
     } catch {
-      setLocalError(t('authModal.validation.passwordMin'));
+      setLocalError(t('authModal.validation.passwordMin',));
       return;
     }
 
     if (password !== confirmPassword) {
-      setLocalError(t('authModal.validation.passwordMismatch'));
+      setLocalError(t('authModal.validation.passwordMismatch',));
       return;
     }
 
-    if (!isEmailAuthCapable(client) || !client.signUpWithEmail) {
-      setLocalError(t('authModal.errors.signupUnavailable'));
+    if (!isEmailAuthCapable(client,) || !client.signUpWithEmail) {
+      setLocalError(t('authModal.errors.signupUnavailable',));
       return;
     }
 
-    setSubmitMode('signup');
+    setSubmitMode('signup',);
     try {
-      const result = await client.signUpWithEmail(normalizedEmail, password);
+      const result = await client.signUpWithEmail(normalizedEmail, password,);
 
       if (result.needsEmailVerification) {
-        setConfirmationEmail(normalizedEmail);
+        setConfirmationEmail(normalizedEmail,);
         if (result.emailAlreadyRegistered) {
-          setLocalError(t('authModal.errors.accountExistsSignInOrResend'));
-          setNotice(t('authModal.notices.requestNewConfirmation'));
-          setResendCooldown(0);
+          setLocalError(t('authModal.errors.accountExistsSignInOrResend',));
+          setNotice(t('authModal.notices.requestNewConfirmation',));
+          setResendCooldown(0,);
         } else {
-          setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail }));
+          setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail, }));
           if (result.confirmationEmailSent) {
-            setResendCooldown(RESEND_COOLDOWN_SECONDS);
+            setResendCooldown(RESEND_COOLDOWN_SECONDS,);
           }
         }
-        setMode('signin');
-        transitionToStep('emailConfirmation');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        setShowPassword(false);
-        setShowConfirmPassword(false);
+        setMode('signin',);
+        transitionToStep('emailConfirmation',);
+        setEmail('',);
+        setPassword('',);
+        setConfirmPassword('',);
+        setShowPassword(false,);
+        setShowConfirmPassword(false,);
         clearRequiredFields();
         return;
       }
 
-      setConfirmationEmail(null);
-      setResendCooldown(0);
-      setNotice(t('authModal.notices.accountCreatedSigningIn'));
+      setConfirmationEmail(null,);
+      setResendCooldown(0,);
+      setNotice(t('authModal.notices.accountCreatedSigningIn',));
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
+      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed',)));
     } finally {
-      setSubmitMode(null);
+      setSubmitMode(null,);
     }
   };
 
@@ -418,17 +418,17 @@ export default function AuthSignInScreen({
 
     const emailCandidate = (confirmationEmail ?? email).trim();
     if (!emailCandidate) {
-      setLocalError(t('authModal.errors.enterEmailFirst'));
+      setLocalError(t('authModal.errors.enterEmailFirst',));
       return;
     }
 
-    const normalizedEmail = normalizeEmailOrSetError(emailCandidate);
+    const normalizedEmail = normalizeEmailOrSetError(emailCandidate,);
     if (!normalizedEmail) {
       return;
     }
 
-    if (!supportsConfirmationResend(client) || !client.resendEmailConfirmation) {
-      setLocalError(t('authModal.errors.resendUnavailable'));
+    if (!supportsConfirmationResend(client,) || !client.resendEmailConfirmation) {
+      setLocalError(t('authModal.errors.resendUnavailable',));
       return;
     }
 
@@ -436,71 +436,71 @@ export default function AuthSignInScreen({
       return;
     }
 
-    setSubmitMode('resend');
+    setSubmitMode('resend',);
     try {
-      await client.resendEmailConfirmation(normalizedEmail);
-      setConfirmationEmail(normalizedEmail);
-      setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail }));
-      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+      await client.resendEmailConfirmation(normalizedEmail,);
+      setConfirmationEmail(normalizedEmail,);
+      setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail, }));
+      setResendCooldown(RESEND_COOLDOWN_SECONDS,);
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
+      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed',)));
     } finally {
-      setSubmitMode(null);
+      setSubmitMode(null,);
     }
   };
 
   const handleGoogleSignIn = async () => {
     resetMessages();
-    setSubmitMode('google');
+    setSubmitMode('google',);
     try {
       await signIn({
         provider: 'google',
         flow: googleFlow,
-      });
+      },);
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
+      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed',)));
     } finally {
-      setSubmitMode(null);
+      setSubmitMode(null,);
     }
   };
 
-  const handleWalletConnect = async (walletType: string) => {
-    setWalletModalVisible(false);
+  const handleWalletConnect = async (walletType: string,) => {
+    setWalletModalVisible(false,);
     resetMessages();
-    setSubmitMode('wallet');
+    setSubmitMode('wallet',);
     try {
       await signIn({
         provider: walletType,
         flow: 'native',
-      });
+      },);
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
+      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed',)));
     } finally {
-      setSubmitMode(null);
+      setSubmitMode(null,);
     }
   };
 
-  const switchMode = (nextMode: AuthMode) => {
+  const switchMode = (nextMode: AuthMode,) => {
     if (nextMode === mode && authStep === 'form') {
       return;
     }
 
-    transitionToStep('form');
-    setMode(nextMode);
+    transitionToStep('form',);
+    setMode(nextMode,);
     resetMessages();
-    setPassword('');
-    setConfirmPassword('');
-    setShowPassword(false);
-    setShowConfirmPassword(false);
+    setPassword('',);
+    setConfirmPassword('',);
+    setShowPassword(false,);
+    setShowConfirmPassword(false,);
     clearRequiredFields();
     if (nextMode === 'signup') {
-      setConfirmationEmail(null);
-      setResendCooldown(0);
+      setConfirmationEmail(null,);
+      setResendCooldown(0,);
     }
   };
 
   return (
-    <View style={[styles.screen, isModal && styles.modalScreen]}>
+    <View style={[styles.screen, isModal && styles.modalScreen,]}>
       {isModal ? (
         <View pointerEvents='none' style={styles.shaderBackdrop}>
           <ShaderBackground opacity={0.52} />
@@ -512,15 +512,15 @@ export default function AuthSignInScreen({
         style={styles.keyboardContainer}
       >
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, isModal && styles.scrollContentModal]}
+          contentContainerStyle={[styles.scrollContent, isModal && styles.scrollContentModal,]}
           keyboardShouldPersistTaps='handled'
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.card, isModal && styles.cardModal]}>
+          <View style={[styles.card, isModal && styles.cardModal,]}>
             <View style={styles.header}>
               <View style={styles.titleLockup}>
                 <ExpoImage source={AIRS_LOGOTIPO_LIGHT} style={styles.titleWordmark} contentFit='contain' />
-                <Text style={styles.subtitle}>{t('authModal.notices.secureSignIn')}</Text>
+                <Text style={styles.subtitle}>{t('authModal.notices.secureSignIn',)}</Text>
               </View>
               {onCancel ? (
                 <TouchableOpacity activeOpacity={0.8} onPress={onCancel} style={styles.closeButton}>
@@ -534,8 +534,8 @@ export default function AuthSignInScreen({
                 <View style={styles.modeSwitch}>
                   <TouchableOpacity
                     activeOpacity={0.85}
-                    onPress={() => switchMode('signin')}
-                    style={[styles.modeButton, mode === 'signin' && styles.modeButtonActive]}
+                    onPress={() => switchMode('signin',)}
+                    style={[styles.modeButton, mode === 'signin' && styles.modeButtonActive,]}
                   >
                     <Text
                       style={[
@@ -543,13 +543,13 @@ export default function AuthSignInScreen({
                         mode === 'signin' && styles.modeButtonTextActive,
                       ]}
                     >
-                      {t('authModal.modes.signIn')}
+                      {t('authModal.modes.signIn',)}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     activeOpacity={0.85}
-                    onPress={() => switchMode('signup')}
-                    style={[styles.modeButton, mode === 'signup' && styles.modeButtonActive]}
+                    onPress={() => switchMode('signup',)}
+                    style={[styles.modeButton, mode === 'signup' && styles.modeButtonActive,]}
                   >
                     <Text
                       style={[
@@ -557,13 +557,13 @@ export default function AuthSignInScreen({
                         mode === 'signup' && styles.modeButtonTextActive,
                       ]}
                     >
-                      {t('authModal.modes.signUp')}
+                      {t('authModal.modes.signUp',)}
                     </Text>
                   </TouchableOpacity>
                 </View>
 
                 <View
-                  style={[styles.inputWrapper, hasEmailInputError && styles.inputWrapperRequired]}
+                  style={[styles.inputWrapper, hasEmailInputError && styles.inputWrapperRequired,]}
                 >
                   <Mail
                     size={16}
@@ -574,21 +574,21 @@ export default function AuthSignInScreen({
                     autoCapitalize='none'
                     autoCorrect={false}
                     keyboardType='email-address'
-                    onChangeText={value => {
-                      setEmail(value);
-                      clearRequiredField('email');
-                      setInvalidEmail(false);
+                    onChangeText={(value,) => {
+                      setEmail(value,);
+                      clearRequiredField('email',);
+                      setInvalidEmail(false,);
                     }}
-                    placeholder={t('authModal.placeholders.email')}
+                    placeholder={t('authModal.placeholders.email',)}
                     placeholderTextColor='rgba(232,232,255,0.35)'
                     style={styles.input}
                     value={email}
                   />
                 </View>
                 {requiredFields.email ? (
-                  <Text style={styles.requiredFieldText}>{t('authModal.validation.emailRequired')}</Text>
+                  <Text style={styles.requiredFieldText}>{t('authModal.validation.emailRequired',)}</Text>
                 ) : invalidEmail ? (
-                  <Text style={styles.requiredFieldText}>{t('authModal.validation.validEmail')}</Text>
+                  <Text style={styles.requiredFieldText}>{t('authModal.validation.validEmail',)}</Text>
                 ) : null}
 
                 <View
@@ -605,11 +605,11 @@ export default function AuthSignInScreen({
                     ref={passwordInputRef}
                     autoCapitalize='none'
                     autoCorrect={false}
-                    onChangeText={value => {
-                      setPassword(value);
-                      clearRequiredField('password');
+                    onChangeText={(value,) => {
+                      setPassword(value,);
+                      clearRequiredField('password',);
                     }}
-                    placeholder={t('authModal.placeholders.password')}
+                    placeholder={t('authModal.placeholders.password',)}
                     placeholderTextColor='rgba(232,232,255,0.35)'
                     secureTextEntry={!showPassword}
                     style={styles.input}
@@ -617,7 +617,7 @@ export default function AuthSignInScreen({
                   />
                   <TouchableOpacity
                     activeOpacity={0.8}
-                    onPress={() => setShowPassword(current => !current)}
+                    onPress={() => setShowPassword((current,) => !current,)}
                     style={styles.visibilityToggle}
                   >
                     {showPassword ? (
@@ -628,7 +628,7 @@ export default function AuthSignInScreen({
                   </TouchableOpacity>
                 </View>
                 {requiredFields.password ? (
-                  <Text style={styles.requiredFieldText}>{t('authModal.validation.passwordRequired')}</Text>
+                  <Text style={styles.requiredFieldText}>{t('authModal.validation.passwordRequired',)}</Text>
                 ) : null}
 
                 {mode === 'signup' ? (
@@ -649,11 +649,11 @@ export default function AuthSignInScreen({
                         ref={confirmPasswordInputRef}
                         autoCapitalize='none'
                         autoCorrect={false}
-                        onChangeText={value => {
-                          setConfirmPassword(value);
-                          clearRequiredField('confirmPassword');
+                        onChangeText={(value,) => {
+                          setConfirmPassword(value,);
+                          clearRequiredField('confirmPassword',);
                         }}
-                        placeholder={t('authModal.placeholders.confirmPassword')}
+                        placeholder={t('authModal.placeholders.confirmPassword',)}
                         placeholderTextColor='rgba(232,232,255,0.35)'
                         secureTextEntry={!showConfirmPassword}
                         style={styles.input}
@@ -661,7 +661,7 @@ export default function AuthSignInScreen({
                       />
                       <TouchableOpacity
                         activeOpacity={0.8}
-                        onPress={() => setShowConfirmPassword(current => !current)}
+                        onPress={() => setShowConfirmPassword((current,) => !current,)}
                         style={styles.visibilityToggle}
                       >
                         {showConfirmPassword ? (
@@ -672,7 +672,7 @@ export default function AuthSignInScreen({
                       </TouchableOpacity>
                     </View>
                     {requiredFields.confirmPassword ? (
-                      <Text style={styles.requiredFieldText}>{t('authModal.validation.confirmPasswordRequired')}</Text>
+                      <Text style={styles.requiredFieldText}>{t('authModal.validation.confirmPasswordRequired',)}</Text>
                     ) : null}
                   </>
                 ) : null}
@@ -687,15 +687,15 @@ export default function AuthSignInScreen({
                       void handleEmailSignUp();
                     }
                   }}
-                  style={[styles.primaryButton, isBusy && styles.buttonDisabled]}
+                  style={[styles.primaryButton, isBusy && styles.buttonDisabled,]}
                 >
                   {submitMode === 'signin' || submitMode === 'signup' ? (
                     <ActivityIndicator color='#050510' size='small' />
                   ) : (
                     <Text style={styles.primaryButtonText}>
                       {mode === 'signin'
-                        ? t('authModal.actions.continueWithEmail')
-                        : t('authModal.actions.createAccount')}
+                        ? t('authModal.actions.continueWithEmail',)
+                        : t('authModal.actions.createAccount',)}
                     </Text>
                   )}
                 </TouchableOpacity>
@@ -704,7 +704,7 @@ export default function AuthSignInScreen({
                   <>
                     <View style={styles.dividerRow}>
                       <View style={styles.dividerLine} />
-                      <Text style={styles.dividerText}>{t('authModal.divider.or')}</Text>
+                      <Text style={styles.dividerText}>{t('authModal.divider.or',)}</Text>
                       <View style={styles.dividerLine} />
                     </View>
 
@@ -714,14 +714,14 @@ export default function AuthSignInScreen({
                       onPress={() => {
                         void handleGoogleSignIn();
                       }}
-                      style={[styles.secondaryButton, isBusy && styles.buttonDisabled]}
+                      style={[styles.secondaryButton, isBusy && styles.buttonDisabled,]}
                     >
                       {submitMode === 'google' ? (
                         <ActivityIndicator color='#e8e8ff' size='small' />
                       ) : (
                         <>
                           <Chrome size={16} color='#e8e8ff' />
-                          <Text style={styles.secondaryButtonText}>{t('authModal.actions.continueWithGoogle')}</Text>
+                          <Text style={styles.secondaryButtonText}>{t('authModal.actions.continueWithGoogle',)}</Text>
                         </>
                       )}
                     </TouchableOpacity>
@@ -729,15 +729,15 @@ export default function AuthSignInScreen({
                     <TouchableOpacity
                       activeOpacity={0.85}
                       disabled={isBusy}
-                      onPress={() => setWalletModalVisible(true)}
-                      style={[styles.secondaryButton, isBusy && styles.buttonDisabled]}
+                      onPress={() => setWalletModalVisible(true,)}
+                      style={[styles.secondaryButton, isBusy && styles.buttonDisabled,]}
                     >
                       {submitMode === 'wallet' ? (
                         <ActivityIndicator color='#e8e8ff' size='small' />
                       ) : (
                         <>
                           <Wallet size={16} color='#e8e8ff' />
-                          <Text style={styles.secondaryButtonText}>{t('authModal.actions.connectWallet')}</Text>
+                          <Text style={styles.secondaryButtonText}>{t('authModal.actions.connectWallet',)}</Text>
                         </>
                       )}
                     </TouchableOpacity>
@@ -760,13 +760,13 @@ export default function AuthSignInScreen({
                 <TouchableOpacity
                   activeOpacity={0.8}
                   disabled={isBusy}
-                  onPress={() => switchMode(mode === 'signin' ? 'signup' : 'signin')}
+                  onPress={() => switchMode(mode === 'signin' ? 'signup' : 'signin',)}
                   style={styles.footerToggle}
                 >
                   <Text style={styles.footerToggleText}>
                     {mode === 'signin'
-                      ? t('authModal.footer.dontHaveAccount')
-                      : t('authModal.footer.alreadyHaveAccount')}
+                      ? t('authModal.footer.dontHaveAccount',)
+                      : t('authModal.footer.alreadyHaveAccount',)}
                   </Text>
                 </TouchableOpacity>
               </>
@@ -776,9 +776,9 @@ export default function AuthSignInScreen({
                   <View style={styles.confirmationIconWrap}>
                     <Mail size={18} color='#66e6c5' />
                   </View>
-                  <Text style={styles.confirmationTitle}>{t('authModal.confirmation.checkEmail')}</Text>
-                  <Text style={styles.confirmationSubtitle}>{t('authModal.confirmation.linkSentTo')}</Text>
-                  <Text style={styles.confirmationEmail}>{confirmationEmail ?? t('authModal.confirmation.emailFallback')}</Text>
+                  <Text style={styles.confirmationTitle}>{t('authModal.confirmation.checkEmail',)}</Text>
+                  <Text style={styles.confirmationSubtitle}>{t('authModal.confirmation.linkSentTo',)}</Text>
+                  <Text style={styles.confirmationEmail}>{confirmationEmail ?? t('authModal.confirmation.emailFallback',)}</Text>
                 </View>
 
                 {notice ? (
@@ -795,9 +795,9 @@ export default function AuthSignInScreen({
                 ) : null}
 
                 <View style={styles.resendBox}>
-                  <Text style={styles.resendSectionTitle}>{t('authModal.resend.title')}</Text>
+                  <Text style={styles.resendSectionTitle}>{t('authModal.resend.title',)}</Text>
                   <Text style={styles.resendText}>
-                    {t('authModal.resend.body')}
+                    {t('authModal.resend.body',)}
                   </Text>
                   <TouchableOpacity
                     activeOpacity={0.8}
@@ -815,8 +815,8 @@ export default function AuthSignInScreen({
                     ) : (
                       <Text style={styles.resendButtonText}>
                         {resendCooldown > 0
-                          ? t('authModal.resend.sendAgainIn', { seconds: resendCooldown })
-                          : t('authModal.resend.sendAgain')}
+                          ? t('authModal.resend.sendAgainIn', { seconds: resendCooldown, })
+                          : t('authModal.resend.sendAgain',)}
                       </Text>
                     )}
                   </TouchableOpacity>
@@ -827,36 +827,36 @@ export default function AuthSignInScreen({
                   disabled={isBusy}
                   onPress={() => {
                     const nextEmail = confirmationEmail ?? '';
-                    transitionToStep('form');
-                    setMode('signin');
-                    setEmail(nextEmail);
-                    setPassword('');
-                    setConfirmPassword('');
+                    transitionToStep('form',);
+                    setMode('signin',);
+                    setEmail(nextEmail,);
+                    setPassword('',);
+                    setConfirmPassword('',);
                     clearRequiredFields();
                     resetMessages();
                   }}
-                  style={[styles.primaryButton, isBusy && styles.buttonDisabled]}
+                  style={[styles.primaryButton, isBusy && styles.buttonDisabled,]}
                 >
-                  <Text style={styles.primaryButtonText}>{t('authModal.actions.alreadyConfirmedContinue')}</Text>
+                  <Text style={styles.primaryButtonText}>{t('authModal.actions.alreadyConfirmedContinue',)}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   activeOpacity={0.8}
                   disabled={isBusy}
                   onPress={() => {
-                    transitionToStep('form');
-                    setMode('signup');
-                    setEmail('');
-                    setPassword('');
-                    setConfirmPassword('');
-                    setConfirmationEmail(null);
-                    setResendCooldown(0);
+                    transitionToStep('form',);
+                    setMode('signup',);
+                    setEmail('',);
+                    setPassword('',);
+                    setConfirmPassword('',);
+                    setConfirmationEmail(null,);
+                    setResendCooldown(0,);
                     clearRequiredFields();
                     resetMessages();
                   }}
                   style={styles.footerToggle}
                 >
-                  <Text style={styles.footerToggleText}>{t('authModal.actions.useAnotherEmail')}</Text>
+                  <Text style={styles.footerToggleText}>{t('authModal.actions.useAnotherEmail',)}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -866,9 +866,9 @@ export default function AuthSignInScreen({
 
       <WalletConnectModal
         visible={walletModalVisible}
-        onClose={() => setWalletModalVisible(false)}
-        onConnect={walletType => {
-          void handleWalletConnect(walletType);
+        onClose={() => setWalletModalVisible(false,)}
+        onConnect={(walletType,) => {
+          void handleWalletConnect(walletType,);
         }}
       />
     </View>
@@ -910,7 +910,7 @@ const styles = createTypographyStyles({
     width: '100%',
     maxWidth: 520,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: 10, },
     shadowOpacity: 0.4,
     shadowRadius: 24,
     elevation: 8,
@@ -1159,4 +1159,4 @@ const styles = createTypographyStyles({
     fontSize: 12,
     fontWeight: '600',
   },
-});
+},);

@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import React, { useState, } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, } from 'react-native';
 import { createTypographyStyles, } from '../theme/typography';
-import { DollarSign, X } from 'lucide-react-native';
-import { PoolPosition } from './types';
+import { DollarSign, X, } from 'lucide-react-native';
+import { PoolPosition, } from './types';
 
 interface PoolVaultProps {
   positions: PoolPosition[];
   onClaimProceeds: (position: PoolPosition) => void;
 }
 
-export default function PoolVault({ positions, onClaimProceeds }: PoolVaultProps) {
-  const [claimModal, setClaimModal] = useState<PoolPosition | null>(null);
+export default function PoolVault({ positions, onClaimProceeds, }: PoolVaultProps,) {
+  const [claimModal, setClaimModal,] = useState<PoolPosition | null>(null,);
 
   const handleClaim = () => {
     if (claimModal) {
-      onClaimProceeds(claimModal);
-      setClaimModal(null);
+      onClaimProceeds(claimModal,);
+      setClaimModal(null,);
     }
   };
 
@@ -29,7 +29,7 @@ export default function PoolVault({ positions, onClaimProceeds }: PoolVaultProps
       </View>
 
       <View style={styles.positionList}>
-        {positions.map((position) => {
+        {positions.map((position,) => {
           const soldPct = (position.soldUSD / position.totalValueUSD) * 100;
           return (
             <View key={position.positionId} style={styles.positionCard}>
@@ -38,8 +38,8 @@ export default function PoolVault({ positions, onClaimProceeds }: PoolVaultProps
                   <Text style={styles.positionId}>{position.positionId}</Text>
                   <Text style={styles.positionToken}>Token: {position.tokenId}</Text>
                 </View>
-                <View style={[styles.statusBadge, position.isClosed ? styles.statusClosed : styles.statusOpen]}>
-                  <Text style={[styles.statusText, position.isClosed ? styles.statusTextClosed : styles.statusTextOpen]}>
+                <View style={[styles.statusBadge, position.isClosed ? styles.statusClosed : styles.statusOpen,]}>
+                  <Text style={[styles.statusText, position.isClosed ? styles.statusTextClosed : styles.statusTextOpen,]}>
                     {position.isClosed ? 'Closed' : 'Open'}
                   </Text>
                 </View>
@@ -52,13 +52,13 @@ export default function PoolVault({ positions, onClaimProceeds }: PoolVaultProps
                 </View>
                 <View style={styles.statItem}>
                   <Text style={styles.statLabel}>Remaining</Text>
-                  <Text style={[styles.statValue, position.isClosed && styles.statValueMuted]}>
+                  <Text style={[styles.statValue, position.isClosed && styles.statValueMuted,]}>
                     ${position.remainingUSD.toLocaleString()}
                   </Text>
                 </View>
                 <View style={styles.statItem}>
                   <Text style={styles.statLabel}>Profit Share</Text>
-                  <Text style={[styles.statValue, styles.statValueAccent]}>{position.profitShare}%</Text>
+                  <Text style={[styles.statValue, styles.statValueAccent,]}>{position.profitShare}%</Text>
                 </View>
               </View>
 
@@ -71,24 +71,24 @@ export default function PoolVault({ positions, onClaimProceeds }: PoolVaultProps
                   </Text>
                 </View>
                 <View style={styles.progressTrack}>
-                  <View style={[styles.progressFill, { width: `${Math.min(soldPct, 100)}%` as any }]} />
+                  <View style={[styles.progressFill, { width: `${Math.min(soldPct, 100,)}%` as any, },]} />
                 </View>
-                <Text style={styles.progressPct}>{soldPct.toFixed(1)}%</Text>
+                <Text style={styles.progressPct}>{soldPct.toFixed(1,)}%</Text>
               </View>
 
               <TouchableOpacity
-                style={[styles.claimButton, position.isClosed ? styles.claimButtonActive : styles.claimButtonDisabled]}
-                onPress={() => position.isClosed && setClaimModal(position)}
+                style={[styles.claimButton, position.isClosed ? styles.claimButtonActive : styles.claimButtonDisabled,]}
+                onPress={() => position.isClosed && setClaimModal(position,)}
                 activeOpacity={position.isClosed ? 0.8 : 1}
               >
                 <DollarSign size={14} color={position.isClosed ? '#050510' : 'rgba(232,232,255,0.3)'} />
-                <Text style={[styles.claimButtonText, position.isClosed ? styles.claimButtonTextActive : styles.claimButtonTextDisabled]}>
+                <Text style={[styles.claimButtonText, position.isClosed ? styles.claimButtonTextActive : styles.claimButtonTextDisabled,]}>
                   {position.isClosed ? 'Claim Proceeds' : 'Awaiting Close'}
                 </Text>
               </TouchableOpacity>
             </View>
           );
-        })}
+        },)}
       </View>
 
       {/* Claim Modal */}
@@ -97,7 +97,7 @@ export default function PoolVault({ positions, onClaimProceeds }: PoolVaultProps
           <View style={styles.modalDialog}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Claim Proceeds</Text>
-              <TouchableOpacity onPress={() => setClaimModal(null)}>
+              <TouchableOpacity onPress={() => setClaimModal(null,)}>
                 <X size={20} color="rgba(232,232,255,0.6)" />
               </TouchableOpacity>
             </View>
@@ -114,9 +114,9 @@ export default function PoolVault({ positions, onClaimProceeds }: PoolVaultProps
                   </View>
                   <View style={styles.claimInfoRow}>
                     <Text style={styles.claimInfoLabel}>Profit Share</Text>
-                    <Text style={[styles.claimInfoValue, styles.claimInfoAccent]}>{claimModal.profitShare}%</Text>
+                    <Text style={[styles.claimInfoValue, styles.claimInfoAccent,]}>{claimModal.profitShare}%</Text>
                   </View>
-                  <View style={[styles.claimInfoRow, styles.claimInfoTotal]}>
+                  <View style={[styles.claimInfoRow, styles.claimInfoTotal,]}>
                     <Text style={styles.claimTotalLabel}>Estimated Payout</Text>
                     <Text style={styles.claimTotalValue}>
                       ${(claimModal.totalValueUSD * (1 + claimModal.profitShare / 100)).toLocaleString()}
@@ -124,7 +124,7 @@ export default function PoolVault({ positions, onClaimProceeds }: PoolVaultProps
                   </View>
                 </View>
                 <View style={styles.modalActions}>
-                  <TouchableOpacity style={styles.ghostButton} onPress={() => setClaimModal(null)} activeOpacity={0.8}>
+                  <TouchableOpacity style={styles.ghostButton} onPress={() => setClaimModal(null,)} activeOpacity={0.8}>
                     <Text style={styles.ghostButtonText}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.primaryButton} onPress={handleClaim} activeOpacity={0.8}>
@@ -169,7 +169,7 @@ const styles = createTypographyStyles({
     borderRadius: 16,
     padding: 16,
     shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 8, },
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 4,
@@ -282,7 +282,7 @@ const styles = createTypographyStyles({
   claimButtonActive: {
     backgroundColor: '#1ccba1',
     shadowColor: '#1ccba1',
-    shadowOffset: { width: 0, height: 0 },
+    shadowOffset: { width: 0, height: 0, },
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 4,
@@ -397,4 +397,4 @@ const styles = createTypographyStyles({
     fontSize: 14,
     fontWeight: '700',
   },
-});
+},);

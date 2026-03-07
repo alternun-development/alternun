@@ -2,10 +2,10 @@ import enCatalog from './catalogs/en.json';
 import esCatalog from './catalogs/es.json';
 import thCatalog from './catalogs/th.json';
 
-export const SUPPORTED_LOCALES = ['en', 'es', 'th'] as const;
+export const SUPPORTED_LOCALES = ['en', 'es', 'th',] as const;
 export type AlternunLocale = (typeof SUPPORTED_LOCALES)[number];
 
-export const TRANSLATION_NAMESPACES = ['shared', 'mobile', 'web', 'docs'] as const;
+export const TRANSLATION_NAMESPACES = ['shared', 'mobile', 'web', 'docs',] as const;
 export type TranslationNamespace = (typeof TRANSLATION_NAMESPACES)[number];
 export type AppTranslationNamespace = Exclude<TranslationNamespace, 'shared'>;
 
@@ -55,17 +55,17 @@ const catalogs: Record<AlternunLocale, TranslationCatalog> = {
   th: thCatalog as TranslationCatalog,
 };
 
-function isTree(value: string | TranslationTree | undefined): value is TranslationTree {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+function isTree(value: string | TranslationTree | undefined,): value is TranslationTree {
+  return typeof value === 'object' && value !== null && !Array.isArray(value,);
 }
 
-function deepMerge(base: TranslationTree, override: TranslationTree): TranslationTree {
+function deepMerge(base: TranslationTree, override: TranslationTree,): TranslationTree {
   const result: TranslationTree = { ...base, };
 
   for (const [key, value,] of Object.entries(override,)) {
     const baseValue = result[key];
 
-    if (isTree(baseValue) && isTree(value)) {
+    if (isTree(baseValue,) && isTree(value,)) {
       result[key] = deepMerge(baseValue, value,);
       continue;
     }
@@ -76,12 +76,12 @@ function deepMerge(base: TranslationTree, override: TranslationTree): Translatio
   return result;
 }
 
-function getPathValue(tree: TranslationTree, key: string): string | TranslationTree | undefined {
-  const segments = key.split('.').filter(Boolean,);
+function getPathValue(tree: TranslationTree, key: string,): string | TranslationTree | undefined {
+  const segments = key.split('.',).filter(Boolean,);
   let current: string | TranslationTree | undefined = tree;
 
   for (const segment of segments) {
-    if (!isTree(current)) {
+    if (!isTree(current,)) {
       return undefined;
     }
 
@@ -91,14 +91,14 @@ function getPathValue(tree: TranslationTree, key: string): string | TranslationT
   return current;
 }
 
-function interpolate(template: string, params?: TranslationParams): string {
+function interpolate(template: string, params?: TranslationParams,): string {
   if (!params) {
     return template;
   }
 
-  return template.replace(/\{\{\s*([^}]+)\s*\}\}/g, (_match, token: string) => {
+  return template.replace(/\{\{\s*([^}]+)\s*\}\}/g, (_match, token: string,) => {
     const value = params[token.trim()];
-    return value == null ? '' : String(value);
+    return value == null ? '' : String(value,);
   },);
 }
 
@@ -106,7 +106,7 @@ export function listSupportedLocales(): ReadonlyArray<AlternunLocale> {
   return SUPPORTED_LOCALES;
 }
 
-export function isSupportedLocale(value: string | null | undefined): value is AlternunLocale {
+export function isSupportedLocale(value: string | null | undefined,): value is AlternunLocale {
   if (!value) {
     return false;
   }
@@ -131,7 +131,7 @@ export function normalizeLocale(
   return isSupportedLocale(baseLocale,) ? baseLocale : fallbackLocale;
 }
 
-export function getCatalog(locale: AlternunLocale | string | null | undefined): TranslationCatalog {
+export function getCatalog(locale: AlternunLocale | string | null | undefined,): TranslationCatalog {
   return catalogs[normalizeLocale(locale,)];
 }
 
