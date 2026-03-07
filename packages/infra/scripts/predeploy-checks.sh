@@ -119,10 +119,6 @@ delete_acm_validation_cname_records() {
   local auto_remove=${AUTO_REMOVE_CONFLICTING_DNS:-false}
   local remove_validation=${INFRA_REMOVE_ACM_VALIDATION_CNAME:-true}
 
-  if ! is_truthy "$remove_validation"; then
-    return 0
-  fi
-
   local existing
   existing=$(aws route53 list-resource-record-sets \
     --hosted-zone-id "$hosted_zone_id" \
@@ -135,6 +131,12 @@ delete_acm_validation_cname_records() {
 
   echo "Found ACM validation CNAME records for ${domain_name}:"
   echo "$existing"
+
+  if ! is_truthy "$remove_validation"; then
+    report_managed_cert_conflict "$domain_name" "$cert_env_name" "$cert_env_value" || return 1
+    echo "WARN: INFRA_REMOVE_ACM_VALIDATION_CNAME=false; keeping ACM validation CNAME records for ${domain_name}." >&2
+    return 0
+  fi
 
   if ! is_truthy "$auto_remove"; then
     report_managed_cert_conflict "$domain_name" "$cert_env_name" "$cert_env_value" || return 1
