@@ -1,7 +1,7 @@
-import { jsx as _jsx } from "react/jsx-runtime";
-import { AuthProvider as UniversalAuthProvider, useAuth as useUniversalAuth, } from "@edcalderon/auth";
-import { useMemo } from "react";
-import { AlternunMobileAuthClient, } from "./AlternunMobileAuthClient";
+import { AuthProvider as UniversalAuthProvider, useAuth as useUniversalAuth, } from '@edcalderon/auth';
+import { createElement, useMemo, } from 'react';
+import { AlternunMobileAuthClient, } from './AlternunMobileAuthClient';
+const UniversalAuthProviderCompat = UniversalAuthProvider;
 export function AppAuthProvider({ children, options, }) {
     var _a, _b, _c, _d;
     const supabaseUrl = (_b = (_a = options === null || options === void 0 ? void 0 : options.supabaseUrl) !== null && _a !== void 0 ? _a : process.env.EXPO_PUBLIC_SUPABASE_URL) !== null && _b !== void 0 ? _b : process.env.EXPO_PUBLIC_SUPABASE_URI;
@@ -22,6 +22,6 @@ export function AppAuthProvider({ children, options, }) {
         supabaseUrl,
         walletBridge,
     ]);
-    return (_jsx(UniversalAuthProvider, { client: client, children: children }));
+    return createElement(UniversalAuthProviderCompat, { client, }, children);
 }
 export const useAuth = useUniversalAuth;
