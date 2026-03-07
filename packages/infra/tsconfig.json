@@ -5,7 +5,8 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "noEmit": true,
+    "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["*.ts", "modules/**/*.ts", "sst-env.d.ts"]
+  "include": ["*.ts", "modules/**/*.ts", "sst-env.d.ts", ".sst/platform/config.d.ts"]
 }
