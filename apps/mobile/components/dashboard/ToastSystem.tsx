@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
 import { ToastMessage } from './types';
 
 interface ToastProps {
@@ -34,7 +35,7 @@ export default function ToastSystem({ toasts, onDismiss }: ToastProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   container: {
     position: 'absolute',
     bottom: 24,

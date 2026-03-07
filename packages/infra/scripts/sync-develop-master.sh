@@ -1,33 +1,33 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REMOTE=${REMOTE:-origin}
-SOURCE_BRANCH=${SOURCE_BRANCH:-develop}
-TARGET_BRANCH=${TARGET_BRANCH:-master}
-
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 REPO_ROOT=$(git rev-parse --show-toplevel)
-cd "$REPO_ROOT"
 
-if [ -n "$(git status --porcelain)" ]; then
-  echo "Working tree is not clean. Commit or stash changes before syncing branches." >&2
-  exit 1
-fi
+resolve_testnet_mode() {
+  local env_file="$REPO_ROOT/.env"
+  local value=""
 
-echo "Fetching latest branches from ${REMOTE}..."
-git fetch "$REMOTE" "$SOURCE_BRANCH" "$TARGET_BRANCH"
+  if [ -f "$env_file" ]; then
+    value=$(awk -F= '/^ALTERNUN_TESTNET_MODE=/{print $2}' "$env_file" | tail -n 1 | tr -d "\"'[:space:]")
+  fi
 
-echo "Updating ${TARGET_BRANCH} from ${REMOTE}/${TARGET_BRANCH}..."
-git checkout "$TARGET_BRANCH"
-git pull --ff-only "$REMOTE" "$TARGET_BRANCH"
+  if [ -z "$value" ]; then
+    value="on"
+  fi
 
-echo "Fast-forwarding ${TARGET_BRANCH} with ${REMOTE}/${SOURCE_BRANCH}..."
-git merge --ff-only "$REMOTE/$SOURCE_BRANCH"
+  echo "$value"
+}
 
-echo "Pushing ${TARGET_BRANCH} to ${REMOTE}..."
-git push "$REMOTE" "$TARGET_BRANCH"
+case "$(resolve_testnet_mode)" in
+  on|ON|true|TRUE|1|yes|YES)
+    echo "ALTERNUN_TESTNET_MODE is enabled in root .env. Use sync:master-develop instead." >&2
+    exit 1
+    ;;
+esac
 
-echo "Returning to ${SOURCE_BRANCH} and updating from remote..."
-git checkout "$SOURCE_BRANCH"
-git pull --ff-only "$REMOTE" "$SOURCE_BRANCH"
+export SOURCE_BRANCH=${SOURCE_BRANCH:-develop}
+export TARGET_BRANCH=${TARGET_BRANCH:-master}
+export RETURN_BRANCH=${RETURN_BRANCH:-develop}
 
-echo "Sync complete: ${SOURCE_BRANCH} -> ${TARGET_BRANCH}"
+exec bash "$SCRIPT_DIR/sync-branches.sh"

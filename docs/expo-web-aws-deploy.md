@@ -16,15 +16,23 @@ cp packages/infra/config/deployment.config.example.json packages/infra/config/de
 
 Set AWS credentials and region for the IAM user with deploy permissions.
 
-## 2. Sync Branches (Fast-Forward)
+## 2. Sync Branches
+
+Current testnet mode:
+
+- `master` is the working branch
+- `develop` is the mirrored branch for the dev/testnet pipeline
+- every push to `master`/`main` is mirrored into `develop` by GitHub Actions
+
+Manual sync remains available when needed.
 
 Only when working tree is clean:
 
 ```bash
-pnpm --filter @alternun/infra run sync:develop-master
+pnpm --filter @alternun/infra run sync:master-develop
 ```
 
-If fast-forward fails, open a PR from `develop` into `master` and resolve conflicts there.
+If fast-forward fails, resolve the branch divergence before pushing again. The automated sync is intentionally fast-forward-only.
 
 ## 3. Deploy Dev
 
@@ -53,3 +61,6 @@ APPROVE=true pnpm --filter @alternun/infra run ensure:pipelines
   - `airs.alternun.co` -> `testnet.airs.alternun.co`
   - `dev.airs.alternun.co` -> `testnet.airs.alternun.co`
   - `alternun.co` -> `alternun.io`
+- Root `.env` local flag:
+  - `ALTERNUN_TESTNET_MODE=on`
+- CI uses the same mode through GitHub Actions (default `on` unless repository variable `ALTERNUN_TESTNET_MODE` disables it).

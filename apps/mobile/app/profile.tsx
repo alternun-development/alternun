@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { createTypographyStyles, } from '../components/theme/typography';
 import { useAuth } from '../components/auth/AppAuthProvider';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 
@@ -442,7 +443,7 @@ export default function ProfileRoute() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   screen: {
     flex: 1,
   },

@@ -1,6 +1,6 @@
 {
   "name": "@alternun/infra",
-  "version": "0.1.0",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "description": "Alternun AWS/SST infrastructure wrapper for Expo web deployments.",
@@ -13,7 +13,8 @@
     "remove:production": "sst remove --stage production",
     "ensure:pipelines": "bash scripts/ensure-pipelines.sh",
     "ensure:secrets": "bash scripts/ensure-secrets.sh",
-    "sync:develop-master": "bash scripts/sync-develop-master.sh"
+    "sync:develop-master": "bash scripts/sync-develop-master.sh",
+    "sync:master-develop": "bash scripts/sync-master-develop.sh"
   },
   "dependencies": {
     "@lsts_tech/infra": "1.0.2",

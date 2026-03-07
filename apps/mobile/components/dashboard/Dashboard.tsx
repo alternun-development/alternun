@@ -7,7 +7,10 @@ import {
   StatusBar,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
 } from 'react-native';
+import AppInfoFooter from '../common/AppInfoFooter';
+import { createTypographyStyles, } from '../theme/typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import TopNav from './TopNav';
@@ -84,11 +87,11 @@ const DASHBOARD_SECTIONS: SectionConfig[] = [
   {
     key: 'ledger',
     label: 'Activity Feed',
-    subtitle: 'AIRS ledger history',
+    subtitle: 'Airs ledger history',
     requiresWallet: true,
     integrationTitle: 'Ledger API integration pending',
     integrationDescription:
-      'No synthetic AIRS events are displayed. Connect your authenticated ledger API for real entries.',
+      'No synthetic Airs events are displayed. Connect your authenticated ledger API for real entries.',
   },
   {
     key: 'certificates',
@@ -339,7 +342,9 @@ export default function Dashboard({
   const [walletModalVisible, setWalletModalVisible] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
+  const { width, } = useWindowDimensions();
   const isDark = themeMode === 'dark';
+  const footerInset = width < 720 ? 90 : 102;
 
   const addToast = useCallback((type: ToastMessage['type'], title: string, message: string) => {
     const id = `toast-${++toastIdCounter}`;
@@ -452,7 +457,7 @@ export default function Dashboard({
 
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: footerInset, }]}
           showsVerticalScrollIndicator={false}
         >
           <HeroStats
@@ -498,6 +503,10 @@ export default function Dashboard({
             );
           })}
         </ScrollView>
+
+        <View pointerEvents='box-none' style={styles.footerOverlay}>
+          <AppInfoFooter />
+        </View>
 
         <WalletConnectModal
           visible={walletModalVisible}
@@ -833,7 +842,7 @@ function SectionPreview({ sectionKey, isDark, disabled, onInteract }: SectionPre
         <View style={experienceStyles.feedRow}>
           <View style={experienceStyles.feedDot} />
           <View style={experienceStyles.feedTextColumn}>
-            <Text style={[experienceStyles.feedTitle, { color: palette.strong }]}>No AIRS activity yet</Text>
+            <Text style={[experienceStyles.feedTitle, { color: palette.strong }]}>No Airs activity yet</Text>
             <Text style={[experienceStyles.feedMeta, { color: palette.muted }]}>Connect integrations to stream events</Text>
           </View>
         </View>
@@ -910,7 +919,7 @@ function SectionPreview({ sectionKey, isDark, disabled, onInteract }: SectionPre
   );
 }
 
-const sectionStyles = StyleSheet.create({
+const sectionStyles = createTypographyStyles({
   divider: {
     height: 1,
     backgroundColor: 'rgba(255,255,255,0.04)',
@@ -945,7 +954,7 @@ const sectionStyles = StyleSheet.create({
   },
 });
 
-const experienceStyles = StyleSheet.create({
+const experienceStyles = createTypographyStyles({
   card: {
     marginHorizontal: 16,
     marginTop: 8,
@@ -1154,7 +1163,7 @@ const experienceStyles = StyleSheet.create({
   },
 });
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   safeArea: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -1178,6 +1187,13 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   bottomSpacer: {
-    height: 80,
+    height: 12,
+  },
+  footerOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
   },
 });

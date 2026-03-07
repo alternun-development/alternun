@@ -25,7 +25,10 @@ export function AppAuthProvider({
   children,
   options,
 }: AppAuthProviderProps): any {
-  const supabaseUrl = options?.supabaseUrl ?? process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const supabaseUrl =
+    options?.supabaseUrl ??
+    process.env.EXPO_PUBLIC_SUPABASE_URL ??
+    process.env.EXPO_PUBLIC_SUPABASE_URI;
   const supabaseKey =
     options?.supabaseKey ??
     process.env.EXPO_PUBLIC_SUPABASE_KEY ??

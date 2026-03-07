@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Modal } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
 import { Leaf, ChevronDown, CreditCard, Check, X } from 'lucide-react-native';
 import { Project } from './types';
 
@@ -237,7 +238,7 @@ export default function CompensationFlow({ projects, onCompensate }: Compensatio
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   section: {
     paddingHorizontal: 16,
     paddingBottom: 24,
