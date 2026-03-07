@@ -24,6 +24,10 @@ env:
     INFRA_CANONICAL_EXPO_DOMAIN_PRODUCTION: 'airs.alternun.co'
     INFRA_CANONICAL_EXPO_DOMAIN_DEV: 'testnet.airs.alternun.co'
     INFRA_CANONICAL_EXPO_DOMAIN_MOBILE: 'preview.airs.alternun.co'
+    INFRA_EXPO_CERT_ARN_DEV: 'arn:aws:acm:us-east-1:124120088516:certificate/339fac88-b65a-4d2d-bd07-741e762e7210'
+    INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN: 'arn:aws:acm:us-east-1:124120088516:certificate/b01e6ac3-7ce2-4761-b51f-c070eadd487a'
+    INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN: 'arn:aws:acm:us-east-1:124120088516:certificate/69a8433c-ef7b-4ef6-9033-f51bcb982414'
+    INFRA_REDIRECT_ROOT_CERT_ARN: 'arn:aws:acm:us-east-1:124120088516:certificate/002f3146-f590-4426-affe-1bae8e1e762d'
     INFRA_LOAD_ROOT_ENV: 'false'
     INFRA_PRESERVE_EXISTING_ENV: 'true'
     INFRA_ENFORCE_AWS_ACCOUNT: 'true'
@@ -31,8 +35,8 @@ env:
     INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'true'
     INFRA_FAIL_ON_SECRET_SYNC: 'false'
     INFRA_RUN_UPSTREAM_PREDEPLOY_CHECKS: 'false'
-    # managed|explicit : managed clears site cert ARN overrides, but preserves redirect cert ARN overrides
-    # so legacy redirect domains can reuse existing ACM certificates when needed.
+    # managed|explicit : managed prefers SST-managed certificates for empty site cert ARN vars,
+    # but preserves any explicit cert ARN overrides so existing ACM certificates can be reused.
     INFRA_CERT_MODE: 'managed'
     # CI should use CodeBuild IAM role (temporary creds), not static keys.
     INFRA_FORCE_ENV_AWS_CREDENTIALS: 'false'
@@ -103,10 +107,14 @@ phases:
         fi
       - |
         if [ "${INFRA_CERT_MODE}" = "managed" ]; then
-          export INFRA_EXPO_CERT_ARN_PRODUCTION=""
-          export INFRA_EXPO_CERT_ARN_DEV=""
-          export INFRA_EXPO_CERT_ARN_MOBILE=""
-          echo "Certificate mode = managed (INFRA_EXPO_CERT_ARN_* cleared; redirect cert ARN overrides preserved if provided)"
+          for cert_var in INFRA_EXPO_CERT_ARN_PRODUCTION INFRA_EXPO_CERT_ARN_DEV INFRA_EXPO_CERT_ARN_MOBILE; do
+            if [ -z "${!cert_var:-}" ]; then
+              export "${cert_var}="
+            else
+              echo "Preserving explicit certificate override: ${cert_var}"
+            fi
+          done
+          echo "Certificate mode = managed (empty INFRA_EXPO_CERT_ARN_* values cleared; explicit site and redirect cert ARN overrides preserved)"
         else
           echo "Certificate mode = explicit (INFRA_*_CERT_ARN preserved)"
         fi
