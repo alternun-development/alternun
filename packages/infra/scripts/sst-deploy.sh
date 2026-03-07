@@ -235,5 +235,20 @@ fi
 
 prune_legacy_managed_certificate_state
 
-TARGET=$(bash "$SCRIPT_DIR/_resolve-infra-script.sh" "sst-deploy.sh")
-exec bash "$TARGET" "$@"
+echo "Using SST stack/stage: ${STACK} (cwd: ${INFRA_DIR})"
+
+echo "Running SST diff (preview of infra changes)"
+(cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst diff --stage "$STACK") || true
+
+if ! is_truthy "${APPROVE:-false}"; then
+  echo "SST diff completed. Re-run with APPROVE=true to apply changes."
+  exit 0
+fi
+
+echo "APPROVE=true detected — running sst deploy"
+echo "Attempting to clear any stale SST lock for stage ${STACK} (no-op if none)"
+(cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst unlock --stage "$STACK") || true
+
+echo "Running sst deploy"
+cd "$INFRA_DIR"
+exec env SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "$STACK" --yes
