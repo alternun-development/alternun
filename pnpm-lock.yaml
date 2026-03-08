@@ -320,8 +320,8 @@ importers:
   packages/infra:
     dependencies:
       '@lsts_tech/infra':
-        specifier: 1.0.2
-        version: 1.0.2(@supabase/supabase-js@2.98.0(bufferutil@4.1.0))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
+        specifier: 1.0.3
+        version: 1.0.3(@supabase/supabase-js@2.98.0(bufferutil@4.1.0))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
       '@pulumi/aws':
         specifier: 6.66.2
         version: 6.66.2(typescript@5.9.3)
@@ -2271,8 +2271,8 @@ packages:
     resolution: {integrity: sha512-XGSsWDweP80Fks16lwkAUIr54ICyBs6PsI4mpfTLQaWgEJRtY9xEV+PeyDpJ+sJEGZxqINlpmAwe/6tS1pP8Ng==}
     engines: {node: '>=10.3.0'}
 
-  '@lsts_tech/infra@1.0.2':
-    resolution: {integrity: sha512-xglyUPA3Po4IzD/IjZVbeOC8RC+BAIP2G1wpejbQyPtQNn4J6GCwKUNlSJgBSqaI+s2xrh2uK+jmvS00PSmsmw==}
+  '@lsts_tech/infra@1.0.3':
+    resolution: {integrity: sha512-rI0qxvmC1swc2zZy2QzpwO40NTm0e05YRi5jeVSwjQEq9BnyPaO6Zc1bONdPKajp6rJLYsRlapGHbRL40jdA0w==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -14723,7 +14723,7 @@ snapshots:
       metro-babel-transformer: 0.83.3
       metro-cache: 0.83.3
       metro-cache-key: 0.83.3
-      metro-config: 0.83.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      metro-config: 0.83.3(bufferutil@4.1.0)
       metro-core: 0.83.3
       metro-file-map: 0.83.3
       metro-minify-terser: 0.83.3
@@ -15508,7 +15508,7 @@ snapshots:
 
   '@logdna/tail-file@2.2.0': {}
 
-  '@lsts_tech/infra@1.0.2(@supabase/supabase-js@2.98.0(bufferutil@4.1.0))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)':
+  '@lsts_tech/infra@1.0.3(@supabase/supabase-js@2.98.0(bufferutil@4.1.0))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)':
     dependencies:
       '@edcalderon/auth': 1.2.1(@supabase/supabase-js@2.98.0(bufferutil@4.1.0))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)
       '@pulumi/aws': 6.66.2(typescript@5.9.3)
@@ -24306,21 +24306,6 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  metro-config@0.83.3(bufferutil@4.1.0)(utf-8-validate@6.0.6):
-    dependencies:
-      connect: 3.7.0
-      flow-enums-runtime: 0.0.6
-      jest-validate: 29.7.0
-      metro: 0.83.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      metro-cache: 0.83.3
-      metro-core: 0.83.3
-      metro-runtime: 0.83.3
-      yaml: 2.8.2
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   metro-config@0.83.5(bufferutil@4.1.0):
     dependencies:
       connect: 3.7.0
@@ -25035,7 +25020,7 @@ snapshots:
       metro-babel-transformer: 0.83.3
       metro-cache: 0.83.3
       metro-cache-key: 0.83.3
-      metro-config: 0.83.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      metro-config: 0.83.3(bufferutil@4.1.0)
       metro-core: 0.83.3
       metro-file-map: 0.83.3
       metro-resolver: 0.83.3
