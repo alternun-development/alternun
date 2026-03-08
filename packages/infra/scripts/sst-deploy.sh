@@ -11,6 +11,20 @@ STACK=${STACK:-${1:-${SST_STAGE:-production}}}
 export STACK
 export SST_STAGE="${SST_STAGE:-$STACK}"
 
+stage_normalized=$(echo "$STACK" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ] && \
+  [ "$stage_normalized" != "identity-dev" ] && \
+  [ "$stage_normalized" != "identity-prod" ] && \
+  [ "$stage_normalized" != "identity-production" ] && \
+  [ "$stage_normalized" != "auth-dev" ] && \
+  [ "$stage_normalized" != "auth-prod" ] && \
+  [ "$stage_normalized" != "authentik-dev" ] && \
+  [ "$stage_normalized" != "authentik-prod" ]; then
+  echo "ERROR: INFRA_ENABLE_EXPO_SITE=false is only allowed on identity stack stages." >&2
+  echo "ERROR: Use STACK=identity-dev or STACK=identity-prod for identity-only deployments." >&2
+  exit 1
+fi
+
 if [ -z "${DOMAIN:-}" ]; then
   case "$STACK" in
     production)

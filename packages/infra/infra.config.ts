@@ -22,7 +22,9 @@ import { deployIdentityInfrastructure } from './modules/identity-resources.js';
 import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
 
 type PipelineStage = 'production' | 'dev' | 'mobile';
-type ManagedPipeline = PipelineStage | 'identity-dev' | 'identity-prod';
+type IdentityPipelineStage = 'identity-dev' | 'identity-prod';
+type DeploymentStage = PipelineStage | IdentityPipelineStage;
+type ManagedPipeline = PipelineStage | IdentityPipelineStage;
 type PipelineComputeType =
   | 'BUILD_GENERAL1_SMALL'
   | 'BUILD_GENERAL1_MEDIUM'
@@ -434,12 +436,52 @@ const commonBuildEnv = {
   PREFIX: pipelinePrefix,
 };
 
-function parseDeploymentStage(value: string): PipelineStage | undefined {
+function parseCoreDeploymentStage(value: string): PipelineStage | undefined {
   const normalized = value.trim().toLowerCase();
   if (normalized === 'production' || normalized === 'prod') return 'production';
   if (normalized === 'dev') return 'dev';
   if (normalized === 'mobile') return 'mobile';
   return undefined;
+}
+
+function resolveStackDeploymentStage(value: string): PipelineStage | undefined {
+  const normalized = value.trim().toLowerCase().replace(/_/g, '-');
+  const coreStage = parseCoreDeploymentStage(normalized);
+  if (coreStage) return coreStage;
+
+  if (
+    normalized === 'identity-dev' ||
+    normalized === 'identitydev' ||
+    normalized === 'auth-dev' ||
+    normalized === 'authentik-dev'
+  ) {
+    return 'dev';
+  }
+
+  if (
+    normalized === 'identity-prod' ||
+    normalized === 'identityprod' ||
+    normalized === 'identity-production' ||
+    normalized === 'auth-prod' ||
+    normalized === 'authentik-prod'
+  ) {
+    return 'production';
+  }
+
+  return undefined;
+}
+
+function isIdentityStackStage(stage: string): boolean {
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+  return (
+    normalized === 'identity-dev' ||
+    normalized === 'identity-prod' ||
+    normalized === 'identity-production' ||
+    normalized === 'auth-dev' ||
+    normalized === 'auth-prod' ||
+    normalized === 'authentik-dev' ||
+    normalized === 'authentik-prod'
+  );
 }
 
 function assertExpoPublicAuthEnvironment(stage: string): void {
@@ -459,7 +501,7 @@ function assertExpoPublicAuthEnvironment(stage: string): void {
 
 function parsePipelineStage(value: string): ManagedPipeline | undefined {
   const normalized = value.trim().toLowerCase().replace(/_/g, '-');
-  const deploymentStage = parseDeploymentStage(normalized);
+  const deploymentStage = parseCoreDeploymentStage(normalized);
   if (deploymentStage) return deploymentStage;
   if (
     normalized === 'identity' ||
@@ -487,7 +529,7 @@ function parsePipelineStage(value: string): ManagedPipeline | undefined {
 const identityEnabledStages = new Set<PipelineStage>(
   identityEnabledStagesRaw
     .split(',')
-    .map(value => parseDeploymentStage(value))
+    .map(value => parseCoreDeploymentStage(value))
     .filter((value): value is PipelineStage => value !== undefined)
 );
 
@@ -504,7 +546,7 @@ const pipelineSpecs: Record<
     suffix: string;
     branch: string;
     outputKey: string;
-    stage: PipelineStage;
+    stage: DeploymentStage;
     buildEnv?: Record<string, string>;
   }
 > = {
@@ -513,12 +555,18 @@ const pipelineSpecs: Record<
     branch: process.env.INFRA_PIPELINE_BRANCH_PROD ?? localConfig.pipeline?.branchProd ?? 'master',
     outputKey: 'productionPipelineName',
     stage: 'production',
+    buildEnv: {
+      INFRA_ENABLE_EXPO_SITE: 'true',
+    },
   },
   dev: {
     suffix: 'dev',
     branch: process.env.INFRA_PIPELINE_BRANCH_DEV ?? localConfig.pipeline?.branchDev ?? 'develop',
     outputKey: 'devPipelineName',
     stage: 'dev',
+    buildEnv: {
+      INFRA_ENABLE_EXPO_SITE: 'true',
+    },
   },
   mobile: {
     suffix: 'mobile',
@@ -526,6 +574,9 @@ const pipelineSpecs: Record<
       process.env.INFRA_PIPELINE_BRANCH_MOBILE ?? localConfig.pipeline?.branchMobile ?? 'mobile',
     outputKey: 'mobilePipelineName',
     stage: 'mobile',
+    buildEnv: {
+      INFRA_ENABLE_EXPO_SITE: 'true',
+    },
   },
   'identity-dev': {
     suffix: 'auth-dev',
@@ -537,7 +588,7 @@ const pipelineSpecs: Record<
       localConfig.pipeline?.branchDev ??
       'develop',
     outputKey: 'identityDevPipelineName',
-    stage: 'dev',
+    stage: 'identity-dev',
     buildEnv: {
       INFRA_IDENTITY_ENABLED: 'true',
       INFRA_IDENTITY_ENABLED_STAGES: 'dev',
@@ -547,6 +598,8 @@ const pipelineSpecs: Record<
       INFRA_LOAD_ROOT_ENV: 'false',
       INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
       INFRA_ENABLE_EXPO_SITE: 'false',
+      INFRA_ENABLE_SECRET_SYNC: 'false',
+      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
       INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
       INFRA_ENABLE_REACHABILITY_CHECK: 'false',
     },
@@ -559,7 +612,7 @@ const pipelineSpecs: Record<
       localConfig.pipeline?.branchProd ??
       'master',
     outputKey: 'identityProdPipelineName',
-    stage: 'production',
+    stage: 'identity-prod',
     buildEnv: {
       INFRA_IDENTITY_ENABLED: 'true',
       INFRA_IDENTITY_ENABLED_STAGES: 'production',
@@ -569,6 +622,8 @@ const pipelineSpecs: Record<
       INFRA_LOAD_ROOT_ENV: 'false',
       INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
       INFRA_ENABLE_EXPO_SITE: 'false',
+      INFRA_ENABLE_SECRET_SYNC: 'false',
+      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
       INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
       INFRA_ENABLE_REACHABILITY_CHECK: 'false',
     },
@@ -577,7 +632,20 @@ const pipelineSpecs: Record<
 
 export function createInfrastructure() {
   const stage = String($app.stage);
-  const parsedDeploymentStage = parseDeploymentStage(stage);
+  const identityStackStage = isIdentityStackStage(stage);
+  const parsedDeploymentStage = resolveStackDeploymentStage(stage);
+  const enableExpoSiteForStage = enableExpoSite && !identityStackStage;
+
+  if (!identityStackStage && !enableExpoSite) {
+    throw new Error(
+      [
+        `Refusing to deploy stage "${stage}" with INFRA_ENABLE_EXPO_SITE=false.`,
+        'This would remove Expo/web resources from a primary app stack.',
+        'Use STACK=identity-dev or STACK=identity-prod for identity-only deployments.',
+      ].join(' ')
+    );
+  }
+
   const isIdentityStageAllowed =
     identityEnabledStages.size === 0
       ? true
@@ -586,8 +654,8 @@ export function createInfrastructure() {
       : false;
   const identityEnabledForStage = identitySettings.enabled && isIdentityStageAllowed;
 
-  if (enableExpoSite) {
-    assertExpoPublicAuthEnvironment(stage);
+  if (enableExpoSiteForStage) {
+    assertExpoPublicAuthEnvironment(parsedDeploymentStage ?? stage);
   }
 
   const identityInfrastructure = identityEnabledForStage
@@ -607,7 +675,7 @@ export function createInfrastructure() {
     siteUrl: null,
     domain: null,
     customDomainEnabled: false,
-    expoSiteEnabled: enableExpoSite,
+    expoSiteEnabled: enableExpoSiteForStage,
     identity: {
       enabled: identityEnabledForStage,
       configured: identitySettings.enabled,
@@ -650,7 +718,7 @@ export function createInfrastructure() {
     },
   };
 
-  if (enableExpoSite) {
+  if (enableExpoSiteForStage) {
     const assetBucketName =
       assetBucketNames[stage as PipelineStage] ??
       createAssetBucketName(stage, pipelinePrefix, rootDomain);

@@ -41,6 +41,8 @@ env:
     INFRA_IDENTITY_ENABLED: 'true'
     INFRA_IDENTITY_ENABLED_STAGES: 'dev'
     INFRA_FAIL_ON_SECRET_SYNC: 'false'
+    INFRA_ENABLE_SECRET_SYNC: 'true'
+    INFRA_ENABLE_PREDEPLOY_CHECKS: 'true'
     INFRA_RUN_UPSTREAM_PREDEPLOY_CHECKS: 'false'
     # managed|explicit : managed prefers SST-managed certificates for empty site cert ARN vars,
     # but preserves any explicit cert ARN overrides so existing ACM certificates can be reused.
@@ -122,6 +124,20 @@ phases:
       - echo "pnpm     = $(pnpm --version)"
       - echo "Infra    = ${INFRA_PATH}"
       - |
+        stage_normalized=$(echo "${SST_STAGE}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+        if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ] && \
+           [ "${stage_normalized}" != "identity-dev" ] && \
+           [ "${stage_normalized}" != "identity-prod" ] && \
+           [ "${stage_normalized}" != "identity-production" ] && \
+           [ "${stage_normalized}" != "auth-dev" ] && \
+           [ "${stage_normalized}" != "auth-prod" ] && \
+           [ "${stage_normalized}" != "authentik-dev" ] && \
+           [ "${stage_normalized}" != "authentik-prod" ]; then
+          echo "ERROR: INFRA_ENABLE_EXPO_SITE=false is only allowed on identity stack stages." >&2
+          echo "ERROR: Use SST_STAGE=identity-dev or SST_STAGE=identity-prod for identity-only deployments." >&2
+          exit 1
+        fi
+      - |
         if [ -z "${INFRA_AWS_ACCOUNT_ID:-}" ] || [ "${INFRA_AWS_ACCOUNT_ID}" = "auto" ]; then
           INFRA_AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
           export INFRA_AWS_ACCOUNT_ID
@@ -147,35 +163,41 @@ phases:
       - echo "Require Expo Auth Env = ${INFRA_REQUIRE_EXPO_PUBLIC_AUTH}"
       - echo "Ensuring infra SST secrets..."
       - |
-        set +e
-        SECRET_SYNC_EXIT=0
-        if [ -f "${INFRA_PATH}/scripts/ensure-secrets.sh" ]; then
-          chmod +x "${INFRA_PATH}/scripts/ensure-secrets.sh" || true
-          (cd "${INFRA_PATH}" && ./scripts/ensure-secrets.sh ${SST_STAGE})
-          SECRET_SYNC_EXIT=$?
-        elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
-          chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
-          (cd "${INFRA_PATH}" && ./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh ${SST_STAGE})
-          SECRET_SYNC_EXIT=$?
-        elif [ -f "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
-          chmod +x "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
-          ./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh ${SST_STAGE}
-          SECRET_SYNC_EXIT=$?
+        if [ "${INFRA_ENABLE_SECRET_SYNC:-true}" != "true" ]; then
+          echo "Skipping secrets sync (INFRA_ENABLE_SECRET_SYNC=${INFRA_ENABLE_SECRET_SYNC})"
         else
-          echo "No ensure-secrets script found; skipping"
-        fi
-        set -e
-
-        if [ "${SECRET_SYNC_EXIT}" -ne 0 ]; then
-          if [ "${INFRA_FAIL_ON_SECRET_SYNC}" = "true" ]; then
-            echo "ERROR: Secret sync failed and INFRA_FAIL_ON_SECRET_SYNC=true"
-            exit "${SECRET_SYNC_EXIT}"
+          set +e
+          SECRET_SYNC_EXIT=0
+          if [ -f "${INFRA_PATH}/scripts/ensure-secrets.sh" ]; then
+            chmod +x "${INFRA_PATH}/scripts/ensure-secrets.sh" || true
+            (cd "${INFRA_PATH}" && ./scripts/ensure-secrets.sh ${SST_STAGE})
+            SECRET_SYNC_EXIT=$?
+          elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
+            chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
+            (cd "${INFRA_PATH}" && ./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh ${SST_STAGE})
+            SECRET_SYNC_EXIT=$?
+          elif [ -f "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
+            chmod +x "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
+            ./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh ${SST_STAGE}
+            SECRET_SYNC_EXIT=$?
+          else
+            echo "No ensure-secrets script found; skipping"
           fi
-          echo "WARN: Secret sync failed (exit ${SECRET_SYNC_EXIT}); continuing with deploy."
+          set -e
+
+          if [ "${SECRET_SYNC_EXIT}" -ne 0 ]; then
+            if [ "${INFRA_FAIL_ON_SECRET_SYNC}" = "true" ]; then
+              echo "ERROR: Secret sync failed and INFRA_FAIL_ON_SECRET_SYNC=true"
+              exit "${SECRET_SYNC_EXIT}"
+            fi
+            echo "WARN: Secret sync failed (exit ${SECRET_SYNC_EXIT}); continuing with deploy."
+          fi
         fi
       - echo "Running pre-deploy checks..."
       - |
-        if [ -f "${INFRA_PATH}/scripts/predeploy-checks.sh" ]; then
+        if [ "${INFRA_ENABLE_PREDEPLOY_CHECKS:-true}" != "true" ]; then
+          echo "Skipping pre-deploy checks (INFRA_ENABLE_PREDEPLOY_CHECKS=${INFRA_ENABLE_PREDEPLOY_CHECKS})"
+        elif [ -f "${INFRA_PATH}/scripts/predeploy-checks.sh" ]; then
           chmod +x "${INFRA_PATH}/scripts/predeploy-checks.sh" || true
           "${INFRA_PATH}/scripts/predeploy-checks.sh" ${SST_STAGE}
         elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/predeploy-checks.sh" ]; then
