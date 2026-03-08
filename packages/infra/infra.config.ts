@@ -612,6 +612,7 @@ export function createInfrastructure() {
       ec2: identitySettings.ec2,
       rds: identitySettings.rds,
       emailProvider: identitySettings.emailProvider,
+      authentikImageTag: identitySettings.authentikImageTag,
       jwt: identitySettings.jwt,
       secrets: identitySettings.secrets,
       deployment: identityInfrastructure

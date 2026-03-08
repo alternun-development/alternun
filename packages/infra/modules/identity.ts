@@ -24,6 +24,7 @@ export interface IdentityLocalConfig {
     enhancedMonitoring?: boolean;
   };
   emailProvider?: IdentityEmailProvider;
+  authentikImageTag?: string;
   jwt?: {
     audience?: string;
     roleClaim?: string;
@@ -60,6 +61,7 @@ export interface IdentitySettings {
     enhancedMonitoring: boolean;
   };
   emailProvider: IdentityEmailProvider;
+  authentikImageTag: string;
   jwt: {
     audience: string;
     roleClaim: string;
@@ -102,6 +104,57 @@ function buildDefaultStageDomains(rootDomain: string): IdentitySettings['stageDo
 
 function normalizeEmailProvider(value: string | undefined): IdentityEmailProvider {
   return value?.toLowerCase() === 'postmark' ? 'postmark' : 'ses';
+}
+
+function extractAuthentikTag(value: string): string {
+  const trimmed = value.trim();
+
+  if (trimmed.length === 0) {
+    throw new Error('INFRA_IDENTITY_AUTHENTIK_IMAGE_TAG cannot be empty.');
+  }
+
+  if (trimmed.includes('/') && trimmed.includes(':')) {
+    return trimmed.split(':').pop() ?? trimmed;
+  }
+
+  return trimmed;
+}
+
+function parseAuthentikCalendarVersion(tag: string): { year: number; release: number } {
+  const match = tag.match(/^(\d{4})\.(\d+)(?:\.[0-9A-Za-z-]+)*$/);
+
+  if (!match) {
+    throw new Error(
+      [
+        `Invalid Authentik image tag "${tag}".`,
+        'Use a calendar-version tag like "2026.2" or "2026.2.1".',
+      ].join(' ')
+    );
+  }
+
+  return {
+    year: Number(match[1]),
+    release: Number(match[2]),
+  };
+}
+
+function normalizeAuthentikImageTag(value: string | undefined): string {
+  const extractedTag = extractAuthentikTag(value ?? '2026.2');
+  const { year, release } = parseAuthentikCalendarVersion(extractedTag);
+  const minYear = 2025;
+  const minRelease = 10;
+  const supportsRedisless = year > minYear || (year === minYear && release >= minRelease);
+
+  if (!supportsRedisless) {
+    throw new Error(
+      [
+        `Authentik tag "${extractedTag}" is not supported in this infrastructure.`,
+        'Use version >= 2025.10 because older versions require Redis.',
+      ].join(' ')
+    );
+  }
+
+  return extractedTag;
 }
 
 export function buildIdentitySettings(args: BuildIdentitySettingsArgs): IdentitySettings {
@@ -178,6 +231,9 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
     },
     emailProvider: normalizeEmailProvider(
       args.env.INFRA_IDENTITY_EMAIL_PROVIDER ?? localConfig?.emailProvider
+    ),
+    authentikImageTag: normalizeAuthentikImageTag(
+      args.env.INFRA_IDENTITY_AUTHENTIK_IMAGE_TAG ?? localConfig?.authentikImageTag
     ),
     jwt: {
       audience:
