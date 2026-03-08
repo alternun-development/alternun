@@ -363,6 +363,10 @@ const isIdentityPipelineProfile = [
   'authentik-prod',
 ].includes(pipelineProfile);
 const enableExpoSite = parseBoolean(process.env.INFRA_ENABLE_EXPO_SITE, !isIdentityPipelineProfile);
+const identityDedicatedStacksOnly = parseBoolean(
+  process.env.INFRA_IDENTITY_DEDICATED_STACKS_ONLY,
+  true
+);
 
 const assetBucketNames: Record<PipelineStage, string> = {
   production: createAssetBucketName('production', pipelinePrefix, rootDomain),
@@ -414,6 +418,7 @@ const commonBuildEnv = {
   INFRA_ENABLE_EXPO_SITE: String(enableExpoSite),
   INFRA_REQUIRE_EXPO_PUBLIC_AUTH: String(requireExpoPublicAuthEnv),
   INFRA_IDENTITY_ENABLED: process.env.INFRA_IDENTITY_ENABLED ?? '',
+  INFRA_IDENTITY_DEDICATED_STACKS_ONLY: String(identityDedicatedStacksOnly),
   INFRA_IDENTITY_ENABLED_STAGES: identityEnabledStagesRaw,
   EXPO_PUBLIC_SUPABASE_URL: expoPublicSupabaseUrl ?? '',
   EXPO_PUBLIC_SUPABASE_KEY: expoPublicSupabaseKey ?? '',
@@ -557,6 +562,8 @@ const pipelineSpecs: Record<
     stage: 'production',
     buildEnv: {
       INFRA_ENABLE_EXPO_SITE: 'true',
+      INFRA_IDENTITY_ENABLED: 'false',
+      INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
     },
   },
   dev: {
@@ -566,6 +573,8 @@ const pipelineSpecs: Record<
     stage: 'dev',
     buildEnv: {
       INFRA_ENABLE_EXPO_SITE: 'true',
+      INFRA_IDENTITY_ENABLED: 'false',
+      INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
     },
   },
   mobile: {
@@ -576,6 +585,8 @@ const pipelineSpecs: Record<
     stage: 'mobile',
     buildEnv: {
       INFRA_ENABLE_EXPO_SITE: 'true',
+      INFRA_IDENTITY_ENABLED: 'false',
+      INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
     },
   },
   'identity-dev': {
@@ -591,6 +602,7 @@ const pipelineSpecs: Record<
     stage: 'identity-dev',
     buildEnv: {
       INFRA_IDENTITY_ENABLED: 'true',
+      INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
       INFRA_IDENTITY_ENABLED_STAGES: 'dev',
       INFRA_IDENTITY_DATABASE_MODE: 'ec2',
       INFRA_PIPELINE_PROFILE: 'identity-dev',
@@ -616,6 +628,7 @@ const pipelineSpecs: Record<
     stage: 'identity-prod',
     buildEnv: {
       INFRA_IDENTITY_ENABLED: 'true',
+      INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
       INFRA_IDENTITY_ENABLED_STAGES: 'production',
       INFRA_IDENTITY_DATABASE_MODE: 'rds',
       INFRA_PIPELINE_PROFILE: 'identity-prod',
@@ -654,7 +667,18 @@ export function createInfrastructure() {
       : parsedDeploymentStage
       ? identityEnabledStages.has(parsedDeploymentStage)
       : false;
-  const identityEnabledForStage = identitySettings.enabled && isIdentityStageAllowed;
+  const identityAllowedOnStack = !identityDedicatedStacksOnly || identityStackStage;
+  const identityEnabledForStage =
+    identitySettings.enabled && isIdentityStageAllowed && identityAllowedOnStack;
+
+  if (identitySettings.enabled && !identityAllowedOnStack) {
+    console.log(
+      [
+        `Identity is enabled but skipped for stack "${stage}" because INFRA_IDENTITY_DEDICATED_STACKS_ONLY=true.`,
+        'Use STACK=identity-dev or STACK=identity-prod to provision identity resources.',
+      ].join(' ')
+    );
+  }
 
   if (enableExpoSiteForStage) {
     assertExpoPublicAuthEnvironment(parsedDeploymentStage ?? stage);
@@ -681,6 +705,7 @@ export function createInfrastructure() {
     identity: {
       enabled: identityEnabledForStage,
       configured: identitySettings.enabled,
+      dedicatedStacksOnly: identityDedicatedStacksOnly,
       enabledStages:
         identityEnabledStages.size === 0 ? 'all' : Array.from(identityEnabledStages.values()),
       domain: resolveIdentityStageDomain(identitySettings, stage),
