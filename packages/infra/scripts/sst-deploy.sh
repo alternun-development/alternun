@@ -247,6 +247,64 @@ echo "APPROVE=true detected — running sst deploy"
 echo "Attempting to clear any stale SST lock for stage ${STACK} (no-op if none)"
 (cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst unlock --stage "$STACK") || true
 
+run_sst_deploy() {
+  local log_file=$1
+  local exit_code=0
+
+  set +e
+  (
+    cd "$INFRA_DIR"
+    env SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "$STACK" --yes
+  ) 2>&1 | tee "$log_file"
+  exit_code=${PIPESTATUS[0]}
+  set -e
+
+  return "$exit_code"
+}
+
+should_attempt_bucket_drift_recovery() {
+  local log_file=$1
+
+  if ! is_truthy "${INFRA_ENABLE_BUCKET_DRIFT_RECOVERY:-true}"; then
+    return 1
+  fi
+
+  if [ "${INFRA_ENABLE_EXPO_SITE:-true}" != "true" ]; then
+    return 1
+  fi
+
+  if grep -q "NoSuchBucket" "$log_file"; then
+    return 0
+  fi
+
+  if grep -q "The specified bucket does not exist" "$log_file"; then
+    return 0
+  fi
+
+  return 1
+}
+
+DEPLOY_LOG=$(mktemp)
 echo "Running sst deploy"
-cd "$INFRA_DIR"
-exec env SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "$STACK" --yes
+if run_sst_deploy "$DEPLOY_LOG"; then
+  rm -f "$DEPLOY_LOG"
+  exit 0
+fi
+
+if should_attempt_bucket_drift_recovery "$DEPLOY_LOG"; then
+  echo "Detected missing S3 bucket during deploy. Running sst refresh once before retry..."
+  (
+    cd "$INFRA_DIR"
+    env SST_TELEMETRY_DISABLED=1 npx sst refresh --stage "$STACK"
+  )
+
+  echo "Retrying sst deploy after refresh"
+  if run_sst_deploy "$DEPLOY_LOG"; then
+    rm -f "$DEPLOY_LOG"
+    exit 0
+  fi
+fi
+
+echo "sst deploy failed. See logs above." >&2
+rm -f "$DEPLOY_LOG"
+exit 1
