@@ -43,6 +43,7 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_JWT_AUDIENCE`
 - `INFRA_IDENTITY_JWT_ROLE_CLAIM`
 - `INFRA_IDENTITY_JWT_ROLES_CLAIM`
+- `INFRA_ENABLE_EXPO_SITE` (set `false` to skip Expo/static-site resources and run identity-only deploys)
 
 Important behavior:
 
@@ -52,6 +53,29 @@ Important behavior:
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
 - the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
+- identity pipeline profiles (`identity-dev`, `identity-prod`) force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy the app site
+
+### Identity-Only IaC Provisioning
+
+Deploy identity infrastructure without touching Expo/site resources:
+
+```bash
+INFRA_IDENTITY_ENABLED=true \
+INFRA_IDENTITY_ENABLED_STAGES=dev \
+INFRA_ENABLE_EXPO_SITE=false \
+pnpm --filter @alternun/infra run deploy:dev
+```
+
+For production identity:
+
+```bash
+INFRA_IDENTITY_ENABLED=true \
+INFRA_IDENTITY_ENABLED_STAGES=production \
+INFRA_ENABLE_EXPO_SITE=false \
+pnpm --filter @alternun/infra run deploy:production
+```
+
+These commands remain fully IaC-driven from `packages/infra/infra.config.ts` and `packages/infra/modules/identity-resources.ts`.
 
 ## Redirects (Dev Stage)
 

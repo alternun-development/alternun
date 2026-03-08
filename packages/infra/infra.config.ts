@@ -348,6 +348,19 @@ const rootDomainRedirectTarget =
 
 const rootDomainRedirectCertArn =
   process.env.INFRA_REDIRECT_ROOT_CERT_ARN ?? localConfig.redirects?.certArns?.rootDomain;
+const pipelineProfile = (process.env.INFRA_PIPELINE_PROFILE ?? '').trim().toLowerCase();
+const isIdentityPipelineProfile = [
+  'identity',
+  'identity-dev',
+  'identity-prod',
+  'auth',
+  'auth-dev',
+  'auth-prod',
+  'authentik',
+  'authentik-dev',
+  'authentik-prod',
+].includes(pipelineProfile);
+const enableExpoSite = parseBoolean(process.env.INFRA_ENABLE_EXPO_SITE, !isIdentityPipelineProfile);
 
 const assetBucketNames: Record<PipelineStage, string> = {
   production: createAssetBucketName('production', pipelinePrefix, rootDomain),
@@ -396,6 +409,7 @@ const commonBuildEnv = {
   INFRA_EXPO_CERT_ARN_MOBILE: expoCerts.mobile ?? '',
   INFRA_EXPO_BUILD_COMMAND: expoBuildCommand,
   INFRA_EXPO_BUILD_OUTPUT: expoBuildOutput,
+  INFRA_ENABLE_EXPO_SITE: String(enableExpoSite),
   INFRA_REQUIRE_EXPO_PUBLIC_AUTH: String(requireExpoPublicAuthEnv),
   INFRA_IDENTITY_ENABLED: process.env.INFRA_IDENTITY_ENABLED ?? '',
   INFRA_IDENTITY_ENABLED_STAGES: identityEnabledStagesRaw,
@@ -532,6 +546,7 @@ const pipelineSpecs: Record<
       INFRA_PRESERVE_EXISTING_ENV: 'true',
       INFRA_LOAD_ROOT_ENV: 'false',
       INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
+      INFRA_ENABLE_EXPO_SITE: 'false',
       INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
       INFRA_ENABLE_REACHABILITY_CHECK: 'false',
     },
@@ -553,6 +568,7 @@ const pipelineSpecs: Record<
       INFRA_PRESERVE_EXISTING_ENV: 'true',
       INFRA_LOAD_ROOT_ENV: 'false',
       INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
+      INFRA_ENABLE_EXPO_SITE: 'false',
       INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
       INFRA_ENABLE_REACHABILITY_CHECK: 'false',
     },
@@ -569,47 +585,11 @@ export function createInfrastructure() {
       ? identityEnabledStages.has(parsedDeploymentStage)
       : false;
   const identityEnabledForStage = identitySettings.enabled && isIdentityStageAllowed;
-  assertExpoPublicAuthEnvironment(stage);
-  const assetBucketName =
-    assetBucketNames[stage as PipelineStage] ??
-    createAssetBucketName(stage, pipelinePrefix, rootDomain);
-  const assetBaseUrl = createAssetBaseUrl(assetBucketName);
-  const introVideoAssets = {
-    en: buildPublicAssetFile(
-      resolvedExpoAppPath,
-      assetBaseUrl,
-      'assets/videos/AIRS-intro-videoplayback-EN.mp4',
-      'landing/videos'
-    ),
-    es: buildPublicAssetFile(
-      resolvedExpoAppPath,
-      assetBaseUrl,
-      'assets/videos/AIRS-intro-videoplayback-ES.mp4',
-      'landing/videos'
-    ),
-  } satisfies Record<'en' | 'es', PublicAssetFile>;
-  // SST's generated aws namespace is intentionally dynamic and not strongly typed here.
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  const publicAssetBucket = new sst.aws.Bucket(`expo-assets-${stage}`, {
-    access: 'public',
-    cors: {
-      allowHeaders: ['*'],
-      allowMethods: ['GET', 'HEAD'],
-      allowOrigins: ['*'],
-      maxAge: '1 day',
-    },
-    transform: {
-      bucket: (
-        bucketArgs: { bucket?: Input<string> },
-        _opts: unknown,
-        _name: string
-      ): undefined => {
-        bucketArgs.bucket = assetBucketName;
-        return undefined;
-      },
-    },
-    versioning: true,
-  });
+
+  if (enableExpoSite) {
+    assertExpoPublicAuthEnvironment(stage);
+  }
+
   const identityInfrastructure = identityEnabledForStage
     ? deployIdentityInfrastructure({
         appName,
@@ -620,113 +600,14 @@ export function createInfrastructure() {
       })
     : undefined;
 
-  const expoDomain = enableCustomDomain
-    ? resolveDomain({
-        rootDomain,
-        stage,
-        stageMap: expoStageMap,
-      })
-    : undefined;
-
-  const expoSite = createExpoSite({
-    appPath: expoAppPath,
-    id: `expo-web-${stage}`,
-    domain:
-      enableCustomDomain && expoDomain
-        ? buildStageDomainConfig({
-            stage,
-            stageDomain: expoDomain.domainName,
-            productionDomain: expoStageMap.production,
-            stageCertificateArn: expoCerts[stage],
-            // AIRS -> testnet redirect is managed as an explicit router below.
-            enableProductionToStageRedirect: false,
-          })
-        : undefined,
-    certificateArn: enableCustomDomain ? expoCerts[stage] : undefined,
-    environment: {
-      EXPO_PUBLIC_ENV: stage,
-      EXPO_PUBLIC_STAGE: stage,
-      EXPO_PUBLIC_ORIGIN: expoDomain ? `https://${expoDomain.domainName}` : undefined,
-      EXPO_PUBLIC_SUPABASE_URL: expoPublicSupabaseUrl,
-      EXPO_PUBLIC_SUPABASE_KEY: expoPublicSupabaseKey,
-      EXPO_PUBLIC_SUPABASE_ANON_KEY: expoPublicSupabaseKey,
-      EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID: expoPublicWalletConnectProjectId,
-      EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: expoPublicWalletConnectChainId,
-      EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH: expoPublicEnableMockWalletAuth,
-      EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH: expoPublicEnableWalletOnlyAuth,
-      EXPO_PUBLIC_ASSET_BASE_URL: assetBaseUrl,
-      EXPO_PUBLIC_AIRS_VIDEO_EN_URL: introVideoAssets.en.url,
-      EXPO_PUBLIC_AIRS_VIDEO_ES_URL: introVideoAssets.es.url,
-    },
-    build: {
-      command: expoBuildCommand,
-      output: expoBuildOutput,
-    },
-    invalidation: {
-      paths: ['/*'],
-      wait: stage === 'production',
-    },
-  });
-
-  const shouldCreateRootDomainRedirect =
-    stage === 'dev' &&
-    enableCustomDomain &&
-    enableRootDomainRedirect &&
-    rootDomainRedirectTarget !== rootDomain;
-
-  if (shouldCreateRootDomainRedirect) {
-    createExternalDomainRedirect({
-      id: `root-domain-redirect-${stage}`,
-      sourceDomain: rootDomain,
-      targetDomain: rootDomainRedirectTarget,
-      certificateArn: rootDomainRedirectCertArn,
-    });
-  }
-
-  const shouldCreateAirsToDevRedirect =
-    stage === 'dev' &&
-    enableCustomDomain &&
-    enableAirsToDevRedirect &&
-    airsToDevSourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase();
-
-  if (shouldCreateAirsToDevRedirect) {
-    createExternalDomainRedirect({
-      id: `airs-domain-redirect-${stage}`,
-      sourceDomain: airsToDevSourceDomain,
-      targetDomain: expoStageMap.dev,
-      certificateArn: airsToDevCertArn,
-    });
-  }
-
-  const shouldCreateDevToTestnetRedirect =
-    stage === 'dev' &&
-    enableCustomDomain &&
-    enableDevToTestnetRedirect &&
-    devToTestnetSourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase();
-
-  if (shouldCreateDevToTestnetRedirect) {
-    createExternalDomainRedirect({
-      id: `dev-domain-redirect-${stage}`,
-      sourceDomain: devToTestnetSourceDomain,
-      targetDomain: expoStageMap.dev,
-      certificateArn: devToTestnetCertArn,
-    });
-  }
-
   const outputs: Record<string, unknown> = {
     app: appName,
-    assets: {
-      airsIntroVideoEn: introVideoAssets.en.url,
-      airsIntroVideoEs: introVideoAssets.es.url,
-    },
-    assetBucket: {
-      baseUrl: assetBaseUrl,
-      domain: publicAssetBucket.domain,
-      name: publicAssetBucket.name,
-    },
-    siteUrl: expoSite.url,
-    domain: expoDomain?.domainName ?? null,
-    customDomainEnabled: enableCustomDomain,
+    assets: null,
+    assetBucket: null,
+    siteUrl: null,
+    domain: null,
+    customDomainEnabled: false,
+    expoSiteEnabled: enableExpoSite,
     identity: {
       enabled: identityEnabledForStage,
       configured: identitySettings.enabled,
@@ -758,6 +639,166 @@ export function createInfrastructure() {
         : null,
     },
     redirects: {
+      airsToDevEnabled: false,
+      airsToDevSource: null,
+      airsToDevTarget: null,
+      devToTestnetEnabled: false,
+      devToTestnetSource: null,
+      devToTestnetTarget: null,
+      rootDomainRedirectEnabled: false,
+      rootDomainRedirectTarget: null,
+    },
+  };
+
+  if (enableExpoSite) {
+    const assetBucketName =
+      assetBucketNames[stage as PipelineStage] ??
+      createAssetBucketName(stage, pipelinePrefix, rootDomain);
+    const assetBaseUrl = createAssetBaseUrl(assetBucketName);
+    const introVideoAssets = {
+      en: buildPublicAssetFile(
+        resolvedExpoAppPath,
+        assetBaseUrl,
+        'assets/videos/AIRS-intro-videoplayback-EN.mp4',
+        'landing/videos'
+      ),
+      es: buildPublicAssetFile(
+        resolvedExpoAppPath,
+        assetBaseUrl,
+        'assets/videos/AIRS-intro-videoplayback-ES.mp4',
+        'landing/videos'
+      ),
+    } satisfies Record<'en' | 'es', PublicAssetFile>;
+
+    // SST's generated aws namespace is intentionally dynamic and not strongly typed here.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const publicAssetBucket = new sst.aws.Bucket(`expo-assets-${stage}`, {
+      access: 'public',
+      cors: {
+        allowHeaders: ['*'],
+        allowMethods: ['GET', 'HEAD'],
+        allowOrigins: ['*'],
+        maxAge: '1 day',
+      },
+      transform: {
+        bucket: (
+          bucketArgs: { bucket?: Input<string> },
+          _opts: unknown,
+          _name: string
+        ): undefined => {
+          bucketArgs.bucket = assetBucketName;
+          return undefined;
+        },
+      },
+      versioning: true,
+    });
+
+    const expoDomain = enableCustomDomain
+      ? resolveDomain({
+          rootDomain,
+          stage,
+          stageMap: expoStageMap,
+        })
+      : undefined;
+
+    const expoSite = createExpoSite({
+      appPath: expoAppPath,
+      id: `expo-web-${stage}`,
+      domain:
+        enableCustomDomain && expoDomain
+          ? buildStageDomainConfig({
+              stage,
+              stageDomain: expoDomain.domainName,
+              productionDomain: expoStageMap.production,
+              stageCertificateArn: expoCerts[stage],
+              // AIRS -> testnet redirect is managed as an explicit router below.
+              enableProductionToStageRedirect: false,
+            })
+          : undefined,
+      certificateArn: enableCustomDomain ? expoCerts[stage] : undefined,
+      environment: {
+        EXPO_PUBLIC_ENV: stage,
+        EXPO_PUBLIC_STAGE: stage,
+        EXPO_PUBLIC_ORIGIN: expoDomain ? `https://${expoDomain.domainName}` : undefined,
+        EXPO_PUBLIC_SUPABASE_URL: expoPublicSupabaseUrl,
+        EXPO_PUBLIC_SUPABASE_KEY: expoPublicSupabaseKey,
+        EXPO_PUBLIC_SUPABASE_ANON_KEY: expoPublicSupabaseKey,
+        EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID: expoPublicWalletConnectProjectId,
+        EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: expoPublicWalletConnectChainId,
+        EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH: expoPublicEnableMockWalletAuth,
+        EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH: expoPublicEnableWalletOnlyAuth,
+        EXPO_PUBLIC_ASSET_BASE_URL: assetBaseUrl,
+        EXPO_PUBLIC_AIRS_VIDEO_EN_URL: introVideoAssets.en.url,
+        EXPO_PUBLIC_AIRS_VIDEO_ES_URL: introVideoAssets.es.url,
+      },
+      build: {
+        command: expoBuildCommand,
+        output: expoBuildOutput,
+      },
+      invalidation: {
+        paths: ['/*'],
+        wait: stage === 'production',
+      },
+    });
+
+    const shouldCreateRootDomainRedirect =
+      stage === 'dev' &&
+      enableCustomDomain &&
+      enableRootDomainRedirect &&
+      rootDomainRedirectTarget !== rootDomain;
+
+    if (shouldCreateRootDomainRedirect) {
+      createExternalDomainRedirect({
+        id: `root-domain-redirect-${stage}`,
+        sourceDomain: rootDomain,
+        targetDomain: rootDomainRedirectTarget,
+        certificateArn: rootDomainRedirectCertArn,
+      });
+    }
+
+    const shouldCreateAirsToDevRedirect =
+      stage === 'dev' &&
+      enableCustomDomain &&
+      enableAirsToDevRedirect &&
+      airsToDevSourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase();
+
+    if (shouldCreateAirsToDevRedirect) {
+      createExternalDomainRedirect({
+        id: `airs-domain-redirect-${stage}`,
+        sourceDomain: airsToDevSourceDomain,
+        targetDomain: expoStageMap.dev,
+        certificateArn: airsToDevCertArn,
+      });
+    }
+
+    const shouldCreateDevToTestnetRedirect =
+      stage === 'dev' &&
+      enableCustomDomain &&
+      enableDevToTestnetRedirect &&
+      devToTestnetSourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase();
+
+    if (shouldCreateDevToTestnetRedirect) {
+      createExternalDomainRedirect({
+        id: `dev-domain-redirect-${stage}`,
+        sourceDomain: devToTestnetSourceDomain,
+        targetDomain: expoStageMap.dev,
+        certificateArn: devToTestnetCertArn,
+      });
+    }
+
+    outputs.assets = {
+      airsIntroVideoEn: introVideoAssets.en.url,
+      airsIntroVideoEs: introVideoAssets.es.url,
+    };
+    outputs.assetBucket = {
+      baseUrl: assetBaseUrl,
+      domain: publicAssetBucket.domain,
+      name: publicAssetBucket.name,
+    };
+    outputs.siteUrl = expoSite.url;
+    outputs.domain = expoDomain?.domainName ?? null;
+    outputs.customDomainEnabled = enableCustomDomain;
+    outputs.redirects = {
       airsToDevEnabled: shouldCreateAirsToDevRedirect,
       airsToDevSource: shouldCreateAirsToDevRedirect ? airsToDevSourceDomain : null,
       airsToDevTarget: shouldCreateAirsToDevRedirect ? expoStageMap.dev : null,
@@ -766,8 +807,8 @@ export function createInfrastructure() {
       devToTestnetTarget: shouldCreateDevToTestnetRedirect ? expoStageMap.dev : null,
       rootDomainRedirectEnabled: shouldCreateRootDomainRedirect,
       rootDomainRedirectTarget: shouldCreateRootDomainRedirect ? rootDomainRedirectTarget : null,
-    },
-  };
+    };
+  }
 
   if (stage === 'production' && selectedPipelines.size > 0) {
     const pipelineOutputs: Record<string, string> = {};
