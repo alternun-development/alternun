@@ -22,6 +22,7 @@ import { deployIdentityInfrastructure } from './modules/identity-resources.js';
 import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
 
 type PipelineStage = 'production' | 'dev' | 'mobile';
+type ManagedPipeline = PipelineStage | 'identity';
 type PipelineComputeType =
   | 'BUILD_GENERAL1_SMALL'
   | 'BUILD_GENERAL1_MEDIUM'
@@ -188,9 +189,9 @@ const pipelineProjectTag =
 const codestarConnectionArn =
   process.env.INFRA_CODESTAR_CONNECTION_ARN ?? localConfig.pipeline?.codestarConnectionArn;
 const selectedPipelinesRaw =
-  process.env.INFRA_PIPELINES ?? localConfig.pipeline?.pipelines ?? 'production,dev';
-const pipelineComputeTypeDefault = (stage: PipelineStage): PipelineComputeType =>
-  stage === 'dev' ? 'BUILD_GENERAL1_LARGE' : 'BUILD_GENERAL1_MEDIUM';
+  process.env.INFRA_PIPELINES ?? localConfig.pipeline?.pipelines ?? 'production,dev,identity';
+const pipelineComputeTypeDefault = (pipeline: ManagedPipeline): PipelineComputeType =>
+  pipeline === 'dev' ? 'BUILD_GENERAL1_LARGE' : 'BUILD_GENERAL1_MEDIUM';
 const parseTimeoutMinutes = (value: string | number | undefined, fallback: number): number => {
   if (value === undefined) return fallback;
   const parsed = Number(value);
@@ -408,24 +409,27 @@ function assertExpoPublicAuthEnvironment(stage: string): void {
   }
 }
 
-function parsePipelineStage(value: string): PipelineStage | undefined {
+function parsePipelineStage(value: string): ManagedPipeline | undefined {
   const normalized = value.trim().toLowerCase();
   if (normalized === 'production' || normalized === 'prod') return 'production';
   if (normalized === 'dev') return 'dev';
   if (normalized === 'mobile') return 'mobile';
+  if (normalized === 'identity' || normalized === 'authentik' || normalized === 'auth') {
+    return 'identity';
+  }
   return undefined;
 }
 
-const selectedPipelines = new Set<PipelineStage>(
+const selectedPipelines = new Set<ManagedPipeline>(
   selectedPipelinesRaw
     .split(',')
     .map(value => parsePipelineStage(value))
-    .filter((value): value is PipelineStage => value !== undefined)
+    .filter((value): value is ManagedPipeline => value !== undefined)
 );
 
 const pipelineSpecs: Record<
-  PipelineStage,
-  { suffix: string; branch: string; stage: PipelineStage }
+  ManagedPipeline,
+  { suffix: string; branch: string; stage: PipelineStage; buildEnv?: Record<string, string> }
 > = {
   production: {
     suffix: 'prod',
@@ -442,6 +446,19 @@ const pipelineSpecs: Record<
     branch:
       process.env.INFRA_PIPELINE_BRANCH_MOBILE ?? localConfig.pipeline?.branchMobile ?? 'mobile',
     stage: 'mobile',
+  },
+  identity: {
+    suffix: 'identity',
+    branch:
+      process.env.INFRA_PIPELINE_BRANCH_IDENTITY ?? localConfig.pipeline?.branchDev ?? 'develop',
+    stage: 'dev',
+    buildEnv: {
+      INFRA_IDENTITY_ENABLED: 'true',
+      INFRA_PIPELINE_PROFILE: 'identity',
+      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
+      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
+      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
+    },
   },
 };
 
@@ -647,7 +664,7 @@ export function createInfrastructure() {
   if (stage === 'production' && selectedPipelines.size > 0) {
     const pipelineOutputs: Record<string, string> = {};
 
-    for (const pipelineStage of [...selectedPipelines] as PipelineStage[]) {
+    for (const pipelineStage of [...selectedPipelines] as ManagedPipeline[]) {
       const spec = pipelineSpecs[pipelineStage];
       const pipelineStageKey = pipelineStage.toUpperCase();
       const pipelineComputeType = (process.env[`INFRA_PIPELINE_COMPUTE_TYPE_${pipelineStageKey}`] ??
@@ -667,7 +684,10 @@ export function createInfrastructure() {
         stage: spec.stage,
         projectTag: pipelineProjectTag,
         codestarConnectionArn,
-        buildEnv: commonBuildEnv,
+        buildEnv: {
+          ...commonBuildEnv,
+          ...spec.buildEnv,
+        },
         computeType: pipelineComputeType,
         timeoutMinutes: pipelineTimeoutMinutes,
       });

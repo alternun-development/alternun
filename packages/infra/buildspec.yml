@@ -66,6 +66,7 @@ env:
     INFRA_ENFORCE_REDIRECT_CHECKS: 'false'
     INFRA_ENABLE_ALIAS_CLEANUP: 'false'
     INFRA_ENABLE_SST_DIFF: 'false'
+    INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'true'
     # Disabled by default: refresh can rewrite live state before deploy.
     INFRA_ENABLE_SST_REFRESH: 'false'
     HUSKY: '0'
@@ -207,7 +208,9 @@ phases:
           exit 1
         fi
       - |
-        if [ -f "${INFRA_PATH}/scripts/sync-public-assets.sh" ]; then
+        if [ "${INFRA_ENABLE_PUBLIC_ASSET_SYNC}" != "true" ]; then
+          echo "Skipping public asset sync (INFRA_ENABLE_PUBLIC_ASSET_SYNC=${INFRA_ENABLE_PUBLIC_ASSET_SYNC})"
+        elif [ -f "${INFRA_PATH}/scripts/sync-public-assets.sh" ]; then
           chmod +x "${INFRA_PATH}/scripts/sync-public-assets.sh" || true
           "${INFRA_PATH}/scripts/sync-public-assets.sh" ${SST_STAGE}
         else

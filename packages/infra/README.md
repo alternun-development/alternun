@@ -172,6 +172,13 @@ Create/repair configured pipelines:
 APPROVE=true pnpm --filter @alternun/infra run ensure:pipelines
 ```
 
+`INFRA_PIPELINES` supports these targets:
+
+- `production`
+- `dev`
+- `mobile`
+- `identity` (dedicated Authentik-focused deploy pipeline; defaults to `develop` branch and deploys `SST_STAGE=dev`)
+
 ## Required CI/Runtime Env Contract
 
 See [`./.env.example`](./.env.example).
@@ -186,6 +193,7 @@ Minimum values to set in CI:
 - `INFRA_PIPELINES`
 - `INFRA_PIPELINE_BRANCH_PROD`
 - `INFRA_PIPELINE_BRANCH_DEV`
+- `INFRA_PIPELINE_BRANCH_IDENTITY` (when `identity` is included in `INFRA_PIPELINES`)
 
 Optional but recommended:
 
