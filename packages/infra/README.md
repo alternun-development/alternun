@@ -43,7 +43,7 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_JWT_AUDIENCE`
 - `INFRA_IDENTITY_JWT_ROLE_CLAIM`
 - `INFRA_IDENTITY_JWT_ROLES_CLAIM`
-- `INFRA_ENABLE_EXPO_SITE` (set `false` to skip Expo/static-site resources and run identity-only deploys)
+- `INFRA_ENABLE_EXPO_SITE` (set `false` on dedicated identity stacks to skip Expo/static-site resources)
 
 Important behavior:
 
@@ -53,17 +53,23 @@ Important behavior:
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
 - the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
-- identity pipeline profiles (`identity-dev`, `identity-prod`) force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy the app site
+- identity pipelines deploy on isolated stacks (`identity-dev`, `identity-prod`) and force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy or modify the app site stack
 
 ### Identity-Only IaC Provisioning
 
 Deploy identity infrastructure without touching Expo/site resources:
 
+Use dedicated identity stacks. Do not run identity-only toggles against `dev` or `production` stacks, or Pulumi will plan deletions for resources not declared in that run.
+
+Fail-safe guardrails are enforced in both IaC and CI:
+
+- `INFRA_ENABLE_EXPO_SITE=false` is rejected for non-identity stack stages
+- only `identity-dev` / `identity-prod` style stages can run identity-only mode
+
 ```bash
 INFRA_IDENTITY_ENABLED=true \
 INFRA_IDENTITY_ENABLED_STAGES=dev \
-INFRA_ENABLE_EXPO_SITE=false \
-pnpm --filter @alternun/infra run deploy:dev
+pnpm --filter @alternun/infra run deploy:identity-dev
 ```
 
 For production identity:
@@ -71,8 +77,7 @@ For production identity:
 ```bash
 INFRA_IDENTITY_ENABLED=true \
 INFRA_IDENTITY_ENABLED_STAGES=production \
-INFRA_ENABLE_EXPO_SITE=false \
-pnpm --filter @alternun/infra run deploy:production
+pnpm --filter @alternun/infra run deploy:identity-prod
 ```
 
 These commands remain fully IaC-driven from `packages/infra/infra.config.ts` and `packages/infra/modules/identity-resources.ts`.
@@ -151,6 +156,8 @@ From repo root:
 ```bash
 pnpm --filter @alternun/infra run deploy:dev
 pnpm --filter @alternun/infra run deploy:production
+pnpm --filter @alternun/infra run deploy:identity-dev
+pnpm --filter @alternun/infra run deploy:identity-prod
 ```
 
 These commands are env-first and enforced:
@@ -202,8 +209,8 @@ APPROVE=true pnpm --filter @alternun/infra run ensure:pipelines
 - `production`
 - `dev`
 - `mobile`
-- `identity-dev` (Authentik-focused pipeline for `SST_STAGE=dev`, defaults to `develop` branch)
-- `identity-prod` (Authentik-focused pipeline for `SST_STAGE=production`, defaults to `master` branch)
+- `identity-dev` (Authentik-focused pipeline for `SST_STAGE=identity-dev`, defaults to `develop` branch)
+- `identity-prod` (Authentik-focused pipeline for `SST_STAGE=identity-prod`, defaults to `master` branch)
 
 Legacy alias: `identity` maps to `identity-dev`.
 Created pipeline names are `alternun-auth-dev-pipeline` and `alternun-auth-prod-pipeline`.

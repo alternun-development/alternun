@@ -269,7 +269,22 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
 }
 
 export function resolveIdentityStageDomain(settings: IdentitySettings, stage: string): string {
-  if (stage === 'production') return settings.stageDomains.production;
-  if (stage === 'mobile') return settings.stageDomains.mobile;
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+
+  if (
+    normalized === 'production' ||
+    normalized === 'prod' ||
+    normalized === 'identity-prod' ||
+    normalized === 'identity-production' ||
+    normalized === 'auth-prod' ||
+    normalized === 'authentik-prod'
+  ) {
+    return settings.stageDomains.production;
+  }
+
+  if (normalized === 'mobile' || normalized === 'identity-mobile') {
+    return settings.stageDomains.mobile;
+  }
+
   return settings.stageDomains.dev;
 }
