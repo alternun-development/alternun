@@ -192,6 +192,7 @@ const selectedPipelinesRaw =
   process.env.INFRA_PIPELINES ?? localConfig.pipeline?.pipelines ?? 'production,dev,identity';
 const pipelineComputeTypeDefault = (pipeline: ManagedPipeline): PipelineComputeType =>
   pipeline === 'dev' ? 'BUILD_GENERAL1_LARGE' : 'BUILD_GENERAL1_MEDIUM';
+const identityEnabledStagesRaw = process.env.INFRA_IDENTITY_ENABLED_STAGES ?? '';
 const parseTimeoutMinutes = (value: string | number | undefined, fallback: number): number => {
   if (value === undefined) return fallback;
   const parsed = Number(value);
@@ -373,6 +374,8 @@ const commonBuildEnv = {
   INFRA_EXPO_BUILD_COMMAND: expoBuildCommand,
   INFRA_EXPO_BUILD_OUTPUT: expoBuildOutput,
   INFRA_REQUIRE_EXPO_PUBLIC_AUTH: String(requireExpoPublicAuthEnv),
+  INFRA_IDENTITY_ENABLED: process.env.INFRA_IDENTITY_ENABLED ?? '',
+  INFRA_IDENTITY_ENABLED_STAGES: identityEnabledStagesRaw,
   EXPO_PUBLIC_SUPABASE_URL: expoPublicSupabaseUrl ?? '',
   EXPO_PUBLIC_SUPABASE_KEY: expoPublicSupabaseKey ?? '',
   EXPO_PUBLIC_SUPABASE_ANON_KEY: expoPublicSupabaseKey ?? '',
@@ -394,6 +397,14 @@ const commonBuildEnv = {
   PREFIX: pipelinePrefix,
 };
 
+function parseDeploymentStage(value: string): PipelineStage | undefined {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'production' || normalized === 'prod') return 'production';
+  if (normalized === 'dev') return 'dev';
+  if (normalized === 'mobile') return 'mobile';
+  return undefined;
+}
+
 function assertExpoPublicAuthEnvironment(stage: string): void {
   if (!requireExpoPublicAuthEnv) return;
   if (!['production', 'dev', 'mobile'].includes(stage)) return;
@@ -411,14 +422,20 @@ function assertExpoPublicAuthEnvironment(stage: string): void {
 
 function parsePipelineStage(value: string): ManagedPipeline | undefined {
   const normalized = value.trim().toLowerCase();
-  if (normalized === 'production' || normalized === 'prod') return 'production';
-  if (normalized === 'dev') return 'dev';
-  if (normalized === 'mobile') return 'mobile';
+  const deploymentStage = parseDeploymentStage(normalized);
+  if (deploymentStage) return deploymentStage;
   if (normalized === 'identity' || normalized === 'authentik' || normalized === 'auth') {
     return 'identity';
   }
   return undefined;
 }
+
+const identityEnabledStages = new Set<PipelineStage>(
+  identityEnabledStagesRaw
+    .split(',')
+    .map(value => parseDeploymentStage(value))
+    .filter((value): value is PipelineStage => value !== undefined)
+);
 
 const selectedPipelines = new Set<ManagedPipeline>(
   selectedPipelinesRaw
@@ -454,6 +471,7 @@ const pipelineSpecs: Record<
     stage: 'dev',
     buildEnv: {
       INFRA_IDENTITY_ENABLED: 'true',
+      INFRA_IDENTITY_ENABLED_STAGES: 'dev',
       INFRA_PIPELINE_PROFILE: 'identity',
       INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
       INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
@@ -464,6 +482,14 @@ const pipelineSpecs: Record<
 
 export function createInfrastructure() {
   const stage = String($app.stage);
+  const parsedDeploymentStage = parseDeploymentStage(stage);
+  const isIdentityStageAllowed =
+    identityEnabledStages.size === 0
+      ? true
+      : parsedDeploymentStage
+      ? identityEnabledStages.has(parsedDeploymentStage)
+      : false;
+  const identityEnabledForStage = identitySettings.enabled && isIdentityStageAllowed;
   assertExpoPublicAuthEnvironment(stage);
   const assetBucketName =
     assetBucketNames[stage as PipelineStage] ??
@@ -505,7 +531,7 @@ export function createInfrastructure() {
     },
     versioning: true,
   });
-  const identityInfrastructure = identitySettings.enabled
+  const identityInfrastructure = identityEnabledForStage
     ? deployIdentityInfrastructure({
         appName,
         hostedZoneId: process.env.INFRA_ROUTE53_HOSTED_ZONE_ID,
@@ -623,7 +649,10 @@ export function createInfrastructure() {
     domain: expoDomain?.domainName ?? null,
     customDomainEnabled: enableCustomDomain,
     identity: {
-      enabled: identitySettings.enabled,
+      enabled: identityEnabledForStage,
+      configured: identitySettings.enabled,
+      enabledStages:
+        identityEnabledStages.size === 0 ? 'all' : Array.from(identityEnabledStages.values()),
       domain: resolveIdentityStageDomain(identitySettings, stage),
       stageDomains: identitySettings.stageDomains,
       ec2: identitySettings.ec2,

@@ -48,6 +48,7 @@ Important behavior:
 
 - secret names are automatically stage-scoped on creation to avoid dev/production collisions
 - Authentik image tag is validated to calendar-version format and must be `>= 2025.10` (Redisless baseline)
+- identity deployment can be stage-scoped with `INFRA_IDENTITY_ENABLED_STAGES` (for example `dev` to keep production untouched)
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
 - the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
@@ -206,6 +207,7 @@ Optional but recommended:
 Optional identity scaffold env:
 
 - `INFRA_IDENTITY_ENABLED`
+- `INFRA_IDENTITY_ENABLED_STAGES`
 - `INFRA_IDENTITY_DOMAIN_PRODUCTION`
 - `INFRA_IDENTITY_DOMAIN_DEV`
 - `INFRA_IDENTITY_DOMAIN_MOBILE`
