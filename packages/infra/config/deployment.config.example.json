@@ -44,8 +44,8 @@
     "enabled": false,
     "domains": {
       "production": "auth.alternun.co",
-      "dev": "auth.testnet.alternun.co",
-      "mobile": "auth.preview.alternun.co"
+      "dev": "testnet.auth.alternun.co",
+      "mobile": "preview.auth.alternun.co"
     },
     "ec2": {
       "instanceType": "t3.small",

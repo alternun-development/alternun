@@ -36,7 +36,7 @@ Use the application domain family, not the marketing domain family, for Authenti
 Initial domain decisions:
 
 - production identity domain: `auth.alternun.co`
-- non-production identity domain: `auth.testnet.alternun.co`
+- non-production identity domain: `testnet.auth.alternun.co`
 
 Rationale:
 
@@ -186,4 +186,4 @@ These items are intentionally not decided here:
 
 - whether future high-availability deployment uses ECS, EKS, or multiple EC2 nodes
 - whether Postmark becomes the long-term email provider
-- whether the non-production identity hostname keeps the `auth.testnet.alternun.co` convention permanently
+- whether the non-production identity hostname keeps the `testnet.auth.alternun.co` convention permanently
