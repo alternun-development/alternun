@@ -126,6 +126,7 @@ function buildAuthBootstrapUserData(args: {
   appName: string;
   stage: string;
   domain: string;
+  authentikImageTag: string;
   authentikSecretArn: pulumi.Input<string>;
   databaseCredentialsSecretArn: pulumi.Input<string>;
   smtpCredentialsSecretArn: pulumi.Input<string>;
@@ -160,6 +161,7 @@ cat >/etc/alternun-identity.env <<'ENVEOF'
 ALTERNUN_APP_NAME=${args.appName}
 ALTERNUN_STAGE=${args.stage}
 ALTERNUN_IDENTITY_DOMAIN=${args.domain}
+AUTHENTIK_IMAGE_TAG=${args.authentikImageTag}
 AUTHENTIK_SECRET_ARN=${authentikSecretArn}
 AUTHENTIK_DATABASE_SECRET_ARN=${databaseCredentialsSecretArn}
 AUTHENTIK_SMTP_SECRET_ARN=${smtpCredentialsSecretArn}
@@ -498,6 +500,7 @@ export function deployIdentityInfrastructure(
       appName: args.appName,
       stage: args.stage,
       domain: identityDomain,
+      authentikImageTag: args.settings.authentikImageTag,
       authentikSecretArn: authentikSecret.arn,
       databaseCredentialsSecretArn: databaseCredentialsSecret.arn,
       smtpCredentialsSecretArn: smtpCredentialsSecret.arn,

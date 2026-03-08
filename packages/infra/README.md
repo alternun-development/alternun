@@ -39,6 +39,7 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_EC2_INSTANCE_TYPE`
 - `INFRA_IDENTITY_RDS_INSTANCE_TYPE`
 - `INFRA_IDENTITY_EMAIL_PROVIDER`
+- `INFRA_IDENTITY_AUTHENTIK_IMAGE_TAG` (calendar-version tag, `>= 2025.10`)
 - `INFRA_IDENTITY_JWT_AUDIENCE`
 - `INFRA_IDENTITY_JWT_ROLE_CLAIM`
 - `INFRA_IDENTITY_JWT_ROLES_CLAIM`
@@ -46,6 +47,7 @@ Enable/configure through env or local config:
 Important behavior:
 
 - secret names are automatically stage-scoped on creation to avoid dev/production collisions
+- Authentik image tag is validated to calendar-version format and must be `>= 2025.10` (Redisless baseline)
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
 - the EC2 host is prepared for Docker-based Authentik deployment, but the runtime compose/bootstrap step is still a separate implementation phase
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
@@ -210,6 +212,7 @@ Optional identity scaffold env:
 - `INFRA_IDENTITY_RDS_PERFORMANCE_INSIGHTS`
 - `INFRA_IDENTITY_RDS_ENHANCED_MONITORING`
 - `INFRA_IDENTITY_EMAIL_PROVIDER`
+- `INFRA_IDENTITY_AUTHENTIK_IMAGE_TAG`
 - `INFRA_IDENTITY_JWT_AUDIENCE`
 - `INFRA_IDENTITY_JWT_ROLE_CLAIM`
 - `INFRA_IDENTITY_JWT_ROLES_CLAIM`
