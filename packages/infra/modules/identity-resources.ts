@@ -190,9 +190,36 @@ function buildAuthBootstrapUserData(args: {
       ]) => `#!/bin/bash
 set -euxo pipefail
 
-dnf install -y docker docker-compose-plugin jq awscli
+dnf install -y docker jq awscli
+if ! command -v curl >/dev/null 2>&1; then
+  dnf install -y curl-minimal
+fi
 systemctl enable --now docker
 usermod -aG docker ec2-user
+
+if ! docker compose version >/dev/null 2>&1; then
+  if ! dnf install -y docker-compose-plugin; then
+    dnf install -y docker-compose || true
+  fi
+fi
+
+if ! docker compose version >/dev/null 2>&1; then
+  ARCH="$(uname -m)"
+  case "\${ARCH}" in
+    x86_64 | amd64) COMPOSE_ARCH="x86_64" ;;
+    aarch64 | arm64) COMPOSE_ARCH="aarch64" ;;
+    *)
+      echo "Unsupported architecture for docker compose plugin: \${ARCH}"
+      exit 1
+      ;;
+  esac
+
+  install -d /usr/local/libexec/docker/cli-plugins
+  curl -fsSL "https://github.com/docker/compose/releases/download/v2.33.1/docker-compose-linux-\${COMPOSE_ARCH}" -o /usr/local/libexec/docker/cli-plugins/docker-compose
+  chmod 0755 /usr/local/libexec/docker/cli-plugins/docker-compose
+fi
+
+docker compose version
 
 install -d -o ec2-user -g ec2-user /opt/alternun/identity
 install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik
@@ -363,7 +390,7 @@ services:
       - /opt/alternun/identity/.env.authentik
     labels:
       - traefik.enable=true
-      - traefik.http.routers.authentik.rule=Host(\`${args.domain}\`)
+      - traefik.http.routers.authentik.rule=Host("${args.domain}")
       - traefik.http.routers.authentik.entrypoints=websecure
       - traefik.http.routers.authentik.tls.certresolver=letsencrypt
       - traefik.http.services.authentik.loadbalancer.server.port=9000
@@ -420,7 +447,7 @@ services:
       - /opt/alternun/identity/.env.authentik
     labels:
       - traefik.enable=true
-      - traefik.http.routers.authentik.rule=Host(\`${args.domain}\`)
+      - traefik.http.routers.authentik.rule=Host("${args.domain}")
       - traefik.http.routers.authentik.entrypoints=websecure
       - traefik.http.routers.authentik.tls.certresolver=letsencrypt
       - traefik.http.services.authentik.loadbalancer.server.port=9000
