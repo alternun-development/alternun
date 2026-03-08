@@ -16,7 +16,7 @@ When `INFRA_IDENTITY_ENABLED=true`, the stack now provisions:
 
 - a dedicated VPC for identity resources
 - a public EC2 host for Authentik runtime bootstrap
-- a PostgreSQL RDS instance in VPC subnets
+- a PostgreSQL database (mode selectable: EC2-local or dedicated RDS)
 - Route53 DNS for the stage-specific identity domain
 - Secrets Manager entries for:
   - Authentik secret key
@@ -36,6 +36,7 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_DOMAIN_PRODUCTION`
 - `INFRA_IDENTITY_DOMAIN_DEV`
 - `INFRA_IDENTITY_DOMAIN_MOBILE`
+- `INFRA_IDENTITY_DATABASE_MODE` (`ec2` for local-on-instance DB, `rds` for dedicated DB)
 - `INFRA_IDENTITY_EC2_INSTANCE_TYPE`
 - `INFRA_IDENTITY_RDS_INSTANCE_TYPE`
 - `INFRA_IDENTITY_EMAIL_PROVIDER`
@@ -50,6 +51,7 @@ Important behavior:
 - secret names are automatically stage-scoped on creation to avoid dev/production collisions
 - Authentik image tag is validated to calendar-version format and must be `>= 2025.10` (Redisless baseline)
 - identity deployment can be stage-scoped with `INFRA_IDENTITY_ENABLED_STAGES` (for example `dev` to keep production untouched)
+- default pipeline profile behavior is `identity-dev => INFRA_IDENTITY_DATABASE_MODE=ec2` and `identity-prod => INFRA_IDENTITY_DATABASE_MODE=rds`
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
 - the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
@@ -69,6 +71,7 @@ Fail-safe guardrails are enforced in both IaC and CI:
 ```bash
 INFRA_IDENTITY_ENABLED=true \
 INFRA_IDENTITY_ENABLED_STAGES=dev \
+INFRA_IDENTITY_DATABASE_MODE=ec2 \
 pnpm --filter @alternun/infra run deploy:identity-dev
 ```
 
@@ -77,6 +80,7 @@ For production identity:
 ```bash
 INFRA_IDENTITY_ENABLED=true \
 INFRA_IDENTITY_ENABLED_STAGES=production \
+INFRA_IDENTITY_DATABASE_MODE=rds \
 pnpm --filter @alternun/infra run deploy:identity-prod
 ```
 
@@ -247,6 +251,7 @@ Optional identity scaffold env:
 - `INFRA_IDENTITY_DOMAIN_PRODUCTION`
 - `INFRA_IDENTITY_DOMAIN_DEV`
 - `INFRA_IDENTITY_DOMAIN_MOBILE`
+- `INFRA_IDENTITY_DATABASE_MODE`
 - `INFRA_IDENTITY_EC2_INSTANCE_TYPE`
 - `INFRA_IDENTITY_EC2_VOLUME_SIZE_GIB`
 - `INFRA_IDENTITY_RDS_ENGINE_VERSION`

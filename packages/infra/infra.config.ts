@@ -592,6 +592,7 @@ const pipelineSpecs: Record<
     buildEnv: {
       INFRA_IDENTITY_ENABLED: 'true',
       INFRA_IDENTITY_ENABLED_STAGES: 'dev',
+      INFRA_IDENTITY_DATABASE_MODE: 'ec2',
       INFRA_PIPELINE_PROFILE: 'identity-dev',
       INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod',
       INFRA_PRESERVE_EXISTING_ENV: 'true',
@@ -616,6 +617,7 @@ const pipelineSpecs: Record<
     buildEnv: {
       INFRA_IDENTITY_ENABLED: 'true',
       INFRA_IDENTITY_ENABLED_STAGES: 'production',
+      INFRA_IDENTITY_DATABASE_MODE: 'rds',
       INFRA_PIPELINE_PROFILE: 'identity-prod',
       INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod',
       INFRA_PRESERVE_EXISTING_ENV: 'true',
@@ -683,6 +685,7 @@ export function createInfrastructure() {
         identityEnabledStages.size === 0 ? 'all' : Array.from(identityEnabledStages.values()),
       domain: resolveIdentityStageDomain(identitySettings, stage),
       stageDomains: identitySettings.stageDomains,
+      database: identitySettings.database,
       ec2: identitySettings.ec2,
       rds: identitySettings.rds,
       emailProvider: identitySettings.emailProvider,

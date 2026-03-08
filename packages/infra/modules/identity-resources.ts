@@ -6,7 +6,7 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
 import { RandomPassword } from '@pulumi/random';
-import type { IdentitySettings } from './identity.js';
+import type { IdentityDatabaseMode, IdentitySettings } from './identity.js';
 import { resolveIdentityStageDomain } from './identity.js';
 
 export interface IdentityInfrastructureArgs {
@@ -53,13 +53,14 @@ export interface IdentityInfrastructureResources {
     publicSubnets: pulumi.Output<string[]>;
   };
   database: {
+    mode: pulumi.Output<IdentityDatabaseMode>;
     address: pulumi.Output<string>;
-    arn: pulumi.Output<string>;
+    arn?: pulumi.Output<string>;
     dbName: pulumi.Output<string>;
     endpoint: pulumi.Output<string>;
-    identifier: pulumi.Output<string>;
+    identifier?: pulumi.Output<string>;
     port: pulumi.Output<number>;
-    subnetGroupName: pulumi.Output<string>;
+    subnetGroupName?: pulumi.Output<string>;
     username: pulumi.Output<string>;
   };
 }
@@ -127,6 +128,7 @@ function buildAuthBootstrapUserData(args: {
   rootDomain: string;
   stage: string;
   domain: string;
+  databaseMode: IdentityDatabaseMode;
   authentikImageTag: string;
   authentikSecretArn: pulumi.Input<string>;
   databaseCredentialsSecretArn: pulumi.Input<string>;
@@ -165,6 +167,7 @@ ALTERNUN_ROOT_DOMAIN=${args.rootDomain}
 ALTERNUN_STAGE=${args.stage}
 ALTERNUN_IDENTITY_DOMAIN=${args.domain}
 AUTHENTIK_IMAGE_TAG=${args.authentikImageTag}
+AUTHENTIK_DATABASE_MODE=${args.databaseMode}
 AUTHENTIK_SECRET_ARN=${authentikSecretArn}
 AUTHENTIK_DATABASE_SECRET_ARN=${databaseCredentialsSecretArn}
 AUTHENTIK_SMTP_SECRET_ARN=${smtpCredentialsSecretArn}
@@ -179,6 +182,7 @@ cat >/opt/alternun/identity/deploy-authentik.sh <<'SCRIPTEOF'
 set -euo pipefail
 
 source /etc/alternun-identity.env
+AUTHENTIK_DATABASE_MODE="\${AUTHENTIK_DATABASE_MODE:-rds}"
 
 TOKEN="$(curl -fsS -X PUT 'http://169.254.169.254/latest/api/token' -H 'X-aws-ec2-metadata-token-ttl-seconds: 21600')"
 INSTANCE_IDENTITY="$(curl -fsS -H "X-aws-ec2-metadata-token: \${TOKEN}" 'http://169.254.169.254/latest/dynamic/instance-identity/document')"
@@ -203,6 +207,15 @@ DATABASE_NAME="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.database // em
 DATABASE_USER="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.username // empty')"
 DATABASE_PASSWORD="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.password // empty')"
 DATABASE_PORT="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '(.port // 5432) | tostring')"
+DATABASE_SSLMODE="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.sslmode // empty')"
+
+if [ -z "\${DATABASE_SSLMODE}" ]; then
+  if [ "\${AUTHENTIK_DATABASE_MODE}" = "ec2" ]; then
+    DATABASE_SSLMODE='disable'
+  else
+    DATABASE_SSLMODE='require'
+  fi
+fi
 
 if [ -z "\${AUTHENTIK_SECRET_KEY_VALUE}" ]; then
   echo "Authentik secret key is missing from \${AUTHENTIK_SECRET_ARN}."
@@ -231,6 +244,10 @@ install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/data
 install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/certs
 install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/custom-templates
 
+if [ "\${AUTHENTIK_DATABASE_MODE}" = "ec2" ]; then
+  install -d -o ec2-user -g ec2-user /opt/alternun/identity/postgres/data
+fi
+
 ENV_FILE='/opt/alternun/identity/.env.authentik'
 : > "\${ENV_FILE}"
 
@@ -244,7 +261,7 @@ append_env AUTHENTIK_POSTGRESQL__PORT "\${DATABASE_PORT}"
 append_env AUTHENTIK_POSTGRESQL__NAME "\${DATABASE_NAME}"
 append_env AUTHENTIK_POSTGRESQL__USER "\${DATABASE_USER}"
 append_env AUTHENTIK_POSTGRESQL__PASSWORD "\${DATABASE_PASSWORD}"
-append_env AUTHENTIK_POSTGRESQL__SSLMODE 'require'
+append_env AUTHENTIK_POSTGRESQL__SSLMODE "\${DATABASE_SSLMODE}"
 append_env AUTHENTIK_ERROR_REPORTING__ENABLED 'false'
 append_env AUTHENTIK_ERROR_REPORTING__ENVIRONMENT "\${ALTERNUN_STAGE}"
 append_env AUTHENTIK_DISABLE_UPDATE_CHECK 'true'
@@ -259,7 +276,81 @@ if [ -n "\${SMTP_HOST}" ]; then
   append_env AUTHENTIK_EMAIL__FROM "\${SMTP_FROM}"
 fi
 
-cat >/opt/alternun/identity/docker-compose.yml <<COMPOSEEOF
+if [ "\${AUTHENTIK_DATABASE_MODE}" = "ec2" ]; then
+  cat >/opt/alternun/identity/docker-compose.yml <<COMPOSEEOF
+services:
+  postgres:
+    image: docker.io/library/postgres:16
+    environment:
+      POSTGRES_DB: \${DATABASE_NAME}
+      POSTGRES_USER: \${DATABASE_USER}
+      POSTGRES_PASSWORD: \${DATABASE_PASSWORD}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U \${DATABASE_USER} -d \${DATABASE_NAME}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    shm_size: 256mb
+    volumes:
+      - /opt/alternun/identity/postgres/data:/var/lib/postgresql/data
+  traefik:
+    image: docker.io/library/traefik:v3.1
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.email=identity-admin@${args.rootDomain}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+    ports:
+      - 80:80
+      - 443:443
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /opt/alternun/identity/traefik-acme.json:/letsencrypt/acme.json
+  server:
+    image: ghcr.io/goauthentik/server:${args.authentikImageTag}
+    command: server
+    depends_on:
+      - postgres
+      - worker
+    env_file:
+      - /opt/alternun/identity/.env.authentik
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.authentik.rule=Host(\`${args.domain}\`)
+      - traefik.http.routers.authentik.entrypoints=websecure
+      - traefik.http.routers.authentik.tls.certresolver=letsencrypt
+      - traefik.http.services.authentik.loadbalancer.server.port=9000
+    restart: unless-stopped
+    shm_size: 512mb
+    volumes:
+      - /opt/alternun/identity/authentik/data:/data
+      - /opt/alternun/identity/authentik/custom-templates:/templates
+  worker:
+    image: ghcr.io/goauthentik/server:${args.authentikImageTag}
+    command: worker
+    depends_on:
+      - postgres
+    env_file:
+      - /opt/alternun/identity/.env.authentik
+    restart: unless-stopped
+    shm_size: 512mb
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/alternun/identity/authentik/data:/data
+      - /opt/alternun/identity/authentik/certs:/certs
+      - /opt/alternun/identity/authentik/custom-templates:/templates
+COMPOSEEOF
+else
+  cat >/opt/alternun/identity/docker-compose.yml <<COMPOSEEOF
 services:
   traefik:
     image: docker.io/library/traefik:v3.1
@@ -313,6 +404,7 @@ services:
       - /opt/alternun/identity/authentik/certs:/certs
       - /opt/alternun/identity/authentik/custom-templates:/templates
 COMPOSEEOF
+fi
 
 if [ ! -f /opt/alternun/identity/traefik-acme.json ]; then
   install -m 600 /dev/null /opt/alternun/identity/traefik-acme.json
@@ -374,6 +466,7 @@ export function deployIdentityInfrastructure(
   const vpc = new sst.aws.Vpc(resourceBaseName) as unknown as IdentityVpcComponent;
   const publicSubnetIds = pulumi.output(vpc.publicSubnets).apply(subnets => pulumi.all(subnets));
   const privateSubnetIds = pulumi.output(vpc.privateSubnets).apply(subnets => pulumi.all(subnets));
+  const useEc2Database = args.settings.database.mode === 'ec2';
 
   const appSecurityGroup = new aws.ec2.SecurityGroup(`${resourceBaseName}-app-sg`, {
     description: `Authentik application security group for ${args.stage}`,
@@ -409,32 +502,34 @@ export function deployIdentityInfrastructure(
     vpcId: vpc.id,
   });
 
-  const databaseSecurityGroup = new aws.ec2.SecurityGroup(`${resourceBaseName}-db-sg`, {
-    description: `Authentik database security group for ${args.stage}`,
-    egress: [
-      {
-        cidrBlocks: ['0.0.0.0/0'],
-        fromPort: 0,
-        ipv6CidrBlocks: ['::/0'],
-        protocol: '-1',
-        toPort: 0,
-      },
-    ],
-    ingress: [
-      {
-        description: 'PostgreSQL from identity application host',
-        fromPort: 5432,
-        protocol: 'tcp',
-        securityGroups: [appSecurityGroup.id],
-        toPort: 5432,
-      },
-    ],
-    tags: {
-      ...resourceTags,
-      Name: `${args.appName}-${args.stage}-identity-db-sg`,
-    },
-    vpcId: vpc.id,
-  });
+  const databaseSecurityGroup = useEc2Database
+    ? undefined
+    : new aws.ec2.SecurityGroup(`${resourceBaseName}-db-sg`, {
+        description: `Authentik database security group for ${args.stage}`,
+        egress: [
+          {
+            cidrBlocks: ['0.0.0.0/0'],
+            fromPort: 0,
+            ipv6CidrBlocks: ['::/0'],
+            protocol: '-1',
+            toPort: 0,
+          },
+        ],
+        ingress: [
+          {
+            description: 'PostgreSQL from identity application host',
+            fromPort: 5432,
+            protocol: 'tcp',
+            securityGroups: [appSecurityGroup.id],
+            toPort: 5432,
+          },
+        ],
+        tags: {
+          ...resourceTags,
+          Name: `${args.appName}-${args.stage}-identity-db-sg`,
+        },
+        vpcId: vpc.id,
+      });
 
   const databasePassword = new RandomPassword(`${resourceBaseName}-db-password`, {
     length: 32,
@@ -520,29 +615,32 @@ export function deployIdentityInfrastructure(
     },
   });
 
-  const databaseSubnetIds = args.settings.rds.publicAccess ? publicSubnetIds : privateSubnetIds;
-  const databaseSubnetGroup = new aws.rds.SubnetGroup(`${resourceBaseName}-db-subnet-group`, {
-    description: `Authentik database subnet group for ${args.stage}`,
-    subnetIds: databaseSubnetIds,
-    tags: {
-      ...resourceTags,
-      Name: `${args.appName}-${args.stage}-identity-db-subnet-group`,
-    },
-  });
-
   const databaseUsername = 'authentik';
   const databaseName = 'authentik';
-  const databaseMonitoringRole = args.settings.rds.enhancedMonitoring
-    ? new aws.iam.Role(`${resourceBaseName}-db-monitoring-role`, {
-        assumeRolePolicy: aws.iam.assumeRolePolicyForPrincipal({
-          Service: 'monitoring.rds.amazonaws.com',
-        }),
+  const databaseSubnetIds =
+    !useEc2Database && args.settings.rds.publicAccess ? publicSubnetIds : privateSubnetIds;
+  const databaseSubnetGroup = useEc2Database
+    ? undefined
+    : new aws.rds.SubnetGroup(`${resourceBaseName}-db-subnet-group`, {
+        description: `Authentik database subnet group for ${args.stage}`,
+        subnetIds: databaseSubnetIds,
         tags: {
           ...resourceTags,
-          Name: `${args.appName}-${args.stage}-identity-db-monitoring-role`,
+          Name: `${args.appName}-${args.stage}-identity-db-subnet-group`,
         },
-      })
-    : undefined;
+      });
+  const databaseMonitoringRole =
+    !useEc2Database && args.settings.rds.enhancedMonitoring
+      ? new aws.iam.Role(`${resourceBaseName}-db-monitoring-role`, {
+          assumeRolePolicy: aws.iam.assumeRolePolicyForPrincipal({
+            Service: 'monitoring.rds.amazonaws.com',
+          }),
+          tags: {
+            ...resourceTags,
+            Name: `${args.appName}-${args.stage}-identity-db-monitoring-role`,
+          },
+        })
+      : undefined;
 
   if (databaseMonitoringRole) {
     new aws.iam.RolePolicyAttachment(`${resourceBaseName}-db-monitoring-policy`, {
@@ -551,58 +649,81 @@ export function deployIdentityInfrastructure(
     });
   }
 
-  const database = new aws.rds.Instance(`${resourceBaseName}-db`, {
-    allocatedStorage: args.settings.rds.storageGiB,
-    applyImmediately: args.stage !== 'production',
-    autoMinorVersionUpgrade: true,
-    backupRetentionPeriod: args.settings.rds.backupRetentionDays,
-    copyTagsToSnapshot: true,
-    dbName: databaseName,
-    dbSubnetGroupName: databaseSubnetGroup.name,
-    deletionProtection: args.stage === 'production',
-    engine: 'postgres',
-    engineVersion: args.settings.rds.engineVersion,
-    finalSnapshotIdentifier:
-      args.stage === 'production'
-        ? `${args.appName}-${args.stage}-authentik-db-final`.toLowerCase()
-        : undefined,
-    identifier: `${args.appName}-${args.stage}-authentik-db`.toLowerCase(),
-    instanceClass: args.settings.rds.instanceType,
-    monitoringInterval: args.settings.rds.enhancedMonitoring ? 60 : 0,
-    monitoringRoleArn: databaseMonitoringRole?.arn,
-    multiAz: args.settings.rds.multiAz,
-    password: databasePassword.result,
-    performanceInsightsEnabled: args.settings.rds.performanceInsights,
-    performanceInsightsRetentionPeriod: args.settings.rds.performanceInsights ? 7 : undefined,
-    port: 5432,
-    publiclyAccessible: args.settings.rds.publicAccess,
-    skipFinalSnapshot: args.stage !== 'production',
-    storageEncrypted: true,
-    storageType: 'gp3',
-    tags: {
-      ...resourceTags,
-      Name: `${args.appName}-${args.stage}-authentik-db`,
-    },
-    username: databaseUsername,
-    vpcSecurityGroupIds: [databaseSecurityGroup.id],
-  });
+  const database = useEc2Database
+    ? undefined
+    : new aws.rds.Instance(`${resourceBaseName}-db`, {
+        allocatedStorage: args.settings.rds.storageGiB,
+        applyImmediately: args.stage !== 'production',
+        autoMinorVersionUpgrade: true,
+        backupRetentionPeriod: args.settings.rds.backupRetentionDays,
+        copyTagsToSnapshot: true,
+        dbName: databaseName,
+        dbSubnetGroupName: databaseSubnetGroup?.name,
+        deletionProtection: args.stage === 'production',
+        engine: 'postgres',
+        engineVersion: args.settings.rds.engineVersion,
+        finalSnapshotIdentifier:
+          args.stage === 'production'
+            ? `${args.appName}-${args.stage}-authentik-db-final`.toLowerCase()
+            : undefined,
+        identifier: `${args.appName}-${args.stage}-authentik-db`.toLowerCase(),
+        instanceClass: args.settings.rds.instanceType,
+        monitoringInterval: args.settings.rds.enhancedMonitoring ? 60 : 0,
+        monitoringRoleArn: databaseMonitoringRole?.arn,
+        multiAz: args.settings.rds.multiAz,
+        password: databasePassword.result,
+        performanceInsightsEnabled: args.settings.rds.performanceInsights,
+        performanceInsightsRetentionPeriod: args.settings.rds.performanceInsights ? 7 : undefined,
+        port: 5432,
+        publiclyAccessible: args.settings.rds.publicAccess,
+        skipFinalSnapshot: args.stage !== 'production',
+        storageEncrypted: true,
+        storageType: 'gp3',
+        tags: {
+          ...resourceTags,
+          Name: `${args.appName}-${args.stage}-authentik-db`,
+        },
+        username: databaseUsername,
+        vpcSecurityGroupIds: databaseSecurityGroup ? [databaseSecurityGroup.id] : undefined,
+      });
+
+  const databaseAddress = useEc2Database ? pulumi.output('postgres') : database!.address;
+  const databaseEndpoint = useEc2Database ? pulumi.output('postgres:5432') : database!.endpoint;
+  const databasePort = pulumi.output(5432);
 
   new aws.secretsmanager.SecretVersion(`${resourceBaseName}-db-secret-version`, {
     secretId: databaseCredentialsSecret.id,
-    secretString: pulumi
-      .all([database.address, database.endpoint, database.port, databasePassword.result])
-      .apply(([address, endpoint, port, password]) =>
-        JSON.stringify({
-          database: databaseName,
-          endpoint,
-          engine: 'postgres',
-          host: address,
-          password,
-          port,
-          uri: `postgresql://${databaseUsername}:${password}@${address}:${port}/${databaseName}`,
-          username: databaseUsername,
-        })
-      ),
+    secretString: useEc2Database
+      ? databasePassword.result.apply(password =>
+          JSON.stringify({
+            database: databaseName,
+            endpoint: 'postgres:5432',
+            engine: 'postgres',
+            host: 'postgres',
+            mode: 'ec2',
+            password,
+            port: 5432,
+            sslmode: 'disable',
+            uri: `postgresql://${databaseUsername}:${password}@postgres:5432/${databaseName}?sslmode=disable`,
+            username: databaseUsername,
+          })
+        )
+      : pulumi
+          .all([databaseAddress, databaseEndpoint, databasePort, databasePassword.result])
+          .apply(([address, endpoint, port, password]) =>
+            JSON.stringify({
+              database: databaseName,
+              endpoint,
+              engine: 'postgres',
+              host: address,
+              mode: 'rds',
+              password,
+              port,
+              sslmode: 'require',
+              uri: `postgresql://${databaseUsername}:${password}@${address}:${port}/${databaseName}?sslmode=require`,
+              username: databaseUsername,
+            })
+          ),
   });
 
   const instanceRole = new aws.iam.Role(`${resourceBaseName}-instance-role`, {
@@ -678,6 +799,7 @@ export function deployIdentityInfrastructure(
       rootDomain: args.rootDomain,
       stage: args.stage,
       domain: identityDomain,
+      databaseMode: args.settings.database.mode,
       authentikImageTag: args.settings.authentikImageTag,
       authentikSecretArn: authentikSecret.arn,
       databaseCredentialsSecretArn: databaseCredentialsSecret.arn,
@@ -724,7 +846,7 @@ export function deployIdentityInfrastructure(
     route53RecordName: identityRecord.name,
     securityGroupIds: {
       app: appSecurityGroup.id,
-      database: databaseSecurityGroup.id,
+      database: databaseSecurityGroup?.id ?? appSecurityGroup.id,
     },
     secrets: {
       authentik: {
@@ -750,13 +872,14 @@ export function deployIdentityInfrastructure(
       publicSubnets: publicSubnetIds,
     },
     database: {
-      address: database.address,
-      arn: database.arn,
+      mode: pulumi.output(args.settings.database.mode),
+      address: databaseAddress,
+      arn: database?.arn,
       dbName: pulumi.output(databaseName),
-      endpoint: database.endpoint,
-      identifier: database.identifier,
-      port: pulumi.output(5432),
-      subnetGroupName: databaseSubnetGroup.name,
+      endpoint: databaseEndpoint,
+      identifier: database?.identifier,
+      port: databasePort,
+      subnetGroupName: databaseSubnetGroup?.name,
       username: pulumi.output(databaseUsername),
     },
   };

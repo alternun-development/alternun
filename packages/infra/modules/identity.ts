@@ -1,6 +1,7 @@
 /* eslint-disable comma-dangle */
 
 export type IdentityEmailProvider = 'ses' | 'postmark';
+export type IdentityDatabaseMode = 'rds' | 'ec2';
 
 export interface IdentityLocalConfig {
   enabled?: boolean;
@@ -22,6 +23,9 @@ export interface IdentityLocalConfig {
     backupRetentionDays?: number;
     performanceInsights?: boolean;
     enhancedMonitoring?: boolean;
+  };
+  database?: {
+    mode?: IdentityDatabaseMode;
   };
   emailProvider?: IdentityEmailProvider;
   authentikImageTag?: string;
@@ -59,6 +63,9 @@ export interface IdentitySettings {
     backupRetentionDays: number;
     performanceInsights: boolean;
     enhancedMonitoring: boolean;
+  };
+  database: {
+    mode: IdentityDatabaseMode;
   };
   emailProvider: IdentityEmailProvider;
   authentikImageTag: string;
@@ -104,6 +111,14 @@ function buildDefaultStageDomains(rootDomain: string): IdentitySettings['stageDo
 
 function normalizeEmailProvider(value: string | undefined): IdentityEmailProvider {
   return value?.toLowerCase() === 'postmark' ? 'postmark' : 'ses';
+}
+
+function normalizeDatabaseMode(value: string | undefined): IdentityDatabaseMode {
+  const normalized = value?.trim().toLowerCase();
+  if (normalized === 'ec2' || normalized === 'local' || normalized === 'local-ec2') {
+    return 'ec2';
+  }
+  return 'rds';
 }
 
 function extractAuthentikTag(value: string): string {
@@ -227,6 +242,11 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
             ? String(localConfig.rds.enhancedMonitoring)
             : undefined),
         false
+      ),
+    },
+    database: {
+      mode: normalizeDatabaseMode(
+        args.env.INFRA_IDENTITY_DATABASE_MODE ?? localConfig?.database?.mode
       ),
     },
     emailProvider: normalizeEmailProvider(
