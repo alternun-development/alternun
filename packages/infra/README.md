@@ -178,7 +178,11 @@ APPROVE=true pnpm --filter @alternun/infra run ensure:pipelines
 - `production`
 - `dev`
 - `mobile`
-- `identity` (dedicated Authentik-focused deploy pipeline; defaults to `develop` branch and deploys `SST_STAGE=dev`)
+- `identity-dev` (Authentik-focused pipeline for `SST_STAGE=dev`, defaults to `develop` branch)
+- `identity-prod` (Authentik-focused pipeline for `SST_STAGE=production`, defaults to `master` branch)
+
+Legacy alias: `identity` maps to `identity-dev`.
+Created pipeline names are `alternun-auth-dev-pipeline` and `alternun-auth-prod-pipeline`.
 
 ## Required CI/Runtime Env Contract
 
@@ -194,7 +198,8 @@ Minimum values to set in CI:
 - `INFRA_PIPELINES`
 - `INFRA_PIPELINE_BRANCH_PROD`
 - `INFRA_PIPELINE_BRANCH_DEV`
-- `INFRA_PIPELINE_BRANCH_IDENTITY` (when `identity` is included in `INFRA_PIPELINES`)
+- `INFRA_PIPELINE_BRANCH_IDENTITY_DEV` (when `identity-dev` is included in `INFRA_PIPELINES`)
+- `INFRA_PIPELINE_BRANCH_IDENTITY_PROD` (when `identity-prod` is included in `INFRA_PIPELINES`)
 
 Optional but recommended:
 
