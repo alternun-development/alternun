@@ -33,6 +33,7 @@ Current default identity domains:
 Enable/configure through env or local config:
 
 - `INFRA_IDENTITY_ENABLED`
+- `INFRA_IDENTITY_DEDICATED_STACKS_ONLY` (default `true`)
 - `INFRA_IDENTITY_DOMAIN_PRODUCTION`
 - `INFRA_IDENTITY_DOMAIN_DEV`
 - `INFRA_IDENTITY_DOMAIN_MOBILE`
@@ -49,6 +50,7 @@ Enable/configure through env or local config:
 Important behavior:
 
 - secret names are automatically stage-scoped on creation to avoid dev/production collisions
+- identity provisioning is isolated to dedicated stacks by default (`identity-dev`, `identity-prod`) to prevent duplicate instances per environment
 - Authentik image tag is validated to calendar-version format and must be `>= 2025.10` (Redisless baseline)
 - identity deployment can be stage-scoped with `INFRA_IDENTITY_ENABLED_STAGES` (for example `dev` to keep production untouched)
 - default pipeline profile behavior is `identity-dev => INFRA_IDENTITY_DATABASE_MODE=ec2` and `identity-prod => INFRA_IDENTITY_DATABASE_MODE=rds`
@@ -247,6 +249,7 @@ Optional but recommended:
 Optional identity scaffold env:
 
 - `INFRA_IDENTITY_ENABLED`
+- `INFRA_IDENTITY_DEDICATED_STACKS_ONLY`
 - `INFRA_IDENTITY_ENABLED_STAGES`
 - `INFRA_IDENTITY_DOMAIN_PRODUCTION`
 - `INFRA_IDENTITY_DOMAIN_DEV`
