@@ -4,27 +4,34 @@
 /* deno-fmt-ignore-file */
 /* biome-ignore-all lint: auto-generated */
 
-declare module "sst" {
+declare module 'sst' {
   export interface Resource {
-    "airs-domain-redirect-dev": {
-      "type": "sst.aws.Router"
-      "url": string
-    }
-    "dev-domain-redirect-dev": {
-      "type": "sst.aws.Router"
-      "url": string
-    }
-    "expo-web-dev": {
-      "type": "sst.aws.StaticSite"
-      "url": string
-    }
-    "root-domain-redirect-dev": {
-      "type": "sst.aws.Router"
-      "url": string
-    }
+    'airs-domain-redirect-dev': {
+      type: 'sst.aws.Router';
+      url: string;
+    };
+    'dev-domain-redirect-dev': {
+      type: 'sst.aws.Router';
+      url: string;
+    };
+    'expo-assets-dev': {
+      name: string;
+      type: 'sst.aws.Bucket';
+    };
+    'expo-web-dev': {
+      type: 'sst.aws.StaticSite';
+      url: string;
+    };
+    'identity-dev': {
+      type: 'sst.aws.Vpc';
+    };
+    'root-domain-redirect-dev': {
+      type: 'sst.aws.Router';
+      url: string;
+    };
   }
 }
 /// <reference path="sst-env.d.ts" />
 
-import "sst"
-export {}
+import 'sst';
+export {};
