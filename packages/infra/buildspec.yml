@@ -38,8 +38,8 @@ env:
     INFRA_PIPELINE_BRANCH_IDENTITY_DEV: 'develop'
     INFRA_PIPELINE_BRANCH_IDENTITY_PROD: 'master'
     INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'true'
-    INFRA_IDENTITY_ENABLED: 'true'
-    INFRA_IDENTITY_ENABLED_STAGES: 'dev'
+    INFRA_IDENTITY_ENABLED: 'false'
+    INFRA_IDENTITY_ENABLED_STAGES: ''
     INFRA_FAIL_ON_SECRET_SYNC: 'false'
     INFRA_ENABLE_SECRET_SYNC: 'true'
     INFRA_ENABLE_PREDEPLOY_CHECKS: 'true'
@@ -254,7 +254,9 @@ phases:
     commands:
       - echo "SST deploy completed for stage ${SST_STAGE}"
       - |
-        if [ "${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC}" != "true" ]; then
+        if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
+          echo "Skipping post-deploy DNS sync because BUILD phase failed."
+        elif [ "${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC}" != "true" ]; then
           echo "Skipping post-deploy DNS sync (INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC})"
         elif [ -f "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" ]; then
           echo "Running post-deploy DNS sync"
@@ -272,7 +274,9 @@ phases:
           echo "No post-deploy DNS sync script found; skipping"
         fi
       - |
-        if [ "${INFRA_ENABLE_REACHABILITY_CHECK}" != "true" ]; then
+        if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
+          echo "Skipping reachability check because BUILD phase failed."
+        elif [ "${INFRA_ENABLE_REACHABILITY_CHECK}" != "true" ]; then
           echo "Skipping reachability check (INFRA_ENABLE_REACHABILITY_CHECK=${INFRA_ENABLE_REACHABILITY_CHECK})"
         elif [ -f "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ]; then
           chmod +x "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" || true
