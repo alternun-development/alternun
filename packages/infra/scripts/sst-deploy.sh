@@ -12,16 +12,30 @@ export STACK
 export SST_STAGE="${SST_STAGE:-$STACK}"
 
 stage_normalized=$(echo "$STACK" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+is_identity_stage=false
+if [ "$stage_normalized" = "identity-dev" ] || \
+  [ "$stage_normalized" = "identity-prod" ] || \
+  [ "$stage_normalized" = "identity-production" ] || \
+  [ "$stage_normalized" = "auth-dev" ] || \
+  [ "$stage_normalized" = "auth-prod" ] || \
+  [ "$stage_normalized" = "authentik-dev" ] || \
+  [ "$stage_normalized" = "authentik-prod" ]; then
+  is_identity_stage=true
+fi
+
 if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ] && \
-  [ "$stage_normalized" != "identity-dev" ] && \
-  [ "$stage_normalized" != "identity-prod" ] && \
-  [ "$stage_normalized" != "identity-production" ] && \
-  [ "$stage_normalized" != "auth-dev" ] && \
-  [ "$stage_normalized" != "auth-prod" ] && \
-  [ "$stage_normalized" != "authentik-dev" ] && \
-  [ "$stage_normalized" != "authentik-prod" ]; then
+  [ "$is_identity_stage" != "true" ]; then
   echo "ERROR: INFRA_ENABLE_EXPO_SITE=false is only allowed on identity stack stages." >&2
   echo "ERROR: Use STACK=identity-dev or STACK=identity-prod for identity-only deployments." >&2
+  exit 1
+fi
+
+if [ "$is_identity_stage" = "true" ] && \
+  [ "${INFRA_IDENTITY_ENABLED:-false}" != "true" ] && \
+  [ "${INFRA_ALLOW_IDENTITY_DISABLE:-false}" != "true" ]; then
+  echo "ERROR: Refusing to deploy identity stack ${STACK} with INFRA_IDENTITY_ENABLED=${INFRA_IDENTITY_ENABLED:-false}." >&2
+  echo "ERROR: Set INFRA_IDENTITY_ENABLED=true for identity stack deploys." >&2
+  echo "ERROR: If you intentionally need a destructive identity disable, set INFRA_ALLOW_IDENTITY_DISABLE=true." >&2
   exit 1
 fi
 
