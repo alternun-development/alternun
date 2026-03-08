@@ -36,6 +36,7 @@ env:
     INFRA_REQUIRE_ROUTE53: 'true'
     INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'true'
     INFRA_IDENTITY_ENABLED: 'true'
+    INFRA_IDENTITY_ENABLED_STAGES: 'dev'
     INFRA_FAIL_ON_SECRET_SYNC: 'false'
     INFRA_RUN_UPSTREAM_PREDEPLOY_CHECKS: 'false'
     # managed|explicit : managed prefers SST-managed certificates for empty site cert ARN vars,
