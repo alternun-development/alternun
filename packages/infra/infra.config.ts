@@ -22,7 +22,7 @@ import { deployIdentityInfrastructure } from './modules/identity-resources.js';
 import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
 
 type PipelineStage = 'production' | 'dev' | 'mobile';
-type ManagedPipeline = PipelineStage | 'identity';
+type ManagedPipeline = PipelineStage | 'identity-dev' | 'identity-prod';
 type PipelineComputeType =
   | 'BUILD_GENERAL1_SMALL'
   | 'BUILD_GENERAL1_MEDIUM'
@@ -49,6 +49,9 @@ interface LocalDeploymentConfig {
     branchProd?: string;
     branchDev?: string;
     branchMobile?: string;
+    branchIdentity?: string;
+    branchIdentityDev?: string;
+    branchIdentityProd?: string;
     computeType?: PipelineComputeType;
     timeoutMinutes?: number;
   };
@@ -189,7 +192,9 @@ const pipelineProjectTag =
 const codestarConnectionArn =
   process.env.INFRA_CODESTAR_CONNECTION_ARN ?? localConfig.pipeline?.codestarConnectionArn;
 const selectedPipelinesRaw =
-  process.env.INFRA_PIPELINES ?? localConfig.pipeline?.pipelines ?? 'production,dev,identity';
+  process.env.INFRA_PIPELINES ??
+  localConfig.pipeline?.pipelines ??
+  'production,dev,identity-dev,identity-prod';
 const pipelineComputeTypeDefault = (pipeline: ManagedPipeline): PipelineComputeType =>
   pipeline === 'dev' ? 'BUILD_GENERAL1_LARGE' : 'BUILD_GENERAL1_MEDIUM';
 const identityEnabledStagesRaw = process.env.INFRA_IDENTITY_ENABLED_STAGES ?? '';
@@ -363,6 +368,24 @@ const commonBuildEnv = {
     process.env.INFRA_PIPELINE_BRANCH_DEV ?? localConfig.pipeline?.branchDev ?? 'develop',
   INFRA_PIPELINE_BRANCH_MOBILE:
     process.env.INFRA_PIPELINE_BRANCH_MOBILE ?? localConfig.pipeline?.branchMobile ?? 'mobile',
+  INFRA_PIPELINE_BRANCH_IDENTITY:
+    process.env.INFRA_PIPELINE_BRANCH_IDENTITY ??
+    localConfig.pipeline?.branchIdentity ??
+    localConfig.pipeline?.branchIdentityDev ??
+    localConfig.pipeline?.branchDev ??
+    'develop',
+  INFRA_PIPELINE_BRANCH_IDENTITY_DEV:
+    process.env.INFRA_PIPELINE_BRANCH_IDENTITY_DEV ??
+    process.env.INFRA_PIPELINE_BRANCH_IDENTITY ??
+    localConfig.pipeline?.branchIdentityDev ??
+    localConfig.pipeline?.branchIdentity ??
+    localConfig.pipeline?.branchDev ??
+    'develop',
+  INFRA_PIPELINE_BRANCH_IDENTITY_PROD:
+    process.env.INFRA_PIPELINE_BRANCH_IDENTITY_PROD ??
+    localConfig.pipeline?.branchIdentityProd ??
+    localConfig.pipeline?.branchProd ??
+    'master',
   INFRA_EXPO_APP_PATH: expoAppPath,
   INFRA_EXPO_SUBDOMAIN: expoSubdomain,
   INFRA_EXPO_DOMAIN_PRODUCTION: expoStageMap.production,
@@ -421,11 +444,28 @@ function assertExpoPublicAuthEnvironment(stage: string): void {
 }
 
 function parsePipelineStage(value: string): ManagedPipeline | undefined {
-  const normalized = value.trim().toLowerCase();
+  const normalized = value.trim().toLowerCase().replace(/_/g, '-');
   const deploymentStage = parseDeploymentStage(normalized);
   if (deploymentStage) return deploymentStage;
-  if (normalized === 'identity' || normalized === 'authentik' || normalized === 'auth') {
-    return 'identity';
+  if (
+    normalized === 'identity' ||
+    normalized === 'identity-dev' ||
+    normalized === 'identitydev' ||
+    normalized === 'authentik' ||
+    normalized === 'authentik-dev' ||
+    normalized === 'auth' ||
+    normalized === 'auth-dev'
+  ) {
+    return 'identity-dev';
+  }
+  if (
+    normalized === 'identity-prod' ||
+    normalized === 'identityprod' ||
+    normalized === 'identity-production' ||
+    normalized === 'authentik-prod' ||
+    normalized === 'auth-prod'
+  ) {
+    return 'identity-prod';
   }
   return undefined;
 }
@@ -446,33 +486,72 @@ const selectedPipelines = new Set<ManagedPipeline>(
 
 const pipelineSpecs: Record<
   ManagedPipeline,
-  { suffix: string; branch: string; stage: PipelineStage; buildEnv?: Record<string, string> }
+  {
+    suffix: string;
+    branch: string;
+    outputKey: string;
+    stage: PipelineStage;
+    buildEnv?: Record<string, string>;
+  }
 > = {
   production: {
     suffix: 'prod',
     branch: process.env.INFRA_PIPELINE_BRANCH_PROD ?? localConfig.pipeline?.branchProd ?? 'master',
+    outputKey: 'productionPipelineName',
     stage: 'production',
   },
   dev: {
     suffix: 'dev',
     branch: process.env.INFRA_PIPELINE_BRANCH_DEV ?? localConfig.pipeline?.branchDev ?? 'develop',
+    outputKey: 'devPipelineName',
     stage: 'dev',
   },
   mobile: {
     suffix: 'mobile',
     branch:
       process.env.INFRA_PIPELINE_BRANCH_MOBILE ?? localConfig.pipeline?.branchMobile ?? 'mobile',
+    outputKey: 'mobilePipelineName',
     stage: 'mobile',
   },
-  identity: {
-    suffix: 'identity',
+  'identity-dev': {
+    suffix: 'auth-dev',
     branch:
-      process.env.INFRA_PIPELINE_BRANCH_IDENTITY ?? localConfig.pipeline?.branchDev ?? 'develop',
+      process.env.INFRA_PIPELINE_BRANCH_IDENTITY_DEV ??
+      process.env.INFRA_PIPELINE_BRANCH_IDENTITY ??
+      localConfig.pipeline?.branchIdentityDev ??
+      localConfig.pipeline?.branchIdentity ??
+      localConfig.pipeline?.branchDev ??
+      'develop',
+    outputKey: 'identityDevPipelineName',
     stage: 'dev',
     buildEnv: {
       INFRA_IDENTITY_ENABLED: 'true',
       INFRA_IDENTITY_ENABLED_STAGES: 'dev',
-      INFRA_PIPELINE_PROFILE: 'identity',
+      INFRA_PIPELINE_PROFILE: 'identity-dev',
+      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod',
+      INFRA_PRESERVE_EXISTING_ENV: 'true',
+      INFRA_LOAD_ROOT_ENV: 'false',
+      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
+      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
+      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
+    },
+  },
+  'identity-prod': {
+    suffix: 'auth-prod',
+    branch:
+      process.env.INFRA_PIPELINE_BRANCH_IDENTITY_PROD ??
+      localConfig.pipeline?.branchIdentityProd ??
+      localConfig.pipeline?.branchProd ??
+      'master',
+    outputKey: 'identityProdPipelineName',
+    stage: 'production',
+    buildEnv: {
+      INFRA_IDENTITY_ENABLED: 'true',
+      INFRA_IDENTITY_ENABLED_STAGES: 'production',
+      INFRA_PIPELINE_PROFILE: 'identity-prod',
+      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod',
+      INFRA_PRESERVE_EXISTING_ENV: 'true',
+      INFRA_LOAD_ROOT_ENV: 'false',
       INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
       INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
       INFRA_ENABLE_REACHABILITY_CHECK: 'false',
@@ -695,7 +774,7 @@ export function createInfrastructure() {
 
     for (const pipelineStage of [...selectedPipelines] as ManagedPipeline[]) {
       const spec = pipelineSpecs[pipelineStage];
-      const pipelineStageKey = pipelineStage.toUpperCase();
+      const pipelineStageKey = pipelineStage.toUpperCase().replace(/[^A-Z0-9]/g, '_');
       const pipelineComputeType = (process.env[`INFRA_PIPELINE_COMPUTE_TYPE_${pipelineStageKey}`] ??
         process.env.INFRA_PIPELINE_COMPUTE_TYPE ??
         localConfig.pipeline?.computeType ??
@@ -721,7 +800,7 @@ export function createInfrastructure() {
         timeoutMinutes: pipelineTimeoutMinutes,
       });
 
-      pipelineOutputs[`${pipelineStage}PipelineName`] = pipeline.pipelineName;
+      pipelineOutputs[spec.outputKey] = pipeline.pipelineName;
     }
 
     outputs.pipelines = pipelineOutputs;
