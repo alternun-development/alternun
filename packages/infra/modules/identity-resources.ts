@@ -124,6 +124,7 @@ function createResourceTags(args: IdentityInfrastructureArgs): Record<string, st
 
 function buildAuthBootstrapUserData(args: {
   appName: string;
+  rootDomain: string;
   stage: string;
   domain: string;
   authentikImageTag: string;
@@ -148,17 +149,19 @@ function buildAuthBootstrapUserData(args: {
       ]) => `#!/bin/bash
 set -euxo pipefail
 
-dnf install -y docker docker-compose-plugin jq
+dnf install -y docker docker-compose-plugin jq awscli
 systemctl enable --now docker
 usermod -aG docker ec2-user
 
 install -d -o ec2-user -g ec2-user /opt/alternun/identity
 install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik
-install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/media
+install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/data
+install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/certs
 install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/custom-templates
 
 cat >/etc/alternun-identity.env <<'ENVEOF'
 ALTERNUN_APP_NAME=${args.appName}
+ALTERNUN_ROOT_DOMAIN=${args.rootDomain}
 ALTERNUN_STAGE=${args.stage}
 ALTERNUN_IDENTITY_DOMAIN=${args.domain}
 AUTHENTIK_IMAGE_TAG=${args.authentikImageTag}
@@ -170,6 +173,180 @@ ENVEOF
 
 chmod 0600 /etc/alternun-identity.env
 chown root:root /etc/alternun-identity.env
+
+cat >/opt/alternun/identity/deploy-authentik.sh <<'SCRIPTEOF'
+#!/bin/bash
+set -euo pipefail
+
+source /etc/alternun-identity.env
+
+TOKEN="$(curl -fsS -X PUT 'http://169.254.169.254/latest/api/token' -H 'X-aws-ec2-metadata-token-ttl-seconds: 21600')"
+INSTANCE_IDENTITY="$(curl -fsS -H "X-aws-ec2-metadata-token: \${TOKEN}" 'http://169.254.169.254/latest/dynamic/instance-identity/document')"
+AWS_REGION="$(printf '%s' "\${INSTANCE_IDENTITY}" | jq -r '.region')"
+
+if [ -z "\${AWS_REGION}" ] || [ "\${AWS_REGION}" = "null" ]; then
+  echo "Unable to resolve AWS region from EC2 metadata."
+  exit 1
+fi
+
+get_secret_json() {
+  aws --region "\${AWS_REGION}" secretsmanager get-secret-value --secret-id "$1" --query SecretString --output text
+}
+
+AUTHENTIK_SECRET_JSON="$(get_secret_json "\${AUTHENTIK_SECRET_ARN}")"
+DATABASE_SECRET_JSON="$(get_secret_json "\${AUTHENTIK_DATABASE_SECRET_ARN}")"
+SMTP_SECRET_JSON="$(get_secret_json "\${AUTHENTIK_SMTP_SECRET_ARN}")"
+
+AUTHENTIK_SECRET_KEY_VALUE="$(printf '%s' "\${AUTHENTIK_SECRET_JSON}" | jq -r '.secretKey // empty')"
+DATABASE_HOST="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.host // empty')"
+DATABASE_NAME="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.database // empty')"
+DATABASE_USER="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.username // empty')"
+DATABASE_PASSWORD="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.password // empty')"
+DATABASE_PORT="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '(.port // 5432) | tostring')"
+
+if [ -z "\${AUTHENTIK_SECRET_KEY_VALUE}" ]; then
+  echo "Authentik secret key is missing from \${AUTHENTIK_SECRET_ARN}."
+  exit 1
+fi
+
+if [ -z "\${DATABASE_HOST}" ] || [ -z "\${DATABASE_NAME}" ] || [ -z "\${DATABASE_USER}" ] || [ -z "\${DATABASE_PASSWORD}" ]; then
+  echo "Database credentials secret \${AUTHENTIK_DATABASE_SECRET_ARN} is incomplete."
+  exit 1
+fi
+
+SMTP_HOST="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r '.host // empty')"
+SMTP_PORT="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r '(.port // 587) | tostring')"
+SMTP_USERNAME="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r '.username // empty')"
+SMTP_PASSWORD="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r '.password // empty')"
+SMTP_USE_TLS="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r 'if has("useTls") then (.useTls | tostring) else "true" end')"
+SMTP_USE_SSL="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r 'if has("useSsl") then (.useSsl | tostring) else "false" end')"
+SMTP_FROM="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r '.from // empty')"
+
+if [ -z "\${SMTP_FROM}" ]; then
+  SMTP_FROM="authentik@\${ALTERNUN_ROOT_DOMAIN}"
+fi
+
+install -d -o ec2-user -g ec2-user /opt/alternun/identity
+install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/data
+install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/certs
+install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/custom-templates
+
+ENV_FILE='/opt/alternun/identity/.env.authentik'
+: > "\${ENV_FILE}"
+
+append_env() {
+  printf '%s=%s\n' "$1" "$2" >> "\${ENV_FILE}"
+}
+
+append_env AUTHENTIK_SECRET_KEY "\${AUTHENTIK_SECRET_KEY_VALUE}"
+append_env AUTHENTIK_POSTGRESQL__HOST "\${DATABASE_HOST}"
+append_env AUTHENTIK_POSTGRESQL__PORT "\${DATABASE_PORT}"
+append_env AUTHENTIK_POSTGRESQL__NAME "\${DATABASE_NAME}"
+append_env AUTHENTIK_POSTGRESQL__USER "\${DATABASE_USER}"
+append_env AUTHENTIK_POSTGRESQL__PASSWORD "\${DATABASE_PASSWORD}"
+append_env AUTHENTIK_POSTGRESQL__SSLMODE 'require'
+append_env AUTHENTIK_ERROR_REPORTING__ENABLED 'false'
+append_env AUTHENTIK_ERROR_REPORTING__ENVIRONMENT "\${ALTERNUN_STAGE}"
+append_env AUTHENTIK_DISABLE_UPDATE_CHECK 'true'
+
+if [ -n "\${SMTP_HOST}" ]; then
+  append_env AUTHENTIK_EMAIL__HOST "\${SMTP_HOST}"
+  append_env AUTHENTIK_EMAIL__PORT "\${SMTP_PORT}"
+  append_env AUTHENTIK_EMAIL__USERNAME "\${SMTP_USERNAME}"
+  append_env AUTHENTIK_EMAIL__PASSWORD "\${SMTP_PASSWORD}"
+  append_env AUTHENTIK_EMAIL__USE_TLS "\${SMTP_USE_TLS}"
+  append_env AUTHENTIK_EMAIL__USE_SSL "\${SMTP_USE_SSL}"
+  append_env AUTHENTIK_EMAIL__FROM "\${SMTP_FROM}"
+fi
+
+cat >/opt/alternun/identity/docker-compose.yml <<COMPOSEEOF
+services:
+  traefik:
+    image: docker.io/library/traefik:v3.1
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.email=identity-admin@${args.rootDomain}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+    ports:
+      - 80:80
+      - 443:443
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /opt/alternun/identity/traefik-acme.json:/letsencrypt/acme.json
+  server:
+    image: ghcr.io/goauthentik/server:${args.authentikImageTag}
+    command: server
+    depends_on:
+      - worker
+    env_file:
+      - /opt/alternun/identity/.env.authentik
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.authentik.rule=Host(\`${args.domain}\`)
+      - traefik.http.routers.authentik.entrypoints=websecure
+      - traefik.http.routers.authentik.tls.certresolver=letsencrypt
+      - traefik.http.services.authentik.loadbalancer.server.port=9000
+    restart: unless-stopped
+    shm_size: 512mb
+    volumes:
+      - /opt/alternun/identity/authentik/data:/data
+      - /opt/alternun/identity/authentik/custom-templates:/templates
+  worker:
+    image: ghcr.io/goauthentik/server:${args.authentikImageTag}
+    command: worker
+    env_file:
+      - /opt/alternun/identity/.env.authentik
+    restart: unless-stopped
+    shm_size: 512mb
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/alternun/identity/authentik/data:/data
+      - /opt/alternun/identity/authentik/certs:/certs
+      - /opt/alternun/identity/authentik/custom-templates:/templates
+COMPOSEEOF
+
+if [ ! -f /opt/alternun/identity/traefik-acme.json ]; then
+  install -m 600 /dev/null /opt/alternun/identity/traefik-acme.json
+fi
+
+chmod 0600 "\${ENV_FILE}"
+chown root:root "\${ENV_FILE}"
+
+docker compose -f /opt/alternun/identity/docker-compose.yml pull
+docker compose -f /opt/alternun/identity/docker-compose.yml up -d --remove-orphans
+SCRIPTEOF
+
+chmod 0755 /opt/alternun/identity/deploy-authentik.sh
+
+cat >/etc/systemd/system/alternun-authentik.service <<'SERVICEEOF'
+[Unit]
+Description=Alternun Authentik Runtime
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/alternun/identity
+ExecStart=/opt/alternun/identity/deploy-authentik.sh
+RemainAfterExit=true
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target
+SERVICEEOF
+
+systemctl daemon-reload
+systemctl enable --now alternun-authentik.service
 `
     );
 }
@@ -498,6 +675,7 @@ export function deployIdentityInfrastructure(
     },
     userData: buildAuthBootstrapUserData({
       appName: args.appName,
+      rootDomain: args.rootDomain,
       stage: args.stage,
       domain: identityDomain,
       authentikImageTag: args.settings.authentikImageTag,
