@@ -123,6 +123,45 @@ function createResourceTags(args: IdentityInfrastructureArgs): Record<string, st
   };
 }
 
+function normalizeIdentityEnvironmentLabel(stage: string): string {
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+
+  if (
+    normalized === 'dev' ||
+    normalized === 'testnet' ||
+    normalized === 'identity-dev' ||
+    normalized === 'identitydev' ||
+    normalized === 'auth-dev' ||
+    normalized === 'authentik-dev'
+  ) {
+    return 'testnet';
+  }
+
+  if (
+    normalized === 'prod' ||
+    normalized === 'production' ||
+    normalized === 'identity-prod' ||
+    normalized === 'identityprod' ||
+    normalized === 'identity-production' ||
+    normalized === 'auth-prod' ||
+    normalized === 'authentik-prod'
+  ) {
+    return 'production';
+  }
+
+  if (
+    normalized === 'mobile' ||
+    normalized === 'preview' ||
+    normalized === 'identity-mobile' ||
+    normalized === 'auth-mobile' ||
+    normalized === 'authentik-mobile'
+  ) {
+    return 'preview';
+  }
+
+  return normalized;
+}
+
 function buildAuthBootstrapUserData(args: {
   appName: string;
   rootDomain: string;
@@ -448,6 +487,8 @@ export function deployIdentityInfrastructure(
 ): IdentityInfrastructureResources {
   const identityDomain = resolveIdentityStageDomain(args.settings, args.stage);
   const resourceBaseName = sanitizeResourceName(`identity-${args.stage}`);
+  const environmentLabel = normalizeIdentityEnvironmentLabel(args.stage);
+  const resourceDisplayPrefix = `${args.appName}-${environmentLabel}-auth`;
   const resourceTags = createResourceTags(args);
   const stageScopedSecrets = {
     authentik: scopeSecretName(args.settings.secrets.authentikSecretKeyName, args.stage),
@@ -497,7 +538,7 @@ export function deployIdentityInfrastructure(
     ],
     tags: {
       ...resourceTags,
-      Name: `${args.appName}-${args.stage}-identity-app-sg`,
+      Name: `${resourceDisplayPrefix}-app-sg`,
     },
     vpcId: vpc.id,
   });
@@ -526,7 +567,7 @@ export function deployIdentityInfrastructure(
         ],
         tags: {
           ...resourceTags,
-          Name: `${args.appName}-${args.stage}-identity-db-sg`,
+          Name: `${resourceDisplayPrefix}-db-sg`,
         },
         vpcId: vpc.id,
       });
@@ -563,7 +604,7 @@ export function deployIdentityInfrastructure(
     name: stageScopedSecrets.authentik,
     tags: {
       ...resourceTags,
-      Name: `${args.appName}-${args.stage}-authentik-secret`,
+      Name: `${resourceDisplayPrefix}-authentik-secret`,
     },
   });
 
@@ -577,7 +618,7 @@ export function deployIdentityInfrastructure(
     name: stageScopedSecrets.smtpCredentials,
     tags: {
       ...resourceTags,
-      Name: `${args.appName}-${args.stage}-smtp-secret`,
+      Name: `${resourceDisplayPrefix}-smtp-secret`,
     },
   });
 
@@ -597,7 +638,7 @@ export function deployIdentityInfrastructure(
     name: stageScopedSecrets.jwtSigningKey,
     tags: {
       ...resourceTags,
-      Name: `${args.appName}-${args.stage}-jwt-signing-secret`,
+      Name: `${resourceDisplayPrefix}-jwt-signing-secret`,
     },
   });
 
@@ -611,7 +652,7 @@ export function deployIdentityInfrastructure(
     name: stageScopedSecrets.databaseCredentials,
     tags: {
       ...resourceTags,
-      Name: `${args.appName}-${args.stage}-database-credentials`,
+      Name: `${resourceDisplayPrefix}-database-credentials`,
     },
   });
 
@@ -626,7 +667,7 @@ export function deployIdentityInfrastructure(
         subnetIds: databaseSubnetIds,
         tags: {
           ...resourceTags,
-          Name: `${args.appName}-${args.stage}-identity-db-subnet-group`,
+          Name: `${resourceDisplayPrefix}-db-subnet-group`,
         },
       });
   const databaseMonitoringRole =
@@ -637,7 +678,7 @@ export function deployIdentityInfrastructure(
           }),
           tags: {
             ...resourceTags,
-            Name: `${args.appName}-${args.stage}-identity-db-monitoring-role`,
+            Name: `${resourceDisplayPrefix}-db-monitoring-role`,
           },
         })
       : undefined;
@@ -681,7 +722,7 @@ export function deployIdentityInfrastructure(
         storageType: 'gp3',
         tags: {
           ...resourceTags,
-          Name: `${args.appName}-${args.stage}-authentik-db`,
+          Name: `${resourceDisplayPrefix}-db`,
         },
         username: databaseUsername,
         vpcSecurityGroupIds: databaseSecurityGroup ? [databaseSecurityGroup.id] : undefined,
@@ -732,7 +773,7 @@ export function deployIdentityInfrastructure(
     }),
     tags: {
       ...resourceTags,
-      Name: `${args.appName}-${args.stage}-identity-instance-role`,
+      Name: `${resourceDisplayPrefix}-instance-role`,
     },
   });
 
@@ -768,7 +809,7 @@ export function deployIdentityInfrastructure(
     role: instanceRole.name,
     tags: {
       ...resourceTags,
-      Name: `${args.appName}-${args.stage}-identity-instance-profile`,
+      Name: `${resourceDisplayPrefix}-instance-profile`,
     },
   });
 
@@ -792,7 +833,7 @@ export function deployIdentityInfrastructure(
     subnetId: publicSubnetIds.apply(subnets => subnets[0]),
     tags: {
       ...resourceTags,
-      Name: `${args.appName}-${args.stage}-identity-instance`,
+      Name: `${resourceDisplayPrefix}-instance`,
     },
     userData: buildAuthBootstrapUserData({
       appName: args.appName,
@@ -814,7 +855,7 @@ export function deployIdentityInfrastructure(
     domain: 'vpc',
     tags: {
       ...resourceTags,
-      Name: `${args.appName}-${args.stage}-identity-eip`,
+      Name: `${resourceDisplayPrefix}-eip`,
     },
   });
 

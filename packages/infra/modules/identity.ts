@@ -104,8 +104,8 @@ function parsePositiveInteger(value: string | number | undefined, fallback: numb
 function buildDefaultStageDomains(rootDomain: string): IdentitySettings['stageDomains'] {
   return {
     production: `auth.${rootDomain}`,
-    dev: `auth.testnet.${rootDomain}`,
-    mobile: `auth.preview.${rootDomain}`,
+    dev: `testnet.auth.${rootDomain}`,
+    mobile: `preview.auth.${rootDomain}`,
   };
 }
 
