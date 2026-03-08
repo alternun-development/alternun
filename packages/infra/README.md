@@ -49,7 +49,7 @@ Important behavior:
 - secret names are automatically stage-scoped on creation to avoid dev/production collisions
 - Authentik image tag is validated to calendar-version format and must be `>= 2025.10` (Redisless baseline)
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
-- the EC2 host is prepared for Docker-based Authentik deployment, but the runtime compose/bootstrap step is still a separate implementation phase
+- the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
 
 ## Redirects (Dev Stage)
