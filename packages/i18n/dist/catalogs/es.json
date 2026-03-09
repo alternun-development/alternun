@@ -51,10 +51,14 @@
         "continueWithEmail": "Continuar con correo",
         "continueWithGoogle": "Continuar con Google",
         "createAccount": "Crear cuenta",
+        "verifyConfirmationCode": "Verificar codigo de confirmacion",
         "useAnotherEmail": "Usar otro correo"
       },
       "confirmation": {
         "checkEmail": "Revisa tu correo",
+        "codeBody": "Ingresa el codigo de verificacion de tu correo para activar tu cuenta aqui.",
+        "codeOrLinkHint": "Usa el codigo del correo o haz clic en el enlace del boton para confirmar.",
+        "codeTitle": "Tienes un codigo de verificacion?",
         "emailFallback": "tu correo",
         "linkSentTo": "Enviamos un enlace de confirmacion a:"
       },
@@ -64,9 +68,11 @@
       "errors": {
         "accountExistsSignInOrResend": "Ya existe una cuenta con este correo. Inicia sesion o reenvia la confirmacion abajo.",
         "authenticationFailed": "La autenticacion fallo. Intentalo de nuevo.",
+        "confirmationCodeInvalid": "El codigo de confirmacion es invalido o vencio. Solicita un nuevo correo e intentalo otra vez.",
         "enterEmailFirst": "Ingresa tu correo primero.",
         "resendUnavailable": "Reenviar la confirmacion no esta disponible en este cliente de autenticacion.",
-        "signupUnavailable": "El registro no esta disponible en este cliente de autenticacion."
+        "signupUnavailable": "El registro no esta disponible en este cliente de autenticacion.",
+        "verificationCodeUnavailable": "La verificacion por codigo no esta disponible en este cliente de autenticacion."
       },
       "footer": {
         "alreadyHaveAccount": "Ya tienes una cuenta? Inicia sesion",
@@ -79,11 +85,13 @@
       "notices": {
         "accountCreatedSigningIn": "Cuenta creada correctamente. Iniciando sesion...",
         "confirmationSent": "Correo de confirmacion enviado a {{email}}.",
+        "emailConfirmedSignIn": "Correo confirmado. Continua iniciando sesion.",
         "requestNewConfirmation": "Si esta cuenta no esta verificada, solicita un nuevo correo de confirmacion.",
         "secureSignIn": "Acceso seguro.",
         "unverifiedEmail": "Tu correo aun no esta verificado. Confirma para continuar."
       },
       "placeholders": {
+        "confirmationCode": "Codigo de verificacion",
         "confirmPassword": "Confirmar contrasena",
         "email": "Correo electronico",
         "password": "Contrasena"
@@ -95,6 +103,7 @@
         "title": "No recibes el correo?"
       },
       "validation": {
+        "confirmationCodeRequired": "El codigo de verificacion es obligatorio.",
         "confirmPasswordRequired": "La confirmacion es obligatoria.",
         "emailAndPasswordRequired": "El correo y la contrasena son obligatorios.",
         "emailPasswordConfirmationRequired": "El correo, la contrasena y la confirmacion son obligatorios.",

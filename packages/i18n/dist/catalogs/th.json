@@ -51,10 +51,14 @@
         "continueWithEmail": "ดำเนินการต่อด้วยอีเมล",
         "continueWithGoogle": "ดำเนินการต่อด้วย Google",
         "createAccount": "สร้างบัญชี",
+        "verifyConfirmationCode": "ยืนยันรหัสยืนยัน",
         "useAnotherEmail": "ใช้อีเมลอื่น"
       },
       "confirmation": {
         "checkEmail": "ตรวจสอบอีเมลของคุณ",
+        "codeBody": "กรอกรหัสยืนยันจากอีเมลเพื่อเปิดใช้งานบัญชีของคุณที่นี่",
+        "codeOrLinkHint": "ใช้รหัสในอีเมล หรือกดปุ่มลิงก์ในอีเมลเพื่อยืนยันก็ได้",
+        "codeTitle": "มีรหัสยืนยันใช่ไหม?",
         "emailFallback": "อีเมลของคุณ",
         "linkSentTo": "เราได้ส่งลิงก์ยืนยันไปที่:"
       },
@@ -64,9 +68,11 @@
       "errors": {
         "accountExistsSignInOrResend": "มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว เข้าสู่ระบบหรือส่งอีเมลยืนยันอีกครั้งด้านล่าง",
         "authenticationFailed": "การยืนยันตัวตนล้มเหลว กรุณาลองใหม่อีกครั้ง",
+        "confirmationCodeInvalid": "รหัสยืนยันไม่ถูกต้องหรือหมดอายุแล้ว ขออีเมลใหม่และลองอีกครั้ง",
         "enterEmailFirst": "กรุณากรอกอีเมลก่อน",
         "resendUnavailable": "การส่งอีเมลยืนยันอีกครั้งยังไม่พร้อมใช้งานในไคลเอนต์นี้",
-        "signupUnavailable": "การสมัครใช้งานยังไม่พร้อมในไคลเอนต์นี้"
+        "signupUnavailable": "การสมัครใช้งานยังไม่พร้อมในไคลเอนต์นี้",
+        "verificationCodeUnavailable": "การยืนยันด้วยรหัสยังไม่พร้อมใช้งานในไคลเอนต์นี้"
       },
       "footer": {
         "alreadyHaveAccount": "มีบัญชีอยู่แล้ว? เข้าสู่ระบบ",
@@ -79,11 +85,13 @@
       "notices": {
         "accountCreatedSigningIn": "สร้างบัญชีสำเร็จ กำลังลงชื่อเข้าใช้...",
         "confirmationSent": "ส่งอีเมลยืนยันไปที่ {{email}} แล้ว",
+        "emailConfirmedSignIn": "ยืนยันอีเมลแล้ว ดำเนินการลงชื่อเข้าใช้ต่อได้เลย",
         "requestNewConfirmation": "หากบัญชีนี้ยังไม่ยืนยัน โปรดขออีเมลยืนยันใหม่",
         "secureSignIn": "เข้าสู่ระบบอย่างปลอดภัย",
         "unverifiedEmail": "อีเมลของคุณยังไม่ได้ยืนยัน โปรดยืนยันก่อนดำเนินการต่อ"
       },
       "placeholders": {
+        "confirmationCode": "รหัสยืนยัน",
         "confirmPassword": "ยืนยันรหัสผ่าน",
         "email": "อีเมล",
         "password": "รหัสผ่าน"
@@ -95,6 +103,7 @@
         "title": "ไม่ได้รับอีเมลใช่ไหม?"
       },
       "validation": {
+        "confirmationCodeRequired": "จำเป็นต้องกรอกรหัสยืนยัน",
         "confirmPasswordRequired": "จำเป็นต้องยืนยันรหัสผ่าน",
         "emailAndPasswordRequired": "จำเป็นต้องกรอกอีเมลและรหัสผ่าน",
         "emailPasswordConfirmationRequired": "จำเป็นต้องกรอกอีเมล รหัสผ่าน และการยืนยัน",
