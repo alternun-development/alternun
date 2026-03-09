@@ -20,6 +20,7 @@ supabase/.temp/
 packages/auth/infra/ses/config.local.json
 packages/auth/infra/ses/*.local.json
 packages/auth/infra/ses/out/
+packages/auth/infra/email/out/
 
 # Local infra business configuration (keep out of public repo)
 packages/infra/config/deployment.config.json

@@ -2,6 +2,7 @@ import { SupabaseClient as UniversalSupabaseClient } from "@edcalderon/auth/supa
 import { createClient } from "@supabase/supabase-js";
 import { getValidationErrorMessage, parseEmailAddress, parseSignInPassword, parseSignUpPassword, } from "../validation/authInputValidation";
 const WALLET_PROVIDERS = ["metamask", "walletconnect"];
+const EMAIL_TEMPLATE_LOCALES = ["en", "es", "th"];
 function getErrorMessage(error) {
     if (error instanceof Error) {
         return error.message;
@@ -26,6 +27,16 @@ function isObfuscatedExistingUserSignUpResult(data) {
 function isMissingSessionError(error) {
     const message = getErrorMessage(error).toLowerCase();
     return message.includes("auth session missing");
+}
+function normalizeEmailTemplateLocale(value) {
+    if (!value) {
+        return null;
+    }
+    const normalized = value.toLowerCase().trim().replace("_", "-");
+    const baseLocale = normalized.split("-")[0];
+    return EMAIL_TEMPLATE_LOCALES.includes(baseLocale)
+        ? baseLocale
+        : null;
 }
 function makeWalletAddress() {
     const seed = Math.random()
@@ -481,7 +492,7 @@ export class AlternunMobileAuthClient {
             redirectUri: redirectTo,
         });
     }
-    async signUpWithEmail(email, password) {
+    async signUpWithEmail(email, password, locale) {
         let normalizedEmail;
         let validatedPassword;
         try {
@@ -495,10 +506,21 @@ export class AlternunMobileAuthClient {
         this.linkedWallet = null;
         this.walletSessionToken = null;
         const supabase = this.ensureSupabase();
-        const { data, error } = await supabase.auth.signUp({
-            email: normalizedEmail,
-            password: validatedPassword,
-        });
+        const emailTemplateLocale = normalizeEmailTemplateLocale(locale);
+        const { data, error } = await supabase.auth.signUp(emailTemplateLocale
+            ? {
+                email: normalizedEmail,
+                password: validatedPassword,
+                options: {
+                    data: {
+                        locale: emailTemplateLocale,
+                    },
+                },
+            }
+            : {
+                email: normalizedEmail,
+                password: validatedPassword,
+            });
         if (error) {
             if (isEmailAlreadyRegisteredError(error.message)) {
                 return {

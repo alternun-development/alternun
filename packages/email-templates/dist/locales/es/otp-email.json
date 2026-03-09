@@ -1,0 +1,10 @@
+{
+  "subject": "Tu codigo de verificacion de Alternun",
+  "preview": "Usa este codigo de un solo uso para continuar con seguridad.",
+  "greeting": "Hola {{email}},",
+  "intro": "Usa el codigo de un solo uso para continuar tu solicitud.",
+  "codeLabel": "Codigo de verificacion",
+  "ctaLabel": "Abrir enlace seguro",
+  "ignoreNotice": "Si no solicitaste esto, puedes ignorar este correo.",
+  "footer": "Equipo de seguridad de Alternun"
+}

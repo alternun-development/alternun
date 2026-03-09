@@ -43,7 +43,11 @@ interface SignUpResult {
 }
 
 interface EmailAuthCapableClient {
-  signUpWithEmail?: (email: string, password: string) => Promise<SignUpResult>;
+  signUpWithEmail?: (
+    email: string,
+    password: string,
+    locale?: string,
+  ) => Promise<SignUpResult>;
   resendEmailConfirmation?: (email: string) => Promise<void>;
 }
 
@@ -62,6 +66,15 @@ function resolveGoogleFlow(supportedFlows: OAuthFlow[],): OAuthFlow {
   }
 
   return 'popup';
+}
+
+function resolveGoogleProvider(): string {
+  const configuredProvider = process.env.EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER?.trim().toLowerCase();
+  if (configuredProvider === 'keycloak') {
+    return 'keycloak';
+  }
+
+  return 'google';
 }
 
 function stripKnownErrorPrefix(message: string,): string {
@@ -176,7 +189,7 @@ export default function AuthSignInScreen({
   presentation = 'screen',
 }: AuthSignInScreenProps,) {
   const { signInWithEmail, signIn, loading, error, client, } = useAuth();
-  const { t, } = useAppTranslation('mobile',);
+  const { t, locale, } = useAppTranslation('mobile',);
   const [mode, setMode,] = useState<AuthMode>('signin',);
   const [email, setEmail,] = useState('',);
   const [password, setPassword,] = useState('',);
@@ -201,8 +214,9 @@ export default function AuthSignInScreen({
 
   const googleFlow = useMemo(
     () => resolveGoogleFlow(client.capabilities().supportedFlows,),
-    [client,]
+    [client,],
   );
+  const googleProvider = useMemo(() => resolveGoogleProvider(), [],);
 
   const rawEffectiveError = localError ?? error;
   const effectiveError = rawEffectiveError
@@ -378,7 +392,7 @@ export default function AuthSignInScreen({
 
     setSubmitMode('signup',);
     try {
-      const result = await client.signUpWithEmail(normalizedEmail, password,);
+      const result = await client.signUpWithEmail(normalizedEmail, password, locale,);
 
       if (result.needsEmailVerification) {
         setConfirmationEmail(normalizedEmail,);
@@ -454,7 +468,7 @@ export default function AuthSignInScreen({
     setSubmitMode('google',);
     try {
       await signIn({
-        provider: 'google',
+        provider: googleProvider,
         flow: googleFlow,
       },);
     } catch (authError) {

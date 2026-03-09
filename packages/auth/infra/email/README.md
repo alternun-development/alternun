@@ -16,6 +16,7 @@ Provider-driven SMTP automation for Supabase Auth.
 2. Generates local SMTP artifacts for audit/debug
 3. Updates Supabase Auth SMTP config via Supabase Management API
 4. Fetches current SMTP status from Supabase
+5. Optionally generates and syncs multilingual Supabase Auth templates from `packages/email-templates`
 
 ## Local Config
 
@@ -50,6 +51,13 @@ Required for Supabase API sync:
 
 - `SUPABASE_ACCESS_TOKEN` (or `SUPABASE_MANAGEMENT_TOKEN`)
 - `SUPABASE_PROJECT_REF` (or `supabaseProjectRef` in config)
+
+Optional for multilingual template generation/sync:
+
+- `SUPABASE_EMAIL_TEMPLATE_LOCALES` (default `en,es,th`)
+- `SUPABASE_EMAIL_TEMPLATE_FALLBACK_LOCALE` (default `en`)
+- `SUPABASE_EMAIL_TEMPLATE_OUTPUT` (output JSON path)
+- `SUPABASE_EMAIL_TEMPLATE_PAYLOAD` (input JSON path when syncing)
 
 Common sender fields:
 
@@ -93,6 +101,39 @@ pnpm --filter @alternun/auth email:status
 pnpm --filter @alternun/auth email:apply
 ```
 
+Generate multilingual auth template payload from locale JSON:
+
+```bash
+pnpm --filter @alternun/auth email:templates:generate
+```
+
+Generated Supabase auth events:
+
+- `confirmation` (confirm sign up)
+- `invite` (invite user)
+- `magic_link`
+- `email_change` (change email address)
+- `recovery` (reset password)
+- `reauthentication`
+
+Locale selection uses Supabase Go templates with:
+
+- `{{ .Data.locale }}`
+
+The generator writes conditional blocks per locale with fallback to `en`.
+
+Sync multilingual auth templates to Supabase:
+
+```bash
+pnpm --filter @alternun/auth email:templates:supabase
+```
+
+Generate + sync multilingual templates:
+
+```bash
+pnpm --filter @alternun/auth email:templates:apply
+```
+
 Force Postmark:
 
 ```bash
@@ -112,4 +153,6 @@ Generated in `packages/auth/infra/email/out/` (ignored):
 - `smtp.env.local`
 - `supabase-auth-config.local.json`
 - `supabase-sync-report.local.json`
+- `supabase-auth-templates.local.json`
+- `supabase-template-sync-report.local.json`
 - `status-report.json`

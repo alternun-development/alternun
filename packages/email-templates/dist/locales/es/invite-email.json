@@ -1,0 +1,9 @@
+{
+  "subject": "Tienes una invitacion para Alternun",
+  "preview": "Acepta tu invitacion para unirte a Alternun.",
+  "greeting": "Hola {{email}},",
+  "intro": "Has recibido una invitacion para unirte a Alternun. Haz clic en el boton para continuar.",
+  "ctaLabel": "Aceptar invitacion",
+  "ignoreNotice": "Si no esperabas esta invitacion, puedes ignorar este correo.",
+  "footer": "Equipo de Alternun"
+}
