@@ -6,6 +6,8 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
 import { RandomPassword } from '@pulumi/random';
+import { readFileSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
 import type { IdentityDatabaseMode, IdentitySettings } from './identity.js';
 import { resolveIdentityStageDomain } from './identity.js';
 
@@ -43,6 +45,10 @@ export interface IdentityInfrastructureResources {
       name: pulumi.Output<string>;
     };
     smtpCredentials: {
+      arn: pulumi.Output<string>;
+      name: pulumi.Output<string>;
+    };
+    integrationConfig: {
       arn: pulumi.Output<string>;
       name: pulumi.Output<string>;
     };
@@ -92,6 +98,23 @@ const ARM_INSTANCE_PREFIXES = [
   'x2gd.',
 ];
 
+const DEPLOY_AUTHENTIK_SCRIPT_TEMPLATE = readFileSync(
+  new URL('../scripts/templates/deploy-authentik.sh', import.meta.url),
+  'utf8'
+).trimEnd();
+const DOCKER_COMPOSE_EC2_TEMPLATE = readFileSync(
+  new URL('../scripts/templates/docker-compose.ec2.yml', import.meta.url),
+  'utf8'
+).trimEnd();
+const DOCKER_COMPOSE_RDS_TEMPLATE = readFileSync(
+  new URL('../scripts/templates/docker-compose.rds.yml', import.meta.url),
+  'utf8'
+).trimEnd();
+const AUTHENTIK_INTEGRATION_BOOTSTRAP_SCRIPT_TEMPLATE = readFileSync(
+  new URL('../scripts/templates/bootstrap-authentik-integrations.py', import.meta.url),
+  'utf8'
+).trimEnd();
+
 function isArmInstanceType(instanceType: string): boolean {
   return ARM_INSTANCE_PREFIXES.some(prefix => instanceType.startsWith(prefix));
 }
@@ -112,6 +135,10 @@ function scopeSecretName(secretName: string, stage: string): string {
   }
 
   return `${normalized}/${stage}`;
+}
+
+function gzipUserData(userData: pulumi.Output<string>): pulumi.Output<string> {
+  return userData.apply(script => gzipSync(Buffer.from(script, 'utf8')).toString('base64'));
 }
 
 function createResourceTags(args: IdentityInfrastructureArgs): Record<string, string> {
@@ -173,6 +200,7 @@ function buildAuthBootstrapUserData(args: {
   databaseCredentialsSecretArn: pulumi.Input<string>;
   smtpCredentialsSecretArn: pulumi.Input<string>;
   jwtSigningKeySecretArn: pulumi.Input<string>;
+  integrationConfigSecretArn: pulumi.Input<string>;
 }): pulumi.Output<string> {
   return pulumi
     .all([
@@ -180,6 +208,7 @@ function buildAuthBootstrapUserData(args: {
       args.databaseCredentialsSecretArn,
       args.smtpCredentialsSecretArn,
       args.jwtSigningKeySecretArn,
+      args.integrationConfigSecretArn,
     ])
     .apply(
       ([
@@ -187,6 +216,7 @@ function buildAuthBootstrapUserData(args: {
         databaseCredentialsSecretArn,
         smtpCredentialsSecretArn,
         jwtSigningKeySecretArn,
+        integrationConfigSecretArn,
       ]) => `#!/bin/bash
 set -euxo pipefail
 
@@ -226,6 +256,7 @@ install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik
 install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/data
 install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/certs
 install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/custom-templates
+install -d -o ec2-user -g ec2-user /opt/alternun/identity/templates
 
 cat >/etc/alternun-identity.env <<'ENVEOF'
 ALTERNUN_APP_NAME=${args.appName}
@@ -238,252 +269,35 @@ AUTHENTIK_SECRET_ARN=${authentikSecretArn}
 AUTHENTIK_DATABASE_SECRET_ARN=${databaseCredentialsSecretArn}
 AUTHENTIK_SMTP_SECRET_ARN=${smtpCredentialsSecretArn}
 AUTHENTIK_JWT_SIGNING_SECRET_ARN=${jwtSigningKeySecretArn}
+AUTHENTIK_INTEGRATION_CONFIG_SECRET_ARN=${integrationConfigSecretArn}
 ENVEOF
 
 chmod 0600 /etc/alternun-identity.env
 chown root:root /etc/alternun-identity.env
 
 cat >/opt/alternun/identity/deploy-authentik.sh <<'SCRIPTEOF'
-#!/bin/bash
-set -euo pipefail
-
-source /etc/alternun-identity.env
-AUTHENTIK_DATABASE_MODE="\${AUTHENTIK_DATABASE_MODE:-rds}"
-
-TOKEN="$(curl -fsS -X PUT 'http://169.254.169.254/latest/api/token' -H 'X-aws-ec2-metadata-token-ttl-seconds: 21600')"
-INSTANCE_IDENTITY="$(curl -fsS -H "X-aws-ec2-metadata-token: \${TOKEN}" 'http://169.254.169.254/latest/dynamic/instance-identity/document')"
-AWS_REGION="$(printf '%s' "\${INSTANCE_IDENTITY}" | jq -r '.region')"
-
-if [ -z "\${AWS_REGION}" ] || [ "\${AWS_REGION}" = "null" ]; then
-  echo "Unable to resolve AWS region from EC2 metadata."
-  exit 1
-fi
-
-get_secret_json() {
-  aws --region "\${AWS_REGION}" secretsmanager get-secret-value --secret-id "$1" --query SecretString --output text
-}
-
-AUTHENTIK_SECRET_JSON="$(get_secret_json "\${AUTHENTIK_SECRET_ARN}")"
-DATABASE_SECRET_JSON="$(get_secret_json "\${AUTHENTIK_DATABASE_SECRET_ARN}")"
-SMTP_SECRET_JSON="$(get_secret_json "\${AUTHENTIK_SMTP_SECRET_ARN}")"
-
-AUTHENTIK_SECRET_KEY_VALUE="$(printf '%s' "\${AUTHENTIK_SECRET_JSON}" | jq -r '.secretKey // empty')"
-DATABASE_HOST="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.host // empty')"
-DATABASE_NAME="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.database // empty')"
-DATABASE_USER="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.username // empty')"
-DATABASE_PASSWORD="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.password // empty')"
-DATABASE_PORT="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '(.port // 5432) | tostring')"
-DATABASE_SSLMODE="$(printf '%s' "\${DATABASE_SECRET_JSON}" | jq -r '.sslmode // empty')"
-
-if [ -z "\${DATABASE_SSLMODE}" ]; then
-  if [ "\${AUTHENTIK_DATABASE_MODE}" = "ec2" ]; then
-    DATABASE_SSLMODE='disable'
-  else
-    DATABASE_SSLMODE='require'
-  fi
-fi
-
-if [ -z "\${AUTHENTIK_SECRET_KEY_VALUE}" ]; then
-  echo "Authentik secret key is missing from \${AUTHENTIK_SECRET_ARN}."
-  exit 1
-fi
-
-if [ -z "\${DATABASE_HOST}" ] || [ -z "\${DATABASE_NAME}" ] || [ -z "\${DATABASE_USER}" ] || [ -z "\${DATABASE_PASSWORD}" ]; then
-  echo "Database credentials secret \${AUTHENTIK_DATABASE_SECRET_ARN} is incomplete."
-  exit 1
-fi
-
-SMTP_HOST="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r '.host // empty')"
-SMTP_PORT="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r '(.port // 587) | tostring')"
-SMTP_USERNAME="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r '.username // empty')"
-SMTP_PASSWORD="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r '.password // empty')"
-SMTP_USE_TLS="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r 'if has("useTls") then (.useTls | tostring) else "true" end')"
-SMTP_USE_SSL="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r 'if has("useSsl") then (.useSsl | tostring) else "false" end')"
-SMTP_FROM="$(printf '%s' "\${SMTP_SECRET_JSON}" | jq -r '.from // empty')"
-
-if [ -z "\${SMTP_FROM}" ]; then
-  SMTP_FROM="authentik@\${ALTERNUN_ROOT_DOMAIN}"
-fi
-
-install -d -o ec2-user -g ec2-user /opt/alternun/identity
-install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/data
-install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/certs
-install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/custom-templates
-
-if [ "\${AUTHENTIK_DATABASE_MODE}" = "ec2" ]; then
-  install -d -o ec2-user -g ec2-user /opt/alternun/identity/postgres/data
-fi
-
-ENV_FILE='/opt/alternun/identity/.env.authentik'
-: > "\${ENV_FILE}"
-
-append_env() {
-  printf '%s=%s\n' "$1" "$2" >> "\${ENV_FILE}"
-}
-
-append_env AUTHENTIK_SECRET_KEY "\${AUTHENTIK_SECRET_KEY_VALUE}"
-append_env AUTHENTIK_POSTGRESQL__HOST "\${DATABASE_HOST}"
-append_env AUTHENTIK_POSTGRESQL__PORT "\${DATABASE_PORT}"
-append_env AUTHENTIK_POSTGRESQL__NAME "\${DATABASE_NAME}"
-append_env AUTHENTIK_POSTGRESQL__USER "\${DATABASE_USER}"
-append_env AUTHENTIK_POSTGRESQL__PASSWORD "\${DATABASE_PASSWORD}"
-append_env AUTHENTIK_POSTGRESQL__SSLMODE "\${DATABASE_SSLMODE}"
-append_env AUTHENTIK_ERROR_REPORTING__ENABLED 'false'
-append_env AUTHENTIK_ERROR_REPORTING__ENVIRONMENT "\${ALTERNUN_STAGE}"
-append_env AUTHENTIK_DISABLE_UPDATE_CHECK 'true'
-
-if [ -n "\${SMTP_HOST}" ]; then
-  append_env AUTHENTIK_EMAIL__HOST "\${SMTP_HOST}"
-  append_env AUTHENTIK_EMAIL__PORT "\${SMTP_PORT}"
-  append_env AUTHENTIK_EMAIL__USERNAME "\${SMTP_USERNAME}"
-  append_env AUTHENTIK_EMAIL__PASSWORD "\${SMTP_PASSWORD}"
-  append_env AUTHENTIK_EMAIL__USE_TLS "\${SMTP_USE_TLS}"
-  append_env AUTHENTIK_EMAIL__USE_SSL "\${SMTP_USE_SSL}"
-  append_env AUTHENTIK_EMAIL__FROM "\${SMTP_FROM}"
-fi
-
-if [ "\${AUTHENTIK_DATABASE_MODE}" = "ec2" ]; then
-  cat >/opt/alternun/identity/docker-compose.yml <<COMPOSEEOF
-services:
-  postgres:
-    image: docker.io/library/postgres:16
-    environment:
-      POSTGRES_DB: \${DATABASE_NAME}
-      POSTGRES_USER: \${DATABASE_USER}
-      POSTGRES_PASSWORD: \${DATABASE_PASSWORD}
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U \${DATABASE_USER} -d \${DATABASE_NAME}']
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    restart: unless-stopped
-    shm_size: 256mb
-    volumes:
-      - /opt/alternun/identity/postgres/data:/var/lib/postgresql/data
-  traefik:
-    image: docker.io/library/traefik:v3.1
-    command:
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --entrypoints.web.address=:80
-      - --entrypoints.websecure.address=:443
-      - --entrypoints.web.http.redirections.entrypoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
-      - --certificatesresolvers.letsencrypt.acme.email=identity-admin@${args.rootDomain}
-      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-    ports:
-      - 80:80
-      - 443:443
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /opt/alternun/identity/traefik-acme.json:/letsencrypt/acme.json
-  server:
-    image: ghcr.io/goauthentik/server:${args.authentikImageTag}
-    command: server
-    depends_on:
-      - postgres
-      - worker
-    env_file:
-      - /opt/alternun/identity/.env.authentik
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.authentik.rule=Host("${args.domain}")
-      - traefik.http.routers.authentik.entrypoints=websecure
-      - traefik.http.routers.authentik.tls.certresolver=letsencrypt
-      - traefik.http.services.authentik.loadbalancer.server.port=9000
-    restart: unless-stopped
-    shm_size: 512mb
-    volumes:
-      - /opt/alternun/identity/authentik/data:/data
-      - /opt/alternun/identity/authentik/custom-templates:/templates
-  worker:
-    image: ghcr.io/goauthentik/server:${args.authentikImageTag}
-    command: worker
-    depends_on:
-      - postgres
-    env_file:
-      - /opt/alternun/identity/.env.authentik
-    restart: unless-stopped
-    shm_size: 512mb
-    user: root
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /opt/alternun/identity/authentik/data:/data
-      - /opt/alternun/identity/authentik/certs:/certs
-      - /opt/alternun/identity/authentik/custom-templates:/templates
-COMPOSEEOF
-else
-  cat >/opt/alternun/identity/docker-compose.yml <<COMPOSEEOF
-services:
-  traefik:
-    image: docker.io/library/traefik:v3.1
-    command:
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --entrypoints.web.address=:80
-      - --entrypoints.websecure.address=:443
-      - --entrypoints.web.http.redirections.entrypoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
-      - --certificatesresolvers.letsencrypt.acme.email=identity-admin@${args.rootDomain}
-      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-    ports:
-      - 80:80
-      - 443:443
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /opt/alternun/identity/traefik-acme.json:/letsencrypt/acme.json
-  server:
-    image: ghcr.io/goauthentik/server:${args.authentikImageTag}
-    command: server
-    depends_on:
-      - worker
-    env_file:
-      - /opt/alternun/identity/.env.authentik
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.authentik.rule=Host("${args.domain}")
-      - traefik.http.routers.authentik.entrypoints=websecure
-      - traefik.http.routers.authentik.tls.certresolver=letsencrypt
-      - traefik.http.services.authentik.loadbalancer.server.port=9000
-    restart: unless-stopped
-    shm_size: 512mb
-    volumes:
-      - /opt/alternun/identity/authentik/data:/data
-      - /opt/alternun/identity/authentik/custom-templates:/templates
-  worker:
-    image: ghcr.io/goauthentik/server:${args.authentikImageTag}
-    command: worker
-    env_file:
-      - /opt/alternun/identity/.env.authentik
-    restart: unless-stopped
-    shm_size: 512mb
-    user: root
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /opt/alternun/identity/authentik/data:/data
-      - /opt/alternun/identity/authentik/certs:/certs
-      - /opt/alternun/identity/authentik/custom-templates:/templates
-COMPOSEEOF
-fi
-
-if [ ! -f /opt/alternun/identity/traefik-acme.json ]; then
-  install -m 600 /dev/null /opt/alternun/identity/traefik-acme.json
-fi
-
-chmod 0600 "\${ENV_FILE}"
-chown root:root "\${ENV_FILE}"
-
-docker compose -f /opt/alternun/identity/docker-compose.yml pull
-docker compose -f /opt/alternun/identity/docker-compose.yml up -d --remove-orphans
+${DEPLOY_AUTHENTIK_SCRIPT_TEMPLATE}
 SCRIPTEOF
 
+cat >/opt/alternun/identity/templates/docker-compose.ec2.yml <<'COMPOSEEC2EOF'
+${DOCKER_COMPOSE_EC2_TEMPLATE}
+COMPOSEEC2EOF
+
+cat >/opt/alternun/identity/templates/docker-compose.rds.yml <<'COMPOSERDSEOF'
+${DOCKER_COMPOSE_RDS_TEMPLATE}
+COMPOSERDSEOF
+
+cat >/opt/alternun/identity/templates/bootstrap-authentik-integrations.py <<'BOOTSTRAPEOF'
+${AUTHENTIK_INTEGRATION_BOOTSTRAP_SCRIPT_TEMPLATE}
+BOOTSTRAPEOF
+
 chmod 0755 /opt/alternun/identity/deploy-authentik.sh
+chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml
+chmod 0644 /opt/alternun/identity/templates/docker-compose.rds.yml
+chmod 0644 /opt/alternun/identity/templates/bootstrap-authentik-integrations.py
+chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml
+chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.rds.yml
+chown ec2-user:ec2-user /opt/alternun/identity/templates/bootstrap-authentik-integrations.py
 
 cat >/etc/systemd/system/alternun-authentik.service <<'SERVICEEOF'
 [Unit]
@@ -525,6 +339,10 @@ export function deployIdentityInfrastructure(
     ),
     smtpCredentials: scopeSecretName(args.settings.secrets.smtpCredentialsSecretName, args.stage),
     jwtSigningKey: scopeSecretName(args.settings.secrets.jwtSigningKeySecretName, args.stage),
+    integrationConfig: scopeSecretName(
+      args.settings.secrets.integrationConfigSecretName,
+      args.stage
+    ),
   };
   const amazonLinuxAmiParameter = isArmInstanceType(args.settings.ec2.instanceType)
     ? '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-arm64'
@@ -626,6 +444,14 @@ export function deployIdentityInfrastructure(
     upper: true,
   });
 
+  const supabaseOidcClientSecret = new RandomPassword(`${resourceBaseName}-supabase-oidc-secret`, {
+    length: 48,
+    lower: true,
+    number: true,
+    special: false,
+    upper: true,
+  });
+
   const authentikSecret = new aws.secretsmanager.Secret(`${resourceBaseName}-authentik-secret`, {
     description: `Authentik secret key for ${args.stage}`,
     name: stageScopedSecrets.authentik,
@@ -672,6 +498,40 @@ export function deployIdentityInfrastructure(
   new aws.secretsmanager.SecretVersion(`${resourceBaseName}-jwt-secret-version`, {
     secretId: jwtSigningKeySecret.id,
     secretString: pulumi.interpolate`{"audience":"${args.settings.jwt.audience}","key":"${jwtSigningKey.result}","roleClaim":"${args.settings.jwt.roleClaim}","rolesClaim":"${args.settings.jwt.rolesClaim}"}`,
+  });
+
+  const integrationConfigSecret = new aws.secretsmanager.Secret(
+    `${resourceBaseName}-integration-config-secret`,
+    {
+      description: `Identity integration configuration for ${args.stage}`,
+      name: stageScopedSecrets.integrationConfig,
+      tags: {
+        ...resourceTags,
+        Name: `${resourceDisplayPrefix}-integration-config`,
+      },
+    }
+  );
+
+  new aws.secretsmanager.SecretVersion(`${resourceBaseName}-integration-config-secret-version`, {
+    secretId: integrationConfigSecret.id,
+    secretString: pulumi.secret(
+      supabaseOidcClientSecret.result.apply(supabaseClientSecret =>
+        JSON.stringify({
+          googleClientId: args.settings.integration.google.clientId,
+          googleClientSecret: args.settings.integration.google.clientSecret,
+          googleSourceName: args.settings.integration.google.sourceName,
+          googleSourceSlug: args.settings.integration.google.sourceSlug,
+          supabaseApplicationName: args.settings.integration.supabase.applicationName,
+          supabaseApplicationSlug: args.settings.integration.supabase.applicationSlug,
+          supabaseManagementAccessToken: args.settings.integration.supabase.managementAccessToken,
+          supabaseOidcClientId: args.settings.integration.supabase.oidcClientId,
+          supabaseOidcClientSecret: supabaseClientSecret,
+          supabaseProjectRef: args.settings.integration.supabase.projectRef,
+          supabaseProviderName: args.settings.integration.supabase.providerName,
+          supabaseSyncConfig: args.settings.integration.supabase.syncConfig,
+        })
+      )
+    ),
   });
 
   const databaseCredentialsSecret = new aws.secretsmanager.Secret(`${resourceBaseName}-db-secret`, {
@@ -817,6 +677,7 @@ export function deployIdentityInfrastructure(
         databaseCredentialsSecret.arn,
         smtpCredentialsSecret.arn,
         jwtSigningKeySecret.arn,
+        integrationConfigSecret.arn,
       ])
       .apply(secretArns =>
         JSON.stringify({
@@ -841,6 +702,19 @@ export function deployIdentityInfrastructure(
   });
 
   const amazonLinuxAmi = aws.ssm.getParameterOutput({ name: amazonLinuxAmiParameter }).value;
+  const bootstrapUserData = buildAuthBootstrapUserData({
+    appName: args.appName,
+    rootDomain: args.rootDomain,
+    stage: args.stage,
+    domain: identityDomain,
+    databaseMode: args.settings.database.mode,
+    authentikImageTag: args.settings.authentikImageTag,
+    authentikSecretArn: authentikSecret.arn,
+    databaseCredentialsSecretArn: databaseCredentialsSecret.arn,
+    smtpCredentialsSecretArn: smtpCredentialsSecret.arn,
+    jwtSigningKeySecretArn: jwtSigningKeySecret.arn,
+    integrationConfigSecretArn: integrationConfigSecret.arn,
+  });
 
   const identityInstance = new aws.ec2.Instance(`${resourceBaseName}-instance`, {
     ami: amazonLinuxAmi,
@@ -862,18 +736,7 @@ export function deployIdentityInfrastructure(
       ...resourceTags,
       Name: `${resourceDisplayPrefix}-instance`,
     },
-    userData: buildAuthBootstrapUserData({
-      appName: args.appName,
-      rootDomain: args.rootDomain,
-      stage: args.stage,
-      domain: identityDomain,
-      databaseMode: args.settings.database.mode,
-      authentikImageTag: args.settings.authentikImageTag,
-      authentikSecretArn: authentikSecret.arn,
-      databaseCredentialsSecretArn: databaseCredentialsSecret.arn,
-      smtpCredentialsSecretArn: smtpCredentialsSecret.arn,
-      jwtSigningKeySecretArn: jwtSigningKeySecret.arn,
-    }),
+    userDataBase64: gzipUserData(bootstrapUserData),
     userDataReplaceOnChange: true,
     vpcSecurityGroupIds: [appSecurityGroup.id],
   });
@@ -932,6 +795,10 @@ export function deployIdentityInfrastructure(
       smtpCredentials: {
         arn: smtpCredentialsSecret.arn,
         name: smtpCredentialsSecret.name,
+      },
+      integrationConfig: {
+        arn: integrationConfigSecret.arn,
+        name: integrationConfigSecret.name,
       },
     },
     vpc: {
