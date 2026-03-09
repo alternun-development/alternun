@@ -2,6 +2,7 @@
 
 export type IdentityEmailProvider = 'ses' | 'postmark';
 export type IdentityDatabaseMode = 'rds' | 'ec2';
+export type IdentityPolicyEngineMode = 'any' | 'all';
 
 export interface IdentityLocalConfig {
   enabled?: boolean;
@@ -35,11 +36,49 @@ export interface IdentityLocalConfig {
     rolesClaim?: string;
     accessTokenTtlMinutes?: number;
   };
+  integration?: {
+    google?: {
+      clientId?: string;
+      clientSecret?: string;
+      sourceName?: string;
+      sourceSlug?: string;
+    };
+    supabase?: {
+      applicationName?: string;
+      applicationSlug?: string;
+      managementAccessToken?: string;
+      oidcClientId?: string;
+      projectRef?: string;
+      providerName?: string;
+      syncConfig?: boolean;
+    };
+    bootstrap?: {
+      admin?: {
+        username?: string;
+        email?: string;
+        name?: string;
+        password?: string;
+        group?: string;
+      };
+      defaultApplication?: {
+        enabled?: boolean;
+        name?: string;
+        slug?: string;
+        group?: string;
+        launchUrl?: string;
+        openInNewTab?: boolean;
+        publisher?: string;
+        description?: string;
+        policyEngineMode?: IdentityPolicyEngineMode;
+      };
+    };
+  };
   secrets?: {
     authentikSecretKeyName?: string;
     databaseCredentialsSecretName?: string;
     smtpCredentialsSecretName?: string;
     jwtSigningKeySecretName?: string;
+    integrationConfigSecretName?: string;
   };
 }
 
@@ -75,11 +114,49 @@ export interface IdentitySettings {
     rolesClaim: string;
     accessTokenTtlMinutes: number;
   };
+  integration: {
+    google: {
+      clientId: string;
+      clientSecret: string;
+      sourceName: string;
+      sourceSlug: string;
+    };
+    supabase: {
+      applicationName: string;
+      applicationSlug: string;
+      managementAccessToken: string;
+      oidcClientId: string;
+      projectRef: string;
+      providerName: string;
+      syncConfig: boolean;
+    };
+    bootstrap: {
+      admin: {
+        username: string;
+        email: string;
+        name: string;
+        password: string;
+        group: string;
+      };
+      defaultApplication: {
+        enabled: boolean;
+        name: string;
+        slug: string;
+        group: string;
+        launchUrl: string;
+        openInNewTab: boolean;
+        publisher: string;
+        description: string;
+        policyEngineMode: IdentityPolicyEngineMode;
+      };
+    };
+  };
   secrets: {
     authentikSecretKeyName: string;
     databaseCredentialsSecretName: string;
     smtpCredentialsSecretName: string;
     jwtSigningKeySecretName: string;
+    integrationConfigSecretName: string;
   };
 }
 
@@ -119,6 +196,10 @@ function normalizeDatabaseMode(value: string | undefined): IdentityDatabaseMode 
     return 'ec2';
   }
   return 'rds';
+}
+
+function normalizePolicyEngineMode(value: string | undefined): IdentityPolicyEngineMode {
+  return value?.trim().toLowerCase() === 'all' ? 'all' : 'any';
 }
 
 function extractAuthentikTag(value: string): string {
@@ -172,9 +253,47 @@ function normalizeAuthentikImageTag(value: string | undefined): string {
   return extractedTag;
 }
 
+function parseSupabaseProjectRef(value: string | undefined): string {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return '';
+  }
+
+  if (!trimmed.includes('://') && !trimmed.includes('/')) {
+    return trimmed;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    const host = parsed.hostname.toLowerCase();
+    const supabaseSuffix = '.supabase.co';
+
+    if (host.endsWith(supabaseSuffix)) {
+      return host.slice(0, -supabaseSuffix.length);
+    }
+  } catch {
+    return '';
+  }
+
+  return '';
+}
+
 export function buildIdentitySettings(args: BuildIdentitySettingsArgs): IdentitySettings {
   const defaultStageDomains = buildDefaultStageDomains(args.rootDomain);
   const localConfig = args.localConfig;
+  const defaultSupabaseApplicationSlug = 'alternun-supabase';
+  const defaultSupabaseProviderName = 'Alternun Supabase OIDC';
+  const defaultSupabaseApplicationName = 'Alternun Supabase';
+  const defaultBootstrapAdminUsername = 'akadmin';
+  const defaultBootstrapAdminEmail = 'admin@alternun.co';
+  const defaultBootstrapAdminName = 'authentik Default Admin';
+  const defaultBootstrapAdminGroup = 'authentik Admins';
+  const defaultBootstrapAppName = 'Alternun Internal';
+  const defaultBootstrapAppSlug = 'alternun-internal';
+  const defaultBootstrapAppGroup = 'Alternun';
+  const defaultBootstrapAppPublisher = 'Alternun';
+  const defaultBootstrapAppDescription = 'Alternun internal access';
 
   return {
     enabled: parseBoolean(
@@ -267,6 +386,134 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
         15
       ),
     },
+    integration: {
+      google: {
+        clientId:
+          args.env.INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID ??
+          localConfig?.integration?.google?.clientId ??
+          args.env.GOOGLE_AUTH_CLIENT_ID ??
+          '',
+        clientSecret:
+          args.env.INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET ??
+          localConfig?.integration?.google?.clientSecret ??
+          args.env.GOOGLE_AUTH_CLIENT_SECRET ??
+          args.env.GOOGLEA_AUTH_CLIENT_SECRET ??
+          '',
+        sourceName:
+          args.env.INFRA_IDENTITY_GOOGLE_SOURCE_NAME ??
+          localConfig?.integration?.google?.sourceName ??
+          'Google',
+        sourceSlug:
+          args.env.INFRA_IDENTITY_GOOGLE_SOURCE_SLUG ??
+          localConfig?.integration?.google?.sourceSlug ??
+          'google',
+      },
+      supabase: {
+        applicationName:
+          args.env.INFRA_IDENTITY_SUPABASE_APPLICATION_NAME ??
+          localConfig?.integration?.supabase?.applicationName ??
+          defaultSupabaseApplicationName,
+        applicationSlug:
+          args.env.INFRA_IDENTITY_SUPABASE_APPLICATION_SLUG ??
+          localConfig?.integration?.supabase?.applicationSlug ??
+          defaultSupabaseApplicationSlug,
+        managementAccessToken:
+          args.env.INFRA_IDENTITY_SUPABASE_MANAGEMENT_ACCESS_TOKEN ??
+          localConfig?.integration?.supabase?.managementAccessToken ??
+          args.env.SUPABASE_ACCESS_TOKEN ??
+          '',
+        oidcClientId:
+          args.env.INFRA_IDENTITY_SUPABASE_OIDC_CLIENT_ID ??
+          localConfig?.integration?.supabase?.oidcClientId ??
+          defaultSupabaseApplicationSlug,
+        projectRef: parseSupabaseProjectRef(
+          args.env.INFRA_IDENTITY_SUPABASE_PROJECT_REF ??
+            localConfig?.integration?.supabase?.projectRef ??
+            args.env.SUPABASE_PROJECT_REF ??
+            args.env.EXPO_PUBLIC_SUPABASE_URL ??
+            args.env.EXPO_PUBLIC_SUPABASE_URI
+        ),
+        providerName:
+          args.env.INFRA_IDENTITY_SUPABASE_PROVIDER_NAME ??
+          localConfig?.integration?.supabase?.providerName ??
+          defaultSupabaseProviderName,
+        syncConfig: parseBoolean(
+          args.env.INFRA_IDENTITY_SUPABASE_SYNC_CONFIG ??
+            (localConfig?.integration?.supabase?.syncConfig !== undefined
+              ? String(localConfig.integration.supabase.syncConfig)
+              : undefined),
+          true
+        ),
+      },
+      bootstrap: {
+        admin: {
+          username:
+            args.env.INFRA_IDENTITY_BOOTSTRAP_ADMIN_USERNAME ??
+            localConfig?.integration?.bootstrap?.admin?.username ??
+            defaultBootstrapAdminUsername,
+          email:
+            args.env.INFRA_IDENTITY_BOOTSTRAP_ADMIN_EMAIL ??
+            localConfig?.integration?.bootstrap?.admin?.email ??
+            defaultBootstrapAdminEmail,
+          name:
+            args.env.INFRA_IDENTITY_BOOTSTRAP_ADMIN_NAME ??
+            localConfig?.integration?.bootstrap?.admin?.name ??
+            defaultBootstrapAdminName,
+          password:
+            args.env.INFRA_IDENTITY_BOOTSTRAP_ADMIN_PASSWORD ??
+            localConfig?.integration?.bootstrap?.admin?.password ??
+            '',
+          group:
+            args.env.INFRA_IDENTITY_BOOTSTRAP_ADMIN_GROUP ??
+            localConfig?.integration?.bootstrap?.admin?.group ??
+            defaultBootstrapAdminGroup,
+        },
+        defaultApplication: {
+          enabled: parseBoolean(
+            args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_ENABLED ??
+              (localConfig?.integration?.bootstrap?.defaultApplication?.enabled !== undefined
+                ? String(localConfig.integration.bootstrap.defaultApplication.enabled)
+                : undefined),
+            true
+          ),
+          name:
+            args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_NAME ??
+            localConfig?.integration?.bootstrap?.defaultApplication?.name ??
+            defaultBootstrapAppName,
+          slug:
+            args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_SLUG ??
+            localConfig?.integration?.bootstrap?.defaultApplication?.slug ??
+            defaultBootstrapAppSlug,
+          group:
+            args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_GROUP ??
+            localConfig?.integration?.bootstrap?.defaultApplication?.group ??
+            defaultBootstrapAppGroup,
+          launchUrl:
+            args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL ??
+            localConfig?.integration?.bootstrap?.defaultApplication?.launchUrl ??
+            '',
+          openInNewTab: parseBoolean(
+            args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_OPEN_IN_NEW_TAB ??
+              (localConfig?.integration?.bootstrap?.defaultApplication?.openInNewTab !== undefined
+                ? String(localConfig.integration.bootstrap.defaultApplication.openInNewTab)
+                : undefined),
+            false
+          ),
+          publisher:
+            args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_PUBLISHER ??
+            localConfig?.integration?.bootstrap?.defaultApplication?.publisher ??
+            defaultBootstrapAppPublisher,
+          description:
+            args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_DESCRIPTION ??
+            localConfig?.integration?.bootstrap?.defaultApplication?.description ??
+            defaultBootstrapAppDescription,
+          policyEngineMode: normalizePolicyEngineMode(
+            args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_POLICY_ENGINE_MODE ??
+              localConfig?.integration?.bootstrap?.defaultApplication?.policyEngineMode
+          ),
+        },
+      },
+    },
     secrets: {
       authentikSecretKeyName:
         args.env.INFRA_IDENTITY_SECRET_AUTHENTIK_KEY_NAME ??
@@ -284,6 +531,10 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
         args.env.INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME ??
         localConfig?.secrets?.jwtSigningKeySecretName ??
         `${args.appName}/identity/jwt-signing-key`,
+      integrationConfigSecretName:
+        args.env.INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME ??
+        localConfig?.secrets?.integrationConfigSecretName ??
+        `${args.appName}/identity/integration-config`,
     },
   };
 }

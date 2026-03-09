@@ -417,9 +417,132 @@ should_attempt_bucket_drift_recovery() {
   return 1
 }
 
+gzip_base64_file() {
+  local path=$1
+  gzip -c "$path" | base64 | tr -d '\n'
+}
+
+resolve_identity_instance_id() {
+  if [ "$is_identity_stage" != "true" ]; then
+    return 1
+  fi
+
+  if ! command -v aws >/dev/null 2>&1; then
+    echo "ERROR: aws CLI is required to sync identity runtime templates." >&2
+    return 1
+  fi
+
+  local instance_id
+  instance_id=$(
+    aws ec2 describe-instances \
+      --filters \
+        "Name=tag:Application,Values=${INFRA_APP_NAME:-alternun-infra}" \
+        "Name=tag:Component,Values=identity" \
+        "Name=tag:Stage,Values=${STACK}" \
+        "Name=instance-state-name,Values=running" \
+      --query 'Reservations[].Instances[].InstanceId' \
+      --output text 2>/dev/null | awk 'NF { print $1; exit }'
+  )
+
+  if [ -z "$instance_id" ] || [ "$instance_id" = "None" ]; then
+    echo "ERROR: Could not resolve running identity instance for stage ${STACK}." >&2
+    return 1
+  fi
+
+  echo "$instance_id"
+}
+
+sync_identity_runtime_templates() {
+  if [ "$is_identity_stage" != "true" ]; then
+    return 0
+  fi
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "ERROR: jq is required to sync identity runtime templates." >&2
+    return 1
+  fi
+
+  local instance_id deploy_b64 bootstrap_b64 ec2_compose_b64 rds_compose_b64 params_json command_id
+  instance_id=$(resolve_identity_instance_id)
+
+  deploy_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/deploy-authentik.sh")
+  bootstrap_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/bootstrap-authentik-integrations.py")
+  ec2_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.ec2.yml")
+  rds_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.rds.yml")
+
+  params_json=$(
+    jq -nc \
+      --arg c1 'set -euo pipefail' \
+      --arg c2 'install -d -o ec2-user -g ec2-user /opt/alternun/identity /opt/alternun/identity/templates /opt/alternun/identity/authentik/custom-templates' \
+      --arg c3 "printf '%s' '$deploy_b64' | base64 -d | gzip -d > /opt/alternun/identity/deploy-authentik.sh" \
+      --arg c4 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/bootstrap-authentik-integrations.py" \
+      --arg c5 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py" \
+      --arg c6 "printf '%s' '$ec2_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.yml" \
+      --arg c7 "printf '%s' '$rds_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.yml" \
+      --arg c8 'chmod 0755 /opt/alternun/identity/deploy-authentik.sh' \
+      --arg c9 'chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
+      --arg c10 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
+      --arg c11 'timeout 900 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
+      --arg c12 "docker compose -f /opt/alternun/identity/docker-compose.yml exec -T server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c \"from django.contrib.auth import get_user_model; from authentik.core.models import Application; U=get_user_model(); admin_exists=U.objects.filter(username=\\\"akadmin\\\", is_active=True).exists(); app_exists=Application.objects.filter(slug=\\\"alternun-internal\\\").exists(); print({\\\"admin_exists\\\": admin_exists, \\\"default_application_exists\\\": app_exists}); raise SystemExit(0 if admin_exists and app_exists else 1)\"'" \
+      '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12]}'
+  )
+
+  echo "Syncing identity runtime templates to instance ${instance_id}..."
+  command_id=$(
+    aws ssm send-command \
+      --region "${AWS_REGION:-us-east-1}" \
+      --instance-ids "$instance_id" \
+      --document-name AWS-RunShellScript \
+      --comment "Sync Alternun identity runtime templates" \
+      --parameters "$params_json" \
+      --query 'Command.CommandId' \
+      --output text
+  )
+
+  local sync_status="" poll_attempt=1 max_poll_attempts=180 invocation_json
+  while [ "$poll_attempt" -le "$max_poll_attempts" ]; do
+    invocation_json=$(
+      aws ssm get-command-invocation \
+        --region "${AWS_REGION:-us-east-1}" \
+        --command-id "$command_id" \
+        --instance-id "$instance_id" \
+        --query '{Status:Status,StatusDetails:StatusDetails,ResponseCode:ResponseCode,StandardOutputContent:StandardOutputContent,StandardErrorContent:StandardErrorContent}' \
+        --output json
+    )
+
+    sync_status=$(printf '%s' "$invocation_json" | jq -r '.Status')
+    case "$sync_status" in
+      Pending | InProgress | Delayed)
+        sleep 5
+        poll_attempt=$((poll_attempt + 1))
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  if [ "$sync_status" = "Pending" ] || [ "$sync_status" = "InProgress" ] || [ "$sync_status" = "Delayed" ]; then
+    echo "$invocation_json"
+    echo "ERROR: Identity runtime sync timed out waiting for command ${command_id}." >&2
+    return 1
+  fi
+
+  sync_status=$(printf '%s' "$invocation_json" | jq -r '.Status')
+  if [ "$sync_status" != "Success" ]; then
+    echo "$invocation_json"
+    echo "ERROR: Identity runtime sync failed." >&2
+    return 1
+  fi
+
+  echo "$invocation_json"
+  return 0
+}
+
 DEPLOY_LOG=$(mktemp)
 echo "Running sst deploy"
 if run_sst_deploy "$DEPLOY_LOG"; then
+  sync_identity_runtime_templates
   rm -f "$DEPLOY_LOG"
   exit 0
 fi
@@ -433,6 +556,7 @@ if should_attempt_bucket_drift_recovery "$DEPLOY_LOG"; then
 
   echo "Retrying sst deploy after refresh"
   if run_sst_deploy "$DEPLOY_LOG"; then
+    sync_identity_runtime_templates
     rm -f "$DEPLOY_LOG"
     exit 0
   fi

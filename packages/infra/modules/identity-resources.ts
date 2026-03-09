@@ -485,6 +485,21 @@ export function deployIdentityInfrastructure(
     upper: true,
   });
 
+  const bootstrapAdminPassword = new RandomPassword(
+    `${resourceBaseName}-bootstrap-admin-password`,
+    {
+      length: 32,
+      lower: true,
+      number: true,
+      special: false,
+      upper: true,
+    }
+  );
+
+  const bootstrapAdminPasswordValue = args.settings.integration.bootstrap.admin.password
+    ? pulumi.output(args.settings.integration.bootstrap.admin.password)
+    : bootstrapAdminPassword.result;
+
   const authentikSecret = new aws.secretsmanager.Secret(`${resourceBaseName}-authentik-secret`, {
     description: `Authentik secret key for ${args.stage}`,
     name: stageScopedSecrets.authentik,
@@ -548,25 +563,46 @@ export function deployIdentityInfrastructure(
   new aws.secretsmanager.SecretVersion(`${resourceBaseName}-integration-config-secret-version`, {
     secretId: integrationConfigSecret.id,
     secretString: pulumi.secret(
-      supabaseOidcClientSecret.result.apply(supabaseClientSecret =>
-        JSON.stringify({
-          googleClientId: args.settings.integration.google.clientId,
-          googleClientSecret: args.settings.integration.google.clientSecret,
-          googleSourceName: args.settings.integration.google.sourceName,
-          googleSourceSlug: args.settings.integration.google.sourceSlug,
-          supabaseApplicationName: args.settings.integration.supabase.applicationName,
-          supabaseApplicationSlug: args.settings.integration.supabase.applicationSlug,
-          supabaseManagementAccessToken: args.settings.integration.supabase.managementAccessToken,
-          supabaseOidcClientId: args.settings.integration.supabase.oidcClientId,
-          supabaseOidcClientSecret: supabaseClientSecret,
-          supabaseProjectRef: args.settings.integration.supabase.projectRef,
-          supabaseProviderName: args.settings.integration.supabase.providerName,
-          supabaseSyncConfig: args.settings.integration.supabase.syncConfig,
-        })
-      )
+      pulumi
+        .all([supabaseOidcClientSecret.result, bootstrapAdminPasswordValue])
+        .apply(([supabaseClientSecret, adminPassword]) =>
+          JSON.stringify({
+            adminEmail: args.settings.integration.bootstrap.admin.email,
+            adminGroup: args.settings.integration.bootstrap.admin.group,
+            adminName: args.settings.integration.bootstrap.admin.name,
+            adminPassword,
+            adminUsername: args.settings.integration.bootstrap.admin.username,
+            defaultApplicationDescription:
+              args.settings.integration.bootstrap.defaultApplication.description,
+            defaultApplicationEnabled:
+              args.settings.integration.bootstrap.defaultApplication.enabled,
+            defaultApplicationGroup: args.settings.integration.bootstrap.defaultApplication.group,
+            defaultApplicationLaunchUrl:
+              args.settings.integration.bootstrap.defaultApplication.launchUrl,
+            defaultApplicationName: args.settings.integration.bootstrap.defaultApplication.name,
+            defaultApplicationOpenInNewTab:
+              args.settings.integration.bootstrap.defaultApplication.openInNewTab,
+            defaultApplicationPolicyEngineMode:
+              args.settings.integration.bootstrap.defaultApplication.policyEngineMode,
+            defaultApplicationPublisher:
+              args.settings.integration.bootstrap.defaultApplication.publisher,
+            defaultApplicationSlug: args.settings.integration.bootstrap.defaultApplication.slug,
+            googleClientId: args.settings.integration.google.clientId,
+            googleClientSecret: args.settings.integration.google.clientSecret,
+            googleSourceName: args.settings.integration.google.sourceName,
+            googleSourceSlug: args.settings.integration.google.sourceSlug,
+            supabaseApplicationName: args.settings.integration.supabase.applicationName,
+            supabaseApplicationSlug: args.settings.integration.supabase.applicationSlug,
+            supabaseManagementAccessToken: args.settings.integration.supabase.managementAccessToken,
+            supabaseOidcClientId: args.settings.integration.supabase.oidcClientId,
+            supabaseOidcClientSecret: supabaseClientSecret,
+            supabaseProjectRef: args.settings.integration.supabase.projectRef,
+            supabaseProviderName: args.settings.integration.supabase.providerName,
+            supabaseSyncConfig: args.settings.integration.supabase.syncConfig,
+          })
+        )
     ),
   });
-
   const databaseCredentialsSecret = new aws.secretsmanager.Secret(`${resourceBaseName}-db-secret`, {
     description: `Authentik database credentials for ${args.stage}`,
     name: stageScopedSecrets.databaseCredentials,

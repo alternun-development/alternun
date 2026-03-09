@@ -23,6 +23,7 @@ When `INFRA_IDENTITY_ENABLED=true`, the stack now provisions:
   - database credentials
   - SMTP credentials placeholder
   - JWT signing key
+  - integration config (Google OAuth + Supabase OIDC bridge)
 
 Current default identity domains:
 
@@ -45,6 +46,35 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_JWT_AUDIENCE`
 - `INFRA_IDENTITY_JWT_ROLE_CLAIM`
 - `INFRA_IDENTITY_JWT_ROLES_CLAIM`
+- `INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID`
+- `INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET`
+- `INFRA_IDENTITY_GOOGLE_SOURCE_NAME`
+- `INFRA_IDENTITY_GOOGLE_SOURCE_SLUG`
+- `INFRA_IDENTITY_SUPABASE_PROJECT_REF` (or `EXPO_PUBLIC_SUPABASE_URL`)
+- `INFRA_IDENTITY_SUPABASE_MANAGEMENT_ACCESS_TOKEN` (or `SUPABASE_ACCESS_TOKEN`)
+- `INFRA_IDENTITY_SUPABASE_OIDC_CLIENT_ID`
+- `INFRA_IDENTITY_SUPABASE_PROVIDER_NAME`
+- `INFRA_IDENTITY_SUPABASE_APPLICATION_SLUG`
+- `INFRA_IDENTITY_SUPABASE_APPLICATION_NAME`
+- `INFRA_IDENTITY_SUPABASE_SYNC_CONFIG`
+- `INFRA_IDENTITY_BOOTSTRAP_ADMIN_USERNAME`
+- `INFRA_IDENTITY_BOOTSTRAP_ADMIN_EMAIL`
+- `INFRA_IDENTITY_BOOTSTRAP_ADMIN_NAME`
+- `INFRA_IDENTITY_BOOTSTRAP_ADMIN_PASSWORD` (optional override; otherwise IaC stores a generated value in integration config secret)
+- `INFRA_IDENTITY_BOOTSTRAP_ADMIN_GROUP`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_ENABLED`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_NAME`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_SLUG`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_GROUP`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_OPEN_IN_NEW_TAB`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_PUBLISHER`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_DESCRIPTION`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_POLICY_ENGINE_MODE` (`any` or `all`)
+- `INFRA_IDENTITY_USERDATA_REPLACE_ON_CHANGE` (default `false`, prevents instance replacement on user-data/template edits)
+- `INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION` (default `true` on production identity stacks)
+- `INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT` (default `false`; must be `true` to allow protected replacements)
+- `INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE` (default `false`; required for intentional `ec2 <-> rds` migrations)
 - `INFRA_ENABLE_EXPO_SITE` (set `false` on dedicated identity stacks to skip Expo/static-site resources)
 
 Important behavior:
@@ -56,8 +86,12 @@ Important behavior:
 - default pipeline profile behavior is `identity-dev => INFRA_IDENTITY_DATABASE_MODE=ec2` and `identity-prod => INFRA_IDENTITY_DATABASE_MODE=rds`
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
 - the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
+- the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
+- when Supabase management token/project ref are provided, infra patches Supabase `external_keycloak_*` settings automatically
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
 - identity pipelines deploy on isolated stacks (`identity-dev`, `identity-prod`) and force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy or modify the app site stack
+- identity deploys now include safety checks to block accidental database mode flips (`ec2` <-> `rds`) unless explicitly allowed
+- identity instances and EIP association can be protected from destructive replacements to reduce auth downtime risk
 
 ### Identity-Only IaC Provisioning
 
