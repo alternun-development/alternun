@@ -25,9 +25,24 @@ fi
 
 if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ] && \
   [ "$is_identity_stage" != "true" ]; then
-  echo "ERROR: INFRA_ENABLE_EXPO_SITE=false is only allowed on identity stack stages." >&2
-  echo "ERROR: Use STACK=identity-dev or STACK=identity-prod for identity-only deployments." >&2
-  exit 1
+  # In CI we always auto-correct to protect shared app stacks from identity-only flags.
+  if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ "${CI:-}" = "true" ]; then
+    echo "WARN: INFRA_ENABLE_EXPO_SITE=false received for non-identity stage ${STACK} in CI; forcing INFRA_ENABLE_EXPO_SITE=true."
+    export INFRA_ENABLE_EXPO_SITE=true
+  else
+    case "${INFRA_AUTO_FORCE_EXPO_SITE:-true}" in
+      0 | false | FALSE | no | NO | off | OFF)
+        echo "ERROR: INFRA_ENABLE_EXPO_SITE=false is only allowed on identity stack stages." >&2
+        echo "ERROR: Use STACK=identity-dev or STACK=identity-prod for identity-only deployments." >&2
+        echo "ERROR: Set INFRA_AUTO_FORCE_EXPO_SITE=true to auto-correct this." >&2
+        exit 1
+        ;;
+      *)
+        echo "WARN: INFRA_ENABLE_EXPO_SITE=false received for non-identity stage ${STACK}; forcing INFRA_ENABLE_EXPO_SITE=true."
+        export INFRA_ENABLE_EXPO_SITE=true
+        ;;
+    esac
+  fi
 fi
 
 if [ "$is_identity_stage" = "true" ] && \
