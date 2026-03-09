@@ -5,9 +5,17 @@
     "repo": "alternun-development/alternun",
     "prefix": "alternun",
     "projectTag": "alternun",
-    "pipelines": "production,dev",
+    "pipelines": "production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod,dashboard-dev,dashboard-prod",
     "branchProd": "master",
-    "branchDev": "develop"
+    "branchDev": "develop",
+    "branchIdentityDev": "develop",
+    "branchIdentityProd": "master",
+    "branchApiDev": "develop",
+    "branchApiProd": "master",
+    "branchAdminDev": "develop",
+    "branchAdminProd": "master",
+    "branchDashboardDev": "develop",
+    "branchDashboardProd": "master"
   },
   "expo": {
     "appPath": "../../apps/mobile",
@@ -39,6 +47,69 @@
       "rootDomain": "",
       "devToTestnet": ""
     }
+  },
+  "backend": {
+    "api": {
+      "enabled": false,
+      "appPath": "../../apps/api",
+      "buildOutput": "dist-lambda",
+      "buildCommand": "pnpm --filter @alternun/api run build",
+      "enableCustomDomain": true,
+      "domains": {
+        "production": "api.alternun.co",
+        "dev": "testnet.api.alternun.co",
+        "mobile": "preview.api.alternun.co"
+      },
+      "certArns": {
+        "production": "",
+        "dev": "",
+        "mobile": ""
+      },
+      "lambda": {
+        "architecture": "arm64",
+        "logRetentionDays": 14,
+        "memorySize": 1024,
+        "timeoutSeconds": 30
+      },
+      "auth": {
+        "audience": "alternun-app",
+        "issuer": "",
+        "jwksUrl": ""
+      },
+      "environment": {
+        "DATABASE_URL": ""
+      }
+    }
+  },
+  "admin": {
+    "enabled": false,
+    "appPath": "../../apps/admin",
+    "buildOutput": "dist",
+    "buildCommand": "pnpm --filter @alternun/admin run build",
+    "enableCustomDomain": true,
+    "domains": {
+      "production": "admin.alternun.co",
+      "dev": "testnet.admin.alternun.co",
+      "mobile": "preview.admin.alternun.co"
+    },
+    "certArns": {
+      "production": "",
+      "dev": "",
+      "mobile": ""
+    },
+    "apiUrls": {
+      "production": "https://api.alternun.co",
+      "dev": "https://testnet.api.alternun.co",
+      "mobile": "https://preview.api.alternun.co"
+    },
+    "authIssuers": {
+      "production": "https://auth.alternun.co",
+      "dev": "https://testnet.auth.alternun.co",
+      "mobile": "https://preview.auth.alternun.co"
+    },
+    "authClientId": "alternun-admin",
+    "authAudience": "alternun-app",
+    "environment": {}
   },
   "identity": {
     "enabled": false,

@@ -14,6 +14,18 @@ import { fileURLToPath } from 'node:url';
 import type { Input } from '@pulumi/pulumi';
 import { createExpoSite, createPipeline, resolveDomain } from '@lsts_tech/infra';
 import {
+  buildAdminSiteSettings,
+  deployAdminSiteInfrastructure,
+  resolveAdminStageDomain,
+  type AdminSiteLocalConfig,
+} from './modules/admin-site.js';
+import {
+  buildBackendApiSettings,
+  deployBackendApiInfrastructure,
+  resolveBackendApiStageDomain,
+  type BackendApiLocalConfig,
+} from './modules/backend-api.js';
+import {
   buildIdentitySettings,
   resolveIdentityStageDomain,
   type IdentityLocalConfig,
@@ -22,9 +34,22 @@ import { deployIdentityInfrastructure } from './modules/identity-resources.js';
 import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
 
 type PipelineStage = 'production' | 'dev' | 'mobile';
+type DashboardPipelineStage = 'dashboard-dev' | 'dashboard-prod';
+type AdminPipelineStage = 'admin-dev' | 'admin-prod';
+type BackendPipelineStage = 'api-dev' | 'api-prod';
 type IdentityPipelineStage = 'identity-dev' | 'identity-prod';
-type DeploymentStage = PipelineStage | IdentityPipelineStage;
-type ManagedPipeline = PipelineStage | IdentityPipelineStage;
+type DeploymentStage =
+  | PipelineStage
+  | IdentityPipelineStage
+  | BackendPipelineStage
+  | AdminPipelineStage
+  | DashboardPipelineStage;
+type ManagedPipeline =
+  | PipelineStage
+  | IdentityPipelineStage
+  | BackendPipelineStage
+  | AdminPipelineStage
+  | DashboardPipelineStage;
 type PipelineComputeType =
   | 'BUILD_GENERAL1_SMALL'
   | 'BUILD_GENERAL1_MEDIUM'
@@ -54,6 +79,15 @@ interface LocalDeploymentConfig {
     branchIdentity?: string;
     branchIdentityDev?: string;
     branchIdentityProd?: string;
+    branchApi?: string;
+    branchApiDev?: string;
+    branchApiProd?: string;
+    branchAdmin?: string;
+    branchAdminDev?: string;
+    branchAdminProd?: string;
+    branchDashboard?: string;
+    branchDashboardDev?: string;
+    branchDashboardProd?: string;
     computeType?: PipelineComputeType;
     timeoutMinutes?: number;
   };
@@ -85,6 +119,10 @@ interface LocalDeploymentConfig {
       enableWalletOnlyAuth?: boolean;
     };
   };
+  backend?: {
+    api?: BackendApiLocalConfig;
+  };
+  admin?: AdminSiteLocalConfig;
   redirects?: {
     enableAirsToDev?: boolean;
     airsToDevSourceDomain?: string;
@@ -179,6 +217,17 @@ function buildPublicAssetFile(
 
 const rootDomain = process.env.INFRA_ROOT_DOMAIN ?? localConfig.rootDomain ?? 'alternun.co';
 const appName = process.env.INFRA_APP_NAME ?? localConfig.appName ?? 'alternun-infra';
+const backendApiSettings = buildBackendApiSettings({
+  appName,
+  rootDomain,
+  env: process.env,
+  localConfig: localConfig.backend?.api,
+});
+const adminSiteSettings = buildAdminSiteSettings({
+  rootDomain,
+  env: process.env,
+  localConfig: localConfig.admin,
+});
 const identitySettings = buildIdentitySettings({
   appName,
   rootDomain,
@@ -196,9 +245,11 @@ const codestarConnectionArn =
 const selectedPipelinesRaw =
   process.env.INFRA_PIPELINES ??
   localConfig.pipeline?.pipelines ??
-  'production,dev,identity-dev,identity-prod';
+  'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod,dashboard-dev,dashboard-prod';
 const pipelineComputeTypeDefault = (pipeline: ManagedPipeline): PipelineComputeType =>
   pipeline === 'dev' ? 'BUILD_GENERAL1_LARGE' : 'BUILD_GENERAL1_MEDIUM';
+const adminSiteEnabledStagesRaw = process.env.INFRA_ADMIN_ENABLED_STAGES ?? '';
+const backendApiEnabledStagesRaw = process.env.INFRA_BACKEND_API_ENABLED_STAGES ?? '';
 const identityEnabledStagesRaw = process.env.INFRA_IDENTITY_ENABLED_STAGES ?? '';
 const parseTimeoutMinutes = (value: string | number | undefined, fallback: number): number => {
   if (value === undefined) return fallback;
@@ -257,6 +308,14 @@ const expoCerts: Record<string, string | undefined> = {
   dev: process.env.INFRA_EXPO_CERT_ARN_DEV ?? localConfig.expo?.certArns?.dev,
   mobile: process.env.INFRA_EXPO_CERT_ARN_MOBILE ?? localConfig.expo?.certArns?.mobile,
 };
+const backendApiDedicatedStacksOnly = parseBoolean(
+  process.env.INFRA_BACKEND_API_DEDICATED_STACKS_ONLY,
+  true
+);
+const adminSiteDedicatedStacksOnly = parseBoolean(
+  process.env.INFRA_ADMIN_DEDICATED_STACKS_ONLY,
+  true
+);
 
 const expoBuildCommand =
   process.env.INFRA_EXPO_BUILD_COMMAND ??
@@ -351,6 +410,25 @@ const rootDomainRedirectTarget =
 const rootDomainRedirectCertArn =
   process.env.INFRA_REDIRECT_ROOT_CERT_ARN ?? localConfig.redirects?.certArns?.rootDomain;
 const pipelineProfile = (process.env.INFRA_PIPELINE_PROFILE ?? '').trim().toLowerCase();
+const isDashboardPipelineProfile = [
+  'dashboard',
+  'dashboard-dev',
+  'dashboard-prod',
+  'dashboard-production',
+  'dashboard-admin',
+  'dashboard-api',
+].includes(pipelineProfile);
+const isAdminSitePipelineProfile = [
+  'admin',
+  'admin-dev',
+  'admin-prod',
+  'admin-production',
+  'backoffice',
+  'backoffice-admin',
+].includes(pipelineProfile);
+const isBackendApiPipelineProfile = ['api', 'api-dev', 'api-prod', 'backend', 'backend-api'].includes(
+  pipelineProfile
+);
 const isIdentityPipelineProfile = [
   'identity',
   'identity-dev',
@@ -362,7 +440,13 @@ const isIdentityPipelineProfile = [
   'authentik-dev',
   'authentik-prod',
 ].includes(pipelineProfile);
-const enableExpoSite = parseBoolean(process.env.INFRA_ENABLE_EXPO_SITE, !isIdentityPipelineProfile);
+const enableExpoSite = parseBoolean(
+  process.env.INFRA_ENABLE_EXPO_SITE,
+  !isIdentityPipelineProfile &&
+    !isBackendApiPipelineProfile &&
+    !isAdminSitePipelineProfile &&
+    !isDashboardPipelineProfile
+);
 const identityDedicatedStacksOnly = parseBoolean(
   process.env.INFRA_IDENTITY_DEDICATED_STACKS_ONLY,
   true
@@ -405,6 +489,63 @@ const commonBuildEnv = {
     localConfig.pipeline?.branchIdentityProd ??
     localConfig.pipeline?.branchProd ??
     'master',
+  INFRA_PIPELINE_BRANCH_API:
+    process.env.INFRA_PIPELINE_BRANCH_API ??
+    localConfig.pipeline?.branchApi ??
+    localConfig.pipeline?.branchApiDev ??
+    localConfig.pipeline?.branchDev ??
+    'develop',
+  INFRA_PIPELINE_BRANCH_API_DEV:
+    process.env.INFRA_PIPELINE_BRANCH_API_DEV ??
+    process.env.INFRA_PIPELINE_BRANCH_API ??
+    localConfig.pipeline?.branchApiDev ??
+    localConfig.pipeline?.branchApi ??
+    localConfig.pipeline?.branchDev ??
+    'develop',
+  INFRA_PIPELINE_BRANCH_API_PROD:
+    process.env.INFRA_PIPELINE_BRANCH_API_PROD ??
+    process.env.INFRA_PIPELINE_BRANCH_API ??
+    localConfig.pipeline?.branchApiProd ??
+    localConfig.pipeline?.branchProd ??
+    'master',
+  INFRA_PIPELINE_BRANCH_ADMIN:
+    process.env.INFRA_PIPELINE_BRANCH_ADMIN ??
+    localConfig.pipeline?.branchAdmin ??
+    localConfig.pipeline?.branchAdminDev ??
+    localConfig.pipeline?.branchDev ??
+    'develop',
+  INFRA_PIPELINE_BRANCH_ADMIN_DEV:
+    process.env.INFRA_PIPELINE_BRANCH_ADMIN_DEV ??
+    process.env.INFRA_PIPELINE_BRANCH_ADMIN ??
+    localConfig.pipeline?.branchAdminDev ??
+    localConfig.pipeline?.branchAdmin ??
+    localConfig.pipeline?.branchDev ??
+    'develop',
+  INFRA_PIPELINE_BRANCH_ADMIN_PROD:
+    process.env.INFRA_PIPELINE_BRANCH_ADMIN_PROD ??
+    process.env.INFRA_PIPELINE_BRANCH_ADMIN ??
+    localConfig.pipeline?.branchAdminProd ??
+    localConfig.pipeline?.branchProd ??
+    'master',
+  INFRA_PIPELINE_BRANCH_DASHBOARD:
+    process.env.INFRA_PIPELINE_BRANCH_DASHBOARD ??
+    localConfig.pipeline?.branchDashboard ??
+    localConfig.pipeline?.branchDashboardDev ??
+    localConfig.pipeline?.branchDev ??
+    'develop',
+  INFRA_PIPELINE_BRANCH_DASHBOARD_DEV:
+    process.env.INFRA_PIPELINE_BRANCH_DASHBOARD_DEV ??
+    process.env.INFRA_PIPELINE_BRANCH_DASHBOARD ??
+    localConfig.pipeline?.branchDashboardDev ??
+    localConfig.pipeline?.branchDashboard ??
+    localConfig.pipeline?.branchDev ??
+    'develop',
+  INFRA_PIPELINE_BRANCH_DASHBOARD_PROD:
+    process.env.INFRA_PIPELINE_BRANCH_DASHBOARD_PROD ??
+    process.env.INFRA_PIPELINE_BRANCH_DASHBOARD ??
+    localConfig.pipeline?.branchDashboardProd ??
+    localConfig.pipeline?.branchProd ??
+    'master',
   INFRA_EXPO_APP_PATH: expoAppPath,
   INFRA_EXPO_SUBDOMAIN: expoSubdomain,
   INFRA_EXPO_DOMAIN_PRODUCTION: expoStageMap.production,
@@ -417,6 +558,48 @@ const commonBuildEnv = {
   INFRA_EXPO_BUILD_OUTPUT: expoBuildOutput,
   INFRA_ENABLE_EXPO_SITE: String(enableExpoSite),
   INFRA_REQUIRE_EXPO_PUBLIC_AUTH: String(requireExpoPublicAuthEnv),
+  INFRA_ENABLE_ADMIN_SITE: String(adminSiteSettings.enabled),
+  INFRA_ADMIN_DEDICATED_STACKS_ONLY: String(adminSiteDedicatedStacksOnly),
+  INFRA_ADMIN_ENABLED_STAGES: adminSiteEnabledStagesRaw,
+  INFRA_ADMIN_APP_PATH: adminSiteSettings.appPath,
+  INFRA_ADMIN_BUILD_OUTPUT: adminSiteSettings.buildOutput,
+  INFRA_ADMIN_BUILD_COMMAND: adminSiteSettings.buildCommand,
+  INFRA_ADMIN_ENABLE_CUSTOM_DOMAIN: String(adminSiteSettings.enableCustomDomain),
+  INFRA_ADMIN_DOMAIN_PRODUCTION: adminSiteSettings.stageDomains.production,
+  INFRA_ADMIN_DOMAIN_DEV: adminSiteSettings.stageDomains.dev,
+  INFRA_ADMIN_DOMAIN_MOBILE: adminSiteSettings.stageDomains.mobile,
+  INFRA_ADMIN_CERT_ARN_PRODUCTION: adminSiteSettings.certArns.production,
+  INFRA_ADMIN_CERT_ARN_DEV: adminSiteSettings.certArns.dev,
+  INFRA_ADMIN_CERT_ARN_MOBILE: adminSiteSettings.certArns.mobile,
+  INFRA_ADMIN_API_URL_PRODUCTION: adminSiteSettings.apiUrls.production,
+  INFRA_ADMIN_API_URL_DEV: adminSiteSettings.apiUrls.dev,
+  INFRA_ADMIN_API_URL_MOBILE: adminSiteSettings.apiUrls.mobile,
+  INFRA_ADMIN_AUTH_ISSUER_PRODUCTION: adminSiteSettings.auth.stageIssuers.production,
+  INFRA_ADMIN_AUTH_ISSUER_DEV: adminSiteSettings.auth.stageIssuers.dev,
+  INFRA_ADMIN_AUTH_ISSUER_MOBILE: adminSiteSettings.auth.stageIssuers.mobile,
+  INFRA_ADMIN_AUTH_CLIENT_ID: adminSiteSettings.auth.clientId,
+  INFRA_ADMIN_AUTH_AUDIENCE: adminSiteSettings.auth.audience,
+  INFRA_ENABLE_BACKEND_API: String(backendApiSettings.enabled),
+  INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: String(backendApiDedicatedStacksOnly),
+  INFRA_BACKEND_API_ENABLED_STAGES: backendApiEnabledStagesRaw,
+  INFRA_BACKEND_API_APP_PATH: backendApiSettings.appPath,
+  INFRA_BACKEND_API_BUILD_OUTPUT: backendApiSettings.buildOutput,
+  INFRA_BACKEND_API_BUILD_COMMAND: backendApiSettings.buildCommand,
+  INFRA_BACKEND_API_ENABLE_CUSTOM_DOMAIN: String(backendApiSettings.enableCustomDomain),
+  INFRA_BACKEND_API_DOMAIN_PRODUCTION: backendApiSettings.stageDomains.production,
+  INFRA_BACKEND_API_DOMAIN_DEV: backendApiSettings.stageDomains.dev,
+  INFRA_BACKEND_API_DOMAIN_MOBILE: backendApiSettings.stageDomains.mobile,
+  INFRA_BACKEND_API_CERT_ARN_PRODUCTION: backendApiSettings.certArns.production,
+  INFRA_BACKEND_API_CERT_ARN_DEV: backendApiSettings.certArns.dev,
+  INFRA_BACKEND_API_CERT_ARN_MOBILE: backendApiSettings.certArns.mobile,
+  INFRA_BACKEND_API_MEMORY_SIZE: String(backendApiSettings.lambda.memorySize),
+  INFRA_BACKEND_API_TIMEOUT_SECONDS: String(backendApiSettings.lambda.timeoutSeconds),
+  INFRA_BACKEND_API_ARCHITECTURE: backendApiSettings.lambda.architecture,
+  INFRA_BACKEND_API_LOG_RETENTION_DAYS: String(backendApiSettings.lambda.logRetentionDays),
+  INFRA_BACKEND_API_AUTHENTIK_AUDIENCE: backendApiSettings.auth.audience,
+  INFRA_BACKEND_API_AUTHENTIK_ISSUER: backendApiSettings.auth.issuer,
+  INFRA_BACKEND_API_AUTHENTIK_JWKS_URL: backendApiSettings.auth.jwksUrl,
+  INFRA_BACKEND_API_DATABASE_URL: process.env.INFRA_BACKEND_API_DATABASE_URL ?? '',
   INFRA_IDENTITY_ENABLED: process.env.INFRA_IDENTITY_ENABLED ?? '',
   INFRA_IDENTITY_DEDICATED_STACKS_ONLY: String(identityDedicatedStacksOnly),
   INFRA_IDENTITY_ENABLED_STAGES: identityEnabledStagesRaw,
@@ -455,6 +638,53 @@ function resolveStackDeploymentStage(value: string): PipelineStage | undefined {
   if (coreStage) return coreStage;
 
   if (
+    normalized === 'dashboard-dev' ||
+    normalized === 'dashboardapi-dev' ||
+    normalized === 'dashboard-admin-dev'
+  ) {
+    return 'dev';
+  }
+
+  if (
+    normalized === 'dashboard-prod' ||
+    normalized === 'dashboard-production' ||
+    normalized === 'dashboardapi-prod' ||
+    normalized === 'dashboard-admin-prod'
+  ) {
+    return 'production';
+  }
+
+  if (
+    normalized === 'admin-dev' ||
+    normalized === 'backoffice-dev' ||
+    normalized === 'backoffice-admin-dev'
+  ) {
+    return 'dev';
+  }
+
+  if (
+    normalized === 'admin-prod' ||
+    normalized === 'admin-production' ||
+    normalized === 'backoffice-prod' ||
+    normalized === 'backoffice-admin-prod'
+  ) {
+    return 'production';
+  }
+
+  if (normalized === 'api-dev' || normalized === 'backend-dev' || normalized === 'backend-api-dev') {
+    return 'dev';
+  }
+
+  if (
+    normalized === 'api-prod' ||
+    normalized === 'api-production' ||
+    normalized === 'backend-prod' ||
+    normalized === 'backend-api-prod'
+  ) {
+    return 'production';
+  }
+
+  if (
     normalized === 'identity-dev' ||
     normalized === 'identitydev' ||
     normalized === 'auth-dev' ||
@@ -476,6 +706,32 @@ function resolveStackDeploymentStage(value: string): PipelineStage | undefined {
   return undefined;
 }
 
+function isAdminSiteStackStage(stage: string): boolean {
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+  return (
+    normalized === 'admin-dev' ||
+    normalized === 'admin-prod' ||
+    normalized === 'admin-production' ||
+    normalized === 'backoffice-dev' ||
+    normalized === 'backoffice-prod' ||
+    normalized === 'backoffice-admin-dev' ||
+    normalized === 'backoffice-admin-prod'
+  );
+}
+
+function isDashboardStackStage(stage: string): boolean {
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+  return (
+    normalized === 'dashboard-dev' ||
+    normalized === 'dashboard-prod' ||
+    normalized === 'dashboard-production' ||
+    normalized === 'dashboardapi-dev' ||
+    normalized === 'dashboardapi-prod' ||
+    normalized === 'dashboard-admin-dev' ||
+    normalized === 'dashboard-admin-prod'
+  );
+}
+
 function isIdentityStackStage(stage: string): boolean {
   const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
   return (
@@ -486,6 +742,19 @@ function isIdentityStackStage(stage: string): boolean {
     normalized === 'auth-prod' ||
     normalized === 'authentik-dev' ||
     normalized === 'authentik-prod'
+  );
+}
+
+function isBackendApiStackStage(stage: string): boolean {
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+  return (
+    normalized === 'api-dev' ||
+    normalized === 'api-prod' ||
+    normalized === 'api-production' ||
+    normalized === 'backend-dev' ||
+    normalized === 'backend-api-dev' ||
+    normalized === 'backend-prod' ||
+    normalized === 'backend-api-prod'
   );
 }
 
@@ -509,6 +778,59 @@ function parsePipelineStage(value: string): ManagedPipeline | undefined {
   const deploymentStage = parseCoreDeploymentStage(normalized);
   if (deploymentStage) return deploymentStage;
   if (
+    normalized === 'dashboard' ||
+    normalized === 'dashboard-dev' ||
+    normalized === 'dashboardapi' ||
+    normalized === 'dashboardapi-dev' ||
+    normalized === 'dashboard-admin' ||
+    normalized === 'dashboard-admin-dev'
+  ) {
+    return 'dashboard-dev';
+  }
+  if (
+    normalized === 'dashboard-prod' ||
+    normalized === 'dashboard-production' ||
+    normalized === 'dashboardapi-prod' ||
+    normalized === 'dashboard-admin-prod'
+  ) {
+    return 'dashboard-prod';
+  }
+  if (
+    normalized === 'admin' ||
+    normalized === 'admin-dev' ||
+    normalized === 'backoffice' ||
+    normalized === 'backoffice-dev' ||
+    normalized === 'backoffice-admin' ||
+    normalized === 'backoffice-admin-dev'
+  ) {
+    return 'admin-dev';
+  }
+  if (
+    normalized === 'admin-prod' ||
+    normalized === 'admin-production' ||
+    normalized === 'backoffice-prod' ||
+    normalized === 'backoffice-admin-prod'
+  ) {
+    return 'admin-prod';
+  }
+  if (
+    normalized === 'api' ||
+    normalized === 'api-dev' ||
+    normalized === 'backend' ||
+    normalized === 'backend-dev' ||
+    normalized === 'backend-api-dev'
+  ) {
+    return 'api-dev';
+  }
+  if (
+    normalized === 'api-prod' ||
+    normalized === 'api-production' ||
+    normalized === 'backend-prod' ||
+    normalized === 'backend-api-prod'
+  ) {
+    return 'api-prod';
+  }
+  if (
     normalized === 'identity' ||
     normalized === 'identity-dev' ||
     normalized === 'identitydev' ||
@@ -531,8 +853,22 @@ function parsePipelineStage(value: string): ManagedPipeline | undefined {
   return undefined;
 }
 
+const adminSiteEnabledStages = new Set<PipelineStage>(
+  adminSiteEnabledStagesRaw
+    .split(',')
+    .map(value => parseCoreDeploymentStage(value))
+    .filter((value): value is PipelineStage => value !== undefined)
+);
+
 const identityEnabledStages = new Set<PipelineStage>(
   identityEnabledStagesRaw
+    .split(',')
+    .map(value => parseCoreDeploymentStage(value))
+    .filter((value): value is PipelineStage => value !== undefined)
+);
+
+const backendApiEnabledStages = new Set<PipelineStage>(
+  backendApiEnabledStagesRaw
     .split(',')
     .map(value => parseCoreDeploymentStage(value))
     .filter((value): value is PipelineStage => value !== undefined)
@@ -589,6 +925,59 @@ const pipelineSpecs: Record<
       INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
     },
   },
+  'api-dev': {
+    suffix: 'api-dev',
+    branch:
+      process.env.INFRA_PIPELINE_BRANCH_API_DEV ??
+      process.env.INFRA_PIPELINE_BRANCH_API ??
+      localConfig.pipeline?.branchApiDev ??
+      localConfig.pipeline?.branchApi ??
+      localConfig.pipeline?.branchDev ??
+      'develop',
+    outputKey: 'apiDevPipelineName',
+    stage: 'api-dev',
+    buildEnv: {
+      INFRA_ENABLE_BACKEND_API: 'true',
+      INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
+      INFRA_BACKEND_API_ENABLED_STAGES: 'dev',
+      INFRA_PIPELINE_PROFILE: 'api-dev',
+      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod',
+      INFRA_PRESERVE_EXISTING_ENV: 'true',
+      INFRA_LOAD_ROOT_ENV: 'false',
+      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
+      INFRA_ENABLE_EXPO_SITE: 'false',
+      INFRA_ENABLE_SECRET_SYNC: 'false',
+      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
+      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
+      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
+    },
+  },
+  'api-prod': {
+    suffix: 'api-prod',
+    branch:
+      process.env.INFRA_PIPELINE_BRANCH_API_PROD ??
+      process.env.INFRA_PIPELINE_BRANCH_API ??
+      localConfig.pipeline?.branchApiProd ??
+      localConfig.pipeline?.branchProd ??
+      'master',
+    outputKey: 'apiProdPipelineName',
+    stage: 'api-prod',
+    buildEnv: {
+      INFRA_ENABLE_BACKEND_API: 'true',
+      INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
+      INFRA_BACKEND_API_ENABLED_STAGES: 'production',
+      INFRA_PIPELINE_PROFILE: 'api-prod',
+      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod',
+      INFRA_PRESERVE_EXISTING_ENV: 'true',
+      INFRA_LOAD_ROOT_ENV: 'false',
+      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
+      INFRA_ENABLE_EXPO_SITE: 'false',
+      INFRA_ENABLE_SECRET_SYNC: 'false',
+      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
+      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
+      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
+    },
+  },
   'identity-dev': {
     suffix: 'auth-dev',
     branch:
@@ -610,7 +999,7 @@ const pipelineSpecs: Record<
       INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
       INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
       INFRA_PIPELINE_PROFILE: 'identity-dev',
-      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod',
+      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,admin-dev,admin-prod',
       INFRA_PRESERVE_EXISTING_ENV: 'true',
       INFRA_LOAD_ROOT_ENV: 'false',
       INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
@@ -640,7 +1029,121 @@ const pipelineSpecs: Record<
       INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
       INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
       INFRA_PIPELINE_PROFILE: 'identity-prod',
-      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod',
+      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,admin-dev,admin-prod',
+      INFRA_PRESERVE_EXISTING_ENV: 'true',
+      INFRA_LOAD_ROOT_ENV: 'false',
+      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
+      INFRA_ENABLE_EXPO_SITE: 'false',
+      INFRA_ENABLE_SECRET_SYNC: 'false',
+      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
+      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
+      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
+    },
+  },
+  'dashboard-dev': {
+    suffix: 'dashboard-dev',
+    branch:
+      process.env.INFRA_PIPELINE_BRANCH_DASHBOARD_DEV ??
+      process.env.INFRA_PIPELINE_BRANCH_DASHBOARD ??
+      localConfig.pipeline?.branchDashboardDev ??
+      localConfig.pipeline?.branchDashboard ??
+      localConfig.pipeline?.branchDev ??
+      'develop',
+    outputKey: 'dashboardDevPipelineName',
+    stage: 'dashboard-dev',
+    buildEnv: {
+      INFRA_ENABLE_ADMIN_SITE: 'true',
+      INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
+      INFRA_ADMIN_ENABLED_STAGES: 'dev',
+      INFRA_ENABLE_BACKEND_API: 'true',
+      INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
+      INFRA_BACKEND_API_ENABLED_STAGES: 'dev',
+      INFRA_PIPELINE_PROFILE: 'dashboard-dev',
+      INFRA_PIPELINES:
+        'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod,dashboard-dev,dashboard-prod',
+      INFRA_PRESERVE_EXISTING_ENV: 'true',
+      INFRA_LOAD_ROOT_ENV: 'false',
+      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
+      INFRA_ENABLE_EXPO_SITE: 'false',
+      INFRA_ENABLE_SECRET_SYNC: 'false',
+      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
+      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
+      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
+    },
+  },
+  'dashboard-prod': {
+    suffix: 'dashboard-prod',
+    branch:
+      process.env.INFRA_PIPELINE_BRANCH_DASHBOARD_PROD ??
+      process.env.INFRA_PIPELINE_BRANCH_DASHBOARD ??
+      localConfig.pipeline?.branchDashboardProd ??
+      localConfig.pipeline?.branchProd ??
+      'master',
+    outputKey: 'dashboardProdPipelineName',
+    stage: 'dashboard-prod',
+    buildEnv: {
+      INFRA_ENABLE_ADMIN_SITE: 'true',
+      INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
+      INFRA_ADMIN_ENABLED_STAGES: 'production',
+      INFRA_ENABLE_BACKEND_API: 'true',
+      INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
+      INFRA_BACKEND_API_ENABLED_STAGES: 'production',
+      INFRA_PIPELINE_PROFILE: 'dashboard-prod',
+      INFRA_PIPELINES:
+        'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod,dashboard-dev,dashboard-prod',
+      INFRA_PRESERVE_EXISTING_ENV: 'true',
+      INFRA_LOAD_ROOT_ENV: 'false',
+      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
+      INFRA_ENABLE_EXPO_SITE: 'false',
+      INFRA_ENABLE_SECRET_SYNC: 'false',
+      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
+      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
+      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
+    },
+  },
+  'admin-dev': {
+    suffix: 'admin-dev',
+    branch:
+      process.env.INFRA_PIPELINE_BRANCH_ADMIN_DEV ??
+      process.env.INFRA_PIPELINE_BRANCH_ADMIN ??
+      localConfig.pipeline?.branchAdminDev ??
+      localConfig.pipeline?.branchAdmin ??
+      localConfig.pipeline?.branchDev ??
+      'develop',
+    outputKey: 'adminDevPipelineName',
+    stage: 'admin-dev',
+    buildEnv: {
+      INFRA_ENABLE_ADMIN_SITE: 'true',
+      INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
+      INFRA_ADMIN_ENABLED_STAGES: 'dev',
+      INFRA_PIPELINE_PROFILE: 'admin-dev',
+      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod',
+      INFRA_PRESERVE_EXISTING_ENV: 'true',
+      INFRA_LOAD_ROOT_ENV: 'false',
+      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
+      INFRA_ENABLE_EXPO_SITE: 'false',
+      INFRA_ENABLE_SECRET_SYNC: 'false',
+      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
+      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
+      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
+    },
+  },
+  'admin-prod': {
+    suffix: 'admin-prod',
+    branch:
+      process.env.INFRA_PIPELINE_BRANCH_ADMIN_PROD ??
+      process.env.INFRA_PIPELINE_BRANCH_ADMIN ??
+      localConfig.pipeline?.branchAdminProd ??
+      localConfig.pipeline?.branchProd ??
+      'master',
+    outputKey: 'adminProdPipelineName',
+    stage: 'admin-prod',
+    buildEnv: {
+      INFRA_ENABLE_ADMIN_SITE: 'true',
+      INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
+      INFRA_ADMIN_ENABLED_STAGES: 'production',
+      INFRA_PIPELINE_PROFILE: 'admin-prod',
+      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod',
       INFRA_PRESERVE_EXISTING_ENV: 'true',
       INFRA_LOAD_ROOT_ENV: 'false',
       INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
@@ -655,29 +1158,72 @@ const pipelineSpecs: Record<
 
 export function createInfrastructure() {
   const stage = String($app.stage);
+  const dashboardStackStage = isDashboardStackStage(stage);
+  const adminSiteStackStage = isAdminSiteStackStage(stage);
+  const backendApiStackStage = isBackendApiStackStage(stage);
   const identityStackStage = isIdentityStackStage(stage);
   const parsedDeploymentStage = resolveStackDeploymentStage(stage);
-  const enableExpoSiteForStage = enableExpoSite && !identityStackStage;
+  const dedicatedNonExpoStage =
+    identityStackStage || backendApiStackStage || adminSiteStackStage || dashboardStackStage;
+  const enableExpoSiteForStage = enableExpoSite && !dedicatedNonExpoStage;
 
-  if (!identityStackStage && !enableExpoSite) {
+  if (!dedicatedNonExpoStage && !enableExpoSite) {
     throw new Error(
       [
         `Refusing to deploy stage "${stage}" with INFRA_ENABLE_EXPO_SITE=false.`,
         'This would remove Expo/web resources from a primary app stack.',
-        'Use STACK=identity-dev or STACK=identity-prod for identity-only deployments.',
+        'Use STACK=identity-dev, STACK=identity-prod, STACK=api-dev, STACK=api-prod, STACK=admin-dev, STACK=admin-prod, STACK=dashboard-dev, or STACK=dashboard-prod for dedicated non-Expo deployments.',
       ].join(' ')
     );
   }
 
+  const isAdminSiteStageAllowed =
+    adminSiteEnabledStages.size === 0
+      ? true
+      : parsedDeploymentStage
+      ? adminSiteEnabledStages.has(parsedDeploymentStage)
+      : false;
+  const isBackendApiStageAllowed =
+    backendApiEnabledStages.size === 0
+      ? true
+      : parsedDeploymentStage
+      ? backendApiEnabledStages.has(parsedDeploymentStage)
+      : false;
   const isIdentityStageAllowed =
     identityEnabledStages.size === 0
       ? true
       : parsedDeploymentStage
       ? identityEnabledStages.has(parsedDeploymentStage)
       : false;
+  const backendApiAllowedOnStack =
+    !backendApiDedicatedStacksOnly || backendApiStackStage || dashboardStackStage;
+  const backendApiEnabledForStage =
+    backendApiSettings.enabled && isBackendApiStageAllowed && backendApiAllowedOnStack;
   const identityAllowedOnStack = !identityDedicatedStacksOnly || identityStackStage;
   const identityEnabledForStage =
     identitySettings.enabled && isIdentityStageAllowed && identityAllowedOnStack;
+  const adminSiteAllowedOnStack =
+    !adminSiteDedicatedStacksOnly || adminSiteStackStage || dashboardStackStage;
+  const adminSiteEnabledForStage =
+    adminSiteSettings.enabled && isAdminSiteStageAllowed && adminSiteAllowedOnStack;
+
+  if (adminSiteSettings.enabled && !adminSiteAllowedOnStack) {
+    console.log(
+      [
+        `Admin site is enabled but skipped for stack "${stage}" because INFRA_ADMIN_DEDICATED_STACKS_ONLY=true.`,
+        'Use STACK=admin-dev, STACK=admin-prod, STACK=dashboard-dev, or STACK=dashboard-prod to provision admin site resources.',
+      ].join(' ')
+    );
+  }
+
+  if (backendApiSettings.enabled && !backendApiAllowedOnStack) {
+    console.log(
+      [
+        `Backend API is enabled but skipped for stack "${stage}" because INFRA_BACKEND_API_DEDICATED_STACKS_ONLY=true.`,
+        'Use STACK=api-dev, STACK=api-prod, STACK=dashboard-dev, or STACK=dashboard-prod to provision backend API resources.',
+      ].join(' ')
+    );
+  }
 
   if (identitySettings.enabled && !identityAllowedOnStack) {
     console.log(
@@ -701,6 +1247,22 @@ export function createInfrastructure() {
         stage,
       })
     : undefined;
+  const backendApiInfrastructure = backendApiEnabledForStage
+    ? deployBackendApiInfrastructure({
+        appName,
+        hostedZoneId: process.env.INFRA_ROUTE53_HOSTED_ZONE_ID,
+        rootDomain,
+        settings: backendApiSettings,
+        stage,
+      })
+    : undefined;
+  const adminSiteInfrastructure = adminSiteEnabledForStage
+    ? deployAdminSiteInfrastructure({
+        rootDomain,
+        settings: adminSiteSettings,
+        stage,
+      })
+    : undefined;
 
   const outputs: Record<string, unknown> = {
     app: appName,
@@ -710,6 +1272,54 @@ export function createInfrastructure() {
     domain: null,
     customDomainEnabled: false,
     expoSiteEnabled: enableExpoSiteForStage,
+    adminSite: {
+      enabled: adminSiteEnabledForStage,
+      configured: adminSiteSettings.enabled,
+      dedicatedStacksOnly: adminSiteDedicatedStacksOnly,
+      enabledStages:
+        adminSiteEnabledStages.size === 0 ? 'all' : Array.from(adminSiteEnabledStages.values()),
+      appPath: adminSiteSettings.appPath,
+      buildOutput: adminSiteSettings.buildOutput,
+      buildCommand: adminSiteSettings.buildCommand,
+      domain: resolveAdminStageDomain(adminSiteSettings, stage),
+      stageDomains: adminSiteSettings.stageDomains,
+      apiUrls: adminSiteSettings.apiUrls,
+      enableCustomDomain: adminSiteSettings.enableCustomDomain,
+      certArns: adminSiteSettings.certArns,
+      auth: adminSiteSettings.auth,
+      deployment: adminSiteInfrastructure
+        ? {
+            domainName: adminSiteInfrastructure.domainName,
+            siteUrl: adminSiteInfrastructure.siteUrl,
+          }
+        : null,
+    },
+    backendApi: {
+      enabled: backendApiEnabledForStage,
+      configured: backendApiSettings.enabled,
+      dedicatedStacksOnly: backendApiDedicatedStacksOnly,
+      enabledStages:
+        backendApiEnabledStages.size === 0 ? 'all' : Array.from(backendApiEnabledStages.values()),
+      appPath: backendApiSettings.appPath,
+      buildOutput: backendApiSettings.buildOutput,
+      buildCommand: backendApiSettings.buildCommand,
+      domain: resolveBackendApiStageDomain(backendApiSettings, stage),
+      stageDomains: backendApiSettings.stageDomains,
+      enableCustomDomain: backendApiSettings.enableCustomDomain,
+      certArns: backendApiSettings.certArns,
+      lambda: backendApiSettings.lambda,
+      auth: backendApiSettings.auth,
+      deployment: backendApiInfrastructure
+        ? {
+            apiId: backendApiInfrastructure.apiId,
+            customDomain: backendApiInfrastructure.customDomain,
+            functionArn: backendApiInfrastructure.functionArn,
+            functionName: backendApiInfrastructure.functionName,
+            invokeUrl: backendApiInfrastructure.invokeUrl,
+            logGroupName: backendApiInfrastructure.logGroupName,
+          }
+        : null,
+    },
     identity: {
       enabled: identityEnabledForStage,
       configured: identitySettings.enabled,
