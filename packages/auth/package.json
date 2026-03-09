@@ -18,6 +18,9 @@
     "email:generate": "node infra/email/scripts/01-generate-smtp-config.cjs",
     "email:supabase": "node infra/email/scripts/02-sync-supabase-smtp.cjs",
     "email:status": "node infra/email/scripts/03-status-report.cjs",
+    "email:templates:generate": "node ../email-templates/scripts/generate-supabase-auth-templates.cjs",
+    "email:templates:supabase": "node infra/email/scripts/04-sync-supabase-templates.cjs",
+    "email:templates:apply": "pnpm run email:templates:generate && pnpm run email:templates:supabase",
     "email:apply": "pnpm run email:generate && pnpm run email:supabase && pnpm run email:status",
     "email:postmark": "EMAIL_SMTP_PROVIDER=postmark pnpm run email:apply",
     "email:ses": "EMAIL_SMTP_PROVIDER=ses pnpm run email:apply"

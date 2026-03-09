@@ -1,0 +1,10 @@
+{
+  "subject": "Your Alternun verification code",
+  "preview": "Use this one-time code to continue securely.",
+  "greeting": "Hi {{email}},",
+  "intro": "Use the one-time code below to continue your request.",
+  "codeLabel": "Verification code",
+  "ctaLabel": "Open secure link",
+  "ignoreNotice": "If you did not request this, you can ignore this email.",
+  "footer": "Alternun Security Team"
+}

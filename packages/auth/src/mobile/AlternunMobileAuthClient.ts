@@ -17,6 +17,7 @@ import {
 
 const WALLET_PROVIDERS = ["metamask", "walletconnect"] as const;
 export type WalletProvider = (typeof WALLET_PROVIDERS)[number];
+const EMAIL_TEMPLATE_LOCALES = ["en", "es", "th"] as const;
 
 interface LinkedWalletState {
   provider: WalletProvider;
@@ -97,6 +98,20 @@ function isObfuscatedExistingUserSignUpResult(data: any): boolean {
 function isMissingSessionError(error: unknown): boolean {
   const message = getErrorMessage(error).toLowerCase();
   return message.includes("auth session missing");
+}
+
+function normalizeEmailTemplateLocale(
+  value: string | null | undefined,
+): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.toLowerCase().trim().replace("_", "-");
+  const baseLocale = normalized.split("-")[0];
+  return (EMAIL_TEMPLATE_LOCALES as ReadonlyArray<string>).includes(baseLocale,)
+    ? baseLocale
+    : null;
 }
 
 function makeWalletAddress(): string {
@@ -726,7 +741,8 @@ export class AlternunMobileAuthClient implements AuthClient {
 
   async signUpWithEmail(
     email: string,
-    password: string
+    password: string,
+    locale?: string,
   ): Promise<EmailSignUpResult> {
     let normalizedEmail: string;
     let validatedPassword: string;
@@ -747,10 +763,23 @@ export class AlternunMobileAuthClient implements AuthClient {
     this.walletSessionToken = null;
     const supabase = this.ensureSupabase();
 
-    const { data, error } = await supabase.auth.signUp({
-      email: normalizedEmail,
-      password: validatedPassword,
-    });
+    const emailTemplateLocale = normalizeEmailTemplateLocale(locale,);
+    const { data, error } = await supabase.auth.signUp(
+      emailTemplateLocale
+        ? {
+            email: normalizedEmail,
+            password: validatedPassword,
+            options: {
+              data: {
+                locale: emailTemplateLocale,
+              },
+            },
+          }
+        : {
+            email: normalizedEmail,
+            password: validatedPassword,
+          },
+    );
 
     if (error) {
       if (isEmailAlreadyRegisteredError(error.message)) {
