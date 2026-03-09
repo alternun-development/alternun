@@ -1,3 +1,42 @@
+## [1.0.4](https://github.com/alternun-development/alternun/compare/v1.0.3...v1.0.4) (2026-03-09)
+
+### Bug Fixes
+
+- canonicalize expo app path for ci asset deploys ([04a6558](https://github.com/alternun-development/alternun/commit/04a6558f7523ec5baf9475df07af58ad25e23510))
+- force canonical cert overrides in ci ([31dfb74](https://github.com/alternun-development/alternun/commit/31dfb741b6b2ed5962c4f6d8f9f2904ddd2e0066))
+- force canonical infra domains in ci ([51420d3](https://github.com/alternun-development/alternun/commit/51420d35d4af0647d31b0bfdf46fe951f9c8a46d))
+- harden infra deploy DNS and cert checks ([e138f32](https://github.com/alternun-development/alternun/commit/e138f32f4bbe1b92cb406026495c56aec604b8ed))
+- **identity:** harden ec2 bootstrap and traefik host rule ([dbe5618](https://github.com/alternun-development/alternun/commit/dbe5618d2cc1f23590a728ba7b485a239b6e9257))
+- **infra:** guard identity stacks from accidental disable ([0d590f8](https://github.com/alternun-development/alternun/commit/0d590f8006a631cd3868d3972d9d9e20702d84a2))
+- **infra:** isolate identity provisioning to dedicated stacks ([45d2cf6](https://github.com/alternun-development/alternun/commit/45d2cf69007cafba25d16c62d1540091fe9bbd42))
+- **infra:** resolve authentik templates in sst runtime ([2076bc8](https://github.com/alternun-development/alternun/commit/2076bc85439409ce7305c25a4fccc3d4bdec6528))
+- make cert pruning non-interactive ([466e439](https://github.com/alternun-development/alternun/commit/466e4391ed320f7e8aa416de6691729a596f18b4))
+- make legacy state pruning non-fatal ([3a29baf](https://github.com/alternun-development/alternun/commit/3a29baf216f6d1174df92c1bf11579cd38703b12))
+- prune legacy cert state before deploy ([70dfd82](https://github.com/alternun-development/alternun/commit/70dfd8205e7dce9e867196917d5eb2e83b5adecb))
+- restore auth package build compatibility ([da68fdd](https://github.com/alternun-development/alternun/commit/da68fdda8d20dfacb261942cd999ea7a9630e206))
+- restore relative expo app path for sst ([0a31442](https://github.com/alternun-development/alternun/commit/0a314420b8d4387efc36017ca1a95a46db806618))
+- reuse explicit certs in ci deploys ([f466aa6](https://github.com/alternun-development/alternun/commit/f466aa686e9d71368af0abb9f3664dd66d7a2804))
+- run sst deploy from repo infra root ([abbca8e](https://github.com/alternun-development/alternun/commit/abbca8e4dac852acf82fb5068014a68a57c93573))
+- speed up ci deploy and prune cert state correctly ([b458669](https://github.com/alternun-development/alternun/commit/b458669bd13842b6e3ac2d27f55b144d283c42e7))
+- stabilize ci install and infra env resolution ([580474b](https://github.com/alternun-development/alternun/commit/580474ba3bce5edd2beac8ce0e04581c0b46823a))
+- sync web media assets without internal sst imports ([0336740](https://github.com/alternun-development/alternun/commit/03367402c08b82a70c0e761403ca2a3f7eaa5adb))
+- use infra wrapper in codebuild deploy ([ae3af9a](https://github.com/alternun-development/alternun/commit/ae3af9aceaa1a31bcc402a8513b7558c47013236))
+
+### Features
+
+- **auth:** support signup confirmation code + localized email guidance ([ef74ec8](https://github.com/alternun-development/alternun/commit/ef74ec88d1113c19debd8e9bd5d5012230012d6f))
+- **email:** add multilingual Supabase auth templates ([3d21004](https://github.com/alternun-development/alternun/commit/3d2100490650c01867e514dc6c4ac0987f031a05))
+- enforce authentik redisless version baseline ([ab2bb51](https://github.com/alternun-development/alternun/commit/ab2bb514bddff8e9e49fcde629b2a71b6955d22a))
+- **identity:** rename dev auth domain and normalize instance naming ([65a597e](https://github.com/alternun-development/alternun/commit/65a597ea6b445be3b86ac44f9dfdb88d745b557a))
+- **infra:** add dedicated identity pipeline target ([74bc283](https://github.com/alternun-development/alternun/commit/74bc2835be6d8beb037a59b85e77c4c9f5e001ef))
+- **infra:** bootstrap authentik runtime on identity host ([994dd7b](https://github.com/alternun-development/alternun/commit/994dd7b87723a6e38eb7902e761e63ba27cb0c82))
+- **infra:** harden identity deploy safety guards ([2439d40](https://github.com/alternun-development/alternun/commit/2439d406e51588398c6d408d435eddcb4dcf4bcb))
+- **infra:** scope identity deploys by stage ([fc4fb6c](https://github.com/alternun-development/alternun/commit/fc4fb6ce65af3f23495f5661e9d586000b49ebb2))
+- **infra:** support ec2-local postgres mode for identity-dev ([a18640a](https://github.com/alternun-development/alternun/commit/a18640acb4e9eaa6481500b0fb9d145761becceb))
+- optimize deploy assets and web media delivery ([b6f37e8](https://github.com/alternun-development/alternun/commit/b6f37e8422cc34d82a4eb460a946e09d6e44e86e))
+- provision identity infrastructure resources ([990dd9c](https://github.com/alternun-development/alternun/commit/990dd9cdce4e47c21bbc0a9a828f1d3e897fc68b))
+- scaffold identity infrastructure config ([46401e5](https://github.com/alternun-development/alternun/commit/46401e516bec63eb1d05a9d7b31820eae858eaac))
+
 ## 1.0.3 (2026-03-07)
 
 ### Bug Fixes
