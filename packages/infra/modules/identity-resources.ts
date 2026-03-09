@@ -7,6 +7,7 @@ import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
 import { RandomPassword } from '@pulumi/random';
 import { readFileSync } from 'node:fs';
+import { resolve as resolvePath } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import type { IdentityDatabaseMode, IdentitySettings } from './identity.js';
 import { resolveIdentityStageDomain } from './identity.js';
@@ -98,22 +99,22 @@ const ARM_INSTANCE_PREFIXES = [
   'x2gd.',
 ];
 
-const DEPLOY_AUTHENTIK_SCRIPT_TEMPLATE = readFileSync(
-  new URL('../scripts/templates/deploy-authentik.sh', import.meta.url),
-  'utf8'
-).trimEnd();
-const DOCKER_COMPOSE_EC2_TEMPLATE = readFileSync(
-  new URL('../scripts/templates/docker-compose.ec2.yml', import.meta.url),
-  'utf8'
-).trimEnd();
-const DOCKER_COMPOSE_RDS_TEMPLATE = readFileSync(
-  new URL('../scripts/templates/docker-compose.rds.yml', import.meta.url),
-  'utf8'
-).trimEnd();
-const AUTHENTIK_INTEGRATION_BOOTSTRAP_SCRIPT_TEMPLATE = readFileSync(
-  new URL('../scripts/templates/bootstrap-authentik-integrations.py', import.meta.url),
-  'utf8'
-).trimEnd();
+function readIdentityTemplate(fileName: string): string {
+  const runtimePath = resolvePath(process.cwd(), 'scripts', 'templates', fileName);
+  try {
+    return readFileSync(runtimePath, 'utf8').trimEnd();
+  } catch {
+    const sourcePath = new URL(`../scripts/templates/${fileName}`, import.meta.url);
+    return readFileSync(sourcePath, 'utf8').trimEnd();
+  }
+}
+
+const DEPLOY_AUTHENTIK_SCRIPT_TEMPLATE = readIdentityTemplate('deploy-authentik.sh');
+const DOCKER_COMPOSE_EC2_TEMPLATE = readIdentityTemplate('docker-compose.ec2.yml');
+const DOCKER_COMPOSE_RDS_TEMPLATE = readIdentityTemplate('docker-compose.rds.yml');
+const AUTHENTIK_INTEGRATION_BOOTSTRAP_SCRIPT_TEMPLATE = readIdentityTemplate(
+  'bootstrap-authentik-integrations.py'
+);
 
 function isArmInstanceType(instanceType: string): boolean {
   return ARM_INSTANCE_PREFIXES.some(prefix => instanceType.startsWith(prefix));
