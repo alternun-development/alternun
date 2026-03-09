@@ -91,6 +91,19 @@ phases:
       - corepack prepare pnpm@${PNPM_VERSION} --activate
       - pnpm --version
       - |
+        stage_normalized=$(echo "${SST_STAGE}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+        if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ] && \
+           [ "${stage_normalized}" != "identity-dev" ] && \
+           [ "${stage_normalized}" != "identity-prod" ] && \
+           [ "${stage_normalized}" != "identity-production" ] && \
+           [ "${stage_normalized}" != "auth-dev" ] && \
+           [ "${stage_normalized}" != "auth-prod" ] && \
+           [ "${stage_normalized}" != "authentik-dev" ] && \
+           [ "${stage_normalized}" != "authentik-prod" ]; then
+          echo "WARN: INFRA_ENABLE_EXPO_SITE=false received on non-identity stage ${SST_STAGE}; forcing INFRA_ENABLE_EXPO_SITE=true to protect app resources."
+          export INFRA_ENABLE_EXPO_SITE=true
+        fi
+      - |
         if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "true" ]; then
           pnpm install --frozen-lockfile --prefer-offline \
             --filter @alternun/infra... \
@@ -133,9 +146,8 @@ phases:
            [ "${stage_normalized}" != "auth-prod" ] && \
            [ "${stage_normalized}" != "authentik-dev" ] && \
            [ "${stage_normalized}" != "authentik-prod" ]; then
-          echo "ERROR: INFRA_ENABLE_EXPO_SITE=false is only allowed on identity stack stages." >&2
-          echo "ERROR: Use SST_STAGE=identity-dev or SST_STAGE=identity-prod for identity-only deployments." >&2
-          exit 1
+          echo "WARN: INFRA_ENABLE_EXPO_SITE=false is only valid on identity stack stages; forcing INFRA_ENABLE_EXPO_SITE=true for ${SST_STAGE}."
+          export INFRA_ENABLE_EXPO_SITE=true
         fi
       - |
         if [ -z "${INFRA_AWS_ACCOUNT_ID:-}" ] || [ "${INFRA_AWS_ACCOUNT_ID}" = "auto" ]; then
