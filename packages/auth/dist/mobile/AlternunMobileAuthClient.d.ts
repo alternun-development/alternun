@@ -59,7 +59,7 @@ export declare class AlternunMobileAuthClient implements AuthClient {
     private signInWalletWithFallback;
     signIn(options: SignInOptions): Promise<void>;
     signInWithGoogle(redirectTo?: string): Promise<void>;
-    signUpWithEmail(email: string, password: string): Promise<EmailSignUpResult>;
+    signUpWithEmail(email: string, password: string, locale?: string): Promise<EmailSignUpResult>;
     resendEmailConfirmation(email: string): Promise<void>;
     signOut(): Promise<void>;
     onAuthStateChange(callback: (user: User | null) => void): () => void;
