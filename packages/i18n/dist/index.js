@@ -15,8 +15,8 @@ exports.getLocaleLabel = getLocaleLabel;
 const en_json_1 = __importDefault(require("./catalogs/en.json"));
 const es_json_1 = __importDefault(require("./catalogs/es.json"));
 const th_json_1 = __importDefault(require("./catalogs/th.json"));
-exports.SUPPORTED_LOCALES = ['en', 'es', 'th'];
-exports.TRANSLATION_NAMESPACES = ['shared', 'mobile', 'web', 'docs'];
+exports.SUPPORTED_LOCALES = ['en', 'es', 'th',];
+exports.TRANSLATION_NAMESPACES = ['shared', 'mobile', 'web', 'docs',];
 exports.DEFAULT_LOCALE = 'en';
 const catalogs = {
     en: en_json_1.default,

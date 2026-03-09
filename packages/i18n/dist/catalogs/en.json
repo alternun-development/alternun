@@ -51,10 +51,14 @@
         "continueWithEmail": "Continue with Email",
         "continueWithGoogle": "Continue with Google",
         "createAccount": "Create Account",
+        "verifyConfirmationCode": "Verify confirmation code",
         "useAnotherEmail": "Use another email"
       },
       "confirmation": {
         "checkEmail": "Check your email",
+        "codeBody": "Enter the verification code from your email to activate your account here.",
+        "codeOrLinkHint": "Use the code in the email or click the button link to confirm.",
+        "codeTitle": "Have a verification code?",
         "emailFallback": "your email",
         "linkSentTo": "We sent a confirmation link to:"
       },
@@ -64,9 +68,11 @@
       "errors": {
         "accountExistsSignInOrResend": "An account with this email already exists. Sign in, or resend the confirmation email below.",
         "authenticationFailed": "Authentication failed. Please try again.",
+        "confirmationCodeInvalid": "The confirmation code is invalid or expired. Request a new email and try again.",
         "enterEmailFirst": "Enter your email first.",
         "resendUnavailable": "Resend confirmation is not available in this auth client.",
-        "signupUnavailable": "Sign-up is not available in this auth client."
+        "signupUnavailable": "Sign-up is not available in this auth client.",
+        "verificationCodeUnavailable": "Code verification is not available in this auth client."
       },
       "footer": {
         "alreadyHaveAccount": "Already have an account? Sign In",
@@ -79,11 +85,13 @@
       "notices": {
         "accountCreatedSigningIn": "Account created successfully. Signing you in...",
         "confirmationSent": "Confirmation email sent to {{email}}.",
+        "emailConfirmedSignIn": "Email confirmed. Continue signing in.",
         "requestNewConfirmation": "If this account is unverified, request a new confirmation email.",
         "secureSignIn": "Secure sign in.",
         "unverifiedEmail": "Your email is not verified yet. Confirm it to continue."
       },
       "placeholders": {
+        "confirmationCode": "Verification code",
         "confirmPassword": "Confirm Password",
         "email": "Email",
         "password": "Password"
@@ -95,6 +103,7 @@
         "title": "Not receiving the email?"
       },
       "validation": {
+        "confirmationCodeRequired": "Verification code is required.",
         "confirmPasswordRequired": "Confirmation is required.",
         "emailAndPasswordRequired": "Email and password are required.",
         "emailPasswordConfirmationRequired": "Email, password, and confirmation are required.",

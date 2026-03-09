@@ -61,6 +61,7 @@ export declare class AlternunMobileAuthClient implements AuthClient {
     signInWithGoogle(redirectTo?: string): Promise<void>;
     signUpWithEmail(email: string, password: string, locale?: string): Promise<EmailSignUpResult>;
     resendEmailConfirmation(email: string): Promise<void>;
+    verifyEmailConfirmationCode(email: string, code: string): Promise<void>;
     signOut(): Promise<void>;
     onAuthStateChange(callback: (user: User | null) => void): () => void;
     getSessionToken(): Promise<string | null>;
