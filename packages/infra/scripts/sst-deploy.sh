@@ -63,6 +63,108 @@ is_truthy() {
   esac
 }
 
+normalize_identity_db_mode() {
+  case "$(echo "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')" in
+    ec2 | local | local-ec2) echo "ec2" ;;
+    *) echo "rds" ;;
+  esac
+}
+
+sanitize_secret_name() {
+  local raw=${1:-}
+  raw="${raw#/}"
+  raw="${raw%/}"
+  echo "$raw"
+}
+
+scope_secret_name() {
+  local secret_name stage_name normalized
+  secret_name=${1:-}
+  stage_name=${2:-}
+  normalized=$(sanitize_secret_name "$secret_name")
+
+  if [ -z "$normalized" ]; then
+    echo ""
+    return 0
+  fi
+
+  if [[ "$normalized" == */"$stage_name" ]] || [[ "$normalized" == *-"$stage_name" ]]; then
+    echo "$normalized"
+    return 0
+  fi
+
+  echo "${normalized}/${stage_name}"
+}
+
+validate_identity_database_mode_transition() {
+  if [ "$is_identity_stage" != "true" ]; then
+    return 0
+  fi
+
+  if [ "${INFRA_IDENTITY_ENABLED:-false}" != "true" ]; then
+    return 0
+  fi
+
+  if ! command -v aws >/dev/null 2>&1; then
+    echo "WARN: aws CLI not found; skipping identity database mode safety check." >&2
+    return 0
+  fi
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "WARN: jq not found; skipping identity database mode safety check." >&2
+    return 0
+  fi
+
+  local expected_mode default_secret_name secret_name scoped_secret_name secret_json current_mode current_host
+  expected_mode=$(normalize_identity_db_mode "${INFRA_IDENTITY_DATABASE_MODE:-rds}")
+  default_secret_name="${INFRA_APP_NAME:-alternun-infra}/identity/database-credentials"
+  secret_name=${INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME:-$default_secret_name}
+  scoped_secret_name=$(scope_secret_name "$secret_name" "$STACK")
+
+  if [ -z "$scoped_secret_name" ]; then
+    echo "WARN: Identity database mode safety check skipped because secret name is empty." >&2
+    return 0
+  fi
+
+  if ! secret_json=$(aws secretsmanager get-secret-value \
+    --secret-id "$scoped_secret_name" \
+    --query 'SecretString' \
+    --output text 2>/dev/null); then
+    echo "Identity database mode safety check: no existing secret at ${scoped_secret_name}; assuming first deploy."
+    return 0
+  fi
+
+  current_mode=$(printf '%s' "$secret_json" | jq -r '.mode // empty')
+  if [ -z "$current_mode" ] || [ "$current_mode" = "null" ]; then
+    current_host=$(printf '%s' "$secret_json" | jq -r '.host // empty')
+    if [ "$current_host" = "postgres" ]; then
+      current_mode="ec2"
+    elif [ -n "$current_host" ] && [ "$current_host" != "null" ]; then
+      current_mode="rds"
+    fi
+  fi
+
+  if [ -z "$current_mode" ]; then
+    echo "WARN: Could not determine existing identity database mode from ${scoped_secret_name}; continuing."
+    return 0
+  fi
+
+  current_mode=$(normalize_identity_db_mode "$current_mode")
+  if [ "$current_mode" = "$expected_mode" ]; then
+    echo "Identity database mode safety check passed: mode=${current_mode}"
+    return 0
+  fi
+
+  if is_truthy "${INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE:-false}"; then
+    echo "WARN: Identity database mode change allowed by INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE=true (${current_mode} -> ${expected_mode})."
+    return 0
+  fi
+
+  echo "ERROR: Refusing deploy because identity database mode would change (${current_mode} -> ${expected_mode})." >&2
+  echo "ERROR: This can cause downtime/data loss. Set INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE=true only for planned migrations." >&2
+  exit 1
+}
+
 remove_state_resource() {
   local target=$1
 
@@ -234,6 +336,8 @@ bash "$SCRIPT_DIR/validate-deploy-context.sh" "$STACK"
 if [ "${RUN_PREDEPLOY_CHECKS:-true}" != "false" ]; then
   SKIP_CONTEXT_VALIDATION=true bash "$SCRIPT_DIR/predeploy-checks.sh" "$STACK"
 fi
+
+validate_identity_database_mode_transition
 
 if is_truthy "${INFRA_ENABLE_ALIAS_CLEANUP:-false}"; then
   cleanup_deploy_aliases

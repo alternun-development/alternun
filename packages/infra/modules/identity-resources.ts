@@ -151,6 +151,23 @@ function createResourceTags(args: IdentityInfrastructureArgs): Record<string, st
   };
 }
 
+function parseBooleanEnv(value: string | undefined, defaultValue: boolean): boolean {
+  if (value === undefined) return defaultValue;
+  return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
+}
+
+function isProductionIdentityStage(stage: string): boolean {
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+  return (
+    normalized === 'production' ||
+    normalized === 'prod' ||
+    normalized === 'identity-prod' ||
+    normalized === 'identity-production' ||
+    normalized === 'auth-prod' ||
+    normalized === 'authentik-prod'
+  );
+}
+
 function normalizeIdentityEnvironmentLabel(stage: string): string {
   const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
 
@@ -327,6 +344,21 @@ systemctl enable --now alternun-authentik.service
 export function deployIdentityInfrastructure(
   args: IdentityInfrastructureArgs
 ): IdentityInfrastructureResources {
+  const productionIdentityStage = isProductionIdentityStage(args.stage);
+  const userDataReplaceOnChange = parseBooleanEnv(
+    process.env.INFRA_IDENTITY_USERDATA_REPLACE_ON_CHANGE,
+    false
+  );
+  const allowInstanceReplacement = parseBooleanEnv(
+    process.env.INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT,
+    false
+  );
+  const protectCriticalResources = parseBooleanEnv(
+    process.env.INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION,
+    productionIdentityStage
+  );
+  const preventDestructiveIdentityChanges = protectCriticalResources && !allowInstanceReplacement;
+
   const identityDomain = resolveIdentityStageDomain(args.settings, args.stage);
   const resourceBaseName = sanitizeResourceName(`identity-${args.stage}`);
   const environmentLabel = normalizeIdentityEnvironmentLabel(args.stage);
@@ -580,41 +612,48 @@ export function deployIdentityInfrastructure(
 
   const database = useEc2Database
     ? undefined
-    : new aws.rds.Instance(`${resourceBaseName}-db`, {
-        allocatedStorage: args.settings.rds.storageGiB,
-        applyImmediately: args.stage !== 'production',
-        autoMinorVersionUpgrade: true,
-        backupRetentionPeriod: args.settings.rds.backupRetentionDays,
-        copyTagsToSnapshot: true,
-        dbName: databaseName,
-        dbSubnetGroupName: databaseSubnetGroup?.name,
-        deletionProtection: args.stage === 'production',
-        engine: 'postgres',
-        engineVersion: args.settings.rds.engineVersion,
-        finalSnapshotIdentifier:
-          args.stage === 'production'
-            ? `${args.appName}-${args.stage}-authentik-db-final`.toLowerCase()
-            : undefined,
-        identifier: `${args.appName}-${args.stage}-authentik-db`.toLowerCase(),
-        instanceClass: args.settings.rds.instanceType,
-        monitoringInterval: args.settings.rds.enhancedMonitoring ? 60 : 0,
-        monitoringRoleArn: databaseMonitoringRole?.arn,
-        multiAz: args.settings.rds.multiAz,
-        password: databasePassword.result,
-        performanceInsightsEnabled: args.settings.rds.performanceInsights,
-        performanceInsightsRetentionPeriod: args.settings.rds.performanceInsights ? 7 : undefined,
-        port: 5432,
-        publiclyAccessible: args.settings.rds.publicAccess,
-        skipFinalSnapshot: args.stage !== 'production',
-        storageEncrypted: true,
-        storageType: 'gp3',
-        tags: {
-          ...resourceTags,
-          Name: `${resourceDisplayPrefix}-db`,
+    : new aws.rds.Instance(
+        `${resourceBaseName}-db`,
+        {
+          allocatedStorage: args.settings.rds.storageGiB,
+          applyImmediately: args.stage !== 'production',
+          autoMinorVersionUpgrade: true,
+          backupRetentionPeriod: args.settings.rds.backupRetentionDays,
+          copyTagsToSnapshot: true,
+          dbName: databaseName,
+          dbSubnetGroupName: databaseSubnetGroup?.name,
+          deletionProtection: args.stage === 'production',
+          engine: 'postgres',
+          engineVersion: args.settings.rds.engineVersion,
+          finalSnapshotIdentifier:
+            args.stage === 'production'
+              ? `${args.appName}-${args.stage}-authentik-db-final`.toLowerCase()
+              : undefined,
+          identifier: `${args.appName}-${args.stage}-authentik-db`.toLowerCase(),
+          instanceClass: args.settings.rds.instanceType,
+          monitoringInterval: args.settings.rds.enhancedMonitoring ? 60 : 0,
+          monitoringRoleArn: databaseMonitoringRole?.arn,
+          multiAz: args.settings.rds.multiAz,
+          password: databasePassword.result,
+          performanceInsightsEnabled: args.settings.rds.performanceInsights,
+          performanceInsightsRetentionPeriod: args.settings.rds.performanceInsights ? 7 : undefined,
+          port: 5432,
+          publiclyAccessible: args.settings.rds.publicAccess,
+          skipFinalSnapshot: args.stage !== 'production',
+          storageEncrypted: true,
+          storageType: 'gp3',
+          tags: {
+            ...resourceTags,
+            Name: `${resourceDisplayPrefix}-db`,
+          },
+          username: databaseUsername,
+          vpcSecurityGroupIds: databaseSecurityGroup ? [databaseSecurityGroup.id] : undefined,
         },
-        username: databaseUsername,
-        vpcSecurityGroupIds: databaseSecurityGroup ? [databaseSecurityGroup.id] : undefined,
-      });
+        {
+          deleteBeforeReplace: false,
+          protect: preventDestructiveIdentityChanges,
+        }
+      );
 
   const databaseAddress = useEc2Database ? pulumi.output('postgres') : database!.address;
   const databaseEndpoint = useEc2Database ? pulumi.output('postgres:5432') : database!.endpoint;
@@ -717,43 +756,64 @@ export function deployIdentityInfrastructure(
     integrationConfigSecretArn: integrationConfigSecret.arn,
   });
 
-  const identityInstance = new aws.ec2.Instance(`${resourceBaseName}-instance`, {
-    ami: amazonLinuxAmi,
-    iamInstanceProfile: instanceProfile.name,
-    instanceType: args.settings.ec2.instanceType,
-    metadataOptions: {
-      httpEndpoint: 'enabled',
-      httpPutResponseHopLimit: 2,
-      httpTokens: 'required',
+  const identityInstance = new aws.ec2.Instance(
+    `${resourceBaseName}-instance`,
+    {
+      ami: amazonLinuxAmi,
+      disableApiTermination: preventDestructiveIdentityChanges,
+      iamInstanceProfile: instanceProfile.name,
+      instanceType: args.settings.ec2.instanceType,
+      metadataOptions: {
+        httpEndpoint: 'enabled',
+        httpPutResponseHopLimit: 2,
+        httpTokens: 'required',
+      },
+      rootBlockDevice: {
+        deleteOnTermination: true,
+        encrypted: true,
+        volumeSize: args.settings.ec2.volumeSizeGiB,
+        volumeType: 'gp3',
+      },
+      subnetId: publicSubnetIds.apply(subnets => subnets[0]),
+      tags: {
+        ...resourceTags,
+        Name: `${resourceDisplayPrefix}-instance`,
+      },
+      userDataBase64: gzipUserData(bootstrapUserData),
+      userDataReplaceOnChange,
+      vpcSecurityGroupIds: [appSecurityGroup.id],
     },
-    rootBlockDevice: {
-      deleteOnTermination: true,
-      encrypted: true,
-      volumeSize: args.settings.ec2.volumeSizeGiB,
-      volumeType: 'gp3',
-    },
-    subnetId: publicSubnetIds.apply(subnets => subnets[0]),
-    tags: {
-      ...resourceTags,
-      Name: `${resourceDisplayPrefix}-instance`,
-    },
-    userDataBase64: gzipUserData(bootstrapUserData),
-    userDataReplaceOnChange: true,
-    vpcSecurityGroupIds: [appSecurityGroup.id],
-  });
+    {
+      deleteBeforeReplace: false,
+      protect: preventDestructiveIdentityChanges,
+    }
+  );
 
-  const identityElasticIp = new aws.ec2.Eip(`${resourceBaseName}-eip`, {
-    domain: 'vpc',
-    tags: {
-      ...resourceTags,
-      Name: `${resourceDisplayPrefix}-eip`,
+  const identityElasticIp = new aws.ec2.Eip(
+    `${resourceBaseName}-eip`,
+    {
+      domain: 'vpc',
+      tags: {
+        ...resourceTags,
+        Name: `${resourceDisplayPrefix}-eip`,
+      },
     },
-  });
+    {
+      protect: preventDestructiveIdentityChanges,
+    }
+  );
 
-  new aws.ec2.EipAssociation(`${resourceBaseName}-eip-association`, {
-    allocationId: identityElasticIp.id,
-    instanceId: identityInstance.id,
-  });
+  new aws.ec2.EipAssociation(
+    `${resourceBaseName}-eip-association`,
+    {
+      allocationId: identityElasticIp.id,
+      instanceId: identityInstance.id,
+    },
+    {
+      deleteBeforeReplace: false,
+      protect: preventDestructiveIdentityChanges,
+    }
+  );
 
   const route53ZoneId =
     args.hostedZoneId ??
