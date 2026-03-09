@@ -100,6 +100,15 @@ function isMissingSessionError(error: unknown): boolean {
   return message.includes("auth session missing");
 }
 
+function parseVerificationCode(code: string): string {
+  const normalizedCode = code.trim().replace(/\s+/g, "");
+  if (!normalizedCode) {
+    throw new Error("Verification code is required.");
+  }
+
+  return normalizedCode;
+}
+
 function normalizeEmailTemplateLocale(
   value: string | null | undefined,
 ): string | null {
@@ -836,6 +845,46 @@ export class AlternunMobileAuthClient implements AuthClient {
     if (error) {
       throw new Error(`PROVIDER_ERROR: ${error.message}`);
     }
+  }
+
+  async verifyEmailConfirmationCode(email: string, code: string): Promise<void> {
+    let normalizedEmail: string;
+    let normalizedCode: string;
+
+    try {
+      normalizedEmail = parseEmailAddress(email);
+      normalizedCode = parseVerificationCode(code);
+    } catch (validationError) {
+      throw new Error(
+        `VALIDATION_ERROR: ${getValidationErrorMessage(
+          validationError,
+          "Enter a valid email address and verification code."
+        )}`
+      );
+    }
+
+    this.walletUser = null;
+    this.linkedWallet = null;
+    this.walletSessionToken = null;
+
+    const supabase = this.ensureSupabase();
+    const { data, error } = await supabase.auth.verifyOtp({
+      type: "signup",
+      email: normalizedEmail,
+      token: normalizedCode,
+    });
+
+    if (error) {
+      throw new Error(`PROVIDER_ERROR: ${error.message}`);
+    }
+
+    if (data?.user) {
+      this.emit(this.mapSupabaseUser(data.user));
+      return;
+    }
+
+    const currentUser = await this.safeGetBaseUser();
+    this.emit(currentUser);
   }
 
   async signOut(): Promise<void> {

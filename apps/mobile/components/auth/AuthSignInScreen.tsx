@@ -25,7 +25,7 @@ import { useAuth, } from './AppAuthProvider';
 const RESEND_COOLDOWN_SECONDS = 45;
 const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg',);
 
-type SubmitMode = 'signin' | 'signup' | 'resend' | 'google' | 'wallet' | null;
+type SubmitMode = 'signin' | 'signup' | 'resend' | 'verifyCode' | 'google' | 'wallet' | null;
 type AuthMode = 'signin' | 'signup';
 type AuthStep = 'form' | 'emailConfirmation';
 type RequiredField = 'email' | 'password' | 'confirmPassword';
@@ -49,6 +49,7 @@ interface EmailAuthCapableClient {
     locale?: string,
   ) => Promise<SignUpResult>;
   resendEmailConfirmation?: (email: string) => Promise<void>;
+  verifyEmailConfirmationCode?: (email: string, code: string) => Promise<void>;
 }
 
 export interface AuthSignInScreenProps {
@@ -167,6 +168,12 @@ function supportsConfirmationResend(client: unknown,): client is EmailAuthCapabl
   );
 }
 
+function supportsConfirmationCodeVerification(client: unknown,): client is EmailAuthCapableClient {
+  return Boolean(
+    client && typeof (client as EmailAuthCapableClient).verifyEmailConfirmationCode === 'function',
+  );
+}
+
 function isEmailNotConfirmedMessage(message: string,): boolean {
   const normalized = message.toLowerCase();
   return (
@@ -199,6 +206,8 @@ export default function AuthSignInScreen({
   const [localError, setLocalError,] = useState<string | null>(null,);
   const [notice, setNotice,] = useState<string | null>(null,);
   const [confirmationEmail, setConfirmationEmail,] = useState<string | null>(null,);
+  const [confirmationCode, setConfirmationCode,] = useState('',);
+  const [confirmationCodeRequired, setConfirmationCodeRequired,] = useState(false,);
   const [resendCooldown, setResendCooldown,] = useState(0,);
   const [authStep, setAuthStep,] = useState<AuthStep>('form',);
   const [showPassword, setShowPassword,] = useState(false,);
@@ -211,6 +220,7 @@ export default function AuthSignInScreen({
   const emailInputRef = useRef<TextInput>(null,);
   const passwordInputRef = useRef<TextInput>(null,);
   const confirmPasswordInputRef = useRef<TextInput>(null,);
+  const confirmationCodeInputRef = useRef<TextInput>(null,);
 
   const googleFlow = useMemo(
     () => resolveGoogleFlow(client.capabilities().supportedFlows,),
@@ -331,6 +341,28 @@ export default function AuthSignInScreen({
     }
   };
 
+  const normalizeConfirmationCode = (rawCode: string,): string => {
+    return rawCode.trim().replace(/\s+/g, '',);
+  };
+
+  const transitionToSignInForm = (
+    prefilledEmail: string,
+    nextNotice: string | null = null,
+  ) => {
+    transitionToStep('form',);
+    setMode('signin',);
+    setEmail(prefilledEmail,);
+    setPassword('',);
+    setConfirmPassword('',);
+    setShowPassword(false,);
+    setShowConfirmPassword(false,);
+    setConfirmationCode('',);
+    setConfirmationCodeRequired(false,);
+    clearRequiredFields();
+    setLocalError(null,);
+    setNotice(nextNotice,);
+  };
+
   const handleEmailSignIn = async () => {
     resetMessages();
 
@@ -351,6 +383,8 @@ export default function AuthSignInScreen({
       const message = getMessage(authError, t('authModal.errors.authenticationFailed',));
       if (normalizedEmail && isEmailNotConfirmedMessage(message,)) {
         setConfirmationEmail(normalizedEmail,);
+        setConfirmationCode('',);
+        setConfirmationCodeRequired(false,);
         setNotice(t('authModal.notices.unverifiedEmail',));
         transitionToStep('emailConfirmation',);
       }
@@ -396,6 +430,8 @@ export default function AuthSignInScreen({
 
       if (result.needsEmailVerification) {
         setConfirmationEmail(normalizedEmail,);
+        setConfirmationCode('',);
+        setConfirmationCodeRequired(false,);
         if (result.emailAlreadyRegistered) {
           setLocalError(t('authModal.errors.accountExistsSignInOrResend',));
           setNotice(t('authModal.notices.requestNewConfirmation',));
@@ -463,6 +499,50 @@ export default function AuthSignInScreen({
     }
   };
 
+  const handleVerifyConfirmationCode = async () => {
+    resetMessages();
+    setConfirmationCodeRequired(false,);
+
+    const emailCandidate = (confirmationEmail ?? email).trim();
+    if (!emailCandidate) {
+      setLocalError(t('authModal.errors.enterEmailFirst',));
+      return;
+    }
+
+    const normalizedEmail = normalizeEmailOrSetError(emailCandidate,);
+    if (!normalizedEmail) {
+      return;
+    }
+
+    if (!supportsConfirmationCodeVerification(client,) || !client.verifyEmailConfirmationCode) {
+      setLocalError(t('authModal.errors.verificationCodeUnavailable',));
+      return;
+    }
+
+    const normalizedCode = normalizeConfirmationCode(confirmationCode,);
+    if (!normalizedCode) {
+      setConfirmationCodeRequired(true,);
+      confirmationCodeInputRef.current?.focus();
+      setLocalError(t('authModal.validation.confirmationCodeRequired',));
+      return;
+    }
+
+    setSubmitMode('verifyCode',);
+    try {
+      await client.verifyEmailConfirmationCode(normalizedEmail, normalizedCode,);
+      setConfirmationEmail(normalizedEmail,);
+      setResendCooldown(0,);
+      transitionToSignInForm(
+        normalizedEmail,
+        t('authModal.notices.emailConfirmedSignIn',),
+      );
+    } catch (authError) {
+      setLocalError(getMessage(authError, t('authModal.errors.confirmationCodeInvalid',)));
+    } finally {
+      setSubmitMode(null,);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     resetMessages();
     setSubmitMode('google',);
@@ -506,6 +586,8 @@ export default function AuthSignInScreen({
     setConfirmPassword('',);
     setShowPassword(false,);
     setShowConfirmPassword(false,);
+    setConfirmationCode('',);
+    setConfirmationCodeRequired(false,);
     clearRequiredFields();
     if (nextMode === 'signup') {
       setConfirmationEmail(null,);
@@ -793,6 +875,60 @@ export default function AuthSignInScreen({
                   <Text style={styles.confirmationTitle}>{t('authModal.confirmation.checkEmail',)}</Text>
                   <Text style={styles.confirmationSubtitle}>{t('authModal.confirmation.linkSentTo',)}</Text>
                   <Text style={styles.confirmationEmail}>{confirmationEmail ?? t('authModal.confirmation.emailFallback',)}</Text>
+                  <Text style={styles.confirmationHint}>{t('authModal.confirmation.codeOrLinkHint',)}</Text>
+                </View>
+
+                <View style={styles.resendBox}>
+                  <Text style={styles.resendSectionTitle}>{t('authModal.confirmation.codeTitle',)}</Text>
+                  <Text style={styles.resendText}>{t('authModal.confirmation.codeBody',)}</Text>
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      confirmationCodeRequired && styles.inputWrapperRequired,
+                    ]}
+                  >
+                    <Lock
+                      size={16}
+                      color={confirmationCodeRequired ? '#fca5a5' : 'rgba(232,232,255,0.55)'}
+                    />
+                    <TextInput
+                      ref={confirmationCodeInputRef}
+                      autoCapitalize='none'
+                      autoCorrect={false}
+                      keyboardType='number-pad'
+                      onChangeText={(value,) => {
+                        setConfirmationCode(value.replace(/\s+/g, '',),);
+                        setConfirmationCodeRequired(false,);
+                      }}
+                      placeholder={t('authModal.placeholders.confirmationCode',)}
+                      placeholderTextColor='rgba(232,232,255,0.35)'
+                      style={styles.input}
+                      textContentType='oneTimeCode'
+                      value={confirmationCode}
+                    />
+                  </View>
+                  {confirmationCodeRequired ? (
+                    <Text style={styles.requiredFieldText}>{t('authModal.validation.confirmationCodeRequired',)}</Text>
+                  ) : null}
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    disabled={isBusy}
+                    onPress={() => {
+                      void handleVerifyConfirmationCode();
+                    }}
+                    style={[
+                      styles.resendButton,
+                      isBusy && styles.buttonDisabled,
+                    ]}
+                  >
+                    {submitMode === 'verifyCode' ? (
+                      <ActivityIndicator color='#1ccba1' size='small' />
+                    ) : (
+                      <Text style={styles.resendButtonText}>
+                        {t('authModal.actions.verifyConfirmationCode',)}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
                 </View>
 
                 {notice ? (
@@ -840,14 +976,7 @@ export default function AuthSignInScreen({
                   activeOpacity={0.85}
                   disabled={isBusy}
                   onPress={() => {
-                    const nextEmail = confirmationEmail ?? '';
-                    transitionToStep('form',);
-                    setMode('signin',);
-                    setEmail(nextEmail,);
-                    setPassword('',);
-                    setConfirmPassword('',);
-                    clearRequiredFields();
-                    resetMessages();
+                    transitionToSignInForm(confirmationEmail ?? '',);
                   }}
                   style={[styles.primaryButton, isBusy && styles.buttonDisabled,]}
                 >
@@ -864,6 +993,8 @@ export default function AuthSignInScreen({
                     setPassword('',);
                     setConfirmPassword('',);
                     setConfirmationEmail(null,);
+                    setConfirmationCode('',);
+                    setConfirmationCodeRequired(false,);
                     setResendCooldown(0,);
                     clearRequiredFields();
                     resetMessages();
@@ -1083,6 +1214,12 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 14,
     fontWeight: '700',
+  },
+  confirmationHint: {
+    marginTop: 2,
+    color: 'rgba(232,232,255,0.7)',
+    fontSize: 12,
+    textAlign: 'center',
   },
   dividerRow: {
     flexDirection: 'row',
