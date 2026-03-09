@@ -1,7 +1,9 @@
 import json
 import os
 
-from authentik.core.models import Application
+from django.contrib.auth import get_user_model
+
+from authentik.core.models import Application, Group
 from authentik.flows.models import Flow
 from authentik.providers.oauth2.models import OAuth2Provider, RedirectURI
 from authentik.sources.oauth.models import OAuthSource
@@ -29,10 +31,177 @@ def normalize_redirects(values):
     return normalized
 
 
+def read_bool_env(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() not in {"0", "false", "no", "off"}
+
+
+def normalize_policy_mode(value: str) -> str:
+    normalized = value.strip().lower()
+    return "all" if normalized == "all" else "any"
+
+
 results = {
+    "admin_user": "skipped",
+    "default_application": "skipped",
     "google_source": "skipped",
     "supabase_provider": "skipped",
 }
+
+identity_domain = read_env("ALTERNUN_BOOTSTRAP_IDENTITY_DOMAIN")
+
+admin_username = read_env("ALTERNUN_BOOTSTRAP_ADMIN_USERNAME", "akadmin")
+admin_email = read_env("ALTERNUN_BOOTSTRAP_ADMIN_EMAIL", "admin@alternun.co")
+admin_name = read_env("ALTERNUN_BOOTSTRAP_ADMIN_NAME", "authentik Default Admin")
+admin_password = read_env("ALTERNUN_BOOTSTRAP_ADMIN_PASSWORD")
+admin_group = read_env("ALTERNUN_BOOTSTRAP_ADMIN_GROUP", "authentik Admins")
+
+if admin_username and admin_email:
+    user_model = get_user_model()
+    admin_defaults = {
+        "email": admin_email,
+        "is_active": True,
+        "name": admin_name,
+        "type": "internal",
+    }
+    admin_user, admin_created = user_model.objects.get_or_create(
+        username=admin_username,
+        defaults=admin_defaults,
+    )
+
+    admin_changed = False
+    if admin_user.email != admin_email:
+        admin_user.email = admin_email
+        admin_changed = True
+    if admin_name and getattr(admin_user, "name", "") != admin_name:
+        admin_user.name = admin_name
+        admin_changed = True
+    if not admin_user.is_active:
+        admin_user.is_active = True
+        admin_changed = True
+    if getattr(admin_user, "type", "") != "internal":
+        admin_user.type = "internal"
+        admin_changed = True
+
+    if admin_password:
+        admin_user.set_password(admin_password)
+        admin_changed = True
+    else:
+        results["admin_password"] = "missing"
+
+    if admin_created or admin_changed:
+        admin_user.save()
+
+    admin_group_obj = Group.objects.filter(name=admin_group).first()
+    if admin_group_obj:
+        if not admin_user.groups.filter(pk=admin_group_obj.pk).exists():
+            admin_user.groups.add(admin_group_obj)
+            admin_changed = True
+            if not admin_created:
+                results["admin_user"] = "updated"
+    else:
+        results["admin_group"] = "missing"
+
+    if admin_created:
+        results["admin_user"] = "created"
+    elif admin_changed:
+        results["admin_user"] = "updated"
+    else:
+        results["admin_user"] = "unchanged"
+
+    results["admin_username"] = admin_username
+    results["admin_email"] = admin_email
+else:
+    results["admin_user"] = "missing_inputs"
+
+default_application_enabled = read_bool_env(
+    "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_ENABLED", True
+)
+default_application_name = read_env(
+    "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_NAME", "Alternun Internal"
+)
+default_application_slug = read_env(
+    "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_SLUG", "alternun-internal"
+)
+default_application_group = read_env(
+    "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_GROUP", "Alternun"
+)
+default_application_launch_url = read_env(
+    "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_LAUNCH_URL",
+    f"https://{identity_domain}/if/user/#/library" if identity_domain else "",
+)
+default_application_open_in_new_tab = read_bool_env(
+    "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_OPEN_IN_NEW_TAB", False
+)
+default_application_publisher = read_env(
+    "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_PUBLISHER", "Alternun"
+)
+default_application_description = read_env(
+    "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_DESCRIPTION", "Alternun internal access"
+)
+default_application_policy_mode = normalize_policy_mode(
+    read_env("ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_POLICY_ENGINE_MODE", "any")
+)
+
+if default_application_enabled and default_application_name and default_application_slug:
+    app_defaults = {
+        "name": default_application_name,
+        "open_in_new_tab": default_application_open_in_new_tab,
+        "policy_engine_mode": default_application_policy_mode,
+    }
+    if default_application_group:
+        app_defaults["group"] = default_application_group
+    if default_application_launch_url:
+        app_defaults["meta_launch_url"] = default_application_launch_url
+    if default_application_publisher:
+        app_defaults["meta_publisher"] = default_application_publisher
+    if default_application_description:
+        app_defaults["meta_description"] = default_application_description
+
+    default_app, default_app_created = Application.objects.get_or_create(
+        slug=default_application_slug, defaults=app_defaults
+    )
+
+    default_app_changed = False
+    default_app_updates = {
+        "name": default_application_name,
+        "open_in_new_tab": default_application_open_in_new_tab,
+        "policy_engine_mode": default_application_policy_mode,
+    }
+
+    for field, expected in default_app_updates.items():
+        if hasattr(default_app, field) and getattr(default_app, field) != expected:
+            setattr(default_app, field, expected)
+            default_app_changed = True
+
+    optional_default_app_updates = {
+        "group": default_application_group,
+        "meta_launch_url": default_application_launch_url,
+        "meta_publisher": default_application_publisher,
+        "meta_description": default_application_description,
+    }
+    for field, expected in optional_default_app_updates.items():
+        if expected and hasattr(default_app, field) and getattr(default_app, field) != expected:
+            setattr(default_app, field, expected)
+            default_app_changed = True
+
+    if default_app_created or default_app_changed:
+        default_app.save()
+
+    if default_app_created:
+        results["default_application"] = "created"
+    elif default_app_changed:
+        results["default_application"] = "updated"
+    else:
+        results["default_application"] = "unchanged"
+
+    results["default_application_slug"] = default_application_slug
+else:
+    results["default_application"] = (
+        "disabled" if not default_application_enabled else "missing_inputs"
+    )
 
 google_client_id = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_CLIENT_ID")
 google_client_secret = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_CLIENT_SECRET")
@@ -109,7 +278,6 @@ supabase_application_slug = read_env(
 supabase_application_name = read_env(
     "ALTERNUN_BOOTSTRAP_SUPABASE_APPLICATION_NAME", "Alternun Supabase"
 )
-identity_domain = read_env("ALTERNUN_BOOTSTRAP_IDENTITY_DOMAIN")
 
 if (
     supabase_project_ref

@@ -76,6 +76,24 @@ SUPABASE_PROVIDER_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.sup
 SUPABASE_APPLICATION_SLUG="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.supabaseApplicationSlug // "alternun-supabase"')"
 SUPABASE_APPLICATION_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.supabaseApplicationName // "Alternun Supabase"')"
 SUPABASE_SYNC_CONFIG="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r 'if has("supabaseSyncConfig") then (.supabaseSyncConfig | tostring) else "true" end')"
+BOOTSTRAP_ADMIN_USERNAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminUsername // "akadmin"')"
+BOOTSTRAP_ADMIN_EMAIL="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminEmail // "admin@alternun.co"')"
+BOOTSTRAP_ADMIN_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminName // "authentik Default Admin"')"
+BOOTSTRAP_ADMIN_PASSWORD="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminPassword // empty')"
+BOOTSTRAP_ADMIN_GROUP="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminGroup // "authentik Admins"')"
+BOOTSTRAP_DEFAULT_APPLICATION_ENABLED="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r 'if has("defaultApplicationEnabled") then (.defaultApplicationEnabled | tostring) else "true" end')"
+BOOTSTRAP_DEFAULT_APPLICATION_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.defaultApplicationName // "Alternun Internal"')"
+BOOTSTRAP_DEFAULT_APPLICATION_SLUG="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.defaultApplicationSlug // "alternun-internal"')"
+BOOTSTRAP_DEFAULT_APPLICATION_GROUP="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.defaultApplicationGroup // "Alternun"')"
+BOOTSTRAP_DEFAULT_APPLICATION_LAUNCH_URL="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.defaultApplicationLaunchUrl // empty')"
+BOOTSTRAP_DEFAULT_APPLICATION_OPEN_IN_NEW_TAB="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r 'if has("defaultApplicationOpenInNewTab") then (.defaultApplicationOpenInNewTab | tostring) else "false" end')"
+BOOTSTRAP_DEFAULT_APPLICATION_PUBLISHER="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.defaultApplicationPublisher // "Alternun"')"
+BOOTSTRAP_DEFAULT_APPLICATION_DESCRIPTION="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.defaultApplicationDescription // "Alternun internal access"')"
+BOOTSTRAP_DEFAULT_APPLICATION_POLICY_ENGINE_MODE="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.defaultApplicationPolicyEngineMode // "any"')"
+
+if [ -z "${BOOTSTRAP_DEFAULT_APPLICATION_LAUNCH_URL}" ]; then
+  BOOTSTRAP_DEFAULT_APPLICATION_LAUNCH_URL="https://${ALTERNUN_IDENTITY_DOMAIN}/if/user/#/library"
+fi
 
 install -d -o ec2-user -g ec2-user /opt/alternun/identity
 install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/data
@@ -141,8 +159,11 @@ fi
 
 cp "${BOOTSTRAP_SCRIPT_TEMPLATE}" /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py
 
-if [ ! -f /opt/alternun/identity/traefik-acme.json ]; then
-  install -m 600 /dev/null /opt/alternun/identity/traefik-acme.json
+ACME_FILE='/opt/alternun/identity/traefik-acme.json'
+LAST_KNOWN_GOOD_ACME_FILE='/opt/alternun/identity/traefik-acme.last-known-good.json'
+
+if [ ! -f "${ACME_FILE}" ]; then
+  install -m 600 /dev/null "${ACME_FILE}"
 fi
 
 chmod 0600 "${ENV_FILE}"
@@ -151,18 +172,136 @@ chown root:root "${ENV_FILE}"
 docker compose -f /opt/alternun/identity/docker-compose.yml pull
 docker compose -f /opt/alternun/identity/docker-compose.yml up -d --remove-orphans
 
+traefik_container_id() {
+  docker compose -f /opt/alternun/identity/docker-compose.yml ps -q traefik 2>/dev/null || true
+}
+
+acme_has_domain_certificate() {
+  local acme_path
+
+  acme_path="${1:-${ACME_FILE}}"
+
+  if [ ! -s "${acme_path}" ]; then
+    return 1
+  fi
+
+  jq -e --arg domain "${ALTERNUN_IDENTITY_DOMAIN}" '
+    (.letsencrypt.Certificates // []) |
+    any(
+      (.domain.main // "") == $domain or
+      ((.domain.sans // []) | index($domain))
+    )
+  ' "${acme_path}" >/dev/null 2>&1
+}
+
+traefik_logs_show_corrupt_acme_state() {
+  local traefik_id
+  traefik_id="$(traefik_container_id)"
+
+  if [ -z "${traefik_id}" ]; then
+    return 1
+  fi
+
+  docker logs --tail 200 "${traefik_id}" 2>&1 | grep -q 'Certificate not found'
+}
+
+traefik_logs_show_rate_limited_acme_state() {
+  local traefik_id
+  traefik_id="$(traefik_container_id)"
+
+  if [ -z "${traefik_id}" ]; then
+    return 1
+  fi
+
+  docker logs --tail 200 "${traefik_id}" 2>&1 | grep -q 'rateLimited'
+}
+
+trigger_traefik_certificate_request() {
+  curl -ksS --resolve "${ALTERNUN_IDENTITY_DOMAIN}:443:127.0.0.1" \
+    "https://${ALTERNUN_IDENTITY_DOMAIN}/" >/dev/null || true
+}
+
+backup_last_known_good_acme_state() {
+  if ! acme_has_domain_certificate "${ACME_FILE}"; then
+    return 1
+  fi
+
+  cp "${ACME_FILE}" "${LAST_KNOWN_GOOD_ACME_FILE}"
+  chown root:root "${LAST_KNOWN_GOOD_ACME_FILE}"
+  chmod 600 "${LAST_KNOWN_GOOD_ACME_FILE}"
+}
+
+restore_last_known_good_acme_state() {
+  if ! acme_has_domain_certificate "${LAST_KNOWN_GOOD_ACME_FILE}"; then
+    return 1
+  fi
+
+  cp "${LAST_KNOWN_GOOD_ACME_FILE}" "${ACME_FILE}"
+  chown root:root "${ACME_FILE}"
+  chmod 600 "${ACME_FILE}"
+  docker compose -f /opt/alternun/identity/docker-compose.yml restart traefik
+}
+
+reset_corrupt_acme_state() {
+  local backup_file
+
+  backup_file="${ACME_FILE}.bak.$(date +%Y%m%d%H%M%S)"
+  cp "${ACME_FILE}" "${backup_file}" || true
+  install -m 600 /dev/null "${ACME_FILE}"
+  chown root:root "${ACME_FILE}"
+  docker compose -f /opt/alternun/identity/docker-compose.yml restart traefik
+}
+
+ensure_traefik_certificate() {
+  local attempt=1
+  local max_attempts=18
+  local acme_reset_performed=0
+
+  backup_last_known_good_acme_state || true
+
+  while [ "${attempt}" -le "${max_attempts}" ]; do
+    trigger_traefik_certificate_request
+
+    if acme_has_domain_certificate; then
+      backup_last_known_good_acme_state || true
+      echo "TLS certificate ready for ${ALTERNUN_IDENTITY_DOMAIN}."
+      return 0
+    fi
+
+    if [ "${acme_reset_performed}" -eq 0 ] && traefik_logs_show_corrupt_acme_state; then
+      echo "WARN: Detected corrupt Traefik ACME state for ${ALTERNUN_IDENTITY_DOMAIN}; resetting ACME storage and retrying."
+      reset_corrupt_acme_state
+      acme_reset_performed=1
+    fi
+
+    if traefik_logs_show_rate_limited_acme_state && restore_last_known_good_acme_state; then
+      echo "WARN: Restored last known good TLS certificate for ${ALTERNUN_IDENTITY_DOMAIN} after Let's Encrypt rate limiting."
+      return 0
+    fi
+
+    sleep 10
+    attempt=$((attempt + 1))
+  done
+
+  if restore_last_known_good_acme_state; then
+    echo "WARN: Restored last known good TLS certificate for ${ALTERNUN_IDENTITY_DOMAIN} after certificate issuance retries were exhausted."
+    return 0
+  fi
+
+  echo "WARN: No Let's Encrypt certificate recorded for ${ALTERNUN_IDENTITY_DOMAIN}; Traefik may still be serving its default certificate."
+  return 1
+}
+
+ensure_traefik_certificate || true
+
 wait_for_authentik_django() {
   local max_attempts=36
   local attempt=1
 
   while [ "${attempt}" -le "${max_attempts}" ]; do
-    if docker compose -f /opt/alternun/identity/docker-compose.yml exec -T server sh -lc '/ak-root/.venv/bin/python - <<'"'"'"'"'"'"'"'"'PY'"'"'"'"'"'"'"'"'
-import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authentik.root.settings")
-import django
-django.setup()
-print("ok")
-PY' >/dev/null 2>&1; then
+    if docker compose -f /opt/alternun/identity/docker-compose.yml exec -T \
+      server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c "print(\"ok\")"' \
+      >/dev/null 2>&1; then
       return 0
     fi
     sleep 5
@@ -178,6 +317,20 @@ if ! wait_for_authentik_django; then
 fi
 
 if ! BOOTSTRAP_RESULTS="$(docker compose -f /opt/alternun/identity/docker-compose.yml exec -T \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_USERNAME="${BOOTSTRAP_ADMIN_USERNAME}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_EMAIL="${BOOTSTRAP_ADMIN_EMAIL}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_NAME="${BOOTSTRAP_ADMIN_NAME}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_PASSWORD="${BOOTSTRAP_ADMIN_PASSWORD}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_GROUP="${BOOTSTRAP_ADMIN_GROUP}" \
+  -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_ENABLED="${BOOTSTRAP_DEFAULT_APPLICATION_ENABLED}" \
+  -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_NAME="${BOOTSTRAP_DEFAULT_APPLICATION_NAME}" \
+  -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_SLUG="${BOOTSTRAP_DEFAULT_APPLICATION_SLUG}" \
+  -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_GROUP="${BOOTSTRAP_DEFAULT_APPLICATION_GROUP}" \
+  -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_LAUNCH_URL="${BOOTSTRAP_DEFAULT_APPLICATION_LAUNCH_URL}" \
+  -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_OPEN_IN_NEW_TAB="${BOOTSTRAP_DEFAULT_APPLICATION_OPEN_IN_NEW_TAB}" \
+  -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_PUBLISHER="${BOOTSTRAP_DEFAULT_APPLICATION_PUBLISHER}" \
+  -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_DESCRIPTION="${BOOTSTRAP_DEFAULT_APPLICATION_DESCRIPTION}" \
+  -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_POLICY_ENGINE_MODE="${BOOTSTRAP_DEFAULT_APPLICATION_POLICY_ENGINE_MODE}" \
   -e ALTERNUN_BOOTSTRAP_GOOGLE_CLIENT_ID="${GOOGLE_AUTH_CLIENT_ID}" \
   -e ALTERNUN_BOOTSTRAP_GOOGLE_CLIENT_SECRET="${GOOGLE_AUTH_CLIENT_SECRET}" \
   -e ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_NAME="${GOOGLE_SOURCE_NAME}" \
