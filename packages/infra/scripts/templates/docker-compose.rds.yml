@@ -30,6 +30,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.authentik.rule=Host("${ALTERNUN_IDENTITY_DOMAIN}")
       - traefik.http.routers.authentik.entrypoints=websecure
+      - traefik.http.routers.authentik.tls=true
       - traefik.http.routers.authentik.tls.certresolver=letsencrypt
       - traefik.http.services.authentik.loadbalancer.server.port=9000
     restart: unless-stopped
