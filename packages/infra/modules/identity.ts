@@ -344,7 +344,7 @@ function parseSupabaseProjectRef(value: string | undefined): string {
 }
 
 export function buildIdentitySettings(args: BuildIdentitySettingsArgs): IdentitySettings {
-  const defaultStageDomains = buildStageDomains('auth', args.rootDomain);
+  const defaultStageDomains = buildStageDomains('sso', args.rootDomain);
   const localConfig = args.localConfig;
   const defaultIdentitySecretNames = buildIdentitySecretNameDefaults(args.appName);
   const defaultAcmeEmail = `${IDENTITY_INFRA_DEFAULTS.tls.acmeEmailLocalPart}@${args.rootDomain}`;
