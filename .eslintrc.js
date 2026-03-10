@@ -54,21 +54,24 @@ module.exports = {
     'comma-style': 'error',
     'computed-property-spacing': 'error',
     'func-call-spacing': 'error',
-    'indent': ['error', 2, { SwitchCase: 1 }],
+    indent: ['error', 2, { SwitchCase: 1 }],
     'key-spacing': 'error',
     'keyword-spacing': 'error',
     'linebreak-style': ['error', 'unix'],
     'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 1 }],
     'no-trailing-spaces': 'error',
     'object-curly-spacing': ['error', 'always'],
-    'quotes': ['error', 'single', { avoidEscape: true }],
-    'semi': ['error', 'always'],
+    quotes: ['error', 'single', { avoidEscape: true }],
+    semi: ['error', 'always'],
     'space-before-blocks': 'error',
-    'space-before-function-paren': ['error', {
-      anonymous: 'always',
-      named: 'never',
-      asyncArrow: 'always'
-    }],
+    'space-before-function-paren': [
+      'error',
+      {
+        anonymous: 'always',
+        named: 'never',
+        asyncArrow: 'always',
+      },
+    ],
     'space-in-parens': 'error',
     'space-infix-ops': 'error',
     'space-unary-ops': 'error',
@@ -101,7 +104,7 @@ module.exports = {
       },
     },
     {
-      files: ['**/*.js'],
+      files: ['**/*.js', '**/*.cjs'],
       rules: {
         '@typescript-eslint/no-require-imports': 'off',
         '@typescript-eslint/no-var-requires': 'off',
