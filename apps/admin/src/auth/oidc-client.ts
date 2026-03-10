@@ -26,7 +26,7 @@ function createSettings(): UserManagerSettings {
     scope: 'openid profile email offline_access',
     automaticSilentRenew: true,
     monitorSession: false,
-    loadUserInfo: true,
+    loadUserInfo: false,
     userStore:
       typeof window === 'undefined'
         ? undefined

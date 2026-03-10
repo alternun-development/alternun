@@ -7,7 +7,7 @@ from authentik.core.models import Application, Group
 from authentik.flows.models import Flow
 from authentik.policies.expression.models import ExpressionPolicy
 from authentik.policies.models import PolicyBinding
-from authentik.providers.oauth2.models import OAuth2Provider
+from authentik.providers.oauth2.models import OAuth2Provider, ScopeMapping
 from authentik.sources.oauth.models import OAuthSource
 from authentik.stages.identification.models import IdentificationStage
 
@@ -99,6 +99,16 @@ def ensure_policy_binding(target, policy, order: int = 0):
     if created or changed:
         binding.save()
     return created, changed
+
+
+def resolve_scope_mappings(managed_ids):
+    mappings = {
+        mapping.managed: mapping
+        for mapping in ScopeMapping.objects.filter(managed__in=managed_ids)
+    }
+    ordered = [mappings[managed_id] for managed_id in managed_ids if managed_id in mappings]
+    missing = [managed_id for managed_id in managed_ids if managed_id not in mappings]
+    return ordered, missing
 
 
 results = {
@@ -195,6 +205,12 @@ else:
     results["admin_user"] = "missing_inputs"
 
 if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_url:
+    admin_scope_mapping_ids = [
+        "goauthentik.io/providers/oauth2/scope-openid",
+        "goauthentik.io/providers/oauth2/scope-email",
+        "goauthentik.io/providers/oauth2/scope-profile",
+        "goauthentik.io/providers/oauth2/scope-offline_access",
+    ]
     expected_redirects = {("strict", admin_oidc_redirect_url)}
     authorization_flow = Flow.objects.filter(
         slug="default-provider-authorization-implicit-consent"
@@ -258,6 +274,26 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
 
     if provider_created or provider_changed:
         provider.save()
+
+    desired_scope_mappings, missing_scope_mapping_ids = resolve_scope_mappings(
+        admin_scope_mapping_ids
+    )
+    current_scope_mapping_ids = set(provider.property_mappings.values_list("pk", flat=True))
+    desired_scope_mapping_pks = {mapping.pk for mapping in desired_scope_mappings}
+    if current_scope_mapping_ids != desired_scope_mapping_pks:
+        provider.property_mappings.set(desired_scope_mappings)
+        provider_changed = True
+
+    if missing_scope_mapping_ids:
+        results["admin_oidc_scope_mappings"] = {
+            "status": "missing_defaults",
+            "missing": missing_scope_mapping_ids,
+        }
+    else:
+        results["admin_oidc_scope_mappings"] = {
+            "status": "configured",
+            "scopes": [mapping.scope_name for mapping in desired_scope_mappings],
+        }
 
     application, application_created = Application.objects.get_or_create(
         slug=admin_oidc_application_slug,
