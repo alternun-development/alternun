@@ -35,8 +35,8 @@ Use the application domain family, not the marketing domain family, for Authenti
 
 Initial domain decisions:
 
-- production identity domain: `auth.alternun.co`
-- non-production identity domain: `testnet.auth.alternun.co`
+- production identity domain: `sso.alternun.co`
+- non-production identity domain: `testnet.sso.alternun.co`
 
 Rationale:
 
@@ -46,7 +46,7 @@ Rationale:
 
 Follow-up:
 
-- if the final DNS convention prefers `auth.dev.alternun.co` or a different non-prod host, that is an implementation detail and does not change the production decision
+- if the final DNS convention prefers `sso.dev.alternun.co` or a different non-prod host, that is an implementation detail and does not change the production decision
 
 ### 2. Trust Boundary
 
@@ -174,7 +174,7 @@ Tradeoffs:
 
 ## Required Follow-up Work
 
-- provision `auth.alternun.co` and the chosen non-production identity hostname in infrastructure as code
+- provision `sso.alternun.co` and the chosen non-production identity hostname in infrastructure as code
 - configure Authentik to issue the approved JWT claim set
 - configure Supabase to validate the Authentik issuer and audience
 - implement and test the restore procedure
@@ -186,4 +186,4 @@ These items are intentionally not decided here:
 
 - whether future high-availability deployment uses ECS, EKS, or multiple EC2 nodes
 - whether Postmark becomes the long-term email provider
-- whether the non-production identity hostname keeps the `testnet.auth.alternun.co` convention permanently
+- whether the non-production identity hostname keeps the `testnet.sso.alternun.co` convention permanently

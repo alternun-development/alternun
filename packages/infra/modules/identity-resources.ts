@@ -71,6 +71,11 @@ export interface IdentityInfrastructureResources {
     subnetGroupName?: pulumi.Output<string>;
     username: pulumi.Output<string>;
   };
+  acmeBackup?: {
+    bucketArn: pulumi.Output<string>;
+    bucketName: pulumi.Output<string>;
+    prefix: pulumi.Output<string>;
+  };
   loadBalancer?: {
     arn: pulumi.Output<string>;
     dnsName: pulumi.Output<string>;
@@ -132,6 +137,15 @@ function isArmInstanceType(instanceType: string): boolean {
 
 function sanitizeResourceName(value: string): string {
   return value.replace(/[^a-zA-Z0-9-]/g, '-');
+}
+
+function sanitizeBucketName(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
 }
 
 function sanitizeSecretName(value: string): string {
@@ -246,6 +260,8 @@ function buildAuthBootstrapUserData(args: {
   tlsMode: string;
   acmeEmail: string;
   route53HostedZoneId: pulumi.Input<string>;
+  acmeBackupBucketName: pulumi.Input<string>;
+  acmeBackupPrefix: string;
   authentikImageTag: string;
   authentikSecretArn: pulumi.Input<string>;
   databaseCredentialsSecretArn: pulumi.Input<string>;
@@ -261,6 +277,7 @@ function buildAuthBootstrapUserData(args: {
       args.jwtSigningKeySecretArn,
       args.integrationConfigSecretArn,
       args.route53HostedZoneId,
+      args.acmeBackupBucketName,
     ])
     .apply(
       ([
@@ -270,6 +287,7 @@ function buildAuthBootstrapUserData(args: {
         jwtSigningKeySecretArn,
         integrationConfigSecretArn,
         route53HostedZoneId,
+        acmeBackupBucketName,
       ]) => `#!/bin/bash
 set -euxo pipefail
 
@@ -320,6 +338,8 @@ ALTERNUN_IDENTITY_INGRESS_MODE=${args.ingressMode}
 ALTERNUN_IDENTITY_TLS_MODE=${args.tlsMode}
 ALTERNUN_IDENTITY_TLS_ACME_EMAIL=${args.acmeEmail}
 ALTERNUN_ROUTE53_HOSTED_ZONE_ID=${route53HostedZoneId}
+ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET=${acmeBackupBucketName}
+ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX=${args.acmeBackupPrefix}
 AUTHENTIK_IMAGE_TAG=${args.authentikImageTag}
 AUTHENTIK_DATABASE_MODE=${args.databaseMode}
 AUTHENTIK_SECRET_ARN=${authentikSecretArn}
@@ -415,14 +435,21 @@ export function deployIdentityInfrastructure(
   const identityIngressMode = args.settings.ingress.stageModes[identityStageKey];
   const identityTlsMode = args.settings.tls.stageModes[identityStageKey];
   const useAlbIngress = identityIngressMode === 'alb';
+  const useAcmeBackup =
+    identityTlsMode === 'acme-route53-dns-01' && args.settings.tls.acmeBackup.enabled;
   const resourceBaseName = sanitizeResourceName(`identity-${args.stage}`);
   const environmentLabel = normalizeIdentityEnvironmentLabel(args.stage);
   const resourceDisplayPrefix = `${args.appName}-${environmentLabel}-auth`;
   const resourceTags = createResourceTags(args);
+  const callerIdentity = aws.getCallerIdentityOutput({});
   const route53ZoneId =
     args.hostedZoneId ??
     args.settings.tls.route53HostedZoneId ??
     aws.route53.getZoneOutput({ name: args.rootDomain, privateZone: false }).zoneId;
+  const acmeBackupBucketName =
+    pulumi.interpolate`${args.appName}-${args.stage}-identity-acme-${callerIdentity.accountId}`.apply(
+      sanitizeBucketName
+    );
   const stageScopedSecrets = {
     authentik: scopeSecretName(args.settings.secrets.authentikSecretKeyName, args.stage),
     databaseCredentials: scopeSecretName(
@@ -444,6 +471,40 @@ export function deployIdentityInfrastructure(
   const vpc = new sst.aws.Vpc(resourceBaseName) as unknown as IdentityVpcComponent;
   const publicSubnetIds = pulumi.output(vpc.publicSubnets).apply(subnets => pulumi.all(subnets));
   const privateSubnetIds = pulumi.output(vpc.privateSubnets).apply(subnets => pulumi.all(subnets));
+  const acmeBackupBucket = useAcmeBackup
+    ? new aws.s3.BucketV2(`${resourceBaseName}-acme-backup`, {
+        bucket: acmeBackupBucketName,
+        forceDestroy: args.stage !== 'production',
+        tags: {
+          ...resourceTags,
+          Name: `${resourceDisplayPrefix}-acme-backup`,
+        },
+      })
+    : undefined;
+
+  if (acmeBackupBucket) {
+    new aws.s3.BucketPublicAccessBlock(`${resourceBaseName}-acme-backup-public-access`, {
+      blockPublicAcls: true,
+      blockPublicPolicy: true,
+      bucket: acmeBackupBucket.id,
+      ignorePublicAcls: true,
+      restrictPublicBuckets: true,
+    });
+
+    new aws.s3.BucketServerSideEncryptionConfigurationV2(
+      `${resourceBaseName}-acme-backup-encryption`,
+      {
+        bucket: acmeBackupBucket.id,
+        rules: [{ applyServerSideEncryptionByDefault: { sseAlgorithm: 'AES256' } }],
+      }
+    );
+
+    new aws.s3.BucketVersioningV2(`${resourceBaseName}-acme-backup-versioning`, {
+      bucket: acmeBackupBucket.id,
+      versioningConfiguration: { status: 'Enabled' },
+    });
+  }
+
   const useEc2Database = args.settings.database.mode === 'ec2';
   const loadBalancerSecurityGroup = useAlbIngress
     ? new aws.ec2.SecurityGroup(`${resourceBaseName}-alb-sg`, {
@@ -917,6 +978,29 @@ export function deployIdentityInfrastructure(
     ),
   });
 
+  if (acmeBackupBucket) {
+    new aws.iam.RolePolicy(`${resourceBaseName}-instance-acme-backup-policy`, {
+      role: instanceRole.name,
+      policy: pulumi.all([acmeBackupBucket.arn]).apply(([bucketArn]) =>
+        JSON.stringify({
+          Version: '2012-10-17',
+          Statement: [
+            {
+              Action: ['s3:GetBucketLocation', 's3:ListBucket'],
+              Effect: 'Allow',
+              Resource: [bucketArn],
+            },
+            {
+              Action: ['s3:GetObject', 's3:PutObject'],
+              Effect: 'Allow',
+              Resource: [`${bucketArn}/*`],
+            },
+          ],
+        })
+      ),
+    });
+  }
+
   const instanceProfile = new aws.iam.InstanceProfile(`${resourceBaseName}-instance-profile`, {
     role: instanceRole.name,
     tags: {
@@ -936,6 +1020,8 @@ export function deployIdentityInfrastructure(
     tlsMode: identityTlsMode,
     acmeEmail: args.settings.tls.acmeEmail,
     route53HostedZoneId: route53ZoneId,
+    acmeBackupBucketName: acmeBackupBucket?.bucket ?? '',
+    acmeBackupPrefix: args.settings.tls.acmeBackup.prefix,
     authentikImageTag: args.settings.authentikImageTag,
     authentikSecretArn: authentikSecret.arn,
     databaseCredentialsSecretArn: databaseCredentialsSecret.arn,
@@ -1204,6 +1290,13 @@ export function deployIdentityInfrastructure(
       subnetGroupName: databaseSubnetGroup?.name,
       username: pulumi.output(databaseUsername),
     },
+    acmeBackup: acmeBackupBucket
+      ? {
+          bucketArn: acmeBackupBucket.arn,
+          bucketName: acmeBackupBucket.bucket,
+          prefix: pulumi.output(args.settings.tls.acmeBackup.prefix),
+        }
+      : undefined,
     loadBalancer:
       identityLoadBalancer && identityTargetGroup && loadBalancerSecurityGroup
         ? {

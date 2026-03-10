@@ -134,7 +134,11 @@
         "mobile": "acme-route53-dns-01"
       },
       "acmeEmail": "identity-admin@alternun.co",
-      "route53HostedZoneId": ""
+      "route53HostedZoneId": "",
+      "acmeBackup": {
+        "enabled": true,
+        "prefix": "state"
+      }
     },
     "ec2": {
       "instanceType": "t3.small",
