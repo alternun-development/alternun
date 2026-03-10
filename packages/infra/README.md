@@ -216,6 +216,8 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_TLS_MODE_MOBILE`
 - `INFRA_IDENTITY_TLS_ACME_EMAIL`
 - `INFRA_IDENTITY_TLS_ROUTE53_HOSTED_ZONE_ID`
+- `INFRA_IDENTITY_TLS_ACME_BACKUP_ENABLED`
+- `INFRA_IDENTITY_TLS_ACME_BACKUP_PREFIX`
 - `INFRA_IDENTITY_ALB_CERTIFICATE_ARN`
 - `INFRA_IDENTITY_ALB_HEALTH_CHECK_PATH`
 - `INFRA_IDENTITY_ALB_HEALTH_CHECK_MATCHER`
@@ -269,6 +271,7 @@ Important behavior:
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
 - the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
 - non-production identity defaults to direct instance ingress with Traefik Route53 DNS-01 ACME
+- non-production identity persists Traefik ACME state locally and backs it up to a private S3 bucket for restore after instance replacement
 - production identity defaults to ALB + ACM, with the ALB terminating TLS and forwarding HTTPS to the instance
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
 - when Supabase management token/project ref are provided, infra patches Supabase `external_keycloak_*` settings automatically

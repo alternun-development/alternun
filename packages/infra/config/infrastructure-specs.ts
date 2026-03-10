@@ -121,6 +121,10 @@ export const IDENTITY_INFRA_DEFAULTS = {
     },
     acmeEmailLocalPart: 'identity-admin',
     route53HostedZoneId: '',
+    acmeBackup: {
+      enabled: true,
+      prefix: 'state',
+    },
   },
   integration: {
     google: {

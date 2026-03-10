@@ -193,10 +193,12 @@ Resources created:
 - EC2 SSM policy attachment
 - EC2 Secrets Manager access policy
 - EC2 Route53 access policy for DNS-01 updates
+- EC2 S3 access policy for ACME backup state
 - EC2 instance profile
 - EC2 instance for Authentik
 - Elastic IP for direct-ingress identity stages
 - Elastic IP association for direct-ingress identity stages
+- private S3 bucket for Traefik ACME backup state on Route53 DNS-01 stages
 - production Application Load Balancer
 - production target group + listeners
 - production ACM certificate + DNS validation record when no explicit cert ARN is provided
@@ -219,6 +221,9 @@ Default specs:
   - production: `alb-acm`
   - dev: `acme-route53-dns-01`
   - mobile: `acme-route53-dns-01`
+- ACME backup defaults:
+  - enabled: `true`
+  - prefix: `state`
 - RDS engine: PostgreSQL `16`
 - RDS instance type: `db.t4g.micro`
 - RDS storage: `20 GiB`
