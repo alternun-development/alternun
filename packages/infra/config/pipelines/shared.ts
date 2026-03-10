@@ -1,8 +1,7 @@
 export const STANDARD_PIPELINE_SET =
-  'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod';
-export const ALL_PIPELINE_SET = `${STANDARD_PIPELINE_SET},dashboard-dev,dashboard-prod`;
-export const IDENTITY_PIPELINE_SET =
-  'production,dev,identity-dev,identity-prod,admin-dev,admin-prod';
+  'production,dev,identity-dev,identity-prod,dashboard-dev,dashboard-prod';
+export const ALL_PIPELINE_SET = STANDARD_PIPELINE_SET;
+export const IDENTITY_PIPELINE_SET = STANDARD_PIPELINE_SET;
 
 const NON_EXPO_PIPELINE_ENV = {
   INFRA_PRESERVE_EXISTING_ENV: 'true',

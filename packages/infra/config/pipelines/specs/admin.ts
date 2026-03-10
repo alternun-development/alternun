@@ -1,10 +1,10 @@
 import { buildNonExpoPipelineEnv, resolveBranch, STANDARD_PIPELINE_SET } from '../shared.js';
-import type { AdminPipelineStage, PipelineConfigContext, PipelineSpecRecord } from '../types.js';
+import type { AdminPipelineStage, PipelineConfigContext, PipelineSpec } from '../types.js';
 
 export function buildAdminPipelineSpecs({
   env,
   pipeline,
-}: PipelineConfigContext): PipelineSpecRecord<AdminPipelineStage> {
+}: PipelineConfigContext): Record<AdminPipelineStage, PipelineSpec> {
   return {
     'admin-dev': {
       suffix: 'adm-dev',

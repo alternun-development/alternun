@@ -414,15 +414,12 @@ Safety behavior:
 - `mobile`
 - `dashboard-dev` (combined admin + API pipeline for `SST_STAGE=dashboard-dev`, defaults to `develop` branch)
 - `dashboard-prod` (combined admin + API pipeline for `SST_STAGE=dashboard-prod`, defaults to `master` branch)
-- `admin-dev` (Refine admin-focused pipeline for `SST_STAGE=admin-dev`, defaults to `develop` branch)
-- `admin-prod` (Refine admin-focused pipeline for `SST_STAGE=admin-prod`, defaults to `master` branch)
-- `api-dev` (NestJS backend-focused pipeline for `SST_STAGE=api-dev`, defaults to `develop` branch)
-- `api-prod` (NestJS backend-focused pipeline for `SST_STAGE=api-prod`, defaults to `master` branch)
 - `identity-dev` (Authentik-focused pipeline for `SST_STAGE=identity-dev`, defaults to `develop` branch)
 - `identity-prod` (Authentik-focused pipeline for `SST_STAGE=identity-prod`, defaults to `master` branch)
 
 Legacy alias: `identity` maps to `identity-dev`.
-Created pipeline names include `alternun-prod-pipeline`, `alternun-dev-pipeline`, `alternun-auth-dev-pipeline`, `alternun-auth-prod-pipeline`, `alternun-api-dev-pipeline`, `alternun-api-prod-pipeline`, `alternun-adm-dev-pipeline`, `alternun-adm-prod-pipeline`, `alternun-dash-dev-pipeline`, and `alternun-dash-prod-pipeline`.
+Created pipeline names include `alternun-prod-pipeline`, `alternun-dev-pipeline`, `alternun-auth-dev-pipeline`, `alternun-auth-prod-pipeline`, `alternun-dash-dev-pipeline`, and `alternun-dash-prod-pipeline`.
+Manual escape hatches remain available through the dedicated stack deploy commands (`deploy:api-dev`, `deploy:api-prod`, `deploy:admin-dev`, `deploy:admin-prod`), but they are no longer managed production-pipeline targets.
 
 ## Required CI/Runtime Env Contract
 
@@ -440,10 +437,6 @@ Minimum values to set in CI:
 - `INFRA_PIPELINE_BRANCH_DEV`
 - `INFRA_PIPELINE_BRANCH_IDENTITY_DEV` (when `identity-dev` is included in `INFRA_PIPELINES`)
 - `INFRA_PIPELINE_BRANCH_IDENTITY_PROD` (when `identity-prod` is included in `INFRA_PIPELINES`)
-- `INFRA_PIPELINE_BRANCH_API_DEV` (when `api-dev` is included in `INFRA_PIPELINES`)
-- `INFRA_PIPELINE_BRANCH_API_PROD` (when `api-prod` is included in `INFRA_PIPELINES`)
-- `INFRA_PIPELINE_BRANCH_ADMIN_DEV` (when `admin-dev` is included in `INFRA_PIPELINES`)
-- `INFRA_PIPELINE_BRANCH_ADMIN_PROD` (when `admin-prod` is included in `INFRA_PIPELINES`)
 - `INFRA_PIPELINE_BRANCH_DASHBOARD_DEV` (when `dashboard-dev` is included in `INFRA_PIPELINES`)
 - `INFRA_PIPELINE_BRANCH_DASHBOARD_PROD` (when `dashboard-prod` is included in `INFRA_PIPELINES`)
 - `INFRA_ENFORCE_PIPELINE_DELETE_GUARD=true`

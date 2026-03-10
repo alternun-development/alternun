@@ -9,12 +9,7 @@ export type DeploymentStage =
   | BackendPipelineStage
   | AdminPipelineStage
   | DashboardPipelineStage;
-export type ManagedPipeline =
-  | PipelineStage
-  | IdentityPipelineStage
-  | BackendPipelineStage
-  | AdminPipelineStage
-  | DashboardPipelineStage;
+export type ManagedPipeline = PipelineStage | IdentityPipelineStage | DashboardPipelineStage;
 export type PipelineComputeType =
   | 'BUILD_GENERAL1_SMALL'
   | 'BUILD_GENERAL1_MEDIUM'
