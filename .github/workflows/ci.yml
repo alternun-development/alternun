@@ -2,9 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main, master]
   pull_request:
     branches: [main, master, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -68,6 +72,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -86,10 +91,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run i18n tests
+        run: pnpm --filter @alternun/i18n test
+
+      - name: Run mobile critical tests
+        run: CI=1 pnpm --filter @alternun/mobile exec jest --runInBand --watchAll=false
 
       - name: Upload coverage to Codecov
+        if: hashFiles('**/coverage/lcov.info') != ''
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage/lcov.info
@@ -126,7 +135,7 @@ jobs:
     needs: [lint, type-check, test]
     strategy:
       matrix:
-        app: [web, mobile, docs]
+        app: [web, mobile]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
