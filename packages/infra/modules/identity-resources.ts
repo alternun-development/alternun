@@ -9,6 +9,7 @@ import { RandomPassword } from '@pulumi/random';
 import { readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { gzipSync } from 'node:zlib';
+import { buildStageDomains } from '../config/infrastructure-specs.js';
 import type { IdentityDatabaseMode, IdentitySettings } from './identity.js';
 import { resolveIdentityStageDomain } from './identity.js';
 
@@ -136,6 +137,25 @@ function scopeSecretName(secretName: string, stage: string): string {
   }
 
   return `${normalized}/${stage}`;
+}
+
+function resolveApplicationStageKey(stage: string): 'production' | 'dev' | 'mobile' {
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+
+  if (
+    normalized === 'production' ||
+    normalized === 'prod' ||
+    normalized === 'identity-prod' ||
+    normalized === 'dashboard-prod'
+  ) {
+    return 'production';
+  }
+
+  if (normalized === 'mobile' || normalized === 'preview' || normalized === 'identity-mobile') {
+    return 'mobile';
+  }
+
+  return 'dev';
 }
 
 function gzipUserData(userData: pulumi.Output<string>): pulumi.Output<string> {
@@ -560,16 +580,36 @@ export function deployIdentityInfrastructure(
     }
   );
 
+  const adminOidcClientSecret = new RandomPassword(`${resourceBaseName}-admin-oidc-secret`, {
+    length: 40,
+    special: false,
+  });
+  const adminStageKey = resolveApplicationStageKey(args.stage);
+  const adminStageDomain = buildStageDomains('admin', args.rootDomain)[adminStageKey];
+  const adminOidcRedirectUrl = `https://${adminStageDomain}/auth/callback`;
+  const adminOidcPostLogoutRedirectUrl = `https://${adminStageDomain}/login`;
+
   new aws.secretsmanager.SecretVersion(`${resourceBaseName}-integration-config-secret-version`, {
     secretId: integrationConfigSecret.id,
     secretString: pulumi.secret(
       pulumi
-        .all([supabaseOidcClientSecret.result, bootstrapAdminPasswordValue])
-        .apply(([supabaseClientSecret, adminPassword]) =>
+        .all([
+          supabaseOidcClientSecret.result,
+          adminOidcClientSecret.result,
+          bootstrapAdminPasswordValue,
+        ])
+        .apply(([supabaseClientSecret, adminClientSecret, adminPassword]) =>
           JSON.stringify({
             adminEmail: args.settings.integration.bootstrap.admin.email,
             adminGroup: args.settings.integration.bootstrap.admin.group,
             adminName: args.settings.integration.bootstrap.admin.name,
+            adminOidcApplicationName: args.settings.integration.adminOidc.applicationName,
+            adminOidcApplicationSlug: args.settings.integration.adminOidc.applicationSlug,
+            adminOidcClientId: args.settings.integration.adminOidc.clientId,
+            adminOidcClientSecret: adminClientSecret,
+            adminOidcPostLogoutRedirectUrl,
+            adminOidcProviderName: args.settings.integration.adminOidc.providerName,
+            adminOidcRedirectUrl,
             adminPassword,
             adminUsername: args.settings.integration.bootstrap.admin.username,
             defaultApplicationDescription:

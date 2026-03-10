@@ -1,7 +1,22 @@
+import { useState } from 'react';
 import { authProvider } from '../../auth/authProvider';
 import { adminEnv } from '../../config/env';
 
-export function LoginPage() {
+export function LoginPage(): JSX.Element {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function handleLogin(): Promise<void> {
+    setErrorMessage(null);
+
+    try {
+      await authProvider.login({});
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Authentik sign-in could not be started.'
+      );
+    }
+  }
+
   return (
     <div className='auth-stage'>
       <section className='auth-card'>
@@ -35,11 +50,13 @@ export function LoginPage() {
           className='primary-button'
           type='button'
           onClick={() => {
-            void authProvider.login({});
+            void handleLogin();
           }}
         >
           Continue with Authentik
         </button>
+
+        {errorMessage ? <p role='alert'>{errorMessage}</p> : null}
       </section>
     </div>
   );
