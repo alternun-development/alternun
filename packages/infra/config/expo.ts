@@ -1,6 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { LocalDeploymentConfig } from './deployment-config.js';
+import {
+  EXPO_INFRA_DEFAULTS,
+  REDIRECT_INFRA_DEFAULTS,
+  buildStageDomains,
+} from './infrastructure-specs.js';
 import { parseBoolean } from './parsing.js';
 import type { PipelineStage } from './pipelines/index.js';
 
@@ -118,16 +123,13 @@ export function resolveExpoConfig({
   profileFlags,
   rootDomain,
 }: ResolveExpoConfigArgs): ResolvedExpoConfig {
-  const appPath = env.INFRA_EXPO_APP_PATH ?? localConfig.expo?.appPath ?? '../../apps/mobile';
+  const appPath =
+    env.INFRA_EXPO_APP_PATH ?? localConfig.expo?.appPath ?? EXPO_INFRA_DEFAULTS.appPath;
   const resolvedAppPath = resolveExpoAppPath(dirname, appPath);
-  const subdomain = env.INFRA_EXPO_SUBDOMAIN ?? localConfig.expo?.subdomain ?? 'airs';
-  const legacyDevDomain = `dev.${subdomain}.${rootDomain}`;
-
-  const defaultExpoDomains: Record<PipelineStage, string> = {
-    production: `${subdomain}.${rootDomain}`,
-    dev: `testnet.${subdomain}.${rootDomain}`,
-    mobile: `preview.${subdomain}.${rootDomain}`,
-  };
+  const subdomain =
+    env.INFRA_EXPO_SUBDOMAIN ?? localConfig.expo?.subdomain ?? EXPO_INFRA_DEFAULTS.subdomain;
+  const legacyDevDomain = `${REDIRECT_INFRA_DEFAULTS.legacyDevSubdomain}.${subdomain}.${rootDomain}`;
+  const defaultExpoDomains = buildStageDomains(subdomain, rootDomain);
 
   const stageDomains: Record<PipelineStage, string> = {
     production:
@@ -148,21 +150,29 @@ export function resolveExpoConfig({
   };
 
   const buildCommand =
-    env.INFRA_EXPO_BUILD_COMMAND ?? localConfig.expo?.build?.command ?? 'npx expo export -p web';
-  const buildOutput = env.INFRA_EXPO_BUILD_OUTPUT ?? localConfig.expo?.build?.output ?? 'dist';
+    env.INFRA_EXPO_BUILD_COMMAND ??
+    localConfig.expo?.build?.command ??
+    EXPO_INFRA_DEFAULTS.buildCommand;
+  const buildOutput =
+    env.INFRA_EXPO_BUILD_OUTPUT ??
+    localConfig.expo?.build?.output ??
+    EXPO_INFRA_DEFAULTS.buildOutput;
   const enableCustomDomainRaw =
     env.INFRA_EXPO_ENABLE_CUSTOM_DOMAIN ??
     (localConfig.expo?.enableCustomDomain !== undefined
       ? String(localConfig.expo.enableCustomDomain)
       : undefined) ??
-    'true';
-  const enableCustomDomain = parseBoolean(enableCustomDomainRaw, true);
+    String(EXPO_INFRA_DEFAULTS.enableCustomDomain);
+  const enableCustomDomain = parseBoolean(
+    enableCustomDomainRaw,
+    EXPO_INFRA_DEFAULTS.enableCustomDomain
+  );
   const requirePublicAuthEnv = parseBoolean(
     env.INFRA_REQUIRE_EXPO_PUBLIC_AUTH ??
       (localConfig.expo?.requirePublicAuthEnv !== undefined
         ? String(localConfig.expo.requirePublicAuthEnv)
         : undefined),
-    true
+    EXPO_INFRA_DEFAULTS.requirePublicAuthEnv
   );
   const enableExpoSite = parseBoolean(
     env.INFRA_ENABLE_EXPO_SITE,
@@ -201,7 +211,7 @@ export function resolveExpoConfig({
         (localConfig.redirects?.enableAirsToDev !== undefined
           ? String(localConfig.redirects.enableAirsToDev)
           : undefined),
-      true
+      REDIRECT_INFRA_DEFAULTS.enableAirsToDev
     ),
     airsToDevSourceDomain:
       env.INFRA_REDIRECT_AIRS_TO_DEV_SOURCE ??
@@ -214,7 +224,7 @@ export function resolveExpoConfig({
         (localConfig.redirects?.enableDevToTestnet !== undefined
           ? String(localConfig.redirects.enableDevToTestnet)
           : undefined),
-      true
+      REDIRECT_INFRA_DEFAULTS.enableDevToTestnet
     ),
     devToTestnetSourceDomain:
       env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE ??
@@ -227,10 +237,12 @@ export function resolveExpoConfig({
         (localConfig.redirects?.enableRootDomainRedirect !== undefined
           ? String(localConfig.redirects.enableRootDomainRedirect)
           : undefined),
-      true
+      REDIRECT_INFRA_DEFAULTS.enableRootDomainRedirect
     ),
     rootDomainRedirectTarget:
-      env.INFRA_REDIRECT_ROOT_TARGET ?? localConfig.redirects?.rootDomainTarget ?? 'alternun.io',
+      env.INFRA_REDIRECT_ROOT_TARGET ??
+      localConfig.redirects?.rootDomainTarget ??
+      REDIRECT_INFRA_DEFAULTS.rootDomainTarget,
     rootDomainRedirectCertArn:
       env.INFRA_REDIRECT_ROOT_CERT_ARN ?? localConfig.redirects?.certArns?.rootDomain,
   };

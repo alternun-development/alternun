@@ -1,5 +1,11 @@
 /* eslint-disable comma-dangle */
 
+import {
+  IDENTITY_INFRA_DEFAULTS,
+  buildIdentitySecretNameDefaults,
+  buildStageDomains,
+} from '../config/infrastructure-specs.js';
+
 export type IdentityEmailProvider = 'ses' | 'postmark';
 export type IdentityDatabaseMode = 'rds' | 'ec2';
 export type IdentityPolicyEngineMode = 'any' | 'all';
@@ -178,16 +184,8 @@ function parsePositiveInteger(value: string | number | undefined, fallback: numb
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
 }
 
-function buildDefaultStageDomains(rootDomain: string): IdentitySettings['stageDomains'] {
-  return {
-    production: `auth.${rootDomain}`,
-    dev: `testnet.auth.${rootDomain}`,
-    mobile: `preview.auth.${rootDomain}`,
-  };
-}
-
 function normalizeEmailProvider(value: string | undefined): IdentityEmailProvider {
-  return value?.toLowerCase() === 'postmark' ? 'postmark' : 'ses';
+  return value?.toLowerCase() === 'postmark' ? 'postmark' : IDENTITY_INFRA_DEFAULTS.emailProvider;
 }
 
 function normalizeDatabaseMode(value: string | undefined): IdentityDatabaseMode {
@@ -235,7 +233,7 @@ function parseAuthentikCalendarVersion(tag: string): { year: number; release: nu
 }
 
 function normalizeAuthentikImageTag(value: string | undefined): string {
-  const extractedTag = extractAuthentikTag(value ?? '2026.2');
+  const extractedTag = extractAuthentikTag(value ?? IDENTITY_INFRA_DEFAULTS.authentikImageTag);
   const { year, release } = parseAuthentikCalendarVersion(extractedTag);
   const minYear = 2025;
   const minRelease = 10;
@@ -280,20 +278,9 @@ function parseSupabaseProjectRef(value: string | undefined): string {
 }
 
 export function buildIdentitySettings(args: BuildIdentitySettingsArgs): IdentitySettings {
-  const defaultStageDomains = buildDefaultStageDomains(args.rootDomain);
+  const defaultStageDomains = buildStageDomains('auth', args.rootDomain);
   const localConfig = args.localConfig;
-  const defaultSupabaseApplicationSlug = 'alternun-supabase';
-  const defaultSupabaseProviderName = 'Alternun Supabase OIDC';
-  const defaultSupabaseApplicationName = 'Alternun Supabase';
-  const defaultBootstrapAdminUsername = 'akadmin';
-  const defaultBootstrapAdminEmail = 'admin@alternun.co';
-  const defaultBootstrapAdminName = 'authentik Default Admin';
-  const defaultBootstrapAdminGroup = 'authentik Admins';
-  const defaultBootstrapAppName = 'Alternun Internal';
-  const defaultBootstrapAppSlug = 'alternun-internal';
-  const defaultBootstrapAppGroup = 'Alternun';
-  const defaultBootstrapAppPublisher = 'Alternun';
-  const defaultBootstrapAppDescription = 'Alternun internal access';
+  const defaultIdentitySecretNames = buildIdentitySecretNameDefaults(args.appName);
 
   return {
     enabled: parseBoolean(
@@ -315,52 +302,56 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
     },
     ec2: {
       instanceType:
-        args.env.INFRA_IDENTITY_EC2_INSTANCE_TYPE ?? localConfig?.ec2?.instanceType ?? 't3.small',
+        args.env.INFRA_IDENTITY_EC2_INSTANCE_TYPE ??
+        localConfig?.ec2?.instanceType ??
+        IDENTITY_INFRA_DEFAULTS.ec2.instanceType,
       volumeSizeGiB: parsePositiveInteger(
         args.env.INFRA_IDENTITY_EC2_VOLUME_SIZE_GIB ?? localConfig?.ec2?.volumeSizeGiB,
-        20
+        IDENTITY_INFRA_DEFAULTS.ec2.volumeSizeGiB
       ),
     },
     rds: {
       engineVersion:
-        args.env.INFRA_IDENTITY_RDS_ENGINE_VERSION ?? localConfig?.rds?.engineVersion ?? '16',
+        args.env.INFRA_IDENTITY_RDS_ENGINE_VERSION ??
+        localConfig?.rds?.engineVersion ??
+        IDENTITY_INFRA_DEFAULTS.rds.engineVersion,
       instanceType:
         args.env.INFRA_IDENTITY_RDS_INSTANCE_TYPE ??
         localConfig?.rds?.instanceType ??
-        'db.t4g.micro',
+        IDENTITY_INFRA_DEFAULTS.rds.instanceType,
       storageGiB: parsePositiveInteger(
         args.env.INFRA_IDENTITY_RDS_STORAGE_GIB ?? localConfig?.rds?.storageGiB,
-        20
+        IDENTITY_INFRA_DEFAULTS.rds.storageGiB
       ),
       multiAz: parseBoolean(
         args.env.INFRA_IDENTITY_RDS_MULTI_AZ ??
           (localConfig?.rds?.multiAz !== undefined ? String(localConfig.rds.multiAz) : undefined),
-        false
+        IDENTITY_INFRA_DEFAULTS.rds.multiAz
       ),
       publicAccess: parseBoolean(
         args.env.INFRA_IDENTITY_RDS_PUBLIC_ACCESS ??
           (localConfig?.rds?.publicAccess !== undefined
             ? String(localConfig.rds.publicAccess)
             : undefined),
-        false
+        IDENTITY_INFRA_DEFAULTS.rds.publicAccess
       ),
       backupRetentionDays: parsePositiveInteger(
         args.env.INFRA_IDENTITY_RDS_BACKUP_RETENTION_DAYS ?? localConfig?.rds?.backupRetentionDays,
-        7
+        IDENTITY_INFRA_DEFAULTS.rds.backupRetentionDays
       ),
       performanceInsights: parseBoolean(
         args.env.INFRA_IDENTITY_RDS_PERFORMANCE_INSIGHTS ??
           (localConfig?.rds?.performanceInsights !== undefined
             ? String(localConfig.rds.performanceInsights)
             : undefined),
-        false
+        IDENTITY_INFRA_DEFAULTS.rds.performanceInsights
       ),
       enhancedMonitoring: parseBoolean(
         args.env.INFRA_IDENTITY_RDS_ENHANCED_MONITORING ??
           (localConfig?.rds?.enhancedMonitoring !== undefined
             ? String(localConfig.rds.enhancedMonitoring)
             : undefined),
-        false
+        IDENTITY_INFRA_DEFAULTS.rds.enhancedMonitoring
       ),
     },
     database: {
@@ -376,14 +367,21 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
     ),
     jwt: {
       audience:
-        args.env.INFRA_IDENTITY_JWT_AUDIENCE ?? localConfig?.jwt?.audience ?? 'alternun-app',
-      roleClaim: args.env.INFRA_IDENTITY_JWT_ROLE_CLAIM ?? localConfig?.jwt?.roleClaim ?? 'role',
+        args.env.INFRA_IDENTITY_JWT_AUDIENCE ??
+        localConfig?.jwt?.audience ??
+        IDENTITY_INFRA_DEFAULTS.jwt.audience,
+      roleClaim:
+        args.env.INFRA_IDENTITY_JWT_ROLE_CLAIM ??
+        localConfig?.jwt?.roleClaim ??
+        IDENTITY_INFRA_DEFAULTS.jwt.roleClaim,
       rolesClaim:
-        args.env.INFRA_IDENTITY_JWT_ROLES_CLAIM ?? localConfig?.jwt?.rolesClaim ?? 'alternun_roles',
+        args.env.INFRA_IDENTITY_JWT_ROLES_CLAIM ??
+        localConfig?.jwt?.rolesClaim ??
+        IDENTITY_INFRA_DEFAULTS.jwt.rolesClaim,
       accessTokenTtlMinutes: parsePositiveInteger(
         args.env.INFRA_IDENTITY_JWT_ACCESS_TOKEN_TTL_MINUTES ??
           localConfig?.jwt?.accessTokenTtlMinutes,
-        15
+        IDENTITY_INFRA_DEFAULTS.jwt.accessTokenTtlMinutes
       ),
     },
     integration: {
@@ -402,21 +400,21 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
         sourceName:
           args.env.INFRA_IDENTITY_GOOGLE_SOURCE_NAME ??
           localConfig?.integration?.google?.sourceName ??
-          'Google',
+          IDENTITY_INFRA_DEFAULTS.integration.google.sourceName,
         sourceSlug:
           args.env.INFRA_IDENTITY_GOOGLE_SOURCE_SLUG ??
           localConfig?.integration?.google?.sourceSlug ??
-          'google',
+          IDENTITY_INFRA_DEFAULTS.integration.google.sourceSlug,
       },
       supabase: {
         applicationName:
           args.env.INFRA_IDENTITY_SUPABASE_APPLICATION_NAME ??
           localConfig?.integration?.supabase?.applicationName ??
-          defaultSupabaseApplicationName,
+          IDENTITY_INFRA_DEFAULTS.integration.supabase.applicationName,
         applicationSlug:
           args.env.INFRA_IDENTITY_SUPABASE_APPLICATION_SLUG ??
           localConfig?.integration?.supabase?.applicationSlug ??
-          defaultSupabaseApplicationSlug,
+          IDENTITY_INFRA_DEFAULTS.integration.supabase.applicationSlug,
         managementAccessToken:
           args.env.INFRA_IDENTITY_SUPABASE_MANAGEMENT_ACCESS_TOKEN ??
           localConfig?.integration?.supabase?.managementAccessToken ??
@@ -425,7 +423,7 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
         oidcClientId:
           args.env.INFRA_IDENTITY_SUPABASE_OIDC_CLIENT_ID ??
           localConfig?.integration?.supabase?.oidcClientId ??
-          defaultSupabaseApplicationSlug,
+          IDENTITY_INFRA_DEFAULTS.integration.supabase.applicationSlug,
         projectRef: parseSupabaseProjectRef(
           args.env.INFRA_IDENTITY_SUPABASE_PROJECT_REF ??
             localConfig?.integration?.supabase?.projectRef ??
@@ -436,13 +434,13 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
         providerName:
           args.env.INFRA_IDENTITY_SUPABASE_PROVIDER_NAME ??
           localConfig?.integration?.supabase?.providerName ??
-          defaultSupabaseProviderName,
+          IDENTITY_INFRA_DEFAULTS.integration.supabase.providerName,
         syncConfig: parseBoolean(
           args.env.INFRA_IDENTITY_SUPABASE_SYNC_CONFIG ??
             (localConfig?.integration?.supabase?.syncConfig !== undefined
               ? String(localConfig.integration.supabase.syncConfig)
               : undefined),
-          true
+          IDENTITY_INFRA_DEFAULTS.integration.supabase.syncConfig
         ),
       },
       bootstrap: {
@@ -450,15 +448,15 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
           username:
             args.env.INFRA_IDENTITY_BOOTSTRAP_ADMIN_USERNAME ??
             localConfig?.integration?.bootstrap?.admin?.username ??
-            defaultBootstrapAdminUsername,
+            IDENTITY_INFRA_DEFAULTS.integration.bootstrap.admin.username,
           email:
             args.env.INFRA_IDENTITY_BOOTSTRAP_ADMIN_EMAIL ??
             localConfig?.integration?.bootstrap?.admin?.email ??
-            defaultBootstrapAdminEmail,
+            IDENTITY_INFRA_DEFAULTS.integration.bootstrap.admin.email,
           name:
             args.env.INFRA_IDENTITY_BOOTSTRAP_ADMIN_NAME ??
             localConfig?.integration?.bootstrap?.admin?.name ??
-            defaultBootstrapAdminName,
+            IDENTITY_INFRA_DEFAULTS.integration.bootstrap.admin.name,
           password:
             args.env.INFRA_IDENTITY_BOOTSTRAP_ADMIN_PASSWORD ??
             localConfig?.integration?.bootstrap?.admin?.password ??
@@ -466,7 +464,7 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
           group:
             args.env.INFRA_IDENTITY_BOOTSTRAP_ADMIN_GROUP ??
             localConfig?.integration?.bootstrap?.admin?.group ??
-            defaultBootstrapAdminGroup,
+            IDENTITY_INFRA_DEFAULTS.integration.bootstrap.admin.group,
         },
         defaultApplication: {
           enabled: parseBoolean(
@@ -474,20 +472,20 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
               (localConfig?.integration?.bootstrap?.defaultApplication?.enabled !== undefined
                 ? String(localConfig.integration.bootstrap.defaultApplication.enabled)
                 : undefined),
-            true
+            IDENTITY_INFRA_DEFAULTS.integration.bootstrap.defaultApplication.enabled
           ),
           name:
             args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_NAME ??
             localConfig?.integration?.bootstrap?.defaultApplication?.name ??
-            defaultBootstrapAppName,
+            IDENTITY_INFRA_DEFAULTS.integration.bootstrap.defaultApplication.name,
           slug:
             args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_SLUG ??
             localConfig?.integration?.bootstrap?.defaultApplication?.slug ??
-            defaultBootstrapAppSlug,
+            IDENTITY_INFRA_DEFAULTS.integration.bootstrap.defaultApplication.slug,
           group:
             args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_GROUP ??
             localConfig?.integration?.bootstrap?.defaultApplication?.group ??
-            defaultBootstrapAppGroup,
+            IDENTITY_INFRA_DEFAULTS.integration.bootstrap.defaultApplication.group,
           launchUrl:
             args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL ??
             localConfig?.integration?.bootstrap?.defaultApplication?.launchUrl ??
@@ -497,16 +495,16 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
               (localConfig?.integration?.bootstrap?.defaultApplication?.openInNewTab !== undefined
                 ? String(localConfig.integration.bootstrap.defaultApplication.openInNewTab)
                 : undefined),
-            false
+            IDENTITY_INFRA_DEFAULTS.integration.bootstrap.defaultApplication.openInNewTab
           ),
           publisher:
             args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_PUBLISHER ??
             localConfig?.integration?.bootstrap?.defaultApplication?.publisher ??
-            defaultBootstrapAppPublisher,
+            IDENTITY_INFRA_DEFAULTS.integration.bootstrap.defaultApplication.publisher,
           description:
             args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_DESCRIPTION ??
             localConfig?.integration?.bootstrap?.defaultApplication?.description ??
-            defaultBootstrapAppDescription,
+            IDENTITY_INFRA_DEFAULTS.integration.bootstrap.defaultApplication.description,
           policyEngineMode: normalizePolicyEngineMode(
             args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_POLICY_ENGINE_MODE ??
               localConfig?.integration?.bootstrap?.defaultApplication?.policyEngineMode
@@ -518,23 +516,23 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
       authentikSecretKeyName:
         args.env.INFRA_IDENTITY_SECRET_AUTHENTIK_KEY_NAME ??
         localConfig?.secrets?.authentikSecretKeyName ??
-        `${args.appName}/identity/authentik-secret-key`,
+        defaultIdentitySecretNames.authentikSecretKeyName,
       databaseCredentialsSecretName:
         args.env.INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME ??
         localConfig?.secrets?.databaseCredentialsSecretName ??
-        `${args.appName}/identity/database-credentials`,
+        defaultIdentitySecretNames.databaseCredentialsSecretName,
       smtpCredentialsSecretName:
         args.env.INFRA_IDENTITY_SECRET_SMTP_CREDENTIALS_NAME ??
         localConfig?.secrets?.smtpCredentialsSecretName ??
-        `${args.appName}/identity/smtp-credentials`,
+        defaultIdentitySecretNames.smtpCredentialsSecretName,
       jwtSigningKeySecretName:
         args.env.INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME ??
         localConfig?.secrets?.jwtSigningKeySecretName ??
-        `${args.appName}/identity/jwt-signing-key`,
+        defaultIdentitySecretNames.jwtSigningKeySecretName,
       integrationConfigSecretName:
         args.env.INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME ??
         localConfig?.secrets?.integrationConfigSecretName ??
-        `${args.appName}/identity/integration-config`,
+        defaultIdentitySecretNames.integrationConfigSecretName,
     },
   };
 }

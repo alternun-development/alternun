@@ -2,6 +2,19 @@
 
 AWS/SST deployment wrapper for Alternun Expo Web using `@lsts_tech/infra`.
 
+## Infrastructure Inventory
+
+For a readable inventory of the actual resources, runtimes, instance sizes, domains, and pipeline topology used by this package, see:
+
+- `packages/infra/INFRASTRUCTURE_SPECS.md`
+
+Important distinction:
+
+- `packages/infra/schemas/` validates secret/config payload shapes
+- `packages/infra/INFRASTRUCTURE_SPECS.md` is the infra topology inventory
+- `packages/infra/config/infrastructure-specs.ts` is the typed default-spec catalog
+- the executable source of truth remains the TypeScript modules under `packages/infra/config` and `packages/infra/modules`
+
 ## Stage Domains
 
 - `production` -> `airs.alternun.co`
