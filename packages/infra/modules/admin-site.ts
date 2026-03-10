@@ -4,6 +4,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createExpoSite, resolveDomain } from '@lsts_tech/infra';
+import {
+  ADMIN_SITE_INFRA_DEFAULTS,
+  buildStageDomains,
+  buildStageUrls,
+} from '../config/infrastructure-specs.js';
 
 export interface AdminSiteLocalConfig {
   enabled?: boolean;
@@ -140,27 +145,15 @@ function resolveAdminSiteAppPath(appPath: string): string {
 }
 
 function buildDefaultStageDomains(rootDomain: string): AdminSiteSettings['stageDomains'] {
-  return {
-    production: `admin.${rootDomain}`,
-    dev: `testnet.admin.${rootDomain}`,
-    mobile: `preview.admin.${rootDomain}`,
-  };
+  return buildStageDomains('admin', rootDomain);
 }
 
 function buildDefaultApiUrls(rootDomain: string): AdminSiteSettings['apiUrls'] {
-  return {
-    production: `https://api.${rootDomain}`,
-    dev: `https://testnet.api.${rootDomain}`,
-    mobile: `https://preview.api.${rootDomain}`,
-  };
+  return buildStageUrls('api', rootDomain);
 }
 
 function buildDefaultAuthIssuers(rootDomain: string): AdminSiteSettings['auth']['stageIssuers'] {
-  return {
-    production: `https://auth.${rootDomain}`,
-    dev: `https://testnet.auth.${rootDomain}`,
-    mobile: `https://preview.auth.${rootDomain}`,
-  };
+  return buildStageUrls('auth', rootDomain);
 }
 
 export function buildAdminSiteSettings(args: BuildAdminSiteSettingsArgs): AdminSiteSettings {
@@ -175,18 +168,22 @@ export function buildAdminSiteSettings(args: BuildAdminSiteSettingsArgs): AdminS
         (localConfig?.enabled !== undefined ? String(localConfig.enabled) : undefined),
       false
     ),
-    appPath: args.env.INFRA_ADMIN_APP_PATH ?? localConfig?.appPath ?? '../../apps/admin',
-    buildOutput: args.env.INFRA_ADMIN_BUILD_OUTPUT ?? localConfig?.buildOutput ?? 'dist',
+    appPath:
+      args.env.INFRA_ADMIN_APP_PATH ?? localConfig?.appPath ?? ADMIN_SITE_INFRA_DEFAULTS.appPath,
+    buildOutput:
+      args.env.INFRA_ADMIN_BUILD_OUTPUT ??
+      localConfig?.buildOutput ??
+      ADMIN_SITE_INFRA_DEFAULTS.buildOutput,
     buildCommand:
       args.env.INFRA_ADMIN_BUILD_COMMAND ??
       localConfig?.buildCommand ??
-      'pnpm --filter @alternun/admin run build',
+      ADMIN_SITE_INFRA_DEFAULTS.buildCommand,
     enableCustomDomain: parseBoolean(
       args.env.INFRA_ADMIN_ENABLE_CUSTOM_DOMAIN ??
         (localConfig?.enableCustomDomain !== undefined
           ? String(localConfig.enableCustomDomain)
           : undefined),
-      true
+      ADMIN_SITE_INFRA_DEFAULTS.enableCustomDomain
     ),
     stageDomains: {
       production:
@@ -216,8 +213,13 @@ export function buildAdminSiteSettings(args: BuildAdminSiteSettingsArgs): AdminS
     },
     auth: {
       clientId:
-        args.env.INFRA_ADMIN_AUTH_CLIENT_ID ?? localConfig?.authClientId ?? 'alternun-admin',
-      audience: args.env.INFRA_ADMIN_AUTH_AUDIENCE ?? localConfig?.authAudience ?? 'alternun-app',
+        args.env.INFRA_ADMIN_AUTH_CLIENT_ID ??
+        localConfig?.authClientId ??
+        ADMIN_SITE_INFRA_DEFAULTS.auth.clientId,
+      audience:
+        args.env.INFRA_ADMIN_AUTH_AUDIENCE ??
+        localConfig?.authAudience ??
+        ADMIN_SITE_INFRA_DEFAULTS.auth.audience,
       stageIssuers: {
         production:
           args.env.INFRA_ADMIN_AUTH_ISSUER_PRODUCTION ??

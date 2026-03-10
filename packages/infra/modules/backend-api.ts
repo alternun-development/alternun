@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
+import { BACKEND_API_INFRA_DEFAULTS, buildStageDomains } from '../config/infrastructure-specs.js';
 
 export type BackendApiArchitecture = 'arm64' | 'x86_64';
 
@@ -109,14 +110,6 @@ function normalizeArchitecture(value: string | undefined): BackendApiArchitectur
   return value?.trim().toLowerCase() === 'x86_64' ? 'x86_64' : 'arm64';
 }
 
-function buildDefaultStageDomains(rootDomain: string): BackendApiSettings['stageDomains'] {
-  return {
-    production: `api.${rootDomain}`,
-    dev: `testnet.api.${rootDomain}`,
-    mobile: `preview.api.${rootDomain}`,
-  };
-}
-
 function resolveStageKey(stage: string): keyof BackendApiSettings['stageDomains'] {
   const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
 
@@ -137,17 +130,7 @@ function resolveStageKey(stage: string): keyof BackendApiSettings['stageDomains'
 }
 
 function resolveAuthDomain(rootDomain: string, stage: string): string {
-  const stageKey = resolveStageKey(stage);
-
-  if (stageKey === 'production') {
-    return `auth.${rootDomain}`;
-  }
-
-  if (stageKey === 'mobile') {
-    return `preview.auth.${rootDomain}`;
-  }
-
-  return `testnet.auth.${rootDomain}`;
+  return buildStageDomains('auth', rootDomain)[resolveStageKey(stage)];
 }
 
 function sanitizeResourceName(value: string): string {
@@ -187,7 +170,7 @@ function createResourceTags(args: BackendApiInfrastructureArgs): Record<string, 
 }
 
 export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): BackendApiSettings {
-  const defaultStageDomains = buildDefaultStageDomains(args.rootDomain);
+  const defaultStageDomains = buildStageDomains('api', args.rootDomain);
   const localConfig = args.localConfig;
 
   return {
@@ -196,19 +179,24 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
         (localConfig?.enabled !== undefined ? String(localConfig.enabled) : undefined),
       false
     ),
-    appPath: args.env.INFRA_BACKEND_API_APP_PATH ?? localConfig?.appPath ?? '../../apps/api',
+    appPath:
+      args.env.INFRA_BACKEND_API_APP_PATH ??
+      localConfig?.appPath ??
+      BACKEND_API_INFRA_DEFAULTS.appPath,
     buildOutput:
-      args.env.INFRA_BACKEND_API_BUILD_OUTPUT ?? localConfig?.buildOutput ?? 'dist-lambda',
+      args.env.INFRA_BACKEND_API_BUILD_OUTPUT ??
+      localConfig?.buildOutput ??
+      BACKEND_API_INFRA_DEFAULTS.buildOutput,
     buildCommand:
       args.env.INFRA_BACKEND_API_BUILD_COMMAND ??
       localConfig?.buildCommand ??
-      'pnpm --filter @alternun/api run build',
+      BACKEND_API_INFRA_DEFAULTS.buildCommand,
     enableCustomDomain: parseBoolean(
       args.env.INFRA_BACKEND_API_ENABLE_CUSTOM_DOMAIN ??
         (localConfig?.enableCustomDomain !== undefined
           ? String(localConfig.enableCustomDomain)
           : undefined),
-      true
+      BACKEND_API_INFRA_DEFAULTS.enableCustomDomain
     ),
     stageDomains: {
       production:
@@ -232,26 +220,28 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
     },
     lambda: {
       architecture: normalizeArchitecture(
-        args.env.INFRA_BACKEND_API_ARCHITECTURE ?? localConfig?.lambda?.architecture
+        args.env.INFRA_BACKEND_API_ARCHITECTURE ??
+          localConfig?.lambda?.architecture ??
+          BACKEND_API_INFRA_DEFAULTS.lambda.architecture
       ),
       logRetentionDays: parsePositiveInteger(
         args.env.INFRA_BACKEND_API_LOG_RETENTION_DAYS ?? localConfig?.lambda?.logRetentionDays,
-        14
+        BACKEND_API_INFRA_DEFAULTS.lambda.logRetentionDays
       ),
       memorySize: parsePositiveInteger(
         args.env.INFRA_BACKEND_API_MEMORY_SIZE ?? localConfig?.lambda?.memorySize,
-        1024
+        BACKEND_API_INFRA_DEFAULTS.lambda.memorySize
       ),
       timeoutSeconds: parsePositiveInteger(
         args.env.INFRA_BACKEND_API_TIMEOUT_SECONDS ?? localConfig?.lambda?.timeoutSeconds,
-        30
+        BACKEND_API_INFRA_DEFAULTS.lambda.timeoutSeconds
       ),
     },
     auth: {
       audience:
         args.env.INFRA_BACKEND_API_AUTHENTIK_AUDIENCE ??
         localConfig?.auth?.audience ??
-        'alternun-app',
+        BACKEND_API_INFRA_DEFAULTS.auth.audience,
       issuer: args.env.INFRA_BACKEND_API_AUTHENTIK_ISSUER ?? localConfig?.auth?.issuer ?? '',
       jwksUrl: args.env.INFRA_BACKEND_API_AUTHENTIK_JWKS_URL ?? localConfig?.auth?.jwksUrl ?? '',
     },
