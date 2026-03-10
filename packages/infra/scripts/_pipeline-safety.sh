@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DEFAULT_MANAGED_PIPELINES_CSV='production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod,dashboard-dev,dashboard-prod'
+DEFAULT_MANAGED_PIPELINES_CSV='production,dev,identity-dev,identity-prod,dashboard-dev,dashboard-prod'
 
 resolve_pipeline_config_path() {
   local current_infra_dir
@@ -56,22 +56,10 @@ normalize_managed_pipeline_key() {
     identity-prod | identityprod | identity-production | auth-prod | authentik-prod)
       printf '%s\n' 'identity-prod'
       ;;
-    api | api-dev | backend | backend-dev | backend-api | backend-api-dev)
-      printf '%s\n' 'api-dev'
-      ;;
-    api-prod | api-production | backend-prod | backend-api-prod)
-      printf '%s\n' 'api-prod'
-      ;;
-    admin | admin-dev | backoffice | backoffice-dev | backoffice-admin | backoffice-admin-dev)
-      printf '%s\n' 'admin-dev'
-      ;;
-    admin-prod | admin-production | backoffice-prod | backoffice-admin-prod)
-      printf '%s\n' 'admin-prod'
-      ;;
-    dashboard | dashboard-dev | dashboardapi | dashboardapi-dev | dashboard-admin | dashboard-admin-dev)
+    dashboard | dashboard-dev | dashboardapi | dashboardapi-dev | dashboard-admin | dashboard-admin-dev | admin | admin-dev | backoffice | backoffice-dev | backoffice-admin | backoffice-admin-dev | api | api-dev | backend | backend-dev | backend-api | backend-api-dev)
       printf '%s\n' 'dashboard-dev'
       ;;
-    dashboard-prod | dashboard-production | dashboardapi-prod | dashboard-admin-prod)
+    dashboard-prod | dashboard-production | dashboardapi-prod | dashboard-admin-prod | admin-prod | admin-production | backoffice-prod | backoffice-admin-prod | api-prod | api-production | backend-prod | backend-api-prod)
       printf '%s\n' 'dashboard-prod'
       ;;
     *) return 1 ;;
@@ -85,10 +73,6 @@ managed_pipeline_suffix_for_key() {
     mobile) printf '%s\n' 'mobile' ;;
     identity-dev) printf '%s\n' 'auth-dev' ;;
     identity-prod) printf '%s\n' 'auth-prod' ;;
-    api-dev) printf '%s\n' 'api-dev' ;;
-    api-prod) printf '%s\n' 'api-prod' ;;
-    admin-dev) printf '%s\n' 'adm-dev' ;;
-    admin-prod) printf '%s\n' 'adm-prod' ;;
     dashboard-dev) printf '%s\n' 'dash-dev' ;;
     dashboard-prod) printf '%s\n' 'dash-prod' ;;
     *) return 1 ;;

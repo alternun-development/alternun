@@ -57,24 +57,33 @@ const MANAGED_PIPELINE_ALIASES: Record<ManagedPipeline, readonly string[]> = {
     'dashboardapi-dev',
     'dashboard-admin',
     'dashboard-admin-dev',
-  ],
-  'dashboard-prod': [
-    'dashboard-prod',
-    'dashboard-production',
-    'dashboardapi-prod',
-    'dashboard-admin-prod',
-  ],
-  'admin-dev': [
     'admin',
     'admin-dev',
     'backoffice',
     'backoffice-dev',
     'backoffice-admin',
     'backoffice-admin-dev',
+    'api',
+    'api-dev',
+    'backend',
+    'backend-dev',
+    'backend-api',
+    'backend-api-dev',
   ],
-  'admin-prod': ['admin-prod', 'admin-production', 'backoffice-prod', 'backoffice-admin-prod'],
-  'api-dev': ['api', 'api-dev', 'backend', 'backend-dev', 'backend-api-dev'],
-  'api-prod': ['api-prod', 'api-production', 'backend-prod', 'backend-api-prod'],
+  'dashboard-prod': [
+    'dashboard-prod',
+    'dashboard-production',
+    'dashboardapi-prod',
+    'dashboard-admin-prod',
+    'admin-prod',
+    'admin-production',
+    'backoffice-prod',
+    'backoffice-admin-prod',
+    'api-prod',
+    'api-production',
+    'backend-prod',
+    'backend-api-prod',
+  ],
   'identity-dev': [
     'identity',
     'identity-dev',
@@ -93,18 +102,36 @@ const MANAGED_PIPELINE_ALIASES: Record<ManagedPipeline, readonly string[]> = {
   ],
 };
 
-const ADMIN_SITE_STACK_ALIASES = MANAGED_PIPELINE_ALIASES['admin-dev'].concat(
-  MANAGED_PIPELINE_ALIASES['admin-prod']
-);
+const ADMIN_SITE_STACK_ALIASES = [
+  'admin',
+  'admin-dev',
+  'admin-prod',
+  'admin-production',
+  'backoffice',
+  'backoffice-dev',
+  'backoffice-prod',
+  'backoffice-admin',
+  'backoffice-admin-dev',
+  'backoffice-admin-prod',
+] as const;
 const DASHBOARD_STACK_ALIASES = MANAGED_PIPELINE_ALIASES['dashboard-dev'].concat(
   MANAGED_PIPELINE_ALIASES['dashboard-prod']
 );
 const IDENTITY_STACK_ALIASES = MANAGED_PIPELINE_ALIASES['identity-dev'].concat(
   MANAGED_PIPELINE_ALIASES['identity-prod']
 );
-const BACKEND_API_STACK_ALIASES = MANAGED_PIPELINE_ALIASES['api-dev'].concat(
-  MANAGED_PIPELINE_ALIASES['api-prod']
-);
+const BACKEND_API_STACK_ALIASES = [
+  'api',
+  'api-dev',
+  'api-prod',
+  'api-production',
+  'backend',
+  'backend-dev',
+  'backend-prod',
+  'backend-api',
+  'backend-api-dev',
+  'backend-api-prod',
+] as const;
 
 const DASHBOARD_PIPELINE_PROFILES = [
   'dashboard',

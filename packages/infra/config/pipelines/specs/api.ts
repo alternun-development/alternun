@@ -1,10 +1,10 @@
 import { buildNonExpoPipelineEnv, resolveBranch, STANDARD_PIPELINE_SET } from '../shared.js';
-import type { BackendPipelineStage, PipelineConfigContext, PipelineSpecRecord } from '../types.js';
+import type { BackendPipelineStage, PipelineConfigContext, PipelineSpec } from '../types.js';
 
 export function buildBackendPipelineSpecs({
   env,
   pipeline,
-}: PipelineConfigContext): PipelineSpecRecord<BackendPipelineStage> {
+}: PipelineConfigContext): Record<BackendPipelineStage, PipelineSpec> {
   return {
     'api-dev': {
       suffix: 'api-dev',
