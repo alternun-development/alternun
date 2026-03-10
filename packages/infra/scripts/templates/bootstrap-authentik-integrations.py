@@ -4,12 +4,13 @@ import os
 from django.contrib.auth import get_user_model
 
 from authentik.core.models import Application, Group
-from authentik.flows.models import Flow
+from authentik.flows.models import Flow, FlowStageBinding
 from authentik.policies.expression.models import ExpressionPolicy
 from authentik.policies.models import PolicyBinding
 from authentik.providers.oauth2.models import OAuth2Provider, ScopeMapping
 from authentik.sources.oauth.models import OAuthSource
 from authentik.stages.identification.models import IdentificationStage
+from authentik.stages.user_write.models import UserWriteStage
 
 
 def read_env(name: str, default: str = "") -> str:
@@ -65,10 +66,54 @@ if user.groups.filter(name__in=list(allowed_groups)).exists():
 
 email = (getattr(user, "email", "") or "").strip().lower()
 if allowed_domain and email.endswith(f"@{{allowed_domain}}"):
+    if getattr(user, "type", "") != "internal":
+        user.type = "internal"
+        user.save(update_fields=["type"])
     return True
 
 ak_message(f"Only approved admin users or @{{allowed_domain}} accounts can access Alternun Admin.")
 return False
+""".strip()
+
+
+def build_internal_user_promotion_expression(allowed_domain: str):
+    return f"""
+allowed_domain = {json.dumps(allowed_domain.lower())}
+plan = request.context.get("flow_plan")
+
+def normalize_email(value):
+    return (value or "").strip().lower()
+
+def is_allowed_email(value):
+    email = normalize_email(value)
+    return bool(allowed_domain and email.endswith(f"@{{allowed_domain}}"))
+
+user = getattr(request, "user", None)
+if user and getattr(user, "is_authenticated", False) and is_allowed_email(getattr(user, "email", "")):
+    if getattr(user, "type", "") != "internal":
+        user.type = "internal"
+        user.save(update_fields=["type"])
+    return True
+
+if not plan:
+    return True
+
+context = getattr(plan, "context", {{}})
+pending_user = context.get("pending_user") or request.context.get("pending_user")
+prompt_data = context.get("prompt_data") or request.context.get("prompt_data") or {{}}
+email_candidates = [
+    getattr(pending_user, "email", ""),
+    prompt_data.get("email", ""),
+    prompt_data.get("mail", ""),
+    request.context.get("pending_user_identifier", ""),
+]
+
+for candidate in email_candidates:
+    if is_allowed_email(candidate):
+        context["user_type"] = "internal"
+        return True
+
+return True
 """.strip()
 
 
@@ -117,6 +162,8 @@ results = {
     "admin_oidc_provider": "skipped",
     "default_application": "skipped",
     "google_source": "skipped",
+    "internal_domain_users": "skipped",
+    "internal_domain_user_promotion": "skipped",
     "supabase_provider": "skipped",
 }
 
@@ -147,9 +194,9 @@ admin_oidc_redirect_url = read_env("ALTERNUN_BOOTSTRAP_ADMIN_OIDC_REDIRECT_URL")
 admin_oidc_post_logout_redirect_url = read_env(
     "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_POST_LOGOUT_REDIRECT_URL"
 )
+user_model = get_user_model()
 
 if admin_username and admin_email:
-    user_model = get_user_model()
     admin_defaults = {
         "email": admin_email,
         "is_active": True,
@@ -203,6 +250,23 @@ if admin_username and admin_email:
     results["admin_email"] = admin_email
 else:
     results["admin_user"] = "missing_inputs"
+
+if admin_allowed_email_domain:
+    promoted_usernames = []
+    for internal_user in user_model.objects.filter(
+        email__iendswith=f"@{admin_allowed_email_domain}"
+    ).exclude(type="internal"):
+        internal_user.type = "internal"
+        internal_user.save(update_fields=["type"])
+        promoted_usernames.append(internal_user.username)
+
+    results["internal_domain_users"] = {
+        "status": "updated" if promoted_usernames else "unchanged",
+        "count": len(promoted_usernames),
+        "usernames": promoted_usernames,
+    }
+else:
+    results["internal_domain_users"] = "missing_allowed_domain"
 
 if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_url:
     admin_scope_mapping_ids = [
@@ -344,6 +408,18 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
         )
 else:
     results["admin_oidc_provider"] = "missing_inputs"
+
+internal_user_promotion_policy = None
+if admin_allowed_email_domain:
+    internal_user_promotion_policy, promotion_policy_created, promotion_policy_changed = (
+        upsert_expression_policy(
+            "alternun-internal-user-promotion",
+            build_internal_user_promotion_expression(admin_allowed_email_domain),
+        )
+    )
+else:
+    promotion_policy_created = False
+    promotion_policy_changed = False
 
 default_application_enabled = read_bool_env(
     "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_ENABLED", True
@@ -508,6 +584,40 @@ if google_client_id and google_client_secret:
             identification_stage.save()
         if not identification_stage.sources.filter(pk=source.pk).exists():
             identification_stage.sources.add(source)
+
+    source_enrollment_flow = source.enrollment_flow or source_enrollment_flow
+    if internal_user_promotion_policy and source_enrollment_flow:
+        user_write_stage_ids = list(
+            UserWriteStage.objects.values_list("stage_ptr_id", flat=True)
+        )
+        enrollment_user_write_binding = (
+            FlowStageBinding.objects.filter(
+                target=source_enrollment_flow,
+                stage_id__in=user_write_stage_ids,
+            )
+            .order_by("order")
+            .first()
+        )
+
+        if enrollment_user_write_binding:
+            policy_binding_created, policy_binding_changed = ensure_policy_binding(
+                enrollment_user_write_binding,
+                internal_user_promotion_policy,
+                order=0,
+            )
+            if (
+                promotion_policy_created
+                or promotion_policy_changed
+                or policy_binding_created
+                or policy_binding_changed
+            ):
+                results["internal_domain_user_promotion"] = "updated"
+            else:
+                results["internal_domain_user_promotion"] = "unchanged"
+        else:
+            results["internal_domain_user_promotion"] = "missing_user_write_binding"
+    elif internal_user_promotion_policy:
+        results["internal_domain_user_promotion"] = "missing_source_enrollment_flow"
 
     if source_created:
         results["google_source"] = "created"
