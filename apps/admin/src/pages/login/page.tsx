@@ -10,6 +10,7 @@ export function LoginPage(): JSX.Element {
     searchParams.get('error') === 'unauthorized-email-domain'
       ? `Google sign-in is limited to @${adminEnv.allowedEmailDomain} accounts, unless you have an approved admin role.`
       : null;
+  const releaseLabel = `v${adminEnv.appVersion} · ${adminEnv.appEnv}`;
 
   async function handleLogin(): Promise<void> {
     setErrorMessage(null);
@@ -101,6 +102,11 @@ export function LoginPage(): JSX.Element {
             {errorMessage}
           </p>
         ) : null}
+
+        <footer className='auth-footer' aria-label='deployment version'>
+          <span className='auth-footer-label'>Deployed release</span>
+          <strong>{releaseLabel}</strong>
+        </footer>
       </section>
     </div>
   );
