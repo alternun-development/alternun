@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 
 from authentik.core.models import Application, Group
 from authentik.flows.models import Flow
-from authentik.providers.oauth2.models import OAuth2Provider, RedirectURI
+from authentik.providers.oauth2.models import OAuth2Provider
 from authentik.sources.oauth.models import OAuthSource
 from authentik.stages.identification.models import IdentificationStage
 
@@ -29,6 +29,10 @@ def normalize_redirects(values):
         if url:
             normalized.add((mode, url))
     return normalized
+
+
+def build_redirect_uri(url: str):
+    return {"matching_mode": "strict", "url": url}
 
 
 def read_bool_env(name: str, default: bool) -> bool:
@@ -146,9 +150,7 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
         defaults={
             "client_id": admin_oidc_client_id,
             "client_secret": admin_oidc_client_secret,
-            "_redirect_uris": [
-                RedirectURI(matching_mode="strict", url=admin_oidc_redirect_url)
-            ],
+            "_redirect_uris": [build_redirect_uri(admin_oidc_redirect_url)],
             "authorization_flow": authorization_flow,
             "invalidation_flow": invalidation_flow,
             "sub_mode": "user_email",
@@ -169,9 +171,7 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
 
     current_redirects = normalize_redirects(getattr(provider, "_redirect_uris", []))
     if current_redirects != expected_redirects:
-        provider._redirect_uris = [
-            RedirectURI(matching_mode="strict", url=admin_oidc_redirect_url)
-        ]
+        provider._redirect_uris = [build_redirect_uri(admin_oidc_redirect_url)]
         provider_changed = True
 
     if authorization_flow and provider.authorization_flow_id != authorization_flow.pk:
@@ -196,9 +196,7 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
         expected_logout_redirects = {("strict", admin_oidc_post_logout_redirect_url)}
         if current_logout_redirects != expected_logout_redirects:
             provider.post_logout_redirect_uris = [
-                RedirectURI(
-                    matching_mode="strict", url=admin_oidc_post_logout_redirect_url
-                )
+                build_redirect_uri(admin_oidc_post_logout_redirect_url)
             ]
             provider_changed = True
 
@@ -419,7 +417,7 @@ if (
         defaults={
             "client_id": supabase_client_id,
             "client_secret": supabase_client_secret,
-            "_redirect_uris": [RedirectURI(matching_mode="strict", url=redirect_url)],
+            "_redirect_uris": [build_redirect_uri(redirect_url)],
             "authorization_flow": authorization_flow,
             "invalidation_flow": invalidation_flow,
             "sub_mode": "user_email",
@@ -440,7 +438,7 @@ if (
 
     current_redirects = normalize_redirects(getattr(provider, "_redirect_uris", []))
     if current_redirects != expected_redirects:
-        provider._redirect_uris = [RedirectURI(matching_mode="strict", url=redirect_url)]
+        provider._redirect_uris = [build_redirect_uri(redirect_url)]
         provider_changed = True
 
     if authorization_flow and provider.authorization_flow_id != authorization_flow.pk:

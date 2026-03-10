@@ -87,6 +87,40 @@ is_truthy() {
   esac
 }
 
+enforce_component_enabled_for_stack() {
+  local var_name=$1
+  local stack_label=$2
+  local component_label=$3
+
+  if [ "${!var_name+x}" != "x" ] || [ -z "${!var_name}" ]; then
+    export "${var_name}=true"
+    echo "INFO: ${stack_label} stack detected; defaulting ${var_name}=true for ${component_label}."
+    return 0
+  fi
+
+  if ! is_truthy "${!var_name}"; then
+    echo "ERROR: Refusing to deploy ${stack_label} with ${var_name}=${!var_name}." >&2
+    echo "ERROR: ${stack_label} stacks own ${component_label} resources and would otherwise remove them." >&2
+    echo "ERROR: Set ${var_name}=true for this deploy." >&2
+    exit 1
+  fi
+}
+
+enforce_dedicated_stack_component_flags() {
+  case "$stage_normalized" in
+    dashboard-dev|dashboard-prod|dashboard-production)
+      enforce_component_enabled_for_stack "INFRA_ENABLE_ADMIN_SITE" "$STACK" "admin site"
+      enforce_component_enabled_for_stack "INFRA_ENABLE_BACKEND_API" "$STACK" "backend API"
+      ;;
+    admin-dev|admin-prod|admin-production|backoffice-dev|backoffice-prod|backoffice-admin-dev|backoffice-admin-prod)
+      enforce_component_enabled_for_stack "INFRA_ENABLE_ADMIN_SITE" "$STACK" "admin site"
+      ;;
+    api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod)
+      enforce_component_enabled_for_stack "INFRA_ENABLE_BACKEND_API" "$STACK" "backend API"
+      ;;
+  esac
+}
+
 normalize_identity_db_mode() {
   case "$(echo "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')" in
     ec2 | local | local-ec2) echo "ec2" ;;
@@ -391,6 +425,8 @@ ensure_route53_hosted_zone_env() {
   echo "Resolved INFRA_ROUTE53_HOSTED_ZONE_ID=${INFRA_ROUTE53_HOSTED_ZONE_ID} for deploy."
 }
 
+enforce_dedicated_stack_component_flags
+
 bash "$SCRIPT_DIR/validate-deploy-context.sh" "$STACK"
 ensure_route53_hosted_zone_env
 
@@ -532,8 +568,9 @@ sync_identity_runtime_templates() {
       --arg c9 'chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
       --arg c10 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
       --arg c11 'timeout 900 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
-      --arg c12 "docker compose -f /opt/alternun/identity/docker-compose.yml exec -T server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c \"from django.contrib.auth import get_user_model; from authentik.core.models import Application; U=get_user_model(); admin_exists=U.objects.filter(username=\\\"akadmin\\\", is_active=True).exists(); app_exists=Application.objects.filter(slug=\\\"alternun-internal\\\").exists(); print({\\\"admin_exists\\\": admin_exists, \\\"default_application_exists\\\": app_exists}); raise SystemExit(0 if admin_exists and app_exists else 1)\"'" \
-      '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12]}'
+      --arg c12 "grep -E 'Authentik integration bootstrap|Supabase auth OIDC synced|WARN:' /tmp/alternun-identity-runtime-sync.log || true" \
+      --arg c13 "docker compose -f /opt/alternun/identity/docker-compose.yml exec -T server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c \"from django.contrib.auth import get_user_model; from authentik.core.models import Application; from authentik.providers.oauth2.models import OAuth2Provider; U=get_user_model(); admin_exists=U.objects.filter(username=\\\"akadmin\\\", is_active=True).exists(); default_app_exists=Application.objects.filter(slug=\\\"alternun-internal\\\").exists(); admin_oidc_app=Application.objects.filter(slug=\\\"alternun-admin\\\").exists(); admin_oidc_provider=OAuth2Provider.objects.filter(name=\\\"Alternun Admin OIDC\\\").exists(); print({\\\"admin_exists\\\": admin_exists, \\\"default_application_exists\\\": default_app_exists, \\\"admin_oidc_application_exists\\\": admin_oidc_app, \\\"admin_oidc_provider_exists\\\": admin_oidc_provider}); raise SystemExit(0 if admin_exists and default_app_exists and admin_oidc_app and admin_oidc_provider else 1)\"'" \
+      '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13]}'
   )
 
   echo "Syncing identity runtime templates to instance ${instance_id}..."
