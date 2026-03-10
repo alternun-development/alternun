@@ -27,7 +27,10 @@ export const authProvider: AuthProvider = {
       };
     }
 
+    await oidcClient.removeUser();
     await oidcClient.signinRedirect({
+      prompt: 'login',
+      max_age: 0,
       state: {
         returnTo: currentReturnTo(),
       },
