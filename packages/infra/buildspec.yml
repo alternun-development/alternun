@@ -202,6 +202,68 @@ phases:
           echo "Expected AWS Account (env) = ${INFRA_AWS_ACCOUNT_ID}"
         fi
       - |
+        if [ "${INFRA_IDENTITY_ENABLED:-false}" = "true" ]; then
+          stage_normalized=$(echo "${SST_STAGE}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+          case "${stage_normalized}" in
+            identity-dev|identity-prod|identity-production|auth-dev|auth-prod|authentik-dev|authentik-prod)
+              if [ "${INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE:-false}" = "true" ]; then
+                echo "Identity database mode auto-correction skipped (INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE=true)"
+              elif command -v aws >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+                identity_secret_name="${INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/database-credentials}"
+                identity_secret_name="${identity_secret_name#/}"
+                identity_secret_name="${identity_secret_name%/}"
+
+                case "${identity_secret_name}" in
+                  */"${SST_STAGE}"|*-"${SST_STAGE}")
+                    scoped_identity_secret_name="${identity_secret_name}"
+                    ;;
+                  *)
+                    scoped_identity_secret_name="${identity_secret_name}/${SST_STAGE}"
+                    ;;
+                esac
+
+                current_identity_secret=$(aws secretsmanager get-secret-value \
+                  --secret-id "${scoped_identity_secret_name}" \
+                  --query 'SecretString' \
+                  --output text 2>/dev/null || true)
+
+                if [ -n "${current_identity_secret}" ] && [ "${current_identity_secret}" != "None" ]; then
+                  current_identity_mode=$(printf '%s' "${current_identity_secret}" | jq -r '.mode // empty')
+                  if [ -z "${current_identity_mode}" ] || [ "${current_identity_mode}" = "null" ]; then
+                    current_identity_host=$(printf '%s' "${current_identity_secret}" | jq -r '.host // empty')
+                    if [ "${current_identity_host}" = "postgres" ]; then
+                      current_identity_mode="ec2"
+                    elif [ -n "${current_identity_host}" ] && [ "${current_identity_host}" != "null" ]; then
+                      current_identity_mode="rds"
+                    fi
+                  fi
+
+                  case "$(printf '%s' "${current_identity_mode}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')" in
+                    ec2|local|local-ec2)
+                      current_identity_mode="ec2"
+                      ;;
+                    rds)
+                      current_identity_mode="rds"
+                      ;;
+                    *)
+                      current_identity_mode=""
+                      ;;
+                  esac
+
+                  if [ -n "${current_identity_mode}" ] && [ "${INFRA_IDENTITY_DATABASE_MODE:-rds}" != "${current_identity_mode}" ]; then
+                    echo "WARN: Correcting INFRA_IDENTITY_DATABASE_MODE from ${INFRA_IDENTITY_DATABASE_MODE:-unset} to ${current_identity_mode} based on deployed secret ${scoped_identity_secret_name}"
+                    export INFRA_IDENTITY_DATABASE_MODE="${current_identity_mode}"
+                  fi
+                else
+                  echo "Identity database mode auto-correction skipped: no existing secret at ${scoped_identity_secret_name}"
+                fi
+              else
+                echo "Identity database mode auto-correction skipped: aws or jq is unavailable"
+              fi
+              ;;
+          esac
+        fi
+      - |
         if [ "${INFRA_CERT_MODE}" = "managed" ]; then
           for cert_var in INFRA_EXPO_CERT_ARN_PRODUCTION INFRA_EXPO_CERT_ARN_DEV INFRA_EXPO_CERT_ARN_MOBILE; do
             if [ -z "${!cert_var:-}" ]; then
