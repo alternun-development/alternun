@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { oidcClient } from '../../auth/oidc-client';
+import { canAccessAdminDashboard, oidcClient } from '../../auth/oidc-client';
 
-export function AuthCallbackPage() {
+export function AuthCallbackPage(): JSX.Element {
   const navigate = useNavigate();
   const [message, setMessage] = useState('Finalizing admin session...');
 
@@ -11,8 +11,14 @@ export function AuthCallbackPage() {
 
     void oidcClient
       .signinRedirectCallback()
-      .then(user => {
+      .then(async user => {
         if (cancelled) {
+          return;
+        }
+
+        if (!canAccessAdminDashboard(user)) {
+          await oidcClient.removeUser();
+          void navigate('/login?error=unauthorized-email-domain', { replace: true });
           return;
         }
 
@@ -24,7 +30,7 @@ export function AuthCallbackPage() {
             ? user.state.returnTo
             : '/dashboard';
 
-        navigate(returnTo, { replace: true });
+        void navigate(returnTo, { replace: true });
       })
       .catch((error: unknown) => {
         if (cancelled) {

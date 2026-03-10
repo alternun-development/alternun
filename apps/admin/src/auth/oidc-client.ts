@@ -9,8 +9,9 @@ import { adminEnv } from '../config/env';
 type ClaimBag = Record<string, unknown>;
 
 const ADMIN_ROLES = ['platform_admin', 'support_admin', 'read_only_admin'] as const;
-const ADMIN_GROUP_ROLE_ALIASES = new Map<string, (typeof ADMIN_ROLES)[number]>([
+const ADMIN_GROUP_ROLE_ALIASES: Map<string, (typeof ADMIN_ROLES)[number]> = new Map([
   ['authentik admins', 'platform_admin'],
+  ['alternun dashboard admins', 'platform_admin'],
 ]);
 
 function createSettings(): UserManagerSettings {
@@ -54,6 +55,26 @@ export async function getAccessToken(): Promise<string | null> {
   return user?.access_token ?? null;
 }
 
+function getSessionEmail(user: User | null): string | null {
+  if (!user) {
+    return null;
+  }
+
+  const claims = user.profile as ClaimBag;
+  return typeof claims.email === 'string' ? claims.email.trim().toLowerCase() : null;
+}
+
+export function hasAllowedAdminEmailDomain(user: User | null): boolean {
+  const email = getSessionEmail(user);
+
+  if (!email) {
+    return false;
+  }
+
+  const expectedDomain = adminEnv.allowedEmailDomain.trim().toLowerCase();
+  return expectedDomain.length > 0 && email.endsWith(`@${expectedDomain}`);
+}
+
 function readClaimArray(claims: ClaimBag, key: string): string[] {
   const value = claims[key];
   if (Array.isArray(value)) {
@@ -61,7 +82,10 @@ function readClaimArray(claims: ClaimBag, key: string): string[] {
   }
 
   if (typeof value === 'string' && value.length > 0) {
-    return value.split(',').map(entry => entry.trim()).filter(Boolean);
+    return value
+      .split(',')
+      .map(entry => entry.trim())
+      .filter(Boolean);
   }
 
   return [];
@@ -95,6 +119,11 @@ export function getAdminRolesFromSession(user: User | null): string[] {
 
 export function hasAdminRole(roles: string[]): boolean {
   return roles.some(role => ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number]));
+}
+
+export function canAccessAdminDashboard(user: User | null): boolean {
+  const roles = getAdminRolesFromSession(user);
+  return hasAdminRole(roles) || hasAllowedAdminEmailDomain(user);
 }
 
 export function extractAdminIdentity(user: User | null): {

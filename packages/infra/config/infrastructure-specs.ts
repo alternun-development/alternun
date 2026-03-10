@@ -74,6 +74,7 @@ export const ADMIN_SITE_INFRA_DEFAULTS = {
     applicationSlug: 'alternun-admin',
     clientId: 'alternun-admin',
     audience: 'alternun-app',
+    allowedEmailDomain: 'alternun.io',
   },
 } as const;
 
@@ -142,6 +143,7 @@ export const IDENTITY_INFRA_DEFAULTS = {
       applicationSlug: 'alternun-admin',
       providerName: 'Alternun Admin OIDC',
       clientId: 'alternun-admin',
+      allowedEmailDomain: ADMIN_SITE_INFRA_DEFAULTS.auth.allowedEmailDomain,
     },
     bootstrap: {
       admin: {

@@ -85,6 +85,7 @@ BOOTSTRAP_ADMIN_PASSWORD="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.a
 BOOTSTRAP_ADMIN_GROUP="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminGroup // "authentik Admins"')"
 BOOTSTRAP_ADMIN_OIDC_APPLICATION_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcApplicationName // "Alternun Admin"')"
 BOOTSTRAP_ADMIN_OIDC_APPLICATION_SLUG="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcApplicationSlug // "alternun-admin"')"
+BOOTSTRAP_ADMIN_ALLOWED_EMAIL_DOMAIN="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminAllowedEmailDomain // "alternun.io"')"
 BOOTSTRAP_ADMIN_OIDC_PROVIDER_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcProviderName // "Alternun Admin OIDC"')"
 BOOTSTRAP_ADMIN_OIDC_CLIENT_ID="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcClientId // "alternun-admin"')"
 BOOTSTRAP_ADMIN_OIDC_CLIENT_SECRET="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcClientSecret // empty')"
@@ -421,6 +422,7 @@ if ! wait_for_authentik_django; then
   exit 0
 fi
 
+BOOTSTRAP_STDERR_FILE="$(mktemp)"
 if ! BOOTSTRAP_RESULTS="$(docker compose -f /opt/alternun/identity/docker-compose.yml exec -T \
   -e ALTERNUN_BOOTSTRAP_ADMIN_USERNAME="${BOOTSTRAP_ADMIN_USERNAME}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_EMAIL="${BOOTSTRAP_ADMIN_EMAIL}" \
@@ -429,6 +431,7 @@ if ! BOOTSTRAP_RESULTS="$(docker compose -f /opt/alternun/identity/docker-compos
   -e ALTERNUN_BOOTSTRAP_ADMIN_GROUP="${BOOTSTRAP_ADMIN_GROUP}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_APPLICATION_NAME="${BOOTSTRAP_ADMIN_OIDC_APPLICATION_NAME}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_APPLICATION_SLUG="${BOOTSTRAP_ADMIN_OIDC_APPLICATION_SLUG}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_ALLOWED_EMAIL_DOMAIN="${BOOTSTRAP_ADMIN_ALLOWED_EMAIL_DOMAIN}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_PROVIDER_NAME="${BOOTSTRAP_ADMIN_OIDC_PROVIDER_NAME}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_CLIENT_ID="${BOOTSTRAP_ADMIN_OIDC_CLIENT_ID}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_CLIENT_SECRET="${BOOTSTRAP_ADMIN_OIDC_CLIENT_SECRET}" \
@@ -454,10 +457,12 @@ if ! BOOTSTRAP_RESULTS="$(docker compose -f /opt/alternun/identity/docker-compos
   -e ALTERNUN_BOOTSTRAP_SUPABASE_APPLICATION_SLUG="${SUPABASE_APPLICATION_SLUG}" \
   -e ALTERNUN_BOOTSTRAP_SUPABASE_APPLICATION_NAME="${SUPABASE_APPLICATION_NAME}" \
   -e ALTERNUN_BOOTSTRAP_IDENTITY_DOMAIN="${ALTERNUN_IDENTITY_DOMAIN}" \
-  server sh -lc '/ak-root/.venv/bin/python /manage.py shell < /templates/alternun-bootstrap-integrations.py')"; then
-  BOOTSTRAP_RESULTS='{"status":"bootstrap_failed"}'
+  server sh -lc '/ak-root/.venv/bin/python /manage.py shell < /templates/alternun-bootstrap-integrations.py' 2>"${BOOTSTRAP_STDERR_FILE}")"; then
+  BOOTSTRAP_STDERR="$(cat "${BOOTSTRAP_STDERR_FILE}")"
+  BOOTSTRAP_RESULTS="$(printf '%s' "${BOOTSTRAP_STDERR}" | jq -Rs '{status:"bootstrap_failed", output:.}')"
   echo "WARN: Failed to bootstrap Authentik integrations."
 fi
+rm -f "${BOOTSTRAP_STDERR_FILE}"
 echo "Authentik integration bootstrap: ${BOOTSTRAP_RESULTS}"
 
 if [ "${SUPABASE_SYNC_CONFIG}" = "true" ] && \
