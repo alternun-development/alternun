@@ -19,4 +19,5 @@ export const adminEnv = {
     'alternun.io'
   ),
   appEnv: requireLike(readEnvString(import.meta.env.VITE_APP_ENV), 'development'),
+  appVersion: __APP_VERSION__,
 } as const;
