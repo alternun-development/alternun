@@ -7,7 +7,7 @@ export function buildAdminPipelineSpecs({
 }: PipelineConfigContext): PipelineSpecRecord<AdminPipelineStage> {
   return {
     'admin-dev': {
-      suffix: 'admin-dev',
+      suffix: 'adm-dev',
       branch: resolveBranch(
         env.INFRA_PIPELINE_BRANCH_ADMIN_DEV,
         env.INFRA_PIPELINE_BRANCH_ADMIN,
@@ -25,7 +25,7 @@ export function buildAdminPipelineSpecs({
       }),
     },
     'admin-prod': {
-      suffix: 'admin-prod',
+      suffix: 'adm-prod',
       branch: resolveBranch(
         env.INFRA_PIPELINE_BRANCH_ADMIN_PROD,
         env.INFRA_PIPELINE_BRANCH_ADMIN,
