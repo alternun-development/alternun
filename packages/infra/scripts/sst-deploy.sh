@@ -355,7 +355,44 @@ cleanup_deploy_aliases() {
   done
 }
 
+ensure_route53_hosted_zone_env() {
+  if ! is_truthy "${INFRA_REQUIRE_ROUTE53:-true}"; then
+    return 0
+  fi
+
+  if [ -n "${INFRA_ROUTE53_HOSTED_ZONE_ID:-}" ]; then
+    export INFRA_ROUTE53_HOSTED_ZONE_ID="${INFRA_ROUTE53_HOSTED_ZONE_ID#/hostedzone/}"
+    return 0
+  fi
+
+  if ! command -v aws >/dev/null 2>&1; then
+    echo "WARN: aws CLI not found; unable to resolve INFRA_ROUTE53_HOSTED_ZONE_ID automatically." >&2
+    return 0
+  fi
+
+  local root_domain resolved_zone_id
+  root_domain="${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-}}"
+
+  if [ -z "$root_domain" ]; then
+    return 0
+  fi
+
+  resolved_zone_id=$(aws route53 list-hosted-zones-by-name \
+    --dns-name "$root_domain" \
+    --max-items 1 \
+    --query 'HostedZones[0].Id' \
+    --output text 2>/dev/null || true)
+
+  if [ -z "$resolved_zone_id" ] || [ "$resolved_zone_id" = "None" ]; then
+    return 0
+  fi
+
+  export INFRA_ROUTE53_HOSTED_ZONE_ID="${resolved_zone_id#/hostedzone/}"
+  echo "Resolved INFRA_ROUTE53_HOSTED_ZONE_ID=${INFRA_ROUTE53_HOSTED_ZONE_ID} for deploy."
+}
+
 bash "$SCRIPT_DIR/validate-deploy-context.sh" "$STACK"
+ensure_route53_hosted_zone_env
 
 if [ "${RUN_PREDEPLOY_CHECKS:-true}" != "false" ]; then
   SKIP_CONTEXT_VALIDATION=true bash "$SCRIPT_DIR/predeploy-checks.sh" "$STACK"
