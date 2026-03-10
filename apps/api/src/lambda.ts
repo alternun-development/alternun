@@ -22,13 +22,15 @@ async function getProxy(): Promise<ProxyHandler> {
   }
 
   const app = await createApp();
-  await app.init();
-
   const fastify = app.getHttpAdapter().getInstance();
+  // This adapter decorates Fastify requests unless disabled, so it must be created
+  // before the app is marked ready. We do not rely on request.awsLambda in this API.
+  cachedProxy = awsLambdaFastify(fastify, {
+    decorateRequest: false,
+  }) as unknown as ProxyHandler;
+  await app.init();
   await fastify.ready();
 
-  // The package publishes duplicate callback/promise overloads; we use the promise handler form.
-  cachedProxy = awsLambdaFastify(fastify) as unknown as ProxyHandler;
   return cachedProxy;
 }
 
