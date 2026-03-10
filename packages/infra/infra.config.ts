@@ -13,47 +13,41 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Input } from '@pulumi/pulumi';
 import { createExpoSite, createPipeline, resolveDomain } from '@lsts_tech/infra';
+import { readLocalDeploymentConfig } from './config/deployment-config.js';
+import {
+  assertExpoPublicAuthEnvironment,
+  createAssetBaseUrl,
+  resolveExpoConfig,
+} from './config/expo.js';
+import { parseBoolean, parseTimeoutMinutes } from './config/parsing.js';
+import {
+  ALL_PIPELINE_SET,
+  buildPipelineSpecs,
+  getPipelineProfileFlags,
+  isAdminSiteStackStage,
+  isBackendApiStackStage,
+  isDashboardStackStage,
+  isIdentityStackStage,
+  parseEnabledPipelineStages,
+  parseSelectedPipelines,
+  resolveStackDeploymentStage,
+  type ManagedPipeline,
+  type PipelineComputeType,
+  type PipelineStage,
+} from './config/pipelines/index.js';
 import {
   buildAdminSiteSettings,
   deployAdminSiteInfrastructure,
   resolveAdminStageDomain,
-  type AdminSiteLocalConfig,
 } from './modules/admin-site.js';
 import {
   buildBackendApiSettings,
   deployBackendApiInfrastructure,
   resolveBackendApiStageDomain,
-  type BackendApiLocalConfig,
 } from './modules/backend-api.js';
-import {
-  buildIdentitySettings,
-  resolveIdentityStageDomain,
-  type IdentityLocalConfig,
-} from './modules/identity.js';
+import { buildIdentitySettings, resolveIdentityStageDomain } from './modules/identity.js';
 import { deployIdentityInfrastructure } from './modules/identity-resources.js';
 import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
-
-type PipelineStage = 'production' | 'dev' | 'mobile';
-type DashboardPipelineStage = 'dashboard-dev' | 'dashboard-prod';
-type AdminPipelineStage = 'admin-dev' | 'admin-prod';
-type BackendPipelineStage = 'api-dev' | 'api-prod';
-type IdentityPipelineStage = 'identity-dev' | 'identity-prod';
-type DeploymentStage =
-  | PipelineStage
-  | IdentityPipelineStage
-  | BackendPipelineStage
-  | AdminPipelineStage
-  | DashboardPipelineStage;
-type ManagedPipeline =
-  | PipelineStage
-  | IdentityPipelineStage
-  | BackendPipelineStage
-  | AdminPipelineStage
-  | DashboardPipelineStage;
-type PipelineComputeType =
-  | 'BUILD_GENERAL1_SMALL'
-  | 'BUILD_GENERAL1_MEDIUM'
-  | 'BUILD_GENERAL1_LARGE';
 
 interface PublicAssetFile {
   cacheControl: string;
@@ -64,116 +58,11 @@ interface PublicAssetFile {
   url: string;
 }
 
-interface LocalDeploymentConfig {
-  appName?: string;
-  rootDomain?: string;
-  pipeline?: {
-    repo?: string;
-    prefix?: string;
-    projectTag?: string;
-    codestarConnectionArn?: string;
-    pipelines?: string;
-    branchProd?: string;
-    branchDev?: string;
-    branchMobile?: string;
-    branchIdentity?: string;
-    branchIdentityDev?: string;
-    branchIdentityProd?: string;
-    branchApi?: string;
-    branchApiDev?: string;
-    branchApiProd?: string;
-    branchAdmin?: string;
-    branchAdminDev?: string;
-    branchAdminProd?: string;
-    branchDashboard?: string;
-    branchDashboardDev?: string;
-    branchDashboardProd?: string;
-    computeType?: PipelineComputeType;
-    timeoutMinutes?: number;
-  };
-  expo?: {
-    appPath?: string;
-    subdomain?: string;
-    enableCustomDomain?: boolean;
-    requirePublicAuthEnv?: boolean;
-    domains?: {
-      production?: string;
-      dev?: string;
-      mobile?: string;
-    };
-    certArns?: {
-      production?: string;
-      dev?: string;
-      mobile?: string;
-    };
-    build?: {
-      command?: string;
-      output?: string;
-    };
-    publicEnv?: {
-      supabaseUrl?: string;
-      supabaseKey?: string;
-      walletConnectProjectId?: string;
-      walletConnectChainId?: string;
-      enableMockWalletAuth?: boolean;
-      enableWalletOnlyAuth?: boolean;
-    };
-  };
-  backend?: {
-    api?: BackendApiLocalConfig;
-  };
-  admin?: AdminSiteLocalConfig;
-  redirects?: {
-    enableAirsToDev?: boolean;
-    airsToDevSourceDomain?: string;
-    enableDevToTestnet?: boolean;
-    devToTestnetSourceDomain?: string;
-    enableRootDomainRedirect?: boolean;
-    rootDomainTarget?: string;
-    certArns?: {
-      airsToDev?: string;
-      rootDomain?: string;
-      devToTestnet?: string;
-    };
-  };
-  identity?: IdentityLocalConfig;
-}
-
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const defaultLocalConfigPath = path.join(dirname, 'config', 'deployment.config.json');
 
-function readLocalDeploymentConfig(configPath: string): LocalDeploymentConfig {
-  if (!fs.existsSync(configPath)) {
-    return {};
-  }
-
-  try {
-    const raw = fs.readFileSync(configPath, 'utf8');
-    const parsed = JSON.parse(raw) as LocalDeploymentConfig;
-    return parsed;
-  } catch {
-    throw new Error(`Invalid JSON in INFRA_CONFIG_PATH file: ${configPath}`);
-  }
-}
-
 const localConfigPath = process.env.INFRA_CONFIG_PATH ?? defaultLocalConfigPath;
 const localConfig = readLocalDeploymentConfig(localConfigPath);
-
-function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
-  if (value === undefined) return defaultValue;
-  return !['0', 'false', 'no', 'off'].includes(value.toLowerCase());
-}
-
-function sanitizeBucketName(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '')
-    .slice(0, 63)
-    .replace(/-+$/, '');
-}
 
 function sanitizeAssetKeySegment(value: string): string {
   return value
@@ -182,14 +71,6 @@ function sanitizeAssetKeySegment(value: string): string {
     .replace(/-+/g, '-')
     .replace(/^-+/, '')
     .replace(/-+$/, '');
-}
-
-function createAssetBucketName(stage: string, prefix: string, domain: string): string {
-  return sanitizeBucketName(`${prefix}-${stage}-public-assets-${domain.replace(/\./g, '-')}`);
-}
-
-function createAssetBaseUrl(bucketName: string): string {
-  return `https://${bucketName}.s3.amazonaws.com`;
 }
 
 function buildPublicAssetFile(
@@ -243,71 +124,12 @@ const pipelineProjectTag =
 const codestarConnectionArn =
   process.env.INFRA_CODESTAR_CONNECTION_ARN ?? localConfig.pipeline?.codestarConnectionArn;
 const selectedPipelinesRaw =
-  process.env.INFRA_PIPELINES ??
-  localConfig.pipeline?.pipelines ??
-  'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod,dashboard-dev,dashboard-prod';
+  process.env.INFRA_PIPELINES ?? localConfig.pipeline?.pipelines ?? ALL_PIPELINE_SET;
 const pipelineComputeTypeDefault = (pipeline: ManagedPipeline): PipelineComputeType =>
   pipeline === 'dev' ? 'BUILD_GENERAL1_LARGE' : 'BUILD_GENERAL1_MEDIUM';
 const adminSiteEnabledStagesRaw = process.env.INFRA_ADMIN_ENABLED_STAGES ?? '';
 const backendApiEnabledStagesRaw = process.env.INFRA_BACKEND_API_ENABLED_STAGES ?? '';
 const identityEnabledStagesRaw = process.env.INFRA_IDENTITY_ENABLED_STAGES ?? '';
-const parseTimeoutMinutes = (value: string | number | undefined, fallback: number): number => {
-  if (value === undefined) return fallback;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-};
-
-const expoAppPath =
-  process.env.INFRA_EXPO_APP_PATH ?? localConfig.expo?.appPath ?? '../../apps/mobile';
-const resolvedExpoAppPath = (() => {
-  const candidatePaths = [
-    expoAppPath,
-    path.resolve(dirname, expoAppPath),
-    path.resolve(dirname, '..', expoAppPath),
-    path.resolve(dirname, '../..', expoAppPath),
-    path.resolve(process.cwd(), expoAppPath),
-    path.resolve(process.cwd(), '..', expoAppPath),
-  ];
-
-  for (const candidatePath of candidatePaths) {
-    const resolvedPath = path.isAbsolute(candidatePath)
-      ? candidatePath
-      : path.resolve(candidatePath);
-
-    if (fs.existsSync(resolvedPath)) {
-      return resolvedPath;
-    }
-  }
-
-  return path.resolve(dirname, expoAppPath);
-})();
-const expoSubdomain = process.env.INFRA_EXPO_SUBDOMAIN ?? localConfig.expo?.subdomain ?? 'airs';
-const legacyDevDomain = `dev.${expoSubdomain}.${rootDomain}`;
-
-const defaultExpoDomains = {
-  production: `${expoSubdomain}.${rootDomain}`,
-  dev: `testnet.${expoSubdomain}.${rootDomain}`,
-  mobile: `preview.${expoSubdomain}.${rootDomain}`,
-};
-
-const expoStageMap: Record<string, string> = {
-  production:
-    process.env.INFRA_EXPO_DOMAIN_PRODUCTION ??
-    localConfig.expo?.domains?.production ??
-    defaultExpoDomains.production,
-  dev:
-    process.env.INFRA_EXPO_DOMAIN_DEV ?? localConfig.expo?.domains?.dev ?? defaultExpoDomains.dev,
-  mobile:
-    process.env.INFRA_EXPO_DOMAIN_MOBILE ??
-    localConfig.expo?.domains?.mobile ??
-    defaultExpoDomains.mobile,
-};
-
-const expoCerts: Record<string, string | undefined> = {
-  production: process.env.INFRA_EXPO_CERT_ARN_PRODUCTION ?? localConfig.expo?.certArns?.production,
-  dev: process.env.INFRA_EXPO_CERT_ARN_DEV ?? localConfig.expo?.certArns?.dev,
-  mobile: process.env.INFRA_EXPO_CERT_ARN_MOBILE ?? localConfig.expo?.certArns?.mobile,
-};
 const backendApiDedicatedStacksOnly = parseBoolean(
   process.env.INFRA_BACKEND_API_DEDICATED_STACKS_ONLY,
   true
@@ -316,147 +138,56 @@ const adminSiteDedicatedStacksOnly = parseBoolean(
   process.env.INFRA_ADMIN_DEDICATED_STACKS_ONLY,
   true
 );
-
-const expoBuildCommand =
-  process.env.INFRA_EXPO_BUILD_COMMAND ??
-  localConfig.expo?.build?.command ??
-  'npx expo export -p web';
-const expoBuildOutput =
-  process.env.INFRA_EXPO_BUILD_OUTPUT ?? localConfig.expo?.build?.output ?? 'dist';
-const enableCustomDomainRaw =
-  process.env.INFRA_EXPO_ENABLE_CUSTOM_DOMAIN ??
-  (localConfig.expo?.enableCustomDomain !== undefined
-    ? String(localConfig.expo.enableCustomDomain)
-    : undefined) ??
-  'true';
-const enableCustomDomain = parseBoolean(enableCustomDomainRaw, true);
-const requireExpoPublicAuthEnv = parseBoolean(
-  process.env.INFRA_REQUIRE_EXPO_PUBLIC_AUTH ??
-    (localConfig.expo?.requirePublicAuthEnv !== undefined
-      ? String(localConfig.expo.requirePublicAuthEnv)
-      : undefined),
-  true
-);
-
-const expoPublicSupabaseUrl =
-  process.env.EXPO_PUBLIC_SUPABASE_URL ?? localConfig.expo?.publicEnv?.supabaseUrl;
-const expoPublicSupabaseKey =
-  process.env.EXPO_PUBLIC_SUPABASE_KEY ??
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
-  localConfig.expo?.publicEnv?.supabaseKey;
-const expoPublicWalletConnectProjectId =
-  process.env.EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID ??
-  localConfig.expo?.publicEnv?.walletConnectProjectId;
-const expoPublicWalletConnectChainId =
-  process.env.EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID ??
-  localConfig.expo?.publicEnv?.walletConnectChainId;
-const expoPublicEnableMockWalletAuth =
-  process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH ??
-  (localConfig.expo?.publicEnv?.enableMockWalletAuth !== undefined
-    ? String(localConfig.expo.publicEnv.enableMockWalletAuth)
-    : undefined);
-const expoPublicEnableWalletOnlyAuth =
-  process.env.EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH ??
-  (localConfig.expo?.publicEnv?.enableWalletOnlyAuth !== undefined
-    ? String(localConfig.expo.publicEnv.enableWalletOnlyAuth)
-    : undefined);
-
-const enableAirsToDevRedirect = parseBoolean(
-  process.env.INFRA_REDIRECT_AIRS_TO_DEV ??
-    (localConfig.redirects?.enableAirsToDev !== undefined
-      ? String(localConfig.redirects.enableAirsToDev)
-      : undefined),
-  true
-);
-
-const airsToDevSourceDomain =
-  process.env.INFRA_REDIRECT_AIRS_TO_DEV_SOURCE ??
-  localConfig.redirects?.airsToDevSourceDomain ??
-  expoStageMap.production;
-
-const airsToDevCertArn =
-  process.env.INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN ?? localConfig.redirects?.certArns?.airsToDev;
-
-const enableDevToTestnetRedirect = parseBoolean(
-  process.env.INFRA_REDIRECT_DEV_TO_TESTNET ??
-    (localConfig.redirects?.enableDevToTestnet !== undefined
-      ? String(localConfig.redirects.enableDevToTestnet)
-      : undefined),
-  true
-);
-
-const devToTestnetSourceDomain =
-  process.env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE ??
-  localConfig.redirects?.devToTestnetSourceDomain ??
-  legacyDevDomain;
-
-const devToTestnetCertArn =
-  process.env.INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN ??
-  localConfig.redirects?.certArns?.devToTestnet;
-
-const enableRootDomainRedirect = parseBoolean(
-  process.env.INFRA_REDIRECT_ROOT_DOMAIN ??
-    (localConfig.redirects?.enableRootDomainRedirect !== undefined
-      ? String(localConfig.redirects.enableRootDomainRedirect)
-      : undefined),
-  true
-);
-
-const rootDomainRedirectTarget =
-  process.env.INFRA_REDIRECT_ROOT_TARGET ??
-  localConfig.redirects?.rootDomainTarget ??
-  'alternun.io';
-
-const rootDomainRedirectCertArn =
-  process.env.INFRA_REDIRECT_ROOT_CERT_ARN ?? localConfig.redirects?.certArns?.rootDomain;
 const pipelineProfile = (process.env.INFRA_PIPELINE_PROFILE ?? '').trim().toLowerCase();
-const isDashboardPipelineProfile = [
-  'dashboard',
-  'dashboard-dev',
-  'dashboard-prod',
-  'dashboard-production',
-  'dashboard-admin',
-  'dashboard-api',
-].includes(pipelineProfile);
-const isAdminSitePipelineProfile = [
-  'admin',
-  'admin-dev',
-  'admin-prod',
-  'admin-production',
-  'backoffice',
-  'backoffice-admin',
-].includes(pipelineProfile);
-const isBackendApiPipelineProfile = ['api', 'api-dev', 'api-prod', 'backend', 'backend-api'].includes(
-  pipelineProfile
-);
-const isIdentityPipelineProfile = [
-  'identity',
-  'identity-dev',
-  'identity-prod',
-  'auth',
-  'auth-dev',
-  'auth-prod',
-  'authentik',
-  'authentik-dev',
-  'authentik-prod',
-].includes(pipelineProfile);
-const enableExpoSite = parseBoolean(
-  process.env.INFRA_ENABLE_EXPO_SITE,
-  !isIdentityPipelineProfile &&
-    !isBackendApiPipelineProfile &&
-    !isAdminSitePipelineProfile &&
-    !isDashboardPipelineProfile
-);
+const {
+  isDashboardPipelineProfile,
+  isAdminSitePipelineProfile,
+  isBackendApiPipelineProfile,
+  isIdentityPipelineProfile,
+} = getPipelineProfileFlags(pipelineProfile);
 const identityDedicatedStacksOnly = parseBoolean(
   process.env.INFRA_IDENTITY_DEDICATED_STACKS_ONLY,
   true
 );
-
-const assetBucketNames: Record<PipelineStage, string> = {
-  production: createAssetBucketName('production', pipelinePrefix, rootDomain),
-  dev: createAssetBucketName('dev', pipelinePrefix, rootDomain),
-  mobile: createAssetBucketName('mobile', pipelinePrefix, rootDomain),
-};
+const expoConfig = resolveExpoConfig({
+  dirname,
+  env: process.env,
+  localConfig,
+  pipelinePrefix,
+  profileFlags: {
+    isDashboardPipelineProfile,
+    isAdminSitePipelineProfile,
+    isBackendApiPipelineProfile,
+    isIdentityPipelineProfile,
+  },
+  rootDomain,
+});
+const expoAppPath = expoConfig.appPath;
+const resolvedExpoAppPath = expoConfig.resolvedAppPath;
+const expoSubdomain = expoConfig.subdomain;
+const expoStageMap = expoConfig.stageDomains;
+const expoCerts = expoConfig.certArns;
+const expoBuildCommand = expoConfig.buildCommand;
+const expoBuildOutput = expoConfig.buildOutput;
+const enableCustomDomain = expoConfig.enableCustomDomain;
+const enableExpoSite = expoConfig.enableExpoSite;
+const requireExpoPublicAuthEnv = expoConfig.requirePublicAuthEnv;
+const expoPublicSupabaseUrl = expoConfig.publicEnv.supabaseUrl;
+const expoPublicSupabaseKey = expoConfig.publicEnv.supabaseKey;
+const expoPublicWalletConnectProjectId = expoConfig.publicEnv.walletConnectProjectId;
+const expoPublicWalletConnectChainId = expoConfig.publicEnv.walletConnectChainId;
+const expoPublicEnableMockWalletAuth = expoConfig.publicEnv.enableMockWalletAuth;
+const expoPublicEnableWalletOnlyAuth = expoConfig.publicEnv.enableWalletOnlyAuth;
+const enableAirsToDevRedirect = expoConfig.redirects.enableAirsToDev;
+const airsToDevSourceDomain = expoConfig.redirects.airsToDevSourceDomain;
+const airsToDevCertArn = expoConfig.redirects.airsToDevCertArn;
+const enableDevToTestnetRedirect = expoConfig.redirects.enableDevToTestnet;
+const devToTestnetSourceDomain = expoConfig.redirects.devToTestnetSourceDomain;
+const devToTestnetCertArn = expoConfig.redirects.devToTestnetCertArn;
+const enableRootDomainRedirect = expoConfig.redirects.enableRootDomainRedirect;
+const rootDomainRedirectTarget = expoConfig.redirects.rootDomainRedirectTarget;
+const rootDomainRedirectCertArn = expoConfig.redirects.rootDomainRedirectCertArn;
+const assetBucketNames = expoConfig.assetBucketNames;
 
 const commonBuildEnv = {
   INFRA_APP_NAME: appName,
@@ -624,537 +355,14 @@ const commonBuildEnv = {
   PREFIX: pipelinePrefix,
 };
 
-function parseCoreDeploymentStage(value: string): PipelineStage | undefined {
-  const normalized = value.trim().toLowerCase();
-  if (normalized === 'production' || normalized === 'prod') return 'production';
-  if (normalized === 'dev') return 'dev';
-  if (normalized === 'mobile') return 'mobile';
-  return undefined;
-}
-
-function resolveStackDeploymentStage(value: string): PipelineStage | undefined {
-  const normalized = value.trim().toLowerCase().replace(/_/g, '-');
-  const coreStage = parseCoreDeploymentStage(normalized);
-  if (coreStage) return coreStage;
-
-  if (
-    normalized === 'dashboard-dev' ||
-    normalized === 'dashboardapi-dev' ||
-    normalized === 'dashboard-admin-dev'
-  ) {
-    return 'dev';
-  }
-
-  if (
-    normalized === 'dashboard-prod' ||
-    normalized === 'dashboard-production' ||
-    normalized === 'dashboardapi-prod' ||
-    normalized === 'dashboard-admin-prod'
-  ) {
-    return 'production';
-  }
-
-  if (
-    normalized === 'admin-dev' ||
-    normalized === 'backoffice-dev' ||
-    normalized === 'backoffice-admin-dev'
-  ) {
-    return 'dev';
-  }
-
-  if (
-    normalized === 'admin-prod' ||
-    normalized === 'admin-production' ||
-    normalized === 'backoffice-prod' ||
-    normalized === 'backoffice-admin-prod'
-  ) {
-    return 'production';
-  }
-
-  if (normalized === 'api-dev' || normalized === 'backend-dev' || normalized === 'backend-api-dev') {
-    return 'dev';
-  }
-
-  if (
-    normalized === 'api-prod' ||
-    normalized === 'api-production' ||
-    normalized === 'backend-prod' ||
-    normalized === 'backend-api-prod'
-  ) {
-    return 'production';
-  }
-
-  if (
-    normalized === 'identity-dev' ||
-    normalized === 'identitydev' ||
-    normalized === 'auth-dev' ||
-    normalized === 'authentik-dev'
-  ) {
-    return 'dev';
-  }
-
-  if (
-    normalized === 'identity-prod' ||
-    normalized === 'identityprod' ||
-    normalized === 'identity-production' ||
-    normalized === 'auth-prod' ||
-    normalized === 'authentik-prod'
-  ) {
-    return 'production';
-  }
-
-  return undefined;
-}
-
-function isAdminSiteStackStage(stage: string): boolean {
-  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
-  return (
-    normalized === 'admin-dev' ||
-    normalized === 'admin-prod' ||
-    normalized === 'admin-production' ||
-    normalized === 'backoffice-dev' ||
-    normalized === 'backoffice-prod' ||
-    normalized === 'backoffice-admin-dev' ||
-    normalized === 'backoffice-admin-prod'
-  );
-}
-
-function isDashboardStackStage(stage: string): boolean {
-  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
-  return (
-    normalized === 'dashboard-dev' ||
-    normalized === 'dashboard-prod' ||
-    normalized === 'dashboard-production' ||
-    normalized === 'dashboardapi-dev' ||
-    normalized === 'dashboardapi-prod' ||
-    normalized === 'dashboard-admin-dev' ||
-    normalized === 'dashboard-admin-prod'
-  );
-}
-
-function isIdentityStackStage(stage: string): boolean {
-  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
-  return (
-    normalized === 'identity-dev' ||
-    normalized === 'identity-prod' ||
-    normalized === 'identity-production' ||
-    normalized === 'auth-dev' ||
-    normalized === 'auth-prod' ||
-    normalized === 'authentik-dev' ||
-    normalized === 'authentik-prod'
-  );
-}
-
-function isBackendApiStackStage(stage: string): boolean {
-  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
-  return (
-    normalized === 'api-dev' ||
-    normalized === 'api-prod' ||
-    normalized === 'api-production' ||
-    normalized === 'backend-dev' ||
-    normalized === 'backend-api-dev' ||
-    normalized === 'backend-prod' ||
-    normalized === 'backend-api-prod'
-  );
-}
-
-function assertExpoPublicAuthEnvironment(stage: string): void {
-  if (!requireExpoPublicAuthEnv) return;
-  if (!['production', 'dev', 'mobile'].includes(stage)) return;
-
-  if (!expoPublicSupabaseUrl || !expoPublicSupabaseKey) {
-    throw new Error(
-      [
-        `Missing Expo auth env for stage "${stage}".`,
-        'Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_KEY',
-        'in packages/infra/.env or pipeline environment variables.',
-      ].join(' ')
-    );
-  }
-}
-
-function parsePipelineStage(value: string): ManagedPipeline | undefined {
-  const normalized = value.trim().toLowerCase().replace(/_/g, '-');
-  const deploymentStage = parseCoreDeploymentStage(normalized);
-  if (deploymentStage) return deploymentStage;
-  if (
-    normalized === 'dashboard' ||
-    normalized === 'dashboard-dev' ||
-    normalized === 'dashboardapi' ||
-    normalized === 'dashboardapi-dev' ||
-    normalized === 'dashboard-admin' ||
-    normalized === 'dashboard-admin-dev'
-  ) {
-    return 'dashboard-dev';
-  }
-  if (
-    normalized === 'dashboard-prod' ||
-    normalized === 'dashboard-production' ||
-    normalized === 'dashboardapi-prod' ||
-    normalized === 'dashboard-admin-prod'
-  ) {
-    return 'dashboard-prod';
-  }
-  if (
-    normalized === 'admin' ||
-    normalized === 'admin-dev' ||
-    normalized === 'backoffice' ||
-    normalized === 'backoffice-dev' ||
-    normalized === 'backoffice-admin' ||
-    normalized === 'backoffice-admin-dev'
-  ) {
-    return 'admin-dev';
-  }
-  if (
-    normalized === 'admin-prod' ||
-    normalized === 'admin-production' ||
-    normalized === 'backoffice-prod' ||
-    normalized === 'backoffice-admin-prod'
-  ) {
-    return 'admin-prod';
-  }
-  if (
-    normalized === 'api' ||
-    normalized === 'api-dev' ||
-    normalized === 'backend' ||
-    normalized === 'backend-dev' ||
-    normalized === 'backend-api-dev'
-  ) {
-    return 'api-dev';
-  }
-  if (
-    normalized === 'api-prod' ||
-    normalized === 'api-production' ||
-    normalized === 'backend-prod' ||
-    normalized === 'backend-api-prod'
-  ) {
-    return 'api-prod';
-  }
-  if (
-    normalized === 'identity' ||
-    normalized === 'identity-dev' ||
-    normalized === 'identitydev' ||
-    normalized === 'authentik' ||
-    normalized === 'authentik-dev' ||
-    normalized === 'auth' ||
-    normalized === 'auth-dev'
-  ) {
-    return 'identity-dev';
-  }
-  if (
-    normalized === 'identity-prod' ||
-    normalized === 'identityprod' ||
-    normalized === 'identity-production' ||
-    normalized === 'authentik-prod' ||
-    normalized === 'auth-prod'
-  ) {
-    return 'identity-prod';
-  }
-  return undefined;
-}
-
-const adminSiteEnabledStages = new Set<PipelineStage>(
-  adminSiteEnabledStagesRaw
-    .split(',')
-    .map(value => parseCoreDeploymentStage(value))
-    .filter((value): value is PipelineStage => value !== undefined)
-);
-
-const identityEnabledStages = new Set<PipelineStage>(
-  identityEnabledStagesRaw
-    .split(',')
-    .map(value => parseCoreDeploymentStage(value))
-    .filter((value): value is PipelineStage => value !== undefined)
-);
-
-const backendApiEnabledStages = new Set<PipelineStage>(
-  backendApiEnabledStagesRaw
-    .split(',')
-    .map(value => parseCoreDeploymentStage(value))
-    .filter((value): value is PipelineStage => value !== undefined)
-);
-
-const selectedPipelines = new Set<ManagedPipeline>(
-  selectedPipelinesRaw
-    .split(',')
-    .map(value => parsePipelineStage(value))
-    .filter((value): value is ManagedPipeline => value !== undefined)
-);
-
-const pipelineSpecs: Record<
-  ManagedPipeline,
-  {
-    suffix: string;
-    branch: string;
-    outputKey: string;
-    stage: DeploymentStage;
-    buildEnv?: Record<string, string>;
-  }
-> = {
-  production: {
-    suffix: 'prod',
-    branch: process.env.INFRA_PIPELINE_BRANCH_PROD ?? localConfig.pipeline?.branchProd ?? 'master',
-    outputKey: 'productionPipelineName',
-    stage: 'production',
-    buildEnv: {
-      INFRA_ENABLE_EXPO_SITE: 'true',
-      INFRA_IDENTITY_ENABLED: 'false',
-      INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
-    },
-  },
-  dev: {
-    suffix: 'dev',
-    branch: process.env.INFRA_PIPELINE_BRANCH_DEV ?? localConfig.pipeline?.branchDev ?? 'develop',
-    outputKey: 'devPipelineName',
-    stage: 'dev',
-    buildEnv: {
-      INFRA_ENABLE_EXPO_SITE: 'true',
-      INFRA_IDENTITY_ENABLED: 'false',
-      INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
-    },
-  },
-  mobile: {
-    suffix: 'mobile',
-    branch:
-      process.env.INFRA_PIPELINE_BRANCH_MOBILE ?? localConfig.pipeline?.branchMobile ?? 'mobile',
-    outputKey: 'mobilePipelineName',
-    stage: 'mobile',
-    buildEnv: {
-      INFRA_ENABLE_EXPO_SITE: 'true',
-      INFRA_IDENTITY_ENABLED: 'false',
-      INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
-    },
-  },
-  'api-dev': {
-    suffix: 'api-dev',
-    branch:
-      process.env.INFRA_PIPELINE_BRANCH_API_DEV ??
-      process.env.INFRA_PIPELINE_BRANCH_API ??
-      localConfig.pipeline?.branchApiDev ??
-      localConfig.pipeline?.branchApi ??
-      localConfig.pipeline?.branchDev ??
-      'develop',
-    outputKey: 'apiDevPipelineName',
-    stage: 'api-dev',
-    buildEnv: {
-      INFRA_ENABLE_BACKEND_API: 'true',
-      INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
-      INFRA_BACKEND_API_ENABLED_STAGES: 'dev',
-      INFRA_PIPELINE_PROFILE: 'api-dev',
-      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod',
-      INFRA_PRESERVE_EXISTING_ENV: 'true',
-      INFRA_LOAD_ROOT_ENV: 'false',
-      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
-      INFRA_ENABLE_EXPO_SITE: 'false',
-      INFRA_ENABLE_SECRET_SYNC: 'false',
-      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
-      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
-      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
-    },
-  },
-  'api-prod': {
-    suffix: 'api-prod',
-    branch:
-      process.env.INFRA_PIPELINE_BRANCH_API_PROD ??
-      process.env.INFRA_PIPELINE_BRANCH_API ??
-      localConfig.pipeline?.branchApiProd ??
-      localConfig.pipeline?.branchProd ??
-      'master',
-    outputKey: 'apiProdPipelineName',
-    stage: 'api-prod',
-    buildEnv: {
-      INFRA_ENABLE_BACKEND_API: 'true',
-      INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
-      INFRA_BACKEND_API_ENABLED_STAGES: 'production',
-      INFRA_PIPELINE_PROFILE: 'api-prod',
-      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod',
-      INFRA_PRESERVE_EXISTING_ENV: 'true',
-      INFRA_LOAD_ROOT_ENV: 'false',
-      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
-      INFRA_ENABLE_EXPO_SITE: 'false',
-      INFRA_ENABLE_SECRET_SYNC: 'false',
-      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
-      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
-      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
-    },
-  },
-  'identity-dev': {
-    suffix: 'auth-dev',
-    branch:
-      process.env.INFRA_PIPELINE_BRANCH_IDENTITY_DEV ??
-      process.env.INFRA_PIPELINE_BRANCH_IDENTITY ??
-      localConfig.pipeline?.branchIdentityDev ??
-      localConfig.pipeline?.branchIdentity ??
-      localConfig.pipeline?.branchDev ??
-      'develop',
-    outputKey: 'identityDevPipelineName',
-    stage: 'identity-dev',
-    buildEnv: {
-      INFRA_IDENTITY_ENABLED: 'true',
-      INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
-      INFRA_IDENTITY_ENABLED_STAGES: 'dev',
-      INFRA_IDENTITY_DATABASE_MODE: 'ec2',
-      INFRA_IDENTITY_USERDATA_REPLACE_ON_CHANGE: 'false',
-      INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION: 'true',
-      INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
-      INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
-      INFRA_PIPELINE_PROFILE: 'identity-dev',
-      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,admin-dev,admin-prod',
-      INFRA_PRESERVE_EXISTING_ENV: 'true',
-      INFRA_LOAD_ROOT_ENV: 'false',
-      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
-      INFRA_ENABLE_EXPO_SITE: 'false',
-      INFRA_ENABLE_SECRET_SYNC: 'false',
-      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
-      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
-      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
-    },
-  },
-  'identity-prod': {
-    suffix: 'auth-prod',
-    branch:
-      process.env.INFRA_PIPELINE_BRANCH_IDENTITY_PROD ??
-      localConfig.pipeline?.branchIdentityProd ??
-      localConfig.pipeline?.branchProd ??
-      'master',
-    outputKey: 'identityProdPipelineName',
-    stage: 'identity-prod',
-    buildEnv: {
-      INFRA_IDENTITY_ENABLED: 'true',
-      INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
-      INFRA_IDENTITY_ENABLED_STAGES: 'production',
-      INFRA_IDENTITY_DATABASE_MODE: 'rds',
-      INFRA_IDENTITY_USERDATA_REPLACE_ON_CHANGE: 'false',
-      INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION: 'true',
-      INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
-      INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
-      INFRA_PIPELINE_PROFILE: 'identity-prod',
-      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,admin-dev,admin-prod',
-      INFRA_PRESERVE_EXISTING_ENV: 'true',
-      INFRA_LOAD_ROOT_ENV: 'false',
-      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
-      INFRA_ENABLE_EXPO_SITE: 'false',
-      INFRA_ENABLE_SECRET_SYNC: 'false',
-      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
-      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
-      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
-    },
-  },
-  'dashboard-dev': {
-    suffix: 'dashboard-dev',
-    branch:
-      process.env.INFRA_PIPELINE_BRANCH_DASHBOARD_DEV ??
-      process.env.INFRA_PIPELINE_BRANCH_DASHBOARD ??
-      localConfig.pipeline?.branchDashboardDev ??
-      localConfig.pipeline?.branchDashboard ??
-      localConfig.pipeline?.branchDev ??
-      'develop',
-    outputKey: 'dashboardDevPipelineName',
-    stage: 'dashboard-dev',
-    buildEnv: {
-      INFRA_ENABLE_ADMIN_SITE: 'true',
-      INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
-      INFRA_ADMIN_ENABLED_STAGES: 'dev',
-      INFRA_ENABLE_BACKEND_API: 'true',
-      INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
-      INFRA_BACKEND_API_ENABLED_STAGES: 'dev',
-      INFRA_PIPELINE_PROFILE: 'dashboard-dev',
-      INFRA_PIPELINES:
-        'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod,dashboard-dev,dashboard-prod',
-      INFRA_PRESERVE_EXISTING_ENV: 'true',
-      INFRA_LOAD_ROOT_ENV: 'false',
-      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
-      INFRA_ENABLE_EXPO_SITE: 'false',
-      INFRA_ENABLE_SECRET_SYNC: 'false',
-      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
-      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
-      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
-    },
-  },
-  'dashboard-prod': {
-    suffix: 'dashboard-prod',
-    branch:
-      process.env.INFRA_PIPELINE_BRANCH_DASHBOARD_PROD ??
-      process.env.INFRA_PIPELINE_BRANCH_DASHBOARD ??
-      localConfig.pipeline?.branchDashboardProd ??
-      localConfig.pipeline?.branchProd ??
-      'master',
-    outputKey: 'dashboardProdPipelineName',
-    stage: 'dashboard-prod',
-    buildEnv: {
-      INFRA_ENABLE_ADMIN_SITE: 'true',
-      INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
-      INFRA_ADMIN_ENABLED_STAGES: 'production',
-      INFRA_ENABLE_BACKEND_API: 'true',
-      INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
-      INFRA_BACKEND_API_ENABLED_STAGES: 'production',
-      INFRA_PIPELINE_PROFILE: 'dashboard-prod',
-      INFRA_PIPELINES:
-        'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod,dashboard-dev,dashboard-prod',
-      INFRA_PRESERVE_EXISTING_ENV: 'true',
-      INFRA_LOAD_ROOT_ENV: 'false',
-      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
-      INFRA_ENABLE_EXPO_SITE: 'false',
-      INFRA_ENABLE_SECRET_SYNC: 'false',
-      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
-      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
-      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
-    },
-  },
-  'admin-dev': {
-    suffix: 'admin-dev',
-    branch:
-      process.env.INFRA_PIPELINE_BRANCH_ADMIN_DEV ??
-      process.env.INFRA_PIPELINE_BRANCH_ADMIN ??
-      localConfig.pipeline?.branchAdminDev ??
-      localConfig.pipeline?.branchAdmin ??
-      localConfig.pipeline?.branchDev ??
-      'develop',
-    outputKey: 'adminDevPipelineName',
-    stage: 'admin-dev',
-    buildEnv: {
-      INFRA_ENABLE_ADMIN_SITE: 'true',
-      INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
-      INFRA_ADMIN_ENABLED_STAGES: 'dev',
-      INFRA_PIPELINE_PROFILE: 'admin-dev',
-      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod',
-      INFRA_PRESERVE_EXISTING_ENV: 'true',
-      INFRA_LOAD_ROOT_ENV: 'false',
-      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
-      INFRA_ENABLE_EXPO_SITE: 'false',
-      INFRA_ENABLE_SECRET_SYNC: 'false',
-      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
-      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
-      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
-    },
-  },
-  'admin-prod': {
-    suffix: 'admin-prod',
-    branch:
-      process.env.INFRA_PIPELINE_BRANCH_ADMIN_PROD ??
-      process.env.INFRA_PIPELINE_BRANCH_ADMIN ??
-      localConfig.pipeline?.branchAdminProd ??
-      localConfig.pipeline?.branchProd ??
-      'master',
-    outputKey: 'adminProdPipelineName',
-    stage: 'admin-prod',
-    buildEnv: {
-      INFRA_ENABLE_ADMIN_SITE: 'true',
-      INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
-      INFRA_ADMIN_ENABLED_STAGES: 'production',
-      INFRA_PIPELINE_PROFILE: 'admin-prod',
-      INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod,api-dev,api-prod,admin-dev,admin-prod',
-      INFRA_PRESERVE_EXISTING_ENV: 'true',
-      INFRA_LOAD_ROOT_ENV: 'false',
-      INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'false',
-      INFRA_ENABLE_EXPO_SITE: 'false',
-      INFRA_ENABLE_SECRET_SYNC: 'false',
-      INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
-      INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
-      INFRA_ENABLE_REACHABILITY_CHECK: 'false',
-    },
-  },
-};
+const adminSiteEnabledStages = parseEnabledPipelineStages(adminSiteEnabledStagesRaw);
+const identityEnabledStages = parseEnabledPipelineStages(identityEnabledStagesRaw);
+const backendApiEnabledStages = parseEnabledPipelineStages(backendApiEnabledStagesRaw);
+const selectedPipelines = parseSelectedPipelines(selectedPipelinesRaw);
+const pipelineSpecs = buildPipelineSpecs({
+  env: process.env,
+  pipeline: localConfig.pipeline,
+});
 
 export function createInfrastructure() {
   const stage = String($app.stage);
@@ -1163,6 +371,7 @@ export function createInfrastructure() {
   const backendApiStackStage = isBackendApiStackStage(stage);
   const identityStackStage = isIdentityStackStage(stage);
   const parsedDeploymentStage = resolveStackDeploymentStage(stage);
+  const expoDeploymentStage = (parsedDeploymentStage ?? stage) as PipelineStage;
   const dedicatedNonExpoStage =
     identityStackStage || backendApiStackStage || adminSiteStackStage || dashboardStackStage;
   const enableExpoSiteForStage = enableExpoSite && !dedicatedNonExpoStage;
@@ -1235,7 +444,7 @@ export function createInfrastructure() {
   }
 
   if (enableExpoSiteForStage) {
-    assertExpoPublicAuthEnvironment(parsedDeploymentStage ?? stage);
+    assertExpoPublicAuthEnvironment(expoConfig, expoDeploymentStage);
   }
 
   const identityInfrastructure = identityEnabledForStage
@@ -1365,9 +574,7 @@ export function createInfrastructure() {
   };
 
   if (enableExpoSiteForStage) {
-    const assetBucketName =
-      assetBucketNames[stage as PipelineStage] ??
-      createAssetBucketName(stage, pipelinePrefix, rootDomain);
+    const assetBucketName = assetBucketNames[expoDeploymentStage];
     const assetBaseUrl = createAssetBaseUrl(assetBucketName);
     const introVideoAssets = {
       en: buildPublicAssetFile(
@@ -1424,12 +631,12 @@ export function createInfrastructure() {
               stage,
               stageDomain: expoDomain.domainName,
               productionDomain: expoStageMap.production,
-              stageCertificateArn: expoCerts[stage],
+              stageCertificateArn: expoCerts[expoDeploymentStage],
               // AIRS -> testnet redirect is managed as an explicit router below.
               enableProductionToStageRedirect: false,
             })
           : undefined,
-      certificateArn: enableCustomDomain ? expoCerts[stage] : undefined,
+      certificateArn: enableCustomDomain ? expoCerts[expoDeploymentStage] : undefined,
       environment: {
         EXPO_PUBLIC_ENV: stage,
         EXPO_PUBLIC_STAGE: stage,
