@@ -91,6 +91,7 @@ export interface IdentityLocalConfig {
       applicationSlug?: string;
       providerName?: string;
       clientId?: string;
+      allowedEmailDomain?: string;
     };
     bootstrap?: {
       admin?: {
@@ -201,6 +202,7 @@ export interface IdentitySettings {
       applicationSlug: string;
       providerName: string;
       clientId: string;
+      allowedEmailDomain: string;
     };
     bootstrap: {
       admin: {
@@ -607,6 +609,10 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
         clientId:
           localConfig?.integration?.adminOidc?.clientId ??
           IDENTITY_INFRA_DEFAULTS.integration.adminOidc.clientId,
+        allowedEmailDomain:
+          args.env.INFRA_ADMIN_ALLOWED_EMAIL_DOMAIN ??
+          localConfig?.integration?.adminOidc?.allowedEmailDomain ??
+          IDENTITY_INFRA_DEFAULTS.integration.adminOidc.allowedEmailDomain,
       },
       bootstrap: {
         admin: {

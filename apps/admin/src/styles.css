@@ -339,6 +339,32 @@ select {
   margin: 1.5rem 0;
 }
 
+.auth-methods {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.auth-method {
+  padding: 1rem;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(13, 40, 65, 0.7), rgba(7, 22, 39, 0.85)),
+    rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(89, 227, 205, 0.12);
+}
+
+.auth-method h2 {
+  margin: 0.35rem 0 0.5rem;
+  font-size: 1rem;
+}
+
+.auth-method p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
 .auth-facts div {
   padding: 0.9rem 1rem;
   border-radius: 18px;
@@ -360,6 +386,11 @@ select {
 
 .error-text {
   color: var(--danger);
+}
+
+.auth-note {
+  margin-top: 1rem;
+  color: var(--text-muted);
 }
 
 @media (max-width: 980px) {

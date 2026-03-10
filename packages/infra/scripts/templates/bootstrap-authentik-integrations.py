@@ -5,6 +5,8 @@ from django.contrib.auth import get_user_model
 
 from authentik.core.models import Application, Group
 from authentik.flows.models import Flow
+from authentik.policies.expression.models import ExpressionPolicy
+from authentik.policies.models import PolicyBinding
 from authentik.providers.oauth2.models import OAuth2Provider
 from authentik.sources.oauth.models import OAuthSource
 from authentik.stages.identification.models import IdentificationStage
@@ -47,8 +49,61 @@ def normalize_policy_mode(value: str) -> str:
     return "all" if normalized == "all" else "any"
 
 
+def build_admin_access_expression(allowed_domain: str, allowed_groups):
+    encoded_groups = json.dumps(sorted(set(group for group in allowed_groups if group)))
+    return f"""
+allowed_domain = {json.dumps(allowed_domain.lower())}
+allowed_groups = set({encoded_groups})
+user = request.user
+
+if not user or not getattr(user, "is_authenticated", False):
+    ak_message("Authentication is required for Alternun Admin.")
+    return False
+
+if user.groups.filter(name__in=list(allowed_groups)).exists():
+    return True
+
+email = (getattr(user, "email", "") or "").strip().lower()
+if allowed_domain and email.endswith(f"@{{allowed_domain}}"):
+    return True
+
+ak_message(f"Only approved admin users or @{{allowed_domain}} accounts can access Alternun Admin.")
+return False
+""".strip()
+
+
+def upsert_expression_policy(name: str, expression: str):
+    policy, created = ExpressionPolicy.objects.get_or_create(
+        name=name,
+        defaults={"expression": expression},
+    )
+    changed = False
+    if policy.expression != expression:
+        policy.expression = expression
+        changed = True
+    if created or changed:
+        policy.save()
+    return policy, created, changed
+
+
+def ensure_policy_binding(target, policy, order: int = 0):
+    binding, created = PolicyBinding.objects.get_or_create(
+        target=target,
+        policy=policy,
+        defaults={"order": order},
+    )
+    changed = False
+    if binding.order != order:
+        binding.order = order
+        changed = True
+    if created or changed:
+        binding.save()
+    return created, changed
+
+
 results = {
     "admin_user": "skipped",
+    "admin_application_policy": "skipped",
     "admin_oidc_provider": "skipped",
     "default_application": "skipped",
     "google_source": "skipped",
@@ -67,6 +122,9 @@ admin_oidc_application_name = read_env(
 )
 admin_oidc_application_slug = read_env(
     "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_APPLICATION_SLUG", "alternun-admin"
+)
+admin_allowed_email_domain = read_env(
+    "ALTERNUN_BOOTSTRAP_ADMIN_ALLOWED_EMAIL_DOMAIN", "alternun.io"
 )
 admin_oidc_provider_name = read_env(
     "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_PROVIDER_NAME", "Alternun Admin OIDC"
@@ -116,15 +174,13 @@ if admin_username and admin_email:
     if admin_created or admin_changed:
         admin_user.save()
 
-    admin_group_obj = Group.objects.filter(name=admin_group).first()
-    if admin_group_obj:
-        if not admin_user.groups.filter(pk=admin_group_obj.pk).exists():
-            admin_user.groups.add(admin_group_obj)
-            admin_changed = True
-            if not admin_created:
-                results["admin_user"] = "updated"
-    else:
-        results["admin_group"] = "missing"
+    admin_group_obj, admin_group_created = Group.objects.get_or_create(name=admin_group)
+    results["admin_group"] = "created" if admin_group_created else "unchanged"
+    if not admin_user.groups.filter(pk=admin_group_obj.pk).exists():
+        admin_user.groups.add(admin_group_obj)
+        admin_changed = True
+        if not admin_created:
+            results["admin_user"] = "updated"
 
     if admin_created:
         results["admin_user"] = "created"
@@ -221,6 +277,23 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
 
     if application_created or application_changed:
         application.save()
+
+    application_policy, policy_created, policy_changed = upsert_expression_policy(
+        "alternun-admin-access",
+        build_admin_access_expression(
+            admin_allowed_email_domain,
+            [admin_group, "authentik Admins", "Alternun Dashboard Admins"],
+        ),
+    )
+    policy_binding_created, policy_binding_changed = ensure_policy_binding(
+        application, application_policy, order=0
+    )
+    if policy_created or policy_binding_created:
+        results["admin_application_policy"] = "created"
+    elif policy_changed or policy_binding_changed:
+        results["admin_application_policy"] = "updated"
+    else:
+        results["admin_application_policy"] = "unchanged"
 
     if provider_created or application_created:
         results["admin_oidc_provider"] = "created"
@@ -358,6 +431,19 @@ if google_client_id and google_client_secret:
             setattr(source, field, expected)
             source_changed = True
 
+    if hasattr(source, "policy_engine_mode") and source.policy_engine_mode != "any":
+        source.policy_engine_mode = "any"
+        source_changed = True
+    if hasattr(source, "user_matching_mode") and source.user_matching_mode != "email_link":
+        source.user_matching_mode = "email_link"
+        source_changed = True
+    if hasattr(source, "enabled") and not source.enabled:
+        source.enabled = True
+        source_changed = True
+    if hasattr(source, "promoted") and not source.promoted:
+        source.promoted = True
+        source_changed = True
+
     if (
         source_authentication_flow
         and source.authentication_flow_id != source_authentication_flow.pk
@@ -372,10 +458,20 @@ if google_client_id and google_client_secret:
         source.save()
 
     identification_stage = IdentificationStage.objects.filter(
-        slug="default-authentication-identification"
+        name="default-authentication-identification"
     ).first()
-    if identification_stage and not identification_stage.sources.filter(pk=source.pk).exists():
-        identification_stage.sources.add(source)
+    if identification_stage:
+        identification_stage_changed = False
+        if (
+            hasattr(identification_stage, "show_source_labels")
+            and not identification_stage.show_source_labels
+        ):
+            identification_stage.show_source_labels = True
+            identification_stage_changed = True
+        if identification_stage_changed:
+            identification_stage.save()
+        if not identification_stage.sources.filter(pk=source.pk).exists():
+            identification_stage.sources.add(source)
 
     if source_created:
         results["google_source"] = "created"

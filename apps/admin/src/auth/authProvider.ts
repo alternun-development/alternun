@@ -1,9 +1,9 @@
 import type { AuthProvider, RefineError } from '@refinedev/core';
 import {
+  canAccessAdminDashboard,
   extractAdminIdentity,
   getActiveAdminSession,
   getAdminRolesFromSession,
-  hasAdminRole,
   oidcClient,
 } from './oidc-client';
 
@@ -19,9 +19,8 @@ function currentReturnTo(): string {
 export const authProvider: AuthProvider = {
   login: async () => {
     const session = await getActiveAdminSession();
-    const roles = getAdminRolesFromSession(session);
 
-    if (session && hasAdminRole(roles)) {
+    if (session && canAccessAdminDashboard(session)) {
       return {
         success: true,
         redirectTo: '/dashboard',
@@ -48,7 +47,6 @@ export const authProvider: AuthProvider = {
   },
   check: async () => {
     const session = await getActiveAdminSession();
-    const roles = getAdminRolesFromSession(session);
 
     if (!session) {
       return {
@@ -57,11 +55,15 @@ export const authProvider: AuthProvider = {
       };
     }
 
-    if (!hasAdminRole(roles)) {
+    if (!canAccessAdminDashboard(session)) {
+      await oidcClient.removeUser();
+
       return {
         authenticated: false,
         redirectTo: '/login',
-        error: new Error('Admin role required to access Alternun Admin.'),
+        error: new Error(
+          'Only approved admin users or @alternun.io accounts can access Alternun Admin.'
+        ),
       };
     }
 

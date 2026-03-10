@@ -76,6 +76,7 @@ Enable/configure through env or local config:
 - `INFRA_ADMIN_AUTH_ISSUER_MOBILE`
 - `INFRA_ADMIN_AUTH_CLIENT_ID`
 - `INFRA_ADMIN_AUTH_AUDIENCE`
+- `INFRA_ADMIN_ALLOWED_EMAIL_DOMAIN`
 
 Important behavior:
 
