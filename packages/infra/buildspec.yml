@@ -4,54 +4,83 @@ version: 0.2
 
 env:
   variables:
-    SST_STAGE: "dev"
-    NODE_VERSION: "22"
-    PNPM_VERSION: "9.15.0"
-    INFRA_PATH: "packages/infra"
+    SST_STAGE: 'dev'
+    NODE_VERSION: '22'
+    PNPM_VERSION: '9.15.0'
+    INFRA_PATH: 'packages/infra'
 
     # Domain defaults for Expo web deployment
-    DOMAIN_ROOT: "alternun.co"
-    PROJECT_PREFIX: "alternun"
-    PREFIX: "alternun"
-    DOMAIN_PRODUCTION: "airs.alternun.co"
-    DOMAIN_DEV: "testnet.airs.alternun.co"
-    DOMAIN_MOBILE: "preview.airs.alternun.co"
-    INFRA_ENFORCE_AWS_ACCOUNT: "true"
-    INFRA_REQUIRE_ROUTE53: "true"
-    INFRA_REQUIRE_EXPO_PUBLIC_AUTH: "true"
-    INFRA_FAIL_ON_SECRET_SYNC: "false"
-    INFRA_RUN_UPSTREAM_PREDEPLOY_CHECKS: "false"
-    # managed|explicit : managed clears cert ARN overrides coming from CodeBuild project env.
-    INFRA_CERT_MODE: "managed"
+    DOMAIN_ROOT: 'alternun.co'
+    INFRA_ROOT_DOMAIN: 'alternun.co'
+    INFRA_CANONICAL_ROOT_DOMAIN: 'alternun.co'
+    PROJECT_PREFIX: 'alternun'
+    PREFIX: 'alternun'
+    INFRA_EXPO_APP_PATH: '../../apps/mobile'
+    INFRA_CANONICAL_EXPO_APP_PATH: '../../apps/mobile'
+    DOMAIN_PRODUCTION: 'airs.alternun.co'
+    DOMAIN_DEV: 'testnet.airs.alternun.co'
+    DOMAIN_MOBILE: 'preview.airs.alternun.co'
+    INFRA_EXPO_DOMAIN_PRODUCTION: 'airs.alternun.co'
+    INFRA_EXPO_DOMAIN_DEV: 'testnet.airs.alternun.co'
+    INFRA_EXPO_DOMAIN_MOBILE: 'preview.airs.alternun.co'
+    INFRA_CANONICAL_EXPO_DOMAIN_PRODUCTION: 'airs.alternun.co'
+    INFRA_CANONICAL_EXPO_DOMAIN_DEV: 'testnet.airs.alternun.co'
+    INFRA_CANONICAL_EXPO_DOMAIN_MOBILE: 'preview.airs.alternun.co'
+    INFRA_CANONICAL_EXPO_CERT_ARN_DEV: 'arn:aws:acm:us-east-1:124120088516:certificate/339fac88-b65a-4d2d-bd07-741e762e7210'
+    INFRA_CANONICAL_REDIRECT_AIRS_TO_DEV_CERT_ARN: 'arn:aws:acm:us-east-1:124120088516:certificate/b01e6ac3-7ce2-4761-b51f-c070eadd487a'
+    INFRA_CANONICAL_REDIRECT_DEV_TO_TESTNET_CERT_ARN: 'arn:aws:acm:us-east-1:124120088516:certificate/69a8433c-ef7b-4ef6-9033-f51bcb982414'
+    INFRA_CANONICAL_REDIRECT_ROOT_CERT_ARN: 'arn:aws:acm:us-east-1:124120088516:certificate/002f3146-f590-4426-affe-1bae8e1e762d'
+    INFRA_LOAD_ROOT_ENV: 'false'
+    INFRA_PRESERVE_EXISTING_ENV: 'true'
+    INFRA_ENFORCE_AWS_ACCOUNT: 'true'
+    INFRA_REQUIRE_ROUTE53: 'true'
+    INFRA_PIPELINES: 'production,dev,identity-dev,identity-prod'
+    INFRA_PIPELINE_BRANCH_IDENTITY_DEV: 'develop'
+    INFRA_PIPELINE_BRANCH_IDENTITY_PROD: 'master'
+    INFRA_REQUIRE_EXPO_PUBLIC_AUTH: 'true'
+    INFRA_IDENTITY_ENABLED: 'false'
+    INFRA_IDENTITY_ENABLED_STAGES: ''
+    INFRA_FAIL_ON_SECRET_SYNC: 'false'
+    INFRA_ENABLE_SECRET_SYNC: 'true'
+    INFRA_ENABLE_PREDEPLOY_CHECKS: 'true'
+    INFRA_RUN_UPSTREAM_PREDEPLOY_CHECKS: 'false'
+    # managed|explicit : managed prefers SST-managed certificates for empty site cert ARN vars,
+    # but preserves any explicit cert ARN overrides so existing ACM certificates can be reused.
+    INFRA_CERT_MODE: 'managed'
     # CI should use CodeBuild IAM role (temporary creds), not static keys.
-    INFRA_FORCE_ENV_AWS_CREDENTIALS: "false"
-    INFRA_REQUIRE_ENV_AWS_CREDENTIALS: "false"
+    INFRA_FORCE_ENV_AWS_CREDENTIALS: 'false'
+    INFRA_REQUIRE_ENV_AWS_CREDENTIALS: 'false'
 
     # Check controls
-    SKIP_DNS_CHECK: "false"
+    SKIP_DNS_CHECK: 'false'
     # Safety-first: never delete existing DNS automatically during deploy.
-    AUTO_REMOVE_CONFLICTING_DNS: "false"
-    INFRA_REMOVE_ACM_VALIDATION_CNAME: "false"
+    AUTO_REMOVE_CONFLICTING_DNS: 'false'
+    INFRA_REMOVE_ACM_VALIDATION_CNAME: 'false'
+    INFRA_FAIL_ON_MANAGED_CERT_CNAME_CONFLICT: 'true'
     # Optional post-deploy DNS sync poll tuning (used only when enabled).
-    POLL_TIMEOUT: "120"
-    POLL_INTERVAL: "15"
+    POLL_TIMEOUT: '120'
+    POLL_INTERVAL: '15'
     # Disabled by default: this fallback can add ~10m waiting for CloudFront alias discovery.
     # Enable only for recovery/manual DNS sync runs.
-    INFRA_ENABLE_POSTDEPLOY_DNS_SYNC: "false"
+    INFRA_ENABLE_POSTDEPLOY_DNS_SYNC: 'false'
     # Fail the pipeline if deployed endpoints are not reachable.
-    INFRA_ENABLE_REACHABILITY_CHECK: "true"
-    INFRA_REACHABILITY_ATTEMPTS: "18"
-    INFRA_REACHABILITY_INTERVAL_SECONDS: "10"
-    INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS: "5"
-    INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS: "20"
-    INFRA_ENFORCE_REDIRECT_CHECKS: "false"
+    INFRA_ENABLE_REACHABILITY_CHECK: 'true'
+    INFRA_REACHABILITY_ATTEMPTS: '18'
+    INFRA_REACHABILITY_INTERVAL_SECONDS: '10'
+    INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS: '5'
+    INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS: '20'
+    INFRA_ENFORCE_REDIRECT_CHECKS: 'false'
+    INFRA_ENABLE_ALIAS_CLEANUP: 'false'
+    INFRA_ENABLE_SST_DIFF: 'false'
+    INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'true'
     # Disabled by default: refresh can rewrite live state before deploy.
-    INFRA_ENABLE_SST_REFRESH: "false"
-    EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: "1"
+    INFRA_ENABLE_SST_REFRESH: 'false'
+    HUSKY: '0'
+    EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: '1'
   secrets-manager:
-    EXPO_PUBLIC_SUPABASE_URL: "alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_URL"
-    EXPO_PUBLIC_SUPABASE_KEY: "alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_KEY"
-    EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID: "alternun/ci/infra/expo-public:EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID"
+    EXPO_PUBLIC_SUPABASE_URL: 'alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_URL'
+    EXPO_PUBLIC_SUPABASE_KEY: 'alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_KEY'
+    EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID: 'alternun/ci/infra/expo-public:EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID'
 
 phases:
   install:
@@ -61,7 +90,33 @@ phases:
       - corepack enable pnpm
       - corepack prepare pnpm@${PNPM_VERSION} --activate
       - pnpm --version
-      - pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+      - |
+        stage_normalized=$(echo "${SST_STAGE}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+        if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ] && \
+           [ "${stage_normalized}" != "identity-dev" ] && \
+           [ "${stage_normalized}" != "identity-prod" ] && \
+           [ "${stage_normalized}" != "identity-production" ] && \
+           [ "${stage_normalized}" != "auth-dev" ] && \
+           [ "${stage_normalized}" != "auth-prod" ] && \
+           [ "${stage_normalized}" != "authentik-dev" ] && \
+           [ "${stage_normalized}" != "authentik-prod" ]; then
+          echo "WARN: INFRA_ENABLE_EXPO_SITE=false received on non-identity stage ${SST_STAGE}; forcing INFRA_ENABLE_EXPO_SITE=true to protect app resources."
+          export INFRA_ENABLE_EXPO_SITE=true
+        fi
+      - |
+        if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "true" ]; then
+          pnpm install --frozen-lockfile --prefer-offline \
+            --filter @alternun/infra... \
+            --filter @alternun/mobile... \
+          || pnpm install --no-frozen-lockfile --prefer-offline \
+            --filter @alternun/infra... \
+            --filter @alternun/mobile...
+        else
+          pnpm install --frozen-lockfile --prefer-offline \
+            --filter @alternun/infra... \
+          || pnpm install --no-frozen-lockfile --prefer-offline \
+            --filter @alternun/infra...
+        fi
 
   pre_build:
     commands:
@@ -82,6 +137,19 @@ phases:
       - echo "pnpm     = $(pnpm --version)"
       - echo "Infra    = ${INFRA_PATH}"
       - |
+        stage_normalized=$(echo "${SST_STAGE}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+        if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ] && \
+           [ "${stage_normalized}" != "identity-dev" ] && \
+           [ "${stage_normalized}" != "identity-prod" ] && \
+           [ "${stage_normalized}" != "identity-production" ] && \
+           [ "${stage_normalized}" != "auth-dev" ] && \
+           [ "${stage_normalized}" != "auth-prod" ] && \
+           [ "${stage_normalized}" != "authentik-dev" ] && \
+           [ "${stage_normalized}" != "authentik-prod" ]; then
+          echo "WARN: INFRA_ENABLE_EXPO_SITE=false is only valid on identity stack stages; forcing INFRA_ENABLE_EXPO_SITE=true for ${SST_STAGE}."
+          export INFRA_ENABLE_EXPO_SITE=true
+        fi
+      - |
         if [ -z "${INFRA_AWS_ACCOUNT_ID:-}" ] || [ "${INFRA_AWS_ACCOUNT_ID}" = "auto" ]; then
           INFRA_AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
           export INFRA_AWS_ACCOUNT_ID
@@ -91,48 +159,57 @@ phases:
         fi
       - |
         if [ "${INFRA_CERT_MODE}" = "managed" ]; then
-          export INFRA_EXPO_CERT_ARN_PRODUCTION=""
-          export INFRA_EXPO_CERT_ARN_DEV=""
-          export INFRA_EXPO_CERT_ARN_MOBILE=""
-          export INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN=""
-          export INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN=""
-          export INFRA_REDIRECT_ROOT_CERT_ARN=""
-          echo "Certificate mode = managed (INFRA_*_CERT_ARN cleared)"
+          for cert_var in INFRA_EXPO_CERT_ARN_PRODUCTION INFRA_EXPO_CERT_ARN_DEV INFRA_EXPO_CERT_ARN_MOBILE; do
+            if [ -z "${!cert_var:-}" ]; then
+              export "${cert_var}="
+            else
+              echo "Preserving explicit certificate override: ${cert_var}"
+            fi
+          done
+          echo "Certificate mode = managed (empty INFRA_EXPO_CERT_ARN_* values cleared; explicit site and redirect cert ARN overrides preserved)"
         else
           echo "Certificate mode = explicit (INFRA_*_CERT_ARN preserved)"
         fi
+      - echo "Infra Expo Domains = production:${INFRA_EXPO_DOMAIN_PRODUCTION} dev:${INFRA_EXPO_DOMAIN_DEV} mobile:${INFRA_EXPO_DOMAIN_MOBILE}"
+      - echo "Resolved Domains   = production:${DOMAIN_PRODUCTION} dev:${DOMAIN_DEV} mobile:${DOMAIN_MOBILE}"
       - echo "Require Expo Auth Env = ${INFRA_REQUIRE_EXPO_PUBLIC_AUTH}"
       - echo "Ensuring infra SST secrets..."
       - |
-        set +e
-        SECRET_SYNC_EXIT=0
-        if [ -f "${INFRA_PATH}/scripts/ensure-secrets.sh" ]; then
-          chmod +x "${INFRA_PATH}/scripts/ensure-secrets.sh" || true
-          (cd "${INFRA_PATH}" && ./scripts/ensure-secrets.sh ${SST_STAGE})
-          SECRET_SYNC_EXIT=$?
-        elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
-          chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
-          (cd "${INFRA_PATH}" && ./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh ${SST_STAGE})
-          SECRET_SYNC_EXIT=$?
-        elif [ -f "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
-          chmod +x "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
-          ./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh ${SST_STAGE}
-          SECRET_SYNC_EXIT=$?
+        if [ "${INFRA_ENABLE_SECRET_SYNC:-true}" != "true" ]; then
+          echo "Skipping secrets sync (INFRA_ENABLE_SECRET_SYNC=${INFRA_ENABLE_SECRET_SYNC})"
         else
-          echo "No ensure-secrets script found; skipping"
-        fi
-        set -e
-
-        if [ "${SECRET_SYNC_EXIT}" -ne 0 ]; then
-          if [ "${INFRA_FAIL_ON_SECRET_SYNC}" = "true" ]; then
-            echo "ERROR: Secret sync failed and INFRA_FAIL_ON_SECRET_SYNC=true"
-            exit "${SECRET_SYNC_EXIT}"
+          set +e
+          SECRET_SYNC_EXIT=0
+          if [ -f "${INFRA_PATH}/scripts/ensure-secrets.sh" ]; then
+            chmod +x "${INFRA_PATH}/scripts/ensure-secrets.sh" || true
+            (cd "${INFRA_PATH}" && ./scripts/ensure-secrets.sh ${SST_STAGE})
+            SECRET_SYNC_EXIT=$?
+          elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
+            chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
+            (cd "${INFRA_PATH}" && ./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh ${SST_STAGE})
+            SECRET_SYNC_EXIT=$?
+          elif [ -f "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" ]; then
+            chmod +x "./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh" || true
+            ./node_modules/@lsts_tech/infra/scripts/ensure-secrets.sh ${SST_STAGE}
+            SECRET_SYNC_EXIT=$?
+          else
+            echo "No ensure-secrets script found; skipping"
           fi
-          echo "WARN: Secret sync failed (exit ${SECRET_SYNC_EXIT}); continuing with deploy."
+          set -e
+
+          if [ "${SECRET_SYNC_EXIT}" -ne 0 ]; then
+            if [ "${INFRA_FAIL_ON_SECRET_SYNC}" = "true" ]; then
+              echo "ERROR: Secret sync failed and INFRA_FAIL_ON_SECRET_SYNC=true"
+              exit "${SECRET_SYNC_EXIT}"
+            fi
+            echo "WARN: Secret sync failed (exit ${SECRET_SYNC_EXIT}); continuing with deploy."
+          fi
         fi
       - echo "Running pre-deploy checks..."
       - |
-        if [ -f "${INFRA_PATH}/scripts/predeploy-checks.sh" ]; then
+        if [ "${INFRA_ENABLE_PREDEPLOY_CHECKS:-true}" != "true" ]; then
+          echo "Skipping pre-deploy checks (INFRA_ENABLE_PREDEPLOY_CHECKS=${INFRA_ENABLE_PREDEPLOY_CHECKS})"
+        elif [ -f "${INFRA_PATH}/scripts/predeploy-checks.sh" ]; then
           chmod +x "${INFRA_PATH}/scripts/predeploy-checks.sh" || true
           "${INFRA_PATH}/scripts/predeploy-checks.sh" ${SST_STAGE}
         elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/predeploy-checks.sh" ]; then
@@ -147,20 +224,51 @@ phases:
 
   build:
     commands:
-      - cd ${INFRA_PATH}
       - |
+        set -euo pipefail
+
+        if [ -f "${INFRA_PATH}/scripts/_load-infra-env.sh" ]; then
+          # shellcheck source=/dev/null
+          source "${INFRA_PATH}/scripts/_load-infra-env.sh"
+          load_infra_env
+        fi
+
         if [ "${INFRA_ENABLE_SST_REFRESH}" = "true" ]; then
-          npx sst refresh --stage ${SST_STAGE}
+          (cd "${INFRA_PATH}" && npx sst refresh --stage ${SST_STAGE})
         else
           echo "Skipping sst refresh (INFRA_ENABLE_SST_REFRESH=${INFRA_ENABLE_SST_REFRESH})"
         fi
-      - npx sst deploy --stage ${SST_STAGE}
+      - |
+        if [ -f "${INFRA_PATH}/scripts/sst-deploy.sh" ]; then
+          chmod +x "${INFRA_PATH}/scripts/sst-deploy.sh" || true
+          APPROVE=true RUN_PREDEPLOY_CHECKS=false STACK=${SST_STAGE} "${INFRA_PATH}/scripts/sst-deploy.sh"
+        elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" ]; then
+          chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" || true
+          (cd "${INFRA_PATH}" && APPROVE=true STACK=${SST_STAGE} ./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh)
+        elif [ -f "./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" ]; then
+          chmod +x "./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" || true
+          APPROVE=true STACK=${SST_STAGE} ./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh
+        else
+          echo "ERROR: No sst-deploy script found." >&2
+          exit 1
+        fi
+      - |
+        if [ "${INFRA_ENABLE_PUBLIC_ASSET_SYNC}" != "true" ]; then
+          echo "Skipping public asset sync (INFRA_ENABLE_PUBLIC_ASSET_SYNC=${INFRA_ENABLE_PUBLIC_ASSET_SYNC})"
+        elif [ -f "${INFRA_PATH}/scripts/sync-public-assets.sh" ]; then
+          chmod +x "${INFRA_PATH}/scripts/sync-public-assets.sh" || true
+          "${INFRA_PATH}/scripts/sync-public-assets.sh" ${SST_STAGE}
+        else
+          echo "No public asset sync script found; skipping"
+        fi
 
   post_build:
     commands:
       - echo "SST deploy completed for stage ${SST_STAGE}"
       - |
-        if [ "${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC}" != "true" ]; then
+        if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
+          echo "Skipping post-deploy DNS sync because BUILD phase failed."
+        elif [ "${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC}" != "true" ]; then
           echo "Skipping post-deploy DNS sync (INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC})"
         elif [ -f "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" ]; then
           echo "Running post-deploy DNS sync"
@@ -178,125 +286,15 @@ phases:
           echo "No post-deploy DNS sync script found; skipping"
         fi
       - |
-        if [ "${INFRA_ENABLE_REACHABILITY_CHECK}" != "true" ]; then
+        if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
+          echo "Skipping reachability check because BUILD phase failed."
+        elif [ "${INFRA_ENABLE_REACHABILITY_CHECK}" != "true" ]; then
           echo "Skipping reachability check (INFRA_ENABLE_REACHABILITY_CHECK=${INFRA_ENABLE_REACHABILITY_CHECK})"
+        elif [ -f "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ]; then
+          chmod +x "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" || true
+          "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ${SST_STAGE}
         else
-          set -euo pipefail
-
-          stage_domain="${DOMAIN_CUSTOM:-${SST_STAGE}.${DOMAIN_ROOT}}"
-          case "${SST_STAGE}" in
-            production) stage_domain="${DOMAIN_PRODUCTION:-${DOMAIN_ROOT}}" ;;
-            dev) stage_domain="${DOMAIN_DEV:-dev.${DOMAIN_ROOT}}" ;;
-            mobile) stage_domain="${DOMAIN_MOBILE:-mobile.${DOMAIN_ROOT}}" ;;
-          esac
-
-          attempts="${INFRA_REACHABILITY_ATTEMPTS:-18}"
-          interval="${INFRA_REACHABILITY_INTERVAL_SECONDS:-10}"
-          connect_timeout="${INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS:-5}"
-          request_timeout="${INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS:-20}"
-
-          normalize_url() {
-            local value="$1"
-            if echo "$value" | grep -Eq '^https?://'; then
-              echo "$value"
-            else
-              echo "https://${value}"
-            fi
-          }
-
-          extract_host() {
-            echo "$1" | sed -E 's#^[a-zA-Z]+://([^/:]+).*$#\1#'
-          }
-
-          is_2xx_3xx() {
-            local code="$1"
-            [ -n "$code" ] && [ "$code" -ge 200 ] && [ "$code" -lt 400 ]
-          }
-
-          curl_probe() {
-            local url="$1"
-            curl -sS -L --max-redirs 10 --connect-timeout "${connect_timeout}" --max-time "${request_timeout}" -o /dev/null -w "%{http_code} %{url_effective}" "$url" 2>/dev/null || true
-          }
-
-          check_reachable() {
-            local label="$1"
-            local url="$2"
-            local i result code effective
-            for i in $(seq 1 "${attempts}"); do
-              result=$(curl_probe "$url")
-              code=${result%% *}
-              effective=${result#* }
-              if is_2xx_3xx "$code"; then
-                echo "Reachability OK: ${label} code=${code} effective=${effective}"
-                return 0
-              fi
-              echo "Reachability pending (${i}/${attempts}): ${label} code=${code:-n/a}"
-              sleep "${interval}"
-            done
-            echo "ERROR: Reachability check failed for ${label}" >&2
-            return 1
-          }
-
-          check_redirect() {
-            local label="$1"
-            local source_url="$2"
-            local expected_host="$3"
-            local i result code effective actual
-            for i in $(seq 1 "${attempts}"); do
-              result=$(curl_probe "$source_url")
-              code=${result%% *}
-              effective=${result#* }
-              actual=$(extract_host "$effective")
-              if is_2xx_3xx "$code" && { [ "$actual" = "$expected_host" ] || [ "$actual" = "www.${expected_host}" ]; }; then
-                echo "Redirect OK: ${label} actual=${actual} expected=${expected_host}"
-                return 0
-              fi
-              echo "Redirect pending (${i}/${attempts}): ${label} actual=${actual:-n/a} expected=${expected_host} code=${code:-n/a}"
-              sleep "${interval}"
-            done
-            echo "ERROR: Redirect check failed for ${label}" >&2
-            return 1
-          }
-
-          run_redirect_check() {
-            local label="$1"
-            local source_url="$2"
-            local expected_host="$3"
-
-            if check_redirect "$label" "$source_url" "$expected_host"; then
-              return 0
-            fi
-
-            if [ "${INFRA_ENFORCE_REDIRECT_CHECKS:-false}" = "true" ]; then
-              echo "ERROR: Redirect enforcement is enabled and ${label} failed." >&2
-              return 1
-            fi
-
-            echo "WARN: Redirect check failed for ${label}; continuing because INFRA_ENFORCE_REDIRECT_CHECKS=false."
-            return 0
-          }
-
-          primary_url=$(normalize_url "${stage_domain}")
-          check_reachable "primary:${stage_domain}" "${primary_url}"
-
-          if [ "${SST_STAGE}" = "dev" ]; then
-            airs_source="${INFRA_REDIRECT_AIRS_TO_DEV_SOURCE:-${DOMAIN_PRODUCTION:-}}"
-            if [ -n "${airs_source}" ] && [ "${airs_source}" != "${stage_domain}" ]; then
-              run_redirect_check "airs->testnet" "$(normalize_url "${airs_source}")" "${stage_domain}"
-            fi
-
-            dev_source="${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}"
-            if [ -n "${dev_source}" ] && [ "${dev_source}" != "${stage_domain}" ]; then
-              run_redirect_check "dev->testnet" "$(normalize_url "${dev_source}")" "${stage_domain}"
-            fi
-
-            root_source="${DOMAIN_ROOT:-}"
-            root_target="${INFRA_REDIRECT_ROOT_TARGET:-}"
-            if [ -n "${root_source}" ] && [ -n "${root_target}" ]; then
-              root_target_host=$(extract_host "$(normalize_url "${root_target}")")
-              run_redirect_check "root->target" "$(normalize_url "${root_source}")" "${root_target_host}"
-            fi
-          fi
+          echo "No postdeploy reachability check script found; skipping"
         fi
 
 cache:

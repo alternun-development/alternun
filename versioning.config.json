@@ -1,11 +1,24 @@
 {
   "rootPackageJson": "package.json",
-  "packages": ["apps/*/package.json", "packages/*/package.json"],
+  "packages": [
+    "apps/docs",
+    "apps/mobile",
+    "apps/web",
+    "packages/auth",
+    "packages/i18n",
+    "packages/infra",
+    "packages/ui"
+  ],
   "changelogFile": "CHANGELOG.md",
   "conventionalCommits": true,
   "syncDependencies": true,
   "ignorePackages": [],
-  "extensions": [],
+  "extensions": [
+    {
+      "name": "alternun-mobile-app-version-sync",
+      "path": "./scripts/versioning/mobile-app-version-extension.cjs"
+    }
+  ],
   "branchAwareness": {
     "enabled": true,
     "defaultBranch": "master",
@@ -17,12 +30,19 @@
         "environment": "production",
         "bumpStrategy": "semantic"
       },
+      "main": {
+        "versionFormat": "semantic",
+        "tagFormat": "v{version}",
+        "syncFiles": ["package.json"],
+        "environment": "production",
+        "bumpStrategy": "semantic"
+      },
       "develop": {
-        "versionFormat": "dev",
+        "versionFormat": "semantic",
         "tagFormat": "v{version}",
         "syncFiles": ["package.json"],
         "environment": "development",
-        "bumpStrategy": "dev-build"
+        "bumpStrategy": "semantic"
       },
       "feature/*": {
         "versionFormat": "feature",

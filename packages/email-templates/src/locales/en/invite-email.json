@@ -1,0 +1,9 @@
+{
+  "subject": "You have been invited to Alternun",
+  "preview": "Accept your invitation to join Alternun.",
+  "greeting": "Hi {{email}},",
+  "intro": "You have been invited to join Alternun. Click the button below to continue.",
+  "ctaLabel": "Accept invitation",
+  "ignoreNotice": "If this invitation was not expected, you can ignore this email.",
+  "footer": "Alternun Team"
+}

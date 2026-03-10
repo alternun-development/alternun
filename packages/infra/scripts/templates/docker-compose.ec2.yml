@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: docker.io/library/postgres:16
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    shm_size: 256mb
+    volumes:
+      - /opt/alternun/identity/postgres/data:/var/lib/postgresql/data
+  traefik:
+    image: docker.io/library/traefik:v3.1
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.email=identity-admin@${ALTERNUN_ROOT_DOMAIN}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+    ports:
+      - 80:80
+      - 443:443
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /opt/alternun/identity/traefik-acme.json:/letsencrypt/acme.json
+  server:
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_IMAGE_TAG}
+    command: server
+    depends_on:
+      - postgres
+      - worker
+    env_file:
+      - /opt/alternun/identity/.env.authentik
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.authentik.rule=Host("${ALTERNUN_IDENTITY_DOMAIN}")
+      - traefik.http.routers.authentik.entrypoints=websecure
+      - traefik.http.routers.authentik.tls=true
+      - traefik.http.routers.authentik.tls.certresolver=letsencrypt
+      - traefik.http.services.authentik.loadbalancer.server.port=9000
+    restart: unless-stopped
+    shm_size: 512mb
+    volumes:
+      - /opt/alternun/identity/authentik/data:/data
+      - /opt/alternun/identity/authentik/custom-templates:/templates
+  worker:
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_IMAGE_TAG}
+    command: worker
+    depends_on:
+      - postgres
+    env_file:
+      - /opt/alternun/identity/.env.authentik
+    restart: unless-stopped
+    shm_size: 512mb
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/alternun/identity/authentik/data:/data
+      - /opt/alternun/identity/authentik/certs:/certs
+      - /opt/alternun/identity/authentik/custom-templates:/templates

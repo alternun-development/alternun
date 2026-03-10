@@ -1,0 +1,11 @@
+{
+  "subject": "Confirma tu nuevo correo en Alternun",
+  "preview": "Verifica este correo para completar el cambio de email.",
+  "greeting": "Hola {{email}},",
+  "intro": "Se solicito cambiar el correo de tu cuenta de Alternun. Confirma este nuevo correo para continuar.",
+  "codeLabel": "Codigo de verificacion",
+  "ctaLabel": "Confirmar nuevo correo",
+  "ignoreNotice": "Si no solicitaste este cambio, protege tu cuenta y conserva tu correo actual.",
+  "closing": "Tus datos de cuenta siguen protegidos.",
+  "footer": "Equipo de seguridad de Alternun"
+}

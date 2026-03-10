@@ -1,0 +1,192 @@
+{
+  "shared": {
+    "labels": {
+      "by": "Por",
+      "dark": "Oscuro",
+      "language": "Idioma",
+      "light": "Claro",
+      "settings": "Configuracion",
+      "signIn": "Iniciar sesion",
+      "theme": "Tema",
+      "yes": "Si",
+      "no": "No"
+    },
+    "languageNames": {
+      "en": "Ingles",
+      "es": "Espanol",
+      "th": "Tailandes"
+    },
+    "templates": {
+      "welcome": "Bienvenido, {{name}}"
+    }
+  },
+  "mobile": {
+    "authCallback": {
+      "errors": {
+        "failed": "La devolucion de autenticacion fallo.",
+        "finalizeFailed": "No fue posible completar la devolucion de autenticacion.",
+        "missingSession": "La devolucion no incluyo un token de sesion completo.",
+        "title": "Error de autenticacion",
+        "unsupportedClient": "La devolucion de autenticacion no esta configurada para este cliente."
+      },
+      "success": {
+        "default": {
+          "message": "La devolucion de autenticacion se completo correctamente.",
+          "title": "Sesion iniciada"
+        },
+        "recovery": {
+          "message": "La devolucion de autenticacion se completo para la recuperacion de contrasena.",
+          "title": "Sesion de recuperacion lista"
+        },
+        "signup": {
+          "message": "Tu correo fue confirmado correctamente. Ya iniciaste sesion.",
+          "title": "Correo confirmado"
+        }
+      }
+    },
+    "authModal": {
+      "actions": {
+        "alreadyConfirmedContinue": "Ya confirme, continuar",
+        "connectWallet": "Conectar billetera",
+        "continueWithEmail": "Continuar con correo",
+        "continueWithGoogle": "Continuar con Google",
+        "createAccount": "Crear cuenta",
+        "verifyConfirmationCode": "Verificar codigo de confirmacion",
+        "useAnotherEmail": "Usar otro correo"
+      },
+      "confirmation": {
+        "checkEmail": "Revisa tu correo",
+        "codeBody": "Ingresa el codigo de verificacion de tu correo para activar tu cuenta aqui.",
+        "codeOrLinkHint": "Usa el codigo del correo o haz clic en el enlace del boton para confirmar.",
+        "codeTitle": "Tienes un codigo de verificacion?",
+        "emailFallback": "tu correo",
+        "linkSentTo": "Enviamos un enlace de confirmacion a:"
+      },
+      "divider": {
+        "or": "o"
+      },
+      "errors": {
+        "accountExistsSignInOrResend": "Ya existe una cuenta con este correo. Inicia sesion o reenvia la confirmacion abajo.",
+        "authenticationFailed": "La autenticacion fallo. Intentalo de nuevo.",
+        "confirmationCodeInvalid": "El codigo de confirmacion es invalido o vencio. Solicita un nuevo correo e intentalo otra vez.",
+        "enterEmailFirst": "Ingresa tu correo primero.",
+        "resendUnavailable": "Reenviar la confirmacion no esta disponible en este cliente de autenticacion.",
+        "signupUnavailable": "El registro no esta disponible en este cliente de autenticacion.",
+        "verificationCodeUnavailable": "La verificacion por codigo no esta disponible en este cliente de autenticacion."
+      },
+      "footer": {
+        "alreadyHaveAccount": "Ya tienes una cuenta? Inicia sesion",
+        "dontHaveAccount": "No tienes una cuenta? Crea una"
+      },
+      "modes": {
+        "signIn": "Iniciar sesion",
+        "signUp": "Crear cuenta"
+      },
+      "notices": {
+        "accountCreatedSigningIn": "Cuenta creada correctamente. Iniciando sesion...",
+        "confirmationSent": "Correo de confirmacion enviado a {{email}}.",
+        "emailConfirmedSignIn": "Correo confirmado. Continua iniciando sesion.",
+        "requestNewConfirmation": "Si esta cuenta no esta verificada, solicita un nuevo correo de confirmacion.",
+        "secureSignIn": "Acceso seguro.",
+        "unverifiedEmail": "Tu correo aun no esta verificado. Confirma para continuar."
+      },
+      "placeholders": {
+        "confirmationCode": "Codigo de verificacion",
+        "confirmPassword": "Confirmar contrasena",
+        "email": "Correo electronico",
+        "password": "Contrasena"
+      },
+      "resend": {
+        "body": "Revisa spam o correo no deseado primero y despues solicita otro correo de confirmacion.",
+        "sendAgain": "Enviar confirmacion otra vez",
+        "sendAgainIn": "Enviar otra vez en {{seconds}}s",
+        "title": "No recibes el correo?"
+      },
+      "validation": {
+        "confirmationCodeRequired": "El codigo de verificacion es obligatorio.",
+        "confirmPasswordRequired": "La confirmacion es obligatoria.",
+        "emailAndPasswordRequired": "El correo y la contrasena son obligatorios.",
+        "emailPasswordConfirmationRequired": "El correo, la contrasena y la confirmacion son obligatorios.",
+        "emailRequired": "El correo es obligatorio.",
+        "passwordMin": "La contrasena debe tener al menos 8 caracteres.",
+        "passwordMismatch": "Las contrasenas no coinciden.",
+        "passwordRequired": "La contrasena es obligatoria.",
+        "validEmail": "Ingresa un correo valido."
+      }
+    },
+    "footer": {
+      "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",
+      "links": {
+        "documentation": "Documentacion",
+        "project": "El Proyecto"
+      },
+      "tagline": "Una \"manera diferente de hacer las cosas\" - Alternun"
+    },
+    "landing": {
+      "actions": {
+        "goToDashboard": "Ir al panel"
+      },
+      "hero": {
+        "presentedBy": "Alternun presenta",
+        "scrollToInteract": "Desplazate para interactuar"
+      },
+      "info": {
+        "scoreLine": "Puntaje de impacto y reputacion de Alternun.",
+        "summaryLine": "Una sola superficie para impacto verificado, ciclo de compensacion y modulos vinculados a la wallet."
+      },
+      "media": {
+        "subtitle": "El programa de lealtad definitivo para quienes protegen el planeta.",
+        "title": "Puntaje de impacto y reputacion de Alternun"
+      },
+      "video": {
+        "loadingIntro": "Cargando video introductorio de Airs",
+        "muted": "Silenciado",
+        "openIntro": "Abrir video introductorio de Airs",
+        "restart": "Reiniciar",
+        "soundOn": "Sonido activado"
+      }
+    },
+    "navigation": {
+      "moreSettings": "Mas configuracion"
+    },
+    "onboarding": {
+      "dontShowIntroAgain": "No mostrar la introduccion otra vez"
+    },
+    "settingsScreen": {
+      "currentLanguage": "Idioma actual",
+      "localPreferenceHelp": "Guardado localmente en las preferencias del navegador o la app.",
+      "sections": {
+        "appearance": "Apariencia",
+        "language": "Idioma",
+        "onboarding": "Introduccion"
+      },
+      "showIntroAgain": "No mostrar la introduccion otra vez",
+      "subtitle": "Administra las preferencias de interfaz y los controles de cuenta.",
+      "title": "Configuracion"
+    },
+    "walletModal": {
+      "disclaimer": "Al conectar, aceptas nuestros Terminos del servicio y Politica de privacidad",
+      "subtitle": "Conecta tu billetera para acceder al panel completo de Ambient Impact",
+      "title": "Conectar billetera",
+      "wallets": {
+        "metamask": {
+          "description": "La billetera Web3 mas popular"
+        },
+        "walletconnect": {
+          "description": "Conecta mediante codigo QR"
+        }
+      }
+    }
+  },
+  "web": {
+    "home": {
+      "title": "Aplicacion web de Alternun",
+      "welcome": "Bienvenido a la aplicacion de Next.js."
+    }
+  },
+  "docs": {
+    "site": {
+      "title": "Documentacion de Alternun"
+    }
+  }
+}

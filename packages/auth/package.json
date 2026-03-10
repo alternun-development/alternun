@@ -1,6 +1,6 @@
 {
   "name": "@alternun/auth",
-  "version": "0.1.0",
+  "version": "1.0.4",
   "description": "Alternun auth wrapper package built on top of @edcalderon/auth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,7 +14,16 @@
     "ses:smtp": "node infra/ses/scripts/03-generate-smtp-config.cjs",
     "ses:supabase": "node infra/ses/scripts/04-sync-supabase-smtp.cjs",
     "ses:status": "node infra/ses/scripts/05-status-report.cjs",
-    "ses:migrate": "pnpm run ses:bootstrap && pnpm run ses:smtp && pnpm run ses:supabase && pnpm run ses:status"
+    "ses:migrate": "pnpm run ses:bootstrap && pnpm run ses:smtp && pnpm run ses:supabase && pnpm run ses:status",
+    "email:generate": "node infra/email/scripts/01-generate-smtp-config.cjs",
+    "email:supabase": "node infra/email/scripts/02-sync-supabase-smtp.cjs",
+    "email:status": "node infra/email/scripts/03-status-report.cjs",
+    "email:templates:generate": "node ../email-templates/scripts/generate-supabase-auth-templates.cjs",
+    "email:templates:supabase": "node infra/email/scripts/04-sync-supabase-templates.cjs",
+    "email:templates:apply": "pnpm run email:templates:generate && pnpm run email:templates:supabase",
+    "email:apply": "pnpm run email:generate && pnpm run email:supabase && pnpm run email:status",
+    "email:postmark": "EMAIL_SMTP_PROVIDER=postmark pnpm run email:apply",
+    "email:ses": "EMAIL_SMTP_PROVIDER=ses pnpm run email:apply"
   },
   "dependencies": {
     "@edcalderon/auth": "1.2.1",

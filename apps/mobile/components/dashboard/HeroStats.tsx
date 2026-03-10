@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { TrendingUp, Layers, Coins, CheckCircle } from 'lucide-react-native';
+import { View, Text, StyleSheet, } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
+import { TrendingUp, Layers, Coins, CheckCircle, } from 'lucide-react-native';
 
 interface HeroStatsProps {
   totalAIRS: number | null;
@@ -11,7 +12,7 @@ interface HeroStatsProps {
   isDark?: boolean;
 }
 
-function formatMetric(value: number | null): string {
+function formatMetric(value: number | null,): string {
   if (typeof value !== 'number') {
     return '--';
   }
@@ -26,28 +27,28 @@ export default function HeroStats({
   compensationsCompleted,
   previewMode = false,
   isDark = true,
-}: HeroStatsProps) {
+}: HeroStatsProps,) {
   const deltaLabel = previewMode ? 'LOCKED' : '+0';
   const palette = isDark
     ? {
-        mesh: 'rgba(28,203,161,0.04)',
-        cardBg: 'rgba(255,255,255,0.04)',
-        cardBorder: 'rgba(255,255,255,0.08)',
-        value: '#e8e8ff',
-        label: 'rgba(232,232,255,0.7)',
-      }
+      mesh: 'rgba(28,203,161,0.04)',
+      cardBg: 'rgba(255,255,255,0.04)',
+      cardBorder: 'rgba(255,255,255,0.08)',
+      value: '#e8e8ff',
+      label: 'rgba(232,232,255,0.7)',
+    }
     : {
-        mesh: 'rgba(15,118,110,0.08)',
-        cardBg: '#ffffff',
-        cardBorder: 'rgba(15,23,42,0.14)',
-        value: '#0f172a',
-        label: '#334155',
-      };
+      mesh: 'rgba(15,118,110,0.08)',
+      cardBg: '#ffffff',
+      cardBorder: 'rgba(15,23,42,0.14)',
+      value: '#0f172a',
+      label: '#334155',
+    };
 
   const stats = [
     {
-      label: 'Total AIRS Earned',
-      value: formatMetric(totalAIRS),
+      label: 'Total Airs Earned',
+      value: formatMetric(totalAIRS,),
       delta: deltaLabel,
       positive: !previewMode,
       icon: TrendingUp,
@@ -55,7 +56,7 @@ export default function HeroStats({
     },
     {
       label: 'Active Positions',
-      value: formatMetric(activePositions),
+      value: formatMetric(activePositions,),
       delta: deltaLabel,
       positive: !previewMode,
       icon: Layers,
@@ -63,7 +64,7 @@ export default function HeroStats({
     },
     {
       label: 'Tokens Held',
-      value: formatMetric(tokensHeld),
+      value: formatMetric(tokensHeld,),
       delta: deltaLabel,
       positive: !previewMode,
       icon: Coins,
@@ -71,7 +72,7 @@ export default function HeroStats({
     },
     {
       label: 'Compensations',
-      value: formatMetric(compensationsCompleted),
+      value: formatMetric(compensationsCompleted,),
       delta: deltaLabel,
       positive: !previewMode,
       icon: CheckCircle,
@@ -81,39 +82,39 @@ export default function HeroStats({
 
   return (
     <View style={styles.container}>
-      <View style={[styles.meshGradient, { backgroundColor: palette.mesh }]} />
+      <View style={[styles.meshGradient, { backgroundColor: palette.mesh, },]} />
       <View style={styles.grid}>
-        {stats.map((stat, index) => {
+        {stats.map((stat, index,) => {
           const Icon = stat.icon;
           return (
             <View
               key={index}
               style={[
                 styles.card,
-                { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
+                { backgroundColor: palette.cardBg, borderColor: palette.cardBorder, },
               ]}
             >
               <View style={styles.cardTop}>
-                <View style={[styles.iconBg, { backgroundColor: `${stat.color}18` }]}>
+                <View style={[styles.iconBg, { backgroundColor: `${stat.color}18`, },]}>
                   <Icon size={16} color={stat.color} />
                 </View>
-                <View style={[styles.delta, stat.positive ? styles.deltaPositive : styles.deltaNegative]}>
-                  <Text style={[styles.deltaText, stat.positive ? styles.deltaTextPositive : styles.deltaTextNegative]}>
+                <View style={[styles.delta, stat.positive ? styles.deltaPositive : styles.deltaNegative,]}>
+                  <Text style={[styles.deltaText, stat.positive ? styles.deltaTextPositive : styles.deltaTextNegative,]}>
                     {stat.delta}
                   </Text>
                 </View>
               </View>
-              <Text style={[styles.value, { color: palette.value }]}>{stat.value}</Text>
-              <Text style={[styles.label, { color: palette.label }]}>{stat.label}</Text>
+              <Text style={[styles.value, { color: palette.value, },]}>{stat.value}</Text>
+              <Text style={[styles.label, { color: palette.label, },]}>{stat.label}</Text>
             </View>
           );
-        })}
+        },)}
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   container: {
     paddingHorizontal: 16,
     paddingVertical: 20,
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 8, },
     shadowOpacity: 0.5,
     shadowRadius: 14,
     elevation: 5,
@@ -188,4 +189,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '400',
   },
-});
+},);

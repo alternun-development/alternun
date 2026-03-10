@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="256"
+   height="256"
+   viewBox="0 0 256 256"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="AIRS-logo.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="4.5546875"
+     inkscape:cx="124.04803"
+     inkscape:cy="128"
+     inkscape:window-width="2560"
+     inkscape:window-height="1368"
+     inkscape:window-x="1080"
+     inkscape:window-y="772"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <!-- Background circle -->
+  <circle
+     cx="128"
+     cy="128"
+     r="110"
+     fill="#004646"
+     id="circle1" />
+  <!-- Rounded triangle -->
+  <path
+     d="m 83.023929,184.2548 c 0,0 -27.780611,-4.73633 -6.150891,-33.88575 L 147.74942,70.795648 c 9.89575,-10.143488 30.4878,-9.472689 31.84836,3.353989 l 1.3895,70.405823 c 0.53291,27.0023 5.90897,40.76527 -10.8054,40.59374 z"
+     fill="#1ee6b5"
+     id="path1"
+     sodipodi:nodetypes="ccccssc"
+     style="stroke-width:0.995784" />
+</svg>

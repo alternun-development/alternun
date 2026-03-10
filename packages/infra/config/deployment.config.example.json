@@ -39,5 +39,79 @@
       "rootDomain": "",
       "devToTestnet": ""
     }
+  },
+  "identity": {
+    "enabled": false,
+    "domains": {
+      "production": "auth.alternun.co",
+      "dev": "testnet.auth.alternun.co",
+      "mobile": "preview.auth.alternun.co"
+    },
+    "ec2": {
+      "instanceType": "t3.small",
+      "volumeSizeGiB": 20
+    },
+    "rds": {
+      "engineVersion": "16",
+      "instanceType": "db.t4g.micro",
+      "storageGiB": 20,
+      "multiAz": false,
+      "publicAccess": false,
+      "backupRetentionDays": 7,
+      "performanceInsights": false,
+      "enhancedMonitoring": false
+    },
+    "emailProvider": "ses",
+    "authentikImageTag": "2026.2",
+    "jwt": {
+      "audience": "alternun-app",
+      "roleClaim": "role",
+      "rolesClaim": "alternun_roles",
+      "accessTokenTtlMinutes": 15
+    },
+    "integration": {
+      "google": {
+        "clientId": "",
+        "clientSecret": "",
+        "sourceName": "Google",
+        "sourceSlug": "google"
+      },
+      "supabase": {
+        "applicationName": "Alternun Supabase",
+        "applicationSlug": "alternun-supabase",
+        "managementAccessToken": "",
+        "oidcClientId": "alternun-supabase",
+        "projectRef": "",
+        "providerName": "Alternun Supabase OIDC",
+        "syncConfig": true
+      },
+      "bootstrap": {
+        "admin": {
+          "username": "akadmin",
+          "email": "admin@alternun.co",
+          "name": "authentik Default Admin",
+          "password": "",
+          "group": "authentik Admins"
+        },
+        "defaultApplication": {
+          "enabled": true,
+          "name": "Alternun Internal",
+          "slug": "alternun-internal",
+          "group": "Alternun",
+          "launchUrl": "",
+          "openInNewTab": false,
+          "publisher": "Alternun",
+          "description": "Alternun internal access",
+          "policyEngineMode": "any"
+        }
+      }
+    },
+    "secrets": {
+      "authentikSecretKeyName": "alternun-infra/identity/authentik-secret-key",
+      "databaseCredentialsSecretName": "alternun-infra/identity/database-credentials",
+      "smtpCredentialsSecretName": "alternun-infra/identity/smtp-credentials",
+      "jwtSigningKeySecretName": "alternun-infra/identity/jwt-signing-key",
+      "integrationConfigSecretName": "alternun-infra/identity/integration-config"
+    }
   }
 }

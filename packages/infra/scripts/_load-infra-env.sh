@@ -12,6 +12,7 @@ is_truthy() {
 
 load_env_file() {
   local env_file=$1
+  local preserve_existing=${2:-false}
   local line key value
 
   [ -f "$env_file" ] || return 0
@@ -37,6 +38,9 @@ load_env_file() {
     fi
 
     if [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+      if is_truthy "$preserve_existing" && [ "${!key+x}" = x ]; then
+        continue
+      fi
       export "$key=$value"
     fi
   done < "$env_file"
@@ -44,21 +48,84 @@ load_env_file() {
 
 load_infra_env() {
   local script_dir infra_dir repo_root infra_env_file
-  local force_env_credentials require_env_credentials
+  local force_env_credentials require_env_credentials preserve_existing_env
+  local canonical_expo_app_path
+  local canonical_root_domain canonical_domain_production canonical_domain_dev canonical_domain_mobile
+  local canonical_cert_production canonical_cert_dev canonical_cert_mobile
+  local canonical_redirect_cert_airs_to_dev canonical_redirect_cert_dev_to_testnet canonical_redirect_cert_root
 
   script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
   infra_dir=$(cd "$script_dir/.." && pwd)
   repo_root=$(cd "$infra_dir/../.." && pwd)
   infra_env_file=${INFRA_ENV_FILE:-"$infra_dir/.env"}
+  preserve_existing_env=${INFRA_PRESERVE_EXISTING_ENV:-false}
 
   if [ -f "$infra_env_file" ]; then
-    load_env_file "$infra_env_file"
+    load_env_file "$infra_env_file" "$preserve_existing_env"
   fi
 
   if is_truthy "${INFRA_LOAD_ROOT_ENV:-false}" && [ -f "$repo_root/.env" ]; then
-    load_env_file "$repo_root/.env"
-    # Keep infra package values authoritative after loading root .env.
-    load_env_file "$infra_env_file"
+    load_env_file "$repo_root/.env" "$preserve_existing_env"
+    if ! is_truthy "$preserve_existing_env"; then
+      # Keep infra package values authoritative after loading root .env.
+      load_env_file "$infra_env_file"
+    fi
+  fi
+
+  canonical_root_domain=${INFRA_CANONICAL_ROOT_DOMAIN:-}
+  canonical_expo_app_path=${INFRA_CANONICAL_EXPO_APP_PATH:-}
+  canonical_domain_production=${INFRA_CANONICAL_EXPO_DOMAIN_PRODUCTION:-}
+  canonical_domain_dev=${INFRA_CANONICAL_EXPO_DOMAIN_DEV:-}
+  canonical_domain_mobile=${INFRA_CANONICAL_EXPO_DOMAIN_MOBILE:-}
+  canonical_cert_production=${INFRA_CANONICAL_EXPO_CERT_ARN_PRODUCTION:-}
+  canonical_cert_dev=${INFRA_CANONICAL_EXPO_CERT_ARN_DEV:-}
+  canonical_cert_mobile=${INFRA_CANONICAL_EXPO_CERT_ARN_MOBILE:-}
+  canonical_redirect_cert_airs_to_dev=${INFRA_CANONICAL_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}
+  canonical_redirect_cert_dev_to_testnet=${INFRA_CANONICAL_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}
+  canonical_redirect_cert_root=${INFRA_CANONICAL_REDIRECT_ROOT_CERT_ARN:-}
+
+  if [ -n "$canonical_root_domain" ]; then
+    export INFRA_ROOT_DOMAIN="$canonical_root_domain"
+  fi
+
+  if [ -n "$canonical_expo_app_path" ]; then
+    export INFRA_EXPO_APP_PATH="$canonical_expo_app_path"
+  fi
+
+  if [ -n "$canonical_domain_production" ]; then
+    export INFRA_EXPO_DOMAIN_PRODUCTION="$canonical_domain_production"
+  fi
+
+  if [ -n "$canonical_domain_dev" ]; then
+    export INFRA_EXPO_DOMAIN_DEV="$canonical_domain_dev"
+  fi
+
+  if [ -n "$canonical_domain_mobile" ]; then
+    export INFRA_EXPO_DOMAIN_MOBILE="$canonical_domain_mobile"
+  fi
+
+  if [ -n "$canonical_cert_production" ]; then
+    export INFRA_EXPO_CERT_ARN_PRODUCTION="$canonical_cert_production"
+  fi
+
+  if [ -n "$canonical_cert_dev" ]; then
+    export INFRA_EXPO_CERT_ARN_DEV="$canonical_cert_dev"
+  fi
+
+  if [ -n "$canonical_cert_mobile" ]; then
+    export INFRA_EXPO_CERT_ARN_MOBILE="$canonical_cert_mobile"
+  fi
+
+  if [ -n "$canonical_redirect_cert_airs_to_dev" ]; then
+    export INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN="$canonical_redirect_cert_airs_to_dev"
+  fi
+
+  if [ -n "$canonical_redirect_cert_dev_to_testnet" ]; then
+    export INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN="$canonical_redirect_cert_dev_to_testnet"
+  fi
+
+  if [ -n "$canonical_redirect_cert_root" ]; then
+    export INFRA_REDIRECT_ROOT_CERT_ARN="$canonical_redirect_cert_root"
   fi
 
   # Backward-compatible aliases for legacy .env naming.
@@ -94,10 +161,11 @@ load_infra_env() {
   fi
 
   # Compatibility bridge for @lsts_tech/infra shell scripts.
-  export DOMAIN_ROOT="${DOMAIN_ROOT:-${INFRA_ROOT_DOMAIN:-}}"
-  export DOMAIN_PRODUCTION="${DOMAIN_PRODUCTION:-${INFRA_EXPO_DOMAIN_PRODUCTION:-}}"
-  export DOMAIN_DEV="${DOMAIN_DEV:-${INFRA_EXPO_DOMAIN_DEV:-}}"
-  export DOMAIN_MOBILE="${DOMAIN_MOBILE:-${INFRA_EXPO_DOMAIN_MOBILE:-}}"
-  export PROJECT_PREFIX="${PROJECT_PREFIX:-${INFRA_PIPELINE_PREFIX:-}}"
-  export PREFIX="${PREFIX:-${INFRA_PIPELINE_PREFIX:-${PROJECT_PREFIX:-}}}"
+  # Keep INFRA_* values authoritative so stale CodeBuild project variables do not override repo config.
+  export DOMAIN_ROOT="${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-}}"
+  export DOMAIN_PRODUCTION="${INFRA_EXPO_DOMAIN_PRODUCTION:-${DOMAIN_PRODUCTION:-}}"
+  export DOMAIN_DEV="${INFRA_EXPO_DOMAIN_DEV:-${DOMAIN_DEV:-}}"
+  export DOMAIN_MOBILE="${INFRA_EXPO_DOMAIN_MOBILE:-${DOMAIN_MOBILE:-}}"
+  export PROJECT_PREFIX="${INFRA_PIPELINE_PREFIX:-${PROJECT_PREFIX:-}}"
+  export PREFIX="${INFRA_PIPELINE_PREFIX:-${PREFIX:-${PROJECT_PREFIX:-}}}"
 }

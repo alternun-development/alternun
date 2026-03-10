@@ -1,0 +1,11 @@
+{
+  "subject": "Tu enlace magico seguro de Alternun",
+  "preview": "Usa este enlace magico para iniciar sesion en Alternun.",
+  "greeting": "Hola {{email}},",
+  "intro": "Usa el enlace seguro para iniciar sesion en tu cuenta de Alternun.",
+  "codeLabel": "Codigo de acceso unico",
+  "ctaLabel": "Iniciar sesion",
+  "ignoreNotice": "Si no solicitaste este acceso, ignora este correo.",
+  "closing": "Acceso rapido y seguro.",
+  "footer": "Equipo de seguridad de Alternun"
+}

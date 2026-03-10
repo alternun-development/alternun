@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, TextInput } from 'react-native';
-import { Plus, ArrowUpFromLine, Flame, ArrowRightLeft, X } from 'lucide-react-native';
-import { ImpactToken, TokenState } from './types';
+import React, { useState, } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, TextInput, } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
+import { Plus, ArrowUpFromLine, Flame, ArrowRightLeft, X, } from 'lucide-react-native';
+import { ImpactToken, TokenState, } from './types';
 
 interface TokenPortfolioProps {
   tokens: ImpactToken[];
@@ -19,25 +20,25 @@ export default function TokenPortfolio({
   onDepositToPool,
   onRetireToken,
   onTransferToken,
-}: TokenPortfolioProps) {
-  const [filter, setFilter] = useState<FilterType>('All');
-  const [depositModal, setDepositModal] = useState<ImpactToken | null>(null);
-  const [retireModal, setRetireModal] = useState<ImpactToken | null>(null);
-  const [transferModal, setTransferModal] = useState<ImpactToken | null>(null);
-  const [costBasis, setCostBasis] = useState('');
-  const [profitShare, setProfitShare] = useState('');
-  const [recipientAddress, setRecipientAddress] = useState('');
+}: TokenPortfolioProps,) {
+  const [filter, setFilter,] = useState<FilterType>('All',);
+  const [depositModal, setDepositModal,] = useState<ImpactToken | null>(null,);
+  const [retireModal, setRetireModal,] = useState<ImpactToken | null>(null,);
+  const [transferModal, setTransferModal,] = useState<ImpactToken | null>(null,);
+  const [costBasis, setCostBasis,] = useState('',);
+  const [profitShare, setProfitShare,] = useState('',);
+  const [recipientAddress, setRecipientAddress,] = useState('',);
 
-  const filters: FilterType[] = ['All', 'Free', 'Deposited', 'Consumed'];
-  const filtered = filter === 'All' ? tokens : tokens.filter((t) => t.state === filter);
+  const filters: FilterType[] = ['All', 'Free', 'Deposited', 'Consumed',];
+  const filtered = filter === 'All' ? tokens : tokens.filter((t,) => t.state === filter,);
 
-  const getStatePillStyle = (state: TokenState) => {
-    if (state === 'Free') return [styles.pill, styles.pillFree];
-    if (state === 'Deposited') return [styles.pill, styles.pillDeposited];
-    return [styles.pill, styles.pillConsumed];
+  const getStatePillStyle = (state: TokenState,) => {
+    if (state === 'Free') return [styles.pill, styles.pillFree,];
+    if (state === 'Deposited') return [styles.pill, styles.pillDeposited,];
+    return [styles.pill, styles.pillConsumed,];
   };
 
-  const getStatePillTextStyle = (state: TokenState) => {
+  const getStatePillTextStyle = (state: TokenState,) => {
     if (state === 'Free') return styles.pillTextFree;
     if (state === 'Deposited') return styles.pillTextDeposited;
     return styles.pillTextConsumed;
@@ -45,17 +46,17 @@ export default function TokenPortfolio({
 
   const handleDeposit = () => {
     if (!depositModal) return;
-    onDepositToPool(depositModal, parseFloat(costBasis) || 0, parseFloat(profitShare) || 0);
-    setDepositModal(null);
-    setCostBasis('');
-    setProfitShare('');
+    onDepositToPool(depositModal, parseFloat(costBasis,) || 0, parseFloat(profitShare,) || 0,);
+    setDepositModal(null,);
+    setCostBasis('',);
+    setProfitShare('',);
   };
 
   const handleTransfer = () => {
     if (!transferModal || !recipientAddress) return;
-    onTransferToken(transferModal, recipientAddress);
-    setTransferModal(null);
-    setRecipientAddress('');
+    onTransferToken(transferModal, recipientAddress,);
+    setTransferModal(null,);
+    setRecipientAddress('',);
   };
 
   return (
@@ -73,26 +74,26 @@ export default function TokenPortfolio({
 
       {/* Filter Pills */}
       <View style={styles.filterRow}>
-        {filters.map((f) => (
+        {filters.map((f,) => (
           <TouchableOpacity
             key={f}
-            style={[styles.filterPill, filter === f && styles.filterPillActive]}
-            onPress={() => setFilter(f)}
+            style={[styles.filterPill, filter === f && styles.filterPillActive,]}
+            onPress={() => setFilter(f,)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.filterPillText, filter === f && styles.filterPillTextActive]}>{f}</Text>
+            <Text style={[styles.filterPillText, filter === f && styles.filterPillTextActive,]}>{f}</Text>
           </TouchableOpacity>
-        ))}
+        ),)}
       </View>
 
       {/* Token Cards */}
       <View style={styles.tokenGrid}>
-        {filtered.map((token) => (
+        {filtered.map((token,) => (
           <View key={token.tokenId} style={styles.tokenCard}>
             <View style={styles.tokenHeader}>
               <Text style={styles.tokenId}>{token.tokenId}</Text>
-              <View style={getStatePillStyle(token.state)}>
-                <Text style={getStatePillTextStyle(token.state)}>{token.state}</Text>
+              <View style={getStatePillStyle(token.state,)}>
+                <Text style={getStatePillTextStyle(token.state,)}>{token.state}</Text>
               </View>
             </View>
             <Text style={styles.tokenProject}>{token.projectName}</Text>
@@ -103,7 +104,7 @@ export default function TokenPortfolio({
               <View style={styles.tokenActions}>
                 <TouchableOpacity
                   style={styles.actionBtn}
-                  onPress={() => setDepositModal(token)}
+                  onPress={() => setDepositModal(token,)}
                   activeOpacity={0.8}
                 >
                   <ArrowUpFromLine size={12} color="#1ccba1" />
@@ -111,7 +112,7 @@ export default function TokenPortfolio({
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionBtnGhost}
-                  onPress={() => setRetireModal(token)}
+                  onPress={() => setRetireModal(token,)}
                   activeOpacity={0.8}
                 >
                   <Flame size={12} color="rgba(232,232,255,0.6)" />
@@ -119,7 +120,7 @@ export default function TokenPortfolio({
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionBtnGhost}
-                  onPress={() => setTransferModal(token)}
+                  onPress={() => setTransferModal(token,)}
                   activeOpacity={0.8}
                 >
                   <ArrowRightLeft size={12} color="rgba(232,232,255,0.6)" />
@@ -138,7 +139,7 @@ export default function TokenPortfolio({
               </View>
             )}
           </View>
-        ))}
+        ),)}
       </View>
 
       {/* Deposit Modal */}
@@ -148,7 +149,7 @@ export default function TokenPortfolio({
             <View style={styles.modalHandle} />
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Deposit to Pool</Text>
-              <TouchableOpacity onPress={() => setDepositModal(null)}>
+              <TouchableOpacity onPress={() => setDepositModal(null,)}>
                 <X size={20} color="rgba(232,232,255,0.6)" />
               </TouchableOpacity>
             </View>
@@ -195,22 +196,22 @@ export default function TokenPortfolio({
           <View style={styles.modalDialog}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Retire Token</Text>
-              <TouchableOpacity onPress={() => setRetireModal(null)}>
+              <TouchableOpacity onPress={() => setRetireModal(null,)}>
                 <X size={20} color="rgba(232,232,255,0.6)" />
               </TouchableOpacity>
             </View>
             <Text style={styles.modalDesc}>
-              Retiring {retireModal?.tokenId} will permanently consume it and credit AIRS to your account. This action cannot be undone.
+              Retiring {retireModal?.tokenId} will permanently consume it and credit Airs to your account. This action cannot be undone.
             </Text>
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.ghostButton} onPress={() => setRetireModal(null)} activeOpacity={0.8}>
+              <TouchableOpacity style={styles.ghostButton} onPress={() => setRetireModal(null,)} activeOpacity={0.8}>
                 <Text style={styles.ghostButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.dangerButton}
                 onPress={() => {
-                  if (retireModal) onRetireToken(retireModal);
-                  setRetireModal(null);
+                  if (retireModal) onRetireToken(retireModal,);
+                  setRetireModal(null,);
                 }}
                 activeOpacity={0.8}
               >
@@ -227,7 +228,7 @@ export default function TokenPortfolio({
           <View style={styles.modalDialog}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Transfer Token</Text>
-              <TouchableOpacity onPress={() => setTransferModal(null)}>
+              <TouchableOpacity onPress={() => setTransferModal(null,)}>
                 <X size={20} color="rgba(232,232,255,0.6)" />
               </TouchableOpacity>
             </View>
@@ -243,7 +244,7 @@ export default function TokenPortfolio({
               />
             </View>
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.ghostButton} onPress={() => setTransferModal(null)} activeOpacity={0.8}>
+              <TouchableOpacity style={styles.ghostButton} onPress={() => setTransferModal(null,)} activeOpacity={0.8}>
                 <Text style={styles.ghostButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.primaryButton} onPress={handleTransfer} activeOpacity={0.8}>
@@ -257,7 +258,7 @@ export default function TokenPortfolio({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   section: {
     paddingHorizontal: 16,
     paddingBottom: 24,
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 8, },
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 4,
@@ -593,4 +594,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-});
+},);

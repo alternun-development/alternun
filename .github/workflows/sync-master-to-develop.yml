@@ -1,0 +1,59 @@
+name: Sync Master To Develop
+
+on:
+  push:
+    branches: [master, main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-master-to-develop
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve testnet mode
+        id: mode
+        run: |
+          mode="${{ vars.ALTERNUN_TESTNET_MODE }}"
+          if [ -z "$mode" ]; then
+            mode="on"
+          fi
+
+          case "$mode" in
+            on|ON|true|TRUE|1|yes|YES)
+              echo "enabled=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "enabled=false" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+
+      - name: Skip when testnet mode is disabled
+        if: steps.mode.outputs.enabled != 'true'
+        run: echo "ALTERNUN_TESTNET_MODE is disabled; skipping master -> develop sync."
+
+      - name: Checkout repository
+        if: steps.mode.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        if: steps.mode.outputs.enabled == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fast-forward develop from master/main
+        if: steps.mode.outputs.enabled == 'true'
+        env:
+          SOURCE_BRANCH: ${{ github.ref_name }}
+        run: |
+          git fetch origin develop "$SOURCE_BRANCH"
+          git checkout -B develop-sync "origin/develop"
+          git merge --ff-only "origin/$SOURCE_BRANCH"
+          git push origin HEAD:develop

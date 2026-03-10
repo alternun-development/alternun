@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+INFRA_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_load-infra-env.sh"
@@ -9,6 +10,49 @@ load_infra_env
 STACK=${STACK:-${1:-${SST_STAGE:-production}}}
 export STACK
 export SST_STAGE="${SST_STAGE:-$STACK}"
+
+stage_normalized=$(echo "$STACK" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+is_identity_stage=false
+if [ "$stage_normalized" = "identity-dev" ] || \
+  [ "$stage_normalized" = "identity-prod" ] || \
+  [ "$stage_normalized" = "identity-production" ] || \
+  [ "$stage_normalized" = "auth-dev" ] || \
+  [ "$stage_normalized" = "auth-prod" ] || \
+  [ "$stage_normalized" = "authentik-dev" ] || \
+  [ "$stage_normalized" = "authentik-prod" ]; then
+  is_identity_stage=true
+fi
+
+if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ] && \
+  [ "$is_identity_stage" != "true" ]; then
+  # In CI we always auto-correct to protect shared app stacks from identity-only flags.
+  if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ "${CI:-}" = "true" ]; then
+    echo "WARN: INFRA_ENABLE_EXPO_SITE=false received for non-identity stage ${STACK} in CI; forcing INFRA_ENABLE_EXPO_SITE=true."
+    export INFRA_ENABLE_EXPO_SITE=true
+  else
+    case "${INFRA_AUTO_FORCE_EXPO_SITE:-true}" in
+      0 | false | FALSE | no | NO | off | OFF)
+        echo "ERROR: INFRA_ENABLE_EXPO_SITE=false is only allowed on identity stack stages." >&2
+        echo "ERROR: Use STACK=identity-dev or STACK=identity-prod for identity-only deployments." >&2
+        echo "ERROR: Set INFRA_AUTO_FORCE_EXPO_SITE=true to auto-correct this." >&2
+        exit 1
+        ;;
+      *)
+        echo "WARN: INFRA_ENABLE_EXPO_SITE=false received for non-identity stage ${STACK}; forcing INFRA_ENABLE_EXPO_SITE=true."
+        export INFRA_ENABLE_EXPO_SITE=true
+        ;;
+    esac
+  fi
+fi
+
+if [ "$is_identity_stage" = "true" ] && \
+  [ "${INFRA_IDENTITY_ENABLED:-false}" != "true" ] && \
+  [ "${INFRA_ALLOW_IDENTITY_DISABLE:-false}" != "true" ]; then
+  echo "ERROR: Refusing to deploy identity stack ${STACK} with INFRA_IDENTITY_ENABLED=${INFRA_IDENTITY_ENABLED:-false}." >&2
+  echo "ERROR: Set INFRA_IDENTITY_ENABLED=true for identity stack deploys." >&2
+  echo "ERROR: If you intentionally need a destructive identity disable, set INFRA_ALLOW_IDENTITY_DISABLE=true." >&2
+  exit 1
+fi
 
 if [ -z "${DOMAIN:-}" ]; then
   case "$STACK" in
@@ -32,6 +76,176 @@ is_truthy() {
     1 | true | TRUE | yes | YES | on | ON) return 0 ;;
     *) return 1 ;;
   esac
+}
+
+normalize_identity_db_mode() {
+  case "$(echo "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')" in
+    ec2 | local | local-ec2) echo "ec2" ;;
+    *) echo "rds" ;;
+  esac
+}
+
+sanitize_secret_name() {
+  local raw=${1:-}
+  raw="${raw#/}"
+  raw="${raw%/}"
+  echo "$raw"
+}
+
+scope_secret_name() {
+  local secret_name stage_name normalized
+  secret_name=${1:-}
+  stage_name=${2:-}
+  normalized=$(sanitize_secret_name "$secret_name")
+
+  if [ -z "$normalized" ]; then
+    echo ""
+    return 0
+  fi
+
+  if [[ "$normalized" == */"$stage_name" ]] || [[ "$normalized" == *-"$stage_name" ]]; then
+    echo "$normalized"
+    return 0
+  fi
+
+  echo "${normalized}/${stage_name}"
+}
+
+validate_identity_database_mode_transition() {
+  if [ "$is_identity_stage" != "true" ]; then
+    return 0
+  fi
+
+  if [ "${INFRA_IDENTITY_ENABLED:-false}" != "true" ]; then
+    return 0
+  fi
+
+  if ! command -v aws >/dev/null 2>&1; then
+    echo "WARN: aws CLI not found; skipping identity database mode safety check." >&2
+    return 0
+  fi
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "WARN: jq not found; skipping identity database mode safety check." >&2
+    return 0
+  fi
+
+  local expected_mode default_secret_name secret_name scoped_secret_name secret_json current_mode current_host
+  expected_mode=$(normalize_identity_db_mode "${INFRA_IDENTITY_DATABASE_MODE:-rds}")
+  default_secret_name="${INFRA_APP_NAME:-alternun-infra}/identity/database-credentials"
+  secret_name=${INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME:-$default_secret_name}
+  scoped_secret_name=$(scope_secret_name "$secret_name" "$STACK")
+
+  if [ -z "$scoped_secret_name" ]; then
+    echo "WARN: Identity database mode safety check skipped because secret name is empty." >&2
+    return 0
+  fi
+
+  if ! secret_json=$(aws secretsmanager get-secret-value \
+    --secret-id "$scoped_secret_name" \
+    --query 'SecretString' \
+    --output text 2>/dev/null); then
+    echo "Identity database mode safety check: no existing secret at ${scoped_secret_name}; assuming first deploy."
+    return 0
+  fi
+
+  current_mode=$(printf '%s' "$secret_json" | jq -r '.mode // empty')
+  if [ -z "$current_mode" ] || [ "$current_mode" = "null" ]; then
+    current_host=$(printf '%s' "$secret_json" | jq -r '.host // empty')
+    if [ "$current_host" = "postgres" ]; then
+      current_mode="ec2"
+    elif [ -n "$current_host" ] && [ "$current_host" != "null" ]; then
+      current_mode="rds"
+    fi
+  fi
+
+  if [ -z "$current_mode" ]; then
+    echo "WARN: Could not determine existing identity database mode from ${scoped_secret_name}; continuing."
+    return 0
+  fi
+
+  current_mode=$(normalize_identity_db_mode "$current_mode")
+  if [ "$current_mode" = "$expected_mode" ]; then
+    echo "Identity database mode safety check passed: mode=${current_mode}"
+    return 0
+  fi
+
+  if is_truthy "${INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE:-false}"; then
+    echo "WARN: Identity database mode change allowed by INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE=true (${current_mode} -> ${expected_mode})."
+    return 0
+  fi
+
+  echo "ERROR: Refusing deploy because identity database mode would change (${current_mode} -> ${expected_mode})." >&2
+  echo "ERROR: This can cause downtime/data loss. Set INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE=true only for planned migrations." >&2
+  exit 1
+}
+
+remove_state_resource() {
+  local target=$1
+
+  if [ -z "$target" ]; then
+    return 0
+  fi
+
+  echo "Pruning legacy managed certificate state for ${target}..."
+
+  local remove_output
+  if remove_output=$(
+    printf 'y\n' | (
+      cd "$INFRA_DIR" &&
+        SST_TELEMETRY_DISABLED=1 npx sst state remove --stage "$STACK" "$target"
+    ) 2>&1
+  ); then
+    echo "Removed state resource: ${target}"
+    return 0
+  fi
+
+  if printf '%s' "$remove_output" | grep -q "No changes made"; then
+    echo "No legacy state changes required for ${target}."
+    return 0
+  fi
+
+  echo "WARN: Failed to remove state resource ${target}; continuing. Output: ${remove_output}" >&2
+  return 0
+}
+
+prune_legacy_managed_certificate_state() {
+  local prefixes=()
+
+  if [ -n "${INFRA_EXPO_CERT_ARN_PRODUCTION:-}" ] && [ "$STACK" = "production" ]; then
+    prefixes+=("expo-web-${STACK}CdnSsl")
+  fi
+
+  if [ -n "${INFRA_EXPO_CERT_ARN_DEV:-}" ] && [ "$STACK" = "dev" ]; then
+    prefixes+=("expo-web-${STACK}CdnSsl")
+  fi
+
+  if [ -n "${INFRA_EXPO_CERT_ARN_MOBILE:-}" ] && [ "$STACK" = "mobile" ]; then
+    prefixes+=("expo-web-${STACK}CdnSsl")
+  fi
+
+  if [ "$STACK" = "dev" ]; then
+    if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" && [ -n "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}" ]; then
+      prefixes+=("airs-domain-redirect-${STACK}CdnSsl")
+    fi
+
+    if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" && [ -n "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}" ]; then
+      prefixes+=("dev-domain-redirect-${STACK}CdnSsl")
+    fi
+
+    if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}" && [ -n "${INFRA_REDIRECT_ROOT_CERT_ARN:-}" ]; then
+      prefixes+=("root-domain-redirect-${STACK}CdnSsl")
+    fi
+  fi
+
+  if [ "${#prefixes[@]}" -eq 0 ]; then
+    return 0
+  fi
+
+  local prefix
+  for prefix in "${prefixes[@]}"; do
+    remove_state_resource "$prefix"
+  done
 }
 
 remove_cloudfront_alias() {
@@ -138,7 +352,216 @@ if [ "${RUN_PREDEPLOY_CHECKS:-true}" != "false" ]; then
   SKIP_CONTEXT_VALIDATION=true bash "$SCRIPT_DIR/predeploy-checks.sh" "$STACK"
 fi
 
-cleanup_deploy_aliases
+validate_identity_database_mode_transition
 
-TARGET=$(bash "$SCRIPT_DIR/_resolve-infra-script.sh" "sst-deploy.sh")
-exec bash "$TARGET" "$@"
+if is_truthy "${INFRA_ENABLE_ALIAS_CLEANUP:-false}"; then
+  cleanup_deploy_aliases
+else
+  echo "Skipping CloudFront alias cleanup (INFRA_ENABLE_ALIAS_CLEANUP=${INFRA_ENABLE_ALIAS_CLEANUP:-false})"
+fi
+
+prune_legacy_managed_certificate_state
+
+echo "Using SST stack/stage: ${STACK} (cwd: ${INFRA_DIR})"
+
+if is_truthy "${INFRA_ENABLE_SST_DIFF:-false}"; then
+  echo "Running SST diff (preview of infra changes)"
+  (cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst diff --stage "$STACK") || true
+else
+  echo "Skipping sst diff (INFRA_ENABLE_SST_DIFF=${INFRA_ENABLE_SST_DIFF:-false})"
+fi
+
+if ! is_truthy "${APPROVE:-false}"; then
+  echo "Preview completed. Re-run with APPROVE=true to apply changes."
+  exit 0
+fi
+
+echo "APPROVE=true detected — running sst deploy"
+echo "Attempting to clear any stale SST lock for stage ${STACK} (no-op if none)"
+(cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst unlock --stage "$STACK") || true
+
+run_sst_deploy() {
+  local log_file=$1
+  local exit_code=0
+
+  set +e
+  (
+    cd "$INFRA_DIR"
+    env SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "$STACK" --yes
+  ) 2>&1 | tee "$log_file"
+  exit_code=${PIPESTATUS[0]}
+  set -e
+
+  return "$exit_code"
+}
+
+should_attempt_bucket_drift_recovery() {
+  local log_file=$1
+
+  if ! is_truthy "${INFRA_ENABLE_BUCKET_DRIFT_RECOVERY:-true}"; then
+    return 1
+  fi
+
+  if [ "${INFRA_ENABLE_EXPO_SITE:-true}" != "true" ]; then
+    return 1
+  fi
+
+  if grep -q "NoSuchBucket" "$log_file"; then
+    return 0
+  fi
+
+  if grep -q "The specified bucket does not exist" "$log_file"; then
+    return 0
+  fi
+
+  return 1
+}
+
+gzip_base64_file() {
+  local path=$1
+  gzip -c "$path" | base64 | tr -d '\n'
+}
+
+resolve_identity_instance_id() {
+  if [ "$is_identity_stage" != "true" ]; then
+    return 1
+  fi
+
+  if ! command -v aws >/dev/null 2>&1; then
+    echo "ERROR: aws CLI is required to sync identity runtime templates." >&2
+    return 1
+  fi
+
+  local instance_id
+  instance_id=$(
+    aws ec2 describe-instances \
+      --filters \
+        "Name=tag:Application,Values=${INFRA_APP_NAME:-alternun-infra}" \
+        "Name=tag:Component,Values=identity" \
+        "Name=tag:Stage,Values=${STACK}" \
+        "Name=instance-state-name,Values=running" \
+      --query 'Reservations[].Instances[].InstanceId' \
+      --output text 2>/dev/null | awk 'NF { print $1; exit }'
+  )
+
+  if [ -z "$instance_id" ] || [ "$instance_id" = "None" ]; then
+    echo "ERROR: Could not resolve running identity instance for stage ${STACK}." >&2
+    return 1
+  fi
+
+  echo "$instance_id"
+}
+
+sync_identity_runtime_templates() {
+  if [ "$is_identity_stage" != "true" ]; then
+    return 0
+  fi
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "ERROR: jq is required to sync identity runtime templates." >&2
+    return 1
+  fi
+
+  local instance_id deploy_b64 bootstrap_b64 ec2_compose_b64 rds_compose_b64 params_json command_id
+  instance_id=$(resolve_identity_instance_id)
+
+  deploy_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/deploy-authentik.sh")
+  bootstrap_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/bootstrap-authentik-integrations.py")
+  ec2_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.ec2.yml")
+  rds_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.rds.yml")
+
+  params_json=$(
+    jq -nc \
+      --arg c1 'set -euo pipefail' \
+      --arg c2 'install -d -o ec2-user -g ec2-user /opt/alternun/identity /opt/alternun/identity/templates /opt/alternun/identity/authentik/custom-templates' \
+      --arg c3 "printf '%s' '$deploy_b64' | base64 -d | gzip -d > /opt/alternun/identity/deploy-authentik.sh" \
+      --arg c4 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/bootstrap-authentik-integrations.py" \
+      --arg c5 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py" \
+      --arg c6 "printf '%s' '$ec2_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.yml" \
+      --arg c7 "printf '%s' '$rds_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.yml" \
+      --arg c8 'chmod 0755 /opt/alternun/identity/deploy-authentik.sh' \
+      --arg c9 'chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
+      --arg c10 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
+      --arg c11 'timeout 900 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
+      --arg c12 "docker compose -f /opt/alternun/identity/docker-compose.yml exec -T server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c \"from django.contrib.auth import get_user_model; from authentik.core.models import Application; U=get_user_model(); admin_exists=U.objects.filter(username=\\\"akadmin\\\", is_active=True).exists(); app_exists=Application.objects.filter(slug=\\\"alternun-internal\\\").exists(); print({\\\"admin_exists\\\": admin_exists, \\\"default_application_exists\\\": app_exists}); raise SystemExit(0 if admin_exists and app_exists else 1)\"'" \
+      '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12]}'
+  )
+
+  echo "Syncing identity runtime templates to instance ${instance_id}..."
+  command_id=$(
+    aws ssm send-command \
+      --region "${AWS_REGION:-us-east-1}" \
+      --instance-ids "$instance_id" \
+      --document-name AWS-RunShellScript \
+      --comment "Sync Alternun identity runtime templates" \
+      --parameters "$params_json" \
+      --query 'Command.CommandId' \
+      --output text
+  )
+
+  local sync_status="" poll_attempt=1 max_poll_attempts=180 invocation_json
+  while [ "$poll_attempt" -le "$max_poll_attempts" ]; do
+    invocation_json=$(
+      aws ssm get-command-invocation \
+        --region "${AWS_REGION:-us-east-1}" \
+        --command-id "$command_id" \
+        --instance-id "$instance_id" \
+        --query '{Status:Status,StatusDetails:StatusDetails,ResponseCode:ResponseCode,StandardOutputContent:StandardOutputContent,StandardErrorContent:StandardErrorContent}' \
+        --output json
+    )
+
+    sync_status=$(printf '%s' "$invocation_json" | jq -r '.Status')
+    case "$sync_status" in
+      Pending | InProgress | Delayed)
+        sleep 5
+        poll_attempt=$((poll_attempt + 1))
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  if [ "$sync_status" = "Pending" ] || [ "$sync_status" = "InProgress" ] || [ "$sync_status" = "Delayed" ]; then
+    echo "$invocation_json"
+    echo "ERROR: Identity runtime sync timed out waiting for command ${command_id}." >&2
+    return 1
+  fi
+
+  sync_status=$(printf '%s' "$invocation_json" | jq -r '.Status')
+  if [ "$sync_status" != "Success" ]; then
+    echo "$invocation_json"
+    echo "ERROR: Identity runtime sync failed." >&2
+    return 1
+  fi
+
+  echo "$invocation_json"
+  return 0
+}
+
+DEPLOY_LOG=$(mktemp)
+echo "Running sst deploy"
+if run_sst_deploy "$DEPLOY_LOG"; then
+  sync_identity_runtime_templates
+  rm -f "$DEPLOY_LOG"
+  exit 0
+fi
+
+if should_attempt_bucket_drift_recovery "$DEPLOY_LOG"; then
+  echo "Detected missing S3 bucket during deploy. Running sst refresh once before retry..."
+  (
+    cd "$INFRA_DIR"
+    env SST_TELEMETRY_DISABLED=1 npx sst refresh --stage "$STACK"
+  )
+
+  echo "Retrying sst deploy after refresh"
+  if run_sst_deploy "$DEPLOY_LOG"; then
+    sync_identity_runtime_templates
+    rm -f "$DEPLOY_LOG"
+    exit 0
+  fi
+fi
+
+echo "sst deploy failed. See logs above." >&2
+rm -f "$DEPLOY_LOG"
+exit 1
