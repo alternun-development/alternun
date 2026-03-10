@@ -196,8 +196,7 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
         (localConfig?.enabled !== undefined ? String(localConfig.enabled) : undefined),
       false
     ),
-    appPath:
-      args.env.INFRA_BACKEND_API_APP_PATH ?? localConfig?.appPath ?? '../../apps/api',
+    appPath: args.env.INFRA_BACKEND_API_APP_PATH ?? localConfig?.appPath ?? '../../apps/api',
     buildOutput:
       args.env.INFRA_BACKEND_API_BUILD_OUTPUT ?? localConfig?.buildOutput ?? 'dist-lambda',
     buildCommand:
@@ -227,12 +226,9 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
     },
     certArns: {
       production:
-        args.env.INFRA_BACKEND_API_CERT_ARN_PRODUCTION ??
-        localConfig?.certArns?.production ??
-        '',
+        args.env.INFRA_BACKEND_API_CERT_ARN_PRODUCTION ?? localConfig?.certArns?.production ?? '',
       dev: args.env.INFRA_BACKEND_API_CERT_ARN_DEV ?? localConfig?.certArns?.dev ?? '',
-      mobile:
-        args.env.INFRA_BACKEND_API_CERT_ARN_MOBILE ?? localConfig?.certArns?.mobile ?? '',
+      mobile: args.env.INFRA_BACKEND_API_CERT_ARN_MOBILE ?? localConfig?.certArns?.mobile ?? '',
     },
     lambda: {
       architecture: normalizeArchitecture(
@@ -256,10 +252,8 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
         args.env.INFRA_BACKEND_API_AUTHENTIK_AUDIENCE ??
         localConfig?.auth?.audience ??
         'alternun-app',
-      issuer:
-        args.env.INFRA_BACKEND_API_AUTHENTIK_ISSUER ?? localConfig?.auth?.issuer ?? '',
-      jwksUrl:
-        args.env.INFRA_BACKEND_API_AUTHENTIK_JWKS_URL ?? localConfig?.auth?.jwksUrl ?? '',
+      issuer: args.env.INFRA_BACKEND_API_AUTHENTIK_ISSUER ?? localConfig?.auth?.issuer ?? '',
+      jwksUrl: args.env.INFRA_BACKEND_API_AUTHENTIK_JWKS_URL ?? localConfig?.auth?.jwksUrl ?? '',
     },
     environment: {
       ...(localConfig?.environment ?? {}),
@@ -270,10 +264,7 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
   };
 }
 
-export function resolveBackendApiStageDomain(
-  settings: BackendApiSettings,
-  stage: string
-): string {
+export function resolveBackendApiStageDomain(settings: BackendApiSettings, stage: string): string {
   return settings.stageDomains[resolveStageKey(stage)];
 }
 
@@ -320,29 +311,33 @@ export function deployBackendApiInfrastructure(
     tags,
   });
 
-  const apiFunction = new aws.lambda.Function(resourceBaseName, {
-    architectures: [args.settings.lambda.architecture],
-    code: new pulumi.asset.FileArchive(bundlePath),
-    environment: {
-      variables: {
-        APP_STAGE: resolveStageKey(args.stage),
-        AUTHENTIK_AUDIENCE: args.settings.auth.audience,
-        AUTHENTIK_ISSUER: authIssuer,
-        AUTHENTIK_JWKS_URL: authJwksUrl,
-        NODE_ENV: 'production',
-        ...args.settings.environment,
+  const apiFunction = new aws.lambda.Function(
+    resourceBaseName,
+    {
+      architectures: [args.settings.lambda.architecture],
+      code: new pulumi.asset.FileArchive(bundlePath),
+      environment: {
+        variables: {
+          APP_STAGE: resolveStageKey(args.stage),
+          AUTHENTIK_AUDIENCE: args.settings.auth.audience,
+          AUTHENTIK_ISSUER: authIssuer,
+          AUTHENTIK_JWKS_URL: authJwksUrl,
+          NODE_ENV: 'production',
+          ...args.settings.environment,
+        },
       },
+      name: lambdaFunctionName,
+      handler: 'lambda.handler',
+      memorySize: args.settings.lambda.memorySize,
+      role: role.arn,
+      runtime: 'nodejs22.x',
+      tags,
+      timeout: args.settings.lambda.timeoutSeconds,
     },
-    name: lambdaFunctionName,
-    handler: 'lambda.handler',
-    memorySize: args.settings.lambda.memorySize,
-    role: role.arn,
-    runtime: 'nodejs22.x',
-    tags,
-    timeout: args.settings.lambda.timeoutSeconds,
-  }, {
-    dependsOn: [logGroup],
-  });
+    {
+      dependsOn: [logGroup],
+    }
+  );
 
   const api = new aws.apigatewayv2.Api(`${resourceBaseName}-http-api`, {
     description: 'Alternun NestJS API',
@@ -379,17 +374,50 @@ export function deployBackendApiInfrastructure(
     sourceArn: pulumi.interpolate`${api.executionArn}/*`,
   });
 
-  const shouldCreateCustomDomain =
-    args.settings.enableCustomDomain &&
-    Boolean(args.hostedZoneId) &&
-    Boolean(args.settings.certArns[stageKey]);
+  const shouldCreateCustomDomain = args.settings.enableCustomDomain && Boolean(args.hostedZoneId);
 
   let customDomain: aws.apigatewayv2.DomainName | undefined;
+  let certificateArn: pulumi.Input<string> | undefined =
+    args.settings.certArns[stageKey] || undefined;
   if (shouldCreateCustomDomain && args.hostedZoneId) {
+    if (!certificateArn) {
+      const certificate = new aws.acm.Certificate(`${resourceBaseName}-cert`, {
+        domainName: stageDomain,
+        validationMethod: 'DNS',
+        tags,
+      });
+
+      const certificateValidationRecord = new aws.route53.Record(
+        `${resourceBaseName}-cert-validation`,
+        {
+          allowOverwrite: true,
+          name: certificate.domainValidationOptions[0].resourceRecordName,
+          records: [certificate.domainValidationOptions[0].resourceRecordValue],
+          ttl: 60,
+          type: certificate.domainValidationOptions[0].resourceRecordType,
+          zoneId: args.hostedZoneId,
+        }
+      );
+
+      const certificateValidation = new aws.acm.CertificateValidation(
+        `${resourceBaseName}-cert-validation-complete`,
+        {
+          certificateArn: certificate.arn,
+          validationRecordFqdns: [certificateValidationRecord.fqdn],
+        }
+      );
+
+      certificateArn = certificateValidation.certificateArn;
+    }
+
+    if (!certificateArn) {
+      throw new Error(`Custom domain certificate could not be resolved for ${stageDomain}.`);
+    }
+
     customDomain = new aws.apigatewayv2.DomainName(`${resourceBaseName}-domain`, {
       domainName: stageDomain,
       domainNameConfiguration: {
-        certificateArn: args.settings.certArns[stageKey],
+        certificateArn,
         endpointType: 'REGIONAL',
         securityPolicy: 'TLS_1_2',
       },
