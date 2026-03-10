@@ -99,9 +99,9 @@
       "mobile": "https://preview.api.alternun.co"
     },
     "authIssuers": {
-      "production": "https://auth.alternun.co/application/o/alternun-admin/",
-      "dev": "https://testnet.auth.alternun.co/application/o/alternun-admin/",
-      "mobile": "https://preview.auth.alternun.co/application/o/alternun-admin/"
+      "production": "https://sso.alternun.co/application/o/alternun-admin/",
+      "dev": "https://testnet.sso.alternun.co/application/o/alternun-admin/",
+      "mobile": "https://preview.sso.alternun.co/application/o/alternun-admin/"
     },
     "authClientId": "alternun-admin",
     "authAudience": "alternun-app",
@@ -110,9 +110,9 @@
   "identity": {
     "enabled": false,
     "domains": {
-      "production": "auth.alternun.co",
-      "dev": "testnet.auth.alternun.co",
-      "mobile": "preview.auth.alternun.co"
+      "production": "sso.alternun.co",
+      "dev": "testnet.sso.alternun.co",
+      "mobile": "preview.sso.alternun.co"
     },
     "ingress": {
       "modes": {

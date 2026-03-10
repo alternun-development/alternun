@@ -130,7 +130,7 @@ function resolveStageKey(stage: string): keyof BackendApiSettings['stageDomains'
 }
 
 function resolveAuthDomain(rootDomain: string, stage: string): string {
-  return buildStageDomains('auth', rootDomain)[resolveStageKey(stage)];
+  return buildStageDomains('sso', rootDomain)[resolveStageKey(stage)];
 }
 
 function sanitizeResourceName(value: string): string {

@@ -206,9 +206,9 @@ Resources created:
 Default specs:
 
 - domains:
-  - production: `auth.alternun.co`
-  - dev: `testnet.auth.alternun.co`
-  - mobile: `preview.auth.alternun.co`
+  - production: `sso.alternun.co`
+  - dev: `testnet.sso.alternun.co`
+  - mobile: `preview.sso.alternun.co`
 - EC2 instance type: `t3.small`
 - EC2 volume size: `20 GiB`
 - ingress defaults:

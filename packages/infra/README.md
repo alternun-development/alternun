@@ -197,9 +197,9 @@ When `INFRA_IDENTITY_ENABLED=true`, the stack now provisions:
 
 Current default identity domains:
 
-- `production` -> `auth.alternun.co`
-- `dev` -> `testnet.auth.alternun.co`
-- `mobile` -> `preview.auth.alternun.co`
+- `production` -> `sso.alternun.co`
+- `dev` -> `testnet.sso.alternun.co`
+- `mobile` -> `preview.sso.alternun.co`
 
 Enable/configure through env or local config:
 
