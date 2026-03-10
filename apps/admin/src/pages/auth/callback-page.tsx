@@ -18,7 +18,12 @@ export function AuthCallbackPage(): JSX.Element {
 
         if (!canAccessAdminDashboard(user)) {
           await oidcClient.removeUser();
-          void navigate('/login?error=unauthorized-email-domain', { replace: true });
+          const origin =
+            typeof window === 'undefined' ? 'http://localhost:4173' : window.location.origin;
+
+          await oidcClient.signoutRedirect({
+            post_logout_redirect_uri: `${origin}/login?error=unauthorized-email-domain`,
+          });
           return;
         }
 
