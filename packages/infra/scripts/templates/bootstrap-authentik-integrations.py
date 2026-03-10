@@ -45,6 +45,7 @@ def normalize_policy_mode(value: str) -> str:
 
 results = {
     "admin_user": "skipped",
+    "admin_oidc_provider": "skipped",
     "default_application": "skipped",
     "google_source": "skipped",
     "supabase_provider": "skipped",
@@ -57,6 +58,23 @@ admin_email = read_env("ALTERNUN_BOOTSTRAP_ADMIN_EMAIL", "admin@alternun.co")
 admin_name = read_env("ALTERNUN_BOOTSTRAP_ADMIN_NAME", "authentik Default Admin")
 admin_password = read_env("ALTERNUN_BOOTSTRAP_ADMIN_PASSWORD")
 admin_group = read_env("ALTERNUN_BOOTSTRAP_ADMIN_GROUP", "authentik Admins")
+admin_oidc_application_name = read_env(
+    "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_APPLICATION_NAME", "Alternun Admin"
+)
+admin_oidc_application_slug = read_env(
+    "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_APPLICATION_SLUG", "alternun-admin"
+)
+admin_oidc_provider_name = read_env(
+    "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_PROVIDER_NAME", "Alternun Admin OIDC"
+)
+admin_oidc_client_id = read_env(
+    "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_CLIENT_ID", "alternun-admin"
+)
+admin_oidc_client_secret = read_env("ALTERNUN_BOOTSTRAP_ADMIN_OIDC_CLIENT_SECRET")
+admin_oidc_redirect_url = read_env("ALTERNUN_BOOTSTRAP_ADMIN_OIDC_REDIRECT_URL")
+admin_oidc_post_logout_redirect_url = read_env(
+    "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_POST_LOGOUT_REDIRECT_URL"
+)
 
 if admin_username and admin_email:
     user_model = get_user_model()
@@ -115,6 +133,110 @@ if admin_username and admin_email:
     results["admin_email"] = admin_email
 else:
     results["admin_user"] = "missing_inputs"
+
+if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_url:
+    expected_redirects = {("strict", admin_oidc_redirect_url)}
+    authorization_flow = Flow.objects.filter(
+        slug="default-provider-authorization-implicit-consent"
+    ).first()
+    invalidation_flow = Flow.objects.filter(slug="default-provider-invalidation-flow").first()
+
+    provider, provider_created = OAuth2Provider.objects.get_or_create(
+        name=admin_oidc_provider_name,
+        defaults={
+            "client_id": admin_oidc_client_id,
+            "client_secret": admin_oidc_client_secret,
+            "_redirect_uris": [
+                RedirectURI(matching_mode="strict", url=admin_oidc_redirect_url)
+            ],
+            "authorization_flow": authorization_flow,
+            "invalidation_flow": invalidation_flow,
+            "sub_mode": "user_email",
+        },
+    )
+
+    provider_changed = False
+    provider_updates = {
+        "client_id": admin_oidc_client_id,
+        "client_secret": admin_oidc_client_secret,
+        "sub_mode": "user_email",
+    }
+    for field, expected in provider_updates.items():
+        current = getattr(provider, field)
+        if current != expected:
+            setattr(provider, field, expected)
+            provider_changed = True
+
+    current_redirects = normalize_redirects(getattr(provider, "_redirect_uris", []))
+    if current_redirects != expected_redirects:
+        provider._redirect_uris = [
+            RedirectURI(matching_mode="strict", url=admin_oidc_redirect_url)
+        ]
+        provider_changed = True
+
+    if authorization_flow and provider.authorization_flow_id != authorization_flow.pk:
+        provider.authorization_flow = authorization_flow
+        provider_changed = True
+    if invalidation_flow and provider.invalidation_flow_id != invalidation_flow.pk:
+        provider.invalidation_flow = invalidation_flow
+        provider_changed = True
+    if (
+        hasattr(provider, "client_type")
+        and getattr(provider, "client_type", None) != "public"
+    ):
+        provider.client_type = "public"
+        provider_changed = True
+    if (
+        admin_oidc_post_logout_redirect_url
+        and hasattr(provider, "post_logout_redirect_uris")
+    ):
+        current_logout_redirects = normalize_redirects(
+            getattr(provider, "post_logout_redirect_uris", [])
+        )
+        expected_logout_redirects = {("strict", admin_oidc_post_logout_redirect_url)}
+        if current_logout_redirects != expected_logout_redirects:
+            provider.post_logout_redirect_uris = [
+                RedirectURI(
+                    matching_mode="strict", url=admin_oidc_post_logout_redirect_url
+                )
+            ]
+            provider_changed = True
+
+    if provider_created or provider_changed:
+        provider.save()
+
+    application, application_created = Application.objects.get_or_create(
+        slug=admin_oidc_application_slug,
+        defaults={
+            "name": admin_oidc_application_name,
+            "provider": provider,
+        },
+    )
+
+    application_changed = False
+    if application.name != admin_oidc_application_name:
+        application.name = admin_oidc_application_name
+        application_changed = True
+    if application.provider_id != provider.pk:
+        application.provider = provider
+        application_changed = True
+
+    if application_created or application_changed:
+        application.save()
+
+    if provider_created or application_created:
+        results["admin_oidc_provider"] = "created"
+    elif provider_changed or application_changed:
+        results["admin_oidc_provider"] = "updated"
+    else:
+        results["admin_oidc_provider"] = "unchanged"
+
+    if identity_domain:
+        results["admin_oidc_issuer"] = (
+            f"https://{identity_domain}/application/o/{admin_oidc_application_slug}/"
+        )
+else:
+    results["admin_oidc_provider"] = "missing_inputs"
 
 default_application_enabled = read_bool_env(
     "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_ENABLED", True

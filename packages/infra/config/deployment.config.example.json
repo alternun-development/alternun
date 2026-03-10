@@ -99,9 +99,9 @@
       "mobile": "https://preview.api.alternun.co"
     },
     "authIssuers": {
-      "production": "https://auth.alternun.co",
-      "dev": "https://testnet.auth.alternun.co",
-      "mobile": "https://preview.auth.alternun.co"
+      "production": "https://auth.alternun.co/application/o/alternun-admin/",
+      "dev": "https://testnet.auth.alternun.co/application/o/alternun-admin/",
+      "mobile": "https://preview.auth.alternun.co/application/o/alternun-admin/"
     },
     "authClientId": "alternun-admin",
     "authAudience": "alternun-app",
@@ -151,6 +151,12 @@
         "projectRef": "",
         "providerName": "Alternun Supabase OIDC",
         "syncConfig": true
+      },
+      "adminOidc": {
+        "applicationName": "Alternun Admin",
+        "applicationSlug": "alternun-admin",
+        "providerName": "Alternun Admin OIDC",
+        "clientId": "alternun-admin"
       },
       "bootstrap": {
         "admin": {

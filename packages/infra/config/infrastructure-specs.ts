@@ -1,4 +1,4 @@
-import type { PipelineStage } from './pipelines/index.js';
+import type { PipelineStage, } from './pipelines/index.js';
 
 export type StageDomainMap = Record<PipelineStage, string>;
 
@@ -71,6 +71,7 @@ export const ADMIN_SITE_INFRA_DEFAULTS = {
   buildCommand: 'pnpm --filter @alternun/admin run build',
   enableCustomDomain: true,
   auth: {
+    applicationSlug: 'alternun-admin',
     clientId: 'alternun-admin',
     audience: 'alternun-app',
   },
@@ -110,6 +111,12 @@ export const IDENTITY_INFRA_DEFAULTS = {
       providerName: 'Alternun Supabase OIDC',
       syncConfig: true,
     },
+    adminOidc: {
+      applicationName: 'Alternun Admin',
+      applicationSlug: 'alternun-admin',
+      providerName: 'Alternun Admin OIDC',
+      clientId: 'alternun-admin',
+    },
     bootstrap: {
       admin: {
         username: 'akadmin',
@@ -131,7 +138,7 @@ export const IDENTITY_INFRA_DEFAULTS = {
   },
 } as const;
 
-export function buildStageDomains(subdomain: string, rootDomain: string): StageDomainMap {
+export function buildStageDomains(subdomain: string, rootDomain: string,): StageDomainMap {
   return {
     production: `${subdomain}.${rootDomain}`,
     dev: `testnet.${subdomain}.${rootDomain}`,
@@ -149,7 +156,13 @@ export function buildStageUrls(subdomain: string, rootDomain: string): StageDoma
   };
 }
 
-export function buildIdentitySecretNameDefaults(appName: string) {
+export function buildIdentitySecretNameDefaults(appName: string): {
+  authentikSecretKeyName: string;
+  databaseCredentialsSecretName: string;
+  smtpCredentialsSecretName: string;
+  jwtSigningKeySecretName: string;
+  integrationConfigSecretName: string;
+} {
   return {
     authentikSecretKeyName: `${appName}/identity/authentik-secret-key`,
     databaseCredentialsSecretName: `${appName}/identity/database-credentials`,
