@@ -251,7 +251,7 @@ Important behavior:
 - identity provisioning is isolated to dedicated stacks by default (`identity-dev`, `identity-prod`) to prevent duplicate instances per environment
 - Authentik image tag is validated to calendar-version format and must be `>= 2025.10` (Redisless baseline)
 - identity deployment can be stage-scoped with `INFRA_IDENTITY_ENABLED_STAGES` (for example `dev` to keep production untouched)
-- default pipeline profile behavior is `identity-dev => INFRA_IDENTITY_DATABASE_MODE=ec2` and `identity-prod => INFRA_IDENTITY_DATABASE_MODE=rds`
+- default pipeline profile behavior is `identity-dev => INFRA_IDENTITY_DATABASE_MODE=rds` and `identity-prod => INFRA_IDENTITY_DATABASE_MODE=rds`
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
 - the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
@@ -275,7 +275,7 @@ Fail-safe guardrails are enforced in both IaC and CI:
 ```bash
 INFRA_IDENTITY_ENABLED=true \
 INFRA_IDENTITY_ENABLED_STAGES=dev \
-INFRA_IDENTITY_DATABASE_MODE=ec2 \
+INFRA_IDENTITY_DATABASE_MODE=rds \
 pnpm --filter @alternun/infra run deploy:identity-dev
 ```
 
