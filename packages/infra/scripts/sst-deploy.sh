@@ -15,6 +15,7 @@ export SST_STAGE="${SST_STAGE:-$STACK}"
 
 stage_normalized=$(echo "$STACK" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 is_identity_stage=false
+is_dedicated_non_expo_stage=false
 if [ "$stage_normalized" = "identity-dev" ] || \
   [ "$stage_normalized" = "identity-prod" ] || \
   [ "$stage_normalized" = "identity-production" ] || \
@@ -25,22 +26,28 @@ if [ "$stage_normalized" = "identity-dev" ] || \
   is_identity_stage=true
 fi
 
+case "$stage_normalized" in
+  identity-dev|identity-prod|identity-production|auth-dev|auth-prod|authentik-dev|authentik-prod|api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod|admin-dev|admin-prod|admin-production|backoffice-dev|backoffice-prod|backoffice-admin-dev|backoffice-admin-prod|dashboard-dev|dashboard-prod|dashboard-production)
+    is_dedicated_non_expo_stage=true
+    ;;
+esac
+
 if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ] && \
-  [ "$is_identity_stage" != "true" ]; then
+  [ "$is_dedicated_non_expo_stage" != "true" ]; then
   # In CI we always auto-correct to protect shared app stacks from identity-only flags.
   if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ "${CI:-}" = "true" ]; then
-    echo "WARN: INFRA_ENABLE_EXPO_SITE=false received for non-identity stage ${STACK} in CI; forcing INFRA_ENABLE_EXPO_SITE=true."
+    echo "WARN: INFRA_ENABLE_EXPO_SITE=false received for non-dedicated stage ${STACK} in CI; forcing INFRA_ENABLE_EXPO_SITE=true."
     export INFRA_ENABLE_EXPO_SITE=true
   else
     case "${INFRA_AUTO_FORCE_EXPO_SITE:-true}" in
       0 | false | FALSE | no | NO | off | OFF)
-        echo "ERROR: INFRA_ENABLE_EXPO_SITE=false is only allowed on identity stack stages." >&2
-        echo "ERROR: Use STACK=identity-dev or STACK=identity-prod for identity-only deployments." >&2
+        echo "ERROR: INFRA_ENABLE_EXPO_SITE=false is only allowed on dedicated non-Expo stack stages." >&2
+        echo "ERROR: Use STACK=identity-dev, STACK=identity-prod, STACK=api-dev, STACK=api-prod, STACK=admin-dev, STACK=admin-prod, STACK=dashboard-dev, or STACK=dashboard-prod." >&2
         echo "ERROR: Set INFRA_AUTO_FORCE_EXPO_SITE=true to auto-correct this." >&2
         exit 1
         ;;
       *)
-        echo "WARN: INFRA_ENABLE_EXPO_SITE=false received for non-identity stage ${STACK}; forcing INFRA_ENABLE_EXPO_SITE=true."
+        echo "WARN: INFRA_ENABLE_EXPO_SITE=false received for non-dedicated stage ${STACK}; forcing INFRA_ENABLE_EXPO_SITE=true."
         export INFRA_ENABLE_EXPO_SITE=true
         ;;
     esac
