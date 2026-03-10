@@ -3,6 +3,8 @@ set -euo pipefail
 
 source /etc/alternun-identity.env
 AUTHENTIK_DATABASE_MODE="${AUTHENTIK_DATABASE_MODE:-rds}"
+ALTERNUN_IDENTITY_TLS_MODE="${ALTERNUN_IDENTITY_TLS_MODE:-acme-route53-dns-01}"
+ALTERNUN_IDENTITY_INGRESS_MODE="${ALTERNUN_IDENTITY_INGRESS_MODE:-instance}"
 
 TOKEN="$(curl -fsS -X PUT 'http://169.254.169.254/latest/api/token' -H 'X-aws-ec2-metadata-token-ttl-seconds: 21600')"
 INSTANCE_IDENTITY="$(curl -fsS -H "X-aws-ec2-metadata-token: ${TOKEN}" 'http://169.254.169.254/latest/dynamic/instance-identity/document')"
@@ -140,11 +142,19 @@ if [ -n "${SMTP_HOST}" ]; then
 fi
 
 TEMPLATE_DIR='/opt/alternun/identity/templates'
-EC2_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.ec2.yml"
-RDS_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.rds.yml"
+EC2_ROUTE53_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.ec2.yml"
+RDS_ROUTE53_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.rds.yml"
+EC2_ALB_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.ec2.alb.yml"
+RDS_ALB_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.rds.alb.yml"
 BOOTSTRAP_SCRIPT_TEMPLATE="${TEMPLATE_DIR}/bootstrap-authentik-integrations.py"
 
-for required_template in "${EC2_COMPOSE_TEMPLATE}" "${RDS_COMPOSE_TEMPLATE}" "${BOOTSTRAP_SCRIPT_TEMPLATE}"; do
+for required_template in \
+  "${EC2_ROUTE53_COMPOSE_TEMPLATE}" \
+  "${RDS_ROUTE53_COMPOSE_TEMPLATE}" \
+  "${EC2_ALB_COMPOSE_TEMPLATE}" \
+  "${RDS_ALB_COMPOSE_TEMPLATE}" \
+  "${BOOTSTRAP_SCRIPT_TEMPLATE}"
+do
   if [ ! -f "${required_template}" ]; then
     echo "Missing identity runtime template: ${required_template}"
     exit 1
@@ -153,15 +163,23 @@ done
 
 export ALTERNUN_IDENTITY_DOMAIN
 export ALTERNUN_ROOT_DOMAIN
+export ALTERNUN_ROUTE53_HOSTED_ZONE_ID
+export ALTERNUN_IDENTITY_TLS_ACME_EMAIL
 export AUTHENTIK_IMAGE_TAG
+export AWS_DEFAULT_REGION="${AWS_REGION}"
+export AWS_REGION
 export DATABASE_NAME
 export DATABASE_PASSWORD
 export DATABASE_USER
 
-if [ "${AUTHENTIK_DATABASE_MODE}" = "ec2" ]; then
-  cp "${EC2_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
+if [ "${AUTHENTIK_DATABASE_MODE}" = "ec2" ] && [ "${ALTERNUN_IDENTITY_TLS_MODE}" = "alb-acm" ]; then
+  cp "${EC2_ALB_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
+elif [ "${AUTHENTIK_DATABASE_MODE}" = "ec2" ]; then
+  cp "${EC2_ROUTE53_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
+elif [ "${ALTERNUN_IDENTITY_TLS_MODE}" = "alb-acm" ]; then
+  cp "${RDS_ALB_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
 else
-  cp "${RDS_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
+  cp "${RDS_ROUTE53_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
 fi
 
 cp "${BOOTSTRAP_SCRIPT_TEMPLATE}" /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py
@@ -169,7 +187,7 @@ cp "${BOOTSTRAP_SCRIPT_TEMPLATE}" /opt/alternun/identity/authentik/custom-templa
 ACME_FILE='/opt/alternun/identity/traefik-acme.json'
 LAST_KNOWN_GOOD_ACME_FILE='/opt/alternun/identity/traefik-acme.last-known-good.json'
 
-if [ ! -f "${ACME_FILE}" ]; then
+if [ "${ALTERNUN_IDENTITY_TLS_MODE}" != "alb-acm" ] && [ ! -f "${ACME_FILE}" ]; then
   install -m 600 /dev/null "${ACME_FILE}"
 fi
 
@@ -299,7 +317,16 @@ ensure_traefik_certificate() {
   return 1
 }
 
-ensure_traefik_certificate || true
+if [ "${ALTERNUN_IDENTITY_TLS_MODE}" = "alb-acm" ]; then
+  echo "Skipping Traefik ACME bootstrap because TLS is terminated at the production ALB."
+else
+  if [ -z "${ALTERNUN_ROUTE53_HOSTED_ZONE_ID:-}" ]; then
+    echo "ALTERNUN_ROUTE53_HOSTED_ZONE_ID is required for Route53 DNS-01 certificate issuance."
+    exit 1
+  fi
+
+  ensure_traefik_certificate || true
+fi
 
 wait_for_authentik_django() {
   local max_attempts=36
