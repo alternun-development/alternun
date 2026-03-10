@@ -19,6 +19,7 @@ import {
   createAssetBaseUrl,
   resolveExpoConfig,
 } from './config/expo.js';
+import { INFRA_CORE_DEFAULTS, PIPELINE_INFRA_DEFAULTS } from './config/infrastructure-specs.js';
 import { parseBoolean, parseTimeoutMinutes } from './config/parsing.js';
 import {
   ALL_PIPELINE_SET,
@@ -96,8 +97,9 @@ function buildPublicAssetFile(
   };
 }
 
-const rootDomain = process.env.INFRA_ROOT_DOMAIN ?? localConfig.rootDomain ?? 'alternun.co';
-const appName = process.env.INFRA_APP_NAME ?? localConfig.appName ?? 'alternun-infra';
+const rootDomain =
+  process.env.INFRA_ROOT_DOMAIN ?? localConfig.rootDomain ?? INFRA_CORE_DEFAULTS.rootDomain;
+const appName = process.env.INFRA_APP_NAME ?? localConfig.appName ?? INFRA_CORE_DEFAULTS.appName;
 const backendApiSettings = buildBackendApiSettings({
   appName,
   rootDomain,
@@ -116,9 +118,11 @@ const identitySettings = buildIdentitySettings({
   localConfig: localConfig.identity,
 });
 const pipelineRepo =
-  process.env.INFRA_PIPELINE_REPO ?? localConfig.pipeline?.repo ?? 'alternun-development/alternun';
+  process.env.INFRA_PIPELINE_REPO ?? localConfig.pipeline?.repo ?? PIPELINE_INFRA_DEFAULTS.repo;
 const pipelinePrefix =
-  process.env.INFRA_PIPELINE_PREFIX ?? localConfig.pipeline?.prefix ?? 'alternun';
+  process.env.INFRA_PIPELINE_PREFIX ??
+  localConfig.pipeline?.prefix ??
+  PIPELINE_INFRA_DEFAULTS.prefix;
 const pipelineProjectTag =
   process.env.INFRA_PROJECT_TAG ?? localConfig.pipeline?.projectTag ?? pipelinePrefix;
 const codestarConnectionArn =
@@ -197,86 +201,92 @@ const commonBuildEnv = {
   INFRA_PROJECT_TAG: pipelineProjectTag,
   INFRA_CODESTAR_CONNECTION_ARN: codestarConnectionArn ?? '',
   INFRA_PIPELINE_BRANCH_PROD:
-    process.env.INFRA_PIPELINE_BRANCH_PROD ?? localConfig.pipeline?.branchProd ?? 'master',
+    process.env.INFRA_PIPELINE_BRANCH_PROD ??
+    localConfig.pipeline?.branchProd ??
+    PIPELINE_INFRA_DEFAULTS.branches.production,
   INFRA_PIPELINE_BRANCH_DEV:
-    process.env.INFRA_PIPELINE_BRANCH_DEV ?? localConfig.pipeline?.branchDev ?? 'develop',
+    process.env.INFRA_PIPELINE_BRANCH_DEV ??
+    localConfig.pipeline?.branchDev ??
+    PIPELINE_INFRA_DEFAULTS.branches.dev,
   INFRA_PIPELINE_BRANCH_MOBILE:
-    process.env.INFRA_PIPELINE_BRANCH_MOBILE ?? localConfig.pipeline?.branchMobile ?? 'mobile',
+    process.env.INFRA_PIPELINE_BRANCH_MOBILE ??
+    localConfig.pipeline?.branchMobile ??
+    PIPELINE_INFRA_DEFAULTS.branches.mobile,
   INFRA_PIPELINE_BRANCH_IDENTITY:
     process.env.INFRA_PIPELINE_BRANCH_IDENTITY ??
     localConfig.pipeline?.branchIdentity ??
     localConfig.pipeline?.branchIdentityDev ??
     localConfig.pipeline?.branchDev ??
-    'develop',
+    PIPELINE_INFRA_DEFAULTS.branches.identity,
   INFRA_PIPELINE_BRANCH_IDENTITY_DEV:
     process.env.INFRA_PIPELINE_BRANCH_IDENTITY_DEV ??
     process.env.INFRA_PIPELINE_BRANCH_IDENTITY ??
     localConfig.pipeline?.branchIdentityDev ??
     localConfig.pipeline?.branchIdentity ??
     localConfig.pipeline?.branchDev ??
-    'develop',
+    PIPELINE_INFRA_DEFAULTS.branches.identityDev,
   INFRA_PIPELINE_BRANCH_IDENTITY_PROD:
     process.env.INFRA_PIPELINE_BRANCH_IDENTITY_PROD ??
     localConfig.pipeline?.branchIdentityProd ??
     localConfig.pipeline?.branchProd ??
-    'master',
+    PIPELINE_INFRA_DEFAULTS.branches.identityProd,
   INFRA_PIPELINE_BRANCH_API:
     process.env.INFRA_PIPELINE_BRANCH_API ??
     localConfig.pipeline?.branchApi ??
     localConfig.pipeline?.branchApiDev ??
     localConfig.pipeline?.branchDev ??
-    'develop',
+    PIPELINE_INFRA_DEFAULTS.branches.api,
   INFRA_PIPELINE_BRANCH_API_DEV:
     process.env.INFRA_PIPELINE_BRANCH_API_DEV ??
     process.env.INFRA_PIPELINE_BRANCH_API ??
     localConfig.pipeline?.branchApiDev ??
     localConfig.pipeline?.branchApi ??
     localConfig.pipeline?.branchDev ??
-    'develop',
+    PIPELINE_INFRA_DEFAULTS.branches.apiDev,
   INFRA_PIPELINE_BRANCH_API_PROD:
     process.env.INFRA_PIPELINE_BRANCH_API_PROD ??
     process.env.INFRA_PIPELINE_BRANCH_API ??
     localConfig.pipeline?.branchApiProd ??
     localConfig.pipeline?.branchProd ??
-    'master',
+    PIPELINE_INFRA_DEFAULTS.branches.apiProd,
   INFRA_PIPELINE_BRANCH_ADMIN:
     process.env.INFRA_PIPELINE_BRANCH_ADMIN ??
     localConfig.pipeline?.branchAdmin ??
     localConfig.pipeline?.branchAdminDev ??
     localConfig.pipeline?.branchDev ??
-    'develop',
+    PIPELINE_INFRA_DEFAULTS.branches.admin,
   INFRA_PIPELINE_BRANCH_ADMIN_DEV:
     process.env.INFRA_PIPELINE_BRANCH_ADMIN_DEV ??
     process.env.INFRA_PIPELINE_BRANCH_ADMIN ??
     localConfig.pipeline?.branchAdminDev ??
     localConfig.pipeline?.branchAdmin ??
     localConfig.pipeline?.branchDev ??
-    'develop',
+    PIPELINE_INFRA_DEFAULTS.branches.adminDev,
   INFRA_PIPELINE_BRANCH_ADMIN_PROD:
     process.env.INFRA_PIPELINE_BRANCH_ADMIN_PROD ??
     process.env.INFRA_PIPELINE_BRANCH_ADMIN ??
     localConfig.pipeline?.branchAdminProd ??
     localConfig.pipeline?.branchProd ??
-    'master',
+    PIPELINE_INFRA_DEFAULTS.branches.adminProd,
   INFRA_PIPELINE_BRANCH_DASHBOARD:
     process.env.INFRA_PIPELINE_BRANCH_DASHBOARD ??
     localConfig.pipeline?.branchDashboard ??
     localConfig.pipeline?.branchDashboardDev ??
     localConfig.pipeline?.branchDev ??
-    'develop',
+    PIPELINE_INFRA_DEFAULTS.branches.dashboard,
   INFRA_PIPELINE_BRANCH_DASHBOARD_DEV:
     process.env.INFRA_PIPELINE_BRANCH_DASHBOARD_DEV ??
     process.env.INFRA_PIPELINE_BRANCH_DASHBOARD ??
     localConfig.pipeline?.branchDashboardDev ??
     localConfig.pipeline?.branchDashboard ??
     localConfig.pipeline?.branchDev ??
-    'develop',
+    PIPELINE_INFRA_DEFAULTS.branches.dashboardDev,
   INFRA_PIPELINE_BRANCH_DASHBOARD_PROD:
     process.env.INFRA_PIPELINE_BRANCH_DASHBOARD_PROD ??
     process.env.INFRA_PIPELINE_BRANCH_DASHBOARD ??
     localConfig.pipeline?.branchDashboardProd ??
     localConfig.pipeline?.branchProd ??
-    'master',
+    PIPELINE_INFRA_DEFAULTS.branches.dashboardProd,
   INFRA_EXPO_APP_PATH: expoAppPath,
   INFRA_EXPO_SUBDOMAIN: expoSubdomain,
   INFRA_EXPO_DOMAIN_PRODUCTION: expoStageMap.production,
