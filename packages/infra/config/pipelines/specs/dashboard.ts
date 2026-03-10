@@ -11,7 +11,7 @@ export function buildDashboardPipelineSpecs({
 }: PipelineConfigContext): PipelineSpecRecord<DashboardPipelineStage> {
   return {
     'dashboard-dev': {
-      suffix: 'dashboard-dev',
+      suffix: 'dash-dev',
       branch: resolveBranch(
         env.INFRA_PIPELINE_BRANCH_DASHBOARD_DEV,
         env.INFRA_PIPELINE_BRANCH_DASHBOARD,
@@ -32,7 +32,7 @@ export function buildDashboardPipelineSpecs({
       }),
     },
     'dashboard-prod': {
-      suffix: 'dashboard-prod',
+      suffix: 'dash-prod',
       branch: resolveBranch(
         env.INFRA_PIPELINE_BRANCH_DASHBOARD_PROD,
         env.INFRA_PIPELINE_BRANCH_DASHBOARD,
