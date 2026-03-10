@@ -114,7 +114,6 @@ def resolve_scope_mappings(managed_ids):
 results = {
     "admin_user": "skipped",
     "admin_application_policy": "skipped",
-    "admin_provider_policy": "skipped",
     "admin_oidc_provider": "skipped",
     "default_application": "skipped",
     "google_source": "skipped",
@@ -325,22 +324,12 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
     policy_binding_created, policy_binding_changed = ensure_policy_binding(
         application, application_policy, order=0
     )
-    provider_policy_binding_created, provider_policy_binding_changed = ensure_policy_binding(
-        provider, application_policy, order=0
-    )
     if policy_created or policy_binding_created:
         results["admin_application_policy"] = "created"
     elif policy_changed or policy_binding_changed:
         results["admin_application_policy"] = "updated"
     else:
         results["admin_application_policy"] = "unchanged"
-
-    if policy_created or provider_policy_binding_created:
-        results["admin_provider_policy"] = "created"
-    elif policy_changed or provider_policy_binding_changed:
-        results["admin_provider_policy"] = "updated"
-    else:
-        results["admin_provider_policy"] = "unchanged"
 
     if provider_created or application_created:
         results["admin_oidc_provider"] = "created"
