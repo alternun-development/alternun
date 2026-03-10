@@ -422,7 +422,7 @@ Safety behavior:
 - `identity-prod` (Authentik-focused pipeline for `SST_STAGE=identity-prod`, defaults to `master` branch)
 
 Legacy alias: `identity` maps to `identity-dev`.
-Created pipeline names include `alternun-prod-pipeline`, `alternun-dev-pipeline`, `alternun-auth-dev-pipeline`, `alternun-auth-prod-pipeline`, `alternun-api-dev-pipeline`, `alternun-api-prod-pipeline`, `alternun-admin-dev-pipeline`, `alternun-admin-prod-pipeline`, `alternun-dash-dev-pipeline`, and `alternun-dash-prod-pipeline`.
+Created pipeline names include `alternun-prod-pipeline`, `alternun-dev-pipeline`, `alternun-auth-dev-pipeline`, `alternun-auth-prod-pipeline`, `alternun-api-dev-pipeline`, `alternun-api-prod-pipeline`, `alternun-adm-dev-pipeline`, `alternun-adm-prod-pipeline`, `alternun-dash-dev-pipeline`, and `alternun-dash-prod-pipeline`.
 
 ## Required CI/Runtime Env Contract
 
