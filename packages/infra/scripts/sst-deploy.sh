@@ -6,6 +6,8 @@ INFRA_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_load-infra-env.sh"
 load_infra_env
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/_pipeline-safety.sh"
 
 STACK=${STACK:-${1:-${SST_STAGE:-production}}}
 export STACK
@@ -353,6 +355,9 @@ if [ "${RUN_PREDEPLOY_CHECKS:-true}" != "false" ]; then
 fi
 
 validate_identity_database_mode_transition
+
+selected_pipeline_csv=$(resolve_selected_pipeline_csv)
+assert_pipeline_reconciliation_safe "$selected_pipeline_csv" "$STACK"
 
 if is_truthy "${INFRA_ENABLE_ALIAS_CLEANUP:-false}"; then
   cleanup_deploy_aliases

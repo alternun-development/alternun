@@ -401,6 +401,12 @@ Create/repair configured pipelines:
 APPROVE=true pnpm --filter @alternun/infra run ensure:pipelines
 ```
 
+Safety behavior:
+
+- `scripts/ensure-pipelines.sh` now reconciles the production pipeline stack once with the canonical managed pipeline set instead of doing one deploy per missing pipeline
+- production pipeline-stack deploys are blocked if they would delete existing managed pipelines, unless `INFRA_ALLOW_PIPELINE_DELETION=true`
+- use `INFRA_MANAGED_PIPELINES_CANONICAL` if your repair target should differ from the default full managed set
+
 `INFRA_PIPELINES` supports these targets:
 
 - `production`
@@ -416,7 +422,7 @@ APPROVE=true pnpm --filter @alternun/infra run ensure:pipelines
 - `identity-prod` (Authentik-focused pipeline for `SST_STAGE=identity-prod`, defaults to `master` branch)
 
 Legacy alias: `identity` maps to `identity-dev`.
-Created pipeline names include `alternun-dashboard-dev-pipeline`, `alternun-dashboard-prod-pipeline`, `alternun-admin-dev-pipeline`, `alternun-admin-prod-pipeline`, `alternun-api-dev-pipeline`, `alternun-api-prod-pipeline`, `alternun-auth-dev-pipeline`, and `alternun-auth-prod-pipeline`.
+Created pipeline names include `alternun-prod-pipeline`, `alternun-dev-pipeline`, `alternun-auth-dev-pipeline`, `alternun-auth-prod-pipeline`, `alternun-api-dev-pipeline`, `alternun-api-prod-pipeline`, `alternun-admin-dev-pipeline`, `alternun-admin-prod-pipeline`, `alternun-dashboard-dev-pipeline`, and `alternun-dashboard-prod-pipeline`.
 
 ## Required CI/Runtime Env Contract
 
@@ -434,16 +440,20 @@ Minimum values to set in CI:
 - `INFRA_PIPELINE_BRANCH_DEV`
 - `INFRA_PIPELINE_BRANCH_IDENTITY_DEV` (when `identity-dev` is included in `INFRA_PIPELINES`)
 - `INFRA_PIPELINE_BRANCH_IDENTITY_PROD` (when `identity-prod` is included in `INFRA_PIPELINES`)
-- `INFRA_PIPELINE_BRANCH_DASHBOARD_DEV` (when `dashboard-dev` is included in `INFRA_PIPELINES`)
-- `INFRA_PIPELINE_BRANCH_DASHBOARD_PROD` (when `dashboard-prod` is included in `INFRA_PIPELINES`)
+- `INFRA_PIPELINE_BRANCH_API_DEV` (when `api-dev` is included in `INFRA_PIPELINES`)
+- `INFRA_PIPELINE_BRANCH_API_PROD` (when `api-prod` is included in `INFRA_PIPELINES`)
 - `INFRA_PIPELINE_BRANCH_ADMIN_DEV` (when `admin-dev` is included in `INFRA_PIPELINES`)
 - `INFRA_PIPELINE_BRANCH_ADMIN_PROD` (when `admin-prod` is included in `INFRA_PIPELINES`)
+- `INFRA_PIPELINE_BRANCH_DASHBOARD_DEV` (when `dashboard-dev` is included in `INFRA_PIPELINES`)
+- `INFRA_PIPELINE_BRANCH_DASHBOARD_PROD` (when `dashboard-prod` is included in `INFRA_PIPELINES`)
+- `INFRA_ENFORCE_PIPELINE_DELETE_GUARD=true`
 
 Optional but recommended:
 
 - `INFRA_AWS_ACCOUNT_ID` (set this in CodeBuild/CodePipeline env or Secrets Manager; if omitted in buildspec it is derived from STS caller identity)
 - `INFRA_ROUTE53_HOSTED_ZONE_ID`
 - `INFRA_CODESTAR_CONNECTION_ARN`
+- `INFRA_MANAGED_PIPELINES_CANONICAL`
 - `INFRA_EXPO_CERT_ARN_PRODUCTION`
 - `INFRA_EXPO_CERT_ARN_DEV`
 
