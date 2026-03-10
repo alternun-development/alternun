@@ -23,22 +23,12 @@ services:
       - --entrypoints.websecure.address=:443
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --certificatesresolvers.letsencrypt.acme.dnschallenge=true
-      - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=route53
-      - --certificatesresolvers.letsencrypt.acme.dnschallenge.delaybeforecheck=10
-      - --certificatesresolvers.letsencrypt.acme.email=${ALTERNUN_IDENTITY_TLS_ACME_EMAIL}
-      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-    environment:
-      AWS_DEFAULT_REGION: ${AWS_REGION}
-      AWS_HOSTED_ZONE_ID: ${ALTERNUN_ROUTE53_HOSTED_ZONE_ID}
-      AWS_REGION: ${AWS_REGION}
     ports:
       - 80:80
       - 443:443
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /opt/alternun/identity/traefik-acme.json:/letsencrypt/acme.json
   server:
     image: ghcr.io/goauthentik/server:${AUTHENTIK_IMAGE_TAG}
     command: server
@@ -52,7 +42,6 @@ services:
       - traefik.http.routers.authentik.rule=Host("${ALTERNUN_IDENTITY_DOMAIN}")
       - traefik.http.routers.authentik.entrypoints=websecure
       - traefik.http.routers.authentik.tls=true
-      - traefik.http.routers.authentik.tls.certresolver=letsencrypt
       - traefik.http.services.authentik.loadbalancer.server.port=9000
     restart: unless-stopped
     shm_size: 512mb

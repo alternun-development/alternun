@@ -186,6 +186,8 @@ When `INFRA_IDENTITY_ENABLED=true`, the stack now provisions:
 - a public EC2 host for Authentik runtime bootstrap
 - a PostgreSQL database (mode selectable: EC2-local or dedicated RDS)
 - Route53 DNS for the stage-specific identity domain
+- Route53 DNS-01 ACME on non-production identity stages
+- production ALB + ACM in front of the identity host
 - Secrets Manager entries for:
   - Authentik secret key
   - database credentials
@@ -206,6 +208,18 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_DOMAIN_PRODUCTION`
 - `INFRA_IDENTITY_DOMAIN_DEV`
 - `INFRA_IDENTITY_DOMAIN_MOBILE`
+- `INFRA_IDENTITY_INGRESS_MODE_PRODUCTION`
+- `INFRA_IDENTITY_INGRESS_MODE_DEV`
+- `INFRA_IDENTITY_INGRESS_MODE_MOBILE`
+- `INFRA_IDENTITY_TLS_MODE_PRODUCTION`
+- `INFRA_IDENTITY_TLS_MODE_DEV`
+- `INFRA_IDENTITY_TLS_MODE_MOBILE`
+- `INFRA_IDENTITY_TLS_ACME_EMAIL`
+- `INFRA_IDENTITY_TLS_ROUTE53_HOSTED_ZONE_ID`
+- `INFRA_IDENTITY_ALB_CERTIFICATE_ARN`
+- `INFRA_IDENTITY_ALB_HEALTH_CHECK_PATH`
+- `INFRA_IDENTITY_ALB_HEALTH_CHECK_MATCHER`
+- `INFRA_IDENTITY_ALB_IDLE_TIMEOUT_SECONDS`
 - `INFRA_IDENTITY_DATABASE_MODE` (`ec2` for local-on-instance DB, `rds` for dedicated DB)
 - `INFRA_IDENTITY_EC2_INSTANCE_TYPE`
 - `INFRA_IDENTITY_RDS_INSTANCE_TYPE`
@@ -254,6 +268,8 @@ Important behavior:
 - default pipeline profile behavior is `identity-dev => INFRA_IDENTITY_DATABASE_MODE=rds` and `identity-prod => INFRA_IDENTITY_DATABASE_MODE=rds`
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
 - the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
+- non-production identity defaults to direct instance ingress with Traefik Route53 DNS-01 ACME
+- production identity defaults to ALB + ACM, with the ALB terminating TLS and forwarding HTTPS to the instance
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
 - when Supabase management token/project ref are provided, infra patches Supabase `external_keycloak_*` settings automatically
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata

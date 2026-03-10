@@ -114,6 +114,28 @@
       "dev": "testnet.auth.alternun.co",
       "mobile": "preview.auth.alternun.co"
     },
+    "ingress": {
+      "modes": {
+        "production": "alb",
+        "dev": "instance",
+        "mobile": "instance"
+      },
+      "alb": {
+        "certificateArn": "",
+        "healthCheckMatcher": "200-399",
+        "healthCheckPath": "/",
+        "idleTimeoutSeconds": 60
+      }
+    },
+    "tls": {
+      "modes": {
+        "production": "alb-acm",
+        "dev": "acme-route53-dns-01",
+        "mobile": "acme-route53-dns-01"
+      },
+      "acmeEmail": "identity-admin@alternun.co",
+      "route53HostedZoneId": ""
+    },
     "ec2": {
       "instanceType": "t3.small",
       "volumeSizeGiB": 20

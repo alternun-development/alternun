@@ -9,6 +9,8 @@ import {
 export type IdentityEmailProvider = 'ses' | 'postmark';
 export type IdentityDatabaseMode = 'rds' | 'ec2';
 export type IdentityPolicyEngineMode = 'any' | 'all';
+export type IdentityIngressMode = 'instance' | 'alb';
+export type IdentityTlsMode = 'acme-route53-dns-01' | 'alb-acm';
 
 export interface IdentityLocalConfig {
   enabled?: boolean;
@@ -33,6 +35,28 @@ export interface IdentityLocalConfig {
   };
   database?: {
     mode?: IdentityDatabaseMode;
+  };
+  ingress?: {
+    modes?: {
+      production?: IdentityIngressMode;
+      dev?: IdentityIngressMode;
+      mobile?: IdentityIngressMode;
+    };
+    alb?: {
+      certificateArn?: string;
+      healthCheckMatcher?: string;
+      healthCheckPath?: string;
+      idleTimeoutSeconds?: number;
+    };
+  };
+  tls?: {
+    modes?: {
+      production?: IdentityTlsMode;
+      dev?: IdentityTlsMode;
+      mobile?: IdentityTlsMode;
+    };
+    acmeEmail?: string;
+    route53HostedZoneId?: string;
   };
   emailProvider?: IdentityEmailProvider;
   authentikImageTag?: string;
@@ -117,6 +141,28 @@ export interface IdentitySettings {
   };
   database: {
     mode: IdentityDatabaseMode;
+  };
+  ingress: {
+    stageModes: {
+      production: IdentityIngressMode;
+      dev: IdentityIngressMode;
+      mobile: IdentityIngressMode;
+    };
+    alb: {
+      certificateArn: string;
+      healthCheckMatcher: string;
+      healthCheckPath: string;
+      idleTimeoutSeconds: number;
+    };
+  };
+  tls: {
+    stageModes: {
+      production: IdentityTlsMode;
+      dev: IdentityTlsMode;
+      mobile: IdentityTlsMode;
+    };
+    acmeEmail: string;
+    route53HostedZoneId: string;
   };
   emailProvider: IdentityEmailProvider;
   authentikImageTag: string;
@@ -208,6 +254,14 @@ function normalizeDatabaseMode(value: string | undefined): IdentityDatabaseMode 
   return 'rds';
 }
 
+function normalizeIngressMode(value: string | undefined): IdentityIngressMode {
+  return value?.trim().toLowerCase() === 'alb' ? 'alb' : 'instance';
+}
+
+function normalizeTlsMode(value: string | undefined): IdentityTlsMode {
+  return value?.trim().toLowerCase() === 'alb-acm' ? 'alb-acm' : 'acme-route53-dns-01';
+}
+
 function normalizePolicyEngineMode(value: string | undefined): IdentityPolicyEngineMode {
   return value?.trim().toLowerCase() === 'all' ? 'all' : 'any';
 }
@@ -293,6 +347,7 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
   const defaultStageDomains = buildStageDomains('auth', args.rootDomain);
   const localConfig = args.localConfig;
   const defaultIdentitySecretNames = buildIdentitySecretNameDefaults(args.appName);
+  const defaultAcmeEmail = `${IDENTITY_INFRA_DEFAULTS.tls.acmeEmailLocalPart}@${args.rootDomain}`;
 
   return {
     enabled: parseBoolean(
@@ -370,6 +425,69 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
       mode: normalizeDatabaseMode(
         args.env.INFRA_IDENTITY_DATABASE_MODE ?? localConfig?.database?.mode
       ),
+    },
+    ingress: {
+      stageModes: {
+        production: normalizeIngressMode(
+          args.env.INFRA_IDENTITY_INGRESS_MODE_PRODUCTION ??
+            localConfig?.ingress?.modes?.production ??
+            IDENTITY_INFRA_DEFAULTS.ingress.modes.production
+        ),
+        dev: normalizeIngressMode(
+          args.env.INFRA_IDENTITY_INGRESS_MODE_DEV ??
+            localConfig?.ingress?.modes?.dev ??
+            IDENTITY_INFRA_DEFAULTS.ingress.modes.dev
+        ),
+        mobile: normalizeIngressMode(
+          args.env.INFRA_IDENTITY_INGRESS_MODE_MOBILE ??
+            localConfig?.ingress?.modes?.mobile ??
+            IDENTITY_INFRA_DEFAULTS.ingress.modes.mobile
+        ),
+      },
+      alb: {
+        certificateArn:
+          args.env.INFRA_IDENTITY_ALB_CERTIFICATE_ARN ??
+          localConfig?.ingress?.alb?.certificateArn ??
+          IDENTITY_INFRA_DEFAULTS.ingress.alb.certificateArn,
+        healthCheckMatcher:
+          args.env.INFRA_IDENTITY_ALB_HEALTH_CHECK_MATCHER ??
+          localConfig?.ingress?.alb?.healthCheckMatcher ??
+          IDENTITY_INFRA_DEFAULTS.ingress.alb.healthCheckMatcher,
+        healthCheckPath:
+          args.env.INFRA_IDENTITY_ALB_HEALTH_CHECK_PATH ??
+          localConfig?.ingress?.alb?.healthCheckPath ??
+          IDENTITY_INFRA_DEFAULTS.ingress.alb.healthCheckPath,
+        idleTimeoutSeconds: parsePositiveInteger(
+          args.env.INFRA_IDENTITY_ALB_IDLE_TIMEOUT_SECONDS ??
+            localConfig?.ingress?.alb?.idleTimeoutSeconds,
+          IDENTITY_INFRA_DEFAULTS.ingress.alb.idleTimeoutSeconds
+        ),
+      },
+    },
+    tls: {
+      stageModes: {
+        production: normalizeTlsMode(
+          args.env.INFRA_IDENTITY_TLS_MODE_PRODUCTION ??
+            localConfig?.tls?.modes?.production ??
+            IDENTITY_INFRA_DEFAULTS.tls.modes.production
+        ),
+        dev: normalizeTlsMode(
+          args.env.INFRA_IDENTITY_TLS_MODE_DEV ??
+            localConfig?.tls?.modes?.dev ??
+            IDENTITY_INFRA_DEFAULTS.tls.modes.dev
+        ),
+        mobile: normalizeTlsMode(
+          args.env.INFRA_IDENTITY_TLS_MODE_MOBILE ??
+            localConfig?.tls?.modes?.mobile ??
+            IDENTITY_INFRA_DEFAULTS.tls.modes.mobile
+        ),
+      },
+      acmeEmail:
+        args.env.INFRA_IDENTITY_TLS_ACME_EMAIL ?? localConfig?.tls?.acmeEmail ?? defaultAcmeEmail,
+      route53HostedZoneId:
+        args.env.INFRA_IDENTITY_TLS_ROUTE53_HOSTED_ZONE_ID ??
+        localConfig?.tls?.route53HostedZoneId ??
+        IDENTITY_INFRA_DEFAULTS.tls.route53HostedZoneId,
     },
     emailProvider: normalizeEmailProvider(
       args.env.INFRA_IDENTITY_EMAIL_PROVIDER ?? localConfig?.emailProvider

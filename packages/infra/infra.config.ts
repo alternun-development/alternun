@@ -572,6 +572,8 @@ export function createInfrastructure() {
       domain: resolveIdentityStageDomain(identitySettings, stage),
       stageDomains: identitySettings.stageDomains,
       database: identitySettings.database,
+      ingress: identitySettings.ingress,
+      tls: identitySettings.tls,
       ec2: identitySettings.ec2,
       rds: identitySettings.rds,
       emailProvider: identitySettings.emailProvider,
@@ -592,6 +594,7 @@ export function createInfrastructure() {
             secrets: identityInfrastructure.secrets,
             vpc: identityInfrastructure.vpc,
             database: identityInfrastructure.database,
+            loadBalancer: identityInfrastructure.loadBalancer ?? null,
           }
         : null,
     },

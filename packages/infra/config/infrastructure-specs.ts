@@ -1,4 +1,4 @@
-import type { PipelineStage, } from './pipelines/index.js';
+import type { PipelineStage } from './pipelines/index.js';
 
 export type StageDomainMap = Record<PipelineStage, string>;
 
@@ -100,6 +100,28 @@ export const IDENTITY_INFRA_DEFAULTS = {
     rolesClaim: 'alternun_roles',
     accessTokenTtlMinutes: 15,
   },
+  ingress: {
+    modes: {
+      production: 'alb',
+      dev: 'instance',
+      mobile: 'instance',
+    },
+    alb: {
+      certificateArn: '',
+      healthCheckMatcher: '200-399',
+      healthCheckPath: '/',
+      idleTimeoutSeconds: 60,
+    },
+  },
+  tls: {
+    modes: {
+      production: 'alb-acm',
+      dev: 'acme-route53-dns-01',
+      mobile: 'acme-route53-dns-01',
+    },
+    acmeEmailLocalPart: 'identity-admin',
+    route53HostedZoneId: '',
+  },
   integration: {
     google: {
       sourceName: 'Google',
@@ -138,7 +160,7 @@ export const IDENTITY_INFRA_DEFAULTS = {
   },
 } as const;
 
-export function buildStageDomains(subdomain: string, rootDomain: string,): StageDomainMap {
+export function buildStageDomains(subdomain: string, rootDomain: string): StageDomainMap {
   return {
     production: `${subdomain}.${rootDomain}`,
     dev: `testnet.${subdomain}.${rootDomain}`,
