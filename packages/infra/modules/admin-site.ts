@@ -114,26 +114,29 @@ function resolveStageKey(stage: string): keyof AdminSiteSettings['stageDomains']
 }
 
 function resolveAdminSiteAppPath(appPath: string): string {
+  const infraRoot = process.cwd();
   const candidatePaths = [
     appPath,
     path.resolve(dirname, appPath),
     path.resolve(dirname, '..', appPath),
     path.resolve(dirname, '../..', appPath),
-    path.resolve(process.cwd(), appPath),
-    path.resolve(process.cwd(), '..', appPath),
+    path.resolve(infraRoot, appPath),
+    path.resolve(infraRoot, '..', appPath),
   ];
 
   for (const candidatePath of candidatePaths) {
     const resolvedPath = path.isAbsolute(candidatePath)
       ? candidatePath
-      : path.resolve(candidatePath);
+      : path.resolve(infraRoot, candidatePath);
 
     if (fs.existsSync(resolvedPath)) {
-      return resolvedPath;
+      // SST StaticSite resolves build directories from the infra root, so we
+      // must preserve a root-relative path here instead of passing an absolute path.
+      return path.relative(infraRoot, resolvedPath) || '.';
     }
   }
 
-  return path.resolve(dirname, appPath);
+  return path.isAbsolute(appPath) ? path.relative(infraRoot, appPath) || '.' : appPath;
 }
 
 function buildDefaultStageDomains(rootDomain: string): AdminSiteSettings['stageDomains'] {
@@ -152,9 +155,7 @@ function buildDefaultApiUrls(rootDomain: string): AdminSiteSettings['apiUrls'] {
   };
 }
 
-function buildDefaultAuthIssuers(
-  rootDomain: string
-): AdminSiteSettings['auth']['stageIssuers'] {
+function buildDefaultAuthIssuers(rootDomain: string): AdminSiteSettings['auth']['stageIssuers'] {
   return {
     production: `https://auth.${rootDomain}`,
     dev: `https://testnet.auth.${rootDomain}`,
@@ -192,12 +193,9 @@ export function buildAdminSiteSettings(args: BuildAdminSiteSettingsArgs): AdminS
         args.env.INFRA_ADMIN_DOMAIN_PRODUCTION ??
         localConfig?.domains?.production ??
         defaultDomains.production,
-      dev:
-        args.env.INFRA_ADMIN_DOMAIN_DEV ?? localConfig?.domains?.dev ?? defaultDomains.dev,
+      dev: args.env.INFRA_ADMIN_DOMAIN_DEV ?? localConfig?.domains?.dev ?? defaultDomains.dev,
       mobile:
-        args.env.INFRA_ADMIN_DOMAIN_MOBILE ??
-        localConfig?.domains?.mobile ??
-        defaultDomains.mobile,
+        args.env.INFRA_ADMIN_DOMAIN_MOBILE ?? localConfig?.domains?.mobile ?? defaultDomains.mobile,
     },
     certArns: {
       production:
@@ -210,8 +208,7 @@ export function buildAdminSiteSettings(args: BuildAdminSiteSettingsArgs): AdminS
         args.env.INFRA_ADMIN_API_URL_PRODUCTION ??
         localConfig?.apiUrls?.production ??
         defaultApiUrls.production,
-      dev:
-        args.env.INFRA_ADMIN_API_URL_DEV ?? localConfig?.apiUrls?.dev ?? defaultApiUrls.dev,
+      dev: args.env.INFRA_ADMIN_API_URL_DEV ?? localConfig?.apiUrls?.dev ?? defaultApiUrls.dev,
       mobile:
         args.env.INFRA_ADMIN_API_URL_MOBILE ??
         localConfig?.apiUrls?.mobile ??
@@ -220,8 +217,7 @@ export function buildAdminSiteSettings(args: BuildAdminSiteSettingsArgs): AdminS
     auth: {
       clientId:
         args.env.INFRA_ADMIN_AUTH_CLIENT_ID ?? localConfig?.authClientId ?? 'alternun-admin',
-      audience:
-        args.env.INFRA_ADMIN_AUTH_AUDIENCE ?? localConfig?.authAudience ?? 'alternun-app',
+      audience: args.env.INFRA_ADMIN_AUTH_AUDIENCE ?? localConfig?.authAudience ?? 'alternun-app',
       stageIssuers: {
         production:
           args.env.INFRA_ADMIN_AUTH_ISSUER_PRODUCTION ??
@@ -255,10 +251,10 @@ export function deployAdminSiteInfrastructure(
   const siteDomain = resolveAdminStageDomain(args.settings, args.stage);
   const resolvedDomain = args.settings.enableCustomDomain
     ? resolveDomain({
-      rootDomain: args.rootDomain,
-      stage: deploymentStage,
-      stageMap: args.settings.stageDomains,
-    })
+        rootDomain: args.rootDomain,
+        stage: deploymentStage,
+        stageMap: args.settings.stageDomains,
+      })
     : undefined;
 
   const site = createExpoSite({
