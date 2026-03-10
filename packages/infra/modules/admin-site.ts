@@ -158,7 +158,7 @@ function buildDefaultAuthIssuers(
   rootDomain: string,
   applicationSlug: string
 ): AdminSiteSettings['auth']['stageIssuers'] {
-  const baseUrls = buildStageUrls('auth', rootDomain);
+  const baseUrls = buildStageUrls('sso', rootDomain);
 
   return {
     production: `${baseUrls.production}/application/o/${applicationSlug}/`,
@@ -267,10 +267,10 @@ export function deployAdminSiteInfrastructure(
   const siteDomain = resolveAdminStageDomain(args.settings, args.stage);
   const resolvedDomain = args.settings.enableCustomDomain
     ? resolveDomain({
-      rootDomain: args.rootDomain,
-      stage: deploymentStage,
-      stageMap: args.settings.stageDomains,
-    })
+        rootDomain: args.rootDomain,
+        stage: deploymentStage,
+        stageMap: args.settings.stageDomains,
+      })
     : undefined;
 
   const site = createExpoSite({
