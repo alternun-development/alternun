@@ -1,0 +1,192 @@
+{
+  "shared": {
+    "labels": {
+      "by": "โดย",
+      "dark": "มืด",
+      "language": "ภาษา",
+      "light": "สว่าง",
+      "settings": "การตั้งค่า",
+      "signIn": "เข้าสู่ระบบ",
+      "theme": "ธีม",
+      "yes": "ใช่",
+      "no": "ไม่"
+    },
+    "languageNames": {
+      "en": "อังกฤษ",
+      "es": "สเปน",
+      "th": "ไทย"
+    },
+    "templates": {
+      "welcome": "ยินดีต้อนรับ, {{name}}"
+    }
+  },
+  "mobile": {
+    "authCallback": {
+      "errors": {
+        "failed": "การตอบกลับการยืนยันตัวตนล้มเหลว",
+        "finalizeFailed": "ไม่สามารถดำเนินการยืนยันตัวตนให้เสร็จสิ้นได้",
+        "missingSession": "การตอบกลับไม่ได้รวมโทเค็นเซสชันที่สมบูรณ์",
+        "title": "ข้อผิดพลาดในการยืนยันตัวตน",
+        "unsupportedClient": "ยังไม่ได้ตั้งค่าการตอบกลับการยืนยันตัวตนสำหรับไคลเอนต์นี้"
+      },
+      "success": {
+        "default": {
+          "message": "การตอบกลับการยืนยันตัวตนเสร็จสมบูรณ์แล้ว",
+          "title": "ลงชื่อเข้าใช้แล้ว"
+        },
+        "recovery": {
+          "message": "การตอบกลับการยืนยันตัวตนสำหรับการกู้คืนรหัสผ่านเสร็จสมบูรณ์แล้ว",
+          "title": "เซสชันกู้คืนพร้อมแล้ว"
+        },
+        "signup": {
+          "message": "ยืนยันอีเมลของคุณสำเร็จแล้ว ตอนนี้คุณได้ลงชื่อเข้าใช้แล้ว",
+          "title": "ยืนยันอีเมลแล้ว"
+        }
+      }
+    },
+    "authModal": {
+      "actions": {
+        "alreadyConfirmedContinue": "ฉันยืนยันแล้ว ดำเนินการต่อ",
+        "connectWallet": "เชื่อมต่อวอลเล็ต",
+        "continueWithEmail": "ดำเนินการต่อด้วยอีเมล",
+        "continueWithGoogle": "ดำเนินการต่อด้วย Google",
+        "createAccount": "สร้างบัญชี",
+        "verifyConfirmationCode": "ยืนยันรหัสยืนยัน",
+        "useAnotherEmail": "ใช้อีเมลอื่น"
+      },
+      "confirmation": {
+        "checkEmail": "ตรวจสอบอีเมลของคุณ",
+        "codeBody": "กรอกรหัสยืนยันจากอีเมลเพื่อเปิดใช้งานบัญชีของคุณที่นี่",
+        "codeOrLinkHint": "ใช้รหัสในอีเมล หรือกดปุ่มลิงก์ในอีเมลเพื่อยืนยันก็ได้",
+        "codeTitle": "มีรหัสยืนยันใช่ไหม?",
+        "emailFallback": "อีเมลของคุณ",
+        "linkSentTo": "เราได้ส่งลิงก์ยืนยันไปที่:"
+      },
+      "divider": {
+        "or": "หรือ"
+      },
+      "errors": {
+        "accountExistsSignInOrResend": "มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว เข้าสู่ระบบหรือส่งอีเมลยืนยันอีกครั้งด้านล่าง",
+        "authenticationFailed": "การยืนยันตัวตนล้มเหลว กรุณาลองใหม่อีกครั้ง",
+        "confirmationCodeInvalid": "รหัสยืนยันไม่ถูกต้องหรือหมดอายุแล้ว ขออีเมลใหม่และลองอีกครั้ง",
+        "enterEmailFirst": "กรุณากรอกอีเมลก่อน",
+        "resendUnavailable": "การส่งอีเมลยืนยันอีกครั้งยังไม่พร้อมใช้งานในไคลเอนต์นี้",
+        "signupUnavailable": "การสมัครใช้งานยังไม่พร้อมในไคลเอนต์นี้",
+        "verificationCodeUnavailable": "การยืนยันด้วยรหัสยังไม่พร้อมใช้งานในไคลเอนต์นี้"
+      },
+      "footer": {
+        "alreadyHaveAccount": "มีบัญชีอยู่แล้ว? เข้าสู่ระบบ",
+        "dontHaveAccount": "ยังไม่มีบัญชี? สมัครใช้งาน"
+      },
+      "modes": {
+        "signIn": "เข้าสู่ระบบ",
+        "signUp": "สมัครใช้งาน"
+      },
+      "notices": {
+        "accountCreatedSigningIn": "สร้างบัญชีสำเร็จ กำลังลงชื่อเข้าใช้...",
+        "confirmationSent": "ส่งอีเมลยืนยันไปที่ {{email}} แล้ว",
+        "emailConfirmedSignIn": "ยืนยันอีเมลแล้ว ดำเนินการลงชื่อเข้าใช้ต่อได้เลย",
+        "requestNewConfirmation": "หากบัญชีนี้ยังไม่ยืนยัน โปรดขออีเมลยืนยันใหม่",
+        "secureSignIn": "เข้าสู่ระบบอย่างปลอดภัย",
+        "unverifiedEmail": "อีเมลของคุณยังไม่ได้ยืนยัน โปรดยืนยันก่อนดำเนินการต่อ"
+      },
+      "placeholders": {
+        "confirmationCode": "รหัสยืนยัน",
+        "confirmPassword": "ยืนยันรหัสผ่าน",
+        "email": "อีเมล",
+        "password": "รหัสผ่าน"
+      },
+      "resend": {
+        "body": "ตรวจสอบสแปมหรืออีเมลขยะก่อน จากนั้นจึงขออีเมลยืนยันอีกครั้ง",
+        "sendAgain": "ส่งอีเมลยืนยันอีกครั้ง",
+        "sendAgainIn": "ส่งอีกครั้งใน {{seconds}} วินาที",
+        "title": "ไม่ได้รับอีเมลใช่ไหม?"
+      },
+      "validation": {
+        "confirmationCodeRequired": "จำเป็นต้องกรอกรหัสยืนยัน",
+        "confirmPasswordRequired": "จำเป็นต้องยืนยันรหัสผ่าน",
+        "emailAndPasswordRequired": "จำเป็นต้องกรอกอีเมลและรหัสผ่าน",
+        "emailPasswordConfirmationRequired": "จำเป็นต้องกรอกอีเมล รหัสผ่าน และการยืนยัน",
+        "emailRequired": "จำเป็นต้องกรอกอีเมล",
+        "passwordMin": "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร",
+        "passwordMismatch": "รหัสผ่านไม่ตรงกัน",
+        "passwordRequired": "จำเป็นต้องกรอกรหัสผ่าน",
+        "validEmail": "กรุณากรอกอีเมลที่ถูกต้อง"
+      }
+    },
+    "footer": {
+      "copyright": "(c) {{year}} Alternun. สงวนลิขสิทธิ์ทั้งหมด.",
+      "links": {
+        "documentation": "เอกสาร",
+        "project": "โครงการ"
+      },
+      "tagline": "\"วิธีที่แตกต่างในการทำสิ่งต่าง ๆ\" - Alternun"
+    },
+    "landing": {
+      "actions": {
+        "goToDashboard": "ไปที่แดชบอร์ด"
+      },
+      "hero": {
+        "presentedBy": "Alternun นำเสนอ",
+        "scrollToInteract": "เลื่อนเพื่อโต้ตอบ"
+      },
+      "info": {
+        "scoreLine": "คะแนนผลกระทบและชื่อเสียงของ Alternun",
+        "summaryLine": "พื้นที่เดียวสำหรับผลกระทบที่ตรวจสอบได้ วงจรการชดเชย และโมดูลที่เชื่อมกับวอลเล็ต"
+      },
+      "media": {
+        "subtitle": "โปรแกรมความภักดีที่ชัดเจนที่สุดสำหรับผู้คนที่ปกป้องโลก",
+        "title": "คะแนนผลกระทบและชื่อเสียงของ Alternun"
+      },
+      "video": {
+        "loadingIntro": "กำลังโหลดวิดีโอแนะนำ Airs",
+        "muted": "ปิดเสียง",
+        "openIntro": "เปิดวิดีโอแนะนำ Airs",
+        "restart": "เริ่มใหม่",
+        "soundOn": "เปิดเสียง"
+      }
+    },
+    "navigation": {
+      "moreSettings": "การตั้งค่าเพิ่มเติม"
+    },
+    "onboarding": {
+      "dontShowIntroAgain": "ไม่ต้องแสดงบทนำอีก"
+    },
+    "settingsScreen": {
+      "currentLanguage": "ภาษาปัจจุบัน",
+      "localPreferenceHelp": "จัดเก็บไว้ในเบราว์เซอร์หรือค่ากำหนดของแอปในเครื่อง",
+      "sections": {
+        "appearance": "รูปลักษณ์",
+        "language": "ภาษา",
+        "onboarding": "เริ่มต้นใช้งาน"
+      },
+      "showIntroAgain": "ไม่ต้องแสดงบทนำอีก",
+      "subtitle": "จัดการการตั้งค่าหน้าตาและตัวควบคุมระดับบัญชี",
+      "title": "การตั้งค่า"
+    },
+    "walletModal": {
+      "disclaimer": "เมื่อเชื่อมต่อ แสดงว่าคุณยอมรับข้อกำหนดการให้บริการและนโยบายความเป็นส่วนตัวของเรา",
+      "subtitle": "เชื่อมต่อวอลเล็ตของคุณเพื่อเข้าถึง Ambient Impact Dashboard แบบเต็มรูปแบบ",
+      "title": "เชื่อมต่อวอลเล็ต",
+      "wallets": {
+        "metamask": {
+          "description": "วอลเล็ต Web3 ที่ได้รับความนิยมมากที่สุด"
+        },
+        "walletconnect": {
+          "description": "เชื่อมต่อผ่าน QR code"
+        }
+      }
+    }
+  },
+  "web": {
+    "home": {
+      "title": "เว็บแอปพลิเคชัน Alternun",
+      "welcome": "ยินดีต้อนรับสู่แอปพลิเคชัน Next.js"
+    }
+  },
+  "docs": {
+    "site": {
+      "title": "เอกสาร Alternun"
+    }
+  }
+}

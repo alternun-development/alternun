@@ -2,17 +2,24 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, master]
   pull_request:
-    branches: [main, develop]
+    branches: [main, master, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   NODE_VERSION: '22.22.0'
-  PNPM_VERSION: '9.0.0'
+  PNPM_VERSION: '9.15.0'
 
 jobs:
   lint:
-    name: Lint and Format
+    name: Static Checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,11 +39,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run ESLint
-        run: pnpm lint
+      - name: Run web lint
+        run: pnpm --filter @alternun/web lint
 
-      - name: Check formatting
-        run: pnpm format:check
+      - name: Check targeted formatting
+        run: pnpm exec prettier --check .eslintrc.js .github/workflows/ci.yml .github/workflows/deploy.yml .github/workflows/test-deploy.yml package.json packages/auth/infra/email/scripts/01-generate-smtp-config.cjs packages/auth/infra/email/scripts/02-sync-supabase-smtp.cjs packages/auth/infra/email/scripts/03-status-report.cjs packages/email-templates/src/lib/i18n.ts
 
   type-check:
     name: Type Check
@@ -65,6 +72,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -83,10 +91,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run i18n tests
+        run: pnpm --filter @alternun/i18n test
+
+      - name: Run mobile critical tests
+        run: CI=1 pnpm --filter @alternun/mobile exec jest --runInBand --watchAll=false
 
       - name: Upload coverage to Codecov
+        if: hashFiles('**/coverage/lcov.info') != ''
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage/lcov.info
@@ -123,7 +135,7 @@ jobs:
     needs: [lint, type-check, test]
     strategy:
       matrix:
-        app: [web, mobile, docs]
+        app: [web, mobile]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -1,22 +1,28 @@
 {
   "name": "@alternun/infra",
-  "version": "0.1.0",
+  "version": "1.0.4",
   "private": true,
   "type": "module",
   "description": "Alternun AWS/SST infrastructure wrapper for Expo web deployments.",
   "scripts": {
     "deploy:dev": "APPROVE=true STACK=dev bash scripts/sst-deploy.sh",
     "deploy:production": "APPROVE=true STACK=production bash scripts/sst-deploy.sh",
+    "deploy:identity-dev": "APPROVE=true STACK=identity-dev bash scripts/sst-deploy.sh",
+    "deploy:identity-prod": "APPROVE=true STACK=identity-prod bash scripts/sst-deploy.sh",
     "diff:dev": "sst diff --stage dev",
     "diff:production": "sst diff --stage production",
     "remove:dev": "sst remove --stage dev",
     "remove:production": "sst remove --stage production",
     "ensure:pipelines": "bash scripts/ensure-pipelines.sh",
     "ensure:secrets": "bash scripts/ensure-secrets.sh",
-    "sync:develop-master": "bash scripts/sync-develop-master.sh"
+    "sync:develop-master": "bash scripts/sync-develop-master.sh",
+    "sync:master-develop": "bash scripts/sync-master-develop.sh"
   },
   "dependencies": {
-    "@lsts_tech/infra": "1.0.2",
+    "@lsts_tech/infra": "1.0.3",
+    "@pulumi/aws": "6.66.2",
+    "@pulumi/pulumi": "3.210.0",
+    "@pulumi/random": "4.16.6",
     "sst": "^3.19.3"
   },
   "devDependencies": {

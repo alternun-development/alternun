@@ -1,6 +1,6 @@
 {
   "name": "alternun",
-  "version": "0.0.0",
+  "version": "1.0.4",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -20,13 +20,26 @@
     "infra:deploy:production": "pnpm --filter @alternun/infra run deploy:production",
     "infra:ensure:pipelines": "pnpm --filter @alternun/infra run ensure:pipelines",
     "infra:sync:develop-master": "pnpm --filter @alternun/infra run sync:develop-master",
+    "infra:sync:master-develop": "pnpm --filter @alternun/infra run sync:master-develop",
     "prepare": "husky install",
-    "version:validate": "versioning validate",
-    "version:sync": "versioning sync",
+    "version:validate": "node scripts/version-validate.mjs",
+    "version:validate:raw": "versioning validate",
+    "version:sync": "node scripts/version-sync.mjs",
+    "version:sync:raw": "versioning sync",
     "version:bump": "versioning bump",
     "version:changelog": "versioning changelog",
     "version:cleanup": "versioning cleanup",
-    "version:check-secrets": "versioning check-secrets"
+    "version:check-secrets": "versioning check-secrets",
+    "release": "node scripts/release.mjs",
+    "release:patch": "node scripts/release.mjs patch",
+    "release:patch:no-push": "node scripts/release.mjs patch --no-push",
+    "release:patch:push": "node scripts/release.mjs patch --push",
+    "release:patch:develop": "node scripts/release.mjs patch --target-branch develop",
+    "release:minor": "node scripts/release.mjs minor",
+    "release:minor:no-push": "node scripts/release.mjs minor --no-push",
+    "release:major": "node scripts/release.mjs major",
+    "release:major:no-push": "node scripts/release.mjs major --no-push",
+    "release:promote": "node scripts/release.mjs --promote"
   },
   "devDependencies": {
     "@docusaurus/tsconfig": "^3.5.2",
@@ -42,10 +55,15 @@
     "turbo": "^2.8.12"
   },
   "engines": {
-    "node": ">=22.22.0",
+    "node": ">=22.20.0",
     "pnpm": ">=9.0.0"
   },
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@9.15.0",
+  "pnpm": {
+    "overrides": {
+      "fast-xml-parser": "4.5.4"
+    }
+  },
   "dependencies": {
     "three": "^0.169.0"
   },

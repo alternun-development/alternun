@@ -1,0 +1,192 @@
+{
+  "shared": {
+    "labels": {
+      "by": "By",
+      "dark": "Dark",
+      "language": "Language",
+      "light": "Light",
+      "settings": "Settings",
+      "signIn": "Sign In",
+      "theme": "Theme",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "languageNames": {
+      "en": "English",
+      "es": "Spanish",
+      "th": "Thai"
+    },
+    "templates": {
+      "welcome": "Welcome, {{name}}"
+    }
+  },
+  "mobile": {
+    "authCallback": {
+      "errors": {
+        "failed": "Authentication callback failed.",
+        "finalizeFailed": "Unable to finalize authentication callback.",
+        "missingSession": "Callback did not include a complete session token.",
+        "title": "Authentication Error",
+        "unsupportedClient": "Auth callback is not configured for this client runtime."
+      },
+      "success": {
+        "default": {
+          "message": "Authentication callback completed successfully.",
+          "title": "Signed In"
+        },
+        "recovery": {
+          "message": "Authentication callback completed for password recovery.",
+          "title": "Recovery Session Ready"
+        },
+        "signup": {
+          "message": "Your email was confirmed successfully. You are now signed in.",
+          "title": "Email Confirmed"
+        }
+      }
+    },
+    "authModal": {
+      "actions": {
+        "alreadyConfirmedContinue": "I already confirmed, continue",
+        "connectWallet": "Connect Wallet",
+        "continueWithEmail": "Continue with Email",
+        "continueWithGoogle": "Continue with Google",
+        "createAccount": "Create Account",
+        "verifyConfirmationCode": "Verify confirmation code",
+        "useAnotherEmail": "Use another email"
+      },
+      "confirmation": {
+        "checkEmail": "Check your email",
+        "codeBody": "Enter the verification code from your email to activate your account here.",
+        "codeOrLinkHint": "Use the code in the email or click the button link to confirm.",
+        "codeTitle": "Have a verification code?",
+        "emailFallback": "your email",
+        "linkSentTo": "We sent a confirmation link to:"
+      },
+      "divider": {
+        "or": "or"
+      },
+      "errors": {
+        "accountExistsSignInOrResend": "An account with this email already exists. Sign in, or resend the confirmation email below.",
+        "authenticationFailed": "Authentication failed. Please try again.",
+        "confirmationCodeInvalid": "The confirmation code is invalid or expired. Request a new email and try again.",
+        "enterEmailFirst": "Enter your email first.",
+        "resendUnavailable": "Resend confirmation is not available in this auth client.",
+        "signupUnavailable": "Sign-up is not available in this auth client.",
+        "verificationCodeUnavailable": "Code verification is not available in this auth client."
+      },
+      "footer": {
+        "alreadyHaveAccount": "Already have an account? Sign In",
+        "dontHaveAccount": "Don't have an account? Sign Up"
+      },
+      "modes": {
+        "signIn": "Sign In",
+        "signUp": "Sign Up"
+      },
+      "notices": {
+        "accountCreatedSigningIn": "Account created successfully. Signing you in...",
+        "confirmationSent": "Confirmation email sent to {{email}}.",
+        "emailConfirmedSignIn": "Email confirmed. Continue signing in.",
+        "requestNewConfirmation": "If this account is unverified, request a new confirmation email.",
+        "secureSignIn": "Secure sign in.",
+        "unverifiedEmail": "Your email is not verified yet. Confirm it to continue."
+      },
+      "placeholders": {
+        "confirmationCode": "Verification code",
+        "confirmPassword": "Confirm Password",
+        "email": "Email",
+        "password": "Password"
+      },
+      "resend": {
+        "body": "Check spam/junk first, then request another confirmation email.",
+        "sendAgain": "Send confirmation again",
+        "sendAgainIn": "Send again in {{seconds}}s",
+        "title": "Not receiving the email?"
+      },
+      "validation": {
+        "confirmationCodeRequired": "Verification code is required.",
+        "confirmPasswordRequired": "Confirmation is required.",
+        "emailAndPasswordRequired": "Email and password are required.",
+        "emailPasswordConfirmationRequired": "Email, password, and confirmation are required.",
+        "emailRequired": "Email is required.",
+        "passwordMin": "Password must be at least 8 characters.",
+        "passwordMismatch": "Passwords do not match.",
+        "passwordRequired": "Password is required.",
+        "validEmail": "Enter a valid email address."
+      }
+    },
+    "footer": {
+      "copyright": "(c) {{year}} Alternun. All rights reserved.",
+      "links": {
+        "documentation": "Documentation",
+        "project": "Project"
+      },
+      "tagline": "A \"different way to do the things\" - Alternun"
+    },
+    "landing": {
+      "actions": {
+        "goToDashboard": "Go to dashboard"
+      },
+      "hero": {
+        "presentedBy": "Alternun Presents",
+        "scrollToInteract": "Scroll to interact"
+      },
+      "info": {
+        "scoreLine": "Alternun Impact & Reputation Score.",
+        "summaryLine": "One surface for verified impact, compensation lifecycle, and wallet-linked modules."
+      },
+      "media": {
+        "subtitle": "The definitive loyalty program for people protecting the planet.",
+        "title": "Alternun Impact & Reputation Score"
+      },
+      "video": {
+        "loadingIntro": "Loading Airs Intro Video",
+        "muted": "Muted",
+        "openIntro": "Open Airs Intro Video",
+        "restart": "Restart",
+        "soundOn": "Sound On"
+      }
+    },
+    "navigation": {
+      "moreSettings": "More Settings"
+    },
+    "onboarding": {
+      "dontShowIntroAgain": "Don't show intro again"
+    },
+    "settingsScreen": {
+      "currentLanguage": "Current Language",
+      "localPreferenceHelp": "Stored locally in your browser/app preferences.",
+      "sections": {
+        "appearance": "Appearance",
+        "language": "Language",
+        "onboarding": "Onboarding"
+      },
+      "showIntroAgain": "Don't Show Intro Again",
+      "subtitle": "Manage interface preferences and account-level controls.",
+      "title": "Settings"
+    },
+    "walletModal": {
+      "disclaimer": "By connecting, you agree to our Terms of Service and Privacy Policy",
+      "subtitle": "Connect your wallet to access the full Ambient Impact Dashboard",
+      "title": "Connect Wallet",
+      "wallets": {
+        "metamask": {
+          "description": "Most popular Web3 wallet"
+        },
+        "walletconnect": {
+          "description": "Connect via QR code"
+        }
+      }
+    }
+  },
+  "web": {
+    "home": {
+      "title": "Alternun Web Application",
+      "welcome": "Welcome to the Next.js application."
+    }
+  },
+  "docs": {
+    "site": {
+      "title": "Alternun Docs"
+    }
+  }
+}

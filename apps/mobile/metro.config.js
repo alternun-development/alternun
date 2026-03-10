@@ -5,8 +5,16 @@ const { resolve } = require("metro-resolver");
 const { withNativeWind } = require("nativewind/metro");
 
 const config = getDefaultConfig(__dirname);
+const workspaceRoot = path.resolve(__dirname, "../..");
 const appRequire = createRequire(path.join(__dirname, "package.json"));
 const expoRequire = createRequire(appRequire.resolve("expo/package.json"));
+const i18nPackageRoot = path.join(workspaceRoot, "packages/i18n");
+const i18nEntry = path.join(i18nPackageRoot, "src/index.ts");
+const i18nCatalogsRoot = path.join(i18nPackageRoot, "src/catalogs");
+
+config.watchFolders = Array.from(
+  new Set([...(config.watchFolders || []), workspaceRoot]),
+);
 
 // Keep a single React runtime on web by pinning resolver targets to app versions.
 const reactPath = path.dirname(appRequire.resolve("react/package.json"));
@@ -22,6 +30,7 @@ const expoAssetEntry = expoRequire.resolve("expo-asset");
 config.resolver = config.resolver || {};
 config.resolver.extraNodeModules = {
   ...(config.resolver.extraNodeModules || {}),
+  "@alternun/i18n": i18nPackageRoot,
   react: reactPath,
   "react-dom": reactDomPath,
   "expo-asset": expoAssetPath,
@@ -46,6 +55,18 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   }
   if (moduleName === "expo-asset") {
     return { type: "sourceFile", filePath: expoAssetEntry };
+  }
+  if (moduleName === "@alternun/i18n") {
+    return { type: "sourceFile", filePath: i18nEntry };
+  }
+  if (moduleName.startsWith("@alternun/i18n/catalogs/")) {
+    return {
+      type: "sourceFile",
+      filePath: path.join(
+        i18nCatalogsRoot,
+        moduleName.slice("@alternun/i18n/catalogs/".length),
+      ),
+    };
   }
   return resolve(context, moduleName, platform);
 };

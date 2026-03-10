@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ShoppingCart, Layers, Leaf, Flame, DollarSign, Copy, Check } from 'lucide-react-native';
-import { AIRSEntry } from './types';
+import React, { useState, } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
+import { ShoppingCart, Layers, Leaf, Flame, DollarSign, Copy, Check, } from 'lucide-react-native';
+import { AIRSEntry, } from './types';
 
 interface AIRSLedgerProps {
   entries: AIRSEntry[];
@@ -31,70 +32,70 @@ const REFERENCE_TYPE_COLORS: Record<AIRSEntry['referenceType'], string> = {
   claim: '#34d399',
 };
 
-function formatTimeAgo(date: Date): string {
+function formatTimeAgo(date: Date,): string {
   const now = Date.now();
   const diff = now - date.getTime();
-  const mins = Math.floor(diff / 60000);
+  const mins = Math.floor(diff / 60000,);
   if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
+  const hours = Math.floor(mins / 60,);
   if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+  return `${Math.floor(hours / 24,)}d ago`;
 }
 
-function truncateHash(hash: string): string {
-  return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
+function truncateHash(hash: string,): string {
+  return `${hash.slice(0, 8,)}...${hash.slice(-6,)}`;
 }
 
-export default function AIRSLedger({ entries }: AIRSLedgerProps) {
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+export default function AIRSLedger({ entries, }: AIRSLedgerProps,) {
+  const [copiedId, setCopiedId,] = useState<string | null>(null,);
 
-  const handleCopy = (id: string, hash: string) => {
+  const handleCopy = (id: string, hash: string,) => {
     // Copy to clipboard (using native fallback)
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+    setCopiedId(id,);
+    setTimeout(() => setCopiedId(null,), 2000,);
   };
 
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <View>
-          <Text style={styles.sectionTitle}>AIRS Ledger</Text>
+          <Text style={styles.sectionTitle}>Airs Ledger</Text>
           <Text style={styles.sectionSubtitle}>Impact activity rewards feed</Text>
         </View>
         <View style={styles.totalBadge}>
           <Text style={styles.totalBadgeText}>
-            +{entries.reduce((s, e) => s + e.amountAIRS, 0).toLocaleString()} AIRS
+            +{entries.reduce((s, e,) => s + e.amountAIRS, 0,).toLocaleString()} Airs
           </Text>
         </View>
       </View>
 
       <View style={styles.feed}>
-        {entries.map((entry, index) => {
+        {entries.map((entry, index,) => {
           const Icon = REFERENCE_TYPE_ICONS[entry.referenceType];
           const color = REFERENCE_TYPE_COLORS[entry.referenceType];
           const isCopied = copiedId === entry.id;
           return (
             <View key={entry.id} style={styles.entryRow}>
-              <View style={[styles.entryIcon, { backgroundColor: `${color}18` }]}>
+              <View style={[styles.entryIcon, { backgroundColor: `${color}18`, },]}>
                 <Icon size={14} color={color} />
               </View>
               <View style={styles.entryContent}>
                 <View style={styles.entryTop}>
                   <Text style={styles.entryReason}>{entry.reason}</Text>
-                  <Text style={styles.entryAmount}>+{entry.amountAIRS} AIRS</Text>
+                  <Text style={styles.entryAmount}>+{entry.amountAIRS} Airs</Text>
                 </View>
                 <View style={styles.entryBottom}>
-                  <View style={[styles.refTypePill, { backgroundColor: `${color}18`, borderColor: `${color}30` }]}>
-                    <Text style={[styles.refTypeText, { color }]}>{REFERENCE_TYPE_LABELS[entry.referenceType]}</Text>
+                  <View style={[styles.refTypePill, { backgroundColor: `${color}18`, borderColor: `${color}30`, },]}>
+                    <Text style={[styles.refTypeText, { color, },]}>{REFERENCE_TYPE_LABELS[entry.referenceType]}</Text>
                   </View>
-                  <Text style={styles.entryTime}>{formatTimeAgo(entry.timestamp)}</Text>
+                  <Text style={styles.entryTime}>{formatTimeAgo(entry.timestamp,)}</Text>
                 </View>
                 <TouchableOpacity
                   style={styles.hashRow}
-                  onPress={() => handleCopy(entry.id, entry.onChainReference)}
+                  onPress={() => handleCopy(entry.id, entry.onChainReference,)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.hashText}>{truncateHash(entry.onChainReference)}</Text>
+                  <Text style={styles.hashText}>{truncateHash(entry.onChainReference,)}</Text>
                   {isCopied ? (
                     <Check size={11} color="#1ccba1" />
                   ) : (
@@ -105,13 +106,13 @@ export default function AIRSLedger({ entries }: AIRSLedgerProps) {
               {index < entries.length - 1 && <View style={styles.divider} />}
             </View>
           );
-        })}
+        },)}
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   section: {
     paddingHorizontal: 16,
     paddingBottom: 24,
@@ -224,4 +225,4 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: 'rgba(255,255,255,0.04)',
   },
-});
+},);
