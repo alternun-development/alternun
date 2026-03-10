@@ -57,6 +57,10 @@ export interface IdentityLocalConfig {
     };
     acmeEmail?: string;
     route53HostedZoneId?: string;
+    acmeBackup?: {
+      enabled?: boolean;
+      prefix?: string;
+    };
   };
   emailProvider?: IdentityEmailProvider;
   authentikImageTag?: string;
@@ -163,6 +167,10 @@ export interface IdentitySettings {
     };
     acmeEmail: string;
     route53HostedZoneId: string;
+    acmeBackup: {
+      enabled: boolean;
+      prefix: string;
+    };
   };
   emailProvider: IdentityEmailProvider;
   authentikImageTag: string;
@@ -488,6 +496,19 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
         args.env.INFRA_IDENTITY_TLS_ROUTE53_HOSTED_ZONE_ID ??
         localConfig?.tls?.route53HostedZoneId ??
         IDENTITY_INFRA_DEFAULTS.tls.route53HostedZoneId,
+      acmeBackup: {
+        enabled: parseBoolean(
+          args.env.INFRA_IDENTITY_TLS_ACME_BACKUP_ENABLED ??
+            (localConfig?.tls?.acmeBackup?.enabled !== undefined
+              ? String(localConfig.tls.acmeBackup.enabled)
+              : undefined),
+          IDENTITY_INFRA_DEFAULTS.tls.acmeBackup.enabled
+        ),
+        prefix:
+          args.env.INFRA_IDENTITY_TLS_ACME_BACKUP_PREFIX ??
+          localConfig?.tls?.acmeBackup?.prefix ??
+          IDENTITY_INFRA_DEFAULTS.tls.acmeBackup.prefix,
+      },
     },
     emailProvider: normalizeEmailProvider(
       args.env.INFRA_IDENTITY_EMAIL_PROVIDER ?? localConfig?.emailProvider

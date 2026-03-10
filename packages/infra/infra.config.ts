@@ -594,6 +594,7 @@ export function createInfrastructure() {
             secrets: identityInfrastructure.secrets,
             vpc: identityInfrastructure.vpc,
             database: identityInfrastructure.database,
+            acmeBackup: identityInfrastructure.acmeBackup ?? null,
             loadBalancer: identityInfrastructure.loadBalancer ?? null,
           }
         : null,

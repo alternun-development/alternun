@@ -186,6 +186,8 @@ cp "${BOOTSTRAP_SCRIPT_TEMPLATE}" /opt/alternun/identity/authentik/custom-templa
 
 ACME_FILE='/opt/alternun/identity/traefik-acme.json'
 LAST_KNOWN_GOOD_ACME_FILE='/opt/alternun/identity/traefik-acme.last-known-good.json'
+ACME_BACKUP_BUCKET="${ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET:-}"
+ACME_BACKUP_PREFIX="${ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX:-state}"
 
 if [ "${ALTERNUN_IDENTITY_TLS_MODE}" != "alb-acm" ] && [ ! -f "${ACME_FILE}" ]; then
   install -m 600 /dev/null "${ACME_FILE}"
@@ -199,6 +201,24 @@ docker compose -f /opt/alternun/identity/docker-compose.yml up -d --remove-orpha
 
 traefik_container_id() {
   docker compose -f /opt/alternun/identity/docker-compose.yml ps -q traefik 2>/dev/null || true
+}
+
+acme_backup_enabled() {
+  [ -n "${ACME_BACKUP_BUCKET}" ]
+}
+
+acme_backup_uri() {
+  local file_name prefix
+  file_name=$1
+  prefix="${ACME_BACKUP_PREFIX#/}"
+  prefix="${prefix%/}"
+
+  if [ -n "${prefix}" ]; then
+    echo "s3://${ACME_BACKUP_BUCKET}/${prefix}/${file_name}"
+    return 0
+  fi
+
+  echo "s3://${ACME_BACKUP_BUCKET}/${file_name}"
 }
 
 acme_has_domain_certificate() {
@@ -246,6 +266,51 @@ trigger_traefik_certificate_request() {
     "https://${ALTERNUN_IDENTITY_DOMAIN}/" >/dev/null || true
 }
 
+restore_acme_file_from_s3() {
+  local object_name target_path
+  object_name=$1
+  target_path=$2
+
+  if ! acme_backup_enabled; then
+    return 1
+  fi
+
+  if aws s3 cp "$(acme_backup_uri "${object_name}")" "${target_path}" >/dev/null 2>&1; then
+    chown root:root "${target_path}"
+    chmod 600 "${target_path}"
+    return 0
+  fi
+
+  return 1
+}
+
+restore_acme_state_from_s3() {
+  local restored=1
+
+  if restore_acme_file_from_s3 'traefik-acme.last-known-good.json' "${LAST_KNOWN_GOOD_ACME_FILE}"; then
+    restored=0
+  fi
+
+  if restore_acme_file_from_s3 'traefik-acme.json' "${ACME_FILE}"; then
+    restored=0
+  fi
+
+  return "${restored}"
+}
+
+backup_acme_file_to_s3() {
+  local source_path object_name
+  source_path=$1
+  object_name=$2
+
+  if ! acme_backup_enabled || [ ! -s "${source_path}" ]; then
+    return 1
+  fi
+
+  aws s3 cp "${source_path}" "$(acme_backup_uri "${object_name}")" \
+    --sse AES256 >/dev/null
+}
+
 backup_last_known_good_acme_state() {
   if ! acme_has_domain_certificate "${ACME_FILE}"; then
     return 1
@@ -254,6 +319,8 @@ backup_last_known_good_acme_state() {
   cp "${ACME_FILE}" "${LAST_KNOWN_GOOD_ACME_FILE}"
   chown root:root "${LAST_KNOWN_GOOD_ACME_FILE}"
   chmod 600 "${LAST_KNOWN_GOOD_ACME_FILE}"
+  backup_acme_file_to_s3 "${ACME_FILE}" 'traefik-acme.json' || true
+  backup_acme_file_to_s3 "${LAST_KNOWN_GOOD_ACME_FILE}" 'traefik-acme.last-known-good.json' || true
 }
 
 restore_last_known_good_acme_state() {
@@ -323,6 +390,10 @@ else
   if [ -z "${ALTERNUN_ROUTE53_HOSTED_ZONE_ID:-}" ]; then
     echo "ALTERNUN_ROUTE53_HOSTED_ZONE_ID is required for Route53 DNS-01 certificate issuance."
     exit 1
+  fi
+
+  if ! acme_has_domain_certificate && restore_acme_state_from_s3 && acme_has_domain_certificate; then
+    echo "Restored ACME state for ${ALTERNUN_IDENTITY_DOMAIN} from S3 backup."
   fi
 
   ensure_traefik_certificate || true
