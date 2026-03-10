@@ -547,30 +547,49 @@ sync_identity_runtime_templates() {
     return 1
   fi
 
-  local instance_id deploy_b64 bootstrap_b64 ec2_compose_b64 rds_compose_b64 params_json command_id
+  local instance_id deploy_b64 bootstrap_b64 ec2_compose_b64 rds_compose_b64 ec2_alb_compose_b64 rds_alb_compose_b64 identity_ingress_mode identity_tls_mode identity_acme_email identity_route53_zone_id params_json command_id
   instance_id=$(resolve_identity_instance_id)
+
+  case "$stage_normalized" in
+    identity-prod|identity-production|auth-prod|authentik-prod)
+      identity_ingress_mode="${INFRA_IDENTITY_INGRESS_MODE_PRODUCTION:-alb}"
+      identity_tls_mode="${INFRA_IDENTITY_TLS_MODE_PRODUCTION:-alb-acm}"
+      ;;
+    *)
+      identity_ingress_mode="${INFRA_IDENTITY_INGRESS_MODE_DEV:-instance}"
+      identity_tls_mode="${INFRA_IDENTITY_TLS_MODE_DEV:-acme-route53-dns-01}"
+      ;;
+  esac
+
+  identity_acme_email="${INFRA_IDENTITY_TLS_ACME_EMAIL:-identity-admin@${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-alternun.co}}}"
+  identity_route53_zone_id="${INFRA_IDENTITY_TLS_ROUTE53_HOSTED_ZONE_ID:-${INFRA_ROUTE53_HOSTED_ZONE_ID:-}}"
 
   deploy_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/deploy-authentik.sh")
   bootstrap_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/bootstrap-authentik-integrations.py")
   ec2_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.ec2.yml")
   rds_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.rds.yml")
+  ec2_alb_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.ec2.alb.yml")
+  rds_alb_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.rds.alb.yml")
 
   params_json=$(
     jq -nc \
       --arg c1 'set -euo pipefail' \
       --arg c2 'install -d -o ec2-user -g ec2-user /opt/alternun/identity /opt/alternun/identity/templates /opt/alternun/identity/authentik/custom-templates' \
-      --arg c3 "printf '%s' '$deploy_b64' | base64 -d | gzip -d > /opt/alternun/identity/deploy-authentik.sh" \
-      --arg c4 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/bootstrap-authentik-integrations.py" \
-      --arg c5 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py" \
-      --arg c6 "printf '%s' '$ec2_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.yml" \
-      --arg c7 "printf '%s' '$rds_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.yml" \
-      --arg c8 'chmod 0755 /opt/alternun/identity/deploy-authentik.sh' \
-      --arg c9 'chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
-      --arg c10 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
-      --arg c11 'timeout 900 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
-      --arg c12 "grep -E 'Authentik integration bootstrap|Supabase auth OIDC synced|WARN:' /tmp/alternun-identity-runtime-sync.log || true" \
-      --arg c13 "docker compose -f /opt/alternun/identity/docker-compose.yml exec -T server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c \"from django.contrib.auth import get_user_model; from authentik.core.models import Application; from authentik.providers.oauth2.models import OAuth2Provider; U=get_user_model(); admin_exists=U.objects.filter(username=\\\"akadmin\\\", is_active=True).exists(); default_app_exists=Application.objects.filter(slug=\\\"alternun-internal\\\").exists(); admin_oidc_app=Application.objects.filter(slug=\\\"alternun-admin\\\").exists(); admin_oidc_provider=OAuth2Provider.objects.filter(name=\\\"Alternun Admin OIDC\\\").exists(); print({\\\"admin_exists\\\": admin_exists, \\\"default_application_exists\\\": default_app_exists, \\\"admin_oidc_application_exists\\\": admin_oidc_app, \\\"admin_oidc_provider_exists\\\": admin_oidc_provider}); raise SystemExit(0 if admin_exists and default_app_exists and admin_oidc_app and admin_oidc_provider else 1)\"'" \
-      '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13]}'
+      --arg c3 "tmp_env=\$(mktemp); grep -vE '^(ALTERNUN_IDENTITY_INGRESS_MODE|ALTERNUN_IDENTITY_TLS_MODE|ALTERNUN_IDENTITY_TLS_ACME_EMAIL|ALTERNUN_ROUTE53_HOSTED_ZONE_ID)=' /etc/alternun-identity.env > \"\$tmp_env\" || true; printf '%s\n' 'ALTERNUN_IDENTITY_INGRESS_MODE=$identity_ingress_mode' 'ALTERNUN_IDENTITY_TLS_MODE=$identity_tls_mode' 'ALTERNUN_IDENTITY_TLS_ACME_EMAIL=$identity_acme_email' 'ALTERNUN_ROUTE53_HOSTED_ZONE_ID=$identity_route53_zone_id' >> \"\$tmp_env\"; install -m 600 \"\$tmp_env\" /etc/alternun-identity.env; rm -f \"\$tmp_env\"" \
+      --arg c4 "printf '%s' '$deploy_b64' | base64 -d | gzip -d > /opt/alternun/identity/deploy-authentik.sh" \
+      --arg c5 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/bootstrap-authentik-integrations.py" \
+      --arg c6 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py" \
+      --arg c7 "printf '%s' '$ec2_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.yml" \
+      --arg c8 "printf '%s' '$rds_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.yml" \
+      --arg c9 "printf '%s' '$ec2_alb_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.alb.yml" \
+      --arg c10 "printf '%s' '$rds_alb_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.alb.yml" \
+      --arg c11 'chmod 0755 /opt/alternun/identity/deploy-authentik.sh' \
+      --arg c12 'chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
+      --arg c13 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
+      --arg c14 'timeout 900 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
+      --arg c15 "grep -E 'Authentik integration bootstrap|Supabase auth OIDC synced|WARN:' /tmp/alternun-identity-runtime-sync.log || true" \
+      --arg c16 "docker compose -f /opt/alternun/identity/docker-compose.yml exec -T server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c \"from django.contrib.auth import get_user_model; from authentik.core.models import Application; from authentik.providers.oauth2.models import OAuth2Provider; U=get_user_model(); admin_exists=U.objects.filter(username=\\\"akadmin\\\", is_active=True).exists(); default_app_exists=Application.objects.filter(slug=\\\"alternun-internal\\\").exists(); admin_oidc_app=Application.objects.filter(slug=\\\"alternun-admin\\\").exists(); admin_oidc_provider=OAuth2Provider.objects.filter(name=\\\"Alternun Admin OIDC\\\").exists(); print({\\\"admin_exists\\\": admin_exists, \\\"default_application_exists\\\": default_app_exists, \\\"admin_oidc_application_exists\\\": admin_oidc_app, \\\"admin_oidc_provider_exists\\\": admin_oidc_provider}); raise SystemExit(0 if admin_exists and default_app_exists and admin_oidc_app and admin_oidc_provider else 1)\"'" \
+      '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13,$c14,$c15,$c16]}'
   )
 
   echo "Syncing identity runtime templates to instance ${instance_id}..."
