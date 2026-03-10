@@ -70,7 +70,7 @@ async function main() {
   console.log(`- Project ref: ${projectRef}`);
   console.log(`- Provider: ${resolved.provider}`);
   console.log(`- SMTP host: ${resolved.payload.smtp_host}:${resolved.payload.smtp_port}`);
-  console.log(`- SMTP user: ${resolved.payload.smtp_user}`);
+  console.log(`- SMTP user configured: ${resolved.payload.smtp_user ? 'yes' : 'no'}`);
   console.log(`- SMTP password configured: ${resolved.payload.smtp_pass ? 'yes' : 'no'}`);
   console.log(`- Output report: ${outputPath}`);
 }
