@@ -38,6 +38,7 @@ export interface AdminSiteLocalConfig {
   };
   authClientId?: string;
   authAudience?: string;
+  authApplicationSlug?: string;
   environment?: Record<string, string>;
 }
 
@@ -63,6 +64,7 @@ export interface AdminSiteSettings {
     mobile: string;
   };
   auth: {
+    applicationSlug: string;
     clientId: string;
     audience: string;
     stageIssuers: {
@@ -152,15 +154,26 @@ function buildDefaultApiUrls(rootDomain: string): AdminSiteSettings['apiUrls'] {
   return buildStageUrls('api', rootDomain);
 }
 
-function buildDefaultAuthIssuers(rootDomain: string): AdminSiteSettings['auth']['stageIssuers'] {
-  return buildStageUrls('auth', rootDomain);
+function buildDefaultAuthIssuers(
+  rootDomain: string,
+  applicationSlug: string
+): AdminSiteSettings['auth']['stageIssuers'] {
+  const baseUrls = buildStageUrls('auth', rootDomain);
+
+  return {
+    production: `${baseUrls.production}/application/o/${applicationSlug}/`,
+    dev: `${baseUrls.dev}/application/o/${applicationSlug}/`,
+    mobile: `${baseUrls.mobile}/application/o/${applicationSlug}/`,
+  };
 }
 
 export function buildAdminSiteSettings(args: BuildAdminSiteSettingsArgs): AdminSiteSettings {
   const defaultDomains = buildDefaultStageDomains(args.rootDomain);
   const defaultApiUrls = buildDefaultApiUrls(args.rootDomain);
-  const defaultAuthIssuers = buildDefaultAuthIssuers(args.rootDomain);
   const localConfig = args.localConfig;
+  const authApplicationSlug =
+    localConfig?.authApplicationSlug ?? ADMIN_SITE_INFRA_DEFAULTS.auth.applicationSlug;
+  const defaultAuthIssuers = buildDefaultAuthIssuers(args.rootDomain, authApplicationSlug);
 
   return {
     enabled: parseBoolean(
@@ -212,6 +225,7 @@ export function buildAdminSiteSettings(args: BuildAdminSiteSettingsArgs): AdminS
         defaultApiUrls.mobile,
     },
     auth: {
+      applicationSlug: authApplicationSlug,
       clientId:
         args.env.INFRA_ADMIN_AUTH_CLIENT_ID ??
         localConfig?.authClientId ??
@@ -253,10 +267,10 @@ export function deployAdminSiteInfrastructure(
   const siteDomain = resolveAdminStageDomain(args.settings, args.stage);
   const resolvedDomain = args.settings.enableCustomDomain
     ? resolveDomain({
-        rootDomain: args.rootDomain,
-        stage: deploymentStage,
-        stageMap: args.settings.stageDomains,
-      })
+      rootDomain: args.rootDomain,
+      stage: deploymentStage,
+      stageMap: args.settings.stageDomains,
+    })
     : undefined;
 
   const site = createExpoSite({

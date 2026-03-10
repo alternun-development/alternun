@@ -9,6 +9,9 @@ import { adminEnv } from '../config/env';
 type ClaimBag = Record<string, unknown>;
 
 const ADMIN_ROLES = ['platform_admin', 'support_admin', 'read_only_admin'] as const;
+const ADMIN_GROUP_ROLE_ALIASES = new Map<string, (typeof ADMIN_ROLES)[number]>([
+  ['authentik admins', 'platform_admin'],
+]);
 
 function createSettings(): UserManagerSettings {
   const origin = typeof window === 'undefined' ? 'http://localhost:4173' : window.location.origin;
@@ -58,10 +61,7 @@ function readClaimArray(claims: ClaimBag, key: string): string[] {
   }
 
   if (typeof value === 'string' && value.length > 0) {
-    return value
-      .split(',')
-      .map(entry => entry.trim())
-      .filter(Boolean);
+    return value.split(',').map(entry => entry.trim()).filter(Boolean);
   }
 
   return [];
@@ -78,6 +78,17 @@ export function getAdminRolesFromSession(user: User | null): string[] {
     ...readClaimArray(claims, 'alternun_roles'),
     ...readClaimArray(claims, 'role'),
   ]);
+  const groups = readClaimArray(claims, 'groups');
+
+  for (const group of groups) {
+    roles.add(group);
+
+    const normalizedGroup = group.trim().toLowerCase();
+    const aliasedRole = ADMIN_GROUP_ROLE_ALIASES.get(normalizedGroup);
+    if (aliasedRole) {
+      roles.add(aliasedRole);
+    }
+  }
 
   return Array.from(roles);
 }

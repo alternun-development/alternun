@@ -58,6 +58,12 @@ export interface IdentityLocalConfig {
       providerName?: string;
       syncConfig?: boolean;
     };
+    adminOidc?: {
+      applicationName?: string;
+      applicationSlug?: string;
+      providerName?: string;
+      clientId?: string;
+    };
     bootstrap?: {
       admin?: {
         username?: string;
@@ -135,6 +141,12 @@ export interface IdentitySettings {
       projectRef: string;
       providerName: string;
       syncConfig: boolean;
+    };
+    adminOidc: {
+      applicationName: string;
+      applicationSlug: string;
+      providerName: string;
+      clientId: string;
     };
     bootstrap: {
       admin: {
@@ -442,6 +454,20 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
               : undefined),
           IDENTITY_INFRA_DEFAULTS.integration.supabase.syncConfig
         ),
+      },
+      adminOidc: {
+        applicationName:
+          localConfig?.integration?.adminOidc?.applicationName ??
+          IDENTITY_INFRA_DEFAULTS.integration.adminOidc.applicationName,
+        applicationSlug:
+          localConfig?.integration?.adminOidc?.applicationSlug ??
+          IDENTITY_INFRA_DEFAULTS.integration.adminOidc.applicationSlug,
+        providerName:
+          localConfig?.integration?.adminOidc?.providerName ??
+          IDENTITY_INFRA_DEFAULTS.integration.adminOidc.providerName,
+        clientId:
+          localConfig?.integration?.adminOidc?.clientId ??
+          IDENTITY_INFRA_DEFAULTS.integration.adminOidc.clientId,
       },
       bootstrap: {
         admin: {
