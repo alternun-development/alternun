@@ -517,24 +517,47 @@ resolve_identity_instance_id() {
     return 1
   fi
 
-  local instance_id
-  instance_id=$(
-    aws ec2 describe-instances \
-      --filters \
-        "Name=tag:Application,Values=${INFRA_APP_NAME:-alternun-infra}" \
-        "Name=tag:Component,Values=identity" \
-        "Name=tag:Stage,Values=${STACK}" \
-        "Name=instance-state-name,Values=running" \
-      --query 'Reservations[].Instances[].InstanceId' \
-      --output text 2>/dev/null | awk 'NF { print $1; exit }'
-  )
+  local instance_id instance_state attempt max_attempts
+  max_attempts=60
 
-  if [ -z "$instance_id" ] || [ "$instance_id" = "None" ]; then
-    echo "ERROR: Could not resolve running identity instance for stage ${STACK}." >&2
-    return 1
+  for attempt in $(seq 1 "$max_attempts"); do
+    instance_id=$(
+      aws ec2 describe-instances \
+        --filters \
+          "Name=tag:Application,Values=${INFRA_APP_NAME:-alternun-infra}" \
+          "Name=tag:Component,Values=identity" \
+          "Name=tag:Stage,Values=${STACK}" \
+        --query 'Reservations[].Instances[].InstanceId' \
+        --output text 2>/dev/null | awk 'NF { print $1; exit }'
+    )
+
+    if [ -n "$instance_id" ] && [ "$instance_id" != "None" ]; then
+      instance_state=$(
+        aws ec2 describe-instances \
+          --instance-ids "$instance_id" \
+          --query 'Reservations[0].Instances[0].State.Name' \
+          --output text 2>/dev/null
+      )
+
+      if [ "$instance_state" = "running" ]; then
+        echo "$instance_id"
+        return 0
+      fi
+
+      echo "Waiting for identity instance ${instance_id} to enter running state (current=${instance_state}, attempt ${attempt}/${max_attempts})..."
+    else
+      echo "Waiting for identity instance tagged with Stage=${STACK} to appear (attempt ${attempt}/${max_attempts})..."
+    fi
+
+    sleep 5
+  done
+
+  if [ -n "${instance_id:-}" ] && [ "$instance_id" != "None" ]; then
+    echo "ERROR: Identity instance ${instance_id} did not reach running state for stage ${STACK}." >&2
+  else
+    echo "ERROR: Could not resolve identity instance for stage ${STACK}." >&2
   fi
-
-  echo "$instance_id"
+  return 1
 }
 
 sync_identity_runtime_templates() {
@@ -547,20 +570,31 @@ sync_identity_runtime_templates() {
     return 1
   fi
 
-  local instance_id deploy_b64 bootstrap_b64 ec2_compose_b64 rds_compose_b64 ec2_alb_compose_b64 rds_alb_compose_b64 identity_ingress_mode identity_tls_mode identity_acme_email identity_route53_zone_id params_json command_id
+  local instance_id deploy_b64 bootstrap_b64 ec2_compose_b64 rds_compose_b64 ec2_alb_compose_b64 rds_alb_compose_b64 identity_domain identity_ingress_mode identity_tls_mode identity_acme_email identity_route53_zone_id identity_root_domain identity_app_name identity_authentik_image_tag identity_database_mode params_json command_id
   instance_id=$(resolve_identity_instance_id)
 
   case "$stage_normalized" in
     identity-prod|identity-production|auth-prod|authentik-prod)
+      identity_domain="${INFRA_IDENTITY_DOMAIN_PRODUCTION:-sso.${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-alternun.co}}}"
       identity_ingress_mode="${INFRA_IDENTITY_INGRESS_MODE_PRODUCTION:-alb}"
       identity_tls_mode="${INFRA_IDENTITY_TLS_MODE_PRODUCTION:-alb-acm}"
       ;;
+    identity-mobile|auth-mobile|authentik-mobile)
+      identity_domain="${INFRA_IDENTITY_DOMAIN_MOBILE:-preview.sso.${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-alternun.co}}}"
+      identity_ingress_mode="${INFRA_IDENTITY_INGRESS_MODE_MOBILE:-instance}"
+      identity_tls_mode="${INFRA_IDENTITY_TLS_MODE_MOBILE:-acme-route53-dns-01}"
+      ;;
     *)
+      identity_domain="${INFRA_IDENTITY_DOMAIN_DEV:-testnet.sso.${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-alternun.co}}}"
       identity_ingress_mode="${INFRA_IDENTITY_INGRESS_MODE_DEV:-instance}"
       identity_tls_mode="${INFRA_IDENTITY_TLS_MODE_DEV:-acme-route53-dns-01}"
       ;;
   esac
 
+  identity_app_name="${INFRA_APP_NAME:-alternun-infra}"
+  identity_root_domain="${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-alternun.co}}"
+  identity_authentik_image_tag="${INFRA_IDENTITY_AUTHENTIK_IMAGE_TAG:-2026.2}"
+  identity_database_mode="${INFRA_IDENTITY_DATABASE_MODE:-rds}"
   identity_acme_email="${INFRA_IDENTITY_TLS_ACME_EMAIL:-identity-admin@${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-alternun.co}}}"
   identity_route53_zone_id="${INFRA_IDENTITY_TLS_ROUTE53_HOSTED_ZONE_ID:-${INFRA_ROUTE53_HOSTED_ZONE_ID:-}}"
 
@@ -575,7 +609,7 @@ sync_identity_runtime_templates() {
     jq -nc \
       --arg c1 'set -euo pipefail' \
       --arg c2 'install -d -o ec2-user -g ec2-user /opt/alternun/identity /opt/alternun/identity/templates /opt/alternun/identity/authentik/custom-templates' \
-      --arg c3 "tmp_env=\$(mktemp); grep -vE '^(ALTERNUN_IDENTITY_INGRESS_MODE|ALTERNUN_IDENTITY_TLS_MODE|ALTERNUN_IDENTITY_TLS_ACME_EMAIL|ALTERNUN_ROUTE53_HOSTED_ZONE_ID)=' /etc/alternun-identity.env > \"\$tmp_env\" || true; printf '%s\n' 'ALTERNUN_IDENTITY_INGRESS_MODE=$identity_ingress_mode' 'ALTERNUN_IDENTITY_TLS_MODE=$identity_tls_mode' 'ALTERNUN_IDENTITY_TLS_ACME_EMAIL=$identity_acme_email' 'ALTERNUN_ROUTE53_HOSTED_ZONE_ID=$identity_route53_zone_id' >> \"\$tmp_env\"; install -m 600 \"\$tmp_env\" /etc/alternun-identity.env; rm -f \"\$tmp_env\"" \
+      --arg c3 "tmp_env=\$(mktemp); grep -vE '^(ALTERNUN_APP_NAME|ALTERNUN_ROOT_DOMAIN|ALTERNUN_STAGE|ALTERNUN_IDENTITY_DOMAIN|ALTERNUN_IDENTITY_INGRESS_MODE|ALTERNUN_IDENTITY_TLS_MODE|ALTERNUN_IDENTITY_TLS_ACME_EMAIL|ALTERNUN_ROUTE53_HOSTED_ZONE_ID|AUTHENTIK_IMAGE_TAG|AUTHENTIK_DATABASE_MODE)=' /etc/alternun-identity.env > \"\$tmp_env\" || true; printf '%s\n' 'ALTERNUN_APP_NAME=$identity_app_name' 'ALTERNUN_ROOT_DOMAIN=$identity_root_domain' 'ALTERNUN_STAGE=$STACK' 'ALTERNUN_IDENTITY_DOMAIN=$identity_domain' 'ALTERNUN_IDENTITY_INGRESS_MODE=$identity_ingress_mode' 'ALTERNUN_IDENTITY_TLS_MODE=$identity_tls_mode' 'ALTERNUN_IDENTITY_TLS_ACME_EMAIL=$identity_acme_email' 'ALTERNUN_ROUTE53_HOSTED_ZONE_ID=$identity_route53_zone_id' 'AUTHENTIK_IMAGE_TAG=$identity_authentik_image_tag' 'AUTHENTIK_DATABASE_MODE=$identity_database_mode' >> \"\$tmp_env\"; install -m 600 \"\$tmp_env\" /etc/alternun-identity.env; rm -f \"\$tmp_env\"" \
       --arg c4 "printf '%s' '$deploy_b64' | base64 -d | gzip -d > /opt/alternun/identity/deploy-authentik.sh" \
       --arg c5 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/bootstrap-authentik-integrations.py" \
       --arg c6 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py" \
@@ -588,7 +622,7 @@ sync_identity_runtime_templates() {
       --arg c13 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
       --arg c14 'timeout 900 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
       --arg c15 "grep -E 'Authentik integration bootstrap|Supabase auth OIDC synced|WARN:' /tmp/alternun-identity-runtime-sync.log || true" \
-      --arg c16 "docker compose -f /opt/alternun/identity/docker-compose.yml exec -T server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c \"from django.contrib.auth import get_user_model; from authentik.core.models import Application; from authentik.providers.oauth2.models import OAuth2Provider; U=get_user_model(); admin_exists=U.objects.filter(username=\\\"akadmin\\\", is_active=True).exists(); default_app_exists=Application.objects.filter(slug=\\\"alternun-internal\\\").exists(); admin_oidc_app=Application.objects.filter(slug=\\\"alternun-admin\\\").exists(); admin_oidc_provider=OAuth2Provider.objects.filter(name=\\\"Alternun Admin OIDC\\\").exists(); print({\\\"admin_exists\\\": admin_exists, \\\"default_application_exists\\\": default_app_exists, \\\"admin_oidc_application_exists\\\": admin_oidc_app, \\\"admin_oidc_provider_exists\\\": admin_oidc_provider}); raise SystemExit(0 if admin_exists and default_app_exists and admin_oidc_app and admin_oidc_provider else 1)\"'" \
+      --arg c16 "set -a; . /etc/alternun-identity.env; set +a; docker compose -f /opt/alternun/identity/docker-compose.yml exec -T server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c \"from django.contrib.auth import get_user_model; from authentik.core.models import Application; from authentik.providers.oauth2.models import OAuth2Provider; U=get_user_model(); admin_exists=U.objects.filter(username=\\\"akadmin\\\", is_active=True).exists(); default_app_exists=Application.objects.filter(slug=\\\"alternun-internal\\\").exists(); admin_oidc_app=Application.objects.filter(slug=\\\"alternun-admin\\\").exists(); admin_oidc_provider=OAuth2Provider.objects.filter(name=\\\"Alternun Admin OIDC\\\").exists(); print({\\\"admin_exists\\\": admin_exists, \\\"default_application_exists\\\": default_app_exists, \\\"admin_oidc_application_exists\\\": admin_oidc_app, \\\"admin_oidc_provider_exists\\\": admin_oidc_provider}); raise SystemExit(0 if admin_exists and default_app_exists and admin_oidc_app and admin_oidc_provider else 1)\"'" \
       '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13,$c14,$c15,$c16]}'
   )
 
