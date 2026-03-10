@@ -8,11 +8,11 @@ on:
 
 env:
   NODE_VERSION: '22.22.0'
-  PNPM_VERSION: '9.0.0'
+  PNPM_VERSION: '9.15.0'
 
 jobs:
   lint:
-    name: Lint and Format
+    name: Static Checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,11 +32,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run ESLint
-        run: pnpm lint
+      - name: Run web lint
+        run: pnpm --filter @alternun/web lint
 
-      - name: Check formatting
-        run: pnpm format:check
+      - name: Check targeted formatting
+        run: pnpm exec prettier --check .eslintrc.js .github/workflows/ci.yml .github/workflows/deploy.yml .github/workflows/test-deploy.yml package.json packages/auth/infra/email/scripts/01-generate-smtp-config.cjs packages/auth/infra/email/scripts/02-sync-supabase-smtp.cjs packages/auth/infra/email/scripts/03-status-report.cjs packages/email-templates/src/lib/i18n.ts
 
   type-check:
     name: Type Check

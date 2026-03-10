@@ -80,7 +80,6 @@ const catalogs = {
         "reset-password-email": reset_password_email_json_3.default,
     },
 };
-const templateTokenPattern = /\{\{\s*([^}]+)\s*\}\}/g;
 function listSupportedEmailLocales() {
     return exports.SUPPORTED_EMAIL_LOCALES;
 }
@@ -115,11 +114,26 @@ function interpolateEmailTemplateText(value, params) {
     if (!params) {
         return value;
     }
-    return value.replace(templateTokenPattern, (match, token) => {
-        const key = token.trim();
+    let result = "";
+    let cursor = 0;
+    while (cursor < value.length) {
+        const start = value.indexOf("{{", cursor);
+        if (start === -1) {
+            result += value.slice(cursor);
+            break;
+        }
+        result += value.slice(cursor, start);
+        const end = value.indexOf("}}", start + 2);
+        if (end === -1) {
+            result += value.slice(start);
+            break;
+        }
+        const key = value.slice(start + 2, end).trim();
         const resolved = params[key];
-        return resolved == null ? match : String(resolved);
-    });
+        result += resolved == null ? value.slice(start, end + 2) : String(resolved);
+        cursor = end + 2;
+    }
+    return result;
 }
 function renderEmailTemplateTranslation({ locale, template, params, fallbackLocale = exports.DEFAULT_EMAIL_LOCALE, }) {
     const translation = getEmailTemplateTranslation(locale, template, fallbackLocale);
