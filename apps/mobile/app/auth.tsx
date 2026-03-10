@@ -1,12 +1,12 @@
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect, useRouter, } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, } from 'react-native';
 import AuthSignInScreen from '../components/auth/AuthSignInScreen';
-import { useAuth } from '../components/auth/AppAuthProvider';
+import { useAuth, } from '../components/auth/AppAuthProvider';
 
 export default function AuthRoute() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading, } = useAuth();
 
   if (loading) {
     return (
@@ -24,7 +24,7 @@ export default function AuthRoute() {
     <AuthSignInScreen
       presentation="modal"
       onCancel={() => {
-        router.replace('/');
+        router.replace('/',);
       }}
     />
   );
@@ -33,8 +33,8 @@ export default function AuthRoute() {
 const styles = StyleSheet.create({
   loadingScreen: {
     flex: 1,
-    backgroundColor: 'rgba(5,5,16,0.82)',
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
   },
-});
+},);

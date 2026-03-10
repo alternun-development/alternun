@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
-import { Award, ExternalLink, X, Share2, Download } from 'lucide-react-native';
-import { SBTCertificate } from './types';
+import React, { useState, } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
+import { Award, ExternalLink, X, Share2, Download, } from 'lucide-react-native';
+import { SBTCertificate, } from './types';
 
 interface CertificateGalleryProps {
   certificates: SBTCertificate[];
 }
 
-function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+function formatDate(date: Date,): string {
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', },);
 }
 
-export default function CertificateGallery({ certificates }: CertificateGalleryProps) {
-  const [selected, setSelected] = useState<SBTCertificate | null>(null);
+export default function CertificateGallery({ certificates, }: CertificateGalleryProps,) {
+  const [selected, setSelected,] = useState<SBTCertificate | null>(null,);
 
   return (
     <View style={styles.section}>
@@ -28,11 +29,11 @@ export default function CertificateGallery({ certificates }: CertificateGalleryP
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {certificates.map((cert) => (
+        {certificates.map((cert,) => (
           <TouchableOpacity
             key={cert.id}
             style={styles.certCard}
-            onPress={() => setSelected(cert)}
+            onPress={() => setSelected(cert,)}
             activeOpacity={0.85}
           >
             <View style={styles.certCardGlow} />
@@ -49,13 +50,13 @@ export default function CertificateGallery({ certificates }: CertificateGalleryP
               <Text style={styles.certImpactValue}>{cert.impactAmount}</Text>
               <Text style={styles.certImpactUnit}>{cert.impactUnit}</Text>
             </View>
-            <Text style={styles.certDate}>{formatDate(cert.date)}</Text>
+            <Text style={styles.certDate}>{formatDate(cert.date,)}</Text>
             <View style={styles.certViewBtn}>
               <Text style={styles.certViewBtnText}>View Certificate</Text>
               <ExternalLink size={10} color="#1ccba1" />
             </View>
           </TouchableOpacity>
-        ))}
+        ),)}
       </ScrollView>
 
       {/* Certificate Detail Modal */}
@@ -64,7 +65,7 @@ export default function CertificateGallery({ certificates }: CertificateGalleryP
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Certificate Details</Text>
-              <TouchableOpacity onPress={() => setSelected(null)}>
+              <TouchableOpacity onPress={() => setSelected(null,)}>
                 <X size={20} color="rgba(232,232,255,0.6)" />
               </TouchableOpacity>
             </View>
@@ -90,15 +91,15 @@ export default function CertificateGallery({ certificates }: CertificateGalleryP
                 </View>
 
                 <View style={styles.metadataSection}>
-                  {Object.entries(selected.metadata).map(([key, val]) => (
+                  {Object.entries(selected.metadata,).map(([key, val,],) => (
                     <View key={key} style={styles.metaRow}>
-                      <Text style={styles.metaKey}>{key.charAt(0).toUpperCase() + key.slice(1)}</Text>
+                      <Text style={styles.metaKey}>{key.charAt(0,).toUpperCase() + key.slice(1,)}</Text>
                       <Text style={styles.metaValue}>{val}</Text>
                     </View>
-                  ))}
+                  ),)}
                   <View style={styles.metaRow}>
                     <Text style={styles.metaKey}>Issue Date</Text>
-                    <Text style={styles.metaValue}>{formatDate(selected.date)}</Text>
+                    <Text style={styles.metaValue}>{formatDate(selected.date,)}</Text>
                   </View>
                 </View>
 
@@ -116,7 +117,7 @@ export default function CertificateGallery({ certificates }: CertificateGalleryP
                     <Download size={14} color="rgba(232,232,255,0.7)" />
                     <Text style={styles.actionButtonText}>Download</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.closeModalBtn} onPress={() => setSelected(null)} activeOpacity={0.8}>
+                  <TouchableOpacity style={styles.closeModalBtn} onPress={() => setSelected(null,)} activeOpacity={0.8}>
                     <Text style={styles.closeModalBtnText}>Close</Text>
                   </TouchableOpacity>
                 </View>
@@ -129,7 +130,7 @@ export default function CertificateGallery({ certificates }: CertificateGalleryP
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createTypographyStyles({
   section: {
     paddingBottom: 24,
   },
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 8, },
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 4,
@@ -426,4 +427,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
-});
+},);

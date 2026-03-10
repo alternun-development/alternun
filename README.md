@@ -95,16 +95,17 @@ pnpm audit
 
 This repository enforces a strict Git workflow to ensure code quality and proper review:
 
-#### � Master Branch Protection
-- **No direct pushes** to master branch are allowed
-- **All changes** must go through pull requests
-- **PRs to master** must come from develop branch only
+#### Master/Testnet Sync Mode
+- **Current mode**: `ALTERNUN_TESTNET_MODE=on`
+- **Working branch**: `master`/`main`
+- **Mirror branch**: `develop`
+- **Behavior**: every push to `master`/`main` is mirrored into `develop` automatically
 
 #### 📝 Required Workflow
-1. **Create feature branch** from develop
+1. **Create feature branch** from master
    ```bash
-   git checkout develop
-   git pull origin develop
+   git checkout master
+   git pull origin master
    git checkout -b feature/your-feature-name
    ```
 
@@ -116,30 +117,24 @@ This repository enforces a strict Git workflow to ensure code quality and proper
    pnpm lint
    ```
 
-3. **Create PR to develop**
+3. **Create PR to master**
    - Push feature branch: `git push origin feature/your-feature-name`
-   - Create pull request targeting develop branch
+   - Create pull request targeting `master`
    - Get code review and approval
 
-4. **Merge to develop**
-   - After approval, merge to develop branch
-   - This updates the development environment
+4. **Merge to master**
+   - After approval, merge to `master`
+   - GitHub Actions mirrors `master` into `develop` automatically while testnet mode is on
 
-5. **Create PR to master**
-   - Create pull request from develop to master
-   - This is for production releases
-   - Requires additional review and testing
-
-#### 🔒 Enforcement Mechanisms
-- **GitHub Actions**: Block direct pushes to master
-- **Branch Protection**: Only allow PRs from develop to master
-- **Automated Checks**: CI/CD must pass before merging
-- **Code Review**: At least one approval required
+#### Enforcement Mechanisms
+- **GitHub Actions**: sync `master/main -> develop` automatically while testnet mode is on
+- **CI**: runs for `master`, `main`, and `develop`
+- **Code Review**: still recommended before merging to `master`
 
 #### 🎯 Why This Workflow?
 - **🔍 Code Quality**: All changes get reviewed
-- **🚀 Stability**: Master branch always stable
-- **🧪 Testing**: Changes tested in develop first
+- **🚀 Stability**: `master` remains the source of truth during testnet mode
+- **🧪 Sync**: `develop` stays aligned automatically for testnet deploys
 - **📊 Traceability**: Clear history of changes
 - **👥 Collaboration**: Team visibility into changes
 
@@ -150,14 +145,22 @@ This monorepo uses `@edcalderon/versioning` for comprehensive version control an
 ### Version Management Commands
 
 ```bash
-# Validate version sync across monorepo
+# Validate version sync across monorepo, including apps/mobile/app.json
 pnpm version:validate
 
-# Sync versions across all packages
+# Sync versions across the whole workspace
 pnpm version:sync
 
-# Bump version (patch, minor, major)
-pnpm version:bump
+# Set an explicit release version across the monorepo
+pnpm release 1.0.2
+
+# Create semantic releases
+pnpm release:patch
+pnpm release:minor
+pnpm release:major
+
+# Promote the current release according to ALTERNUN_TESTNET_MODE
+pnpm release -- --promote
 
 # Generate changelog from commits
 pnpm version:changelog
@@ -174,7 +177,7 @@ pnpm version:check-secrets
 - **🔄 Automatic Sync**: Keeps versions consistent across all packages
 - **🌿 Branch Awareness**: Different versioning strategies per branch
   - `master`: Semantic versioning for production releases
-  - `develop`: Development builds with dev versions
+  - `develop`: Semantic versioning while it mirrors `master` in testnet mode
   - `feature/*`: Feature branch versioning
   - `hotfix/*`: Hotfix versioning
 - **📝 Changelog Generation**: Automatic changelog from conventional commits
@@ -185,8 +188,30 @@ pnpm version:check-secrets
 
 1. **Development**: Work on feature branches with automatic version tracking
 2. **Validation**: Pre-push hooks validate version consistency
-3. **Release**: Use semantic versioning for production releases
+3. **Release**: use the release wrapper for every production version increment
 4. **Documentation**: Auto-generated changelogs for releases
+
+### Mandatory Versioning Rule
+
+- Never edit `version` fields manually in `package.json`
+- Never edit `apps/mobile/app.json` version manually
+- Never edit `CHANGELOG.md` manually for releases
+- Always use:
+
+```bash
+pnpm version:sync
+pnpm version:validate
+pnpm release:patch
+```
+
+### Release Flow
+
+- `pnpm release <version>` sets an explicit version across the root package, every workspace package, and `apps/mobile/app.json`, then regenerates `CHANGELOG.md`.
+- `pnpm release:patch`, `pnpm release:minor`, and `pnpm release:major` wrap `@edcalderon/versioning` and then sync `apps/mobile/app.json` before creating the release commit/tag.
+- `pnpm release -- --promote` never increments the version. It only promotes the current release.
+  - When `ALTERNUN_TESTNET_MODE=on`, promotion must run from `master` or `main`. The script pushes the production branch and then reuses the existing infra sync flow to fast-forward `develop`.
+  - When `ALTERNUN_TESTNET_MODE=off`, promotion must run from `develop`. The script pushes `develop` and opens a PR from `develop` into `master` or `main`.
+- `pnpm version:sync` and `pnpm version:validate` remain available as low-level maintenance commands, but they now also cover `apps/mobile/app.json`.
 
 ### Security & Cleanup Guards
 
@@ -212,9 +237,9 @@ pnpm version:check-secrets
 
 Versioning is configured in `versioning.config.json`:
 
-- Monorepo package patterns (`apps/*/package.json`, `packages/*/package.json`)
-- Branch-specific strategies
-- Conventional commit support
+- Explicit workspace package directories (`apps/docs`, `apps/mobile`, `apps/web`, `packages/*`)
+- Branch-specific strategies for `master`, `main`, `develop`, `feature/*`, and `hotfix/*`
+- A local extension that keeps `apps/mobile/app.json` aligned with the workspace version
 - Automatic dependency synchronization
 
 ## 📱 Applications

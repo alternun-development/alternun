@@ -1,0 +1,11 @@
+{
+  "subject": "Reautenticate para continuar en Alternun",
+  "preview": "Confirma esta solicitud antes de completar una accion sensible.",
+  "greeting": "Hola {{email}},",
+  "intro": "Para proteger tu cuenta, necesitamos que te reautentiques antes de completar esta accion sensible.",
+  "codeLabel": "Codigo de verificacion",
+  "ctaLabel": "Reautenticar ahora",
+  "ignoreNotice": "Si no iniciaste esta accion, protege tu cuenta de inmediato.",
+  "closing": "Gracias por mantener segura tu cuenta.",
+  "footer": "Equipo de seguridad de Alternun"
+}

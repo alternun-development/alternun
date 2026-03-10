@@ -1,6 +1,9 @@
 # SES Migration Module (Supabase Auth SMTP)
 
 This module provisions and validates Amazon SES for Supabase Auth email delivery.
+For provider-switching (Postmark default, SES fallback), use:
+`packages/auth/infra/email`.
+
 It is designed for public repositories:
 - no secrets committed
 - local config file ignored

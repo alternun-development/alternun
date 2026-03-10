@@ -1,31 +1,46 @@
 import {
   AuthProvider as UniversalAuthProvider,
   useAuth as useUniversalAuth,
-} from "@edcalderon/auth";
-import { useMemo, type PropsWithChildren } from "react";
+} from '@edcalderon/auth';
+import {
+  createElement,
+  useMemo,
+  type ComponentType,
+  type PropsWithChildren,
+  type ReactNode,
+  type ReactElement,
+} from 'react';
 import {
   AlternunMobileAuthClient,
   type AlternunMobileAuthClientOptions,
-} from "./AlternunMobileAuthClient";
+} from './AlternunMobileAuthClient';
 
 type MobileAuthOverrideOptions = Pick<
   AlternunMobileAuthClientOptions,
-  | "walletBridge"
-  | "allowMockWalletFallback"
-  | "allowWalletOnlySession"
-  | "supabaseUrl"
-  | "supabaseKey"
+  | 'walletBridge'
+  | 'allowMockWalletFallback'
+  | 'allowWalletOnlySession'
+  | 'supabaseUrl'
+  | 'supabaseKey'
 >;
 
 export interface AppAuthProviderProps extends PropsWithChildren {
   options?: MobileAuthOverrideOptions;
 }
 
-export function AppAuthProvider({
-  children,
-  options,
-}: AppAuthProviderProps): any {
-  const supabaseUrl = options?.supabaseUrl ?? process.env.EXPO_PUBLIC_SUPABASE_URL;
+type UniversalAuthProviderCompatProps = {
+  client: AlternunMobileAuthClient;
+  children?: ReactNode;
+};
+
+const UniversalAuthProviderCompat =
+  UniversalAuthProvider as unknown as ComponentType<UniversalAuthProviderCompatProps>;
+
+export function AppAuthProvider({ children, options }: AppAuthProviderProps): ReactElement {
+  const supabaseUrl =
+    options?.supabaseUrl ??
+    process.env.EXPO_PUBLIC_SUPABASE_URL ??
+    process.env.EXPO_PUBLIC_SUPABASE_URI;
   const supabaseKey =
     options?.supabaseKey ??
     process.env.EXPO_PUBLIC_SUPABASE_KEY ??
@@ -43,18 +58,10 @@ export function AppAuthProvider({
         allowMockWalletFallback,
         allowWalletOnlySession,
       }),
-    [
-      allowMockWalletFallback,
-      allowWalletOnlySession,
-      supabaseKey,
-      supabaseUrl,
-      walletBridge,
-    ]
+    [allowMockWalletFallback, allowWalletOnlySession, supabaseKey, supabaseUrl, walletBridge]
   );
 
-  return (
-    <UniversalAuthProvider client={client}>{children}</UniversalAuthProvider>
-  );
+  return createElement(UniversalAuthProviderCompat, { client }, children);
 }
 
 export const useAuth = useUniversalAuth;

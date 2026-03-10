@@ -8,6 +8,120 @@ AWS/SST deployment wrapper for Alternun Expo Web using `@lsts_tech/infra`.
 - `dev` -> `testnet.airs.alternun.co`
 - `mobile` (optional) -> `preview.airs.alternun.co`
 
+## Identity Infrastructure
+
+Authentik infrastructure is wired into the stack and remains disabled by default.
+
+When `INFRA_IDENTITY_ENABLED=true`, the stack now provisions:
+
+- a dedicated VPC for identity resources
+- a public EC2 host for Authentik runtime bootstrap
+- a PostgreSQL database (mode selectable: EC2-local or dedicated RDS)
+- Route53 DNS for the stage-specific identity domain
+- Secrets Manager entries for:
+  - Authentik secret key
+  - database credentials
+  - SMTP credentials placeholder
+  - JWT signing key
+  - integration config (Google OAuth + Supabase OIDC bridge)
+
+Current default identity domains:
+
+- `production` -> `auth.alternun.co`
+- `dev` -> `testnet.auth.alternun.co`
+- `mobile` -> `preview.auth.alternun.co`
+
+Enable/configure through env or local config:
+
+- `INFRA_IDENTITY_ENABLED`
+- `INFRA_IDENTITY_DEDICATED_STACKS_ONLY` (default `true`)
+- `INFRA_IDENTITY_DOMAIN_PRODUCTION`
+- `INFRA_IDENTITY_DOMAIN_DEV`
+- `INFRA_IDENTITY_DOMAIN_MOBILE`
+- `INFRA_IDENTITY_DATABASE_MODE` (`ec2` for local-on-instance DB, `rds` for dedicated DB)
+- `INFRA_IDENTITY_EC2_INSTANCE_TYPE`
+- `INFRA_IDENTITY_RDS_INSTANCE_TYPE`
+- `INFRA_IDENTITY_EMAIL_PROVIDER`
+- `INFRA_IDENTITY_AUTHENTIK_IMAGE_TAG` (calendar-version tag, `>= 2025.10`)
+- `INFRA_IDENTITY_JWT_AUDIENCE`
+- `INFRA_IDENTITY_JWT_ROLE_CLAIM`
+- `INFRA_IDENTITY_JWT_ROLES_CLAIM`
+- `INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID`
+- `INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET`
+- `INFRA_IDENTITY_GOOGLE_SOURCE_NAME`
+- `INFRA_IDENTITY_GOOGLE_SOURCE_SLUG`
+- `INFRA_IDENTITY_SUPABASE_PROJECT_REF` (or `EXPO_PUBLIC_SUPABASE_URL`)
+- `INFRA_IDENTITY_SUPABASE_MANAGEMENT_ACCESS_TOKEN` (or `SUPABASE_ACCESS_TOKEN`)
+- `INFRA_IDENTITY_SUPABASE_OIDC_CLIENT_ID`
+- `INFRA_IDENTITY_SUPABASE_PROVIDER_NAME`
+- `INFRA_IDENTITY_SUPABASE_APPLICATION_SLUG`
+- `INFRA_IDENTITY_SUPABASE_APPLICATION_NAME`
+- `INFRA_IDENTITY_SUPABASE_SYNC_CONFIG`
+- `INFRA_IDENTITY_BOOTSTRAP_ADMIN_USERNAME`
+- `INFRA_IDENTITY_BOOTSTRAP_ADMIN_EMAIL`
+- `INFRA_IDENTITY_BOOTSTRAP_ADMIN_NAME`
+- `INFRA_IDENTITY_BOOTSTRAP_ADMIN_PASSWORD` (optional override; otherwise IaC stores a generated value in integration config secret)
+- `INFRA_IDENTITY_BOOTSTRAP_ADMIN_GROUP`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_ENABLED`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_NAME`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_SLUG`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_GROUP`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_OPEN_IN_NEW_TAB`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_PUBLISHER`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_DESCRIPTION`
+- `INFRA_IDENTITY_DEFAULT_APPLICATION_POLICY_ENGINE_MODE` (`any` or `all`)
+- `INFRA_IDENTITY_USERDATA_REPLACE_ON_CHANGE` (default `false`, prevents instance replacement on user-data/template edits)
+- `INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION` (default `true` on production identity stacks)
+- `INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT` (default `false`; must be `true` to allow protected replacements)
+- `INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE` (default `false`; required for intentional `ec2 <-> rds` migrations)
+- `INFRA_ENABLE_EXPO_SITE` (set `false` on dedicated identity stacks to skip Expo/static-site resources)
+
+Important behavior:
+
+- secret names are automatically stage-scoped on creation to avoid dev/production collisions
+- identity provisioning is isolated to dedicated stacks by default (`identity-dev`, `identity-prod`) to prevent duplicate instances per environment
+- Authentik image tag is validated to calendar-version format and must be `>= 2025.10` (Redisless baseline)
+- identity deployment can be stage-scoped with `INFRA_IDENTITY_ENABLED_STAGES` (for example `dev` to keep production untouched)
+- default pipeline profile behavior is `identity-dev => INFRA_IDENTITY_DATABASE_MODE=ec2` and `identity-prod => INFRA_IDENTITY_DATABASE_MODE=rds`
+- the identity VPC does not create NAT by default, keeping the baseline cost lean
+- the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
+- the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
+- when Supabase management token/project ref are provided, infra patches Supabase `external_keycloak_*` settings automatically
+- SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
+- identity pipelines deploy on isolated stacks (`identity-dev`, `identity-prod`) and force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy or modify the app site stack
+- identity deploys now include safety checks to block accidental database mode flips (`ec2` <-> `rds`) unless explicitly allowed
+- identity instances and EIP association can be protected from destructive replacements to reduce auth downtime risk
+
+### Identity-Only IaC Provisioning
+
+Deploy identity infrastructure without touching Expo/site resources:
+
+Use dedicated identity stacks. Do not run identity-only toggles against `dev` or `production` stacks, or Pulumi will plan deletions for resources not declared in that run.
+
+Fail-safe guardrails are enforced in both IaC and CI:
+
+- `INFRA_ENABLE_EXPO_SITE=false` is rejected for non-identity stack stages
+- only `identity-dev` / `identity-prod` style stages can run identity-only mode
+
+```bash
+INFRA_IDENTITY_ENABLED=true \
+INFRA_IDENTITY_ENABLED_STAGES=dev \
+INFRA_IDENTITY_DATABASE_MODE=ec2 \
+pnpm --filter @alternun/infra run deploy:identity-dev
+```
+
+For production identity:
+
+```bash
+INFRA_IDENTITY_ENABLED=true \
+INFRA_IDENTITY_ENABLED_STAGES=production \
+INFRA_IDENTITY_DATABASE_MODE=rds \
+pnpm --filter @alternun/infra run deploy:identity-prod
+```
+
+These commands remain fully IaC-driven from `packages/infra/infra.config.ts` and `packages/infra/modules/identity-resources.ts`.
+
 ## Redirects (Dev Stage)
 
 During `dev` deployments, infra can provision:
@@ -51,19 +165,29 @@ export INFRA_CONFIG_PATH=./packages/infra/config/deployment.config.json
 
 Environment variables always override local JSON values.
 
-## Branch Promotion (develop -> master)
+## Branch Sync
 
 Run only from a clean working tree:
+
+```bash
+pnpm --filter @alternun/infra run sync:master-develop
+```
+
+Current testnet mode uses `master -> develop` as the fast-forward direction.
+
+This script does a fast-forward-only sync:
+
+1. fetches `master` and `develop`
+2. fast-forwards `develop` from `master`
+3. pushes `develop`
+
+The legacy promotion helper still exists:
 
 ```bash
 pnpm --filter @alternun/infra run sync:develop-master
 ```
 
-This script does a fast-forward-only promotion:
-
-1. fetches `develop` and `master`
-2. fast-forwards `master` from `develop`
-3. pushes `master`
+Use it only when testnet mode is disabled and the traditional `develop -> master` release flow is restored.
 
 ## Deploy
 
@@ -72,6 +196,8 @@ From repo root:
 ```bash
 pnpm --filter @alternun/infra run deploy:dev
 pnpm --filter @alternun/infra run deploy:production
+pnpm --filter @alternun/infra run deploy:identity-dev
+pnpm --filter @alternun/infra run deploy:identity-prod
 ```
 
 These commands are env-first and enforced:
@@ -118,6 +244,17 @@ Create/repair configured pipelines:
 APPROVE=true pnpm --filter @alternun/infra run ensure:pipelines
 ```
 
+`INFRA_PIPELINES` supports these targets:
+
+- `production`
+- `dev`
+- `mobile`
+- `identity-dev` (Authentik-focused pipeline for `SST_STAGE=identity-dev`, defaults to `develop` branch)
+- `identity-prod` (Authentik-focused pipeline for `SST_STAGE=identity-prod`, defaults to `master` branch)
+
+Legacy alias: `identity` maps to `identity-dev`.
+Created pipeline names are `alternun-auth-dev-pipeline` and `alternun-auth-prod-pipeline`.
+
 ## Required CI/Runtime Env Contract
 
 See [`./.env.example`](./.env.example).
@@ -132,6 +269,8 @@ Minimum values to set in CI:
 - `INFRA_PIPELINES`
 - `INFRA_PIPELINE_BRANCH_PROD`
 - `INFRA_PIPELINE_BRANCH_DEV`
+- `INFRA_PIPELINE_BRANCH_IDENTITY_DEV` (when `identity-dev` is included in `INFRA_PIPELINES`)
+- `INFRA_PIPELINE_BRANCH_IDENTITY_PROD` (when `identity-prod` is included in `INFRA_PIPELINES`)
 
 Optional but recommended:
 
@@ -140,6 +279,32 @@ Optional but recommended:
 - `INFRA_CODESTAR_CONNECTION_ARN`
 - `INFRA_EXPO_CERT_ARN_PRODUCTION`
 - `INFRA_EXPO_CERT_ARN_DEV`
+
+Optional identity scaffold env:
+
+- `INFRA_IDENTITY_ENABLED`
+- `INFRA_IDENTITY_DEDICATED_STACKS_ONLY`
+- `INFRA_IDENTITY_ENABLED_STAGES`
+- `INFRA_IDENTITY_DOMAIN_PRODUCTION`
+- `INFRA_IDENTITY_DOMAIN_DEV`
+- `INFRA_IDENTITY_DOMAIN_MOBILE`
+- `INFRA_IDENTITY_DATABASE_MODE`
+- `INFRA_IDENTITY_EC2_INSTANCE_TYPE`
+- `INFRA_IDENTITY_EC2_VOLUME_SIZE_GIB`
+- `INFRA_IDENTITY_RDS_ENGINE_VERSION`
+- `INFRA_IDENTITY_RDS_INSTANCE_TYPE`
+- `INFRA_IDENTITY_RDS_STORAGE_GIB`
+- `INFRA_IDENTITY_RDS_MULTI_AZ`
+- `INFRA_IDENTITY_RDS_PUBLIC_ACCESS`
+- `INFRA_IDENTITY_RDS_BACKUP_RETENTION_DAYS`
+- `INFRA_IDENTITY_RDS_PERFORMANCE_INSIGHTS`
+- `INFRA_IDENTITY_RDS_ENHANCED_MONITORING`
+- `INFRA_IDENTITY_EMAIL_PROVIDER`
+- `INFRA_IDENTITY_AUTHENTIK_IMAGE_TAG`
+- `INFRA_IDENTITY_JWT_AUDIENCE`
+- `INFRA_IDENTITY_JWT_ROLE_CLAIM`
+- `INFRA_IDENTITY_JWT_ROLES_CLAIM`
+- `INFRA_IDENTITY_JWT_ACCESS_TOKEN_TTL_MINUTES`
 
 Required for Expo auth-enabled deploys (`INFRA_REQUIRE_EXPO_PUBLIC_AUTH=true`):
 

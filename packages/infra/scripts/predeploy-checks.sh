@@ -37,6 +37,31 @@ resolve_hz_id() {
   echo "${hz_raw#/hostedzone/}"
 }
 
+report_managed_cert_conflict() {
+  local domain_name=$1
+  local cert_env_name=${2:-}
+  local cert_env_value=${3:-}
+  local fail_on_conflict=${INFRA_FAIL_ON_MANAGED_CERT_CNAME_CONFLICT:-true}
+  local guidance
+
+  if [ -n "$cert_env_value" ]; then
+    echo "INFO: Existing ACM validation CNAME records found for ${domain_name}; ${cert_env_name} is set, so reusing an explicit certificate is expected."
+    return 0
+  fi
+
+  guidance="Set ${cert_env_name} to reuse an existing ACM certificate, or enable AUTO_REMOVE_CONFLICTING_DNS=true and INFRA_REMOVE_ACM_VALIDATION_CNAME=true if you intend to replace the validation records."
+
+  if is_truthy "$fail_on_conflict"; then
+    echo "ERROR: Existing ACM validation CNAME records for ${domain_name} will conflict with managed certificate creation." >&2
+    echo "ERROR: ${guidance}" >&2
+    return 1
+  fi
+
+  echo "WARN: Existing ACM validation CNAME records for ${domain_name} may conflict with managed certificate creation." >&2
+  echo "WARN: ${guidance}" >&2
+  return 0
+}
+
 delete_conflicting_dns_records() {
   local hosted_zone_id=$1
   local record_name=$2
@@ -89,12 +114,10 @@ EOF
 delete_acm_validation_cname_records() {
   local hosted_zone_id=$1
   local domain_name=$2
+  local cert_env_name=${3:-}
+  local cert_env_value=${4:-}
   local auto_remove=${AUTO_REMOVE_CONFLICTING_DNS:-false}
   local remove_validation=${INFRA_REMOVE_ACM_VALIDATION_CNAME:-true}
-
-  if ! is_truthy "$remove_validation"; then
-    return 0
-  fi
 
   local existing
   existing=$(aws route53 list-resource-record-sets \
@@ -109,7 +132,14 @@ delete_acm_validation_cname_records() {
   echo "Found ACM validation CNAME records for ${domain_name}:"
   echo "$existing"
 
+  if ! is_truthy "$remove_validation"; then
+    report_managed_cert_conflict "$domain_name" "$cert_env_name" "$cert_env_value" || return 1
+    echo "WARN: INFRA_REMOVE_ACM_VALIDATION_CNAME=false; keeping ACM validation CNAME records for ${domain_name}." >&2
+    return 0
+  fi
+
   if ! is_truthy "$auto_remove"; then
+    report_managed_cert_conflict "$domain_name" "$cert_env_name" "$cert_env_value" || return 1
     echo "WARN: AUTO_REMOVE_CONFLICTING_DNS=false; keeping ACM validation CNAME records for ${domain_name}." >&2
     return 0
   fi
@@ -140,6 +170,50 @@ EOF
   done
 }
 
+check_stage_domain_validation_cname_records() {
+  if is_truthy "${SKIP_DNS_CHECK:-false}"; then
+    return 0
+  fi
+
+  if ! command -v aws >/dev/null 2>&1; then
+    echo "WARN: aws CLI not found; skipping stage ACM validation CNAME check." >&2
+    return 0
+  fi
+
+  local hosted_zone_id
+  hosted_zone_id=$(resolve_hz_id)
+  if [ -z "$hosted_zone_id" ]; then
+    echo "WARN: hosted zone for ${DOMAIN_ROOT:-<unset>} not found; skipping stage ACM validation CNAME check."
+    return 0
+  fi
+
+  local stage_domain cert_env_name cert_env_value
+  case "$stage" in
+    production)
+      stage_domain=${INFRA_EXPO_DOMAIN_PRODUCTION:-${DOMAIN_PRODUCTION:-}}
+      cert_env_name=INFRA_EXPO_CERT_ARN_PRODUCTION
+      cert_env_value=${INFRA_EXPO_CERT_ARN_PRODUCTION:-}
+      ;;
+    dev)
+      stage_domain=${INFRA_EXPO_DOMAIN_DEV:-${DOMAIN_DEV:-}}
+      cert_env_name=INFRA_EXPO_CERT_ARN_DEV
+      cert_env_value=${INFRA_EXPO_CERT_ARN_DEV:-}
+      ;;
+    mobile)
+      stage_domain=${INFRA_EXPO_DOMAIN_MOBILE:-${DOMAIN_MOBILE:-}}
+      cert_env_name=INFRA_EXPO_CERT_ARN_MOBILE
+      cert_env_value=${INFRA_EXPO_CERT_ARN_MOBILE:-}
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+
+  if [ -n "$stage_domain" ]; then
+    delete_acm_validation_cname_records "$hosted_zone_id" "$stage_domain" "$cert_env_name" "$cert_env_value"
+  fi
+}
+
 run_extra_redirect_dns_cleanup() {
   if [ "$stage" != "dev" ]; then
     return 0
@@ -168,17 +242,20 @@ run_extra_redirect_dns_cleanup() {
 
   if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" && [ -n "$airs_source" ]; then
     delete_conflicting_dns_records "$hosted_zone_id" "$airs_source"
-    delete_acm_validation_cname_records "$hosted_zone_id" "$airs_source"
+    delete_acm_validation_cname_records "$hosted_zone_id" "$airs_source" \
+      INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}"
   fi
 
   if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" && [ -n "$dev_source" ]; then
     delete_conflicting_dns_records "$hosted_zone_id" "$dev_source"
-    delete_acm_validation_cname_records "$hosted_zone_id" "$dev_source"
+    delete_acm_validation_cname_records "$hosted_zone_id" "$dev_source" \
+      INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}"
   fi
 
   if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}" && [ -n "$root_source" ]; then
     delete_conflicting_dns_records "$hosted_zone_id" "$root_source"
-    delete_acm_validation_cname_records "$hosted_zone_id" "$root_source"
+    delete_acm_validation_cname_records "$hosted_zone_id" "$root_source" \
+      INFRA_REDIRECT_ROOT_CERT_ARN "${INFRA_REDIRECT_ROOT_CERT_ARN:-}"
   fi
 }
 
@@ -208,6 +285,7 @@ validate_expo_public_auth_env() {
 }
 
 validate_expo_public_auth_env
+check_stage_domain_validation_cname_records
 run_extra_redirect_dns_cleanup
 
 if is_truthy "${INFRA_RUN_UPSTREAM_PREDEPLOY_CHECKS:-false}"; then
