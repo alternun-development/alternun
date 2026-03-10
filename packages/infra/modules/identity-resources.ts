@@ -750,6 +750,7 @@ export function deployIdentityInfrastructure(
             adminEmail: args.settings.integration.bootstrap.admin.email,
             adminGroup: args.settings.integration.bootstrap.admin.group,
             adminName: args.settings.integration.bootstrap.admin.name,
+            adminAllowedEmailDomain: args.settings.integration.adminOidc.allowedEmailDomain,
             adminOidcApplicationName: args.settings.integration.adminOidc.applicationName,
             adminOidcApplicationSlug: args.settings.integration.adminOidc.applicationSlug,
             adminOidcClientId: args.settings.integration.adminOidc.clientId,

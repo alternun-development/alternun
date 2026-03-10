@@ -105,6 +105,7 @@
     },
     "authClientId": "alternun-admin",
     "authAudience": "alternun-app",
+    "allowedEmailDomain": "alternun.io",
     "environment": {}
   },
   "identity": {

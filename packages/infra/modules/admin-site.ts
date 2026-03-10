@@ -39,6 +39,7 @@ export interface AdminSiteLocalConfig {
   authClientId?: string;
   authAudience?: string;
   authApplicationSlug?: string;
+  allowedEmailDomain?: string;
   environment?: Record<string, string>;
 }
 
@@ -67,6 +68,7 @@ export interface AdminSiteSettings {
     applicationSlug: string;
     clientId: string;
     audience: string;
+    allowedEmailDomain: string;
     stageIssuers: {
       production: string;
       dev: string;
@@ -234,6 +236,10 @@ export function buildAdminSiteSettings(args: BuildAdminSiteSettingsArgs): AdminS
         args.env.INFRA_ADMIN_AUTH_AUDIENCE ??
         localConfig?.authAudience ??
         ADMIN_SITE_INFRA_DEFAULTS.auth.audience,
+      allowedEmailDomain:
+        args.env.INFRA_ADMIN_ALLOWED_EMAIL_DOMAIN ??
+        localConfig?.allowedEmailDomain ??
+        ADMIN_SITE_INFRA_DEFAULTS.auth.allowedEmailDomain,
       stageIssuers: {
         production:
           args.env.INFRA_ADMIN_AUTH_ISSUER_PRODUCTION ??
@@ -289,6 +295,7 @@ export function deployAdminSiteInfrastructure(
       VITE_AUTH_ISSUER: args.settings.auth.stageIssuers[deploymentStage],
       VITE_AUTH_CLIENT_ID: args.settings.auth.clientId,
       VITE_AUTH_AUDIENCE: args.settings.auth.audience,
+      VITE_ALLOWED_ADMIN_EMAIL_DOMAIN: args.settings.auth.allowedEmailDomain,
       VITE_APP_ENV: deploymentStage,
       ...args.settings.environment,
     },

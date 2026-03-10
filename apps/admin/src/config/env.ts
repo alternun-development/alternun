@@ -14,5 +14,9 @@ export const adminEnv = {
   ),
   authClientId: requireLike(readEnvString(import.meta.env.VITE_AUTH_CLIENT_ID), 'alternun-admin'),
   authAudience: requireLike(readEnvString(import.meta.env.VITE_AUTH_AUDIENCE), 'alternun-app'),
+  allowedEmailDomain: requireLike(
+    readEnvString(import.meta.env.VITE_ALLOWED_ADMIN_EMAIL_DOMAIN),
+    'alternun.io'
+  ),
   appEnv: requireLike(readEnvString(import.meta.env.VITE_APP_ENV), 'development'),
 } as const;
