@@ -426,6 +426,30 @@ export function createInfrastructure() {
   const adminSiteEnabledForStage =
     adminSiteSettings.enabled && isAdminSiteStageAllowed && adminSiteAllowedOnStack;
 
+  if (dashboardStackStage && !adminSiteSettings.enabled) {
+    throw new Error(
+      `Refusing to deploy "${stage}" with INFRA_ENABLE_ADMIN_SITE=false. Dashboard stacks own admin resources and would otherwise remove them.`
+    );
+  }
+
+  if (dashboardStackStage && !backendApiSettings.enabled) {
+    throw new Error(
+      `Refusing to deploy "${stage}" with INFRA_ENABLE_BACKEND_API=false. Dashboard stacks own backend API resources and would otherwise remove them.`
+    );
+  }
+
+  if (adminSiteStackStage && !dashboardStackStage && !adminSiteSettings.enabled) {
+    throw new Error(
+      `Refusing to deploy "${stage}" with INFRA_ENABLE_ADMIN_SITE=false. Admin-dedicated stacks own admin resources and would otherwise remove them.`
+    );
+  }
+
+  if (backendApiStackStage && !dashboardStackStage && !backendApiSettings.enabled) {
+    throw new Error(
+      `Refusing to deploy "${stage}" with INFRA_ENABLE_BACKEND_API=false. API-dedicated stacks own backend resources and would otherwise remove them.`
+    );
+  }
+
   if (adminSiteSettings.enabled && !adminSiteAllowedOnStack) {
     console.log(
       [
