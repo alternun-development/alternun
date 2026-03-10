@@ -549,9 +549,9 @@ resolve_identity_instance_id() {
         return 0
       fi
 
-      echo "Waiting for identity instance ${instance_id} to enter running state (current=${instance_state}, attempt ${attempt}/${max_attempts})..."
+      echo "Waiting for identity instance ${instance_id} to enter running state (current=${instance_state}, attempt ${attempt}/${max_attempts})..." >&2
     else
-      echo "Waiting for identity instance tagged with Stage=${STACK} to appear (attempt ${attempt}/${max_attempts})..."
+      echo "Waiting for identity instance tagged with Stage=${STACK} to appear (attempt ${attempt}/${max_attempts})..." >&2
     fi
 
     sleep 5
