@@ -89,8 +89,8 @@ managed_pipeline_suffix_for_key() {
     api-prod) printf '%s\n' 'api-prod' ;;
     admin-dev) printf '%s\n' 'admin-dev' ;;
     admin-prod) printf '%s\n' 'admin-prod' ;;
-    dashboard-dev) printf '%s\n' 'dashboard-dev' ;;
-    dashboard-prod) printf '%s\n' 'dashboard-prod' ;;
+    dashboard-dev) printf '%s\n' 'dash-dev' ;;
+    dashboard-prod) printf '%s\n' 'dash-prod' ;;
     *) return 1 ;;
   esac
 }
