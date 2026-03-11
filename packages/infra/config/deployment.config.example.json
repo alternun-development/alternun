@@ -5,9 +5,13 @@
     "repo": "alternun-development/alternun",
     "prefix": "alternun",
     "projectTag": "alternun",
-    "pipelines": "production,dev",
+    "pipelines": "production,dev,identity-dev,identity-prod,dashboard-dev,dashboard-prod",
     "branchProd": "master",
-    "branchDev": "develop"
+    "branchDev": "develop",
+    "branchIdentityDev": "develop",
+    "branchIdentityProd": "master",
+    "branchDashboardDev": "develop",
+    "branchDashboardProd": "master"
   },
   "expo": {
     "appPath": "../../apps/mobile",
@@ -40,12 +44,109 @@
       "devToTestnet": ""
     }
   },
+  "backend": {
+    "api": {
+      "enabled": false,
+      "appPath": "../../apps/api",
+      "buildOutput": "dist-lambda",
+      "buildCommand": "pnpm --filter @alternun/api run build",
+      "enableCustomDomain": true,
+      "domains": {
+        "production": "api.alternun.co",
+        "dev": "testnet.api.alternun.co",
+        "mobile": "preview.api.alternun.co"
+      },
+      "certArns": {
+        "production": "",
+        "dev": "",
+        "mobile": ""
+      },
+      "lambda": {
+        "architecture": "arm64",
+        "logRetentionDays": 14,
+        "memorySize": 1024,
+        "timeoutSeconds": 30
+      },
+      "auth": {
+        "audience": "alternun-app",
+        "issuer": "",
+        "jwksUrl": ""
+      },
+      "environment": {
+        "DATABASE_URL": "",
+        "DECAP_PUBLIC_BASE_URL": "https://api.alternun.co",
+        "DECAP_ALLOWED_ORIGINS": "https://docs.alternun.io,https://alternun-development.github.io,http://127.0.0.1:8083,http://localhost:8083",
+        "DECAP_GITHUB_OAUTH_CLIENT_ID": "",
+        "DECAP_GITHUB_OAUTH_CLIENT_SECRET": "",
+        "DECAP_GITHUB_OAUTH_REPO_PRIVATE": "false",
+        "DECAP_GITHUB_OAUTH_SCOPE": "",
+        "DECAP_OAUTH_STATE_SECRET": ""
+      }
+    }
+  },
+  "admin": {
+    "enabled": false,
+    "appPath": "../../apps/admin",
+    "buildOutput": "dist",
+    "buildCommand": "pnpm --filter @alternun/admin run build",
+    "enableCustomDomain": true,
+    "domains": {
+      "production": "admin.alternun.co",
+      "dev": "testnet.admin.alternun.co",
+      "mobile": "preview.admin.alternun.co"
+    },
+    "certArns": {
+      "production": "",
+      "dev": "",
+      "mobile": ""
+    },
+    "apiUrls": {
+      "production": "https://api.alternun.co",
+      "dev": "https://testnet.api.alternun.co",
+      "mobile": "https://preview.api.alternun.co"
+    },
+    "authIssuers": {
+      "production": "https://sso.alternun.co/application/o/alternun-admin/",
+      "dev": "https://testnet.sso.alternun.co/application/o/alternun-admin/",
+      "mobile": "https://preview.sso.alternun.co/application/o/alternun-admin/"
+    },
+    "authClientId": "alternun-admin",
+    "authAudience": "alternun-app",
+    "allowedEmailDomain": "alternun.io",
+    "environment": {}
+  },
   "identity": {
     "enabled": false,
     "domains": {
-      "production": "auth.alternun.co",
-      "dev": "testnet.auth.alternun.co",
-      "mobile": "preview.auth.alternun.co"
+      "production": "sso.alternun.co",
+      "dev": "testnet.sso.alternun.co",
+      "mobile": "preview.sso.alternun.co"
+    },
+    "ingress": {
+      "modes": {
+        "production": "alb",
+        "dev": "instance",
+        "mobile": "instance"
+      },
+      "alb": {
+        "certificateArn": "",
+        "healthCheckMatcher": "200-399",
+        "healthCheckPath": "/",
+        "idleTimeoutSeconds": 60
+      }
+    },
+    "tls": {
+      "modes": {
+        "production": "alb-acm",
+        "dev": "acme-route53-dns-01",
+        "mobile": "acme-route53-dns-01"
+      },
+      "acmeEmail": "identity-admin@alternun.co",
+      "route53HostedZoneId": "",
+      "acmeBackup": {
+        "enabled": true,
+        "prefix": "state"
+      }
     },
     "ec2": {
       "instanceType": "t3.small",
@@ -84,6 +185,21 @@
         "projectRef": "",
         "providerName": "Alternun Supabase OIDC",
         "syncConfig": true
+      },
+      "adminOidc": {
+        "applicationName": "Alternun Admin",
+        "applicationSlug": "alternun-admin",
+        "providerName": "Alternun Admin OIDC",
+        "clientId": "alternun-admin"
+      },
+      "docsCmsOidc": {
+        "applicationName": "Alternun Docs CMS",
+        "applicationSlug": "alternun-docs-cms",
+        "providerName": "Alternun Docs CMS OIDC",
+        "clientId": "alternun-docs-cms",
+        "siteUrl": "https://docs.alternun.io",
+        "localDevUrl": "http://127.0.0.1:8083",
+        "allowedGroups": ["authentik Admins", "Alternun Dashboard Admins", "Alternun Docs Editors"]
       },
       "bootstrap": {
         "admin": {

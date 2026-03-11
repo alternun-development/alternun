@@ -8,5 +8,11 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["*.ts", "modules/**/*.ts", "sst-env.d.ts", ".sst/platform/config.d.ts"]
+  "include": [
+    "*.ts",
+    "config/**/*.ts",
+    "modules/**/*.ts",
+    "sst-env.d.ts",
+    ".sst/platform/config.d.ts"
+  ]
 }
