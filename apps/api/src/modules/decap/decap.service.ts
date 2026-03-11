@@ -1,4 +1,4 @@
-import crypto from 'node:crypto';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import {
   BadRequestException,
   Injectable,
@@ -264,10 +264,7 @@ export class DecapService {
 
   private signState(payload: SignedStatePayload, secret: string): string {
     const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    const signature = crypto
-      .createHmac('sha256', secret)
-      .update(encodedPayload)
-      .digest('base64url');
+    const signature = createHmac('sha256', secret).update(encodedPayload).digest('base64url');
     return `${encodedPayload}.${signature}`;
   }
 
@@ -282,8 +279,7 @@ export class DecapService {
     }
 
     const [encodedPayload, signature] = parts;
-    const expectedSignature = crypto
-      .createHmac('sha256', secret)
+    const expectedSignature = createHmac('sha256', secret)
       .update(encodedPayload)
       .digest('base64url');
 
@@ -291,7 +287,7 @@ export class DecapService {
     const expectedBuffer = Buffer.from(expectedSignature);
     if (
       signatureBuffer.length !== expectedBuffer.length ||
-      !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
+      !timingSafeEqual(signatureBuffer, expectedBuffer)
     ) {
       return null;
     }
