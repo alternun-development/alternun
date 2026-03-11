@@ -34,4 +34,6 @@ jobs:
         run: pnpm install
 
       - name: Test build website
+        env:
+          DOCS_CMS_USE_TESTNET_API_FALLBACK: 'true'
         run: pnpm build

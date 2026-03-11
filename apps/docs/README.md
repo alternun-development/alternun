@@ -77,6 +77,13 @@ DOCS_CMS_GITHUB_OAUTH_BASE_URL=https://api.alternun.co
 DOCS_CMS_GITHUB_AUTH_ENDPOINT=decap/auth
 ```
 
+Temporary fallback when production API is not available:
+
+```env
+DOCS_CMS_USE_TESTNET_API_FALLBACK=true
+DOCS_CMS_GITHUB_TESTNET_API_BASE_URL=https://testnet.api.alternun.co
+```
+
 ### GitHub backend note
 
 Decap's GitHub backend requires an OAuth bridge/proxy for authentication on a static site.
