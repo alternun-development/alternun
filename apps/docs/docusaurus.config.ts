@@ -13,6 +13,15 @@ function parseListEnv(value: string | undefined, fallback: string[]): string[] {
     .filter(Boolean);
 }
 
+function parseBooleanEnv(name: string, fallback = false): boolean {
+  const value = readTrimmedEnv(name);
+  if (!value) {
+    return fallback;
+  }
+
+  return !['0', 'false', 'no', 'off'].includes(value.toLowerCase());
+}
+
 function readTrimmedEnv(name: string): string | undefined {
   const value = process.env[name]?.trim();
   if (!value || value.length === 0) {
@@ -28,7 +37,12 @@ const cmsAllowedGroups = parseListEnv(process.env.DOCS_CMS_ALLOWED_GROUPS, [
   'Alternun Docs Editors',
 ]);
 
-const cmsGithubOAuthBaseUrl = readTrimmedEnv('DOCS_CMS_GITHUB_OAUTH_BASE_URL') ?? '';
+const cmsGithubTestnetApiBaseUrl =
+  readTrimmedEnv('DOCS_CMS_GITHUB_TESTNET_API_BASE_URL') ?? 'https://testnet.api.alternun.co';
+const useTestnetApiFallback = parseBooleanEnv('DOCS_CMS_USE_TESTNET_API_FALLBACK');
+const cmsGithubOAuthBaseUrl =
+  readTrimmedEnv('DOCS_CMS_GITHUB_OAUTH_BASE_URL') ??
+  (useTestnetApiFallback ? cmsGithubTestnetApiBaseUrl : '');
 const cmsGithubAuthEndpoint = readTrimmedEnv('DOCS_CMS_GITHUB_AUTH_ENDPOINT') ?? 'decap/auth';
 const cmsGithubRepo = readTrimmedEnv('DOCS_CMS_GITHUB_REPO') ?? 'alternun-development/alternun';
 const cmsGithubBranch = readTrimmedEnv('DOCS_CMS_GITHUB_BRANCH') ?? 'master';
