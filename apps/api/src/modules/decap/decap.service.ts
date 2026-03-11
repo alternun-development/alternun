@@ -26,6 +26,12 @@ interface DecapCallbackParams {
   state?: string;
 }
 
+interface DecapAuthorizationParams {
+  provider?: string;
+  requestedScope?: string;
+  siteId?: string;
+}
+
 interface DecapHtmlResponse {
   html: string;
   statusCode: number;
@@ -57,11 +63,17 @@ interface SignedStatePayload {
 export class DecapService {
   private readonly logger = new Logger(DecapService.name);
 
-  createAuthorizationUrl(request: FastifyRequest, provider?: string): string {
-    const resolvedProvider = this.resolveProvider(provider);
+  startAuthorization(request: FastifyRequest, params: DecapAuthorizationParams): DecapHtmlResponse {
+    const authorizeUrl = this.createAuthorizationUrl(request, params);
+    return this.renderAuthorizationRedirect(authorizeUrl);
+  }
+
+  createAuthorizationUrl(request: FastifyRequest, params: DecapAuthorizationParams): string {
+    const resolvedProvider = this.resolveProvider(params.provider);
     const config = this.getConfig();
     const callbackUrl = this.getCallbackUrl(request, config.publicBaseUrl);
-    const origin = this.resolveAllowedOrigin(request, config.allowedOrigins);
+    const origin = this.resolveAllowedOrigin(request, config.allowedOrigins, params.siteId);
+    const scope = this.resolveScope(params.requestedScope, config.scope);
     const state = this.signState(
       {
         iat: Date.now(),
@@ -72,14 +84,14 @@ export class DecapService {
       config.stateSecret
     );
 
-    const params = new URLSearchParams({
+    const searchParams = new URLSearchParams({
       client_id: config.clientId,
       redirect_uri: callbackUrl,
-      scope: config.scope,
+      scope,
       state,
     });
 
-    return `${GITHUB_AUTHORIZE_URL}?${params.toString()}`;
+    return `${GITHUB_AUTHORIZE_URL}?${searchParams.toString()}`;
   }
 
   async handleCallback(
@@ -236,13 +248,19 @@ export class DecapService {
 
   private resolveAllowedOrigin(
     request: FastifyRequest,
-    allowedOrigins: Set<string>
+    allowedOrigins: Set<string>,
+    siteId?: string
   ): string | undefined {
     const candidates = [
       this.readHeader(request.headers.origin),
       this.readHeader(request.headers.referer),
       this.readHeader(request.headers.referrer),
     ];
+
+    const siteOrigin = this.resolveOriginFromSiteId(siteId, allowedOrigins);
+    if (siteOrigin) {
+      candidates.push(siteOrigin);
+    }
 
     for (const candidate of candidates) {
       if (!candidate) {
@@ -260,6 +278,49 @@ export class DecapService {
     }
 
     return undefined;
+  }
+
+  private resolveOriginFromSiteId(
+    siteId: string | undefined,
+    allowedOrigins: Set<string>
+  ): string | undefined {
+    if (!siteId) {
+      return undefined;
+    }
+
+    const trimmedSiteId = siteId.trim();
+    if (!trimmedSiteId) {
+      return undefined;
+    }
+
+    const candidates = trimmedSiteId.includes('://')
+      ? [trimmedSiteId]
+      : [`https://${trimmedSiteId}`, `http://${trimmedSiteId}`];
+
+    for (const candidate of candidates) {
+      try {
+        const origin = new URL(candidate).origin;
+        if (allowedOrigins.has(origin)) {
+          return origin;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return undefined;
+  }
+
+  private resolveScope(requestedScope: string | undefined, fallbackScope: string): string {
+    const defaultScopes = this.parseScopes(fallbackScope);
+    const requestedScopes = this.parseScopes(requestedScope);
+    const scopes = new Set([...defaultScopes, ...requestedScopes]);
+
+    if (scopes.has('repo')) {
+      scopes.delete('public_repo');
+    }
+
+    return Array.from(scopes).join(',');
   }
 
   private signState(payload: SignedStatePayload, secret: string): string {
@@ -399,8 +460,43 @@ export class DecapService {
     };
   }
 
+  private renderAuthorizationRedirect(authorizeUrl: string): DecapHtmlResponse {
+    const safeAuthorizeUrl = JSON.stringify(authorizeUrl);
+
+    return {
+      html: `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content="0;url=${this.escapeHtmlAttribute(authorizeUrl)}" />
+    <title>Alternun Decap OAuth</title>
+  </head>
+  <body>
+    <p>Redirecting to GitHub…</p>
+    <p><a href="${this.escapeHtmlAttribute(authorizeUrl)}">Continue to GitHub</a></p>
+    <script>
+      window.location.replace(${safeAuthorizeUrl});
+    </script>
+  </body>
+</html>`,
+      statusCode: 200,
+    };
+  }
+
   private formatErrorMessage(error: string, description?: string): string {
     return description?.trim() ? `${error}: ${description.trim()}` : error;
+  }
+
+  private parseScopes(value: string | undefined): string[] {
+    if (!value) {
+      return [];
+    }
+
+    return value
+      .split(/[\s,]+/)
+      .map(scope => scope.trim())
+      .filter(Boolean);
   }
 
   private parseList(value: string | undefined, fallback: string[]): string[] {
@@ -436,5 +532,13 @@ export class DecapService {
     }
 
     return value;
+  }
+
+  private escapeHtmlAttribute(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 }
