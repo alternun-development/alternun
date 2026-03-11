@@ -151,12 +151,8 @@ export const IDENTITY_INFRA_DEFAULTS = {
       providerName: 'Alternun Docs CMS OIDC',
       clientId: 'alternun-docs-cms',
       siteUrl: 'https://docs.alternun.io',
-      localDevUrl: 'http://localhost:3000',
-      allowedGroups: [
-        'authentik Admins',
-        'Alternun Dashboard Admins',
-        'Alternun Docs Editors',
-      ],
+      localDevUrl: 'http://127.0.0.1:8083',
+      allowedGroups: ['authentik Admins', 'Alternun Dashboard Admins', 'Alternun Docs Editors'],
     },
     bootstrap: {
       admin: {

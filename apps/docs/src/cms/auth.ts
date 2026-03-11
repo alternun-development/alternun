@@ -30,7 +30,7 @@ function normalizeGroup(value: string): string {
 }
 
 export function createDocsCmsUserManager(config: DocsCmsCustomFields): UserManager {
-  const origin = typeof window === 'undefined' ? 'http://localhost:3000' : window.location.origin;
+  const origin = typeof window === 'undefined' ? 'http://127.0.0.1:8083' : window.location.origin;
 
   const settings: UserManagerSettings = {
     authority: config.auth.issuer,
@@ -90,9 +90,11 @@ export function extractCmsIdentity(user: User | null): CmsAuthIdentity | null {
   const claims = user.profile as ClaimBag;
   const email = typeof claims.email === 'string' ? claims.email : undefined;
   const name =
-    (typeof claims.name === 'string' && claims.name) ||
-    (typeof claims.preferred_username === 'string' && claims.preferred_username) ||
-    email ||
+    (typeof claims.name === 'string' && claims.name.length > 0 ? claims.name : undefined) ??
+    (typeof claims.preferred_username === 'string' && claims.preferred_username.length > 0
+      ? claims.preferred_username
+      : undefined) ??
+    email ??
     'Alternun Editor';
 
   return {
