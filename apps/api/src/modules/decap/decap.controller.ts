@@ -24,11 +24,22 @@ export class DecapController {
   async auth(
     @Req() request: FastifyRequest,
     @Res() reply: FastifyReply,
-    @Query('provider') provider?: string
+    @Query('provider') provider?: string,
+    @Query('scope') scope?: string,
+    @Query('site_id') siteId?: string
   ): Promise<void> {
     try {
-      const authorizeUrl = this.decapService.createAuthorizationUrl(request, provider);
-      await reply.redirect(authorizeUrl);
+      const response = this.decapService.startAuthorization(request, {
+        provider,
+        requestedScope: scope,
+        siteId,
+      });
+
+      await reply
+        .code(response.statusCode)
+        .header('cache-control', 'no-store')
+        .type('text/html; charset=utf-8')
+        .send(response.html);
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof ServiceUnavailableException) {
         await reply
