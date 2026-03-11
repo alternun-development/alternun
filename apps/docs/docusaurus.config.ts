@@ -2,6 +2,29 @@ import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
+function parseListEnv(value: string | undefined, fallback: string[]): string[] {
+  if (!value) {
+    return fallback;
+  }
+
+  return value
+    .split(',')
+    .map(entry => entry.trim())
+    .filter(Boolean);
+}
+
+const cmsAllowedGroups = parseListEnv(process.env.DOCS_CMS_ALLOWED_GROUPS, [
+  'authentik Admins',
+  'Alternun Dashboard Admins',
+  'Alternun Docs Editors',
+]);
+
+const cmsGithubOAuthBaseUrl = process.env.DOCS_CMS_GITHUB_OAUTH_BASE_URL?.trim() ?? '';
+const cmsGithubAuthEndpoint = process.env.DOCS_CMS_GITHUB_AUTH_ENDPOINT?.trim() || 'auth';
+const cmsGithubRepo =
+  process.env.DOCS_CMS_GITHUB_REPO?.trim() || 'alternun-development/alternun';
+const cmsGithubBranch = process.env.DOCS_CMS_GITHUB_BRANCH?.trim() || 'master';
+
 const config: Config = {
   title: 'Alternun Docs',
   tagline: '#ReDeFine the future with us',
@@ -75,6 +98,30 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
+
+  customFields: {
+    cms: {
+      auth: {
+        issuer:
+          process.env.DOCS_CMS_AUTH_ISSUER?.trim() ||
+          'https://testnet.sso.alternun.co/application/o/alternun-docs-cms/',
+        clientId: process.env.DOCS_CMS_AUTH_CLIENT_ID?.trim() || 'alternun-docs-cms',
+        audience: process.env.DOCS_CMS_AUTH_AUDIENCE?.trim() || 'alternun-app',
+        allowedGroups: cmsAllowedGroups,
+      },
+      backend: {
+        mode: cmsGithubOAuthBaseUrl ? 'github' : 'test-repo',
+        repo: cmsGithubRepo,
+        branch: cmsGithubBranch,
+        baseUrl: cmsGithubOAuthBaseUrl,
+        authEndpoint: cmsGithubAuthEndpoint,
+      },
+      media: {
+        folder: 'apps/docs/static/img/uploads',
+        publicFolder: '/img/uploads',
+      },
+    },
+  },
 
   themeConfig: {
     // Replace with your project's social card
