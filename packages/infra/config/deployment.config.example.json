@@ -73,7 +73,14 @@
         "jwksUrl": ""
       },
       "environment": {
-        "DATABASE_URL": ""
+        "DATABASE_URL": "",
+        "DECAP_PUBLIC_BASE_URL": "https://api.alternun.co",
+        "DECAP_ALLOWED_ORIGINS": "https://docs.alternun.io,https://alternun-development.github.io,http://127.0.0.1:8083,http://localhost:8083",
+        "DECAP_GITHUB_OAUTH_CLIENT_ID": "",
+        "DECAP_GITHUB_OAUTH_CLIENT_SECRET": "",
+        "DECAP_GITHUB_OAUTH_REPO_PRIVATE": "false",
+        "DECAP_GITHUB_OAUTH_SCOPE": "",
+        "DECAP_OAUTH_STATE_SECRET": ""
       }
     }
   },
@@ -191,12 +198,8 @@
         "providerName": "Alternun Docs CMS OIDC",
         "clientId": "alternun-docs-cms",
         "siteUrl": "https://docs.alternun.io",
-        "localDevUrl": "http://localhost:3000",
-        "allowedGroups": [
-          "authentik Admins",
-          "Alternun Dashboard Admins",
-          "Alternun Docs Editors"
-        ]
+        "localDevUrl": "http://127.0.0.1:8083",
+        "allowedGroups": ["authentik Admins", "Alternun Dashboard Admins", "Alternun Docs Editors"]
       },
       "bootstrap": {
         "admin": {

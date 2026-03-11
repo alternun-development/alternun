@@ -13,17 +13,25 @@ function parseListEnv(value: string | undefined, fallback: string[]): string[] {
     .filter(Boolean);
 }
 
+function readTrimmedEnv(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  if (!value || value.length === 0) {
+    return undefined;
+  }
+
+  return value;
+}
+
 const cmsAllowedGroups = parseListEnv(process.env.DOCS_CMS_ALLOWED_GROUPS, [
   'authentik Admins',
   'Alternun Dashboard Admins',
   'Alternun Docs Editors',
 ]);
 
-const cmsGithubOAuthBaseUrl = process.env.DOCS_CMS_GITHUB_OAUTH_BASE_URL?.trim() ?? '';
-const cmsGithubAuthEndpoint = process.env.DOCS_CMS_GITHUB_AUTH_ENDPOINT?.trim() || 'auth';
-const cmsGithubRepo =
-  process.env.DOCS_CMS_GITHUB_REPO?.trim() || 'alternun-development/alternun';
-const cmsGithubBranch = process.env.DOCS_CMS_GITHUB_BRANCH?.trim() || 'master';
+const cmsGithubOAuthBaseUrl = readTrimmedEnv('DOCS_CMS_GITHUB_OAUTH_BASE_URL') ?? '';
+const cmsGithubAuthEndpoint = readTrimmedEnv('DOCS_CMS_GITHUB_AUTH_ENDPOINT') ?? 'decap/auth';
+const cmsGithubRepo = readTrimmedEnv('DOCS_CMS_GITHUB_REPO') ?? 'alternun-development/alternun';
+const cmsGithubBranch = readTrimmedEnv('DOCS_CMS_GITHUB_BRANCH') ?? 'master';
 
 const config: Config = {
   title: 'Alternun Docs',
@@ -103,10 +111,10 @@ const config: Config = {
     cms: {
       auth: {
         issuer:
-          process.env.DOCS_CMS_AUTH_ISSUER?.trim() ||
+          readTrimmedEnv('DOCS_CMS_AUTH_ISSUER') ??
           'https://testnet.sso.alternun.co/application/o/alternun-docs-cms/',
-        clientId: process.env.DOCS_CMS_AUTH_CLIENT_ID?.trim() || 'alternun-docs-cms',
-        audience: process.env.DOCS_CMS_AUTH_AUDIENCE?.trim() || 'alternun-app',
+        clientId: readTrimmedEnv('DOCS_CMS_AUTH_CLIENT_ID') ?? 'alternun-docs-cms',
+        audience: readTrimmedEnv('DOCS_CMS_AUTH_AUDIENCE') ?? 'alternun-app',
         allowedGroups: cmsAllowedGroups,
       },
       backend: {

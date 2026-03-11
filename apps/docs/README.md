@@ -46,7 +46,7 @@ The docs editor is exposed at `/admin` and is protected by Authentik before Deca
 
 - Auth client: `alternun-docs-cms`
 - Expected callback: `https://docs.alternun.io/admin/auth/callback`
-- Local callback: `http://localhost:3000/admin/auth/callback`
+- Local callback: `http://127.0.0.1:8083/admin/auth/callback`
 - Allowed groups:
   - `authentik Admins`
   - `Alternun Dashboard Admins`
@@ -68,8 +68,28 @@ The Docusaurus build reads these optional environment variables:
 If `DOCS_CMS_GITHUB_OAUTH_BASE_URL` is not provided, the editor falls back to Decap's
 `test-repo` backend so the UI can still be exercised safely.
 
+Recommended production values:
+
+```env
+DOCS_CMS_GITHUB_REPO=alternun-development/alternun
+DOCS_CMS_GITHUB_BRANCH=master
+DOCS_CMS_GITHUB_OAUTH_BASE_URL=https://api.alternun.co
+DOCS_CMS_GITHUB_AUTH_ENDPOINT=decap/auth
+```
+
 ### GitHub backend note
 
 Decap's GitHub backend requires an OAuth bridge/proxy for authentication on a static site.
-That bridge is not created by the Docusaurus app itself. Until the OAuth bridge is configured,
-the editor UI works, but write-back should be treated as preview/test only.
+That bridge is now expected to be served by `apps/api` at:
+
+- `GET /decap/auth`
+- `GET /decap/callback`
+
+GitHub OAuth App callback URLs must point at the API bridge, not the docs site itself. For
+production, use:
+
+- `https://api.alternun.co/decap/callback`
+
+For local development, use:
+
+- `http://127.0.0.1:8082/decap/callback`

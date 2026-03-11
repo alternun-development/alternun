@@ -250,6 +250,38 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
       ...(args.env.INFRA_BACKEND_API_DATABASE_URL
         ? { DATABASE_URL: args.env.INFRA_BACKEND_API_DATABASE_URL }
         : {}),
+      ...(args.env.INFRA_BACKEND_API_DECAP_PUBLIC_BASE_URL
+        ? { DECAP_PUBLIC_BASE_URL: args.env.INFRA_BACKEND_API_DECAP_PUBLIC_BASE_URL }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_DECAP_ALLOWED_ORIGINS
+        ? { DECAP_ALLOWED_ORIGINS: args.env.INFRA_BACKEND_API_DECAP_ALLOWED_ORIGINS }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_DECAP_GITHUB_CLIENT_ID
+        ? {
+            DECAP_GITHUB_OAUTH_CLIENT_ID: args.env.INFRA_BACKEND_API_DECAP_GITHUB_CLIENT_ID,
+          }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_DECAP_GITHUB_CLIENT_SECRET
+        ? {
+            DECAP_GITHUB_OAUTH_CLIENT_SECRET: args.env.INFRA_BACKEND_API_DECAP_GITHUB_CLIENT_SECRET,
+          }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_DECAP_GITHUB_OAUTH_REPO_PRIVATE
+        ? {
+            DECAP_GITHUB_OAUTH_REPO_PRIVATE:
+              args.env.INFRA_BACKEND_API_DECAP_GITHUB_OAUTH_REPO_PRIVATE,
+          }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_DECAP_GITHUB_OAUTH_SCOPE
+        ? {
+            DECAP_GITHUB_OAUTH_SCOPE: args.env.INFRA_BACKEND_API_DECAP_GITHUB_OAUTH_SCOPE,
+          }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_DECAP_OAUTH_STATE_SECRET
+        ? {
+            DECAP_OAUTH_STATE_SECRET: args.env.INFRA_BACKEND_API_DECAP_OAUTH_STATE_SECRET,
+          }
+        : {}),
     },
   };
 }
