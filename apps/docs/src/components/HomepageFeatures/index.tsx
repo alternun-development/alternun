@@ -7,7 +7,7 @@ import styles from './styles.module.css';
 type FeatureItem = {
   title: string;
   icon: string;
-  description: JSX.Element;
+  description: React.ReactNode;
 };
 
 const FeatureList: FeatureItem[] = [
@@ -43,7 +43,7 @@ const FeatureList: FeatureItem[] = [
   },
 ];
 
-function Feature({ title, icon, description }: FeatureItem) {
+function Feature({ title, icon, description }: FeatureItem): React.ReactElement {
   return (
     <motion.div
       className={clsx('col col--4')}
@@ -96,8 +96,14 @@ export default function HomepageFeatures(): React.ReactElement {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          {FeatureList.map((props, idx) => (
-            <Feature key={idx} {...props} />
+          {FeatureList.map(props => (
+            <React.Fragment key={props.title}>
+              <Feature
+                title={props.title}
+                icon={props.icon}
+                description={props.description}
+              />
+            </React.Fragment>
           ))}
         </motion.div>
       </div>

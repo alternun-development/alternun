@@ -731,10 +731,23 @@ export function deployIdentityInfrastructure(
     length: 40,
     special: false,
   });
+  const docsCmsOidcClientSecret = new RandomPassword(`${resourceBaseName}-docs-cms-oidc-secret`, {
+    length: 40,
+    special: false,
+  });
   const adminStageKey = resolveApplicationStageKey(args.stage);
   const adminStageDomain = buildStageDomains('admin', args.rootDomain)[adminStageKey];
   const adminOidcRedirectUrl = `https://${adminStageDomain}/auth/callback`;
   const adminOidcPostLogoutRedirectUrl = `https://${adminStageDomain}/login`;
+  const normalizeBaseUrl = (value: string): string => value.replace(/\/+$/, '');
+  const docsCmsSiteUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.siteUrl);
+  const docsCmsLocalDevUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.localDevUrl);
+  const docsCmsOidcRedirectUrls = [docsCmsSiteUrl, docsCmsLocalDevUrl]
+    .filter(Boolean)
+    .map(url => `${url}/admin/auth/callback`);
+  const docsCmsOidcPostLogoutRedirectUrls = [docsCmsSiteUrl, docsCmsLocalDevUrl]
+    .filter(Boolean)
+    .map(url => `${url}/admin`);
 
   new aws.secretsmanager.SecretVersion(`${resourceBaseName}-integration-config-secret-version`, {
     secretId: integrationConfigSecret.id,
@@ -743,9 +756,10 @@ export function deployIdentityInfrastructure(
         .all([
           supabaseOidcClientSecret.result,
           adminOidcClientSecret.result,
+          docsCmsOidcClientSecret.result,
           bootstrapAdminPasswordValue,
         ])
-        .apply(([supabaseClientSecret, adminClientSecret, adminPassword]) =>
+        .apply(([supabaseClientSecret, adminClientSecret, docsCmsClientSecret, adminPassword]) =>
           JSON.stringify({
             adminEmail: args.settings.integration.bootstrap.admin.email,
             adminGroup: args.settings.integration.bootstrap.admin.group,
@@ -760,6 +774,14 @@ export function deployIdentityInfrastructure(
             adminOidcRedirectUrl,
             adminPassword,
             adminUsername: args.settings.integration.bootstrap.admin.username,
+            docsCmsOidcAllowedGroups: args.settings.integration.docsCmsOidc.allowedGroups,
+            docsCmsOidcApplicationName: args.settings.integration.docsCmsOidc.applicationName,
+            docsCmsOidcApplicationSlug: args.settings.integration.docsCmsOidc.applicationSlug,
+            docsCmsOidcClientId: args.settings.integration.docsCmsOidc.clientId,
+            docsCmsOidcClientSecret: docsCmsClientSecret,
+            docsCmsOidcPostLogoutRedirectUrls,
+            docsCmsOidcProviderName: args.settings.integration.docsCmsOidc.providerName,
+            docsCmsOidcRedirectUrls,
             defaultApplicationDescription:
               args.settings.integration.bootstrap.defaultApplication.description,
             defaultApplicationEnabled:

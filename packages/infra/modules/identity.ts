@@ -93,6 +93,15 @@ export interface IdentityLocalConfig {
       clientId?: string;
       allowedEmailDomain?: string;
     };
+    docsCmsOidc?: {
+      applicationName?: string;
+      applicationSlug?: string;
+      providerName?: string;
+      clientId?: string;
+      siteUrl?: string;
+      localDevUrl?: string;
+      allowedGroups?: string[];
+    };
     bootstrap?: {
       admin?: {
         username?: string;
@@ -203,6 +212,15 @@ export interface IdentitySettings {
       providerName: string;
       clientId: string;
       allowedEmailDomain: string;
+    };
+    docsCmsOidc: {
+      applicationName: string;
+      applicationSlug: string;
+      providerName: string;
+      clientId: string;
+      siteUrl: string;
+      localDevUrl: string;
+      allowedGroups: string[];
     };
     bootstrap: {
       admin: {
@@ -613,6 +631,31 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
           args.env.INFRA_ADMIN_ALLOWED_EMAIL_DOMAIN ??
           localConfig?.integration?.adminOidc?.allowedEmailDomain ??
           IDENTITY_INFRA_DEFAULTS.integration.adminOidc.allowedEmailDomain,
+      },
+      docsCmsOidc: {
+        applicationName:
+          localConfig?.integration?.docsCmsOidc?.applicationName ??
+          IDENTITY_INFRA_DEFAULTS.integration.docsCmsOidc.applicationName,
+        applicationSlug:
+          localConfig?.integration?.docsCmsOidc?.applicationSlug ??
+          IDENTITY_INFRA_DEFAULTS.integration.docsCmsOidc.applicationSlug,
+        providerName:
+          localConfig?.integration?.docsCmsOidc?.providerName ??
+          IDENTITY_INFRA_DEFAULTS.integration.docsCmsOidc.providerName,
+        clientId:
+          localConfig?.integration?.docsCmsOidc?.clientId ??
+          IDENTITY_INFRA_DEFAULTS.integration.docsCmsOidc.clientId,
+        siteUrl:
+          args.env.INFRA_DOCS_CMS_SITE_URL ??
+          localConfig?.integration?.docsCmsOidc?.siteUrl ??
+          IDENTITY_INFRA_DEFAULTS.integration.docsCmsOidc.siteUrl,
+        localDevUrl:
+          args.env.INFRA_DOCS_CMS_LOCAL_DEV_URL ??
+          localConfig?.integration?.docsCmsOidc?.localDevUrl ??
+          IDENTITY_INFRA_DEFAULTS.integration.docsCmsOidc.localDevUrl,
+        allowedGroups:
+          localConfig?.integration?.docsCmsOidc?.allowedGroups ??
+          [...IDENTITY_INFRA_DEFAULTS.integration.docsCmsOidc.allowedGroups],
       },
       bootstrap: {
         admin: {

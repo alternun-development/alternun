@@ -38,11 +38,28 @@ def build_redirect_uri(url: str):
     return {"matching_mode": "strict", "url": url}
 
 
+def build_redirect_uris(urls):
+    return [build_redirect_uri(url) for url in urls if url]
+
+
 def read_bool_env(name: str, default: bool) -> bool:
     value = os.environ.get(name)
     if value is None:
         return default
     return value.strip().lower() not in {"0", "false", "no", "off"}
+
+
+def read_list_env(name: str, default=None):
+    value = os.environ.get(name)
+    if value is None:
+        return list(default or [])
+
+    entries = []
+    for item in value.split(","):
+        normalized = item.strip()
+        if normalized:
+            entries.append(normalized)
+    return entries
 
 
 def normalize_policy_mode(value: str) -> str:
@@ -117,6 +134,24 @@ return True
 """.strip()
 
 
+def build_group_access_expression(application_name: str, allowed_groups):
+    encoded_groups = json.dumps(sorted(set(group for group in allowed_groups if group)))
+    return f"""
+allowed_groups = set({encoded_groups})
+user = request.user
+
+if not user or not getattr(user, "is_authenticated", False):
+    ak_message("Authentication is required for {application_name}.")
+    return False
+
+if user.groups.filter(name__in=list(allowed_groups)).exists():
+    return True
+
+ak_message("{application_name} can only be accessed by approved Alternun admin/editor groups.")
+return False
+""".strip()
+
+
 def upsert_expression_policy(name: str, expression: str):
     policy, created = ExpressionPolicy.objects.get_or_create(
         name=name,
@@ -160,6 +195,9 @@ results = {
     "admin_user": "skipped",
     "admin_application_policy": "skipped",
     "admin_oidc_provider": "skipped",
+    "docs_cms_application_policy": "skipped",
+    "docs_cms_oidc_provider": "skipped",
+    "docs_cms_groups": "skipped",
     "default_application": "skipped",
     "google_source": "skipped",
     "internal_domain_users": "skipped",
@@ -193,6 +231,29 @@ admin_oidc_client_secret = read_env("ALTERNUN_BOOTSTRAP_ADMIN_OIDC_CLIENT_SECRET
 admin_oidc_redirect_url = read_env("ALTERNUN_BOOTSTRAP_ADMIN_OIDC_REDIRECT_URL")
 admin_oidc_post_logout_redirect_url = read_env(
     "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_POST_LOGOUT_REDIRECT_URL"
+)
+docs_cms_oidc_application_name = read_env(
+    "ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_APPLICATION_NAME", "Alternun Docs CMS"
+)
+docs_cms_oidc_application_slug = read_env(
+    "ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_APPLICATION_SLUG", "alternun-docs-cms"
+)
+docs_cms_oidc_provider_name = read_env(
+    "ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_PROVIDER_NAME", "Alternun Docs CMS OIDC"
+)
+docs_cms_oidc_client_id = read_env(
+    "ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_CLIENT_ID", "alternun-docs-cms"
+)
+docs_cms_oidc_client_secret = read_env("ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_CLIENT_SECRET")
+docs_cms_oidc_redirect_urls = read_list_env(
+    "ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_REDIRECT_URLS"
+)
+docs_cms_oidc_post_logout_redirect_urls = read_list_env(
+    "ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_POST_LOGOUT_REDIRECT_URLS"
+)
+docs_cms_oidc_allowed_groups = read_list_env(
+    "ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_ALLOWED_GROUPS",
+    ["authentik Admins", "Alternun Dashboard Admins", "Alternun Docs Editors"],
 )
 user_model = get_user_model()
 
@@ -408,6 +469,161 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
         )
 else:
     results["admin_oidc_provider"] = "missing_inputs"
+
+if docs_cms_oidc_allowed_groups:
+    ensured_docs_groups = []
+    for group_name in docs_cms_oidc_allowed_groups:
+        if not group_name:
+            continue
+        Group.objects.get_or_create(name=group_name)
+        ensured_docs_groups.append(group_name)
+
+    results["docs_cms_groups"] = {
+        "status": "configured",
+        "groups": ensured_docs_groups,
+    }
+else:
+    results["docs_cms_groups"] = "missing_allowed_groups"
+
+if docs_cms_oidc_application_slug and docs_cms_oidc_client_id and docs_cms_oidc_redirect_urls:
+    docs_scope_mapping_ids = [
+        "goauthentik.io/providers/oauth2/scope-openid",
+        "goauthentik.io/providers/oauth2/scope-email",
+        "goauthentik.io/providers/oauth2/scope-profile",
+        "goauthentik.io/providers/oauth2/scope-offline_access",
+    ]
+    expected_redirects = normalize_redirects(build_redirect_uris(docs_cms_oidc_redirect_urls))
+    authorization_flow = Flow.objects.filter(
+        slug="default-provider-authorization-implicit-consent"
+    ).first()
+    invalidation_flow = Flow.objects.filter(slug="default-provider-invalidation-flow").first()
+
+    provider, provider_created = OAuth2Provider.objects.get_or_create(
+        name=docs_cms_oidc_provider_name,
+        defaults={
+            "client_id": docs_cms_oidc_client_id,
+            "client_secret": docs_cms_oidc_client_secret,
+            "_redirect_uris": build_redirect_uris(docs_cms_oidc_redirect_urls),
+            "authorization_flow": authorization_flow,
+            "invalidation_flow": invalidation_flow,
+            "sub_mode": "user_email",
+        },
+    )
+
+    provider_changed = False
+    provider_updates = {
+        "client_id": docs_cms_oidc_client_id,
+        "client_secret": docs_cms_oidc_client_secret,
+        "sub_mode": "user_email",
+    }
+    for field, expected in provider_updates.items():
+        current = getattr(provider, field)
+        if current != expected:
+            setattr(provider, field, expected)
+            provider_changed = True
+
+    current_redirects = normalize_redirects(getattr(provider, "_redirect_uris", []))
+    if current_redirects != expected_redirects:
+        provider._redirect_uris = build_redirect_uris(docs_cms_oidc_redirect_urls)
+        provider_changed = True
+
+    if authorization_flow and provider.authorization_flow_id != authorization_flow.pk:
+        provider.authorization_flow = authorization_flow
+        provider_changed = True
+    if invalidation_flow and provider.invalidation_flow_id != invalidation_flow.pk:
+        provider.invalidation_flow = invalidation_flow
+        provider_changed = True
+    if (
+        hasattr(provider, "client_type")
+        and getattr(provider, "client_type", None) != "public"
+    ):
+        provider.client_type = "public"
+        provider_changed = True
+    if docs_cms_oidc_post_logout_redirect_urls and hasattr(provider, "post_logout_redirect_uris"):
+        current_logout_redirects = normalize_redirects(
+            getattr(provider, "post_logout_redirect_uris", [])
+        )
+        expected_logout_redirects = normalize_redirects(
+            build_redirect_uris(docs_cms_oidc_post_logout_redirect_urls)
+        )
+        if current_logout_redirects != expected_logout_redirects:
+            provider.post_logout_redirect_uris = build_redirect_uris(
+                docs_cms_oidc_post_logout_redirect_urls
+            )
+            provider_changed = True
+
+    if provider_created or provider_changed:
+        provider.save()
+
+    desired_scope_mappings, missing_scope_mapping_ids = resolve_scope_mappings(
+        docs_scope_mapping_ids
+    )
+    current_scope_mapping_ids = set(provider.property_mappings.values_list("pk", flat=True))
+    desired_scope_mapping_pks = {mapping.pk for mapping in desired_scope_mappings}
+    if current_scope_mapping_ids != desired_scope_mapping_pks:
+        provider.property_mappings.set(desired_scope_mappings)
+        provider_changed = True
+
+    if missing_scope_mapping_ids:
+        results["docs_cms_oidc_scope_mappings"] = {
+            "status": "missing_defaults",
+            "missing": missing_scope_mapping_ids,
+        }
+    else:
+        results["docs_cms_oidc_scope_mappings"] = {
+            "status": "configured",
+            "scopes": [mapping.scope_name for mapping in desired_scope_mappings],
+        }
+
+    application, application_created = Application.objects.get_or_create(
+        slug=docs_cms_oidc_application_slug,
+        defaults={
+            "name": docs_cms_oidc_application_name,
+            "provider": provider,
+        },
+    )
+
+    application_changed = False
+    if application.name != docs_cms_oidc_application_name:
+        application.name = docs_cms_oidc_application_name
+        application_changed = True
+    if application.provider_id != provider.pk:
+        application.provider = provider
+        application_changed = True
+
+    if application_created or application_changed:
+        application.save()
+
+    docs_cms_policy, policy_created, policy_changed = upsert_expression_policy(
+        "alternun-docs-cms-access",
+        build_group_access_expression(
+            docs_cms_oidc_application_name,
+            docs_cms_oidc_allowed_groups,
+        ),
+    )
+    policy_binding_created, policy_binding_changed = ensure_policy_binding(
+        application, docs_cms_policy, order=0
+    )
+    if policy_created or policy_binding_created:
+        results["docs_cms_application_policy"] = "created"
+    elif policy_changed or policy_binding_changed:
+        results["docs_cms_application_policy"] = "updated"
+    else:
+        results["docs_cms_application_policy"] = "unchanged"
+
+    if provider_created or application_created:
+        results["docs_cms_oidc_provider"] = "created"
+    elif provider_changed or application_changed:
+        results["docs_cms_oidc_provider"] = "updated"
+    else:
+        results["docs_cms_oidc_provider"] = "unchanged"
+
+    if identity_domain:
+        results["docs_cms_oidc_issuer"] = (
+            f"https://{identity_domain}/application/o/{docs_cms_oidc_application_slug}/"
+        )
+else:
+    results["docs_cms_oidc_provider"] = "missing_inputs"
 
 internal_user_promotion_policy = None
 if admin_allowed_email_domain:

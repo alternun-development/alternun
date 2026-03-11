@@ -145,6 +145,19 @@ export const IDENTITY_INFRA_DEFAULTS = {
       clientId: 'alternun-admin',
       allowedEmailDomain: ADMIN_SITE_INFRA_DEFAULTS.auth.allowedEmailDomain,
     },
+    docsCmsOidc: {
+      applicationName: 'Alternun Docs CMS',
+      applicationSlug: 'alternun-docs-cms',
+      providerName: 'Alternun Docs CMS OIDC',
+      clientId: 'alternun-docs-cms',
+      siteUrl: 'https://docs.alternun.io',
+      localDevUrl: 'http://localhost:3000',
+      allowedGroups: [
+        'authentik Admins',
+        'Alternun Dashboard Admins',
+        'Alternun Docs Editors',
+      ],
+    },
     bootstrap: {
       admin: {
         username: 'akadmin',
