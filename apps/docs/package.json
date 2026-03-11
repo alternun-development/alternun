@@ -5,6 +5,7 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
+    "dev:local": "docusaurus start --host 127.0.0.1 --port 8083",
     "build": "./build.sh",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
