@@ -33,6 +33,8 @@ jobs:
         run: pnpm install
 
       - name: Build website
+        env:
+          DOCS_CMS_USE_TESTNET_API_FALLBACK: 'true'
         run: pnpm build
 
       - name: Upload Build Artifact
