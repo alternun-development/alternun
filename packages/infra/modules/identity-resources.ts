@@ -9,6 +9,7 @@ import { RandomPassword } from '@pulumi/random';
 import { readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { gzipSync } from 'node:zlib';
+import { buildStageDomains } from '../config/infrastructure-specs.js';
 import type { IdentityDatabaseMode, IdentitySettings } from './identity.js';
 import { resolveIdentityStageDomain } from './identity.js';
 
@@ -70,6 +71,18 @@ export interface IdentityInfrastructureResources {
     subnetGroupName?: pulumi.Output<string>;
     username: pulumi.Output<string>;
   };
+  acmeBackup?: {
+    bucketArn: pulumi.Output<string>;
+    bucketName: pulumi.Output<string>;
+    prefix: pulumi.Output<string>;
+  };
+  loadBalancer?: {
+    arn: pulumi.Output<string>;
+    dnsName: pulumi.Output<string>;
+    hostedZoneId: pulumi.Output<string>;
+    securityGroupId: pulumi.Output<string>;
+    targetGroupArn: pulumi.Output<string>;
+  };
 }
 
 interface IdentityVpcComponent {
@@ -110,8 +123,10 @@ function readIdentityTemplate(fileName: string): string {
 }
 
 const DEPLOY_AUTHENTIK_SCRIPT_TEMPLATE = readIdentityTemplate('deploy-authentik.sh');
-const DOCKER_COMPOSE_EC2_TEMPLATE = readIdentityTemplate('docker-compose.ec2.yml');
-const DOCKER_COMPOSE_RDS_TEMPLATE = readIdentityTemplate('docker-compose.rds.yml');
+const DOCKER_COMPOSE_EC2_ROUTE53_TEMPLATE = readIdentityTemplate('docker-compose.ec2.yml');
+const DOCKER_COMPOSE_RDS_ROUTE53_TEMPLATE = readIdentityTemplate('docker-compose.rds.yml');
+const DOCKER_COMPOSE_EC2_ALB_TEMPLATE = readIdentityTemplate('docker-compose.ec2.alb.yml');
+const DOCKER_COMPOSE_RDS_ALB_TEMPLATE = readIdentityTemplate('docker-compose.rds.alb.yml');
 const AUTHENTIK_INTEGRATION_BOOTSTRAP_SCRIPT_TEMPLATE = readIdentityTemplate(
   'bootstrap-authentik-integrations.py'
 );
@@ -122,6 +137,15 @@ function isArmInstanceType(instanceType: string): boolean {
 
 function sanitizeResourceName(value: string): string {
   return value.replace(/[^a-zA-Z0-9-]/g, '-');
+}
+
+function sanitizeBucketName(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
 }
 
 function sanitizeSecretName(value: string): string {
@@ -136,6 +160,25 @@ function scopeSecretName(secretName: string, stage: string): string {
   }
 
   return `${normalized}/${stage}`;
+}
+
+function resolveApplicationStageKey(stage: string): 'production' | 'dev' | 'mobile' {
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+
+  if (
+    normalized === 'production' ||
+    normalized === 'prod' ||
+    normalized === 'identity-prod' ||
+    normalized === 'dashboard-prod'
+  ) {
+    return 'production';
+  }
+
+  if (normalized === 'mobile' || normalized === 'preview' || normalized === 'identity-mobile') {
+    return 'mobile';
+  }
+
+  return 'dev';
 }
 
 function gzipUserData(userData: pulumi.Output<string>): pulumi.Output<string> {
@@ -213,6 +256,12 @@ function buildAuthBootstrapUserData(args: {
   stage: string;
   domain: string;
   databaseMode: IdentityDatabaseMode;
+  ingressMode: string;
+  tlsMode: string;
+  acmeEmail: string;
+  route53HostedZoneId: pulumi.Input<string>;
+  acmeBackupBucketName: pulumi.Input<string>;
+  acmeBackupPrefix: string;
   authentikImageTag: string;
   authentikSecretArn: pulumi.Input<string>;
   databaseCredentialsSecretArn: pulumi.Input<string>;
@@ -227,6 +276,8 @@ function buildAuthBootstrapUserData(args: {
       args.smtpCredentialsSecretArn,
       args.jwtSigningKeySecretArn,
       args.integrationConfigSecretArn,
+      args.route53HostedZoneId,
+      args.acmeBackupBucketName,
     ])
     .apply(
       ([
@@ -235,6 +286,8 @@ function buildAuthBootstrapUserData(args: {
         smtpCredentialsSecretArn,
         jwtSigningKeySecretArn,
         integrationConfigSecretArn,
+        route53HostedZoneId,
+        acmeBackupBucketName,
       ]) => `#!/bin/bash
 set -euxo pipefail
 
@@ -281,6 +334,12 @@ ALTERNUN_APP_NAME=${args.appName}
 ALTERNUN_ROOT_DOMAIN=${args.rootDomain}
 ALTERNUN_STAGE=${args.stage}
 ALTERNUN_IDENTITY_DOMAIN=${args.domain}
+ALTERNUN_IDENTITY_INGRESS_MODE=${args.ingressMode}
+ALTERNUN_IDENTITY_TLS_MODE=${args.tlsMode}
+ALTERNUN_IDENTITY_TLS_ACME_EMAIL=${args.acmeEmail}
+ALTERNUN_ROUTE53_HOSTED_ZONE_ID=${route53HostedZoneId}
+ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET=${acmeBackupBucketName}
+ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX=${args.acmeBackupPrefix}
 AUTHENTIK_IMAGE_TAG=${args.authentikImageTag}
 AUTHENTIK_DATABASE_MODE=${args.databaseMode}
 AUTHENTIK_SECRET_ARN=${authentikSecretArn}
@@ -298,12 +357,20 @@ ${DEPLOY_AUTHENTIK_SCRIPT_TEMPLATE}
 SCRIPTEOF
 
 cat >/opt/alternun/identity/templates/docker-compose.ec2.yml <<'COMPOSEEC2EOF'
-${DOCKER_COMPOSE_EC2_TEMPLATE}
+${DOCKER_COMPOSE_EC2_ROUTE53_TEMPLATE}
 COMPOSEEC2EOF
 
 cat >/opt/alternun/identity/templates/docker-compose.rds.yml <<'COMPOSERDSEOF'
-${DOCKER_COMPOSE_RDS_TEMPLATE}
+${DOCKER_COMPOSE_RDS_ROUTE53_TEMPLATE}
 COMPOSERDSEOF
+
+cat >/opt/alternun/identity/templates/docker-compose.ec2.alb.yml <<'COMPOSEEC2ALBEOF'
+${DOCKER_COMPOSE_EC2_ALB_TEMPLATE}
+COMPOSEEC2ALBEOF
+
+cat >/opt/alternun/identity/templates/docker-compose.rds.alb.yml <<'COMPOSERDSALBEOF'
+${DOCKER_COMPOSE_RDS_ALB_TEMPLATE}
+COMPOSERDSALBEOF
 
 cat >/opt/alternun/identity/templates/bootstrap-authentik-integrations.py <<'BOOTSTRAPEOF'
 ${AUTHENTIK_INTEGRATION_BOOTSTRAP_SCRIPT_TEMPLATE}
@@ -312,9 +379,13 @@ BOOTSTRAPEOF
 chmod 0755 /opt/alternun/identity/deploy-authentik.sh
 chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml
 chmod 0644 /opt/alternun/identity/templates/docker-compose.rds.yml
+chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.alb.yml
+chmod 0644 /opt/alternun/identity/templates/docker-compose.rds.alb.yml
 chmod 0644 /opt/alternun/identity/templates/bootstrap-authentik-integrations.py
 chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml
 chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.rds.yml
+chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.alb.yml
+chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.rds.alb.yml
 chown ec2-user:ec2-user /opt/alternun/identity/templates/bootstrap-authentik-integrations.py
 
 cat >/etc/systemd/system/alternun-authentik.service <<'SERVICEEOF'
@@ -360,10 +431,25 @@ export function deployIdentityInfrastructure(
   const preventDestructiveIdentityChanges = protectCriticalResources && !allowInstanceReplacement;
 
   const identityDomain = resolveIdentityStageDomain(args.settings, args.stage);
+  const identityStageKey = resolveApplicationStageKey(args.stage);
+  const identityIngressMode = args.settings.ingress.stageModes[identityStageKey];
+  const identityTlsMode = args.settings.tls.stageModes[identityStageKey];
+  const useAlbIngress = identityIngressMode === 'alb';
+  const useAcmeBackup =
+    identityTlsMode === 'acme-route53-dns-01' && args.settings.tls.acmeBackup.enabled;
   const resourceBaseName = sanitizeResourceName(`identity-${args.stage}`);
   const environmentLabel = normalizeIdentityEnvironmentLabel(args.stage);
   const resourceDisplayPrefix = `${args.appName}-${environmentLabel}-auth`;
   const resourceTags = createResourceTags(args);
+  const callerIdentity = aws.getCallerIdentityOutput({});
+  const route53ZoneId =
+    args.hostedZoneId ??
+    args.settings.tls.route53HostedZoneId ??
+    aws.route53.getZoneOutput({ name: args.rootDomain, privateZone: false }).zoneId;
+  const acmeBackupBucketName =
+    pulumi.interpolate`${args.appName}-${args.stage}-identity-acme-${callerIdentity.accountId}`.apply(
+      sanitizeBucketName
+    );
   const stageScopedSecrets = {
     authentik: scopeSecretName(args.settings.secrets.authentikSecretKeyName, args.stage),
     databaseCredentials: scopeSecretName(
@@ -385,7 +471,76 @@ export function deployIdentityInfrastructure(
   const vpc = new sst.aws.Vpc(resourceBaseName) as unknown as IdentityVpcComponent;
   const publicSubnetIds = pulumi.output(vpc.publicSubnets).apply(subnets => pulumi.all(subnets));
   const privateSubnetIds = pulumi.output(vpc.privateSubnets).apply(subnets => pulumi.all(subnets));
+  const acmeBackupBucket = useAcmeBackup
+    ? new aws.s3.BucketV2(`${resourceBaseName}-acme-backup`, {
+        bucket: acmeBackupBucketName,
+        forceDestroy: args.stage !== 'production',
+        tags: {
+          ...resourceTags,
+          Name: `${resourceDisplayPrefix}-acme-backup`,
+        },
+      })
+    : undefined;
+
+  if (acmeBackupBucket) {
+    new aws.s3.BucketPublicAccessBlock(`${resourceBaseName}-acme-backup-public-access`, {
+      blockPublicAcls: true,
+      blockPublicPolicy: true,
+      bucket: acmeBackupBucket.id,
+      ignorePublicAcls: true,
+      restrictPublicBuckets: true,
+    });
+
+    new aws.s3.BucketServerSideEncryptionConfigurationV2(
+      `${resourceBaseName}-acme-backup-encryption`,
+      {
+        bucket: acmeBackupBucket.id,
+        rules: [{ applyServerSideEncryptionByDefault: { sseAlgorithm: 'AES256' } }],
+      }
+    );
+
+    new aws.s3.BucketVersioningV2(`${resourceBaseName}-acme-backup-versioning`, {
+      bucket: acmeBackupBucket.id,
+      versioningConfiguration: { status: 'Enabled' },
+    });
+  }
+
   const useEc2Database = args.settings.database.mode === 'ec2';
+  const loadBalancerSecurityGroup = useAlbIngress
+    ? new aws.ec2.SecurityGroup(`${resourceBaseName}-alb-sg`, {
+        description: `Authentik load balancer security group for ${args.stage}`,
+        egress: [
+          {
+            cidrBlocks: ['0.0.0.0/0'],
+            fromPort: 0,
+            ipv6CidrBlocks: ['::/0'],
+            protocol: '-1',
+            toPort: 0,
+          },
+        ],
+        ingress: [
+          {
+            cidrBlocks: ['0.0.0.0/0'],
+            description: 'HTTP',
+            fromPort: 80,
+            protocol: 'tcp',
+            toPort: 80,
+          },
+          {
+            cidrBlocks: ['0.0.0.0/0'],
+            description: 'HTTPS',
+            fromPort: 443,
+            protocol: 'tcp',
+            toPort: 443,
+          },
+        ],
+        tags: {
+          ...resourceTags,
+          Name: `${resourceDisplayPrefix}-alb-sg`,
+        },
+        vpcId: vpc.id,
+      })
+    : undefined;
 
   const appSecurityGroup = new aws.ec2.SecurityGroup(`${resourceBaseName}-app-sg`, {
     description: `Authentik application security group for ${args.stage}`,
@@ -399,20 +554,32 @@ export function deployIdentityInfrastructure(
       },
     ],
     ingress: [
-      {
-        cidrBlocks: ['0.0.0.0/0'],
-        description: 'HTTP',
-        fromPort: 80,
-        protocol: 'tcp',
-        toPort: 80,
-      },
-      {
-        cidrBlocks: ['0.0.0.0/0'],
-        description: 'HTTPS',
-        fromPort: 443,
-        protocol: 'tcp',
-        toPort: 443,
-      },
+      ...(useAlbIngress
+        ? [
+            {
+              description: 'HTTPS from load balancer',
+              fromPort: 443,
+              protocol: 'tcp',
+              securityGroups: [loadBalancerSecurityGroup!.id],
+              toPort: 443,
+            },
+          ]
+        : [
+            {
+              cidrBlocks: ['0.0.0.0/0'],
+              description: 'HTTP',
+              fromPort: 80,
+              protocol: 'tcp',
+              toPort: 80,
+            },
+            {
+              cidrBlocks: ['0.0.0.0/0'],
+              description: 'HTTPS',
+              fromPort: 443,
+              protocol: 'tcp',
+              toPort: 443,
+            },
+          ]),
     ],
     tags: {
       ...resourceTags,
@@ -560,18 +727,61 @@ export function deployIdentityInfrastructure(
     }
   );
 
+  const adminOidcClientSecret = new RandomPassword(`${resourceBaseName}-admin-oidc-secret`, {
+    length: 40,
+    special: false,
+  });
+  const docsCmsOidcClientSecret = new RandomPassword(`${resourceBaseName}-docs-cms-oidc-secret`, {
+    length: 40,
+    special: false,
+  });
+  const adminStageKey = resolveApplicationStageKey(args.stage);
+  const adminStageDomain = buildStageDomains('admin', args.rootDomain)[adminStageKey];
+  const adminOidcRedirectUrl = `https://${adminStageDomain}/auth/callback`;
+  const adminOidcPostLogoutRedirectUrl = `https://${adminStageDomain}/login`;
+  const normalizeBaseUrl = (value: string): string => value.replace(/\/+$/, '');
+  const docsCmsSiteUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.siteUrl);
+  const docsCmsLocalDevUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.localDevUrl);
+  const docsCmsOidcRedirectUrls = [docsCmsSiteUrl, docsCmsLocalDevUrl]
+    .filter(Boolean)
+    .map(url => `${url}/admin/auth/callback`);
+  const docsCmsOidcPostLogoutRedirectUrls = [docsCmsSiteUrl, docsCmsLocalDevUrl]
+    .filter(Boolean)
+    .map(url => `${url}/admin`);
+
   new aws.secretsmanager.SecretVersion(`${resourceBaseName}-integration-config-secret-version`, {
     secretId: integrationConfigSecret.id,
     secretString: pulumi.secret(
       pulumi
-        .all([supabaseOidcClientSecret.result, bootstrapAdminPasswordValue])
-        .apply(([supabaseClientSecret, adminPassword]) =>
+        .all([
+          supabaseOidcClientSecret.result,
+          adminOidcClientSecret.result,
+          docsCmsOidcClientSecret.result,
+          bootstrapAdminPasswordValue,
+        ])
+        .apply(([supabaseClientSecret, adminClientSecret, docsCmsClientSecret, adminPassword]) =>
           JSON.stringify({
             adminEmail: args.settings.integration.bootstrap.admin.email,
             adminGroup: args.settings.integration.bootstrap.admin.group,
             adminName: args.settings.integration.bootstrap.admin.name,
+            adminAllowedEmailDomain: args.settings.integration.adminOidc.allowedEmailDomain,
+            adminOidcApplicationName: args.settings.integration.adminOidc.applicationName,
+            adminOidcApplicationSlug: args.settings.integration.adminOidc.applicationSlug,
+            adminOidcClientId: args.settings.integration.adminOidc.clientId,
+            adminOidcClientSecret: adminClientSecret,
+            adminOidcPostLogoutRedirectUrl,
+            adminOidcProviderName: args.settings.integration.adminOidc.providerName,
+            adminOidcRedirectUrl,
             adminPassword,
             adminUsername: args.settings.integration.bootstrap.admin.username,
+            docsCmsOidcAllowedGroups: args.settings.integration.docsCmsOidc.allowedGroups,
+            docsCmsOidcApplicationName: args.settings.integration.docsCmsOidc.applicationName,
+            docsCmsOidcApplicationSlug: args.settings.integration.docsCmsOidc.applicationSlug,
+            docsCmsOidcClientId: args.settings.integration.docsCmsOidc.clientId,
+            docsCmsOidcClientSecret: docsCmsClientSecret,
+            docsCmsOidcPostLogoutRedirectUrls,
+            docsCmsOidcProviderName: args.settings.integration.docsCmsOidc.providerName,
+            docsCmsOidcRedirectUrls,
             defaultApplicationDescription:
               args.settings.integration.bootstrap.defaultApplication.description,
             defaultApplicationEnabled:
@@ -769,6 +979,51 @@ export function deployIdentityInfrastructure(
       ),
   });
 
+  new aws.iam.RolePolicy(`${resourceBaseName}-instance-route53-policy`, {
+    role: instanceRole.name,
+    policy: pulumi.output(route53ZoneId).apply(zoneId =>
+      JSON.stringify({
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Action: [
+              'route53:ChangeResourceRecordSets',
+              'route53:GetChange',
+              'route53:ListHostedZones',
+              'route53:ListHostedZonesByName',
+              'route53:ListResourceRecordSets',
+            ],
+            Effect: 'Allow',
+            Resource: ['*', `arn:aws:route53:::hostedzone/${zoneId}`],
+          },
+        ],
+      })
+    ),
+  });
+
+  if (acmeBackupBucket) {
+    new aws.iam.RolePolicy(`${resourceBaseName}-instance-acme-backup-policy`, {
+      role: instanceRole.name,
+      policy: pulumi.all([acmeBackupBucket.arn]).apply(([bucketArn]) =>
+        JSON.stringify({
+          Version: '2012-10-17',
+          Statement: [
+            {
+              Action: ['s3:GetBucketLocation', 's3:ListBucket'],
+              Effect: 'Allow',
+              Resource: [bucketArn],
+            },
+            {
+              Action: ['s3:GetObject', 's3:PutObject'],
+              Effect: 'Allow',
+              Resource: [`${bucketArn}/*`],
+            },
+          ],
+        })
+      ),
+    });
+  }
+
   const instanceProfile = new aws.iam.InstanceProfile(`${resourceBaseName}-instance-profile`, {
     role: instanceRole.name,
     tags: {
@@ -784,6 +1039,12 @@ export function deployIdentityInfrastructure(
     stage: args.stage,
     domain: identityDomain,
     databaseMode: args.settings.database.mode,
+    ingressMode: identityIngressMode,
+    tlsMode: identityTlsMode,
+    acmeEmail: args.settings.tls.acmeEmail,
+    route53HostedZoneId: route53ZoneId,
+    acmeBackupBucketName: acmeBackupBucket?.bucket ?? '',
+    acmeBackupPrefix: args.settings.tls.acmeBackup.prefix,
     authentikImageTag: args.settings.authentikImageTag,
     authentikSecretArn: authentikSecret.arn,
     databaseCredentialsSecretArn: databaseCredentialsSecret.arn,
@@ -825,51 +1086,189 @@ export function deployIdentityInfrastructure(
     }
   );
 
-  const identityElasticIp = new aws.ec2.Eip(
-    `${resourceBaseName}-eip`,
-    {
-      domain: 'vpc',
+  const identityElasticIp = useAlbIngress
+    ? undefined
+    : new aws.ec2.Eip(
+        `${resourceBaseName}-eip`,
+        {
+          domain: 'vpc',
+          tags: {
+            ...resourceTags,
+            Name: `${resourceDisplayPrefix}-eip`,
+          },
+        },
+        {
+          protect: preventDestructiveIdentityChanges,
+        }
+      );
+
+  if (identityElasticIp) {
+    new aws.ec2.EipAssociation(
+      `${resourceBaseName}-eip-association`,
+      {
+        allocationId: identityElasticIp.id,
+        instanceId: identityInstance.id,
+      },
+      {
+        deleteBeforeReplace: false,
+        protect: preventDestructiveIdentityChanges,
+      }
+    );
+  }
+
+  let identityLoadBalancer: aws.lb.LoadBalancer | undefined;
+  let identityTargetGroup: aws.lb.TargetGroup | undefined;
+
+  if (useAlbIngress) {
+    identityTargetGroup = new aws.lb.TargetGroup(`${resourceBaseName}-tg`, {
+      deregistrationDelay: 30,
+      healthCheck: {
+        enabled: true,
+        healthyThreshold: 2,
+        interval: 30,
+        matcher: args.settings.ingress.alb.healthCheckMatcher,
+        path: args.settings.ingress.alb.healthCheckPath,
+        port: 'traffic-port',
+        protocol: 'HTTPS',
+        timeout: 5,
+        unhealthyThreshold: 3,
+      },
+      port: 443,
+      protocol: 'HTTPS',
+      targetType: 'instance',
       tags: {
         ...resourceTags,
-        Name: `${resourceDisplayPrefix}-eip`,
+        Name: `${resourceDisplayPrefix}-tg`,
       },
-    },
-    {
-      protect: preventDestructiveIdentityChanges,
+      vpcId: vpc.id,
+    });
+
+    new aws.lb.TargetGroupAttachment(`${resourceBaseName}-tg-attachment`, {
+      port: 443,
+      targetGroupArn: identityTargetGroup.arn,
+      targetId: identityInstance.id,
+    });
+
+    identityLoadBalancer = new aws.lb.LoadBalancer(
+      `${resourceBaseName}-alb`,
+      {
+        enableDeletionProtection: protectCriticalResources,
+        idleTimeout: args.settings.ingress.alb.idleTimeoutSeconds,
+        internal: false,
+        loadBalancerType: 'application',
+        securityGroups: [loadBalancerSecurityGroup!.id],
+        subnets: publicSubnetIds,
+        tags: {
+          ...resourceTags,
+          Name: `${resourceDisplayPrefix}-alb`,
+        },
+      },
+      {
+        protect: preventDestructiveIdentityChanges,
+      }
+    );
+
+    let certificateArn: pulumi.Input<string> | undefined =
+      args.settings.ingress.alb.certificateArn || undefined;
+
+    if (!certificateArn) {
+      const certificate = new aws.acm.Certificate(`${resourceBaseName}-alb-cert`, {
+        domainName: identityDomain,
+        validationMethod: 'DNS',
+        tags: resourceTags,
+      });
+
+      const certificateValidationRecord = new aws.route53.Record(
+        `${resourceBaseName}-alb-cert-validation`,
+        {
+          allowOverwrite: true,
+          name: certificate.domainValidationOptions[0].resourceRecordName,
+          records: [certificate.domainValidationOptions[0].resourceRecordValue],
+          ttl: 60,
+          type: certificate.domainValidationOptions[0].resourceRecordType,
+          zoneId: route53ZoneId,
+        }
+      );
+
+      const certificateValidation = new aws.acm.CertificateValidation(
+        `${resourceBaseName}-alb-cert-validation-complete`,
+        {
+          certificateArn: certificate.arn,
+          validationRecordFqdns: [certificateValidationRecord.fqdn],
+        }
+      );
+
+      certificateArn = certificateValidation.certificateArn;
     }
-  );
 
-  new aws.ec2.EipAssociation(
-    `${resourceBaseName}-eip-association`,
-    {
-      allocationId: identityElasticIp.id,
-      instanceId: identityInstance.id,
-    },
-    {
-      deleteBeforeReplace: false,
-      protect: preventDestructiveIdentityChanges,
+    if (!certificateArn) {
+      throw new Error(`Identity ALB certificate could not be resolved for ${identityDomain}.`);
     }
-  );
 
-  const route53ZoneId =
-    args.hostedZoneId ??
-    aws.route53.getZoneOutput({ name: args.rootDomain, privateZone: false }).zoneId;
+    new aws.lb.Listener(`${resourceBaseName}-alb-http`, {
+      defaultActions: [
+        {
+          redirect: {
+            port: '443',
+            protocol: 'HTTPS',
+            statusCode: 'HTTP_301',
+          },
+          type: 'redirect',
+        },
+      ],
+      loadBalancerArn: identityLoadBalancer.arn,
+      port: 80,
+      protocol: 'HTTP',
+    });
 
-  const identityRecord = new aws.route53.Record(`${resourceBaseName}-dns`, {
-    allowOverwrite: true,
-    name: identityDomain,
-    records: [identityElasticIp.publicIp],
-    ttl: 300,
-    type: 'A',
-    zoneId: route53ZoneId,
-  });
+    new aws.lb.Listener(`${resourceBaseName}-alb-https`, {
+      certificateArn,
+      defaultActions: [
+        {
+          targetGroupArn: identityTargetGroup.arn,
+          type: 'forward',
+        },
+      ],
+      loadBalancerArn: identityLoadBalancer.arn,
+      port: 443,
+      protocol: 'HTTPS',
+      sslPolicy: 'ELBSecurityPolicy-TLS13-1-2-2021-06',
+    });
+  }
+
+  const identityRecord = useAlbIngress
+    ? new aws.route53.Record(`${resourceBaseName}-dns`, {
+        aliases: [
+          {
+            evaluateTargetHealth: true,
+            name: identityLoadBalancer!.dnsName,
+            zoneId: identityLoadBalancer!.zoneId,
+          },
+        ],
+        allowOverwrite: true,
+        name: identityDomain,
+        type: 'A',
+        zoneId: route53ZoneId,
+      })
+    : new aws.route53.Record(`${resourceBaseName}-dns`, {
+        allowOverwrite: true,
+        name: identityDomain,
+        records: [identityElasticIp!.publicIp],
+        ttl: 300,
+        type: 'A',
+        zoneId: route53ZoneId,
+      });
+
+  const identityPublicIp = identityElasticIp
+    ? identityElasticIp.publicIp
+    : identityInstance.publicIp;
 
   return {
     domain: identityDomain,
     dnsRecordFqdn: identityRecord.fqdn,
     instanceId: identityInstance.id,
     instanceProfileName: instanceProfile.name,
-    publicIp: identityElasticIp.publicIp,
+    publicIp: identityPublicIp,
     privateIp: identityInstance.privateIp,
     route53RecordName: identityRecord.name,
     securityGroupIds: {
@@ -914,5 +1313,22 @@ export function deployIdentityInfrastructure(
       subnetGroupName: databaseSubnetGroup?.name,
       username: pulumi.output(databaseUsername),
     },
+    acmeBackup: acmeBackupBucket
+      ? {
+          bucketArn: acmeBackupBucket.arn,
+          bucketName: acmeBackupBucket.bucket,
+          prefix: pulumi.output(args.settings.tls.acmeBackup.prefix),
+        }
+      : undefined,
+    loadBalancer:
+      identityLoadBalancer && identityTargetGroup && loadBalancerSecurityGroup
+        ? {
+            arn: identityLoadBalancer.arn,
+            dnsName: identityLoadBalancer.dnsName,
+            hostedZoneId: identityLoadBalancer.zoneId,
+            securityGroupId: loadBalancerSecurityGroup.id,
+            targetGroupArn: identityTargetGroup.arn,
+          }
+        : undefined,
   };
 }

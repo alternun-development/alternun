@@ -5,6 +5,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:all": "concurrently -k --names api,admin,mobile,docs --prefix-colors blue,green,magenta,cyan \"pnpm --filter @alternun/api run dev\" \"pnpm --filter @alternun/admin run dev:local\" \"pnpm --filter @alternun/mobile run web:local\" \"pnpm --filter alternun-docs run dev:local\"",
+    "admin": "pnpm --filter @alternun/admin dev",
     "mobile": "pnpm --filter ./apps/mobile start",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -18,6 +20,12 @@
     "clean": "turbo run clean",
     "infra:deploy:dev": "pnpm --filter @alternun/infra run deploy:dev",
     "infra:deploy:production": "pnpm --filter @alternun/infra run deploy:production",
+    "infra:deploy:api-dev": "pnpm --filter @alternun/infra run deploy:api-dev",
+    "infra:deploy:api-prod": "pnpm --filter @alternun/infra run deploy:api-prod",
+    "infra:deploy:dashboard-dev": "pnpm --filter @alternun/infra run deploy:dashboard-dev",
+    "infra:deploy:dashboard-prod": "pnpm --filter @alternun/infra run deploy:dashboard-prod",
+    "infra:deploy:admin-dev": "pnpm --filter @alternun/infra run deploy:admin-dev",
+    "infra:deploy:admin-prod": "pnpm --filter @alternun/infra run deploy:admin-prod",
     "infra:ensure:pipelines": "pnpm --filter @alternun/infra run ensure:pipelines",
     "infra:sync:develop-master": "pnpm --filter @alternun/infra run sync:develop-master",
     "infra:sync:master-develop": "pnpm --filter @alternun/infra run sync:master-develop",
@@ -47,6 +55,7 @@
     "@types/three": "^0.169.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "concurrently": "^9.2.1",
     "eslint": "^8.40.0",
     "eslint-plugin-security": "^1.7.1",
     "husky": "^8.0.3",
@@ -61,7 +70,8 @@
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
-      "fast-xml-parser": "4.5.4"
+      "fast-xml-parser": "4.5.4",
+      "simple-git": "3.32.3"
     }
   },
   "dependencies": {

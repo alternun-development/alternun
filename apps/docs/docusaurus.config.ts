@@ -2,6 +2,51 @@ import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
+function parseListEnv(value: string | undefined, fallback: string[]): string[] {
+  if (!value) {
+    return fallback;
+  }
+
+  return value
+    .split(',')
+    .map(entry => entry.trim())
+    .filter(Boolean);
+}
+
+function parseBooleanEnv(name: string, fallback = false): boolean {
+  const value = readTrimmedEnv(name);
+  if (!value) {
+    return fallback;
+  }
+
+  return !['0', 'false', 'no', 'off'].includes(value.toLowerCase());
+}
+
+function readTrimmedEnv(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  if (!value || value.length === 0) {
+    return undefined;
+  }
+
+  return value;
+}
+
+const cmsAllowedGroups = parseListEnv(process.env.DOCS_CMS_ALLOWED_GROUPS, [
+  'authentik Admins',
+  'Alternun Dashboard Admins',
+  'Alternun Docs Editors',
+]);
+
+const cmsGithubTestnetApiBaseUrl =
+  readTrimmedEnv('DOCS_CMS_GITHUB_TESTNET_API_BASE_URL') ?? 'https://testnet.api.alternun.co';
+const useTestnetApiFallback = parseBooleanEnv('DOCS_CMS_USE_TESTNET_API_FALLBACK');
+const cmsGithubOAuthBaseUrl =
+  readTrimmedEnv('DOCS_CMS_GITHUB_OAUTH_BASE_URL') ??
+  (useTestnetApiFallback ? cmsGithubTestnetApiBaseUrl : '');
+const cmsGithubAuthEndpoint = readTrimmedEnv('DOCS_CMS_GITHUB_AUTH_ENDPOINT') ?? 'decap/auth';
+const cmsGithubRepo = readTrimmedEnv('DOCS_CMS_GITHUB_REPO') ?? 'alternun-development/alternun';
+const cmsGithubBranch = readTrimmedEnv('DOCS_CMS_GITHUB_BRANCH') ?? 'master';
+
 const config: Config = {
   title: 'Alternun Docs',
   tagline: '#ReDeFine the future with us',
@@ -75,6 +120,30 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
+
+  customFields: {
+    cms: {
+      auth: {
+        issuer:
+          readTrimmedEnv('DOCS_CMS_AUTH_ISSUER') ??
+          'https://testnet.sso.alternun.co/application/o/alternun-docs-cms/',
+        clientId: readTrimmedEnv('DOCS_CMS_AUTH_CLIENT_ID') ?? 'alternun-docs-cms',
+        audience: readTrimmedEnv('DOCS_CMS_AUTH_AUDIENCE') ?? 'alternun-app',
+        allowedGroups: cmsAllowedGroups,
+      },
+      backend: {
+        mode: cmsGithubOAuthBaseUrl ? 'github' : 'test-repo',
+        repo: cmsGithubRepo,
+        branch: cmsGithubBranch,
+        baseUrl: cmsGithubOAuthBaseUrl,
+        authEndpoint: cmsGithubAuthEndpoint,
+      },
+      media: {
+        folder: 'apps/docs/static/img/uploads',
+        publicFolder: '/img/uploads',
+      },
+    },
+  },
 
   themeConfig: {
     // Replace with your project's social card

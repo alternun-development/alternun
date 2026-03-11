@@ -5,6 +5,7 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
+    "dev:local": "docusaurus start --host 127.0.0.1 --port 8083",
     "build": "./build.sh",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
@@ -19,6 +20,7 @@
     "@docusaurus/preset-classic": "3.5.2",
     "@docusaurus/theme-mermaid": "3.5.2",
     "@mdx-js/react": "^3.0.0",
+    "oidc-client-ts": "^3.4.1",
     "@react-three/fiber": "^8.17.10",
     "clsx": "^2.0.0",
     "framer-motion": "^12.34.0",
@@ -28,8 +30,10 @@
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.5.2",
+    "@docusaurus/theme-classic": "3.5.2",
     "@docusaurus/tsconfig": "3.5.2",
     "@docusaurus/types": "3.5.2",
+    "@types/node": "^22.13.10",
     "typescript": "~5.5.2"
   },
   "browserslist": {

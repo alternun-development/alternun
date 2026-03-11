@@ -11,6 +11,9 @@ node_modules
 **/.turbo/
 **/.next/
 **/*.tsbuildinfo
+apps/admin/dist/
+apps/api/dist/
+apps/api/dist-lambda/
 supabase/.temp/
 
 # Lockfiles for non-pnpm managers

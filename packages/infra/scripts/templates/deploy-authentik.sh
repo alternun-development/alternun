@@ -3,6 +3,8 @@ set -euo pipefail
 
 source /etc/alternun-identity.env
 AUTHENTIK_DATABASE_MODE="${AUTHENTIK_DATABASE_MODE:-rds}"
+ALTERNUN_IDENTITY_TLS_MODE="${ALTERNUN_IDENTITY_TLS_MODE:-acme-route53-dns-01}"
+ALTERNUN_IDENTITY_INGRESS_MODE="${ALTERNUN_IDENTITY_INGRESS_MODE:-instance}"
 
 TOKEN="$(curl -fsS -X PUT 'http://169.254.169.254/latest/api/token' -H 'X-aws-ec2-metadata-token-ttl-seconds: 21600')"
 INSTANCE_IDENTITY="$(curl -fsS -H "X-aws-ec2-metadata-token: ${TOKEN}" 'http://169.254.169.254/latest/dynamic/instance-identity/document')"
@@ -81,6 +83,22 @@ BOOTSTRAP_ADMIN_EMAIL="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.admi
 BOOTSTRAP_ADMIN_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminName // "authentik Default Admin"')"
 BOOTSTRAP_ADMIN_PASSWORD="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminPassword // empty')"
 BOOTSTRAP_ADMIN_GROUP="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminGroup // "authentik Admins"')"
+BOOTSTRAP_ADMIN_OIDC_APPLICATION_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcApplicationName // "Alternun Admin"')"
+BOOTSTRAP_ADMIN_OIDC_APPLICATION_SLUG="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcApplicationSlug // "alternun-admin"')"
+BOOTSTRAP_ADMIN_ALLOWED_EMAIL_DOMAIN="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminAllowedEmailDomain // "alternun.io"')"
+BOOTSTRAP_ADMIN_OIDC_PROVIDER_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcProviderName // "Alternun Admin OIDC"')"
+BOOTSTRAP_ADMIN_OIDC_CLIENT_ID="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcClientId // "alternun-admin"')"
+BOOTSTRAP_ADMIN_OIDC_CLIENT_SECRET="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcClientSecret // empty')"
+BOOTSTRAP_ADMIN_OIDC_REDIRECT_URL="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcRedirectUrl // empty')"
+BOOTSTRAP_ADMIN_OIDC_POST_LOGOUT_REDIRECT_URL="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.adminOidcPostLogoutRedirectUrl // empty')"
+BOOTSTRAP_DOCS_CMS_OIDC_APPLICATION_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.docsCmsOidcApplicationName // "Alternun Docs CMS"')"
+BOOTSTRAP_DOCS_CMS_OIDC_APPLICATION_SLUG="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.docsCmsOidcApplicationSlug // "alternun-docs-cms"')"
+BOOTSTRAP_DOCS_CMS_OIDC_PROVIDER_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.docsCmsOidcProviderName // "Alternun Docs CMS OIDC"')"
+BOOTSTRAP_DOCS_CMS_OIDC_CLIENT_ID="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.docsCmsOidcClientId // "alternun-docs-cms"')"
+BOOTSTRAP_DOCS_CMS_OIDC_CLIENT_SECRET="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.docsCmsOidcClientSecret // empty')"
+BOOTSTRAP_DOCS_CMS_OIDC_REDIRECT_URLS="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '(.docsCmsOidcRedirectUrls // []) | join(",")')"
+BOOTSTRAP_DOCS_CMS_OIDC_POST_LOGOUT_REDIRECT_URLS="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '(.docsCmsOidcPostLogoutRedirectUrls // []) | join(",")')"
+BOOTSTRAP_DOCS_CMS_OIDC_ALLOWED_GROUPS="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '(.docsCmsOidcAllowedGroups // ["authentik Admins","Alternun Dashboard Admins","Alternun Docs Editors"]) | join(",")')"
 BOOTSTRAP_DEFAULT_APPLICATION_ENABLED="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r 'if has("defaultApplicationEnabled") then (.defaultApplicationEnabled | tostring) else "true" end')"
 BOOTSTRAP_DEFAULT_APPLICATION_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.defaultApplicationName // "Alternun Internal"')"
 BOOTSTRAP_DEFAULT_APPLICATION_SLUG="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.defaultApplicationSlug // "alternun-internal"')"
@@ -133,11 +151,19 @@ if [ -n "${SMTP_HOST}" ]; then
 fi
 
 TEMPLATE_DIR='/opt/alternun/identity/templates'
-EC2_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.ec2.yml"
-RDS_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.rds.yml"
+EC2_ROUTE53_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.ec2.yml"
+RDS_ROUTE53_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.rds.yml"
+EC2_ALB_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.ec2.alb.yml"
+RDS_ALB_COMPOSE_TEMPLATE="${TEMPLATE_DIR}/docker-compose.rds.alb.yml"
 BOOTSTRAP_SCRIPT_TEMPLATE="${TEMPLATE_DIR}/bootstrap-authentik-integrations.py"
 
-for required_template in "${EC2_COMPOSE_TEMPLATE}" "${RDS_COMPOSE_TEMPLATE}" "${BOOTSTRAP_SCRIPT_TEMPLATE}"; do
+for required_template in \
+  "${EC2_ROUTE53_COMPOSE_TEMPLATE}" \
+  "${RDS_ROUTE53_COMPOSE_TEMPLATE}" \
+  "${EC2_ALB_COMPOSE_TEMPLATE}" \
+  "${RDS_ALB_COMPOSE_TEMPLATE}" \
+  "${BOOTSTRAP_SCRIPT_TEMPLATE}"
+do
   if [ ! -f "${required_template}" ]; then
     echo "Missing identity runtime template: ${required_template}"
     exit 1
@@ -146,23 +172,33 @@ done
 
 export ALTERNUN_IDENTITY_DOMAIN
 export ALTERNUN_ROOT_DOMAIN
+export ALTERNUN_ROUTE53_HOSTED_ZONE_ID
+export ALTERNUN_IDENTITY_TLS_ACME_EMAIL
 export AUTHENTIK_IMAGE_TAG
+export AWS_DEFAULT_REGION="${AWS_REGION}"
+export AWS_REGION
 export DATABASE_NAME
 export DATABASE_PASSWORD
 export DATABASE_USER
 
-if [ "${AUTHENTIK_DATABASE_MODE}" = "ec2" ]; then
-  cp "${EC2_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
+if [ "${AUTHENTIK_DATABASE_MODE}" = "ec2" ] && [ "${ALTERNUN_IDENTITY_TLS_MODE}" = "alb-acm" ]; then
+  cp "${EC2_ALB_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
+elif [ "${AUTHENTIK_DATABASE_MODE}" = "ec2" ]; then
+  cp "${EC2_ROUTE53_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
+elif [ "${ALTERNUN_IDENTITY_TLS_MODE}" = "alb-acm" ]; then
+  cp "${RDS_ALB_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
 else
-  cp "${RDS_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
+  cp "${RDS_ROUTE53_COMPOSE_TEMPLATE}" /opt/alternun/identity/docker-compose.yml
 fi
 
 cp "${BOOTSTRAP_SCRIPT_TEMPLATE}" /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py
 
 ACME_FILE='/opt/alternun/identity/traefik-acme.json'
 LAST_KNOWN_GOOD_ACME_FILE='/opt/alternun/identity/traefik-acme.last-known-good.json'
+ACME_BACKUP_BUCKET="${ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET:-}"
+ACME_BACKUP_PREFIX="${ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX:-state}"
 
-if [ ! -f "${ACME_FILE}" ]; then
+if [ "${ALTERNUN_IDENTITY_TLS_MODE}" != "alb-acm" ] && [ ! -f "${ACME_FILE}" ]; then
   install -m 600 /dev/null "${ACME_FILE}"
 fi
 
@@ -174,6 +210,24 @@ docker compose -f /opt/alternun/identity/docker-compose.yml up -d --remove-orpha
 
 traefik_container_id() {
   docker compose -f /opt/alternun/identity/docker-compose.yml ps -q traefik 2>/dev/null || true
+}
+
+acme_backup_enabled() {
+  [ -n "${ACME_BACKUP_BUCKET}" ]
+}
+
+acme_backup_uri() {
+  local file_name prefix
+  file_name=$1
+  prefix="${ACME_BACKUP_PREFIX#/}"
+  prefix="${prefix%/}"
+
+  if [ -n "${prefix}" ]; then
+    echo "s3://${ACME_BACKUP_BUCKET}/${prefix}/${file_name}"
+    return 0
+  fi
+
+  echo "s3://${ACME_BACKUP_BUCKET}/${file_name}"
 }
 
 acme_has_domain_certificate() {
@@ -221,6 +275,51 @@ trigger_traefik_certificate_request() {
     "https://${ALTERNUN_IDENTITY_DOMAIN}/" >/dev/null || true
 }
 
+restore_acme_file_from_s3() {
+  local object_name target_path
+  object_name=$1
+  target_path=$2
+
+  if ! acme_backup_enabled; then
+    return 1
+  fi
+
+  if aws s3 cp "$(acme_backup_uri "${object_name}")" "${target_path}" >/dev/null 2>&1; then
+    chown root:root "${target_path}"
+    chmod 600 "${target_path}"
+    return 0
+  fi
+
+  return 1
+}
+
+restore_acme_state_from_s3() {
+  local restored=1
+
+  if restore_acme_file_from_s3 'traefik-acme.last-known-good.json' "${LAST_KNOWN_GOOD_ACME_FILE}"; then
+    restored=0
+  fi
+
+  if restore_acme_file_from_s3 'traefik-acme.json' "${ACME_FILE}"; then
+    restored=0
+  fi
+
+  return "${restored}"
+}
+
+backup_acme_file_to_s3() {
+  local source_path object_name
+  source_path=$1
+  object_name=$2
+
+  if ! acme_backup_enabled || [ ! -s "${source_path}" ]; then
+    return 1
+  fi
+
+  aws s3 cp "${source_path}" "$(acme_backup_uri "${object_name}")" \
+    --sse AES256 >/dev/null
+}
+
 backup_last_known_good_acme_state() {
   if ! acme_has_domain_certificate "${ACME_FILE}"; then
     return 1
@@ -229,6 +328,8 @@ backup_last_known_good_acme_state() {
   cp "${ACME_FILE}" "${LAST_KNOWN_GOOD_ACME_FILE}"
   chown root:root "${LAST_KNOWN_GOOD_ACME_FILE}"
   chmod 600 "${LAST_KNOWN_GOOD_ACME_FILE}"
+  backup_acme_file_to_s3 "${ACME_FILE}" 'traefik-acme.json' || true
+  backup_acme_file_to_s3 "${LAST_KNOWN_GOOD_ACME_FILE}" 'traefik-acme.last-known-good.json' || true
 }
 
 restore_last_known_good_acme_state() {
@@ -292,7 +393,20 @@ ensure_traefik_certificate() {
   return 1
 }
 
-ensure_traefik_certificate || true
+if [ "${ALTERNUN_IDENTITY_TLS_MODE}" = "alb-acm" ]; then
+  echo "Skipping Traefik ACME bootstrap because TLS is terminated at the production ALB."
+else
+  if [ -z "${ALTERNUN_ROUTE53_HOSTED_ZONE_ID:-}" ]; then
+    echo "ALTERNUN_ROUTE53_HOSTED_ZONE_ID is required for Route53 DNS-01 certificate issuance."
+    exit 1
+  fi
+
+  if ! acme_has_domain_certificate && restore_acme_state_from_s3 && acme_has_domain_certificate; then
+    echo "Restored ACME state for ${ALTERNUN_IDENTITY_DOMAIN} from S3 backup."
+  fi
+
+  ensure_traefik_certificate || true
+fi
 
 wait_for_authentik_django() {
   local max_attempts=36
@@ -316,12 +430,29 @@ if ! wait_for_authentik_django; then
   exit 0
 fi
 
+BOOTSTRAP_STDERR_FILE="$(mktemp)"
 if ! BOOTSTRAP_RESULTS="$(docker compose -f /opt/alternun/identity/docker-compose.yml exec -T \
   -e ALTERNUN_BOOTSTRAP_ADMIN_USERNAME="${BOOTSTRAP_ADMIN_USERNAME}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_EMAIL="${BOOTSTRAP_ADMIN_EMAIL}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_NAME="${BOOTSTRAP_ADMIN_NAME}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_PASSWORD="${BOOTSTRAP_ADMIN_PASSWORD}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_GROUP="${BOOTSTRAP_ADMIN_GROUP}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_APPLICATION_NAME="${BOOTSTRAP_ADMIN_OIDC_APPLICATION_NAME}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_APPLICATION_SLUG="${BOOTSTRAP_ADMIN_OIDC_APPLICATION_SLUG}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_ALLOWED_EMAIL_DOMAIN="${BOOTSTRAP_ADMIN_ALLOWED_EMAIL_DOMAIN}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_PROVIDER_NAME="${BOOTSTRAP_ADMIN_OIDC_PROVIDER_NAME}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_CLIENT_ID="${BOOTSTRAP_ADMIN_OIDC_CLIENT_ID}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_CLIENT_SECRET="${BOOTSTRAP_ADMIN_OIDC_CLIENT_SECRET}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_REDIRECT_URL="${BOOTSTRAP_ADMIN_OIDC_REDIRECT_URL}" \
+  -e ALTERNUN_BOOTSTRAP_ADMIN_OIDC_POST_LOGOUT_REDIRECT_URL="${BOOTSTRAP_ADMIN_OIDC_POST_LOGOUT_REDIRECT_URL}" \
+  -e ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_APPLICATION_NAME="${BOOTSTRAP_DOCS_CMS_OIDC_APPLICATION_NAME}" \
+  -e ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_APPLICATION_SLUG="${BOOTSTRAP_DOCS_CMS_OIDC_APPLICATION_SLUG}" \
+  -e ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_PROVIDER_NAME="${BOOTSTRAP_DOCS_CMS_OIDC_PROVIDER_NAME}" \
+  -e ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_CLIENT_ID="${BOOTSTRAP_DOCS_CMS_OIDC_CLIENT_ID}" \
+  -e ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_CLIENT_SECRET="${BOOTSTRAP_DOCS_CMS_OIDC_CLIENT_SECRET}" \
+  -e ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_REDIRECT_URLS="${BOOTSTRAP_DOCS_CMS_OIDC_REDIRECT_URLS}" \
+  -e ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_POST_LOGOUT_REDIRECT_URLS="${BOOTSTRAP_DOCS_CMS_OIDC_POST_LOGOUT_REDIRECT_URLS}" \
+  -e ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_ALLOWED_GROUPS="${BOOTSTRAP_DOCS_CMS_OIDC_ALLOWED_GROUPS}" \
   -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_ENABLED="${BOOTSTRAP_DEFAULT_APPLICATION_ENABLED}" \
   -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_NAME="${BOOTSTRAP_DEFAULT_APPLICATION_NAME}" \
   -e ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_SLUG="${BOOTSTRAP_DEFAULT_APPLICATION_SLUG}" \
@@ -342,10 +473,12 @@ if ! BOOTSTRAP_RESULTS="$(docker compose -f /opt/alternun/identity/docker-compos
   -e ALTERNUN_BOOTSTRAP_SUPABASE_APPLICATION_SLUG="${SUPABASE_APPLICATION_SLUG}" \
   -e ALTERNUN_BOOTSTRAP_SUPABASE_APPLICATION_NAME="${SUPABASE_APPLICATION_NAME}" \
   -e ALTERNUN_BOOTSTRAP_IDENTITY_DOMAIN="${ALTERNUN_IDENTITY_DOMAIN}" \
-  server sh -lc '/ak-root/.venv/bin/python /manage.py shell < /templates/alternun-bootstrap-integrations.py')"; then
-  BOOTSTRAP_RESULTS='{"status":"bootstrap_failed"}'
+  server sh -lc '/ak-root/.venv/bin/python /manage.py shell < /templates/alternun-bootstrap-integrations.py' 2>"${BOOTSTRAP_STDERR_FILE}")"; then
+  BOOTSTRAP_STDERR="$(cat "${BOOTSTRAP_STDERR_FILE}")"
+  BOOTSTRAP_RESULTS="$(printf '%s' "${BOOTSTRAP_STDERR}" | jq -Rs '{status:"bootstrap_failed", output:.}')"
   echo "WARN: Failed to bootstrap Authentik integrations."
 fi
+rm -f "${BOOTSTRAP_STDERR_FILE}"
 echo "Authentik integration bootstrap: ${BOOTSTRAP_RESULTS}"
 
 if [ "${SUPABASE_SYNC_CONFIG}" = "true" ] && \
