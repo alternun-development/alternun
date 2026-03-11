@@ -1,6 +1,8 @@
 {
   "rootPackageJson": "package.json",
   "packages": [
+    "apps/admin",
+    "apps/api",
     "apps/docs",
     "apps/mobile",
     "apps/web",

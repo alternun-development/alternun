@@ -7,6 +7,12 @@
   "scripts": {
     "deploy:dev": "APPROVE=true STACK=dev bash scripts/sst-deploy.sh",
     "deploy:production": "APPROVE=true STACK=production bash scripts/sst-deploy.sh",
+    "deploy:api-dev": "APPROVE=true STACK=api-dev bash scripts/sst-deploy.sh",
+    "deploy:api-prod": "APPROVE=true STACK=api-prod bash scripts/sst-deploy.sh",
+    "deploy:dashboard-dev": "APPROVE=true STACK=dashboard-dev bash scripts/sst-deploy.sh",
+    "deploy:dashboard-prod": "APPROVE=true STACK=dashboard-prod bash scripts/sst-deploy.sh",
+    "deploy:admin-dev": "APPROVE=true STACK=admin-dev bash scripts/sst-deploy.sh",
+    "deploy:admin-prod": "APPROVE=true STACK=admin-prod bash scripts/sst-deploy.sh",
     "deploy:identity-dev": "APPROVE=true STACK=identity-dev bash scripts/sst-deploy.sh",
     "deploy:identity-prod": "APPROVE=true STACK=identity-prod bash scripts/sst-deploy.sh",
     "diff:dev": "sst diff --stage dev",
