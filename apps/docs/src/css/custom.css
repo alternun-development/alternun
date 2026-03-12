@@ -37,3 +37,47 @@
 [data-theme='dark'] .navbar__logo img {
   content: url('/img/alternun-white.svg');
 }
+
+/* Improve Mermaid readability against the docs dark surface. */
+[data-theme='dark'] .docusaurus-mermaid-container svg .messageText,
+[data-theme='dark'] .docusaurus-mermaid-container svg .labelText,
+[data-theme='dark'] .docusaurus-mermaid-container svg .labelText > tspan,
+[data-theme='dark'] .docusaurus-mermaid-container svg .loopText,
+[data-theme='dark'] .docusaurus-mermaid-container svg .loopText > tspan,
+[data-theme='dark'] .docusaurus-mermaid-container svg .noteText,
+[data-theme='dark'] .docusaurus-mermaid-container svg .noteText > tspan,
+[data-theme='dark'] .docusaurus-mermaid-container svg .edgeLabel text,
+[data-theme='dark'] .docusaurus-mermaid-container svg .cluster-label text,
+[data-theme='dark'] .docusaurus-mermaid-container svg .cluster text,
+[data-theme='dark'] .docusaurus-mermaid-container svg .legend text,
+[data-theme='dark'] .docusaurus-mermaid-container svg .sectionTitle {
+  fill: #f3f7fb !important;
+  color: #f3f7fb !important;
+}
+
+[data-theme='dark'] .docusaurus-mermaid-container svg .actor-line,
+[data-theme='dark'] .docusaurus-mermaid-container svg .messageLine0,
+[data-theme='dark'] .docusaurus-mermaid-container svg .messageLine1,
+[data-theme='dark'] .docusaurus-mermaid-container svg .loopLine,
+[data-theme='dark'] .docusaurus-mermaid-container svg .edgePath .path,
+[data-theme='dark'] .docusaurus-mermaid-container svg .flowchart-link,
+[data-theme='dark'] .docusaurus-mermaid-container svg .relationshipLine,
+[data-theme='dark'] .docusaurus-mermaid-container svg .relation {
+  stroke: #b7c7d8 !important;
+}
+
+[data-theme='dark'] .docusaurus-mermaid-container svg .arrowheadPath,
+[data-theme='dark'] .docusaurus-mermaid-container svg #arrowhead path,
+[data-theme='dark'] .docusaurus-mermaid-container svg #crosshead path {
+  fill: #b7c7d8 !important;
+  stroke: #b7c7d8 !important;
+}
+
+[data-theme='dark'] .docusaurus-mermaid-container svg .note,
+[data-theme='dark'] .docusaurus-mermaid-container svg .labelBox,
+[data-theme='dark'] .docusaurus-mermaid-container svg .edgeLabel rect,
+[data-theme='dark'] .docusaurus-mermaid-container svg .labelBkg {
+  fill: #253345 !important;
+  stroke: #8fa5ba !important;
+  background-color: #253345 !important;
+}
