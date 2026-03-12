@@ -1,6 +1,18 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { APP_VERSION } from '../app-metadata';
+
+function resolveBundledSwaggerUiPath(): string | undefined {
+  const bundledAssetsPath = join(process.cwd(), 'swagger-ui');
+
+  if (!existsSync(join(bundledAssetsPath, 'swagger-ui-bundle.js'))) {
+    return undefined;
+  }
+
+  return bundledAssetsPath;
+}
 
 export function setupOpenApi(app: NestFastifyApplication) {
   const config = new DocumentBuilder()
@@ -19,7 +31,10 @@ export function setupOpenApi(app: NestFastifyApplication) {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
+  const customSwaggerUiPath = resolveBundledSwaggerUiPath();
+
   SwaggerModule.setup('docs', app, document, {
+    ...(customSwaggerUiPath ? { customSwaggerUiPath } : {}),
     jsonDocumentUrl: 'docs-json',
   });
 
