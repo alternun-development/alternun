@@ -22,3 +22,10 @@ esbuild "${lambda_entry}" \
   --alias:@nestjs/platform-express=./shims/empty-module.js \
   --alias:@nestjs/websockets/socket-module=./shims/empty-module.js \
   --external:aws-sdk
+
+swagger_ui_dir=$(
+  node -e "const { createRequire } = require('node:module'); const swaggerPackageJson = require.resolve('@nestjs/swagger/package.json', { paths: [process.cwd()] }); const swaggerRequire = createRequire(swaggerPackageJson); process.stdout.write(swaggerRequire('swagger-ui-dist/absolute-path.js')());"
+)
+
+mkdir -p dist-lambda/swagger-ui
+cp -R "${swagger_ui_dir}/." dist-lambda/swagger-ui/
