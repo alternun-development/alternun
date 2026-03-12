@@ -150,7 +150,7 @@ const config: Config = {
     image: 'img/alternun-socials.png',
     favicon: 'img/favicon.ico',
     mermaid: {
-      theme: { light: 'neutral', dark: 'forest' },
+      theme: { light: 'neutral', dark: 'dark' },
     },
     navbar: {
       title: '',
