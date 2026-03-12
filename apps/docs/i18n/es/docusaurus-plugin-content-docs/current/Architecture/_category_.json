@@ -1,0 +1,8 @@
+{
+  "label": "Arquitectura",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Notas públicas sobre arquitectura, infraestructura, seguridad y entrega para Alternun y AIRS."
+  }
+}
