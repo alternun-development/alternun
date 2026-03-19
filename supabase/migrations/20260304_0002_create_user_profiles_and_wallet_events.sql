@@ -61,8 +61,8 @@ begin
       split_part(coalesce(new.email, ''), '@', 1)
     ),
     new.raw_user_meta_data->>'avatar_url',
-    coalesce(new.app_metadata->>'provider', 'supabase'),
-    coalesce(new.app_metadata->>'provider_id', new.id::text),
+    coalesce(new.raw_app_meta_data->>'provider', 'supabase'),
+    coalesce(new.raw_app_meta_data->>'provider_id', new.id::text),
     coalesce(new.raw_user_meta_data, '{}'::jsonb)
   )
   on conflict (user_id)
@@ -104,8 +104,8 @@ select
     split_part(coalesce(u.email, ''), '@', 1)
   ),
   u.raw_user_meta_data->>'avatar_url',
-  coalesce(u.app_metadata->>'provider', 'supabase'),
-  coalesce(u.app_metadata->>'provider_id', u.id::text),
+  coalesce(u.raw_app_meta_data->>'provider', 'supabase'),
+  coalesce(u.raw_app_meta_data->>'provider_id', u.id::text),
   coalesce(u.raw_user_meta_data, '{}'::jsonb)
 from auth.users u
 on conflict (user_id)

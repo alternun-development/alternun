@@ -2,11 +2,19 @@ import {
   AppAuthProvider as AlternunAuthProvider,
   useAuth as useAlternunAuth,
 } from '@alternun/auth';
-import { useEffect, useMemo, useState, type PropsWithChildren, } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View, } from 'react-native';
-import { createTypographyStyles, } from '../theme/typography';
-import { useAppTranslation, } from '../i18n/useAppTranslation';
-import { createWeb3WalletBridge, } from './walletBridge';
+import { useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+import { Platform, Pressable, Text, View } from 'react-native';
+import { createTypographyStyles } from '../theme/typography';
+import { useAppTranslation } from '../i18n/useAppTranslation';
+import { createWeb3WalletBridge } from './walletBridge';
+import {
+  clearOidcSession,
+  handleAuthentikCallback,
+  hasPendingAuthentikCallback,
+  OIDC_INITIAL_SEARCH,
+  readOidcSession,
+  type OidcSession,
+} from '../../services/auth/AuthentikOidcClient';
 
 function getAllowMockWalletFallback(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH === 'true';
@@ -40,15 +48,14 @@ interface SupabaseSetSessionResponse {
 }
 
 interface SupabaseAuthShape {
-  setSession?: (
-    payload: AuthTokenSessionPayload,
-  ) => Promise<SupabaseSetSessionResponse>;
+  setSession?: (payload: AuthTokenSessionPayload) => Promise<SupabaseSetSessionResponse>;
 }
 
 interface CallbackCapableAuthClient {
   supabase?: {
     auth?: SupabaseAuthShape;
   };
+  setOidcUser?: (user: import('@alternun/auth').User | null) => void;
 }
 
 const AUTH_CALLBACK_QUERY_KEYS = [
@@ -66,60 +73,134 @@ const AUTH_CALLBACK_QUERY_KEYS = [
 
 function resolveCallbackSuccessToast(
   typeValue: string | null,
-  t: (key: string, params?: Record<string, string | number>, fallback?: string) => string,
+  t: (key: string, params?: Record<string, string | number>, fallback?: string) => string
 ): CallbackToast {
   const normalizedType = (typeValue ?? '').toLowerCase().trim();
 
   if (normalizedType === 'signup') {
     return {
       type: 'success',
-      title: t('authCallback.success.signup.title',),
-      message: t('authCallback.success.signup.message',),
+      title: t('authCallback.success.signup.title'),
+      message: t('authCallback.success.signup.message'),
     };
   }
 
   if (normalizedType === 'recovery') {
     return {
       type: 'info',
-      title: t('authCallback.success.recovery.title',),
-      message: t('authCallback.success.recovery.message',),
+      title: t('authCallback.success.recovery.title'),
+      message: t('authCallback.success.recovery.message'),
     };
   }
 
   return {
     type: 'success',
-    title: t('authCallback.success.default.title',),
-    message: t('authCallback.success.default.message',),
+    title: t('authCallback.success.default.title'),
+    message: t('authCallback.success.default.message'),
   };
 }
 
-function stripAuthCallbackTokensFromUrl(urlValue: string,): void {
+function stripAuthCallbackTokensFromUrl(urlValue: string): void {
   const runtimeWindow = typeof window === 'undefined' ? undefined : window;
 
   try {
-    const parsedUrl = new URL(urlValue,);
-    const searchParams = new URLSearchParams(parsedUrl.search,);
+    const parsedUrl = new URL(urlValue);
+    const searchParams = new URLSearchParams(parsedUrl.search);
     for (const key of AUTH_CALLBACK_QUERY_KEYS) {
-      searchParams.delete(key,);
+      searchParams.delete(key);
     }
 
     const nextSearch = searchParams.toString();
     const nextPath = `${parsedUrl.pathname}${nextSearch ? `?${nextSearch}` : ''}`;
     if (runtimeWindow?.history?.replaceState) {
-      runtimeWindow.history.replaceState({}, '', nextPath,);
+      runtimeWindow.history.replaceState({}, '', nextPath);
     }
   } catch {
     const fallbackPathname = runtimeWindow?.location?.pathname;
     if (runtimeWindow?.history?.replaceState && fallbackPathname) {
-      runtimeWindow.history.replaceState({}, '', fallbackPathname,);
+      runtimeWindow.history.replaceState({}, '', fallbackPathname);
     }
   }
 }
 
+function oidcSessionToUser(session: OidcSession): import('@alternun/auth').User {
+  return {
+    id: session.appUserId,
+    email: session.email,
+    avatarUrl: session.picture,
+    provider: session.provider,
+    metadata: {
+      ...session.rawClaims,
+      name: session.name,
+      picture: session.picture,
+      emailVerified: session.emailVerified,
+    },
+  };
+}
+
 function AuthCallbackBridge(): React.JSX.Element | null {
-  const { client, } = useAlternunAuth();
-  const { t, } = useAppTranslation('mobile',);
-  const [toast, setToast,] = useState<CallbackToast | null>(null,);
+  const { client } = useAlternunAuth();
+  const { t } = useAppTranslation('mobile');
+  const [toast, setToast] = useState<CallbackToast | null>(null);
+
+  // Restore stored OIDC session on mount (survives page reload)
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const session = readOidcSession();
+    if (!session) return;
+    const callbackClient = client as CallbackCapableAuthClient;
+    callbackClient.setOidcUser?.(oidcSessionToUser(session));
+  }, [client]);
+
+  // Clear OIDC session when user signs out
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    return client.onAuthStateChange(user => {
+      if (!user) clearOidcSession();
+    });
+  }, [client]);
+
+  // Handle Authentik OIDC redirect callback (?code=...&state=...)
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    // Use the module-level snapshot captured before Expo Router could modify
+    // window.location. This prevents two classes of state-mismatch failures:
+    //   1. Router strips ?code=&state= before the effect runs.
+    //   2. React StrictMode remounts the effect a second time; by then the URL
+    //      is already clean so hasPendingAuthentikCallback returns false and the
+    //      second invocation is a no-op.
+    if (!hasPendingAuthentikCallback(OIDC_INITIAL_SEARCH)) return;
+
+    const searchSnapshot = OIDC_INITIAL_SEARCH;
+    const runtimeWindow = typeof window === 'undefined' ? undefined : window;
+    if (runtimeWindow?.history?.replaceState) {
+      runtimeWindow.history.replaceState({}, '', runtimeWindow.location.pathname);
+    }
+
+    let cancelled = false;
+    void handleAuthentikCallback(searchSnapshot)
+      .then(session => {
+        if (cancelled) return;
+        const callbackClient = client as CallbackCapableAuthClient;
+        callbackClient.setOidcUser?.(oidcSessionToUser(session));
+        setToast({
+          type: 'success',
+          title: t('authCallback.success.default.title'),
+          message: t('authCallback.success.default.message'),
+        });
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setToast({
+          type: 'error',
+          title: t('authCallback.errors.title'),
+          message: err instanceof Error ? err.message : t('authCallback.errors.finalizeFailed'),
+        });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [client, t]);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -131,20 +212,19 @@ function AuthCallbackBridge(): React.JSX.Element | null {
       return;
     }
 
-    const hashValue = runtimeWindow.location.hash?.startsWith('#',)
-      ? runtimeWindow.location.hash.slice(1,)
+    const hashValue = runtimeWindow.location.hash?.startsWith('#')
+      ? runtimeWindow.location.hash.slice(1)
       : runtimeWindow.location.hash ?? '';
-    const hashParams = new URLSearchParams(hashValue,);
-    const queryParams = new URLSearchParams(runtimeWindow.location.search ?? '',);
-    const readParam = (key: string,): string | null =>
-      hashParams.get(key,) ?? queryParams.get(key,);
+    const hashParams = new URLSearchParams(hashValue);
+    const queryParams = new URLSearchParams(runtimeWindow.location.search ?? '');
+    const readParam = (key: string): string | null => hashParams.get(key) ?? queryParams.get(key);
 
-    const accessToken = readParam('access_token',);
-    const refreshToken = readParam('refresh_token',);
-    const callbackType = readParam('type',);
-    const callbackError = readParam('error',);
-    const callbackErrorDescription = readParam('error_description',);
-    const callbackErrorCode = readParam('error_code',);
+    const accessToken = readParam('access_token');
+    const refreshToken = readParam('refresh_token');
+    const callbackType = readParam('type');
+    const callbackError = readParam('error');
+    const callbackErrorDescription = readParam('error_description');
+    const callbackErrorCode = readParam('error_code');
 
     const hasCallbackPayload = [
       accessToken,
@@ -153,41 +233,39 @@ function AuthCallbackBridge(): React.JSX.Element | null {
       callbackError,
       callbackErrorDescription,
       callbackErrorCode,
-    ].some((value,) => Boolean((value?.length ?? 0) > 0,),);
+    ].some(value => Boolean((value?.length ?? 0) > 0));
 
     if (!hasCallbackPayload) {
       return;
     }
 
     // Always scrub callback tokens from the URL immediately.
-    stripAuthCallbackTokensFromUrl(runtimeWindow.location.href,);
+    stripAuthCallbackTokensFromUrl(runtimeWindow.location.href);
 
-    const hasCallbackError = [
-      callbackError,
-      callbackErrorDescription,
-      callbackErrorCode,
-    ].some((value,) => Boolean((value?.length ?? 0) > 0,),);
+    const hasCallbackError = [callbackError, callbackErrorDescription, callbackErrorCode].some(
+      value => Boolean((value?.length ?? 0) > 0)
+    );
 
     if (hasCallbackError) {
       const errorMessage =
         callbackErrorDescription ??
         callbackError ??
         callbackErrorCode ??
-        t('authCallback.errors.failed',);
+        t('authCallback.errors.failed');
       setToast({
         type: 'error',
-        title: t('authCallback.errors.title',),
+        title: t('authCallback.errors.title'),
         message: errorMessage,
-      },);
+      });
       return;
     }
 
     if (!accessToken || !refreshToken) {
       setToast({
         type: 'error',
-        title: t('authCallback.errors.title',),
-        message: t('authCallback.errors.missingSession',),
-      },);
+        title: t('authCallback.errors.title'),
+        message: t('authCallback.errors.missingSession'),
+      });
       return;
     }
 
@@ -197,9 +275,9 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     if (typeof setSession !== 'function') {
       setToast({
         type: 'error',
-        title: t('authCallback.errors.title',),
-        message: t('authCallback.errors.unsupportedClient',),
-      },);
+        title: t('authCallback.errors.title'),
+        message: t('authCallback.errors.unsupportedClient'),
+      });
       return;
     }
 
@@ -207,8 +285,8 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     void setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
-    },)
-      .then((result,) => {
+    })
+      .then(result => {
         if (cancelled) {
           return;
         }
@@ -216,33 +294,30 @@ function AuthCallbackBridge(): React.JSX.Element | null {
         if (result.error?.message) {
           setToast({
             type: 'error',
-            title: t('authCallback.errors.title',),
+            title: t('authCallback.errors.title'),
             message: result.error.message,
-          },);
+          });
           return;
         }
 
-        setToast(resolveCallbackSuccessToast(callbackType, t,),);
-      },)
-      .catch((error: unknown,) => {
+        setToast(resolveCallbackSuccessToast(callbackType, t));
+      })
+      .catch((error: unknown) => {
         if (cancelled) {
           return;
         }
 
         setToast({
           type: 'error',
-          title: t('authCallback.errors.title',),
-          message:
-            error instanceof Error
-              ? error.message
-              : t('authCallback.errors.finalizeFailed',),
-        },);
-      },);
+          title: t('authCallback.errors.title'),
+          message: error instanceof Error ? error.message : t('authCallback.errors.finalizeFailed'),
+        });
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [client, t,],);
+  }, [client, t]);
 
   useEffect(() => {
     if (!toast) {
@@ -250,11 +325,11 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     }
 
     const timeout = setTimeout(() => {
-      setToast(null,);
-    }, 5500,);
+      setToast(null);
+    }, 5500);
 
-    return () => clearTimeout(timeout,);
-  }, [toast,],);
+    return () => clearTimeout(timeout);
+  }, [toast]);
 
   if (!toast) {
     return null;
@@ -264,11 +339,15 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     <View pointerEvents='box-none' style={styles.toastContainer}>
       <Pressable
         onPress={() => {
-          setToast(null,);
+          setToast(null);
         }}
         style={[
           styles.toastCard,
-          toast.type === 'error' ? styles.toastCardError : toast.type === 'info' ? styles.toastCardInfo : styles.toastCardSuccess,
+          toast.type === 'error'
+            ? styles.toastCardError
+            : toast.type === 'info'
+            ? styles.toastCardInfo
+            : styles.toastCardSuccess,
         ]}
       >
         <Text style={styles.toastTitle}>{toast.title}</Text>
@@ -278,8 +357,8 @@ function AuthCallbackBridge(): React.JSX.Element | null {
   );
 }
 
-export function AppAuthProvider({ children, }: PropsWithChildren,): React.JSX.Element {
-  const walletBridge = useMemo(() => createWeb3WalletBridge(), [],);
+export function AppAuthProvider({ children }: PropsWithChildren): React.JSX.Element {
+  const walletBridge = useMemo(() => createWeb3WalletBridge(), []);
 
   return (
     <AlternunAuthProvider
@@ -313,7 +392,7 @@ const styles = createTypographyStyles({
     paddingHorizontal: 14,
     paddingVertical: 11,
     shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 6, },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.38,
     shadowRadius: 14,
     elevation: 12,
@@ -341,5 +420,5 @@ const styles = createTypographyStyles({
     fontSize: 12,
     lineHeight: 16,
   },
-},);
-export type { OAuthFlow, User, } from '@alternun/auth';
+});
+export type { OAuthFlow, User } from '@alternun/auth';
