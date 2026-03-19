@@ -50,6 +50,7 @@
         "connectWallet": "Connect Wallet",
         "continueWithEmail": "Continue with Email",
         "continueWithGoogle": "Continue with Google",
+        "continueWithDiscord": "Continue with Discord",
         "createAccount": "Create Account",
         "verifyConfirmationCode": "Verify confirmation code",
         "useAnotherEmail": "Use another email"
