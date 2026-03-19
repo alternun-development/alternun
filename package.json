@@ -1,6 +1,6 @@
 {
   "name": "alternun",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@docusaurus/tsconfig": "^3.5.2",
-    "@edcalderon/versioning": "^1.0.0",
+    "@edcalderon/versioning": "^1.5.1",
     "@types/three": "^0.169.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
