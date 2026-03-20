@@ -590,7 +590,7 @@ export default function AirsIntroExperience({
   const toggleMute = () => {
     setHasManualAudioChoice(true);
     setHasAutoUnmuted(true);
-    setIsMuted(prev => !prev);
+    setIsMuted((prev) => !prev);
   };
 
   const restartVideo = () => {
@@ -713,7 +713,7 @@ export default function AirsIntroExperience({
             { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
           ]}
           activeOpacity={0.86}
-          onPress={() => setProfileMenuVisible(prev => !prev)}
+          onPress={() => setProfileMenuVisible((prev) => !prev)}
         >
           <View style={[styles.floatingAvatar, { backgroundColor: `${palette.accent}22` }]}>
             <Text style={[styles.floatingAvatarText, { color: palette.accent }]}>U</Text>
@@ -744,7 +744,7 @@ export default function AirsIntroExperience({
 
             <TouchableOpacity
               style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg }]}
-              onPress={() => setSettingsExpanded(prev => !prev)}
+              onPress={() => setSettingsExpanded((prev) => !prev)}
               activeOpacity={0.82}
             >
               <SettingsIcon size={14} color={palette.textPrimary} />
@@ -960,7 +960,7 @@ export default function AirsIntroExperience({
                         minHeight: mediaTagPillHeight,
                         backgroundColor: mediaTagPillBackgroundColor,
                         borderColor: mediaTagPillBorderColor,
-                        shadowColor: mediaTagPillShadowColor,
+                        boxShadow: `0px 8px 18px 0px ${mediaTagPillShadowColor}`,
                       },
                     ]}
                   >
@@ -1145,11 +1145,7 @@ const styles = createTypographyStyles({
     borderRadius: 12,
     padding: 8,
     gap: 6,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.24,
-    shadowRadius: 16,
-    elevation: 10,
+    boxShadow: '0px 6px 16px 0px rgba(0, 0, 0, 0.24)',
   },
   floatingMenuItem: {
     borderRadius: 10,
@@ -1268,11 +1264,7 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.24)',
     backgroundColor: '#04040f',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.32,
-    shadowRadius: 28,
-    elevation: 10,
+    boxShadow: '0px 16px 28px 0px rgba(0, 0, 0, 0.32)',
   },
   heroFooter: {
     position: 'absolute',
@@ -1376,10 +1368,6 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 1,
-    shadowRadius: 18,
-    elevation: 10,
   },
   mediaTagSubtitleOverlay: {
     position: 'absolute',
