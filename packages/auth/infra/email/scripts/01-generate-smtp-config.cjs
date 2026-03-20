@@ -43,7 +43,7 @@ async function main() {
   console.log(`- Output payload: ${payloadOutputPath}`);
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('SMTP config generation failed.');
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);

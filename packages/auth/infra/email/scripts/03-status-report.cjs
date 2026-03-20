@@ -109,7 +109,7 @@ async function main() {
   console.log(`- Output: ${outputPath}`);
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('Status report generation failed.');
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
