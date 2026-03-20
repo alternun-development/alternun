@@ -204,15 +204,20 @@ phases:
         echo "Resolving Authentik OIDC config from SSM (stage key: ${_ssm_stage})"
         for _var in EXPO_PUBLIC_AUTHENTIK_ISSUER EXPO_PUBLIC_AUTHENTIK_CLIENT_ID EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI; do
           _ssm_path="/alternun/ci/${_ssm_stage}/expo-public/${_var}"
+          _ssm_stderr=$(mktemp)
           _ssm_value=$(aws ssm get-parameter \
             --name "${_ssm_path}" \
             --query 'Parameter.Value' \
-            --output text 2>/dev/null || true)
+            --output text 2>"${_ssm_stderr}") || _ssm_exit=$?
+          _ssm_err_text=$(cat "${_ssm_stderr}"); rm -f "${_ssm_stderr}"
           if [ -n "${_ssm_value}" ] && [ "${_ssm_value}" != "None" ]; then
             export "${_var}=${_ssm_value}"
             echo "  ${_var} loaded from SSM"
-          else
+          elif echo "${_ssm_err_text}" | grep -q 'ParameterNotFound'; then
             echo "  WARN: SSM param ${_ssm_path} not found; ${_var} will be empty (Authentik auth buttons will be hidden)"
+          else
+            echo "  ERROR: Failed to read SSM param ${_ssm_path}: ${_ssm_err_text}" >&2
+            exit "${_ssm_exit:-1}"
           fi
         done
       - |
