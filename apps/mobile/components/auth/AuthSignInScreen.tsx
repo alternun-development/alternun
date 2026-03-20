@@ -28,6 +28,7 @@ import {
   TextInput,
   TouchableOpacity,
   UIManager,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { createTypographyStyles } from '../theme/typography';
@@ -37,8 +38,8 @@ import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
 
 const RESEND_COOLDOWN_SECONDS = 45;
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
 
 type SubmitMode =
   | 'signin'
@@ -253,6 +254,7 @@ export default function AuthSignInScreen({
     : null;
   const isBusy = loading || submitMode !== null;
   const isModal = presentation === 'modal';
+  const { height: windowHeight } = useWindowDimensions();
   const hasEmailInputError = requiredFields.email || invalidEmail;
 
   useEffect(() => {
@@ -643,14 +645,17 @@ export default function AuthSignInScreen({
         style={styles.keyboardContainer}
       >
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, isModal && styles.scrollContentModal]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isModal && styles.scrollContentModal,
+            { minHeight: windowHeight },
+          ]}
           keyboardShouldPersistTaps='handled'
           showsVerticalScrollIndicator={false}
         >
           <View style={[styles.card, isModal && styles.cardModal]}>
             <View style={styles.header}>
               <View style={styles.titleLockup}>
-                {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
                 <ExpoImage
                   source={AIRS_LOGOTIPO_LIGHT}
                   style={styles.titleWordmark}
@@ -1125,7 +1130,6 @@ const styles = createTypographyStyles({
     padding: 20,
   },
   scrollContentModal: {
-    justifyContent: 'center',
     alignItems: 'center',
   },
   card: {
