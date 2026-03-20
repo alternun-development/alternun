@@ -13,8 +13,11 @@ import {
   hasPendingAuthentikCallback,
   OIDC_INITIAL_SEARCH,
   readOidcSession,
+  upsertOidcUser,
+  type OidcClaims,
   type OidcSession,
-} from '../../services/auth/AuthentikOidcClient';
+  type OidcTokens,
+} from '@alternun/auth';
 
 function getAllowMockWalletFallback(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH === 'true';
@@ -123,17 +126,20 @@ function stripAuthCallbackTokensFromUrl(urlValue: string): void {
   }
 }
 
-function oidcSessionToUser(session: OidcSession): import('@alternun/auth').User {
+function oidcSessionToUser(
+  session: OidcSession,
+  supabaseUserId?: string
+): import('@alternun/auth').User {
   return {
-    id: session.appUserId,
-    email: session.email,
-    avatarUrl: session.picture,
+    id: supabaseUserId ?? session.claims.sub,
+    email: session.claims.email,
+    avatarUrl: session.claims.picture,
     provider: session.provider,
     metadata: {
-      ...session.rawClaims,
-      name: session.name,
-      picture: session.picture,
-      emailVerified: session.emailVerified,
+      ...session.claims,
+      name: session.claims.name,
+      picture: session.claims.picture,
+      emailVerified: session.claims.email_verified,
     },
   };
 }
@@ -149,13 +155,20 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     const session = readOidcSession();
     if (!session) return;
     const callbackClient = client as CallbackCapableAuthClient;
-    callbackClient.setOidcUser?.(oidcSessionToUser(session));
+    // Re-upsert on restore to ensure Supabase UUID is current; fall back to sub.
+    void upsertOidcUser(session.claims, session.provider)
+      .then((supabaseUserId) => {
+        callbackClient.setOidcUser?.(oidcSessionToUser(session, supabaseUserId));
+      })
+      .catch(() => {
+        callbackClient.setOidcUser?.(oidcSessionToUser(session));
+      });
   }, [client]);
 
   // Clear OIDC session when user signs out
   useEffect(() => {
     if (Platform.OS !== 'web') return;
-    return client.onAuthStateChange(user => {
+    return client.onAuthStateChange((user) => {
       if (!user) clearOidcSession();
     });
   }, [client]);
@@ -163,26 +176,32 @@ function AuthCallbackBridge(): React.JSX.Element | null {
   // Handle Authentik OIDC redirect callback (?code=...&state=...)
   useEffect(() => {
     if (Platform.OS !== 'web') return;
-    // Use the module-level snapshot captured before Expo Router could modify
-    // window.location. This prevents two classes of state-mismatch failures:
-    //   1. Router strips ?code=&state= before the effect runs.
-    //   2. React StrictMode remounts the effect a second time; by then the URL
-    //      is already clean so hasPendingAuthentikCallback returns false and the
-    //      second invocation is a no-op.
-    if (!hasPendingAuthentikCallback(OIDC_INITIAL_SEARCH)) return;
-
-    const searchSnapshot = OIDC_INITIAL_SEARCH;
+    // In @edcalderon/auth 1.3.0 OIDC_INITIAL_SEARCH is a sessionStorage key.
+    // startAuthentikOAuthFlow stores window.location.search there before
+    // redirecting, so we can read it back after the redirect even if Expo
+    // Router has already stripped the query params from the URL.
     const runtimeWindow = typeof window === 'undefined' ? undefined : window;
+    const savedSearch =
+      runtimeWindow?.sessionStorage?.getItem(OIDC_INITIAL_SEARCH) ??
+      runtimeWindow?.location?.search ??
+      '';
+    if (!hasPendingAuthentikCallback(savedSearch)) return;
+
     if (runtimeWindow?.history?.replaceState) {
       runtimeWindow.history.replaceState({}, '', runtimeWindow.location.pathname);
     }
 
     let cancelled = false;
-    void handleAuthentikCallback(searchSnapshot)
-      .then(session => {
+    let supabaseUserId: string | undefined;
+    void handleAuthentikCallback(savedSearch, {
+      onSessionReady: async (_claims: OidcClaims, _tokens: OidcTokens, session: OidcSession) => {
+        supabaseUserId = await upsertOidcUser(session.claims, session.provider);
+      },
+    })
+      .then((session) => {
         if (cancelled) return;
         const callbackClient = client as CallbackCapableAuthClient;
-        callbackClient.setOidcUser?.(oidcSessionToUser(session));
+        callbackClient.setOidcUser?.(oidcSessionToUser(session, supabaseUserId));
         setToast({
           type: 'success',
           title: t('authCallback.success.default.title'),
@@ -233,7 +252,7 @@ function AuthCallbackBridge(): React.JSX.Element | null {
       callbackError,
       callbackErrorDescription,
       callbackErrorCode,
-    ].some(value => Boolean((value?.length ?? 0) > 0));
+    ].some((value) => Boolean((value?.length ?? 0) > 0));
 
     if (!hasCallbackPayload) {
       return;
@@ -243,7 +262,7 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     stripAuthCallbackTokensFromUrl(runtimeWindow.location.href);
 
     const hasCallbackError = [callbackError, callbackErrorDescription, callbackErrorCode].some(
-      value => Boolean((value?.length ?? 0) > 0)
+      (value) => Boolean((value?.length ?? 0) > 0)
     );
 
     if (hasCallbackError) {
@@ -270,9 +289,9 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     }
 
     const callbackClient = client as CallbackCapableAuthClient;
-    const setSession = callbackClient.supabase?.auth?.setSession;
+    const authModule = callbackClient.supabase?.auth;
 
-    if (typeof setSession !== 'function') {
+    if (!authModule || typeof authModule.setSession !== 'function') {
       setToast({
         type: 'error',
         title: t('authCallback.errors.title'),
@@ -282,11 +301,12 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     }
 
     let cancelled = false;
-    void setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    })
-      .then(result => {
+    void authModule
+      .setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      })
+      .then((result) => {
         if (cancelled) {
           return;
         }

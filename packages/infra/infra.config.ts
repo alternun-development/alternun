@@ -182,6 +182,9 @@ const expoPublicWalletConnectProjectId = expoConfig.publicEnv.walletConnectProje
 const expoPublicWalletConnectChainId = expoConfig.publicEnv.walletConnectChainId;
 const expoPublicEnableMockWalletAuth = expoConfig.publicEnv.enableMockWalletAuth;
 const expoPublicEnableWalletOnlyAuth = expoConfig.publicEnv.enableWalletOnlyAuth;
+const expoPublicAuthentikIssuer = expoConfig.publicEnv.authentikIssuer;
+const expoPublicAuthentikClientId = expoConfig.publicEnv.authentikClientId;
+const expoPublicAuthentikRedirectUri = expoConfig.publicEnv.authentikRedirectUri;
 const enableAirsToDevRedirect = expoConfig.redirects.enableAirsToDev;
 const airsToDevSourceDomain = expoConfig.redirects.airsToDevSourceDomain;
 const airsToDevCertArn = expoConfig.redirects.airsToDevCertArn;
@@ -379,6 +382,9 @@ const commonBuildEnv = {
   EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: expoPublicWalletConnectChainId ?? '',
   EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH: expoPublicEnableMockWalletAuth ?? '',
   EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH: expoPublicEnableWalletOnlyAuth ?? '',
+  EXPO_PUBLIC_AUTHENTIK_ISSUER: expoPublicAuthentikIssuer ?? '',
+  EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId ?? '',
+  EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: expoPublicAuthentikRedirectUri ?? '',
   INFRA_REDIRECT_AIRS_TO_DEV_SOURCE: airsToDevSourceDomain,
   INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN: airsToDevCertArn ?? '',
   INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE: devToTestnetSourceDomain,
@@ -717,6 +723,9 @@ export function createInfrastructure() {
         EXPO_PUBLIC_ASSET_BASE_URL: assetBaseUrl,
         EXPO_PUBLIC_AIRS_VIDEO_EN_URL: introVideoAssets.en.url,
         EXPO_PUBLIC_AIRS_VIDEO_ES_URL: introVideoAssets.es.url,
+        EXPO_PUBLIC_AUTHENTIK_ISSUER: expoPublicAuthentikIssuer,
+        EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId,
+        EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: expoPublicAuthentikRedirectUri,
       },
       build: {
         command: expoBuildCommand,

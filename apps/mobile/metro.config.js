@@ -36,6 +36,27 @@ config.resolver.extraNodeModules = {
   "expo-asset": expoAssetPath,
 };
 
+// valtio (pulled in via @walletconnect → @reown/appkit) ships pre-compiled code
+// that contains `import.meta.env` checks.  Metro bundles scripts as non-module
+// <script> tags, so the browser throws SES_UNCAUGHT_EXCEPTION for `import.meta`.
+// Explicitly including valtio in the transform pass lets babel-preset-expo
+// replace `import.meta.env` with `process.env` equivalents at build time.
+const defaultIgnorePattern =
+  config.transformer?.transformIgnorePatterns?.[0] ??
+  /node_modules\/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?\/.*|@expo-google-fonts\/.*|react-navigation|@react-navigation\/.*|@unimodules\/.*|unimodules|sentry-expo|native-base|react-native-svg)/;
+
+const additionalTransformPackages = ["valtio", "@reown"];
+const basePattern = defaultIgnorePattern.toString().slice(1, -1); // strip leading/trailing /
+config.transformer = config.transformer || {};
+config.transformer.transformIgnorePatterns = [
+  new RegExp(
+    basePattern.replace(
+      "(?!(",
+      `(?!(${additionalTransformPackages.join("|")}|`,
+    ),
+  ),
+];
+
 // Force a single React runtime for every workspace package (including symlinked deps).
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName === "react") {
