@@ -1,8 +1,18 @@
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { BlurView } from 'expo-blur';
 import { Image as ExpoImage } from 'expo-image';
-import React, { useEffect, useMemo, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import Animated, {
+  cancelAnimation,
+  Easing,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { createTypographyStyles } from '../theme/typography';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -32,36 +42,39 @@ export default function LandingFooter(): React.JSX.Element {
   const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
 
   // Floating orb animations
-  const orbLeftAnim = useRef(new Animated.Value(0)).current;
-  const orbRightAnim = useRef(new Animated.Value(0)).current;
+  const orbLeft = useSharedValue(0);
+  const orbRight = useSharedValue(0);
 
   useEffect(() => {
-    const makeFloat = (val: Animated.Value, duration: number) =>
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(val, {
-            toValue: 1,
-            duration,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-          Animated.timing(val, {
-            toValue: 0,
-            duration,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-        ])
+    const makeFloat = (duration: number) =>
+      withRepeat(
+        withSequence(
+          withTiming(1, { duration, easing: Easing.inOut(Easing.sin) }),
+          withTiming(0, { duration, easing: Easing.inOut(Easing.sin) })
+        ),
+        -1
       );
-    const leftAnim = makeFloat(orbLeftAnim, 5800);
-    const rightAnim = makeFloat(orbRightAnim, 7200);
-    leftAnim.start();
-    rightAnim.start();
+    orbLeft.value = makeFloat(5800);
+    orbRight.value = makeFloat(7200);
     return () => {
-      leftAnim.stop();
-      rightAnim.stop();
+      cancelAnimation(orbLeft);
+      cancelAnimation(orbRight);
     };
-  }, [orbLeftAnim, orbRightAnim]);
+  }, [orbLeft, orbRight]);
+
+  const orbLeftStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: interpolate(orbLeft.value, [0, 1], [0, 22]) },
+      { translateY: interpolate(orbLeft.value, [0, 1], [0, 18]) },
+    ],
+  }));
+
+  const orbRightStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: interpolate(orbRight.value, [0, 1], [0, -18]) },
+      { translateY: interpolate(orbRight.value, [0, 1], [0, -22]) },
+    ],
+  }));
 
   const palette = isDark
     ? {
@@ -132,22 +145,7 @@ export default function LandingFooter(): React.JSX.Element {
             styles.glowOrb,
             styles.glowOrbLeft,
             { backgroundColor: palette.glowA },
-            {
-              transform: [
-                {
-                  translateX: orbLeftAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, 22],
-                  }),
-                },
-                {
-                  translateY: orbLeftAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, 18],
-                  }),
-                },
-              ],
-            },
+            orbLeftStyle,
           ]}
         />
         <Animated.View
@@ -156,22 +154,7 @@ export default function LandingFooter(): React.JSX.Element {
             styles.glowOrb,
             styles.glowOrbRight,
             { backgroundColor: palette.glowB },
-            {
-              transform: [
-                {
-                  translateX: orbRightAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, -18],
-                  }),
-                },
-                {
-                  translateY: orbRightAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, -22],
-                  }),
-                },
-              ],
-            },
+            orbRightStyle,
           ]}
         />
 
