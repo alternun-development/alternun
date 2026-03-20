@@ -1,0 +1,8 @@
+{
+  "label": "Contribution",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "How Alternun contributors plan work, track issues, and move changes from backlog to merge."
+  }
+}
