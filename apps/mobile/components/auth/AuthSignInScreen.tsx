@@ -4,7 +4,6 @@ import { Image as ExpoImage } from 'expo-image';
 import {
   AlertCircle,
   Chrome,
-  ChevronDown,
   Eye,
   EyeOff,
   Languages,
@@ -278,7 +277,7 @@ export default function AuthSignInScreen({
     }
 
     const timeout = setTimeout(() => {
-      setResendCooldown(seconds => (seconds > 0 ? seconds - 1 : 0));
+      setResendCooldown((seconds) => (seconds > 0 ? seconds - 1 : 0));
     }, 1000);
 
     return () => clearTimeout(timeout);
@@ -300,7 +299,7 @@ export default function AuthSignInScreen({
   };
 
   const clearRequiredField = (field: RequiredField) => {
-    setRequiredFields(current => {
+    setRequiredFields((current) => {
       if (!current[field]) {
         return current;
       }
@@ -676,11 +675,13 @@ export default function AuthSignInScreen({
                 <View style={styles.settingsMenuContainer}>
                   <TouchableOpacity
                     activeOpacity={0.8}
-                    onPress={() => setSettingsMenuOpen(prev => !prev)}
-                    style={styles.settingsButton}
+                    onPress={() => setSettingsMenuOpen((prev) => !prev)}
+                    style={[styles.settingsButton, settingsMenuOpen && styles.settingsButtonActive]}
                   >
-                    <Settings size={14} color='rgba(232,232,255,0.75)' />
-                    <ChevronDown size={11} color='rgba(232,232,255,0.45)' />
+                    <Settings
+                      size={15}
+                      color={settingsMenuOpen ? '#1ccba1' : 'rgba(232,232,255,0.65)'}
+                    />
                   </TouchableOpacity>
                   {settingsMenuOpen ? (
                     <View style={styles.settingsDropdown}>
@@ -765,7 +766,7 @@ export default function AuthSignInScreen({
                     autoCapitalize='none'
                     autoCorrect={false}
                     keyboardType='email-address'
-                    onChangeText={value => {
+                    onChangeText={(value) => {
                       setEmail(value);
                       clearRequiredField('email');
                       setInvalidEmail(false);
@@ -800,7 +801,7 @@ export default function AuthSignInScreen({
                     ref={passwordInputRef}
                     autoCapitalize='none'
                     autoCorrect={false}
-                    onChangeText={value => {
+                    onChangeText={(value) => {
                       setPassword(value);
                       clearRequiredField('password');
                     }}
@@ -812,7 +813,7 @@ export default function AuthSignInScreen({
                   />
                   <TouchableOpacity
                     activeOpacity={0.8}
-                    onPress={() => setShowPassword(current => !current)}
+                    onPress={() => setShowPassword((current) => !current)}
                     style={styles.visibilityToggle}
                   >
                     {showPassword ? (
@@ -846,7 +847,7 @@ export default function AuthSignInScreen({
                         ref={confirmPasswordInputRef}
                         autoCapitalize='none'
                         autoCorrect={false}
-                        onChangeText={value => {
+                        onChangeText={(value) => {
                           setConfirmPassword(value);
                           clearRequiredField('confirmPassword');
                         }}
@@ -858,7 +859,7 @@ export default function AuthSignInScreen({
                       />
                       <TouchableOpacity
                         activeOpacity={0.8}
-                        onPress={() => setShowConfirmPassword(current => !current)}
+                        onPress={() => setShowConfirmPassword((current) => !current)}
                         style={styles.visibilityToggle}
                       >
                         {showConfirmPassword ? (
@@ -1035,7 +1036,7 @@ export default function AuthSignInScreen({
                       autoCapitalize='none'
                       autoCorrect={false}
                       keyboardType='number-pad'
-                      onChangeText={value => {
+                      onChangeText={(value) => {
                         setConfirmationCode(value.replace(/\s+/g, ''));
                         setConfirmationCodeRequired(false);
                       }}
@@ -1152,7 +1153,7 @@ export default function AuthSignInScreen({
       <WalletConnectModal
         visible={walletModalVisible}
         onClose={() => setWalletModalVisible(false)}
-        onConnect={walletType => {
+        onConnect={(walletType) => {
           void handleWalletConnect(walletType);
         }}
       />
@@ -1216,44 +1217,44 @@ const styles = createTypographyStyles({
     position: 'relative',
   },
   settingsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
     width: 34,
     height: 34,
     borderRadius: 17,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    alignSelf: 'flex-start',
+    borderColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
     justifyContent: 'center',
+  },
+  settingsButtonActive: {
+    borderColor: 'rgba(28,203,161,0.4)',
+    backgroundColor: 'rgba(28,203,161,0.08)',
   },
   settingsDropdown: {
     position: 'absolute',
-    top: 38,
+    top: 40,
     right: 0,
-    zIndex: 100,
-    minWidth: 160,
+    zIndex: 200,
+    minWidth: 168,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    backgroundColor: '#0d0d1f',
+    borderColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: '#07071a',
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 16,
-    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    elevation: 24,
   },
   settingsDropdownItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
   },
   settingsDropdownLabel: {
     flex: 1,
-    color: '#e8e8ff',
+    color: 'rgba(232,232,255,0.8)',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -1264,8 +1265,8 @@ const styles = createTypographyStyles({
   },
   settingsDropdownDivider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    marginHorizontal: 8,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    marginHorizontal: 10,
   },
   titleLockup: {
     gap: 6,
