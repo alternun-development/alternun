@@ -1,18 +1,57 @@
 /**
- * Authentik OIDC client with PKCE for the Alternun mobile (web runtime).
+ * Authentik OIDC client with PKCE for web runtime apps.
  *
- * Flow:
- *   1. startAuthentikOAuthFlow(hint)  → redirects to Authentik /authorize/
- *   2. Authentik redirects back with  ?code=...&state=...
- *   3. handleAuthentikCallback()      → exchanges code for tokens, fetches userinfo,
- *                                       upserts public.users via Supabase RPC
+ * ── Authentik setup requirements ─────────────────────────────────────────────
  *
- * PKCE verifier/challenge is stored in sessionStorage (tab-scoped, auto-cleared).
- * The resolved session (OidcSession) is stored in localStorage so it survives
- * a page reload.
+ *  1. Create an OAuth2/OIDC provider (type: Authorization Code + PKCE).
+ *     - Client type: Public (no client secret)
+ *     - Redirect URIs: your app origin (e.g. https://myapp.com/)
+ *     - Authorization flow: default-provider-authorization-implicit-consent
+ *       (0 stage bindings — implicit consent fires immediately once logged in)
  *
- * All Supabase calls use the anon key + a SECURITY DEFINER RPC; no service-role
- * credentials are needed on the client.
+ *  2. Create an Application and bind it to the provider.
+ *
+ *  3. Create OAuth Sources for each social provider (Google, Discord, …).
+ *     - Google source slug:  "google"
+ *     - Discord source slug: "discord"
+ *     - Google requires https://<authentik-host>/source/oauth/callback/google/
+ *       to be registered as an Authorized Redirect URI in Google Cloud Console.
+ *
+ *  4. Known Authentik 2026.2.1 bug — IntegrityError in handle_existing_link:
+ *     When an authenticated session user re-authenticates via a social source,
+ *     flow_manager.py line 306 calls connection.save() on a new (pk=None)
+ *     UserSourceConnection, hitting the (user_id, source_id) unique constraint.
+ *     Hot-patch fix applied to production:
+ *       connection.save()  →  type(connection).objects.update_or_create(
+ *                               user=connection.user,
+ *                               source=connection.source,
+ *                               defaults={"identifier": connection.identifier},
+ *                             )
+ *     Reported to Authentik upstream. Re-apply after container image upgrades.
+ *
+ * ── Auth flow ─────────────────────────────────────────────────────────────────
+ *
+ *   1. startAuthentikOAuthFlow('google' | 'discord')
+ *        → generates PKCE verifier+challenge, stores in sessionStorage
+ *        → redirects to /source/oauth/login/<slug>/?next=/application/o/authorize/?...
+ *           (bypasses Authentik login page entirely — user sees only Google/Discord UI)
+ *   2. Social provider authenticates → redirects to Authentik's OAuth callback
+ *   3. Authentik follows `next` → runs authorization flow (implicit consent)
+ *   4. Authentik redirects to app with ?code=...&state=...
+ *   5. handleAuthentikCallback()
+ *        → validates state, retrieves PKCE verifier from sessionStorage
+ *        → exchanges code for access + id tokens via /application/o/token/
+ *        → fetches userinfo from /application/o/userinfo/
+ *        → upserts user via Supabase SECURITY DEFINER RPC upsert_oidc_user()
+ *        → saves OidcSession to localStorage
+ *
+ * ── Required env vars ─────────────────────────────────────────────────────────
+ *
+ *   EXPO_PUBLIC_AUTHENTIK_ISSUER      https://<host>/application/o/<app-slug>/
+ *   EXPO_PUBLIC_AUTHENTIK_CLIENT_ID   <oauth2-provider-client-id>
+ *   EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI  https://<app-origin>/   (must match Authentik + app)
+ *   EXPO_PUBLIC_SUPABASE_URL          (for upsert_oidc_user RPC)
+ *   EXPO_PUBLIC_SUPABASE_KEY          (anon key — no service role needed)
  */
 
 // ─── Config helpers ──────────────────────────────────────────────────────────
