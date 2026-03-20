@@ -129,10 +129,12 @@ env:
     INFRA_ENABLE_SST_REFRESH: 'false'
     HUSKY: '0'
     EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: '1'
-    # Authentik OIDC config (public PKCE client — no secret needed)
-    EXPO_PUBLIC_AUTHENTIK_ISSUER: 'https://testnet.sso.alternun.co/application/o/alternun-mobile/'
-    EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: 'alternun-mobile'
-    EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: 'https://testnet.airs.alternun.co/'
+    # Authentik OIDC config — resolved per-stage from SSM in pre_build.
+    # Do NOT hardcode these here; values differ between dev and production.
+    # SSM paths: /alternun/ci/{dev|production}/expo-public/EXPO_PUBLIC_AUTHENTIK_*
+    EXPO_PUBLIC_AUTHENTIK_ISSUER: ''
+    EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: ''
+    EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: ''
   secrets-manager:
     EXPO_PUBLIC_SUPABASE_URL: 'alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_URL'
     EXPO_PUBLIC_SUPABASE_KEY: 'alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_KEY'
@@ -192,6 +194,27 @@ phases:
       - echo "Node     = $(node --version)"
       - echo "pnpm     = $(pnpm --version)"
       - echo "Infra    = ${INFRA_PATH}"
+      - |
+        # Resolve stage-specific Authentik OIDC config from SSM Parameter Store.
+        # Maps pipeline stage names to SSM key: production|prod → production, everything else → dev.
+        case "$(echo "${SST_STAGE}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')" in
+          production|prod) _ssm_stage="production" ;;
+          *) _ssm_stage="dev" ;;
+        esac
+        echo "Resolving Authentik OIDC config from SSM (stage key: ${_ssm_stage})"
+        for _var in EXPO_PUBLIC_AUTHENTIK_ISSUER EXPO_PUBLIC_AUTHENTIK_CLIENT_ID EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI; do
+          _ssm_path="/alternun/ci/${_ssm_stage}/expo-public/${_var}"
+          _ssm_value=$(aws ssm get-parameter \
+            --name "${_ssm_path}" \
+            --query 'Parameter.Value' \
+            --output text 2>/dev/null || true)
+          if [ -n "${_ssm_value}" ] && [ "${_ssm_value}" != "None" ]; then
+            export "${_var}=${_ssm_value}"
+            echo "  ${_var} loaded from SSM"
+          else
+            echo "  WARN: SSM param ${_ssm_path} not found; ${_var} will be empty (Authentik auth buttons will be hidden)"
+          fi
+        done
       - |
         stage_normalized=$(echo "${SST_STAGE}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
         if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ]; then
