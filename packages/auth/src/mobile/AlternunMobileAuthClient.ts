@@ -121,8 +121,13 @@ function normalizeEmailTemplateLocale(value: string | null | undefined): string 
 }
 
 function makeWalletAddress(): string {
-  const seed = Math.random().toString(16).replace('.', '').padEnd(40, '0').slice(0, 40);
-  return `0x${seed}`;
+  const bytes = new Uint8Array(20);
+  crypto.getRandomValues(bytes);
+  let hex = '';
+  for (const b of bytes) {
+    hex += b.toString(16).padStart(2, '0');
+  }
+  return `0x${hex}`;
 }
 
 function extractWalletProvider(user: User | null): WalletProvider | null {

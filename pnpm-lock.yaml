@@ -20,8 +20,8 @@ importers:
         specifier: ^3.5.2
         version: 3.5.2
       '@edcalderon/versioning':
-        specifier: ^1.0.0
-        version: 1.3.1
+        specifier: ^1.5.1
+        version: 1.5.1
       '@types/three':
         specifier: ^0.169.0
         version: 0.169.0
@@ -388,8 +388,8 @@ importers:
   packages/auth:
     dependencies:
       '@edcalderon/auth':
-        specifier: 1.2.1
-        version: 1.2.1(@supabase/supabase-js@2.98.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13)(utf-8-validate@6.0.6))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
+        specifier: 1.2.2
+        version: 1.2.2(@supabase/supabase-js@2.98.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13)(utf-8-validate@6.0.6))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
       '@supabase/supabase-js':
         specifier: ^2.98.0
         version: 2.98.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
@@ -1724,8 +1724,8 @@ packages:
       '@docusaurus/types':
         optional: true
 
-  '@edcalderon/auth@1.2.1':
-    resolution: {integrity: sha512-27lbyoCnz+Em7HWGDy+wknQkSePPKiDvFkBHv5m9bwhCaAHuQJPbyYLJ80sygYMhhgfaGVIgBxJW40nFh5abbA==}
+  '@edcalderon/auth@1.2.2':
+    resolution: {integrity: sha512-1RZRD8IJ9r6mZxJRoKKUN1ypooq5Pzccxq5vCWq+W/CyxHH2nl+jRY4hy7nL84XMx3j2BQSH6aP7C9SWRy6Hhg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@supabase/supabase-js': ^2.0.0
@@ -1743,8 +1743,8 @@ packages:
       react-native:
         optional: true
 
-  '@edcalderon/versioning@1.3.1':
-    resolution: {integrity: sha512-jMihSYj3wVw7WTMLxYHH0LzusnECnqModRIdCgKJ1Ey/yR6Cqiz0j3w6iMctk/x8seIeqdYHxe4W0yIHCJdS4g==}
+  '@edcalderon/versioning@1.5.1':
+    resolution: {integrity: sha512-irfRZLe9rCoeRNCgCBHurKwnL+ngh90RvTyhV10k0V58XlCZvjHMJjlB4YF9SxLV0+7ZiM7jF3y5S0eEyeJ9EQ==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -15295,7 +15295,7 @@ snapshots:
       - uglify-js
       - webpack-cli
 
-  '@edcalderon/auth@1.2.1(@supabase/supabase-js@2.98.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13)(utf-8-validate@6.0.6))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)':
+  '@edcalderon/auth@1.2.2(@supabase/supabase-js@2.98.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13)(utf-8-validate@6.0.6))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)':
     dependencies:
       react: 19.1.0
     optionalDependencies:
@@ -15304,7 +15304,7 @@ snapshots:
       react-dom: 19.1.0(react@19.1.0)
       react-native: 0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13)(utf-8-validate@6.0.6))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6)
 
-  '@edcalderon/auth@1.2.1(@supabase/supabase-js@2.98.0(bufferutil@4.1.0))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)':
+  '@edcalderon/auth@1.2.2(@supabase/supabase-js@2.98.0(bufferutil@4.1.0))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)':
     dependencies:
       react: 19.1.0
     optionalDependencies:
@@ -15313,7 +15313,7 @@ snapshots:
       react-dom: 19.1.0(react@19.1.0)
       react-native: 0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)
 
-  '@edcalderon/versioning@1.3.1':
+  '@edcalderon/versioning@1.5.1':
     dependencies:
       commander: 12.1.0
       conventional-changelog: 5.1.0
@@ -16664,7 +16664,7 @@ snapshots:
 
   '@lsts_tech/infra@1.0.3(@supabase/supabase-js@2.98.0(bufferutil@4.1.0))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)(ts-node@10.9.2(@swc/core@1.15.18)(@types/node@22.19.13)(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
-      '@edcalderon/auth': 1.2.1(@supabase/supabase-js@2.98.0(bufferutil@4.1.0))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)
+      '@edcalderon/auth': 1.2.2(@supabase/supabase-js@2.98.0(bufferutil@4.1.0))(firebase@12.10.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)
       '@pulumi/aws': 6.66.2(ts-node@10.9.2(@swc/core@1.15.18)(@types/node@22.19.13)(typescript@5.9.3))(typescript@5.9.3)
       '@pulumi/pulumi': 3.210.0(ts-node@10.9.2(@swc/core@1.15.18)(@types/node@22.19.13)(typescript@5.9.3))(typescript@5.9.3)
       sst: 3.19.3
@@ -25908,7 +25908,6 @@ snapshots:
       - encoding
       - supports-color
       - utf-8-validate
-    optional: true
 
   metro-config@0.83.3(bufferutil@4.1.0):
     dependencies:
@@ -26365,7 +26364,6 @@ snapshots:
       - encoding
       - supports-color
       - utf-8-validate
-    optional: true
 
   metro-transform-worker@0.83.3(bufferutil@4.1.0):
     dependencies:
@@ -26475,7 +26473,7 @@ snapshots:
       metro-babel-transformer: 0.73.10
       metro-cache: 0.73.10
       metro-cache-key: 0.73.10
-      metro-config: 0.73.10(bufferutil@4.1.0)(encoding@0.1.13)
+      metro-config: 0.73.10(bufferutil@4.1.0)(encoding@0.1.13)(utf-8-validate@6.0.6)
       metro-core: 0.73.10
       metro-file-map: 0.73.10
       metro-hermes-compiler: 0.73.10
@@ -26534,7 +26532,7 @@ snapshots:
       metro-babel-transformer: 0.73.10
       metro-cache: 0.73.10
       metro-cache-key: 0.73.10
-      metro-config: 0.73.10(bufferutil@4.1.0)(encoding@0.1.13)
+      metro-config: 0.73.10(bufferutil@4.1.0)(encoding@0.1.13)(utf-8-validate@6.0.6)
       metro-core: 0.73.10
       metro-file-map: 0.73.10
       metro-hermes-compiler: 0.73.10
@@ -26564,7 +26562,6 @@ snapshots:
       - encoding
       - supports-color
       - utf-8-validate
-    optional: true
 
   metro@0.83.3(bufferutil@4.1.0):
     dependencies:
