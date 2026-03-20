@@ -37,6 +37,21 @@ This keeps the dependent admin/API surfaces in the same pipeline run while still
 
 Use them when you want one pipeline to update the internal dashboard end-to-end without risking deletions on `dev` / `production` Expo stacks.
 
+## Runtime Policy
+
+Approved near-term runtime policy:
+
+- dashboard development/testnet API runs on `Lambda + API Gateway`
+- dashboard production API target is a dedicated `EC2 t4g.small`
+- admin remains a static site
+- identity/authentik remains separate from the app runtime
+
+Current implementation status:
+
+- the backend infrastructure currently implemented in this package is still `Lambda + API Gateway`
+- the production `EC2 t4g.small` API target is documented, but not implemented or deployed yet
+- do not run a production deploy expecting EC2-backed API infrastructure until that backend module is changed
+
 ## Admin Site
 
 Refine admin infrastructure is wired into the stack and remains disabled by default.
@@ -149,6 +164,7 @@ Important behavior:
 - backend provisioning is isolated to dedicated stacks by default (`api-dev`, `api-prod`) to avoid mixing API runtime changes into the Expo stacks
 - dedicated backend pipelines force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy or modify the static app site
 - the current backend target is Lambda + API Gateway, which keeps the first provisioning increment aligned with the existing SST pipeline model
+- approved runtime direction is Lambda for development/testnet and a dedicated `t4g.small` host for the first production backend target
 - SST outputs expose backend API deployment metadata including invoke URL, Lambda identifiers, log group, and custom domain when present
 - for dependent admin + API releases, prefer the combined `dashboard-dev` / `dashboard-prod` pipelines
 

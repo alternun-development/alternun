@@ -53,12 +53,14 @@ Ready to go deep in the Digital Gold Mining, check out how we create the Gold Ba
 
 ## For Builders And Contributors
 
-If you are exploring the repository, onboarding to the engineering team, or reviewing the platform as an open-source contributor, start with the new architecture section:
+If you are exploring the repository, onboarding to the engineering team, or reviewing the platform as an open-source contributor, start with the architecture and contribution sections:
 
 - [Alternun and AIRS Architecture](/docs/Architecture/overview)
 - [Monorepo and Stack](/docs/Architecture/monorepo-and-stack)
 - [Infrastructure and Delivery](/docs/Architecture/infrastructure-and-delivery)
 - [Security and Quality](/docs/Architecture/security-and-quality)
+- [Contribution Overview](/docs/Contribution/overview)
+- [Issue Tracking And Labels](/docs/Contribution/issue-tracking-and-labels)
 
 :::info
 Regenerative Finance + Decentralized Finance = ReDeFi
