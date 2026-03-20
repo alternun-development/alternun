@@ -4,6 +4,7 @@ import os
 from django.contrib.auth import get_user_model
 
 from authentik.core.models import Application, Group
+from authentik.events.models import Event, EventAction, NotificationTransport, NotificationTransportMode, NotificationRule, NotificationSeverity
 from authentik.flows.models import Flow, FlowStageBinding
 from authentik.policies.expression.models import ExpressionPolicy
 from authentik.policies.models import PolicyBinding
@@ -192,6 +193,7 @@ def resolve_scope_mappings(managed_ids):
 
 
 results = {
+    "user_sync_webhook": "skipped",
     "admin_user": "skipped",
     "admin_application_policy": "skipped",
     "admin_oidc_provider": "skipped",
@@ -200,6 +202,8 @@ results = {
     "docs_cms_groups": "skipped",
     "default_application": "skipped",
     "google_source": "skipped",
+    "discord_source": "skipped",
+    "mobile_oidc_provider": "skipped",
     "internal_domain_users": "skipped",
     "internal_domain_user_promotion": "skipped",
     "supabase_provider": "skipped",
@@ -940,5 +944,331 @@ if (
     )
 else:
     results["supabase_provider"] = "missing_inputs"
+
+# ─── User-sync webhook (Authentik → Supabase via API) ────────────────────────
+# Whenever a user is created or updated in Authentik, POST to the Alternun API
+# so it can be upserted into public.users (vendor-independent source of truth).
+user_sync_webhook_url = read_env("ALTERNUN_BOOTSTRAP_USER_SYNC_WEBHOOK_URL")
+user_sync_webhook_secret = read_env("ALTERNUN_BOOTSTRAP_USER_SYNC_WEBHOOK_SECRET")
+user_sync_transport_name = read_env(
+    "ALTERNUN_BOOTSTRAP_USER_SYNC_TRANSPORT_NAME", "Alternun User Sync Webhook"
+)
+user_sync_rule_name = read_env(
+    "ALTERNUN_BOOTSTRAP_USER_SYNC_RULE_NAME", "Alternun Sync Users to Supabase"
+)
+
+if user_sync_webhook_url:
+    transport, transport_created = NotificationTransport.objects.get_or_create(
+        name=user_sync_transport_name,
+        defaults={
+            "mode": NotificationTransportMode.WEBHOOK,
+            "webhook_url": user_sync_webhook_url,
+            "webhook_mapping": None,
+            "send_once": False,
+        },
+    )
+
+    transport_changed = False
+    if transport.mode != NotificationTransportMode.WEBHOOK:
+        transport.mode = NotificationTransportMode.WEBHOOK
+        transport_changed = True
+    if transport.webhook_url != user_sync_webhook_url:
+        transport.webhook_url = user_sync_webhook_url
+        transport_changed = True
+
+    # Inject the shared secret as a custom header via the webhook mapping expression
+    if user_sync_webhook_secret:
+        secret_header_expression = (
+            f"return {{'headers': {{'X-Authentik-Webhook-Secret': {json.dumps(user_sync_webhook_secret)}}}}}"
+        )
+        if not transport.webhook_mapping or getattr(transport.webhook_mapping, 'expression', '') != secret_header_expression:
+            from authentik.blueprints.v1.importer import BlueprintImporter
+            # Use a PropertyMapping for the header injection if available
+            try:
+                from authentik.core.models import PropertyMapping
+                header_mapping, _ = PropertyMapping.objects.get_or_create(
+                    name="alternun-user-sync-webhook-headers",
+                    defaults={"expression": secret_header_expression},
+                )
+                if header_mapping.expression != secret_header_expression:
+                    header_mapping.expression = secret_header_expression
+                    header_mapping.save()
+                if transport.webhook_mapping_id != header_mapping.pk:
+                    transport.webhook_mapping = header_mapping
+                    transport_changed = True
+            except Exception:
+                pass
+
+    if transport_created or transport_changed:
+        transport.save()
+
+    # Notification rule: fire for model_created and model_updated on authentik_core.user
+    rule, rule_created = NotificationRule.objects.get_or_create(
+        name=user_sync_rule_name,
+        defaults={
+            "severity": NotificationSeverity.NOTICE,
+            "group": None,
+        },
+    )
+
+    rule_changed = False
+    if rule.severity != NotificationSeverity.NOTICE:
+        rule.severity = NotificationSeverity.NOTICE
+        rule_changed = True
+
+    if rule_created or rule_changed:
+        rule.save()
+
+    if not rule.transports.filter(pk=transport.pk).exists():
+        rule.transports.add(transport)
+        rule_changed = True
+
+    # Bind the rule to model_created / model_updated for authentik_core.user only via
+    # an expression policy filter so we don't spam on every event.
+    user_sync_policy_expression = """
+action = request.context.get("notification", {}).get("event", {}).get("action", "")
+model = request.context.get("notification", {}).get("event", {}).get("context", {}).get("model", {}).get("app", "") + "." + \\
+        request.context.get("notification", {}).get("event", {}).get("context", {}).get("model", {}).get("model_name", "")
+if action in ("model_created", "model_updated") and model == "authentik_core.user":
+    return True
+return False
+""".strip()
+
+    user_sync_policy, _, _ = upsert_expression_policy(
+        "alternun-user-sync-filter",
+        user_sync_policy_expression,
+    )
+    ensure_policy_binding(rule, user_sync_policy, order=0)
+
+    if transport_created or rule_created:
+        results["user_sync_webhook"] = "created"
+    elif transport_changed or rule_changed:
+        results["user_sync_webhook"] = "updated"
+    else:
+        results["user_sync_webhook"] = "unchanged"
+
+    results["user_sync_webhook_url"] = user_sync_webhook_url
+else:
+    results["user_sync_webhook"] = "missing_url"
+
+# ─── Discord OAuth source ─────────────────────────────────────────────────────
+discord_client_id = read_env("ALTERNUN_BOOTSTRAP_DISCORD_CLIENT_ID")
+discord_client_secret = read_env("ALTERNUN_BOOTSTRAP_DISCORD_CLIENT_SECRET")
+discord_source_slug = read_env("ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_SLUG", "discord")
+discord_source_name = read_env("ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_NAME", "Discord")
+
+if discord_client_id and discord_client_secret:
+    source_authentication_flow = Flow.objects.filter(
+        slug="default-source-authentication"
+    ).first()
+    source_enrollment_flow = Flow.objects.filter(slug="default-source-enrollment").first()
+
+    discord_source, discord_source_created = OAuthSource.objects.get_or_create(
+        slug=discord_source_slug,
+        defaults={
+            "name": discord_source_name,
+            "provider_type": "discord",
+            "consumer_key": discord_client_id,
+            "consumer_secret": discord_client_secret,
+            "authentication_flow": source_authentication_flow,
+            "enrollment_flow": source_enrollment_flow,
+        },
+    )
+
+    discord_source_changed = False
+    discord_source_updates = {
+        "name": discord_source_name,
+        "provider_type": "discord",
+        "consumer_key": discord_client_id,
+        "consumer_secret": discord_client_secret,
+    }
+    for field, expected in discord_source_updates.items():
+        current = getattr(discord_source, field)
+        if current != expected:
+            setattr(discord_source, field, expected)
+            discord_source_changed = True
+
+    if hasattr(discord_source, "policy_engine_mode") and discord_source.policy_engine_mode != "any":
+        discord_source.policy_engine_mode = "any"
+        discord_source_changed = True
+    if hasattr(discord_source, "user_matching_mode") and discord_source.user_matching_mode != "email_link":
+        discord_source.user_matching_mode = "email_link"
+        discord_source_changed = True
+    if hasattr(discord_source, "enabled") and not discord_source.enabled:
+        discord_source.enabled = True
+        discord_source_changed = True
+
+    if (
+        source_authentication_flow
+        and discord_source.authentication_flow_id != source_authentication_flow.pk
+    ):
+        discord_source.authentication_flow = source_authentication_flow
+        discord_source_changed = True
+    if source_enrollment_flow and discord_source.enrollment_flow_id != source_enrollment_flow.pk:
+        discord_source.enrollment_flow = source_enrollment_flow
+        discord_source_changed = True
+
+    if discord_source_created or discord_source_changed:
+        discord_source.save()
+
+    # Show Discord on the login page
+    identification_stage = IdentificationStage.objects.filter(
+        name="default-authentication-identification"
+    ).first()
+    if identification_stage:
+        if (
+            hasattr(identification_stage, "show_source_labels")
+            and not identification_stage.show_source_labels
+        ):
+            identification_stage.show_source_labels = True
+            identification_stage.save()
+        if not identification_stage.sources.filter(pk=discord_source.pk).exists():
+            identification_stage.sources.add(discord_source)
+
+    if discord_source_created:
+        results["discord_source"] = "created"
+    elif discord_source_changed:
+        results["discord_source"] = "updated"
+    else:
+        results["discord_source"] = "unchanged"
+else:
+    results["discord_source"] = "missing_credentials"
+
+# ─── Mobile OIDC provider (public client, PKCE) ───────────────────────────────
+# This provider is used by the Alternun mobile web app for Google/Discord login
+# via the Authentik OIDC flow without any vendor lock-in to Supabase Auth.
+mobile_oidc_client_id = read_env(
+    "ALTERNUN_BOOTSTRAP_MOBILE_OIDC_CLIENT_ID", "alternun-mobile"
+)
+mobile_oidc_application_slug = read_env(
+    "ALTERNUN_BOOTSTRAP_MOBILE_OIDC_APPLICATION_SLUG", "alternun-mobile"
+)
+mobile_oidc_application_name = read_env(
+    "ALTERNUN_BOOTSTRAP_MOBILE_OIDC_APPLICATION_NAME", "Alternun Mobile"
+)
+mobile_oidc_provider_name = read_env(
+    "ALTERNUN_BOOTSTRAP_MOBILE_OIDC_PROVIDER_NAME", "Alternun Mobile OIDC"
+)
+mobile_oidc_redirect_urls = read_list_env("ALTERNUN_BOOTSTRAP_MOBILE_OIDC_REDIRECT_URLS")
+mobile_oidc_post_logout_redirect_urls = read_list_env(
+    "ALTERNUN_BOOTSTRAP_MOBILE_OIDC_POST_LOGOUT_REDIRECT_URLS"
+)
+
+if mobile_oidc_client_id and mobile_oidc_redirect_urls:
+    mobile_scope_mapping_ids = [
+        "goauthentik.io/providers/oauth2/scope-openid",
+        "goauthentik.io/providers/oauth2/scope-email",
+        "goauthentik.io/providers/oauth2/scope-profile",
+    ]
+    authorization_flow = Flow.objects.filter(
+        slug="default-provider-authorization-implicit-consent"
+    ).first()
+    invalidation_flow = Flow.objects.filter(slug="default-provider-invalidation-flow").first()
+
+    expected_redirects = normalize_redirects(build_redirect_uris(mobile_oidc_redirect_urls))
+
+    mobile_provider, mobile_provider_created = OAuth2Provider.objects.get_or_create(
+        name=mobile_oidc_provider_name,
+        defaults={
+            "client_id": mobile_oidc_client_id,
+            # Public client — no client secret; PKCE enforced.
+            "client_secret": "",
+            "client_type": "public",
+            "_redirect_uris": build_redirect_uris(mobile_oidc_redirect_urls),
+            "authorization_flow": authorization_flow,
+            "invalidation_flow": invalidation_flow,
+            # Use user_uuid so sub is stable even if email changes.
+            "sub_mode": "user_uuid",
+        },
+    )
+
+    mobile_provider_changed = False
+
+    if getattr(mobile_provider, "client_id", None) != mobile_oidc_client_id:
+        mobile_provider.client_id = mobile_oidc_client_id
+        mobile_provider_changed = True
+    if hasattr(mobile_provider, "client_type") and mobile_provider.client_type != "public":
+        mobile_provider.client_type = "public"
+        mobile_provider_changed = True
+    if hasattr(mobile_provider, "sub_mode") and mobile_provider.sub_mode != "user_uuid":
+        mobile_provider.sub_mode = "user_uuid"
+        mobile_provider_changed = True
+
+    current_redirects = normalize_redirects(getattr(mobile_provider, "_redirect_uris", []))
+    if current_redirects != expected_redirects:
+        mobile_provider._redirect_uris = build_redirect_uris(mobile_oidc_redirect_urls)
+        mobile_provider_changed = True
+
+    if authorization_flow and mobile_provider.authorization_flow_id != authorization_flow.pk:
+        mobile_provider.authorization_flow = authorization_flow
+        mobile_provider_changed = True
+    if invalidation_flow and mobile_provider.invalidation_flow_id != invalidation_flow.pk:
+        mobile_provider.invalidation_flow = invalidation_flow
+        mobile_provider_changed = True
+
+    if mobile_oidc_post_logout_redirect_urls and hasattr(mobile_provider, "post_logout_redirect_uris"):
+        current_logout_redirects = normalize_redirects(
+            getattr(mobile_provider, "post_logout_redirect_uris", [])
+        )
+        expected_logout_redirects = normalize_redirects(
+            build_redirect_uris(mobile_oidc_post_logout_redirect_urls)
+        )
+        if current_logout_redirects != expected_logout_redirects:
+            mobile_provider.post_logout_redirect_uris = build_redirect_uris(
+                mobile_oidc_post_logout_redirect_urls
+            )
+            mobile_provider_changed = True
+
+    if mobile_provider_created or mobile_provider_changed:
+        mobile_provider.save()
+
+    desired_scope_mappings, missing_scope_mapping_ids = resolve_scope_mappings(
+        mobile_scope_mapping_ids
+    )
+    current_scope_mapping_ids = set(mobile_provider.property_mappings.values_list("pk", flat=True))
+    desired_scope_mapping_pks = {mapping.pk for mapping in desired_scope_mappings}
+    if current_scope_mapping_ids != desired_scope_mapping_pks:
+        mobile_provider.property_mappings.set(desired_scope_mappings)
+        mobile_provider_changed = True
+
+    mobile_application, mobile_application_created = Application.objects.get_or_create(
+        slug=mobile_oidc_application_slug,
+        defaults={
+            "name": mobile_oidc_application_name,
+            "provider": mobile_provider,
+        },
+    )
+
+    mobile_application_changed = False
+    if mobile_application.name != mobile_oidc_application_name:
+        mobile_application.name = mobile_oidc_application_name
+        mobile_application_changed = True
+    if mobile_application.provider_id != mobile_provider.pk:
+        mobile_application.provider = mobile_provider
+        mobile_application_changed = True
+
+    if mobile_application_created or mobile_application_changed:
+        mobile_application.save()
+
+    if missing_scope_mapping_ids:
+        results["mobile_oidc_scope_mappings"] = {
+            "status": "missing_defaults",
+            "missing": missing_scope_mapping_ids,
+        }
+
+    if mobile_provider_created or mobile_application_created:
+        results["mobile_oidc_provider"] = "created"
+    elif mobile_provider_changed or mobile_application_changed:
+        results["mobile_oidc_provider"] = "updated"
+    else:
+        results["mobile_oidc_provider"] = "unchanged"
+
+    if identity_domain:
+        results["mobile_oidc_issuer"] = (
+            f"https://{identity_domain}/application/o/{mobile_oidc_application_slug}/"
+        )
+        results["mobile_oidc_client_id"] = mobile_oidc_client_id
+else:
+    results["mobile_oidc_provider"] = "missing_inputs"
 
 print(json.dumps(results))

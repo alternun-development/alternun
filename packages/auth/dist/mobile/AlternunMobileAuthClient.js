@@ -111,6 +111,7 @@ export class AlternunMobileAuthClient {
         this.runtime = "native";
         this.supabase = null;
         this.listeners = new Set();
+        this.oidcUser = null;
         this.walletUser = null;
         this.linkedWallet = null;
         this.walletSessionToken = null;
@@ -337,6 +338,9 @@ export class AlternunMobileAuthClient {
         return this.applyLinkedWallet(mappedUser);
     }
     async getUser() {
+        if (this.oidcUser) {
+            return this.oidcUser;
+        }
         if (this.walletUser) {
             return this.walletUser;
         }
@@ -614,6 +618,7 @@ export class AlternunMobileAuthClient {
                 // Ignore bridge disconnect errors to avoid trapping users in signed-in state.
             }
         }
+        this.oidcUser = null;
         const hadWallet = Boolean(this.walletUser || this.linkedWallet);
         this.walletUser = null;
         this.linkedWallet = null;
@@ -629,6 +634,14 @@ export class AlternunMobileAuthClient {
             }
         }
         this.emit(null);
+    }
+    /**
+     * Inject a user that was authenticated externally via Authentik OIDC.
+     * Call with null to clear the OIDC session (e.g. on sign-out).
+     */
+    setOidcUser(user) {
+        this.oidcUser = user;
+        this.emit(user);
     }
     onAuthStateChange(callback) {
         this.listeners.add(callback);
