@@ -75,7 +75,7 @@ async function main() {
   console.log(`- Output report: ${outputPath}`);
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('Supabase SMTP sync failed.');
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
