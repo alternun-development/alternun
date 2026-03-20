@@ -30,6 +30,9 @@ export interface ExpoLocalConfig {
     walletConnectChainId?: string;
     enableMockWalletAuth?: boolean;
     enableWalletOnlyAuth?: boolean;
+    authentikIssuer?: string;
+    authentikClientId?: string;
+    authentikRedirectUri?: string;
   };
 }
 

@@ -9,7 +9,7 @@ function parseListEnv(value: string | undefined, fallback: string[]): string[] {
 
   return value
     .split(',')
-    .map(entry => entry.trim())
+    .map((entry) => entry.trim())
     .filter(Boolean);
 }
 
@@ -23,6 +23,7 @@ function parseBooleanEnv(name: string, fallback = false): boolean {
 }
 
 function readTrimmedEnv(name: string): string | undefined {
+  // eslint-disable-next-line security/detect-object-injection
   const value = process.env[name]?.trim();
   if (!value || value.length === 0) {
     return undefined;

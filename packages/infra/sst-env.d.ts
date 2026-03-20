@@ -5,31 +5,7 @@
 /* biome-ignore-all lint: auto-generated */
 
 declare module 'sst' {
-  export interface Resource {
-    'airs-domain-redirect-dev': {
-      type: 'sst.aws.Router';
-      url: string;
-    };
-    'dev-domain-redirect-dev': {
-      type: 'sst.aws.Router';
-      url: string;
-    };
-    'expo-assets-dev': {
-      name: string;
-      type: 'sst.aws.Bucket';
-    };
-    'expo-web-dev': {
-      type: 'sst.aws.StaticSite';
-      url: string;
-    };
-    'identity-dev': {
-      type: 'sst.aws.Vpc';
-    };
-    'root-domain-redirect-dev': {
-      type: 'sst.aws.Router';
-      url: string;
-    };
-  }
+  export interface Resource {}
 }
 /// <reference path="sst-env.d.ts" />
 

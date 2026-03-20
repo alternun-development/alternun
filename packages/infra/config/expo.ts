@@ -34,6 +34,9 @@ export interface ResolvedExpoConfig {
     walletConnectChainId?: string;
     enableMockWalletAuth?: string;
     enableWalletOnlyAuth?: string;
+    authentikIssuer?: string;
+    authentikClientId?: string;
+    authentikRedirectUri?: string;
   };
   redirects: {
     enableAirsToDev: boolean;
@@ -203,6 +206,12 @@ export function resolveExpoConfig({
       (localConfig.expo?.publicEnv?.enableWalletOnlyAuth !== undefined
         ? String(localConfig.expo.publicEnv.enableWalletOnlyAuth)
         : undefined),
+    authentikIssuer:
+      env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? localConfig.expo?.publicEnv?.authentikIssuer,
+    authentikClientId:
+      env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? localConfig.expo?.publicEnv?.authentikClientId,
+    authentikRedirectUri:
+      env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI ?? localConfig.expo?.publicEnv?.authentikRedirectUri,
   };
 
   const redirects = {

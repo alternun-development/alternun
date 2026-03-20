@@ -1,4 +1,4 @@
-export { AuthProvider } from "@edcalderon/auth";
+export { AuthProvider } from '@edcalderon/auth';
 export type {
   AuthCapabilities,
   AuthClient,
@@ -6,13 +6,9 @@ export type {
   OAuthFlow,
   SignInOptions,
   User,
-} from "@edcalderon/auth";
+} from '@edcalderon/auth';
 
-export {
-  AppAuthProvider,
-  useAuth,
-  type AppAuthProviderProps,
-} from "./mobile/AppAuthProvider";
+export { AppAuthProvider, useAuth, type AppAuthProviderProps } from './mobile/AppAuthProvider';
 
 export {
   AlternunMobileAuthClient,
@@ -23,7 +19,24 @@ export {
   type WalletConnectionBridge,
   type WalletConnectionResult,
   type WalletProvider,
-} from "./mobile/AlternunMobileAuthClient";
+} from './mobile/AlternunMobileAuthClient';
+
+export {
+  isAuthentikConfigured,
+  hasPendingAuthentikCallback,
+  startAuthentikOAuthFlow,
+  handleAuthentikCallback,
+  readOidcSession,
+  clearOidcSession,
+  OIDC_INITIAL_SEARCH,
+  type OidcClaims,
+  type OidcSession,
+  type OidcProvider,
+  type OidcTokens,
+  type AuthentikOidcConfig,
+} from '@edcalderon/auth';
+
+export { upsertOidcUser } from './AuthentikOidcClient';
 
 export {
   emailAddressSchema,
@@ -33,4 +46,4 @@ export {
   parseSignInPassword,
   parseSignUpPassword,
   getValidationErrorMessage,
-} from "./validation/authInputValidation";
+} from './validation/authInputValidation';

@@ -6,17 +6,18 @@ import {
   Chrome,
   Eye,
   EyeOff,
+  Languages,
   Lock,
   Mail,
   MessageSquare,
+  Moon,
+  Settings,
+  Sun,
   Wallet,
   X,
 } from 'lucide-react-native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  isAuthentikConfigured,
-  startAuthentikOAuthFlow,
-} from '../../services/auth/AuthentikOidcClient';
+import { isAuthentikConfigured, startAuthentikOAuthFlow } from '@alternun/auth';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -28,17 +29,23 @@ import {
   TextInput,
   TouchableOpacity,
   UIManager,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { getLocaleLabel } from '@alternun/i18n';
 import { createTypographyStyles } from '../theme/typography';
+import { useAppPalette } from '../theme/useAppPalette';
 import ShaderBackground from './ShaderBackground';
 import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
+import { useAppPreferences } from '../settings/AppPreferencesProvider';
 
 const RESEND_COOLDOWN_SECONDS = 45;
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as number;
 
 type SubmitMode =
   | 'signin'
@@ -216,6 +223,10 @@ export default function AuthSignInScreen({
 }: AuthSignInScreenProps) {
   const { signInWithEmail, signIn, loading, error, client } = useAuth();
   const { t, locale } = useAppTranslation('mobile');
+  const { language, toggleThemeMode, cycleLanguage } = useAppPreferences();
+  const p = useAppPalette();
+  const ThemeIcon = p.isDark ? Sun : Moon;
+  const themeLabel = p.isDark ? t('labels.dark') : t('labels.light');
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -231,6 +242,7 @@ export default function AuthSignInScreen({
   const [authStep, setAuthStep] = useState<AuthStep>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [invalidEmail, setInvalidEmail] = useState(false);
   const [requiredFields, setRequiredFields] = useState<RequiredFieldState>(() =>
     createDefaultRequiredFieldState()
@@ -253,6 +265,7 @@ export default function AuthSignInScreen({
     : null;
   const isBusy = loading || submitMode !== null;
   const isModal = presentation === 'modal';
+  const { height: windowHeight } = useWindowDimensions();
   const hasEmailInputError = requiredFields.email || invalidEmail;
 
   useEffect(() => {
@@ -267,7 +280,7 @@ export default function AuthSignInScreen({
     }
 
     const timeout = setTimeout(() => {
-      setResendCooldown(seconds => (seconds > 0 ? seconds - 1 : 0));
+      setResendCooldown((seconds) => (seconds > 0 ? seconds - 1 : 0));
     }, 1000);
 
     return () => clearTimeout(timeout);
@@ -289,7 +302,7 @@ export default function AuthSignInScreen({
   };
 
   const clearRequiredField = (field: RequiredField) => {
-    setRequiredFields(current => {
+    setRequiredFields((current) => {
       if (!current[field]) {
         return current;
       }
@@ -631,7 +644,13 @@ export default function AuthSignInScreen({
   };
 
   return (
-    <View style={[styles.screen, isModal && styles.modalScreen]}>
+    <View
+      style={[
+        styles.screen,
+        isModal && styles.modalScreen,
+        { backgroundColor: isModal ? p.overlay : p.screenBg },
+      ]}
+    >
       {isModal ? (
         <View pointerEvents='none' style={styles.shaderBackdrop}>
           <ShaderBackground opacity={0.52} />
@@ -643,40 +662,125 @@ export default function AuthSignInScreen({
         style={styles.keyboardContainer}
       >
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, isModal && styles.scrollContentModal]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isModal && styles.scrollContentModal,
+            { minHeight: windowHeight },
+          ]}
           keyboardShouldPersistTaps='handled'
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.card, isModal && styles.cardModal]}>
+          <View
+            style={[
+              styles.card,
+              isModal && styles.cardModal,
+              { backgroundColor: p.cardBg, borderColor: p.cardBorder },
+            ]}
+          >
             <View style={styles.header}>
               <View style={styles.titleLockup}>
-                {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
                 <ExpoImage
-                  source={AIRS_LOGOTIPO_LIGHT}
+                  source={p.isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK}
                   style={styles.titleWordmark}
                   contentFit='contain'
                 />
-                <Text style={styles.subtitle}>{t('authModal.notices.secureSignIn')}</Text>
+                <Text style={[styles.subtitle, { color: p.textMuted }]}>
+                  {t('authModal.notices.secureSignIn')}
+                </Text>
               </View>
-              {onCancel ? (
-                <TouchableOpacity activeOpacity={0.8} onPress={onCancel} style={styles.closeButton}>
-                  <X size={16} color='rgba(232,232,255,0.75)' />
-                </TouchableOpacity>
-              ) : null}
+              <View style={styles.headerActions}>
+                <View style={styles.settingsMenuContainer}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => setSettingsMenuOpen((prev) => !prev)}
+                    style={[
+                      styles.settingsButton,
+                      {
+                        borderColor: settingsMenuOpen ? p.accent : p.cardBorder,
+                        backgroundColor: settingsMenuOpen ? p.accentMuted : undefined,
+                      },
+                    ]}
+                  >
+                    <Settings size={15} color={settingsMenuOpen ? p.accent : p.iconDefault} />
+                  </TouchableOpacity>
+                  {settingsMenuOpen ? (
+                    <View
+                      style={[
+                        styles.settingsDropdown,
+                        { backgroundColor: p.dropdownBg, borderColor: p.dropdownBorder },
+                      ]}
+                    >
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => cycleLanguage()}
+                        style={styles.settingsDropdownItem}
+                      >
+                        <Languages size={13} color={p.iconDefault} />
+                        <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
+                          {t('labels.language')}
+                        </Text>
+                        <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
+                          {getLocaleLabel(language, language)}
+                        </Text>
+                      </TouchableOpacity>
+                      <View
+                        style={[
+                          styles.settingsDropdownDivider,
+                          { backgroundColor: p.dropdownDivider },
+                        ]}
+                      />
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => toggleThemeMode()}
+                        style={styles.settingsDropdownItem}
+                      >
+                        <ThemeIcon size={13} color={p.iconDefault} />
+                        <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
+                          {t('labels.theme')}
+                        </Text>
+                        <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
+                          {themeLabel}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                </View>
+                {onCancel ? (
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={onCancel}
+                    style={[styles.closeButton, { borderColor: p.cardBorder }]}
+                  >
+                    <X size={16} color={p.iconDefault} />
+                  </TouchableOpacity>
+                ) : null}
+              </View>
             </View>
 
             {authStep === 'form' ? (
               <>
-                <View style={styles.modeSwitch}>
+                <View
+                  style={[
+                    styles.modeSwitch,
+                    { borderColor: p.inputBorder, backgroundColor: p.inputBg },
+                  ]}
+                >
                   <TouchableOpacity
                     activeOpacity={0.85}
                     onPress={() => switchMode('signin')}
-                    style={[styles.modeButton, mode === 'signin' && styles.modeButtonActive]}
+                    style={[
+                      styles.modeButton,
+                      mode === 'signin' && [
+                        styles.modeButtonActive,
+                        { backgroundColor: p.accentMuted },
+                      ],
+                    ]}
                   >
                     <Text
                       style={[
                         styles.modeButtonText,
-                        mode === 'signin' && styles.modeButtonTextActive,
+                        { color: p.textMuted },
+                        mode === 'signin' && { color: p.accent },
                       ]}
                     >
                       {t('authModal.modes.signIn')}
@@ -685,12 +789,19 @@ export default function AuthSignInScreen({
                   <TouchableOpacity
                     activeOpacity={0.85}
                     onPress={() => switchMode('signup')}
-                    style={[styles.modeButton, mode === 'signup' && styles.modeButtonActive]}
+                    style={[
+                      styles.modeButton,
+                      mode === 'signup' && [
+                        styles.modeButtonActive,
+                        { backgroundColor: p.accentMuted },
+                      ],
+                    ]}
                   >
                     <Text
                       style={[
                         styles.modeButtonText,
-                        mode === 'signup' && styles.modeButtonTextActive,
+                        { color: p.textMuted },
+                        mode === 'signup' && { color: p.accent },
                       ]}
                     >
                       {t('authModal.modes.signUp')}
@@ -699,34 +810,38 @@ export default function AuthSignInScreen({
                 </View>
 
                 <View
-                  style={[styles.inputWrapper, hasEmailInputError && styles.inputWrapperRequired]}
+                  style={[
+                    styles.inputWrapper,
+                    { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                    hasEmailInputError && {
+                      backgroundColor: p.errorBg,
+                      borderColor: p.errorBorder,
+                    },
+                  ]}
                 >
-                  <Mail
-                    size={16}
-                    color={hasEmailInputError ? '#fca5a5' : 'rgba(232,232,255,0.55)'}
-                  />
+                  <Mail size={16} color={hasEmailInputError ? p.errorIcon : p.textMuted} />
                   <TextInput
                     ref={emailInputRef}
                     autoCapitalize='none'
                     autoCorrect={false}
                     keyboardType='email-address'
-                    onChangeText={value => {
+                    onChangeText={(value) => {
                       setEmail(value);
                       clearRequiredField('email');
                       setInvalidEmail(false);
                     }}
                     placeholder={t('authModal.placeholders.email')}
-                    placeholderTextColor='rgba(232,232,255,0.35)'
-                    style={styles.input}
+                    placeholderTextColor={p.textPlaceholder}
+                    style={[styles.input, { color: p.textPrimary }]}
                     value={email}
                   />
                 </View>
                 {requiredFields.email ? (
-                  <Text style={styles.requiredFieldText}>
+                  <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
                     {t('authModal.validation.emailRequired')}
                   </Text>
                 ) : invalidEmail ? (
-                  <Text style={styles.requiredFieldText}>
+                  <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
                     {t('authModal.validation.validEmail')}
                   </Text>
                 ) : null}
@@ -734,41 +849,42 @@ export default function AuthSignInScreen({
                 <View
                   style={[
                     styles.inputWrapper,
-                    requiredFields.password && styles.inputWrapperRequired,
+                    { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                    requiredFields.password && {
+                      backgroundColor: p.errorBg,
+                      borderColor: p.errorBorder,
+                    },
                   ]}
                 >
-                  <Lock
-                    size={16}
-                    color={requiredFields.password ? '#fca5a5' : 'rgba(232,232,255,0.55)'}
-                  />
+                  <Lock size={16} color={requiredFields.password ? p.errorIcon : p.textMuted} />
                   <TextInput
                     ref={passwordInputRef}
                     autoCapitalize='none'
                     autoCorrect={false}
-                    onChangeText={value => {
+                    onChangeText={(value) => {
                       setPassword(value);
                       clearRequiredField('password');
                     }}
                     placeholder={t('authModal.placeholders.password')}
-                    placeholderTextColor='rgba(232,232,255,0.35)'
+                    placeholderTextColor={p.textPlaceholder}
                     secureTextEntry={!showPassword}
-                    style={styles.input}
+                    style={[styles.input, { color: p.textPrimary }]}
                     value={password}
                   />
                   <TouchableOpacity
                     activeOpacity={0.8}
-                    onPress={() => setShowPassword(current => !current)}
+                    onPress={() => setShowPassword((current) => !current)}
                     style={styles.visibilityToggle}
                   >
                     {showPassword ? (
-                      <EyeOff size={16} color='rgba(232,232,255,0.7)' />
+                      <EyeOff size={16} color={p.textSecondary} />
                     ) : (
-                      <Eye size={16} color='rgba(232,232,255,0.7)' />
+                      <Eye size={16} color={p.textSecondary} />
                     )}
                   </TouchableOpacity>
                 </View>
                 {requiredFields.password ? (
-                  <Text style={styles.requiredFieldText}>
+                  <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
                     {t('authModal.validation.passwordRequired')}
                   </Text>
                 ) : null}
@@ -778,43 +894,45 @@ export default function AuthSignInScreen({
                     <View
                       style={[
                         styles.inputWrapper,
-                        requiredFields.confirmPassword && styles.inputWrapperRequired,
+                        { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                        requiredFields.confirmPassword && {
+                          backgroundColor: p.errorBg,
+                          borderColor: p.errorBorder,
+                        },
                       ]}
                     >
                       <Lock
                         size={16}
-                        color={
-                          requiredFields.confirmPassword ? '#fca5a5' : 'rgba(232,232,255,0.55)'
-                        }
+                        color={requiredFields.confirmPassword ? p.errorIcon : p.textMuted}
                       />
                       <TextInput
                         ref={confirmPasswordInputRef}
                         autoCapitalize='none'
                         autoCorrect={false}
-                        onChangeText={value => {
+                        onChangeText={(value) => {
                           setConfirmPassword(value);
                           clearRequiredField('confirmPassword');
                         }}
                         placeholder={t('authModal.placeholders.confirmPassword')}
-                        placeholderTextColor='rgba(232,232,255,0.35)'
+                        placeholderTextColor={p.textPlaceholder}
                         secureTextEntry={!showConfirmPassword}
-                        style={styles.input}
+                        style={[styles.input, { color: p.textPrimary }]}
                         value={confirmPassword}
                       />
                       <TouchableOpacity
                         activeOpacity={0.8}
-                        onPress={() => setShowConfirmPassword(current => !current)}
+                        onPress={() => setShowConfirmPassword((current) => !current)}
                         style={styles.visibilityToggle}
                       >
                         {showConfirmPassword ? (
-                          <EyeOff size={16} color='rgba(232,232,255,0.7)' />
+                          <EyeOff size={16} color={p.textSecondary} />
                         ) : (
-                          <Eye size={16} color='rgba(232,232,255,0.7)' />
+                          <Eye size={16} color={p.textSecondary} />
                         )}
                       </TouchableOpacity>
                     </View>
                     {requiredFields.confirmPassword ? (
-                      <Text style={styles.requiredFieldText}>
+                      <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
                         {t('authModal.validation.confirmPasswordRequired')}
                       </Text>
                     ) : null}
@@ -831,12 +949,16 @@ export default function AuthSignInScreen({
                       void handleEmailSignUp();
                     }
                   }}
-                  style={[styles.primaryButton, isBusy && styles.buttonDisabled]}
+                  style={[
+                    styles.primaryButton,
+                    { backgroundColor: p.primaryBtnBg },
+                    isBusy && styles.buttonDisabled,
+                  ]}
                 >
                   {submitMode === 'signin' || submitMode === 'signup' ? (
-                    <ActivityIndicator color='#050510' size='small' />
+                    <ActivityIndicator color={p.primaryBtnText} size='small' />
                   ) : (
-                    <Text style={styles.primaryButtonText}>
+                    <Text style={[styles.primaryButtonText, { color: p.primaryBtnText }]}>
                       {mode === 'signin'
                         ? t('authModal.actions.continueWithEmail')
                         : t('authModal.actions.createAccount')}
@@ -847,9 +969,11 @@ export default function AuthSignInScreen({
                 {mode === 'signin' ? (
                   <>
                     <View style={styles.dividerRow}>
-                      <View style={styles.dividerLine} />
-                      <Text style={styles.dividerText}>{t('authModal.divider.or')}</Text>
-                      <View style={styles.dividerLine} />
+                      <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
+                      <Text style={[styles.dividerText, { color: p.textMuted }]}>
+                        {t('authModal.divider.or')}
+                      </Text>
+                      <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
                     </View>
 
                     <TouchableOpacity
@@ -858,14 +982,18 @@ export default function AuthSignInScreen({
                       onPress={() => {
                         void handleGoogleSignIn();
                       }}
-                      style={[styles.secondaryButton, isBusy && styles.buttonDisabled]}
+                      style={[
+                        styles.secondaryButton,
+                        { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
+                        isBusy && styles.buttonDisabled,
+                      ]}
                     >
                       {submitMode === 'google' ? (
-                        <ActivityIndicator color='#e8e8ff' size='small' />
+                        <ActivityIndicator color={p.secondaryBtnText} size='small' />
                       ) : (
                         <>
-                          <Chrome size={16} color='#e8e8ff' />
-                          <Text style={styles.secondaryButtonText}>
+                          <Chrome size={16} color={p.secondaryBtnText} />
+                          <Text style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}>
                             {t('authModal.actions.continueWithGoogle')}
                           </Text>
                         </>
@@ -879,14 +1007,20 @@ export default function AuthSignInScreen({
                         onPress={() => {
                           void handleDiscordSignIn();
                         }}
-                        style={[styles.secondaryButton, isBusy && styles.buttonDisabled]}
+                        style={[
+                          styles.secondaryButton,
+                          { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
+                          isBusy && styles.buttonDisabled,
+                        ]}
                       >
                         {submitMode === 'discord' ? (
-                          <ActivityIndicator color='#e8e8ff' size='small' />
+                          <ActivityIndicator color={p.secondaryBtnText} size='small' />
                         ) : (
                           <>
-                            <MessageSquare size={16} color='#e8e8ff' />
-                            <Text style={styles.secondaryButtonText}>
+                            <MessageSquare size={16} color={p.secondaryBtnText} />
+                            <Text
+                              style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}
+                            >
                               {t('authModal.actions.continueWithDiscord')}
                             </Text>
                           </>
@@ -898,14 +1032,18 @@ export default function AuthSignInScreen({
                       activeOpacity={0.85}
                       disabled={isBusy}
                       onPress={() => setWalletModalVisible(true)}
-                      style={[styles.secondaryButton, isBusy && styles.buttonDisabled]}
+                      style={[
+                        styles.secondaryButton,
+                        { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
+                        isBusy && styles.buttonDisabled,
+                      ]}
                     >
                       {submitMode === 'wallet' ? (
-                        <ActivityIndicator color='#e8e8ff' size='small' />
+                        <ActivityIndicator color={p.secondaryBtnText} size='small' />
                       ) : (
                         <>
-                          <Wallet size={16} color='#e8e8ff' />
-                          <Text style={styles.secondaryButtonText}>
+                          <Wallet size={16} color={p.secondaryBtnText} />
+                          <Text style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}>
                             {t('authModal.actions.connectWallet')}
                           </Text>
                         </>
@@ -915,15 +1053,25 @@ export default function AuthSignInScreen({
                 ) : null}
 
                 {notice ? (
-                  <View style={styles.noticeBox}>
-                    <Text style={styles.noticeText}>{notice}</Text>
+                  <View
+                    style={[
+                      styles.noticeBox,
+                      { backgroundColor: p.noticeBg, borderColor: p.noticeBorder },
+                    ]}
+                  >
+                    <Text style={[styles.noticeText, { color: p.noticeText }]}>{notice}</Text>
                   </View>
                 ) : null}
 
                 {effectiveError ? (
-                  <View style={styles.errorBox}>
-                    <AlertCircle color='#f87171' size={14} />
-                    <Text style={styles.errorText}>{effectiveError}</Text>
+                  <View
+                    style={[
+                      styles.errorBox,
+                      { backgroundColor: p.errorBg, borderColor: p.errorBorder },
+                    ]}
+                  >
+                    <AlertCircle color={p.errorIcon} size={14} />
+                    <Text style={[styles.errorText, { color: p.errorText }]}>{effectiveError}</Text>
                   </View>
                 ) : null}
 
@@ -933,7 +1081,7 @@ export default function AuthSignInScreen({
                   onPress={() => switchMode(mode === 'signin' ? 'signup' : 'signin')}
                   style={styles.footerToggle}
                 >
-                  <Text style={styles.footerToggleText}>
+                  <Text style={[styles.footerToggleText, { color: p.textMuted }]}>
                     {mode === 'signin'
                       ? t('authModal.footer.dontHaveAccount')
                       : t('authModal.footer.alreadyHaveAccount')}
@@ -942,57 +1090,75 @@ export default function AuthSignInScreen({
               </>
             ) : (
               <>
-                <View style={styles.confirmationIntro}>
-                  <View style={styles.confirmationIconWrap}>
-                    <Mail size={18} color='#66e6c5' />
+                <View
+                  style={[
+                    styles.confirmationIntro,
+                    { backgroundColor: p.noticeBg, borderColor: p.noticeBorder },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.confirmationIconWrap,
+                      { borderColor: p.noticeBorder, backgroundColor: p.noticeBg },
+                    ]}
+                  >
+                    <Mail size={18} color={p.noticeText} />
                   </View>
-                  <Text style={styles.confirmationTitle}>
+                  <Text style={[styles.confirmationTitle, { color: p.noticeText }]}>
                     {t('authModal.confirmation.checkEmail')}
                   </Text>
-                  <Text style={styles.confirmationSubtitle}>
+                  <Text style={[styles.confirmationSubtitle, { color: p.textSecondary }]}>
                     {t('authModal.confirmation.linkSentTo')}
                   </Text>
-                  <Text style={styles.confirmationEmail}>
+                  <Text style={[styles.confirmationEmail, { color: p.textPrimary }]}>
                     {confirmationEmail ?? t('authModal.confirmation.emailFallback')}
                   </Text>
-                  <Text style={styles.confirmationHint}>
+                  <Text style={[styles.confirmationHint, { color: p.textSecondary }]}>
                     {t('authModal.confirmation.codeOrLinkHint')}
                   </Text>
                 </View>
 
-                <View style={styles.resendBox}>
-                  <Text style={styles.resendSectionTitle}>
+                <View
+                  style={[
+                    styles.resendBox,
+                    { borderColor: p.inputBorder, backgroundColor: p.inputBg },
+                  ]}
+                >
+                  <Text style={[styles.resendSectionTitle, { color: p.textPrimary }]}>
                     {t('authModal.confirmation.codeTitle')}
                   </Text>
-                  <Text style={styles.resendText}>{t('authModal.confirmation.codeBody')}</Text>
+                  <Text style={[styles.resendText, { color: p.textSecondary }]}>
+                    {t('authModal.confirmation.codeBody')}
+                  </Text>
                   <View
                     style={[
                       styles.inputWrapper,
-                      confirmationCodeRequired && styles.inputWrapperRequired,
+                      { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                      confirmationCodeRequired && {
+                        backgroundColor: p.errorBg,
+                        borderColor: p.errorBorder,
+                      },
                     ]}
                   >
-                    <Lock
-                      size={16}
-                      color={confirmationCodeRequired ? '#fca5a5' : 'rgba(232,232,255,0.55)'}
-                    />
+                    <Lock size={16} color={confirmationCodeRequired ? p.errorIcon : p.textMuted} />
                     <TextInput
                       ref={confirmationCodeInputRef}
                       autoCapitalize='none'
                       autoCorrect={false}
                       keyboardType='number-pad'
-                      onChangeText={value => {
+                      onChangeText={(value) => {
                         setConfirmationCode(value.replace(/\s+/g, ''));
                         setConfirmationCodeRequired(false);
                       }}
                       placeholder={t('authModal.placeholders.confirmationCode')}
-                      placeholderTextColor='rgba(232,232,255,0.35)'
-                      style={styles.input}
+                      placeholderTextColor={p.textPlaceholder}
+                      style={[styles.input, { color: p.textPrimary }]}
                       textContentType='oneTimeCode'
                       value={confirmationCode}
                     />
                   </View>
                   {confirmationCodeRequired ? (
-                    <Text style={styles.requiredFieldText}>
+                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
                       {t('authModal.validation.confirmationCodeRequired')}
                     </Text>
                   ) : null}
@@ -1002,12 +1168,16 @@ export default function AuthSignInScreen({
                     onPress={() => {
                       void handleVerifyConfirmationCode();
                     }}
-                    style={[styles.resendButton, isBusy && styles.buttonDisabled]}
+                    style={[
+                      styles.resendButton,
+                      { borderColor: p.noticeBorder, backgroundColor: p.noticeBg },
+                      isBusy && styles.buttonDisabled,
+                    ]}
                   >
                     {submitMode === 'verifyCode' ? (
-                      <ActivityIndicator color='#1ccba1' size='small' />
+                      <ActivityIndicator color={p.accent} size='small' />
                     ) : (
-                      <Text style={styles.resendButtonText}>
+                      <Text style={[styles.resendButtonText, { color: p.noticeText }]}>
                         {t('authModal.actions.verifyConfirmationCode')}
                       </Text>
                     )}
@@ -1015,21 +1185,40 @@ export default function AuthSignInScreen({
                 </View>
 
                 {notice ? (
-                  <View style={styles.noticeBox}>
-                    <Text style={styles.noticeText}>{notice}</Text>
+                  <View
+                    style={[
+                      styles.noticeBox,
+                      { backgroundColor: p.noticeBg, borderColor: p.noticeBorder },
+                    ]}
+                  >
+                    <Text style={[styles.noticeText, { color: p.noticeText }]}>{notice}</Text>
                   </View>
                 ) : null}
 
                 {effectiveError ? (
-                  <View style={styles.errorBox}>
-                    <AlertCircle color='#f87171' size={14} />
-                    <Text style={styles.errorText}>{effectiveError}</Text>
+                  <View
+                    style={[
+                      styles.errorBox,
+                      { backgroundColor: p.errorBg, borderColor: p.errorBorder },
+                    ]}
+                  >
+                    <AlertCircle color={p.errorIcon} size={14} />
+                    <Text style={[styles.errorText, { color: p.errorText }]}>{effectiveError}</Text>
                   </View>
                 ) : null}
 
-                <View style={styles.resendBox}>
-                  <Text style={styles.resendSectionTitle}>{t('authModal.resend.title')}</Text>
-                  <Text style={styles.resendText}>{t('authModal.resend.body')}</Text>
+                <View
+                  style={[
+                    styles.resendBox,
+                    { borderColor: p.inputBorder, backgroundColor: p.inputBg },
+                  ]}
+                >
+                  <Text style={[styles.resendSectionTitle, { color: p.textPrimary }]}>
+                    {t('authModal.resend.title')}
+                  </Text>
+                  <Text style={[styles.resendText, { color: p.textSecondary }]}>
+                    {t('authModal.resend.body')}
+                  </Text>
                   <TouchableOpacity
                     activeOpacity={0.8}
                     disabled={isBusy || resendCooldown > 0}
@@ -1038,13 +1227,14 @@ export default function AuthSignInScreen({
                     }}
                     style={[
                       styles.resendButton,
+                      { borderColor: p.noticeBorder, backgroundColor: p.noticeBg },
                       (isBusy || resendCooldown > 0) && styles.buttonDisabled,
                     ]}
                   >
                     {submitMode === 'resend' ? (
-                      <ActivityIndicator color='#1ccba1' size='small' />
+                      <ActivityIndicator color={p.accent} size='small' />
                     ) : (
-                      <Text style={styles.resendButtonText}>
+                      <Text style={[styles.resendButtonText, { color: p.noticeText }]}>
                         {resendCooldown > 0
                           ? t('authModal.resend.sendAgainIn', { seconds: resendCooldown })
                           : t('authModal.resend.sendAgain')}
@@ -1059,9 +1249,13 @@ export default function AuthSignInScreen({
                   onPress={() => {
                     transitionToSignInForm(confirmationEmail ?? '');
                   }}
-                  style={[styles.primaryButton, isBusy && styles.buttonDisabled]}
+                  style={[
+                    styles.primaryButton,
+                    { backgroundColor: p.primaryBtnBg },
+                    isBusy && styles.buttonDisabled,
+                  ]}
                 >
-                  <Text style={styles.primaryButtonText}>
+                  <Text style={[styles.primaryButtonText, { color: p.primaryBtnText }]}>
                     {t('authModal.actions.alreadyConfirmedContinue')}
                   </Text>
                 </TouchableOpacity>
@@ -1084,7 +1278,7 @@ export default function AuthSignInScreen({
                   }}
                   style={styles.footerToggle}
                 >
-                  <Text style={styles.footerToggleText}>
+                  <Text style={[styles.footerToggleText, { color: p.textMuted }]}>
                     {t('authModal.actions.useAnotherEmail')}
                   </Text>
                 </TouchableOpacity>
@@ -1097,7 +1291,7 @@ export default function AuthSignInScreen({
       <WalletConnectModal
         visible={walletModalVisible}
         onClose={() => setWalletModalVisible(false)}
-        onConnect={walletType => {
+        onConnect={(walletType) => {
           void handleWalletConnect(walletType);
         }}
       />
@@ -1125,7 +1319,6 @@ const styles = createTypographyStyles({
     padding: 20,
   },
   scrollContentModal: {
-    justifyContent: 'center',
     alignItems: 'center',
   },
   card: {
@@ -1151,6 +1344,70 @@ const styles = createTypographyStyles({
     alignItems: 'flex-start',
     gap: 12,
     marginBottom: 4,
+    zIndex: 50,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 0,
+    zIndex: 50,
+  },
+  settingsMenuContainer: {
+    position: 'relative',
+    zIndex: 100,
+  },
+  settingsButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingsButtonActive: {
+    borderColor: 'rgba(28,203,161,0.4)',
+    backgroundColor: 'rgba(28,203,161,0.08)',
+  },
+  settingsDropdown: {
+    position: 'absolute',
+    top: 40,
+    right: 0,
+    zIndex: 9999,
+    minWidth: 168,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: '#07071a',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    elevation: 24,
+  },
+  settingsDropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+  },
+  settingsDropdownLabel: {
+    flex: 1,
+    color: 'rgba(232,232,255,0.8)',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  settingsDropdownValue: {
+    color: '#1ccba1',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  settingsDropdownDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    marginHorizontal: 10,
   },
   titleLockup: {
     gap: 6,
@@ -1215,6 +1472,7 @@ const styles = createTypographyStyles({
   },
   input: {
     flex: 1,
+    minWidth: 0,
     color: '#e8e8ff',
     fontSize: 14,
     paddingVertical: 0,

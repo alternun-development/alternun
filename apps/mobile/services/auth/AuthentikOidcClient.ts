@@ -1,18 +1,57 @@
 /**
- * Authentik OIDC client with PKCE for the Alternun mobile (web runtime).
+ * Authentik OIDC client with PKCE for web runtime apps.
  *
- * Flow:
- *   1. startAuthentikOAuthFlow(hint)  → redirects to Authentik /authorize/
- *   2. Authentik redirects back with  ?code=...&state=...
- *   3. handleAuthentikCallback()      → exchanges code for tokens, fetches userinfo,
- *                                       upserts public.users via Supabase RPC
+ * ── Authentik setup requirements ─────────────────────────────────────────────
  *
- * PKCE verifier/challenge is stored in sessionStorage (tab-scoped, auto-cleared).
- * The resolved session (OidcSession) is stored in localStorage so it survives
- * a page reload.
+ *  1. Create an OAuth2/OIDC provider (type: Authorization Code + PKCE).
+ *     - Client type: Public (no client secret)
+ *     - Redirect URIs: your app origin (e.g. https://myapp.com/)
+ *     - Authorization flow: default-provider-authorization-implicit-consent
+ *       (0 stage bindings — implicit consent fires immediately once logged in)
  *
- * All Supabase calls use the anon key + a SECURITY DEFINER RPC; no service-role
- * credentials are needed on the client.
+ *  2. Create an Application and bind it to the provider.
+ *
+ *  3. Create OAuth Sources for each social provider (Google, Discord, …).
+ *     - Google source slug:  "google"
+ *     - Discord source slug: "discord"
+ *     - Google requires https://<authentik-host>/source/oauth/callback/google/
+ *       to be registered as an Authorized Redirect URI in Google Cloud Console.
+ *
+ *  4. Known Authentik 2026.2.1 bug — IntegrityError in handle_existing_link:
+ *     When an authenticated session user re-authenticates via a social source,
+ *     flow_manager.py line 306 calls connection.save() on a new (pk=None)
+ *     UserSourceConnection, hitting the (user_id, source_id) unique constraint.
+ *     Hot-patch fix applied to production:
+ *       connection.save()  →  type(connection).objects.update_or_create(
+ *                               user=connection.user,
+ *                               source=connection.source,
+ *                               defaults={"identifier": connection.identifier},
+ *                             )
+ *     Reported to Authentik upstream. Re-apply after container image upgrades.
+ *
+ * ── Auth flow ─────────────────────────────────────────────────────────────────
+ *
+ *   1. startAuthentikOAuthFlow('google' | 'discord')
+ *        → generates PKCE verifier+challenge, stores in sessionStorage
+ *        → redirects to /source/oauth/login/<slug>/?next=/application/o/authorize/?...
+ *           (bypasses Authentik login page entirely — user sees only Google/Discord UI)
+ *   2. Social provider authenticates → redirects to Authentik's OAuth callback
+ *   3. Authentik follows `next` → runs authorization flow (implicit consent)
+ *   4. Authentik redirects to app with ?code=...&state=...
+ *   5. handleAuthentikCallback()
+ *        → validates state, retrieves PKCE verifier from sessionStorage
+ *        → exchanges code for access + id tokens via /application/o/token/
+ *        → fetches userinfo from /application/o/userinfo/
+ *        → upserts user via Supabase SECURITY DEFINER RPC upsert_oidc_user()
+ *        → saves OidcSession to localStorage
+ *
+ * ── Required env vars ─────────────────────────────────────────────────────────
+ *
+ *   EXPO_PUBLIC_AUTHENTIK_ISSUER      https://<host>/application/o/<app-slug>/
+ *   EXPO_PUBLIC_AUTHENTIK_CLIENT_ID   <oauth2-provider-client-id>
+ *   EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI  https://<app-origin>/   (must match Authentik + app)
+ *   EXPO_PUBLIC_SUPABASE_URL          (for upsert_oidc_user RPC)
+ *   EXPO_PUBLIC_SUPABASE_KEY          (anon key — no service role needed)
  */
 
 // ─── Config helpers ──────────────────────────────────────────────────────────
@@ -317,8 +356,21 @@ export function hasPendingAuthentikCallback(searchString?: string): boolean {
 /**
  * Starts the Authentik OIDC authorization flow.
  *
- * @param providerHint  'google' | 'discord' — forwarded as the `hint` query
- *                      parameter so Authentik pre-selects the social provider.
+ * Instead of going to /application/o/authorize/?hint=<provider> (which still
+ * shows the Authentik login page because the mobile authorization flow has no
+ * identification stage), we redirect to Authentik's social source login
+ * endpoint: /source/oauth/login/<slug>/
+ *
+ * Flow:
+ *   1. Browser → /source/oauth/login/google/?next=/application/o/authorize/?...
+ *   2. Authentik → Google OAuth (no Authentik UI shown)
+ *   3. Google  → /source/oauth/callback/google/
+ *   4. Authentik (user now logged in) → follows `next` → /application/o/authorize/?...
+ *   5. Authorization flow (implicit consent, 0 stages) → issues PKCE code
+ *   6. Authentik → https://testnet.airs.alternun.co/?code=XXX&state=YYY
+ *   7. App handles callback as before
+ *
+ * @param providerHint  'google' | 'discord' — slug of the Authentik OAuth source.
  */
 export async function startAuthentikOAuthFlow(providerHint: 'google' | 'discord'): Promise<void> {
   const issuer = getAuthentikIssuer();
@@ -337,8 +389,9 @@ export async function startAuthentikOAuthFlow(providerHint: 'google' | 'discord'
   sessionStorage.setItem(PKCE_KEY, verifier);
   sessionStorage.setItem(STATE_KEY, state);
 
+  // Build the OIDC authorize URL (the destination AFTER social login).
   const authorizeUrl = `${getAuthentikEndpointBase()}authorize/`;
-  const params = new URLSearchParams({
+  const authorizeParams = new URLSearchParams({
     response_type: 'code',
     client_id: clientId,
     redirect_uri: redirectUri,
@@ -346,11 +399,21 @@ export async function startAuthentikOAuthFlow(providerHint: 'google' | 'discord'
     state,
     code_challenge: challenge,
     code_challenge_method: 'S256',
-    // Authentik `hint` pre-selects the social source
-    hint: providerHint,
   });
 
-  window.location.href = `${authorizeUrl}?${params.toString()}`;
+  // Derive the Authentik origin from the issuer URL so we can build the
+  // source-login URL and a relative `next` path (Authentik only follows
+  // same-origin `next` parameters for security).
+  const authentikOrigin = new URL(issuer).origin;
+  const authorizePath = authorizeUrl.replace(authentikOrigin, '');
+  const nextPath = `${authorizePath}?${authorizeParams.toString()}`;
+
+  // /source/oauth/login/<slug>/ directly initiates the external OAuth flow,
+  // bypassing any Authentik UI. After the external provider authenticates the
+  // user, Authentik follows `next` to complete the OIDC authorization.
+  window.location.href = `${authentikOrigin}/source/oauth/login/${providerHint}/?next=${encodeURIComponent(
+    nextPath
+  )}`;
 }
 
 /**
