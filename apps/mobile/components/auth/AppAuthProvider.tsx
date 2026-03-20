@@ -157,7 +157,7 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     const callbackClient = client as CallbackCapableAuthClient;
     // Re-upsert on restore to ensure Supabase UUID is current; fall back to sub.
     void upsertOidcUser(session.claims, session.provider)
-      .then(supabaseUserId => {
+      .then((supabaseUserId) => {
         callbackClient.setOidcUser?.(oidcSessionToUser(session, supabaseUserId));
       })
       .catch(() => {
@@ -168,7 +168,7 @@ function AuthCallbackBridge(): React.JSX.Element | null {
   // Clear OIDC session when user signs out
   useEffect(() => {
     if (Platform.OS !== 'web') return;
-    return client.onAuthStateChange(user => {
+    return client.onAuthStateChange((user) => {
       if (!user) clearOidcSession();
     });
   }, [client]);
@@ -198,7 +198,7 @@ function AuthCallbackBridge(): React.JSX.Element | null {
         supabaseUserId = await upsertOidcUser(session.claims, session.provider);
       },
     })
-      .then(session => {
+      .then((session) => {
         if (cancelled) return;
         const callbackClient = client as CallbackCapableAuthClient;
         callbackClient.setOidcUser?.(oidcSessionToUser(session, supabaseUserId));
@@ -252,7 +252,7 @@ function AuthCallbackBridge(): React.JSX.Element | null {
       callbackError,
       callbackErrorDescription,
       callbackErrorCode,
-    ].some(value => Boolean((value?.length ?? 0) > 0));
+    ].some((value) => Boolean((value?.length ?? 0) > 0));
 
     if (!hasCallbackPayload) {
       return;
@@ -262,7 +262,7 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     stripAuthCallbackTokensFromUrl(runtimeWindow.location.href);
 
     const hasCallbackError = [callbackError, callbackErrorDescription, callbackErrorCode].some(
-      value => Boolean((value?.length ?? 0) > 0)
+      (value) => Boolean((value?.length ?? 0) > 0)
     );
 
     if (hasCallbackError) {
@@ -289,9 +289,9 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     }
 
     const callbackClient = client as CallbackCapableAuthClient;
-    const setSession = callbackClient.supabase?.auth?.setSession;
+    const authModule = callbackClient.supabase?.auth;
 
-    if (typeof setSession !== 'function') {
+    if (!authModule || typeof authModule.setSession !== 'function') {
       setToast({
         type: 'error',
         title: t('authCallback.errors.title'),
@@ -301,11 +301,12 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     }
 
     let cancelled = false;
-    void setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    })
-      .then(result => {
+    void authModule
+      .setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      })
+      .then((result) => {
         if (cancelled) {
           return;
         }

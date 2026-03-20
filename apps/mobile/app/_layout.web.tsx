@@ -1,16 +1,19 @@
-import { DarkTheme, DefaultTheme, ThemeProvider, } from '@react-navigation/native';
-import { Stack, usePathname, } from 'expo-router';
-import { StatusBar, } from 'expo-status-bar';
-import { AppAuthProvider, } from '../components/auth/AppAuthProvider';
+import React from 'react';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { Stack, usePathname } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { AppAuthProvider } from '../components/auth/AppAuthProvider';
 import AppInfoFooter from '../components/common/AppInfoFooter';
 import {
   AppPreferencesProvider,
   useAppPreferences,
 } from '../components/settings/AppPreferencesProvider';
-import { StyleSheet, View, } from 'react-native';
+import { useColorScheme } from 'nativewind';
+import { useEffect } from 'react';
+import { StyleSheet, View } from 'react-native';
 import '../global.css';
 
-export default function RootLayout(): any {
+export default function RootLayout(): React.JSX.Element {
   return (
     <AppPreferencesProvider>
       <RootApp />
@@ -18,9 +21,14 @@ export default function RootLayout(): any {
   );
 }
 
-function RootApp(): any {
-  const { themeMode, } = useAppPreferences();
+function RootApp(): React.JSX.Element {
+  const { themeMode } = useAppPreferences();
+  const colorScheme = useColorScheme();
   const navigationTheme = themeMode === 'dark' ? DarkTheme : DefaultTheme;
+
+  useEffect(() => {
+    colorScheme.setColorScheme(themeMode);
+  }, [colorScheme, themeMode]);
   const pathname = usePathname();
   const showLayoutFooter = pathname !== '/auth' && pathname !== '/';
 
@@ -30,18 +38,18 @@ function RootApp(): any {
         <View style={styles.appShell}>
           <View style={styles.stackContainer}>
             <Stack
-              screenOptions={({ route, },) => ({
-                headerShown: !route.name.startsWith('tempobook',),
+              screenOptions={({ route }) => ({
+                headerShown: !route.name.startsWith('tempobook'),
               })}
             >
-              <Stack.Screen name='index' options={{ headerShown: false, }} />
+              <Stack.Screen name='index' options={{ headerShown: false }} />
               <Stack.Screen
                 name='auth'
                 options={{
                   headerShown: false,
                   presentation: 'transparentModal',
                   animation: 'fade',
-                  contentStyle: { backgroundColor: 'transparent', },
+                  contentStyle: { backgroundColor: 'transparent' },
                 }}
               />
               <Stack.Screen
@@ -86,4 +94,4 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 10,
   },
-},);
+});
