@@ -4,11 +4,16 @@ import { Image as ExpoImage } from 'expo-image';
 import {
   AlertCircle,
   Chrome,
+  ChevronDown,
   Eye,
   EyeOff,
+  Languages,
   Lock,
   Mail,
   MessageSquare,
+  Moon,
+  Settings,
+  Sun,
   Wallet,
   X,
 } from 'lucide-react-native';
@@ -28,11 +33,13 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { getLocaleLabel } from '@alternun/i18n';
 import { createTypographyStyles } from '../theme/typography';
 import ShaderBackground from './ShaderBackground';
 import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
+import { useAppPreferences } from '../settings/AppPreferencesProvider';
 
 const RESEND_COOLDOWN_SECONDS = 45;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -214,6 +221,10 @@ export default function AuthSignInScreen({
 }: AuthSignInScreenProps) {
   const { signInWithEmail, signIn, loading, error, client } = useAuth();
   const { t, locale } = useAppTranslation('mobile');
+  const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
+  const isDark = themeMode === 'dark';
+  const ThemeIcon = isDark ? Sun : Moon;
+  const themeLabel = isDark ? t('labels.dark') : t('labels.light');
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -229,6 +240,7 @@ export default function AuthSignInScreen({
   const [authStep, setAuthStep] = useState<AuthStep>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [invalidEmail, setInvalidEmail] = useState(false);
   const [requiredFields, setRequiredFields] = useState<RequiredFieldState>(() =>
     createDefaultRequiredFieldState()
@@ -660,11 +672,52 @@ export default function AuthSignInScreen({
                 />
                 <Text style={styles.subtitle}>{t('authModal.notices.secureSignIn')}</Text>
               </View>
-              {onCancel ? (
-                <TouchableOpacity activeOpacity={0.8} onPress={onCancel} style={styles.closeButton}>
-                  <X size={16} color='rgba(232,232,255,0.75)' />
-                </TouchableOpacity>
-              ) : null}
+              <View style={styles.headerActions}>
+                <View style={styles.settingsMenuContainer}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => setSettingsMenuOpen(prev => !prev)}
+                    style={styles.settingsButton}
+                  >
+                    <Settings size={14} color='rgba(232,232,255,0.75)' />
+                    <ChevronDown size={11} color='rgba(232,232,255,0.45)' />
+                  </TouchableOpacity>
+                  {settingsMenuOpen ? (
+                    <View style={styles.settingsDropdown}>
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => cycleLanguage()}
+                        style={styles.settingsDropdownItem}
+                      >
+                        <Languages size={13} color='rgba(232,232,255,0.75)' />
+                        <Text style={styles.settingsDropdownLabel}>{t('labels.language')}</Text>
+                        <Text style={styles.settingsDropdownValue}>
+                          {getLocaleLabel(language, language)}
+                        </Text>
+                      </TouchableOpacity>
+                      <View style={styles.settingsDropdownDivider} />
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => toggleThemeMode()}
+                        style={styles.settingsDropdownItem}
+                      >
+                        <ThemeIcon size={13} color='rgba(232,232,255,0.75)' />
+                        <Text style={styles.settingsDropdownLabel}>{t('labels.theme')}</Text>
+                        <Text style={styles.settingsDropdownValue}>{themeLabel}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                </View>
+                {onCancel ? (
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={onCancel}
+                    style={styles.closeButton}
+                  >
+                    <X size={16} color='rgba(232,232,255,0.75)' />
+                  </TouchableOpacity>
+                ) : null}
+              </View>
             </View>
 
             {authStep === 'form' ? (
@@ -1153,6 +1206,67 @@ const styles = createTypographyStyles({
     gap: 12,
     marginBottom: 4,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 0,
+  },
+  settingsMenuContainer: {
+    position: 'relative',
+  },
+  settingsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    alignSelf: 'flex-start',
+    justifyContent: 'center',
+  },
+  settingsDropdown: {
+    position: 'absolute',
+    top: 38,
+    right: 0,
+    zIndex: 100,
+    minWidth: 160,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: '#0d0d1f',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 16,
+    overflow: 'hidden',
+  },
+  settingsDropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  settingsDropdownLabel: {
+    flex: 1,
+    color: '#e8e8ff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  settingsDropdownValue: {
+    color: '#1ccba1',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  settingsDropdownDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    marginHorizontal: 8,
+  },
   titleLockup: {
     gap: 6,
   },
@@ -1216,6 +1330,7 @@ const styles = createTypographyStyles({
   },
   input: {
     flex: 1,
+    minWidth: 0,
     color: '#e8e8ff',
     fontSize: 14,
     paddingVertical: 0,
