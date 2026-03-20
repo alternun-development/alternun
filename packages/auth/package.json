@@ -1,6 +1,6 @@
 {
   "name": "@alternun/auth",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Alternun auth wrapper package built on top of @edcalderon/auth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,7 +26,7 @@
     "email:ses": "EMAIL_SMTP_PROVIDER=ses pnpm run email:apply"
   },
   "dependencies": {
-    "@edcalderon/auth": "1.2.1",
+    "@edcalderon/auth": "1.2.2",
     "@supabase/supabase-js": "^2.98.0",
     "zod": "^3.24.2"
   },
