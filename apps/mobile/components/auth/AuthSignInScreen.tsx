@@ -1206,15 +1206,18 @@ const styles = createTypographyStyles({
     alignItems: 'flex-start',
     gap: 12,
     marginBottom: 4,
+    zIndex: 50,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     flexShrink: 0,
+    zIndex: 50,
   },
   settingsMenuContainer: {
     position: 'relative',
+    zIndex: 100,
   },
   settingsButton: {
     width: 34,
@@ -1233,7 +1236,7 @@ const styles = createTypographyStyles({
     position: 'absolute',
     top: 40,
     right: 0,
-    zIndex: 200,
+    zIndex: 9999,
     minWidth: 168,
     borderRadius: 12,
     borderWidth: 1,
