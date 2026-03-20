@@ -12,10 +12,8 @@ interface HealthState {
   message?: string;
 }
 
-export function DashboardPage() {
-  const [health, setHealth] = useState<HealthState>({
-    status: 'loading',
-  });
+function useApiHealth(): HealthState {
+  const [health, setHealth] = useState<HealthState>({ status: 'loading' });
 
   useEffect(() => {
     let cancelled = false;
@@ -24,11 +22,7 @@ export function DashboardPage() {
       try {
         const token = await getAccessToken();
         const response = await fetch(`${adminEnv.apiUrl}/v1/health`, {
-          headers: token
-            ? {
-                Authorization: `Bearer ${token}`,
-              }
-            : undefined,
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
 
         const payload = (await response.json()) as {
@@ -38,9 +32,7 @@ export function DashboardPage() {
           timestamp?: string;
         };
 
-        if (cancelled) {
-          return;
-        }
+        if (cancelled) return;
 
         setHealth({
           service: payload.service,
@@ -50,10 +42,7 @@ export function DashboardPage() {
           message: response.ok ? undefined : `Health request failed with ${response.status}.`,
         });
       } catch (error) {
-        if (cancelled) {
-          return;
-        }
-
+        if (cancelled) return;
         setHealth({
           status: 'error',
           message: error instanceof Error ? error.message : 'Health request failed.',
@@ -62,13 +51,18 @@ export function DashboardPage() {
     }
 
     void loadHealth();
-
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const resources = adminResources.filter(resource => resource.name !== 'dashboard');
+  return health;
+}
+
+export function DashboardPage() {
+  const health = useApiHealth();
+
+  const resources = adminResources.filter((resource) => resource.name !== 'dashboard');
 
   return (
     <section className='page-grid'>
@@ -113,7 +107,7 @@ export function DashboardPage() {
       </article>
 
       <section className='resource-grid'>
-        {resources.map(resource => (
+        {resources.map((resource) => (
           <article key={resource.name} className='panel resource-panel'>
             <span className='panel-label'>{resource.name}</span>
             <h3>{resource.meta.title}</h3>
