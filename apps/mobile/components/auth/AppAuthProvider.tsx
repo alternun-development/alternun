@@ -14,7 +14,7 @@ import {
   OIDC_INITIAL_SEARCH,
   readOidcSession,
   type OidcSession,
-} from '../../services/auth/AuthentikOidcClient';
+} from '@alternun/auth';
 
 function getAllowMockWalletFallback(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH === 'true';

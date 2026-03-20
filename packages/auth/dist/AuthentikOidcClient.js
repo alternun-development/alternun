@@ -1,0 +1,377 @@
+/**
+ * Authentik OIDC client with PKCE for web runtime apps.
+ *
+ * ── Authentik setup requirements ─────────────────────────────────────────────
+ *
+ *  1. Create an OAuth2/OIDC provider (type: Authorization Code + PKCE).
+ *     - Client type: Public (no client secret)
+ *     - Redirect URIs: your app origin (e.g. https://myapp.com/)
+ *     - Authorization flow: default-provider-authorization-implicit-consent
+ *       (0 stage bindings — implicit consent fires immediately once logged in)
+ *
+ *  2. Create an Application and bind it to the provider.
+ *
+ *  3. Create OAuth Sources for each social provider (Google, Discord, …).
+ *     - Google source slug:  "google"
+ *     - Discord source slug: "discord"
+ *     - Google requires https://<authentik-host>/source/oauth/callback/google/
+ *       to be registered as an Authorized Redirect URI in Google Cloud Console.
+ *
+ *  4. Known Authentik 2026.2.1 bug — IntegrityError in handle_existing_link:
+ *     When an authenticated session user re-authenticates via a social source,
+ *     flow_manager.py line 306 calls connection.save() on a new (pk=None)
+ *     UserSourceConnection, hitting the (user_id, source_id) unique constraint.
+ *     Hot-patch fix applied to production:
+ *       connection.save()  →  type(connection).objects.update_or_create(
+ *                               user=connection.user,
+ *                               source=connection.source,
+ *                               defaults={"identifier": connection.identifier},
+ *                             )
+ *     Reported to Authentik upstream. Re-apply after container image upgrades.
+ *
+ * ── Auth flow ─────────────────────────────────────────────────────────────────
+ *
+ *   1. startAuthentikOAuthFlow('google' | 'discord')
+ *        → generates PKCE verifier+challenge, stores in sessionStorage
+ *        → redirects to /source/oauth/login/<slug>/?next=/application/o/authorize/?...
+ *           (bypasses Authentik login page entirely — user sees only Google/Discord UI)
+ *   2. Social provider authenticates → redirects to Authentik's OAuth callback
+ *   3. Authentik follows `next` → runs authorization flow (implicit consent)
+ *   4. Authentik redirects to app with ?code=...&state=...
+ *   5. handleAuthentikCallback()
+ *        → validates state, retrieves PKCE verifier from sessionStorage
+ *        → exchanges code for access + id tokens via /application/o/token/
+ *        → fetches userinfo from /application/o/userinfo/
+ *        → upserts user via Supabase SECURITY DEFINER RPC upsert_oidc_user()
+ *        → saves OidcSession to localStorage
+ *
+ * ── Required env vars ─────────────────────────────────────────────────────────
+ *
+ *   EXPO_PUBLIC_AUTHENTIK_ISSUER      https://<host>/application/o/<app-slug>/
+ *   EXPO_PUBLIC_AUTHENTIK_CLIENT_ID   <oauth2-provider-client-id>
+ *   EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI  https://<app-origin>/   (must match Authentik + app)
+ *   EXPO_PUBLIC_SUPABASE_URL          (for upsert_oidc_user RPC)
+ *   EXPO_PUBLIC_SUPABASE_KEY          (anon key — no service role needed)
+ */
+// ─── Config helpers ──────────────────────────────────────────────────────────
+/**
+ * Authentik's OIDC discovery document uses a GLOBAL authorize/token/userinfo
+ * endpoint at `/application/o/<verb>/`, NOT a per-application path like
+ * `/application/o/<slug>/<verb>/`.  Given the issuer URL
+ * `https://host/application/o/<slug>/` this returns the base
+ * `https://host/application/o/` so callers can append the verb they need.
+ *
+ * Falls back to the raw issuer if the expected pattern is not found so that
+ * non-Authentik issuers still get a sensible (though potentially wrong) URL.
+ */
+function getAuthentikEndpointBase() {
+    const issuer = getAuthentikIssuer();
+    // Strip the slug segment: .../application/o/<slug>/ → .../application/o/
+    const match = issuer.match(/^(https?:\/\/.+?\/application\/o\/)/);
+    if (match)
+        return match[1];
+    // Fallback: strip trailing slug (one path segment) from issuer
+    return issuer.replace(/\/$/, '').replace(/\/[^/]+$/, '/');
+}
+function getAuthentikIssuer() {
+    var _a;
+    return (_a = process.env.EXPO_PUBLIC_AUTHENTIK_ISSUER) !== null && _a !== void 0 ? _a : '';
+}
+function getAuthentikClientId() {
+    var _a;
+    return (_a = process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID) !== null && _a !== void 0 ? _a : '';
+}
+function getAuthentikRedirectUri() {
+    var _a;
+    return ((_a = process.env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI) !== null && _a !== void 0 ? _a : (typeof window !== 'undefined' ? `${window.location.origin}/` : ''));
+}
+function getSupabaseUrl() {
+    var _a, _b;
+    return (_b = (_a = process.env.EXPO_PUBLIC_SUPABASE_URL) !== null && _a !== void 0 ? _a : process.env.EXPO_PUBLIC_SUPABASE_URI) !== null && _b !== void 0 ? _b : '';
+}
+function getSupabaseAnonKey() {
+    var _a, _b;
+    return (_b = (_a = process.env.EXPO_PUBLIC_SUPABASE_KEY) !== null && _a !== void 0 ? _a : process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) !== null && _b !== void 0 ? _b : '';
+}
+// ─── Storage keys ─────────────────────────────────────────────────────────────
+const PKCE_KEY = 'alternun:oidc:pkce_verifier';
+const STATE_KEY = 'alternun:oidc:state';
+const SESSION_KEY = 'alternun:oidc:session';
+// ─── PKCE helpers ─────────────────────────────────────────────────────────────
+async function sha256(plain) {
+    const encoder = new TextEncoder();
+    return crypto.subtle.digest('SHA-256', encoder.encode(plain));
+}
+function base64UrlEncode(buffer) {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+}
+async function generatePkce() {
+    const array = new Uint8Array(64);
+    crypto.getRandomValues(array);
+    const verifier = base64UrlEncode(array.buffer);
+    const challenge = base64UrlEncode(await sha256(verifier));
+    return { verifier, challenge };
+}
+function generateState() {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return base64UrlEncode(array.buffer);
+}
+// ─── JWT decode (no verification — claims already came from userinfo endpoint) ──
+export function decodeJwtPayload(jwt) {
+    try {
+        const parts = jwt.split('.');
+        if (parts.length < 2)
+            return {};
+        const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        return JSON.parse(atob(payload));
+    }
+    catch {
+        return {};
+    }
+}
+async function upsertOidcUser(claims, provider) {
+    var _a, _b, _c, _d, _e;
+    const supabaseUrl = getSupabaseUrl();
+    const anonKey = getSupabaseAnonKey();
+    if (!supabaseUrl || !anonKey) {
+        throw new Error('CONFIG_ERROR: EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_KEY must be set.');
+    }
+    const iss = (_a = claims.iss) !== null && _a !== void 0 ? _a : getAuthentikIssuer();
+    const body = {
+        p_sub: claims.sub,
+        p_iss: iss,
+        p_email: (_b = claims.email) !== null && _b !== void 0 ? _b : null,
+        p_email_verified: (_c = claims.email_verified) !== null && _c !== void 0 ? _c : false,
+        p_name: (_d = claims.name) !== null && _d !== void 0 ? _d : null,
+        p_picture: (_e = claims.picture) !== null && _e !== void 0 ? _e : null,
+        p_provider: provider !== null && provider !== void 0 ? provider : null,
+        p_raw_claims: claims,
+    };
+    const res = await fetch(`${supabaseUrl}/rest/v1/rpc/upsert_oidc_user`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            apikey: anonKey,
+            Authorization: `Bearer ${anonKey}`,
+        },
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`Failed to upsert user: ${res.status} ${text}`);
+    }
+    const data = (await res.json());
+    return data.id;
+}
+// ─── Userinfo ─────────────────────────────────────────────────────────────────
+async function fetchUserinfo(accessToken) {
+    if (!getAuthentikIssuer()) {
+        throw new Error('CONFIG_ERROR: EXPO_PUBLIC_AUTHENTIK_ISSUER must be set.');
+    }
+    const userinfoUrl = `${getAuthentikEndpointBase()}userinfo/`;
+    const res = await fetch(userinfoUrl, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) {
+        throw new Error(`Userinfo request failed: ${res.status}`);
+    }
+    return (await res.json());
+}
+async function exchangeCodeForTokens(code, codeVerifier) {
+    const clientId = getAuthentikClientId();
+    const redirectUri = getAuthentikRedirectUri();
+    if (!getAuthentikIssuer() || !clientId) {
+        throw new Error('CONFIG_ERROR: EXPO_PUBLIC_AUTHENTIK_ISSUER and EXPO_PUBLIC_AUTHENTIK_CLIENT_ID must be set.');
+    }
+    const tokenUrl = `${getAuthentikEndpointBase()}token/`;
+    const params = new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        code,
+        code_verifier: codeVerifier,
+    });
+    const res = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString(),
+    });
+    if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`Token exchange failed: ${res.status} ${text}`);
+    }
+    return (await res.json());
+}
+// ─── Session storage ──────────────────────────────────────────────────────────
+export function readOidcSession() {
+    if (typeof localStorage === 'undefined')
+        return null;
+    try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        if (!raw)
+            return null;
+        const session = JSON.parse(raw);
+        // Treat expired sessions as absent
+        if (Date.now() > session.expiresAt) {
+            localStorage.removeItem(SESSION_KEY);
+            return null;
+        }
+        return session;
+    }
+    catch {
+        return null;
+    }
+}
+export function clearOidcSession() {
+    if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem(SESSION_KEY);
+    }
+}
+function saveOidcSession(session) {
+    if (typeof localStorage === 'undefined')
+        return;
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+}
+// ─── Module-level URL snapshot ────────────────────────────────────────────────
+// Captured synchronously at import time — before Expo Router or any useEffect
+// can modify window.location. This is the only reliable way to read the OIDC
+// callback params (?code=&state=) because React effects run after routing.
+export const OIDC_INITIAL_SEARCH = typeof window !== 'undefined' ? window.location.search : '';
+// ─── Public API ───────────────────────────────────────────────────────────────
+/**
+ * Returns true when the minimum Authentik env vars are present.
+ * Use this to conditionally show Authentik-only buttons (e.g. Discord).
+ */
+export function isAuthentikConfigured() {
+    return Boolean(getAuthentikIssuer() && getAuthentikClientId());
+}
+/**
+ * Returns true when the given search string (or current URL) looks like an
+ * Authentik OIDC callback (i.e. has `?code=...&state=...`).
+ *
+ * @param searchString  Pass `OIDC_INITIAL_SEARCH` to check the URL as it was
+ *   at module-load time, before any router had a chance to modify it.
+ */
+export function hasPendingAuthentikCallback(searchString) {
+    const search = searchString !== null && searchString !== void 0 ? searchString : (typeof window !== 'undefined' ? window.location.search : '');
+    const params = new URLSearchParams(search);
+    return Boolean(params.get('code') && params.get('state'));
+}
+/**
+ * Starts the Authentik OIDC authorization flow.
+ *
+ * Instead of going to /application/o/authorize/?hint=<provider> (which still
+ * shows the Authentik login page because the mobile authorization flow has no
+ * identification stage), we redirect to Authentik's social source login
+ * endpoint: /source/oauth/login/<slug>/
+ *
+ * Flow:
+ *   1. Browser → /source/oauth/login/google/?next=/application/o/authorize/?...
+ *   2. Authentik → Google OAuth (no Authentik UI shown)
+ *   3. Google  → /source/oauth/callback/google/
+ *   4. Authentik (user now logged in) → follows `next` → /application/o/authorize/?...
+ *   5. Authorization flow (implicit consent, 0 stages) → issues PKCE code
+ *   6. Authentik → https://testnet.airs.alternun.co/?code=XXX&state=YYY
+ *   7. App handles callback as before
+ *
+ * @param providerHint  'google' | 'discord' — slug of the Authentik OAuth source.
+ */
+export async function startAuthentikOAuthFlow(providerHint) {
+    const issuer = getAuthentikIssuer();
+    const clientId = getAuthentikClientId();
+    const redirectUri = getAuthentikRedirectUri();
+    if (!issuer || !clientId) {
+        throw new Error('CONFIG_ERROR: EXPO_PUBLIC_AUTHENTIK_ISSUER and EXPO_PUBLIC_AUTHENTIK_CLIENT_ID must be set.');
+    }
+    const { verifier, challenge } = await generatePkce();
+    const state = generateState();
+    sessionStorage.setItem(PKCE_KEY, verifier);
+    sessionStorage.setItem(STATE_KEY, state);
+    // Build the OIDC authorize URL (the destination AFTER social login).
+    const authorizeUrl = `${getAuthentikEndpointBase()}authorize/`;
+    const authorizeParams = new URLSearchParams({
+        response_type: 'code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope: 'openid email profile',
+        state,
+        code_challenge: challenge,
+        code_challenge_method: 'S256',
+    });
+    // Derive the Authentik origin from the issuer URL so we can build the
+    // source-login URL and a relative `next` path (Authentik only follows
+    // same-origin `next` parameters for security).
+    const authentikOrigin = new URL(issuer).origin;
+    const authorizePath = authorizeUrl.replace(authentikOrigin, '');
+    const nextPath = `${authorizePath}?${authorizeParams.toString()}`;
+    // /source/oauth/login/<slug>/ directly initiates the external OAuth flow,
+    // bypassing any Authentik UI. After the external provider authenticates the
+    // user, Authentik follows `next` to complete the OIDC authorization.
+    window.location.href = `${authentikOrigin}/source/oauth/login/${providerHint}/?next=${encodeURIComponent(nextPath)}`;
+}
+/**
+ * Call this on the page that receives the redirect from Authentik.
+ * Returns the fully-resolved OidcSession or throws on error.
+ *
+ * @param searchString  Optional snapshot of `window.location.search` captured
+ *   before the caller strips the URL. Pass this to avoid race conditions in
+ *   React StrictMode where the effect may run a second time after the URL has
+ *   already been cleaned up.
+ */
+export async function handleAuthentikCallback(searchString) {
+    var _a, _b, _c, _d, _e;
+    const params = new URLSearchParams(searchString !== null && searchString !== void 0 ? searchString : window.location.search);
+    const code = params.get('code');
+    const returnedState = params.get('state');
+    if (!code) {
+        throw new Error('OIDC callback is missing `code` parameter.');
+    }
+    const expectedState = sessionStorage.getItem(STATE_KEY);
+    const codeVerifier = sessionStorage.getItem(PKCE_KEY);
+    // Clean up PKCE artifacts immediately
+    sessionStorage.removeItem(STATE_KEY);
+    sessionStorage.removeItem(PKCE_KEY);
+    if (!expectedState || returnedState !== expectedState) {
+        throw new Error('OIDC state mismatch — possible CSRF attack.');
+    }
+    if (!codeVerifier) {
+        throw new Error('PKCE verifier missing from session storage.');
+    }
+    const tokens = await exchangeCodeForTokens(code, codeVerifier);
+    const claims = await fetchUserinfo(tokens.access_token);
+    // Determine which social provider was used by inspecting the id_token or
+    // falling back to the 'source' claim Authentik includes in userinfo.
+    let provider;
+    if (tokens.id_token) {
+        const idPayload = decodeJwtPayload(tokens.id_token);
+        const source = (_a = idPayload.source) !== null && _a !== void 0 ? _a : (_b = idPayload.amr) === null || _b === void 0 ? void 0 : _b[0];
+        if (source)
+            provider = source;
+    }
+    if (!provider) {
+        // Authentik sometimes includes 'source' directly in the userinfo claims
+        provider = claims.source;
+    }
+    const appUserId = await upsertOidcUser(claims, provider);
+    const expiresIn = (_c = tokens.expires_in) !== null && _c !== void 0 ? _c : 3600;
+    const session = {
+        appUserId,
+        sub: claims.sub,
+        iss: (_d = claims.iss) !== null && _d !== void 0 ? _d : getAuthentikIssuer(),
+        email: claims.email,
+        emailVerified: (_e = claims.email_verified) !== null && _e !== void 0 ? _e : false,
+        name: claims.name,
+        picture: claims.picture,
+        provider,
+        rawClaims: claims,
+        accessToken: tokens.access_token,
+        idToken: tokens.id_token,
+        expiresAt: Date.now() + expiresIn * 1000,
+    };
+    saveOidcSession(session);
+    return session;
+}

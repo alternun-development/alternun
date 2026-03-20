@@ -13,10 +13,7 @@ import {
   X,
 } from 'lucide-react-native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  isAuthentikConfigured,
-  startAuthentikOAuthFlow,
-} from '../../services/auth/AuthentikOidcClient';
+import { isAuthentikConfigured, startAuthentikOAuthFlow } from '@alternun/auth';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
