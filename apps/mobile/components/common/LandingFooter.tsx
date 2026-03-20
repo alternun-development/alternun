@@ -1,8 +1,8 @@
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { BlurView } from 'expo-blur';
 import { Image as ExpoImage } from 'expo-image';
-import React, { useMemo } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { Animated, Easing, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { createTypographyStyles } from '../theme/typography';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -30,6 +30,38 @@ export default function LandingFooter(): React.JSX.Element {
   const useCompactFooter = !isWide;
   const wordmarkSource = isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK;
   const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
+
+  // Floating orb animations
+  const orbLeftAnim = useRef(new Animated.Value(0)).current;
+  const orbRightAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const makeFloat = (val: Animated.Value, duration: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(val, {
+            toValue: 1,
+            duration,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(val, {
+            toValue: 0,
+            duration,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ])
+      );
+    const leftAnim = makeFloat(orbLeftAnim, 5800);
+    const rightAnim = makeFloat(orbRightAnim, 7200);
+    leftAnim.start();
+    rightAnim.start();
+    return () => {
+      leftAnim.stop();
+      rightAnim.stop();
+    };
+  }, [orbLeftAnim, orbRightAnim]);
 
   const palette = isDark
     ? {
@@ -94,13 +126,53 @@ export default function LandingFooter(): React.JSX.Element {
           tint={isDark ? 'dark' : 'light'}
           style={[StyleSheet.absoluteFillObject, { borderRadius: shellRadius }]}
         />
-        <View
+        <Animated.View
           pointerEvents='none'
-          style={[styles.glowOrb, styles.glowOrbLeft, { backgroundColor: palette.glowA }]}
+          style={[
+            styles.glowOrb,
+            styles.glowOrbLeft,
+            { backgroundColor: palette.glowA },
+            {
+              transform: [
+                {
+                  translateX: orbLeftAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 22],
+                  }),
+                },
+                {
+                  translateY: orbLeftAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 18],
+                  }),
+                },
+              ],
+            },
+          ]}
         />
-        <View
+        <Animated.View
           pointerEvents='none'
-          style={[styles.glowOrb, styles.glowOrbRight, { backgroundColor: palette.glowB }]}
+          style={[
+            styles.glowOrb,
+            styles.glowOrbRight,
+            { backgroundColor: palette.glowB },
+            {
+              transform: [
+                {
+                  translateX: orbRightAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -18],
+                  }),
+                },
+                {
+                  translateY: orbRightAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -22],
+                  }),
+                },
+              ],
+            },
+          ]}
         />
 
         {isWide ? (
