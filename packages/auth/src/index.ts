@@ -28,11 +28,15 @@ export {
   handleAuthentikCallback,
   readOidcSession,
   clearOidcSession,
-  decodeJwtPayload,
   OIDC_INITIAL_SEARCH,
   type OidcClaims,
   type OidcSession,
-} from './AuthentikOidcClient';
+  type OidcProvider,
+  type OidcTokens,
+  type AuthentikOidcConfig,
+} from '@edcalderon/auth';
+
+export { upsertOidcUser } from './AuthentikOidcClient';
 
 export {
   emailAddressSchema,
