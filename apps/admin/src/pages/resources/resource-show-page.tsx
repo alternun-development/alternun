@@ -6,7 +6,7 @@ interface ResourceShowPageProps {
   resourceName: string;
 }
 
-function renderValue(value: unknown): string {
+function formatValue(value: unknown): string {
   if (value === null || value === undefined) {
     return '—';
   }
@@ -61,7 +61,7 @@ export function ResourceShowPage({ resourceName }: ResourceShowPageProps) {
             {Object.entries(record).map(([key, value]) => (
               <div key={key}>
                 <dt>{key}</dt>
-                <dd>{renderValue(value)}</dd>
+                <dd>{formatValue(value)}</dd>
               </div>
             ))}
           </dl>

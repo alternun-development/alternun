@@ -1,8 +1,8 @@
-import { SupabaseClient as UniversalSupabaseClient } from "@edcalderon/auth/supabase";
-import { createClient } from "@supabase/supabase-js";
-import { getValidationErrorMessage, parseEmailAddress, parseSignInPassword, parseSignUpPassword, } from "../validation/authInputValidation";
-const WALLET_PROVIDERS = ["metamask", "walletconnect"];
-const EMAIL_TEMPLATE_LOCALES = ["en", "es", "th"];
+import { SupabaseClient as UniversalSupabaseClient } from '@edcalderon/auth/supabase';
+import { createClient } from '@supabase/supabase-js';
+import { getValidationErrorMessage, parseEmailAddress, parseSignInPassword, parseSignUpPassword, } from '../validation/authInputValidation';
+const WALLET_PROVIDERS = ['metamask', 'walletconnect'];
+const EMAIL_TEMPLATE_LOCALES = ['en', 'es', 'th'];
 function getErrorMessage(error) {
     if (error instanceof Error) {
         return error.message;
@@ -11,9 +11,9 @@ function getErrorMessage(error) {
 }
 function isEmailAlreadyRegisteredError(errorMessage) {
     const normalized = errorMessage.toLowerCase();
-    return (normalized.includes("already registered") ||
-        normalized.includes("already been registered") ||
-        normalized.includes("user already exists"));
+    return (normalized.includes('already registered') ||
+        normalized.includes('already been registered') ||
+        normalized.includes('user already exists'));
 }
 function isObfuscatedExistingUserSignUpResult(data) {
     if (!data || data.session || !data.user) {
@@ -26,12 +26,12 @@ function isObfuscatedExistingUserSignUpResult(data) {
 }
 function isMissingSessionError(error) {
     const message = getErrorMessage(error).toLowerCase();
-    return message.includes("auth session missing");
+    return message.includes('auth session missing');
 }
 function parseVerificationCode(code) {
-    const normalizedCode = code.trim().replace(/\s+/g, "");
+    const normalizedCode = code.trim().replace(/\s+/g, '');
     if (!normalizedCode) {
-        throw new Error("Verification code is required.");
+        throw new Error('Verification code is required.');
     }
     return normalizedCode;
 }
@@ -39,39 +39,38 @@ function normalizeEmailTemplateLocale(value) {
     if (!value) {
         return null;
     }
-    const normalized = value.toLowerCase().trim().replace("_", "-");
-    const baseLocale = normalized.split("-")[0];
-    return EMAIL_TEMPLATE_LOCALES.includes(baseLocale)
-        ? baseLocale
-        : null;
+    const normalized = value.toLowerCase().trim().replace('_', '-');
+    const baseLocale = normalized.split('-')[0];
+    return EMAIL_TEMPLATE_LOCALES.includes(baseLocale) ? baseLocale : null;
 }
 function makeWalletAddress() {
-    const seed = Math.random()
-        .toString(16)
-        .replace(".", "")
-        .padEnd(40, "0")
-        .slice(0, 40);
-    return `0x${seed}`;
+    const bytes = new Uint8Array(20);
+    crypto.getRandomValues(bytes);
+    let hex = '';
+    for (const b of bytes) {
+        hex += b.toString(16).padStart(2, '0');
+    }
+    return `0x${hex}`;
 }
 function extractWalletProvider(user) {
     if (!user) {
         return null;
     }
-    if (typeof user.provider === "string" && user.provider.startsWith("wallet:")) {
-        const provider = user.provider.replace("wallet:", "").toLowerCase();
-        if (provider === "metamask" || provider === "walletconnect") {
+    if (typeof user.provider === 'string' && user.provider.startsWith('wallet:')) {
+        const provider = user.provider.replace('wallet:', '').toLowerCase();
+        if (provider === 'metamask' || provider === 'walletconnect') {
             return provider;
         }
     }
-    const metadata = user.metadata && typeof user.metadata === "object"
+    const metadata = user.metadata && typeof user.metadata === 'object'
         ? user.metadata
         : {};
-    const providerValue = typeof metadata.walletProvider === "string"
+    const providerValue = typeof metadata.walletProvider === 'string'
         ? metadata.walletProvider.toLowerCase()
-        : typeof metadata.wallet_provider === "string"
+        : typeof metadata.wallet_provider === 'string'
             ? metadata.wallet_provider.toLowerCase()
             : null;
-    if (providerValue === "metamask" || providerValue === "walletconnect") {
+    if (providerValue === 'metamask' || providerValue === 'walletconnect') {
         return providerValue;
     }
     return null;
@@ -80,10 +79,10 @@ function extractWalletAddress(user) {
     if (!user) {
         return null;
     }
-    const metadata = user.metadata && typeof user.metadata === "object"
+    const metadata = user.metadata && typeof user.metadata === 'object'
         ? user.metadata
         : {};
-    const walletObject = typeof metadata.wallet === "object" && metadata.wallet !== null
+    const walletObject = typeof metadata.wallet === 'object' && metadata.wallet !== null
         ? metadata.wallet
         : null;
     const candidates = [
@@ -95,20 +94,19 @@ function extractWalletAddress(user) {
         user.providerUserId,
     ];
     for (const candidate of candidates) {
-        if (typeof candidate === "string" && candidate.trim().length > 0) {
+        if (typeof candidate === 'string' && candidate.trim().length > 0) {
             return candidate;
         }
     }
     return null;
 }
 export function isWalletProvider(provider) {
-    return Boolean(provider &&
-        WALLET_PROVIDERS.includes(provider.toLowerCase()));
+    return Boolean(provider && WALLET_PROVIDERS.includes(provider.toLowerCase()));
 }
 export class AlternunMobileAuthClient {
     constructor(options) {
         var _a, _b, _c, _d;
-        this.runtime = "native";
+        this.runtime = 'native';
         this.supabase = null;
         this.listeners = new Set();
         this.oidcUser = null;
@@ -133,7 +131,7 @@ export class AlternunMobileAuthClient {
             });
             this.baseClient = new UniversalSupabaseClient({
                 supabase,
-                runtime: "native",
+                runtime: 'native',
             });
             this.supabase = supabase;
         }
@@ -145,24 +143,24 @@ export class AlternunMobileAuthClient {
     capabilities() {
         var _a, _b;
         const baseFlows = (_b = (_a = this.baseClient) === null || _a === void 0 ? void 0 : _a.capabilities().supportedFlows) !== null && _b !== void 0 ? _b : [];
-        const flowSet = new Set(["native", ...baseFlows]);
+        const flowSet = new Set(['native', ...baseFlows]);
         return {
             runtime: this.runtime,
             supportedFlows: Array.from(flowSet),
         };
     }
     emit(user) {
-        this.listeners.forEach((listener) => listener(user));
+        this.listeners.forEach(listener => listener(user));
     }
     ensureBaseClient() {
         if (!this.baseClient) {
-            throw new Error("CONFIG_ERROR: Auth is not configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_KEY.");
+            throw new Error('CONFIG_ERROR: Auth is not configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_KEY.');
         }
         return this.baseClient;
     }
     ensureSupabase() {
         if (!this.supabase) {
-            throw new Error("CONFIG_ERROR: Auth is not configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_KEY.");
+            throw new Error('CONFIG_ERROR: Auth is not configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_KEY.');
         }
         return this.supabase;
     }
@@ -184,7 +182,7 @@ export class AlternunMobileAuthClient {
         if (!user || !this.linkedWallet) {
             return user;
         }
-        const metadata = user.metadata && typeof user.metadata === "object"
+        const metadata = user.metadata && typeof user.metadata === 'object'
             ? user.metadata
             : {};
         return {
@@ -246,7 +244,7 @@ export class AlternunMobileAuthClient {
         return this.toLinkedWalletState(provider, walletAddress);
     }
     buildWalletMetadataPayload(baseUser, linkedWallet) {
-        const baseMetadata = baseUser.metadata && typeof baseUser.metadata === "object"
+        const baseMetadata = baseUser.metadata && typeof baseUser.metadata === 'object'
             ? baseUser.metadata
             : {};
         const nextWallet = {
@@ -257,15 +255,15 @@ export class AlternunMobileAuthClient {
         };
         const existingLinkedWalletsRaw = baseMetadata.linkedWallets;
         const existingLinkedWallets = Array.isArray(existingLinkedWalletsRaw)
-            ? existingLinkedWalletsRaw.filter((entry) => Boolean(entry && typeof entry === "object"))
+            ? existingLinkedWalletsRaw.filter((entry) => Boolean(entry && typeof entry === 'object'))
             : [];
-        const filteredExisting = existingLinkedWallets.filter((entry) => {
-            const providerValue = typeof entry.provider === "string" ? entry.provider.toLowerCase() : null;
-            const addressValue = typeof entry.address === "string" ? entry.address.toLowerCase() : null;
+        const filteredExisting = existingLinkedWallets.filter(entry => {
+            const providerValue = typeof entry.provider === 'string' ? entry.provider.toLowerCase() : null;
+            const addressValue = typeof entry.address === 'string' ? entry.address.toLowerCase() : null;
             return !(providerValue === linkedWallet.provider &&
                 addressValue === linkedWallet.walletAddress.toLowerCase());
         });
-        const walletObject = typeof baseMetadata.wallet === "object" && baseMetadata.wallet !== null
+        const walletObject = typeof baseMetadata.wallet === 'object' && baseMetadata.wallet !== null
             ? baseMetadata.wallet
             : {};
         return {
@@ -282,14 +280,14 @@ export class AlternunMobileAuthClient {
     }
     resolveWalletChain(linkedWallet) {
         const chainCandidate = linkedWallet.metadata.chain;
-        if (typeof chainCandidate === "string" && chainCandidate.trim().length > 0) {
+        if (typeof chainCandidate === 'string' && chainCandidate.trim().length > 0) {
             return chainCandidate.trim().toLowerCase();
         }
-        if (typeof linkedWallet.metadata.chainId === "string" ||
-            typeof linkedWallet.metadata.chainId === "number") {
-            return "ethereum";
+        if (typeof linkedWallet.metadata.chainId === 'string' ||
+            typeof linkedWallet.metadata.chainId === 'number') {
+            return 'ethereum';
         }
-        return "ethereum";
+        return 'ethereum';
     }
     async upsertWalletRegistryEntry(baseUser, linkedWallet) {
         if (!this.supabase) {
@@ -297,7 +295,7 @@ export class AlternunMobileAuthClient {
         }
         const chain = this.resolveWalletChain(linkedWallet);
         const walletAddressNormalized = linkedWallet.walletAddress.toLowerCase();
-        const { error } = await this.supabase.from("user_wallets").upsert({
+        const { error } = await this.supabase.from('user_wallets').upsert({
             user_id: baseUser.id,
             chain,
             wallet_provider: linkedWallet.provider,
@@ -308,14 +306,14 @@ export class AlternunMobileAuthClient {
             last_used_at: new Date().toISOString(),
             metadata: linkedWallet.metadata,
         }, {
-            onConflict: "user_id,chain,wallet_address_normalized",
+            onConflict: 'user_id,chain,wallet_address_normalized',
         });
         if (!error) {
             return;
         }
         const typedError = error;
-        if (typedError.code === "42P01") {
-            throw new Error("CONFIG_ERROR: Missing public.user_wallets table. Run the wallet schema migration.");
+        if (typedError.code === '42P01') {
+            throw new Error('CONFIG_ERROR: Missing public.user_wallets table. Run the wallet schema migration.');
         }
         throw new Error(`PROVIDER_ERROR: Failed to persist wallet registry record: ${typedError.message}`);
     }
@@ -361,7 +359,7 @@ export class AlternunMobileAuthClient {
             validatedPassword = parseSignInPassword(password);
         }
         catch (validationError) {
-            throw new Error(`VALIDATION_ERROR: ${getValidationErrorMessage(validationError, "Email and password are required.")}`);
+            throw new Error(`VALIDATION_ERROR: ${getValidationErrorMessage(validationError, 'Email and password are required.')}`);
         }
         this.walletUser = null;
         this.linkedWallet = null;
@@ -376,7 +374,7 @@ export class AlternunMobileAuthClient {
         }
         await this.baseClient.signIn({
             provider,
-            flow: "native",
+            flow: 'native',
         });
         const baseUser = await this.safeGetBaseUser();
         if (!baseUser) {
@@ -384,7 +382,7 @@ export class AlternunMobileAuthClient {
         }
         const linkedWallet = this.hydrateWalletStateFromUser(baseUser);
         if (!linkedWallet) {
-            throw new Error("PROVIDER_ERROR: Wallet provider did not return a valid wallet identity.");
+            throw new Error('PROVIDER_ERROR: Wallet provider did not return a valid wallet identity.');
         }
         this.walletUser = null;
         this.linkedWallet = linkedWallet;
@@ -409,7 +407,7 @@ export class AlternunMobileAuthClient {
             return;
         }
         if (!this.allowWalletOnlySession) {
-            throw new Error("UNSUPPORTED_FLOW: Wallet-only login is disabled. Sign in with email or Google first, then connect your wallet.");
+            throw new Error('UNSUPPORTED_FLOW: Wallet-only login is disabled. Sign in with email or Google first, then connect your wallet.');
         }
         this.linkedWallet = null;
         this.walletUser = this.getWalletUser(linkedWallet);
@@ -444,7 +442,7 @@ export class AlternunMobileAuthClient {
             this.walletSessionToken = null;
             await this.ensureBaseClient().signIn({
                 provider: options.provider,
-                flow: (_b = options.flow) !== null && _b !== void 0 ? _b : "native",
+                flow: (_b = options.flow) !== null && _b !== void 0 ? _b : 'native',
                 redirectUri: options.redirectUri,
             });
             return;
@@ -498,8 +496,8 @@ export class AlternunMobileAuthClient {
     }
     async signInWithGoogle(redirectTo) {
         await this.signIn({
-            provider: "google",
-            flow: "native",
+            provider: 'google',
+            flow: 'native',
             redirectUri: redirectTo,
         });
     }
@@ -511,7 +509,7 @@ export class AlternunMobileAuthClient {
             validatedPassword = parseSignUpPassword(password);
         }
         catch (validationError) {
-            throw new Error(`VALIDATION_ERROR: ${getValidationErrorMessage(validationError, "Enter a valid email address and password.")}`);
+            throw new Error(`VALIDATION_ERROR: ${getValidationErrorMessage(validationError, 'Enter a valid email address and password.')}`);
         }
         this.walletUser = null;
         this.linkedWallet = null;
@@ -565,11 +563,11 @@ export class AlternunMobileAuthClient {
             normalizedEmail = parseEmailAddress(email);
         }
         catch (validationError) {
-            throw new Error(`VALIDATION_ERROR: ${getValidationErrorMessage(validationError, "Enter a valid email address.")}`);
+            throw new Error(`VALIDATION_ERROR: ${getValidationErrorMessage(validationError, 'Enter a valid email address.')}`);
         }
         const supabase = this.ensureSupabase();
         const { error } = await supabase.auth.resend({
-            type: "signup",
+            type: 'signup',
             email: normalizedEmail,
         });
         if (error) {
@@ -584,14 +582,14 @@ export class AlternunMobileAuthClient {
             normalizedCode = parseVerificationCode(code);
         }
         catch (validationError) {
-            throw new Error(`VALIDATION_ERROR: ${getValidationErrorMessage(validationError, "Enter a valid email address and verification code.")}`);
+            throw new Error(`VALIDATION_ERROR: ${getValidationErrorMessage(validationError, 'Enter a valid email address and verification code.')}`);
         }
         this.walletUser = null;
         this.linkedWallet = null;
         this.walletSessionToken = null;
         const supabase = this.ensureSupabase();
         const { data, error } = await supabase.auth.verifyOtp({
-            type: "signup",
+            type: 'signup',
             email: normalizedEmail,
             token: normalizedCode,
         });
@@ -607,9 +605,7 @@ export class AlternunMobileAuthClient {
     }
     async signOut() {
         var _a, _b;
-        const walletState = (_a = this.linkedWallet) !== null && _a !== void 0 ? _a : (this.walletUser
-            ? this.hydrateWalletStateFromUser(this.walletUser)
-            : null);
+        const walletState = (_a = this.linkedWallet) !== null && _a !== void 0 ? _a : (this.walletUser ? this.hydrateWalletStateFromUser(this.walletUser) : null);
         if (walletState && ((_b = this.walletBridge) === null || _b === void 0 ? void 0 : _b.disconnect)) {
             try {
                 await this.walletBridge.disconnect(walletState.provider, walletState.walletAddress);
@@ -646,7 +642,7 @@ export class AlternunMobileAuthClient {
     onAuthStateChange(callback) {
         this.listeners.add(callback);
         if (!this.unsubscribeBase && this.baseClient) {
-            this.unsubscribeBase = this.baseClient.onAuthStateChange((user) => {
+            this.unsubscribeBase = this.baseClient.onAuthStateChange(user => {
                 if (this.walletUser) {
                     return;
                 }
