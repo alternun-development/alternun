@@ -26,7 +26,7 @@
     "email:ses": "EMAIL_SMTP_PROVIDER=ses pnpm run email:apply"
   },
   "dependencies": {
-    "@edcalderon/auth": "1.3.0",
+    "@edcalderon/auth": "1.4.2",
     "@supabase/supabase-js": "^2.98.0",
     "zod": "^3.24.2"
   },
