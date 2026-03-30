@@ -11,13 +11,13 @@ import {
   clearOidcSession,
   handleAuthentikCallback,
   hasPendingAuthentikCallback,
-  OIDC_INITIAL_SEARCH,
   readOidcSession,
   upsertOidcUser,
   type OidcClaims,
   type OidcSession,
   type OidcTokens,
 } from '@alternun/auth';
+import { AUTHENTIK_INITIAL_SEARCH } from '../../services/auth/authSession';
 
 function getAllowMockWalletFallback(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH === 'true';
@@ -176,15 +176,13 @@ function AuthCallbackBridge(): React.JSX.Element | null {
   // Handle Authentik OIDC redirect callback (?code=...&state=...)
   useEffect(() => {
     if (Platform.OS !== 'web') return;
-    // In @edcalderon/auth 1.3.0 OIDC_INITIAL_SEARCH is a sessionStorage key.
-    // startAuthentikOAuthFlow stores window.location.search there before
-    // redirecting, so we can read it back after the redirect even if Expo
-    // Router has already stripped the query params from the URL.
+    // We capture the current URL search at module load time so the callback
+    // survives Expo Router stripping the query params before effects.
     const runtimeWindow = typeof window === 'undefined' ? undefined : window;
     const savedSearch =
-      runtimeWindow?.sessionStorage?.getItem(OIDC_INITIAL_SEARCH) ??
-      runtimeWindow?.location?.search ??
-      '';
+      AUTHENTIK_INITIAL_SEARCH.length > 0
+        ? AUTHENTIK_INITIAL_SEARCH
+        : runtimeWindow?.location?.search ?? '';
     if (!hasPendingAuthentikCallback(savedSearch)) return;
 
     if (runtimeWindow?.history?.replaceState) {
