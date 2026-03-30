@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-export default function HomeScreen() {
+export default function HomeScreen(): React.JSX.Element {
   const { user, loading, signIn, signOutUser } = useAuth();
   const { showAirsIntro, setShowAirsIntro } = useAppPreferences();
   const router = useRouter();
@@ -20,13 +20,13 @@ export default function HomeScreen() {
 
   const shouldShowAirsIntro = useMemo(
     () => !user && showAirsIntro && !introDismissedThisSession,
-    [introDismissedThisSession, showAirsIntro, user],
+    [introDismissedThisSession, showAirsIntro, user]
   );
 
   if (loading) {
     return (
       <View style={styles.loadingScreen}>
-        <ActivityIndicator size="large" color="#1ccba1" />
+        <ActivityIndicator size='large' color='#1ccba1' />
       </View>
     );
   }
@@ -40,7 +40,7 @@ export default function HomeScreen() {
           }
           setIntroDismissedThisSession(true);
         }}
-        onSignIn={() => router.push('/auth')}
+        onSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
       />
     );
   }
@@ -48,8 +48,8 @@ export default function HomeScreen() {
   return (
     <Dashboard
       user={user ?? null}
-      onRequireSignIn={() => router.push('/auth')}
-      onOpenProfilePage={() => router.push('/profile' as any)}
+      onRequireSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
+      onOpenProfilePage={() => router.push('/profile')}
       onOpenSettingsPage={() => router.push('/settings')}
       onWalletConnect={async (walletType: string) => {
         await signIn({
