@@ -6,6 +6,7 @@ settings:
 
 overrides:
   fast-xml-parser: 4.5.4
+  handlebars: 4.7.9
   simple-git: 3.32.3
 
 importers:
@@ -20,8 +21,8 @@ importers:
         specifier: ^3.5.2
         version: 3.5.2
       '@edcalderon/versioning':
-        specifier: ^1.5.1
-        version: 1.5.1
+        specifier: ^1.5.8
+        version: 1.5.8
       '@types/three':
         specifier: ^0.169.0
         version: 0.169.0
@@ -1743,8 +1744,8 @@ packages:
       react-native:
         optional: true
 
-  '@edcalderon/versioning@1.5.1':
-    resolution: {integrity: sha512-irfRZLe9rCoeRNCgCBHurKwnL+ngh90RvTyhV10k0V58XlCZvjHMJjlB4YF9SxLV0+7ZiM7jF3y5S0eEyeJ9EQ==}
+  '@edcalderon/versioning@1.5.8':
+    resolution: {integrity: sha512-oGhC8Ti6eyPJgWH4AplKW18P2Zs+aU4L5SBjMJi2WkBBeXhsOBOQCMqH5der1mkPh+HD/04aXWAB+ILOACl3CA==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -7606,8 +7607,8 @@ packages:
   handle-thing@2.0.1:
     resolution: {integrity: sha512-9Qn4yBxelxoh2Ow62nP+Ka/kMnOXRi8BXnRaUwezLNhqelnN49xKz4F/dPP8OYLxLxq6JDtZb2i9XznUQbNPTg==}
 
-  handlebars@4.7.8:
-    resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}
+  handlebars@4.7.9:
+    resolution: {integrity: sha512-4E71E0rpOaQuJR2A3xDZ+GM1HyWYv1clR58tC8emQNeQe3RH7MAzSbat+V0wG78LQBo6m6bzSG/L4pBuCsgnUQ==}
     engines: {node: '>=0.4.7'}
     hasBin: true
 
@@ -15313,7 +15314,7 @@ snapshots:
       react-dom: 19.1.0(react@19.1.0)
       react-native: 0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)
 
-  '@edcalderon/versioning@1.5.1':
+  '@edcalderon/versioning@1.5.8':
     dependencies:
       commander: 12.1.0
       conventional-changelog: 5.1.0
@@ -21926,7 +21927,7 @@ snapshots:
   conventional-changelog-writer@7.0.1:
     dependencies:
       conventional-commits-filter: 4.0.0
-      handlebars: 4.7.8
+      handlebars: 4.7.9
       json-stringify-safe: 5.0.1
       meow: 12.1.1
       semver: 7.7.4
@@ -23963,7 +23964,7 @@ snapshots:
 
   handle-thing@2.0.1: {}
 
-  handlebars@4.7.8:
+  handlebars@4.7.9:
     dependencies:
       minimist: 1.2.8
       neo-async: 2.6.2
@@ -26534,7 +26535,7 @@ snapshots:
       metro-babel-transformer: 0.73.10
       metro-cache: 0.73.10
       metro-cache-key: 0.73.10
-      metro-config: 0.73.10(bufferutil@4.1.0)(encoding@0.1.13)(utf-8-validate@6.0.6)
+      metro-config: 0.73.10(bufferutil@4.1.0)(encoding@0.1.13)
       metro-core: 0.73.10
       metro-file-map: 0.73.10
       metro-hermes-compiler: 0.73.10
