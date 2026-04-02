@@ -725,7 +725,13 @@ export function createInfrastructure() {
         EXPO_PUBLIC_AIRS_VIDEO_ES_URL: introVideoAssets.es.url,
         EXPO_PUBLIC_AUTHENTIK_ISSUER: expoPublicAuthentikIssuer,
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId,
-        EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: expoPublicAuthentikRedirectUri,
+        // Auto-derive the redirect URI from the deployed expo domain when not explicitly set.
+        // This ensures the OIDC callback always points at the correct deployed origin.
+        EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI:
+          expoPublicAuthentikRedirectUri ??
+          (enableCustomDomain && expoStageMap[expoDeploymentStage]
+            ? `https://${expoStageMap[expoDeploymentStage]}/`
+            : undefined),
       },
       build: {
         command: expoBuildCommand,
