@@ -154,6 +154,12 @@ export const IDENTITY_INFRA_DEFAULTS = {
       localDevUrl: 'http://127.0.0.1:8083',
       allowedGroups: ['authentik Admins', 'Alternun Dashboard Admins', 'Alternun Docs Editors'],
     },
+    mobileOidc: {
+      clientId: 'alternun-mobile',
+      applicationName: 'Alternun Mobile',
+      applicationSlug: 'alternun-mobile',
+      providerName: 'Alternun Mobile OIDC',
+    },
     bootstrap: {
       admin: {
         username: 'akadmin',

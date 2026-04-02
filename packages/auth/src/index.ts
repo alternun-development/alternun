@@ -11,6 +11,12 @@ export type {
 export { AppAuthProvider, useAuth, type AppAuthProviderProps } from './mobile/AppAuthProvider';
 
 export {
+  createAlternunAuthentikPreset,
+  type AlternunAuthentikPresetOptions,
+  type AlternunAuthentikPreset,
+} from './mobile/authentikPreset';
+
+export {
   AlternunMobileAuthClient,
   SUPPORTED_WALLET_PROVIDERS,
   createAlternunMobileAuthClient,
