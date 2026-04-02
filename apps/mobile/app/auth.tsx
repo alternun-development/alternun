@@ -3,16 +3,10 @@ import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import AuthSignInScreen from '../components/auth/AuthSignInScreen';
 import { useAuth } from '../components/auth/AppAuthProvider';
-import {
-  hasPendingAuthentikCallback,
-  OIDC_INITIAL_SEARCH,
-  resolveSafeRedirect,
-} from '@alternun/auth';
+import { hasPendingAuthentikCallback, resolveSafeRedirect } from '@alternun/auth';
 
-const AUTHENTIK_INITIAL_SEARCH =
-  typeof window !== 'undefined'
-    ? window.sessionStorage.getItem(OIDC_INITIAL_SEARCH) ?? window.location.search
-    : '';
+// Capture at module load time so it survives Expo Router's URL cleanup.
+const AUTHENTIK_INITIAL_SEARCH = typeof window !== 'undefined' ? window.location.search : '';
 
 const AUTH_RETURN_TO_KEY = 'alternun:auth:return-to';
 

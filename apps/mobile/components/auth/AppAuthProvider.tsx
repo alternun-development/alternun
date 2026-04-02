@@ -12,11 +12,14 @@ import {
   createAlternunAuthentikPreset,
   handleAuthentikCallback,
   hasPendingAuthentikCallback,
-  OIDC_INITIAL_SEARCH,
   readOidcSession,
   type OidcSession,
   type OidcTokens,
 } from '@alternun/auth';
+
+// Capture window.location.search at module load time — before Expo Router's
+// navigation events strip the query string from the URL on the callback render.
+const INITIAL_SEARCH = typeof window !== 'undefined' ? window.location.search : '';
 
 const authentikPreset = createAlternunAuthentikPreset({
   issuer: process.env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
@@ -199,9 +202,7 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     if (Platform.OS !== 'web') return;
     const runtimeWindow = typeof window === 'undefined' ? undefined : window;
     const savedSearch =
-      runtimeWindow?.sessionStorage?.getItem(OIDC_INITIAL_SEARCH) ??
-      runtimeWindow?.location?.search ??
-      '';
+      INITIAL_SEARCH.length > 0 ? INITIAL_SEARCH : runtimeWindow?.location?.search ?? '';
     if (!hasPendingAuthentikCallback(savedSearch)) return;
 
     if (runtimeWindow?.history?.replaceState) {
