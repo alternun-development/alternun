@@ -38,6 +38,7 @@ export {
   createAuthentikPreset,
   createAuthentikRelayHandler,
   createAuthentikLogoutHandler,
+  createProvisioningAdapter,
   handleAuthentikPresetCallback,
   discoverEndpoints,
   resolveSafeRedirect,
