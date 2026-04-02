@@ -734,11 +734,9 @@ google_source_slug = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_SLUG", "google")
 google_source_name = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_NAME", "Google")
 
 if google_client_id and google_client_secret:
-    # authentication_flow is intentionally None: the default-source-authentication
-    # flow has "authentication" designation which Authentik refuses to run when
-    # an existing session is already active, causing "Flow does not apply to
-    # current user". Without an authentication_flow, Authentik logs the linked
-    # user in directly after the Google callback — simpler and session-safe.
+    source_authentication_flow = Flow.objects.filter(
+        slug="default-source-authentication"
+    ).first()
     source_enrollment_flow = Flow.objects.filter(slug="default-source-enrollment").first()
     source, source_created = OAuthSource.objects.get_or_create(
         slug=google_source_slug,
@@ -747,7 +745,7 @@ if google_client_id and google_client_secret:
             "provider_type": "google",
             "consumer_key": google_client_id,
             "consumer_secret": google_client_secret,
-            "authentication_flow": None,
+            "authentication_flow": source_authentication_flow,
             "enrollment_flow": source_enrollment_flow,
         },
     )
@@ -778,9 +776,11 @@ if google_client_id and google_client_secret:
         source.promoted = True
         source_changed = True
 
-    # Always clear authentication_flow to avoid "Flow does not apply" errors.
-    if source.authentication_flow_id is not None:
-        source.authentication_flow = None
+    if (
+        source_authentication_flow
+        and source.authentication_flow_id != source_authentication_flow.pk
+    ):
+        source.authentication_flow = source_authentication_flow
         source_changed = True
     if source_enrollment_flow and source.enrollment_flow_id != source_enrollment_flow.pk:
         source.enrollment_flow = source_enrollment_flow
