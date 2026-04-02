@@ -2,9 +2,15 @@ import { useAuth } from '../components/auth/AppAuthProvider';
 import Dashboard from '../components/dashboard/Dashboard';
 import AirsIntroExperience from '../components/onboarding/AirsIntroExperience';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import { hasPendingAuthentikCallback } from '@alternun/auth';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+
+// True when the page loaded with an Authentik OIDC callback in the URL.
+// Stays true until the callback is processed and the user is set.
+const OIDC_CALLBACK_PENDING =
+  typeof window !== 'undefined' && hasPendingAuthentikCallback(window.location.search);
 
 export default function HomeScreen(): React.JSX.Element {
   const { user, loading, signIn, signOutUser } = useAuth();
@@ -23,7 +29,7 @@ export default function HomeScreen(): React.JSX.Element {
     [introDismissedThisSession, showAirsIntro, user]
   );
 
-  if (loading) {
+  if (loading || (OIDC_CALLBACK_PENDING && !user)) {
     return (
       <View style={styles.loadingScreen}>
         <ActivityIndicator size='large' color='#1ccba1' />
