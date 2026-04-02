@@ -38,7 +38,7 @@ import {
   type ProvisioningAdapter,
   type ProvisioningPayload,
   type ProvisioningResult,
-} from '@edcalderon/auth/authentik';
+} from '../authentik';
 import type { OidcClaims } from '@edcalderon/auth';
 import { upsertOidcUser } from '../AuthentikOidcClient';
 
