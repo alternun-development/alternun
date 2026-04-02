@@ -11,6 +11,12 @@ export type {
 export { AppAuthProvider, useAuth, type AppAuthProviderProps } from './mobile/AppAuthProvider';
 
 export {
+  createAlternunAuthentikPreset,
+  type AlternunAuthentikPresetOptions,
+  type AlternunAuthentikPreset,
+} from './mobile/authentikPreset';
+
+export {
   AlternunMobileAuthClient,
   SUPPORTED_WALLET_PROVIDERS,
   createAlternunMobileAuthClient,
@@ -29,12 +35,38 @@ export {
   readOidcSession,
   clearOidcSession,
   OIDC_INITIAL_SEARCH,
+  createAuthentikPreset,
+  createAuthentikRelayHandler,
+  createAuthentikLogoutHandler,
+  createProvisioningAdapter,
+  handleAuthentikPresetCallback,
+  discoverEndpoints,
+  resolveSafeRedirect,
+  validateAuthentikConfig,
+  validateFullConfig,
   type OidcClaims,
   type OidcSession,
   type OidcProvider,
   type OidcTokens,
   type AuthentikOidcConfig,
-} from '@edcalderon/auth';
+  type AuthentikPreset,
+  type AuthentikPresetConfig,
+  type CreateAuthentikPresetOptions,
+  type HandleAuthentikCallbackInput,
+  type AuthentikRelayHandler,
+  type AuthentikRelayConfig,
+  type AuthentikCallbackConfig,
+  type AuthentikLogoutConfig,
+  type AuthentikEndpoints,
+  type AuthentikProvider,
+  type AuthentikCallbackResult,
+  type ProcessCallbackResult,
+  type AuthentikLogoutResult,
+  type ProvisioningAdapter,
+  type ProvisioningPayload,
+  type ProvisioningResult,
+  type SafeRedirectConfig,
+} from './authentik';
 
 export { upsertOidcUser } from './AuthentikOidcClient';
 

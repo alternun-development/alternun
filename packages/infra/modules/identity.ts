@@ -102,6 +102,15 @@ export interface IdentityLocalConfig {
       localDevUrl?: string;
       allowedGroups?: string[];
     };
+    mobileOidc?: {
+      clientId?: string;
+      applicationName?: string;
+      applicationSlug?: string;
+      providerName?: string;
+      /** Comma-separated list of allowed redirect URIs for the mobile OIDC provider. */
+      redirectUrls?: string[];
+      postLogoutRedirectUrls?: string[];
+    };
     bootstrap?: {
       admin?: {
         username?: string;
@@ -221,6 +230,15 @@ export interface IdentitySettings {
       siteUrl: string;
       localDevUrl: string;
       allowedGroups: string[];
+    };
+    mobileOidc: {
+      clientId: string;
+      applicationName: string;
+      applicationSlug: string;
+      providerName: string;
+      /** Allowed redirect URIs registered in the Authentik mobile OIDC provider. */
+      redirectUrls: string[];
+      postLogoutRedirectUrls: string[];
     };
     bootstrap: {
       admin: {
@@ -653,9 +671,54 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
           args.env.INFRA_DOCS_CMS_LOCAL_DEV_URL ??
           localConfig?.integration?.docsCmsOidc?.localDevUrl ??
           IDENTITY_INFRA_DEFAULTS.integration.docsCmsOidc.localDevUrl,
-        allowedGroups:
-          localConfig?.integration?.docsCmsOidc?.allowedGroups ??
-          [...IDENTITY_INFRA_DEFAULTS.integration.docsCmsOidc.allowedGroups],
+        allowedGroups: localConfig?.integration?.docsCmsOidc?.allowedGroups ?? [
+          ...IDENTITY_INFRA_DEFAULTS.integration.docsCmsOidc.allowedGroups,
+        ],
+      },
+      mobileOidc: {
+        clientId:
+          args.env.INFRA_MOBILE_OIDC_CLIENT_ID ??
+          localConfig?.integration?.mobileOidc?.clientId ??
+          IDENTITY_INFRA_DEFAULTS.integration.mobileOidc.clientId,
+        applicationName:
+          args.env.INFRA_MOBILE_OIDC_APPLICATION_NAME ??
+          localConfig?.integration?.mobileOidc?.applicationName ??
+          IDENTITY_INFRA_DEFAULTS.integration.mobileOidc.applicationName,
+        applicationSlug:
+          args.env.INFRA_MOBILE_OIDC_APPLICATION_SLUG ??
+          localConfig?.integration?.mobileOidc?.applicationSlug ??
+          IDENTITY_INFRA_DEFAULTS.integration.mobileOidc.applicationSlug,
+        providerName:
+          args.env.INFRA_MOBILE_OIDC_PROVIDER_NAME ??
+          localConfig?.integration?.mobileOidc?.providerName ??
+          IDENTITY_INFRA_DEFAULTS.integration.mobileOidc.providerName,
+        redirectUrls: (() => {
+          const explicit =
+            args.env.INFRA_MOBILE_OIDC_REDIRECT_URLS?.split(',')
+              .map((s) => s.trim())
+              .filter(Boolean) ?? localConfig?.integration?.mobileOidc?.redirectUrls;
+          if (explicit?.length) return explicit;
+          // Derive from expo domain env vars when not explicitly configured.
+          const urls: string[] = [];
+          if (args.env.INFRA_EXPO_DOMAIN_DEV)
+            urls.push(`https://${args.env.INFRA_EXPO_DOMAIN_DEV}/`);
+          if (args.env.INFRA_EXPO_DOMAIN_PRODUCTION)
+            urls.push(`https://${args.env.INFRA_EXPO_DOMAIN_PRODUCTION}/`);
+          return urls;
+        })(),
+        postLogoutRedirectUrls: (() => {
+          const explicit =
+            args.env.INFRA_MOBILE_OIDC_POST_LOGOUT_REDIRECT_URLS?.split(',')
+              .map((s) => s.trim())
+              .filter(Boolean) ?? localConfig?.integration?.mobileOidc?.postLogoutRedirectUrls;
+          if (explicit?.length) return explicit;
+          const urls: string[] = [];
+          if (args.env.INFRA_EXPO_DOMAIN_DEV)
+            urls.push(`https://${args.env.INFRA_EXPO_DOMAIN_DEV}/`);
+          if (args.env.INFRA_EXPO_DOMAIN_PRODUCTION)
+            urls.push(`https://${args.env.INFRA_EXPO_DOMAIN_PRODUCTION}/`);
+          return urls;
+        })(),
       },
       bootstrap: {
         admin: {
