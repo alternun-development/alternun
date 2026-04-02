@@ -9,15 +9,22 @@ import { useAppTranslation } from '../i18n/useAppTranslation';
 import { createWeb3WalletBridge } from './walletBridge';
 import {
   clearOidcSession,
+  createAlternunAuthentikPreset,
   handleAuthentikCallback,
   hasPendingAuthentikCallback,
+  OIDC_INITIAL_SEARCH,
   readOidcSession,
-  upsertOidcUser,
-  type OidcClaims,
   type OidcSession,
   type OidcTokens,
 } from '@alternun/auth';
-import { AUTHENTIK_INITIAL_SEARCH } from '../../services/auth/authSession';
+
+const authentikPreset = createAlternunAuthentikPreset({
+  issuer: process.env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
+  clientId: process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? '',
+  redirectUri:
+    process.env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI ??
+    (typeof window !== 'undefined' ? `${window.location.origin}/` : ''),
+});
 
 function getAllowMockWalletFallback(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH === 'true';
@@ -155,34 +162,46 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     const session = readOidcSession();
     if (!session) return;
     const callbackClient = client as CallbackCapableAuthClient;
-    // Re-upsert on restore to ensure Supabase UUID is current; fall back to sub.
-    void upsertOidcUser(session.claims, session.provider)
-      .then((supabaseUserId) => {
-        callbackClient.setOidcUser?.(oidcSessionToUser(session, supabaseUserId));
+    // Re-provision on restore to ensure Supabase UUID is current; fall back to sub.
+    void authentikPreset
+      .onSessionReady(session.claims, session.provider)
+      .then((appUserId) => {
+        callbackClient.setOidcUser?.(oidcSessionToUser(session, appUserId));
       })
       .catch(() => {
         callbackClient.setOidcUser?.(oidcSessionToUser(session));
       });
   }, [client]);
 
-  // Clear OIDC session when user signs out
+  // Clear OIDC session and revoke token when user signs out
   useEffect(() => {
     if (Platform.OS !== 'web') return;
     return client.onAuthStateChange((user) => {
-      if (!user) clearOidcSession();
+      if (!user) {
+        const session = readOidcSession();
+        clearOidcSession();
+        if (session?.tokens.accessToken ?? session?.tokens.idToken) {
+          void authentikPreset
+            .logoutHandler({
+              accessToken: session.tokens.accessToken,
+              idToken: session.tokens.idToken,
+            })
+            .catch(() => {
+              // Best-effort token revocation — local session already cleared
+            });
+        }
+      }
     });
   }, [client]);
 
   // Handle Authentik OIDC redirect callback (?code=...&state=...)
   useEffect(() => {
     if (Platform.OS !== 'web') return;
-    // We capture the current URL search at module load time so the callback
-    // survives Expo Router stripping the query params before effects.
     const runtimeWindow = typeof window === 'undefined' ? undefined : window;
     const savedSearch =
-      AUTHENTIK_INITIAL_SEARCH.length > 0
-        ? AUTHENTIK_INITIAL_SEARCH
-        : runtimeWindow?.location?.search ?? '';
+      runtimeWindow?.sessionStorage?.getItem(OIDC_INITIAL_SEARCH) ??
+      runtimeWindow?.location?.search ??
+      '';
     if (!hasPendingAuthentikCallback(savedSearch)) return;
 
     if (runtimeWindow?.history?.replaceState) {
@@ -192,8 +211,8 @@ function AuthCallbackBridge(): React.JSX.Element | null {
     let cancelled = false;
     let supabaseUserId: string | undefined;
     void handleAuthentikCallback(savedSearch, {
-      onSessionReady: async (_claims: OidcClaims, _tokens: OidcTokens, session: OidcSession) => {
-        supabaseUserId = await upsertOidcUser(session.claims, session.provider);
+      onSessionReady: async (_claims, _tokens: OidcTokens, session: OidcSession) => {
+        supabaseUserId = await authentikPreset.onSessionReady(session.claims, session.provider);
       },
     })
       .then((session) => {
