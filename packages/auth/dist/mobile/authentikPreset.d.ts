@@ -31,7 +31,7 @@ import {
   type AuthentikPreset,
   type AuthentikRelayHandler,
   type AuthentikLogoutResult,
-} from '@edcalderon/auth/authentik';
+} from '../authentik';
 import type { OidcClaims } from '@edcalderon/auth';
 export interface AlternunAuthentikPresetOptions {
   issuer: string;

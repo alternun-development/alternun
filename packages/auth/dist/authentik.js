@@ -1,2 +1,2 @@
 export { isAuthentikConfigured, hasPendingAuthentikCallback, startAuthentikOAuthFlow, handleAuthentikCallback, readOidcSession, clearOidcSession, OIDC_INITIAL_SEARCH, } from '@edcalderon/auth';
-export { createAuthentikPreset, createAuthentikRelayHandler, createAuthentikLogoutHandler, handleAuthentikCallback as handleAuthentikPresetCallback, discoverEndpoints, resolveSafeRedirect, validateAuthentikConfig, validateFullConfig, } from '@edcalderon/auth/authentik';
+export { createAuthentikPreset, createAuthentikRelayHandler, createAuthentikLogoutHandler, createProvisioningAdapter, handleAuthentikCallback as handleAuthentikPresetCallback, discoverEndpoints, resolveSafeRedirect, validateAuthentikConfig, validateFullConfig, } from '@edcalderon/auth/authentik';

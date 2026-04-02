@@ -9,6 +9,11 @@ export type {
 } from '@edcalderon/auth';
 export { AppAuthProvider, useAuth, type AppAuthProviderProps } from './mobile/AppAuthProvider';
 export {
+  createAlternunAuthentikPreset,
+  type AlternunAuthentikPresetOptions,
+  type AlternunAuthentikPreset,
+} from './mobile/authentikPreset';
+export {
   AlternunMobileAuthClient,
   SUPPORTED_WALLET_PROVIDERS,
   createAlternunMobileAuthClient,
@@ -29,6 +34,7 @@ export {
   createAuthentikPreset,
   createAuthentikRelayHandler,
   createAuthentikLogoutHandler,
+  createProvisioningAdapter,
   handleAuthentikPresetCallback,
   discoverEndpoints,
   resolveSafeRedirect,
