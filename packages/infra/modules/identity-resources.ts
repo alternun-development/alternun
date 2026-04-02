@@ -132,7 +132,7 @@ const AUTHENTIK_INTEGRATION_BOOTSTRAP_SCRIPT_TEMPLATE = readIdentityTemplate(
 );
 
 function isArmInstanceType(instanceType: string): boolean {
-  return ARM_INSTANCE_PREFIXES.some(prefix => instanceType.startsWith(prefix));
+  return ARM_INSTANCE_PREFIXES.some((prefix) => instanceType.startsWith(prefix));
 }
 
 function sanitizeResourceName(value: string): string {
@@ -182,7 +182,7 @@ function resolveApplicationStageKey(stage: string): 'production' | 'dev' | 'mobi
 }
 
 function gzipUserData(userData: pulumi.Output<string>): pulumi.Output<string> {
-  return userData.apply(script => gzipSync(Buffer.from(script, 'utf8')).toString('base64'));
+  return userData.apply((script) => gzipSync(Buffer.from(script, 'utf8')).toString('base64'));
 }
 
 function createResourceTags(args: IdentityInfrastructureArgs): Record<string, string> {
@@ -469,8 +469,10 @@ export function deployIdentityInfrastructure(
 
   // SST's generated aws namespace is intentionally dynamic and not strongly typed here.
   const vpc = new sst.aws.Vpc(resourceBaseName) as unknown as IdentityVpcComponent;
-  const publicSubnetIds = pulumi.output(vpc.publicSubnets).apply(subnets => pulumi.all(subnets));
-  const privateSubnetIds = pulumi.output(vpc.privateSubnets).apply(subnets => pulumi.all(subnets));
+  const publicSubnetIds = pulumi.output(vpc.publicSubnets).apply((subnets) => pulumi.all(subnets));
+  const privateSubnetIds = pulumi
+    .output(vpc.privateSubnets)
+    .apply((subnets) => pulumi.all(subnets));
   const acmeBackupBucket = useAcmeBackup
     ? new aws.s3.BucketV2(`${resourceBaseName}-acme-backup`, {
         bucket: acmeBackupBucketName,
@@ -744,10 +746,10 @@ export function deployIdentityInfrastructure(
   const docsCmsLocalDevUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.localDevUrl);
   const docsCmsOidcRedirectUrls = [docsCmsSiteUrl, docsCmsLocalDevUrl]
     .filter(Boolean)
-    .map(url => `${url}/admin/auth/callback`);
+    .map((url) => `${url}/admin/auth/callback`);
   const docsCmsOidcPostLogoutRedirectUrls = [docsCmsSiteUrl, docsCmsLocalDevUrl]
     .filter(Boolean)
-    .map(url => `${url}/admin`);
+    .map((url) => `${url}/admin`);
 
   new aws.secretsmanager.SecretVersion(`${resourceBaseName}-integration-config-secret-version`, {
     secretId: integrationConfigSecret.id,
@@ -801,6 +803,13 @@ export function deployIdentityInfrastructure(
             googleClientSecret: args.settings.integration.google.clientSecret,
             googleSourceName: args.settings.integration.google.sourceName,
             googleSourceSlug: args.settings.integration.google.sourceSlug,
+            mobileOidcClientId: args.settings.integration.mobileOidc.clientId,
+            mobileOidcApplicationName: args.settings.integration.mobileOidc.applicationName,
+            mobileOidcApplicationSlug: args.settings.integration.mobileOidc.applicationSlug,
+            mobileOidcProviderName: args.settings.integration.mobileOidc.providerName,
+            mobileOidcRedirectUrls: args.settings.integration.mobileOidc.redirectUrls,
+            mobileOidcPostLogoutRedirectUrls:
+              args.settings.integration.mobileOidc.postLogoutRedirectUrls,
             supabaseApplicationName: args.settings.integration.supabase.applicationName,
             supabaseApplicationSlug: args.settings.integration.supabase.applicationSlug,
             supabaseManagementAccessToken: args.settings.integration.supabase.managementAccessToken,
@@ -908,7 +917,7 @@ export function deployIdentityInfrastructure(
   new aws.secretsmanager.SecretVersion(`${resourceBaseName}-db-secret-version`, {
     secretId: databaseCredentialsSecret.id,
     secretString: useEc2Database
-      ? databasePassword.result.apply(password =>
+      ? databasePassword.result.apply((password) =>
           JSON.stringify({
             database: databaseName,
             endpoint: 'postgres:5432',
@@ -965,7 +974,7 @@ export function deployIdentityInfrastructure(
         jwtSigningKeySecret.arn,
         integrationConfigSecret.arn,
       ])
-      .apply(secretArns =>
+      .apply((secretArns) =>
         JSON.stringify({
           Version: '2012-10-17',
           Statement: [
@@ -981,7 +990,7 @@ export function deployIdentityInfrastructure(
 
   new aws.iam.RolePolicy(`${resourceBaseName}-instance-route53-policy`, {
     role: instanceRole.name,
-    policy: pulumi.output(route53ZoneId).apply(zoneId =>
+    policy: pulumi.output(route53ZoneId).apply((zoneId) =>
       JSON.stringify({
         Version: '2012-10-17',
         Statement: [
@@ -1071,7 +1080,7 @@ export function deployIdentityInfrastructure(
         volumeSize: args.settings.ec2.volumeSizeGiB,
         volumeType: 'gp3',
       },
-      subnetId: publicSubnetIds.apply(subnets => subnets[0]),
+      subnetId: publicSubnetIds.apply((subnets) => subnets[0]),
       tags: {
         ...resourceTags,
         Name: `${resourceDisplayPrefix}-instance`,
