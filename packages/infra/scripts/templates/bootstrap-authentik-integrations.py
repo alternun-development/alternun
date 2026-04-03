@@ -11,6 +11,7 @@ from authentik.policies.models import PolicyBinding
 from authentik.providers.oauth2.models import OAuth2Provider, ScopeMapping
 from authentik.sources.oauth.models import OAuthSource
 from authentik.stages.identification.models import IdentificationStage
+from authentik.stages.user_login.models import UserLoginStage
 from authentik.stages.user_write.models import UserWriteStage
 
 
@@ -205,6 +206,21 @@ def ensure_flow_stage_binding(flow, stage, order: int = 0):
     if created or changed:
         binding.save()
     return created, changed
+
+
+def prune_flow_stage_bindings(flow, stage_model):
+    if not flow:
+        return 0
+
+    stage_ids = list(stage_model.objects.values_list("stage_ptr_id", flat=True))
+    if not stage_ids:
+        return 0
+
+    bindings = FlowStageBinding.objects.filter(target=flow, stage_id__in=stage_ids)
+    removed_count = bindings.count()
+    if removed_count:
+        bindings.delete()
+    return removed_count
 
 
 def upsert_authentication_flow(
@@ -792,6 +808,12 @@ if google_client_id and google_client_secret:
         slug="default-source-authentication"
     ).first()
     source_enrollment_flow = Flow.objects.filter(slug="default-source-enrollment").first()
+    source_authentication_flow_pruned = prune_flow_stage_bindings(
+        source_authentication_flow, UserLoginStage
+    )
+    source_enrollment_flow_pruned = prune_flow_stage_bindings(
+        source_enrollment_flow, UserLoginStage
+    )
     source, source_created = OAuthSource.objects.get_or_create(
         slug=google_source_slug,
         defaults={
@@ -838,6 +860,8 @@ if google_client_id and google_client_secret:
         source_changed = True
     if source_enrollment_flow and source.enrollment_flow_id != source_enrollment_flow.pk:
         source.enrollment_flow = source_enrollment_flow
+        source_changed = True
+    if source_authentication_flow_pruned or source_enrollment_flow_pruned:
         source_changed = True
 
     if source_created or source_changed:
@@ -1116,6 +1140,12 @@ if discord_client_id and discord_client_secret:
         slug="default-source-authentication"
     ).first()
     source_enrollment_flow = Flow.objects.filter(slug="default-source-enrollment").first()
+    source_authentication_flow_pruned = prune_flow_stage_bindings(
+        source_authentication_flow, UserLoginStage
+    )
+    source_enrollment_flow_pruned = prune_flow_stage_bindings(
+        source_enrollment_flow, UserLoginStage
+    )
 
     discord_source, discord_source_created = OAuthSource.objects.get_or_create(
         slug=discord_source_slug,
@@ -1160,6 +1190,8 @@ if discord_client_id and discord_client_secret:
         discord_source_changed = True
     if source_enrollment_flow and discord_source.enrollment_flow_id != source_enrollment_flow.pk:
         discord_source.enrollment_flow = source_enrollment_flow
+        discord_source_changed = True
+    if source_authentication_flow_pruned or source_enrollment_flow_pruned:
         discord_source_changed = True
 
     if discord_source_created or discord_source_changed:
