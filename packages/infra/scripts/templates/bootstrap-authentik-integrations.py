@@ -952,6 +952,9 @@ if google_client_id and google_client_secret:
 
     if source_created or source_changed:
         source.save()
+    results["google_source_authentication_flow"] = (
+        getattr(getattr(source, "authentication_flow", None), "slug", None)
+    )
 
     google_source_flow_slug = read_env(
         "ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_FLOW_SLUG", "alternun-google-login"
@@ -974,6 +977,10 @@ if google_client_id and google_client_secret:
             source,
         )
     )
+    if SourceStage is not None and google_source_flow and source.authentication_flow_id != google_source_flow.pk:
+        OAuthSource.objects.filter(pk=source.pk).update(authentication_flow=google_source_flow)
+        source.authentication_flow = google_source_flow
+        source_changed = True
     if SourceStage is None:
         results["google_source_flow"] = "unsupported"
     elif google_source_flow_created:
@@ -1312,6 +1319,9 @@ if discord_client_id and discord_client_secret:
 
     if discord_source_created or discord_source_changed:
         discord_source.save()
+    results["discord_source_authentication_flow"] = (
+        getattr(getattr(discord_source, "authentication_flow", None), "slug", None)
+    )
 
     discord_source_flow_slug = read_env(
         "ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_FLOW_SLUG", "alternun-discord-login"
@@ -1334,6 +1344,10 @@ if discord_client_id and discord_client_secret:
             discord_source,
         )
     )
+    if SourceStage is not None and discord_source_flow and discord_source.authentication_flow_id != discord_source_flow.pk:
+        OAuthSource.objects.filter(pk=discord_source.pk).update(authentication_flow=discord_source_flow)
+        discord_source.authentication_flow = discord_source_flow
+        discord_source_changed = True
     if SourceStage is None:
         results["discord_source_flow"] = "unsupported"
     elif discord_source_flow_created:
