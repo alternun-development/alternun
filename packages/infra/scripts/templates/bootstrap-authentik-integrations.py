@@ -10,6 +10,7 @@ from authentik.policies.expression.models import ExpressionPolicy
 from authentik.policies.models import PolicyBinding
 from authentik.providers.oauth2.models import OAuth2Provider, ScopeMapping
 from authentik.sources.oauth.models import OAuthSource
+from authentik.stages.redirect.models import RedirectStage
 from authentik.stages.identification.models import IdentificationStage
 from authentik.stages.user_logout.models import UserLogoutStage
 from authentik.stages.user_login.models import UserLoginStage
@@ -290,6 +291,29 @@ def upsert_invalidation_flow(
     if created or changed:
         flow.save()
     return flow, created, changed
+
+
+def upsert_redirect_stage(
+    name: str,
+    target_static: str,
+    *,
+    keep_context: bool = True,
+):
+    defaults = {
+        "name": name,
+        "mode": "static",
+        "target_static": target_static,
+        "keep_context": keep_context,
+    }
+    stage, created = RedirectStage.objects.get_or_create(name=name, defaults=defaults)
+    changed = False
+    for field, expected in defaults.items():
+        if hasattr(stage, field) and getattr(stage, field) != expected:
+            setattr(stage, field, expected)
+            changed = True
+    if created or changed:
+        stage.save()
+    return stage, created, changed
 
 
 def upsert_source_stage_flow(
@@ -1359,6 +1383,30 @@ if mobile_oidc_client_id and mobile_oidc_redirect_urls:
         ensure_flow_stage_binding(mobile_invalidation_flow, logout_stage, order=0)
         mobile_invalidation_flow_changed = True
 
+    mobile_logout_redirect_url = (
+        mobile_oidc_post_logout_redirect_urls[0]
+        if mobile_oidc_post_logout_redirect_urls
+        else ""
+    )
+    mobile_logout_redirect_stage = None
+    mobile_logout_redirect_stage_created = False
+    mobile_logout_redirect_stage_changed = False
+    if mobile_logout_redirect_url:
+        mobile_logout_redirect_stage, mobile_logout_redirect_stage_created, mobile_logout_redirect_stage_changed = (
+            upsert_redirect_stage(
+                "alternun-mobile-provider-invalidation-redirect",
+                mobile_logout_redirect_url,
+                keep_context=True,
+            )
+        )
+        if not FlowStageBinding.objects.filter(
+            target=mobile_invalidation_flow, stage=mobile_logout_redirect_stage
+        ).exists():
+            ensure_flow_stage_binding(mobile_invalidation_flow, mobile_logout_redirect_stage, order=1)
+            mobile_invalidation_flow_changed = True
+        elif mobile_logout_redirect_stage_created or mobile_logout_redirect_stage_changed:
+            mobile_invalidation_flow_changed = True
+
     expected_redirects = normalize_redirects(build_redirect_uris(mobile_oidc_redirect_urls))
 
     mobile_provider, mobile_provider_created = OAuth2Provider.objects.get_or_create(
@@ -1422,6 +1470,10 @@ if mobile_oidc_client_id and mobile_oidc_redirect_urls:
     if mobile_invalidation_flow_created or mobile_invalidation_flow_changed:
         results["mobile_oidc_invalidation_flow"] = (
             "created" if mobile_invalidation_flow_created else "updated"
+        )
+    if mobile_logout_redirect_stage_created or mobile_logout_redirect_stage_changed:
+        results["mobile_oidc_logout_redirect_stage"] = (
+            "created" if mobile_logout_redirect_stage_created else "updated"
         )
 
     desired_scope_mappings, missing_scope_mapping_ids = resolve_scope_mappings(

@@ -29,6 +29,9 @@
     "build": {
       "command": "npx expo export -p web",
       "output": "dist"
+    },
+    "publicEnv": {
+      "authentikLoginEntryMode": "relay"
     }
   },
   "redirects": {
