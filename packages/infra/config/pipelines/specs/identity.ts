@@ -5,6 +5,15 @@ export function buildIdentityPipelineSpecs({
   env,
   pipeline,
 }: PipelineConfigContext): PipelineSpecRecord<IdentityPipelineStage> {
+  const googleAuthClientId =
+    env.INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID ?? env.GOOGLE_AUTH_CLIENT_ID ?? '';
+  const googleAuthClientSecret =
+    env.INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET ??
+    env.GOOGLE_AUTH_CLIENT_SECRET ??
+    env.GOOGLEA_AUTH_CLIENT_SECRET ??
+    '';
+  const googleAuthClientSecretKey = 'INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET';
+
   return {
     'identity-dev': {
       suffix: 'auth-dev',
@@ -28,6 +37,8 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
         INFRA_IDENTITY_ADMIN_OIDC_LOCAL_DEV_URL: 'http://localhost:4173',
+        INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
+        [googleAuthClientSecretKey]: googleAuthClientSecret,
       }),
     },
     'identity-prod': {
@@ -49,6 +60,8 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION: 'true',
         INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
+        INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
+        [googleAuthClientSecretKey]: googleAuthClientSecret,
       }),
     },
   };
