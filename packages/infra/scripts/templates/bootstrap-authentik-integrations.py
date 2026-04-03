@@ -11,6 +11,7 @@ from authentik.policies.models import PolicyBinding
 from authentik.providers.oauth2.models import OAuth2Provider, ScopeMapping
 from authentik.sources.oauth.models import OAuthSource
 from authentik.stages.identification.models import IdentificationStage
+from authentik.stages.user_logout.models import UserLogoutStage
 from authentik.stages.user_login.models import UserLoginStage
 from authentik.stages.user_write.models import UserWriteStage
 
@@ -237,6 +238,36 @@ def upsert_authentication_flow(
         "name": name,
         "title": title,
         "designation": "authentication",
+        "policy_engine_mode": policy_engine_mode,
+        "compatibility_mode": compatibility_mode,
+        "layout": layout,
+        "denied_action": denied_action,
+    }
+    flow, created = Flow.objects.get_or_create(slug=slug, defaults=defaults)
+    changed = False
+    for field, expected in defaults.items():
+        if hasattr(flow, field) and getattr(flow, field) != expected:
+            setattr(flow, field, expected)
+            changed = True
+    if created or changed:
+        flow.save()
+    return flow, created, changed
+
+
+def upsert_invalidation_flow(
+    slug: str,
+    name: str,
+    title: str,
+    *,
+    policy_engine_mode: str = "any",
+    compatibility_mode: bool = True,
+    layout: str = "stacked",
+    denied_action: str = "message_continue",
+):
+    defaults = {
+        "name": name,
+        "title": title,
+        "designation": "invalidation",
         "policy_engine_mode": policy_engine_mode,
         "compatibility_mode": compatibility_mode,
         "layout": layout,
@@ -1249,7 +1280,19 @@ if mobile_oidc_client_id and mobile_oidc_redirect_urls:
     authorization_flow = Flow.objects.filter(
         slug="default-provider-authorization-implicit-consent"
     ).first()
-    invalidation_flow = Flow.objects.filter(slug="default-provider-invalidation-flow").first()
+    mobile_invalidation_flow, mobile_invalidation_flow_created, mobile_invalidation_flow_changed = (
+        upsert_invalidation_flow(
+            "alternun-mobile-provider-invalidation-flow",
+            "Alternun Mobile Provider Invalidation",
+            "Log out of Alternun Mobile",
+        )
+    )
+    logout_stage = UserLogoutStage.objects.filter(name="default-invalidation-logout").first()
+    if logout_stage and not FlowStageBinding.objects.filter(
+        target=mobile_invalidation_flow, stage=logout_stage
+    ).exists():
+        ensure_flow_stage_binding(mobile_invalidation_flow, logout_stage, order=0)
+        mobile_invalidation_flow_changed = True
 
     expected_redirects = normalize_redirects(build_redirect_uris(mobile_oidc_redirect_urls))
 
@@ -1262,7 +1305,7 @@ if mobile_oidc_client_id and mobile_oidc_redirect_urls:
             "client_type": "public",
             "_redirect_uris": build_redirect_uris(mobile_oidc_redirect_urls),
             "authorization_flow": authorization_flow,
-            "invalidation_flow": invalidation_flow,
+            "invalidation_flow": mobile_invalidation_flow,
             # Use user_uuid so sub is stable even if email changes.
             "sub_mode": "user_uuid",
         },
@@ -1288,8 +1331,11 @@ if mobile_oidc_client_id and mobile_oidc_redirect_urls:
     if authorization_flow and mobile_provider.authorization_flow_id != authorization_flow.pk:
         mobile_provider.authorization_flow = authorization_flow
         mobile_provider_changed = True
-    if invalidation_flow and mobile_provider.invalidation_flow_id != invalidation_flow.pk:
-        mobile_provider.invalidation_flow = invalidation_flow
+    if (
+        mobile_invalidation_flow
+        and mobile_provider.invalidation_flow_id != mobile_invalidation_flow.pk
+    ):
+        mobile_provider.invalidation_flow = mobile_invalidation_flow
         mobile_provider_changed = True
 
     if mobile_oidc_post_logout_redirect_urls and hasattr(mobile_provider, "post_logout_redirect_uris"):
@@ -1307,6 +1353,11 @@ if mobile_oidc_client_id and mobile_oidc_redirect_urls:
 
     if mobile_provider_created or mobile_provider_changed:
         mobile_provider.save()
+
+    if mobile_invalidation_flow_created or mobile_invalidation_flow_changed:
+        results["mobile_oidc_invalidation_flow"] = (
+            "created" if mobile_invalidation_flow_created else "updated"
+        )
 
     desired_scope_mappings, missing_scope_mapping_ids = resolve_scope_mappings(
         mobile_scope_mapping_ids
