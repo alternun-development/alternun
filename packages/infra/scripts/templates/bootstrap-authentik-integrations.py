@@ -4,7 +4,7 @@ import os
 from django.contrib.auth import get_user_model
 
 from authentik.core.models import Application, Group
-from authentik.events.models import Event, EventAction, NotificationTransport, NotificationTransportMode, NotificationRule, NotificationSeverity
+from authentik.events.models import Event, EventAction, NotificationTransport, NotificationRule, NotificationSeverity
 from authentik.flows.models import Flow, FlowStageBinding
 from authentik.policies.expression.models import ExpressionPolicy
 from authentik.policies.models import PolicyBinding
@@ -970,7 +970,7 @@ if user_sync_webhook_url:
     transport, transport_created = NotificationTransport.objects.get_or_create(
         name=user_sync_transport_name,
         defaults={
-            "mode": NotificationTransportMode.WEBHOOK,
+            "mode": "webhook",
             "webhook_url": user_sync_webhook_url,
             "webhook_mapping": None,
             "send_once": False,
@@ -978,8 +978,8 @@ if user_sync_webhook_url:
     )
 
     transport_changed = False
-    if transport.mode != NotificationTransportMode.WEBHOOK:
-        transport.mode = NotificationTransportMode.WEBHOOK
+    if transport.mode != "webhook":
+        transport.mode = "webhook"
         transport_changed = True
     if transport.webhook_url != user_sync_webhook_url:
         transport.webhook_url = user_sync_webhook_url
