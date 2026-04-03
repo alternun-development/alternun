@@ -34,9 +34,9 @@
  *   1. startAuthentikOAuthFlow('google' | 'discord')
  *        → optionally clears an existing Authentik session first
  *        → generates PKCE verifier+challenge, stores in sessionStorage
- *        → redirects to /if/flow/<slug>/?next=/application/o/authorize/?...
- *           when a provider flow slug exists, otherwise falls back to the
- *           direct source login route
+ *        → redirects to /source/oauth/login/<provider>/?next=/application/o/authorize/?...
+ *           by default, with explicit provider flow slugs available only when
+ *           a deployment opts into them
  *   2. Social provider authenticates → returns to Authentik
  *   3. Authentik follows `next` → runs authorization flow (implicit consent)
  *   4. Authentik redirects to app with ?code=...&state=...
@@ -104,10 +104,7 @@ function getSupabaseAnonKey(): string {
 }
 
 const PENDING_PROVIDER_KEY = 'alternun:oidc:pending_provider';
-const AUTHENTIK_PROVIDER_FLOW_SLUGS: Partial<Record<'google' | 'discord', string>> = {
-  google: 'alternun-google-login',
-  discord: 'alternun-discord-login',
-};
+const AUTHENTIK_PROVIDER_FLOW_SLUGS: Partial<Record<'google' | 'discord', string>> = {};
 
 export function readPendingAuthentikOAuthProvider(): 'google' | 'discord' | null {
   if (typeof window === 'undefined') {
@@ -453,14 +450,15 @@ export function hasPendingAuthentikCallback(searchString?: string): boolean {
  *
  * Instead of going to /application/o/authorize/?hint=<provider> (which still
  * shows the Authentik login page because the mobile authorization flow has no
- * identification stage), we redirect to a provider-specific Authentik flow
- * when available, otherwise fall back to the social source login endpoint.
+ * identification stage), we redirect to the direct social source login
+ * endpoint by default. Deployments that explicitly provide a provider flow slug
+ * can opt into /if/flow/<slug>/.
  *
  * Flow:
- *   1. Browser → /if/flow/<slug>/?next=/application/o/authorize/?...
- *        or /source/oauth/login/google/?next=/application/o/authorize/?...
- *   2. Authentik → Google OAuth (no Authentik library page shown)
- *   3. Google  → returns to Authentik and resumes the flow
+ *   1. Browser → /source/oauth/login/google/?next=/application/o/authorize/?...
+ *        unless a deployment explicitly configures a provider flow slug
+ *   2. Authentik → Google OAuth
+ *   3. Google → returns to Authentik and resumes the source flow
  *   4. Authentik follows `next` → /application/o/authorize/?...
  *   5. Authorization flow (implicit consent, 0 stages) → issues PKCE code
  *   6. Authentik → https://testnet.airs.alternun.co/?code=XXX&state=YYY

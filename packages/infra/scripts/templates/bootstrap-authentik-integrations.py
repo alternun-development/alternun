@@ -956,39 +956,7 @@ if google_client_id and google_client_secret:
         getattr(getattr(source, "authentication_flow", None), "slug", None)
     )
 
-    google_source_flow_slug = read_env(
-        "ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_FLOW_SLUG", "alternun-google-login"
-    )
-    google_source_flow_name = read_env(
-        "ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_FLOW_NAME", "Alternun Google Login"
-    )
-    google_source_flow_title = read_env(
-        "ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_FLOW_TITLE", "Sign in with Google"
-    )
-    google_source_stage_name = read_env(
-        "ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_STAGE_NAME", "Alternun Google Source Stage"
-    )
-    google_source_flow, google_source_flow_created, google_source_flow_changed, _, _, _ = (
-        upsert_source_stage_flow(
-            google_source_flow_slug,
-            google_source_flow_name,
-            google_source_flow_title,
-            google_source_stage_name,
-            source,
-        )
-    )
-    if SourceStage is not None and google_source_flow and source.authentication_flow_id != google_source_flow.pk:
-        OAuthSource.objects.filter(pk=source.pk).update(authentication_flow=google_source_flow)
-        source.authentication_flow = google_source_flow
-        source_changed = True
-    if SourceStage is None:
-        results["google_source_flow"] = "unsupported"
-    elif google_source_flow_created:
-        results["google_source_flow"] = "created"
-    elif google_source_flow_changed:
-        results["google_source_flow"] = "updated"
-    else:
-        results["google_source_flow"] = "unchanged"
+    results["google_source_flow"] = "disabled"
 
     identification_stage = IdentificationStage.objects.filter(
         name="default-authentication-identification"
@@ -1323,39 +1291,7 @@ if discord_client_id and discord_client_secret:
         getattr(getattr(discord_source, "authentication_flow", None), "slug", None)
     )
 
-    discord_source_flow_slug = read_env(
-        "ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_FLOW_SLUG", "alternun-discord-login"
-    )
-    discord_source_flow_name = read_env(
-        "ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_FLOW_NAME", "Alternun Discord Login"
-    )
-    discord_source_flow_title = read_env(
-        "ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_FLOW_TITLE", "Sign in with Discord"
-    )
-    discord_source_stage_name = read_env(
-        "ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_STAGE_NAME", "Alternun Discord Source Stage"
-    )
-    discord_source_flow, discord_source_flow_created, discord_source_flow_changed, _, _, _ = (
-        upsert_source_stage_flow(
-            discord_source_flow_slug,
-            discord_source_flow_name,
-            discord_source_flow_title,
-            discord_source_stage_name,
-            discord_source,
-        )
-    )
-    if SourceStage is not None and discord_source_flow and discord_source.authentication_flow_id != discord_source_flow.pk:
-        OAuthSource.objects.filter(pk=discord_source.pk).update(authentication_flow=discord_source_flow)
-        discord_source.authentication_flow = discord_source_flow
-        discord_source_changed = True
-    if SourceStage is None:
-        results["discord_source_flow"] = "unsupported"
-    elif discord_source_flow_created:
-        results["discord_source_flow"] = "created"
-    elif discord_source_flow_changed:
-        results["discord_source_flow"] = "updated"
-    else:
-        results["discord_source_flow"] = "unchanged"
+    results["discord_source_flow"] = "disabled"
 
     # Show Discord on the login page
     identification_stage = IdentificationStage.objects.filter(
