@@ -218,6 +218,17 @@ Current default identity domains:
 - `dev` -> `testnet.sso.alternun.co`
 - `mobile` -> `preview.sso.alternun.co`
 
+### Mobile Auth Entry Mode
+
+The mobile web auth surface supports two Authentik entry patterns:
+
+- `relay` keeps the app as the visible entrypoint and routes through `/auth-relay` before starting the Authentik login flow.
+- `source` jumps straight to Authentik's social source login route.
+
+Control the mode with `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE` in repo env, pipeline env, or `packages/infra/config/deployment.config.json`.
+The default is `relay`, which is the most flexible option for return-target handling and future flow changes.
+The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages so logout returns to the app instead of stopping on Authentik's success page.
+
 Enable/configure through env or local config:
 
 - `INFRA_IDENTITY_ENABLED`

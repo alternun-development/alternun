@@ -185,6 +185,7 @@ const expoPublicEnableWalletOnlyAuth = expoConfig.publicEnv.enableWalletOnlyAuth
 const expoPublicAuthentikIssuer = expoConfig.publicEnv.authentikIssuer;
 const expoPublicAuthentikClientId = expoConfig.publicEnv.authentikClientId;
 const expoPublicAuthentikRedirectUri = expoConfig.publicEnv.authentikRedirectUri;
+const expoPublicAuthentikLoginEntryMode = expoConfig.publicEnv.authentikLoginEntryMode;
 const enableAirsToDevRedirect = expoConfig.redirects.enableAirsToDev;
 const airsToDevSourceDomain = expoConfig.redirects.airsToDevSourceDomain;
 const airsToDevCertArn = expoConfig.redirects.airsToDevCertArn;
@@ -385,6 +386,7 @@ const commonBuildEnv = {
   EXPO_PUBLIC_AUTHENTIK_ISSUER: expoPublicAuthentikIssuer ?? '',
   EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId ?? '',
   EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: expoPublicAuthentikRedirectUri ?? '',
+  EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: expoPublicAuthentikLoginEntryMode ?? '',
   INFRA_REDIRECT_AIRS_TO_DEV_SOURCE: airsToDevSourceDomain,
   INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN: airsToDevCertArn ?? '',
   INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE: devToTestnetSourceDomain,

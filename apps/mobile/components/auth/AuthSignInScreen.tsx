@@ -32,6 +32,7 @@ import {
   View,
 } from 'react-native';
 import { getLocaleLabel } from '@alternun/i18n';
+import { useRouter } from 'expo-router';
 import { createTypographyStyles } from '../theme/typography';
 import { useAppPalette } from '../theme/useAppPalette';
 import ShaderBackground from './ShaderBackground';
@@ -45,6 +46,10 @@ import {
   readPendingAuthentikOAuthProvider,
   startAuthentikOAuthFlow,
 } from '../../services/auth/AuthentikOidcClient';
+import {
+  buildAuthentikRelayRoute,
+  getAuthentikLoginEntryMode,
+} from '../../services/auth/authEntry';
 
 const RESEND_COOLDOWN_SECONDS = 45;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -86,6 +91,7 @@ interface EmailAuthCapableClient {
 export interface AuthSignInScreenProps {
   onCancel?: () => void;
   presentation?: 'screen' | 'modal';
+  authReturnTo?: string;
 }
 
 function resolveGoogleFlow(supportedFlows: OAuthFlow[]): OAuthFlow {
@@ -225,10 +231,12 @@ function createDefaultRequiredFieldState(): RequiredFieldState {
 export default function AuthSignInScreen({
   onCancel,
   presentation = 'screen',
+  authReturnTo,
 }: AuthSignInScreenProps) {
   const { signInWithEmail, signIn, loading, error, client } = useAuth();
   const { t, locale } = useAppTranslation('mobile');
   const { language, toggleThemeMode, cycleLanguage } = useAppPreferences();
+  const router = useRouter();
   const p = useAppPalette();
   const ThemeIcon = p.isDark ? Sun : Moon;
   const themeLabel = p.isDark ? t('labels.dark') : t('labels.light');
@@ -263,6 +271,7 @@ export default function AuthSignInScreen({
     [client]
   );
   const googleProvider = useMemo(() => resolveGoogleProvider(), []);
+  const authentikLoginEntryMode = useMemo(() => getAuthentikLoginEntryMode(), []);
 
   const rawEffectiveError = localError ?? error;
   const effectiveError = rawEffectiveError
@@ -303,6 +312,16 @@ export default function AuthSignInScreen({
 
     clearPendingAuthentikOAuthProvider();
     setSubmitMode(pendingProvider);
+    if (authentikLoginEntryMode === 'relay' && isAuthentikConfigured()) {
+      router.replace(
+        buildAuthentikRelayRoute(pendingProvider, {
+          next: authReturnTo,
+          forceFreshSession: false,
+        })
+      );
+      return;
+    }
+
     void startAuthentikOAuthFlow(pendingProvider)
       .catch((authError) => {
         setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
@@ -310,7 +329,7 @@ export default function AuthSignInScreen({
       .finally(() => {
         setSubmitMode(null);
       });
-  }, [t]);
+  }, [authReturnTo, authentikLoginEntryMode, router, t]);
 
   const transitionToStep = (step: AuthStep) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -599,6 +618,16 @@ export default function AuthSignInScreen({
     resetMessages();
     setSubmitMode('google');
     try {
+      if (Platform.OS === 'web' && authentikLoginEntryMode === 'relay' && isAuthentikConfigured()) {
+        router.replace(
+          buildAuthentikRelayRoute('google', {
+            next: authReturnTo,
+            forceFreshSession: true,
+          })
+        );
+        return;
+      }
+
       // Try Authentik OIDC first (vendor-independent); falls back to Supabase Auth
       // when Authentik env vars are not configured.
       await startAuthentikOAuthFlow('google', { forceFreshSession: true });
@@ -624,6 +653,16 @@ export default function AuthSignInScreen({
     resetMessages();
     setSubmitMode('discord');
     try {
+      if (Platform.OS === 'web' && authentikLoginEntryMode === 'relay' && isAuthentikConfigured()) {
+        router.replace(
+          buildAuthentikRelayRoute('discord', {
+            next: authReturnTo,
+            forceFreshSession: true,
+          })
+        );
+        return;
+      }
+
       await startAuthentikOAuthFlow('discord', { forceFreshSession: true });
     } catch (oidcError) {
       setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
