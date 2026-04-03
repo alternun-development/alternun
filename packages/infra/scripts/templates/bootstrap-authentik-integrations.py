@@ -232,6 +232,7 @@ admin_oidc_client_id = read_env(
     "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_CLIENT_ID", "alternun-admin"
 )
 admin_oidc_client_secret = read_env("ALTERNUN_BOOTSTRAP_ADMIN_OIDC_CLIENT_SECRET")
+admin_oidc_launch_url = read_env("ALTERNUN_BOOTSTRAP_ADMIN_OIDC_LAUNCH_URL")
 admin_oidc_redirect_url = read_env("ALTERNUN_BOOTSTRAP_ADMIN_OIDC_REDIRECT_URL")
 admin_oidc_post_logout_redirect_url = read_env(
     "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_POST_LOGOUT_REDIRECT_URL"
@@ -429,6 +430,7 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
         defaults={
             "name": admin_oidc_application_name,
             "provider": provider,
+            "meta_launch_url": admin_oidc_launch_url,
         },
     )
 
@@ -438,6 +440,13 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
         application_changed = True
     if application.provider_id != provider.pk:
         application.provider = provider
+        application_changed = True
+    if (
+        admin_oidc_launch_url
+        and hasattr(application, "meta_launch_url")
+        and application.meta_launch_url != admin_oidc_launch_url
+    ):
+        application.meta_launch_url = admin_oidc_launch_url
         application_changed = True
 
     if application_created or application_changed:
