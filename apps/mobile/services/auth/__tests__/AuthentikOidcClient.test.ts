@@ -8,7 +8,7 @@ describe('buildAuthentikOAuthFlowStartUrl', () => {
   const state = 'state-123';
   const codeChallenge = 'challenge-123';
 
-  it('starts google sign-in through the Authentik source login route', () => {
+  it('starts google sign-in through the provider-specific Authentik flow', () => {
     const url = buildAuthentikOAuthFlowStartUrl({
       providerHint: 'google',
       issuer,
@@ -20,14 +20,13 @@ describe('buildAuthentikOAuthFlowStartUrl', () => {
 
     const parsed = new URL(url);
     expect(parsed.origin).toBe('https://testnet.sso.alternun.co');
-    expect(parsed.pathname).toBe('/source/oauth/login/google/');
+    expect(parsed.pathname).toBe('/if/flow/alternun-google-login/');
     expect(parsed.searchParams.get('next')).toContain('/application/o/authorize/?');
     expect(parsed.searchParams.get('next')).toContain('client_id=alternun-mobile');
     expect(parsed.searchParams.get('next')).toContain('state=state-123');
-    expect(parsed.searchParams.get('next')).not.toContain('/if/flow/');
   });
 
-  it('starts discord sign-in through the Authentik source login route', () => {
+  it('starts discord sign-in through the provider-specific Authentik flow', () => {
     const url = buildAuthentikOAuthFlowStartUrl({
       providerHint: 'discord',
       issuer,
@@ -39,10 +38,26 @@ describe('buildAuthentikOAuthFlowStartUrl', () => {
 
     const parsed = new URL(url);
     expect(parsed.origin).toBe('https://testnet.sso.alternun.co');
-    expect(parsed.pathname).toBe('/source/oauth/login/discord/');
+    expect(parsed.pathname).toBe('/if/flow/alternun-discord-login/');
     expect(parsed.searchParams.get('next')).toContain('/application/o/authorize/?');
     expect(parsed.searchParams.get('next')).toContain('client_id=alternun-mobile');
     expect(parsed.searchParams.get('next')).toContain('state=state-123');
-    expect(parsed.searchParams.get('next')).not.toContain('/if/flow/');
+  });
+
+  it('falls back to the source login route when no flow slug is configured', () => {
+    const url = buildAuthentikOAuthFlowStartUrl({
+      providerHint: 'google',
+      issuer,
+      clientId,
+      redirectUri,
+      state,
+      codeChallenge,
+      providerFlowSlugs: {},
+    });
+
+    const parsed = new URL(url);
+    expect(parsed.origin).toBe('https://testnet.sso.alternun.co');
+    expect(parsed.pathname).toBe('/source/oauth/login/google/');
+    expect(parsed.searchParams.get('next')).toContain('/application/o/authorize/?');
   });
 });
