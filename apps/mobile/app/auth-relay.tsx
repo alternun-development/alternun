@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRootNavigationState, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import {
@@ -37,12 +37,14 @@ function readBooleanParam(value: string | string[] | undefined, defaultValue: bo
 
 export default function AuthRelayRoute(): React.JSX.Element {
   const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
   const { provider, fresh, next } = useLocalSearchParams<{
     provider?: string | string[];
     fresh?: string | string[];
     next?: string | string[];
   }>();
   const hasStartedRef = useRef(false);
+  const isNavigationReady = Boolean(rootNavigationState?.key);
 
   const providerHint = useMemo(() => {
     const resolved = readParam(provider);
@@ -53,6 +55,10 @@ export default function AuthRelayRoute(): React.JSX.Element {
   const forceFreshSession = useMemo(() => readBooleanParam(fresh, true), [fresh]);
 
   useEffect(() => {
+    if (!isNavigationReady) {
+      return;
+    }
+
     if (hasStartedRef.current) {
       return;
     }
@@ -66,7 +72,7 @@ export default function AuthRelayRoute(): React.JSX.Element {
     void startAuthentikOAuthFlow(providerHint, { forceFreshSession }).catch(() => {
       router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
     });
-  }, [forceFreshSession, nextTarget, providerHint, router]);
+  }, [forceFreshSession, isNavigationReady, nextTarget, providerHint, router]);
 
   return (
     <View style={styles.loadingScreen}>

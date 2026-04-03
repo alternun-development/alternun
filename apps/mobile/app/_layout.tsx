@@ -30,10 +30,6 @@ export default function RootLayout(): any {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
-
   return (
     <AppPreferencesProvider>
       <RootApp />

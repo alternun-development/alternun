@@ -1,4 +1,4 @@
-import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRootNavigationState, useRouter } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import AuthSignInScreen from '../components/auth/AuthSignInScreen';
@@ -53,8 +53,10 @@ type AuthRouteHref = Parameters<ReturnType<typeof useRouter>['replace']>[0];
 
 export default function AuthRoute(): React.JSX.Element {
   const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
   const { next } = useLocalSearchParams<{ next?: string | string[] }>();
   const { user, loading } = useAuth();
+  const isNavigationReady = Boolean(rootNavigationState?.key);
 
   const requestedNext = readSearchParam(next);
   const initialSearch = AUTHENTIK_INITIAL_SEARCH;
@@ -67,6 +69,7 @@ export default function AuthRoute(): React.JSX.Element {
 
     return resolveReturnTarget(requestedNext ?? '/');
   }, [isCallbackRedirect, requestedNext]);
+  const redirectHref = redirectTarget;
 
   useEffect(() => {
     if (typeof window === 'undefined' || isCallbackRedirect) {
@@ -76,18 +79,20 @@ export default function AuthRoute(): React.JSX.Element {
     storeReturnTo(redirectTarget);
   }, [isCallbackRedirect, redirectTarget]);
 
-  if (loading) {
+  useEffect(() => {
+    if (!isNavigationReady || loading || !user) {
+      return;
+    }
+
+    router.replace(redirectHref as AuthRouteHref);
+  }, [isNavigationReady, loading, redirectHref, router, user]);
+
+  if (loading || !isNavigationReady || user) {
     return (
       <View style={styles.loadingScreen}>
         <ActivityIndicator size='large' color='#1ccba1' />
       </View>
     );
-  }
-
-  const redirectHref = redirectTarget;
-
-  if (user) {
-    return <Redirect href={redirectHref as AuthRouteHref} />;
   }
 
   return (

@@ -4,7 +4,7 @@ import AirsIntroExperience from '../components/onboarding/AirsIntroExperience';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import { readPendingAuthentikOAuthProvider } from '../services/auth/AuthentikOidcClient';
 import { hasPendingAuthentikCallback } from '@alternun/auth';
-import { useRouter } from 'expo-router';
+import { useRootNavigationState, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
@@ -17,8 +17,10 @@ export default function HomeScreen(): React.JSX.Element {
   const { user, loading, signIn, signOutUser } = useAuth();
   const { showAirsIntro, setShowAirsIntro } = useAppPreferences();
   const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
   const [introDismissedThisSession, setIntroDismissedThisSession] = useState(false);
   const pendingAuthentikProvider = readPendingAuthentikOAuthProvider();
+  const isNavigationReady = Boolean(rootNavigationState?.key);
 
   useEffect(() => {
     if (user) {
@@ -27,7 +29,7 @@ export default function HomeScreen(): React.JSX.Element {
   }, [user]);
 
   useEffect(() => {
-    if (user != null) {
+    if (!isNavigationReady || user != null) {
       return;
     }
 
@@ -36,14 +38,19 @@ export default function HomeScreen(): React.JSX.Element {
     }
 
     router.replace({ pathname: '/auth', params: { next: '/' } });
-  }, [pendingAuthentikProvider, router, user]);
+  }, [isNavigationReady, pendingAuthentikProvider, router, user]);
 
   const shouldShowAirsIntro = useMemo(
     () => !user && showAirsIntro && !introDismissedThisSession,
     [introDismissedThisSession, showAirsIntro, user]
   );
 
-  if (loading || (OIDC_CALLBACK_PENDING && !user) || (!user && pendingAuthentikProvider)) {
+  if (
+    loading ||
+    !isNavigationReady ||
+    (OIDC_CALLBACK_PENDING && !user) ||
+    (!user && pendingAuthentikProvider)
+  ) {
     return (
       <View style={styles.loadingScreen}>
         <ActivityIndicator size='large' color='#1ccba1' />
