@@ -15,6 +15,14 @@ from authentik.stages.user_logout.models import UserLogoutStage
 from authentik.stages.user_login.models import UserLoginStage
 from authentik.stages.user_write.models import UserWriteStage
 
+try:
+    from authentik.enterprise.stages.source.models import SourceStage
+except ImportError:
+    try:
+        from authentik.stages.source.models import SourceStage
+    except ImportError:
+        SourceStage = None
+
 
 def read_env(name: str, default: str = "") -> str:
     value = os.environ.get(name)
@@ -284,6 +292,51 @@ def upsert_invalidation_flow(
     return flow, created, changed
 
 
+def upsert_source_stage_flow(
+    flow_slug: str,
+    flow_name: str,
+    flow_title: str,
+    stage_name: str,
+    source,
+    *,
+    resume_timeout: str = "minutes=15",
+):
+    flow, flow_created, flow_changed = upsert_authentication_flow(
+        flow_slug,
+        flow_name,
+        flow_title,
+    )
+
+    if not SourceStage or not source:
+        return flow, flow_created, flow_changed, None, False, False
+
+    stage, stage_created = SourceStage.objects.get_or_create(
+        name=stage_name,
+        defaults={
+            "source": source,
+            "resume_timeout": resume_timeout,
+        },
+    )
+    stage_changed = False
+
+    if hasattr(stage, "source") and stage.source_id != source.pk:
+        stage.source = source
+        stage_changed = True
+    if hasattr(stage, "resume_timeout") and stage.resume_timeout != resume_timeout:
+        stage.resume_timeout = resume_timeout
+        stage_changed = True
+
+    if stage_created or stage_changed:
+        stage.save()
+        flow_changed = True
+
+    stage_binding_created, stage_binding_changed = ensure_flow_stage_binding(flow, stage, order=0)
+    if stage_binding_created or stage_binding_changed:
+        flow_changed = True
+
+    return flow, flow_created, flow_changed, stage, stage_created, stage_changed
+
+
 results = {
     "user_sync_webhook": "skipped",
     "admin_user": "skipped",
@@ -295,6 +348,8 @@ results = {
     "default_application": "skipped",
     "google_source": "skipped",
     "discord_source": "skipped",
+    "google_source_flow": "skipped",
+    "discord_source_flow": "skipped",
     "mobile_oidc_provider": "skipped",
     "internal_domain_users": "skipped",
     "internal_domain_user_promotion": "skipped",
@@ -898,6 +953,36 @@ if google_client_id and google_client_secret:
     if source_created or source_changed:
         source.save()
 
+    google_source_flow_slug = read_env(
+        "ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_FLOW_SLUG", "alternun-google-login"
+    )
+    google_source_flow_name = read_env(
+        "ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_FLOW_NAME", "Alternun Google Login"
+    )
+    google_source_flow_title = read_env(
+        "ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_FLOW_TITLE", "Sign in with Google"
+    )
+    google_source_stage_name = read_env(
+        "ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_STAGE_NAME", "Alternun Google Source Stage"
+    )
+    google_source_flow, google_source_flow_created, google_source_flow_changed, _, _, _ = (
+        upsert_source_stage_flow(
+            google_source_flow_slug,
+            google_source_flow_name,
+            google_source_flow_title,
+            google_source_stage_name,
+            source,
+        )
+    )
+    if SourceStage is None:
+        results["google_source_flow"] = "unsupported"
+    elif google_source_flow_created:
+        results["google_source_flow"] = "created"
+    elif google_source_flow_changed:
+        results["google_source_flow"] = "updated"
+    else:
+        results["google_source_flow"] = "unchanged"
+
     identification_stage = IdentificationStage.objects.filter(
         name="default-authentication-identification"
     ).first()
@@ -1227,6 +1312,36 @@ if discord_client_id and discord_client_secret:
 
     if discord_source_created or discord_source_changed:
         discord_source.save()
+
+    discord_source_flow_slug = read_env(
+        "ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_FLOW_SLUG", "alternun-discord-login"
+    )
+    discord_source_flow_name = read_env(
+        "ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_FLOW_NAME", "Alternun Discord Login"
+    )
+    discord_source_flow_title = read_env(
+        "ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_FLOW_TITLE", "Sign in with Discord"
+    )
+    discord_source_stage_name = read_env(
+        "ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_STAGE_NAME", "Alternun Discord Source Stage"
+    )
+    discord_source_flow, discord_source_flow_created, discord_source_flow_changed, _, _, _ = (
+        upsert_source_stage_flow(
+            discord_source_flow_slug,
+            discord_source_flow_name,
+            discord_source_flow_title,
+            discord_source_stage_name,
+            discord_source,
+        )
+    )
+    if SourceStage is None:
+        results["discord_source_flow"] = "unsupported"
+    elif discord_source_flow_created:
+        results["discord_source_flow"] = "created"
+    elif discord_source_flow_changed:
+        results["discord_source_flow"] = "updated"
+    else:
+        results["discord_source_flow"] = "unchanged"
 
     # Show Discord on the login page
     identification_stage = IdentificationStage.objects.filter(

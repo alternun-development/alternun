@@ -34,8 +34,9 @@
  *   1. startAuthentikOAuthFlow('google' | 'discord')
  *        → optionally clears an existing Authentik session first
  *        → generates PKCE verifier+challenge, stores in sessionStorage
- *        → redirects to /source/oauth/login/<slug>/?next=/application/o/authorize/?...
- *           (direct source login, bypassing the generic library page)
+ *        → redirects to /if/flow/<slug>/?next=/application/o/authorize/?...
+ *           when a provider flow slug exists, otherwise falls back to the
+ *           direct source login route
  *   2. Social provider authenticates → returns to Authentik
  *   3. Authentik follows `next` → runs authorization flow (implicit consent)
  *   4. Authentik redirects to app with ?code=...&state=...
@@ -103,6 +104,10 @@ function getSupabaseAnonKey(): string {
 }
 
 const PENDING_PROVIDER_KEY = 'alternun:oidc:pending_provider';
+const AUTHENTIK_PROVIDER_FLOW_SLUGS: Partial<Record<'google' | 'discord', string>> = {
+  google: 'alternun-google-login',
+  discord: 'alternun-discord-login',
+};
 
 export function readPendingAuthentikOAuthProvider(): 'google' | 'discord' | null {
   if (typeof window === 'undefined') {
@@ -136,6 +141,7 @@ export function buildAuthentikOAuthFlowStartUrl({
   redirectUri,
   state,
   codeChallenge,
+  providerFlowSlugs,
 }: {
   providerHint: 'google' | 'discord';
   issuer: string;
@@ -143,6 +149,7 @@ export function buildAuthentikOAuthFlowStartUrl({
   redirectUri: string;
   state: string;
   codeChallenge: string;
+  providerFlowSlugs?: Partial<Record<'google' | 'discord', string>>;
 }): string {
   const authorizeUrl = `${getAuthentikEndpointBaseFromIssuer(issuer)}authorize/`;
   const authorizeParams = new URLSearchParams({
@@ -158,6 +165,14 @@ export function buildAuthentikOAuthFlowStartUrl({
   const authentikOrigin = new URL(issuer).origin;
   const authorizePath = authorizeUrl.replace(authentikOrigin, '');
   const nextPath = `${authorizePath}?${authorizeParams.toString()}`;
+  const activeProviderFlowSlugs = providerFlowSlugs ?? AUTHENTIK_PROVIDER_FLOW_SLUGS;
+  const flowSlug = activeProviderFlowSlugs[providerHint]?.trim();
+
+  if (flowSlug) {
+    return `${authentikOrigin}/if/flow/${encodeURIComponent(flowSlug)}/?next=${encodeURIComponent(
+      nextPath
+    )}`;
+  }
 
   return `${authentikOrigin}/source/oauth/login/${providerHint}/?next=${encodeURIComponent(
     nextPath
@@ -435,10 +450,12 @@ export function hasPendingAuthentikCallback(searchString?: string): boolean {
  *
  * Instead of going to /application/o/authorize/?hint=<provider> (which still
  * shows the Authentik login page because the mobile authorization flow has no
- * identification stage), we redirect to the social source login endpoint.
+ * identification stage), we redirect to a provider-specific Authentik flow
+ * when available, otherwise fall back to the social source login endpoint.
  *
  * Flow:
- *   1. Browser → /source/oauth/login/google/?next=/application/o/authorize/?...
+ *   1. Browser → /if/flow/<slug>/?next=/application/o/authorize/?...
+ *        or /source/oauth/login/google/?next=/application/o/authorize/?...
  *   2. Authentik → Google OAuth (no Authentik library page shown)
  *   3. Google  → returns to Authentik and resumes the flow
  *   4. Authentik follows `next` → /application/o/authorize/?...
@@ -485,6 +502,7 @@ export async function startAuthentikOAuthFlow(
     redirectUri,
     state,
     codeChallenge: challenge,
+    providerFlowSlugs: AUTHENTIK_PROVIDER_FLOW_SLUGS,
   });
 }
 
