@@ -17,7 +17,6 @@ import {
   X,
 } from 'lucide-react-native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { isAuthentikConfigured, startAuthentikOAuthFlow } from '@alternun/auth';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -40,6 +39,10 @@ import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import {
+  isAuthentikConfigured,
+  startAuthentikOAuthFlow,
+} from '../../services/auth/AuthentikOidcClient';
 
 const RESEND_COOLDOWN_SECONDS = 45;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
