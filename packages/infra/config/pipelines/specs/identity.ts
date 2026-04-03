@@ -27,6 +27,7 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION: 'true',
         INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
+        INFRA_IDENTITY_ADMIN_OIDC_LOCAL_DEV_URL: 'http://localhost:4173',
       }),
     },
     'identity-prod': {
