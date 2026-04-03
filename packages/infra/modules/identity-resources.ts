@@ -739,9 +739,12 @@ export function deployIdentityInfrastructure(
   });
   const adminStageKey = resolveApplicationStageKey(args.stage);
   const adminStageDomain = buildStageDomains('admin', args.rootDomain)[adminStageKey];
-  const adminOidcRedirectUrl = `https://${adminStageDomain}/auth/callback`;
-  const adminOidcPostLogoutRedirectUrl = `https://${adminStageDomain}/login`;
   const normalizeBaseUrl = (value: string): string => value.replace(/\/+$/, '');
+  const adminOidcLocalDevUrl = normalizeBaseUrl(args.settings.integration.adminOidc.localDevUrl);
+  const adminOidcBaseUrl = adminOidcLocalDevUrl || `https://${adminStageDomain}`;
+  const adminOidcLaunchUrl = `${adminOidcBaseUrl}/`;
+  const adminOidcRedirectUrl = `${adminOidcBaseUrl}/auth/callback`;
+  const adminOidcPostLogoutRedirectUrl = `${adminOidcBaseUrl}/login`;
   const docsCmsSiteUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.siteUrl);
   const docsCmsLocalDevUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.localDevUrl);
   const docsCmsOidcRedirectUrls = [docsCmsSiteUrl, docsCmsLocalDevUrl]
@@ -771,6 +774,7 @@ export function deployIdentityInfrastructure(
             adminOidcApplicationSlug: args.settings.integration.adminOidc.applicationSlug,
             adminOidcClientId: args.settings.integration.adminOidc.clientId,
             adminOidcClientSecret: adminClientSecret,
+            adminOidcLaunchUrl,
             adminOidcPostLogoutRedirectUrl,
             adminOidcProviderName: args.settings.integration.adminOidc.providerName,
             adminOidcRedirectUrl,
@@ -1091,6 +1095,10 @@ export function deployIdentityInfrastructure(
     },
     {
       deleteBeforeReplace: false,
+      // The bootstrap scripts are copied to the instance again after every successful deploy
+      // by `sync_identity_runtime_templates()` in `sst-deploy.sh`, so changes here must not
+      // force a protected instance replacement.
+      ignoreChanges: ['userDataBase64'],
       protect: preventDestructiveIdentityChanges,
     }
   );

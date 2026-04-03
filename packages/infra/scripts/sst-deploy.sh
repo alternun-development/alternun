@@ -532,7 +532,7 @@ resolve_identity_instance_id() {
           "Name=tag:Application,Values=${INFRA_APP_NAME:-alternun-infra}" \
           "Name=tag:Component,Values=identity" \
           "Name=tag:Stage,Values=${STACK}" \
-        --query 'Reservations[].Instances[].InstanceId' \
+        --query 'Reservations[].Instances[?State.Name==`pending` || State.Name==`running`].InstanceId' \
         --output text 2>/dev/null | awk 'NF { print $1; exit }'
     )
 

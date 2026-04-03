@@ -91,6 +91,7 @@ export interface IdentityLocalConfig {
       applicationSlug?: string;
       providerName?: string;
       clientId?: string;
+      localDevUrl?: string;
       allowedEmailDomain?: string;
     };
     docsCmsOidc?: {
@@ -220,6 +221,7 @@ export interface IdentitySettings {
       applicationSlug: string;
       providerName: string;
       clientId: string;
+      localDevUrl: string;
       allowedEmailDomain: string;
     };
     docsCmsOidc: {
@@ -389,11 +391,26 @@ function parseSupabaseProjectRef(value: string | undefined): string {
   return '';
 }
 
+function normalizeBaseUrl(value: string | undefined): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed.replace(/\/+$/, '') : '';
+}
+
 export function buildIdentitySettings(args: BuildIdentitySettingsArgs): IdentitySettings {
   const defaultStageDomains = buildStageDomains('sso', args.rootDomain);
   const localConfig = args.localConfig;
   const defaultIdentitySecretNames = buildIdentitySecretNameDefaults(args.appName);
   const defaultAcmeEmail = `${IDENTITY_INFRA_DEFAULTS.tls.acmeEmailLocalPart}@${args.rootDomain}`;
+  const adminOidcLocalDevUrl = normalizeBaseUrl(
+    args.env.INFRA_IDENTITY_ADMIN_OIDC_LOCAL_DEV_URL ??
+      localConfig?.integration?.adminOidc?.localDevUrl
+  );
+  const explicitDefaultApplicationLaunchUrl = normalizeBaseUrl(
+    args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL ??
+      localConfig?.integration?.bootstrap?.defaultApplication?.launchUrl
+  );
+  const defaultApplicationLaunchUrl =
+    explicitDefaultApplicationLaunchUrl || (adminOidcLocalDevUrl ? `${adminOidcLocalDevUrl}/` : '');
 
   return {
     enabled: parseBoolean(
@@ -645,6 +662,7 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
         clientId:
           localConfig?.integration?.adminOidc?.clientId ??
           IDENTITY_INFRA_DEFAULTS.integration.adminOidc.clientId,
+        localDevUrl: adminOidcLocalDevUrl,
         allowedEmailDomain:
           args.env.INFRA_ADMIN_ALLOWED_EMAIL_DOMAIN ??
           localConfig?.integration?.adminOidc?.allowedEmailDomain ??
@@ -763,10 +781,7 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
             args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_GROUP ??
             localConfig?.integration?.bootstrap?.defaultApplication?.group ??
             IDENTITY_INFRA_DEFAULTS.integration.bootstrap.defaultApplication.group,
-          launchUrl:
-            args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL ??
-            localConfig?.integration?.bootstrap?.defaultApplication?.launchUrl ??
-            '',
+          launchUrl: defaultApplicationLaunchUrl,
           openInNewTab: parseBoolean(
             args.env.INFRA_IDENTITY_DEFAULT_APPLICATION_OPEN_IN_NEW_TAB ??
               (localConfig?.integration?.bootstrap?.defaultApplication?.openInNewTab !== undefined

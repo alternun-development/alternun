@@ -190,7 +190,8 @@
         "applicationName": "Alternun Admin",
         "applicationSlug": "alternun-admin",
         "providerName": "Alternun Admin OIDC",
-        "clientId": "alternun-admin"
+        "clientId": "alternun-admin",
+        "localDevUrl": "http://localhost:4173"
       },
       "docsCmsOidc": {
         "applicationName": "Alternun Docs CMS",
