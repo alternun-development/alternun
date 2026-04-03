@@ -17,7 +17,7 @@ function readSearchParam(value: string | string[] | undefined): string | null {
 }
 
 function isAuthentikCallbackSearch(searchString?: string): boolean {
-  return hasPendingAuthentikCallback(searchString ?? AUTHENTIK_INITIAL_SEARCH);
+  return hasPendingAuthentikCallback(searchString ?? '');
 }
 
 function readStoredReturnTo(): string | null {
@@ -57,7 +57,7 @@ export default function AuthRoute(): React.JSX.Element {
   const { user, loading } = useAuth();
 
   const requestedNext = readSearchParam(next);
-  const initialSearch = useMemo(() => AUTHENTIK_INITIAL_SEARCH, []);
+  const initialSearch = AUTHENTIK_INITIAL_SEARCH;
   const isCallbackRedirect = isAuthentikCallbackSearch(initialSearch);
 
   const redirectTarget = useMemo(() => {
@@ -84,17 +84,18 @@ export default function AuthRoute(): React.JSX.Element {
     );
   }
 
-  const redirectHref = redirectTarget as AuthRouteHref;
+  const redirectHref = redirectTarget;
 
   if (user) {
-    return <Redirect href={redirectHref} />;
+    return <Redirect href={redirectHref as AuthRouteHref} />;
   }
 
   return (
     <AuthSignInScreen
       presentation='modal'
+      authReturnTo={redirectHref}
       onCancel={() => {
-        router.replace(redirectHref);
+        router.replace(redirectHref as AuthRouteHref);
       }}
     />
   );

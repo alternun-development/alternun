@@ -30,7 +30,7 @@ function RootApp(): React.JSX.Element {
     colorScheme.setColorScheme(themeMode);
   }, [colorScheme, themeMode]);
   const pathname = usePathname();
-  const showLayoutFooter = pathname !== '/auth' && pathname !== '/';
+  const showLayoutFooter = pathname !== '/auth' && pathname !== '/auth-relay' && pathname !== '/';
 
   return (
     <AppAuthProvider>
@@ -45,6 +45,15 @@ function RootApp(): React.JSX.Element {
               <Stack.Screen name='index' options={{ headerShown: false }} />
               <Stack.Screen
                 name='auth'
+                options={{
+                  headerShown: false,
+                  presentation: 'transparentModal',
+                  animation: 'fade',
+                  contentStyle: { backgroundColor: 'transparent' },
+                }}
+              />
+              <Stack.Screen
+                name='auth-relay'
                 options={{
                   headerShown: false,
                   presentation: 'transparentModal',
