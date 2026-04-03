@@ -468,7 +468,7 @@ export async function startAuthentikOAuthFlow(
     }
 
     setPendingAuthentikOAuthProvider(providerHint);
-    window.location.href = buildAuthentikLogoutUrl(window.location.href);
+    window.location.href = buildAuthentikLogoutUrl(`${window.location.origin}/`);
     return;
   }
 

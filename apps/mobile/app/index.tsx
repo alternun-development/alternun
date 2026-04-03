@@ -2,6 +2,7 @@ import { useAuth } from '../components/auth/AppAuthProvider';
 import Dashboard from '../components/dashboard/Dashboard';
 import AirsIntroExperience from '../components/onboarding/AirsIntroExperience';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import { readPendingAuthentikOAuthProvider } from '../services/auth/AuthentikOidcClient';
 import { hasPendingAuthentikCallback } from '@alternun/auth';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -17,6 +18,7 @@ export default function HomeScreen(): React.JSX.Element {
   const { showAirsIntro, setShowAirsIntro } = useAppPreferences();
   const router = useRouter();
   const [introDismissedThisSession, setIntroDismissedThisSession] = useState(false);
+  const pendingAuthentikProvider = readPendingAuthentikOAuthProvider();
 
   useEffect(() => {
     if (user) {
@@ -24,12 +26,24 @@ export default function HomeScreen(): React.JSX.Element {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (user != null) {
+      return;
+    }
+
+    if (pendingAuthentikProvider == null) {
+      return;
+    }
+
+    router.replace({ pathname: '/auth', params: { next: '/' } });
+  }, [pendingAuthentikProvider, router, user]);
+
   const shouldShowAirsIntro = useMemo(
     () => !user && showAirsIntro && !introDismissedThisSession,
     [introDismissedThisSession, showAirsIntro, user]
   );
 
-  if (loading || (OIDC_CALLBACK_PENDING && !user)) {
+  if (loading || (OIDC_CALLBACK_PENDING && !user) || (!user && pendingAuthentikProvider)) {
     return (
       <View style={styles.loadingScreen}>
         <ActivityIndicator size='large' color='#1ccba1' />
