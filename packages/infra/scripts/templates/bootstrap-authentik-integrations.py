@@ -11,6 +11,7 @@ from authentik.policies.models import PolicyBinding
 from authentik.providers.oauth2.models import OAuth2Provider, ScopeMapping
 from authentik.sources.oauth.models import OAuthSource
 from authentik.stages.identification.models import IdentificationStage
+from authentik.stages.source.models import SourceStage
 from authentik.stages.user_write.models import UserWriteStage
 
 
@@ -192,6 +193,84 @@ def resolve_scope_mappings(managed_ids):
     return ordered, missing
 
 
+def ensure_flow_stage_binding(flow, stage, order: int = 0):
+    binding, created = FlowStageBinding.objects.get_or_create(
+        target=flow,
+        stage=stage,
+        defaults={"order": order},
+    )
+    changed = False
+    if binding.order != order:
+        binding.order = order
+        changed = True
+    if created or changed:
+        binding.save()
+    return created, changed
+
+
+def upsert_authentication_flow(
+    slug: str,
+    name: str,
+    title: str,
+    *,
+    policy_engine_mode: str = "any",
+    compatibility_mode: bool = True,
+    layout: str = "stacked",
+    denied_action: str = "message_continue",
+):
+    defaults = {
+        "name": name,
+        "title": title,
+        "designation": "authentication",
+        "policy_engine_mode": policy_engine_mode,
+        "compatibility_mode": compatibility_mode,
+        "layout": layout,
+        "denied_action": denied_action,
+    }
+    flow, created = Flow.objects.get_or_create(slug=slug, defaults=defaults)
+    changed = False
+    for field, expected in defaults.items():
+        if hasattr(flow, field) and getattr(flow, field) != expected:
+            setattr(flow, field, expected)
+            changed = True
+    if created or changed:
+        flow.save()
+    return flow, created, changed
+
+
+def ensure_social_login_flow(source, *, flow_slug: str, flow_name: str, stage_name: str):
+    flow, flow_created, flow_changed = upsert_authentication_flow(
+        flow_slug,
+        flow_name,
+        flow_name,
+    )
+
+    stage, stage_created = SourceStage.objects.get_or_create(
+        name=stage_name,
+        defaults={"source": source},
+    )
+    stage_changed = False
+    if hasattr(stage, "source") and stage.source_id != source.pk:
+        stage.source = source
+        stage_changed = True
+    if stage_created or stage_changed:
+        stage.save()
+
+    binding_created, binding_changed = ensure_flow_stage_binding(flow, stage, order=0)
+    if flow_created or stage_created or binding_created:
+        status = "created"
+    elif flow_changed or stage_changed or binding_changed:
+        status = "updated"
+    else:
+        status = "unchanged"
+
+    return {
+        "flow": flow,
+        "stage": stage,
+        "status": status,
+    }
+
+
 results = {
     "user_sync_webhook": "skipped",
     "admin_user": "skipped",
@@ -202,7 +281,9 @@ results = {
     "docs_cms_groups": "skipped",
     "default_application": "skipped",
     "google_source": "skipped",
+    "google_login_flow": "skipped",
     "discord_source": "skipped",
+    "discord_login_flow": "skipped",
     "mobile_oidc_provider": "skipped",
     "internal_domain_users": "skipped",
     "internal_domain_user_promotion": "skipped",
@@ -814,6 +895,15 @@ if google_client_id and google_client_secret:
         if not identification_stage.sources.filter(pk=source.pk).exists():
             identification_stage.sources.add(source)
 
+    google_login_flow = ensure_social_login_flow(
+        source,
+        flow_slug="alternun-google-login",
+        flow_name="Alternun Google Login",
+        stage_name="Alternun Google Login Source",
+    )
+    results["google_login_flow"] = google_login_flow["status"]
+    results["google_login_flow_slug"] = "alternun-google-login"
+
     source_enrollment_flow = source.enrollment_flow or source_enrollment_flow
     if internal_user_promotion_policy and source_enrollment_flow:
         user_write_stage_ids = list(
@@ -856,6 +946,7 @@ if google_client_id and google_client_secret:
         results["google_source"] = "unchanged"
 else:
     results["google_source"] = "missing_credentials"
+    results["google_login_flow"] = "missing_credentials"
 
 supabase_project_ref = read_env("ALTERNUN_BOOTSTRAP_SUPABASE_PROJECT_REF")
 supabase_client_id = read_env("ALTERNUN_BOOTSTRAP_SUPABASE_CLIENT_ID")
@@ -1134,6 +1225,15 @@ if discord_client_id and discord_client_secret:
         if not identification_stage.sources.filter(pk=discord_source.pk).exists():
             identification_stage.sources.add(discord_source)
 
+    discord_login_flow = ensure_social_login_flow(
+        discord_source,
+        flow_slug="alternun-discord-login",
+        flow_name="Alternun Discord Login",
+        stage_name="Alternun Discord Login Source",
+    )
+    results["discord_login_flow"] = discord_login_flow["status"]
+    results["discord_login_flow_slug"] = "alternun-discord-login"
+
     if discord_source_created:
         results["discord_source"] = "created"
     elif discord_source_changed:
@@ -1142,6 +1242,7 @@ if discord_client_id and discord_client_secret:
         results["discord_source"] = "unchanged"
 else:
     results["discord_source"] = "missing_credentials"
+    results["discord_login_flow"] = "missing_credentials"
 
 # ─── Mobile OIDC provider (public client, PKCE) ───────────────────────────────
 # This provider is used by the Alternun mobile web app for Google/Discord login

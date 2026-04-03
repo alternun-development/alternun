@@ -33,9 +33,10 @@
  *
  *   1. startAuthentikOAuthFlow('google' | 'discord')
  *        → generates PKCE verifier+challenge, stores in sessionStorage
- *        → redirects to /source/oauth/login/<slug>/?next=/application/o/authorize/?...
- *           (bypasses Authentik login page entirely — user sees only Google/Discord UI)
- *   2. Social provider authenticates → redirects to Authentik's OAuth callback
+ *        → redirects to /if/flow/<provider-login-flow>/?next=/application/o/authorize/?...
+ *           (provider-specific Authentik flow that immediately drops into the matching
+ *            Google/Discord source stage, instead of showing /if/user/#/library)
+ *   2. Social provider authenticates → returns to Authentik
  *   3. Authentik follows `next` → runs authorization flow (implicit consent)
  *   4. Authentik redirects to app with ?code=...&state=...
  *   5. handleAuthentikCallback()
@@ -67,7 +68,10 @@
  * non-Authentik issuers still get a sensible (though potentially wrong) URL.
  */
 function getAuthentikEndpointBase(): string {
-  const issuer = getAuthentikIssuer();
+  return getAuthentikEndpointBaseFromIssuer(getAuthentikIssuer());
+}
+
+function getAuthentikEndpointBaseFromIssuer(issuer: string): string {
   // Strip the slug segment: .../application/o/<slug>/ → .../application/o/
   const match = issuer.match(/^(https?:\/\/.+?\/application\/o\/)/);
   if (match) return match[1];
@@ -96,6 +100,40 @@ function getSupabaseUrl(): string {
 
 function getSupabaseAnonKey(): string {
   return process.env.EXPO_PUBLIC_SUPABASE_KEY ?? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+}
+
+export function buildAuthentikOAuthFlowStartUrl({
+  providerHint,
+  issuer,
+  clientId,
+  redirectUri,
+  state,
+  codeChallenge,
+}: {
+  providerHint: 'google' | 'discord';
+  issuer: string;
+  clientId: string;
+  redirectUri: string;
+  state: string;
+  codeChallenge: string;
+}): string {
+  const authorizeUrl = `${getAuthentikEndpointBaseFromIssuer(issuer)}authorize/`;
+  const authorizeParams = new URLSearchParams({
+    response_type: 'code',
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    scope: 'openid email profile',
+    state,
+    code_challenge: codeChallenge,
+    code_challenge_method: 'S256',
+  });
+
+  const authentikOrigin = new URL(issuer).origin;
+  const authorizePath = authorizeUrl.replace(authentikOrigin, '');
+  const nextPath = `${authorizePath}?${authorizeParams.toString()}`;
+  const loginFlowSlug = getAuthentikLoginFlowSlug(providerHint);
+
+  return `${authentikOrigin}/if/flow/${loginFlowSlug}/?next=${encodeURIComponent(nextPath)}`;
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -159,6 +197,15 @@ function generateState(): string {
   const array = new Uint8Array(16);
   crypto.getRandomValues(array);
   return base64UrlEncode(array.buffer);
+}
+
+function getAuthentikLoginFlowSlug(providerHint: 'google' | 'discord'): string {
+  switch (providerHint) {
+    case 'google':
+      return 'alternun-google-login';
+    case 'discord':
+      return 'alternun-discord-login';
+  }
 }
 
 // ─── JWT decode (no verification — claims already came from userinfo endpoint) ──
@@ -328,7 +375,7 @@ function saveOidcSession(session: OidcSession): void {
 // callback params (?code=&state=) because React effects run after routing.
 
 export const OIDC_INITIAL_SEARCH: string =
-  typeof window !== 'undefined' ? window.location.search : '';
+  typeof window !== 'undefined' ? window.location?.search ?? '' : '';
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
@@ -358,19 +405,18 @@ export function hasPendingAuthentikCallback(searchString?: string): boolean {
  *
  * Instead of going to /application/o/authorize/?hint=<provider> (which still
  * shows the Authentik login page because the mobile authorization flow has no
- * identification stage), we redirect to Authentik's social source login
- * endpoint: /source/oauth/login/<slug>/
+ * identification stage), we redirect to a provider-specific Authentik flow.
  *
  * Flow:
- *   1. Browser → /source/oauth/login/google/?next=/application/o/authorize/?...
- *   2. Authentik → Google OAuth (no Authentik UI shown)
- *   3. Google  → /source/oauth/callback/google/
- *   4. Authentik (user now logged in) → follows `next` → /application/o/authorize/?...
+ *   1. Browser → /if/flow/alternun-google-login/?next=/application/o/authorize/?...
+ *   2. Authentik → Google OAuth (no Authentik library page shown)
+ *   3. Google  → returns to Authentik and resumes the flow
+ *   4. Authentik follows `next` → /application/o/authorize/?...
  *   5. Authorization flow (implicit consent, 0 stages) → issues PKCE code
  *   6. Authentik → https://testnet.airs.alternun.co/?code=XXX&state=YYY
  *   7. App handles callback as before
  *
- * @param providerHint  'google' | 'discord' — slug of the Authentik OAuth source.
+ * @param providerHint  'google' | 'discord' — provider-specific login flow key.
  */
 export async function startAuthentikOAuthFlow(providerHint: 'google' | 'discord'): Promise<void> {
   const issuer = getAuthentikIssuer();
@@ -389,31 +435,17 @@ export async function startAuthentikOAuthFlow(providerHint: 'google' | 'discord'
   sessionStorage.setItem(PKCE_KEY, verifier);
   sessionStorage.setItem(STATE_KEY, state);
 
-  // Build the OIDC authorize URL (the destination AFTER social login).
-  const authorizeUrl = `${getAuthentikEndpointBase()}authorize/`;
-  const authorizeParams = new URLSearchParams({
-    response_type: 'code',
-    client_id: clientId,
-    redirect_uri: redirectUri,
-    scope: 'openid email profile',
+  // The provider-specific Authentik flow contains a SourceStage bound to the
+  // matching social source. That keeps login off the generic dashboard/library
+  // page while still letting Authentik resume into the OIDC authorization.
+  window.location.href = buildAuthentikOAuthFlowStartUrl({
+    providerHint,
+    issuer,
+    clientId,
+    redirectUri,
     state,
-    code_challenge: challenge,
-    code_challenge_method: 'S256',
+    codeChallenge: challenge,
   });
-
-  // Derive the Authentik origin from the issuer URL so we can build the
-  // source-login URL and a relative `next` path (Authentik only follows
-  // same-origin `next` parameters for security).
-  const authentikOrigin = new URL(issuer).origin;
-  const authorizePath = authorizeUrl.replace(authentikOrigin, '');
-  const nextPath = `${authorizePath}?${authorizeParams.toString()}`;
-
-  // /source/oauth/login/<slug>/ directly initiates the external OAuth flow,
-  // bypassing any Authentik UI. After the external provider authenticates the
-  // user, Authentik follows `next` to complete the OIDC authorization.
-  window.location.href = `${authentikOrigin}/source/oauth/login/${providerHint}/?next=${encodeURIComponent(
-    nextPath
-  )}`;
 }
 
 /**

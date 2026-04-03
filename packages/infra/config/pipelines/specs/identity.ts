@@ -13,8 +13,12 @@ export function buildIdentityPipelineSpecs({
     env.GOOGLEA_AUTH_CLIENT_SECRET ??
     '';
   const googleAuthClientSecretKey = 'INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET';
-  const devAppLaunchUrl = `https://${env.INFRA_EXPO_DOMAIN_DEV ?? 'testnet.airs.alternun.co'}/`;
-  const prodAppLaunchUrl = `https://${env.INFRA_EXPO_DOMAIN_PRODUCTION ?? 'airs.alternun.co'}/`;
+  const devAppLaunchUrl = `https://${
+    env.INFRA_EXPO_DOMAIN_DEV ?? 'testnet.airs.alternun.co'
+  }/auth?next=/`;
+  const prodAppLaunchUrl = `https://${
+    env.INFRA_EXPO_DOMAIN_PRODUCTION ?? 'airs.alternun.co'
+  }/auth?next=/`;
 
   return {
     'identity-dev': {

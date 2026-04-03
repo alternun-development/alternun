@@ -1,0 +1,48 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+import { buildAuthentikOAuthFlowStartUrl } from '../AuthentikOidcClient';
+
+describe('buildAuthentikOAuthFlowStartUrl', () => {
+  const issuer = 'https://testnet.sso.alternun.co/application/o/alternun-mobile/';
+  const clientId = 'alternun-mobile';
+  const redirectUri = 'https://testnet.airs.alternun.co/';
+  const state = 'state-123';
+  const codeChallenge = 'challenge-123';
+
+  it('starts google sign-in through the provider-specific Authentik flow', () => {
+    const url = buildAuthentikOAuthFlowStartUrl({
+      providerHint: 'google',
+      issuer,
+      clientId,
+      redirectUri,
+      state,
+      codeChallenge,
+    });
+
+    const parsed = new URL(url);
+    expect(parsed.origin).toBe('https://testnet.sso.alternun.co');
+    expect(parsed.pathname).toBe('/if/flow/alternun-google-login/');
+    expect(parsed.searchParams.get('next')).toContain('/application/o/authorize/?');
+    expect(parsed.searchParams.get('next')).toContain('client_id=alternun-mobile');
+    expect(parsed.searchParams.get('next')).toContain('state=state-123');
+    expect(parsed.searchParams.get('next')).not.toContain('/source/oauth/login/');
+  });
+
+  it('starts discord sign-in through the provider-specific Authentik flow', () => {
+    const url = buildAuthentikOAuthFlowStartUrl({
+      providerHint: 'discord',
+      issuer,
+      clientId,
+      redirectUri,
+      state,
+      codeChallenge,
+    });
+
+    const parsed = new URL(url);
+    expect(parsed.origin).toBe('https://testnet.sso.alternun.co');
+    expect(parsed.pathname).toBe('/if/flow/alternun-discord-login/');
+    expect(parsed.searchParams.get('next')).toContain('/application/o/authorize/?');
+    expect(parsed.searchParams.get('next')).toContain('client_id=alternun-mobile');
+    expect(parsed.searchParams.get('next')).toContain('state=state-123');
+    expect(parsed.searchParams.get('next')).not.toContain('/source/oauth/login/');
+  });
+});
