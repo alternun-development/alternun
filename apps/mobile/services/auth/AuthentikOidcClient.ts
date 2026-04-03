@@ -32,6 +32,7 @@
  * ── Auth flow ─────────────────────────────────────────────────────────────────
  *
  *   1. startAuthentikOAuthFlow('google' | 'discord')
+ *        → optionally clears an existing Authentik session first
  *        → generates PKCE verifier+challenge, stores in sessionStorage
  *        → redirects to /source/oauth/login/<slug>/?next=/application/o/authorize/?...
  *           (direct source login, bypassing the generic library page)
@@ -101,6 +102,33 @@ function getSupabaseAnonKey(): string {
   return process.env.EXPO_PUBLIC_SUPABASE_KEY ?? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 }
 
+const PENDING_PROVIDER_KEY = 'alternun:oidc:pending_provider';
+
+export function readPendingAuthentikOAuthProvider(): 'google' | 'discord' | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const value = window.sessionStorage.getItem(PENDING_PROVIDER_KEY);
+  if (value === 'google' || value === 'discord') {
+    return value;
+  }
+
+  return null;
+}
+
+export function clearPendingAuthentikOAuthProvider(): void {
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.removeItem(PENDING_PROVIDER_KEY);
+  }
+}
+
+function setPendingAuthentikOAuthProvider(providerHint: 'google' | 'discord'): void {
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.setItem(PENDING_PROVIDER_KEY, providerHint);
+  }
+}
+
 export function buildAuthentikOAuthFlowStartUrl({
   providerHint,
   issuer,
@@ -134,6 +162,17 @@ export function buildAuthentikOAuthFlowStartUrl({
   return `${authentikOrigin}/source/oauth/login/${providerHint}/?next=${encodeURIComponent(
     nextPath
   )}`;
+}
+
+function buildAuthentikLogoutUrl(postLogoutRedirectUri: string): string {
+  const issuer = getAuthentikIssuer();
+  const clientId = getAuthentikClientId();
+  const endSessionUrl = new URL(`${issuer.replace(/\/$/, '')}/end-session/`);
+  if (clientId) {
+    endSessionUrl.searchParams.set('client_id', clientId);
+  }
+  endSessionUrl.searchParams.set('post_logout_redirect_uri', postLogoutRedirectUri);
+  return endSessionUrl.toString();
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -409,7 +448,10 @@ export function hasPendingAuthentikCallback(searchString?: string): boolean {
  *
  * @param providerHint  'google' | 'discord' — Authentik social source slug.
  */
-export async function startAuthentikOAuthFlow(providerHint: 'google' | 'discord'): Promise<void> {
+export async function startAuthentikOAuthFlow(
+  providerHint: 'google' | 'discord',
+  options: { forceFreshSession?: boolean } = {}
+): Promise<void> {
   const issuer = getAuthentikIssuer();
   const clientId = getAuthentikClientId();
   const redirectUri = getAuthentikRedirectUri();
@@ -418,6 +460,16 @@ export async function startAuthentikOAuthFlow(providerHint: 'google' | 'discord'
     throw new Error(
       'CONFIG_ERROR: EXPO_PUBLIC_AUTHENTIK_ISSUER and EXPO_PUBLIC_AUTHENTIK_CLIENT_ID must be set.'
     );
+  }
+
+  if (options.forceFreshSession) {
+    if (typeof window === 'undefined') {
+      throw new Error('Authentik login requires a browser session.');
+    }
+
+    setPendingAuthentikOAuthProvider(providerHint);
+    window.location.href = buildAuthentikLogoutUrl(window.location.href);
+    return;
   }
 
   const { verifier, challenge } = await generatePkce();
