@@ -41,6 +41,8 @@ import { useAuth } from './AppAuthProvider';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import {
   isAuthentikConfigured,
+  clearPendingAuthentikOAuthProvider,
+  readPendingAuthentikOAuthProvider,
   startAuthentikOAuthFlow,
 } from '../../services/auth/AuthentikOidcClient';
 
@@ -288,6 +290,27 @@ export default function AuthSignInScreen({
 
     return () => clearTimeout(timeout);
   }, [resendCooldown]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      return;
+    }
+
+    const pendingProvider = readPendingAuthentikOAuthProvider();
+    if (!pendingProvider) {
+      return;
+    }
+
+    clearPendingAuthentikOAuthProvider();
+    setSubmitMode(pendingProvider);
+    void startAuthentikOAuthFlow(pendingProvider)
+      .catch((authError) => {
+        setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
+      })
+      .finally(() => {
+        setSubmitMode(null);
+      });
+  }, [t]);
 
   const transitionToStep = (step: AuthStep) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -578,7 +601,7 @@ export default function AuthSignInScreen({
     try {
       // Try Authentik OIDC first (vendor-independent); falls back to Supabase Auth
       // when Authentik env vars are not configured.
-      await startAuthentikOAuthFlow('google');
+      await startAuthentikOAuthFlow('google', { forceFreshSession: true });
       // startAuthentikOAuthFlow redirects the page; code below only runs on error.
     } catch (oidcError) {
       const msg = oidcError instanceof Error ? oidcError.message : '';
@@ -601,7 +624,7 @@ export default function AuthSignInScreen({
     resetMessages();
     setSubmitMode('discord');
     try {
-      await startAuthentikOAuthFlow('discord');
+      await startAuthentikOAuthFlow('discord', { forceFreshSession: true });
     } catch (oidcError) {
       setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
     } finally {
