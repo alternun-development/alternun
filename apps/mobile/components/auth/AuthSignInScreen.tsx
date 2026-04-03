@@ -622,7 +622,7 @@ export default function AuthSignInScreen({
         router.replace(
           buildAuthentikRelayRoute('google', {
             next: authReturnTo,
-            forceFreshSession: true,
+            forceFreshSession: false,
           })
         );
         return;
@@ -657,7 +657,7 @@ export default function AuthSignInScreen({
         router.replace(
           buildAuthentikRelayRoute('discord', {
             next: authReturnTo,
-            forceFreshSession: true,
+            forceFreshSession: false,
           })
         );
         return;
