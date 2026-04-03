@@ -33,9 +33,8 @@
  *
  *   1. startAuthentikOAuthFlow('google' | 'discord')
  *        → generates PKCE verifier+challenge, stores in sessionStorage
- *        → redirects to /if/flow/<provider-login-flow>/?next=/application/o/authorize/?...
- *           (provider-specific Authentik flow that immediately drops into the matching
- *            Google/Discord source stage, instead of showing /if/user/#/library)
+ *        → redirects to /source/oauth/login/<slug>/?next=/application/o/authorize/?...
+ *           (direct source login, bypassing the generic library page)
  *   2. Social provider authenticates → returns to Authentik
  *   3. Authentik follows `next` → runs authorization flow (implicit consent)
  *   4. Authentik redirects to app with ?code=...&state=...
@@ -131,9 +130,10 @@ export function buildAuthentikOAuthFlowStartUrl({
   const authentikOrigin = new URL(issuer).origin;
   const authorizePath = authorizeUrl.replace(authentikOrigin, '');
   const nextPath = `${authorizePath}?${authorizeParams.toString()}`;
-  const loginFlowSlug = getAuthentikLoginFlowSlug(providerHint);
 
-  return `${authentikOrigin}/if/flow/${loginFlowSlug}/?next=${encodeURIComponent(nextPath)}`;
+  return `${authentikOrigin}/source/oauth/login/${providerHint}/?next=${encodeURIComponent(
+    nextPath
+  )}`;
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -197,15 +197,6 @@ function generateState(): string {
   const array = new Uint8Array(16);
   crypto.getRandomValues(array);
   return base64UrlEncode(array.buffer);
-}
-
-function getAuthentikLoginFlowSlug(providerHint: 'google' | 'discord'): string {
-  switch (providerHint) {
-    case 'google':
-      return 'alternun-google-login';
-    case 'discord':
-      return 'alternun-discord-login';
-  }
 }
 
 // ─── JWT decode (no verification — claims already came from userinfo endpoint) ──
@@ -405,10 +396,10 @@ export function hasPendingAuthentikCallback(searchString?: string): boolean {
  *
  * Instead of going to /application/o/authorize/?hint=<provider> (which still
  * shows the Authentik login page because the mobile authorization flow has no
- * identification stage), we redirect to a provider-specific Authentik flow.
+ * identification stage), we redirect to the social source login endpoint.
  *
  * Flow:
- *   1. Browser → /if/flow/alternun-google-login/?next=/application/o/authorize/?...
+ *   1. Browser → /source/oauth/login/google/?next=/application/o/authorize/?...
  *   2. Authentik → Google OAuth (no Authentik library page shown)
  *   3. Google  → returns to Authentik and resumes the flow
  *   4. Authentik follows `next` → /application/o/authorize/?...
@@ -416,7 +407,7 @@ export function hasPendingAuthentikCallback(searchString?: string): boolean {
  *   6. Authentik → https://testnet.airs.alternun.co/?code=XXX&state=YYY
  *   7. App handles callback as before
  *
- * @param providerHint  'google' | 'discord' — provider-specific login flow key.
+ * @param providerHint  'google' | 'discord' — Authentik social source slug.
  */
 export async function startAuthentikOAuthFlow(providerHint: 'google' | 'discord'): Promise<void> {
   const issuer = getAuthentikIssuer();
@@ -435,9 +426,6 @@ export async function startAuthentikOAuthFlow(providerHint: 'google' | 'discord'
   sessionStorage.setItem(PKCE_KEY, verifier);
   sessionStorage.setItem(STATE_KEY, state);
 
-  // The provider-specific Authentik flow contains a SourceStage bound to the
-  // matching social source. That keeps login off the generic dashboard/library
-  // page while still letting Authentik resume into the OIDC authorization.
   window.location.href = buildAuthentikOAuthFlowStartUrl({
     providerHint,
     issuer,
