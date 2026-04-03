@@ -189,6 +189,11 @@ function AuthCallbackBridge(): React.JSX.Element | null {
               accessToken: session.tokens.accessToken,
               idToken: session.tokens.idToken,
             })
+            .then((result: { endSessionUrl?: string }) => {
+              if (typeof window !== 'undefined' && result.endSessionUrl) {
+                window.location.assign(result.endSessionUrl);
+              }
+            })
             .catch(() => {
               // Best-effort token revocation — local session already cleared
             });

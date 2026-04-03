@@ -179,7 +179,7 @@ export function buildAuthentikOAuthFlowStartUrl({
   )}`;
 }
 
-function buildAuthentikLogoutUrl(postLogoutRedirectUri: string): string {
+function buildAuthentikLogoutUrl(postLogoutRedirectUri: string, idTokenHint?: string): string {
   const issuer = getAuthentikIssuer();
   const clientId = getAuthentikClientId();
   const endSessionUrl = new URL(`${issuer.replace(/\/$/, '')}/end-session/`);
@@ -187,6 +187,9 @@ function buildAuthentikLogoutUrl(postLogoutRedirectUri: string): string {
     endSessionUrl.searchParams.set('client_id', clientId);
   }
   endSessionUrl.searchParams.set('post_logout_redirect_uri', postLogoutRedirectUri);
+  if (idTokenHint) {
+    endSessionUrl.searchParams.set('id_token_hint', idTokenHint);
+  }
   return endSessionUrl.toString();
 }
 
@@ -485,7 +488,11 @@ export async function startAuthentikOAuthFlow(
     }
 
     setPendingAuthentikOAuthProvider(providerHint);
-    window.location.href = buildAuthentikLogoutUrl(`${window.location.origin}/`);
+    const currentSession = readOidcSession();
+    window.location.href = buildAuthentikLogoutUrl(
+      `${window.location.origin}/`,
+      currentSession?.idToken
+    );
     return;
   }
 
