@@ -5,7 +5,7 @@ import {
   isAuthentikConfigured,
   startAuthentikOAuthFlow,
 } from '../services/auth/AuthentikOidcClient';
-import { AUTHENTIK_PROVIDER_FLOW_SLUGS } from '../services/auth/authEntry';
+import { resolveAuthentikProviderFlowSlugs } from '../services/auth/authEntry';
 
 function readParam(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) {
@@ -54,6 +54,7 @@ export default function AuthRelayRoute(): React.JSX.Element {
 
   const nextTarget = useMemo(() => readParam(next), [next]);
   const forceFreshSession = useMemo(() => readBooleanParam(fresh, true), [fresh]);
+  const providerFlowSlugs = useMemo(() => resolveAuthentikProviderFlowSlugs(), []);
 
   useEffect(() => {
     if (!isNavigationReady) {
@@ -72,11 +73,11 @@ export default function AuthRelayRoute(): React.JSX.Element {
 
     void startAuthentikOAuthFlow(providerHint, {
       forceFreshSession,
-      providerFlowSlugs: AUTHENTIK_PROVIDER_FLOW_SLUGS,
+      providerFlowSlugs,
     }).catch(() => {
       router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
     });
-  }, [forceFreshSession, isNavigationReady, nextTarget, providerHint, router]);
+  }, [forceFreshSession, isNavigationReady, nextTarget, providerFlowSlugs, providerHint, router]);
 
   return (
     <View style={styles.loadingScreen}>
