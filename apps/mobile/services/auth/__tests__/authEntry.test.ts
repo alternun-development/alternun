@@ -5,6 +5,7 @@ import {
   getAuthentikLoginEntryMode,
   normalizeAuthentikLoginEntryMode,
   parseAuthentikProviderFlowSlugs,
+  resolveAuthentikProviderFlowSlugs,
 } from '../authEntry';
 
 describe('authEntry', () => {
@@ -79,6 +80,33 @@ describe('authEntry', () => {
     ).toEqual({
       google: 'alternun-google-login',
       discord: 'alternun-discord-login',
+    });
+  });
+
+  it('ignores provider flow slugs on localhost', () => {
+    expect(
+      resolveAuthentikProviderFlowSlugs({
+        hostname: 'localhost',
+        value: JSON.stringify({ google: 'alternun-google-login' }),
+      })
+    ).toEqual({});
+
+    expect(
+      resolveAuthentikProviderFlowSlugs({
+        hostname: '127.0.0.1',
+        value: JSON.stringify({ discord: 'alternun-discord-login' }),
+      })
+    ).toEqual({});
+  });
+
+  it('keeps provider flow slugs on non-localhost hosts', () => {
+    expect(
+      resolveAuthentikProviderFlowSlugs({
+        hostname: 'testnet.airs.alternun.co',
+        value: JSON.stringify({ google: 'alternun-google-login' }),
+      })
+    ).toEqual({
+      google: 'alternun-google-login',
     });
   });
 });
