@@ -974,13 +974,35 @@ if google_client_id and google_client_secret:
     if source_authentication_flow_pruned or source_enrollment_flow_pruned:
         source_changed = True
 
+    google_login_flow, google_login_flow_created, google_login_flow_changed, google_login_stage, google_login_stage_created, google_login_stage_changed = upsert_source_stage_flow(
+        "alternun-google-login",
+        "Alternun Google Login",
+        "Alternun Google Login",
+        "alternun-google-source-stage",
+        source,
+    )
+    if google_login_stage:
+        if source.authentication_flow_id != google_login_flow.pk:
+            source.authentication_flow = google_login_flow
+            source_changed = True
+        if google_login_flow_created or google_login_flow_changed:
+            source_changed = True
+        if google_login_stage_created or google_login_stage_changed:
+            source_changed = True
+        if google_login_flow_created:
+            results["google_source_flow"] = "created"
+        elif google_login_flow_changed or google_login_stage_created or google_login_stage_changed:
+            results["google_source_flow"] = "updated"
+        else:
+            results["google_source_flow"] = "unchanged"
+    else:
+        results["google_source_flow"] = "disabled"
+
     if source_created or source_changed:
         source.save()
     results["google_source_authentication_flow"] = (
         getattr(getattr(source, "authentication_flow", None), "slug", None)
     )
-
-    results["google_source_flow"] = "disabled"
 
     identification_stage = IdentificationStage.objects.filter(
         name="default-authentication-identification"
@@ -1309,13 +1331,35 @@ if discord_client_id and discord_client_secret:
     if source_authentication_flow_pruned or source_enrollment_flow_pruned:
         discord_source_changed = True
 
+    discord_login_flow, discord_login_flow_created, discord_login_flow_changed, discord_login_stage, discord_login_stage_created, discord_login_stage_changed = upsert_source_stage_flow(
+        "alternun-discord-login",
+        "Alternun Discord Login",
+        "Alternun Discord Login",
+        "alternun-discord-source-stage",
+        discord_source,
+    )
+    if discord_login_stage:
+        if discord_source.authentication_flow_id != discord_login_flow.pk:
+            discord_source.authentication_flow = discord_login_flow
+            discord_source_changed = True
+        if discord_login_flow_created or discord_login_flow_changed:
+            discord_source_changed = True
+        if discord_login_stage_created or discord_login_stage_changed:
+            discord_source_changed = True
+        if discord_login_flow_created:
+            results["discord_source_flow"] = "created"
+        elif discord_login_flow_changed or discord_login_stage_created or discord_login_stage_changed:
+            results["discord_source_flow"] = "updated"
+        else:
+            results["discord_source_flow"] = "unchanged"
+    else:
+        results["discord_source_flow"] = "disabled"
+
     if discord_source_created or discord_source_changed:
         discord_source.save()
     results["discord_source_authentication_flow"] = (
         getattr(getattr(discord_source, "authentication_flow", None), "slug", None)
     )
-
-    results["discord_source_flow"] = "disabled"
 
     # Show Discord on the login page
     identification_stage = IdentificationStage.objects.filter(

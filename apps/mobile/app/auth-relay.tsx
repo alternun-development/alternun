@@ -5,6 +5,7 @@ import {
   isAuthentikConfigured,
   startAuthentikOAuthFlow,
 } from '../services/auth/AuthentikOidcClient';
+import { AUTHENTIK_PROVIDER_FLOW_SLUGS } from '../services/auth/authEntry';
 
 function readParam(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) {
@@ -69,7 +70,10 @@ export default function AuthRelayRoute(): React.JSX.Element {
       return;
     }
 
-    void startAuthentikOAuthFlow(providerHint, { forceFreshSession }).catch(() => {
+    void startAuthentikOAuthFlow(providerHint, {
+      forceFreshSession,
+      providerFlowSlugs: AUTHENTIK_PROVIDER_FLOW_SLUGS,
+    }).catch(() => {
       router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
     });
   }, [forceFreshSession, isNavigationReady, nextTarget, providerHint, router]);
