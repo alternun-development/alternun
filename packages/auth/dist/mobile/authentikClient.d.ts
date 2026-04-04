@@ -6,10 +6,7 @@ import {
   type OidcSession,
   type OidcTokens,
 } from '@edcalderon/auth';
-import {
-  buildAuthentikOAuthFlowStartUrl as buildOauthStartUrl,
-  type BuildAuthentikOAuthFlowStartUrlInput,
-} from './authentikUrls';
+import { type BuildAuthentikOAuthFlowStartUrlInput } from './authentikUrls';
 export type AuthentikProviderFlowSlugs = Partial<Record<'google' | 'discord', string>>;
 export interface AlternunAuthentikOAuthFlowOptions extends AuthentikOidcConfig {
   forceFreshSession?: boolean;
@@ -18,7 +15,7 @@ export interface AlternunAuthentikOAuthFlowOptions extends AuthentikOidcConfig {
 export declare function buildAlternunAuthentikOAuthFlowStartUrl(
   input: BuildAuthentikOAuthFlowStartUrlInput
 ): string;
-export { buildOauthStartUrl as buildAuthentikOAuthFlowStartUrl };
+export { buildAuthentikOAuthFlowStartUrl, resolveAuthentikRedirectUri } from './authentikUrls';
 export declare function readPendingAuthentikOAuthProvider(
   config?: AuthentikOidcConfig
 ): 'google' | 'discord' | null;

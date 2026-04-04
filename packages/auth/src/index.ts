@@ -54,6 +54,7 @@ export {
   clearOidcSession,
   readPendingAuthentikOAuthProvider,
   clearPendingAuthentikOAuthProvider,
+  resolveAuthentikRedirectUri,
   OIDC_INITIAL_SEARCH,
   createAuthentikPreset,
   createAuthentikRelayHandler,
