@@ -36,48 +36,48 @@ const magic_link_email_json_3 = __importDefault(require("../locales/th/magic-lin
 const otp_email_json_3 = __importDefault(require("../locales/th/otp-email.json"));
 const reauthentication_email_json_3 = __importDefault(require("../locales/th/reauthentication-email.json"));
 const reset_password_email_json_3 = __importDefault(require("../locales/th/reset-password-email.json"));
-exports.SUPPORTED_EMAIL_LOCALES = ["en", "es", "th"];
-exports.DEFAULT_EMAIL_LOCALE = "en";
+exports.SUPPORTED_EMAIL_LOCALES = ['en', 'es', 'th'];
+exports.DEFAULT_EMAIL_LOCALE = 'en';
 exports.EMAIL_TEMPLATE_KEYS = [
-    "account-delete-email",
-    "change-email-email",
-    "confirm-signup-email",
-    "invite-email",
-    "magic-link-email",
-    "otp-email",
-    "reauthentication-email",
-    "reset-password-email",
+    'account-delete-email',
+    'change-email-email',
+    'confirm-signup-email',
+    'invite-email',
+    'magic-link-email',
+    'otp-email',
+    'reauthentication-email',
+    'reset-password-email',
 ];
 const catalogs = {
     en: {
-        "account-delete-email": account_delete_email_json_1.default,
-        "change-email-email": change_email_email_json_1.default,
-        "confirm-signup-email": confirm_signup_email_json_1.default,
-        "invite-email": invite_email_json_1.default,
-        "magic-link-email": magic_link_email_json_1.default,
-        "otp-email": otp_email_json_1.default,
-        "reauthentication-email": reauthentication_email_json_1.default,
-        "reset-password-email": reset_password_email_json_1.default,
+        'account-delete-email': account_delete_email_json_1.default,
+        'change-email-email': change_email_email_json_1.default,
+        'confirm-signup-email': confirm_signup_email_json_1.default,
+        'invite-email': invite_email_json_1.default,
+        'magic-link-email': magic_link_email_json_1.default,
+        'otp-email': otp_email_json_1.default,
+        'reauthentication-email': reauthentication_email_json_1.default,
+        'reset-password-email': reset_password_email_json_1.default,
     },
     es: {
-        "account-delete-email": account_delete_email_json_2.default,
-        "change-email-email": change_email_email_json_2.default,
-        "confirm-signup-email": confirm_signup_email_json_2.default,
-        "invite-email": invite_email_json_2.default,
-        "magic-link-email": magic_link_email_json_2.default,
-        "otp-email": otp_email_json_2.default,
-        "reauthentication-email": reauthentication_email_json_2.default,
-        "reset-password-email": reset_password_email_json_2.default,
+        'account-delete-email': account_delete_email_json_2.default,
+        'change-email-email': change_email_email_json_2.default,
+        'confirm-signup-email': confirm_signup_email_json_2.default,
+        'invite-email': invite_email_json_2.default,
+        'magic-link-email': magic_link_email_json_2.default,
+        'otp-email': otp_email_json_2.default,
+        'reauthentication-email': reauthentication_email_json_2.default,
+        'reset-password-email': reset_password_email_json_2.default,
     },
     th: {
-        "account-delete-email": account_delete_email_json_3.default,
-        "change-email-email": change_email_email_json_3.default,
-        "confirm-signup-email": confirm_signup_email_json_3.default,
-        "invite-email": invite_email_json_3.default,
-        "magic-link-email": magic_link_email_json_3.default,
-        "otp-email": otp_email_json_3.default,
-        "reauthentication-email": reauthentication_email_json_3.default,
-        "reset-password-email": reset_password_email_json_3.default,
+        'account-delete-email': account_delete_email_json_3.default,
+        'change-email-email': change_email_email_json_3.default,
+        'confirm-signup-email': confirm_signup_email_json_3.default,
+        'invite-email': invite_email_json_3.default,
+        'magic-link-email': magic_link_email_json_3.default,
+        'otp-email': otp_email_json_3.default,
+        'reauthentication-email': reauthentication_email_json_3.default,
+        'reset-password-email': reset_password_email_json_3.default,
     },
 };
 function listSupportedEmailLocales() {
@@ -96,11 +96,11 @@ function normalizeEmailLocale(value, fallbackLocale = exports.DEFAULT_EMAIL_LOCA
     if (!value) {
         return fallbackLocale;
     }
-    const normalized = value.toLowerCase().replace("_", "-");
+    const normalized = value.toLowerCase().replace('_', '-');
     if (isSupportedEmailLocale(normalized)) {
         return normalized;
     }
-    const baseLocale = normalized.split("-")[0];
+    const baseLocale = normalized.split('-')[0];
     return isSupportedEmailLocale(baseLocale) ? baseLocale : fallbackLocale;
 }
 function getEmailTemplateTranslation(locale, template, fallbackLocale = exports.DEFAULT_EMAIL_LOCALE) {
@@ -114,16 +114,16 @@ function interpolateEmailTemplateText(value, params) {
     if (!params) {
         return value;
     }
-    let result = "";
+    let result = '';
     let cursor = 0;
     while (cursor < value.length) {
-        const start = value.indexOf("{{", cursor);
+        const start = value.indexOf('{{', cursor);
         if (start === -1) {
             result += value.slice(cursor);
             break;
         }
         result += value.slice(cursor, start);
-        const end = value.indexOf("}}", start + 2);
+        const end = value.indexOf('}}', start + 2);
         if (end === -1) {
             result += value.slice(start);
             break;
@@ -162,8 +162,8 @@ function createEmailTemplateTranslator({ locale, template, fallbackLocale = expo
         translation,
         t(key, params) {
             const value = translation[key];
-            if (typeof value !== "string") {
-                return "";
+            if (typeof value !== 'string') {
+                return '';
             }
             return interpolateEmailTemplateText(value, params);
         },

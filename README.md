@@ -154,7 +154,7 @@ pnpm version:sync
 # Set an explicit release version across the monorepo
 pnpm release 1.0.2
 
-# Create semantic releases
+# Create release bumps
 pnpm release:patch
 pnpm release:minor
 pnpm release:major
@@ -177,7 +177,7 @@ pnpm version:check-secrets
 - **🔄 Automatic Sync**: Keeps versions consistent across all packages
 - **🌿 Branch Awareness**: Different versioning strategies per branch
   - `master`: Semantic versioning for production releases
-  - `develop`: Semantic versioning while it mirrors `master` in testnet mode
+  - `develop`: Branch-aware dev builds while it mirrors `master` in testnet mode
   - `feature/*`: Feature branch versioning
   - `hotfix/*`: Hotfix versioning
 - **📝 Changelog Generation**: Automatic changelog from conventional commits
@@ -207,7 +207,9 @@ pnpm release:patch
 ### Release Flow
 
 - `pnpm release <version>` sets an explicit version across the root package, every workspace package, and `apps/mobile/app.json`, then regenerates `CHANGELOG.md`.
-- `pnpm release:patch`, `pnpm release:minor`, and `pnpm release:major` wrap `@edcalderon/versioning` and then sync `apps/mobile/app.json` before creating the release commit/tag.
+- `pnpm release:patch`, `pnpm release:minor`, and `pnpm release:major` wrap `@edcalderon/versioning`, regenerate `CHANGELOG.md`, sync `apps/mobile/app.json`, force a fresh workspace build so tracked package artifacts such as `packages/auth/dist` stay current, create the release commit/tag, and push by default.
+- On `develop`, those releases use the branch-aware dev format, so the version and tag become `semantic-dev.<build>` instead of a plain semantic version.
+- Use `pnpm release:patch:no-push` only when you intentionally want to stop before pushing.
 - `pnpm release -- --promote` never increments the version. It only promotes the current release.
   - When `ALTERNUN_TESTNET_MODE=on`, promotion must run from `master` or `main`. The script pushes the production branch and then reuses the existing infra sync flow to fast-forward `develop`.
   - When `ALTERNUN_TESTNET_MODE=off`, promotion must run from `develop`. The script pushes `develop` and opens a PR from `develop` into `master` or `main`.
