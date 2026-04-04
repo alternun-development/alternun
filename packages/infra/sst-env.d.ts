@@ -4,14 +4,19 @@
 /* deno-fmt-ignore-file */
 /* biome-ignore-all lint: auto-generated */
 
-declare module "sst" {
+declare module 'sst' {
   export interface Resource {
-    "identity-identity-dev": {
-      "type": "sst.aws.Vpc"
-    }
+    'expo-assets-production': {
+      name: string;
+      type: 'sst.aws.Bucket';
+    };
+    'expo-web-production': {
+      type: 'sst.aws.StaticSite';
+      url: string;
+    };
   }
 }
 /// <reference path="sst-env.d.ts" />
 
-import "sst"
-export {}
+import 'sst';
+export {};

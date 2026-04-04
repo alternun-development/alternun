@@ -1,4 +1,5 @@
 
-> @alternun/ui@0.0.1 build
-> tsc
+
+> @alternun/ui@1.0.7-dev.1 build /home/ed/Documents/Alternun/alternun-2/packages/ui
+> ./build.sh
 
