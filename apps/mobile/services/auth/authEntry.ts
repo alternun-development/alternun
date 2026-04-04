@@ -1,6 +1,11 @@
 export type AuthentikLoginEntryMode = 'relay' | 'source';
 export type AuthentikRelayProvider = 'google' | 'discord';
 
+export const AUTHENTIK_PROVIDER_FLOW_SLUGS: Record<AuthentikRelayProvider, string> = {
+  google: 'alternun-google-login',
+  discord: 'alternun-discord-login',
+};
+
 export interface AuthentikRelayRoute {
   pathname: '/auth-relay';
   params: {
