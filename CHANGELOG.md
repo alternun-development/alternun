@@ -1,3 +1,15 @@
+## [1.0.7-dev.3](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.2...v1.0.7-dev.3) (2026-04-04)
+
+### Features
+
+- dashboard UI redesign, shared UI design system, and Metro fix ([68a50de](https://github.com/alternun-development/alternun/commit/68a50de171e1bbf2f1c902141c5c571221da98ac))
+
+## [1.0.7-dev.3](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.2...v1.0.7-dev.3) (2026-04-04)
+
+### Features
+
+- dashboard UI redesign, shared UI design system, and Metro fix ([68a50de](https://github.com/alternun-development/alternun/commit/68a50de171e1bbf2f1c902141c5c571221da98ac))
+
 ## [1.0.7-dev.2](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.1...v1.0.7-dev.2) (2026-04-04)
 
 ### Bug Fixes
