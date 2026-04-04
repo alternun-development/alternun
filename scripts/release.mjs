@@ -18,6 +18,12 @@ const IGNORED_WORKTREE_PATHS = new Set([
   'apps/web/.turbo/turbo-build.log',
   'packages/ui/.turbo/turbo-build.log',
 ]);
+const TRACKED_BUILD_OUTPUT_PATHS = [
+  'packages/auth/dist',
+  'packages/email-templates/dist',
+  'packages/i18n/dist',
+  'packages/ui/dist',
+];
 
 function printUsage() {
   console.log(`Usage:
@@ -26,9 +32,8 @@ function printUsage() {
   pnpm release --promote
 
 Options:
-  --push          Explicitly enable direct push after commit/tag creation.
   --no-push       Skip the default direct push for release targets.
-  --target-branch Branch to push when using direct push. Defaults to the current branch.
+  --target-branch Assert the branch being released. Defaults to the current branch.
   --promote       Push and promote the current release using the active branch policy.
   --remote <name> Git remote to use. Defaults to origin.
   --no-tag        Do not create an annotated git tag.
@@ -62,11 +67,6 @@ function parseArgs(argv) {
 
     if (value === '--promote') {
       options.promote = true;
-      continue;
-    }
-
-    if (value === '--push') {
-      options.pushMode = 'on';
       continue;
     }
 
@@ -132,10 +132,6 @@ function parseArgs(argv) {
     throw new Error('Provide a release type/version or use --promote.');
   }
 
-  if (options.pushMode === 'on' && options.promote) {
-    throw new Error('--push cannot be combined with --promote.');
-  }
-
   if (!options.createCommit && options.createTag) {
     throw new Error('--no-commit requires --no-tag.');
   }
@@ -165,6 +161,10 @@ function shouldDirectPush({ target, options }) {
   }
 
   return options.pushMode !== 'off';
+}
+
+function shouldUseBranchAwareRelease(branchName) {
+  return branchName === 'develop';
 }
 
 function run(command, args, { dryRun = false, env = process.env, capture = false } = {}) {
@@ -303,8 +303,18 @@ function stageReleaseFiles(dryRun) {
     managedPaths.add('CHANGELOG.md');
   }
 
+  for (const trackedBuildOutputPath of TRACKED_BUILD_OUTPUT_PATHS) {
+    if (fs.existsSync(path.join(REPO_ROOT, trackedBuildOutputPath))) {
+      managedPaths.add(trackedBuildOutputPath);
+    }
+  }
+
   const existingPaths = [...managedPaths].filter((relativePath) => fs.existsSync(path.join(REPO_ROOT, relativePath)));
   run('git', ['add', '--', ...existingPaths], { dryRun });
+}
+
+function buildReleaseArtifacts(dryRun) {
+  run('pnpm', ['exec', 'turbo', 'run', 'build', '--force'], { dryRun });
 }
 
 function createReleaseCommit(version, dryRun) {
@@ -321,7 +331,7 @@ function pushRelease({ remote, dryRun, targetBranch }) {
   const branchToPush = targetBranch ?? currentBranch;
 
   if (branchToPush !== currentBranch) {
-    throw new Error(`--push must target the current branch. Current branch: ${currentBranch}, requested: ${branchToPush}`);
+    throw new Error(`Direct release push must use the current branch. Current branch: ${currentBranch}, requested: ${branchToPush}`);
   }
 
   run('git', ['push', remote, branchToPush, '--follow-tags'], { dryRun });
@@ -440,7 +450,7 @@ function promoteRelease({ version, remote, dryRun, productionBranch }) {
   console.log(`Promoted v${version}: pushed develop and prepared a PR into ${productionBranch}.`);
 }
 
-function performVersionChange(target, options) {
+function performVersionChange(target, options, branchName) {
   if (!target) {
     return readRootVersion();
   }
@@ -448,8 +458,22 @@ function performVersionChange(target, options) {
   ensureChangelogFile(options.dryRun);
 
   if (VALID_BUMPS.has(target)) {
+    const useBranchAware = shouldUseBranchAwareRelease(branchName);
+    if (useBranchAware) {
+      run(
+        'pnpm',
+        ['exec', 'versioning', target, '--branch-aware', '--target-branch', branchName, '--no-commit', '--no-tag'],
+        { dryRun: options.dryRun },
+      );
+      const version = readRootVersion();
+      run('node', ['scripts/version-sync.mjs', '--version', version], { dryRun: options.dryRun });
+      run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+      return version;
+    }
+
     run('pnpm', ['exec', 'versioning', target, '--no-commit', '--no-tag'], { dryRun: options.dryRun });
-    const version = options.dryRun ? readRootVersion() : readRootVersion();
+    run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+    const version = readRootVersion();
     if (!options.dryRun) {
       syncSupplementalVersionFiles(version);
     }
@@ -477,8 +501,13 @@ function main() {
 
   ensureCleanWorkingTree(options);
 
+  const currentBranch = getCurrentBranch();
   const productionBranch = resolveProductionBranch();
-  const version = performVersionChange(target, options);
+  const version = performVersionChange(target, options, currentBranch);
+
+  if (target) {
+    buildReleaseArtifacts(options.dryRun);
+  }
 
   if (target && options.createCommit) {
     createReleaseCommit(version, options.dryRun);
