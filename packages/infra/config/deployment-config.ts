@@ -36,6 +36,7 @@ export interface ExpoLocalConfig {
     authentikLoginEntryMode?: string;
     authentikSocialLoginMode?: string;
     authentikProviderFlowSlugs?: string;
+    releaseUpdateMode?: string;
   };
 }
 

@@ -9,6 +9,7 @@
     "packages/auth",
     "packages/i18n",
     "packages/infra",
+    "packages/update",
     "packages/ui"
   ],
   "changelogFile": "CHANGELOG.md",
@@ -40,11 +41,11 @@
         "bumpStrategy": "semantic"
       },
       "develop": {
-        "versionFormat": "semantic",
+        "versionFormat": "dev",
         "tagFormat": "v{version}",
         "syncFiles": ["package.json"],
         "environment": "development",
-        "bumpStrategy": "semantic"
+        "bumpStrategy": "dev-build"
       },
       "feature/*": {
         "versionFormat": "feature",

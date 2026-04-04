@@ -1,3 +1,15 @@
+## [1.0.7-dev.2](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.1...v1.0.7-dev.2) (2026-04-04)
+
+### Bug Fixes
+
+- build tracked artifacts during release ([ed05ec3](https://github.com/alternun-development/alternun/commit/ed05ec3c71695ca504aa1a9b7aa8b808d2d68deb))
+
+## [1.0.7-dev.2](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.1...v1.0.7-dev.2) (2026-04-04)
+
+### Bug Fixes
+
+- build tracked artifacts during release ([ed05ec3](https://github.com/alternun-development/alternun/commit/ed05ec3c71695ca504aa1a9b7aa8b808d2d68deb))
+
 ## [1.0.7-dev.1](https://github.com/alternun-development/alternun/compare/v1.0.4...v1.0.7-dev.1) (2026-04-04)
 
 ### Bug Fixes

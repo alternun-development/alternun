@@ -1,0 +1,35 @@
+{
+  "name": "@alternun/update",
+  "version": "1.0.7-dev.2",
+  "description": "Shared release update detection and service worker helpers for Alternun web apps",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "scripts",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "./build.sh",
+    "dev": "tsc -w",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "export-assets": "node scripts/export-assets.mjs"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "@types/react": "^19.1.17",
+    "react": "19.1.0",
+    "typescript": "~5.9.2"
+  }
+}

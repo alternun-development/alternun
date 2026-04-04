@@ -4,7 +4,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "dist-lambda/**", ".next/**", "build/**"],
+      "outputs": ["dist/**", "dist-lambda/**", ".next/**", "build/**", "public/alternun-release-*"],
       "inputs": ["src/**", "public/**", "package.json"],
       "env": ["NODE_ENV"]
     },

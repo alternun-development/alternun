@@ -76,6 +76,7 @@ For AIRS, the infra package provisions:
 - asset buckets
 - CloudFront-backed distribution path
 - stage-aware redirects
+- release-update manifest and worker assets generated from the current package version
 
 ### Backend API delivery
 
