@@ -38,6 +38,7 @@ export interface ResolvedExpoConfig {
     authentikClientId?: string;
     authentikRedirectUri?: string;
     authentikLoginEntryMode?: string;
+    authentikProviderFlowSlugs?: string;
   };
   redirects: {
     enableAirsToDev: boolean;
@@ -216,6 +217,9 @@ export function resolveExpoConfig({
     authentikLoginEntryMode:
       env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE ??
       localConfig.expo?.publicEnv?.authentikLoginEntryMode,
+    authentikProviderFlowSlugs:
+      env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS ??
+      localConfig.expo?.publicEnv?.authentikProviderFlowSlugs,
   };
 
   const redirects = {

@@ -805,6 +805,7 @@ export function deployIdentityInfrastructure(
             defaultApplicationSlug: args.settings.integration.bootstrap.defaultApplication.slug,
             googleClientId: args.settings.integration.google.clientId,
             googleClientSecret: args.settings.integration.google.clientSecret,
+            googleSourceLoginFlowSlug: args.settings.integration.google.loginFlowSlug,
             googleSourceName: args.settings.integration.google.sourceName,
             googleSourceSlug: args.settings.integration.google.sourceSlug,
             mobileOidcClientId: args.settings.integration.mobileOidc.clientId,
