@@ -28,6 +28,7 @@ packages/auth/infra/email/out/
 # Local infra business configuration (keep out of public repo)
 packages/infra/config/deployment.config.json
 packages/infra/.sst/
+packages/infra/sst-env.d.ts
 
 # Claude Code workspace
 .claude/
