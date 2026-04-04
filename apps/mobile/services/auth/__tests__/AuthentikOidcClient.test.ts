@@ -78,4 +78,10 @@ describe('buildAuthentikOAuthFlowStartUrl', () => {
       )
     ).toBe('https://testnet.airs.alternun.co/auth/callback');
   });
+
+  it('prefers the active browser origin over a loopback redirect uri during local dev', () => {
+    expect(resolveAuthentikRedirectUri('http://localhost:8081/', 'http://localhost:8083')).toBe(
+      'http://localhost:8083/'
+    );
+  });
 });
