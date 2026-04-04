@@ -228,7 +228,7 @@ The mobile web auth surface supports two Authentik entry patterns:
 Control the mode with `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE` in repo env, pipeline env, or `packages/infra/config/deployment.config.json`.
 The default is `relay`, which is the most flexible option for return-target handling and future flow changes.
 If you want the optional custom Authentik source-stage pattern, set `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` in infra config. The mobile bundle derives `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` from that setting automatically. Leave it empty for direct source login.
-Testnet currently keeps `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG=alternun-google-login` so Google login uses the custom source-stage relay there, while other environments can still use direct source login by leaving the slug empty.
+Testnet currently leaves `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` empty so Google login uses direct source login there, while other environments can opt into the custom source-stage relay by setting the slug explicitly.
 The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages so logout returns to the app instead of stopping on Authentik's success page.
 
 Enable/configure through env or local config:
