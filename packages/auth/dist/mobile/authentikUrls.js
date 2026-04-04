@@ -1,7 +1,24 @@
 const DEFAULT_SCOPE = 'openid profile email';
+const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
+function isLoopbackHostname(value) {
+    const hostname = value === null || value === void 0 ? void 0 : value.trim().toLowerCase();
+    return Boolean(hostname && LOOPBACK_HOSTNAMES.has(hostname));
+}
+function shouldPreferBrowserOrigin(explicitRedirectUri, browserOrigin) {
+    if (!(browserOrigin === null || browserOrigin === void 0 ? void 0 : browserOrigin.trim())) {
+        return false;
+    }
+    try {
+        const explicitUrl = new URL(explicitRedirectUri);
+        return isLoopbackHostname(explicitUrl.hostname);
+    }
+    catch {
+        return false;
+    }
+}
 export function resolveAuthentikRedirectUri(explicitRedirectUri, browserOrigin) {
     const normalizedExplicitRedirectUri = explicitRedirectUri === null || explicitRedirectUri === void 0 ? void 0 : explicitRedirectUri.trim();
-    if (normalizedExplicitRedirectUri) {
+    if (normalizedExplicitRedirectUri && !shouldPreferBrowserOrigin(normalizedExplicitRedirectUri, browserOrigin)) {
         return normalizedExplicitRedirectUri;
     }
     const normalizedBrowserOrigin = browserOrigin === null || browserOrigin === void 0 ? void 0 : browserOrigin.trim();
