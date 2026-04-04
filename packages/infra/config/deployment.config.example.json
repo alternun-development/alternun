@@ -178,7 +178,8 @@
         "clientId": "",
         "clientSecret": "",
         "sourceName": "Google",
-        "sourceSlug": "google"
+        "sourceSlug": "google",
+        "loginFlowSlug": ""
       },
       "supabase": {
         "applicationName": "Alternun Supabase",

@@ -76,6 +76,7 @@ export interface IdentityLocalConfig {
       clientSecret?: string;
       sourceName?: string;
       sourceSlug?: string;
+      loginFlowSlug?: string;
     };
     supabase?: {
       applicationName?: string;
@@ -206,6 +207,7 @@ export interface IdentitySettings {
       clientSecret: string;
       sourceName: string;
       sourceSlug: string;
+      loginFlowSlug: string;
     };
     supabase: {
       applicationName: string;
@@ -611,6 +613,10 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
           args.env.INFRA_IDENTITY_GOOGLE_SOURCE_SLUG ??
           localConfig?.integration?.google?.sourceSlug ??
           IDENTITY_INFRA_DEFAULTS.integration.google.sourceSlug,
+        loginFlowSlug:
+          args.env.INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG ??
+          localConfig?.integration?.google?.loginFlowSlug ??
+          '',
       },
       supabase: {
         applicationName:

@@ -1,10 +1,35 @@
 export type AuthentikLoginEntryMode = 'relay' | 'source';
 export type AuthentikRelayProvider = 'google' | 'discord';
+export type AuthentikProviderFlowSlugs = Partial<Record<AuthentikRelayProvider, string>>;
 
-export const AUTHENTIK_PROVIDER_FLOW_SLUGS: Record<AuthentikRelayProvider, string> = {
-  google: 'alternun-google-login',
-  discord: 'alternun-discord-login',
-};
+export function parseAuthentikProviderFlowSlugs(
+  value: string | undefined | null
+): AuthentikProviderFlowSlugs {
+  if (!value) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    const slugs: AuthentikProviderFlowSlugs = {};
+
+    if (typeof parsed.google === 'string' && parsed.google.trim().length > 0) {
+      slugs.google = parsed.google.trim();
+    }
+
+    if (typeof parsed.discord === 'string' && parsed.discord.trim().length > 0) {
+      slugs.discord = parsed.discord.trim();
+    }
+
+    return slugs;
+  } catch {
+    return {};
+  }
+}
+
+export const AUTHENTIK_PROVIDER_FLOW_SLUGS = parseAuthentikProviderFlowSlugs(
+  process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS
+);
 
 export interface AuthentikRelayRoute {
   pathname: '/auth-relay';
