@@ -22,6 +22,8 @@ The current architecture direction is:
 
 This is a good separation because it keeps authentication ownership explicit.
 
+For the current login-entry modes, social-login modes, and redirect controls, see [Authentication and Session Flow](./authentication-and-session-flow.md).
+
 ### API input handling
 
 The NestJS API already enables important validation defaults:
