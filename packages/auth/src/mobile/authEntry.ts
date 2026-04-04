@@ -2,7 +2,23 @@ export type AuthentikLoginEntryMode = 'relay' | 'source';
 export type AuthentikRelayProvider = 'google' | 'discord';
 export type AuthentikProviderFlowSlugs = Partial<Record<AuthentikRelayProvider, string>>;
 
+export interface AuthentikLoginStrategy {
+  mode: AuthentikLoginEntryMode;
+  providerFlowSlugs: AuthentikProviderFlowSlugs;
+}
+
+export interface ResolveAuthentikLoginStrategyOptions {
+  hostname?: string | null;
+  entryMode?: string | undefined | null;
+  providerFlowSlugsValue?: string | undefined | null;
+}
+
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
+const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE: AuthentikLoginEntryMode = 'relay';
+
+function normalizeHostname(value: string | undefined | null): string {
+  return (value ?? '').trim().toLowerCase();
+}
 
 export function parseAuthentikProviderFlowSlugs(
   value: string | undefined | null
@@ -29,10 +45,6 @@ export function parseAuthentikProviderFlowSlugs(
   }
 }
 
-function normalizeHostname(value: string | undefined | null): string {
-  return (value ?? '').trim().toLowerCase();
-}
-
 export function resolveAuthentikProviderFlowSlugs(options?: {
   hostname?: string | null;
   value?: string | undefined | null;
@@ -48,20 +60,7 @@ export function resolveAuthentikProviderFlowSlugs(options?: {
   );
 }
 
-export const AUTHENTIK_PROVIDER_FLOW_SLUGS = resolveAuthentikProviderFlowSlugs();
-
-export interface AuthentikRelayRoute {
-  pathname: '/auth-relay';
-  params: {
-    provider: AuthentikRelayProvider;
-    fresh: '0' | '1';
-    next?: string;
-  };
-}
-
-const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE: AuthentikLoginEntryMode = 'relay';
-
-function normalizeAuthentikLoginEntryMode(
+export function normalizeAuthentikLoginEntryMode(
   value: string | undefined | null
 ): AuthentikLoginEntryMode {
   const normalized = value?.trim().toLowerCase();
@@ -78,6 +77,30 @@ export function getAuthentikLoginEntryMode(): AuthentikLoginEntryMode {
 
 export function shouldUseAuthentikRelayEntry(): boolean {
   return getAuthentikLoginEntryMode() === 'relay';
+}
+
+export function resolveAuthentikLoginStrategy(
+  options?: ResolveAuthentikLoginStrategyOptions
+): AuthentikLoginStrategy {
+  return {
+    mode: normalizeAuthentikLoginEntryMode(
+      options?.entryMode ?? process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE
+    ),
+    providerFlowSlugs: resolveAuthentikProviderFlowSlugs({
+      hostname: options?.hostname,
+      value:
+        options?.providerFlowSlugsValue ?? process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS,
+    }),
+  };
+}
+
+export interface AuthentikRelayRoute {
+  pathname: '/auth-relay';
+  params: {
+    provider: AuthentikRelayProvider;
+    fresh: '0' | '1';
+    next?: string;
+  };
 }
 
 export function buildAuthentikRelayPath(
@@ -114,5 +137,3 @@ export function buildAuthentikRelayRoute(
 
   return route;
 }
-
-export { normalizeAuthentikLoginEntryMode };

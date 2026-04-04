@@ -4,6 +4,20 @@
   "description": "Alternun auth wrapper package built on top of @edcalderon/auth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./mobile/authentikClient": {
+      "types": "./dist/mobile/authentikClient.d.ts",
+      "default": "./dist/mobile/authentikClient.js"
+    },
+    "./mobile/authEntry": {
+      "types": "./dist/mobile/authEntry.d.ts",
+      "default": "./dist/mobile/authEntry.js"
+    }
+  },
   "scripts": {
     "build": "./build.sh",
     "dev": "tsc -w",

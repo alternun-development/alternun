@@ -3,9 +3,9 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import {
   isAuthentikConfigured,
+  resolveAuthentikLoginStrategy,
   startAuthentikOAuthFlow,
-} from '../services/auth/AuthentikOidcClient';
-import { resolveAuthentikProviderFlowSlugs } from '../services/auth/authEntry';
+} from '@alternun/auth';
 
 function readParam(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) {
@@ -54,7 +54,7 @@ export default function AuthRelayRoute(): React.JSX.Element {
 
   const nextTarget = useMemo(() => readParam(next), [next]);
   const forceFreshSession = useMemo(() => readBooleanParam(fresh, true), [fresh]);
-  const providerFlowSlugs = useMemo(() => resolveAuthentikProviderFlowSlugs(), []);
+  const providerFlowSlugs = resolveAuthentikLoginStrategy().providerFlowSlugs;
 
   useEffect(() => {
     if (!isNavigationReady) {

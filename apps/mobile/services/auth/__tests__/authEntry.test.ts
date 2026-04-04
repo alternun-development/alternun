@@ -5,8 +5,9 @@ import {
   getAuthentikLoginEntryMode,
   normalizeAuthentikLoginEntryMode,
   parseAuthentikProviderFlowSlugs,
+  resolveAuthentikLoginStrategy,
   resolveAuthentikProviderFlowSlugs,
-} from '../authEntry';
+} from '@alternun/auth/mobile/authEntry';
 
 describe('authEntry', () => {
   const originalMode = process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE;
@@ -107,6 +108,32 @@ describe('authEntry', () => {
       })
     ).toEqual({
       google: 'alternun-google-login',
+    });
+  });
+
+  it('resolves a full login strategy for testnet and localhost', () => {
+    expect(
+      resolveAuthentikLoginStrategy({
+        hostname: 'testnet.airs.alternun.co',
+        entryMode: 'relay',
+        providerFlowSlugsValue: JSON.stringify({ google: 'alternun-google-login' }),
+      })
+    ).toEqual({
+      mode: 'relay',
+      providerFlowSlugs: {
+        google: 'alternun-google-login',
+      },
+    });
+
+    expect(
+      resolveAuthentikLoginStrategy({
+        hostname: 'localhost',
+        entryMode: 'source',
+        providerFlowSlugsValue: JSON.stringify({ google: 'alternun-google-login' }),
+      })
+    ).toEqual({
+      mode: 'source',
+      providerFlowSlugs: {},
     });
   });
 });
