@@ -1,5 +1,14 @@
 import type { OAuthFlow } from './AppAuthProvider';
-import { parseEmailAddress, parseSignUpPassword } from '@alternun/auth';
+import {
+  buildAuthentikRelayRoute,
+  clearPendingAuthentikOAuthProvider,
+  isAuthentikConfigured,
+  parseEmailAddress,
+  parseSignUpPassword,
+  readPendingAuthentikOAuthProvider,
+  resolveAuthentikLoginStrategy,
+  startAuthentikOAuthFlow,
+} from '@alternun/auth';
 import { Image as ExpoImage } from 'expo-image';
 import {
   AlertCircle,
@@ -40,17 +49,6 @@ import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
-import {
-  isAuthentikConfigured,
-  clearPendingAuthentikOAuthProvider,
-  readPendingAuthentikOAuthProvider,
-  startAuthentikOAuthFlow,
-} from '../../services/auth/AuthentikOidcClient';
-import {
-  buildAuthentikRelayRoute,
-  getAuthentikLoginEntryMode,
-} from '../../services/auth/authEntry';
-
 const RESEND_COOLDOWN_SECONDS = 45;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
@@ -240,6 +238,9 @@ export default function AuthSignInScreen({
   const p = useAppPalette();
   const ThemeIcon = p.isDark ? Sun : Moon;
   const themeLabel = p.isDark ? t('labels.dark') : t('labels.light');
+  const loginStrategy = resolveAuthentikLoginStrategy();
+  const authentikLoginEntryMode = loginStrategy.mode;
+  const providerFlowSlugs = loginStrategy.providerFlowSlugs;
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -271,7 +272,6 @@ export default function AuthSignInScreen({
     [client]
   );
   const googleProvider = useMemo(() => resolveGoogleProvider(), []);
-  const authentikLoginEntryMode = useMemo(() => getAuthentikLoginEntryMode(), []);
 
   const rawEffectiveError = localError ?? error;
   const effectiveError = rawEffectiveError
@@ -306,7 +306,7 @@ export default function AuthSignInScreen({
     }
 
     const pendingProvider = readPendingAuthentikOAuthProvider();
-    if (!pendingProvider) {
+    if (pendingProvider !== 'google' && pendingProvider !== 'discord') {
       return;
     }
 
@@ -630,7 +630,10 @@ export default function AuthSignInScreen({
 
       // Try Authentik OIDC first (vendor-independent); falls back to Supabase Auth
       // when Authentik env vars are not configured.
-      await startAuthentikOAuthFlow('google', { forceFreshSession: true });
+      await startAuthentikOAuthFlow('google', {
+        forceFreshSession: true,
+        providerFlowSlugs,
+      });
       // startAuthentikOAuthFlow redirects the page; code below only runs on error.
     } catch (oidcError) {
       const msg = oidcError instanceof Error ? oidcError.message : '';
@@ -663,7 +666,10 @@ export default function AuthSignInScreen({
         return;
       }
 
-      await startAuthentikOAuthFlow('discord', { forceFreshSession: true });
+      await startAuthentikOAuthFlow('discord', {
+        forceFreshSession: true,
+        providerFlowSlugs,
+      });
     } catch (oidcError) {
       setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
     } finally {

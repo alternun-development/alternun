@@ -17,6 +17,23 @@ export {
 } from './mobile/authentikPreset';
 
 export {
+  buildAuthentikRelayPath,
+  buildAuthentikRelayRoute,
+  getAuthentikLoginEntryMode,
+  normalizeAuthentikLoginEntryMode,
+  parseAuthentikProviderFlowSlugs,
+  resolveAuthentikLoginStrategy,
+  resolveAuthentikProviderFlowSlugs,
+  shouldUseAuthentikRelayEntry,
+  type AuthentikLoginEntryMode,
+  type AuthentikLoginStrategy,
+  type AuthentikProviderFlowSlugs,
+  type AuthentikRelayProvider,
+  type AuthentikRelayRoute,
+  type ResolveAuthentikLoginStrategyOptions,
+} from './mobile/authEntry';
+
+export {
   AlternunMobileAuthClient,
   SUPPORTED_WALLET_PROVIDERS,
   createAlternunMobileAuthClient,
@@ -28,12 +45,15 @@ export {
 } from './mobile/AlternunMobileAuthClient';
 
 export {
+  buildAuthentikOAuthFlowStartUrl,
   isAuthentikConfigured,
   hasPendingAuthentikCallback,
   startAuthentikOAuthFlow,
   handleAuthentikCallback,
   readOidcSession,
   clearOidcSession,
+  readPendingAuthentikOAuthProvider,
+  clearPendingAuthentikOAuthProvider,
   OIDC_INITIAL_SEARCH,
   createAuthentikPreset,
   createAuthentikRelayHandler,
@@ -44,6 +64,7 @@ export {
   resolveSafeRedirect,
   validateAuthentikConfig,
   validateFullConfig,
+  type AlternunAuthentikOAuthFlowOptions,
   type OidcClaims,
   type OidcSession,
   type OidcProvider,
