@@ -128,5 +128,6 @@ For the clearest onboarding path:
 
 1. Start with [Monorepo and Stack](./monorepo-and-stack.md)
 2. Continue to [Runtime Architecture](./runtime-architecture.md)
-3. Then read [Infrastructure and Delivery](./infrastructure-and-delivery.md)
-4. Finish with [Security and Quality](./security-and-quality.md) and [Next Improvements](./next-improvements.md)
+3. Then read [Authentication and Session Flow](./authentication-and-session-flow)
+4. Then read [Infrastructure and Delivery](./infrastructure-and-delivery.md)
+5. Finish with [Security and Quality](./security-and-quality.md) and [Next Improvements](./next-improvements.md)
