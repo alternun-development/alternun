@@ -1,5 +1,5 @@
-import { OIDC_INITIAL_SEARCH, clearOidcSession as rawClearOidcSession, handleAuthentikCallback as rawHandleAuthentikCallback, hasPendingAuthentikCallback as rawHasPendingAuthentikCallback, isAuthentikConfigured as rawIsAuthentikConfigured, readOidcSession as rawReadOidcSession, } from '@edcalderon/auth';
-import { buildAuthentikOAuthFlowStartUrl as buildOauthStartUrl, } from './authentikUrls';
+import { OIDC_INITIAL_SEARCH, clearOidcSession as rawClearOidcSession, handleAuthentikCallback as rawHandleAuthentikCallback, hasPendingAuthentikCallback as rawHasPendingAuthentikCallback, readOidcSession as rawReadOidcSession, } from '@edcalderon/auth';
+import { buildAuthentikOAuthFlowStartUrl as buildOauthStartUrl, resolveAuthentikRedirectUri, } from './authentikUrls';
 const DEFAULT_ENV_KEYS = {
     issuer: 'EXPO_PUBLIC_AUTHENTIK_ISSUER',
     clientId: 'EXPO_PUBLIC_AUTHENTIK_CLIENT_ID',
@@ -32,11 +32,18 @@ function resolveSessionStorage(config) {
     }
     return window.sessionStorage;
 }
+function resolveBrowserOrigin() {
+    var _a;
+    if (typeof window === 'undefined') {
+        return undefined;
+    }
+    return (_a = window.location) === null || _a === void 0 ? void 0 : _a.origin;
+}
 function resolveAuthentikClientConfig(config = {}) {
     var _a, _b, _c;
     const issuer = resolveEnvValue(config, 'issuer');
     const clientId = resolveEnvValue(config, 'clientId');
-    const redirectUri = resolveEnvValue(config, 'redirectUri');
+    const redirectUri = resolveAuthentikRedirectUri(resolveEnvValue(config, 'redirectUri'), resolveBrowserOrigin());
     const normalizedScope = (_a = config.scope) === null || _a === void 0 ? void 0 : _a.trim();
     if (!issuer || !clientId || !redirectUri) {
         throw new Error('CONFIG_ERROR: Missing Authentik issuer, clientId, or redirectUri');
@@ -87,7 +94,7 @@ function buildAuthentikLogoutUrl({ issuer, clientId, postLogoutRedirectUri, idTo
 export function buildAlternunAuthentikOAuthFlowStartUrl(input) {
     return buildOauthStartUrl(input);
 }
-export { buildOauthStartUrl as buildAuthentikOAuthFlowStartUrl, };
+export { buildAuthentikOAuthFlowStartUrl, resolveAuthentikRedirectUri, } from './authentikUrls';
 export function readPendingAuthentikOAuthProvider(config = {}) {
     var _a, _b;
     const key = config.pendingStorageKey
@@ -112,7 +119,10 @@ function setPendingAuthentikOAuthProvider(provider, resolved) {
     resolved.sessionStorage.setItem(resolved.pendingProviderKey, provider);
 }
 export function isAuthentikConfigured(config = {}) {
-    return rawIsAuthentikConfigured(config);
+    const issuer = resolveEnvValue(config, 'issuer');
+    const clientId = resolveEnvValue(config, 'clientId');
+    const redirectUri = resolveAuthentikRedirectUri(resolveEnvValue(config, 'redirectUri'), resolveBrowserOrigin());
+    return Boolean(issuer && clientId && redirectUri);
 }
 export function hasPendingAuthentikCallback(searchString) {
     return rawHasPendingAuthentikCallback(searchString);

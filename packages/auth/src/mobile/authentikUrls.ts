@@ -12,6 +12,25 @@ export interface BuildAuthentikOAuthFlowStartUrlInput {
 
 const DEFAULT_SCOPE = 'openid profile email';
 
+export function resolveAuthentikRedirectUri(
+  explicitRedirectUri: string | undefined | null,
+  browserOrigin?: string | null
+): string | undefined {
+  const normalizedExplicitRedirectUri = explicitRedirectUri?.trim();
+  if (normalizedExplicitRedirectUri) {
+    return normalizedExplicitRedirectUri;
+  }
+
+  const normalizedBrowserOrigin = browserOrigin?.trim();
+  if (!normalizedBrowserOrigin) {
+    return undefined;
+  }
+
+  return normalizedBrowserOrigin.endsWith('/')
+    ? normalizedBrowserOrigin
+    : `${normalizedBrowserOrigin}/`;
+}
+
 export function getAuthentikEndpointBaseFromIssuer(issuer: string): string {
   const match = issuer.match(/^(https?:\/\/.+?\/application\/o\/)/);
   if (match) {

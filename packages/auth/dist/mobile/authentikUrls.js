@@ -1,4 +1,17 @@
 const DEFAULT_SCOPE = 'openid profile email';
+export function resolveAuthentikRedirectUri(explicitRedirectUri, browserOrigin) {
+    const normalizedExplicitRedirectUri = explicitRedirectUri === null || explicitRedirectUri === void 0 ? void 0 : explicitRedirectUri.trim();
+    if (normalizedExplicitRedirectUri) {
+        return normalizedExplicitRedirectUri;
+    }
+    const normalizedBrowserOrigin = browserOrigin === null || browserOrigin === void 0 ? void 0 : browserOrigin.trim();
+    if (!normalizedBrowserOrigin) {
+        return undefined;
+    }
+    return normalizedBrowserOrigin.endsWith('/')
+        ? normalizedBrowserOrigin
+        : `${normalizedBrowserOrigin}/`;
+}
 export function getAuthentikEndpointBaseFromIssuer(issuer) {
     const match = issuer.match(/^(https?:\/\/.+?\/application\/o\/)/);
     if (match) {

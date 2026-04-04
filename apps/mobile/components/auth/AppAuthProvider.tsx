@@ -13,6 +13,7 @@ import {
   handleAuthentikCallback,
   hasPendingAuthentikCallback,
   readOidcSession,
+  resolveAuthentikRedirectUri,
   type OidcSession,
   type OidcTokens,
 } from '@alternun/auth';
@@ -25,8 +26,10 @@ const authentikPreset = createAlternunAuthentikPreset({
   issuer: process.env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
   clientId: process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? '',
   redirectUri:
-    process.env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI ??
-    (typeof window !== 'undefined' ? `${window.location.origin}/` : ''),
+    resolveAuthentikRedirectUri(
+      process.env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI,
+      typeof window !== 'undefined' ? window.location.origin : undefined
+    ) ?? '',
 });
 
 function getAllowMockWalletFallback(): boolean {
