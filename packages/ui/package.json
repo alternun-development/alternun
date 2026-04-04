@@ -9,11 +9,6 @@
     "dev": "tsc -w",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-native": "0.71.7"
-  },
   "devDependencies": {
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
@@ -21,8 +16,8 @@
     "typescript": "^5.0.4"
   },
   "peerDependencies": {
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-native": "0.71.7"
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0",
+    "react-native": ">=0.71.0"
   }
 }
