@@ -54,7 +54,8 @@ export default function AuthRelayRoute(): React.JSX.Element {
 
   const nextTarget = useMemo(() => readParam(next), [next]);
   const forceFreshSession = useMemo(() => readBooleanParam(fresh, true), [fresh]);
-  const providerFlowSlugs = resolveAuthentikLoginStrategy().providerFlowSlugs;
+  const loginStrategy = resolveAuthentikLoginStrategy();
+  const providerFlowSlugs = loginStrategy.providerFlowSlugs;
 
   useEffect(() => {
     if (!isNavigationReady) {
@@ -66,7 +67,12 @@ export default function AuthRelayRoute(): React.JSX.Element {
     }
     hasStartedRef.current = true;
 
-    if (!isAuthentikConfigured() || !providerHint) {
+    if (loginStrategy.socialMode === 'supabase' || !providerHint) {
+      router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
+      return;
+    }
+
+    if (!isAuthentikConfigured() && loginStrategy.socialMode !== 'authentik') {
       router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
       return;
     }
@@ -77,7 +83,15 @@ export default function AuthRelayRoute(): React.JSX.Element {
     }).catch(() => {
       router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
     });
-  }, [forceFreshSession, isNavigationReady, nextTarget, providerFlowSlugs, providerHint, router]);
+  }, [
+    forceFreshSession,
+    isNavigationReady,
+    loginStrategy.socialMode,
+    nextTarget,
+    providerFlowSlugs,
+    providerHint,
+    router,
+  ]);
 
   return (
     <View style={styles.loadingScreen}>

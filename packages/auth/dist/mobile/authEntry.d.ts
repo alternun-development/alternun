@@ -1,13 +1,16 @@
 export type AuthentikLoginEntryMode = 'relay' | 'source';
+export type AuthentikSocialLoginMode = 'authentik' | 'hybrid' | 'supabase';
 export type AuthentikRelayProvider = 'google' | 'discord';
 export type AuthentikProviderFlowSlugs = Partial<Record<AuthentikRelayProvider, string>>;
 export interface AuthentikLoginStrategy {
   mode: AuthentikLoginEntryMode;
+  socialMode: AuthentikSocialLoginMode;
   providerFlowSlugs: AuthentikProviderFlowSlugs;
 }
 export interface ResolveAuthentikLoginStrategyOptions {
   hostname?: string | null;
   entryMode?: string | undefined | null;
+  socialMode?: string | undefined | null;
   providerFlowSlugsValue?: string | undefined | null;
 }
 export declare function parseAuthentikProviderFlowSlugs(
@@ -20,7 +23,11 @@ export declare function resolveAuthentikProviderFlowSlugs(options?: {
 export declare function normalizeAuthentikLoginEntryMode(
   value: string | undefined | null
 ): AuthentikLoginEntryMode;
+export declare function normalizeAuthentikSocialLoginMode(
+  value: string | undefined | null
+): AuthentikSocialLoginMode;
 export declare function getAuthentikLoginEntryMode(): AuthentikLoginEntryMode;
+export declare function getAuthentikSocialLoginMode(): AuthentikSocialLoginMode;
 export declare function shouldUseAuthentikRelayEntry(): boolean;
 export declare function resolveAuthentikLoginStrategy(
   options?: ResolveAuthentikLoginStrategyOptions

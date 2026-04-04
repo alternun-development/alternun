@@ -186,6 +186,7 @@ const expoPublicAuthentikIssuer = expoConfig.publicEnv.authentikIssuer;
 const expoPublicAuthentikClientId = expoConfig.publicEnv.authentikClientId;
 const expoPublicAuthentikRedirectUri = expoConfig.publicEnv.authentikRedirectUri;
 const expoPublicAuthentikLoginEntryMode = expoConfig.publicEnv.authentikLoginEntryMode;
+const expoPublicAuthentikSocialLoginMode = expoConfig.publicEnv.authentikSocialLoginMode;
 const expoPublicAuthentikProviderFlowSlugs =
   expoConfig.publicEnv.authentikProviderFlowSlugs ??
   (identitySettings.integration.google.loginFlowSlug.trim()
@@ -394,6 +395,7 @@ const commonBuildEnv = {
   EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId ?? '',
   EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: expoPublicAuthentikRedirectUri ?? '',
   EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: expoPublicAuthentikLoginEntryMode ?? '',
+  EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: expoPublicAuthentikSocialLoginMode ?? '',
   EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: expoPublicAuthentikProviderFlowSlugs ?? '',
   INFRA_REDIRECT_AIRS_TO_DEV_SOURCE: airsToDevSourceDomain,
   INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN: airsToDevCertArn ?? '',
@@ -735,6 +737,7 @@ export function createInfrastructure() {
         EXPO_PUBLIC_AIRS_VIDEO_ES_URL: introVideoAssets.es.url,
         EXPO_PUBLIC_AUTHENTIK_ISSUER: expoPublicAuthentikIssuer,
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId,
+        EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: expoPublicAuthentikSocialLoginMode,
         // Auto-derive the redirect URI from the deployed expo domain when not explicitly set.
         // This ensures the OIDC callback always points at the correct deployed origin.
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI:

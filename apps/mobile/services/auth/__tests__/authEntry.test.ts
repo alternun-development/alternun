@@ -3,7 +3,9 @@ import {
   buildAuthentikRelayPath,
   buildAuthentikRelayRoute,
   getAuthentikLoginEntryMode,
+  getAuthentikSocialLoginMode,
   normalizeAuthentikLoginEntryMode,
+  normalizeAuthentikSocialLoginMode,
   parseAuthentikProviderFlowSlugs,
   resolveAuthentikLoginStrategy,
   resolveAuthentikProviderFlowSlugs,
@@ -11,6 +13,7 @@ import {
 
 describe('authEntry', () => {
   const originalMode = process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE;
+  const originalSocialMode = process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE;
   const originalFlowSlugs = process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS;
 
   afterEach(() => {
@@ -24,6 +27,12 @@ describe('authEntry', () => {
       delete process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS;
     } else {
       process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS = originalFlowSlugs;
+    }
+
+    if (originalSocialMode === undefined) {
+      delete process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE;
+    } else {
+      process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE = originalSocialMode;
     }
   });
 
@@ -39,6 +48,15 @@ describe('authEntry', () => {
 
   it('normalizes unknown values back to relay', () => {
     expect(normalizeAuthentikLoginEntryMode('something-else')).toBe('relay');
+  });
+
+  it('defaults social login mode to hybrid when the env var is absent', () => {
+    delete process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE;
+    expect(getAuthentikSocialLoginMode()).toBe('hybrid');
+  });
+
+  it('normalizes invalid social login modes back to hybrid', () => {
+    expect(normalizeAuthentikSocialLoginMode('something-else')).toBe('hybrid');
   });
 
   it('builds an app-owned relay path with the provider and next target', () => {
@@ -116,10 +134,12 @@ describe('authEntry', () => {
       resolveAuthentikLoginStrategy({
         hostname: 'testnet.airs.alternun.co',
         entryMode: 'relay',
+        socialMode: 'authentik',
         providerFlowSlugsValue: JSON.stringify({ google: 'alternun-google-login' }),
       })
     ).toEqual({
       mode: 'relay',
+      socialMode: 'authentik',
       providerFlowSlugs: {
         google: 'alternun-google-login',
       },
@@ -129,10 +149,12 @@ describe('authEntry', () => {
       resolveAuthentikLoginStrategy({
         hostname: 'localhost',
         entryMode: 'source',
+        socialMode: 'supabase',
         providerFlowSlugsValue: JSON.stringify({ google: 'alternun-google-login' }),
       })
     ).toEqual({
       mode: 'source',
+      socialMode: 'supabase',
       providerFlowSlugs: {},
     });
   });

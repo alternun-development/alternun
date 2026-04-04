@@ -26,6 +26,7 @@ export function buildCorePipelineSpecs({
         INFRA_IDENTITY_ENABLED: 'false',
         INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('production', env),
+        EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
       },
     },
     dev: {
@@ -38,6 +39,7 @@ export function buildCorePipelineSpecs({
         INFRA_IDENTITY_ENABLED: 'false',
         INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('dev', env),
+        EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
       },
     },
     mobile: {
@@ -50,6 +52,7 @@ export function buildCorePipelineSpecs({
         INFRA_IDENTITY_ENABLED: 'false',
         INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('mobile', env),
+        EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
       },
     },
   };
