@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
-import { buildAuthentikOAuthFlowStartUrl } from '../AuthentikOidcClient';
+import { buildAuthentikOAuthFlowStartUrl } from '../../../../../packages/auth/src/mobile/authentikUrls';
 
 describe('buildAuthentikOAuthFlowStartUrl', () => {
   const issuer = 'https://testnet.sso.alternun.co/application/o/alternun-mobile/';
