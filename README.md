@@ -27,6 +27,7 @@ alternun/
 │   ├── mobile/             # React Native/Expo mobile app
 │   └── docs/               # Docusaurus documentation site
 ├── packages/               # Shared packages
+│   ├── update/             # Shared release-update worker and hook
 │   └── ui/                 # Cross-platform UI components
 ├── .github/                # GitHub workflows and templates
 └── turbo.json             # Turborepo configuration
@@ -208,6 +209,7 @@ pnpm release:patch
 
 - `pnpm release <version>` sets an explicit version across the root package, every workspace package, and `apps/mobile/app.json`, then regenerates `CHANGELOG.md`.
 - `pnpm release:patch`, `pnpm release:minor`, and `pnpm release:major` wrap `@edcalderon/versioning`, regenerate `CHANGELOG.md`, sync `apps/mobile/app.json`, force a fresh workspace build so tracked package artifacts such as `packages/auth/dist` stay current, create the release commit/tag, and push by default.
+- Those release builds also keep `packages/update/dist` current so the shared release-update worker ships with the same version that the monorepo release tags use.
 - On `develop`, those releases use the branch-aware dev format, so the version and tag become `semantic-dev.<build>` instead of a plain semantic version.
 - Use `pnpm release:patch:no-push` only when you intentionally want to stop before pushing.
 - `pnpm release -- --promote` never increments the version. It only promotes the current release.

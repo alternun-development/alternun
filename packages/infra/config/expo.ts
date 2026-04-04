@@ -40,6 +40,7 @@ export interface ResolvedExpoConfig {
     authentikLoginEntryMode?: string;
     authentikSocialLoginMode?: string;
     authentikProviderFlowSlugs?: string;
+    releaseUpdateMode?: string;
   };
   redirects: {
     enableAirsToDev: boolean;
@@ -224,6 +225,8 @@ export function resolveExpoConfig({
     authentikProviderFlowSlugs:
       env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS ??
       localConfig.expo?.publicEnv?.authentikProviderFlowSlugs,
+    releaseUpdateMode:
+      env.EXPO_PUBLIC_RELEASE_UPDATE_MODE ?? localConfig.expo?.publicEnv?.releaseUpdateMode,
   };
 
   const redirects = {

@@ -27,12 +27,13 @@
       "mobile": ""
     },
     "build": {
-      "command": "npx expo export -p web",
+      "command": "pnpm --filter @alternun/mobile run build:web",
       "output": "dist"
     },
     "publicEnv": {
       "authentikLoginEntryMode": "relay",
-      "authentikSocialLoginMode": "authentik"
+      "authentikSocialLoginMode": "authentik",
+      "releaseUpdateMode": "auto"
     }
   },
   "redirects": {

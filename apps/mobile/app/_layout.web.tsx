@@ -11,6 +11,7 @@ import {
 import { useColorScheme } from 'nativewind';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
+import ReleaseUpdateBanner from '../components/release/ReleaseUpdateBanner.web';
 import '../global.css';
 
 export default function RootLayout(): React.JSX.Element {
@@ -82,6 +83,7 @@ function RootApp(): React.JSX.Element {
               <AppInfoFooter />
             </View>
           ) : null}
+          <ReleaseUpdateBanner />
         </View>
         <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>

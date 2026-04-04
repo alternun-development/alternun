@@ -230,9 +230,31 @@ The default is `relay`, which is the most flexible option for return-target hand
 Use `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` to control whether the app uses Authentik-only social login, the hybrid Authentik/Supabase fallback path, or Supabase-only login.
 Set it to `authentik` on testnet when you want the Discord/Google buttons to stay on Authentik and never fall back to Supabase.
 The core web pipelines set `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` so deployed bundles stay on Authentik by default; local web dev can still opt into `hybrid` if needed.
+The core web pipelines set `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` so deployed bundles get a reload prompt when a new release is detected. Local development can keep `auto` or `off`.
 `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` is optional in deployed web builds; when omitted, the shared auth helpers derive the callback from the current browser origin. Loopback values are treated as local-dev hints and browser origin wins during web development. Keep it explicit only if you need a non-standard callback path.
 If you want the optional custom Authentik source-stage pattern, set `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` in infra config. The mobile bundle derives `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` from that setting automatically. Leave it empty for direct source login.
 The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages so logout returns to the app instead of stopping on Authentik's success page.
+
+### Release Update Banner
+
+The shared release-update package lives in `packages/update` and is used by the web surfaces to detect when a newer build is available.
+It generates a version manifest and a tiny service worker from the current package version during each app build.
+
+Build entrypoints:
+
+- Expo web: `pnpm --filter @alternun/mobile run build:web`
+- Next.js web: `pnpm --filter @alternun/web run build`
+
+Mode switches:
+
+- `EXPO_PUBLIC_RELEASE_UPDATE_MODE=auto|on|off`
+- `NEXT_PUBLIC_RELEASE_UPDATE_MODE=auto|on|off`
+
+Recommended values:
+
+- deployed Expo builds: `on`
+- localhost or loopback development: `auto`
+- temporary opt-out: `off`
 
 Enable/configure through env or local config:
 

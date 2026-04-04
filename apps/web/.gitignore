@@ -1,0 +1,6 @@
+.next/
+.turbo/
+node_modules/
+*.tsbuildinfo
+public/alternun-release-manifest.json
+public/alternun-release-worker.js
