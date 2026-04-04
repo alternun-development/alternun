@@ -28,3 +28,10 @@ packages/auth/infra/email/out/
 # Local infra business configuration (keep out of public repo)
 packages/infra/config/deployment.config.json
 packages/infra/.sst/
+
+# Claude Code workspace
+.claude/
+.codex
+tmp/
+__pycache__/
+apps/admin/src/bones/
