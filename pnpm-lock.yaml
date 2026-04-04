@@ -212,6 +212,9 @@ importers:
       '@alternun/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@alternun/update':
+        specifier: workspace:*
+        version: link:../../packages/update
       '@expo/vector-icons':
         specifier: ^15.0.3
         version: 15.1.1(expo-font@14.0.11(expo@54.0.33)(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13)(utf-8-validate@6.0.6))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13)(utf-8-validate@6.0.6))(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)(utf-8-validate@6.0.6))(react@19.1.0)
@@ -357,6 +360,9 @@ importers:
       '@alternun/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@alternun/update':
+        specifier: workspace:*
+        version: link:../../packages/update
       '@gsap/react':
         specifier: ^2.1.2
         version: 2.1.2(gsap@3.14.2)(react@18.2.0)
@@ -496,6 +502,21 @@ importers:
       typescript:
         specifier: ^5.0.4
         version: 5.5.4
+
+  packages/update:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.13.9
+        version: 22.19.13
+      '@types/react':
+        specifier: ^19.1.17
+        version: 19.1.17
+      react:
+        specifier: 19.1.0
+        version: 19.1.0
+      typescript:
+        specifier: ~5.9.2
+        version: 5.9.3
 
 packages:
 
@@ -17817,7 +17838,7 @@ snapshots:
       debug: 4.4.3(supports-color@5.5.0)
       invariant: 2.2.4
       metro: 0.83.5(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      metro-config: 0.83.5(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      metro-config: 0.83.5(bufferutil@4.1.0)
       metro-core: 0.83.5
       semver: 7.7.4
     optionalDependencies:
@@ -25865,21 +25886,6 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  metro-config@0.83.5(bufferutil@4.1.0)(utf-8-validate@6.0.6):
-    dependencies:
-      connect: 3.7.0
-      flow-enums-runtime: 0.0.6
-      jest-validate: 29.7.0
-      metro: 0.83.5(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      metro-cache: 0.83.5
-      metro-core: 0.83.5
-      metro-runtime: 0.83.5
-      yaml: 2.8.2
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   metro-core@0.73.10:
     dependencies:
       lodash.throttle: 4.1.1
@@ -26589,7 +26595,7 @@ snapshots:
       metro-babel-transformer: 0.83.5
       metro-cache: 0.83.5
       metro-cache-key: 0.83.5
-      metro-config: 0.83.5(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      metro-config: 0.83.5(bufferutil@4.1.0)
       metro-core: 0.83.5
       metro-file-map: 0.83.5
       metro-resolver: 0.83.5
