@@ -14,7 +14,7 @@ function getProcessEnv() {
 }
 function resolveEnvValue(config, key) {
     var _a, _b, _c, _d;
-    const envKeys = { ...DEFAULT_ENV_KEYS, ...((_a = config.envKeys) !== null && _a !== void 0 ? _a : {}), };
+    const envKeys = { ...DEFAULT_ENV_KEYS, ...((_a = config.envKeys) !== null && _a !== void 0 ? _a : {}) };
     const explicit = key === 'issuer' ? config.issuer : key === 'clientId' ? config.clientId : config.redirectUri;
     if (explicit === null || explicit === void 0 ? void 0 : explicit.trim()) {
         return explicit.trim();
@@ -80,7 +80,7 @@ async function sha256(input) {
 async function buildPkcePair() {
     const verifier = randomString(64);
     const challenge = encodeBase64Url(await sha256(verifier));
-    return { verifier, challenge, };
+    return { verifier, challenge };
 }
 function buildAuthentikLogoutUrl({ issuer, clientId, postLogoutRedirectUri, idTokenHint, }) {
     const endSessionUrl = new URL(`${issuer.replace(/\/$/, '')}/end-session/`);
@@ -94,7 +94,7 @@ function buildAuthentikLogoutUrl({ issuer, clientId, postLogoutRedirectUri, idTo
 export function buildAlternunAuthentikOAuthFlowStartUrl(input) {
     return buildOauthStartUrl(input);
 }
-export { buildAuthentikOAuthFlowStartUrl, resolveAuthentikRedirectUri, } from './authentikUrls';
+export { buildAuthentikOAuthFlowStartUrl, resolveAuthentikRedirectUri } from './authentikUrls';
 export function readPendingAuthentikOAuthProvider(config = {}) {
     var _a, _b;
     const key = config.pendingStorageKey
@@ -151,7 +151,7 @@ export async function startAuthentikOAuthFlow(provider, config = {}) {
         return;
     }
     clearPendingAuthentikOAuthProvider(config);
-    const { verifier, challenge, } = await buildPkcePair();
+    const { verifier, challenge } = await buildPkcePair();
     const state = randomString(32);
     const pendingState = {
         state,
