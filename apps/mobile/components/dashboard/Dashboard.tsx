@@ -1,30 +1,32 @@
-import React, { useCallback, useMemo, useState, } from 'react';
-import type { User, } from '../auth/AppAuthProvider';
+import React, { useCallback, useMemo, useState } from 'react';
+import type { User } from '../auth/AppAuthProvider';
 import {
   View,
   ScrollView,
-  StyleSheet,
   StatusBar,
   Text,
   TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
 import AppInfoFooter from '../common/AppInfoFooter';
-import { createTypographyStyles, } from '../theme/typography';
-import { SafeAreaView, } from 'react-native-safe-area-context';
+import { createTypographyStyles } from '../theme/typography';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ThemeProvider, SectionHeaderSkeleton } from '@alternun/ui';
 
 import TopNav from './TopNav';
 import HeroStats from './HeroStats';
 import WalletConnectModal from './WalletConnectModal';
 import ToastSystem from './ToastSystem';
-import { useAppPreferences, } from '../settings/AppPreferencesProvider';
+import { useAppPreferences } from '../settings/AppPreferencesProvider';
 
-import type { ToastMessage, } from './types';
+import type { ToastMessage } from './types';
 
 let toastIdCounter = 0;
 
 interface DashboardProps {
   user: User | null;
+  /** When true the hero stats and section headers render as skeletons */
+  isLoading?: boolean;
   onRequireSignIn: () => void;
   onOpenProfilePage: () => void;
   onOpenSettingsPage: () => void;
@@ -104,7 +106,7 @@ const DASHBOARD_SECTIONS: SectionConfig[] = [
   },
 ];
 
-function getMetadata(user: User | null,): UserMetadata {
+function getMetadata(user: User | null): UserMetadata {
   if (!user?.metadata || typeof user.metadata !== 'object') {
     return {};
   }
@@ -112,14 +114,14 @@ function getMetadata(user: User | null,): UserMetadata {
   return user.metadata as UserMetadata;
 }
 
-function readNumber(value: unknown,): number | null {
-  if (typeof value === 'number' && Number.isFinite(value,)) {
+function readNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
     return value;
   }
 
   if (typeof value === 'string' && value.trim().length > 0) {
-    const parsed = Number(value,);
-    if (Number.isFinite(parsed,)) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
       return parsed;
     }
   }
@@ -129,7 +131,7 @@ function readNumber(value: unknown,): number | null {
 
 function firstValidNumber(...candidates: unknown[]): number | null {
   for (const candidate of candidates) {
-    const value = readNumber(candidate,);
+    const value = readNumber(candidate);
     if (value !== null) {
       return value;
     }
@@ -138,23 +140,24 @@ function firstValidNumber(...candidates: unknown[]): number | null {
   return null;
 }
 
-function clampToPositiveInteger(value: number,): number {
-  if (!Number.isFinite(value,) || value < 0) {
+function clampToPositiveInteger(value: number): number {
+  if (!Number.isFinite(value) || value < 0) {
     return 0;
   }
 
-  return Math.floor(value,);
+  return Math.floor(value);
 }
 
-function getUserDashboardStats(user: User | null,): DashboardStats | null {
+function getUserDashboardStats(user: User | null): DashboardStats | null {
   if (!user) {
     return null;
   }
 
-  const metadata = getMetadata(user,);
-  const stats = typeof metadata.stats === 'object' && metadata.stats !== null
-    ? (metadata.stats as UserMetadata)
-    : {};
+  const metadata = getMetadata(user);
+  const stats =
+    typeof metadata.stats === 'object' && metadata.stats !== null
+      ? (metadata.stats as UserMetadata)
+      : {};
 
   return {
     totalAIRS: clampToPositiveInteger(
@@ -165,50 +168,52 @@ function getUserDashboardStats(user: User | null,): DashboardStats | null {
         metadata.totalAIRS,
         metadata.totalAirs,
         metadata.total_airs,
-        metadata.airs,
-      ) ?? 0,
+        metadata.airs
+      ) ?? 0
     ),
     activePositions: clampToPositiveInteger(
       firstValidNumber(
         stats.activePositions,
         stats.active_positions,
         metadata.activePositions,
-        metadata.active_positions,
-      ) ?? 0,
+        metadata.active_positions
+      ) ?? 0
     ),
     tokensHeld: clampToPositiveInteger(
       firstValidNumber(
         stats.tokensHeld,
         stats.tokens_held,
         metadata.tokensHeld,
-        metadata.tokens_held,
-      ) ?? 0,
+        metadata.tokens_held
+      ) ?? 0
     ),
     compensationsCompleted: clampToPositiveInteger(
       firstValidNumber(
         stats.compensationsCompleted,
         stats.compensations_completed,
         metadata.compensationsCompleted,
-        metadata.compensations_completed,
-      ) ?? 0,
+        metadata.compensations_completed
+      ) ?? 0
     ),
   };
 }
 
-function getUserProfileInfo(user: User | null,): ProfileInfo {
+function getUserProfileInfo(user: User | null): ProfileInfo {
   if (!user) {
-    return { displayName: 'Guest', };
+    return { displayName: 'Guest' };
   }
 
-  const metadata = getMetadata(user,);
-  const firstName = typeof metadata.firstName === 'string'
-    ? metadata.firstName
-    : typeof metadata.first_name === 'string'
+  const metadata = getMetadata(user);
+  const firstName =
+    typeof metadata.firstName === 'string'
+      ? metadata.firstName
+      : typeof metadata.first_name === 'string'
       ? metadata.first_name
       : '';
-  const lastName = typeof metadata.lastName === 'string'
-    ? metadata.lastName
-    : typeof metadata.last_name === 'string'
+  const lastName =
+    typeof metadata.lastName === 'string'
+      ? metadata.lastName
+      : typeof metadata.last_name === 'string'
       ? metadata.last_name
       : '';
 
@@ -224,29 +229,30 @@ function getUserProfileInfo(user: User | null,): ProfileInfo {
   ];
 
   const nameCandidate = rawNameCandidates.find(
-    (entry,): entry is string => typeof entry === 'string' && entry.trim().length > 0,
+    (entry): entry is string => typeof entry === 'string' && entry.trim().length > 0
   );
 
   const emailLocalPart =
-    typeof user.email === 'string' && user.email.includes('@',)
-      ? user.email.split('@',)[0]
+    typeof user.email === 'string' && user.email.includes('@')
+      ? user.email.split('@')[0]
       : undefined;
 
   return {
-    displayName: nameCandidate?.trim() || emailLocalPart || 'Account',
+    displayName: nameCandidate?.trim() ?? emailLocalPart ?? 'Account',
     email: user.email,
   };
 }
 
-function getWalletAddress(user: User | null,): string {
+function getWalletAddress(user: User | null): string {
   if (!user) {
     return '';
   }
 
-  const metadata = getMetadata(user,);
-  const walletObject = typeof metadata.wallet === 'object' && metadata.wallet !== null
-    ? (metadata.wallet as Record<string, unknown>)
-    : undefined;
+  const metadata = getMetadata(user);
+  const walletObject =
+    typeof metadata.wallet === 'object' && metadata.wallet !== null
+      ? (metadata.wallet as Record<string, unknown>)
+      : undefined;
 
   const metadataCandidates = [
     metadata.walletAddress,
@@ -257,17 +263,17 @@ function getWalletAddress(user: User | null,): string {
   ];
 
   for (const candidate of metadataCandidates) {
-    if (typeof candidate === 'string' && candidate.startsWith('0x',) && candidate.length >= 10) {
+    if (typeof candidate === 'string' && candidate.startsWith('0x') && candidate.length >= 10) {
       return candidate;
     }
   }
 
-  if (typeof user.providerUserId === 'string' && user.providerUserId.startsWith('0x',)) {
+  if (typeof user.providerUserId === 'string' && user.providerUserId.startsWith('0x')) {
     return user.providerUserId;
   }
 
-  if (user.id.includes('0x',)) {
-    const candidate = user.id.slice(user.id.indexOf('0x',),);
+  if (user.id.includes('0x')) {
+    const candidate = user.id.slice(user.id.indexOf('0x'));
     if (candidate.length >= 10) {
       return candidate;
     }
@@ -276,15 +282,16 @@ function getWalletAddress(user: User | null,): string {
   return '';
 }
 
-function getWalletProvider(user: User | null,): string | null {
+function getWalletProvider(user: User | null): string | null {
   if (!user) {
     return null;
   }
 
-  const metadata = getMetadata(user,);
-  const provider = typeof metadata.walletProvider === 'string'
-    ? metadata.walletProvider
-    : typeof metadata.wallet_provider === 'string'
+  const metadata = getMetadata(user);
+  const provider =
+    typeof metadata.walletProvider === 'string'
+      ? metadata.walletProvider
+      : typeof metadata.wallet_provider === 'string'
       ? metadata.wallet_provider
       : null;
 
@@ -292,23 +299,23 @@ function getWalletProvider(user: User | null,): string | null {
     return provider.toLowerCase();
   }
 
-  if (typeof user.provider === 'string' && user.provider.startsWith('wallet:',)) {
-    return user.provider.replace('wallet:', '',).toLowerCase();
+  if (typeof user.provider === 'string' && user.provider.startsWith('wallet:')) {
+    return user.provider.replace('wallet:', '').toLowerCase();
   }
 
   return null;
 }
 
-function getAuthMethodLabel(user: User | null,): string {
+function getAuthMethodLabel(user: User | null): string {
   if (!user) {
     return 'guest';
   }
 
-  if (user.provider && !user.provider.startsWith('wallet:',)) {
+  if (user.provider && !user.provider.startsWith('wallet:')) {
     return `auth: ${user.provider}`;
   }
 
-  if (user.provider && user.provider.startsWith('wallet:',)) {
+  if (user.provider && user.provider.startsWith('wallet:')) {
     return 'auth: wallet';
   }
 
@@ -319,7 +326,11 @@ function getAuthMethodLabel(user: User | null,): string {
   return 'auth: session';
 }
 
-function getAccessState(section: SectionConfig, user: User | null, walletConnected: boolean,): AccessState {
+function getAccessState(
+  section: SectionConfig,
+  user: User | null,
+  walletConnected: boolean
+): AccessState {
   if (!user) {
     return 'signin';
   }
@@ -333,68 +344,67 @@ function getAccessState(section: SectionConfig, user: User | null, walletConnect
 
 export default function Dashboard({
   user,
+  isLoading = false,
   onRequireSignIn,
   onOpenProfilePage,
   onOpenSettingsPage,
   onWalletConnect,
   onSignOut,
-}: DashboardProps,) {
-  const [walletModalVisible, setWalletModalVisible,] = useState(false,);
-  const [toasts, setToasts,] = useState<ToastMessage[]>([],);
-  const { themeMode, language, toggleThemeMode, cycleLanguage, } = useAppPreferences();
-  const { width, } = useWindowDimensions();
+}: DashboardProps) {
+  const [walletModalVisible, setWalletModalVisible] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
+  const { width } = useWindowDimensions();
   const isDark = themeMode === 'dark';
   const footerInset = width < 720 ? 90 : 102;
 
-  const addToast = useCallback((type: ToastMessage['type'], title: string, message: string,) => {
+  const addToast = useCallback((type: ToastMessage['type'], title: string, message: string) => {
     const id = `toast-${++toastIdCounter}`;
-    setToasts((prev,) => [...prev, { id, type, title, message, },],);
+    setToasts((prev) => [...prev, { id, type, title, message }]);
     setTimeout(() => {
-      setToasts((prev,) => prev.filter((t,) => t.id !== id,),);
-    }, 4000,);
-  }, [],);
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  }, []);
 
-  const dismissToast = useCallback((id: string,) => {
-    setToasts((prev,) => prev.filter((t,) => t.id !== id,),);
-  }, [],);
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
-  const walletAddress = getWalletAddress(user,);
-  const walletProvider = getWalletProvider(user,);
-  const walletConnected = Boolean(walletAddress || walletProvider,);
+  const walletAddress = getWalletAddress(user);
+  const walletProvider = getWalletProvider(user);
+  const walletConnected = Boolean(walletAddress || walletProvider);
   const atnEligible = walletConnected;
-  const authMethodLabel = getAuthMethodLabel(user,);
-  const userStats = useMemo(() => getUserDashboardStats(user,), [user,],);
-  const profileInfo = useMemo(() => getUserProfileInfo(user,), [user,],);
+  const authMethodLabel = getAuthMethodLabel(user);
+  const userStats = useMemo(() => getUserDashboardStats(user), [user]);
+  const profileInfo = useMemo(() => getUserProfileInfo(user), [user]);
 
   const handleRequireSignIn = useCallback(() => {
     onRequireSignIn();
-  }, [onRequireSignIn,],);
+  }, [onRequireSignIn]);
 
   const handleOpenWalletConnect = useCallback(() => {
     if (!user) {
-      addToast('info', 'Sign In Required', 'Sign in first to connect a wallet.',);
+      addToast('info', 'Sign In Required', 'Sign in first to connect a wallet.');
       onRequireSignIn();
       return;
     }
 
-    setWalletModalVisible(true,);
-  }, [addToast, onRequireSignIn, user,],);
+    setWalletModalVisible(true);
+  }, [addToast, onRequireSignIn, user]);
 
   const handleConnect = useCallback(
-    async (walletType: string,) => {
-      setWalletModalVisible(false,);
+    async (walletType: string) => {
+      setWalletModalVisible(false);
       try {
-        await onWalletConnect(walletType,);
-        addToast('success', 'Wallet Connected', 'Wallet authentication completed.',);
+        await onWalletConnect(walletType);
+        addToast('success', 'Wallet Connected', 'Wallet authentication completed.');
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : 'Unable to connect wallet at this time.';
-        addToast('error', 'Wallet Connection Failed', message,);
+          error instanceof Error ? error.message : 'Unable to connect wallet at this time.';
+        addToast('error', 'Wallet Connection Failed', message);
       }
     },
-    [addToast, onWalletConnect,],
+    [addToast, onWalletConnect]
   );
 
   const handleSignOut = useCallback(async () => {
@@ -406,124 +416,151 @@ export default function Dashboard({
     try {
       await onSignOut();
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Unable to sign out right now.';
-      addToast('error', 'Sign Out Failed', message,);
+      const message = error instanceof Error ? error.message : 'Unable to sign out right now.';
+      addToast('error', 'Sign Out Failed', message);
     }
-  }, [addToast, onRequireSignIn, onSignOut, user,],);
+  }, [addToast, onRequireSignIn, onSignOut, user]);
 
   const handleOpenProfile = useCallback(() => {
     onOpenProfilePage();
-  }, [onOpenProfilePage,],);
+  }, [onOpenProfilePage]);
 
   const handleOpenSettings = useCallback(() => {
     onOpenSettingsPage();
-  }, [onOpenSettingsPage,],);
+  }, [onOpenSettingsPage]);
 
   const sectionStates = useMemo(
     () =>
-      DASHBOARD_SECTIONS.map((section,) => ({
+      DASHBOARD_SECTIONS.map((section) => ({
         section,
-        accessState: getAccessState(section, user, walletConnected,),
-      }),),
-    [user, walletConnected,],
+        accessState: getAccessState(section, user, walletConnected),
+      })),
+    [user, walletConnected]
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={isDark ? '#050510' : '#f6f8fc'} />
-      <View style={[styles.container, { backgroundColor: isDark ? '#050510' : '#f6f8fc', },]}>
-        <TopNav
-          key={user ? 'topnav-signed-in' : 'topnav-signed-out'}
-          signedIn={Boolean(user,)}
-          walletConnected={walletConnected}
-          walletAddress={walletAddress}
-          atnEligible={atnEligible}
-          themeMode={themeMode}
-          language={language}
-          authMethodLabel={authMethodLabel}
-          userDisplayName={profileInfo.displayName}
-          userEmail={profileInfo.email}
-          onSignIn={handleRequireSignIn}
-          onConnectWallet={handleOpenWalletConnect}
-          onToggleTheme={toggleThemeMode}
-          onCycleLanguage={cycleLanguage}
-          onOpenProfile={handleOpenProfile}
-          onOpenSettings={handleOpenSettings}
-          onSignOut={() => {
-            void handleSignOut();
-          }}
+    <ThemeProvider mode={isDark ? 'dark' : 'light'}>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar
+          barStyle={isDark ? 'light-content' : 'dark-content'}
+          backgroundColor={isDark ? '#050510' : '#f6f8fc'}
         />
-
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: footerInset, },]}
-          showsVerticalScrollIndicator={false}
-        >
-          <HeroStats
-            totalAIRS={userStats ? userStats.totalAIRS : null}
-            activePositions={userStats ? userStats.activePositions : null}
-            tokensHeld={userStats ? userStats.tokensHeld : null}
-            compensationsCompleted={userStats ? userStats.compensationsCompleted : null}
-            previewMode={!user}
-            isDark={isDark}
+        <View style={[styles.container, { backgroundColor: isDark ? '#050510' : '#f6f8fc' }]}>
+          <TopNav
+            key={user ? 'topnav-signed-in' : 'topnav-signed-out'}
+            signedIn={Boolean(user)}
+            walletConnected={walletConnected}
+            walletAddress={walletAddress}
+            atnEligible={atnEligible}
+            themeMode={themeMode}
+            language={language}
+            authMethodLabel={authMethodLabel}
+            userDisplayName={profileInfo.displayName}
+            userEmail={profileInfo.email}
+            onSignIn={handleRequireSignIn}
+            onConnectWallet={handleOpenWalletConnect}
+            onToggleTheme={toggleThemeMode}
+            onCycleLanguage={cycleLanguage}
+            onOpenProfile={handleOpenProfile}
+            onOpenSettings={handleOpenSettings}
+            onSignOut={() => {
+              void handleSignOut();
+            }}
           />
 
-          {!user ? (
-            <View style={styles.authHintRow}>
-              <Text style={[styles.authHintText, { color: isDark ? 'rgba(232,232,255,0.72)' : '#475569', },]}>
-                Sign in from the top-right profile menu to activate actions.
-              </Text>
-            </View>
-          ) : null}
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={[styles.scrollContent, { paddingBottom: footerInset }]}
+            showsVerticalScrollIndicator={false}
+          >
+            <HeroStats
+              totalAIRS={userStats ? userStats.totalAIRS : null}
+              activePositions={userStats ? userStats.activePositions : null}
+              tokensHeld={userStats ? userStats.tokensHeld : null}
+              compensationsCompleted={userStats ? userStats.compensationsCompleted : null}
+              isLoading={isLoading}
+              previewMode={!user}
+              isDark={isDark}
+            />
 
-          {sectionStates.map(({ section, accessState, }, index,) => {
-            return (
-              <React.Fragment key={section.key}>
-                <SectionDivider isDark={isDark} />
-                <SectionLabel isDark={isDark} label={section.label} subtitle={section.subtitle} />
-                <SectionExperienceCard
-                  section={section}
-                  accessState={accessState}
-                  isDark={isDark}
-                  onConnectWallet={handleOpenWalletConnect}
-                  onSignOut={() => {
-                    void handleSignOut();
-                  }}
-                  onInteract={(actionLabel,) => {
-                    addToast(
-                      'info',
-                      'Work in progress',
-                      `${section.label}: ${actionLabel} will be enabled in the next release.`,
-                    );
-                  }}
-                />
-                {index === sectionStates.length - 1 ? <View style={styles.bottomSpacer} /> : null}
-              </React.Fragment>
-            );
-          },)}
-        </ScrollView>
+            {!user ? (
+              <View style={styles.authHintRow}>
+                <Text
+                  style={[
+                    styles.authHintText,
+                    { color: isDark ? 'rgba(232,232,255,0.72)' : '#475569' },
+                  ]}
+                >
+                  Sign in from the top-right profile menu to activate actions.
+                </Text>
+              </View>
+            ) : null}
 
-        <View pointerEvents='box-none' style={styles.footerOverlay}>
-          <AppInfoFooter />
+            {sectionStates.map(({ section, accessState }, index) => {
+              return (
+                <React.Fragment key={section.key}>
+                  <SectionDivider isDark={isDark} />
+                  {isLoading ? (
+                    <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
+                      <SectionHeaderSkeleton />
+                    </View>
+                  ) : (
+                    <SectionLabel
+                      isDark={isDark}
+                      label={section.label}
+                      subtitle={section.subtitle}
+                    />
+                  )}
+                  <SectionExperienceCard
+                    section={section}
+                    accessState={accessState}
+                    isDark={isDark}
+                    onConnectWallet={handleOpenWalletConnect}
+                    onSignOut={() => {
+                      void handleSignOut();
+                    }}
+                    onInteract={(actionLabel) => {
+                      addToast(
+                        'info',
+                        'Work in progress',
+                        `${section.label}: ${actionLabel} will be enabled in the next release.`
+                      );
+                    }}
+                  />
+                  {index === sectionStates.length - 1 ? <View style={styles.bottomSpacer} /> : null}
+                </React.Fragment>
+              );
+            })}
+          </ScrollView>
+
+          <View pointerEvents='box-none' style={styles.footerOverlay}>
+            <AppInfoFooter />
+          </View>
+
+          <WalletConnectModal
+            visible={walletModalVisible}
+            onClose={() => setWalletModalVisible(false)}
+            onConnect={(walletType) => {
+              void handleConnect(walletType);
+            }}
+          />
+
+          <ToastSystem toasts={toasts} onDismiss={dismissToast} />
         </View>
-
-        <WalletConnectModal
-          visible={walletModalVisible}
-          onClose={() => setWalletModalVisible(false,)}
-          onConnect={(walletType,) => {
-            void handleConnect(walletType,);
-          }}
-        />
-
-        <ToastSystem toasts={toasts} onDismiss={dismissToast} />
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ThemeProvider>
   );
 }
 
-function SectionDivider({ isDark, }: { isDark: boolean },) {
-  return <View style={[sectionStyles.divider, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.12)', },]} />;
+function SectionDivider({ isDark }: { isDark: boolean }) {
+  return (
+    <View
+      style={[
+        sectionStyles.divider,
+        { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.12)' },
+      ]}
+    />
+  );
 }
 
 function SectionLabel({
@@ -534,14 +571,23 @@ function SectionLabel({
   isDark: boolean;
   label: string;
   subtitle?: string;
-},) {
+}) {
   return (
     <View style={sectionStyles.labelContainer}>
       <View style={sectionStyles.labelAccent} />
       <View>
-        <Text style={[sectionStyles.label, { color: isDark ? 'rgba(232,232,255,0.95)' : '#0f172a', },]}>{label}</Text>
+        <Text
+          style={[sectionStyles.label, { color: isDark ? 'rgba(232,232,255,0.95)' : '#0f172a' }]}
+        >
+          {label}
+        </Text>
         {subtitle ? (
-          <Text style={[sectionStyles.sublabel, { color: isDark ? 'rgba(232,232,255,0.8)' : '#475569', },]}>
+          <Text
+            style={[
+              sectionStyles.sublabel,
+              { color: isDark ? 'rgba(232,232,255,0.8)' : '#475569' },
+            ]}
+          >
             {subtitle}
           </Text>
         ) : null}
@@ -580,7 +626,7 @@ interface ExperiencePalette {
   overlaySecondaryText: string;
 }
 
-function getExperiencePalette(isDark: boolean,): ExperiencePalette {
+function getExperiencePalette(isDark: boolean): ExperiencePalette {
   if (isDark) {
     return {
       cardBg: 'rgba(255,255,255,0.03)',
@@ -633,13 +679,18 @@ function SectionExperienceCard({
   onConnectWallet,
   onSignOut,
   onInteract,
-}: SectionExperienceCardProps,) {
+}: SectionExperienceCardProps) {
   const locked = accessState !== 'integration';
   const showOverlay = accessState === 'wallet';
-  const palette = getExperiencePalette(isDark,);
+  const palette = getExperiencePalette(isDark);
 
   return (
-    <View style={[experienceStyles.card, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder, },]}>
+    <View
+      style={[
+        experienceStyles.card,
+        { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
+      ]}
+    >
       <SectionPreview
         sectionKey={section.key}
         isDark={isDark}
@@ -648,11 +699,13 @@ function SectionExperienceCard({
       />
 
       {showOverlay ? (
-        <View style={[experienceStyles.overlay, { backgroundColor: palette.overlayBg, },]}>
-          <Text style={[experienceStyles.overlayTitle, { color: palette.overlayTitle, },]}>
+        <View style={[experienceStyles.overlay, { backgroundColor: palette.overlayBg }]}>
+          <Text style={[experienceStyles.overlayTitle, { color: palette.overlayTitle }]}>
             Connect wallet to activate this section
           </Text>
-          <Text style={[experienceStyles.overlayDescription, { color: palette.overlayDescription, },]}>
+          <Text
+            style={[experienceStyles.overlayDescription, { color: palette.overlayDescription }]}
+          >
             You can preview the final UI now. Actions will unlock after wallet linking.
           </Text>
           <View style={experienceStyles.overlayActions}>
@@ -674,7 +727,14 @@ function SectionExperienceCard({
               onPress={onSignOut}
               activeOpacity={0.85}
             >
-              <Text style={[experienceStyles.overlaySecondaryText, { color: palette.overlaySecondaryText, },]}>Sign Out</Text>
+              <Text
+                style={[
+                  experienceStyles.overlaySecondaryText,
+                  { color: palette.overlaySecondaryText },
+                ]}
+              >
+                Sign Out
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -690,38 +750,52 @@ interface SectionPreviewProps {
   onInteract: (actionLabel: string) => void;
 }
 
-function SectionPreview({ sectionKey, isDark, disabled, onInteract, }: SectionPreviewProps,) {
-  const palette = getExperiencePalette(isDark,);
+function SectionPreview({ sectionKey, isDark, disabled, onInteract }: SectionPreviewProps) {
+  const palette = getExperiencePalette(isDark);
   const disabledActionStyle = disabled ? experienceStyles.actionDisabled : null;
   const disabledActionTextStyle = disabled ? experienceStyles.actionTextDisabled : null;
 
-  const run = (label: string,) => {
+  const run = (label: string) => {
     if (disabled) {
       return;
     }
-    onInteract(label,);
+    onInteract(label);
   };
 
   if (sectionKey === 'compensation') {
     return (
       <View style={experienceStyles.previewBlock}>
-        <Text style={[experienceStyles.previewTitle, { color: palette.title, },]}>Offset Checkout</Text>
-        <View style={[experienceStyles.metricRow, { backgroundColor: palette.rowBg, borderColor: palette.rowBorder, },]}>
-          <Text style={[experienceStyles.metricLabel, { color: palette.muted, },]}>Project</Text>
-          <Text style={[experienceStyles.metricValue, { color: palette.strong, },]}>Not selected</Text>
+        <Text style={[experienceStyles.previewTitle, { color: palette.title }]}>
+          Offset Checkout
+        </Text>
+        <View
+          style={[
+            experienceStyles.metricRow,
+            { backgroundColor: palette.rowBg, borderColor: palette.rowBorder },
+          ]}
+        >
+          <Text style={[experienceStyles.metricLabel, { color: palette.muted }]}>Project</Text>
+          <Text style={[experienceStyles.metricValue, { color: palette.strong }]}>
+            Not selected
+          </Text>
         </View>
-        <View style={[experienceStyles.metricRow, { backgroundColor: palette.rowBg, borderColor: palette.rowBorder, },]}>
-          <Text style={[experienceStyles.metricLabel, { color: palette.muted, },]}>Amount</Text>
-          <Text style={[experienceStyles.metricValue, { color: palette.strong, },]}>$0.00</Text>
+        <View
+          style={[
+            experienceStyles.metricRow,
+            { backgroundColor: palette.rowBg, borderColor: palette.rowBorder },
+          ]}
+        >
+          <Text style={[experienceStyles.metricLabel, { color: palette.muted }]}>Amount</Text>
+          <Text style={[experienceStyles.metricValue, { color: palette.strong }]}>$0.00</Text>
         </View>
         <View style={experienceStyles.previewActions}>
           <TouchableOpacity
-            style={[experienceStyles.previewActionPrimary, disabledActionStyle,]}
+            style={[experienceStyles.previewActionPrimary, disabledActionStyle]}
             disabled={disabled}
-            onPress={() => run('Open checkout',)}
+            onPress={() => run('Open checkout')}
             activeOpacity={0.8}
           >
-            <Text style={[experienceStyles.previewActionPrimaryText, disabledActionTextStyle,]}>
+            <Text style={[experienceStyles.previewActionPrimaryText, disabledActionTextStyle]}>
               Preview Checkout
             </Text>
           </TouchableOpacity>
@@ -735,10 +809,16 @@ function SectionPreview({ sectionKey, isDark, disabled, onInteract, }: SectionPr
               disabledActionStyle,
             ]}
             disabled={disabled}
-            onPress={() => run('Issue certificate',)}
+            onPress={() => run('Issue certificate')}
             activeOpacity={0.8}
           >
-            <Text style={[experienceStyles.previewActionSecondaryText, { color: palette.secondaryButtonText, }, disabledActionTextStyle,]}>
+            <Text
+              style={[
+                experienceStyles.previewActionSecondaryText,
+                { color: palette.secondaryButtonText },
+                disabledActionTextStyle,
+              ]}
+            >
               Issue SBT
             </Text>
           </TouchableOpacity>
@@ -751,20 +831,24 @@ function SectionPreview({ sectionKey, isDark, disabled, onInteract, }: SectionPr
     return (
       <View style={experienceStyles.previewBlock}>
         <View style={experienceStyles.tokenRow}>
-          <Text style={[experienceStyles.tokenId, { color: palette.strong, },]}>Token #000</Text>
+          <Text style={[experienceStyles.tokenId, { color: palette.strong }]}>Token #000</Text>
           <View style={experienceStyles.statusPill}>
             <Text style={experienceStyles.statusPillText}>Free</Text>
           </View>
         </View>
-        <Text style={[experienceStyles.tokenMeta, { color: palette.muted, },]}>Acquisition: $0.00</Text>
+        <Text style={[experienceStyles.tokenMeta, { color: palette.muted }]}>
+          Acquisition: $0.00
+        </Text>
         <View style={experienceStyles.previewActions}>
           <TouchableOpacity
-            style={[experienceStyles.previewActionPrimary, disabledActionStyle,]}
+            style={[experienceStyles.previewActionPrimary, disabledActionStyle]}
             disabled={disabled}
-            onPress={() => run('Deposit token to pool',)}
+            onPress={() => run('Deposit token to pool')}
             activeOpacity={0.8}
           >
-            <Text style={[experienceStyles.previewActionPrimaryText, disabledActionTextStyle,]}>Deposit</Text>
+            <Text style={[experienceStyles.previewActionPrimaryText, disabledActionTextStyle]}>
+              Deposit
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -776,10 +860,16 @@ function SectionPreview({ sectionKey, isDark, disabled, onInteract, }: SectionPr
               disabledActionStyle,
             ]}
             disabled={disabled}
-            onPress={() => run('Retire token',)}
+            onPress={() => run('Retire token')}
             activeOpacity={0.8}
           >
-            <Text style={[experienceStyles.previewActionSecondaryText, { color: palette.secondaryButtonText, }, disabledActionTextStyle,]}>
+            <Text
+              style={[
+                experienceStyles.previewActionSecondaryText,
+                { color: palette.secondaryButtonText },
+                disabledActionTextStyle,
+              ]}
+            >
               Retire
             </Text>
           </TouchableOpacity>
@@ -793,10 +883,16 @@ function SectionPreview({ sectionKey, isDark, disabled, onInteract, }: SectionPr
               disabledActionStyle,
             ]}
             disabled={disabled}
-            onPress={() => run('Transfer token',)}
+            onPress={() => run('Transfer token')}
             activeOpacity={0.8}
           >
-            <Text style={[experienceStyles.previewActionSecondaryText, { color: palette.secondaryButtonText, }, disabledActionTextStyle,]}>
+            <Text
+              style={[
+                experienceStyles.previewActionSecondaryText,
+                { color: palette.secondaryButtonText },
+                disabledActionTextStyle,
+              ]}
+            >
               Transfer
             </Text>
           </TouchableOpacity>
@@ -808,26 +904,36 @@ function SectionPreview({ sectionKey, isDark, disabled, onInteract, }: SectionPr
   if (sectionKey === 'pool') {
     return (
       <View style={experienceStyles.previewBlock}>
-        <View style={[experienceStyles.metricRow, { backgroundColor: palette.rowBg, borderColor: palette.rowBorder, },]}>
-          <Text style={[experienceStyles.metricLabel, { color: palette.muted, },]}>Position</Text>
-          <Text style={[experienceStyles.metricValue, { color: palette.strong, },]}>POS-000</Text>
+        <View
+          style={[
+            experienceStyles.metricRow,
+            { backgroundColor: palette.rowBg, borderColor: palette.rowBorder },
+          ]}
+        >
+          <Text style={[experienceStyles.metricLabel, { color: palette.muted }]}>Position</Text>
+          <Text style={[experienceStyles.metricValue, { color: palette.strong }]}>POS-000</Text>
         </View>
-        <View style={[experienceStyles.metricRow, { backgroundColor: palette.rowBg, borderColor: palette.rowBorder, },]}>
-          <Text style={[experienceStyles.metricLabel, { color: palette.muted, },]}>Total Value</Text>
-          <Text style={[experienceStyles.metricValue, { color: palette.strong, },]}>$0.00</Text>
+        <View
+          style={[
+            experienceStyles.metricRow,
+            { backgroundColor: palette.rowBg, borderColor: palette.rowBorder },
+          ]}
+        >
+          <Text style={[experienceStyles.metricLabel, { color: palette.muted }]}>Total Value</Text>
+          <Text style={[experienceStyles.metricValue, { color: palette.strong }]}>$0.00</Text>
         </View>
-        <View style={[experienceStyles.progressTrack, { backgroundColor: palette.progressTrack, },]}>
-          <View style={[experienceStyles.progressFill, { width: '0%', },]} />
+        <View style={[experienceStyles.progressTrack, { backgroundColor: palette.progressTrack }]}>
+          <View style={[experienceStyles.progressFill, { width: '0%' }]} />
         </View>
-        <Text style={[experienceStyles.progressText, { color: palette.muted, },]}>Sold 0.0%</Text>
+        <Text style={[experienceStyles.progressText, { color: palette.muted }]}>Sold 0.0%</Text>
         <View style={experienceStyles.previewActions}>
           <TouchableOpacity
-            style={[experienceStyles.previewActionPrimary, disabledActionStyle,]}
+            style={[experienceStyles.previewActionPrimary, disabledActionStyle]}
             disabled={disabled}
-            onPress={() => run('Claim proceeds',)}
+            onPress={() => run('Claim proceeds')}
             activeOpacity={0.8}
           >
-            <Text style={[experienceStyles.previewActionPrimaryText, disabledActionTextStyle,]}>
+            <Text style={[experienceStyles.previewActionPrimaryText, disabledActionTextStyle]}>
               Claim Proceeds
             </Text>
           </TouchableOpacity>
@@ -842,15 +948,23 @@ function SectionPreview({ sectionKey, isDark, disabled, onInteract, }: SectionPr
         <View style={experienceStyles.feedRow}>
           <View style={experienceStyles.feedDot} />
           <View style={experienceStyles.feedTextColumn}>
-            <Text style={[experienceStyles.feedTitle, { color: palette.strong, },]}>No Airs activity yet</Text>
-            <Text style={[experienceStyles.feedMeta, { color: palette.muted, },]}>Connect integrations to stream events</Text>
+            <Text style={[experienceStyles.feedTitle, { color: palette.strong }]}>
+              No Airs activity yet
+            </Text>
+            <Text style={[experienceStyles.feedMeta, { color: palette.muted }]}>
+              Connect integrations to stream events
+            </Text>
           </View>
         </View>
         <View style={experienceStyles.feedRow}>
-          <View style={[experienceStyles.feedDotMuted, { backgroundColor: palette.feedDotMuted, },]} />
+          <View
+            style={[experienceStyles.feedDotMuted, { backgroundColor: palette.feedDotMuted }]}
+          />
           <View style={experienceStyles.feedTextColumn}>
-            <Text style={[experienceStyles.feedTitleMuted, { color: palette.muted, },]}>Ledger reference</Text>
-            <Text style={[experienceStyles.feedMeta, { color: palette.muted, },]}>0x0000...0000</Text>
+            <Text style={[experienceStyles.feedTitleMuted, { color: palette.muted }]}>
+              Ledger reference
+            </Text>
+            <Text style={[experienceStyles.feedMeta, { color: palette.muted }]}>0x0000...0000</Text>
           </View>
         </View>
         <View style={experienceStyles.previewActions}>
@@ -864,10 +978,16 @@ function SectionPreview({ sectionKey, isDark, disabled, onInteract, }: SectionPr
               disabledActionStyle,
             ]}
             disabled={disabled}
-            onPress={() => run('Refresh ledger feed',)}
+            onPress={() => run('Refresh ledger feed')}
             activeOpacity={0.8}
           >
-            <Text style={[experienceStyles.previewActionSecondaryText, { color: palette.secondaryButtonText, }, disabledActionTextStyle,]}>
+            <Text
+              style={[
+                experienceStyles.previewActionSecondaryText,
+                { color: palette.secondaryButtonText },
+                disabledActionTextStyle,
+              ]}
+            >
               Refresh Feed
             </Text>
           </TouchableOpacity>
@@ -878,22 +998,32 @@ function SectionPreview({ sectionKey, isDark, disabled, onInteract, }: SectionPr
 
   return (
     <View style={experienceStyles.previewBlock}>
-      <View style={[experienceStyles.metricRow, { backgroundColor: palette.rowBg, borderColor: palette.rowBorder, },]}>
-        <Text style={[experienceStyles.metricLabel, { color: palette.muted, },]}>Certificate</Text>
-        <Text style={[experienceStyles.metricValue, { color: palette.strong, },]}>SBT-000</Text>
+      <View
+        style={[
+          experienceStyles.metricRow,
+          { backgroundColor: palette.rowBg, borderColor: palette.rowBorder },
+        ]}
+      >
+        <Text style={[experienceStyles.metricLabel, { color: palette.muted }]}>Certificate</Text>
+        <Text style={[experienceStyles.metricValue, { color: palette.strong }]}>SBT-000</Text>
       </View>
-      <View style={[experienceStyles.metricRow, { backgroundColor: palette.rowBg, borderColor: palette.rowBorder, },]}>
-        <Text style={[experienceStyles.metricLabel, { color: palette.muted, },]}>Impact</Text>
-        <Text style={[experienceStyles.metricValue, { color: palette.strong, },]}>0.00 tCO₂</Text>
+      <View
+        style={[
+          experienceStyles.metricRow,
+          { backgroundColor: palette.rowBg, borderColor: palette.rowBorder },
+        ]}
+      >
+        <Text style={[experienceStyles.metricLabel, { color: palette.muted }]}>Impact</Text>
+        <Text style={[experienceStyles.metricValue, { color: palette.strong }]}>0.00 tCO₂</Text>
       </View>
       <View style={experienceStyles.previewActions}>
         <TouchableOpacity
-          style={[experienceStyles.previewActionPrimary, disabledActionStyle,]}
+          style={[experienceStyles.previewActionPrimary, disabledActionStyle]}
           disabled={disabled}
-          onPress={() => run('Open certificate viewer',)}
+          onPress={() => run('Open certificate viewer')}
           activeOpacity={0.8}
         >
-          <Text style={[experienceStyles.previewActionPrimaryText, disabledActionTextStyle,]}>
+          <Text style={[experienceStyles.previewActionPrimaryText, disabledActionTextStyle]}>
             View Certificate
           </Text>
         </TouchableOpacity>
@@ -907,10 +1037,16 @@ function SectionPreview({ sectionKey, isDark, disabled, onInteract, }: SectionPr
             disabledActionStyle,
           ]}
           disabled={disabled}
-          onPress={() => run('Share certificate',)}
+          onPress={() => run('Share certificate')}
           activeOpacity={0.8}
         >
-          <Text style={[experienceStyles.previewActionSecondaryText, { color: palette.secondaryButtonText, }, disabledActionTextStyle,]}>
+          <Text
+            style={[
+              experienceStyles.previewActionSecondaryText,
+              { color: palette.secondaryButtonText },
+              disabledActionTextStyle,
+            ]}
+          >
             Share
           </Text>
         </TouchableOpacity>
@@ -952,7 +1088,7 @@ const sectionStyles = createTypographyStyles({
     fontSize: 11,
     marginTop: 1,
   },
-},);
+});
 
 const experienceStyles = createTypographyStyles({
   card: {
@@ -1161,7 +1297,7 @@ const experienceStyles = createTypographyStyles({
     fontSize: 12,
     fontWeight: '700',
   },
-},);
+});
 
 const styles = createTypographyStyles({
   safeArea: {
@@ -1196,4 +1332,4 @@ const styles = createTypographyStyles({
     bottom: 0,
     zIndex: 10,
   },
-},);
+});
