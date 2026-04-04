@@ -358,6 +358,15 @@ def upsert_source_stage_flow(
     if stage_binding_created or stage_binding_changed:
         flow_changed = True
 
+    # Keep these source-login flows deterministic. If an earlier bootstrap run
+    # created a different stage for the same source, prune the stale binding so
+    # the flow stays a single-stage relay instead of accumulating leftovers.
+    stale_bindings = FlowStageBinding.objects.filter(target=flow).exclude(stage_id=stage.pk)
+    stale_binding_count = stale_bindings.count()
+    if stale_binding_count:
+        stale_bindings.delete()
+        flow_changed = True
+
     return flow, flow_created, flow_changed, stage, stage_created, stage_changed
 
 
