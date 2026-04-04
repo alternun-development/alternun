@@ -468,7 +468,10 @@ export function hasPendingAuthentikCallback(searchString?: string): boolean {
  */
 export async function startAuthentikOAuthFlow(
   providerHint: 'google' | 'discord',
-  options: { forceFreshSession?: boolean } = {}
+  options: {
+    forceFreshSession?: boolean;
+    providerFlowSlugs?: Partial<Record<'google' | 'discord', string>>;
+  } = {}
 ): Promise<void> {
   const issuer = getAuthentikIssuer();
   const clientId = getAuthentikClientId();
@@ -507,7 +510,7 @@ export async function startAuthentikOAuthFlow(
     redirectUri,
     state,
     codeChallenge: challenge,
-    providerFlowSlugs: AUTHENTIK_PROVIDER_FLOW_SLUGS,
+    providerFlowSlugs: options.providerFlowSlugs,
   });
 }
 
