@@ -18,7 +18,8 @@ function shouldPreferBrowserOrigin(explicitRedirectUri, browserOrigin) {
 }
 export function resolveAuthentikRedirectUri(explicitRedirectUri, browserOrigin) {
     const normalizedExplicitRedirectUri = explicitRedirectUri === null || explicitRedirectUri === void 0 ? void 0 : explicitRedirectUri.trim();
-    if (normalizedExplicitRedirectUri && !shouldPreferBrowserOrigin(normalizedExplicitRedirectUri, browserOrigin)) {
+    if (normalizedExplicitRedirectUri &&
+        !shouldPreferBrowserOrigin(normalizedExplicitRedirectUri, browserOrigin)) {
         return normalizedExplicitRedirectUri;
     }
     const normalizedBrowserOrigin = browserOrigin === null || browserOrigin === void 0 ? void 0 : browserOrigin.trim();

@@ -20,7 +20,9 @@ export {
   buildAuthentikRelayPath,
   buildAuthentikRelayRoute,
   getAuthentikLoginEntryMode,
+  getAuthentikSocialLoginMode,
   normalizeAuthentikLoginEntryMode,
+  normalizeAuthentikSocialLoginMode,
   parseAuthentikProviderFlowSlugs,
   resolveAuthentikLoginStrategy,
   resolveAuthentikProviderFlowSlugs,
@@ -30,6 +32,7 @@ export {
   type AuthentikProviderFlowSlugs,
   type AuthentikRelayProvider,
   type AuthentikRelayRoute,
+  type AuthentikSocialLoginMode,
   type ResolveAuthentikLoginStrategyOptions,
 } from './mobile/authEntry';
 

@@ -227,6 +227,9 @@ The mobile web auth surface supports two Authentik entry patterns:
 
 Control the mode with `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE` in repo env, pipeline env, or `packages/infra/config/deployment.config.json`.
 The default is `relay`, which is the most flexible option for return-target handling and future flow changes.
+Use `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` to control whether the app uses Authentik-only social login, the hybrid Authentik/Supabase fallback path, or Supabase-only login.
+Set it to `authentik` on testnet when you want the Discord/Google buttons to stay on Authentik and never fall back to Supabase.
+The core web pipelines set `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` so deployed bundles stay on Authentik by default; local web dev can still opt into `hybrid` if needed.
 `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` is optional in deployed web builds; when omitted, the shared auth helpers derive the callback from the current browser origin. Loopback values are treated as local-dev hints and browser origin wins during web development. Keep it explicit only if you need a non-standard callback path.
 If you want the optional custom Authentik source-stage pattern, set `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` in infra config. The mobile bundle derives `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` from that setting automatically. Leave it empty for direct source login.
 The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages so logout returns to the app instead of stopping on Authentik's success page.
@@ -305,6 +308,7 @@ Important behavior:
 - non-production identity persists Traefik ACME state locally and backs it up to a private S3 bucket for restore after instance replacement
 - production identity defaults to ALB + ACM, with the ALB terminating TLS and forwarding HTTPS to the instance
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
+- `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` keeps the mobile social login path on Authentik and disables Supabase fallback in the web bundle
 - local development can point the default internal app tile, the admin app tile/callbacks, and the mobile OIDC callbacks at localhost via `INFRA_IDENTITY_ADMIN_OIDC_LOCAL_DEV_URL` and `INFRA_MOBILE_OIDC_REDIRECT_URLS`
 - when Supabase management token/project ref are provided, infra patches Supabase `external_keycloak_*` settings automatically
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
