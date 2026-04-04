@@ -1,20 +1,24 @@
 export type AuthentikLoginEntryMode = 'relay' | 'source';
+export type AuthentikSocialLoginMode = 'authentik' | 'hybrid' | 'supabase';
 export type AuthentikRelayProvider = 'google' | 'discord';
 export type AuthentikProviderFlowSlugs = Partial<Record<AuthentikRelayProvider, string>>;
 
 export interface AuthentikLoginStrategy {
   mode: AuthentikLoginEntryMode;
+  socialMode: AuthentikSocialLoginMode;
   providerFlowSlugs: AuthentikProviderFlowSlugs;
 }
 
 export interface ResolveAuthentikLoginStrategyOptions {
   hostname?: string | null;
   entryMode?: string | undefined | null;
+  socialMode?: string | undefined | null;
   providerFlowSlugsValue?: string | undefined | null;
 }
 
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
 const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE: AuthentikLoginEntryMode = 'relay';
+const DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE: AuthentikSocialLoginMode = 'hybrid';
 
 function normalizeHostname(value: string | undefined | null): string {
   return (value ?? '').trim().toLowerCase();
@@ -71,8 +75,23 @@ export function normalizeAuthentikLoginEntryMode(
   return DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE;
 }
 
+export function normalizeAuthentikSocialLoginMode(
+  value: string | undefined | null
+): AuthentikSocialLoginMode {
+  const normalized = value?.trim().toLowerCase();
+  if (normalized === 'authentik' || normalized === 'hybrid' || normalized === 'supabase') {
+    return normalized;
+  }
+
+  return DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE;
+}
+
 export function getAuthentikLoginEntryMode(): AuthentikLoginEntryMode {
   return normalizeAuthentikLoginEntryMode(process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE);
+}
+
+export function getAuthentikSocialLoginMode(): AuthentikSocialLoginMode {
+  return normalizeAuthentikSocialLoginMode(process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE);
 }
 
 export function shouldUseAuthentikRelayEntry(): boolean {
@@ -85,6 +104,9 @@ export function resolveAuthentikLoginStrategy(
   return {
     mode: normalizeAuthentikLoginEntryMode(
       options?.entryMode ?? process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE
+    ),
+    socialMode: normalizeAuthentikSocialLoginMode(
+      options?.socialMode ?? process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE
     ),
     providerFlowSlugs: resolveAuthentikProviderFlowSlugs({
       hostname: options?.hostname,

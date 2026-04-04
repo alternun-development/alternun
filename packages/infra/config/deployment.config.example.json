@@ -31,7 +31,8 @@
       "output": "dist"
     },
     "publicEnv": {
-      "authentikLoginEntryMode": "relay"
+      "authentikLoginEntryMode": "relay",
+      "authentikSocialLoginMode": "authentik"
     }
   },
   "redirects": {

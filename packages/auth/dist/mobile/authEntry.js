@@ -1,5 +1,6 @@
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
 const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE = 'relay';
+const DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE = 'hybrid';
 function normalizeHostname(value) {
     return (value !== null && value !== void 0 ? value : '').trim().toLowerCase();
 }
@@ -37,19 +38,30 @@ export function normalizeAuthentikLoginEntryMode(value) {
     }
     return DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE;
 }
+export function normalizeAuthentikSocialLoginMode(value) {
+    const normalized = value === null || value === void 0 ? void 0 : value.trim().toLowerCase();
+    if (normalized === 'authentik' || normalized === 'hybrid' || normalized === 'supabase') {
+        return normalized;
+    }
+    return DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE;
+}
 export function getAuthentikLoginEntryMode() {
     return normalizeAuthentikLoginEntryMode(process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE);
+}
+export function getAuthentikSocialLoginMode() {
+    return normalizeAuthentikSocialLoginMode(process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE);
 }
 export function shouldUseAuthentikRelayEntry() {
     return getAuthentikLoginEntryMode() === 'relay';
 }
 export function resolveAuthentikLoginStrategy(options) {
-    var _a, _b;
+    var _a, _b, _c;
     return {
         mode: normalizeAuthentikLoginEntryMode((_a = options === null || options === void 0 ? void 0 : options.entryMode) !== null && _a !== void 0 ? _a : process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE),
+        socialMode: normalizeAuthentikSocialLoginMode((_b = options === null || options === void 0 ? void 0 : options.socialMode) !== null && _b !== void 0 ? _b : process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE),
         providerFlowSlugs: resolveAuthentikProviderFlowSlugs({
             hostname: options === null || options === void 0 ? void 0 : options.hostname,
-            value: (_b = options === null || options === void 0 ? void 0 : options.providerFlowSlugsValue) !== null && _b !== void 0 ? _b : process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS,
+            value: (_c = options === null || options === void 0 ? void 0 : options.providerFlowSlugsValue) !== null && _c !== void 0 ? _c : process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS,
         }),
     };
 }

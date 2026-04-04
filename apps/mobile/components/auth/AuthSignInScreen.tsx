@@ -240,7 +240,17 @@ export default function AuthSignInScreen({
   const themeLabel = p.isDark ? t('labels.dark') : t('labels.light');
   const loginStrategy = resolveAuthentikLoginStrategy();
   const authentikLoginEntryMode = loginStrategy.mode;
+  const authentikSocialLoginMode = loginStrategy.socialMode;
   const providerFlowSlugs = loginStrategy.providerFlowSlugs;
+  const authentikConfigured = isAuthentikConfigured();
+  const shouldUseAuthentikSocialLogin = authentikSocialLoginMode !== 'supabase';
+  const shouldForceAuthentikSocialLogin = authentikSocialLoginMode === 'authentik';
+  const shouldShowAuthentikSocialButtons =
+    shouldUseAuthentikSocialLogin && (shouldForceAuthentikSocialLogin || authentikConfigured);
+  const shouldUseAuthentikRelayEntry =
+    authentikLoginEntryMode === 'relay' &&
+    shouldShowAuthentikSocialButtons &&
+    (authentikSocialLoginMode !== 'authentik' || authentikConfigured);
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -312,7 +322,7 @@ export default function AuthSignInScreen({
 
     clearPendingAuthentikOAuthProvider();
     setSubmitMode(pendingProvider);
-    if (authentikLoginEntryMode === 'relay' && isAuthentikConfigured()) {
+    if (shouldUseAuthentikRelayEntry) {
       router.replace(
         buildAuthentikRelayRoute(pendingProvider, {
           next: authReturnTo,
@@ -329,7 +339,7 @@ export default function AuthSignInScreen({
       .finally(() => {
         setSubmitMode(null);
       });
-  }, [authReturnTo, authentikLoginEntryMode, router, t]);
+  }, [authReturnTo, router, shouldUseAuthentikRelayEntry, t]);
 
   const transitionToStep = (step: AuthStep) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -618,7 +628,7 @@ export default function AuthSignInScreen({
     resetMessages();
     setSubmitMode('google');
     try {
-      if (Platform.OS === 'web' && authentikLoginEntryMode === 'relay' && isAuthentikConfigured()) {
+      if (Platform.OS === 'web' && shouldUseAuthentikRelayEntry) {
         router.replace(
           buildAuthentikRelayRoute('google', {
             next: authReturnTo,
@@ -628,8 +638,13 @@ export default function AuthSignInScreen({
         return;
       }
 
-      // Try Authentik OIDC first (vendor-independent); falls back to Supabase Auth
-      // when Authentik env vars are not configured.
+      // Try Authentik OIDC first (vendor-independent). In hybrid mode we
+      // fall back to Supabase Auth when Authentik env vars are not configured.
+      if (!shouldUseAuthentikSocialLogin) {
+        await signIn({ provider: googleProvider, flow: googleFlow });
+        return;
+      }
+
       await startAuthentikOAuthFlow('google', {
         forceFreshSession: true,
         providerFlowSlugs,
@@ -637,7 +652,9 @@ export default function AuthSignInScreen({
       // startAuthentikOAuthFlow redirects the page; code below only runs on error.
     } catch (oidcError) {
       const msg = oidcError instanceof Error ? oidcError.message : '';
-      if (msg.startsWith('CONFIG_ERROR')) {
+      if (shouldForceAuthentikSocialLogin) {
+        setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
+      } else if (msg.startsWith('CONFIG_ERROR')) {
         // Authentik not configured — fall back to Supabase Auth OAuth
         try {
           await signIn({ provider: googleProvider, flow: googleFlow });
@@ -656,13 +673,18 @@ export default function AuthSignInScreen({
     resetMessages();
     setSubmitMode('discord');
     try {
-      if (Platform.OS === 'web' && authentikLoginEntryMode === 'relay' && isAuthentikConfigured()) {
+      if (Platform.OS === 'web' && shouldUseAuthentikRelayEntry) {
         router.replace(
           buildAuthentikRelayRoute('discord', {
             next: authReturnTo,
             forceFreshSession: false,
           })
         );
+        return;
+      }
+
+      if (!shouldUseAuthentikSocialLogin) {
+        setLocalError(t('authModal.errors.authenticationFailed'));
         return;
       }
 
@@ -1071,7 +1093,7 @@ export default function AuthSignInScreen({
                       )}
                     </TouchableOpacity>
 
-                    {isAuthentikConfigured() ? (
+                    {shouldShowAuthentikSocialButtons ? (
                       <TouchableOpacity
                         activeOpacity={0.85}
                         disabled={isBusy}
