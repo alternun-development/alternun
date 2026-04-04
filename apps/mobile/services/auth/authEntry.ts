@@ -2,6 +2,8 @@ export type AuthentikLoginEntryMode = 'relay' | 'source';
 export type AuthentikRelayProvider = 'google' | 'discord';
 export type AuthentikProviderFlowSlugs = Partial<Record<AuthentikRelayProvider, string>>;
 
+const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
+
 export function parseAuthentikProviderFlowSlugs(
   value: string | undefined | null
 ): AuthentikProviderFlowSlugs {
@@ -27,9 +29,26 @@ export function parseAuthentikProviderFlowSlugs(
   }
 }
 
-export const AUTHENTIK_PROVIDER_FLOW_SLUGS = parseAuthentikProviderFlowSlugs(
-  process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS
-);
+function normalizeHostname(value: string | undefined | null): string {
+  return (value ?? '').trim().toLowerCase();
+}
+
+export function resolveAuthentikProviderFlowSlugs(options?: {
+  hostname?: string | null;
+  value?: string | undefined | null;
+}): AuthentikProviderFlowSlugs {
+  const hostname =
+    options?.hostname ?? (typeof window !== 'undefined' ? window.location?.hostname ?? null : null);
+  if (LOOPBACK_HOSTNAMES.has(normalizeHostname(hostname))) {
+    return {};
+  }
+
+  return parseAuthentikProviderFlowSlugs(
+    options?.value ?? process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS
+  );
+}
+
+export const AUTHENTIK_PROVIDER_FLOW_SLUGS = resolveAuthentikProviderFlowSlugs();
 
 export interface AuthentikRelayRoute {
   pathname: '/auth-relay';

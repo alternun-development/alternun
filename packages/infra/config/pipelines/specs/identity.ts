@@ -44,7 +44,7 @@ export function buildIdentityPipelineSpecs({
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
         INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL: devAppLaunchUrl,
         INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
-        INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: '',
+        INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: 'alternun-google-login',
         [googleAuthClientSecretKey]: googleAuthClientSecret,
       }),
     },
