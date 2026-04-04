@@ -11,13 +11,38 @@ export interface BuildAuthentikOAuthFlowStartUrlInput {
 }
 
 const DEFAULT_SCOPE = 'openid profile email';
+const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
+
+function isLoopbackHostname(value: string | undefined | null): boolean {
+  const hostname = value?.trim().toLowerCase();
+  return Boolean(hostname && LOOPBACK_HOSTNAMES.has(hostname));
+}
+
+function shouldPreferBrowserOrigin(
+  explicitRedirectUri: string,
+  browserOrigin?: string | null
+): boolean {
+  if (!browserOrigin?.trim()) {
+    return false;
+  }
+
+  try {
+    const explicitUrl = new URL(explicitRedirectUri);
+    return isLoopbackHostname(explicitUrl.hostname);
+  } catch {
+    return false;
+  }
+}
 
 export function resolveAuthentikRedirectUri(
   explicitRedirectUri: string | undefined | null,
   browserOrigin?: string | null
 ): string | undefined {
   const normalizedExplicitRedirectUri = explicitRedirectUri?.trim();
-  if (normalizedExplicitRedirectUri) {
+  if (
+    normalizedExplicitRedirectUri &&
+    !shouldPreferBrowserOrigin(normalizedExplicitRedirectUri, browserOrigin)
+  ) {
     return normalizedExplicitRedirectUri;
   }
 

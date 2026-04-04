@@ -227,7 +227,7 @@ The mobile web auth surface supports two Authentik entry patterns:
 
 Control the mode with `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE` in repo env, pipeline env, or `packages/infra/config/deployment.config.json`.
 The default is `relay`, which is the most flexible option for return-target handling and future flow changes.
-`EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` is optional in deployed web builds; when omitted, the shared auth helpers derive the callback from the current browser origin. Keep it explicit only if you need a non-standard callback path.
+`EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` is optional in deployed web builds; when omitted, the shared auth helpers derive the callback from the current browser origin. Loopback values are treated as local-dev hints and browser origin wins during web development. Keep it explicit only if you need a non-standard callback path.
 If you want the optional custom Authentik source-stage pattern, set `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` in infra config. The mobile bundle derives `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` from that setting automatically. Leave it empty for direct source login.
 The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages so logout returns to the app instead of stopping on Authentik's success page.
 
