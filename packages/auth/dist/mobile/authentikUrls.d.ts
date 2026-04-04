@@ -9,6 +9,10 @@ export interface BuildAuthentikOAuthFlowStartUrlInput {
   providerFlowSlugs?: Record<string, string>;
   providerSourceSlugs?: Record<string, string>;
 }
+export declare function resolveAuthentikRedirectUri(
+  explicitRedirectUri: string | undefined | null,
+  browserOrigin?: string | null
+): string | undefined;
 export declare function getAuthentikEndpointBaseFromIssuer(issuer: string): string;
 export declare function buildAuthentikOAuthFlowStartUrl({
   providerHint,

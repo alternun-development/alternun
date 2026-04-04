@@ -8,6 +8,7 @@ export {
   isAuthentikConfigured,
   readOidcSession,
   readPendingAuthentikOAuthProvider,
+  resolveAuthentikRedirectUri,
   startAuthentikOAuthFlow,
   type AlternunAuthentikOAuthFlowOptions,
   type AuthentikOidcConfig,

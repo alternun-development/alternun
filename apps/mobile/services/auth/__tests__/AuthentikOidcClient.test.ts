@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
-import { buildAuthentikOAuthFlowStartUrl } from '../../../../../packages/auth/src/mobile/authentikUrls';
+import {
+  buildAuthentikOAuthFlowStartUrl,
+  resolveAuthentikRedirectUri,
+} from '../../../../../packages/auth/src/mobile/authentikUrls';
 
 describe('buildAuthentikOAuthFlowStartUrl', () => {
   const issuer = 'https://testnet.sso.alternun.co/application/o/alternun-mobile/';
@@ -59,5 +62,20 @@ describe('buildAuthentikOAuthFlowStartUrl', () => {
     expect(parsed.origin).toBe('https://testnet.sso.alternun.co');
     expect(parsed.pathname).toBe('/if/flow/alternun-google-login/');
     expect(parsed.searchParams.get('next')).toContain('/application/o/authorize/?');
+  });
+
+  it('derives a redirect uri from the current origin when the explicit value is missing', () => {
+    expect(resolveAuthentikRedirectUri(undefined, 'https://testnet.airs.alternun.co')).toBe(
+      'https://testnet.airs.alternun.co/'
+    );
+  });
+
+  it('preserves an explicit redirect uri when provided', () => {
+    expect(
+      resolveAuthentikRedirectUri(
+        'https://testnet.airs.alternun.co/auth/callback',
+        'https://ignored.example'
+      )
+    ).toBe('https://testnet.airs.alternun.co/auth/callback');
   });
 });
