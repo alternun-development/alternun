@@ -233,6 +233,26 @@ def prune_flow_stage_bindings(flow, stage_model):
     return removed_count
 
 
+def delete_source_stage_flows(source, keep_slugs=None):
+    if not SourceStage or not source:
+        return 0
+
+    keep_slugs = {slug for slug in (keep_slugs or []) if slug}
+    stage_ids = list(SourceStage.objects.filter(source=source).values_list("pk", flat=True))
+    if not stage_ids:
+        return 0
+
+    bindings = FlowStageBinding.objects.filter(stage_id__in=stage_ids)
+    flow_ids = list(
+        bindings.exclude(target__slug__in=keep_slugs).values_list("target_id", flat=True).distinct()
+    )
+    if not flow_ids:
+        return 0
+
+    deleted_count, _ = Flow.objects.filter(pk__in=flow_ids).delete()
+    return deleted_count
+
+
 def upsert_authentication_flow(
     slug: str,
     name: str,
@@ -1017,6 +1037,15 @@ if google_client_id and google_client_secret:
             source_changed = True
         if source_authentication_flow_pruned or source_enrollment_flow_pruned:
             source_changed = True
+        google_source_flow_deleted = delete_source_stage_flows(
+            source,
+            keep_slugs={
+                source_authentication_flow.slug if source_authentication_flow else "",
+                source_enrollment_flow.slug if source_enrollment_flow else "",
+            },
+        )
+        if google_source_flow_deleted:
+            source_changed = True
         results["google_source_flow"] = "direct"
 
     if source_created or source_changed:
@@ -1385,6 +1414,15 @@ if discord_client_id and discord_client_secret:
             discord_source.enrollment_flow = source_enrollment_flow
             discord_source_changed = True
         if source_authentication_flow_pruned or source_enrollment_flow_pruned:
+            discord_source_changed = True
+        discord_source_flow_deleted = delete_source_stage_flows(
+            discord_source,
+            keep_slugs={
+                source_authentication_flow.slug if source_authentication_flow else "",
+                source_enrollment_flow.slug if source_enrollment_flow else "",
+            },
+        )
+        if discord_source_flow_deleted:
             discord_source_changed = True
         results["discord_source_flow"] = "direct"
 
