@@ -4,16 +4,24 @@ import {
   buildAuthentikRelayRoute,
   getAuthentikLoginEntryMode,
   normalizeAuthentikLoginEntryMode,
+  parseAuthentikProviderFlowSlugs,
 } from '../authEntry';
 
 describe('authEntry', () => {
   const originalMode = process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE;
+  const originalFlowSlugs = process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS;
 
   afterEach(() => {
     if (originalMode === undefined) {
       delete process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE;
     } else {
       process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE = originalMode;
+    }
+
+    if (originalFlowSlugs === undefined) {
+      delete process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS;
+    } else {
+      process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS = originalFlowSlugs;
     }
   });
 
@@ -57,6 +65,20 @@ describe('authEntry', () => {
         fresh: '1',
         next: '/welcome',
       },
+    });
+  });
+
+  it('parses provider flow slugs from json env', () => {
+    expect(
+      parseAuthentikProviderFlowSlugs(
+        JSON.stringify({
+          google: 'alternun-google-login',
+          discord: 'alternun-discord-login',
+        })
+      )
+    ).toEqual({
+      google: 'alternun-google-login',
+      discord: 'alternun-discord-login',
     });
   });
 });

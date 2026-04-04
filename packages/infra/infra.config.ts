@@ -186,6 +186,13 @@ const expoPublicAuthentikIssuer = expoConfig.publicEnv.authentikIssuer;
 const expoPublicAuthentikClientId = expoConfig.publicEnv.authentikClientId;
 const expoPublicAuthentikRedirectUri = expoConfig.publicEnv.authentikRedirectUri;
 const expoPublicAuthentikLoginEntryMode = expoConfig.publicEnv.authentikLoginEntryMode;
+const expoPublicAuthentikProviderFlowSlugs =
+  expoConfig.publicEnv.authentikProviderFlowSlugs ??
+  (identitySettings.integration.google.loginFlowSlug.trim()
+    ? JSON.stringify({
+        google: identitySettings.integration.google.loginFlowSlug.trim(),
+      })
+    : '');
 const enableAirsToDevRedirect = expoConfig.redirects.enableAirsToDev;
 const airsToDevSourceDomain = expoConfig.redirects.airsToDevSourceDomain;
 const airsToDevCertArn = expoConfig.redirects.airsToDevCertArn;
@@ -387,6 +394,7 @@ const commonBuildEnv = {
   EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId ?? '',
   EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: expoPublicAuthentikRedirectUri ?? '',
   EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: expoPublicAuthentikLoginEntryMode ?? '',
+  EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: expoPublicAuthentikProviderFlowSlugs ?? '',
   INFRA_REDIRECT_AIRS_TO_DEV_SOURCE: airsToDevSourceDomain,
   INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN: airsToDevCertArn ?? '',
   INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE: devToTestnetSourceDomain,
