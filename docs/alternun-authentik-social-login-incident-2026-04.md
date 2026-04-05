@@ -102,6 +102,7 @@ The fix was:
 - `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`
 - `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`
 - `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` empty by default
+- `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=false` by default
 
 ### Authentik source configuration
 
@@ -123,6 +124,7 @@ The main durable changes were:
 - explicit runtime split in the shared auth package
 - explicit browser callback route
 - explicit social-login mode switch
+- explicit allow flag for custom provider-flow slugs
 - direct-source default for deployed bundles
 - removal of hidden custom-flow derivation
 - Authentik bootstrap fix to restore `UserLoginStage` in direct-source mode

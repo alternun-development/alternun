@@ -40,6 +40,7 @@ export interface ResolvedExpoConfig {
     authentikLoginEntryMode?: string;
     authentikSocialLoginMode?: string;
     authentikProviderFlowSlugs?: string;
+    authentikAllowCustomProviderFlowSlugs?: string;
     releaseUpdateMode?: string;
   };
   redirects: {
@@ -82,8 +83,13 @@ function createAssetBucketName(stage: PipelineStage, prefix: string, domain: str
 
 function resolveAuthentikProviderFlowSlugsEnvValue(
   env: NodeJS.ProcessEnv,
-  localConfig: LocalDeploymentConfig
+  localConfig: LocalDeploymentConfig,
+  allowCustomProviderFlowSlugs: boolean
 ): string | undefined {
+  if (!allowCustomProviderFlowSlugs) {
+    return undefined;
+  }
+
   if (env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS !== undefined) {
     return env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS;
   }
@@ -203,6 +209,10 @@ export function resolveExpoConfig({
       !profileFlags.isAdminSitePipelineProfile &&
       !profileFlags.isDashboardPipelineProfile
   );
+  const allowCustomProviderFlowSlugs =
+    parseBoolean(env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS, false) ||
+    parseBoolean(env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS, false) ||
+    Boolean(localConfig.expo?.publicEnv?.authentikAllowCustomProviderFlowSlugs);
 
   const publicEnv = {
     supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL ?? localConfig.expo?.publicEnv?.supabaseUrl,
@@ -237,7 +247,12 @@ export function resolveExpoConfig({
     authentikSocialLoginMode:
       env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE ??
       localConfig.expo?.publicEnv?.authentikSocialLoginMode,
-    authentikProviderFlowSlugs: resolveAuthentikProviderFlowSlugsEnvValue(env, localConfig),
+    authentikProviderFlowSlugs: resolveAuthentikProviderFlowSlugsEnvValue(
+      env,
+      localConfig,
+      allowCustomProviderFlowSlugs
+    ),
+    authentikAllowCustomProviderFlowSlugs: allowCustomProviderFlowSlugs ? 'true' : undefined,
     releaseUpdateMode:
       env.EXPO_PUBLIC_RELEASE_UPDATE_MODE ?? localConfig.expo?.publicEnv?.releaseUpdateMode,
   };

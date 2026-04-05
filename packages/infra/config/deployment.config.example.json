@@ -33,6 +33,7 @@
     "publicEnv": {
       "authentikLoginEntryMode": "relay",
       "authentikSocialLoginMode": "authentik",
+      "authentikAllowCustomProviderFlowSlugs": false,
       "releaseUpdateMode": "auto"
     }
   },
@@ -181,7 +182,8 @@
         "clientSecret": "",
         "sourceName": "Google",
         "sourceSlug": "google",
-        "loginFlowSlug": ""
+        "loginFlowSlug": "",
+        "allowCustomProviderFlowSlugs": false
       },
       "supabase": {
         "applicationName": "Alternun Supabase",

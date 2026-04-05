@@ -263,6 +263,7 @@ function buildAuthBootstrapUserData(args: {
   acmeBackupBucketName: pulumi.Input<string>;
   acmeBackupPrefix: string;
   authentikImageTag: string;
+  allowCustomProviderFlowSlugs: boolean;
   authentikSecretArn: pulumi.Input<string>;
   databaseCredentialsSecretArn: pulumi.Input<string>;
   smtpCredentialsSecretArn: pulumi.Input<string>;
@@ -337,6 +338,7 @@ ALTERNUN_IDENTITY_DOMAIN=${args.domain}
 ALTERNUN_IDENTITY_INGRESS_MODE=${args.ingressMode}
 ALTERNUN_IDENTITY_TLS_MODE=${args.tlsMode}
 ALTERNUN_IDENTITY_TLS_ACME_EMAIL=${args.acmeEmail}
+ALTERNUN_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=${args.allowCustomProviderFlowSlugs ? 'true' : 'false'}
 ALTERNUN_ROUTE53_HOSTED_ZONE_ID=${route53HostedZoneId}
 ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET=${acmeBackupBucketName}
 ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX=${args.acmeBackupPrefix}
@@ -1060,6 +1062,7 @@ export function deployIdentityInfrastructure(
     acmeBackupBucketName: acmeBackupBucket?.bucket ?? '',
     acmeBackupPrefix: args.settings.tls.acmeBackup.prefix,
     authentikImageTag: args.settings.authentikImageTag,
+    allowCustomProviderFlowSlugs: args.settings.integration.google.allowCustomProviderFlowSlugs,
     authentikSecretArn: authentikSecret.arn,
     databaseCredentialsSecretArn: databaseCredentialsSecret.arn,
     smtpCredentialsSecretArn: smtpCredentialsSecret.arn,

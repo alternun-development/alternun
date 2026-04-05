@@ -12,6 +12,7 @@ export interface ResolveAuthentikLoginStrategyOptions {
   entryMode?: string | undefined | null;
   socialMode?: string | undefined | null;
   providerFlowSlugsValue?: string | undefined | null;
+  allowCustomProviderFlowSlugs?: boolean | string | undefined | null;
 }
 export declare function parseAuthentikProviderFlowSlugs(
   value: string | undefined | null
@@ -19,6 +20,7 @@ export declare function parseAuthentikProviderFlowSlugs(
 export declare function resolveAuthentikProviderFlowSlugs(options?: {
   hostname?: string | null;
   value?: string | undefined | null;
+  allowCustomProviderFlowSlugs?: boolean | string | undefined | null;
 }): AuthentikProviderFlowSlugs;
 export declare function normalizeAuthentikLoginEntryMode(
   value: string | undefined | null
