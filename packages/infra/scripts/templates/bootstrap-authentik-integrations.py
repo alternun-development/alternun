@@ -1610,6 +1610,7 @@ mobile_oidc_application_slug = read_env(
 mobile_oidc_application_name = read_env(
     "ALTERNUN_BOOTSTRAP_MOBILE_OIDC_APPLICATION_NAME", "Alternun Mobile"
 )
+mobile_oidc_launch_url = read_env("ALTERNUN_BOOTSTRAP_MOBILE_OIDC_LAUNCH_URL")
 mobile_oidc_provider_name = read_env(
     "ALTERNUN_BOOTSTRAP_MOBILE_OIDC_PROVIDER_NAME", "Alternun Mobile OIDC"
 )
@@ -1748,6 +1749,7 @@ if mobile_oidc_client_id and mobile_oidc_redirect_urls:
         defaults={
             "name": mobile_oidc_application_name,
             "provider": mobile_provider,
+            "meta_launch_url": mobile_oidc_launch_url,
         },
     )
 
@@ -1757,6 +1759,13 @@ if mobile_oidc_client_id and mobile_oidc_redirect_urls:
         mobile_application_changed = True
     if mobile_application.provider_id != mobile_provider.pk:
         mobile_application.provider = mobile_provider
+        mobile_application_changed = True
+    if (
+        mobile_oidc_launch_url
+        and hasattr(mobile_application, "meta_launch_url")
+        and mobile_application.meta_launch_url != mobile_oidc_launch_url
+    ):
+        mobile_application.meta_launch_url = mobile_oidc_launch_url
         mobile_application_changed = True
 
     if mobile_application_created or mobile_application_changed:
@@ -1780,6 +1789,7 @@ if mobile_oidc_client_id and mobile_oidc_redirect_urls:
             f"https://{identity_domain}/application/o/{mobile_oidc_application_slug}/"
         )
         results["mobile_oidc_client_id"] = mobile_oidc_client_id
+        results["mobile_oidc_launch_url"] = mobile_oidc_launch_url
 else:
     results["mobile_oidc_provider"] = "missing_inputs"
 

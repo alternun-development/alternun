@@ -747,6 +747,11 @@ export function deployIdentityInfrastructure(
   const adminOidcLaunchUrl = `${adminOidcBaseUrl}/`;
   const adminOidcRedirectUrl = `${adminOidcBaseUrl}/auth/callback`;
   const adminOidcPostLogoutRedirectUrl = `${adminOidcBaseUrl}/login`;
+  const mobileStageKey = resolveApplicationStageKey(args.stage);
+  const mobileAirsStageDomain = buildStageDomains('airs', args.rootDomain)[mobileStageKey];
+  const mobileOidcLaunchUrl =
+    args.settings.integration.mobileOidc.launchUrl.trim() ||
+    `https://${mobileAirsStageDomain}/auth?next=/`;
   const docsCmsSiteUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.siteUrl);
   const docsCmsLocalDevUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.localDevUrl);
   const docsCmsOidcRedirectUrls = [docsCmsSiteUrl, docsCmsLocalDevUrl]
@@ -813,6 +818,7 @@ export function deployIdentityInfrastructure(
             mobileOidcClientId: args.settings.integration.mobileOidc.clientId,
             mobileOidcApplicationName: args.settings.integration.mobileOidc.applicationName,
             mobileOidcApplicationSlug: args.settings.integration.mobileOidc.applicationSlug,
+            mobileOidcLaunchUrl,
             mobileOidcProviderName: args.settings.integration.mobileOidc.providerName,
             mobileOidcRedirectUrls: args.settings.integration.mobileOidc.redirectUrls,
             mobileOidcPostLogoutRedirectUrls:
