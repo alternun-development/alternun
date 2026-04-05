@@ -14,6 +14,7 @@ node_modules
 apps/admin/dist/
 apps/api/dist/
 apps/api/dist-lambda/
+packages/ui/dist/
 supabase/.temp/
 
 # Lockfiles for non-pnpm managers
