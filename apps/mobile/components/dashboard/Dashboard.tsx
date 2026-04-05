@@ -373,7 +373,6 @@ export default function Dashboard({
   const walletAddress = getWalletAddress(user);
   const walletProvider = getWalletProvider(user);
   const walletConnected = Boolean(walletAddress || walletProvider);
-  const atnEligible = walletConnected;
   const authMethodLabel = getAuthMethodLabel(user);
   const userStats = useMemo(() => getUserDashboardStats(user), [user]);
   const profileInfo = useMemo(() => getUserProfileInfo(user), [user]);
@@ -451,7 +450,6 @@ export default function Dashboard({
             signedIn={Boolean(user)}
             walletConnected={walletConnected}
             walletAddress={walletAddress}
-            atnEligible={atnEligible}
             themeMode={themeMode}
             language={language}
             authMethodLabel={authMethodLabel}
