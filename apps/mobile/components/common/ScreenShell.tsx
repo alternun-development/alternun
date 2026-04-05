@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { createContext, useContext, useRef, useCallback } from 'react';
+import { View, StyleSheet, useWindowDimensions, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ThemeProvider } from '@alternun/ui';
@@ -8,6 +8,25 @@ import AppInfoFooter from './AppInfoFooter';
 import { useAuth } from '../auth/AppAuthProvider';
 import type { User } from '../auth/AppAuthProvider';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { useBackToTop } from '../../hooks/useBackToTop';
+import { BackToTopButton } from './BackToTopButton';
+
+// ── ScrollView Context for back-to-top button ──────────────────────────────────
+
+interface ScreenShellContextType {
+  setScrollRef: (ref: ScrollView | null) => void;
+  onScroll: (e: { nativeEvent: { contentOffset: { y: number } } }) => void;
+}
+
+const ScreenShellContext = createContext<ScreenShellContextType | null>(null);
+
+export function useScreenShellScroll() {
+  const context = useContext(ScreenShellContext);
+  if (!context) {
+    throw new Error('useScreenShellScroll must be used within ScreenShell');
+  }
+  return context;
+}
 
 // ── Minimal user-info helpers (mirrors Dashboard logic) ───────────────────────
 
@@ -102,8 +121,25 @@ export default function ScreenShell({
   const { user, signOutUser } = useAuth();
   const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel } =
     useAppPreferences();
+  const { width } = useWindowDimensions();
   const router = useRouter();
   const isDark = themeMode === 'dark';
+  const isMobile = width < 720;
+
+  // Back-to-top state
+  const scrollRefInternal = useRef<ScrollView>(null);
+  const { showBackToTop, handleScroll, scrollToTop, bounceStyle } = useBackToTop({
+    scrollThreshold: 200,
+  });
+
+  const setScrollRef = useCallback((ref: ScrollView | null) => {
+    scrollRefInternal.current = ref;
+  }, []);
+
+  const contextValue: ScreenShellContextType = {
+    setScrollRef,
+    onScroll: handleScroll,
+  };
 
   const userDisplayName = getUserDisplayName(user ?? null);
   const airsScore = getUserAirsScore(user ?? null);
@@ -133,45 +169,56 @@ export default function ScreenShell({
   const bgColor = backgroundColor ?? (isDark ? '#050510' : '#f6f8fc');
 
   return (
-    <ThemeProvider mode={isDark ? 'dark' : 'light'}>
-      <SafeAreaView
-        style={[styles.root, { backgroundColor: bgColor }]}
-        edges={['top', 'left', 'right', 'bottom']}
-      >
-        {/* Main content — paddingTop reserves space for the floating TopNav */}
-        <View style={styles.body}>{children}</View>
+    <ScreenShellContext.Provider value={contextValue}>
+      <ThemeProvider mode={isDark ? 'dark' : 'light'}>
+        <SafeAreaView
+          style={[styles.root, { backgroundColor: bgColor }]}
+          edges={['top', 'left', 'right', 'bottom']}
+        >
+          {/* Main content — paddingTop reserves space for the floating TopNav */}
+          <View style={styles.body}>{children}</View>
 
-        {/* Footer pinned below content */}
-        <AppInfoFooter />
-
-        {/* Floating TopNav — rendered last so it layers over content */}
-        <View style={styles.floatingNav} pointerEvents='box-none'>
-          <TopNav
-            signedIn={signedIn}
-            walletConnected={walletConnected}
-            walletAddress={walletAddress}
-            themeMode={themeMode}
-            language={language}
-            motionLevel={motionLevel}
-            userDisplayName={userDisplayName}
-            userEmail={user?.email}
-            airsScore={airsScore}
-            activeSection={activeSection}
-            onSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
-            onConnectWallet={() => router.push('/wallet')}
-            onToggleTheme={toggleThemeMode}
-            onCycleLanguage={cycleLanguage}
-            onCycleMotionLevel={cycleMotionLevel}
-            onOpenProfile={() => router.push('/profile')}
-            onOpenSettings={() => router.push('/settings')}
-            onSignOut={() => {
-              void signOutUser();
-            }}
-            onNavigate={handleNavigate}
+          {/* Back-to-top button */}
+          <BackToTopButton
+            visible={showBackToTop}
+            onPress={scrollToTop}
+            isDark={isDark}
+            isMobile={isMobile}
+            bounceStyle={bounceStyle}
           />
-        </View>
-      </SafeAreaView>
-    </ThemeProvider>
+
+          {/* Footer pinned below content */}
+          <AppInfoFooter />
+
+          {/* Floating TopNav — rendered last so it layers over content */}
+          <View style={styles.floatingNav} pointerEvents='box-none'>
+            <TopNav
+              signedIn={signedIn}
+              walletConnected={walletConnected}
+              walletAddress={walletAddress}
+              themeMode={themeMode}
+              language={language}
+              motionLevel={motionLevel}
+              userDisplayName={userDisplayName}
+              userEmail={user?.email}
+              airsScore={airsScore}
+              activeSection={activeSection}
+              onSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
+              onConnectWallet={() => router.push('/wallet')}
+              onToggleTheme={toggleThemeMode}
+              onCycleLanguage={cycleLanguage}
+              onCycleMotionLevel={cycleMotionLevel}
+              onOpenProfile={() => router.push('/profile')}
+              onOpenSettings={() => router.push('/settings')}
+              onSignOut={() => {
+                void signOutUser();
+              }}
+              onNavigate={handleNavigate}
+            />
+          </View>
+        </SafeAreaView>
+      </ThemeProvider>
+    </ScreenShellContext.Provider>
   );
 }
 
