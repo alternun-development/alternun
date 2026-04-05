@@ -233,6 +233,41 @@ def prune_flow_stage_bindings(flow, stage_model):
     return removed_count
 
 
+def ensure_named_user_login_stage(name: str):
+    stage, created = UserLoginStage.objects.get_or_create(name=name)
+    return stage, created
+
+
+def ensure_direct_source_login_bindings(authentication_flow, enrollment_flow):
+    changed = False
+
+    if authentication_flow:
+        authentication_login_stage, authentication_login_stage_created = (
+            ensure_named_user_login_stage("default-source-authentication-login")
+        )
+        binding_created, binding_changed = ensure_flow_stage_binding(
+            authentication_flow,
+            authentication_login_stage,
+            order=100,
+        )
+        if authentication_login_stage_created or binding_created or binding_changed:
+            changed = True
+
+    if enrollment_flow:
+        enrollment_login_stage, enrollment_login_stage_created = ensure_named_user_login_stage(
+            "default-source-enrollment-login"
+        )
+        binding_created, binding_changed = ensure_flow_stage_binding(
+            enrollment_flow,
+            enrollment_login_stage,
+            order=100,
+        )
+        if enrollment_login_stage_created or binding_created or binding_changed:
+            changed = True
+
+    return changed
+
+
 def delete_source_stage_flows(source, keep_slugs=None):
     if not SourceStage or not source:
         return 0
@@ -948,12 +983,22 @@ if google_client_id and google_client_secret:
         slug="default-source-authentication"
     ).first()
     source_enrollment_flow = Flow.objects.filter(slug="default-source-enrollment").first()
-    source_authentication_flow_pruned = prune_flow_stage_bindings(
-        source_authentication_flow, UserLoginStage
-    )
-    source_enrollment_flow_pruned = prune_flow_stage_bindings(
-        source_enrollment_flow, UserLoginStage
-    )
+    source_authentication_flow_pruned = 0
+    source_enrollment_flow_pruned = 0
+    source_direct_bindings_ensured = False
+
+    if google_login_flow_slug:
+        source_authentication_flow_pruned = prune_flow_stage_bindings(
+            source_authentication_flow, UserLoginStage
+        )
+        source_enrollment_flow_pruned = prune_flow_stage_bindings(
+            source_enrollment_flow, UserLoginStage
+        )
+    else:
+        source_direct_bindings_ensured = ensure_direct_source_login_bindings(
+            source_authentication_flow,
+            source_enrollment_flow,
+        )
     source, source_created = OAuthSource.objects.get_or_create(
         slug=google_source_slug,
         defaults={
@@ -1001,7 +1046,11 @@ if google_client_id and google_client_secret:
     if source_enrollment_flow and source.enrollment_flow_id != source_enrollment_flow.pk:
         source.enrollment_flow = source_enrollment_flow
         source_changed = True
-    if source_authentication_flow_pruned or source_enrollment_flow_pruned:
+    if (
+        source_authentication_flow_pruned
+        or source_enrollment_flow_pruned
+        or source_direct_bindings_ensured
+    ):
         source_changed = True
 
     if google_login_flow_slug:
@@ -1015,6 +1064,9 @@ if google_client_id and google_client_secret:
         if google_login_stage:
             if source.authentication_flow_id != google_login_flow.pk:
                 source.authentication_flow = google_login_flow
+                source_changed = True
+            if getattr(source, "enrollment_flow_id", None) is not None:
+                source.enrollment_flow = None
                 source_changed = True
             if google_login_flow_created or google_login_flow_changed:
                 source_changed = True
@@ -1035,7 +1087,11 @@ if google_client_id and google_client_secret:
         if source_enrollment_flow and source.enrollment_flow_id != source_enrollment_flow.pk:
             source.enrollment_flow = source_enrollment_flow
             source_changed = True
-        if source_authentication_flow_pruned or source_enrollment_flow_pruned:
+        if (
+            source_authentication_flow_pruned
+            or source_enrollment_flow_pruned
+            or source_direct_bindings_ensured
+        ):
             source_changed = True
         google_source_flow_deleted = delete_source_stage_flows(
             source,
@@ -1328,12 +1384,22 @@ if discord_client_id and discord_client_secret:
         slug="default-source-authentication"
     ).first()
     source_enrollment_flow = Flow.objects.filter(slug="default-source-enrollment").first()
-    source_authentication_flow_pruned = prune_flow_stage_bindings(
-        source_authentication_flow, UserLoginStage
-    )
-    source_enrollment_flow_pruned = prune_flow_stage_bindings(
-        source_enrollment_flow, UserLoginStage
-    )
+    source_authentication_flow_pruned = 0
+    source_enrollment_flow_pruned = 0
+    source_direct_bindings_ensured = False
+
+    if discord_login_flow_slug:
+        source_authentication_flow_pruned = prune_flow_stage_bindings(
+            source_authentication_flow, UserLoginStage
+        )
+        source_enrollment_flow_pruned = prune_flow_stage_bindings(
+            source_enrollment_flow, UserLoginStage
+        )
+    else:
+        source_direct_bindings_ensured = ensure_direct_source_login_bindings(
+            source_authentication_flow,
+            source_enrollment_flow,
+        )
 
     discord_source, discord_source_created = OAuthSource.objects.get_or_create(
         slug=discord_source_slug,
@@ -1379,7 +1445,11 @@ if discord_client_id and discord_client_secret:
     if source_enrollment_flow and discord_source.enrollment_flow_id != source_enrollment_flow.pk:
         discord_source.enrollment_flow = source_enrollment_flow
         discord_source_changed = True
-    if source_authentication_flow_pruned or source_enrollment_flow_pruned:
+    if (
+        source_authentication_flow_pruned
+        or source_enrollment_flow_pruned
+        or source_direct_bindings_ensured
+    ):
         discord_source_changed = True
 
     if discord_login_flow_slug:
@@ -1393,6 +1463,9 @@ if discord_client_id and discord_client_secret:
         if discord_login_stage:
             if discord_source.authentication_flow_id != discord_login_flow.pk:
                 discord_source.authentication_flow = discord_login_flow
+                discord_source_changed = True
+            if getattr(discord_source, "enrollment_flow_id", None) is not None:
+                discord_source.enrollment_flow = None
                 discord_source_changed = True
             if discord_login_flow_created or discord_login_flow_changed:
                 discord_source_changed = True
@@ -1413,7 +1486,11 @@ if discord_client_id and discord_client_secret:
         if source_enrollment_flow and discord_source.enrollment_flow_id != source_enrollment_flow.pk:
             discord_source.enrollment_flow = source_enrollment_flow
             discord_source_changed = True
-        if source_authentication_flow_pruned or source_enrollment_flow_pruned:
+        if (
+            source_authentication_flow_pruned
+            or source_enrollment_flow_pruned
+            or source_direct_bindings_ensured
+        ):
             discord_source_changed = True
         discord_source_flow_deleted = delete_source_stage_flows(
             discord_source,
