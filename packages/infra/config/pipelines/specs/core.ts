@@ -2,6 +2,11 @@ import { buildStageUrls } from '../../infrastructure-specs.js';
 import { resolveBranch } from '../shared.js';
 import type { PipelineConfigContext, PipelineSpecRecord, PipelineStage } from '../types.js';
 
+function isTruthy(value: string | undefined): boolean {
+  const normalized = value?.trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+}
+
 function buildAuthentikRedirectUriForStage(stage: PipelineStage, env: NodeJS.ProcessEnv): string {
   const stageUrls = buildStageUrls(
     env.INFRA_EXPO_SUBDOMAIN ?? 'airs',
@@ -12,24 +17,29 @@ function buildAuthentikRedirectUriForStage(stage: PipelineStage, env: NodeJS.Pro
 }
 
 function resolveAuthentikProviderFlowSlugsForStage(
-  stage: PipelineStage,
-  env: NodeJS.ProcessEnv
+  env: NodeJS.ProcessEnv,
+  allowCustomProviderFlowSlugs: boolean
 ): string {
-  if (env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS !== undefined) {
-    return env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS;
-  }
-
-  if (stage !== 'dev') {
+  if (!allowCustomProviderFlowSlugs) {
     return '';
   }
 
-  return '';
+  return env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS ?? '';
 }
 
 export function buildCorePipelineSpecs({
   env,
   pipeline,
 }: PipelineConfigContext): PipelineSpecRecord<PipelineStage> {
+  const allowCustomProviderFlowSlugs =
+    isTruthy(env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS) ||
+    isTruthy(env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS);
+  const authentikProviderFlowSlugs = resolveAuthentikProviderFlowSlugsForStage(
+    env,
+    allowCustomProviderFlowSlugs
+  );
+  const authentikAllowCustomProviderFlowSlugs = allowCustomProviderFlowSlugs ? 'true' : '';
+
   return {
     production: {
       suffix: 'prod',
@@ -45,10 +55,9 @@ export function buildCorePipelineSpecs({
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('production', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
         EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
-        EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: resolveAuthentikProviderFlowSlugsForStage(
-          'production',
-          env
-        ),
+        EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
+          authentikAllowCustomProviderFlowSlugs,
+        EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,
         EXPO_PUBLIC_RELEASE_UPDATE_MODE: 'on',
       },
     },
@@ -66,10 +75,9 @@ export function buildCorePipelineSpecs({
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('dev', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
         EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
-        EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: resolveAuthentikProviderFlowSlugsForStage(
-          'dev',
-          env
-        ),
+        EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
+          authentikAllowCustomProviderFlowSlugs,
+        EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,
         EXPO_PUBLIC_RELEASE_UPDATE_MODE: 'on',
       },
     },
@@ -87,10 +95,9 @@ export function buildCorePipelineSpecs({
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('mobile', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
         EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
-        EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: resolveAuthentikProviderFlowSlugsForStage(
-          'mobile',
-          env
-        ),
+        EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
+          authentikAllowCustomProviderFlowSlugs,
+        EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,
         EXPO_PUBLIC_RELEASE_UPDATE_MODE: 'on',
       },
     },

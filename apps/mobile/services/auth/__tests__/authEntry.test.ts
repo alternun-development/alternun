@@ -15,6 +15,8 @@ describe('authEntry', () => {
   const originalMode = process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE;
   const originalSocialMode = process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE;
   const originalFlowSlugs = process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS;
+  const originalAllowCustomFlowSlugs =
+    process.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS;
 
   afterEach(() => {
     if (originalMode === undefined) {
@@ -33,6 +35,13 @@ describe('authEntry', () => {
       delete process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE;
     } else {
       process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE = originalSocialMode;
+    }
+
+    if (originalAllowCustomFlowSlugs === undefined) {
+      delete process.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS;
+    } else {
+      process.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS =
+        originalAllowCustomFlowSlugs;
     }
   });
 
@@ -118,18 +127,38 @@ describe('authEntry', () => {
     ).toEqual({});
   });
 
-  it('keeps provider flow slugs on non-localhost hosts', () => {
+  it('ignores provider flow slugs on non-localhost hosts unless explicitly enabled', () => {
+    delete process.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS;
+
     expect(
       resolveAuthentikProviderFlowSlugs({
         hostname: 'testnet.airs.alternun.co',
         value: JSON.stringify({ google: 'alternun-google-login' }),
       })
+    ).toEqual({});
+
+    expect(
+      resolveAuthentikProviderFlowSlugs({
+        hostname: 'testnet.airs.alternun.co',
+        value: JSON.stringify({ google: 'alternun-google-login' }),
+        allowCustomProviderFlowSlugs: true,
+      })
     ).toEqual({
       google: 'alternun-google-login',
     });
+
+    expect(
+      resolveAuthentikProviderFlowSlugs({
+        hostname: 'localhost',
+        value: JSON.stringify({ google: 'alternun-google-login' }),
+        allowCustomProviderFlowSlugs: true,
+      })
+    ).toEqual({});
   });
 
-  it('resolves a full login strategy for testnet and localhost', () => {
+  it('keeps provider flow slugs disabled in the full login strategy unless explicitly allowed', () => {
+    delete process.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS;
+
     expect(
       resolveAuthentikLoginStrategy({
         hostname: 'testnet.airs.alternun.co',
@@ -140,22 +169,23 @@ describe('authEntry', () => {
     ).toEqual({
       mode: 'relay',
       socialMode: 'authentik',
-      providerFlowSlugs: {
-        google: 'alternun-google-login',
-      },
+      providerFlowSlugs: {},
     });
 
     expect(
       resolveAuthentikLoginStrategy({
-        hostname: 'localhost',
+        hostname: 'testnet.airs.alternun.co',
         entryMode: 'source',
         socialMode: 'supabase',
         providerFlowSlugsValue: JSON.stringify({ google: 'alternun-google-login' }),
+        allowCustomProviderFlowSlugs: true,
       })
     ).toEqual({
       mode: 'source',
       socialMode: 'supabase',
-      providerFlowSlugs: {},
+      providerFlowSlugs: {
+        google: 'alternun-google-login',
+      },
     });
   });
 });

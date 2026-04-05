@@ -14,14 +14,25 @@ export interface ResolveAuthentikLoginStrategyOptions {
   entryMode?: string | undefined | null;
   socialMode?: string | undefined | null;
   providerFlowSlugsValue?: string | undefined | null;
+  allowCustomProviderFlowSlugs?: boolean | string | undefined | null;
 }
 
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
+const TRUTHY_ENV_VALUES = new Set(['1', 'true', 'yes', 'on']);
 const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE: AuthentikLoginEntryMode = 'source';
 const DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE: AuthentikSocialLoginMode = 'authentik';
 
 function normalizeHostname(value: string | undefined | null): string {
   return (value ?? '').trim().toLowerCase();
+}
+
+function isTruthy(value: boolean | string | undefined | null): boolean {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  const normalized = value?.trim().toLowerCase();
+  return Boolean(normalized && TRUTHY_ENV_VALUES.has(normalized));
 }
 
 export function parseAuthentikProviderFlowSlugs(
@@ -52,10 +63,18 @@ export function parseAuthentikProviderFlowSlugs(
 export function resolveAuthentikProviderFlowSlugs(options?: {
   hostname?: string | null;
   value?: string | undefined | null;
+  allowCustomProviderFlowSlugs?: boolean | string | undefined | null;
 }): AuthentikProviderFlowSlugs {
   const hostname =
     options?.hostname ?? (typeof window !== 'undefined' ? window.location?.hostname ?? null : null);
   if (LOOPBACK_HOSTNAMES.has(normalizeHostname(hostname))) {
+    return {};
+  }
+
+  const allowCustomProviderFlowSlugs =
+    options?.allowCustomProviderFlowSlugs ??
+    process.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS;
+  if (!isTruthy(allowCustomProviderFlowSlugs)) {
     return {};
   }
 
@@ -112,6 +131,9 @@ export function resolveAuthentikLoginStrategy(
       hostname: options?.hostname,
       value:
         options?.providerFlowSlugsValue ?? process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS,
+      allowCustomProviderFlowSlugs:
+        options?.allowCustomProviderFlowSlugs ??
+        process.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS,
     }),
   };
 }

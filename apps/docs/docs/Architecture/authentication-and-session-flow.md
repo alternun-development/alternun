@@ -213,12 +213,14 @@ For native, use an explicit runtime-appropriate redirect/deep-link URI.
 
 ## Custom Authentik Flow Slugs
 
-Custom provider flow slugs are supported, but they are now explicit-only.
+Custom provider flow slugs are supported, but they are now explicit-only and gated behind an allow flag.
 
+- `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS`
 - `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS`
+- `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS`
 - `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG`
 
-If these are unset, AIRS uses the direct source-login path.
+If the allow flag is unset or false, AIRS uses the direct source-login path even if a custom slug is present.
 
 There is no hidden automatic custom Google starter flow assumption anymore.
 
@@ -231,6 +233,8 @@ As of April 2026, the intended deployed AIRS web mode is:
 - `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`
 - `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`
 - `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` empty
+- `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS` false
+- `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS` false
 - `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` empty unless a custom starter flow is being tested deliberately
 
 On the Authentik side, the expected direct-source configuration is:
@@ -279,14 +283,16 @@ When debugging, verify the live browser bundle and the live Authentik source con
 
 ## Configuration Contract
 
-| Variable                                    | Purpose                              | Typical value                                                                  |
-| ------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------ |
-| `EXPO_PUBLIC_AUTHENTIK_ISSUER`              | Authentik issuer URL                 | `https://testnet.sso.alternun.co/application/o/alternun-mobile/`               |
-| `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID`           | Public OIDC client ID                | `alternun-mobile`                                                              |
-| `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI`        | Optional explicit callback URL       | usually blank on deployed web; derived as `/auth/callback` from browser origin |
-| `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE`    | `source` or `relay`                  | `source`                                                                       |
-| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`   | `authentik`, `hybrid`, or `supabase` | `authentik`                                                                    |
-| `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` | Optional custom provider-flow JSON   | empty unless explicitly needed                                                 |
+| Variable                                                 | Purpose                                          | Typical value                                                                  |
+| -------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `EXPO_PUBLIC_AUTHENTIK_ISSUER`                           | Authentik issuer URL                             | `https://testnet.sso.alternun.co/application/o/alternun-mobile/`               |
+| `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID`                        | Public OIDC client ID                            | `alternun-mobile`                                                              |
+| `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI`                     | Optional explicit callback URL                   | usually blank on deployed web; derived as `/auth/callback` from browser origin |
+| `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE`                 | `source` or `relay`                              | `source`                                                                       |
+| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`                | `authentik`, `hybrid`, or `supabase`             | `authentik`                                                                    |
+| `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS`              | Optional custom provider-flow JSON               | empty unless explicitly needed                                                 |
+| `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS` | Explicit opt-in for custom provider-flow slugs   | `false`                                                                        |
+| `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS`       | Infra-side opt-in for custom provider-flow slugs | `false`                                                                        |
 
 ## Supabase Custom OIDC Checks
 

@@ -284,7 +284,28 @@ validate_expo_public_auth_env() {
   echo "Expo auth env check passed for stage ${stage}."
 }
 
+validate_custom_authentik_provider_flow_slugs() {
+  local infra_allow_custom_provider_flow_slugs=${INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS:-}
+  local expo_allow_custom_provider_flow_slugs=${EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:-}
+  local expo_provider_flow_slugs=${EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS:-}
+  local identity_google_login_flow_slug=${INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG:-}
+
+  if is_truthy "$infra_allow_custom_provider_flow_slugs" || is_truthy "$expo_allow_custom_provider_flow_slugs"; then
+    return 0
+  fi
+
+  if [ -z "$expo_provider_flow_slugs" ] && [ -z "$identity_google_login_flow_slug" ]; then
+    return 0
+  fi
+
+  echo "ERROR: Custom Authentik provider flow slugs are set without an explicit allow flag." >&2
+  echo "Set INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS=true (or EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=true for local app builds) only when you deliberately want custom starter flows." >&2
+  echo "Otherwise leave EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS and INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG empty so deployed bundles use the direct source-login path." >&2
+  return 1
+}
+
 validate_expo_public_auth_env
+validate_custom_authentik_provider_flow_slugs
 check_stage_domain_validation_cname_records
 run_extra_redirect_dns_cleanup
 
