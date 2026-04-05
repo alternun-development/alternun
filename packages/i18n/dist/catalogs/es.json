@@ -1,6 +1,7 @@
 {
   "shared": {
     "labels": {
+      "backToTop": "Inicio",
       "by": "Por",
       "dark": "Oscuro",
       "language": "Idioma",
@@ -9,8 +10,7 @@
       "signIn": "Iniciar sesion",
       "theme": "Tema",
       "yes": "Si",
-      "no": "No",
-      "backToTop": "Inicio"
+      "no": "No"
     },
     "languageNames": {
       "en": "Ingles",
@@ -116,6 +116,9 @@
         "validEmail": "Ingresa un correo valido."
       }
     },
+    "dashboard": {
+      "backToTop": "Inicio"
+    },
     "footer": {
       "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",
       "links": {
@@ -178,9 +181,6 @@
           "description": "Conecta mediante codigo QR"
         }
       }
-    },
-    "dashboard": {
-      "backToTop": "Inicio"
     }
   },
   "web": {

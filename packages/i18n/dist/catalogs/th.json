@@ -1,6 +1,7 @@
 {
   "shared": {
     "labels": {
+      "backToTop": "ด้านบน",
       "by": "โดย",
       "dark": "มืด",
       "language": "ภาษา",
@@ -9,8 +10,7 @@
       "signIn": "เข้าสู่ระบบ",
       "theme": "ธีม",
       "yes": "ใช่",
-      "no": "ไม่",
-      "backToTop": "ด้านบน"
+      "no": "ไม่"
     },
     "languageNames": {
       "en": "อังกฤษ",
@@ -116,6 +116,9 @@
         "validEmail": "กรุณากรอกอีเมลที่ถูกต้อง"
       }
     },
+    "dashboard": {
+      "backToTop": "ด้านบน"
+    },
     "footer": {
       "copyright": "(c) {{year}} Alternun. สงวนลิขสิทธิ์ทั้งหมด.",
       "links": {
@@ -178,9 +181,6 @@
           "description": "เชื่อมต่อผ่าน QR code"
         }
       }
-    },
-    "dashboard": {
-      "backToTop": "ด้านบน"
     }
   },
   "web": {

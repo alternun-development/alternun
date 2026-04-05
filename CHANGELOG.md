@@ -1,3 +1,17 @@
+## [1.0.9](https://github.com/alternun-development/alternun/compare/v1.0.8...v1.0.9) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,auth,i18n:** \_layout, AppInfoFooter, Dashboard, HeroStats ([d9c31a7](https://github.com/alternun-development/alternun/commit/d9c31a7e4844cec99504356ba1c52ce50897e47a))
+- split authentik web callback flow ([6f03008](https://github.com/alternun-development/alternun/commit/6f03008a1b263e7d7371836857c1119093edc32e))
+
+## [1.0.9](https://github.com/alternun-development/alternun/compare/v1.0.8...v1.0.9) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,auth,i18n:** \_layout, AppInfoFooter, Dashboard, HeroStats ([d9c31a7](https://github.com/alternun-development/alternun/commit/d9c31a7e4844cec99504356ba1c52ce50897e47a))
+- split authentik web callback flow ([6f03008](https://github.com/alternun-development/alternun/commit/6f03008a1b263e7d7371836857c1119093edc32e))
+
 ## [1.0.8](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.3...v1.0.8) (2026-04-05)
 
 ### Bug Fixes

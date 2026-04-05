@@ -1,8 +1,8 @@
-import { SupabaseClient as UniversalSupabaseClient, } from '@edcalderon/auth/supabase';
-import { createClient, } from '@supabase/supabase-js';
+import { SupabaseClient as UniversalSupabaseClient } from '@edcalderon/auth/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { getValidationErrorMessage, parseEmailAddress, parseSignInPassword, parseSignUpPassword, } from '../validation/authInputValidation';
-const WALLET_PROVIDERS = ['metamask', 'walletconnect',];
-const EMAIL_TEMPLATE_LOCALES = ['en', 'es', 'th',];
+const WALLET_PROVIDERS = ['metamask', 'walletconnect'];
+const EMAIL_TEMPLATE_LOCALES = ['en', 'es', 'th'];
 function resolveClientRuntime() {
     return typeof window !== 'undefined' && typeof document !== 'undefined' ? 'web' : 'native';
 }
@@ -291,7 +291,7 @@ export class AlternunMobileAuthClient {
                 ...walletObject,
                 ...nextWallet,
             },
-            linkedWallets: [nextWallet, ...filteredExisting,].slice(0, 5),
+            linkedWallets: [nextWallet, ...filteredExisting].slice(0, 5),
         };
     }
     resolveWalletChain(linkedWallet) {
@@ -311,7 +311,7 @@ export class AlternunMobileAuthClient {
         }
         const chain = this.resolveWalletChain(linkedWallet);
         const walletAddressNormalized = linkedWallet.walletAddress.toLowerCase();
-        const { error, } = await this.supabase.from('user_wallets').upsert({
+        const { error } = await this.supabase.from('user_wallets').upsert({
             user_id: baseUser.id,
             chain,
             wallet_provider: linkedWallet.provider,
@@ -339,7 +339,7 @@ export class AlternunMobileAuthClient {
         }
         await this.upsertWalletRegistryEntry(baseUser, linkedWallet);
         const metadata = this.buildWalletMetadataPayload(baseUser, linkedWallet);
-        const { data, error, } = await this.supabase.auth.updateUser({
+        const { data, error } = await this.supabase.auth.updateUser({
             data: metadata,
         });
         if (error) {
@@ -532,7 +532,7 @@ export class AlternunMobileAuthClient {
         this.walletSessionToken = null;
         const supabase = this.ensureSupabase();
         const emailTemplateLocale = normalizeEmailTemplateLocale(locale);
-        const { data, error, } = await supabase.auth.signUp(emailTemplateLocale
+        const { data, error } = await supabase.auth.signUp(emailTemplateLocale
             ? {
                 email: normalizedEmail,
                 password: validatedPassword,
@@ -582,7 +582,7 @@ export class AlternunMobileAuthClient {
             throw new Error(`VALIDATION_ERROR: ${getValidationErrorMessage(validationError, 'Enter a valid email address.')}`);
         }
         const supabase = this.ensureSupabase();
-        const { error, } = await supabase.auth.resend({
+        const { error } = await supabase.auth.resend({
             type: 'signup',
             email: normalizedEmail,
         });
@@ -604,7 +604,7 @@ export class AlternunMobileAuthClient {
         this.linkedWallet = null;
         this.walletSessionToken = null;
         const supabase = this.ensureSupabase();
-        const { data, error, } = await supabase.auth.verifyOtp({
+        const { data, error } = await supabase.auth.verifyOtp({
             type: 'signup',
             email: normalizedEmail,
             token: normalizedCode,
