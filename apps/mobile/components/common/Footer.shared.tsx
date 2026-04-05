@@ -1,20 +1,10 @@
-import { useAppTranslation, } from '../i18n/useAppTranslation';
+import { useAppTranslation } from '../i18n/useAppTranslation';
 import Constants from 'expo-constants';
-import { Image as ExpoImage, } from 'expo-image';
+import { Image as ExpoImage } from 'expo-image';
 import React from 'react';
-import {
-  Instagram,
-  Send,
-  Twitter,
-  Youtube,
-} from 'lucide-react-native';
-import {
-  Linking,
-  Pressable,
-  StyleSheet,
-  Text,
-} from 'react-native';
-import type { FooterPrimaryLink, } from './AppInfoFooter.links';
+import { Instagram, Send, Twitter, Youtube } from 'lucide-react-native';
+import { Linking, Pressable, StyleSheet, Text } from 'react-native';
+import type { FooterPrimaryLink } from './AppInfoFooter.links';
 
 export type LinkIconProps = {
   size?: number | string;
@@ -41,27 +31,31 @@ type ExpoImageSource = React.ComponentProps<typeof ExpoImage>['source'];
 
 // Metro asset loading still relies on require() for local image modules here.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg',) as ExpoImageSource;
+export const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg',) as ExpoImageSource;
+export const AIRS_LOGOTIPO_LIGHT =
+  require('../../assets/AIRS-logotipo-light.svg') as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png',) as ExpoImageSource;
+export const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png') as ExpoImageSource;
 // Keep footer version aligned with the app package version used in this workspace.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const MOBILE_PACKAGE = require('../../package.json',) as MobilePackageJson;
+const MOBILE_PACKAGE = require('../../package.json') as MobilePackageJson;
 
 export const SOCIAL_LINKS: FooterLink[] = [
-  { label: 'Telegram', url: 'https://t.me/+4dPOLQ3otkE4NjIx#', icon: Send, },
-  { label: 'X', url: 'https://x.com/Alternun_io', icon: Twitter, },
-  { label: 'Instagram', url: 'https://www.instagram.com/Alternun.io/', icon: Instagram, },
-  { label: 'YouTube', url: 'https://www.youtube.com/@alternun_io', icon: Youtube, },
+  { label: 'Telegram', url: 'https://t.me/+4dPOLQ3otkE4NjIx#', icon: Send },
+  { label: 'X', url: 'https://x.com/Alternun_io', icon: Twitter },
+  { label: 'Instagram', url: 'https://www.instagram.com/Alternun.io/', icon: Instagram },
+  { label: 'YouTube', url: 'https://www.youtube.com/@alternun_io', icon: Youtube },
 ];
 
 export function resolveVersionMetadata(): VersionMetadata {
   const packageVersion = MOBILE_PACKAGE.version?.trim();
   const nativeVersion = Constants.nativeApplicationVersion as string | null | undefined;
   const nativeBuild = Constants.nativeBuildVersion as string | null | undefined;
-  const expoConfig = Constants.expoConfig as { version?: string | null | undefined } | null | undefined;
+  const expoConfig = Constants.expoConfig as
+    | { version?: string | null | undefined }
+    | null
+    | undefined;
   const expoConfigVersion = expoConfig?.version;
 
   if (packageVersion) {
@@ -98,8 +92,8 @@ export function resolveVersionMetadata(): VersionMetadata {
   };
 }
 
-export function openExternalUrl(url: string,): void {
-  void Linking.openURL(url,).catch(() => undefined,);
+export function openExternalUrl(url: string): void {
+  void Linking.openURL(url).catch(() => undefined);
 }
 
 export function SocialPill({
@@ -110,12 +104,14 @@ export function SocialPill({
   backgroundColor,
   borderColor,
   compact = false,
+  hoverColor,
 }: FooterLink & {
   iconColor: string;
   backgroundColor: string;
   borderColor: string;
   compact?: boolean;
-},): React.JSX.Element | null {
+  hoverColor?: string;
+}): React.JSX.Element | null {
   if (!Icon) {
     return null;
   }
@@ -123,13 +119,15 @@ export function SocialPill({
   return (
     <Pressable
       accessibilityLabel={label}
-      onPress={() => openExternalUrl(url,)}
-      style={({ pressed, },) => [
+      onPress={() => openExternalUrl(url)}
+      style={({ hovered, pressed }) => [
         styles.socialPill,
         compact && styles.socialPillCompact,
+        hovered && styles.socialPillHovered,
+        pressed && styles.socialPillPressed,
         {
-          backgroundColor: pressed ? borderColor : backgroundColor,
-          borderColor,
+          backgroundColor: pressed || hovered ? hoverColor ?? borderColor : backgroundColor,
+          borderColor: hovered ? iconColor : borderColor,
         },
       ]}
     >
@@ -143,33 +141,48 @@ export function FooterTextLink({
   url,
   textColor,
   compact = false,
+  hoverColor,
 }: {
   label: string;
   url: FooterPrimaryLink['url'];
   textColor: string;
   compact?: boolean;
-},): React.JSX.Element {
+  hoverColor?: string;
+}): React.JSX.Element {
   return (
     <Pressable
-      onPress={() => openExternalUrl(url,)}
-      style={({ pressed, },) => [styles.textLinkPressable, compact && styles.textLinkPressableCompact, pressed && styles.textLinkPressablePressed,]}
+      onPress={() => openExternalUrl(url)}
+      style={({ hovered, pressed }) => [
+        styles.textLinkPressable,
+        compact && styles.textLinkPressableCompact,
+        hovered && styles.textLinkPressableHovered,
+        pressed && styles.textLinkPressablePressed,
+      ]}
     >
-      <Text style={[styles.textLinkText, compact && styles.textLinkTextCompact, { color: textColor, },]}>{label}</Text>
+      {({ hovered, pressed }) => (
+        <Text
+          style={[
+            styles.textLinkText,
+            compact && styles.textLinkTextCompact,
+            hovered && styles.textLinkTextHovered,
+            pressed && styles.textLinkTextPressed,
+            { color: hovered ? hoverColor ?? textColor : textColor },
+          ]}
+        >
+          {label}
+        </Text>
+      )}
     </Pressable>
   );
 }
 
-export function FooterCopyright({
-  color,
-}: {
-  color: string;
-},): React.JSX.Element {
-  const { t, } = useAppTranslation('mobile',);
+export function FooterCopyright({ color }: { color: string }): React.JSX.Element {
+  const { t } = useAppTranslation('mobile');
   const footerYear = new Date().getFullYear();
 
   return (
-    <Text style={[styles.copyrightText, { color, },]}>
-      {t('footer.copyright', { year: footerYear, }, `(c) ${footerYear} Alternun.`,)}
+    <Text style={[styles.copyrightText, { color }]}>
+      {t('footer.copyright', { year: footerYear }, `(c) ${footerYear} Alternun.`)}
     </Text>
   );
 }
@@ -188,12 +201,22 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
   },
+  socialPillHovered: {
+    transform: [{ translateY: -1 }, { scale: 1.04 }],
+    boxShadow: '0px 8px 18px rgba(30, 230, 181, 0.18)',
+  },
+  socialPillPressed: {
+    transform: [{ scale: 0.98 }],
+  },
   textLinkPressable: {
     minHeight: 22,
     justifyContent: 'center',
   },
   textLinkPressableCompact: {
     minHeight: 20,
+  },
+  textLinkPressableHovered: {
+    transform: [{ translateY: -1 }],
   },
   textLinkPressablePressed: {
     opacity: 0.65,
@@ -206,8 +229,14 @@ const styles = StyleSheet.create({
   textLinkTextCompact: {
     fontSize: 12,
   },
+  textLinkTextHovered: {
+    textDecorationLine: 'underline',
+  },
+  textLinkTextPressed: {
+    opacity: 0.7,
+  },
   copyrightText: {
     fontSize: 11,
     fontWeight: '700',
   },
-},);
+});

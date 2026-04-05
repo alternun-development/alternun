@@ -218,6 +218,44 @@ Current default identity domains:
 - `dev` -> `testnet.sso.alternun.co`
 - `mobile` -> `preview.sso.alternun.co`
 
+### Mobile Auth Entry Mode
+
+The mobile web auth surface supports two Authentik entry patterns:
+
+- `source` jumps straight to Authentik's social source login route.
+- `relay` keeps the app as the visible entrypoint and routes through `/auth-relay` before starting the Authentik login flow.
+
+Control the mode with `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE` in repo env, pipeline env, or `packages/infra/config/deployment.config.json`.
+The default is `source`, which is the smoothest option and avoids an extra relay hop unless you explicitly opt in.
+Use `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` to control whether the app uses Authentik-only social login, the hybrid Authentik/Supabase fallback path, or Supabase-only login.
+The default is `authentik` for deployed bundles so testnet/prod stay Authentik-first unless you explicitly opt into another mode.
+Use `hybrid` only when you intentionally want Supabase fallback while iterating locally.
+The core web pipelines set `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`, `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`, and `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` so deployed bundles stay on the shortest stable Authentik path and get a reload prompt when a new release is detected.
+`EXPO_PUBLIC_AUTHENTIK_ISSUER` and `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID` should be present in env, but deployed web builds now derive sane defaults from the live `airs` origin if they are omitted. `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` is also optional in deployed web builds; when omitted, the shared auth helpers derive `https://<airs-domain>/auth/callback` from the current browser origin. Loopback values are treated as local-dev hints and browser origin wins during web development.
+Custom Authentik provider-flow slugs are now explicit only. Set `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=true` and `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` or `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS=true` and `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` only when you intentionally want a custom starter flow. When those values are blank, the app uses the direct source-login path and the identity bootstrap stays on the direct source-login flows.
+The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages so logout returns to the app instead of stopping on Authentik's success page.
+
+### Release Update Banner
+
+The shared release-update package lives in `packages/update` and is used by the web surfaces to detect when a newer build is available.
+It generates a version manifest and a tiny service worker from the current package version during each app build.
+
+Build entrypoints:
+
+- Expo web: `pnpm --filter @alternun/mobile run build:web`
+- Next.js web: `pnpm --filter @alternun/web run build`
+
+Mode switches:
+
+- `EXPO_PUBLIC_RELEASE_UPDATE_MODE=auto|on|off`
+- `NEXT_PUBLIC_RELEASE_UPDATE_MODE=auto|on|off`
+
+Recommended values:
+
+- deployed Expo builds: `on`
+- localhost or loopback development: `auto`
+- temporary opt-out: `off`
+
 Enable/configure through env or local config:
 
 - `INFRA_IDENTITY_ENABLED`
@@ -251,6 +289,9 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET`
 - `INFRA_IDENTITY_GOOGLE_SOURCE_NAME`
 - `INFRA_IDENTITY_GOOGLE_SOURCE_SLUG`
+- `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` (optional; set only when you intentionally want a custom outer Authentik starter flow, otherwise leave it empty for direct source login)
+- `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS` (set `true` only when you intentionally want custom provider-flow slugs in the app bundle)
+- `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS` (set `true` only when you intentionally want custom provider-flow slugs)
 - `INFRA_IDENTITY_SUPABASE_PROJECT_REF` (or `EXPO_PUBLIC_SUPABASE_URL`)
 - `INFRA_IDENTITY_SUPABASE_MANAGEMENT_ACCESS_TOKEN` (or `SUPABASE_ACCESS_TOKEN`)
 - `INFRA_IDENTITY_SUPABASE_OIDC_CLIENT_ID`
@@ -291,7 +332,11 @@ Important behavior:
 - non-production identity persists Traefik ACME state locally and backs it up to a private S3 bucket for restore after instance replacement
 - production identity defaults to ALB + ACM, with the ALB terminating TLS and forwarding HTTPS to the instance
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
-- local development can point the default internal app tile, the admin app tile/callbacks, and the mobile OIDC callbacks at localhost via `INFRA_IDENTITY_ADMIN_OIDC_LOCAL_DEV_URL` and `INFRA_MOBILE_OIDC_REDIRECT_URLS`
+- the Google source bootstrap binds a username-mapping policy to `default-source-enrollment-prompt`, so first-time Google enrollments reuse the upstream email as the username and skip the manual Authentik username screen
+- the `Alternun Mobile` Authentik application tile defaults to the stage-specific AIRS auth entrypoint (`/auth?next=/`) so the tile opens the app instead of the Authentik library
+- `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` keeps the mobile social login path on Authentik and disables Supabase fallback in the web bundle
+- in direct source mode, Authentik must keep `default-source-authentication-login` and `default-source-enrollment-login`; clearing those stages causes Google callback loops instead of dashboard redirects
+- local development can point the default internal app tile, the admin app tile/callbacks, the mobile app tile launch URL, and the mobile OIDC callbacks at localhost via `INFRA_IDENTITY_ADMIN_OIDC_LOCAL_DEV_URL`, `INFRA_IDENTITY_MOBILE_OIDC_LAUNCH_URL`, and `INFRA_MOBILE_OIDC_REDIRECT_URLS`
 - when Supabase management token/project ref are provided, infra patches Supabase `external_keycloak_*` settings automatically
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
 - identity pipelines deploy on isolated stacks (`identity-dev`, `identity-prod`) and force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy or modify the app site stack

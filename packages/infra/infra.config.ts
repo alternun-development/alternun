@@ -185,6 +185,12 @@ const expoPublicEnableWalletOnlyAuth = expoConfig.publicEnv.enableWalletOnlyAuth
 const expoPublicAuthentikIssuer = expoConfig.publicEnv.authentikIssuer;
 const expoPublicAuthentikClientId = expoConfig.publicEnv.authentikClientId;
 const expoPublicAuthentikRedirectUri = expoConfig.publicEnv.authentikRedirectUri;
+const expoPublicAuthentikLoginEntryMode = expoConfig.publicEnv.authentikLoginEntryMode;
+const expoPublicAuthentikSocialLoginMode = expoConfig.publicEnv.authentikSocialLoginMode;
+const expoPublicAuthentikProviderFlowSlugs = expoConfig.publicEnv.authentikProviderFlowSlugs ?? '';
+const expoPublicAuthentikAllowCustomProviderFlowSlugs =
+  expoConfig.publicEnv.authentikAllowCustomProviderFlowSlugs ?? '';
+const expoPublicReleaseUpdateMode = expoConfig.publicEnv.releaseUpdateMode;
 const enableAirsToDevRedirect = expoConfig.redirects.enableAirsToDev;
 const airsToDevSourceDomain = expoConfig.redirects.airsToDevSourceDomain;
 const airsToDevCertArn = expoConfig.redirects.airsToDevCertArn;
@@ -385,6 +391,11 @@ const commonBuildEnv = {
   EXPO_PUBLIC_AUTHENTIK_ISSUER: expoPublicAuthentikIssuer ?? '',
   EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId ?? '',
   EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: expoPublicAuthentikRedirectUri ?? '',
+  EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: expoPublicAuthentikLoginEntryMode ?? '',
+  EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: expoPublicAuthentikSocialLoginMode ?? '',
+  EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: expoPublicAuthentikProviderFlowSlugs ?? '',
+  EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
+    expoPublicAuthentikAllowCustomProviderFlowSlugs ?? '',
   INFRA_REDIRECT_AIRS_TO_DEV_SOURCE: airsToDevSourceDomain,
   INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN: airsToDevCertArn ?? '',
   INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE: devToTestnetSourceDomain,
@@ -725,6 +736,8 @@ export function createInfrastructure() {
         EXPO_PUBLIC_AIRS_VIDEO_ES_URL: introVideoAssets.es.url,
         EXPO_PUBLIC_AUTHENTIK_ISSUER: expoPublicAuthentikIssuer,
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId,
+        EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: expoPublicAuthentikSocialLoginMode,
+        EXPO_PUBLIC_RELEASE_UPDATE_MODE: expoPublicReleaseUpdateMode,
         // Auto-derive the redirect URI from the deployed expo domain when not explicitly set.
         // This ensures the OIDC callback always points at the correct deployed origin.
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI:
