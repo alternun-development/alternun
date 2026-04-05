@@ -1,3 +1,15 @@
+## [1.0.11](https://github.com/alternun-development/alternun/compare/v1.0.10...v1.0.11) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,ui:** \_layout, AppInfoFooter, Dashboard, ParticleBubbles ([3bf92ae](https://github.com/alternun-development/alternun/commit/3bf92aeb52169e6c4d1d37e2a0498061c5bffe43))
+
+## [1.0.11](https://github.com/alternun-development/alternun/compare/v1.0.10...v1.0.11) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,ui:** \_layout, AppInfoFooter, Dashboard, ParticleBubbles ([3bf92ae](https://github.com/alternun-development/alternun/commit/3bf92aeb52169e6c4d1d37e2a0498061c5bffe43))
+
 ## [1.0.10](https://github.com/alternun-development/alternun/compare/v1.0.9...v1.0.10) (2026-04-05)
 
 ### Bug Fixes
