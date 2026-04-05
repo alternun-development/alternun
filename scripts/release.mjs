@@ -14,6 +14,7 @@ const {
 } = require('./versioning/version-files.cjs');
 
 const VALID_BUMPS = new Set(['patch', 'minor', 'major']);
+const BUILD_TARGET = 'build';
 const IGNORED_WORKTREE_PATHS = new Set([
   'apps/web/.turbo/turbo-build.log',
   'packages/ui/.turbo/turbo-build.log',
@@ -28,7 +29,7 @@ const TRACKED_BUILD_OUTPUT_PATHS = [
 
 function printUsage() {
   console.log(`Usage:
-  pnpm release <patch|minor|major>
+  pnpm release [build|patch|minor|major|<version>]
   pnpm release <version>
   pnpm release --promote
 
@@ -130,7 +131,11 @@ function parseArgs(argv) {
   }
 
   if (!target && !options.promote) {
-    throw new Error('Provide a release type/version or use --promote.');
+    target = BUILD_TARGET;
+  }
+
+  if (options.promote && target !== null) {
+    throw new Error('--promote cannot be combined with a release target.');
   }
 
   if (!options.createCommit && options.createTag) {
@@ -162,10 +167,6 @@ function shouldDirectPush({ target, options }) {
   }
 
   return options.pushMode !== 'off';
-}
-
-function shouldUseBranchAwareRelease(branchName) {
-  return branchName === 'develop';
 }
 
 function run(command, args, { dryRun = false, env = process.env, capture = false } = {}) {
@@ -239,21 +240,27 @@ function ensureCleanWorkingTree(options) {
     return;
   }
 
-  const statusLines = run('git', ['status', '--porcelain'], { capture: true }).stdout
-    .split('\n')
+  const statusLines = run('git', ['status', '--porcelain'], { capture: true })
+    .stdout.split('\n')
     .map((line) => line.trimEnd())
     .filter(Boolean);
 
-  const relevantChanges = statusLines.filter((line) => !IGNORED_WORKTREE_PATHS.has(parseStatusPath(line)));
+  const relevantChanges = statusLines.filter(
+    (line) => !IGNORED_WORKTREE_PATHS.has(parseStatusPath(line))
+  );
 
   if (relevantChanges.length > 0) {
-    throw new Error('Working tree is not clean. Commit or stash changes before running the release flow.');
+    throw new Error(
+      'Working tree is not clean. Commit or stash changes before running the release flow.'
+    );
   }
 }
 
 function resolveProductionBranch() {
-  const refs = run('git', ['for-each-ref', '--format=%(refname:short)', 'refs/heads'], { capture: true }).stdout
-    .split('\n')
+  const refs = run('git', ['for-each-ref', '--format=%(refname:short)', 'refs/heads'], {
+    capture: true,
+  })
+    .stdout.split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
 
@@ -289,7 +296,7 @@ function ensureChangelogFile(dryRun) {
   fs.writeFileSync(
     changelogPath,
     '# Changelog\n\nAll notable changes to this project will be documented in this file.\n',
-    'utf8',
+    'utf8'
   );
 }
 
@@ -310,7 +317,9 @@ function stageReleaseFiles(dryRun) {
     }
   }
 
-  const existingPaths = [...managedPaths].filter((relativePath) => fs.existsSync(path.join(REPO_ROOT, relativePath)));
+  const existingPaths = [...managedPaths].filter((relativePath) =>
+    fs.existsSync(path.join(REPO_ROOT, relativePath))
+  );
   run('git', ['add', '--', ...existingPaths], { dryRun });
 }
 
@@ -332,7 +341,9 @@ function pushRelease({ remote, dryRun, targetBranch }) {
   const branchToPush = targetBranch ?? currentBranch;
 
   if (branchToPush !== currentBranch) {
-    throw new Error(`Direct release push must use the current branch. Current branch: ${currentBranch}, requested: ${branchToPush}`);
+    throw new Error(
+      `Direct release push must use the current branch. Current branch: ${currentBranch}, requested: ${branchToPush}`
+    );
   }
 
   run('git', ['push', remote, branchToPush, '--follow-tags'], { dryRun });
@@ -343,7 +354,9 @@ function buildCompareUrl(remoteUrl, base, head) {
   const normalized = remoteUrl.replace(/\.git$/, '');
 
   if (normalized.startsWith('git@github.com:')) {
-    return `https://github.com/${normalized.slice('git@github.com:'.length)}/compare/${base}...${head}?expand=1`;
+    return `https://github.com/${normalized.slice(
+      'git@github.com:'.length
+    )}/compare/${base}...${head}?expand=1`;
   }
 
   if (normalized.startsWith('https://github.com/')) {
@@ -387,11 +400,15 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
     return;
   }
 
-  const result = spawnSync('gh', ['pr', 'create', '--base', base, '--head', head, '--title', title, '--body', body], {
-    cwd: REPO_ROOT,
-    encoding: 'utf8',
-    stdio: 'pipe',
-  });
+  const result = spawnSync(
+    'gh',
+    ['pr', 'create', '--base', base, '--head', head, '--title', title, '--body', body],
+    {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+      stdio: 'pipe',
+    }
+  );
 
   if ((result.status ?? 1) === 0) {
     const output = result.stdout.trim();
@@ -418,7 +435,9 @@ function promoteRelease({ version, remote, dryRun, productionBranch }) {
 
   if (isTestnetModeEnabled()) {
     if (currentBranch !== productionBranch) {
-      throw new Error(`ALTERNUN_TESTNET_MODE=on requires promotion from ${productionBranch}. Current branch: ${currentBranch}`);
+      throw new Error(
+        `ALTERNUN_TESTNET_MODE=on requires promotion from ${productionBranch}. Current branch: ${currentBranch}`
+      );
     }
 
     run('git', ['push', remote, productionBranch, '--follow-tags'], { dryRun });
@@ -437,7 +456,9 @@ function promoteRelease({ version, remote, dryRun, productionBranch }) {
   }
 
   if (currentBranch !== 'develop') {
-    throw new Error(`ALTERNUN_TESTNET_MODE=off requires promotion from develop. Current branch: ${currentBranch}`);
+    throw new Error(
+      `ALTERNUN_TESTNET_MODE=off requires promotion from develop. Current branch: ${currentBranch}`
+    );
   }
 
   run('git', ['push', remote, 'develop', '--follow-tags'], { dryRun });
@@ -458,21 +479,37 @@ function performVersionChange(target, options, branchName) {
 
   ensureChangelogFile(options.dryRun);
 
-  if (VALID_BUMPS.has(target)) {
-    const useBranchAware = shouldUseBranchAwareRelease(branchName);
-    if (useBranchAware) {
-      run(
-        'pnpm',
-        ['exec', 'versioning', target, '--branch-aware', '--target-branch', branchName, '--no-commit', '--no-tag'],
-        { dryRun: options.dryRun },
+  if (target === BUILD_TARGET) {
+    if (branchName === 'master' || branchName === 'main') {
+      throw new Error(
+        `Build releases are only supported on development branches. Use patch/minor/major or --promote on ${branchName}.`
       );
-      const version = readRootVersion();
-      run('node', ['scripts/version-sync.mjs', '--version', version], { dryRun: options.dryRun });
-      run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
-      return version;
     }
 
-    run('pnpm', ['exec', 'versioning', target, '--no-commit', '--no-tag'], { dryRun: options.dryRun });
+    run(
+      'pnpm',
+      [
+        'exec',
+        'versioning',
+        'patch',
+        '--branch-aware',
+        '--target-branch',
+        branchName,
+        '--no-commit',
+        '--no-tag',
+      ],
+      { dryRun: options.dryRun }
+    );
+    const version = readRootVersion();
+    run('node', ['scripts/version-sync.mjs', '--version', version], { dryRun: options.dryRun });
+    run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+    return version;
+  }
+
+  if (VALID_BUMPS.has(target)) {
+    run('pnpm', ['exec', 'versioning', target, '--no-commit', '--no-tag'], {
+      dryRun: options.dryRun,
+    });
     run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
     const version = readRootVersion();
     if (!options.dryRun) {
