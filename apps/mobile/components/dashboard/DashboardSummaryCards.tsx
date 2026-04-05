@@ -68,18 +68,21 @@ function getPalette(isDark: boolean) {
 function SummaryCard({
   children,
   p,
+  compact = false,
 }: {
   children: React.ReactNode;
   p: ReturnType<typeof getPalette>;
+  compact?: boolean;
 }) {
   return (
     <View
       style={[
         styles.card,
+        compact && styles.cardCompact,
         {
           backgroundColor: p.cardBg,
           borderColor: p.cardBorder,
-          boxShadow: `0px 14px 32px ${p.cardShadow}`,
+          boxShadow: compact ? `0px 10px 22px ${p.cardShadow}` : `0px 14px 32px ${p.cardShadow}`,
         },
       ]}
     >
@@ -92,21 +95,29 @@ function CardTitle({
   label,
   sub,
   p,
+  compact = false,
 }: {
   label: string;
   sub: string;
   p: ReturnType<typeof getPalette>;
+  compact?: boolean;
 }) {
   return (
-    <View style={styles.titleBlock}>
-      <Text style={[styles.title, { color: p.title }]}>{label}</Text>
-      <Text style={[styles.subtitle, { color: p.subtitle }]}>{sub}</Text>
+    <View style={[styles.titleBlock, compact && styles.titleBlockCompact]}>
+      <Text style={[styles.title, compact && styles.titleCompact, { color: p.title }]}>
+        {label}
+      </Text>
+      <Text style={[styles.subtitle, compact && styles.subtitleCompact, { color: p.subtitle }]}>
+        {sub}
+      </Text>
     </View>
   );
 }
 
-function Divider({ p }: { p: ReturnType<typeof getPalette> }) {
-  return <View style={[styles.divider, { backgroundColor: p.line }]} />;
+function Divider({ p, compact = false }: { p: ReturnType<typeof getPalette>; compact?: boolean }) {
+  return (
+    <View style={[styles.divider, compact && styles.dividerCompact, { backgroundColor: p.line }]} />
+  );
 }
 
 function PositionRow({
@@ -114,49 +125,93 @@ function PositionRow({
   label,
   value,
   p,
+  compact = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   p: ReturnType<typeof getPalette>;
+  compact?: boolean;
 }) {
   return (
-    <View style={styles.positionRow}>
-      <View style={[styles.positionIcon, { backgroundColor: p.iconBg }]}>{icon}</View>
-      <Text style={[styles.positionLabel, { color: p.title }]}>{label}</Text>
-      <Text style={[styles.positionValue, { color: p.title }]}>{value}</Text>
+    <View style={[styles.positionRow, compact && styles.positionRowCompact]}>
+      <View
+        style={[
+          styles.positionIcon,
+          compact && styles.positionIconCompact,
+          { backgroundColor: p.iconBg },
+        ]}
+      >
+        {icon}
+      </View>
+      <Text
+        style={[styles.positionLabel, compact && styles.positionLabelCompact, { color: p.title }]}
+      >
+        {label}
+      </Text>
+      <Text
+        style={[styles.positionValue, compact && styles.positionValueCompact, { color: p.title }]}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
 
-function PositionCard({ p }: { p: ReturnType<typeof getPalette> }) {
+function PositionCard({
+  p,
+  compact = false,
+}: {
+  p: ReturnType<typeof getPalette>;
+  compact?: boolean;
+}) {
   return (
-    <SummaryCard p={p}>
-      <CardTitle label='Tu posición' sub='Entre miembros de Airs By Alternun' p={p} />
+    <SummaryCard p={p} compact={compact}>
+      <CardTitle
+        label='Tu posición'
+        sub='Entre miembros de Airs By Alternun'
+        p={p}
+        compact={compact}
+      />
 
-      <View style={styles.positionList}>
+      <View style={[styles.positionList, compact && styles.positionListCompact]}>
         <PositionRow
           icon={<GlobeIcon size={18} color={p.accent} />}
           label='Global'
           value='#1.284'
           p={p}
+          compact={compact}
         />
         <PositionRow
           icon={<Text style={styles.flagEmoji}>🇨🇴</Text>}
           label='Colombia'
           value='#132'
           p={p}
+          compact={compact}
         />
         <PositionRow
           icon={<MapPinnedIcon size={18} color={p.iconColor} />}
           label='Medellín'
           value='#18'
           p={p}
+          compact={compact}
         />
       </View>
 
-      <View style={[styles.positionFooter, { borderTopColor: p.line }]}>
-        <Text style={[styles.positionFootnote, { color: p.muted }]}>
+      <View
+        style={[
+          styles.positionFooter,
+          compact && styles.positionFooterCompact,
+          { borderTopColor: p.line },
+        ]}
+      >
+        <Text
+          style={[
+            styles.positionFootnote,
+            compact && styles.positionFootnoteCompact,
+            { color: p.muted },
+          ]}
+        >
           Ranking basado en Airs acumulados
         </Text>
       </View>
@@ -169,59 +224,112 @@ function RBIStatRow({
   value,
   valueColor,
   p,
+  compact = false,
 }: {
   label: string;
   value: string;
   valueColor?: string;
   p: ReturnType<typeof getPalette>;
+  compact?: boolean;
 }) {
   return (
     <View style={styles.statRow}>
-      <Text style={[styles.statLabel, { color: p.copy }]}>{label}</Text>
-      <Text style={[styles.statValue, { color: valueColor ?? p.title }]}>{value}</Text>
+      <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
+        {label}
+      </Text>
+      <Text
+        style={[
+          styles.statValue,
+          compact && styles.statValueCompact,
+          { color: valueColor ?? p.title },
+        ]}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
 
-function RBICard({ p }: { p: ReturnType<typeof getPalette> }) {
+function RBICard({ p, compact = false }: { p: ReturnType<typeof getPalette>; compact?: boolean }) {
   return (
-    <SummaryCard p={p}>
-      <CardTitle label='Proyección RBI' sub='Ingreso estimado próximo ciclo' p={p} />
+    <SummaryCard p={p} compact={compact}>
+      <CardTitle
+        label='Proyección RBI'
+        sub='Ingreso estimado próximo ciclo'
+        p={p}
+        compact={compact}
+      />
 
-      <View style={styles.rbiHero}>
-        <Text style={[styles.rbiValue, { color: p.accent }]}>≈ 14.2 ATN</Text>
-        <View style={[styles.heroBadge, { backgroundColor: p.title }]}>
+      <View style={[styles.rbiHero, compact && styles.rbiHeroCompact]}>
+        <Text style={[styles.rbiValue, compact && styles.rbiValueCompact, { color: p.accent }]}>
+          ≈ 14.2 ATN
+        </Text>
+        <View
+          style={[
+            styles.heroBadge,
+            compact && styles.heroBadgeCompact,
+            { backgroundColor: p.title },
+          ]}
+        >
           <CoinsIcon size={14} color='#F8FAFC' />
         </View>
       </View>
 
-      <Divider p={p} />
+      <Divider p={p} compact={compact} />
 
-      <View style={styles.statList}>
-        <RBIStatRow label='Pool RBI estimado:' value='$120.000' p={p} />
-        <RBIStatRow label='Usuarios elegibles:' value='8.420' p={p} />
-        <RBIStatRow label='Tu puntaje Airs:' value='12.480' valueColor={p.title} p={p} />
+      <View style={[styles.statList, compact && styles.statListCompact]}>
+        <RBIStatRow label='Pool RBI estimado:' value='$120.000' p={p} compact={compact} />
+        <RBIStatRow label='Usuarios elegibles:' value='8.420' p={p} compact={compact} />
+        <RBIStatRow
+          label='Tu puntaje Airs:'
+          value='12.480'
+          valueColor={p.title}
+          p={p}
+          compact={compact}
+        />
       </View>
 
-      <Divider p={p} />
+      <Divider p={p} compact={compact} />
 
-      <View style={[styles.calloutCard, { backgroundColor: p.warningSoft }]}>
-        <View style={[styles.calloutIcon, { backgroundColor: 'rgba(255,255,255,0.48)' }]}>
+      <View
+        style={[
+          styles.calloutCard,
+          compact && styles.calloutCardCompact,
+          { backgroundColor: p.warningSoft },
+        ]}
+      >
+        <View
+          style={[
+            styles.calloutIcon,
+            compact && styles.calloutIconCompact,
+            { backgroundColor: 'rgba(255,255,255,0.48)' },
+          ]}
+        >
           <SparklesIcon size={18} color={p.warning} />
         </View>
         <View style={styles.calloutBody}>
-          <Text style={[styles.calloutTitle, { color: p.warning }]}>Boost activo</Text>
-          <Text style={[styles.calloutText, { color: p.copy }]}>
+          <Text
+            style={[
+              styles.calloutTitle,
+              compact && styles.calloutTitleCompact,
+              { color: p.warning },
+            ]}
+          >
+            Boost activo
+          </Text>
+          <Text
+            style={[styles.calloutText, compact && styles.calloutTextCompact, { color: p.copy }]}
+          >
             El RBI está +32% por incentivos especiales.
           </Text>
         </View>
       </View>
 
-      <Divider p={p} />
+      <Divider p={p} compact={compact} />
 
-      <View style={styles.tipRow}>
+      <View style={[styles.tipRow, compact && styles.tipRowCompact]}>
         <FlagIcon size={16} color={p.title} />
-        <Text style={[styles.tipText, { color: p.copy }]}>
+        <Text style={[styles.tipText, compact && styles.tipTextCompact, { color: p.copy }]}>
           Tip: Si alcanzas Platinum este mes, tu proyección subiría a ≈ 21 ATN.
         </Text>
       </View>
@@ -234,51 +342,116 @@ function TokenRow({
   sublabel,
   value,
   p,
+  compact = false,
 }: {
   label: string;
   sublabel: string;
   value: string;
   p: ReturnType<typeof getPalette>;
+  compact?: boolean;
 }) {
   return (
-    <View style={styles.tokenRow}>
+    <View style={[styles.tokenRow, compact && styles.tokenRowCompact]}>
       <View style={styles.tokenLabelBlock}>
-        <Text style={[styles.tokenLabel, { color: p.title }]}>{label}</Text>
-        <Text style={[styles.tokenSubLabel, { color: p.muted }]}>{sublabel}</Text>
+        <Text style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}>
+          {label}
+        </Text>
+        <Text
+          style={[styles.tokenSubLabel, compact && styles.tokenSubLabelCompact, { color: p.muted }]}
+        >
+          {sublabel}
+        </Text>
       </View>
-      <Text style={[styles.tokenValue, { color: p.title }]}>{value}</Text>
+      <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
+        {value}
+      </Text>
     </View>
   );
 }
 
-function ATNCard({ p }: { p: ReturnType<typeof getPalette> }) {
+function ATNCard({ p, compact = false }: { p: ReturnType<typeof getPalette>; compact?: boolean }) {
   return (
-    <SummaryCard p={p}>
-      <CardTitle label='Mis ATN' sub='Tus tokens regenerativos' p={p} />
+    <SummaryCard p={p} compact={compact}>
+      <CardTitle label='Mis ATN' sub='Tus tokens regenerativos' p={p} compact={compact} />
 
-      <TokenRow label='ATN disponibles' sublabel='Listos para usar' value='1.240' p={p} />
-      <Divider p={p} />
-      <TokenRow label='ATN en stacking' sublabel='Participando en proyectos' value='3.000' p={p} />
+      <TokenRow
+        label='ATN disponibles'
+        sublabel='Listos para usar'
+        value='1.240'
+        p={p}
+        compact={compact}
+      />
+      <Divider p={p} compact={compact} />
+      <TokenRow
+        label='ATN en stacking'
+        sublabel='Participando en proyectos'
+        value='3.000'
+        p={p}
+        compact={compact}
+      />
 
-      <View style={styles.totalRow}>
-        <Text style={[styles.totalLabel, { color: p.title }]}>Total ATN</Text>
+      <View style={[styles.totalRow, compact && styles.totalRowCompact]}>
+        <Text style={[styles.totalLabel, compact && styles.totalLabelCompact, { color: p.title }]}>
+          Total ATN
+        </Text>
         <View style={styles.totalValueWrap}>
           <TrendingUpIcon size={16} color={p.accent} />
-          <Text style={[styles.totalValue, { color: p.accentStrong }]}>4.240</Text>
+          <Text
+            style={[
+              styles.totalValue,
+              compact && styles.totalValueCompact,
+              { color: p.accentStrong },
+            ]}
+          >
+            4.240
+          </Text>
         </View>
       </View>
 
       <View
-        style={[styles.walletPanel, { backgroundColor: p.panelBg, borderColor: p.panelBorder }]}
+        style={[
+          styles.walletPanel,
+          compact && styles.walletPanelCompact,
+          { backgroundColor: p.panelBg, borderColor: p.panelBorder },
+        ]}
       >
         <View style={styles.walletPanelTop}>
-          <Text style={[styles.walletPanelLabel, { color: p.title }]}>Wallet principal</Text>
-          <Text style={[styles.walletPanelMeta, { color: p.muted }]}>Interna</Text>
+          <Text
+            style={[
+              styles.walletPanelLabel,
+              compact && styles.walletPanelLabelCompact,
+              { color: p.title },
+            ]}
+          >
+            Wallet principal
+          </Text>
+          <Text
+            style={[
+              styles.walletPanelMeta,
+              compact && styles.walletPanelMetaCompact,
+              { color: p.muted },
+            ]}
+          >
+            Interna
+          </Text>
         </View>
-        <Text style={[styles.walletAddress, { color: p.copy }]}>0xA8f9...Wq77E4c2</Text>
+        <Text
+          numberOfLines={1}
+          style={[styles.walletAddress, compact && styles.walletAddressCompact, { color: p.copy }]}
+        >
+          0xA8f9...Wq77E4c2
+        </Text>
         <View style={styles.walletLinkRow}>
           <WalletIcon size={15} color={p.title} />
-          <Text style={[styles.walletLinkText, { color: p.title }]}>Gestionar wallet</Text>
+          <Text
+            style={[
+              styles.walletLinkText,
+              compact && styles.walletLinkTextCompact,
+              { color: p.title },
+            ]}
+          >
+            Gestionar wallet
+          </Text>
         </View>
       </View>
     </SummaryCard>
@@ -289,18 +462,25 @@ export default function DashboardSummaryCards({ isDark }: DashboardSummaryCardsP
   const p = getPalette(isDark);
   const { width } = useWindowDimensions();
   const isMobile = width < 920;
+  const isCompactMobile = width < 520;
 
   return (
-    <View style={styles.root}>
-      <View style={[styles.grid, isMobile ? styles.gridMobile : styles.gridDesktop]}>
+    <View style={[styles.root, isCompactMobile && styles.rootCompact]}>
+      <View
+        style={[
+          styles.grid,
+          isMobile ? styles.gridMobile : styles.gridDesktop,
+          isCompactMobile && styles.gridCompact,
+        ]}
+      >
         <View style={styles.cardSlot}>
-          <PositionCard p={p} />
+          <PositionCard p={p} compact={isCompactMobile} />
         </View>
         <View style={styles.cardSlot}>
-          <RBICard p={p} />
+          <RBICard p={p} compact={isCompactMobile} />
         </View>
         <View style={styles.cardSlot}>
-          <ATNCard p={p} />
+          <ATNCard p={p} compact={isCompactMobile} />
         </View>
       </View>
     </View>
@@ -311,10 +491,18 @@ const styles = StyleSheet.create({
   root: {
     paddingHorizontal: 16,
     paddingTop: 18,
-    paddingBottom: 8,
+    paddingBottom: 18,
+  },
+  rootCompact: {
+    paddingHorizontal: 12,
+    paddingTop: 14,
+    paddingBottom: 24,
   },
   grid: {
     gap: 18,
+  },
+  gridCompact: {
+    gap: 14,
   },
   gridMobile: {
     flexDirection: 'column',
@@ -336,33 +524,61 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 16,
   },
+  cardCompact: {
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 14,
+  },
   titleBlock: {
     gap: 6,
     marginBottom: 18,
+  },
+  titleBlockCompact: {
+    gap: 4,
+    marginBottom: 14,
   },
   title: {
     fontSize: 22,
     fontWeight: '900',
     letterSpacing: -0.8,
   },
+  titleCompact: {
+    fontSize: 18,
+    letterSpacing: -0.55,
+  },
   subtitle: {
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '500',
   },
+  subtitleCompact: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
   divider: {
     height: 1,
     marginVertical: 14,
+  },
+  dividerCompact: {
+    marginVertical: 10,
   },
 
   positionList: {
     gap: 18,
     paddingBottom: 18,
   },
+  positionListCompact: {
+    gap: 14,
+    paddingBottom: 14,
+  },
   positionRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  positionRowCompact: {
+    gap: 10,
   },
   positionIcon: {
     width: 36,
@@ -370,6 +586,11 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  positionIconCompact: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   flagEmoji: {
     fontSize: 18,
@@ -380,10 +601,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.2,
   },
+  positionLabelCompact: {
+    fontSize: 16,
+  },
   positionValue: {
     fontSize: 24,
     fontWeight: '900',
     letterSpacing: -0.8,
+  },
+  positionValueCompact: {
+    fontSize: 21,
+    letterSpacing: -0.6,
   },
   positionFooter: {
     marginTop: 'auto',
@@ -391,10 +619,16 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     alignItems: 'center',
   },
+  positionFooterCompact: {
+    paddingTop: 10,
+  },
   positionFootnote: {
     fontSize: 11,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  positionFootnoteCompact: {
+    fontSize: 10,
   },
 
   rbiHero: {
@@ -403,11 +637,19 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 6,
   },
+  rbiHeroCompact: {
+    gap: 8,
+    marginBottom: 4,
+  },
   rbiValue: {
     flex: 1,
     fontSize: 30,
     fontWeight: '900',
     letterSpacing: -1.1,
+  },
+  rbiValueCompact: {
+    fontSize: 24,
+    letterSpacing: -0.75,
   },
   heroBadge: {
     width: 34,
@@ -416,8 +658,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  heroBadgeCompact: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+  },
   statList: {
     gap: 10,
+  },
+  statListCompact: {
+    gap: 8,
   },
   statRow: {
     flexDirection: 'row',
@@ -430,11 +680,19 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: '500',
   },
+  statLabelCompact: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
   statValue: {
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '800',
     textAlign: 'right',
+  },
+  statValueCompact: {
+    fontSize: 12,
+    lineHeight: 16,
   },
   calloutCard: {
     flexDirection: 'row',
@@ -444,12 +702,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
+  calloutCardCompact: {
+    gap: 10,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
   calloutIcon: {
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  calloutIconCompact: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   calloutBody: {
     flex: 1,
@@ -459,15 +728,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
   },
+  calloutTitleCompact: {
+    fontSize: 13,
+  },
   calloutText: {
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '500',
   },
+  calloutTextCompact: {
+    fontSize: 11,
+    lineHeight: 15,
+  },
   tipRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
+  },
+  tipRowCompact: {
+    gap: 8,
   },
   tipText: {
     flex: 1,
@@ -475,12 +754,20 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: '600',
   },
+  tipTextCompact: {
+    fontSize: 11,
+    lineHeight: 16,
+  },
 
   tokenRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     paddingVertical: 2,
+  },
+  tokenRowCompact: {
+    gap: 10,
+    paddingVertical: 0,
   },
   tokenLabelBlock: {
     flex: 1,
@@ -491,15 +778,26 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: -0.2,
   },
+  tokenLabelCompact: {
+    fontSize: 14,
+  },
   tokenSubLabel: {
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '500',
   },
+  tokenSubLabelCompact: {
+    fontSize: 11,
+    lineHeight: 14,
+  },
   tokenValue: {
     fontSize: 24,
     fontWeight: '900',
     letterSpacing: -0.8,
+  },
+  tokenValueCompact: {
+    fontSize: 20,
+    letterSpacing: -0.55,
   },
   totalRow: {
     flexDirection: 'row',
@@ -508,10 +806,17 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 16,
   },
+  totalRowCompact: {
+    marginTop: 12,
+    marginBottom: 12,
+  },
   totalLabel: {
     fontSize: 17,
     fontWeight: '900',
     letterSpacing: -0.3,
+  },
+  totalLabelCompact: {
+    fontSize: 15,
   },
   totalValueWrap: {
     flexDirection: 'row',
@@ -523,12 +828,22 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: -0.9,
   },
+  totalValueCompact: {
+    fontSize: 22,
+    letterSpacing: -0.65,
+  },
   walletPanel: {
     borderWidth: 1,
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 14,
     gap: 10,
+  },
+  walletPanelCompact: {
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 8,
   },
   walletPanelTop: {
     flexDirection: 'row',
@@ -540,14 +855,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
   },
+  walletPanelLabelCompact: {
+    fontSize: 13,
+  },
   walletPanelMeta: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  walletPanelMetaCompact: {
+    fontSize: 12,
   },
   walletAddress: {
     fontSize: 15,
     fontWeight: '500',
     letterSpacing: -0.1,
+  },
+  walletAddressCompact: {
+    fontSize: 14,
   },
   walletLinkRow: {
     flexDirection: 'row',
@@ -557,5 +881,8 @@ const styles = StyleSheet.create({
   walletLinkText: {
     fontSize: 14,
     fontWeight: '800',
+  },
+  walletLinkTextCompact: {
+    fontSize: 13,
   },
 });

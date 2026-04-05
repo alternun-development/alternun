@@ -299,6 +299,8 @@ export default function Dashboard({
   const scrollRef = useRef<ScrollView>(null);
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
+  const scrollTopInset = isMobile ? 82 : 62;
+  const scrollBottomInset = isMobile ? 18 : 8;
   const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel } =
     useAppPreferences();
   const router = useRouter();
@@ -424,7 +426,13 @@ export default function Dashboard({
           <ScrollView
             ref={scrollRef}
             style={styles.scroll}
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[
+              styles.scrollContent,
+              {
+                paddingTop: scrollTopInset,
+                paddingBottom: scrollBottomInset,
+              },
+            ]}
             showsVerticalScrollIndicator={false}
             onScroll={handleScroll}
             scrollEventThrottle={100}
@@ -590,7 +598,6 @@ const styles = createTypographyStyles({
   scrollContent: {
     flexGrow: 1,
     flexDirection: 'column',
-    paddingTop: 62,
   },
   floatingNav: {
     position: 'absolute',
@@ -631,7 +638,7 @@ const styles = createTypographyStyles({
   },
   backToTopMobile: {
     right: 14,
-    top: -52,
+    bottom: 18,
     width: 42,
     height: 42,
     padding: 3,

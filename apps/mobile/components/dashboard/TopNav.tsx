@@ -252,9 +252,17 @@ export default function TopNav({
       )}
 
       {/* ── Glass nav bar ────────────────────────────────────────────────── */}
-      <View style={[styles.navBar, { borderBottomColor: p.navBorder }]}>
+      <View
+        style={[styles.navBar, isMobile && styles.navBarMobile, { borderBottomColor: p.navBorder }]}
+      >
         {/* Glass background — clipped separately so dropdown can overflow */}
-        <View style={[styles.navBarGlass, { borderBottomColor: p.navBorder }]}>
+        <View
+          style={[
+            styles.navBarGlass,
+            isMobile && styles.navBarGlassMobile,
+            { borderBottomColor: p.navBorder },
+          ]}
+        >
           <BlurView
             intensity={isDark ? 52 : 40}
             tint={isDark ? 'dark' : 'light'}
@@ -269,11 +277,15 @@ export default function TopNav({
             accessibilityRole='button'
             accessibilityLabel='Return to dashboard'
             onPress={handleBrandPress}
-            style={({ pressed }) => [styles.logoButton, pressed && styles.logoButtonPressed]}
+            style={({ pressed }) => [
+              styles.logoButton,
+              isMobile && styles.logoButtonMobile,
+              pressed && styles.logoButtonPressed,
+            ]}
           >
             <View style={styles.logoBrand}>
               {/* Wordmark row: "Airs" SVG + mark */}
-              <View style={styles.logoMarkRow}>
+              <View style={[styles.logoMarkRow, isMobile && styles.logoMarkRowMobile]}>
                 <ExpoImage
                   source={wordmarkSource}
                   style={isMobile ? styles.wordmarkMobile : styles.wordmark}
@@ -304,12 +316,22 @@ export default function TopNav({
           {/* ── Profile trigger pill ────────────────────────────────────── */}
           <View style={styles.profileContainer}>
             <TouchableOpacity
-              style={[styles.profilePill, { backgroundColor: p.pillBg, borderColor: p.pillBorder }]}
+              style={[
+                styles.profilePill,
+                isMobile && styles.profilePillMobile,
+                { backgroundColor: p.pillBg, borderColor: p.pillBorder },
+              ]}
               onPress={toggleMenu}
               activeOpacity={0.85}
             >
               {/* Avatar */}
-              <View style={[styles.avatar, { backgroundColor: p.avatarBg }]}>
+              <View
+                style={[
+                  styles.avatar,
+                  isMobile && styles.avatarMobile,
+                  { backgroundColor: p.avatarBg },
+                ]}
+              >
                 {signedIn ? (
                   <Text style={[styles.avatarText, { color: p.avatarText }]}>{initials}</Text>
                 ) : (
@@ -323,12 +345,26 @@ export default function TopNav({
 
               {/* Name + score */}
               {signedIn && (
-                <View style={styles.nameBlock}>
-                  <Text style={[styles.pillName, { color: p.pillText }]} numberOfLines={1}>
+                <View style={[styles.nameBlock, isMobile && styles.nameBlockMobile]}>
+                  <Text
+                    style={[
+                      styles.pillName,
+                      isMobile && styles.pillNameMobile,
+                      { color: p.pillText },
+                    ]}
+                    numberOfLines={1}
+                  >
                     {profileName}
                   </Text>
                   {airsScore != null && (
-                    <Text style={[styles.pillScore, { color: p.scoreText }]} numberOfLines={1}>
+                    <Text
+                      style={[
+                        styles.pillScore,
+                        isMobile && styles.pillScoreMobile,
+                        { color: p.scoreText },
+                      ]}
+                      numberOfLines={1}
+                    >
                       {airsScore.toLocaleString()} Airs
                     </Text>
                   )}
@@ -339,6 +375,7 @@ export default function TopNav({
               <TouchableOpacity
                 style={[
                   styles.notifBadge,
+                  isMobile && styles.notifBadgeMobile,
                   { backgroundColor: unreadCount > 0 ? p.badgeBg : 'rgba(255,255,255,0.18)' },
                 ]}
                 onPress={(e) => {
@@ -601,6 +638,10 @@ const styles = StyleSheet.create({
     zIndex: 1100,
     position: 'relative',
   },
+  navBarMobile: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
   // Separate clipped layer for blur + tint so it doesn't clip the dropdown
   navBarGlass: {
     position: 'absolute',
@@ -613,6 +654,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
+  navBarGlassMobile: {
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+  },
   logoArea: {
     flex: 1,
     minWidth: 0,
@@ -624,6 +669,10 @@ const styles = StyleSheet.create({
     paddingRight: 8,
     paddingVertical: 2,
   },
+  logoButtonMobile: {
+    paddingRight: 4,
+    paddingVertical: 1,
+  },
   logoButtonPressed: {
     opacity: 0.78,
   },
@@ -634,6 +683,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  logoMarkRowMobile: {
+    gap: 4,
   },
   wordmark: {
     width: 72,
@@ -687,12 +739,23 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     boxShadow: '0px 10px 22px rgba(30, 230, 181, 0.18)',
   },
+  profilePillMobile: {
+    gap: 6,
+    paddingVertical: 4,
+    paddingLeft: 4,
+    paddingRight: 8,
+  },
   avatar: {
     width: 30,
     height: 30,
     borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarMobile: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
   },
   avatarText: {
     fontSize: 12,
@@ -702,15 +765,26 @@ const styles = StyleSheet.create({
     gap: 1,
     maxWidth: 110,
   },
+  nameBlockMobile: {
+    maxWidth: 92,
+  },
   pillName: {
     fontSize: 12,
     fontWeight: '700',
     lineHeight: 15,
   },
+  pillNameMobile: {
+    fontSize: 11,
+    lineHeight: 13,
+  },
   pillScore: {
     fontSize: 10,
     fontWeight: '600',
     lineHeight: 13,
+  },
+  pillScoreMobile: {
+    fontSize: 9,
+    lineHeight: 11,
   },
   notifBadge: {
     flexDirection: 'row',
@@ -721,6 +795,11 @@ const styles = StyleSheet.create({
     height: 22,
     justifyContent: 'center',
     paddingHorizontal: 7,
+  },
+  notifBadgeMobile: {
+    minWidth: 18,
+    height: 20,
+    paddingHorizontal: 6,
   },
   notifBadgeText: {
     fontSize: 10,
