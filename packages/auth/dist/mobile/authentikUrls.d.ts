@@ -9,6 +9,15 @@ export interface BuildAuthentikOAuthFlowStartUrlInput {
   providerFlowSlugs?: Record<string, string>;
   providerSourceSlugs?: Record<string, string>;
 }
+export declare const DEFAULT_AUTHENTIK_CLIENT_ID = 'alternun-mobile';
+export declare function resolveAuthentikClientId(
+  explicitClientId: string | undefined | null
+): string | undefined;
+export declare function resolveAuthentikIssuer(
+  explicitIssuer: string | undefined | null,
+  browserOrigin?: string | null,
+  clientId?: string
+): string | undefined;
 export declare function resolveAuthentikRedirectUri(
   explicitRedirectUri: string | undefined | null,
   browserOrigin?: string | null

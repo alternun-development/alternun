@@ -1,4 +1,5 @@
 const DEFAULT_SCOPE = 'openid profile email';
+export const DEFAULT_AUTHENTIK_CLIENT_ID = 'alternun-mobile';
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
 function isLoopbackHostname(value) {
     const hostname = value === null || value === void 0 ? void 0 : value.trim().toLowerCase();
@@ -15,6 +16,42 @@ function shouldPreferBrowserOrigin(explicitRedirectUri, browserOrigin) {
     catch {
         return false;
     }
+}
+function deriveAuthentikIssuerFromBrowserOrigin(browserOrigin, clientId) {
+    try {
+        const origin = new URL(browserOrigin.trim());
+        if (isLoopbackHostname(origin.hostname)) {
+            return undefined;
+        }
+        const hostnameParts = origin.hostname.split('.');
+        const airsIndex = hostnameParts.indexOf('airs');
+        if (airsIndex === -1) {
+            return undefined;
+        }
+        hostnameParts[airsIndex] = 'sso';
+        return `${origin.protocol}//${hostnameParts.join('.')}/application/o/${encodeURIComponent(clientId)}/`;
+    }
+    catch {
+        return undefined;
+    }
+}
+export function resolveAuthentikClientId(explicitClientId) {
+    const normalizedExplicitClientId = explicitClientId === null || explicitClientId === void 0 ? void 0 : explicitClientId.trim();
+    if (normalizedExplicitClientId) {
+        return normalizedExplicitClientId;
+    }
+    return DEFAULT_AUTHENTIK_CLIENT_ID;
+}
+export function resolveAuthentikIssuer(explicitIssuer, browserOrigin, clientId = DEFAULT_AUTHENTIK_CLIENT_ID) {
+    const normalizedExplicitIssuer = explicitIssuer === null || explicitIssuer === void 0 ? void 0 : explicitIssuer.trim();
+    if (normalizedExplicitIssuer) {
+        return normalizedExplicitIssuer;
+    }
+    const normalizedBrowserOrigin = browserOrigin === null || browserOrigin === void 0 ? void 0 : browserOrigin.trim();
+    if (!normalizedBrowserOrigin) {
+        return undefined;
+    }
+    return deriveAuthentikIssuerFromBrowserOrigin(normalizedBrowserOrigin, clientId);
 }
 export function resolveAuthentikRedirectUri(explicitRedirectUri, browserOrigin) {
     const normalizedExplicitRedirectUri = explicitRedirectUri === null || explicitRedirectUri === void 0 ? void 0 : explicitRedirectUri.trim();

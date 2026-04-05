@@ -11,6 +11,7 @@ export interface BuildAuthentikOAuthFlowStartUrlInput {
 }
 
 const DEFAULT_SCOPE = 'openid profile email';
+export const DEFAULT_AUTHENTIK_CLIENT_ID = 'alternun-mobile';
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
 
 function isLoopbackHostname(value: string | undefined | null): boolean {
@@ -32,6 +33,60 @@ function shouldPreferBrowserOrigin(
   } catch {
     return false;
   }
+}
+
+function deriveAuthentikIssuerFromBrowserOrigin(
+  browserOrigin: string,
+  clientId: string
+): string | undefined {
+  try {
+    const origin = new URL(browserOrigin.trim());
+    if (isLoopbackHostname(origin.hostname)) {
+      return undefined;
+    }
+
+    const hostnameParts = origin.hostname.split('.');
+    const airsIndex = hostnameParts.indexOf('airs');
+    if (airsIndex === -1) {
+      return undefined;
+    }
+
+    hostnameParts[airsIndex] = 'sso';
+    return `${origin.protocol}//${hostnameParts.join('.')}/application/o/${encodeURIComponent(
+      clientId
+    )}/`;
+  } catch {
+    return undefined;
+  }
+}
+
+export function resolveAuthentikClientId(
+  explicitClientId: string | undefined | null
+): string | undefined {
+  const normalizedExplicitClientId = explicitClientId?.trim();
+  if (normalizedExplicitClientId) {
+    return normalizedExplicitClientId;
+  }
+
+  return DEFAULT_AUTHENTIK_CLIENT_ID;
+}
+
+export function resolveAuthentikIssuer(
+  explicitIssuer: string | undefined | null,
+  browserOrigin?: string | null,
+  clientId: string = DEFAULT_AUTHENTIK_CLIENT_ID
+): string | undefined {
+  const normalizedExplicitIssuer = explicitIssuer?.trim();
+  if (normalizedExplicitIssuer) {
+    return normalizedExplicitIssuer;
+  }
+
+  const normalizedBrowserOrigin = browserOrigin?.trim();
+  if (!normalizedBrowserOrigin) {
+    return undefined;
+  }
+
+  return deriveAuthentikIssuerFromBrowserOrigin(normalizedBrowserOrigin, clientId);
 }
 
 export function resolveAuthentikRedirectUri(

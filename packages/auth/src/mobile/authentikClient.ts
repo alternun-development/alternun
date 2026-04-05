@@ -13,6 +13,8 @@ import {
 } from '@edcalderon/auth';
 import {
   buildAuthentikOAuthFlowStartUrl as buildOauthStartUrl,
+  resolveAuthentikClientId,
+  resolveAuthentikIssuer,
   resolveAuthentikRedirectUri,
   type BuildAuthentikOAuthFlowStartUrlInput,
 } from './authentikUrls';
@@ -95,11 +97,12 @@ function resolveBrowserOrigin(): string | undefined {
 function resolveAuthentikClientConfig(
   config: AuthentikOidcConfig = {}
 ): ResolvedAuthentikClientConfig {
-  const issuer = resolveEnvValue(config, 'issuer');
-  const clientId = resolveEnvValue(config, 'clientId');
+  const browserOrigin = resolveBrowserOrigin();
+  const clientId = resolveAuthentikClientId(resolveEnvValue(config, 'clientId'));
+  const issuer = resolveAuthentikIssuer(resolveEnvValue(config, 'issuer'), browserOrigin, clientId);
   const redirectUri = resolveAuthentikRedirectUri(
     resolveEnvValue(config, 'redirectUri'),
-    resolveBrowserOrigin()
+    browserOrigin
   );
   const normalizedScope = config.scope?.trim();
 
@@ -206,11 +209,12 @@ function setPendingAuthentikOAuthProvider(
 }
 
 export function isAuthentikConfigured(config: AuthentikOidcConfig = {}): boolean {
-  const issuer = resolveEnvValue(config, 'issuer');
-  const clientId = resolveEnvValue(config, 'clientId');
+  const browserOrigin = resolveBrowserOrigin();
+  const clientId = resolveAuthentikClientId(resolveEnvValue(config, 'clientId'));
+  const issuer = resolveAuthentikIssuer(resolveEnvValue(config, 'issuer'), browserOrigin, clientId);
   const redirectUri = resolveAuthentikRedirectUri(
     resolveEnvValue(config, 'redirectUri'),
-    resolveBrowserOrigin()
+    browserOrigin
   );
 
   return Boolean(issuer && clientId && redirectUri);
