@@ -37,6 +37,11 @@ export interface ResolvedExpoConfig {
     authentikIssuer?: string;
     authentikClientId?: string;
     authentikRedirectUri?: string;
+    authentikLoginEntryMode?: string;
+    authentikSocialLoginMode?: string;
+    authentikProviderFlowSlugs?: string;
+    authentikAllowCustomProviderFlowSlugs?: string;
+    releaseUpdateMode?: string;
   };
   redirects: {
     enableAirsToDev: boolean;
@@ -74,6 +79,26 @@ function sanitizeBucketName(value: string): string {
 
 function createAssetBucketName(stage: PipelineStage, prefix: string, domain: string): string {
   return sanitizeBucketName(`${prefix}-${stage}-public-assets-${domain.replace(/\./g, '-')}`);
+}
+
+function resolveAuthentikProviderFlowSlugsEnvValue(
+  env: NodeJS.ProcessEnv,
+  localConfig: LocalDeploymentConfig,
+  allowCustomProviderFlowSlugs: boolean
+): string | undefined {
+  if (!allowCustomProviderFlowSlugs) {
+    return undefined;
+  }
+
+  if (env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS !== undefined) {
+    return env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS;
+  }
+
+  if (localConfig.expo?.publicEnv?.authentikProviderFlowSlugs !== undefined) {
+    return localConfig.expo.publicEnv.authentikProviderFlowSlugs;
+  }
+
+  return undefined;
 }
 
 function resolveExpoAppPath(dirname: string, appPath: string): string {
@@ -184,6 +209,10 @@ export function resolveExpoConfig({
       !profileFlags.isAdminSitePipelineProfile &&
       !profileFlags.isDashboardPipelineProfile
   );
+  const allowCustomProviderFlowSlugs =
+    parseBoolean(env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS, false) ||
+    parseBoolean(env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS, false) ||
+    Boolean(localConfig.expo?.publicEnv?.authentikAllowCustomProviderFlowSlugs);
 
   const publicEnv = {
     supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL ?? localConfig.expo?.publicEnv?.supabaseUrl,
@@ -212,6 +241,20 @@ export function resolveExpoConfig({
       env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? localConfig.expo?.publicEnv?.authentikClientId,
     authentikRedirectUri:
       env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI ?? localConfig.expo?.publicEnv?.authentikRedirectUri,
+    authentikLoginEntryMode:
+      env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE ??
+      localConfig.expo?.publicEnv?.authentikLoginEntryMode,
+    authentikSocialLoginMode:
+      env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE ??
+      localConfig.expo?.publicEnv?.authentikSocialLoginMode,
+    authentikProviderFlowSlugs: resolveAuthentikProviderFlowSlugsEnvValue(
+      env,
+      localConfig,
+      allowCustomProviderFlowSlugs
+    ),
+    authentikAllowCustomProviderFlowSlugs: allowCustomProviderFlowSlugs ? 'true' : undefined,
+    releaseUpdateMode:
+      env.EXPO_PUBLIC_RELEASE_UPDATE_MODE ?? localConfig.expo?.publicEnv?.releaseUpdateMode,
   };
 
   const redirects = {

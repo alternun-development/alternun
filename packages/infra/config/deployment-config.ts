@@ -33,6 +33,11 @@ export interface ExpoLocalConfig {
     authentikIssuer?: string;
     authentikClientId?: string;
     authentikRedirectUri?: string;
+    authentikLoginEntryMode?: string;
+    authentikSocialLoginMode?: string;
+    authentikProviderFlowSlugs?: string;
+    authentikAllowCustomProviderFlowSlugs?: boolean;
+    releaseUpdateMode?: string;
   };
 }
 

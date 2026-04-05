@@ -1,6 +1,7 @@
 {
   "shared": {
     "labels": {
+      "backToTop": "Inicio",
       "by": "Por",
       "dark": "Oscuro",
       "language": "Idioma",
@@ -114,6 +115,9 @@
         "passwordRequired": "La contrasena es obligatoria.",
         "validEmail": "Ingresa un correo valido."
       }
+    },
+    "dashboard": {
+      "backToTop": "Inicio"
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",

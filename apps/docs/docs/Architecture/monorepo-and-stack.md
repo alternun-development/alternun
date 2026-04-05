@@ -135,6 +135,7 @@ Purpose:
 
 - keeps reusable interface pieces out of a single app
 - supports multi-app reuse where design language overlaps
+- is consumed source-first inside the monorepo; `packages/ui/dist` is a local build artifact
 
 ### `@alternun/i18n`
 

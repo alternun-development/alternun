@@ -1,10 +1,30 @@
 import { buildNonExpoPipelineEnv, IDENTITY_PIPELINE_SET, resolveBranch } from '../shared.js';
 import type { IdentityPipelineStage, PipelineConfigContext, PipelineSpecRecord } from '../types.js';
 
+function resolveDevGoogleLoginFlowSlug(env: NodeJS.ProcessEnv): string {
+  return env.INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG?.trim() ?? '';
+}
+
 export function buildIdentityPipelineSpecs({
   env,
   pipeline,
 }: PipelineConfigContext): PipelineSpecRecord<IdentityPipelineStage> {
+  const googleAuthClientId =
+    env.INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID ?? env.GOOGLE_AUTH_CLIENT_ID ?? '';
+  const googleAuthClientSecret =
+    env.INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET ??
+    env.GOOGLE_AUTH_CLIENT_SECRET ??
+    env.GOOGLEA_AUTH_CLIENT_SECRET ??
+    '';
+  const googleAuthClientSecretKey = 'INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET';
+  const devAppLaunchUrl = `https://${
+    env.INFRA_EXPO_DOMAIN_DEV ?? 'testnet.airs.alternun.co'
+  }/auth?next=/`;
+  const prodAppLaunchUrl = `https://${
+    env.INFRA_EXPO_DOMAIN_PRODUCTION ?? 'airs.alternun.co'
+  }/auth?next=/`;
+  const devGoogleLoginFlowSlug = resolveDevGoogleLoginFlowSlug(env);
+
   return {
     'identity-dev': {
       suffix: 'auth-dev',
@@ -27,6 +47,10 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION: 'true',
         INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
+        INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL: devAppLaunchUrl,
+        INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
+        INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: devGoogleLoginFlowSlug,
+        [googleAuthClientSecretKey]: googleAuthClientSecret,
       }),
     },
     'identity-prod': {
@@ -48,6 +72,9 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION: 'true',
         INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
+        INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL: prodAppLaunchUrl,
+        INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
+        [googleAuthClientSecretKey]: googleAuthClientSecret,
       }),
     },
   };

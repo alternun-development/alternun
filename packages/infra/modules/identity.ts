@@ -76,6 +76,8 @@ export interface IdentityLocalConfig {
       clientSecret?: string;
       sourceName?: string;
       sourceSlug?: string;
+      loginFlowSlug?: string;
+      allowCustomProviderFlowSlugs?: boolean;
     };
     supabase?: {
       applicationName?: string;
@@ -108,6 +110,7 @@ export interface IdentityLocalConfig {
       applicationName?: string;
       applicationSlug?: string;
       providerName?: string;
+      launchUrl?: string;
       /** Comma-separated list of allowed redirect URIs for the mobile OIDC provider. */
       redirectUrls?: string[];
       postLogoutRedirectUrls?: string[];
@@ -206,6 +209,8 @@ export interface IdentitySettings {
       clientSecret: string;
       sourceName: string;
       sourceSlug: string;
+      loginFlowSlug: string;
+      allowCustomProviderFlowSlugs: boolean;
     };
     supabase: {
       applicationName: string;
@@ -238,6 +243,7 @@ export interface IdentitySettings {
       applicationName: string;
       applicationSlug: string;
       providerName: string;
+      launchUrl: string;
       /** Allowed redirect URIs registered in the Authentik mobile OIDC provider. */
       redirectUrls: string[];
       postLogoutRedirectUrls: string[];
@@ -411,6 +417,15 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
   );
   const defaultApplicationLaunchUrl =
     explicitDefaultApplicationLaunchUrl || (adminOidcLocalDevUrl ? `${adminOidcLocalDevUrl}/` : '');
+  const explicitMobileOidcLaunchUrl = (
+    args.env.INFRA_IDENTITY_MOBILE_OIDC_LAUNCH_URL ??
+    localConfig?.integration?.mobileOidc?.launchUrl ??
+    ''
+  ).trim();
+  const allowCustomProviderFlowSlugs =
+    parseBoolean(args.env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS, false) ||
+    parseBoolean(args.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS, false) ||
+    Boolean(localConfig?.integration?.google?.allowCustomProviderFlowSlugs);
 
   return {
     enabled: parseBoolean(
@@ -611,6 +626,12 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
           args.env.INFRA_IDENTITY_GOOGLE_SOURCE_SLUG ??
           localConfig?.integration?.google?.sourceSlug ??
           IDENTITY_INFRA_DEFAULTS.integration.google.sourceSlug,
+        loginFlowSlug: allowCustomProviderFlowSlugs
+          ? args.env.INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG ??
+            localConfig?.integration?.google?.loginFlowSlug ??
+            ''
+          : '',
+        allowCustomProviderFlowSlugs,
       },
       supabase: {
         applicationName:
@@ -710,6 +731,7 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
           args.env.INFRA_MOBILE_OIDC_PROVIDER_NAME ??
           localConfig?.integration?.mobileOidc?.providerName ??
           IDENTITY_INFRA_DEFAULTS.integration.mobileOidc.providerName,
+        launchUrl: explicitMobileOidcLaunchUrl,
         redirectUrls: (() => {
           const explicit =
             args.env.INFRA_MOBILE_OIDC_REDIRECT_URLS?.split(',')

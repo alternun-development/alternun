@@ -1,6 +1,7 @@
 {
   "shared": {
     "labels": {
+      "backToTop": "Inicio",
       "by": "Por",
       "dark": "Oscuro",
       "language": "Idioma",
@@ -50,6 +51,7 @@
         "connectWallet": "Conectar billetera",
         "continueWithEmail": "Continuar con correo",
         "continueWithGoogle": "Continuar con Google",
+        "continueWithDiscord": "Continuar con Discord",
         "createAccount": "Crear cuenta",
         "verifyConfirmationCode": "Verificar codigo de confirmacion",
         "useAnotherEmail": "Usar otro correo"
@@ -113,6 +115,9 @@
         "passwordRequired": "La contrasena es obligatoria.",
         "validEmail": "Ingresa un correo valido."
       }
+    },
+    "dashboard": {
+      "backToTop": "Inicio"
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",

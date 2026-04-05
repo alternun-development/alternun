@@ -9,6 +9,7 @@
     "packages/auth",
     "packages/i18n",
     "packages/infra",
+    "packages/update",
     "packages/ui"
   ],
   "changelogFile": "CHANGELOG.md",
@@ -21,6 +22,22 @@
       "path": "./scripts/versioning/mobile-app-version-extension.cjs"
     }
   ],
+  "extensionConfig": {
+    "secrets-check": {
+      "allowlist": [
+        "DATABASE_PASSWORD=",
+        "SMTP_PASSWORD=",
+        "GOOGLE_AUTH_CLIENT_SECRET=",
+        "USER_SYNC_WEBHOOK_SECRET=",
+        "DISCORD_CLIENT_SECRET=",
+        "SUPABASE_MANAGEMENT_ACCESS_TOKEN=",
+        "SUPABASE_OIDC_CLIENT_SECRET=",
+        "BOOTSTRAP_ADMIN_",
+        "BOOTSTRAP_DOCS_CMS_",
+        "ALTERNUN_BOOTSTRAP_"
+      ]
+    }
+  },
   "branchAwareness": {
     "enabled": true,
     "defaultBranch": "master",
@@ -40,11 +57,11 @@
         "bumpStrategy": "semantic"
       },
       "develop": {
-        "versionFormat": "semantic",
+        "versionFormat": "dev",
         "tagFormat": "v{version}",
         "syncFiles": ["package.json"],
         "environment": "development",
-        "bumpStrategy": "semantic"
+        "bumpStrategy": "dev-build"
       },
       "feature/*": {
         "versionFormat": "feature",

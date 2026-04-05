@@ -2,39 +2,35 @@ import { useAuth } from '../components/auth/AppAuthProvider';
 import Dashboard from '../components/dashboard/Dashboard';
 import AirsIntroExperience from '../components/onboarding/AirsIntroExperience';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
-import { hasPendingAuthentikCallback } from '@alternun/auth';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { readPendingAuthentikOAuthProvider } from '@alternun/auth';
+import { Redirect, useRootNavigationState, useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-
-// True when the page loaded with an Authentik OIDC callback in the URL.
-// Stays true until the callback is processed and the user is set.
-const OIDC_CALLBACK_PENDING =
-  typeof window !== 'undefined' && hasPendingAuthentikCallback(window.location.search);
 
 export default function HomeScreen(): React.JSX.Element {
   const { user, loading, signIn, signOutUser } = useAuth();
   const { showAirsIntro, setShowAirsIntro } = useAppPreferences();
   const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
   const [introDismissedThisSession, setIntroDismissedThisSession] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      setIntroDismissedThisSession(false);
-    }
-  }, [user]);
+  const pendingAuthentikProvider = readPendingAuthentikOAuthProvider();
+  const isNavigationReady = Boolean(rootNavigationState?.key);
 
   const shouldShowAirsIntro = useMemo(
     () => !user && showAirsIntro && !introDismissedThisSession,
     [introDismissedThisSession, showAirsIntro, user]
   );
 
-  if (loading || (OIDC_CALLBACK_PENDING && !user)) {
+  if (loading || !isNavigationReady) {
     return (
       <View style={styles.loadingScreen}>
         <ActivityIndicator size='large' color='#1ccba1' />
       </View>
     );
+  }
+
+  if (!user && pendingAuthentikProvider) {
+    return <Redirect href={{ pathname: '/auth', params: { next: '/' } }} />;
   }
 
   if (shouldShowAirsIntro) {
@@ -64,6 +60,7 @@ export default function HomeScreen(): React.JSX.Element {
         });
       }}
       onSignOut={async () => {
+        setIntroDismissedThisSession(false);
         await signOutUser();
       }}
     />

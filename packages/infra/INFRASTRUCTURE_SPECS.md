@@ -54,12 +54,13 @@ Resources created:
 
 - `sst.aws.Bucket` for public web assets
 - `sst.aws.StaticSite` for the Expo web build
+- release-update manifest and worker files generated into the app `public/` directory during builds
 - optional redirect routers via `sst.aws.Router`
 
 Default specs:
 
 - app path: `../../apps/mobile`
-- build command: `npx expo export -p web`
+- build command: `pnpm --filter @alternun/mobile run build:web`
 - build output: `dist`
 - domains:
   - production: `airs.alternun.co`

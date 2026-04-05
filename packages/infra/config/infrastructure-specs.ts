@@ -35,7 +35,7 @@ export const PIPELINE_INFRA_DEFAULTS = {
 export const EXPO_INFRA_DEFAULTS = {
   appPath: '../../apps/mobile',
   subdomain: 'airs',
-  buildCommand: 'npx expo export -p web',
+  buildCommand: 'pnpm --filter @alternun/mobile run build:web',
   buildOutput: 'dist',
   enableCustomDomain: true,
   requirePublicAuthEnv: true,

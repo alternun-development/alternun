@@ -1,5 +1,14 @@
-import type { OAuthFlow } from './AppAuthProvider';
-import { parseEmailAddress, parseSignUpPassword } from '@alternun/auth';
+import {
+  buildAuthentikRelayRoute,
+  clearPendingAuthentikOAuthProvider,
+  isAuthentikConfigured,
+  nativeSignIn,
+  parseEmailAddress,
+  parseSignUpPassword,
+  readPendingAuthentikOAuthProvider,
+  resolveAuthentikLoginStrategy,
+  webRedirectSignIn,
+} from '@alternun/auth';
 import { Image as ExpoImage } from 'expo-image';
 import {
   AlertCircle,
@@ -16,8 +25,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { isAuthentikConfigured, startAuthentikOAuthFlow } from '@alternun/auth';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -33,6 +41,7 @@ import {
   View,
 } from 'react-native';
 import { getLocaleLabel } from '@alternun/i18n';
+import { useRouter } from 'expo-router';
 import { createTypographyStyles } from '../theme/typography';
 import { useAppPalette } from '../theme/useAppPalette';
 import ShaderBackground from './ShaderBackground';
@@ -40,7 +49,6 @@ import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
-
 const RESEND_COOLDOWN_SECONDS = 45;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
@@ -81,18 +89,7 @@ interface EmailAuthCapableClient {
 export interface AuthSignInScreenProps {
   onCancel?: () => void;
   presentation?: 'screen' | 'modal';
-}
-
-function resolveGoogleFlow(supportedFlows: OAuthFlow[]): OAuthFlow {
-  if (supportedFlows.includes('redirect')) {
-    return 'redirect';
-  }
-
-  if (supportedFlows.includes('native')) {
-    return 'native';
-  }
-
-  return 'popup';
+  authReturnTo?: string;
 }
 
 function resolveGoogleProvider(): string {
@@ -220,13 +217,27 @@ function createDefaultRequiredFieldState(): RequiredFieldState {
 export default function AuthSignInScreen({
   onCancel,
   presentation = 'screen',
+  authReturnTo,
 }: AuthSignInScreenProps) {
   const { signInWithEmail, signIn, loading, error, client } = useAuth();
   const { t, locale } = useAppTranslation('mobile');
   const { language, toggleThemeMode, cycleLanguage } = useAppPreferences();
+  const router = useRouter();
   const p = useAppPalette();
   const ThemeIcon = p.isDark ? Sun : Moon;
   const themeLabel = p.isDark ? t('labels.dark') : t('labels.light');
+  const loginStrategy = resolveAuthentikLoginStrategy();
+  const authentikLoginEntryMode = loginStrategy.mode;
+  const authentikSocialLoginMode = loginStrategy.socialMode;
+  const authentikConfigured = isAuthentikConfigured();
+  const shouldUseAuthentikSocialLogin = authentikSocialLoginMode !== 'supabase';
+  const shouldForceAuthentikSocialLogin = authentikSocialLoginMode === 'authentik';
+  const shouldShowAuthentikSocialButtons =
+    shouldUseAuthentikSocialLogin && (shouldForceAuthentikSocialLogin || authentikConfigured);
+  const shouldUseAuthentikRelayEntry =
+    authentikLoginEntryMode === 'relay' &&
+    shouldShowAuthentikSocialButtons &&
+    (authentikSocialLoginMode !== 'authentik' || authentikConfigured);
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -253,11 +264,7 @@ export default function AuthSignInScreen({
   const confirmPasswordInputRef = useRef<TextInput>(null);
   const confirmationCodeInputRef = useRef<TextInput>(null);
 
-  const googleFlow = useMemo(
-    () => resolveGoogleFlow(client.capabilities().supportedFlows),
-    [client]
-  );
-  const googleProvider = useMemo(() => resolveGoogleProvider(), []);
+  const googleProvider = resolveGoogleProvider();
 
   const rawEffectiveError = localError ?? error;
   const effectiveError = rawEffectiveError
@@ -285,6 +292,43 @@ export default function AuthSignInScreen({
 
     return () => clearTimeout(timeout);
   }, [resendCooldown]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      return;
+    }
+
+    const pendingProvider = readPendingAuthentikOAuthProvider();
+    if (pendingProvider !== 'google' && pendingProvider !== 'discord') {
+      return;
+    }
+
+    clearPendingAuthentikOAuthProvider();
+    setSubmitMode(pendingProvider);
+    if (shouldUseAuthentikRelayEntry) {
+      router.replace(
+        buildAuthentikRelayRoute(pendingProvider, {
+          next: authReturnTo,
+          forceFreshSession: false,
+        })
+      );
+      return;
+    }
+
+    void webRedirectSignIn({
+      client,
+      provider: pendingProvider,
+      authentikProviderHint: pendingProvider,
+      redirectTo: authReturnTo,
+      strategy: loginStrategy,
+    })
+      .catch((authError: unknown) => {
+        setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
+      })
+      .finally(() => {
+        setSubmitMode(null);
+      });
+  }, [authReturnTo, client, loginStrategy, router, shouldUseAuthentikRelayEntry, t]);
 
   const transitionToStep = (step: AuthStep) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -573,22 +617,33 @@ export default function AuthSignInScreen({
     resetMessages();
     setSubmitMode('google');
     try {
-      // Try Authentik OIDC first (vendor-independent); falls back to Supabase Auth
-      // when Authentik env vars are not configured.
-      await startAuthentikOAuthFlow('google');
-      // startAuthentikOAuthFlow redirects the page; code below only runs on error.
-    } catch (oidcError) {
-      const msg = oidcError instanceof Error ? oidcError.message : '';
-      if (msg.startsWith('CONFIG_ERROR')) {
-        // Authentik not configured — fall back to Supabase Auth OAuth
-        try {
-          await signIn({ provider: googleProvider, flow: googleFlow });
-        } catch (authError) {
-          setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
-        }
-      } else {
-        setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
+      if (Platform.OS === 'web' && shouldUseAuthentikRelayEntry) {
+        router.replace(
+          buildAuthentikRelayRoute('google', {
+            next: authReturnTo,
+            forceFreshSession: false,
+          })
+        );
+        return;
       }
+
+      if (Platform.OS === 'web') {
+        await webRedirectSignIn({
+          client,
+          provider: googleProvider,
+          authentikProviderHint: 'google',
+          redirectTo: authReturnTo,
+          strategy: loginStrategy,
+        });
+        return;
+      }
+
+      await nativeSignIn({
+        client,
+        provider: googleProvider,
+      });
+    } catch (oidcError) {
+      setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
     } finally {
       setSubmitMode(null);
     }
@@ -598,7 +653,31 @@ export default function AuthSignInScreen({
     resetMessages();
     setSubmitMode('discord');
     try {
-      await startAuthentikOAuthFlow('discord');
+      if (Platform.OS === 'web' && shouldUseAuthentikRelayEntry) {
+        router.replace(
+          buildAuthentikRelayRoute('discord', {
+            next: authReturnTo,
+            forceFreshSession: false,
+          })
+        );
+        return;
+      }
+
+      if (Platform.OS === 'web') {
+        await webRedirectSignIn({
+          client,
+          provider: 'discord',
+          authentikProviderHint: 'discord',
+          redirectTo: authReturnTo,
+          strategy: loginStrategy,
+        });
+        return;
+      }
+
+      await nativeSignIn({
+        client,
+        provider: 'discord',
+      });
     } catch (oidcError) {
       setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
     } finally {
@@ -1000,7 +1079,7 @@ export default function AuthSignInScreen({
                       )}
                     </TouchableOpacity>
 
-                    {isAuthentikConfigured() ? (
+                    {shouldShowAuthentikSocialButtons ? (
                       <TouchableOpacity
                         activeOpacity={0.85}
                         disabled={isBusy}

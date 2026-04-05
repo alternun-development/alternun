@@ -1,16 +1,15 @@
-import { DarkTheme, DefaultTheme, ThemeProvider, } from '@react-navigation/native';
-import { AppAuthProvider, } from '../components/auth/AppAuthProvider';
-import AppInfoFooter from '../components/common/AppInfoFooter';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { AppAuthProvider } from '../components/auth/AppAuthProvider';
 import {
   AppPreferencesProvider,
   useAppPreferences,
 } from '../components/settings/AppPreferencesProvider';
-import { useFonts, } from 'expo-font';
-import { Stack, usePathname, } from 'expo-router';
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar, } from 'expo-status-bar';
-import { useEffect, } from 'react';
-import { StyleSheet, View, } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useCallback } from 'react';
+import { StyleSheet, View } from 'react-native';
 import 'react-native-reanimated';
 import '../global.css';
 
@@ -18,58 +17,62 @@ import '../global.css';
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout(): any {
-  const [loaded,] = useFonts({
+  const [loaded] = useFonts({
     // Expo expects a bundled asset module reference here.
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf',),
-  },);
-
-  useEffect(() => {
-    if (loaded) {
-      void SplashScreen.hideAsync();
-    }
-  }, [loaded,],);
-
-  if (!loaded) {
-    return null;
-  }
+    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  });
 
   return (
     <AppPreferencesProvider>
-      <RootApp />
+      <RootApp fontsLoaded={loaded} />
     </AppPreferencesProvider>
   );
 }
 
-function RootApp(): any {
-  const { themeMode, } = useAppPreferences();
+function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): any {
+  const { themeMode } = useAppPreferences();
   const navigationTheme = themeMode === 'dark' ? DarkTheme : DefaultTheme;
-  const pathname = usePathname();
-  const showLayoutFooter = pathname !== '/auth' && pathname !== '/';
-
+  const handleLayout = useCallback(() => {
+    if (fontsLoaded) {
+      void SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
   return (
     <AppAuthProvider>
       <ThemeProvider value={navigationTheme}>
-        <View style={styles.appShell}>
+        <View style={styles.appShell} onLayout={handleLayout}>
           <View style={styles.stackContainer}>
-            <Stack
-              screenOptions={({ route, },) => ({
-                headerShown: !route.name.startsWith('tempobook',),
-              })}
-            >
-              <Stack.Screen name='index' options={{ headerShown: false, }} />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name='index' options={{ headerShown: false }} />
               <Stack.Screen
                 name='auth'
                 options={{
                   headerShown: false,
                   presentation: 'transparentModal',
                   animation: 'fade',
-                  contentStyle: { backgroundColor: 'transparent', },
+                  contentStyle: { backgroundColor: 'transparent' },
+                }}
+              />
+              <Stack.Screen
+                name='auth-relay'
+                options={{
+                  headerShown: false,
+                  presentation: 'transparentModal',
+                  animation: 'fade',
+                  contentStyle: { backgroundColor: 'transparent' },
+                }}
+              />
+              <Stack.Screen
+                name='auth/callback'
+                options={{
+                  headerShown: false,
                 }}
               />
               <Stack.Screen
                 name='settings'
                 options={{
+                  headerShown: true,
                   title: 'Settings',
                   headerBackTitle: 'Back',
                 }}
@@ -77,17 +80,37 @@ function RootApp(): any {
               <Stack.Screen
                 name='profile'
                 options={{
+                  headerShown: true,
                   title: 'Profile',
                   headerBackTitle: 'Back',
                 }}
               />
+              <Stack.Screen
+                name='compensaciones'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='mis-atn'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='proyectos'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='beneficios'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='ranking'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='wallet'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
             </Stack>
           </View>
-          {showLayoutFooter ? (
-            <View pointerEvents='box-none' style={styles.footerOverlay}>
-              <AppInfoFooter />
-            </View>
-          ) : null}
         </View>
         <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>
@@ -102,11 +125,4 @@ const styles = StyleSheet.create({
   stackContainer: {
     flex: 1,
   },
-  footerOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
-  },
-},);
+});

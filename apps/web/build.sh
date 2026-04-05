@@ -1,3 +1,6 @@
 #!/bin/bash
-# Build script that ignores turbo filter arguments
+set -euo pipefail
+
+pnpm --filter @alternun/update build
+node ../../packages/update/scripts/export-assets.mjs --target-dir public
 next build

@@ -263,6 +263,7 @@ function buildAuthBootstrapUserData(args: {
   acmeBackupBucketName: pulumi.Input<string>;
   acmeBackupPrefix: string;
   authentikImageTag: string;
+  allowCustomProviderFlowSlugs: boolean;
   authentikSecretArn: pulumi.Input<string>;
   databaseCredentialsSecretArn: pulumi.Input<string>;
   smtpCredentialsSecretArn: pulumi.Input<string>;
@@ -337,6 +338,7 @@ ALTERNUN_IDENTITY_DOMAIN=${args.domain}
 ALTERNUN_IDENTITY_INGRESS_MODE=${args.ingressMode}
 ALTERNUN_IDENTITY_TLS_MODE=${args.tlsMode}
 ALTERNUN_IDENTITY_TLS_ACME_EMAIL=${args.acmeEmail}
+ALTERNUN_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=${args.allowCustomProviderFlowSlugs ? 'true' : 'false'}
 ALTERNUN_ROUTE53_HOSTED_ZONE_ID=${route53HostedZoneId}
 ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET=${acmeBackupBucketName}
 ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX=${args.acmeBackupPrefix}
@@ -745,6 +747,11 @@ export function deployIdentityInfrastructure(
   const adminOidcLaunchUrl = `${adminOidcBaseUrl}/`;
   const adminOidcRedirectUrl = `${adminOidcBaseUrl}/auth/callback`;
   const adminOidcPostLogoutRedirectUrl = `${adminOidcBaseUrl}/login`;
+  const mobileStageKey = resolveApplicationStageKey(args.stage);
+  const mobileAirsStageDomain = buildStageDomains('airs', args.rootDomain)[mobileStageKey];
+  const mobileOidcLaunchUrl =
+    args.settings.integration.mobileOidc.launchUrl.trim() ||
+    `https://${mobileAirsStageDomain}/auth?next=/`;
   const docsCmsSiteUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.siteUrl);
   const docsCmsLocalDevUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.localDevUrl);
   const docsCmsOidcRedirectUrls = [docsCmsSiteUrl, docsCmsLocalDevUrl]
@@ -805,11 +812,13 @@ export function deployIdentityInfrastructure(
             defaultApplicationSlug: args.settings.integration.bootstrap.defaultApplication.slug,
             googleClientId: args.settings.integration.google.clientId,
             googleClientSecret: args.settings.integration.google.clientSecret,
+            googleSourceLoginFlowSlug: args.settings.integration.google.loginFlowSlug,
             googleSourceName: args.settings.integration.google.sourceName,
             googleSourceSlug: args.settings.integration.google.sourceSlug,
             mobileOidcClientId: args.settings.integration.mobileOidc.clientId,
             mobileOidcApplicationName: args.settings.integration.mobileOidc.applicationName,
             mobileOidcApplicationSlug: args.settings.integration.mobileOidc.applicationSlug,
+            mobileOidcLaunchUrl,
             mobileOidcProviderName: args.settings.integration.mobileOidc.providerName,
             mobileOidcRedirectUrls: args.settings.integration.mobileOidc.redirectUrls,
             mobileOidcPostLogoutRedirectUrls:
@@ -1059,6 +1068,7 @@ export function deployIdentityInfrastructure(
     acmeBackupBucketName: acmeBackupBucket?.bucket ?? '',
     acmeBackupPrefix: args.settings.tls.acmeBackup.prefix,
     authentikImageTag: args.settings.authentikImageTag,
+    allowCustomProviderFlowSlugs: args.settings.integration.google.allowCustomProviderFlowSlugs,
     authentikSecretArn: authentikSecret.arn,
     databaseCredentialsSecretArn: databaseCredentialsSecret.arn,
     smtpCredentialsSecretArn: smtpCredentialsSecret.arn,

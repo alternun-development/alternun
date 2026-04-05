@@ -1,3 +1,333 @@
+## [1.0.18](https://github.com/alternun-development/alternun/compare/v1.0.17...v1.0.18) (2026-04-05)
+
+## [1.0.18](https://github.com/alternun-development/alternun/compare/v1.0.17...v1.0.18) (2026-04-05)
+
+## [1.0.17](https://github.com/alternun-development/alternun/compare/v1.0.16...v1.0.17) (2026-04-05)
+
+### Bug Fixes
+
+- **repo,docs,mobile:** AGENTS, CLAUDE, README, authentication-and-session-flow ([01f04c7](https://github.com/alternun-development/alternun/commit/01f04c7aabda74785953f1636de8bcf1ca958797))
+
+## [1.0.17](https://github.com/alternun-development/alternun/compare/v1.0.16...v1.0.17) (2026-04-05)
+
+### Bug Fixes
+
+- **repo,docs,mobile:** AGENTS, CLAUDE, README, authentication-and-session-flow ([01f04c7](https://github.com/alternun-development/alternun/commit/01f04c7aabda74785953f1636de8bcf1ca958797))
+
+## [1.0.16](https://github.com/alternun-development/alternun/compare/v1.0.15...v1.0.16) (2026-04-05)
+
+### Bug Fixes
+
+- **docs,repo,infra:** authentication-and-session-flow, alternun-authentik-social-login-incident-2026-04, README, bootstrap-authentik-integrations ([63ab8e5](https://github.com/alternun-development/alternun/commit/63ab8e5bf7328e97bbd25685af776f1e68ab5ae6))
+
+## [1.0.16](https://github.com/alternun-development/alternun/compare/v1.0.15...v1.0.16) (2026-04-05)
+
+### Bug Fixes
+
+- **docs,repo,infra:** authentication-and-session-flow, alternun-authentik-social-login-incident-2026-04, README, bootstrap-authentik-integrations ([63ab8e5](https://github.com/alternun-development/alternun/commit/63ab8e5bf7328e97bbd25685af776f1e68ab5ae6))
+
+## [1.0.15](https://github.com/alternun-development/alternun/compare/v1.0.14...v1.0.15) (2026-04-05)
+
+## [1.0.15](https://github.com/alternun-development/alternun/compare/v1.0.14...v1.0.15) (2026-04-05)
+
+## [1.0.14](https://github.com/alternun-development/alternun/compare/v1.0.13...v1.0.14) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile:** DashboardSummaryCards ([041a8fe](https://github.com/alternun-development/alternun/commit/041a8fea72cf61fd293ce9a68416d7e71a9d7c46))
+
+## [1.0.14](https://github.com/alternun-development/alternun/compare/v1.0.13...v1.0.14) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile:** DashboardSummaryCards ([041a8fe](https://github.com/alternun-development/alternun/commit/041a8fea72cf61fd293ce9a68416d7e71a9d7c46))
+
+## [1.0.13](https://github.com/alternun-development/alternun/compare/v1.0.12...v1.0.13) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,auth,update:** Dashboard, DashboardSummaryCards, TopNav ([5ae9580](https://github.com/alternun-development/alternun/commit/5ae9580ea1784816927e5f4f4ed882b2ca825ba1))
+
+## [1.0.13](https://github.com/alternun-development/alternun/compare/v1.0.12...v1.0.13) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,auth,update:** Dashboard, DashboardSummaryCards, TopNav ([5ae9580](https://github.com/alternun-development/alternun/commit/5ae9580ea1784816927e5f4f4ed882b2ca825ba1))
+
+## [1.0.12](https://github.com/alternun-development/alternun/compare/v1.0.11...v1.0.12) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,auth,update:** \_layout, HorizontalCardScroller, Dashboard, NotificationDropdown ([fccc4f3](https://github.com/alternun-development/alternun/commit/fccc4f3962cfa22111a028b8bf3dec1d56d8e1b5))
+- **mobile,ui:** \_layout.web, beneficios, compensaciones, mis-atn ([d7799b5](https://github.com/alternun-development/alternun/commit/d7799b5245537149a34d66f85d8f46ccbc54018c))
+
+## [1.0.12](https://github.com/alternun-development/alternun/compare/v1.0.11...v1.0.12) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,auth,update:** \_layout, HorizontalCardScroller, Dashboard, NotificationDropdown ([fccc4f3](https://github.com/alternun-development/alternun/commit/fccc4f3962cfa22111a028b8bf3dec1d56d8e1b5))
+- **mobile,ui:** \_layout.web, beneficios, compensaciones, mis-atn ([d7799b5](https://github.com/alternun-development/alternun/commit/d7799b5245537149a34d66f85d8f46ccbc54018c))
+
+## [1.0.11](https://github.com/alternun-development/alternun/compare/v1.0.10...v1.0.11) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,ui:** \_layout, AppInfoFooter, Dashboard, ParticleBubbles ([3bf92ae](https://github.com/alternun-development/alternun/commit/3bf92aeb52169e6c4d1d37e2a0498061c5bffe43))
+
+## [1.0.11](https://github.com/alternun-development/alternun/compare/v1.0.10...v1.0.11) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,ui:** \_layout, AppInfoFooter, Dashboard, ParticleBubbles ([3bf92ae](https://github.com/alternun-development/alternun/commit/3bf92aeb52169e6c4d1d37e2a0498061c5bffe43))
+
+## [1.0.10](https://github.com/alternun-development/alternun/compare/v1.0.9...v1.0.10) (2026-04-05)
+
+### Bug Fixes
+
+- restore direct source auth login stages ([9e746aa](https://github.com/alternun-development/alternun/commit/9e746aab1bbe48abbf0c69e2e149bef1c824dd99))
+
+## [1.0.10](https://github.com/alternun-development/alternun/compare/v1.0.9...v1.0.10) (2026-04-05)
+
+### Bug Fixes
+
+- restore direct source auth login stages ([9e746aa](https://github.com/alternun-development/alternun/commit/9e746aab1bbe48abbf0c69e2e149bef1c824dd99))
+
+## [1.0.9](https://github.com/alternun-development/alternun/compare/v1.0.8...v1.0.9) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,auth,i18n:** \_layout, AppInfoFooter, Dashboard, HeroStats ([d9c31a7](https://github.com/alternun-development/alternun/commit/d9c31a7e4844cec99504356ba1c52ce50897e47a))
+- split authentik web callback flow ([6f03008](https://github.com/alternun-development/alternun/commit/6f03008a1b263e7d7371836857c1119093edc32e))
+
+## [1.0.9](https://github.com/alternun-development/alternun/compare/v1.0.8...v1.0.9) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,auth,i18n:** \_layout, AppInfoFooter, Dashboard, HeroStats ([d9c31a7](https://github.com/alternun-development/alternun/commit/d9c31a7e4844cec99504356ba1c52ce50897e47a))
+- split authentik web callback flow ([6f03008](https://github.com/alternun-development/alternun/commit/6f03008a1b263e7d7371836857c1119093edc32e))
+
+## [1.0.8](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.3...v1.0.8) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile:** clean up TopNav — remove top-bar pills, move wallet into dropdown ([a356e59](https://github.com/alternun-development/alternun/commit/a356e591087d7f111dc059a383f9718d1d7bb422))
+- **repo,admin,api:** CHANGELOG, app, tsconfig ([1286f02](https://github.com/alternun-development/alternun/commit/1286f02022bd0df46492f3a779630e15d657175d))
+- resolve @alternun/update in Metro and fix auth callback loop ([27ea88b](https://github.com/alternun-development/alternun/commit/27ea88b3e24aaf0f4a6d5e44a7f406b03e48df34))
+
+### Features
+
+- **scripts:** auto-commit pending changes before release ([8e7f7c4](https://github.com/alternun-development/alternun/commit/8e7f7c491490552ac415131c23b20713d9635817))
+
+## [1.0.8](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.3...v1.0.8) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile:** clean up TopNav — remove top-bar pills, move wallet into dropdown ([a356e59](https://github.com/alternun-development/alternun/commit/a356e591087d7f111dc059a383f9718d1d7bb422))
+- **repo,admin,api:** CHANGELOG, app, tsconfig ([1286f02](https://github.com/alternun-development/alternun/commit/1286f02022bd0df46492f3a779630e15d657175d))
+- resolve @alternun/update in Metro and fix auth callback loop ([27ea88b](https://github.com/alternun-development/alternun/commit/27ea88b3e24aaf0f4a6d5e44a7f406b03e48df34))
+
+### Features
+
+- **scripts:** auto-commit pending changes before release ([8e7f7c4](https://github.com/alternun-development/alternun/commit/8e7f7c491490552ac415131c23b20713d9635817))
+
+## [1.0.7](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.3...v1.0.7) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile:** clean up TopNav — remove top-bar pills, move wallet into dropdown ([a356e59](https://github.com/alternun-development/alternun/commit/a356e591087d7f111dc059a383f9718d1d7bb422))
+- resolve @alternun/update in Metro and fix auth callback loop ([27ea88b](https://github.com/alternun-development/alternun/commit/27ea88b3e24aaf0f4a6d5e44a7f406b03e48df34))
+
+### Features
+
+- **scripts:** auto-commit pending changes before release ([8e7f7c4](https://github.com/alternun-development/alternun/commit/8e7f7c491490552ac415131c23b20713d9635817))
+
+## [1.0.7](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.3...v1.0.7) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile:** clean up TopNav — remove top-bar pills, move wallet into dropdown ([a356e59](https://github.com/alternun-development/alternun/commit/a356e591087d7f111dc059a383f9718d1d7bb422))
+- resolve @alternun/update in Metro and fix auth callback loop ([27ea88b](https://github.com/alternun-development/alternun/commit/27ea88b3e24aaf0f4a6d5e44a7f406b03e48df34))
+
+### Features
+
+- **scripts:** auto-commit pending changes before release ([8e7f7c4](https://github.com/alternun-development/alternun/commit/8e7f7c491490552ac415131c23b20713d9635817))
+
+## [1.0.7-dev.3](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.2...v1.0.7-dev.3) (2026-04-04)
+
+### Features
+
+- dashboard UI redesign, shared UI design system, and Metro fix ([68a50de](https://github.com/alternun-development/alternun/commit/68a50de171e1bbf2f1c902141c5c571221da98ac))
+
+## [1.0.7-dev.3](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.2...v1.0.7-dev.3) (2026-04-04)
+
+### Features
+
+- dashboard UI redesign, shared UI design system, and Metro fix ([68a50de](https://github.com/alternun-development/alternun/commit/68a50de171e1bbf2f1c902141c5c571221da98ac))
+
+## [1.0.7-dev.2](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.1...v1.0.7-dev.2) (2026-04-04)
+
+### Bug Fixes
+
+- build tracked artifacts during release ([ed05ec3](https://github.com/alternun-development/alternun/commit/ed05ec3c71695ca504aa1a9b7aa8b808d2d68deb))
+
+## [1.0.7-dev.2](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.1...v1.0.7-dev.2) (2026-04-04)
+
+### Bug Fixes
+
+- build tracked artifacts during release ([ed05ec3](https://github.com/alternun-development/alternun/commit/ed05ec3c71695ca504aa1a9b7aa8b808d2d68deb))
+
+## [1.0.7-dev.1](https://github.com/alternun-development/alternun/compare/v1.0.4...v1.0.7-dev.1) (2026-04-04)
+
+### Bug Fixes
+
+- add explicit authentik social login mode ([499db0f](https://github.com/alternun-development/alternun/commit/499db0fa24dbd0bc5b72df420808b3fa54e3c97d))
+- **admin:** harden authentik sign-in flow ([7505182](https://github.com/alternun-development/alternun/commit/7505182f1ddf9e7f7c6c8b3f06f590e253634e3d))
+- **admin:** stop userinfo cors failures ([740b900](https://github.com/alternun-development/alternun/commit/740b900d3d972e770c1ca9fa1bf8694ad647c4c6))
+- **admin:** use provider-specific oidc issuer ([af7731a](https://github.com/alternun-development/alternun/commit/af7731a66fd197523b8b14b3cfd7fecf008f85cb))
+- **admin:** wire authentik oidc login ([698e815](https://github.com/alternun-development/alternun/commit/698e815558424fd3567220912d39811aabe54a7a))
+- **api:** bundle swagger ui assets ([1b92fc7](https://github.com/alternun-development/alternun/commit/1b92fc7795e8d7f33744b3648763c0332e15cca5))
+- **api:** harden decap oauth popup bridge ([6cfdf8c](https://github.com/alternun-development/alternun/commit/6cfdf8c234489295e6668cab42b708a9c64d5a8d))
+- **api:** initialize lambda proxy before fastify ready ([8252e56](https://github.com/alternun-development/alternun/commit/8252e56d1f1958320d99c3c739f10b13b40c7247))
+- **api:** stabilize decap oauth state crypto helpers ([1741b4e](https://github.com/alternun-development/alternun/commit/1741b4e07fcf3527c9ac6218c41e8a12e896babe))
+- **auth:** bypass Authentik login page for Google/Discord OAuth ([8209666](https://github.com/alternun-development/alternun/commit/8209666a0a3a4b02cc68ee41c4af41ac0c8225ba))
+- **auth:** capture OIDC callback search at module load time ([60f23e7](https://github.com/alternun-development/alternun/commit/60f23e730e8ae27c37e2adb4382855063e956f6d))
+- **auth:** fix settings dropdown z-index stacking over card content ([3abb30e](https://github.com/alternun-development/alternun/commit/3abb30e4392fb4180cfa8ba341e5e58e7ed1c37a))
+- **auth:** fix Supabase setSession this-binding and inject Authentik env into CI ([caf0cf8](https://github.com/alternun-development/alternun/commit/caf0cf8cefd3cfab572f4275caa82dbe0f3916e2))
+- **auth:** improve settings dropdown — solid bg, no chevron, active gear state ([3a8a7a5](https://github.com/alternun-development/alternun/commit/3a8a7a580657bed3e19855ed3b4624d684901501))
+- **auth:** remove Google source authentication_flow + keep spinner during OIDC callback ([7f166bf](https://github.com/alternun-development/alternun/commit/7f166bfaa71db252c71d264a2e10edf7c455b37f))
+- **auth:** resolve @edcalderon/auth/authentik via local re-export ([51588e9](https://github.com/alternun-development/alternun/commit/51588e9561e00af1701b05cc9a6e70d32571029e))
+- **ci:** align identity dev pipeline database mode ([966ae9c](https://github.com/alternun-development/alternun/commit/966ae9c961820c96239e1a8b32be791e9ea6400f))
+- **ci:** reduce duplicate and slow checks ([1a239d8](https://github.com/alternun-development/alternun/commit/1a239d84ec6b8451687415731353b35c2dd0968f))
+- **ci:** sync lockfile and fix CodeQL insecure-randomness alert ([a1e3f38](https://github.com/alternun-development/alternun/commit/a1e3f3829fb43c1d3ea69ef18e6b51bfefb87ed4))
+- **ci:** unblock release checks and code scanning ([e04377f](https://github.com/alternun-development/alternun/commit/e04377f66aba7182cdb6a0a31af0e3c5ce347aba))
+- derive authentik redirect uri ([8b46d80](https://github.com/alternun-development/alternun/commit/8b46d806cb87ca639f9df8f0ec55c49b433c5975))
+- **identity:** keep admin policy bootstrap app-scoped ([8b5bfa9](https://github.com/alternun-development/alternun/commit/8b5bfa961b996a79835d3ade1518c3b26c13f3b4))
+- **identity:** promote internal google admins ([1a3ca2f](https://github.com/alternun-development/alternun/commit/1a3ca2f2aa7de8bc82f2c4138de364dfb10b9525))
+- **infra:** allow dedicated non-expo stack deploys ([ad22218](https://github.com/alternun-development/alternun/commit/ad22218e8788a62f349ab9b74333dc0749eb4645))
+- **infra:** auto-provision api custom domain certs ([4b57f33](https://github.com/alternun-development/alternun/commit/4b57f3334f6a64f214d2aa22da7d2cd017a1fbed))
+- **infra:** export resolved route53 zone for deploys ([2292b0c](https://github.com/alternun-development/alternun/commit/2292b0cbfa9df20c023a6af84eeb660ea2dc9520))
+- **infra:** fail build on SSM errors, warn only on ParameterNotFound ([35fe88c](https://github.com/alternun-development/alternun/commit/35fe88c201bde21ad15f7f1fbc047b11b46c689f))
+- **infra:** guard managed pipeline reconciliation ([0a5b07a](https://github.com/alternun-development/alternun/commit/0a5b07a3e5e7abaa304958a7a54d2a7b0964e1fd))
+- **infra:** inject Authentik OIDC env vars into Expo SST build ([fb35b23](https://github.com/alternun-development/alternun/commit/fb35b23b04f82174e5d3de16f1587fdd9e2a6fea))
+- **infra:** keep identity runtime sync logs off stdout ([67a7fd4](https://github.com/alternun-development/alternun/commit/67a7fd4b7f98c0c9bf8e47b5d329f65e693398b3))
+- **infra:** migrate identity runtime sync templates ([c3845d8](https://github.com/alternun-development/alternun/commit/c3845d86bf8faf5e15923dd26f8c2ce6c5b0a897))
+- **infra:** protect dashboard deploys and bootstrap admin oidc ([b972478](https://github.com/alternun-development/alternun/commit/b972478731d67eb56d130801310f0d9c707d88b6))
+- **infra:** resolve admin site path from infra root ([9e769c1](https://github.com/alternun-development/alternun/commit/9e769c131edd038f4abeacb4c237358d6e53ff4f))
+- **infra:** resolve Authentik OIDC config per-stage from SSM ([5907127](https://github.com/alternun-development/alternun/commit/5907127d0fe106bc4ed29a0f7660b504f4d90bda))
+- **infra:** shorten admin pipeline resource names ([3165901](https://github.com/alternun-development/alternun/commit/316590118cae7153158ff012e9970496ad0b046e))
+- **infra:** shorten dashboard pipeline resource names ([4f1cbfd](https://github.com/alternun-development/alternun/commit/4f1cbfdd04962f3fcfe154f806d977291322e294))
+- **infra:** sync renamed identity domains safely ([1e20dbd](https://github.com/alternun-development/alternun/commit/1e20dbdef7373c98e737e488950cc8019021d192))
+- **mobile,admin:** address react-doctor warnings ([e309d47](https://github.com/alternun-development/alternun/commit/e309d47488ed6d64c88cbadde6d37529b7ede63b))
+- **mobile:** collapse video controls to icon-only on narrow cards ([42b62f9](https://github.com/alternun-development/alternun/commit/42b62f9d0f1e474530be7539acdc9fe39ca58056))
+- **mobile:** fix auth modal scroll clipping on narrow screens ([d5cd5d3](https://github.com/alternun-development/alternun/commit/d5cd5d358e3017422235acc89d37faf0576d1be5))
+- **mobile:** fix footer overflow on narrow/mobile screens ([72d3700](https://github.com/alternun-development/alternun/commit/72d370080fabc3eace5aef588e25ce506b9f1049))
+- **mobile:** remove deleted authSession.ts import from auth.tsx ([14768e0](https://github.com/alternun-development/alternun/commit/14768e0e7536323bddd8da0a0dce235a71ef919a))
+- **mobile:** transform valtio through Babel to eliminate import.meta SES error ([392a574](https://github.com/alternun-development/alternun/commit/392a57432e1ee64c096818291d2e4a6a4cf78229))
+- pass google auth creds to identity pipelines ([4c5b7fb](https://github.com/alternun-development/alternun/commit/4c5b7fb005e52401c6a50eaddf31b33ad0bf44e0))
+- repair pnpm lockfile for audit ([700f26f](https://github.com/alternun-development/alternun/commit/700f26f3379d306e64e6c312efa6ff721f5a7cbc))
+- restore authentication_flow on Google Authentik source ([93f0cce](https://github.com/alternun-development/alternun/commit/93f0cce61b10ba2a14b552bfc202c1a71a87f561))
+- **security:** clear remaining codeql alerts ([7b0289b](https://github.com/alternun-development/alternun/commit/7b0289b1d97c250189a94349cd56c34352c56e10))
+- **security:** patch simple-git critical advisory ([909210d](https://github.com/alternun-development/alternun/commit/909210dab21c90a31f46078ab871d4ad786f88b8))
+- unify authentik web auth flow ([82bf095](https://github.com/alternun-development/alternun/commit/82bf0952d0d877831ba866c0d1e0a1030f3ea27e))
+- update versioning and handlebars override ([937e024](https://github.com/alternun-development/alternun/commit/937e024df4dab0d6686f2009660b2c6fc711eda9))
+- use localhost admin oidc in identity dev pipeline ([60b60b0](https://github.com/alternun-development/alternun/commit/60b60b0fa3b45e5348561e85e6b321e2b07c47a9))
+
+### Features
+
+- add authentik redirect preservation and v1.4.2 exports ([8d6922f](https://github.com/alternun-development/alternun/commit/8d6922f29eff4894ef4b24ec7c4c591d8f6aabd7))
+- **admin:** secure hosted authentik sign-in ([a723f7f](https://github.com/alternun-development/alternun/commit/a723f7f13ca207179c185d0b05f88865f3e37af6))
+- **admin:** show deployed release on login ([fac3d55](https://github.com/alternun-development/alternun/commit/fac3d556096e2e503da55277bc79b6e4bba88e23))
+- **auth,infra:** use authentik v1.4.2 preset helpers and fix mobile redirect URIs ([c5af2fd](https://github.com/alternun-development/alternun/commit/c5af2fdcdff1cb8b478a24b422e26340cac3c0d3))
+- **auth:** add settings dropdown to auth modal header, fix password icon overflow ([128057f](https://github.com/alternun-development/alternun/commit/128057fd034e5a7de00016effdbeba1fdce0bf58))
+- **auth:** Authentik OIDC + vendor-independent Supabase user sync — v1.0.5 ([8ba5b86](https://github.com/alternun-development/alternun/commit/8ba5b86e57d94935a2c239b67e26b8d3cee412fb))
+- **auth:** extract AuthentikOidcClient into @alternun/auth package ([1c4c423](https://github.com/alternun-development/alternun/commit/1c4c4233fcac25b3caa3192cdf685180e29618d4))
+- **auth:** upgrade to @edcalderon/auth 1.3.0 with canonical AuthentikOidcClient ([fa06519](https://github.com/alternun-development/alternun/commit/fa0651940a2926d22587d5ced77a4d90a2ec575e))
+- **docs:** add decap cms admin auth ([8d9fa82](https://github.com/alternun-development/alternun/commit/8d9fa824d5edfe160da3f6fc370d47f3d86555e2))
+- **docs:** add testnet api fallback flag for decap ([3364e43](https://github.com/alternun-development/alternun/commit/3364e430e02a56a8dd34cddc2de215a508ed159a))
+- **docs:** enable production decap github oauth ([5ab8d16](https://github.com/alternun-development/alternun/commit/5ab8d16a2a8ea0667cae9053d3c6973eaadef19b))
+- **identity:** back up acme state to s3 ([c2d8e10](https://github.com/alternun-development/alternun/commit/c2d8e10bf1fd3b530a6997635679194a1e8b20a6))
+- **identity:** rename auth host to sso ([d93ce37](https://github.com/alternun-development/alternun/commit/d93ce379aea759d2f9fc5aacd59754ca937b3ce8))
+- **identity:** split testnet dns01 and prod alb tls ([d102c7c](https://github.com/alternun-development/alternun/commit/d102c7c5a5e37f58ac7266c3af358c804575ec06))
+- **mobile:** add subtle floating animation to footer glow orbs ([14aff64](https://github.com/alternun-development/alternun/commit/14aff64d304b92e510ef5171e39fd2c5094daf0f))
+- **platform:** add dashboard api admin pipelines ([2e994a4](https://github.com/alternun-development/alternun/commit/2e994a40ecf4cb979f0861bc1d41f07646b8bb64))
+- **theme:** centralized palette tokens + full light/dark mode on auth card ([c16a53c](https://github.com/alternun-development/alternun/commit/c16a53c768d8a76982a0210daafc993bb548d017))
+
+## [1.0.7-dev.1](https://github.com/alternun-development/alternun/compare/v1.0.4...v1.0.7-dev.1) (2026-04-04)
+
+### Bug Fixes
+
+- add explicit authentik social login mode ([499db0f](https://github.com/alternun-development/alternun/commit/499db0fa24dbd0bc5b72df420808b3fa54e3c97d))
+- **admin:** harden authentik sign-in flow ([7505182](https://github.com/alternun-development/alternun/commit/7505182f1ddf9e7f7c6c8b3f06f590e253634e3d))
+- **admin:** stop userinfo cors failures ([740b900](https://github.com/alternun-development/alternun/commit/740b900d3d972e770c1ca9fa1bf8694ad647c4c6))
+- **admin:** use provider-specific oidc issuer ([af7731a](https://github.com/alternun-development/alternun/commit/af7731a66fd197523b8b14b3cfd7fecf008f85cb))
+- **admin:** wire authentik oidc login ([698e815](https://github.com/alternun-development/alternun/commit/698e815558424fd3567220912d39811aabe54a7a))
+- **api:** bundle swagger ui assets ([1b92fc7](https://github.com/alternun-development/alternun/commit/1b92fc7795e8d7f33744b3648763c0332e15cca5))
+- **api:** harden decap oauth popup bridge ([6cfdf8c](https://github.com/alternun-development/alternun/commit/6cfdf8c234489295e6668cab42b708a9c64d5a8d))
+- **api:** initialize lambda proxy before fastify ready ([8252e56](https://github.com/alternun-development/alternun/commit/8252e56d1f1958320d99c3c739f10b13b40c7247))
+- **api:** stabilize decap oauth state crypto helpers ([1741b4e](https://github.com/alternun-development/alternun/commit/1741b4e07fcf3527c9ac6218c41e8a12e896babe))
+- **auth:** bypass Authentik login page for Google/Discord OAuth ([8209666](https://github.com/alternun-development/alternun/commit/8209666a0a3a4b02cc68ee41c4af41ac0c8225ba))
+- **auth:** capture OIDC callback search at module load time ([60f23e7](https://github.com/alternun-development/alternun/commit/60f23e730e8ae27c37e2adb4382855063e956f6d))
+- **auth:** fix settings dropdown z-index stacking over card content ([3abb30e](https://github.com/alternun-development/alternun/commit/3abb30e4392fb4180cfa8ba341e5e58e7ed1c37a))
+- **auth:** fix Supabase setSession this-binding and inject Authentik env into CI ([caf0cf8](https://github.com/alternun-development/alternun/commit/caf0cf8cefd3cfab572f4275caa82dbe0f3916e2))
+- **auth:** improve settings dropdown — solid bg, no chevron, active gear state ([3a8a7a5](https://github.com/alternun-development/alternun/commit/3a8a7a580657bed3e19855ed3b4624d684901501))
+- **auth:** remove Google source authentication_flow + keep spinner during OIDC callback ([7f166bf](https://github.com/alternun-development/alternun/commit/7f166bfaa71db252c71d264a2e10edf7c455b37f))
+- **auth:** resolve @edcalderon/auth/authentik via local re-export ([51588e9](https://github.com/alternun-development/alternun/commit/51588e9561e00af1701b05cc9a6e70d32571029e))
+- **ci:** align identity dev pipeline database mode ([966ae9c](https://github.com/alternun-development/alternun/commit/966ae9c961820c96239e1a8b32be791e9ea6400f))
+- **ci:** reduce duplicate and slow checks ([1a239d8](https://github.com/alternun-development/alternun/commit/1a239d84ec6b8451687415731353b35c2dd0968f))
+- **ci:** sync lockfile and fix CodeQL insecure-randomness alert ([a1e3f38](https://github.com/alternun-development/alternun/commit/a1e3f3829fb43c1d3ea69ef18e6b51bfefb87ed4))
+- **ci:** unblock release checks and code scanning ([e04377f](https://github.com/alternun-development/alternun/commit/e04377f66aba7182cdb6a0a31af0e3c5ce347aba))
+- derive authentik redirect uri ([8b46d80](https://github.com/alternun-development/alternun/commit/8b46d806cb87ca639f9df8f0ec55c49b433c5975))
+- **identity:** keep admin policy bootstrap app-scoped ([8b5bfa9](https://github.com/alternun-development/alternun/commit/8b5bfa961b996a79835d3ade1518c3b26c13f3b4))
+- **identity:** promote internal google admins ([1a3ca2f](https://github.com/alternun-development/alternun/commit/1a3ca2f2aa7de8bc82f2c4138de364dfb10b9525))
+- **infra:** allow dedicated non-expo stack deploys ([ad22218](https://github.com/alternun-development/alternun/commit/ad22218e8788a62f349ab9b74333dc0749eb4645))
+- **infra:** auto-provision api custom domain certs ([4b57f33](https://github.com/alternun-development/alternun/commit/4b57f3334f6a64f214d2aa22da7d2cd017a1fbed))
+- **infra:** export resolved route53 zone for deploys ([2292b0c](https://github.com/alternun-development/alternun/commit/2292b0cbfa9df20c023a6af84eeb660ea2dc9520))
+- **infra:** fail build on SSM errors, warn only on ParameterNotFound ([35fe88c](https://github.com/alternun-development/alternun/commit/35fe88c201bde21ad15f7f1fbc047b11b46c689f))
+- **infra:** guard managed pipeline reconciliation ([0a5b07a](https://github.com/alternun-development/alternun/commit/0a5b07a3e5e7abaa304958a7a54d2a7b0964e1fd))
+- **infra:** inject Authentik OIDC env vars into Expo SST build ([fb35b23](https://github.com/alternun-development/alternun/commit/fb35b23b04f82174e5d3de16f1587fdd9e2a6fea))
+- **infra:** keep identity runtime sync logs off stdout ([67a7fd4](https://github.com/alternun-development/alternun/commit/67a7fd4b7f98c0c9bf8e47b5d329f65e693398b3))
+- **infra:** migrate identity runtime sync templates ([c3845d8](https://github.com/alternun-development/alternun/commit/c3845d86bf8faf5e15923dd26f8c2ce6c5b0a897))
+- **infra:** protect dashboard deploys and bootstrap admin oidc ([b972478](https://github.com/alternun-development/alternun/commit/b972478731d67eb56d130801310f0d9c707d88b6))
+- **infra:** resolve admin site path from infra root ([9e769c1](https://github.com/alternun-development/alternun/commit/9e769c131edd038f4abeacb4c237358d6e53ff4f))
+- **infra:** resolve Authentik OIDC config per-stage from SSM ([5907127](https://github.com/alternun-development/alternun/commit/5907127d0fe106bc4ed29a0f7660b504f4d90bda))
+- **infra:** shorten admin pipeline resource names ([3165901](https://github.com/alternun-development/alternun/commit/316590118cae7153158ff012e9970496ad0b046e))
+- **infra:** shorten dashboard pipeline resource names ([4f1cbfd](https://github.com/alternun-development/alternun/commit/4f1cbfdd04962f3fcfe154f806d977291322e294))
+- **infra:** sync renamed identity domains safely ([1e20dbd](https://github.com/alternun-development/alternun/commit/1e20dbdef7373c98e737e488950cc8019021d192))
+- **mobile,admin:** address react-doctor warnings ([e309d47](https://github.com/alternun-development/alternun/commit/e309d47488ed6d64c88cbadde6d37529b7ede63b))
+- **mobile:** collapse video controls to icon-only on narrow cards ([42b62f9](https://github.com/alternun-development/alternun/commit/42b62f9d0f1e474530be7539acdc9fe39ca58056))
+- **mobile:** fix auth modal scroll clipping on narrow screens ([d5cd5d3](https://github.com/alternun-development/alternun/commit/d5cd5d358e3017422235acc89d37faf0576d1be5))
+- **mobile:** fix footer overflow on narrow/mobile screens ([72d3700](https://github.com/alternun-development/alternun/commit/72d370080fabc3eace5aef588e25ce506b9f1049))
+- **mobile:** remove deleted authSession.ts import from auth.tsx ([14768e0](https://github.com/alternun-development/alternun/commit/14768e0e7536323bddd8da0a0dce235a71ef919a))
+- **mobile:** transform valtio through Babel to eliminate import.meta SES error ([392a574](https://github.com/alternun-development/alternun/commit/392a57432e1ee64c096818291d2e4a6a4cf78229))
+- pass google auth creds to identity pipelines ([4c5b7fb](https://github.com/alternun-development/alternun/commit/4c5b7fb005e52401c6a50eaddf31b33ad0bf44e0))
+- repair pnpm lockfile for audit ([700f26f](https://github.com/alternun-development/alternun/commit/700f26f3379d306e64e6c312efa6ff721f5a7cbc))
+- restore authentication_flow on Google Authentik source ([93f0cce](https://github.com/alternun-development/alternun/commit/93f0cce61b10ba2a14b552bfc202c1a71a87f561))
+- **security:** clear remaining codeql alerts ([7b0289b](https://github.com/alternun-development/alternun/commit/7b0289b1d97c250189a94349cd56c34352c56e10))
+- **security:** patch simple-git critical advisory ([909210d](https://github.com/alternun-development/alternun/commit/909210dab21c90a31f46078ab871d4ad786f88b8))
+- unify authentik web auth flow ([82bf095](https://github.com/alternun-development/alternun/commit/82bf0952d0d877831ba866c0d1e0a1030f3ea27e))
+- update versioning and handlebars override ([937e024](https://github.com/alternun-development/alternun/commit/937e024df4dab0d6686f2009660b2c6fc711eda9))
+- use localhost admin oidc in identity dev pipeline ([60b60b0](https://github.com/alternun-development/alternun/commit/60b60b0fa3b45e5348561e85e6b321e2b07c47a9))
+
+### Features
+
+- add authentik redirect preservation and v1.4.2 exports ([8d6922f](https://github.com/alternun-development/alternun/commit/8d6922f29eff4894ef4b24ec7c4c591d8f6aabd7))
+- **admin:** secure hosted authentik sign-in ([a723f7f](https://github.com/alternun-development/alternun/commit/a723f7f13ca207179c185d0b05f88865f3e37af6))
+- **admin:** show deployed release on login ([fac3d55](https://github.com/alternun-development/alternun/commit/fac3d556096e2e503da55277bc79b6e4bba88e23))
+- **auth,infra:** use authentik v1.4.2 preset helpers and fix mobile redirect URIs ([c5af2fd](https://github.com/alternun-development/alternun/commit/c5af2fdcdff1cb8b478a24b422e26340cac3c0d3))
+- **auth:** add settings dropdown to auth modal header, fix password icon overflow ([128057f](https://github.com/alternun-development/alternun/commit/128057fd034e5a7de00016effdbeba1fdce0bf58))
+- **auth:** Authentik OIDC + vendor-independent Supabase user sync — v1.0.5 ([8ba5b86](https://github.com/alternun-development/alternun/commit/8ba5b86e57d94935a2c239b67e26b8d3cee412fb))
+- **auth:** extract AuthentikOidcClient into @alternun/auth package ([1c4c423](https://github.com/alternun-development/alternun/commit/1c4c4233fcac25b3caa3192cdf685180e29618d4))
+- **auth:** upgrade to @edcalderon/auth 1.3.0 with canonical AuthentikOidcClient ([fa06519](https://github.com/alternun-development/alternun/commit/fa0651940a2926d22587d5ced77a4d90a2ec575e))
+- **docs:** add decap cms admin auth ([8d9fa82](https://github.com/alternun-development/alternun/commit/8d9fa824d5edfe160da3f6fc370d47f3d86555e2))
+- **docs:** add testnet api fallback flag for decap ([3364e43](https://github.com/alternun-development/alternun/commit/3364e430e02a56a8dd34cddc2de215a508ed159a))
+- **docs:** enable production decap github oauth ([5ab8d16](https://github.com/alternun-development/alternun/commit/5ab8d16a2a8ea0667cae9053d3c6973eaadef19b))
+- **identity:** back up acme state to s3 ([c2d8e10](https://github.com/alternun-development/alternun/commit/c2d8e10bf1fd3b530a6997635679194a1e8b20a6))
+- **identity:** rename auth host to sso ([d93ce37](https://github.com/alternun-development/alternun/commit/d93ce379aea759d2f9fc5aacd59754ca937b3ce8))
+- **identity:** split testnet dns01 and prod alb tls ([d102c7c](https://github.com/alternun-development/alternun/commit/d102c7c5a5e37f58ac7266c3af358c804575ec06))
+- **mobile:** add subtle floating animation to footer glow orbs ([14aff64](https://github.com/alternun-development/alternun/commit/14aff64d304b92e510ef5171e39fd2c5094daf0f))
+- **platform:** add dashboard api admin pipelines ([2e994a4](https://github.com/alternun-development/alternun/commit/2e994a40ecf4cb979f0861bc1d41f07646b8bb64))
+- **theme:** centralized palette tokens + full light/dark mode on auth card ([c16a53c](https://github.com/alternun-development/alternun/commit/c16a53c768d8a76982a0210daafc993bb548d017))
+
 ## [1.0.4](https://github.com/alternun-development/alternun/compare/v1.0.3...v1.0.4) (2026-03-09)
 
 ### Bug Fixes

@@ -1,11 +1,24 @@
 # Alternun Agent Guide
 
-This file is the short entry point for agents working in this repository.
-Keep it compact. The detailed source of truth lives in repo docs.
+Short entry point for all agents. Stable facts only — detailed source of truth lives in repo docs.
+
+## Repo Shape
+
+| Path             | Name               | Role                      |
+| ---------------- | ------------------ | ------------------------- |
+| `apps/api`       | `@alternun/api`    | NestJS + Fastify backend  |
+| `apps/mobile`    | —                  | Expo / AIRS client        |
+| `apps/admin`     | `@alternun/admin`  | Internal admin console    |
+| `apps/web`       | —                  | Secondary web surface     |
+| `apps/docs`      | `alternun-docs`    | Public Docusaurus site    |
+| `packages/ui`    | —                  | Shared component library  |
+| `packages/infra` | `@alternun/infra`  | Deploy + pipeline scripts |
+| `packages/auth`  | `@edcalderon/auth` | Auth helpers (Authentik)  |
+| `packages/i18n`  | —                  | Shared translations       |
 
 ## Start Here
 
-Read these first when orienting yourself:
+Read these first when orienting to a new task:
 
 - `README.md`
 - `docs/README.md`
@@ -15,50 +28,70 @@ Read these first when orienting yourself:
 - `docs/contribution-workflow.md`
 - `docs/alternun_nestjs_fastify_openapi_blueprint.md`
 
-If the task is about a specific subsystem, read the matching local docs next.
+For subsystem-specific work, read the matching local docs next.
 
-## Repo Shape
+## Key Commands
 
-- `apps/mobile` is the main AIRS client surface.
-- `apps/admin` is the internal admin console.
-- `apps/api` is the NestJS + Fastify backend.
-- `apps/docs` is the public docs site.
-- `apps/web` is a secondary web surface.
-- `packages/*` contains shared libraries and tooling.
-- `packages/infra` owns deployment and pipeline code.
+```bash
+pnpm dev:all          # all surfaces concurrently
+pnpm lint
+pnpm type-check
+pnpm test
+pnpm build
+
+# Targeted (prefer these before root commands)
+pnpm --filter @alternun/api run dev
+pnpm --filter @alternun/admin run dev:local
+pnpm --filter @alternun/mobile run web:local
+```
+
+## Validation Order (smallest first)
+
+1. `pnpm lint`
+2. `pnpm type-check`
+3. `pnpm test`
+4. `pnpm build`
+
+For targeted changes use the relevant package/app command first, then broaden if the change is cross-cutting.
 
 ## Working Rules
 
 - Prefer repository-local documentation over hidden assumptions.
-- If a decision matters, encode it in `docs/` or `apps/docs/docs/`.
 - Keep changes scoped to the relevant surface.
-- Do not edit generated build outputs such as `dist/`, `build/`, `coverage/`, or `dist-lambda/`.
-- If you change behavior, update tests and any affected docs in the same change.
-- If you change issue workflow or labels, update `docs/contribution-workflow.md` and the public contribution docs together.
+- Never edit generated outputs: `dist/`, `build/`, `coverage/`, `dist-lambda/`.
+- If you change behavior, update tests and affected docs in the same change.
+- If code and docs disagree, fix the repo — don't add a second explanation.
+- If you change issue workflow or labels, update `docs/contribution-workflow.md` too.
+
+## Non-Obvious Rules
+
+- **Auth** = Authentik (OIDC). Never bypass or mock it in integration paths.
+- **Data** = Supabase. RLS and authorization live there.
+- **Validation** happens at API boundary only — trust internal guarantees.
+- **Commits** require husky hooks to pass — fix root cause, never `--no-verify`.
+- **Branch flow**: feature → `develop` → `master`. PRs target `develop` unless hotfix.
+- **Infra deploys** run via `pnpm infra:deploy:*` — confirm with user before running.
+- **Secrets**: `.env.*` files are never committed. Use AWS Secrets Manager in prod.
 
 ## Backend Rules
 
-For API work:
-
-- preserve the validation defaults already in place
-- keep OpenAPI contracts accurate
-- validate input at the boundary
-- treat Authentik as the identity provider
-- treat Supabase as the data and authorization layer
-
-## Validation
-
-Use the smallest useful verification set first, then broaden if needed:
-
-- `pnpm lint`
-- `pnpm type-check`
-- `pnpm test`
-- `pnpm build`
-
-For targeted changes, prefer the relevant package/app command, then run the root checks above if the change is cross-cutting.
+- Preserve validation defaults already in place.
+- Keep OpenAPI contracts accurate.
+- Validate input at the boundary.
+- Authentik is the identity provider.
+- Supabase is the data and authorization layer.
 
 ## Docs Discipline
 
-- Public-facing architecture belongs in `apps/docs/docs/Architecture/`.
-- Internal operating notes belong in `docs/`.
-- If code and docs disagree, fix the repo to match reality rather than adding a second explanation.
+- Public-facing architecture → `apps/docs/docs/Architecture/`.
+- Internal operating notes → `docs/`.
+- If code and docs disagree, fix the repo to match reality.
+
+## Agent Efficiency Rules
+
+- Read only the files you need — load context progressively.
+- For broad exploration, delegate to an `Explore` subagent.
+- For multi-step implementation, use `Plan` before coding.
+- Isolate noisy subtasks into subagents to protect main context.
+- Prefer `Glob`/`Grep` over spawning agents for simple searches.
+- Store stable project facts in memory files, not in conversation.

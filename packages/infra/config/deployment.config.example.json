@@ -27,8 +27,14 @@
       "mobile": ""
     },
     "build": {
-      "command": "npx expo export -p web",
+      "command": "pnpm --filter @alternun/mobile run build:web",
       "output": "dist"
+    },
+    "publicEnv": {
+      "authentikLoginEntryMode": "relay",
+      "authentikSocialLoginMode": "authentik",
+      "authentikAllowCustomProviderFlowSlugs": false,
+      "releaseUpdateMode": "auto"
     }
   },
   "redirects": {
@@ -175,7 +181,9 @@
         "clientId": "",
         "clientSecret": "",
         "sourceName": "Google",
-        "sourceSlug": "google"
+        "sourceSlug": "google",
+        "loginFlowSlug": "",
+        "allowCustomProviderFlowSlugs": false
       },
       "supabase": {
         "applicationName": "Alternun Supabase",
@@ -201,6 +209,13 @@
         "siteUrl": "https://docs.alternun.io",
         "localDevUrl": "http://127.0.0.1:8083",
         "allowedGroups": ["authentik Admins", "Alternun Dashboard Admins", "Alternun Docs Editors"]
+      },
+      "mobileOidc": {
+        "clientId": "alternun-mobile",
+        "applicationName": "Alternun Mobile",
+        "applicationSlug": "alternun-mobile",
+        "providerName": "Alternun Mobile OIDC",
+        "launchUrl": ""
       },
       "bootstrap": {
         "admin": {

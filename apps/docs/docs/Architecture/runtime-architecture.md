@@ -67,6 +67,8 @@ For AIRS, the current runtime is centered on the Expo app:
 - Supabase is already part of the client-side integration model
 - wallet-related behavior is present in the public app stack
 
+For the full sign-in, callback, provisioning, and logout flow, see [Authentication and Session Flow](./authentication-and-session-flow).
+
 In other words, AIRS is not just a static marketing frontend. It is the beginning of the actual application runtime.
 
 ## Admin Runtime
