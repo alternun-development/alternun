@@ -1,3 +1,15 @@
+## [1.0.16](https://github.com/alternun-development/alternun/compare/v1.0.15...v1.0.16) (2026-04-05)
+
+### Bug Fixes
+
+- **docs,repo,infra:** authentication-and-session-flow, alternun-authentik-social-login-incident-2026-04, README, bootstrap-authentik-integrations ([63ab8e5](https://github.com/alternun-development/alternun/commit/63ab8e5bf7328e97bbd25685af776f1e68ab5ae6))
+
+## [1.0.16](https://github.com/alternun-development/alternun/compare/v1.0.15...v1.0.16) (2026-04-05)
+
+### Bug Fixes
+
+- **docs,repo,infra:** authentication-and-session-flow, alternun-authentik-social-login-incident-2026-04, README, bootstrap-authentik-integrations ([63ab8e5](https://github.com/alternun-development/alternun/commit/63ab8e5bf7328e97bbd25685af776f1e68ab5ae6))
+
 ## [1.0.15](https://github.com/alternun-development/alternun/compare/v1.0.14...v1.0.15) (2026-04-05)
 
 ## [1.0.15](https://github.com/alternun-development/alternun/compare/v1.0.14...v1.0.15) (2026-04-05)
