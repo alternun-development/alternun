@@ -18,7 +18,7 @@ export interface ResolveAuthentikLoginStrategyOptions {
 
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
 const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE: AuthentikLoginEntryMode = 'relay';
-const DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE: AuthentikSocialLoginMode = 'hybrid';
+const DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE: AuthentikSocialLoginMode = 'authentik';
 
 function normalizeHostname(value: string | undefined | null): string {
   return (value ?? '').trim().toLowerCase();

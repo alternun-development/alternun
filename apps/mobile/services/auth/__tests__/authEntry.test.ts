@@ -50,13 +50,13 @@ describe('authEntry', () => {
     expect(normalizeAuthentikLoginEntryMode('something-else')).toBe('relay');
   });
 
-  it('defaults social login mode to hybrid when the env var is absent', () => {
+  it('defaults social login mode to authentik when the env var is absent', () => {
     delete process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE;
-    expect(getAuthentikSocialLoginMode()).toBe('hybrid');
+    expect(getAuthentikSocialLoginMode()).toBe('authentik');
   });
 
-  it('normalizes invalid social login modes back to hybrid', () => {
-    expect(normalizeAuthentikSocialLoginMode('something-else')).toBe('hybrid');
+  it('normalizes invalid social login modes back to authentik', () => {
+    expect(normalizeAuthentikSocialLoginMode('something-else')).toBe('authentik');
   });
 
   it('builds an app-owned relay path with the provider and next target', () => {

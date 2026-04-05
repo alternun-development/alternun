@@ -1,6 +1,6 @@
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
 const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE = 'relay';
-const DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE = 'hybrid';
+const DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE = 'authentik';
 function normalizeHostname(value) {
     return (value !== null && value !== void 0 ? value : '').trim().toLowerCase();
 }

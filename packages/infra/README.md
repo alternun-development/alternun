@@ -228,11 +228,11 @@ The mobile web auth surface supports two Authentik entry patterns:
 Control the mode with `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE` in repo env, pipeline env, or `packages/infra/config/deployment.config.json`.
 The default is `relay`, which is the most flexible option for return-target handling and future flow changes.
 Use `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` to control whether the app uses Authentik-only social login, the hybrid Authentik/Supabase fallback path, or Supabase-only login.
-Set it to `authentik` on testnet when you want the Discord/Google buttons to stay on Authentik and never fall back to Supabase.
-The core web pipelines set `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` so deployed bundles stay on Authentik by default; local web dev can still opt into `hybrid` if needed.
+The default is `authentik` for deployed bundles so testnet/prod stay Authentik-first unless you explicitly opt into another mode.
+Use `hybrid` only when you intentionally want Supabase fallback while iterating locally.
 The core web pipelines set `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` so deployed bundles get a reload prompt when a new release is detected. Local development can keep `auto` or `off`.
 `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` is optional in deployed web builds; when omitted, the shared auth helpers derive the callback from the current browser origin. Loopback values are treated as local-dev hints and browser origin wins during web development. Keep it explicit only if you need a non-standard callback path.
-If you want the optional custom Authentik source-stage pattern, set `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` in infra config. The mobile bundle derives `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` from that setting automatically. Leave it empty for direct source login.
+If you want the optional custom Authentik source-stage pattern, set `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` explicitly. Leave it empty for the direct source-login path. `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` still controls the Authentik-side bootstrap object, but it no longer drives the mobile bundle automatically.
 The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages so logout returns to the app instead of stopping on Authentik's success page.
 
 ### Release Update Banner
