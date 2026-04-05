@@ -3,10 +3,8 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
-  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -17,11 +15,11 @@ import {
   UserPlus,
   Award,
   Gift,
-  Search,
   ChevronLeft,
   ChevronRight,
   type LucideProps,
 } from 'lucide-react-native';
+import SearchFilterBar, { type SearchFilterOption } from '../common/SearchFilterBar';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const CartIcon = ShoppingCart as React.FC<LucideProps>;
@@ -29,7 +27,6 @@ const UserCheckIcon = UserCheck as React.FC<LucideProps>;
 const UserPlusIcon = UserPlus as React.FC<LucideProps>;
 const AwardIcon = Award as React.FC<LucideProps>;
 const GiftIcon = Gift as React.FC<LucideProps>;
-const SearchIcon = Search as React.FC<LucideProps>;
 const PrevIcon = ChevronLeft as React.FC<LucideProps>;
 const NextIcon = ChevronRight as React.FC<LucideProps>;
 
@@ -160,6 +157,15 @@ const TYPE_LABELS: Record<ActivityType, string> = {
   certificate: 'Certificado',
 };
 
+const FILTERS: SearchFilterOption[] = [
+  { key: 'all', label: 'Todos' },
+  { key: 'compensation', label: 'Compensación' },
+  { key: 'purchase', label: 'Compra' },
+  { key: 'profile', label: 'Perfil' },
+  { key: 'account', label: 'Cuenta' },
+  { key: 'reward', label: 'Recompensa' },
+];
+
 function getIcon(type: ActivityType, color: string): React.ReactNode {
   const props = { size: 16, color };
   switch (type) {
@@ -176,45 +182,6 @@ function getIcon(type: ActivityType, color: string): React.ReactNode {
     case 'reward':
       return <GiftIcon {...props} />;
   }
-}
-
-// ─── Filter pill ──────────────────────────────────────────────────────────────
-
-interface FilterPillProps {
-  label: string;
-  active: boolean;
-  isDark: boolean;
-  onPress: () => void;
-}
-
-function FilterChip({ label, active, isDark, onPress }: FilterPillProps) {
-  const accent = isDark ? '#1EE6B5' : '#0d9488';
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.8}
-      style={[
-        styles.chip,
-        {
-          backgroundColor: active
-            ? isDark
-              ? 'rgba(30,230,181,0.15)'
-              : 'rgba(13,148,136,0.12)'
-            : 'transparent',
-          borderColor: active ? accent : isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)',
-        },
-      ]}
-    >
-      <Text
-        style={[
-          styles.chipText,
-          { color: active ? accent : isDark ? 'rgba(232,255,246,0.6)' : 'rgba(11,45,49,0.6)' },
-        ]}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
 }
 
 // ─── Row ──────────────────────────────────────────────────────────────────────
@@ -291,8 +258,6 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
   const textColor = isDark ? '#e8fff6' : '#0b2d31';
   const mutedColor = isDark ? 'rgba(232,255,246,0.55)' : 'rgba(11,45,49,0.55)';
   const headerBg = isDark ? 'rgba(30,230,181,0.06)' : 'rgba(13,148,136,0.06)';
-  const inputBg = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
-  const inputBorder = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)';
 
   // Filtered + searched list
   const filtered = activities.filter((a) => {
@@ -343,24 +308,10 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
     };
   }, []);
 
-  // Reset page when filter/search changes
-  useEffect(() => {
-    setPage(0);
-  }, [activeFilter, search]);
-
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => setIsRefreshing(false), 800);
   };
-
-  const FILTERS: Array<{ key: ActivityType | 'all'; label: string }> = [
-    { key: 'all', label: 'Todos' },
-    { key: 'compensation', label: 'Compensación' },
-    { key: 'purchase', label: 'Compra' },
-    { key: 'profile', label: 'Perfil' },
-    { key: 'account', label: 'Cuenta' },
-    { key: 'reward', label: 'Recompensa' },
-  ];
 
   return (
     <View style={[styles.container, { backgroundColor: bg }]}>
@@ -385,35 +336,20 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
         </TouchableOpacity>
       </View>
 
-      {/* Search bar */}
-      <View style={[styles.searchBar, { backgroundColor: inputBg, borderColor: inputBorder }]}>
-        <SearchIcon size={15} color={mutedColor} />
-        <TextInput
-          style={[styles.searchInput, { color: textColor }]}
-          placeholder='Buscar actividad o fuente...'
-          placeholderTextColor={mutedColor}
-          value={search}
-          onChangeText={setSearch}
-        />
-      </View>
-
-      {/* Filter pills */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filtersRow}
-        contentContainerStyle={styles.filtersContent}
-      >
-        {FILTERS.map((f) => (
-          <FilterChip
-            key={f.key}
-            label={f.label}
-            active={activeFilter === f.key}
-            isDark={isDark}
-            onPress={() => setActiveFilter(f.key)}
-          />
-        ))}
-      </ScrollView>
+      <SearchFilterBar
+        value={search}
+        onChangeText={(value) => {
+          setSearch(value);
+          setPage(0);
+        }}
+        placeholder='Buscar actividad o fuente...'
+        filters={FILTERS}
+        activeFilter={activeFilter}
+        onChangeFilter={(filterKey) => {
+          setActiveFilter(filterKey as ActivityType | 'all');
+          setPage(0);
+        }}
+      />
 
       {/* Table */}
       <View style={[styles.table, { backgroundColor: cardBg, borderColor: cardBorder }]}>
@@ -537,38 +473,6 @@ const styles = StyleSheet.create({
   liveText: {
     fontSize: 11,
     fontWeight: '700',
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    marginBottom: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 13,
-    padding: 0,
-  },
-  filtersRow: {
-    marginBottom: 12,
-  },
-  filtersContent: {
-    gap: 8,
-    paddingRight: 8,
-  },
-  chip: {
-    borderWidth: 1,
-    borderRadius: 99,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-  },
-  chipText: {
-    fontSize: 12,
-    fontWeight: '600',
   },
   table: {
     borderWidth: 1,

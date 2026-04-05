@@ -1,9 +1,11 @@
 import { useRouter } from 'expo-router';
 import { ChevronLeft, FolderKanban, TrendingUp, type LucideProps } from 'lucide-react-native';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GlassCard, ProgressBar, SectionContainer, StatCard } from '@alternun/ui';
+import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import HorizontalCardScroller from '../components/common/HorizontalCardScroller';
 import ScreenShell from '../components/common/ScreenShell';
 
 const ChevronLeftIcon = ChevronLeft as React.FC<LucideProps>;
@@ -39,10 +41,18 @@ const STATUS_COLORS: Record<ProjectStatus, { bg: string; text: string; border: s
   Completado: { bg: 'rgba(99,179,237,0.14)', text: '#63b3ed', border: 'rgba(99,179,237,0.3)' },
 };
 
+const FILTER_OPTIONS: SearchFilterOption[] = [
+  { key: 'all', label: 'Todos' },
+  { key: 'Activo', label: 'Activos' },
+  { key: 'Completado', label: 'Completados' },
+];
+
 export default function ProyectosScreen() {
   const router = useRouter();
   const { themeMode } = useAppPreferences();
   const isDark = themeMode === 'dark';
+  const [search, setSearch] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
@@ -72,6 +82,18 @@ export default function ProyectosScreen() {
         accent: '#0d9488',
       };
 
+  const filteredProjects = useMemo(() => {
+    const normalizedQuery = search.trim().toLowerCase();
+    return PROJECTS.filter((project) => {
+      const matchesFilter = activeFilter === 'all' || project.status === activeFilter;
+      const matchesSearch =
+        !normalizedQuery ||
+        project.title.toLowerCase().includes(normalizedQuery) ||
+        project.location.toLowerCase().includes(normalizedQuery);
+      return matchesFilter && matchesSearch;
+    });
+  }, [activeFilter, search]);
+
   return (
     <ScreenShell activeSection='proyectos' backgroundColor={c.bg}>
       <View style={[styles.root, { backgroundColor: c.bg }]}>
@@ -96,7 +118,7 @@ export default function ProyectosScreen() {
             showsVerticalScrollIndicator={false}
           >
             {/* Stat cards */}
-            <View style={styles.statsRow}>
+            <HorizontalCardScroller isDark={isDark}>
               <StatCard
                 label='Activos'
                 value='8'
@@ -111,16 +133,28 @@ export default function ProyectosScreen() {
                 icon={<TrendingUpIcon size={16} color='#63b3ed' />}
                 style={styles.statCard}
               />
-            </View>
+            </HorizontalCardScroller>
 
             {/* Project list */}
             <SectionContainer title='Todos los Proyectos'>
-              {PROJECTS.map((project, idx) => {
+              <SearchFilterBar
+                value={search}
+                onChangeText={setSearch}
+                placeholder='Buscar proyecto o ubicación...'
+                filters={FILTER_OPTIONS}
+                activeFilter={activeFilter}
+                onChangeFilter={setActiveFilter}
+              />
+              {filteredProjects.map((project, idx) => {
                 const sc = STATUS_COLORS[project.status];
                 return (
                   <GlassCard
                     key={project.title}
-                    style={[styles.projectCard, idx === PROJECTS.length - 1 && { marginBottom: 0 }]}
+                    style={
+                      idx === filteredProjects.length - 1
+                        ? styles.projectCardLast
+                        : styles.projectCard
+                    }
                   >
                     <View style={styles.projectHeader}>
                       <View style={[styles.iconCircle, { backgroundColor: `${c.accent}18` }]}>
@@ -191,17 +225,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 0,
   },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16,
-  },
   statCard: {
     flex: 1,
+    boxShadow: 'none',
   },
   projectCard: {
     padding: 14,
     marginBottom: 12,
+  },
+  projectCardLast: {
+    padding: 14,
+    marginBottom: 0,
   },
   projectHeader: {
     flexDirection: 'row',

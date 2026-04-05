@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
 import { Check, ChevronLeft, Gift, Lock, type LucideProps } from 'lucide-react-native';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GlassCard, SectionContainer } from '@alternun/ui';
+import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import ScreenShell from '../components/common/ScreenShell';
 
@@ -27,10 +28,18 @@ const BENEFITS: { title: string; tier: Tier; unlocked: boolean }[] = [
   { title: 'Mentoría Verde', tier: 'Platinum', unlocked: false },
 ];
 
+const FILTER_OPTIONS: SearchFilterOption[] = [
+  { key: 'all', label: 'Todos' },
+  { key: 'unlocked', label: 'Desbloqueados' },
+  { key: 'locked', label: 'Bloqueados' },
+];
+
 export default function BeneficiosScreen() {
   const router = useRouter();
   const { themeMode } = useAppPreferences();
   const isDark = themeMode === 'dark';
+  const [search, setSearch] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
@@ -59,6 +68,21 @@ export default function BeneficiosScreen() {
         muted: 'rgba(11,45,49,0.6)',
         accent: '#0d9488',
       };
+
+  const filteredBenefits = useMemo(() => {
+    const normalizedQuery = search.trim().toLowerCase();
+    return BENEFITS.filter((benefit) => {
+      const matchesFilter =
+        activeFilter === 'all' ||
+        (activeFilter === 'unlocked' && benefit.unlocked) ||
+        (activeFilter === 'locked' && !benefit.unlocked);
+      const matchesSearch =
+        !normalizedQuery ||
+        benefit.title.toLowerCase().includes(normalizedQuery) ||
+        benefit.tier.toLowerCase().includes(normalizedQuery);
+      return matchesFilter && matchesSearch;
+    });
+  }, [activeFilter, search]);
 
   return (
     <ScreenShell activeSection='beneficios' backgroundColor={c.bg}>
@@ -90,15 +114,23 @@ export default function BeneficiosScreen() {
 
             {/* Benefit cards */}
             <SectionContainer title='Tus Beneficios'>
+              <SearchFilterBar
+                value={search}
+                onChangeText={setSearch}
+                placeholder='Buscar beneficio o nivel...'
+                filters={FILTER_OPTIONS}
+                activeFilter={activeFilter}
+                onChangeFilter={setActiveFilter}
+              />
               <GlassCard style={styles.listCard}>
-                {BENEFITS.map((benefit, idx) => {
+                {filteredBenefits.map((benefit, idx) => {
                   const tc = TIER_COLORS[benefit.tier];
                   return (
                     <View
                       key={benefit.title}
                       style={[
                         styles.row,
-                        idx < BENEFITS.length - 1 && {
+                        idx < filteredBenefits.length - 1 && {
                           borderBottomWidth: 1,
                           borderBottomColor: c.border,
                         },

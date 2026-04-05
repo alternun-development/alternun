@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
 import { createTypographyStyles } from '../theme/typography';
 import { Plus, ArrowUpFromLine, Flame, ArrowRightLeft, X } from 'lucide-react-native';
-import { FilterPill, StatusPill } from '@alternun/ui';
+import { StatusPill } from '@alternun/ui';
+import SearchFilterBar, { type SearchFilterOption } from '../common/SearchFilterBar';
 import { ImpactToken, TokenState } from './types';
 
 interface TokenPortfolioProps {
@@ -15,6 +16,13 @@ interface TokenPortfolioProps {
 
 type FilterType = 'All' | TokenState;
 
+const FILTER_OPTIONS: SearchFilterOption[] = [
+  { key: 'All', label: 'Todos' },
+  { key: 'Free', label: 'Libre' },
+  { key: 'Deposited', label: 'Depositado' },
+  { key: 'Consumed', label: 'Retirado' },
+];
+
 export default function TokenPortfolio({
   tokens,
   onBuyToken,
@@ -23,6 +31,7 @@ export default function TokenPortfolio({
   onTransferToken,
 }: TokenPortfolioProps) {
   const [filter, setFilter] = useState<FilterType>('All');
+  const [search, setSearch] = useState('');
   const [depositModal, setDepositModal] = useState<ImpactToken | null>(null);
   const [retireModal, setRetireModal] = useState<ImpactToken | null>(null);
   const [transferModal, setTransferModal] = useState<ImpactToken | null>(null);
@@ -30,8 +39,17 @@ export default function TokenPortfolio({
   const [profitShare, setProfitShare] = useState('');
   const [recipientAddress, setRecipientAddress] = useState('');
 
-  const filters: FilterType[] = ['All', 'Free', 'Deposited', 'Consumed'];
-  const filtered = filter === 'All' ? tokens : tokens.filter((t) => t.state === filter);
+  const filtered = useMemo(() => {
+    const normalizedQuery = search.trim().toLowerCase();
+    return tokens.filter((token) => {
+      const matchesFilter = filter === 'All' || token.state === filter;
+      const matchesSearch =
+        !normalizedQuery ||
+        token.tokenId.toLowerCase().includes(normalizedQuery) ||
+        token.projectName.toLowerCase().includes(normalizedQuery);
+      return matchesFilter && matchesSearch;
+    });
+  }, [filter, search, tokens]);
 
   const handleDeposit = () => {
     if (!depositModal) return;
@@ -61,12 +79,14 @@ export default function TokenPortfolio({
         </TouchableOpacity>
       </View>
 
-      {/* Filter Pills */}
-      <View style={styles.filterRow}>
-        {filters.map((f) => (
-          <FilterPill key={f} label={f} active={filter === f} onPress={() => setFilter(f)} />
-        ))}
-      </View>
+      <SearchFilterBar
+        value={search}
+        onChangeText={setSearch}
+        placeholder='Buscar token o proyecto...'
+        filters={FILTER_OPTIONS}
+        activeFilter={filter}
+        onChangeFilter={(filterKey) => setFilter(filterKey as FilterType)}
+      />
 
       {/* Token Cards */}
       <View style={styles.tokenGrid}>
@@ -290,32 +310,6 @@ const styles = createTypographyStyles({
     color: '#050510',
     fontSize: 13,
     fontWeight: '700',
-  },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  filterPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-  },
-  filterPillActive: {
-    backgroundColor: 'rgba(28,203,161,0.15)',
-    borderColor: 'rgba(28,203,161,0.4)',
-  },
-  filterPillText: {
-    color: 'rgba(232,232,255,0.5)',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  filterPillTextActive: {
-    color: '#1ccba1',
-    fontWeight: '600',
   },
   tokenGrid: {
     flexDirection: 'row',

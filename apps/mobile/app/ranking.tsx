@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
 import { Award, ChevronLeft, Trophy, type LucideProps } from 'lucide-react-native';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GlassCard, SectionContainer } from '@alternun/ui';
+import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import ScreenShell from '../components/common/ScreenShell';
 
@@ -18,6 +19,12 @@ const TOP_USERS = [
   { rank: 5, name: 'Lucía Vargas', score: '58.900', medal: null, color: null },
 ];
 
+const FILTER_OPTIONS: SearchFilterOption[] = [
+  { key: 'all', label: 'Todos' },
+  { key: 'podium', label: 'Podio' },
+  { key: 'others', label: 'Resto' },
+];
+
 function getInitials(name: string): string {
   const parts = name.trim().split(' ');
   if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
@@ -28,6 +35,8 @@ export default function RankingScreen() {
   const router = useRouter();
   const { themeMode } = useAppPreferences();
   const isDark = themeMode === 'dark';
+  const [search, setSearch] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
@@ -56,6 +65,18 @@ export default function RankingScreen() {
         muted: 'rgba(11,45,49,0.6)',
         accent: '#0d9488',
       };
+
+  const filteredUsers = useMemo(() => {
+    const normalizedQuery = search.trim().toLowerCase();
+    return TOP_USERS.filter((user) => {
+      const matchesFilter =
+        activeFilter === 'all' ||
+        (activeFilter === 'podium' && user.rank <= 3) ||
+        (activeFilter === 'others' && user.rank > 3);
+      const matchesSearch = !normalizedQuery || user.name.toLowerCase().includes(normalizedQuery);
+      return matchesFilter && matchesSearch;
+    });
+  }, [activeFilter, search]);
 
   return (
     <ScreenShell activeSection='ranking' backgroundColor={c.bg}>
@@ -100,13 +121,21 @@ export default function RankingScreen() {
 
             {/* Top impactors */}
             <SectionContainer title='Top Impactores'>
+              <SearchFilterBar
+                value={search}
+                onChangeText={setSearch}
+                placeholder='Buscar persona o posición...'
+                filters={FILTER_OPTIONS}
+                activeFilter={activeFilter}
+                onChangeFilter={setActiveFilter}
+              />
               <GlassCard style={styles.listCard}>
-                {TOP_USERS.map((user, idx) => (
+                {filteredUsers.map((user, idx) => (
                   <View
                     key={user.rank}
                     style={[
                       styles.row,
-                      idx < TOP_USERS.length - 1 && {
+                      idx < filteredUsers.length - 1 && {
                         borderBottomWidth: 1,
                         borderBottomColor: c.border,
                       },

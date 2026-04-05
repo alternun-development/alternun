@@ -1,9 +1,11 @@
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Coins, TrendingUp, type LucideProps } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FilterPill, GlassCard, SectionContainer, StatCard, StatusPill } from '@alternun/ui';
+import { GlassCard, SectionContainer, StatCard, StatusPill } from '@alternun/ui';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import HorizontalCardScroller from '../components/common/HorizontalCardScroller';
+import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
 import ScreenShell from '../components/common/ScreenShell';
 
 const ChevronLeftIcon = ChevronLeft as React.FC<LucideProps>;
@@ -11,6 +13,7 @@ const CoinsIcon = Coins as React.FC<LucideProps>;
 const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
 
 const FILTERS = ['Todos', 'Libre', 'Depositado', 'Retirado'];
+const FILTER_OPTIONS: SearchFilterOption[] = FILTERS.map((label) => ({ key: label, label }));
 
 type TokenStatus = 'Free' | 'Deposited' | 'Consumed';
 
@@ -26,6 +29,7 @@ export default function MisAtnScreen() {
   const { themeMode } = useAppPreferences();
   const isDark = themeMode === 'dark';
   const [activeFilter, setActiveFilter] = useState('Todos');
+  const [search, setSearch] = useState('');
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
@@ -55,6 +59,22 @@ export default function MisAtnScreen() {
         accent: '#0d9488',
       };
 
+  const filteredTokens = useMemo(() => {
+    const normalizedQuery = search.trim().toLowerCase();
+    return TOKENS.filter((token) => {
+      const matchesFilter =
+        activeFilter === 'Todos' ||
+        (activeFilter === 'Libre' && token.status === 'Free') ||
+        (activeFilter === 'Depositado' && token.status === 'Deposited') ||
+        (activeFilter === 'Retirado' && token.status === 'Consumed');
+      const matchesSearch =
+        !normalizedQuery ||
+        token.id.toLowerCase().includes(normalizedQuery) ||
+        token.project.toLowerCase().includes(normalizedQuery);
+      return matchesFilter && matchesSearch;
+    });
+  }, [activeFilter, search]);
+
   return (
     <ScreenShell activeSection='portfolio' backgroundColor={c.bg}>
       <View style={[styles.root, { backgroundColor: c.bg }]}>
@@ -79,7 +99,7 @@ export default function MisAtnScreen() {
             showsVerticalScrollIndicator={false}
           >
             {/* Stat cards */}
-            <View style={styles.statsRow}>
+            <HorizontalCardScroller isDark={isDark}>
               <StatCard
                 label='Total ATN'
                 value='156'
@@ -101,29 +121,26 @@ export default function MisAtnScreen() {
                 icon={<CoinsIcon size={16} color={c.accent} />}
                 style={styles.statCard}
               />
-            </View>
+            </HorizontalCardScroller>
 
-            {/* Filter pills */}
-            <View style={styles.filterRow}>
-              {FILTERS.map((f) => (
-                <FilterPill
-                  key={f}
-                  label={f}
-                  active={activeFilter === f}
-                  onPress={() => setActiveFilter(f)}
-                />
-              ))}
-            </View>
+            <SearchFilterBar
+              value={search}
+              onChangeText={setSearch}
+              placeholder='Buscar token o proyecto...'
+              filters={FILTER_OPTIONS}
+              activeFilter={activeFilter}
+              onChangeFilter={setActiveFilter}
+            />
 
             {/* Token list */}
             <SectionContainer title='Tokens'>
               <GlassCard style={styles.listCard}>
-                {TOKENS.map((token, idx) => (
+                {filteredTokens.map((token, idx) => (
                   <View
                     key={token.id}
                     style={[
                       styles.row,
-                      idx < TOKENS.length - 1 && {
+                      idx < filteredTokens.length - 1 && {
                         borderBottomWidth: 1,
                         borderBottomColor: c.border,
                       },
@@ -177,19 +194,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 0,
   },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16,
-  },
   statCard: {
     flex: 1,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'wrap',
-    marginBottom: 16,
+    boxShadow: 'none',
   },
   listCard: {
     padding: 0,
