@@ -1,3 +1,3 @@
 export { OIDC_INITIAL_SEARCH, buildAuthentikOAuthFlowStartUrl, clearOidcSession, clearPendingAuthentikOAuthProvider, handleAuthentikCallback, hasPendingAuthentikCallback, isAuthentikConfigured, readOidcSession, readPendingAuthentikOAuthProvider, resolveAuthentikRedirectUri, startAuthentikOAuthFlow, } from './mobile/authentikClient';
-export { DEFAULT_AUTHENTIK_CLIENT_ID, resolveAuthentikClientId, resolveAuthentikIssuer, } from './mobile/authentikUrls';
+export { DEFAULT_AUTHENTIK_CLIENT_ID, AUTHENTIK_WEB_CALLBACK_PATH, buildAuthentikWebCallbackUrl, resolveAuthentikClientId, resolveAuthentikIssuer, } from './mobile/authentikUrls';
 export { createAuthentikPreset, createAuthentikRelayHandler, createAuthentikLogoutHandler, createProvisioningAdapter, handleAuthentikCallback as handleAuthentikPresetCallback, discoverEndpoints, resolveSafeRedirect, validateAuthentikConfig, validateFullConfig, } from '@edcalderon/auth/authentik';

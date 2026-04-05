@@ -68,7 +68,7 @@ describe('buildAuthentikOAuthFlowStartUrl', () => {
 
   it('derives a redirect uri from the current origin when the explicit value is missing', () => {
     expect(resolveAuthentikRedirectUri(undefined, 'https://testnet.airs.alternun.co')).toBe(
-      'https://testnet.airs.alternun.co/'
+      'https://testnet.airs.alternun.co/auth/callback'
     );
   });
 
@@ -83,8 +83,17 @@ describe('buildAuthentikOAuthFlowStartUrl', () => {
 
   it('prefers the active browser origin over a loopback redirect uri during local dev', () => {
     expect(resolveAuthentikRedirectUri('http://localhost:8081/', 'http://localhost:8083')).toBe(
-      'http://localhost:8083/'
+      'http://localhost:8083/auth/callback'
     );
+  });
+
+  it('prefers the dedicated callback route over a stale root redirect on the same origin', () => {
+    expect(
+      resolveAuthentikRedirectUri(
+        'https://testnet.airs.alternun.co/',
+        'https://testnet.airs.alternun.co'
+      )
+    ).toBe('https://testnet.airs.alternun.co/auth/callback');
   });
 
   it('defaults the authentik client id when explicit value is missing', () => {

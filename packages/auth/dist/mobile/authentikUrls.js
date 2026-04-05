@@ -1,17 +1,22 @@
 const DEFAULT_SCOPE = 'openid profile email';
 export const DEFAULT_AUTHENTIK_CLIENT_ID = 'alternun-mobile';
+export const AUTHENTIK_WEB_CALLBACK_PATH = '/auth/callback';
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
 function isLoopbackHostname(value) {
     const hostname = value === null || value === void 0 ? void 0 : value.trim().toLowerCase();
     return Boolean(hostname && LOOPBACK_HOSTNAMES.has(hostname));
 }
 function shouldPreferBrowserOrigin(explicitRedirectUri, browserOrigin) {
-    if (!(browserOrigin === null || browserOrigin === void 0 ? void 0 : browserOrigin.trim())) {
+    const normalizedBrowserOrigin = normalizeBrowserOrigin(browserOrigin);
+    if (!normalizedBrowserOrigin) {
         return false;
     }
     try {
         const explicitUrl = new URL(explicitRedirectUri);
-        return isLoopbackHostname(explicitUrl.hostname);
+        if (isLoopbackHostname(explicitUrl.hostname)) {
+            return true;
+        }
+        return explicitUrl.origin === normalizedBrowserOrigin && explicitUrl.pathname === '/';
     }
     catch {
         return false;
@@ -34,6 +39,21 @@ function deriveAuthentikIssuerFromBrowserOrigin(browserOrigin, clientId) {
     catch {
         return undefined;
     }
+}
+function normalizeBrowserOrigin(browserOrigin) {
+    const normalizedBrowserOrigin = browserOrigin === null || browserOrigin === void 0 ? void 0 : browserOrigin.trim();
+    if (!normalizedBrowserOrigin) {
+        return undefined;
+    }
+    return normalizedBrowserOrigin.replace(/\/+$/, '');
+}
+export function buildAuthentikWebCallbackUrl(browserOrigin, callbackPath = AUTHENTIK_WEB_CALLBACK_PATH) {
+    const normalizedOrigin = normalizeBrowserOrigin(browserOrigin);
+    if (!normalizedOrigin) {
+        return undefined;
+    }
+    const normalizedPath = callbackPath.startsWith('/') ? callbackPath : `/${callbackPath}`;
+    return `${normalizedOrigin}${normalizedPath}`;
 }
 export function resolveAuthentikClientId(explicitClientId) {
     const normalizedExplicitClientId = explicitClientId === null || explicitClientId === void 0 ? void 0 : explicitClientId.trim();
@@ -59,13 +79,7 @@ export function resolveAuthentikRedirectUri(explicitRedirectUri, browserOrigin) 
         !shouldPreferBrowserOrigin(normalizedExplicitRedirectUri, browserOrigin)) {
         return normalizedExplicitRedirectUri;
     }
-    const normalizedBrowserOrigin = browserOrigin === null || browserOrigin === void 0 ? void 0 : browserOrigin.trim();
-    if (!normalizedBrowserOrigin) {
-        return undefined;
-    }
-    return normalizedBrowserOrigin.endsWith('/')
-        ? normalizedBrowserOrigin
-        : `${normalizedBrowserOrigin}/`;
+    return buildAuthentikWebCallbackUrl(browserOrigin);
 }
 export function getAuthentikEndpointBaseFromIssuer(issuer) {
     const match = issuer.match(/^(https?:\/\/.+?\/application\/o\/)/);

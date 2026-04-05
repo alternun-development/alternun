@@ -1,6 +1,10 @@
 import { buildNonExpoPipelineEnv, IDENTITY_PIPELINE_SET, resolveBranch } from '../shared.js';
 import type { IdentityPipelineStage, PipelineConfigContext, PipelineSpecRecord } from '../types.js';
 
+function resolveDevGoogleLoginFlowSlug(env: NodeJS.ProcessEnv): string {
+  return env.INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG?.trim() ?? '';
+}
+
 export function buildIdentityPipelineSpecs({
   env,
   pipeline,
@@ -19,6 +23,7 @@ export function buildIdentityPipelineSpecs({
   const prodAppLaunchUrl = `https://${
     env.INFRA_EXPO_DOMAIN_PRODUCTION ?? 'airs.alternun.co'
   }/auth?next=/`;
+  const devGoogleLoginFlowSlug = resolveDevGoogleLoginFlowSlug(env);
 
   return {
     'identity-dev': {
@@ -44,7 +49,7 @@ export function buildIdentityPipelineSpecs({
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
         INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL: devAppLaunchUrl,
         INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
-        INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: 'alternun-google-login',
+        INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: devGoogleLoginFlowSlug,
         [googleAuthClientSecretKey]: googleAuthClientSecret,
       }),
     },
