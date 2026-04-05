@@ -332,6 +332,7 @@ Important behavior:
 - non-production identity persists Traefik ACME state locally and backs it up to a private S3 bucket for restore after instance replacement
 - production identity defaults to ALB + ACM, with the ALB terminating TLS and forwarding HTTPS to the instance
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
+- the Google source bootstrap binds a username-mapping policy to `default-source-enrollment-prompt`, so first-time Google enrollments reuse the upstream email as the username and skip the manual Authentik username screen
 - `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` keeps the mobile social login path on Authentik and disables Supabase fallback in the web bundle
 - in direct source mode, Authentik must keep `default-source-authentication-login` and `default-source-enrollment-login`; clearing those stages causes Google callback loops instead of dashboard redirects
 - local development can point the default internal app tile, the admin app tile/callbacks, and the mobile OIDC callbacks at localhost via `INFRA_IDENTITY_ADMIN_OIDC_LOCAL_DEV_URL` and `INFRA_MOBILE_OIDC_REDIRECT_URLS`

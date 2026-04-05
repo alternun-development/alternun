@@ -126,6 +126,7 @@ The main durable changes were:
 - explicit social-login mode switch
 - explicit allow flag for custom provider-flow slugs
 - direct-source default for deployed bundles
+- Google source enrollment now auto-fills the username from the upstream Google email, so first-time logins do not stop on the Authentik username screen
 - removal of hidden custom-flow derivation
 - Authentik bootstrap fix to restore `UserLoginStage` in direct-source mode
 
