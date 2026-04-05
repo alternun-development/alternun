@@ -1,6 +1,7 @@
 {
   "shared": {
     "labels": {
+      "backToTop": "Top",
       "by": "By",
       "dark": "Dark",
       "language": "Language",
@@ -9,8 +10,7 @@
       "signIn": "Sign In",
       "theme": "Theme",
       "yes": "Yes",
-      "no": "No",
-      "backToTop": "Top"
+      "no": "No"
     },
     "languageNames": {
       "en": "English",
@@ -116,6 +116,9 @@
         "validEmail": "Enter a valid email address."
       }
     },
+    "dashboard": {
+      "backToTop": "Top"
+    },
     "footer": {
       "copyright": "(c) {{year}} Alternun. All rights reserved.",
       "links": {
@@ -178,9 +181,6 @@
           "description": "Connect via QR code"
         }
       }
-    },
-    "dashboard": {
-      "backToTop": "Top"
     }
   },
   "web": {

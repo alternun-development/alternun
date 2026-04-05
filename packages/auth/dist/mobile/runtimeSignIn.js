@@ -1,7 +1,7 @@
-import { resolveSafeRedirect, } from '@edcalderon/auth/authentik';
-import { isAuthentikConfigured, startAuthentikOAuthFlow, } from './authentikClient';
-import { resolveAuthentikLoginStrategy, } from './authEntry';
-import { buildAuthentikWebCallbackUrl, } from './authentikUrls';
+import { resolveSafeRedirect } from '@edcalderon/auth/authentik';
+import { isAuthentikConfigured, startAuthentikOAuthFlow } from './authentikClient';
+import { resolveAuthentikLoginStrategy } from './authEntry';
+import { buildAuthentikWebCallbackUrl } from './authentikUrls';
 const AUTH_RETURN_TO_STORAGE_KEY = 'alternun:auth:return-to';
 function canUseBrowserRuntime() {
     return typeof window !== 'undefined' && typeof document !== 'undefined';
@@ -22,8 +22,8 @@ function normalizeInternalHref(target) {
     }
 }
 export function resolveAuthReturnTo(target) {
-    const allowedOrigins = canUseBrowserRuntime() ? [window.location.origin,] : [];
-    const safe = resolveSafeRedirect(target !== null && target !== void 0 ? target : '/', { allowedOrigins, fallbackUrl: '/', });
+    const allowedOrigins = canUseBrowserRuntime() ? [window.location.origin] : [];
+    const safe = resolveSafeRedirect(target !== null && target !== void 0 ? target : '/', { allowedOrigins, fallbackUrl: '/' });
     return normalizeInternalHref(safe);
 }
 export function storeAuthReturnTo(target) {
