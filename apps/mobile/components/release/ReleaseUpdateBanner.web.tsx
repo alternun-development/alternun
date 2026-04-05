@@ -63,11 +63,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(5, 5, 16, 0.92)',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.28,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 16 },
-    elevation: 12,
+    boxShadow: '0px 18px 36px rgba(0, 0, 0, 0.22)',
   },
   copy: {
     gap: 4,

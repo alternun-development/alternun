@@ -15,6 +15,31 @@ import { ChevronLeft, ChevronRight, type LucideProps } from 'lucide-react-native
 const ChevronLeftIcon = ChevronLeft as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
 
+function resolveChildKey(child: React.ReactNode): string {
+  if (React.isValidElement(child)) {
+    if (child.key != null) {
+      return String(child.key);
+    }
+
+    const props = child.props as Record<string, unknown>;
+    const typeRef =
+      typeof child.type === 'string'
+        ? { displayName: child.type, name: child.type }
+        : (child.type as { displayName?: string; name?: string });
+    const typeName = typeRef.displayName ?? typeRef.name ?? 'node';
+    const stableValue =
+      props.id ?? props.label ?? props.title ?? props.name ?? props.value ?? props.children;
+
+    if (typeof stableValue === 'string' || typeof stableValue === 'number') {
+      return `${typeName}-${stableValue}`;
+    }
+
+    return typeName;
+  }
+
+  return typeof child === 'string' || typeof child === 'number' ? String(child) : 'card-node';
+}
+
 interface HorizontalCardScrollerProps {
   children: React.ReactNode;
   isDark: boolean;
@@ -169,7 +194,7 @@ export default function HorizontalCardScroller({
         >
           {items.map((child, index) => (
             <View
-              key={`card-${index}`}
+              key={resolveChildKey(child)}
               style={[
                 styles.itemSlot,
                 {
