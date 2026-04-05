@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GlassCard, ProgressBar, SectionContainer, StatCard } from '@alternun/ui';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import HorizontalCardScroller from '../components/common/HorizontalCardScroller';
 import ScreenShell from '../components/common/ScreenShell';
 
 const ChevronLeftIcon = ChevronLeft as React.FC<LucideProps>;
@@ -75,7 +76,7 @@ export default function CompensacionesScreen() {
             showsVerticalScrollIndicator={false}
           >
             {/* Stat cards */}
-            <View style={styles.statsRow}>
+            <HorizontalCardScroller isDark={isDark}>
               <StatCard
                 label='CO₂ Offset'
                 value='24.8t'
@@ -97,7 +98,7 @@ export default function CompensacionesScreen() {
                 icon={<ShieldCheckIcon size={16} color={c.accent} />}
                 style={styles.statCard}
               />
-            </View>
+            </HorizontalCardScroller>
 
             {/* Historial */}
             <SectionContainer title='Historial'>
@@ -183,13 +184,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 0,
   },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16,
-  },
   statCard: {
     flex: 1,
+    boxShadow: 'none',
   },
   listCard: {
     padding: 0,
