@@ -31,7 +31,11 @@ function RootApp(): React.JSX.Element {
     colorScheme.setColorScheme(themeMode);
   }, [colorScheme, themeMode]);
   const pathname = usePathname();
-  const showLayoutFooter = pathname !== '/auth' && pathname !== '/auth-relay' && pathname !== '/';
+  const showLayoutFooter =
+    pathname !== '/auth' &&
+    pathname !== '/auth-relay' &&
+    pathname !== '/auth/callback' &&
+    pathname !== '/';
 
   return (
     <AppAuthProvider>
@@ -60,6 +64,12 @@ function RootApp(): React.JSX.Element {
                   presentation: 'transparentModal',
                   animation: 'fade',
                   contentStyle: { backgroundColor: 'transparent' },
+                }}
+              />
+              <Stack.Screen
+                name='auth/callback'
+                options={{
+                  headerShown: false,
                 }}
               />
               <Stack.Screen

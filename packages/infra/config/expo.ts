@@ -80,6 +80,21 @@ function createAssetBucketName(stage: PipelineStage, prefix: string, domain: str
   return sanitizeBucketName(`${prefix}-${stage}-public-assets-${domain.replace(/\./g, '-')}`);
 }
 
+function resolveAuthentikProviderFlowSlugsEnvValue(
+  env: NodeJS.ProcessEnv,
+  localConfig: LocalDeploymentConfig
+): string | undefined {
+  if (env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS !== undefined) {
+    return env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS;
+  }
+
+  if (localConfig.expo?.publicEnv?.authentikProviderFlowSlugs !== undefined) {
+    return localConfig.expo.publicEnv.authentikProviderFlowSlugs;
+  }
+
+  return undefined;
+}
+
 function resolveExpoAppPath(dirname: string, appPath: string): string {
   const candidatePaths = [
     appPath,
@@ -222,9 +237,7 @@ export function resolveExpoConfig({
     authentikSocialLoginMode:
       env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE ??
       localConfig.expo?.publicEnv?.authentikSocialLoginMode,
-    authentikProviderFlowSlugs:
-      env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS ??
-      localConfig.expo?.publicEnv?.authentikProviderFlowSlugs,
+    authentikProviderFlowSlugs: resolveAuthentikProviderFlowSlugsEnvValue(env, localConfig),
     releaseUpdateMode:
       env.EXPO_PUBLIC_RELEASE_UPDATE_MODE ?? localConfig.expo?.publicEnv?.releaseUpdateMode,
   };

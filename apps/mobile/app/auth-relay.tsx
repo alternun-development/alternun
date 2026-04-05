@@ -1,11 +1,8 @@
 import { useLocalSearchParams, useRootNavigationState, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import {
-  isAuthentikConfigured,
-  resolveAuthentikLoginStrategy,
-  startAuthentikOAuthFlow,
-} from '@alternun/auth';
+import { resolveAuthentikLoginStrategy, webRedirectSignIn } from '@alternun/auth';
+import { useAuth } from '../components/auth/AppAuthProvider';
 
 function readParam(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) {
@@ -39,6 +36,7 @@ function readBooleanParam(value: string | string[] | undefined, defaultValue: bo
 export default function AuthRelayRoute(): React.JSX.Element {
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
+  const { client } = useAuth();
   const { provider, fresh, next } = useLocalSearchParams<{
     provider?: string | string[];
     fresh?: string | string[];
@@ -53,9 +51,8 @@ export default function AuthRelayRoute(): React.JSX.Element {
   }, [provider]);
 
   const nextTarget = useMemo(() => readParam(next), [next]);
-  const forceFreshSession = useMemo(() => readBooleanParam(fresh, true), [fresh]);
+  const forceFreshSession = useMemo(() => readBooleanParam(fresh, false), [fresh]);
   const loginStrategy = resolveAuthentikLoginStrategy();
-  const providerFlowSlugs = loginStrategy.providerFlowSlugs;
 
   useEffect(() => {
     if (!isNavigationReady) {
@@ -72,23 +69,22 @@ export default function AuthRelayRoute(): React.JSX.Element {
       return;
     }
 
-    if (!isAuthentikConfigured() && loginStrategy.socialMode !== 'authentik') {
-      router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
-      return;
-    }
-
-    void startAuthentikOAuthFlow(providerHint, {
+    void webRedirectSignIn({
+      client,
+      provider: providerHint,
+      authentikProviderHint: providerHint,
+      redirectTo: nextTarget,
       forceFreshSession,
-      providerFlowSlugs,
+      strategy: loginStrategy,
     }).catch(() => {
       router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
     });
   }, [
+    client,
     forceFreshSession,
     isNavigationReady,
     loginStrategy.socialMode,
     nextTarget,
-    providerFlowSlugs,
     providerHint,
     router,
   ]);

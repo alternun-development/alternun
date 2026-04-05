@@ -41,7 +41,11 @@ function RootApp(): any {
   const { themeMode } = useAppPreferences();
   const navigationTheme = themeMode === 'dark' ? DarkTheme : DefaultTheme;
   const pathname = usePathname();
-  const showLayoutFooter = pathname !== '/auth' && pathname !== '/auth-relay' && pathname !== '/';
+  const showLayoutFooter =
+    pathname !== '/auth' &&
+    pathname !== '/auth-relay' &&
+    pathname !== '/auth/callback' &&
+    pathname !== '/';
 
   return (
     <AppAuthProvider>
@@ -70,6 +74,12 @@ function RootApp(): any {
                   presentation: 'transparentModal',
                   animation: 'fade',
                   contentStyle: { backgroundColor: 'transparent' },
+                }}
+              />
+              <Stack.Screen
+                name='auth/callback'
+                options={{
+                  headerShown: false,
                 }}
               />
               <Stack.Screen

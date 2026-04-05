@@ -16,6 +16,10 @@
     "./mobile/authEntry": {
       "types": "./dist/mobile/authEntry.d.ts",
       "default": "./dist/mobile/authEntry.js"
+    },
+    "./mobile/runtimeSignIn": {
+      "types": "./dist/mobile/runtimeSignIn.d.ts",
+      "default": "./dist/mobile/runtimeSignIn.js"
     }
   },
   "scripts": {
