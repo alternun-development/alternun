@@ -19,8 +19,6 @@ export {
 } from './mobile/authentikClient';
 export {
   DEFAULT_AUTHENTIK_CLIENT_ID,
-  AUTHENTIK_WEB_CALLBACK_PATH,
-  buildAuthentikWebCallbackUrl,
   resolveAuthentikClientId,
   resolveAuthentikIssuer,
 } from './mobile/authentikUrls';

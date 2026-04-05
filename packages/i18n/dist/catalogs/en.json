@@ -9,7 +9,8 @@
       "signIn": "Sign In",
       "theme": "Theme",
       "yes": "Yes",
-      "no": "No"
+      "no": "No",
+      "backToTop": "Top"
     },
     "languageNames": {
       "en": "English",
@@ -177,6 +178,9 @@
           "description": "Connect via QR code"
         }
       }
+    },
+    "dashboard": {
+      "backToTop": "Top"
     }
   },
   "web": {

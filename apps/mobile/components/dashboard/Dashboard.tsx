@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { User } from '../auth/AppAuthProvider';
 import {
   View,
@@ -8,6 +8,22 @@ import {
   TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
+import Animated, {
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
+import { ChevronsUp, type LucideProps } from 'lucide-react-native';
+import { useAppTranslation } from '../i18n/useAppTranslation';
+
+const BackIcon = ChevronsUp as React.FC<LucideProps>;
+const AnimatedView = Animated.View as unknown as React.FC<
+  React.ComponentProps<typeof View> & { style?: any }
+>;
 import AppInfoFooter from '../common/AppInfoFooter';
 import { createTypographyStyles } from '../theme/typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,10 +32,8 @@ import { ThemeProvider, SectionHeaderSkeleton } from '@alternun/ui';
 import TopNav from './TopNav';
 import HeroStats from './HeroStats';
 import WalletConnectModal from './WalletConnectModal';
-import ToastSystem from './ToastSystem';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
-
-import type { ToastMessage } from './types';
+import { ToastSystem, type ToastItem, type ToastType } from '@alternun/ui';
 
 let toastIdCounter = 0;
 
@@ -352,13 +366,45 @@ export default function Dashboard({
   onSignOut,
 }: DashboardProps) {
   const [walletModalVisible, setWalletModalVisible] = useState(false);
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
   const { width } = useWindowDimensions();
+  const isMobile = width < 720;
+  const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
   const isDark = themeMode === 'dark';
-  const footerInset = width < 720 ? 90 : 102;
+  const { t } = useAppTranslation('mobile');
 
-  const addToast = useCallback((type: ToastMessage['type'], title: string, message: string) => {
+  // Bounce animation for back-to-top icon
+  const bounce = useSharedValue(0);
+  useEffect(() => {
+    if (showBackToTop) {
+      bounce.value = withRepeat(
+        withSequence(
+          withTiming(-5, { duration: 420, easing: Easing.out(Easing.quad) }),
+          withTiming(0, { duration: 380, easing: Easing.in(Easing.quad) })
+        ),
+        -1
+      );
+    } else {
+      cancelAnimation(bounce);
+      bounce.value = 0;
+    }
+  }, [showBackToTop, bounce]);
+
+  const bounceStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: bounce.value }],
+  }));
+
+  const handleScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
+    setShowBackToTop(e.nativeEvent.contentOffset.y > 200);
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  }, []);
+
+  const addToast = useCallback((type: ToastType, title: string, message: string) => {
     const id = `toast-${++toastIdCounter}`;
     setToasts((prev) => [...prev, { id, type, title, message }]);
     setTimeout(() => {
@@ -445,93 +491,108 @@ export default function Dashboard({
           backgroundColor={isDark ? '#050510' : '#f6f8fc'}
         />
         <View style={[styles.container, { backgroundColor: isDark ? '#050510' : '#f6f8fc' }]}>
-          <TopNav
-            key={user ? 'topnav-signed-in' : 'topnav-signed-out'}
-            signedIn={Boolean(user)}
-            walletConnected={walletConnected}
-            walletAddress={walletAddress}
-            themeMode={themeMode}
-            language={language}
-            authMethodLabel={authMethodLabel}
-            userDisplayName={profileInfo.displayName}
-            userEmail={profileInfo.email}
-            onSignIn={handleRequireSignIn}
-            onConnectWallet={handleOpenWalletConnect}
-            onToggleTheme={toggleThemeMode}
-            onCycleLanguage={cycleLanguage}
-            onOpenProfile={handleOpenProfile}
-            onOpenSettings={handleOpenSettings}
-            onSignOut={() => {
-              void handleSignOut();
-            }}
-          />
-
           <ScrollView
+            ref={scrollRef}
             style={styles.scroll}
-            contentContainerStyle={[styles.scrollContent, { paddingBottom: footerInset }]}
+            contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={100}
           >
-            <HeroStats
-              totalAIRS={userStats ? userStats.totalAIRS : null}
-              activePositions={userStats ? userStats.activePositions : null}
-              tokensHeld={userStats ? userStats.tokensHeld : null}
-              compensationsCompleted={userStats ? userStats.compensationsCompleted : null}
-              isLoading={isLoading}
-              previewMode={!user}
-              isDark={isDark}
-            />
+            <View style={styles.scrollInner}>
+              <HeroStats
+                totalAIRS={userStats ? userStats.totalAIRS : null}
+                activePositions={userStats ? userStats.activePositions : null}
+                tokensHeld={userStats ? userStats.tokensHeld : null}
+                compensationsCompleted={userStats ? userStats.compensationsCompleted : null}
+                isLoading={isLoading}
+                previewMode={!user}
+                isDark={isDark}
+                displayName={profileInfo.displayName}
+              />
 
-            {!user ? (
-              <View style={styles.authHintRow}>
-                <Text
-                  style={[
-                    styles.authHintText,
-                    { color: isDark ? 'rgba(232,232,255,0.72)' : '#475569' },
-                  ]}
-                >
-                  Sign in from the top-right profile menu to activate actions.
-                </Text>
-              </View>
-            ) : null}
+              {!user ? (
+                <View style={styles.authHintRow}>
+                  <Text
+                    style={[
+                      styles.authHintText,
+                      { color: isDark ? 'rgba(232,232,255,0.72)' : '#475569' },
+                    ]}
+                  >
+                    Sign in from the top-right profile menu to activate actions.
+                  </Text>
+                </View>
+              ) : null}
 
-            {sectionStates.map(({ section, accessState }, index) => {
-              return (
-                <React.Fragment key={section.key}>
-                  <SectionDivider isDark={isDark} />
-                  {isLoading ? (
-                    <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
-                      <SectionHeaderSkeleton />
-                    </View>
-                  ) : (
-                    <SectionLabel
+              {sectionStates.map(({ section, accessState }) => {
+                return (
+                  <React.Fragment key={section.key}>
+                    <SectionDivider isDark={isDark} />
+                    {isLoading ? (
+                      <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
+                        <SectionHeaderSkeleton />
+                      </View>
+                    ) : (
+                      <SectionLabel
+                        isDark={isDark}
+                        label={section.label}
+                        subtitle={section.subtitle}
+                      />
+                    )}
+                    <SectionExperienceCard
+                      section={section}
+                      accessState={accessState}
                       isDark={isDark}
-                      label={section.label}
-                      subtitle={section.subtitle}
+                      onConnectWallet={handleOpenWalletConnect}
+                      onSignOut={() => {
+                        void handleSignOut();
+                      }}
+                      onInteract={(actionLabel) => {
+                        addToast(
+                          'info',
+                          'Work in progress',
+                          `${section.label}: ${actionLabel} will be enabled in the next release.`
+                        );
+                      }}
                     />
-                  )}
-                  <SectionExperienceCard
-                    section={section}
-                    accessState={accessState}
-                    isDark={isDark}
-                    onConnectWallet={handleOpenWalletConnect}
-                    onSignOut={() => {
-                      void handleSignOut();
-                    }}
-                    onInteract={(actionLabel) => {
-                      addToast(
-                        'info',
-                        'Work in progress',
-                        `${section.label}: ${actionLabel} will be enabled in the next release.`
-                      );
-                    }}
-                  />
-                  {index === sectionStates.length - 1 ? <View style={styles.bottomSpacer} /> : null}
-                </React.Fragment>
-              );
-            })}
+                  </React.Fragment>
+                );
+              })}
+            </View>
           </ScrollView>
 
-          <View pointerEvents='box-none' style={styles.footerOverlay}>
+          <View style={styles.stickyBottom}>
+            {showBackToTop && (
+              <TouchableOpacity
+                style={[
+                  styles.backToTopPill,
+                  isMobile ? styles.backToTopMobile : styles.backToTopDesktop,
+                  {
+                    backgroundColor: isDark ? '#0a1520' : '#0d2235',
+                    borderWidth: 1,
+                    borderColor: isDark ? 'rgba(28,203,161,0.25)' : 'rgba(28,203,161,0.35)',
+                  },
+                ]}
+                onPress={scrollToTop}
+                activeOpacity={0.85}
+              >
+                <View
+                  style={[
+                    styles.backToTopIconWrap,
+                    { backgroundColor: isDark ? 'rgba(28,203,161,0.18)' : 'rgba(28,203,161,0.22)' },
+                  ]}
+                >
+                  <AnimatedView style={bounceStyle}>
+                    <BackIcon size={16} color='#1ccba1' strokeWidth={2.5} />
+                  </AnimatedView>
+                </View>
+                {!isMobile && (
+                  <Text style={styles.backToTopText}>
+                    {t('dashboard.backToTop', undefined, 'Back to Top').toUpperCase()}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            )}
             <AppInfoFooter />
           </View>
 
@@ -542,6 +603,38 @@ export default function Dashboard({
               void handleConnect(walletType);
             }}
           />
+
+          {/* Floating nav — rendered last so it overlays content + dropdown isn't clipped */}
+          <View style={styles.floatingNav} pointerEvents='box-none'>
+            <TopNav
+              key={user ? 'topnav-signed-in' : 'topnav-signed-out'}
+              signedIn={Boolean(user)}
+              walletConnected={walletConnected}
+              walletAddress={walletAddress}
+              themeMode={themeMode}
+              language={language}
+              authMethodLabel={authMethodLabel}
+              userDisplayName={profileInfo.displayName}
+              userEmail={profileInfo.email}
+              airsScore={userStats?.totalAIRS ?? null}
+              onSignIn={handleRequireSignIn}
+              onConnectWallet={handleOpenWalletConnect}
+              onToggleTheme={toggleThemeMode}
+              onCycleLanguage={cycleLanguage}
+              onOpenProfile={handleOpenProfile}
+              onOpenSettings={handleOpenSettings}
+              onSignOut={() => {
+                void handleSignOut();
+              }}
+              onNavigate={(key) => {
+                const ref = scrollRef.current;
+                if (!ref) return;
+                if (key === 'dashboard') {
+                  ref.scrollTo({ y: 0, animated: true });
+                }
+              }}
+            />
+          </View>
 
           <ToastSystem toasts={toasts} onDismiss={dismissToast} />
         </View>
@@ -1309,7 +1402,19 @@ const styles = createTypographyStyles({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 24,
+    flexGrow: 1,
+    flexDirection: 'column',
+    paddingTop: 62,
+  },
+  floatingNav: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
+  scrollInner: {
+    flex: 1,
   },
   authHintRow: {
     paddingHorizontal: 16,
@@ -1322,6 +1427,50 @@ const styles = createTypographyStyles({
   },
   bottomSpacer: {
     height: 12,
+  },
+  stickyBottom: {
+    position: 'relative',
+  },
+  backToTopPill: {
+    position: 'absolute',
+    zIndex: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 999,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  backToTopMobile: {
+    right: 14,
+    top: -52,
+    width: 42,
+    height: 42,
+    padding: 3,
+    justifyContent: 'center',
+  },
+  backToTopDesktop: {
+    right: 24,
+    top: -62,
+    height: 48,
+    padding: 5,
+    paddingRight: 22,
+    gap: 12,
+  },
+  backToTopIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backToTopText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 2.2,
   },
   footerOverlay: {
     position: 'absolute',

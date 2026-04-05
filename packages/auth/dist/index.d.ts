@@ -33,18 +33,6 @@ export {
   type ResolveAuthentikLoginStrategyOptions,
 } from './mobile/authEntry';
 export {
-  clearAuthReturnTo,
-  getAuthentikWebCallbackUrl,
-  nativeSignIn,
-  readAuthReturnTo,
-  resolveAuthReturnTo,
-  resolveAuthRuntime,
-  storeAuthReturnTo,
-  webRedirectSignIn,
-  type NativeSignInOptions,
-  type WebRedirectSignInOptions,
-} from './mobile/runtimeSignIn';
-export {
   AlternunMobileAuthClient,
   SUPPORTED_WALLET_PROVIDERS,
   createAlternunMobileAuthClient,
@@ -64,8 +52,6 @@ export {
   clearOidcSession,
   readPendingAuthentikOAuthProvider,
   clearPendingAuthentikOAuthProvider,
-  AUTHENTIK_WEB_CALLBACK_PATH,
-  buildAuthentikWebCallbackUrl,
   resolveAuthentikRedirectUri,
   resolveAuthentikClientId,
   resolveAuthentikIssuer,

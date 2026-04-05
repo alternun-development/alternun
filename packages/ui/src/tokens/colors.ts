@@ -54,9 +54,14 @@ export const palette = {
   infoDim: 'rgba(129,140,248,0.12)',
 
   // Status tiers
+  statusBronze: '#cd7f32',
+  statusSilver: '#a8b8cc',
   statusGold: '#d4b96a',
   statusPlatinum: '#9ba9c4',
-  statusSilver: '#a8b8cc',
+
+  // Hero / forest backgrounds
+  heroForestDark: '#050f0c',
+  heroForestLight: '#eaf8f3',
 
   // Pure
   white: '#ffffff',

@@ -10,14 +10,9 @@ export interface BuildAuthentikOAuthFlowStartUrlInput {
   providerSourceSlugs?: Record<string, string>;
 }
 export declare const DEFAULT_AUTHENTIK_CLIENT_ID = 'alternun-mobile';
-export declare const AUTHENTIK_WEB_CALLBACK_PATH = '/auth/callback';
-export declare function buildAuthentikWebCallbackUrl(
-  browserOrigin: string | undefined | null,
-  callbackPath?: string
-): string | undefined;
 export declare function resolveAuthentikClientId(
   explicitClientId: string | undefined | null
-): string;
+): string | undefined;
 export declare function resolveAuthentikIssuer(
   explicitIssuer: string | undefined | null,
   browserOrigin?: string | null,

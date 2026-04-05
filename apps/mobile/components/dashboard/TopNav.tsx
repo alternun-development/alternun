@@ -1,583 +1,824 @@
 import { getLocaleLabel } from '@alternun/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { createTypographyStyles } from '../theme/typography';
-import { Image as ExpoImage } from 'expo-image';
 import {
-  Wallet,
+  Pressable,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  useWindowDimensions,
+} from 'react-native';
+import { BlurView as BlurViewRaw } from 'expo-blur';
+import { Image as ExpoImageRaw } from 'expo-image';
+
+const BlurView = BlurViewRaw as unknown as React.FC<any>;
+import {
+  Bell,
   ChevronDown,
+  ChevronUp,
   ChevronRight,
   Settings,
-  CircleUserRound,
   LogOut,
   Languages,
   Moon,
   Sun,
   LogIn,
-  ExternalLink,
+  Wallet,
+  LayoutDashboard,
+  Leaf,
+  ShieldCheck,
+  FolderKanban,
+  Gift,
+  Trophy,
+  CircleUserRound,
+  Zap,
+  type LucideProps,
 } from 'lucide-react-native';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppTranslation } from '../i18n/useAppTranslation';
-import type { AppLanguage, ThemeMode } from '../settings/AppPreferencesProvider';
+import type { AppLanguage, MotionLevel, ThemeMode } from '../settings/AppPreferencesProvider';
+import NotificationDropdown, { type NotificationItem } from './NotificationDropdown';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+const ALTERNUN_LOGO = require('../../assets/logo.png') as number;
 
+// ── JSX-safe casts ────────────────────────────────────────────────────────────
+const ExpoImage = ExpoImageRaw as unknown as React.FC<any>;
+const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
+const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
+const SettingsIcon = Settings as React.FC<LucideProps>;
+const LogOutIcon = LogOut as React.FC<LucideProps>;
+const LanguagesIcon = Languages as React.FC<LucideProps>;
+const LogInIcon = LogIn as React.FC<LucideProps>;
+const WalletIcon = Wallet as React.FC<LucideProps>;
+const LayoutDashboardIcon = LayoutDashboard as React.FC<LucideProps>;
+const LeafIcon = Leaf as React.FC<LucideProps>;
+const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
+const FolderKanbanIcon = FolderKanban as React.FC<LucideProps>;
+const GiftIcon = Gift as React.FC<LucideProps>;
+const TrophyIcon = Trophy as React.FC<LucideProps>;
+const BellIcon = Bell as React.FC<LucideProps>;
+const ChevronUpIcon = ChevronUp as React.FC<LucideProps>;
+const CircleUserRoundIcon = CircleUserRound as React.FC<LucideProps>;
+const MoonIcon = Moon as React.FC<LucideProps>;
+const SunIcon = Sun as React.FC<LucideProps>;
+const ZapIcon = Zap as React.FC<LucideProps>;
+
+// ── Nav sections ──────────────────────────────────────────────────────────────
+export interface NavSection {
+  key: string;
+  label: string;
+  icon: React.FC<LucideProps>;
+}
+
+export const NAV_SECTIONS: NavSection[] = [
+  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
+  { key: 'compensation', label: 'Compensaciones', icon: LeafIcon },
+  { key: 'portfolio', label: 'Mis ATN', icon: ShieldCheckIcon },
+  { key: 'proyectos', label: 'Proyectos', icon: FolderKanbanIcon },
+  { key: 'beneficios', label: 'Beneficios', icon: GiftIcon },
+  { key: 'ranking', label: 'Ranking', icon: TrophyIcon },
+  { key: 'wallet', label: 'Wallet', icon: WalletIcon },
+  { key: 'profile', label: 'Mi Perfil', icon: CircleUserRoundIcon },
+];
+
+// ── Props ─────────────────────────────────────────────────────────────────────
 interface TopNavProps {
   signedIn: boolean;
   walletConnected: boolean;
   walletAddress: string;
   themeMode: ThemeMode;
   language: AppLanguage;
+  motionLevel?: MotionLevel;
   authMethodLabel?: string;
   userDisplayName?: string;
   userEmail?: string;
+  airsScore?: number | null;
+  notifications?: NotificationItem[];
+  activeSection?: string;
   onSignIn: () => void;
   onConnectWallet: () => void;
   onToggleTheme: () => void;
   onCycleLanguage: () => void;
+  onCycleMotionLevel?: () => void;
   onOpenProfile: () => void;
   onOpenSettings: () => void;
   onSignOut: () => void;
+  onNavigate?: (sectionKey: string) => void;
+  onMarkAllNotificationsRead?: () => void;
+  onDismissNotification?: (id: string) => void;
 }
 
 function getInitials(name?: string): string {
-  if (!name?.trim()) {
-    return 'U';
-  }
-
+  if (!name?.trim()) return 'U';
   const parts = name.trim().split(/\s+/).filter(Boolean);
-
-  if (parts.length === 1) {
-    return parts[0].slice(0, 1).toUpperCase();
-  }
-
+  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
   return `${parts[0].slice(0, 1)}${parts[1].slice(0, 1)}`.toUpperCase();
 }
 
+// ── Component ─────────────────────────────────────────────────────────────────
 export default function TopNav({
   signedIn,
-  walletConnected,
-  walletAddress,
+  walletConnected: _walletConnected,
+  walletAddress: _walletAddress,
   themeMode,
   language,
-  authMethodLabel,
+  motionLevel,
+  authMethodLabel: _authMethodLabel,
   userDisplayName,
   userEmail,
+  airsScore,
+  notifications = [],
+  activeSection = 'dashboard',
   onSignIn,
   onConnectWallet,
   onToggleTheme,
   onCycleLanguage,
+  onCycleMotionLevel,
   onOpenProfile,
   onOpenSettings,
   onSignOut,
+  onNavigate,
+  onMarkAllNotificationsRead,
+  onDismissNotification,
 }: TopNavProps) {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [notifVisible, setNotifVisible] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(false);
   const { t } = useAppTranslation('mobile');
+  const { width, height } = useWindowDimensions();
   const isDark = themeMode === 'dark';
-  const iconColor = isDark ? '#e8e8ff' : '#0f172a';
-  const secondaryColor = isDark ? '#66e6c5' : '#0f766e';
+  const isMobile = width < 720;
+
   const brandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
   const brandMarkCutout = isDark ? '#03292f' : '#d9fff4';
   const wordmarkSource = isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK;
+  const ThemeIconComp = isDark ? SunIcon : MoonIcon;
   const themeLabel = isDark ? t('labels.dark') : t('labels.light');
-  const ThemeIcon = isDark ? Sun : Moon;
-  const SettingsChevron = settingsExpanded ? ChevronDown : ChevronRight;
-  const palette = isDark
+
+  // ── Palette ────────────────────────────────────────────────────────────────
+  const p = isDark
     ? {
-        navBg: 'rgba(5,5,16,0.95)',
-        navBorder: 'rgba(255,255,255,0.06)',
-        logoText: '#e8e8ff',
-        triggerBg: 'rgba(255,255,255,0.04)',
-        triggerBorder: 'rgba(255,255,255,0.12)',
-        profileName: '#e8e8ff',
-        authMethod: 'rgba(232,232,255,0.7)',
-        dropdownBg: '#0d0d1f',
-        dropdownBorder: 'rgba(255,255,255,0.12)',
-        dropdownDivider: 'rgba(255,255,255,0.08)',
-        dropdownItemBg: 'rgba(255,255,255,0.03)',
-        dropdownText: '#e8e8ff',
-        headerEmail: 'rgba(232,232,255,0.72)',
-        avatarBg: 'rgba(28,203,161,0.16)',
-        avatarText: '#1ccba1',
-        chevron: 'rgba(232,232,255,0.62)',
-        walletRowBg: 'rgba(28,203,161,0.07)',
-        walletRowBorder: 'rgba(28,203,161,0.2)',
-        walletRowText: '#5bf6d0',
-        linkWalletBg: 'rgba(255,255,255,0.03)',
-        linkWalletText: '#1ccba1',
+        navBg: 'rgba(5,5,22,0.55)',
+        navBorder: 'rgba(255,255,255,0.10)',
+        pillBg: '#0d1327',
+        pillBorder: 'rgba(255,255,255,0.14)',
+        pillText: '#e8e8ff',
+        pillSub: 'rgba(232,232,255,0.60)',
+        avatarBg: '#1ccba1',
+        avatarText: '#050510',
+        scoreText: '#1ee6b5',
+        chevron: 'rgba(232,232,255,0.45)',
+        badgeBg: '#3b5bdb',
+        badgeText: '#ffffff',
+        accent: '#1ccba1',
+        dropBg: '#0d1020',
+        dropBorder: 'rgba(255,255,255,0.10)',
+        dropDivider: 'rgba(255,255,255,0.07)',
+        dropText: '#e8e8ff',
+        dropSub: 'rgba(232,232,255,0.55)',
+        navActive: 'rgba(28,203,161,0.14)',
+        navActiveBorder: 'rgba(28,203,161,0.32)',
+        navActiveText: '#1ccba1',
+        iconIdle: 'rgba(232,232,255,0.55)',
+        danger: '#f87171',
+        dangerBg: 'rgba(248,113,113,0.09)',
       }
     : {
-        navBg: '#ffffff',
+        navBg: 'rgba(255,255,255,0.55)',
         navBorder: 'rgba(15,23,42,0.12)',
-        logoText: '#0f172a',
-        triggerBg: '#ffffff',
-        triggerBorder: 'rgba(15,23,42,0.18)',
-        profileName: '#0f172a',
-        authMethod: '#475569',
-        dropdownBg: '#ffffff',
-        dropdownBorder: 'rgba(15,23,42,0.16)',
-        dropdownDivider: 'rgba(15,23,42,0.12)',
-        dropdownItemBg: 'rgba(15,23,42,0.03)',
-        dropdownText: '#0f172a',
-        headerEmail: '#475569',
-        avatarBg: 'rgba(15,118,110,0.14)',
-        avatarText: '#0f766e',
-        chevron: '#64748b',
-        walletRowBg: 'rgba(15,118,110,0.07)',
-        walletRowBorder: 'rgba(15,118,110,0.2)',
-        walletRowText: '#0f766e',
-        linkWalletBg: 'rgba(15,23,42,0.03)',
-        linkWalletText: '#0f766e',
+        pillBg: '#ffffff',
+        pillBorder: 'rgba(15,23,42,0.16)',
+        pillText: '#0f172a',
+        pillSub: '#475569',
+        avatarBg: '#0d9488',
+        avatarText: '#ffffff',
+        scoreText: '#0d9488',
+        chevron: '#94a3b8',
+        badgeBg: '#3b5bdb',
+        badgeText: '#ffffff',
+        accent: '#0d9488',
+        dropBg: '#ffffff',
+        dropBorder: 'rgba(15,23,42,0.14)',
+        dropDivider: 'rgba(15,23,42,0.08)',
+        dropText: '#0f172a',
+        dropSub: '#64748b',
+        navActive: 'rgba(13,148,136,0.11)',
+        navActiveBorder: 'rgba(13,148,136,0.28)',
+        navActiveText: '#0d9488',
+        iconIdle: '#64748b',
+        danger: '#ef4444',
+        dangerBg: 'rgba(239,68,68,0.08)',
       };
-
-  const truncatedAddress = walletAddress
-    ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
-    : '';
 
   const profileName = userDisplayName?.trim() ?? 'Account';
   const initials = useMemo(() => getInitials(profileName), [profileName]);
-  const triggerInitials = signedIn ? initials : 'U';
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
-    if (!menuVisible) {
-      setSettingsExpanded(false);
-    }
+    if (!menuVisible) setSettingsExpanded(false);
   }, [menuVisible]);
 
+  const toggleMenu = () => {
+    setNotifVisible(false);
+    setMenuVisible((v) => !v);
+  };
+  const toggleNotif = () => {
+    setMenuVisible(false);
+    setNotifVisible((v) => !v);
+  };
+
+  const anyOpen = menuVisible || notifVisible;
+  const dismissAll = () => {
+    setMenuVisible(false);
+    setNotifVisible(false);
+  };
+
   return (
-    <View
-      style={[styles.nav, { borderBottomColor: palette.navBorder, backgroundColor: palette.navBg }]}
-    >
-      {/* Logo */}
-      <View style={styles.logoContainer}>
-        <AirsBrandMark size={28} fillColor={brandMarkFill} cutoutColor={brandMarkCutout} />
-        <View style={styles.brandCopy}>
-          <ExpoImage source={wordmarkSource} style={styles.wordmarkImage} contentFit='contain' />
-          <Text
-            numberOfLines={1}
-            ellipsizeMode='tail'
-            style={[styles.logoCaption, { color: palette.logoText }]}
-          >
-            Alternun Impact & Reputation Score
-          </Text>
+    // Outer wrapper: fills the absolute slot in Dashboard
+    <View style={styles.wrapper}>
+      {/* ── Full-screen dismiss overlay (closes dropdown on outside tap) ── */}
+      {anyOpen && (
+        <Pressable style={[styles.dismissOverlay, { width, height }]} onPress={dismissAll} />
+      )}
+
+      {/* ── Glass nav bar ────────────────────────────────────────────────── */}
+      <View style={[styles.navBar, { borderBottomColor: p.navBorder }]}>
+        {/* Glass background — clipped separately so dropdown can overflow */}
+        <View style={[styles.navBarGlass, { borderBottomColor: p.navBorder }]}>
+          <BlurView
+            intensity={isDark ? 52 : 40}
+            tint={isDark ? 'dark' : 'light'}
+            style={StyleSheet.absoluteFillObject}
+          />
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: p.navBg }]} />
         </View>
-      </View>
 
-      {/* Profile trigger + dropdown */}
-      <View style={styles.profileMenuContainer}>
-        <TouchableOpacity
-          style={[
-            styles.profileTrigger,
-            { backgroundColor: palette.triggerBg, borderColor: palette.triggerBorder },
-          ]}
-          onPress={() => setMenuVisible((prev) => !prev)}
-          activeOpacity={0.85}
-        >
-          <View style={[styles.avatar, { backgroundColor: palette.avatarBg }]}>
-            <Text style={[styles.avatarText, { color: palette.avatarText }]}>
-              {triggerInitials}
-            </Text>
+        {/* Left: Airs wordmark + brand mark + byline */}
+        <View style={styles.logoArea}>
+          <View style={styles.logoBrand}>
+            {/* Wordmark row: "Airs" SVG + mark */}
+            <View style={styles.logoMarkRow}>
+              <ExpoImage
+                source={wordmarkSource}
+                style={isMobile ? styles.wordmarkMobile : styles.wordmark}
+                contentFit='contain'
+              />
+              <AirsBrandMark
+                size={isMobile ? 28 : 34}
+                fillColor={brandMarkFill}
+                cutoutColor={brandMarkCutout}
+              />
+            </View>
+            {/* Byline: "By [Alternun logo]" + subtitle on desktop */}
+            <View style={styles.bylineRow}>
+              <Text style={[styles.bylineBy, { color: p.pillSub }]}>{t('labels.by')}</Text>
+              <ExpoImage source={ALTERNUN_LOGO} style={styles.bylineLogo} contentFit='contain' />
+              {!isMobile && (
+                <Text style={[styles.bylineSubtitle, { color: p.pillSub }]} numberOfLines={1}>
+                  Alternun Impact & Reputation Score
+                </Text>
+              )}
+            </View>
           </View>
-          {signedIn ? (
-            <Text style={[styles.profileName, { color: palette.profileName }]} numberOfLines={1}>
-              {profileName}
-            </Text>
-          ) : null}
-          <ChevronDown size={14} color={palette.chevron} />
-        </TouchableOpacity>
+        </View>
 
-        {menuVisible ? (
-          <View
-            style={[
-              styles.profileDropdown,
-              { backgroundColor: palette.dropdownBg, borderColor: palette.dropdownBorder },
-            ]}
-          >
-            {/* Header: name + email + auth method */}
-            {signedIn && (userEmail ?? authMethodLabel) ? (
-              <View style={[styles.dropdownHeader, { borderBottomColor: palette.dropdownDivider }]}>
-                <View style={styles.dropdownHeaderTop}>
-                  <Text
-                    style={[styles.dropdownHeaderName, { color: palette.dropdownText }]}
-                    numberOfLines={1}
-                  >
+        {/* Right: profile pill (notification badge inside) */}
+        <View style={styles.rightArea}>
+          {/* ── Profile trigger pill ────────────────────────────────────── */}
+          <View style={styles.profileContainer}>
+            <TouchableOpacity
+              style={[styles.profilePill, { backgroundColor: p.pillBg, borderColor: p.pillBorder }]}
+              onPress={toggleMenu}
+              activeOpacity={0.85}
+            >
+              {/* Avatar */}
+              <View style={[styles.avatar, { backgroundColor: p.avatarBg }]}>
+                {signedIn ? (
+                  <Text style={[styles.avatarText, { color: p.avatarText }]}>{initials}</Text>
+                ) : (
+                  <AirsBrandMark
+                    size={13}
+                    fillColor={brandMarkFill}
+                    cutoutColor={brandMarkCutout}
+                  />
+                )}
+              </View>
+
+              {/* Name + score */}
+              {signedIn && (
+                <View style={styles.nameBlock}>
+                  <Text style={[styles.pillName, { color: p.pillText }]} numberOfLines={1}>
                     {profileName}
                   </Text>
-                  {authMethodLabel ? (
-                    <Text
-                      style={[styles.dropdownHeaderAuthMethod, { color: palette.authMethod }]}
-                      numberOfLines={1}
-                    >
-                      {authMethodLabel}
+                  {airsScore != null && (
+                    <Text style={[styles.pillScore, { color: p.scoreText }]} numberOfLines={1}>
+                      {airsScore.toLocaleString()} Airs
                     </Text>
-                  ) : null}
+                  )}
                 </View>
-                {userEmail ? (
-                  <Text
-                    style={[styles.dropdownHeaderEmail, { color: palette.headerEmail }]}
-                    numberOfLines={1}
-                  >
-                    {userEmail}
-                  </Text>
-                ) : null}
+              )}
 
-                {/* Wallet row — directly below email */}
-                {walletConnected ? (
-                  <View
-                    style={[
-                      styles.walletRow,
-                      {
-                        backgroundColor: palette.walletRowBg,
-                        borderColor: palette.walletRowBorder,
-                      },
-                    ]}
-                  >
-                    <View style={styles.walletDot} />
-                    <Text
-                      style={[styles.walletAddress, { color: palette.walletRowText }]}
-                      numberOfLines={1}
-                    >
-                      {truncatedAddress || 'Wallet connected'}
-                    </Text>
+              {/* Bell + count badge */}
+              <TouchableOpacity
+                style={[
+                  styles.notifBadge,
+                  { backgroundColor: unreadCount > 0 ? p.badgeBg : 'transparent' },
+                ]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  toggleNotif();
+                }}
+                hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+              >
+                <BellIcon size={12} color={unreadCount > 0 ? p.badgeText : p.chevron} />
+                {unreadCount > 0 && (
+                  <Text style={[styles.notifBadgeText, { color: p.badgeText }]}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              {/* Dropdown chevron — flips on open/close */}
+              {menuVisible ? (
+                <ChevronUpIcon size={14} color={p.accent} />
+              ) : (
+                <ChevronDownIcon size={14} color={p.chevron} />
+              )}
+            </TouchableOpacity>
+
+            {/* ── Profile + Nav dropdown ─────────────────────────────────── */}
+            {menuVisible && (
+              <View
+                style={[styles.dropdown, { backgroundColor: p.dropBg, borderColor: p.dropBorder }]}
+              >
+                {/* User header */}
+                {signedIn && (
+                  <View style={[styles.dropHeader, { borderBottomColor: p.dropDivider }]}>
+                    <View style={[styles.dropAvatar, { backgroundColor: p.avatarBg }]}>
+                      <Text style={[styles.dropAvatarText, { color: p.avatarText }]}>
+                        {initials}
+                      </Text>
+                    </View>
+                    <View style={styles.dropHeaderInfo}>
+                      <Text
+                        style={[styles.dropHeaderName, { color: p.dropText }]}
+                        numberOfLines={1}
+                      >
+                        {profileName}
+                      </Text>
+                      {userEmail ? (
+                        <Text
+                          style={[styles.dropHeaderEmail, { color: p.dropSub }]}
+                          numberOfLines={1}
+                        >
+                          {userEmail}
+                        </Text>
+                      ) : null}
+                      {airsScore != null && (
+                        <View style={[styles.dropScorePill, { backgroundColor: p.navActive }]}>
+                          <Text style={[styles.dropScoreText, { color: p.accent }]}>
+                            {airsScore.toLocaleString()} Airs
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
-                ) : (
+                )}
+
+                {/* Sign in */}
+                {!signedIn && (
                   <TouchableOpacity
-                    style={[styles.linkWalletRow, { backgroundColor: palette.linkWalletBg }]}
+                    style={[styles.navItem, { backgroundColor: 'transparent' }]}
                     onPress={() => {
                       setMenuVisible(false);
-                      onConnectWallet();
+                      onSignIn();
                     }}
                     activeOpacity={0.8}
                   >
-                    <Wallet size={11} color={palette.linkWalletText} />
-                    <Text style={[styles.linkWalletText, { color: palette.linkWalletText }]}>
-                      Link wallet
+                    <LogInIcon size={15} color={p.accent} />
+                    <Text style={[styles.navItemText, { color: p.dropText }]}>
+                      {t('labels.signIn')}
                     </Text>
-                    <ExternalLink size={10} color={palette.linkWalletText} />
+                  </TouchableOpacity>
+                )}
+
+                {/* Nav items */}
+                <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
+                  {NAV_SECTIONS.map((section) => {
+                    const isActive = activeSection === section.key;
+                    const IconComp = section.icon;
+                    return (
+                      <TouchableOpacity
+                        key={section.key}
+                        style={[
+                          styles.navItem,
+                          {
+                            backgroundColor: isActive ? p.navActive : 'transparent',
+                            borderWidth: isActive ? 1 : 0,
+                            borderColor: isActive ? p.navActiveBorder : 'transparent',
+                          },
+                        ]}
+                        onPress={() => {
+                          setMenuVisible(false);
+                          if (section.key === 'profile') {
+                            onOpenProfile();
+                            return;
+                          }
+                          if (section.key === 'wallet') {
+                            onConnectWallet();
+                            return;
+                          }
+                          onNavigate?.(section.key);
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <IconComp size={15} color={isActive ? p.navActiveText : p.iconIdle} />
+                        <Text
+                          style={[
+                            styles.navItemText,
+                            { color: isActive ? p.navActiveText : p.dropText },
+                            isActive && styles.navItemTextActive,
+                          ]}
+                        >
+                          {section.label}
+                        </Text>
+                        {isActive && (
+                          <View style={[styles.activeIndicator, { backgroundColor: p.accent }]} />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                {/* Settings expandable */}
+                <TouchableOpacity
+                  style={[styles.navItem, { backgroundColor: 'transparent' }]}
+                  onPress={() => setSettingsExpanded((v) => !v)}
+                  activeOpacity={0.8}
+                >
+                  <SettingsIcon size={15} color={p.iconIdle} />
+                  <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                    {t('labels.settings')}
+                  </Text>
+                  {settingsExpanded ? (
+                    <ChevronDownIcon size={13} color={p.chevron} />
+                  ) : (
+                    <ChevronRightIcon size={13} color={p.chevron} />
+                  )}
+                </TouchableOpacity>
+
+                {settingsExpanded && (
+                  <>
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={onCycleLanguage}
+                      activeOpacity={0.8}
+                    >
+                      <LanguagesIcon size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        {t('labels.language')}
+                      </Text>
+                      <Text style={[styles.navItemValue, { color: p.accent }]}>
+                        {getLocaleLabel(language, language)}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={onToggleTheme}
+                      activeOpacity={0.8}
+                    >
+                      <ThemeIconComp size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        {t('labels.theme')}
+                      </Text>
+                      <Text style={[styles.navItemValue, { color: p.accent }]}>{themeLabel}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={() => onCycleMotionLevel?.()}
+                      activeOpacity={0.8}
+                    >
+                      <ZapIcon size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        Animación
+                      </Text>
+                      <Text style={[styles.navItemValue, { color: p.accent }]}>
+                        {motionLevel === 'full' ? 'Full' : motionLevel === 'low' ? 'Low' : 'Off'}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={() => {
+                        setMenuVisible(false);
+                        onOpenSettings();
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <SettingsIcon size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText }]}>
+                        {t('navigation.moreSettings')}
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                {/* Sign out */}
+                {signedIn && (
+                  <TouchableOpacity
+                    style={[styles.navItem, { backgroundColor: p.dangerBg }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      onSignOut();
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <LogOutIcon size={15} color={p.danger} />
+                    <Text style={[styles.navItemText, { color: p.danger }]}>Sign Out</Text>
                   </TouchableOpacity>
                 )}
               </View>
-            ) : null}
-
-            {/* Sign in */}
-            {!signedIn ? (
-              <TouchableOpacity
-                style={[styles.dropdownItem, { backgroundColor: palette.dropdownItemBg }]}
-                onPress={() => {
-                  setMenuVisible(false);
-                  onSignIn();
-                }}
-                activeOpacity={0.8}
-              >
-                <LogIn size={14} color={iconColor} />
-                <Text style={[styles.dropdownItemText, { color: palette.dropdownText }]}>
-                  {t('labels.signIn')}
-                </Text>
-              </TouchableOpacity>
-            ) : null}
-
-            {/* Profile */}
-            {signedIn ? (
-              <TouchableOpacity
-                style={[styles.dropdownItem, { backgroundColor: palette.dropdownItemBg }]}
-                onPress={() => {
-                  setMenuVisible(false);
-                  onOpenProfile();
-                }}
-                activeOpacity={0.8}
-              >
-                <CircleUserRound size={14} color={iconColor} />
-                <Text style={[styles.dropdownItemText, { color: palette.dropdownText }]}>
-                  Profile
-                </Text>
-              </TouchableOpacity>
-            ) : null}
-
-            {/* Settings (expandable) */}
-            <TouchableOpacity
-              style={[styles.dropdownItem, { backgroundColor: palette.dropdownItemBg }]}
-              onPress={() => {
-                setSettingsExpanded((prev) => !prev);
-              }}
-              activeOpacity={0.8}
-            >
-              <View style={styles.dropdownItemSplit}>
-                <View style={styles.dropdownItemLeft}>
-                  <Settings size={14} color={iconColor} />
-                  <Text style={[styles.dropdownItemText, { color: palette.dropdownText }]}>
-                    {t('labels.settings')}
-                  </Text>
-                </View>
-                <SettingsChevron size={14} color={palette.chevron} />
-              </View>
-            </TouchableOpacity>
-
-            {settingsExpanded ? (
-              <>
-                <TouchableOpacity
-                  style={[styles.dropdownSubItem, { backgroundColor: palette.dropdownItemBg }]}
-                  onPress={() => {
-                    onCycleLanguage();
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.dropdownItemSplit}>
-                    <View style={styles.dropdownItemLeft}>
-                      <Languages size={14} color={iconColor} />
-                      <Text style={[styles.dropdownItemText, { color: palette.dropdownText }]}>
-                        {t('labels.language')}
-                      </Text>
-                    </View>
-                    <Text style={[styles.dropdownItemValue, { color: secondaryColor }]}>
-                      {getLocaleLabel(language, language)}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.dropdownSubItem, { backgroundColor: palette.dropdownItemBg }]}
-                  onPress={() => {
-                    onToggleTheme();
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.dropdownItemSplit}>
-                    <View style={styles.dropdownItemLeft}>
-                      <ThemeIcon size={14} color={iconColor} />
-                      <Text style={[styles.dropdownItemText, { color: palette.dropdownText }]}>
-                        {t('labels.theme')}
-                      </Text>
-                    </View>
-                    <Text style={[styles.dropdownItemValue, { color: secondaryColor }]}>
-                      {themeLabel}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.dropdownSubItem, { backgroundColor: palette.dropdownItemBg }]}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    setSettingsExpanded(false);
-                    onOpenSettings();
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.dropdownItemLeft}>
-                    <Settings size={14} color={iconColor} />
-                    <Text style={[styles.dropdownItemText, { color: palette.dropdownText }]}>
-                      {t('navigation.moreSettings')}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </>
-            ) : null}
-
-            {/* Sign out */}
-            {signedIn ? (
-              <TouchableOpacity
-                style={[styles.dropdownItem, styles.dropdownItemDanger]}
-                onPress={() => {
-                  setMenuVisible(false);
-                  onSignOut();
-                }}
-                activeOpacity={0.8}
-              >
-                <LogOut size={14} color='#f87171' />
-                <Text style={styles.dropdownItemTextDanger}>Sign Out</Text>
-              </TouchableOpacity>
-            ) : null}
+            )}
           </View>
-        ) : null}
+        </View>
       </View>
+
+      {/* ── Notification dropdown (portal-like, outside nav bar) ─────────── */}
+      {notifVisible && (
+        <View style={styles.notifDropdownWrapper}>
+          <NotificationDropdown
+            notifications={notifications}
+            isDark={isDark}
+            onMarkAllRead={() => onMarkAllNotificationsRead?.()}
+            onDismiss={(id) => onDismissNotification?.(id)}
+            onClose={() => setNotifVisible(false)}
+          />
+        </View>
+      )}
     </View>
   );
 }
 
-const styles = createTypographyStyles({
-  nav: {
+// ── Styles ────────────────────────────────────────────────────────────────────
+const styles = StyleSheet.create({
+  wrapper: {
+    position: 'relative',
+    zIndex: 1000,
+  },
+  dismissOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    zIndex: 990,
+  },
+  navBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    zIndex: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    // NO overflow: 'hidden' here — dropdown must render beyond these bounds
+    zIndex: 1100,
+    position: 'relative',
   },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  // Separate clipped layer for blur + tint so it doesn't clip the dropdown
+  navBarGlass: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+  },
+  logoArea: {
     flex: 1,
     minWidth: 0,
-    marginRight: 12,
+    justifyContent: 'center',
   },
-  brandCopy: {
-    gap: 1,
+  logoBrand: {
+    gap: 2,
+  },
+  logoMarkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  wordmark: {
+    width: 72,
+    height: 26,
+  },
+  wordmarkMobile: {
+    width: 52,
+    height: 20,
+  },
+  bylineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingLeft: 2,
+  },
+  bylineBy: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.1,
+  },
+  bylineLogo: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+  },
+  bylineSubtitle: {
+    fontSize: 10,
+    fontWeight: '500',
+    letterSpacing: 0.05,
     flexShrink: 1,
   },
-  wordmarkImage: {
-    width: 64,
-    height: 22,
-  },
-  logoCaption: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.08,
-    flexShrink: 1,
-  },
-  profileMenuContainer: {
-    position: 'relative',
-    flexShrink: 0,
-  },
-  profileTrigger: {
+  rightArea: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flexShrink: 0,
+  },
+
+  // ── Profile pill ────────────────────────────────────────────────────────
+  profileContainer: {
+    position: 'relative',
+  },
+  profilePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
     borderWidth: 1,
-    borderRadius: 24,
-    paddingVertical: 6,
-    paddingHorizontal: 7,
+    borderRadius: 999,
+    paddingVertical: 5,
+    paddingLeft: 5,
+    paddingRight: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
   },
   avatar: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '800',
   },
-  profileName: {
+  nameBlock: {
+    gap: 1,
+    maxWidth: 110,
+  },
+  pillName: {
     fontSize: 12,
     fontWeight: '700',
-    maxWidth: 94,
+    lineHeight: 15,
   },
-  profileDropdown: {
-    position: 'absolute',
-    top: 44,
-    right: 0,
-    width: 240,
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: 8,
-    gap: 4,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 18,
-    elevation: 8,
-    zIndex: 100,
-  },
-  dropdownHeader: {
-    borderBottomWidth: 1,
-    paddingBottom: 10,
-    marginBottom: 2,
-    gap: 3,
-  },
-  dropdownHeaderTop: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  dropdownHeaderName: {
-    flex: 1,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  dropdownHeaderAuthMethod: {
-    fontSize: 9,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  dropdownHeaderEmail: {
+  pillScore: {
     fontSize: 10,
+    fontWeight: '600',
+    lineHeight: 13,
   },
-  walletRow: {
+  notifBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 6,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
+    gap: 3,
+    borderRadius: 999,
+    minWidth: 20,
+    height: 22,
+    justifyContent: 'center',
+    paddingHorizontal: 7,
   },
-  walletDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#1ccba1',
+  notifBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    lineHeight: 13,
+  },
+
+  // ── Dropdown ────────────────────────────────────────────────────────────
+  dropdown: {
+    position: 'absolute',
+    top: 46,
+    right: 0,
+    width: 236,
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    gap: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.5,
+    shadowRadius: 24,
+    elevation: 14,
+    zIndex: 1200,
+  },
+  dropHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    paddingHorizontal: 8,
+    paddingTop: 8,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    marginBottom: 4,
+  },
+  dropAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
     flexShrink: 0,
   },
-  walletAddress: {
-    fontSize: 11,
-    fontWeight: '600',
-    fontFamily: 'monospace',
+  dropAvatarText: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  dropHeaderInfo: {
     flex: 1,
+    gap: 3,
   },
-  linkWalletRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 6,
-    borderRadius: 8,
+  dropHeaderName: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  dropHeaderEmail: {
+    fontSize: 10,
+  },
+  dropScorePill: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
     paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingVertical: 2,
+    marginTop: 2,
   },
-  linkWalletText: {
-    fontSize: 11,
-    fontWeight: '600',
+  dropScoreText: {
+    fontSize: 10,
+    fontWeight: '700',
   },
-  dropdownItem: {
+  navSectionGroup: {
+    borderBottomWidth: 1,
+    paddingBottom: 4,
+    marginBottom: 2,
+  },
+  navItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
     paddingHorizontal: 10,
     paddingVertical: 9,
     borderRadius: 10,
+    position: 'relative',
   },
-  dropdownSubItem: {
-    marginLeft: 10,
+  navItemText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  navItemTextActive: {
+    fontWeight: '700',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    right: 10,
+    width: 5,
+    height: 5,
+    borderRadius: 999,
+  },
+  navSubItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
     paddingHorizontal: 10,
-    paddingVertical: 9,
+    paddingVertical: 8,
     borderRadius: 10,
+    marginLeft: 8,
   },
-  dropdownItemSplit: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  dropdownItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  dropdownItemDanger: {
-    backgroundColor: 'rgba(248,113,113,0.08)',
-  },
-  dropdownItemText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  dropdownItemValue: {
+  navItemValue: {
     fontSize: 11,
     fontWeight: '700',
   },
-  dropdownItemTextDanger: {
-    color: '#fca5a5',
-    fontSize: 12,
-    fontWeight: '700',
+
+  // ── Notification dropdown wrapper ───────────────────────────────────────
+  notifDropdownWrapper: {
+    position: 'absolute',
+    top: 52,
+    right: 14,
+    zIndex: 1300,
   },
 });
