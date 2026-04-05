@@ -1,12 +1,11 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { AppAuthProvider } from '../components/auth/AppAuthProvider';
-import AppInfoFooter from '../components/common/AppInfoFooter';
 import {
   AppPreferencesProvider,
   useAppPreferences,
 } from '../components/settings/AppPreferencesProvider';
 import { useFonts } from 'expo-font';
-import { Stack, usePathname } from 'expo-router';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -40,13 +39,6 @@ export default function RootLayout(): any {
 function RootApp(): any {
   const { themeMode } = useAppPreferences();
   const navigationTheme = themeMode === 'dark' ? DarkTheme : DefaultTheme;
-  const pathname = usePathname();
-  const showLayoutFooter =
-    pathname !== '/auth' &&
-    pathname !== '/auth-relay' &&
-    pathname !== '/auth/callback' &&
-    pathname !== '/';
-
   return (
     <AppAuthProvider>
       <ThemeProvider value={navigationTheme}>
@@ -98,7 +90,6 @@ function RootApp(): any {
               />
             </Stack>
           </View>
-          {showLayoutFooter && <AppInfoFooter />}
         </View>
         <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>
@@ -109,7 +100,6 @@ function RootApp(): any {
 const styles = StyleSheet.create({
   appShell: {
     flex: 1,
-    flexDirection: 'column',
   },
   stackContainer: {
     flex: 1,

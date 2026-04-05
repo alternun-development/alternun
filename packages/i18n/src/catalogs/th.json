@@ -1,6 +1,7 @@
 {
   "shared": {
     "labels": {
+      "backToTop": "ด้านบน",
       "by": "โดย",
       "dark": "มืด",
       "language": "ภาษา",
@@ -114,6 +115,9 @@
         "passwordRequired": "จำเป็นต้องกรอกรหัสผ่าน",
         "validEmail": "กรุณากรอกอีเมลที่ถูกต้อง"
       }
+    },
+    "dashboard": {
+      "backToTop": "ด้านบน"
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. สงวนลิขสิทธิ์ทั้งหมด.",
