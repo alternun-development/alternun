@@ -9,7 +9,8 @@
       "signIn": "Iniciar sesion",
       "theme": "Tema",
       "yes": "Si",
-      "no": "No"
+      "no": "No",
+      "backToTop": "Inicio"
     },
     "languageNames": {
       "en": "Ingles",
@@ -177,6 +178,9 @@
           "description": "Conecta mediante codigo QR"
         }
       }
+    },
+    "dashboard": {
+      "backToTop": "Inicio"
     }
   },
   "web": {

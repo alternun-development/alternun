@@ -9,7 +9,8 @@
       "signIn": "เข้าสู่ระบบ",
       "theme": "ธีม",
       "yes": "ใช่",
-      "no": "ไม่"
+      "no": "ไม่",
+      "backToTop": "ด้านบน"
     },
     "languageNames": {
       "en": "อังกฤษ",
@@ -177,6 +178,9 @@
           "description": "เชื่อมต่อผ่าน QR code"
         }
       }
+    },
+    "dashboard": {
+      "backToTop": "ด้านบน"
     }
   },
   "web": {
