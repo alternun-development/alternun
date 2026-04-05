@@ -243,6 +243,7 @@ On the Authentik side, the expected direct-source configuration is:
 - Google `enrollment_flow = default-source-enrollment`
 - `default-source-authentication` must include `default-source-authentication-login`
 - `default-source-enrollment` must end with `default-source-enrollment-login`
+- Google enrollment should also bind a username-mapping policy on `default-source-enrollment-prompt` so the upstream Google email becomes the username automatically on first enrollment
 
 If those login stages are missing, Google can complete upstream auth but fail to establish the Authentik-side user session, which shows up as loops or repeated Authentik/Google handoffs.
 
@@ -256,6 +257,7 @@ The current architecture reduces Authentik friction by keeping the browser path 
 - Authentik uses direct source login by default
 - browser callback finalization happens on `/auth/callback`
 - AIRS restores the intended destination after callback completion
+- first-time Google enrollments should auto-fill the username from the upstream Google email instead of stopping on the Authentik username screen
 
 That means the normal web path should be:
 

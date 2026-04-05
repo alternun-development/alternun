@@ -146,6 +146,14 @@ return True
 """.strip()
 
 
+def build_google_source_username_mapping_expression():
+    return """
+email = request.context["prompt_data"]["email"]
+request.context["prompt_data"]["username"] = email
+return False
+""".strip()
+
+
 def build_group_access_expression(application_name: str, allowed_groups):
     encoded_groups = json.dumps(sorted(set(group for group in allowed_groups if group)))
     return f"""
@@ -233,6 +241,17 @@ def prune_flow_stage_bindings(flow, stage_model):
     return removed_count
 
 
+def find_flow_stage_binding(flow, stage_name: str):
+    if not flow:
+        return None
+
+    return (
+        FlowStageBinding.objects.filter(target=flow, stage__name=stage_name)
+        .order_by("order")
+        .first()
+    )
+
+
 def ensure_named_user_login_stage(name: str):
     stage, created = UserLoginStage.objects.get_or_create(name=name)
     return stage, created
@@ -266,6 +285,36 @@ def ensure_direct_source_login_bindings(authentication_flow, enrollment_flow):
             changed = True
 
     return changed
+
+
+def ensure_google_source_username_mapping_binding(source_enrollment_flow):
+    if not source_enrollment_flow:
+        return "missing_source_enrollment_flow"
+
+    prompt_stage_binding = find_flow_stage_binding(
+        source_enrollment_flow,
+        "default-source-enrollment-prompt",
+    )
+    if not prompt_stage_binding:
+        return "missing_prompt_stage_binding"
+
+    username_mapping_policy, policy_created, policy_changed = upsert_expression_policy(
+        "alternun-google-source-username-mapping",
+        build_google_source_username_mapping_expression(),
+    )
+    # Keep this ahead of authentik's built-in if-username policy so the prompt
+    # stage sees the upstream Google email as the username and auto-continues.
+    policy_binding_created, policy_binding_changed = ensure_policy_binding(
+        prompt_stage_binding,
+        username_mapping_policy,
+        order=-10,
+    )
+
+    if policy_created or policy_binding_created:
+        return "created"
+    if policy_changed or policy_binding_changed:
+        return "updated"
+    return "unchanged"
 
 
 def delete_source_stage_flows(source, keep_slugs=None):
@@ -437,6 +486,7 @@ results = {
     "google_source": "skipped",
     "discord_source": "skipped",
     "google_source_flow": "skipped",
+    "google_source_username_mapping": "skipped",
     "discord_source_flow": "skipped",
     "mobile_oidc_provider": "skipped",
     "internal_domain_users": "skipped",
@@ -1119,6 +1169,12 @@ if google_client_id and google_client_secret:
     results["google_source_authentication_flow"] = (
         getattr(getattr(source, "authentication_flow", None), "slug", None)
     )
+    if google_login_flow_slug:
+        results["google_source_username_mapping"] = "disabled"
+    else:
+        results["google_source_username_mapping"] = ensure_google_source_username_mapping_binding(
+            source_enrollment_flow
+        )
 
     identification_stage = IdentificationStage.objects.filter(
         name="default-authentication-identification"
