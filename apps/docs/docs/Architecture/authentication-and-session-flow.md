@@ -172,6 +172,7 @@ Direct Authentik source login.
 
 - shortest reliable path
 - default for deployed bundles
+- current testnet and production mode
 
 ### `relay`
 
@@ -222,6 +223,59 @@ If these are unset, AIRS uses the direct source-login path.
 There is no hidden automatic custom Google starter flow assumption anymore.
 
 That matters because implicit source-stage flows were creating hard-to-debug loops and double handoffs between Authentik and Google.
+
+## Current Deployed State
+
+As of April 2026, the intended deployed AIRS web mode is:
+
+- `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`
+- `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`
+- `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` empty
+- `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` empty unless a custom starter flow is being tested deliberately
+
+On the Authentik side, the expected direct-source configuration is:
+
+- Google `authentication_flow = default-source-authentication`
+- Google `enrollment_flow = default-source-enrollment`
+- `default-source-authentication` must include `default-source-authentication-login`
+- `default-source-enrollment` must end with `default-source-enrollment-login`
+
+If those login stages are missing, Google can complete upstream auth but fail to establish the Authentik-side user session, which shows up as loops or repeated Authentik/Google handoffs.
+
+For deployed AIRS web, custom outer starter flows such as `alternun-google-login` are not the default operating mode.
+
+## Smoothing the Browser Flow
+
+The current architecture reduces Authentik friction by keeping the browser path short:
+
+- AIRS web starts from `/auth`
+- Authentik uses direct source login by default
+- browser callback finalization happens on `/auth/callback`
+- AIRS restores the intended destination after callback completion
+
+That means the normal web path should be:
+
+1. AIRS `/auth?next=...`
+2. Authentik source login
+3. Google or Discord
+4. Authentik callback
+5. AIRS `/auth/callback`
+6. final AIRS route
+
+If the browser bounces through additional Authentik flow screens before returning to AIRS, treat that as a regression and inspect the identity bootstrap state first.
+
+## Known Failure Modes
+
+These are the concrete regressions that have already happened in this repo:
+
+- direct-source mode with `default-source-authentication` missing `UserLoginStage`
+- custom outer source-stage flow enabled in Authentik while the AIRS app bundle is already in direct-source mode
+- AIRS bundle built from stale shared package output rather than current auth package source
+- web callback state handled inside UI components instead of a dedicated callback route
+- local loopback redirect URIs leaking into deployed web assumptions
+- hidden Authentik fallback behavior caused by `hybrid` social mode or stale emitted JS defaults
+
+When debugging, verify the live browser bundle and the live Authentik source configuration together. Checking only env files is not enough.
 
 ## Configuration Contract
 
