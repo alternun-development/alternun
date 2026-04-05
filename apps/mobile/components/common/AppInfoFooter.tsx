@@ -107,7 +107,7 @@ export default function AppInfoFooter(): React.JSX.Element {
         bottomBar: 'rgba(255,255,255,0.2)',
       };
 
-  const shellPadding = isWide ? 20 : isMobile ? 12 : 20;
+  const shellPadding = isWide ? 12 : isMobile ? 8 : 12;
   const brandMarkSize = isWide ? 36 : isMobile ? 28 : 32;
   const wordmarkWidth = isWide ? 90 : isMobile ? 68 : 82;
   const wordmarkHeight = isWide ? 30 : isMobile ? 22 : 26;

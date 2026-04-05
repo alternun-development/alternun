@@ -18,6 +18,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { ChevronsUp, type LucideProps } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 
 const BackIcon = ChevronsUp as React.FC<LucideProps>;
@@ -31,6 +32,8 @@ import { ThemeProvider, SectionHeaderSkeleton } from '@alternun/ui';
 
 import TopNav from './TopNav';
 import HeroStats from './HeroStats';
+import ActivityFeed from './ActivityFeed';
+import DashboardSummaryCards from './DashboardSummaryCards';
 import WalletConnectModal from './WalletConnectModal';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { ToastSystem, type ToastItem, type ToastType } from '@alternun/ui';
@@ -371,7 +374,9 @@ export default function Dashboard({
   const scrollRef = useRef<ScrollView>(null);
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
-  const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
+  const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel } =
+    useAppPreferences();
+  const router = useRouter();
   const isDark = themeMode === 'dark';
   const { t } = useAppTranslation('mobile');
 
@@ -524,6 +529,11 @@ export default function Dashboard({
                 </View>
               ) : null}
 
+              {/* ── Recent Activity + Summary Cards ─────────────────────── */}
+              <SectionDivider isDark={isDark} />
+              <ActivityFeed isDark={isDark} />
+              <DashboardSummaryCards isDark={isDark} />
+
               {sectionStates.map(({ section, accessState }) => {
                 return (
                   <React.Fragment key={section.key}>
@@ -619,18 +629,32 @@ export default function Dashboard({
               airsScore={userStats?.totalAIRS ?? null}
               onSignIn={handleRequireSignIn}
               onConnectWallet={handleOpenWalletConnect}
+              motionLevel={motionLevel}
               onToggleTheme={toggleThemeMode}
               onCycleLanguage={cycleLanguage}
+              onCycleMotionLevel={cycleMotionLevel}
               onOpenProfile={handleOpenProfile}
               onOpenSettings={handleOpenSettings}
               onSignOut={() => {
                 void handleSignOut();
               }}
               onNavigate={(key) => {
-                const ref = scrollRef.current;
-                if (!ref) return;
                 if (key === 'dashboard') {
-                  ref.scrollTo({ y: 0, animated: true });
+                  scrollRef.current?.scrollTo({ y: 0, animated: true });
+                } else if (key === 'compensation') {
+                  router.push('/compensaciones');
+                } else if (key === 'portfolio') {
+                  router.push('/mis-atn');
+                } else if (key === 'proyectos') {
+                  router.push('/proyectos');
+                } else if (key === 'beneficios') {
+                  router.push('/beneficios');
+                } else if (key === 'ranking') {
+                  router.push('/ranking');
+                } else if (key === 'wallet') {
+                  router.push('/wallet');
+                } else if (key === 'profile') {
+                  router.push('/profile');
                 }
               }}
             />

@@ -157,13 +157,13 @@ export function HeroPanel({
             toValue: 1,
             duration,
             easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
           Animated.timing(val, {
             toValue: 0,
             duration,
             easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
         ])
       );

@@ -51,7 +51,7 @@ function FloatingParticle({
       toValue: 1,
       duration,
       easing: Easing.linear,
-      useNativeDriver: true,
+      useNativeDriver: false,
     });
 
     anim.start(({ finished }) => {

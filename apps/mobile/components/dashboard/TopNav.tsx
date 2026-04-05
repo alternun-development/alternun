@@ -165,17 +165,17 @@ export default function TopNav({
     ? {
         navBg: 'rgba(5,5,22,0.55)',
         navBorder: 'rgba(255,255,255,0.10)',
-        pillBg: '#0d1327',
-        pillBorder: 'rgba(255,255,255,0.14)',
-        pillText: '#e8e8ff',
-        pillSub: 'rgba(232,232,255,0.60)',
-        avatarBg: '#1ccba1',
-        avatarText: '#050510',
-        scoreText: '#1ee6b5',
-        chevron: 'rgba(232,232,255,0.45)',
+        pillBg: '#1EE6B5',
+        pillBorder: 'transparent',
+        pillText: '#064A4B',
+        pillSub: 'rgba(232,232,255,0.50)',
+        avatarBg: 'rgba(6,74,75,0.20)',
+        avatarText: '#064A4B',
+        scoreText: 'rgba(6,74,75,0.80)',
+        chevron: '#064A4B',
         badgeBg: '#3b5bdb',
         badgeText: '#ffffff',
-        accent: '#1ccba1',
+        accent: '#1EE6B5',
         dropBg: '#0d1020',
         dropBorder: 'rgba(255,255,255,0.10)',
         dropDivider: 'rgba(255,255,255,0.07)',
@@ -183,7 +183,7 @@ export default function TopNav({
         dropSub: 'rgba(232,232,255,0.55)',
         navActive: 'rgba(28,203,161,0.14)',
         navActiveBorder: 'rgba(28,203,161,0.32)',
-        navActiveText: '#1ccba1',
+        navActiveText: '#1EE6B5',
         iconIdle: 'rgba(232,232,255,0.55)',
         danger: '#f87171',
         dangerBg: 'rgba(248,113,113,0.09)',
@@ -191,14 +191,14 @@ export default function TopNav({
     : {
         navBg: 'rgba(255,255,255,0.55)',
         navBorder: 'rgba(15,23,42,0.12)',
-        pillBg: '#ffffff',
-        pillBorder: 'rgba(15,23,42,0.16)',
-        pillText: '#0f172a',
-        pillSub: '#475569',
-        avatarBg: '#0d9488',
-        avatarText: '#ffffff',
-        scoreText: '#0d9488',
-        chevron: '#94a3b8',
+        pillBg: '#064A4B',
+        pillBorder: 'transparent',
+        pillText: '#ffffff',
+        pillSub: '#64748b',
+        avatarBg: 'rgba(0,0,0,0.25)',
+        avatarText: '#1EE6B5',
+        scoreText: '#1EE6B5',
+        chevron: 'rgba(255,255,255,0.85)',
         badgeBg: '#3b5bdb',
         badgeText: '#ffffff',
         accent: '#0d9488',
@@ -323,11 +323,11 @@ export default function TopNav({
                 </View>
               )}
 
-              {/* Bell + count badge */}
+              {/* Notification badge */}
               <TouchableOpacity
                 style={[
                   styles.notifBadge,
-                  { backgroundColor: unreadCount > 0 ? p.badgeBg : 'transparent' },
+                  { backgroundColor: unreadCount > 0 ? p.badgeBg : 'rgba(255,255,255,0.18)' },
                 ]}
                 onPress={(e) => {
                   e.stopPropagation();
@@ -335,17 +335,18 @@ export default function TopNav({
                 }}
                 hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
               >
-                <BellIcon size={12} color={unreadCount > 0 ? p.badgeText : p.chevron} />
-                {unreadCount > 0 && (
+                {unreadCount > 0 ? (
                   <Text style={[styles.notifBadgeText, { color: p.badgeText }]}>
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </Text>
+                ) : (
+                  <BellIcon size={11} color='rgba(255,255,255,0.85)' />
                 )}
               </TouchableOpacity>
 
-              {/* Dropdown chevron — flips on open/close */}
+              {/* Dropdown chevron */}
               {menuVisible ? (
-                <ChevronUpIcon size={14} color={p.accent} />
+                <ChevronUpIcon size={14} color={p.chevron} />
               ) : (
                 <ChevronDownIcon size={14} color={p.chevron} />
               )}
@@ -663,11 +664,11 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingLeft: 5,
     paddingRight: 10,
-    shadowColor: '#000',
+    shadowColor: '#1EE6B5',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 4,
   },
   avatar: {
     width: 30,
