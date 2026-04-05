@@ -24,7 +24,6 @@ const TRACKED_BUILD_OUTPUT_PATHS = [
   'packages/email-templates/dist',
   'packages/i18n/dist',
   'packages/update/dist',
-  'packages/ui/dist',
 ];
 
 function printUsage() {

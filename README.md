@@ -267,6 +267,8 @@ Versioning is configured in `versioning.config.json`:
 - **UI Components**: @alternun/ui
 - **Features**: Native performance, Expo services
 
+`@alternun/ui` is consumed source-first inside the monorepo. `packages/ui/dist` is a local build artifact and is not versioned.
+
 ### Documentation (`apps/docs`)
 
 - **Framework**: Docusaurus 3.5+

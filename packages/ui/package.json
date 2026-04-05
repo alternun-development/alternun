@@ -10,8 +10,8 @@
     "clean": "rm -rf dist"
   },
   "devDependencies": {
-    "@types/react": "^18.2.6",
-    "@types/react-dom": "^18.2.4",
+    "@types/react": "^19.1.17",
+    "@types/react-dom": "^19.1.17",
     "@types/react-native": "^0.71.6",
     "typescript": "^5.0.4"
   },
