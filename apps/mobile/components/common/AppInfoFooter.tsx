@@ -1,8 +1,7 @@
 import { useAppTranslation } from '../i18n/useAppTranslation';
-import { BlurView } from 'expo-blur';
 import { Image as ExpoImage } from 'expo-image';
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Text, useWindowDimensions, View } from 'react-native';
 import { createTypographyStyles } from '../theme/typography';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { resolvePrimaryLinksForViewport } from './AppInfoFooter.links';
@@ -27,51 +26,37 @@ export default function AppInfoFooter(): React.JSX.Element {
 
   const palette = isDark
     ? {
-        shellBg: 'rgba(6, 18, 17, 0.62)',
-        shellBorder: 'rgba(142, 255, 223, 0.14)',
-        title: '#effff9',
-        text: 'rgba(239,255,249,0.82)',
-        muted: 'rgba(220,255,246,0.58)',
+        bg: '#050510',
+        border: 'rgba(28, 203, 161, 0.12)',
+        title: '#e8e8ff',
+        text: 'rgba(232, 232, 255, 0.7)',
+        muted: 'rgba(232, 232, 255, 0.5)',
       }
     : {
-        shellBg: 'rgba(250, 255, 253, 0.86)',
-        shellBorder: 'rgba(11, 90, 95, 0.12)',
-        title: '#0b2d31',
-        text: 'rgba(11,45,49,0.82)',
-        muted: 'rgba(11,45,49,0.54)',
+        bg: '#f9fafb',
+        border: 'rgba(15, 23, 42, 0.12)',
+        title: '#0f172a',
+        text: 'rgba(15, 45, 49, 0.7)',
+        muted: 'rgba(15, 45, 49, 0.5)',
       };
 
-  const shellRadius = isMobile ? 16 : 18;
-  const wordmarkWidth = isMobile ? 78 : 92;
-  const wordmarkHeight = isMobile ? 26 : 30;
+  const wordmarkWidth = isMobile ? 72 : 88;
+  const wordmarkHeight = isMobile ? 24 : 28;
 
   return (
     <View
       style={[
-        styles.outer,
-        { paddingHorizontal: isMobile ? 8 : 12, paddingBottom: isMobile ? 8 : 10 },
+        styles.footer,
+        {
+          backgroundColor: palette.bg,
+          borderTopColor: palette.border,
+        },
       ]}
     >
-      <View
-        style={[
-          styles.shell,
-          {
-            backgroundColor: palette.shellBg,
-            borderColor: palette.shellBorder,
-            borderRadius: shellRadius,
-            paddingHorizontal: isMobile ? 12 : 14,
-            paddingVertical: isMobile ? 10 : 11,
-          },
-        ]}
-      >
-        <BlurView
-          intensity={28}
-          tint={isDark ? 'dark' : 'light'}
-          style={[StyleSheet.absoluteFillObject, { borderRadius: shellRadius }]}
-        />
-
-        <View style={[styles.row, isMobile && styles.rowMobile]}>
-          <View style={styles.brandWrap}>
+      {/* Desktop layout: row */}
+      {!isMobile && (
+        <View style={styles.desktopRow}>
+          <View style={styles.leftSection}>
             <ExpoImage
               source={wordmarkSource}
               style={{ width: wordmarkWidth, height: wordmarkHeight }}
@@ -79,7 +64,7 @@ export default function AppInfoFooter(): React.JSX.Element {
             />
           </View>
 
-          <View style={[styles.linkRow, isMobile && styles.linkRowMobile]}>
+          <View style={styles.centerSection}>
             {primaryLinks.map((link) => (
               <FooterTextLink
                 key={link.labelKey}
@@ -91,68 +76,101 @@ export default function AppInfoFooter(): React.JSX.Element {
             ))}
           </View>
 
-          <View style={[styles.metaWrap, isMobile && styles.metaWrapMobile]}>
+          <View style={styles.rightSection}>
             <FooterCopyright color={palette.text} />
             <Text numberOfLines={1} style={[styles.versionText, { color: palette.muted }]}>
               v{versionMetadata.version}
             </Text>
           </View>
         </View>
-      </View>
+      )}
+
+      {/* Mobile layout: stacked */}
+      {isMobile && (
+        <View style={styles.mobileColumn}>
+          <View style={styles.mobileLogoSection}>
+            <ExpoImage
+              source={wordmarkSource}
+              style={{ width: wordmarkWidth, height: wordmarkHeight }}
+              contentFit='contain'
+            />
+          </View>
+
+          <View style={styles.mobileLinkSection}>
+            {primaryLinks.map((link) => (
+              <FooterTextLink
+                key={link.labelKey}
+                label={t(link.labelKey, undefined, link.fallbackLabel)}
+                url={link.url}
+                textColor={palette.title}
+                compact
+              />
+            ))}
+          </View>
+
+          <View style={styles.mobileMetaSection}>
+            <FooterCopyright color={palette.text} />
+            <Text numberOfLines={1} style={[styles.versionText, { color: palette.muted }]}>
+              v{versionMetadata.version}
+            </Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = createTypographyStyles({
-  outer: {
-    alignSelf: 'stretch',
-    minWidth: 0,
+  footer: {
+    width: '100%',
+    borderTopWidth: 1,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
   },
-  shell: {
-    overflow: 'hidden',
-    borderWidth: 1,
-    position: 'relative',
-  },
-  row: {
+
+  /* Desktop */
+  desktopRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  rowMobile: {
-    flexDirection: 'column',
     alignItems: 'flex-start',
-    gap: 8,
+    justifyContent: 'space-between',
+    gap: 32,
   },
-  brandWrap: {
-    justifyContent: 'center',
+  leftSection: {
+    minWidth: 100,
   },
-  linkRow: {
+  centerSection: {
+    flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-    flex: 1,
+    gap: 20,
   },
-  linkRowMobile: {
-    width: '100%',
-    justifyContent: 'flex-start',
-    gap: 10,
-    flex: 0,
-  },
-  metaWrap: {
+  rightSection: {
+    minWidth: 100,
     alignItems: 'flex-end',
-    gap: 2,
-    minWidth: 92,
+    gap: 4,
   },
-  metaWrapMobile: {
-    width: '100%',
+
+  /* Mobile */
+  mobileColumn: {
+    gap: 20,
+  },
+  mobileLogoSection: {
+    alignItems: 'flex-start',
+  },
+  mobileLinkSection: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minWidth: 0,
+    flexWrap: 'wrap',
+    gap: 16,
   },
+  mobileMetaSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
+
   versionText: {
     fontSize: 10,
     fontWeight: '600',

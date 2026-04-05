@@ -98,11 +98,7 @@ function RootApp(): any {
               />
             </Stack>
           </View>
-          {showLayoutFooter ? (
-            <View pointerEvents='box-none' style={styles.footerOverlay}>
-              <AppInfoFooter />
-            </View>
-          ) : null}
+          {showLayoutFooter && <AppInfoFooter />}
         </View>
         <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>
@@ -113,15 +109,9 @@ function RootApp(): any {
 const styles = StyleSheet.create({
   appShell: {
     flex: 1,
+    flexDirection: 'column',
   },
   stackContainer: {
     flex: 1,
-  },
-  footerOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
   },
 });
