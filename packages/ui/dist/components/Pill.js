@@ -51,17 +51,18 @@ function FilterPill(_a) {
                 : { backgroundColor: theme.cardBg, borderColor: theme.cardBorder },
             style,
         ]}>
-      <react_native_1.Text style={[
-            styles.filterText,
-            { color: active ? theme.accentText : theme.textSecondary },
-        ]}>
+      <react_native_1.Text style={[styles.filterText, { color: active ? theme.accentText : theme.textSecondary }]}>
         {label}
       </react_native_1.Text>
     </react_native_1.TouchableOpacity>);
 }
 function CountBadge(_a) {
     var count = _a.count, _b = _a.color, color = _b === void 0 ? colors_1.palette.teal : _b, style = _a.style, textStyle = _a.textStyle;
-    return (<react_native_1.View style={[styles.countBadge, { backgroundColor: "".concat(color, "22"), borderColor: "".concat(color, "44") }, style]}>
+    return (<react_native_1.View style={[
+            styles.countBadge,
+            { backgroundColor: "".concat(color, "22"), borderColor: "".concat(color, "44") },
+            style,
+        ]}>
       <react_native_1.Text style={[styles.countText, { color: color }, textStyle]}>{count}</react_native_1.Text>
     </react_native_1.View>);
 }

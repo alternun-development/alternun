@@ -64,7 +64,10 @@ function SkeletonLoader(_a) {
             { width: width, height: height, borderRadius: borderRadius, backgroundColor: theme.skeletonBase },
             style,
         ]}>
-      <react_native_1.Animated.View style={[react_native_1.StyleSheet.absoluteFillObject, { borderRadius: borderRadius, backgroundColor: highlight }]}/>
+      <react_native_1.Animated.View style={[
+            react_native_1.StyleSheet.absoluteFillObject,
+            { borderRadius: borderRadius, backgroundColor: highlight },
+        ]}/>
     </react_native_1.View>);
 }
 // ── Preset skeleton shapes ────────────────────────────────────────────────
