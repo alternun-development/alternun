@@ -5,7 +5,7 @@
 
 export const palette = {
   // Brand
-  teal: '#1ccba1',
+  teal: '#1EE6B5',
   tealDark: '#0d9488',
   tealLight: '#5bf6d0',
 
