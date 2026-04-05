@@ -2,7 +2,7 @@
   "expo": {
     "name": "test-tempo",
     "slug": "test-tempo",
-    "version": "1.0.13",
+    "version": "1.0.14",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
