@@ -1,3 +1,15 @@
+## [1.0.14](https://github.com/alternun-development/alternun/compare/v1.0.13...v1.0.14) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile:** DashboardSummaryCards ([041a8fe](https://github.com/alternun-development/alternun/commit/041a8fea72cf61fd293ce9a68416d7e71a9d7c46))
+
+## [1.0.14](https://github.com/alternun-development/alternun/compare/v1.0.13...v1.0.14) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile:** DashboardSummaryCards ([041a8fe](https://github.com/alternun-development/alternun/commit/041a8fea72cf61fd293ce9a68416d7e71a9d7c46))
+
 ## [1.0.13](https://github.com/alternun-development/alternun/compare/v1.0.12...v1.0.13) (2026-04-05)
 
 ### Bug Fixes
