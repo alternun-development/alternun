@@ -1,3 +1,15 @@
+## [1.0.10](https://github.com/alternun-development/alternun/compare/v1.0.9...v1.0.10) (2026-04-05)
+
+### Bug Fixes
+
+- restore direct source auth login stages ([9e746aa](https://github.com/alternun-development/alternun/commit/9e746aab1bbe48abbf0c69e2e149bef1c824dd99))
+
+## [1.0.10](https://github.com/alternun-development/alternun/compare/v1.0.9...v1.0.10) (2026-04-05)
+
+### Bug Fixes
+
+- restore direct source auth login stages ([9e746aa](https://github.com/alternun-development/alternun/commit/9e746aab1bbe48abbf0c69e2e149bef1c824dd99))
+
 ## [1.0.9](https://github.com/alternun-development/alternun/compare/v1.0.8...v1.0.9) (2026-04-05)
 
 ### Bug Fixes
