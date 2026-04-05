@@ -110,6 +110,7 @@ export interface IdentityLocalConfig {
       applicationName?: string;
       applicationSlug?: string;
       providerName?: string;
+      launchUrl?: string;
       /** Comma-separated list of allowed redirect URIs for the mobile OIDC provider. */
       redirectUrls?: string[];
       postLogoutRedirectUrls?: string[];
@@ -242,6 +243,7 @@ export interface IdentitySettings {
       applicationName: string;
       applicationSlug: string;
       providerName: string;
+      launchUrl: string;
       /** Allowed redirect URIs registered in the Authentik mobile OIDC provider. */
       redirectUrls: string[];
       postLogoutRedirectUrls: string[];
@@ -415,6 +417,11 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
   );
   const defaultApplicationLaunchUrl =
     explicitDefaultApplicationLaunchUrl || (adminOidcLocalDevUrl ? `${adminOidcLocalDevUrl}/` : '');
+  const explicitMobileOidcLaunchUrl = (
+    args.env.INFRA_IDENTITY_MOBILE_OIDC_LAUNCH_URL ??
+    localConfig?.integration?.mobileOidc?.launchUrl ??
+    ''
+  ).trim();
   const allowCustomProviderFlowSlugs =
     parseBoolean(args.env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS, false) ||
     parseBoolean(args.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS, false) ||
@@ -724,6 +731,7 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
           args.env.INFRA_MOBILE_OIDC_PROVIDER_NAME ??
           localConfig?.integration?.mobileOidc?.providerName ??
           IDENTITY_INFRA_DEFAULTS.integration.mobileOidc.providerName,
+        launchUrl: explicitMobileOidcLaunchUrl,
         redirectUrls: (() => {
           const explicit =
             args.env.INFRA_MOBILE_OIDC_REDIRECT_URLS?.split(',')

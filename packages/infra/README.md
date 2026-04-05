@@ -333,9 +333,10 @@ Important behavior:
 - production identity defaults to ALB + ACM, with the ALB terminating TLS and forwarding HTTPS to the instance
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
 - the Google source bootstrap binds a username-mapping policy to `default-source-enrollment-prompt`, so first-time Google enrollments reuse the upstream email as the username and skip the manual Authentik username screen
+- the `Alternun Mobile` Authentik application tile defaults to the stage-specific AIRS auth entrypoint (`/auth?next=/`) so the tile opens the app instead of the Authentik library
 - `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` keeps the mobile social login path on Authentik and disables Supabase fallback in the web bundle
 - in direct source mode, Authentik must keep `default-source-authentication-login` and `default-source-enrollment-login`; clearing those stages causes Google callback loops instead of dashboard redirects
-- local development can point the default internal app tile, the admin app tile/callbacks, and the mobile OIDC callbacks at localhost via `INFRA_IDENTITY_ADMIN_OIDC_LOCAL_DEV_URL` and `INFRA_MOBILE_OIDC_REDIRECT_URLS`
+- local development can point the default internal app tile, the admin app tile/callbacks, the mobile app tile launch URL, and the mobile OIDC callbacks at localhost via `INFRA_IDENTITY_ADMIN_OIDC_LOCAL_DEV_URL`, `INFRA_IDENTITY_MOBILE_OIDC_LAUNCH_URL`, and `INFRA_MOBILE_OIDC_REDIRECT_URLS`
 - when Supabase management token/project ref are provided, infra patches Supabase `external_keycloak_*` settings automatically
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
 - identity pipelines deploy on isolated stacks (`identity-dev`, `identity-prod`) and force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy or modify the app site stack

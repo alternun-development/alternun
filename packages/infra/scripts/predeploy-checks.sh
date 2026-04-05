@@ -304,8 +304,25 @@ validate_custom_authentik_provider_flow_slugs() {
   return 1
 }
 
+validate_mobile_oidc_launch_url() {
+  local launch_url=${INFRA_IDENTITY_MOBILE_OIDC_LAUNCH_URL:-}
+
+  if [ -z "$launch_url" ]; then
+    return 0
+  fi
+
+  case "$launch_url" in
+    *"/if/user/#/library"*|*"//sso."*|*"//preview.sso."*|*"//testnet.sso."*)
+      echo "ERROR: INFRA_IDENTITY_MOBILE_OIDC_LAUNCH_URL must point to the AIRS app, not Authentik." >&2
+      echo "ERROR: Current value: ${launch_url}" >&2
+      return 1
+      ;;
+  esac
+}
+
 validate_expo_public_auth_env
 validate_custom_authentik_provider_flow_slugs
+validate_mobile_oidc_launch_url
 check_stage_domain_validation_cname_records
 run_extra_redirect_dns_cleanup
 
