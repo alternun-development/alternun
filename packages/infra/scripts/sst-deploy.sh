@@ -600,6 +600,13 @@ sync_identity_runtime_templates() {
   identity_root_domain="${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-alternun.co}}"
   identity_authentik_image_tag="${INFRA_IDENTITY_AUTHENTIK_IMAGE_TAG:-2026.2}"
   identity_database_mode="${INFRA_IDENTITY_DATABASE_MODE:-rds}"
+  identity_allow_custom_provider_flow_slugs="$(
+    if is_truthy "${INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS:-${EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:-false}}"; then
+      echo "true"
+    else
+      echo "false"
+    fi
+  )"
   identity_acme_email="${INFRA_IDENTITY_TLS_ACME_EMAIL:-identity-admin@${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-alternun.co}}}"
   identity_route53_zone_id="${INFRA_IDENTITY_TLS_ROUTE53_HOSTED_ZONE_ID:-${INFRA_ROUTE53_HOSTED_ZONE_ID:-}}"
   identity_acme_backup_prefix="${INFRA_IDENTITY_TLS_ACME_BACKUP_PREFIX:-state}"
@@ -620,7 +627,7 @@ sync_identity_runtime_templates() {
     jq -nc \
       --arg c1 'set -euo pipefail' \
       --arg c2 'install -d -o ec2-user -g ec2-user /opt/alternun/identity /opt/alternun/identity/templates /opt/alternun/identity/authentik/custom-templates' \
-      --arg c3 "tmp_env=\$(mktemp); grep -vE '^(ALTERNUN_APP_NAME|ALTERNUN_ROOT_DOMAIN|ALTERNUN_STAGE|ALTERNUN_IDENTITY_DOMAIN|ALTERNUN_IDENTITY_INGRESS_MODE|ALTERNUN_IDENTITY_TLS_MODE|ALTERNUN_IDENTITY_TLS_ACME_EMAIL|ALTERNUN_ROUTE53_HOSTED_ZONE_ID|ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET|ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX|AUTHENTIK_IMAGE_TAG|AUTHENTIK_DATABASE_MODE)=' /etc/alternun-identity.env > \"\$tmp_env\" || true; printf '%s\n' 'ALTERNUN_APP_NAME=$identity_app_name' 'ALTERNUN_ROOT_DOMAIN=$identity_root_domain' 'ALTERNUN_STAGE=$STACK' 'ALTERNUN_IDENTITY_DOMAIN=$identity_domain' 'ALTERNUN_IDENTITY_INGRESS_MODE=$identity_ingress_mode' 'ALTERNUN_IDENTITY_TLS_MODE=$identity_tls_mode' 'ALTERNUN_IDENTITY_TLS_ACME_EMAIL=$identity_acme_email' 'ALTERNUN_ROUTE53_HOSTED_ZONE_ID=$identity_route53_zone_id' 'ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET=$identity_acme_backup_bucket' 'ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX=$identity_acme_backup_prefix' 'AUTHENTIK_IMAGE_TAG=$identity_authentik_image_tag' 'AUTHENTIK_DATABASE_MODE=$identity_database_mode' >> \"\$tmp_env\"; install -m 600 \"\$tmp_env\" /etc/alternun-identity.env; rm -f \"\$tmp_env\"" \
+      --arg c3 "tmp_env=\$(mktemp); grep -vE '^(ALTERNUN_APP_NAME|ALTERNUN_ROOT_DOMAIN|ALTERNUN_STAGE|ALTERNUN_IDENTITY_DOMAIN|ALTERNUN_IDENTITY_INGRESS_MODE|ALTERNUN_IDENTITY_TLS_MODE|ALTERNUN_IDENTITY_TLS_ACME_EMAIL|ALTERNUN_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS|ALTERNUN_ROUTE53_HOSTED_ZONE_ID|ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET|ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX|AUTHENTIK_IMAGE_TAG|AUTHENTIK_DATABASE_MODE)=' /etc/alternun-identity.env > \"\$tmp_env\" || true; printf '%s\n' 'ALTERNUN_APP_NAME=$identity_app_name' 'ALTERNUN_ROOT_DOMAIN=$identity_root_domain' 'ALTERNUN_STAGE=$STACK' 'ALTERNUN_IDENTITY_DOMAIN=$identity_domain' 'ALTERNUN_IDENTITY_INGRESS_MODE=$identity_ingress_mode' 'ALTERNUN_IDENTITY_TLS_MODE=$identity_tls_mode' 'ALTERNUN_IDENTITY_TLS_ACME_EMAIL=$identity_acme_email' 'ALTERNUN_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=$identity_allow_custom_provider_flow_slugs' 'ALTERNUN_ROUTE53_HOSTED_ZONE_ID=$identity_route53_zone_id' 'ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET=$identity_acme_backup_bucket' 'ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX=$identity_acme_backup_prefix' 'AUTHENTIK_IMAGE_TAG=$identity_authentik_image_tag' 'AUTHENTIK_DATABASE_MODE=$identity_database_mode' >> \"\$tmp_env\"; install -m 600 \"\$tmp_env\" /etc/alternun-identity.env; rm -f \"\$tmp_env\"" \
       --arg c4 "printf '%s' '$deploy_b64' | base64 -d | gzip -d > /opt/alternun/identity/deploy-authentik.sh" \
       --arg c5 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/bootstrap-authentik-integrations.py" \
       --arg c6 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py" \

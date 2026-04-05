@@ -975,8 +975,18 @@ else:
 google_client_id = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_CLIENT_ID")
 google_client_secret = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_CLIENT_SECRET")
 google_login_flow_slug = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_LOGIN_FLOW_SLUG")
+allow_custom_provider_flow_slugs = read_bool_env(
+    "ALTERNUN_BOOTSTRAP_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS",
+    False,
+)
 google_source_slug = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_SLUG", "google")
 google_source_name = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_NAME", "Google")
+
+if google_login_flow_slug and not allow_custom_provider_flow_slugs:
+    print(
+        "WARNING: Ignoring ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_LOGIN_FLOW_SLUG because custom provider flow slugs are disabled."
+    )
+    google_login_flow_slug = ""
 
 if google_client_id and google_client_secret:
     source_authentication_flow = Flow.objects.filter(

@@ -77,6 +77,7 @@ export interface IdentityLocalConfig {
       sourceName?: string;
       sourceSlug?: string;
       loginFlowSlug?: string;
+      allowCustomProviderFlowSlugs?: boolean;
     };
     supabase?: {
       applicationName?: string;
@@ -208,6 +209,7 @@ export interface IdentitySettings {
       sourceName: string;
       sourceSlug: string;
       loginFlowSlug: string;
+      allowCustomProviderFlowSlugs: boolean;
     };
     supabase: {
       applicationName: string;
@@ -413,6 +415,10 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
   );
   const defaultApplicationLaunchUrl =
     explicitDefaultApplicationLaunchUrl || (adminOidcLocalDevUrl ? `${adminOidcLocalDevUrl}/` : '');
+  const allowCustomProviderFlowSlugs =
+    parseBoolean(args.env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS, false) ||
+    parseBoolean(args.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS, false) ||
+    Boolean(localConfig?.integration?.google?.allowCustomProviderFlowSlugs);
 
   return {
     enabled: parseBoolean(
@@ -613,10 +619,12 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
           args.env.INFRA_IDENTITY_GOOGLE_SOURCE_SLUG ??
           localConfig?.integration?.google?.sourceSlug ??
           IDENTITY_INFRA_DEFAULTS.integration.google.sourceSlug,
-        loginFlowSlug:
-          args.env.INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG ??
-          localConfig?.integration?.google?.loginFlowSlug ??
-          '',
+        loginFlowSlug: allowCustomProviderFlowSlugs
+          ? args.env.INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG ??
+            localConfig?.integration?.google?.loginFlowSlug ??
+            ''
+          : '',
+        allowCustomProviderFlowSlugs,
       },
       supabase: {
         applicationName:
