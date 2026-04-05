@@ -15,23 +15,11 @@ function StatCard(_a) {
     if (isLoading) {
         return <SkeletonLoader_1.StatCardSkeleton />;
     }
-    return (<react_native_1.View style={[
-            styles.card,
-            { backgroundColor: theme.cardBg, borderColor: theme.cardBorder },
-            style,
-        ]}>
+    return (<react_native_1.View style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }, style]}>
       <react_native_1.View style={styles.cardTop}>
-        <react_native_1.View style={[styles.iconBg, { backgroundColor: "".concat(accentColor, "18") }]}>
-          {icon}
-        </react_native_1.View>
-        <react_native_1.View style={[
-            styles.deltaBadge,
-            deltaPositive ? styles.deltaPositive : styles.deltaNegative,
-        ]}>
-          <react_native_1.Text style={[
-            styles.deltaText,
-            { color: deltaPositive ? '#1ccba1' : '#ef4444' },
-        ]}>
+        <react_native_1.View style={[styles.iconBg, { backgroundColor: "".concat(accentColor, "18") }]}>{icon}</react_native_1.View>
+        <react_native_1.View style={[styles.deltaBadge, deltaPositive ? styles.deltaPositive : styles.deltaNegative]}>
+          <react_native_1.Text style={[styles.deltaText, { color: deltaPositive ? '#1ccba1' : '#ef4444' }]}>
             {delta}
           </react_native_1.Text>
         </react_native_1.View>
