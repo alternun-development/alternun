@@ -12,6 +12,8 @@ import {
   createAlternunAuthentikPreset,
   handleAuthentikCallback,
   hasPendingAuthentikCallback,
+  resolveAuthentikClientId,
+  resolveAuthentikIssuer,
   readOidcSession,
   resolveAuthentikRedirectUri,
   type OidcSession,
@@ -23,8 +25,13 @@ import {
 const INITIAL_SEARCH = typeof window !== 'undefined' ? window.location.search : '';
 
 const authentikPreset = createAlternunAuthentikPreset({
-  issuer: process.env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
-  clientId: process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? '',
+  issuer:
+    resolveAuthentikIssuer(
+      process.env.EXPO_PUBLIC_AUTHENTIK_ISSUER,
+      typeof window !== 'undefined' ? window.location.origin : undefined,
+      resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID)
+    ) ?? '',
+  clientId: resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID),
   redirectUri:
     resolveAuthentikRedirectUri(
       process.env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI,

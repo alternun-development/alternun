@@ -18,6 +18,11 @@ export {
   type OidcTokens,
 } from './mobile/authentikClient';
 export {
+  DEFAULT_AUTHENTIK_CLIENT_ID,
+  resolveAuthentikClientId,
+  resolveAuthentikIssuer,
+} from './mobile/authentikUrls';
+export {
   createAuthentikPreset,
   createAuthentikRelayHandler,
   createAuthentikLogoutHandler,
