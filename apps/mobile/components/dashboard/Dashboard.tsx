@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { User } from '../auth/AppAuthProvider';
 import {
   View,
@@ -305,30 +305,39 @@ export default function Dashboard({
   const isDark = themeMode === 'dark';
   const { t } = useAppTranslation('mobile');
 
-  // Bounce animation for back-to-top icon
   const bounce = useSharedValue(0);
-  useEffect(() => {
-    if (showBackToTop) {
-      bounce.value = withRepeat(
-        withSequence(
-          withTiming(-5, { duration: 420, easing: Easing.out(Easing.quad) }),
-          withTiming(0, { duration: 380, easing: Easing.in(Easing.quad) })
-        ),
-        -1
-      );
-    } else {
-      cancelAnimation(bounce);
-      bounce.value = 0;
-    }
-  }, [showBackToTop, bounce]);
 
   const bounceStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: bounce.value }],
   }));
 
-  const handleScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
-    setShowBackToTop(e.nativeEvent.contentOffset.y > 200);
-  }, []);
+  const handleScroll = useCallback(
+    (e: { nativeEvent: { contentOffset: { y: number } } }) => {
+      const nextVisible = e.nativeEvent.contentOffset.y > 200;
+
+      setShowBackToTop((currentVisible) => {
+        if (currentVisible === nextVisible) {
+          return currentVisible;
+        }
+
+        if (nextVisible) {
+          bounce.value = withRepeat(
+            withSequence(
+              withTiming(-5, { duration: 420, easing: Easing.out(Easing.quad) }),
+              withTiming(0, { duration: 380, easing: Easing.in(Easing.quad) })
+            ),
+            -1
+          );
+        } else {
+          cancelAnimation(bounce);
+          bounce.value = 0;
+        }
+
+        return nextVisible;
+      });
+    },
+    [bounce]
+  );
 
   const scrollToTop = useCallback(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
