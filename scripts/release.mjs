@@ -14,28 +14,40 @@ const {
 } = require('./versioning/version-files.cjs');
 
 const VALID_BUMPS = new Set(['patch', 'minor', 'major']);
+const BUILD_TARGET = 'build';
 const IGNORED_WORKTREE_PATHS = new Set([
   'apps/web/.turbo/turbo-build.log',
   'packages/ui/.turbo/turbo-build.log',
 ]);
+const TRACKED_BUILD_OUTPUT_PATHS = [
+  'packages/auth/dist',
+  'packages/email-templates/dist',
+  'packages/i18n/dist',
+  'packages/update/dist',
+];
 
 function printUsage() {
   console.log(`Usage:
-  pnpm release <patch|minor|major>
+  pnpm release [build|patch|minor|major|<version>]
   pnpm release <version>
   pnpm release --promote
 
 Options:
-  --push          Explicitly enable direct push after commit/tag creation.
   --no-push       Skip the default direct push for release targets.
-  --target-branch Branch to push when using direct push. Defaults to the current branch.
+  --target-branch Assert the branch being released. Defaults to the current branch.
   --promote       Push and promote the current release using the active branch policy.
   --remote <name> Git remote to use. Defaults to origin.
   --no-tag        Do not create an annotated git tag.
   --no-commit     Do not create a release commit.
   --dry-run       Print commands without changing git state.
-  --allow-dirty   Skip the clean-working-tree guard.
+  --allow-dirty   Skip the clean-working-tree guard (does not auto-commit).
   --help          Show this help text.
+
+Notes:
+  By default, uncommitted tracked changes are automatically staged and committed
+  with a generated conventional-commit message before the release starts.
+  New untracked source files are also staged unless they look like build artefacts.
+  Use --allow-dirty to skip this and proceed with a dirty tree (no auto-commit).
 `);
 }
 
@@ -62,11 +74,6 @@ function parseArgs(argv) {
 
     if (value === '--promote') {
       options.promote = true;
-      continue;
-    }
-
-    if (value === '--push') {
-      options.pushMode = 'on';
       continue;
     }
 
@@ -129,11 +136,11 @@ function parseArgs(argv) {
   }
 
   if (!target && !options.promote) {
-    throw new Error('Provide a release type/version or use --promote.');
+    target = BUILD_TARGET;
   }
 
-  if (options.pushMode === 'on' && options.promote) {
-    throw new Error('--push cannot be combined with --promote.');
+  if (options.promote && target !== null) {
+    throw new Error('--promote cannot be combined with a release target.');
   }
 
   if (!options.createCommit && options.createTag) {
@@ -233,26 +240,151 @@ function parseStatusPath(line) {
   return rawPath.replace(/\\/g, '/');
 }
 
+function getPendingChanges() {
+  return run('git', ['status', '--porcelain'], { capture: true })
+    .stdout.split('\n')
+    .map((line) => line.trimEnd())
+    .filter(Boolean)
+    .filter((line) => !IGNORED_WORKTREE_PATHS.has(parseStatusPath(line)))
+    .map((line) => ({
+      xy: line.slice(0, 2).trim(),
+      path: parseStatusPath(line),
+      untracked: line.startsWith('??'),
+    }));
+}
+
+const AREA_MAP = [
+  ['apps/mobile', 'mobile'],
+  ['apps/web', 'web'],
+  ['apps/admin', 'admin'],
+  ['apps/api', 'api'],
+  ['apps/docs', 'docs'],
+  ['packages/ui', 'ui'],
+  ['packages/auth', 'auth'],
+  ['packages/i18n', 'i18n'],
+  ['packages/infra', 'infra'],
+  ['packages/update', 'update'],
+  ['packages/email-templates', 'email'],
+  ['scripts', 'scripts'],
+];
+
+function resolveAreas(paths) {
+  const areas = new Set();
+  for (const p of paths) {
+    let matched = false;
+    for (const [prefix, label] of AREA_MAP) {
+      if (p === prefix || p.startsWith(prefix + '/')) {
+        areas.add(label);
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) areas.add('repo');
+  }
+  return [...areas].slice(0, 3);
+}
+
+function resolveCommitType(paths) {
+  // New source files → feat; test/spec files → test; config/scripts → chore; else fix
+  if (paths.some((p) => /\.(test|spec)\.[jt]sx?$/.test(p))) return 'test';
+  if (
+    paths.every(
+      (p) =>
+        p.endsWith('.json') ||
+        p.endsWith('.md') ||
+        p.startsWith('scripts/') ||
+        p.startsWith('.github/')
+    )
+  )
+    return 'chore';
+  // If most changes are in component/feature directories, lean towards fix
+  return 'fix';
+}
+
+function buildAutoCommitMessage(changes) {
+  const paths = changes.map((c) => c.path);
+  const areas = resolveAreas(paths);
+  const type = resolveCommitType(paths);
+  const scope = areas.join(',');
+
+  // Build a short summary from the changed file basenames
+  const baseNames = [
+    ...new Set(
+      paths
+        .filter((p) => !p.endsWith('.log') && !p.includes('/dist/'))
+        .map((p) => path.basename(p, path.extname(p)))
+        .filter((n) => n && n !== 'index' && n !== 'package')
+        .slice(0, 4)
+    ),
+  ];
+
+  const summary =
+    baseNames.length > 0
+      ? baseNames.join(', ')
+      : `${paths.length} file${paths.length === 1 ? '' : 's'} updated`;
+
+  return `${type}(${scope}): ${summary}`;
+}
+
+function autoCommitPendingChanges(dryRun) {
+  const changes = getPendingChanges();
+  if (changes.length === 0) return;
+
+  const tracked = changes.filter((c) => !c.untracked);
+  const untracked = changes.filter((c) => c.untracked);
+
+  if (tracked.length === 0 && untracked.length === 0) return;
+
+  console.log(`\nDetected ${changes.length} pending change(s) — auto-committing before release:`);
+  for (const c of changes.slice(0, 12)) {
+    console.log(`  ${c.xy || '??'} ${c.path}`);
+  }
+  if (changes.length > 12) {
+    console.log(`  ... and ${changes.length - 12} more`);
+  }
+
+  const message = buildAutoCommitMessage(changes);
+  console.log(`\nCommit message: "${message}"\n`);
+
+  // Stage tracked modifications and deletions
+  if (tracked.length > 0) {
+    run('git', ['add', '-u'], { dryRun });
+  }
+
+  // Stage new untracked files that are not obviously generated
+  const stagedUntracked = untracked.filter(
+    (c) =>
+      !c.path.endsWith('.log') &&
+      !c.path.includes('node_modules/') &&
+      !c.path.includes('/dist/') &&
+      !c.path.includes('/.turbo/')
+  );
+  if (stagedUntracked.length > 0) {
+    run('git', ['add', '--', ...stagedUntracked.map((c) => c.path)], { dryRun });
+  }
+
+  run('git', ['commit', '-m', message], { dryRun });
+  console.log('✓ Pending changes committed.\n');
+}
+
 function ensureCleanWorkingTree(options) {
   if (options.allowDirty) {
     return;
   }
 
-  const statusLines = run('git', ['status', '--porcelain'], { capture: true }).stdout
-    .split('\n')
-    .map((line) => line.trimEnd())
-    .filter(Boolean);
-
-  const relevantChanges = statusLines.filter((line) => !IGNORED_WORKTREE_PATHS.has(parseStatusPath(line)));
-
-  if (relevantChanges.length > 0) {
-    throw new Error('Working tree is not clean. Commit or stash changes before running the release flow.');
+  const changes = getPendingChanges();
+  if (changes.length > 0) {
+    throw new Error(
+      'Working tree is not clean. Commit or stash changes before running the release flow.'
+    );
   }
 }
 
 function resolveProductionBranch() {
-  const refs = run('git', ['for-each-ref', '--format=%(refname:short)', 'refs/heads'], { capture: true }).stdout
-    .split('\n')
+  const refs = run('git', ['for-each-ref', '--format=%(refname:short)', 'refs/heads'], {
+    capture: true,
+  })
+    .stdout.split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
 
@@ -288,7 +420,7 @@ function ensureChangelogFile(dryRun) {
   fs.writeFileSync(
     changelogPath,
     '# Changelog\n\nAll notable changes to this project will be documented in this file.\n',
-    'utf8',
+    'utf8'
   );
 }
 
@@ -303,8 +435,20 @@ function stageReleaseFiles(dryRun) {
     managedPaths.add('CHANGELOG.md');
   }
 
-  const existingPaths = [...managedPaths].filter((relativePath) => fs.existsSync(path.join(REPO_ROOT, relativePath)));
+  for (const trackedBuildOutputPath of TRACKED_BUILD_OUTPUT_PATHS) {
+    if (fs.existsSync(path.join(REPO_ROOT, trackedBuildOutputPath))) {
+      managedPaths.add(trackedBuildOutputPath);
+    }
+  }
+
+  const existingPaths = [...managedPaths].filter((relativePath) =>
+    fs.existsSync(path.join(REPO_ROOT, relativePath))
+  );
   run('git', ['add', '--', ...existingPaths], { dryRun });
+}
+
+function buildReleaseArtifacts(dryRun) {
+  run('pnpm', ['exec', 'turbo', 'run', 'build', '--force'], { dryRun });
 }
 
 function createReleaseCommit(version, dryRun) {
@@ -321,7 +465,9 @@ function pushRelease({ remote, dryRun, targetBranch }) {
   const branchToPush = targetBranch ?? currentBranch;
 
   if (branchToPush !== currentBranch) {
-    throw new Error(`--push must target the current branch. Current branch: ${currentBranch}, requested: ${branchToPush}`);
+    throw new Error(
+      `Direct release push must use the current branch. Current branch: ${currentBranch}, requested: ${branchToPush}`
+    );
   }
 
   run('git', ['push', remote, branchToPush, '--follow-tags'], { dryRun });
@@ -332,7 +478,9 @@ function buildCompareUrl(remoteUrl, base, head) {
   const normalized = remoteUrl.replace(/\.git$/, '');
 
   if (normalized.startsWith('git@github.com:')) {
-    return `https://github.com/${normalized.slice('git@github.com:'.length)}/compare/${base}...${head}?expand=1`;
+    return `https://github.com/${normalized.slice(
+      'git@github.com:'.length
+    )}/compare/${base}...${head}?expand=1`;
   }
 
   if (normalized.startsWith('https://github.com/')) {
@@ -376,11 +524,15 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
     return;
   }
 
-  const result = spawnSync('gh', ['pr', 'create', '--base', base, '--head', head, '--title', title, '--body', body], {
-    cwd: REPO_ROOT,
-    encoding: 'utf8',
-    stdio: 'pipe',
-  });
+  const result = spawnSync(
+    'gh',
+    ['pr', 'create', '--base', base, '--head', head, '--title', title, '--body', body],
+    {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+      stdio: 'pipe',
+    }
+  );
 
   if ((result.status ?? 1) === 0) {
     const output = result.stdout.trim();
@@ -407,7 +559,9 @@ function promoteRelease({ version, remote, dryRun, productionBranch }) {
 
   if (isTestnetModeEnabled()) {
     if (currentBranch !== productionBranch) {
-      throw new Error(`ALTERNUN_TESTNET_MODE=on requires promotion from ${productionBranch}. Current branch: ${currentBranch}`);
+      throw new Error(
+        `ALTERNUN_TESTNET_MODE=on requires promotion from ${productionBranch}. Current branch: ${currentBranch}`
+      );
     }
 
     run('git', ['push', remote, productionBranch, '--follow-tags'], { dryRun });
@@ -426,7 +580,9 @@ function promoteRelease({ version, remote, dryRun, productionBranch }) {
   }
 
   if (currentBranch !== 'develop') {
-    throw new Error(`ALTERNUN_TESTNET_MODE=off requires promotion from develop. Current branch: ${currentBranch}`);
+    throw new Error(
+      `ALTERNUN_TESTNET_MODE=off requires promotion from develop. Current branch: ${currentBranch}`
+    );
   }
 
   run('git', ['push', remote, 'develop', '--follow-tags'], { dryRun });
@@ -440,16 +596,46 @@ function promoteRelease({ version, remote, dryRun, productionBranch }) {
   console.log(`Promoted v${version}: pushed develop and prepared a PR into ${productionBranch}.`);
 }
 
-function performVersionChange(target, options) {
+function performVersionChange(target, options, branchName) {
   if (!target) {
     return readRootVersion();
   }
 
   ensureChangelogFile(options.dryRun);
 
+  if (target === BUILD_TARGET) {
+    if (branchName === 'master' || branchName === 'main') {
+      throw new Error(
+        `Build releases are only supported on development branches. Use patch/minor/major or --promote on ${branchName}.`
+      );
+    }
+
+    run(
+      'pnpm',
+      [
+        'exec',
+        'versioning',
+        'patch',
+        '--branch-aware',
+        '--target-branch',
+        branchName,
+        '--no-commit',
+        '--no-tag',
+      ],
+      { dryRun: options.dryRun }
+    );
+    const version = readRootVersion();
+    run('node', ['scripts/version-sync.mjs', '--version', version], { dryRun: options.dryRun });
+    run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+    return version;
+  }
+
   if (VALID_BUMPS.has(target)) {
-    run('pnpm', ['exec', 'versioning', target, '--no-commit', '--no-tag'], { dryRun: options.dryRun });
-    const version = options.dryRun ? readRootVersion() : readRootVersion();
+    run('pnpm', ['exec', 'versioning', target, '--no-commit', '--no-tag'], {
+      dryRun: options.dryRun,
+    });
+    run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+    const version = readRootVersion();
     if (!options.dryRun) {
       syncSupplementalVersionFiles(version);
     }
@@ -475,10 +661,19 @@ function main() {
     throw new Error('--no-commit requires --no-push.');
   }
 
+  if (!options.allowDirty && !options.promote) {
+    autoCommitPendingChanges(options.dryRun);
+  }
+
   ensureCleanWorkingTree(options);
 
+  const currentBranch = getCurrentBranch();
   const productionBranch = resolveProductionBranch();
-  const version = performVersionChange(target, options);
+  const version = performVersionChange(target, options, currentBranch);
+
+  if (target) {
+    buildReleaseArtifacts(options.dryRun);
+  }
 
   if (target && options.createCommit) {
     createReleaseCommit(version, options.dryRun);

@@ -1,9 +1,27 @@
 {
   "name": "@alternun/auth",
-  "version": "1.0.7",
+  "version": "1.0.18",
   "description": "Alternun auth wrapper package built on top of @edcalderon/auth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./mobile/authentikClient": {
+      "types": "./dist/mobile/authentikClient.d.ts",
+      "default": "./dist/mobile/authentikClient.js"
+    },
+    "./mobile/authEntry": {
+      "types": "./dist/mobile/authEntry.d.ts",
+      "default": "./dist/mobile/authEntry.js"
+    },
+    "./mobile/runtimeSignIn": {
+      "types": "./dist/mobile/runtimeSignIn.d.ts",
+      "default": "./dist/mobile/runtimeSignIn.js"
+    }
+  },
   "scripts": {
     "build": "./build.sh",
     "dev": "tsc -w",

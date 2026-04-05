@@ -11,6 +11,7 @@ import {
 import { useColorScheme } from 'nativewind';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
+import ReleaseUpdateBanner from '../components/release/ReleaseUpdateBanner.web';
 import '../global.css';
 
 export default function RootLayout(): React.JSX.Element {
@@ -30,18 +31,18 @@ function RootApp(): React.JSX.Element {
     colorScheme.setColorScheme(themeMode);
   }, [colorScheme, themeMode]);
   const pathname = usePathname();
-  const showLayoutFooter = pathname !== '/auth' && pathname !== '/';
+  const showLayoutFooter =
+    pathname !== '/auth' &&
+    pathname !== '/auth-relay' &&
+    pathname !== '/auth/callback' &&
+    pathname !== '/';
 
   return (
     <AppAuthProvider>
       <ThemeProvider value={navigationTheme}>
         <View style={styles.appShell}>
           <View style={styles.stackContainer}>
-            <Stack
-              screenOptions={({ route }) => ({
-                headerShown: !route.name.startsWith('tempobook'),
-              })}
-            >
+            <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name='index' options={{ headerShown: false }} />
               <Stack.Screen
                 name='auth'
@@ -50,6 +51,21 @@ function RootApp(): React.JSX.Element {
                   presentation: 'transparentModal',
                   animation: 'fade',
                   contentStyle: { backgroundColor: 'transparent' },
+                }}
+              />
+              <Stack.Screen
+                name='auth-relay'
+                options={{
+                  headerShown: false,
+                  presentation: 'transparentModal',
+                  animation: 'fade',
+                  contentStyle: { backgroundColor: 'transparent' },
+                }}
+              />
+              <Stack.Screen
+                name='auth/callback'
+                options={{
+                  headerShown: false,
                 }}
               />
               <Stack.Screen
@@ -62,9 +78,34 @@ function RootApp(): React.JSX.Element {
               <Stack.Screen
                 name='profile'
                 options={{
+                  headerShown: true,
                   title: 'Profile',
                   headerBackTitle: 'Back',
                 }}
+              />
+              <Stack.Screen
+                name='compensaciones'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='mis-atn'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='proyectos'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='beneficios'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='ranking'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='wallet'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
               />
             </Stack>
           </View>
@@ -73,6 +114,7 @@ function RootApp(): React.JSX.Element {
               <AppInfoFooter />
             </View>
           ) : null}
+          <ReleaseUpdateBanner />
         </View>
         <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>

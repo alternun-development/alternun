@@ -1,6 +1,7 @@
 {
   "shared": {
     "labels": {
+      "backToTop": "Top",
       "by": "By",
       "dark": "Dark",
       "language": "Language",
@@ -114,6 +115,9 @@
         "passwordRequired": "Password is required.",
         "validEmail": "Enter a valid email address."
       }
+    },
+    "dashboard": {
+      "backToTop": "Top"
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. All rights reserved.",

@@ -1,6 +1,7 @@
 {
   "shared": {
     "labels": {
+      "backToTop": "ด้านบน",
       "by": "โดย",
       "dark": "มืด",
       "language": "ภาษา",
@@ -50,6 +51,7 @@
         "connectWallet": "เชื่อมต่อวอลเล็ต",
         "continueWithEmail": "ดำเนินการต่อด้วยอีเมล",
         "continueWithGoogle": "ดำเนินการต่อด้วย Google",
+        "continueWithDiscord": "ดำเนินการต่อด้วย Discord",
         "createAccount": "สร้างบัญชี",
         "verifyConfirmationCode": "ยืนยันรหัสยืนยัน",
         "useAnotherEmail": "ใช้อีเมลอื่น"
@@ -113,6 +115,9 @@
         "passwordRequired": "จำเป็นต้องกรอกรหัสผ่าน",
         "validEmail": "กรุณากรอกอีเมลที่ถูกต้อง"
       }
+    },
+    "dashboard": {
+      "backToTop": "ด้านบน"
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. สงวนลิขสิทธิ์ทั้งหมด.",

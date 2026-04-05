@@ -20,6 +20,10 @@ const WALLET_PROVIDERS = ['metamask', 'walletconnect'] as const;
 export type WalletProvider = (typeof WALLET_PROVIDERS)[number];
 const EMAIL_TEMPLATE_LOCALES = ['en', 'es', 'th'] as const;
 
+function resolveClientRuntime(): AuthRuntime {
+  return typeof window !== 'undefined' && typeof document !== 'undefined' ? 'web' : 'native';
+}
+
 interface LinkedWalletState {
   provider: WalletProvider;
   walletAddress: string;
@@ -199,7 +203,7 @@ export function isWalletProvider(provider?: string): provider is WalletProvider 
 }
 
 export class AlternunMobileAuthClient implements AuthClient {
-  runtime: AuthRuntime = 'native';
+  runtime: AuthRuntime;
 
   private baseClient: AuthClient | null;
   private supabase: any = null;
@@ -214,6 +218,7 @@ export class AlternunMobileAuthClient implements AuthClient {
   private allowWalletOnlySession: boolean = false;
 
   constructor(options: AlternunMobileAuthClientOptions) {
+    this.runtime = resolveClientRuntime();
     const supabaseKey = options.supabaseKey ?? options.supabaseAnonKey;
     this.walletBridge = options.walletBridge ?? null;
     this.allowMockWalletFallback = options.allowMockWalletFallback ?? false;
@@ -230,7 +235,7 @@ export class AlternunMobileAuthClient implements AuthClient {
 
       this.baseClient = new UniversalSupabaseClient({
         supabase,
-        runtime: 'native',
+        runtime: this.runtime,
       });
       this.supabase = supabase;
     } else {
@@ -241,7 +246,13 @@ export class AlternunMobileAuthClient implements AuthClient {
 
   capabilities(): AuthCapabilities {
     const baseFlows = this.baseClient?.capabilities().supportedFlows ?? [];
-    const flowSet = new Set<OAuthFlow>(['native', ...baseFlows]);
+    const flowSet = new Set<OAuthFlow>(baseFlows);
+
+    if (this.runtime === 'native') {
+      flowSet.add('native');
+    } else {
+      flowSet.add('redirect');
+    }
 
     return {
       runtime: this.runtime,
@@ -250,7 +261,9 @@ export class AlternunMobileAuthClient implements AuthClient {
   }
 
   private emit(user: User | null): void {
-    this.listeners.forEach(listener => listener(user));
+    this.listeners.forEach((listener) => {
+      listener(user);
+    });
   }
 
   private ensureBaseClient(): AuthClient {
@@ -387,13 +400,16 @@ export class AlternunMobileAuthClient implements AuthClient {
     };
 
     const existingLinkedWalletsRaw = baseMetadata.linkedWallets;
-    const existingLinkedWallets = Array.isArray(existingLinkedWalletsRaw)
-      ? existingLinkedWalletsRaw.filter((entry): entry is WalletMetadataEntry =>
-          Boolean(entry && typeof entry === 'object')
-        )
-      : [];
+    const existingLinkedWallets: WalletMetadataEntry[] = [];
+    if (Array.isArray(existingLinkedWalletsRaw)) {
+      for (const entry of existingLinkedWalletsRaw) {
+        if (entry && typeof entry === 'object') {
+          existingLinkedWallets.push(entry as WalletMetadataEntry);
+        }
+      }
+    }
 
-    const filteredExisting = existingLinkedWallets.filter(entry => {
+    const filteredExisting = existingLinkedWallets.filter((entry) => {
       const providerValue =
         typeof entry.provider === 'string' ? entry.provider.toLowerCase() : null;
       const addressValue = typeof entry.address === 'string' ? entry.address.toLowerCase() : null;
@@ -663,7 +679,7 @@ export class AlternunMobileAuthClient implements AuthClient {
       this.walletSessionToken = null;
       await this.ensureBaseClient().signIn({
         provider: options.provider,
-        flow: options.flow ?? 'native',
+        flow: options.flow ?? (this.runtime === 'web' ? 'redirect' : 'native'),
         redirectUri: options.redirectUri,
       });
       return;
@@ -729,7 +745,7 @@ export class AlternunMobileAuthClient implements AuthClient {
   async signInWithGoogle(redirectTo?: string): Promise<void> {
     await this.signIn({
       provider: 'google',
-      flow: 'native',
+      flow: this.runtime === 'web' ? 'redirect' : 'native',
       redirectUri: redirectTo,
     });
   }
@@ -918,7 +934,7 @@ export class AlternunMobileAuthClient implements AuthClient {
     this.listeners.add(callback);
 
     if (!this.unsubscribeBase && this.baseClient) {
-      this.unsubscribeBase = this.baseClient.onAuthStateChange(user => {
+      this.unsubscribeBase = this.baseClient.onAuthStateChange((user) => {
         if (this.walletUser) {
           return;
         }

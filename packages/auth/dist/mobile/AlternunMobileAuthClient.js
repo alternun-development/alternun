@@ -3,6 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 import { getValidationErrorMessage, parseEmailAddress, parseSignInPassword, parseSignUpPassword, } from '../validation/authInputValidation';
 const WALLET_PROVIDERS = ['metamask', 'walletconnect'];
 const EMAIL_TEMPLATE_LOCALES = ['en', 'es', 'th'];
+function resolveClientRuntime() {
+    return typeof window !== 'undefined' && typeof document !== 'undefined' ? 'web' : 'native';
+}
 function getErrorMessage(error) {
     if (error instanceof Error) {
         return error.message;
@@ -106,7 +109,6 @@ export function isWalletProvider(provider) {
 export class AlternunMobileAuthClient {
     constructor(options) {
         var _a, _b, _c, _d;
-        this.runtime = 'native';
         this.supabase = null;
         this.listeners = new Set();
         this.oidcUser = null;
@@ -117,6 +119,7 @@ export class AlternunMobileAuthClient {
         this.walletBridge = null;
         this.allowMockWalletFallback = false;
         this.allowWalletOnlySession = false;
+        this.runtime = resolveClientRuntime();
         const supabaseKey = (_a = options.supabaseKey) !== null && _a !== void 0 ? _a : options.supabaseAnonKey;
         this.walletBridge = (_b = options.walletBridge) !== null && _b !== void 0 ? _b : null;
         this.allowMockWalletFallback = (_c = options.allowMockWalletFallback) !== null && _c !== void 0 ? _c : false;
@@ -131,7 +134,7 @@ export class AlternunMobileAuthClient {
             });
             this.baseClient = new UniversalSupabaseClient({
                 supabase,
-                runtime: 'native',
+                runtime: this.runtime,
             });
             this.supabase = supabase;
         }
@@ -143,14 +146,22 @@ export class AlternunMobileAuthClient {
     capabilities() {
         var _a, _b;
         const baseFlows = (_b = (_a = this.baseClient) === null || _a === void 0 ? void 0 : _a.capabilities().supportedFlows) !== null && _b !== void 0 ? _b : [];
-        const flowSet = new Set(['native', ...baseFlows]);
+        const flowSet = new Set(baseFlows);
+        if (this.runtime === 'native') {
+            flowSet.add('native');
+        }
+        else {
+            flowSet.add('redirect');
+        }
         return {
             runtime: this.runtime,
             supportedFlows: Array.from(flowSet),
         };
     }
     emit(user) {
-        this.listeners.forEach(listener => listener(user));
+        this.listeners.forEach((listener) => {
+            listener(user);
+        });
     }
     ensureBaseClient() {
         if (!this.baseClient) {
@@ -254,10 +265,15 @@ export class AlternunMobileAuthClient {
             ...linkedWallet.metadata,
         };
         const existingLinkedWalletsRaw = baseMetadata.linkedWallets;
-        const existingLinkedWallets = Array.isArray(existingLinkedWalletsRaw)
-            ? existingLinkedWalletsRaw.filter((entry) => Boolean(entry && typeof entry === 'object'))
-            : [];
-        const filteredExisting = existingLinkedWallets.filter(entry => {
+        const existingLinkedWallets = [];
+        if (Array.isArray(existingLinkedWalletsRaw)) {
+            for (const entry of existingLinkedWalletsRaw) {
+                if (entry && typeof entry === 'object') {
+                    existingLinkedWallets.push(entry);
+                }
+            }
+        }
+        const filteredExisting = existingLinkedWallets.filter((entry) => {
             const providerValue = typeof entry.provider === 'string' ? entry.provider.toLowerCase() : null;
             const addressValue = typeof entry.address === 'string' ? entry.address.toLowerCase() : null;
             return !(providerValue === linkedWallet.provider &&
@@ -442,7 +458,7 @@ export class AlternunMobileAuthClient {
             this.walletSessionToken = null;
             await this.ensureBaseClient().signIn({
                 provider: options.provider,
-                flow: (_b = options.flow) !== null && _b !== void 0 ? _b : 'native',
+                flow: (_b = options.flow) !== null && _b !== void 0 ? _b : (this.runtime === 'web' ? 'redirect' : 'native'),
                 redirectUri: options.redirectUri,
             });
             return;
@@ -497,7 +513,7 @@ export class AlternunMobileAuthClient {
     async signInWithGoogle(redirectTo) {
         await this.signIn({
             provider: 'google',
-            flow: 'native',
+            flow: this.runtime === 'web' ? 'redirect' : 'native',
             redirectUri: redirectTo,
         });
     }
@@ -642,7 +658,7 @@ export class AlternunMobileAuthClient {
     onAuthStateChange(callback) {
         this.listeners.add(callback);
         if (!this.unsubscribeBase && this.baseClient) {
-            this.unsubscribeBase = this.baseClient.onAuthStateChange(user => {
+            this.unsubscribeBase = this.baseClient.onAuthStateChange((user) => {
                 if (this.walletUser) {
                     return;
                 }
