@@ -1,3 +1,17 @@
+## [1.0.12](https://github.com/alternun-development/alternun/compare/v1.0.11...v1.0.12) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,auth,update:** \_layout, HorizontalCardScroller, Dashboard, NotificationDropdown ([fccc4f3](https://github.com/alternun-development/alternun/commit/fccc4f3962cfa22111a028b8bf3dec1d56d8e1b5))
+- **mobile,ui:** \_layout.web, beneficios, compensaciones, mis-atn ([d7799b5](https://github.com/alternun-development/alternun/commit/d7799b5245537149a34d66f85d8f46ccbc54018c))
+
+## [1.0.12](https://github.com/alternun-development/alternun/compare/v1.0.11...v1.0.12) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile,auth,update:** \_layout, HorizontalCardScroller, Dashboard, NotificationDropdown ([fccc4f3](https://github.com/alternun-development/alternun/commit/fccc4f3962cfa22111a028b8bf3dec1d56d8e1b5))
+- **mobile,ui:** \_layout.web, beneficios, compensaciones, mis-atn ([d7799b5](https://github.com/alternun-development/alternun/commit/d7799b5245537149a34d66f85d8f46ccbc54018c))
+
 ## [1.0.11](https://github.com/alternun-development/alternun/compare/v1.0.10...v1.0.11) (2026-04-05)
 
 ### Bug Fixes
