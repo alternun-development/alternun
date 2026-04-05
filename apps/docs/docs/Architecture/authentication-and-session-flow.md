@@ -54,6 +54,7 @@ That means:
 
 - testnet and production should not silently fall back to Supabase for Google or Discord
 - the social buttons should remain Authentik-backed as long as the Authentik issuer and client ID are present
+- deployed web bundles can derive the issuer/client ID from the live `airs` origin if the env is missing, which keeps testnet resilient to stale pipeline wiring
 - local development can still opt into `hybrid` when a more permissive setup is useful
 
 Custom provider-flow slugs are now explicit:
@@ -97,6 +98,7 @@ The mobile auth screen decides which path to use from the current env and runtim
 - if the social login mode is `hybrid`, Authentik is used when available and Supabase is the fallback
 - if the social login mode is `supabase`, the Authentik social buttons are bypassed entirely
 - if `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` is empty, the app uses the direct source-login route instead of a custom Authentik flow slug
+- if the issuer or client ID env is missing in a deployed web bundle, the shared auth helpers derive them from the current `airs` origin and the default mobile client slug
 
 The relevant implementation lives in the auth helpers and the sign-in screen, not in a one-off app-local login branch.
 
@@ -126,15 +128,15 @@ This is what prevents the user from getting stranded at the Authentik success pa
 
 These are the key env variables involved in the flow:
 
-| Variable                                    | Purpose                                                 | Typical value                                                                           |
-| ------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `EXPO_PUBLIC_AUTHENTIK_ISSUER`              | Authentik issuer URL for the app client                 | `https://testnet.sso.alternun.co/application/o/alternun-mobile/`                        |
-| `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID`           | Public OIDC client ID registered in Authentik           | `alternun-mobile`                                                                       |
-| `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI`        | Optional explicit callback URL                          | usually injected by infra on deployed web builds, otherwise derived from browser origin |
-| `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE`    | Relay vs direct source entry                            | `relay` or `source`                                                                     |
-| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`   | Authentik vs hybrid vs Supabase-only social login       | `authentik`, `hybrid`, or `supabase`                                                    |
-| `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` | Optional provider -> custom Authentik flow slug mapping | JSON such as `{"google":"alternun-google-login"}`                                       |
-| `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG`     | Infra bootstrap knob for Authentik-side flow creation   | usually empty unless you intentionally manage a custom source-stage login flow          |
+| Variable                                    | Purpose                                                 | Typical value                                                                                                                 |
+| ------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `EXPO_PUBLIC_AUTHENTIK_ISSUER`              | Authentik issuer URL for the app client                 | `https://testnet.sso.alternun.co/application/o/alternun-mobile/` (or derived from origin when omitted on deployed web builds) |
+| `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID`           | Public OIDC client ID registered in Authentik           | `alternun-mobile` (defaults to the Alternun mobile slug when omitted)                                                         |
+| `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI`        | Optional explicit callback URL                          | usually injected by infra on deployed web builds, otherwise derived from browser origin                                       |
+| `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE`    | Relay vs direct source entry                            | `relay` or `source`                                                                                                           |
+| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`   | Authentik vs hybrid vs Supabase-only social login       | `authentik`, `hybrid`, or `supabase`                                                                                          |
+| `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` | Optional provider -> custom Authentik flow slug mapping | JSON such as `{"google":"alternun-google-login"}`                                                                             |
+| `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG`     | Infra bootstrap knob for Authentik-side flow creation   | usually empty unless you intentionally manage a custom source-stage login flow                                                |
 
 Current operational rules:
 

@@ -1,5 +1,5 @@
 import { OIDC_INITIAL_SEARCH, clearOidcSession as rawClearOidcSession, handleAuthentikCallback as rawHandleAuthentikCallback, hasPendingAuthentikCallback as rawHasPendingAuthentikCallback, readOidcSession as rawReadOidcSession, } from '@edcalderon/auth';
-import { buildAuthentikOAuthFlowStartUrl as buildOauthStartUrl, resolveAuthentikRedirectUri, } from './authentikUrls';
+import { buildAuthentikOAuthFlowStartUrl as buildOauthStartUrl, resolveAuthentikClientId, resolveAuthentikIssuer, resolveAuthentikRedirectUri, } from './authentikUrls';
 const DEFAULT_ENV_KEYS = {
     issuer: 'EXPO_PUBLIC_AUTHENTIK_ISSUER',
     clientId: 'EXPO_PUBLIC_AUTHENTIK_CLIENT_ID',
@@ -41,9 +41,10 @@ function resolveBrowserOrigin() {
 }
 function resolveAuthentikClientConfig(config = {}) {
     var _a, _b, _c;
-    const issuer = resolveEnvValue(config, 'issuer');
-    const clientId = resolveEnvValue(config, 'clientId');
-    const redirectUri = resolveAuthentikRedirectUri(resolveEnvValue(config, 'redirectUri'), resolveBrowserOrigin());
+    const browserOrigin = resolveBrowserOrigin();
+    const clientId = resolveAuthentikClientId(resolveEnvValue(config, 'clientId'));
+    const issuer = resolveAuthentikIssuer(resolveEnvValue(config, 'issuer'), browserOrigin, clientId);
+    const redirectUri = resolveAuthentikRedirectUri(resolveEnvValue(config, 'redirectUri'), browserOrigin);
     const normalizedScope = (_a = config.scope) === null || _a === void 0 ? void 0 : _a.trim();
     if (!issuer || !clientId || !redirectUri) {
         throw new Error('CONFIG_ERROR: Missing Authentik issuer, clientId, or redirectUri');
@@ -119,9 +120,10 @@ function setPendingAuthentikOAuthProvider(provider, resolved) {
     resolved.sessionStorage.setItem(resolved.pendingProviderKey, provider);
 }
 export function isAuthentikConfigured(config = {}) {
-    const issuer = resolveEnvValue(config, 'issuer');
-    const clientId = resolveEnvValue(config, 'clientId');
-    const redirectUri = resolveAuthentikRedirectUri(resolveEnvValue(config, 'redirectUri'), resolveBrowserOrigin());
+    const browserOrigin = resolveBrowserOrigin();
+    const clientId = resolveAuthentikClientId(resolveEnvValue(config, 'clientId'));
+    const issuer = resolveAuthentikIssuer(resolveEnvValue(config, 'issuer'), browserOrigin, clientId);
+    const redirectUri = resolveAuthentikRedirectUri(resolveEnvValue(config, 'redirectUri'), browserOrigin);
     return Boolean(issuer && clientId && redirectUri);
 }
 export function hasPendingAuthentikCallback(searchString) {

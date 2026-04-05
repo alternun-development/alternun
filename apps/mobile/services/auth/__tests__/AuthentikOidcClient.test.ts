@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import {
   buildAuthentikOAuthFlowStartUrl,
+  resolveAuthentikClientId,
+  resolveAuthentikIssuer,
   resolveAuthentikRedirectUri,
 } from '../../../../../packages/auth/src/mobile/authentikUrls';
 
@@ -83,5 +85,24 @@ describe('buildAuthentikOAuthFlowStartUrl', () => {
     expect(resolveAuthentikRedirectUri('http://localhost:8081/', 'http://localhost:8083')).toBe(
       'http://localhost:8083/'
     );
+  });
+
+  it('defaults the authentik client id when explicit value is missing', () => {
+    expect(resolveAuthentikClientId(undefined)).toBe('alternun-mobile');
+  });
+
+  it('derives the authentik issuer from the deployed origin when explicit value is missing', () => {
+    expect(resolveAuthentikIssuer(undefined, 'https://testnet.airs.alternun.co')).toBe(
+      'https://testnet.sso.alternun.co/application/o/alternun-mobile/'
+    );
+  });
+
+  it('preserves an explicit authentik issuer when provided', () => {
+    expect(
+      resolveAuthentikIssuer(
+        'https://testnet.sso.alternun.co/application/o/alternun-mobile/',
+        'https://ignored.example'
+      )
+    ).toBe('https://testnet.sso.alternun.co/application/o/alternun-mobile/');
   });
 });

@@ -53,6 +53,8 @@ export {
   readPendingAuthentikOAuthProvider,
   clearPendingAuthentikOAuthProvider,
   resolveAuthentikRedirectUri,
+  resolveAuthentikClientId,
+  resolveAuthentikIssuer,
   OIDC_INITIAL_SEARCH,
   createAuthentikPreset,
   createAuthentikRelayHandler,
