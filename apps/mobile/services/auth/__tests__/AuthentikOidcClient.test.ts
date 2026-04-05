@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import {
   buildAuthentikOAuthFlowStartUrl,
+  buildAuthentikWebCallbackUrl,
   resolveAuthentikClientId,
   resolveAuthentikIssuer,
   resolveAuthentikRedirectUri,
@@ -94,6 +95,15 @@ describe('buildAuthentikOAuthFlowStartUrl', () => {
         'https://testnet.airs.alternun.co'
       )
     ).toBe('https://testnet.airs.alternun.co/auth/callback');
+  });
+
+  it('strips repeated trailing slashes from the browser origin without altering the callback route', () => {
+    expect(buildAuthentikWebCallbackUrl('https://testnet.airs.alternun.co////')).toBe(
+      'https://testnet.airs.alternun.co/auth/callback'
+    );
+    expect(resolveAuthentikRedirectUri(undefined, 'https://testnet.airs.alternun.co////')).toBe(
+      'https://testnet.airs.alternun.co/auth/callback'
+    );
   });
 
   it('defaults the authentik client id when explicit value is missing', () => {

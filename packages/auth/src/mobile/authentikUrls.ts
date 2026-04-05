@@ -72,7 +72,16 @@ function normalizeBrowserOrigin(browserOrigin: string | undefined | null): strin
     return undefined;
   }
 
-  return normalizedBrowserOrigin.replace(/\/+$/, '');
+  let endIndex = normalizedBrowserOrigin.length;
+  while (endIndex > 0 && normalizedBrowserOrigin.charAt(endIndex - 1) === '/') {
+    endIndex -= 1;
+  }
+
+  if (endIndex === 0) {
+    return undefined;
+  }
+
+  return normalizedBrowserOrigin.slice(0, endIndex);
 }
 
 export function buildAuthentikWebCallbackUrl(
