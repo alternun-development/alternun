@@ -187,13 +187,7 @@ const expoPublicAuthentikClientId = expoConfig.publicEnv.authentikClientId;
 const expoPublicAuthentikRedirectUri = expoConfig.publicEnv.authentikRedirectUri;
 const expoPublicAuthentikLoginEntryMode = expoConfig.publicEnv.authentikLoginEntryMode;
 const expoPublicAuthentikSocialLoginMode = expoConfig.publicEnv.authentikSocialLoginMode;
-const expoPublicAuthentikProviderFlowSlugs =
-  expoConfig.publicEnv.authentikProviderFlowSlugs ??
-  (identitySettings.integration.google.loginFlowSlug.trim()
-    ? JSON.stringify({
-        google: identitySettings.integration.google.loginFlowSlug.trim(),
-      })
-    : '');
+const expoPublicAuthentikProviderFlowSlugs = expoConfig.publicEnv.authentikProviderFlowSlugs ?? '';
 const expoPublicReleaseUpdateMode = expoConfig.publicEnv.releaseUpdateMode;
 const enableAirsToDevRedirect = expoConfig.redirects.enableAirsToDev;
 const airsToDevSourceDomain = expoConfig.redirects.airsToDevSourceDomain;
