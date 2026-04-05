@@ -38,6 +38,8 @@
     "version:changelog": "versioning changelog",
     "version:cleanup": "versioning cleanup",
     "version:check-secrets": "versioning check-secrets",
+    "changelog:check": "node scripts/check-changelog.mjs",
+    "changelog:check:allow-empty": "node scripts/check-changelog.mjs --allow-empty",
     "release": "node scripts/release.mjs",
     "release:build": "node scripts/release.mjs build",
     "release:build:no-push": "node scripts/release.mjs build --no-push",
