@@ -194,6 +194,7 @@ export default function LandingFooter(): React.JSX.Element {
                       label={t(link.labelKey, undefined, link.fallbackLabel)}
                       url={link.url}
                       textColor={palette.title}
+                      hoverColor={palette.accent}
                     />
                   ))}
                 </View>
@@ -208,6 +209,7 @@ export default function LandingFooter(): React.JSX.Element {
                       iconColor={palette.accent}
                       backgroundColor={palette.socialBg}
                       borderColor={palette.socialBorder}
+                      hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
                     />
                   ))}
                 </View>
@@ -270,6 +272,7 @@ export default function LandingFooter(): React.JSX.Element {
                   label={t(link.labelKey, undefined, link.fallbackLabel)}
                   url={link.url}
                   textColor={palette.title}
+                  hoverColor={palette.accent}
                 />
               ))}
             </View>
@@ -283,6 +286,7 @@ export default function LandingFooter(): React.JSX.Element {
                   iconColor={palette.accent}
                   backgroundColor={palette.socialBg}
                   borderColor={palette.socialBorder}
+                  hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
                 />
               ))}
             </View>

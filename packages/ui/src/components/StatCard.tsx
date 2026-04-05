@@ -62,11 +62,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.xl,
     padding: spacing[4],
-    shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 14,
-    elevation: 5,
+    boxShadow: '0px 10px 24px rgba(0, 0, 30, 0.16)',
   },
   cardTop: {
     flexDirection: 'row',

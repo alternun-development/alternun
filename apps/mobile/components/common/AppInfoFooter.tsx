@@ -107,13 +107,13 @@ export default function AppInfoFooter(): React.JSX.Element {
         bottomBar: 'rgba(255,255,255,0.2)',
       };
 
-  const shellPadding = isWide ? 12 : isMobile ? 8 : 12;
-  const brandMarkSize = isWide ? 36 : isMobile ? 28 : 32;
-  const wordmarkWidth = isWide ? 90 : isMobile ? 68 : 82;
-  const wordmarkHeight = isWide ? 30 : isMobile ? 22 : 26;
+  const shellPadding = isWide ? 8 : isMobile ? 6 : 9;
+  const brandMarkSize = isWide ? 34 : isMobile ? 26 : 30;
+  const wordmarkWidth = isWide ? 84 : isMobile ? 64 : 76;
+  const wordmarkHeight = isWide ? 28 : isMobile ? 20 : 24;
 
   return (
-    <View style={[styles.outer]}>
+    <View style={styles.outer}>
       <View
         style={[
           styles.shell,
@@ -127,7 +127,7 @@ export default function AppInfoFooter(): React.JSX.Element {
           <BlurView
             intensity={isWide ? 42 : 30}
             tint={isDark ? 'dark' : 'light'}
-            style={[StyleSheet.absoluteFillObject]}
+            style={StyleSheet.absoluteFillObject}
           />
         )}
         {motionLevel === 'off' && (
@@ -189,6 +189,7 @@ export default function AppInfoFooter(): React.JSX.Element {
                     label={t(link.labelKey, undefined, link.fallbackLabel)}
                     url={link.url}
                     textColor={palette.title}
+                    hoverColor={palette.accent}
                   />
                 ))}
               </View>
@@ -203,6 +204,7 @@ export default function AppInfoFooter(): React.JSX.Element {
                     iconColor={palette.accent}
                     backgroundColor={palette.socialBg}
                     borderColor={palette.socialBorder}
+                    hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
                   />
                 ))}
               </View>
@@ -222,6 +224,7 @@ export default function AppInfoFooter(): React.JSX.Element {
                   iconColor={palette.accent}
                   backgroundColor={palette.socialBg}
                   borderColor={palette.socialBorder}
+                  hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
                 />
               ))}
             </View>
@@ -234,7 +237,7 @@ export default function AppInfoFooter(): React.JSX.Element {
             styles.bottomBar,
             {
               backgroundColor: palette.bottomBar,
-              marginTop: isMobile ? 8 : 16,
+              marginTop: isMobile ? 6 : 10,
             },
           ]}
         >
@@ -286,23 +289,23 @@ const styles = createTypographyStyles({
   /* Desktop */
   desktopLayout: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 20,
+    gap: 14,
   },
   brandBlock: {
-    gap: 2,
-    minWidth: 160,
+    gap: 0,
+    minWidth: 148,
   },
   brandHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   bylineRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
     paddingLeft: 2,
   },
   bylineText: {
@@ -317,21 +320,23 @@ const styles = createTypographyStyles({
   },
   linksBlock: {
     flex: 1,
+    minWidth: 0,
   },
   linkRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   socialBlock: {
     alignItems: 'flex-end',
+    marginLeft: 'auto',
   },
   socialRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 6,
   },
 
   /* Mobile */
@@ -354,7 +359,7 @@ const styles = createTypographyStyles({
 
   /* Bottom bar */
   bottomBar: {
-    marginTop: 24,
+    marginTop: 12,
     borderRadius: 0,
     borderWidth: 0,
     borderTopWidth: 1,
@@ -364,12 +369,12 @@ const styles = createTypographyStyles({
     justifyContent: 'space-between',
     gap: 12,
     paddingHorizontal: 0,
-    paddingVertical: 10,
+    paddingVertical: 7,
   },
   versionBadge: {
     borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 7,
+    borderRadius: 999,
+    paddingHorizontal: 8,
     paddingVertical: 2,
   },
   bottomMeta: {

@@ -231,6 +231,10 @@ export default function TopNav({
     setMenuVisible(false);
     setNotifVisible((v) => !v);
   };
+  const handleBrandPress = () => {
+    dismissAll();
+    onNavigate?.('dashboard');
+  };
 
   const anyOpen = menuVisible || notifVisible;
   const dismissAll = () => {
@@ -260,31 +264,38 @@ export default function TopNav({
 
         {/* Left: Airs wordmark + brand mark + byline */}
         <View style={styles.logoArea}>
-          <View style={styles.logoBrand}>
-            {/* Wordmark row: "Airs" SVG + mark */}
-            <View style={styles.logoMarkRow}>
-              <ExpoImage
-                source={wordmarkSource}
-                style={isMobile ? styles.wordmarkMobile : styles.wordmark}
-                contentFit='contain'
-              />
-              <AirsBrandMark
-                size={isMobile ? 28 : 34}
-                fillColor={brandMarkFill}
-                cutoutColor={brandMarkCutout}
-              />
+          <Pressable
+            accessibilityRole='button'
+            accessibilityLabel='Return to dashboard'
+            onPress={handleBrandPress}
+            style={({ pressed }) => [styles.logoButton, pressed && styles.logoButtonPressed]}
+          >
+            <View style={styles.logoBrand}>
+              {/* Wordmark row: "Airs" SVG + mark */}
+              <View style={styles.logoMarkRow}>
+                <ExpoImage
+                  source={wordmarkSource}
+                  style={isMobile ? styles.wordmarkMobile : styles.wordmark}
+                  contentFit='contain'
+                />
+                <AirsBrandMark
+                  size={isMobile ? 28 : 34}
+                  fillColor={brandMarkFill}
+                  cutoutColor={brandMarkCutout}
+                />
+              </View>
+              {/* Byline: "By [Alternun logo]" + subtitle on desktop */}
+              <View style={styles.bylineRow}>
+                <Text style={[styles.bylineBy, { color: p.pillSub }]}>{t('labels.by')}</Text>
+                <ExpoImage source={ALTERNUN_LOGO} style={styles.bylineLogo} contentFit='contain' />
+                {!isMobile && (
+                  <Text style={[styles.bylineSubtitle, { color: p.pillSub }]} numberOfLines={1}>
+                    Alternun Impact & Reputation Score
+                  </Text>
+                )}
+              </View>
             </View>
-            {/* Byline: "By [Alternun logo]" + subtitle on desktop */}
-            <View style={styles.bylineRow}>
-              <Text style={[styles.bylineBy, { color: p.pillSub }]}>{t('labels.by')}</Text>
-              <ExpoImage source={ALTERNUN_LOGO} style={styles.bylineLogo} contentFit='contain' />
-              {!isMobile && (
-                <Text style={[styles.bylineSubtitle, { color: p.pillSub }]} numberOfLines={1}>
-                  Alternun Impact & Reputation Score
-                </Text>
-              )}
-            </View>
-          </View>
+          </Pressable>
         </View>
 
         {/* Right: profile pill (notification badge inside) */}
@@ -605,6 +616,15 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     justifyContent: 'center',
+  },
+  logoButton: {
+    alignSelf: 'flex-start',
+    borderRadius: 16,
+    paddingRight: 8,
+    paddingVertical: 2,
+  },
+  logoButtonPressed: {
+    opacity: 0.78,
   },
   logoBrand: {
     gap: 2,
