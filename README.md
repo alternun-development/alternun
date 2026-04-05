@@ -152,13 +152,17 @@ pnpm version:validate
 # Sync versions across the whole workspace
 pnpm version:sync
 
-# Set an explicit release version across the monorepo
-pnpm release 1.0.2
+# Create a build release
+pnpm release
+pnpm release build
 
 # Create release bumps
-pnpm release:patch
+pnpm release patch
 pnpm release:minor
 pnpm release:major
+
+# Set an explicit release version across the monorepo
+pnpm release 1.0.2
 
 # Promote the current release according to ALTERNUN_TESTNET_MODE
 pnpm release -- --promote
@@ -189,7 +193,7 @@ pnpm version:check-secrets
 
 1. **Development**: Work on feature branches with automatic version tracking
 2. **Validation**: Pre-push hooks validate version consistency
-3. **Release**: use the release wrapper for every production version increment
+3. **Release**: use the release wrapper for every versioned build or patch increment
 4. **Documentation**: Auto-generated changelogs for releases
 
 ### Mandatory Versioning Rule
@@ -202,16 +206,17 @@ pnpm version:check-secrets
 ```bash
 pnpm version:sync
 pnpm version:validate
-pnpm release:patch
+pnpm release
+pnpm release patch
 ```
 
 ### Release Flow
 
 - `pnpm release <version>` sets an explicit version across the root package, every workspace package, and `apps/mobile/app.json`, then regenerates `CHANGELOG.md`.
-- `pnpm release:patch`, `pnpm release:minor`, and `pnpm release:major` wrap `@edcalderon/versioning`, regenerate `CHANGELOG.md`, sync `apps/mobile/app.json`, force a fresh workspace build so tracked package artifacts such as `packages/auth/dist` stay current, create the release commit/tag, and push by default.
+- `pnpm release` or `pnpm release build` creates a build release on development branches using the branch-aware dev format, so `develop` becomes `semantic-dev.<build>`.
+- `pnpm release patch`, `pnpm release minor`, and `pnpm release major` wrap `@edcalderon/versioning`, regenerate `CHANGELOG.md`, sync `apps/mobile/app.json`, force a fresh workspace build so tracked package artifacts such as `packages/auth/dist` stay current, create the release commit/tag, and push by default.
 - Those release builds also keep `packages/update/dist` current so the shared release-update worker ships with the same version that the monorepo release tags use.
-- On `develop`, those releases use the branch-aware dev format, so the version and tag become `semantic-dev.<build>` instead of a plain semantic version.
-- Use `pnpm release:patch:no-push` only when you intentionally want to stop before pushing.
+- Use `pnpm release:build:no-push` or `pnpm release:patch:no-push` only when you intentionally want to stop before pushing.
 - `pnpm release -- --promote` never increments the version. It only promotes the current release.
   - When `ALTERNUN_TESTNET_MODE=on`, promotion must run from `master` or `main`. The script pushes the production branch and then reuses the existing infra sync flow to fast-forward `develop`.
   - When `ALTERNUN_TESTNET_MODE=off`, promotion must run from `develop`. The script pushes `develop` and opens a PR from `develop` into `master` or `main`.
