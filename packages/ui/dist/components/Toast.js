@@ -64,7 +64,7 @@ function Toast(_a) {
 }
 function ToastSystem(_a) {
     var toasts = _a.toasts, onDismiss = _a.onDismiss;
-    return (<react_native_1.View style={styles.system} pointerEvents="box-none">
+    return (<react_native_1.View style={styles.system} pointerEvents='box-none'>
       {toasts.map(function (t) { return (<Toast key={t.id} item={t} onDismiss={onDismiss}/>); })}
     </react_native_1.View>);
 }

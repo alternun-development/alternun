@@ -32,9 +32,7 @@ function GlassCard(_a) {
     return (<react_native_1.View style={[
             styles.card,
             {
-                backgroundColor: theme.isDark
-                    ? "rgba(13,13,31,0.88)"
-                    : "rgba(255,255,255,0.88)",
+                backgroundColor: theme.isDark ? 'rgba(13,13,31,0.88)' : 'rgba(255,255,255,0.88)',
                 borderColor: VARIANT_BORDERS[variant],
                 shadowColor: VARIANT_GLOW[variant],
                 padding: padding !== null && padding !== void 0 ? padding : spacing_1.spacing[4],

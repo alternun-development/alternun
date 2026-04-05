@@ -44,7 +44,7 @@ declare const STATUS_PRESETS: {
 };
 export type StatusPreset = keyof typeof STATUS_PRESETS;
 interface StatusPillProps {
-  status: StatusPreset | string;
+  status: string;
   size?: 'sm' | 'md';
   style?: ViewStyle;
 }

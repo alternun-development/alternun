@@ -59,11 +59,14 @@ function ProgressBar(_a) {
     var shimmerOpacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] });
     return (<react_native_1.View style={style}>
       {showLabel && (<react_native_1.View style={styles.labelRow}>
-          {label ? <react_native_1.Text style={[styles.label, { color: theme.textSecondary }]}>{label}</react_native_1.Text> : null}
+          {label ? (<react_native_1.Text style={[styles.label, { color: theme.textSecondary }]}>{label}</react_native_1.Text>) : null}
           {trailingLabel ? (<react_native_1.Text style={[styles.label, { color: theme.textMuted }]}>{trailingLabel}</react_native_1.Text>) : null}
         </react_native_1.View>)}
 
-      <react_native_1.View style={[styles.track, { height: height, borderRadius: spacing_1.radius.full, backgroundColor: theme.skeletonBase }]}>
+      <react_native_1.View style={[
+            styles.track,
+            { height: height, borderRadius: spacing_1.radius.full, backgroundColor: theme.skeletonBase },
+        ]}>
         <react_native_1.Animated.View style={[
             styles.fill,
             {
@@ -79,9 +82,7 @@ function ProgressBar(_a) {
         ]}/>
       </react_native_1.View>
 
-      <react_native_1.Text style={[styles.percent, { color: theme.textMuted }]}>
-        {Math.round(clamped * 100)}%
-      </react_native_1.Text>
+      <react_native_1.Text style={[styles.percent, { color: theme.textMuted }]}>{Math.round(clamped * 100)}%</react_native_1.Text>
     </react_native_1.View>);
 }
 var styles = react_native_1.StyleSheet.create({

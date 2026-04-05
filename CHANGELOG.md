@@ -1,3 +1,25 @@
+## [1.0.7](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.3...v1.0.7) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile:** clean up TopNav — remove top-bar pills, move wallet into dropdown ([a356e59](https://github.com/alternun-development/alternun/commit/a356e591087d7f111dc059a383f9718d1d7bb422))
+- resolve @alternun/update in Metro and fix auth callback loop ([27ea88b](https://github.com/alternun-development/alternun/commit/27ea88b3e24aaf0f4a6d5e44a7f406b03e48df34))
+
+### Features
+
+- **scripts:** auto-commit pending changes before release ([8e7f7c4](https://github.com/alternun-development/alternun/commit/8e7f7c491490552ac415131c23b20713d9635817))
+
+## [1.0.7](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.3...v1.0.7) (2026-04-05)
+
+### Bug Fixes
+
+- **mobile:** clean up TopNav — remove top-bar pills, move wallet into dropdown ([a356e59](https://github.com/alternun-development/alternun/commit/a356e591087d7f111dc059a383f9718d1d7bb422))
+- resolve @alternun/update in Metro and fix auth callback loop ([27ea88b](https://github.com/alternun-development/alternun/commit/27ea88b3e24aaf0f4a6d5e44a7f406b03e48df34))
+
+### Features
+
+- **scripts:** auto-commit pending changes before release ([8e7f7c4](https://github.com/alternun-development/alternun/commit/8e7f7c491490552ac415131c23b20713d9635817))
+
 ## [1.0.7-dev.3](https://github.com/alternun-development/alternun/compare/v1.0.7-dev.2...v1.0.7-dev.3) (2026-04-04)
 
 ### Features
