@@ -67,6 +67,7 @@ const CircleUserRoundIcon = CircleUserRound as React.FC<LucideProps>;
 const MoonIcon = Moon as React.FC<LucideProps>;
 const SunIcon = Sun as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
+const EMPTY_NOTIFICATIONS: NotificationItem[] = [];
 
 // ── Nav sections ──────────────────────────────────────────────────────────────
 export interface NavSection {
@@ -132,7 +133,7 @@ export default function TopNav({
   userDisplayName,
   userEmail,
   airsScore,
-  notifications = [],
+  notifications = EMPTY_NOTIFICATIONS,
   activeSection = 'dashboard',
   onSignIn,
   onConnectWallet,
@@ -684,11 +685,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingLeft: 5,
     paddingRight: 10,
-    shadowColor: '#1EE6B5',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 4,
+    boxShadow: '0px 10px 22px rgba(30, 230, 181, 0.18)',
   },
   avatar: {
     width: 30,
@@ -742,11 +739,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 6,
     gap: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.5,
-    shadowRadius: 24,
-    elevation: 14,
+    boxShadow: '0px 18px 34px rgba(5, 16, 13, 0.28)',
     zIndex: 1200,
   },
   dropHeader: {

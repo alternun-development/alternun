@@ -8,7 +8,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import 'react-native-reanimated';
 import '../global.css';
@@ -23,26 +23,25 @@ export default function RootLayout(): any {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  useEffect(() => {
-    if (loaded) {
-      void SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
   return (
     <AppPreferencesProvider>
-      <RootApp />
+      <RootApp fontsLoaded={loaded} />
     </AppPreferencesProvider>
   );
 }
 
-function RootApp(): any {
+function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): any {
   const { themeMode } = useAppPreferences();
   const navigationTheme = themeMode === 'dark' ? DarkTheme : DefaultTheme;
+  const handleLayout = useCallback(() => {
+    if (fontsLoaded) {
+      void SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
   return (
     <AppAuthProvider>
       <ThemeProvider value={navigationTheme}>
-        <View style={styles.appShell}>
+        <View style={styles.appShell} onLayout={handleLayout}>
           <View style={styles.stackContainer}>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name='index' options={{ headerShown: false }} />
