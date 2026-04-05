@@ -41,8 +41,14 @@ Options:
   --no-tag        Do not create an annotated git tag.
   --no-commit     Do not create a release commit.
   --dry-run       Print commands without changing git state.
-  --allow-dirty   Skip the clean-working-tree guard.
+  --allow-dirty   Skip the clean-working-tree guard (does not auto-commit).
   --help          Show this help text.
+
+Notes:
+  By default, uncommitted tracked changes are automatically staged and committed
+  with a generated conventional-commit message before the release starts.
+  New untracked source files are also staged unless they look like build artefacts.
+  Use --allow-dirty to skip this and proceed with a dirty tree (no auto-commit).
 `);
 }
 
@@ -235,21 +241,140 @@ function parseStatusPath(line) {
   return rawPath.replace(/\\/g, '/');
 }
 
+function getPendingChanges() {
+  return run('git', ['status', '--porcelain'], { capture: true })
+    .stdout.split('\n')
+    .map((line) => line.trimEnd())
+    .filter(Boolean)
+    .filter((line) => !IGNORED_WORKTREE_PATHS.has(parseStatusPath(line)))
+    .map((line) => ({
+      xy: line.slice(0, 2).trim(),
+      path: parseStatusPath(line),
+      untracked: line.startsWith('??'),
+    }));
+}
+
+const AREA_MAP = [
+  ['apps/mobile', 'mobile'],
+  ['apps/web', 'web'],
+  ['apps/admin', 'admin'],
+  ['apps/api', 'api'],
+  ['apps/docs', 'docs'],
+  ['packages/ui', 'ui'],
+  ['packages/auth', 'auth'],
+  ['packages/i18n', 'i18n'],
+  ['packages/infra', 'infra'],
+  ['packages/update', 'update'],
+  ['packages/email-templates', 'email'],
+  ['scripts', 'scripts'],
+];
+
+function resolveAreas(paths) {
+  const areas = new Set();
+  for (const p of paths) {
+    let matched = false;
+    for (const [prefix, label] of AREA_MAP) {
+      if (p === prefix || p.startsWith(prefix + '/')) {
+        areas.add(label);
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) areas.add('repo');
+  }
+  return [...areas].slice(0, 3);
+}
+
+function resolveCommitType(paths) {
+  // New source files → feat; test/spec files → test; config/scripts → chore; else fix
+  if (paths.some((p) => /\.(test|spec)\.[jt]sx?$/.test(p))) return 'test';
+  if (
+    paths.every(
+      (p) =>
+        p.endsWith('.json') ||
+        p.endsWith('.md') ||
+        p.startsWith('scripts/') ||
+        p.startsWith('.github/')
+    )
+  )
+    return 'chore';
+  // If most changes are in component/feature directories, lean towards fix
+  return 'fix';
+}
+
+function buildAutoCommitMessage(changes) {
+  const paths = changes.map((c) => c.path);
+  const areas = resolveAreas(paths);
+  const type = resolveCommitType(paths);
+  const scope = areas.join(',');
+
+  // Build a short summary from the changed file basenames
+  const baseNames = [
+    ...new Set(
+      paths
+        .filter((p) => !p.endsWith('.log') && !p.includes('/dist/'))
+        .map((p) => path.basename(p, path.extname(p)))
+        .filter((n) => n && n !== 'index' && n !== 'package')
+        .slice(0, 4)
+    ),
+  ];
+
+  const summary =
+    baseNames.length > 0
+      ? baseNames.join(', ')
+      : `${paths.length} file${paths.length === 1 ? '' : 's'} updated`;
+
+  return `${type}(${scope}): ${summary}`;
+}
+
+function autoCommitPendingChanges(dryRun) {
+  const changes = getPendingChanges();
+  if (changes.length === 0) return;
+
+  const tracked = changes.filter((c) => !c.untracked);
+  const untracked = changes.filter((c) => c.untracked);
+
+  if (tracked.length === 0 && untracked.length === 0) return;
+
+  console.log(`\nDetected ${changes.length} pending change(s) — auto-committing before release:`);
+  for (const c of changes.slice(0, 12)) {
+    console.log(`  ${c.xy || '??'} ${c.path}`);
+  }
+  if (changes.length > 12) {
+    console.log(`  ... and ${changes.length - 12} more`);
+  }
+
+  const message = buildAutoCommitMessage(changes);
+  console.log(`\nCommit message: "${message}"\n`);
+
+  // Stage tracked modifications and deletions
+  if (tracked.length > 0) {
+    run('git', ['add', '-u'], { dryRun });
+  }
+
+  // Stage new untracked files that are not obviously generated
+  const stagedUntracked = untracked.filter(
+    (c) =>
+      !c.path.endsWith('.log') &&
+      !c.path.includes('node_modules/') &&
+      !c.path.includes('/dist/') &&
+      !c.path.includes('/.turbo/')
+  );
+  if (stagedUntracked.length > 0) {
+    run('git', ['add', '--', ...stagedUntracked.map((c) => c.path)], { dryRun });
+  }
+
+  run('git', ['commit', '-m', message], { dryRun });
+  console.log('✓ Pending changes committed.\n');
+}
+
 function ensureCleanWorkingTree(options) {
   if (options.allowDirty) {
     return;
   }
 
-  const statusLines = run('git', ['status', '--porcelain'], { capture: true })
-    .stdout.split('\n')
-    .map((line) => line.trimEnd())
-    .filter(Boolean);
-
-  const relevantChanges = statusLines.filter(
-    (line) => !IGNORED_WORKTREE_PATHS.has(parseStatusPath(line))
-  );
-
-  if (relevantChanges.length > 0) {
+  const changes = getPendingChanges();
+  if (changes.length > 0) {
     throw new Error(
       'Working tree is not clean. Commit or stash changes before running the release flow.'
     );
@@ -535,6 +660,10 @@ function main() {
 
   if (!options.createCommit && directPushEnabled) {
     throw new Error('--no-commit requires --no-push.');
+  }
+
+  if (!options.allowDirty && !options.promote) {
+    autoCommitPendingChanges(options.dryRun);
   }
 
   ensureCleanWorkingTree(options);
