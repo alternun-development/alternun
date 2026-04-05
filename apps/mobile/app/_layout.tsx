@@ -44,11 +44,7 @@ function RootApp(): any {
       <ThemeProvider value={navigationTheme}>
         <View style={styles.appShell}>
           <View style={styles.stackContainer}>
-            <Stack
-              screenOptions={({ route }) => ({
-                headerShown: !route.name.startsWith('tempobook'),
-              })}
-            >
+            <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name='index' options={{ headerShown: false }} />
               <Stack.Screen
                 name='auth'
@@ -77,6 +73,7 @@ function RootApp(): any {
               <Stack.Screen
                 name='settings'
                 options={{
+                  headerShown: true,
                   title: 'Settings',
                   headerBackTitle: 'Back',
                 }}
@@ -84,9 +81,34 @@ function RootApp(): any {
               <Stack.Screen
                 name='profile'
                 options={{
+                  headerShown: true,
                   title: 'Profile',
                   headerBackTitle: 'Back',
                 }}
+              />
+              <Stack.Screen
+                name='compensaciones'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='mis-atn'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='proyectos'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='beneficios'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='ranking'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='wallet'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
               />
             </Stack>
           </View>
