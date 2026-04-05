@@ -26,23 +26,24 @@ interface DashboardSummaryCardsProps {
 function getPalette(isDark: boolean) {
   return isDark
     ? {
-        cardBg: 'rgba(249,250,252,0.96)',
-        cardBorder: 'rgba(112,124,151,0.28)',
-        cardShadow: 'rgba(12,18,38,0.28)',
-        title: '#313A91',
-        subtitle: '#566287',
-        copy: '#636A82',
-        muted: '#7A8098',
-        accent: '#11826B',
-        accentSoft: 'rgba(17,130,107,0.11)',
-        accentStrong: '#0E8D71',
-        warning: '#D2A12F',
-        warningSoft: 'rgba(210,161,47,0.16)',
-        line: 'rgba(69,80,118,0.14)',
-        panelBg: 'rgba(236,239,244,0.88)',
-        panelBorder: 'rgba(119,126,155,0.24)',
-        iconBg: 'rgba(49,58,145,0.08)',
-        iconColor: '#313A91',
+        cardBg: 'rgba(11,18,27,0.96)',
+        cardBorder: 'rgba(124,146,182,0.18)',
+        cardShadow: 'rgba(0,0,0,0.34)',
+        title: '#DCE5FF',
+        subtitle: '#93A4C8',
+        copy: '#B5C0D6',
+        muted: '#7F8AA4',
+        accent: '#27C8A3',
+        accentSoft: 'rgba(39,200,163,0.12)',
+        accentStrong: '#4DE2BC',
+        warning: '#E6B44E',
+        warningSoft: 'rgba(230,180,78,0.14)',
+        line: 'rgba(154,170,202,0.14)',
+        panelBg: 'rgba(18,27,39,0.86)',
+        panelBorder: 'rgba(128,146,184,0.18)',
+        iconBg: 'rgba(58,78,124,0.28)',
+        iconColor: '#9FB2FF',
+        heroBadgeBg: '#3140A8',
       }
     : {
         cardBg: '#FBFCFE',
@@ -62,6 +63,7 @@ function getPalette(isDark: boolean) {
         panelBorder: 'rgba(119,126,155,0.22)',
         iconBg: 'rgba(49,58,145,0.08)',
         iconColor: '#313A91',
+        heroBadgeBg: '#313A91',
       };
 }
 
@@ -268,7 +270,7 @@ function RBICard({ p, compact = false }: { p: ReturnType<typeof getPalette>; com
           style={[
             styles.heroBadge,
             compact && styles.heroBadgeCompact,
-            { backgroundColor: p.title },
+            { backgroundColor: p.heroBadgeBg },
           ]}
         >
           <CoinsIcon size={14} color='#F8FAFC' />
