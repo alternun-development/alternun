@@ -15,6 +15,9 @@ const i18nCatalogsRoot = path.join(i18nPackageRoot, "src/catalogs");
 const uiPackageRoot = path.join(workspaceRoot, "packages/ui");
 const uiEntry = path.join(uiPackageRoot, "src/index.ts");
 
+const updatePackageRoot = path.join(workspaceRoot, "packages/update");
+const updateEntry = path.join(updatePackageRoot, "src/index.ts");
+
 config.watchFolders = Array.from(
   new Set([...(config.watchFolders || []), workspaceRoot]),
 );
@@ -36,6 +39,7 @@ config.resolver.extraNodeModules = {
   ...(config.resolver.extraNodeModules || {}),
   "@alternun/i18n": i18nPackageRoot,
   "@alternun/ui": uiPackageRoot,
+  "@alternun/update": updatePackageRoot,
   react: reactPath,
   "react-dom": reactDomPath,
   "react-native": reactNativePath,
@@ -93,6 +97,9 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   }
   if (moduleName === "@alternun/ui") {
     return { type: "sourceFile", filePath: uiEntry };
+  }
+  if (moduleName === "@alternun/update") {
+    return { type: "sourceFile", filePath: updateEntry };
   }
   if (moduleName === "expo-asset") {
     return { type: "sourceFile", filePath: expoAssetEntry };

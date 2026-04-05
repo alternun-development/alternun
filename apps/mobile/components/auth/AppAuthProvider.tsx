@@ -2,6 +2,7 @@ import {
   AppAuthProvider as AlternunAuthProvider,
   useAuth as useAlternunAuth,
 } from '@alternun/auth';
+import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 import { createTypographyStyles } from '../theme/typography';
@@ -167,6 +168,7 @@ function oidcSessionToUser(
 function AuthCallbackBridge(): React.JSX.Element | null {
   const { client } = useAlternunAuth();
   const { t } = useAppTranslation('mobile');
+  const router = useRouter();
   const [toast, setToast] = useState<CallbackToast | null>(null);
 
   // Restore stored OIDC session on mount (survives page reload)
@@ -248,6 +250,10 @@ function AuthCallbackBridge(): React.JSX.Element | null {
           title: t('authCallback.errors.title'),
           message: err instanceof Error ? err.message : t('authCallback.errors.finalizeFailed'),
         });
+        // Navigate to auth so the user isn't stuck on a blank spinner.
+        // The home page can't recover on its own when OIDC_CALLBACK_PENDING is true
+        // and the user never gets set.
+        router.replace('/auth');
       });
     return () => {
       cancelled = true;
