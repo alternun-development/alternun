@@ -222,17 +222,17 @@ Current default identity domains:
 
 The mobile web auth surface supports two Authentik entry patterns:
 
-- `relay` keeps the app as the visible entrypoint and routes through `/auth-relay` before starting the Authentik login flow.
 - `source` jumps straight to Authentik's social source login route.
+- `relay` keeps the app as the visible entrypoint and routes through `/auth-relay` before starting the Authentik login flow.
 
 Control the mode with `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE` in repo env, pipeline env, or `packages/infra/config/deployment.config.json`.
-The default is `relay`, which is the most flexible option for return-target handling and future flow changes.
+The default is `source`, which is the smoothest option and avoids an extra relay hop unless you explicitly opt in.
 Use `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` to control whether the app uses Authentik-only social login, the hybrid Authentik/Supabase fallback path, or Supabase-only login.
 The default is `authentik` for deployed bundles so testnet/prod stay Authentik-first unless you explicitly opt into another mode.
 Use `hybrid` only when you intentionally want Supabase fallback while iterating locally.
-The core web pipelines set `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` so deployed bundles get a reload prompt when a new release is detected. Local development can keep `auto` or `off`.
-`EXPO_PUBLIC_AUTHENTIK_ISSUER` and `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID` should be present in env, but deployed web builds now derive sane defaults from the live `airs` origin if they are omitted. `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` is also optional in deployed web builds; when omitted, the shared auth helpers derive the callback from the current browser origin. Loopback values are treated as local-dev hints and browser origin wins during web development. Keep the issuer and redirect explicit only if you need non-standard callback paths.
-If you want the optional custom Authentik source-stage pattern, set `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` explicitly. Leave it empty for the direct source-login path. `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` still controls the Authentik-side bootstrap object, but it no longer drives the mobile bundle automatically.
+The core web pipelines set `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`, `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`, and `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` so deployed bundles stay on the shortest stable Authentik path and get a reload prompt when a new release is detected.
+`EXPO_PUBLIC_AUTHENTIK_ISSUER` and `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID` should be present in env, but deployed web builds now derive sane defaults from the live `airs` origin if they are omitted. `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` is also optional in deployed web builds; when omitted, the shared auth helpers derive `https://<airs-domain>/auth/callback` from the current browser origin. Loopback values are treated as local-dev hints and browser origin wins during web development.
+Custom Authentik provider-flow slugs are now explicit only. Set `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` or `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` only when you intentionally want a custom starter flow. When those values are blank, the app uses the direct source-login path.
 The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages so logout returns to the app instead of stopping on Authentik's success page.
 
 ### Release Update Banner
@@ -289,7 +289,7 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET`
 - `INFRA_IDENTITY_GOOGLE_SOURCE_NAME`
 - `INFRA_IDENTITY_GOOGLE_SOURCE_SLUG`
-- `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` (optional; leave empty for direct source login)
+- `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` (optional; set only when you intentionally want a custom outer Authentik starter flow, otherwise leave it empty for direct source login)
 - `INFRA_IDENTITY_SUPABASE_PROJECT_REF` (or `EXPO_PUBLIC_SUPABASE_URL`)
 - `INFRA_IDENTITY_SUPABASE_MANAGEMENT_ACCESS_TOKEN` (or `SUPABASE_ACCESS_TOKEN`)
 - `INFRA_IDENTITY_SUPABASE_OIDC_CLIENT_ID`

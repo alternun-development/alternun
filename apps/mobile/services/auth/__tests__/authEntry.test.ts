@@ -36,9 +36,9 @@ describe('authEntry', () => {
     }
   });
 
-  it('defaults to relay mode when the env var is absent', () => {
+  it('defaults to source mode when the env var is absent', () => {
     delete process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE;
-    expect(getAuthentikLoginEntryMode()).toBe('relay');
+    expect(getAuthentikLoginEntryMode()).toBe('source');
   });
 
   it('accepts explicit source mode', () => {
@@ -46,8 +46,8 @@ describe('authEntry', () => {
     expect(getAuthentikLoginEntryMode()).toBe('source');
   });
 
-  it('normalizes unknown values back to relay', () => {
-    expect(normalizeAuthentikLoginEntryMode('something-else')).toBe('relay');
+  it('normalizes unknown values back to source', () => {
+    expect(normalizeAuthentikLoginEntryMode('something-else')).toBe('source');
   });
 
   it('defaults social login mode to authentik when the env var is absent', () => {
@@ -68,8 +68,8 @@ describe('authEntry', () => {
     ).toBe('/auth-relay?provider=google&next=%2Fdashboard%3Ftab%3Dprofile&fresh=0');
   });
 
-  it('defaults relay routes to a fresh session start', () => {
-    expect(buildAuthentikRelayPath('discord')).toBe('/auth-relay?provider=discord&fresh=1');
+  it('defaults relay routes to a no-logout start', () => {
+    expect(buildAuthentikRelayPath('discord')).toBe('/auth-relay?provider=discord&fresh=0');
   });
 
   it('builds a typed app-owned relay route for expo-router', () => {

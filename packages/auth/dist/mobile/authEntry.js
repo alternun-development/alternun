@@ -1,5 +1,5 @@
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
-const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE = 'relay';
+const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE = 'source';
 const DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE = 'authentik';
 function normalizeHostname(value) {
     return (value !== null && value !== void 0 ? value : '').trim().toLowerCase();
@@ -82,7 +82,7 @@ export function buildAuthentikRelayRoute(providerHint, options) {
         pathname: '/auth-relay',
         params: {
             provider: providerHint,
-            fresh: (options === null || options === void 0 ? void 0 : options.forceFreshSession) === false ? '0' : '1',
+            fresh: (options === null || options === void 0 ? void 0 : options.forceFreshSession) === true ? '1' : '0',
         },
     };
     const trimmedNext = (_a = options === null || options === void 0 ? void 0 : options.next) === null || _a === void 0 ? void 0 : _a.trim();

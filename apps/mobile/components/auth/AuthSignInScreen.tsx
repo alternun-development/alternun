@@ -1,13 +1,13 @@
-import type { OAuthFlow } from './AppAuthProvider';
 import {
   buildAuthentikRelayRoute,
   clearPendingAuthentikOAuthProvider,
   isAuthentikConfigured,
+  nativeSignIn,
   parseEmailAddress,
   parseSignUpPassword,
   readPendingAuthentikOAuthProvider,
   resolveAuthentikLoginStrategy,
-  startAuthentikOAuthFlow,
+  webRedirectSignIn,
 } from '@alternun/auth';
 import { Image as ExpoImage } from 'expo-image';
 import {
@@ -25,7 +25,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -90,18 +90,6 @@ export interface AuthSignInScreenProps {
   onCancel?: () => void;
   presentation?: 'screen' | 'modal';
   authReturnTo?: string;
-}
-
-function resolveGoogleFlow(supportedFlows: OAuthFlow[]): OAuthFlow {
-  if (supportedFlows.includes('redirect')) {
-    return 'redirect';
-  }
-
-  if (supportedFlows.includes('native')) {
-    return 'native';
-  }
-
-  return 'popup';
 }
 
 function resolveGoogleProvider(): string {
@@ -241,7 +229,6 @@ export default function AuthSignInScreen({
   const loginStrategy = resolveAuthentikLoginStrategy();
   const authentikLoginEntryMode = loginStrategy.mode;
   const authentikSocialLoginMode = loginStrategy.socialMode;
-  const providerFlowSlugs = loginStrategy.providerFlowSlugs;
   const authentikConfigured = isAuthentikConfigured();
   const shouldUseAuthentikSocialLogin = authentikSocialLoginMode !== 'supabase';
   const shouldForceAuthentikSocialLogin = authentikSocialLoginMode === 'authentik';
@@ -277,11 +264,7 @@ export default function AuthSignInScreen({
   const confirmPasswordInputRef = useRef<TextInput>(null);
   const confirmationCodeInputRef = useRef<TextInput>(null);
 
-  const googleFlow = useMemo(
-    () => resolveGoogleFlow(client.capabilities().supportedFlows),
-    [client]
-  );
-  const googleProvider = useMemo(() => resolveGoogleProvider(), []);
+  const googleProvider = resolveGoogleProvider();
 
   const rawEffectiveError = localError ?? error;
   const effectiveError = rawEffectiveError
@@ -332,14 +315,20 @@ export default function AuthSignInScreen({
       return;
     }
 
-    void startAuthentikOAuthFlow(pendingProvider)
-      .catch((authError) => {
+    void webRedirectSignIn({
+      client,
+      provider: pendingProvider,
+      authentikProviderHint: pendingProvider,
+      redirectTo: authReturnTo,
+      strategy: loginStrategy,
+    })
+      .catch((authError: unknown) => {
         setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
       })
       .finally(() => {
         setSubmitMode(null);
       });
-  }, [authReturnTo, router, shouldUseAuthentikRelayEntry, t]);
+  }, [authReturnTo, client, loginStrategy, router, shouldUseAuthentikRelayEntry, t]);
 
   const transitionToStep = (step: AuthStep) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -638,32 +627,23 @@ export default function AuthSignInScreen({
         return;
       }
 
-      // Try Authentik OIDC first (vendor-independent). In hybrid mode we
-      // fall back to Supabase Auth when Authentik env vars are not configured.
-      if (!shouldUseAuthentikSocialLogin) {
-        await signIn({ provider: googleProvider, flow: googleFlow });
+      if (Platform.OS === 'web') {
+        await webRedirectSignIn({
+          client,
+          provider: googleProvider,
+          authentikProviderHint: 'google',
+          redirectTo: authReturnTo,
+          strategy: loginStrategy,
+        });
         return;
       }
 
-      await startAuthentikOAuthFlow('google', {
-        forceFreshSession: true,
-        providerFlowSlugs,
+      await nativeSignIn({
+        client,
+        provider: googleProvider,
       });
-      // startAuthentikOAuthFlow redirects the page; code below only runs on error.
     } catch (oidcError) {
-      const msg = oidcError instanceof Error ? oidcError.message : '';
-      if (shouldForceAuthentikSocialLogin) {
-        setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
-      } else if (msg.startsWith('CONFIG_ERROR')) {
-        // Authentik not configured — fall back to Supabase Auth OAuth
-        try {
-          await signIn({ provider: googleProvider, flow: googleFlow });
-        } catch (authError) {
-          setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
-        }
-      } else {
-        setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
-      }
+      setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
     } finally {
       setSubmitMode(null);
     }
@@ -683,14 +663,20 @@ export default function AuthSignInScreen({
         return;
       }
 
-      if (!shouldUseAuthentikSocialLogin) {
-        setLocalError(t('authModal.errors.authenticationFailed'));
+      if (Platform.OS === 'web') {
+        await webRedirectSignIn({
+          client,
+          provider: 'discord',
+          authentikProviderHint: 'discord',
+          redirectTo: authReturnTo,
+          strategy: loginStrategy,
+        });
         return;
       }
 
-      await startAuthentikOAuthFlow('discord', {
-        forceFreshSession: true,
-        providerFlowSlugs,
+      await nativeSignIn({
+        client,
+        provider: 'discord',
       });
     } catch (oidcError) {
       setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));

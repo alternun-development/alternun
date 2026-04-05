@@ -4,168 +4,269 @@ sidebar_position: 2.5
 
 # Authentication and Session Flow
 
-This page documents the current AIRS authentication path as it exists now: Authentik owns identity, Supabase owns application data and authorization, and the shared auth packages coordinate the browser flow between them.
+This is the current AIRS auth architecture.
 
-The important design goal is simple:
+It is intentionally split by runtime:
 
-- Authentik should be the visible identity layer for deployed web builds
-- Supabase should remain the data and authorization layer
-- the app should control the redirect and callback flow instead of depending on Authentik's user dashboard
-- local development should stay flexible without making the deployed path ambiguous
+- web uses a browser redirect flow with a dedicated callback route
+- native uses the client runtime directly and stays separate from the web callback contract
+- Authentik owns identity
+- Supabase owns application session persistence, app-user provisioning, data, and authorization
 
-## System Roles
+The main rule is simple: deployed web builds should not silently drift between Authentik and Supabase because of hidden defaults.
 
-The current auth stack is split across a few specific pieces:
+## Responsibilities
 
-- `apps/mobile` owns the public AIRS sign-in UI and route handling
-- `@alternun/auth` owns the shared auth orchestration helpers and the mobile auth client wrapper
-- `packages/infra` owns deploy-time auth environment wiring and pipeline policy
-- Authentik is the OIDC provider and the identity boundary
-- Supabase stores the app session data and remains the authorization/data layer
+### Authentik
 
-## Auth Modes
+Authentik is the identity provider boundary.
 
-The login flow has two separate switches. They serve different purposes and should not be conflated.
+It owns:
 
-### 1. Login entry mode
+- upstream social identity flows such as Google and Discord
+- the OIDC authorization/code exchange boundary
+- upstream logout and IdP session state
+- identity-side app/provider configuration
 
-This controls the first visible hop when the user clicks a social login button.
+It does **not** own the AIRS web callback page or AIRS route state.
 
-- `relay` keeps the app as the visible entrypoint and routes through `/auth-relay`
-- `source` jumps straight to Authentik's social source login route
+### Supabase
 
-The mode is controlled by `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE`.
+Supabase is the application auth/data layer.
 
-### 2. Social login mode
+It owns:
 
-This controls whether social login is Authentik-first, hybrid, or Supabase-only.
+- the application session once AIRS finalizes auth
+- app-user provisioning and synchronization
+- row-level authorization and app data access
+- email/password auth and wallet auth
 
-- `authentik` forces Authentik-only social login
-- `hybrid` uses Authentik when configured and falls back to Supabase when needed
-- `supabase` bypasses Authentik social login entirely
+For AIRS web social login, Supabase is not the visible identity broker. Authentik is.
 
-The mode is controlled by `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`.
+## Runtime Split
 
-### Current deployment policy
+The shared auth package now exposes runtime-specific entry helpers instead of pretending every environment is the same.
 
-For deployed public builds, the infra pipeline sets `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`.
+### Web
 
-That means:
+Use browser redirects.
 
-- testnet and production should not silently fall back to Supabase for Google or Discord
-- the social buttons should remain Authentik-backed as long as the Authentik issuer and client ID are present
-- deployed web bundles can derive the issuer/client ID from the live `airs` origin if the env is missing, which keeps testnet resilient to stale pipeline wiring
-- local development can still opt into `hybrid` when a more permissive setup is useful
+- `webRedirectSignIn(...)`
+- callback route: `/auth/callback`
 
-Custom provider-flow slugs are now explicit:
+Web social login stores the intended destination, redirects to Authentik, finalizes the callback on `/auth/callback`, then returns to the requested route.
 
-- keep `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` empty for the direct source-login path
-- set it only when you intentionally want to force a custom Authentik flow slug such as `alternun-google-login`
-- `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` still governs the Authentik bootstrap, but it no longer auto-enables the mobile bundle path
+### Native
 
-## Current Flow
+Use native auth entry.
 
-At a high level, the auth round-trip looks like this:
+- `nativeSignIn(...)`
+
+Native auth remains separate from the web callback route. It should use runtime-native redirect/deep-link behavior instead of borrowing browser callback assumptions.
+
+### Popup support
+
+Popup login is **not** part of the package contract.
+
+If popup auth is added later, it should be implemented as a separate explicit API, not implied by a generic `signIn({ flow })` wrapper.
+
+## Shared Package Contract
+
+The shared package surface lives in `@alternun/auth`.
+
+The important pieces are:
+
+- `packages/auth/src/mobile/runtimeSignIn.ts`
+  - `webRedirectSignIn(...)`
+  - `nativeSignIn(...)`
+  - web callback URL helpers
+  - return-target storage helpers
+- `packages/auth/src/mobile/authentikUrls.ts`
+  - issuer/client/redirect resolution
+  - web callback URL defaults
+- `packages/auth/src/mobile/authentikClient.ts`
+  - Authentik OIDC start/finalize helpers
+- `packages/auth/src/mobile/AlternunMobileAuthClient.ts`
+  - runtime-aware client wrapper
+  - browser runtime is now `web`, not `native`
+
+The package contract is deliberately explicit:
+
+- web social auth starts through `webRedirectSignIn(...)`
+- native social auth starts through `nativeSignIn(...)`
+- wallet/email flows keep using the app auth client directly
+
+## Web Flow
+
+The deployed AIRS web flow is:
 
 ```mermaid
 sequenceDiagram
   participant User
-  participant Screen as AIRS auth screen
-  participant Relay as /auth-relay
+  participant App as /auth
   participant Auth as Authentik
+  participant Callback as /auth/callback
   participant Provider as AppAuthProvider
   participant Supabase as Supabase
 
-  User->>Screen: Open /auth?next=/
-  alt relay mode
-    Screen->>Relay: Go through /auth-relay
-    Relay->>Auth: Start Authentik login flow
-  else source mode
-    Screen->>Auth: Start Authentik login flow directly
-  end
-  Auth-->>Provider: Return code / tokens to callback URL
-  Provider->>Supabase: upsert_oidc_user provisioning
-  Provider-->>User: Restore app session and continue to next route
+  User->>App: Open /auth?next=/dashboard
+  App->>Auth: webRedirectSignIn(provider, redirectTo)
+  Auth->>Auth: Social login / OIDC
+  Auth-->>Callback: Redirect with code/state
+  Callback->>Supabase: Provision / finalize app session
+  Callback->>Provider: setOidcUser(...)
+  Callback-->>User: Redirect to stored next route
 ```
 
-### What the screen does
+Important implementation rules:
 
-The mobile auth screen decides which path to use from the current env and runtime state:
+- `/auth` is the sign-in page, not the callback handler
+- `/auth/callback` is the browser callback boundary
+- callback finalization does not live in a UI button component
+- the intended destination is stored explicitly and restored after success
 
-- if the app is configured for `relay`, it sends the user to `/auth-relay`
-- if the app is configured for `source`, it starts the Authentik login flow directly
-- if the social login mode is `authentik`, Google and Discord stay on Authentik and do not fall back to Supabase
-- if the social login mode is `hybrid`, Authentik is used when available and Supabase is the fallback
-- if the social login mode is `supabase`, the Authentik social buttons are bypassed entirely
-- if `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` is empty, the app uses the direct source-login route instead of a custom Authentik flow slug
-- if the issuer or client ID env is missing in a deployed web bundle, the shared auth helpers derive them from the current `airs` origin and the default mobile client slug
+## Native Flow
 
-The relevant implementation lives in the auth helpers and the sign-in screen, not in a one-off app-local login branch.
+Native auth is separate:
 
-## Callback And Session Restoration
+```mermaid
+sequenceDiagram
+  participant User
+  participant App as Native app
+  participant Client as nativeSignIn(...)
+  participant Provider as Native auth provider
 
-The callback path is handled by the shared auth package and the app auth provider:
+  User->>App: Tap social login
+  App->>Client: nativeSignIn(provider, redirectUri)
+  Client->>Provider: Start native auth flow
+  Provider-->>App: Return via native redirect/deep link
+```
 
-- `@alternun/auth` stores the pending OIDC state and processes the callback response
-- `AppAuthProvider` reads the OIDC callback response, restores the session, and provisions the user into Supabase
-- the callback URL can be derived from the browser origin when the explicit redirect URI is omitted in deployed web builds
-- loopback hosts like `localhost` are treated as local-dev hints so the browser origin wins during development
+Native does not depend on the web callback page.
 
-That last point matters because it keeps local development from depending on a stale port-specific redirect URI.
+## Web Callback Route
 
-## Logout And Session Clearing
+The dedicated browser callback route is:
 
-Sign-out is not just a UI state reset. The app now clears both the app session and the Authentik session:
+- `apps/mobile/app/auth/callback.tsx`
 
-- the mobile auth client clears the local OIDC state
-- the Authentik preset builds the end-session URL
-- the browser is redirected through Authentik logout so the upstream session is actually cleared
-- the logout response returns to the app instead of stopping on Authentik's success page
+It is responsible for:
 
-This is what prevents the user from getting stranded at the Authentik success page or re-entering the browser with a stale account session.
+- receiving the redirect from Authentik
+- finalizing the OIDC callback
+- handling callback errors
+- restoring the AIRS app session
+- redirecting the browser to the intended destination
+
+This is intentionally cleaner than embedding callback handling inside `AppAuthProvider` or the sign-in screen.
+
+`AppAuthProvider` now handles session restoration and sign-out cleanup, while `/auth/callback` handles browser callback finalization.
+
+## Entry Modes
+
+The package still supports two Authentik entry styles.
+
+### `source`
+
+Direct Authentik source login.
+
+- shortest reliable path
+- default for deployed bundles
+
+### `relay`
+
+App-owned relay entry through `/auth-relay`.
+
+- opt-in only
+- use when you deliberately want an app-controlled starter hop before Authentik
+
+## Social Login Modes
+
+`EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` controls who owns social login:
+
+- `authentik`
+  - Authentik only
+  - no silent Supabase social fallback
+- `hybrid`
+  - Authentik when configured
+  - Supabase fallback only if Authentik is unavailable
+- `supabase`
+  - bypass Authentik social login entirely
+
+For deployed AIRS web builds, the intended default is:
+
+- `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`
+- `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`
+
+## Redirect URI Contract
+
+For web, the effective callback target is:
+
+- `https://<airs-domain>/auth/callback`
+
+That is now the default derived callback URL when the browser origin is available.
+
+If an older env still points at the site root, the shared web resolver prefers the dedicated callback route on the same origin instead of staying on the stale root redirect.
+
+For native, use an explicit runtime-appropriate redirect/deep-link URI.
+
+## Custom Authentik Flow Slugs
+
+Custom provider flow slugs are supported, but they are now explicit-only.
+
+- `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS`
+- `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG`
+
+If these are unset, AIRS uses the direct source-login path.
+
+There is no hidden automatic custom Google starter flow assumption anymore.
+
+That matters because implicit source-stage flows were creating hard-to-debug loops and double handoffs between Authentik and Google.
 
 ## Configuration Contract
 
-These are the key env variables involved in the flow:
+| Variable                                    | Purpose                              | Typical value                                                                  |
+| ------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------ |
+| `EXPO_PUBLIC_AUTHENTIK_ISSUER`              | Authentik issuer URL                 | `https://testnet.sso.alternun.co/application/o/alternun-mobile/`               |
+| `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID`           | Public OIDC client ID                | `alternun-mobile`                                                              |
+| `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI`        | Optional explicit callback URL       | usually blank on deployed web; derived as `/auth/callback` from browser origin |
+| `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE`    | `source` or `relay`                  | `source`                                                                       |
+| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`   | `authentik`, `hybrid`, or `supabase` | `authentik`                                                                    |
+| `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` | Optional custom provider-flow JSON   | empty unless explicitly needed                                                 |
 
-| Variable                                    | Purpose                                                 | Typical value                                                                                                                 |
-| ------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `EXPO_PUBLIC_AUTHENTIK_ISSUER`              | Authentik issuer URL for the app client                 | `https://testnet.sso.alternun.co/application/o/alternun-mobile/` (or derived from origin when omitted on deployed web builds) |
-| `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID`           | Public OIDC client ID registered in Authentik           | `alternun-mobile` (defaults to the Alternun mobile slug when omitted)                                                         |
-| `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI`        | Optional explicit callback URL                          | usually injected by infra on deployed web builds, otherwise derived from browser origin                                       |
-| `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE`    | Relay vs direct source entry                            | `relay` or `source`                                                                                                           |
-| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`   | Authentik vs hybrid vs Supabase-only social login       | `authentik`, `hybrid`, or `supabase`                                                                                          |
-| `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` | Optional provider -> custom Authentik flow slug mapping | JSON such as `{"google":"alternun-google-login"}`                                                                             |
-| `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG`     | Infra bootstrap knob for Authentik-side flow creation   | usually empty unless you intentionally manage a custom source-stage login flow                                                |
+## Supabase Custom OIDC Checks
 
-Current operational rules:
+When Supabase is configured to trust Authentik as a custom OIDC provider, verify all three of these:
 
-- deployed testnet and production bundles should keep `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`
-- local web can keep `hybrid` if a Supabase fallback is desirable while iterating
-- custom Authentik source-stage slugs are optional, not required, and are only used when explicitly mapped in `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS`
-- loopback local hosts ignore custom provider slugs and fall back to the direct source-login path
+- the provider ID is the expected `custom:...` identifier
+- Authentik uses the Supabase callback URI shown when the provider was created
+- the app’s final `redirectTo` URL is allow-listed in Supabase URL configuration
 
-## Source Of Truth
+Those checks matter for Supabase-side integrations, but they are separate from the AIRS web Authentik-first social entry flow.
 
-If you need to modify the flow, start with these files:
+## Source of Truth
 
-- `packages/auth/src/mobile/authEntry.ts`
+If you need to change the current flow, start here:
+
+- `packages/auth/src/mobile/runtimeSignIn.ts`
 - `packages/auth/src/mobile/authentikUrls.ts`
 - `packages/auth/src/mobile/authentikClient.ts`
-- `apps/mobile/components/auth/AuthSignInScreen.tsx`
+- `packages/auth/src/mobile/AlternunMobileAuthClient.ts`
+- `apps/mobile/app/auth.tsx`
+- `apps/mobile/app/auth/callback.tsx`
 - `apps/mobile/app/auth-relay.tsx`
+- `apps/mobile/components/auth/AuthSignInScreen.tsx`
 - `apps/mobile/components/auth/AppAuthProvider.tsx`
 - `packages/infra/config/pipelines/specs/core.ts`
 - `packages/infra/config/pipelines/specs/identity.ts`
+- `packages/infra/modules/identity.ts`
 
 ## Troubleshooting
 
-The common failures map to a small number of causes:
-
-- if the Google or Discord buttons disappear on testnet, check the social login mode and the Authentik issuer/client ID env
-- if testnet falls back to Supabase, the deployed bundle is usually stale or the social login mode is not set to `authentik`
-- if localhost loops during auth, check the redirect URI handling and restart the local dev server so it picks up the latest shared auth package build
-- if Authentik opens directly at `/if/user/`, that is the Authentik dashboard and not the AIRS app entrypoint
+- If AIRS web shows the Supabase social path on testnet, check the deployed bundle env first, especially `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`.
+- If Google loops between Authentik and Google, check whether a custom provider flow slug is enabled unintentionally.
+- If Authentik returns to the wrong place, check the effective redirect URI and make sure `/auth/callback` is allowed on the provider.
+- If localhost behaves differently from testnet, confirm you are testing the web callback route and not a native-style redirect path.
 
 ## Related Reading
 
