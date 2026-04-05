@@ -1,3 +1,15 @@
+## [1.0.17](https://github.com/alternun-development/alternun/compare/v1.0.16...v1.0.17) (2026-04-05)
+
+### Bug Fixes
+
+- **repo,docs,mobile:** AGENTS, CLAUDE, README, authentication-and-session-flow ([01f04c7](https://github.com/alternun-development/alternun/commit/01f04c7aabda74785953f1636de8bcf1ca958797))
+
+## [1.0.17](https://github.com/alternun-development/alternun/compare/v1.0.16...v1.0.17) (2026-04-05)
+
+### Bug Fixes
+
+- **repo,docs,mobile:** AGENTS, CLAUDE, README, authentication-and-session-flow ([01f04c7](https://github.com/alternun-development/alternun/commit/01f04c7aabda74785953f1636de8bcf1ca958797))
+
 ## [1.0.16](https://github.com/alternun-development/alternun/compare/v1.0.15...v1.0.16) (2026-04-05)
 
 ### Bug Fixes
