@@ -1,3 +1,15 @@
+## [1.0.24](https://github.com/alternun-development/alternun/compare/v1.0.23...v1.0.24) (2026-04-06)
+
+### Bug Fixes
+
+- **repo,docs:** .gitignore, auth ([99bdb97](https://github.com/alternun-development/alternun/commit/99bdb974cc50eb46e50215772ddc82f8a9280025))
+
+## [1.0.24](https://github.com/alternun-development/alternun/compare/v1.0.23...v1.0.24) (2026-04-06)
+
+### Bug Fixes
+
+- **repo,docs:** .gitignore, auth ([99bdb97](https://github.com/alternun-development/alternun/commit/99bdb974cc50eb46e50215772ddc82f8a9280025))
+
 ## [1.0.23](https://github.com/alternun-development/alternun/compare/v1.0.22...v1.0.23) (2026-04-06)
 
 ### Bug Fixes
