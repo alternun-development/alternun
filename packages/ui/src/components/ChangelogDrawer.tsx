@@ -329,7 +329,7 @@ export function ChangelogDrawer({
     setPage((p) => Math.min(totalPages - 1, p + 1));
   }, [totalPages]);
 
-  const releasesUrl = githubUrl ? `${githubUrl.replace(/\/$/, '')}/releases` : undefined;
+  const releasesUrl = githubUrl ? `${githubUrl.replace(/\/$/, '')}/tags` : undefined;
 
   return (
     <View style={style}>
@@ -373,7 +373,10 @@ export function ChangelogDrawer({
           {/* Header */}
           <View style={[innerStyles.sheetHeader, { borderBottomColor: borderColor }]}>
             <View style={innerStyles.sheetHeaderLeft}>
-              <Text style={[innerStyles.sheetTitle, { color: textPrimary }]}>Release History</Text>
+              <Text style={[innerStyles.sheetTitle, { color: textPrimary }]}>
+                Release History
+                {latestVersion ? ` • v${latestVersion}` : ''}
+              </Text>
               {totalPages > 1 && (
                 <Text style={[innerStyles.pageLabel, { color: textMuted }]}>
                   {page + 1}/{totalPages}
@@ -535,7 +538,7 @@ const innerStyles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    maxHeight: '82%',
+    maxHeight: '90%',
     borderTopLeftRadius: radius['2xl'],
     borderTopRightRadius: radius['2xl'],
     borderWidth: 1,
