@@ -29,6 +29,70 @@ export interface ChangelogEntry {
   hasContent: boolean;
 }
 
+interface CommitReference {
+  text: string;
+  commitHash?: string;
+  commitUrl?: string;
+}
+
+function isHexString(value: string): boolean {
+  if (value.length < 7) {
+    return false;
+  }
+
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    const isDigit = code >= 48 && code <= 57;
+    const lowerCode = code | 32;
+    const isHexLetter = lowerCode >= 97 && lowerCode <= 102;
+
+    if (!isDigit && !isHexLetter) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function extractTrailingCommitReference(input: string): CommitReference {
+  const trimmed = input.trim();
+  const linkStart = trimmed.lastIndexOf('](');
+
+  if (linkStart === -1) {
+    return { text: input };
+  }
+
+  const hashStart = trimmed.lastIndexOf('[', linkStart);
+  const urlStart = linkStart + 2;
+  const urlEnd = trimmed.indexOf(')', urlStart);
+
+  if (hashStart === -1 || urlEnd === -1) {
+    return { text: input };
+  }
+
+  const commitHash = trimmed.slice(hashStart + 1, linkStart);
+  const commitUrl = trimmed.slice(urlStart, urlEnd);
+
+  if (!isHexString(commitHash)) {
+    return { text: input };
+  }
+
+  for (let index = urlEnd + 1; index < trimmed.length; index += 1) {
+    const char = trimmed[index];
+
+    if (char !== ')' && char !== ' ' && char !== '\t' && char !== '.') {
+      return { text: input };
+    }
+  }
+
+  let text = trimmed.slice(0, hashStart).trim();
+  if (text.endsWith('(')) {
+    text = text.slice(0, -1).trim();
+  }
+
+  return { text, commitHash, commitUrl };
+}
+
 /**
  * Parse a raw CHANGELOG.md string into structured ChangelogEntry objects.
  * Handles both formats:
@@ -81,22 +145,15 @@ export function parseChangelog(raw: string): ChangelogEntry[] {
         // Extract **scope**: prefix
         const scopeMatch = itemText.match(/^\*\*([^*]+)\*\*:\s*(.*)/);
         const scope = scopeMatch?.[1];
-        let text = scopeMatch ? scopeMatch[2] : itemText;
+        const text = scopeMatch ? scopeMatch[2] : itemText;
+        const commitReference = extractTrailingCommitReference(text);
 
-        // Extract trailing commit reference  ([abc123](url))
-        // eslint-disable-next-line security/detect-unsafe-regex
-        const commitMatch = text.match(/\s*\(?\[([a-f0-9]{7,})\]\(([^)]+)\)\)?[\s.]*$/);
-        const commitHash = commitMatch?.[1];
-        const commitUrl = commitMatch?.[2];
-        if (commitMatch) {
-          text = text
-            .slice(0, commitMatch.index)
-            .trim()
-            .replace(/\s*\($/, '')
-            .trim();
-        }
-
-        currentSection.items.push({ text, scope, commitHash, commitUrl });
+        currentSection.items.push({
+          text: commitReference.text,
+          scope,
+          commitHash: commitReference.commitHash,
+          commitUrl: commitReference.commitUrl,
+        });
       }
     }
 
