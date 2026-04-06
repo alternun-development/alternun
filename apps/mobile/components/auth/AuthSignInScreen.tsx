@@ -48,6 +48,7 @@ import ShaderBackground from './ShaderBackground';
 import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
+import { shouldForceFreshAuthentikSocialSession } from './authentikWebSessionPolicy';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 const RESEND_COOLDOWN_SECONDS = 45;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -218,7 +219,7 @@ export default function AuthSignInScreen({
   onCancel,
   presentation = 'screen',
   authReturnTo,
-}: AuthSignInScreenProps) {
+}: AuthSignInScreenProps): JSX.Element {
   const { signInWithEmail, signIn, loading, error, client } = useAuth();
   const { t, locale } = useAppTranslation('mobile');
   const { language, toggleThemeMode, cycleLanguage } = useAppPreferences();
@@ -227,6 +228,7 @@ export default function AuthSignInScreen({
   const ThemeIcon = p.isDark ? Sun : Moon;
   const themeLabel = p.isDark ? t('labels.dark') : t('labels.light');
   const loginStrategy = resolveAuthentikLoginStrategy();
+  const forceFreshSocialSession = shouldForceFreshAuthentikSocialSession(Platform.OS);
   const authentikLoginEntryMode = loginStrategy.mode;
   const authentikSocialLoginMode = loginStrategy.socialMode;
   const authentikConfigured = isAuthentikConfigured();
@@ -290,7 +292,7 @@ export default function AuthSignInScreen({
       setResendCooldown((seconds) => (seconds > 0 ? seconds - 1 : 0));
     }, 1000);
 
-    return () => clearTimeout(timeout);
+    return (): void => clearTimeout(timeout);
   }, [resendCooldown]);
 
   useEffect(() => {
@@ -330,35 +332,51 @@ export default function AuthSignInScreen({
       });
   }, [authReturnTo, client, loginStrategy, router, shouldUseAuthentikRelayEntry, t]);
 
-  const transitionToStep = (step: AuthStep) => {
+  const transitionToStep = (step: AuthStep): void => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setAuthStep(step);
   };
 
-  const resetMessages = () => {
+  const resetMessages = (): void => {
     setLocalError(null);
     setNotice(null);
   };
 
-  const clearRequiredFields = () => {
+  const clearRequiredFields = (): void => {
     setRequiredFields(createDefaultRequiredFieldState());
     setInvalidEmail(false);
   };
 
-  const clearRequiredField = (field: RequiredField) => {
+  const clearRequiredField = (field: RequiredField): void => {
     setRequiredFields((current) => {
-      if (!current[field]) {
-        return current;
+      if (field === 'email') {
+        return current.email
+          ? {
+              ...current,
+              email: false,
+            }
+          : current;
       }
 
-      return {
-        ...current,
-        [field]: false,
-      };
+      if (field === 'password') {
+        return current.password
+          ? {
+              ...current,
+              password: false,
+            }
+          : current;
+      }
+
+      return current.confirmPassword
+        ? {
+            ...current,
+            confirmPassword: false,
+          }
+        : current;
     });
   };
 
-  const focusRequiredField = (field: RequiredField) => {
+  const focusRequiredField = (field: RequiredField): void => {
     if (field === 'email') {
       emailInputRef.current?.focus();
       return;
@@ -385,7 +403,13 @@ export default function AuthSignInScreen({
           : confirmPassword.trim();
       const isMissing = !value;
 
-      nextRequiredState[field] = isMissing;
+      if (field === 'email') {
+        nextRequiredState.email = isMissing;
+      } else if (field === 'password') {
+        nextRequiredState.password = isMissing;
+      } else {
+        nextRequiredState.confirmPassword = isMissing;
+      }
       if (!firstMissingField && isMissing) {
         firstMissingField = field;
       }
@@ -421,7 +445,10 @@ export default function AuthSignInScreen({
     return rawCode.trim().replace(/\s+/g, '');
   };
 
-  const transitionToSignInForm = (prefilledEmail: string, nextNotice: string | null = null) => {
+  const transitionToSignInForm = (
+    prefilledEmail: string,
+    nextNotice: string | null = null
+  ): void => {
     transitionToStep('form');
     setMode('signin');
     setEmail(prefilledEmail);
@@ -436,7 +463,7 @@ export default function AuthSignInScreen({
     setNotice(nextNotice);
   };
 
-  const handleEmailSignIn = async () => {
+  const handleEmailSignIn = async (): Promise<void> => {
     resetMessages();
 
     if (!validateRequiredFields(['email', 'password'])) {
@@ -467,7 +494,7 @@ export default function AuthSignInScreen({
     }
   };
 
-  const handleEmailSignUp = async () => {
+  const handleEmailSignUp = async (): Promise<void> => {
     resetMessages();
 
     if (!validateRequiredFields(['email', 'password', 'confirmPassword'])) {
@@ -487,6 +514,8 @@ export default function AuthSignInScreen({
       return;
     }
 
+    // Comparing two user-entered form fields locally is not a secret check.
+    // eslint-disable-next-line security/detect-possible-timing-attacks
     if (password !== confirmPassword) {
       setLocalError(t('authModal.validation.passwordMismatch'));
       return;
@@ -536,7 +565,7 @@ export default function AuthSignInScreen({
     }
   };
 
-  const handleResendConfirmation = async () => {
+  const handleResendConfirmation = async (): Promise<void> => {
     resetMessages();
 
     const emailCandidate = (confirmationEmail ?? email).trim();
@@ -572,7 +601,7 @@ export default function AuthSignInScreen({
     }
   };
 
-  const handleVerifyConfirmationCode = async () => {
+  const handleVerifyConfirmationCode = async (): Promise<void> => {
     resetMessages();
     setConfirmationCodeRequired(false);
 
@@ -613,7 +642,7 @@ export default function AuthSignInScreen({
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (): Promise<void> => {
     resetMessages();
     setSubmitMode('google');
     try {
@@ -621,7 +650,7 @@ export default function AuthSignInScreen({
         router.replace(
           buildAuthentikRelayRoute('google', {
             next: authReturnTo,
-            forceFreshSession: false,
+            forceFreshSession: forceFreshSocialSession,
           })
         );
         return;
@@ -633,6 +662,7 @@ export default function AuthSignInScreen({
           provider: googleProvider,
           authentikProviderHint: 'google',
           redirectTo: authReturnTo,
+          forceFreshSession: forceFreshSocialSession,
           strategy: loginStrategy,
         });
         return;
@@ -649,7 +679,7 @@ export default function AuthSignInScreen({
     }
   };
 
-  const handleDiscordSignIn = async () => {
+  const handleDiscordSignIn = async (): Promise<void> => {
     resetMessages();
     setSubmitMode('discord');
     try {
@@ -657,7 +687,7 @@ export default function AuthSignInScreen({
         router.replace(
           buildAuthentikRelayRoute('discord', {
             next: authReturnTo,
-            forceFreshSession: false,
+            forceFreshSession: forceFreshSocialSession,
           })
         );
         return;
@@ -669,6 +699,7 @@ export default function AuthSignInScreen({
           provider: 'discord',
           authentikProviderHint: 'discord',
           redirectTo: authReturnTo,
+          forceFreshSession: forceFreshSocialSession,
           strategy: loginStrategy,
         });
         return;
@@ -685,7 +716,7 @@ export default function AuthSignInScreen({
     }
   };
 
-  const handleWalletConnect = async (walletType: string) => {
+  const handleWalletConnect = async (walletType: string): Promise<void> => {
     setWalletModalVisible(false);
     resetMessages();
     setSubmitMode('wallet');
@@ -701,7 +732,7 @@ export default function AuthSignInScreen({
     }
   };
 
-  const switchMode = (nextMode: AuthMode) => {
+  const switchMode = (nextMode: AuthMode): void => {
     if (nextMode === mode && authStep === 'form') {
       return;
     }
