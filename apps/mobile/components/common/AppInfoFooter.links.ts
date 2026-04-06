@@ -23,8 +23,9 @@ export const FOOTER_PRIMARY_LINK_DEFINITIONS = [
 ] as const;
 
 function resolveDocumentationUrl(locale: AlternunLocale): string {
-  // Use localhost in development, production URLs otherwise
-  const baseUrl = __DEV__ ? 'http://localhost:8083' : 'https://docs.alternun.io';
+  // Use localhost in development builds, production URLs otherwise.
+  const baseUrl =
+    process.env.NODE_ENV === 'development' ? 'http://localhost:8083' : 'https://docs.alternun.io';
 
   if (locale === 'es') {
     return `${baseUrl}/es/`;
@@ -45,7 +46,8 @@ export function resolvePrimaryLinksForViewport(
   // Keep a single source of truth so desktop/mobile cannot drift.
   const resolvedLocale = normalizeLocale(locale);
 
-  const projectUrl = __DEV__ ? 'http://localhost:3000' : 'https://alternun.io';
+  const projectUrl =
+    process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://alternun.io';
 
   return [
     {
