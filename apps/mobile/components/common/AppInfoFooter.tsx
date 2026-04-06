@@ -13,6 +13,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import { ChangelogDrawer } from '@alternun/ui';
 import { createTypographyStyles } from '../theme/typography';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -28,6 +29,7 @@ import {
   SOCIAL_LINKS,
   resolveVersionMetadata,
 } from './Footer.shared';
+import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 
 export default function AppInfoFooter(): React.JSX.Element {
   const { themeMode, language, motionLevel } = useAppPreferences();
@@ -35,6 +37,7 @@ export default function AppInfoFooter(): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
   const isDark = themeMode === 'dark';
   const versionMetadata = useMemo(resolveVersionMetadata, []);
+  const changelogContent = useMemo(getChangelogContent, []);
 
   const isMobile = width < 720;
   const isWide = width >= 1120;
@@ -215,18 +218,39 @@ export default function AppInfoFooter(): React.JSX.Element {
         {/* Mobile layout — minimal */}
         {isMobile && (
           <View style={styles.mobileLayout}>
-            <View style={styles.socialRowMobile}>
-              {SOCIAL_LINKS.map((link) => (
-                <SocialPill
-                  key={link.label}
-                  {...link}
-                  compact
-                  iconColor={palette.accent}
-                  backgroundColor={palette.socialBg}
-                  borderColor={palette.socialBorder}
-                  hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
-                />
-              ))}
+            {/* Links and icons on same line */}
+            <View style={styles.mobileLinksIconsRow}>
+              {/* Links — left side */}
+              <View style={styles.mobileLinksSection}>
+                {primaryLinks.map((link, index) => (
+                  <React.Fragment key={link.labelKey}>
+                    <FooterTextLink
+                      label={t(link.labelKey, undefined, link.fallbackLabel)}
+                      url={link.url}
+                      textColor={palette.accent}
+                      compact
+                    />
+                    {index < primaryLinks.length - 1 && (
+                      <Text style={[styles.linkDivider, { color: palette.muted }]}>•</Text>
+                    )}
+                  </React.Fragment>
+                ))}
+              </View>
+
+              {/* Social icons — right side */}
+              <View style={styles.socialRowMobileCompact}>
+                {SOCIAL_LINKS.map((link) => (
+                  <SocialPill
+                    key={link.label}
+                    {...link}
+                    compact
+                    iconColor={palette.accent}
+                    backgroundColor={palette.socialBg}
+                    borderColor={palette.socialBorder}
+                    hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
+                  />
+                ))}
+              </View>
             </View>
           </View>
         )}
@@ -242,16 +266,12 @@ export default function AppInfoFooter(): React.JSX.Element {
           ]}
         >
           <FooterCopyright color={palette.title} />
-          <View
-            style={[
-              styles.versionBadge,
-              { borderColor: isDark ? 'rgba(30,230,181,0.2)' : 'rgba(11,90,95,0.15)' },
-            ]}
-          >
-            <Text numberOfLines={1} style={[styles.bottomMeta, { color: palette.accent }]}>
-              v{versionMetadata.version}
-            </Text>
-          </View>
+          <ChangelogDrawer
+            changelog={changelogContent}
+            githubUrl={GITHUB_REPO_URL}
+            pageSize={3}
+            triggerLabel={`v${versionMetadata.version}`}
+          />
         </View>
       </View>
     </View>
@@ -341,7 +361,23 @@ const styles = createTypographyStyles({
 
   /* Mobile */
   mobileLayout: {
-    gap: 10,
+    gap: 2,
+  },
+  mobileLinksIconsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
+  },
+  mobileLinksSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
+  linkDivider: {
+    fontSize: 10,
+    fontWeight: '500',
   },
   brandHeaderMobile: {
     flexDirection: 'row',
@@ -355,6 +391,12 @@ const styles = createTypographyStyles({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
+    justifyContent: 'center',
+  },
+  socialRowMobileCompact: {
+    flexDirection: 'row',
+    gap: 4,
+    flexShrink: 0,
   },
 
   /* Bottom bar */

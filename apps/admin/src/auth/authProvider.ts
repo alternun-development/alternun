@@ -28,9 +28,9 @@ export const authProvider: AuthProvider = {
     }
 
     await oidcClient.removeUser();
+    // Reuse any active Authentik session instead of forcing a fresh login; the
+    // callback still validates that the resulting user is allowed into admin.
     await oidcClient.signinRedirect({
-      prompt: 'login',
-      max_age: 0,
       state: {
         returnTo: currentReturnTo(),
       },

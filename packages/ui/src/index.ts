@@ -53,3 +53,12 @@ export {
   SectionHeaderSkeleton,
   PillRowSkeleton,
 } from './components/SkeletonLoader';
+
+// ── Changelog ─────────────────────────────────────────────────────────────────
+export { ChangelogDrawer, parseChangelog } from './components/ChangelogDrawer';
+export type {
+  ChangelogDrawerProps,
+  ChangelogEntry,
+  ChangelogSection,
+  ChangelogItem,
+} from './components/ChangelogDrawer';

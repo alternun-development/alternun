@@ -30,6 +30,7 @@ packages/auth/infra/email/out/
 packages/infra/config/deployment.config.json
 packages/infra/.sst/
 packages/infra/sst-env.d.ts
+apps/admin/src/sst-env.d.ts
 
 # Claude Code workspace
 .claude/

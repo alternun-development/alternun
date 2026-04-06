@@ -3,9 +3,11 @@ import { useRouter } from 'expo-router';
 import { LogOut, Settings, Shield, UserCircle2, Wallet } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { createTypographyStyles } from '../components/theme/typography';
 import { useAuth } from '../components/auth/AppAuthProvider';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import TopNav from '../components/dashboard/TopNav';
 
 type UserMetadata = Record<string, unknown>;
 
@@ -231,7 +233,8 @@ function InfoRow({
 export default function ProfileRoute() {
   const router = useRouter();
   const { user, loading, signOutUser } = useAuth();
-  const { themeMode } = useAppPreferences();
+  const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel } =
+    useAppPreferences();
   const [signingOut, setSigningOut] = useState(false);
   const isDark = themeMode === 'dark';
 
@@ -280,6 +283,38 @@ export default function ProfileRoute() {
     }
   };
 
+  const handleNavigate = (key: string) => {
+    if (key === 'dashboard') {
+      router.push('/');
+    } else if (key === 'compensation') {
+      router.push('/compensaciones');
+    } else if (key === 'portfolio') {
+      router.push('/mis-atn');
+    } else if (key === 'proyectos') {
+      router.push('/proyectos');
+    } else if (key === 'beneficios') {
+      router.push('/beneficios');
+    } else if (key === 'ranking') {
+      router.push('/ranking');
+    } else if (key === 'wallet') {
+      router.push('/wallet');
+    } else if (key === 'profile') {
+      router.push('/profile');
+    }
+  };
+
+  const userStats = useMemo(() => {
+    if (!user) return null;
+    const metadata = getMetadata(user);
+    const stats =
+      typeof metadata.stats === 'object' && metadata.stats !== null
+        ? (metadata.stats as UserMetadata)
+        : {};
+    return {
+      totalAIRS: Number.isFinite(Number(stats.totalAIRS)) ? Number(stats.totalAIRS) : 0,
+    };
+  }, [user]);
+
   if (loading) {
     return (
       <View style={[styles.centeredState, { backgroundColor: palette.screenBg }]}>
@@ -321,176 +356,223 @@ export default function ProfileRoute() {
   const rolesDisplay = roles.length > 0 ? roles.join(', ') : 'No roles assigned';
 
   return (
-    <View style={[styles.screen, { backgroundColor: palette.screenBg }]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View
-          style={[
-            styles.heroCard,
-            { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
-          ]}
-        >
-          <View style={[styles.avatar, { backgroundColor: palette.pillBg }]}>
-            <Text style={[styles.avatarText, { color: palette.accent }]}>
-              {toInitials(profile.displayName)}
-            </Text>
-          </View>
-          <View style={styles.heroMain}>
-            <Text style={[styles.heroName, { color: palette.textPrimary }]}>
-              {profile.displayName}
-            </Text>
-            <Text style={[styles.heroEmail, { color: palette.textMuted }]}>
-              {profile.email ?? 'No email available'}
-            </Text>
-            <View style={[styles.authPill, { backgroundColor: palette.pillBg }]}>
-              <Shield size={12} color={palette.accent} />
-              <Text style={[styles.authPillText, { color: palette.accent }]}>{authMethod}</Text>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.screenBg }]}>
+      <View style={[styles.screen, { backgroundColor: palette.screenBg }]}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <View
+            style={[
+              styles.heroCard,
+              { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
+            ]}
+          >
+            <View style={[styles.avatar, { backgroundColor: palette.pillBg }]}>
+              <Text style={[styles.avatarText, { color: palette.accent }]}>
+                {toInitials(profile.displayName)}
+              </Text>
+            </View>
+            <View style={styles.heroMain}>
+              <Text style={[styles.heroName, { color: palette.textPrimary }]}>
+                {profile.displayName}
+              </Text>
+              <Text style={[styles.heroEmail, { color: palette.textMuted }]}>
+                {profile.email ?? 'No email available'}
+              </Text>
+              <View style={[styles.authPill, { backgroundColor: palette.pillBg }]}>
+                <Shield size={12} color={palette.accent} />
+                <Text style={[styles.authPillText, { color: palette.accent }]}>{authMethod}</Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        <View
-          style={[
-            styles.infoCard,
-            { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
-          ]}
-        >
-          <Text style={[styles.cardTitle, { color: palette.textPrimary }]}>Account</Text>
-          <InfoRow
-            label='User ID'
-            value={truncateMiddle(user.id, 12, 8)}
-            borderColor={palette.rowBorder}
-            labelColor={palette.textSubtle}
-            valueColor={palette.textPrimary}
-            valueStrong
-          />
-          <InfoRow
-            label='Provider ID'
-            value={authUserId}
-            borderColor={palette.rowBorder}
-            labelColor={palette.textSubtle}
-            valueColor={palette.textMuted}
-          />
-          <InfoRow
-            label='Email'
-            value={profile.email ?? 'Not available'}
-            borderColor='transparent'
-            labelColor={palette.textSubtle}
-            valueColor={palette.textMuted}
-          />
-        </View>
-
-        <View
-          style={[
-            styles.infoCard,
-            { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
-          ]}
-        >
-          <Text style={[styles.cardTitle, { color: palette.textPrimary }]}>Wallet</Text>
-          <InfoRow
-            label='Status'
-            value={walletConnected ? 'Connected' : 'Not linked'}
-            borderColor={palette.rowBorder}
-            labelColor={palette.textSubtle}
-            valueColor={walletConnected ? '#16a34a' : palette.textSubtle}
-            valueStrong
-          />
-          <InfoRow
-            label='Address'
-            value={walletDisplay}
-            borderColor={palette.rowBorder}
-            labelColor={palette.textSubtle}
-            valueColor={palette.textMuted}
-          />
-          <InfoRow
-            label='Provider'
-            value={providerDisplay}
-            borderColor='transparent'
-            labelColor={palette.textSubtle}
-            valueColor={palette.textMuted}
-          />
-        </View>
-
-        <View
-          style={[
-            styles.infoCard,
-            { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
-          ]}
-        >
-          <Text style={[styles.cardTitle, { color: palette.textPrimary }]}>Access</Text>
-          <InfoRow
-            label='Auth Method'
-            value={authMethod}
-            borderColor={palette.rowBorder}
-            labelColor={palette.textSubtle}
-            valueColor={palette.textMuted}
-          />
-          <InfoRow
-            label='Roles'
-            value={rolesDisplay}
-            borderColor='transparent'
-            labelColor={palette.textSubtle}
-            valueColor={palette.textMuted}
-          />
-        </View>
-
-        <View style={styles.actionRow}>
-          <TouchableOpacity
+          <View
             style={[
-              styles.secondaryButton,
-              {
-                backgroundColor: palette.buttonSecondaryBg,
-                borderColor: palette.buttonSecondaryBorder,
-              },
+              styles.infoCard,
+              { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
             ]}
-            onPress={() => router.push('/settings')}
-            activeOpacity={0.85}
           >
-            <Settings size={16} color={palette.textPrimary} />
-            <Text style={[styles.secondaryButtonText, { color: palette.textPrimary }]}>
-              Settings
-            </Text>
-          </TouchableOpacity>
+            <Text style={[styles.cardTitle, { color: palette.textPrimary }]}>Account</Text>
+            <InfoRow
+              label='User ID'
+              value={truncateMiddle(user.id, 12, 8)}
+              borderColor={palette.rowBorder}
+              labelColor={palette.textSubtle}
+              valueColor={palette.textPrimary}
+              valueStrong
+            />
+            <InfoRow
+              label='Provider ID'
+              value={authUserId}
+              borderColor={palette.rowBorder}
+              labelColor={palette.textSubtle}
+              valueColor={palette.textMuted}
+            />
+            <InfoRow
+              label='Email'
+              value={profile.email ?? 'Not available'}
+              borderColor='transparent'
+              labelColor={palette.textSubtle}
+              valueColor={palette.textMuted}
+            />
+          </View>
 
-          <TouchableOpacity
-            style={[styles.secondaryButton, styles.dangerButton]}
-            onPress={() => {
+          <View
+            style={[
+              styles.infoCard,
+              { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
+            ]}
+          >
+            <Text style={[styles.cardTitle, { color: palette.textPrimary }]}>Wallet</Text>
+            <InfoRow
+              label='Status'
+              value={walletConnected ? 'Connected' : 'Not linked'}
+              borderColor={palette.rowBorder}
+              labelColor={palette.textSubtle}
+              valueColor={walletConnected ? '#16a34a' : palette.textSubtle}
+              valueStrong
+            />
+            <InfoRow
+              label='Address'
+              value={walletDisplay}
+              borderColor={palette.rowBorder}
+              labelColor={palette.textSubtle}
+              valueColor={palette.textMuted}
+            />
+            <InfoRow
+              label='Provider'
+              value={providerDisplay}
+              borderColor='transparent'
+              labelColor={palette.textSubtle}
+              valueColor={palette.textMuted}
+            />
+          </View>
+
+          <View
+            style={[
+              styles.infoCard,
+              { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
+            ]}
+          >
+            <Text style={[styles.cardTitle, { color: palette.textPrimary }]}>Access</Text>
+            <InfoRow
+              label='Auth Method'
+              value={authMethod}
+              borderColor={palette.rowBorder}
+              labelColor={palette.textSubtle}
+              valueColor={palette.textMuted}
+            />
+            <InfoRow
+              label='Roles'
+              value={rolesDisplay}
+              borderColor='transparent'
+              labelColor={palette.textSubtle}
+              valueColor={palette.textMuted}
+            />
+          </View>
+
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              style={[
+                styles.secondaryButton,
+                {
+                  backgroundColor: palette.buttonSecondaryBg,
+                  borderColor: palette.buttonSecondaryBorder,
+                },
+              ]}
+              onPress={() => router.push('/settings')}
+              activeOpacity={0.85}
+            >
+              <Settings size={16} color={palette.textPrimary} />
+              <Text style={[styles.secondaryButtonText, { color: palette.textPrimary }]}>
+                Settings
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.secondaryButton, styles.dangerButton]}
+              onPress={() => {
+                void handleSignOut();
+              }}
+              activeOpacity={0.85}
+              disabled={signingOut}
+            >
+              <LogOut size={16} color='#fca5a5' />
+              <Text style={styles.dangerButtonText}>
+                {signingOut ? 'Signing Out...' : 'Sign Out'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View
+            style={[
+              styles.noteCard,
+              { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
+            ]}
+          >
+            <UserCircle2 size={16} color={palette.accent} />
+            <Wallet size={16} color={palette.accent} />
+            <Text style={[styles.noteText, { color: palette.textMuted }]}>
+              Profile values are loaded from your authenticated session and metadata.
+            </Text>
+          </View>
+        </ScrollView>
+
+        {/* Floating nav */}
+        <View style={styles.floatingNav} pointerEvents='box-none'>
+          <TopNav
+            key={user ? 'topnav-signed-in' : 'topnav-signed-out'}
+            signedIn={Boolean(user)}
+            walletConnected={walletConnected}
+            walletAddress={walletAddress}
+            themeMode={themeMode}
+            language={language}
+            authMethodLabel={authMethod}
+            userDisplayName={profile.displayName}
+            userEmail={profile.email}
+            airsScore={userStats?.totalAIRS ?? null}
+            onSignIn={() => router.replace({ pathname: '/auth', params: { next: '/profile' } })}
+            onConnectWallet={() => {
+              if (!user) {
+                router.replace({ pathname: '/auth', params: { next: '/profile' } });
+              }
+            }}
+            motionLevel={motionLevel}
+            onToggleTheme={toggleThemeMode}
+            onCycleLanguage={cycleLanguage}
+            onCycleMotionLevel={cycleMotionLevel}
+            onOpenProfile={() => {}}
+            onOpenSettings={() => router.push('/settings')}
+            onSignOut={() => {
               void handleSignOut();
             }}
-            activeOpacity={0.85}
-            disabled={signingOut}
-          >
-            <LogOut size={16} color='#fca5a5' />
-            <Text style={styles.dangerButtonText}>
-              {signingOut ? 'Signing Out...' : 'Sign Out'}
-            </Text>
-          </TouchableOpacity>
+            onNavigate={handleNavigate}
+          />
         </View>
-
-        <View
-          style={[
-            styles.noteCard,
-            { backgroundColor: palette.cardBg, borderColor: palette.cardBorder },
-          ]}
-        >
-          <UserCircle2 size={16} color={palette.accent} />
-          <Wallet size={16} color={palette.accent} />
-          <Text style={[styles.noteText, { color: palette.textMuted }]}>
-            Profile values are loaded from your authenticated session and metadata.
-          </Text>
-        </View>
-      </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = createTypographyStyles({
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   screen: {
     flex: 1,
   },
+  floatingNav: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
   content: {
+    flexGrow: 1,
     padding: 20,
     gap: 14,
     paddingBottom: 34,
+    paddingTop: 120,
   },
   centeredState: {
     flex: 1,

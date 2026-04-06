@@ -236,6 +236,7 @@ As of April 2026, the intended deployed AIRS web mode is:
 - `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS` false
 - `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS` false
 - `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` empty unless a custom starter flow is being tested deliberately
+- the default internal application tile opens the stage-specific admin dashboard origin unless you override `INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL`
 - the `Alternun Mobile` Authentik application tile uses a stage-specific launch URL that points at the AIRS auth entrypoint, so the user enters the app instead of staying on the Authentik library page
 
 On the Authentik side, the expected direct-source configuration is:
