@@ -399,7 +399,17 @@ function parseSupabaseProjectRef(value: string | undefined): string {
 
 function normalizeBaseUrl(value: string | undefined): string {
   const trimmed = value?.trim();
-  return trimmed ? trimmed.replace(/\/+$/, '') : '';
+  if (!trimmed) {
+    return '';
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    const normalizedPath = parsed.pathname.replace(/\/+$/, '');
+    return `${parsed.origin}${normalizedPath}${parsed.search}${parsed.hash}`;
+  } catch {
+    return trimmed.replace(/\/+$/, '');
+  }
 }
 
 export function buildIdentitySettings(args: BuildIdentitySettingsArgs): IdentitySettings {

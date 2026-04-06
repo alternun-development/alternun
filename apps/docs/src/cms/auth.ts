@@ -1,4 +1,9 @@
-import { UserManager, WebStorageStateStore, type UserManagerSettings } from 'oidc-client-ts';
+import {
+  UserManager,
+  WebStorageStateStore,
+  type UserManagerSettings,
+  type UserManagerSettingsStore,
+} from 'oidc-client-ts';
 import type { CmsAuthIdentity, DocsCmsCustomFields } from './types';
 
 type ClaimBag = Record<string, unknown>;
@@ -14,6 +19,7 @@ export interface DocsCmsUserManager {
   signinRedirect(options?: { state?: { returnTo?: string } }): Promise<void>;
   signinRedirectCallback(): Promise<DocsCmsSession>;
   signoutRedirect(options?: { post_logout_redirect_uri?: string }): Promise<void>;
+  readonly settings: UserManagerSettingsStore;
 }
 
 function readClaimArray(claims: ClaimBag, key: string): string[] {

@@ -95,8 +95,28 @@ export function getAuthentikEndpointBaseFromIssuer(issuer) {
     }
     return issuer.replace(/\/$/, '').replace(/\/[^/]+$/, '/');
 }
-export function buildAuthentikOAuthFlowStartUrl({ providerHint, issuer, clientId, redirectUri, state, codeChallenge, scope, providerFlowSlugs, providerSourceSlugs, }) {
+export function buildAuthentikLoginEntryUrl({ issuer, authorizeUrl, providerHint, providerFlowSlugs, providerSourceSlugs, }) {
     var _a;
+    const trimmedAuthorizeUrl = authorizeUrl.trim();
+    const normalizedProviderHint = providerHint === null || providerHint === void 0 ? void 0 : providerHint.trim();
+    if (!trimmedAuthorizeUrl) {
+        throw new Error('CONFIG_ERROR: authorizeUrl is required');
+    }
+    if (!normalizedProviderHint) {
+        return trimmedAuthorizeUrl;
+    }
+    const authentikOrigin = new URL(issuer).origin;
+    const flowSlug = (_a = providerFlowSlugs === null || providerFlowSlugs === void 0 ? void 0 : providerFlowSlugs[normalizedProviderHint]) === null || _a === void 0 ? void 0 : _a.trim();
+    if (flowSlug) {
+        return `${authentikOrigin}/if/flow/${encodeURIComponent(flowSlug)}/?next=${encodeURIComponent(trimmedAuthorizeUrl)}`;
+    }
+    const sourceSlugCandidate = providerSourceSlugs === null || providerSourceSlugs === void 0 ? void 0 : providerSourceSlugs[normalizedProviderHint];
+    const sourceSlug = sourceSlugCandidate != null && sourceSlugCandidate.trim().length > 0
+        ? sourceSlugCandidate.trim()
+        : normalizedProviderHint;
+    return `${authentikOrigin}/source/oauth/login/${encodeURIComponent(sourceSlug)}/?next=${encodeURIComponent(trimmedAuthorizeUrl)}`;
+}
+export function buildAuthentikOAuthFlowStartUrl({ providerHint, issuer, clientId, redirectUri, state, codeChallenge, scope, providerFlowSlugs, providerSourceSlugs, }) {
     const normalizedScope = scope === null || scope === void 0 ? void 0 : scope.trim();
     const authorizeUrl = new URL(`${getAuthentikEndpointBaseFromIssuer(issuer)}authorize/`);
     authorizeUrl.searchParams.set('response_type', 'code');
@@ -106,14 +126,11 @@ export function buildAuthentikOAuthFlowStartUrl({ providerHint, issuer, clientId
     authorizeUrl.searchParams.set('state', state);
     authorizeUrl.searchParams.set('code_challenge', codeChallenge);
     authorizeUrl.searchParams.set('code_challenge_method', 'S256');
-    const authentikOrigin = new URL(issuer).origin;
-    const flowSlug = (_a = providerFlowSlugs === null || providerFlowSlugs === void 0 ? void 0 : providerFlowSlugs[providerHint]) === null || _a === void 0 ? void 0 : _a.trim();
-    if (flowSlug) {
-        return `${authentikOrigin}/if/flow/${encodeURIComponent(flowSlug)}/?next=${encodeURIComponent(authorizeUrl.toString())}`;
-    }
-    const sourceSlugCandidate = providerSourceSlugs === null || providerSourceSlugs === void 0 ? void 0 : providerSourceSlugs[providerHint];
-    const sourceSlug = sourceSlugCandidate != null && sourceSlugCandidate.trim().length > 0
-        ? sourceSlugCandidate.trim()
-        : providerHint;
-    return `${authentikOrigin}/source/oauth/login/${encodeURIComponent(sourceSlug)}/?next=${encodeURIComponent(authorizeUrl.toString())}`;
+    return buildAuthentikLoginEntryUrl({
+        issuer,
+        authorizeUrl: authorizeUrl.toString(),
+        providerHint,
+        providerFlowSlugs,
+        providerSourceSlugs,
+    });
 }

@@ -20,9 +20,11 @@ export {
 export {
   DEFAULT_AUTHENTIK_CLIENT_ID,
   AUTHENTIK_WEB_CALLBACK_PATH,
+  buildAuthentikLoginEntryUrl,
   buildAuthentikWebCallbackUrl,
   resolveAuthentikClientId,
   resolveAuthentikIssuer,
+  type BuildAuthentikLoginEntryUrlInput,
 } from './mobile/authentikUrls';
 export {
   createAuthentikPreset,

@@ -22,6 +22,7 @@ Do not treat Expo web as native auth.
 
 - runtime-specific sign-in helpers
 - Authentik issuer/client/redirect resolution
+- Authentik direct source/flow entry URL helpers
 - browser callback URL derivation
 - return-target storage for browser redirects
 - the Alternun mobile auth client wrapper
@@ -47,3 +48,4 @@ Do not treat Expo web as native auth.
 - Custom Authentik provider flow slugs are optional and explicit-only. They are ignored unless `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=true`.
 - Web callback URLs default to `https://<origin>/auth/callback` when a browser origin is available.
 - AIRS web can force a fresh Authentik session before social source login when shared SSO sessions would otherwise keep the wrong Authentik user active during callback handoff.
+- Static apps such as admin/docs can wrap their own OIDC authorize URLs with `buildAuthentikLoginEntryUrl(...)` to start Google-style login from an app-owned relay route instead of dropping users into the Authentik library.

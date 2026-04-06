@@ -12,14 +12,18 @@ export function LoginPage(): JSX.Element {
       : null;
   const releaseLabel = `v${adminEnv.appVersion} · ${adminEnv.appEnv}`;
 
-  async function handleLogin(): Promise<void> {
+  async function handleLogin(provider: 'google' | 'password'): Promise<void> {
     setErrorMessage(null);
 
     try {
-      await authProvider.login({});
+      await authProvider.login({ provider });
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : 'Authentik sign-in could not be started.'
+        error instanceof Error
+          ? error.message
+          : provider === 'google'
+          ? 'Google sign-in could not be started.'
+          : 'Authentik sign-in could not be started.'
       );
     }
   }
@@ -76,20 +80,32 @@ export function LoginPage(): JSX.Element {
           </div>
         </dl>
 
-        <button
-          className='primary-button'
-          type='button'
-          onClick={() => {
-            void handleLogin();
-          }}
-        >
-          Continue to secure sign-in
-        </button>
+        <div className='auth-actions'>
+          <button
+            className='primary-button'
+            type='button'
+            onClick={() => {
+              void handleLogin('google');
+            }}
+          >
+            Continue with Google
+          </button>
+
+          <button
+            className='secondary-button'
+            type='button'
+            onClick={() => {
+              void handleLogin('password');
+            }}
+          >
+            Use email and password
+          </button>
+        </div>
 
         <p className='auth-note'>
-          Password entry stays on Authentik. The dashboard never handles raw credentials directly.
-          Workspace Google accounts get dashboard access, but only approved admin roles can mutate
-          protected resources.
+          Google sign-in now starts from an app-owned relay route so Authentik can hand control
+          straight back to the dashboard callback. Password entry still stays on Authentik, and the
+          dashboard never handles raw credentials directly.
         </p>
 
         {loginError ? (
