@@ -1,12 +1,20 @@
-import {
-  UserManager,
-  WebStorageStateStore,
-  type User,
-  type UserManagerSettings,
-} from 'oidc-client-ts';
+import { UserManager, WebStorageStateStore, type UserManagerSettings } from 'oidc-client-ts';
 import type { CmsAuthIdentity, DocsCmsCustomFields } from './types';
 
 type ClaimBag = Record<string, unknown>;
+
+export interface DocsCmsSession {
+  expired: boolean;
+  profile: ClaimBag;
+}
+
+export interface DocsCmsUserManager {
+  getUser(): Promise<DocsCmsSession | null>;
+  removeUser(): Promise<void>;
+  signinRedirect(options?: { state?: { returnTo?: string } }): Promise<void>;
+  signinRedirectCallback(): Promise<DocsCmsSession>;
+  signoutRedirect(options?: { post_logout_redirect_uri?: string }): Promise<void>;
+}
 
 function readClaimArray(claims: ClaimBag, key: string): string[] {
   const value = claims[key];
@@ -18,7 +26,7 @@ function readClaimArray(claims: ClaimBag, key: string): string[] {
   if (typeof value === 'string' && value.length > 0) {
     return value
       .split(',')
-      .map(entry => entry.trim())
+      .map((entry) => entry.trim())
       .filter(Boolean);
   }
 
@@ -29,7 +37,7 @@ function normalizeGroup(value: string): string {
   return value.trim().toLowerCase();
 }
 
-export function createDocsCmsUserManager(config: DocsCmsCustomFields): UserManager {
+export function createDocsCmsUserManager(config: DocsCmsCustomFields): DocsCmsUserManager {
   const origin = typeof window === 'undefined' ? 'http://127.0.0.1:8083' : window.location.origin;
 
   const settings: UserManagerSettings = {
@@ -53,10 +61,12 @@ export function createDocsCmsUserManager(config: DocsCmsCustomFields): UserManag
       : undefined,
   };
 
-  return new UserManager(settings);
+  return new UserManager(settings) as unknown as DocsCmsUserManager;
 }
 
-export async function getActiveCmsSession(userManager: UserManager): Promise<User | null> {
+export async function getActiveCmsSession(
+  userManager: DocsCmsUserManager
+): Promise<DocsCmsSession | null> {
   const user = await userManager.getUser();
 
   if (!user || user.expired) {
@@ -66,12 +76,12 @@ export async function getActiveCmsSession(userManager: UserManager): Promise<Use
   return user;
 }
 
-export function canAccessCms(user: User | null, config: DocsCmsCustomFields): boolean {
+export function canAccessCms(user: DocsCmsSession | null, config: DocsCmsCustomFields): boolean {
   if (!user) {
     return false;
   }
 
-  const claims = user.profile as ClaimBag;
+  const claims = user.profile;
   const allowedGroups = new Set(config.auth.allowedGroups.map(normalizeGroup));
   const userGroups = [
     ...readClaimArray(claims, 'groups'),
@@ -79,15 +89,15 @@ export function canAccessCms(user: User | null, config: DocsCmsCustomFields): bo
     ...readClaimArray(claims, 'alternun_roles'),
   ].map(normalizeGroup);
 
-  return userGroups.some(group => allowedGroups.has(group));
+  return userGroups.some((group) => allowedGroups.has(group));
 }
 
-export function extractCmsIdentity(user: User | null): CmsAuthIdentity | null {
+export function extractCmsIdentity(user: DocsCmsSession | null): CmsAuthIdentity | null {
   if (!user) {
     return null;
   }
 
-  const claims = user.profile as ClaimBag;
+  const claims = user.profile;
   const email = typeof claims.email === 'string' ? claims.email : undefined;
   const name =
     (typeof claims.name === 'string' && claims.name.length > 0 ? claims.name : undefined) ??
