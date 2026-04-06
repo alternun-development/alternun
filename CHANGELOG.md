@@ -1,3 +1,19 @@
+## [1.0.25](https://github.com/alternun-development/alternun/compare/v1.0.24...v1.0.25) (2026-04-06)
+
+### Bug Fixes
+
+- **ci:** sync changelog parser and lockfile ([2542848](https://github.com/alternun-development/alternun/commit/25428486ccf1bcaa2c419efeb0223fc1c75134ce))
+- **mobile:** embed changelog data for reliable loading in all environments ([7e38a63](https://github.com/alternun-development/alternun/commit/7e38a63b5a535757c502cc5aad2cf5a6d8a9e643))
+- **mobile:** make footer links test-safe ([3a159f2](https://github.com/alternun-development/alternun/commit/3a159f2a9b1f29ed460a8415af1bd0ddc4e43cb2))
+
+## [1.0.25](https://github.com/alternun-development/alternun/compare/v1.0.24...v1.0.25) (2026-04-06)
+
+### Bug Fixes
+
+- **ci:** sync changelog parser and lockfile ([2542848](https://github.com/alternun-development/alternun/commit/25428486ccf1bcaa2c419efeb0223fc1c75134ce))
+- **mobile:** embed changelog data for reliable loading in all environments ([7e38a63](https://github.com/alternun-development/alternun/commit/7e38a63b5a535757c502cc5aad2cf5a6d8a9e643))
+- **mobile:** make footer links test-safe ([3a159f2](https://github.com/alternun-development/alternun/commit/3a159f2a9b1f29ed460a8415af1bd0ddc4e43cb2))
+
 ## [1.0.24](https://github.com/alternun-development/alternun/compare/v1.0.23...v1.0.24) (2026-04-06)
 
 ### Bug Fixes
