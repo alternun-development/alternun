@@ -34,6 +34,7 @@ These stages deploy both:
 - the Refine admin frontend
 
 This keeps the dependent admin/API surfaces in the same pipeline run while still isolating them from the public Expo stack.
+The generated dashboard pipeline env also carries `INFRA_ENFORCE_PIPELINE_DELETE_GUARD=true`, so the production reconciliation step refuses to prune existing managed pipelines unless a removal is explicitly intended.
 
 Use them when you want one pipeline to update the internal dashboard end-to-end without risking deletions on `dev` / `production` Expo stacks.
 
@@ -332,6 +333,7 @@ Important behavior:
 - non-production identity persists Traefik ACME state locally and backs it up to a private S3 bucket for restore after instance replacement
 - production identity defaults to ALB + ACM, with the ALB terminating TLS and forwarding HTTPS to the instance
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
+- non-production identity stages promote any authenticated social-login user to `internal`, so testnet signup reaches the interface; production stays on the `alternun.io` domain gate
 - the Google source bootstrap binds a username-mapping policy to `default-source-enrollment-prompt`, so first-time Google enrollments reuse the upstream email as the username and skip the manual Authentik username screen
 - the `Alternun Mobile` Authentik application tile defaults to the stage-specific AIRS auth entrypoint (`/auth?next=/`) so the tile opens the app instead of the Authentik library
 - `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` keeps the mobile social login path on Authentik and disables Supabase fallback in the web bundle
