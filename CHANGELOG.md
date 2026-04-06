@@ -1,3 +1,15 @@
+## [1.0.20](https://github.com/alternun-development/alternun/compare/v1.0.19...v1.0.20) (2026-04-06)
+
+### Bug Fixes
+
+- **infra:** README, shared, identity-resources, bootstrap-authentik-integrations ([47c7006](https://github.com/alternun-development/alternun/commit/47c70064e9618c9155a1f928700a753089507370))
+
+## [1.0.20](https://github.com/alternun-development/alternun/compare/v1.0.19...v1.0.20) (2026-04-06)
+
+### Bug Fixes
+
+- **infra:** README, shared, identity-resources, bootstrap-authentik-integrations ([47c7006](https://github.com/alternun-development/alternun/commit/47c70064e9618c9155a1f928700a753089507370))
+
 ## [1.0.19](https://github.com/alternun-development/alternun/compare/v1.0.18...v1.0.19) (2026-04-06)
 
 ### Bug Fixes
