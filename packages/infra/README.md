@@ -333,6 +333,7 @@ Important behavior:
 - non-production identity persists Traefik ACME state locally and backs it up to a private S3 bucket for restore after instance replacement
 - production identity defaults to ALB + ACM, with the ALB terminating TLS and forwarding HTTPS to the instance
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
+- the default internal application tile falls back to the stage-specific admin dashboard origin, so it opens the dashboard instead of the Authentik library unless you override `INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL`
 - non-production identity stages promote any authenticated social-login user to `internal`, so testnet signup reaches the interface; production stays on the `alternun.io` domain gate
 - the Google source bootstrap binds a username-mapping policy to `default-source-enrollment-prompt`, so first-time Google enrollments reuse the upstream email as the username and skip the manual Authentik username screen
 - the `Alternun Mobile` Authentik application tile defaults to the stage-specific AIRS auth entrypoint (`/auth?next=/`) so the tile opens the app instead of the Authentik library
