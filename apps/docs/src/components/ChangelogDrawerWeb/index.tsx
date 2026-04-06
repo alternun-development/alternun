@@ -7,6 +7,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access */
 
 import React, { useCallback, useMemo, useState } from 'react';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import { parseChangelog, type ChangelogEntry } from '../../utils/getChangelog';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import styles from './styles.module.css';
@@ -20,6 +21,8 @@ interface ChangelogDrawerWebProps {
   pageSize?: number;
   /** Override label on the collapsed trigger. Default: "v{latest}" */
   triggerLabel?: string;
+  /** Use localized labels. Default: true */
+  useLocalizedLabels?: boolean;
 }
 
 const SECTION_ICONS: Record<string, string> = {
@@ -38,12 +41,57 @@ function sectionIcon(label: string): string {
   return Object.prototype.hasOwnProperty.call(SECTION_ICONS, key) ? SECTION_ICONS[key] : '•';
 }
 
+function getLocalizedLabels(locale: string): Record<string, string> {
+  const labels: Record<string, Record<string, string>> = {
+    en: {
+      releaseHistory: 'Release History',
+      latest: 'latest',
+      tag: 'tag',
+      diff: 'diff',
+      newer: '← Newer',
+      older: 'Older →',
+      viewAllReleases: 'View all releases',
+      noChanges: 'No changelog entries found.',
+      noDocumented: 'No documented changes.',
+    },
+    es: {
+      releaseHistory: 'Historial de Versiones',
+      latest: 'más reciente',
+      tag: 'etiqueta',
+      diff: 'diferencia',
+      newer: '← Más Reciente',
+      older: 'Más Antiguo →',
+      viewAllReleases: 'Ver todas las versiones',
+      noChanges: 'No se encontraron entradas de cambios.',
+      noDocumented: 'Sin cambios documentados.',
+    },
+    th: {
+      releaseHistory: 'ประวัติการปล่อยรุ่น',
+      latest: 'ล่าสุด',
+      tag: 'แท็ก',
+      diff: 'ความแตกต่าง',
+      newer: '← ล่าสุด',
+      older: 'เก่าลง →',
+      viewAllReleases: 'ดูการปล่อยรุ่นทั้งหมด',
+      noChanges: 'ไม่พบรายการที่เปลี่ยนแปลง',
+      noDocumented: 'ไม่มีการเปลี่ยนแปลงที่มีเอกสาร',
+    },
+  };
+
+  return labels[locale] || labels.en;
+}
+
 function ChangelogDrawerWebContent({
   changelog,
   githubUrl,
   pageSize = 3,
   triggerLabel,
+  useLocalizedLabels = true,
 }: ChangelogDrawerWebProps): React.JSX.Element {
+  const { i18n } = useDocusaurusContext();
+  const locale = i18n.currentLocale || 'en';
+  const labels = useLocalizedLabels ? getLocalizedLabels(locale) : getLocalizedLabels('en');
+
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
 
@@ -100,7 +148,7 @@ function ChangelogDrawerWebContent({
               <div className={styles.sheetHeader}>
                 <div className={styles.sheetHeaderLeft}>
                   <h3 className={styles.sheetTitle}>
-                    Release History
+                    {labels.releaseHistory}
                     {latestVersion ? ` • v${latestVersion}` : ''}
                   </h3>
                   {totalPages > 1 && (
@@ -122,7 +170,7 @@ function ChangelogDrawerWebContent({
               <div className={styles.entriesScroll}>
                 <div className={styles.entriesContent}>
                   {visibleEntries.length === 0 ? (
-                    <p className={styles.emptyState}>No changelog entries found.</p>
+                    <p className={styles.emptyState}>{labels.noChanges}</p>
                   ) : (
                     visibleEntries.map((entry, idx) => (
                       <div key={entry.version} className={styles.entryCard}>
@@ -131,7 +179,7 @@ function ChangelogDrawerWebContent({
                           <div className={styles.versionMeta}>
                             <span className={styles.versionText}>v{entry.version}</span>
                             {idx === 0 && page === 0 && (
-                              <span className={styles.latestPill}>latest</span>
+                              <span className={styles.latestPill}>{labels.latest}</span>
                             )}
                             <span className={styles.dateText}>{entry.date}</span>
                           </div>
@@ -145,7 +193,7 @@ function ChangelogDrawerWebContent({
                                 rel='noopener noreferrer'
                                 className={styles.versionLink}
                               >
-                                tag ↗
+                                {labels.tag} ↗
                               </a>
                             )}
                             {entry.compareUrl && (
@@ -155,7 +203,7 @@ function ChangelogDrawerWebContent({
                                 rel='noopener noreferrer'
                                 className={styles.versionLink}
                               >
-                                diff ↗
+                                {labels.diff} ↗
                               </a>
                             )}
                           </div>
@@ -205,7 +253,7 @@ function ChangelogDrawerWebContent({
                               </div>
                             ))
                           ) : (
-                            <p className={styles.emptyEntry}>No documented changes.</p>
+                            <p className={styles.emptyEntry}>{labels.noDocumented}</p>
                           )}
                         </div>
                       </div>
@@ -223,7 +271,7 @@ function ChangelogDrawerWebContent({
                     onClick={prevPage}
                     disabled={page === 0}
                   >
-                    ← Newer
+                    {labels.newer}
                   </button>
                   <button
                     className={`${styles.pageBtn} ${
@@ -232,7 +280,7 @@ function ChangelogDrawerWebContent({
                     onClick={nextPage}
                     disabled={page >= totalPages - 1}
                   >
-                    Older →
+                    {labels.older}
                   </button>
                 </div>
 
@@ -244,7 +292,7 @@ function ChangelogDrawerWebContent({
                     rel='noopener noreferrer'
                     className={styles.githubLink}
                   >
-                    View all releases ↗
+                    {labels.viewAllReleases} ↗
                   </a>
                 )}
               </div>
