@@ -1,3 +1,15 @@
+## [1.0.23](https://github.com/alternun-development/alternun/compare/v1.0.22...v1.0.23) (2026-04-06)
+
+### Bug Fixes
+
+- **admin,docs,infra:** README, authProvider, authentication-and-session-flow, .env ([e75e896](https://github.com/alternun-development/alternun/commit/e75e8969f3ae1c2c0ef3c500e38ddb3b63b3339b))
+
+## [1.0.23](https://github.com/alternun-development/alternun/compare/v1.0.22...v1.0.23) (2026-04-06)
+
+### Bug Fixes
+
+- **admin,docs,infra:** README, authProvider, authentication-and-session-flow, .env ([e75e896](https://github.com/alternun-development/alternun/commit/e75e8969f3ae1c2c0ef3c500e38ddb3b63b3339b))
+
 ## [1.0.22](https://github.com/alternun-development/alternun/compare/v1.0.21...v1.0.22) (2026-04-06)
 
 ### Bug Fixes
