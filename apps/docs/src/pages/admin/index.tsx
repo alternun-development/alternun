@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState, type JSX } from 'react';
-import type { UserManager } from 'oidc-client-ts';
+import { useEffect, useState, type JSX } from 'react';
 import { buildDecapConfig } from '../../cms/decap-config';
 import {
   canAccessCms,
@@ -10,6 +9,8 @@ import {
 import { useDocsCmsConfig } from '../../cms/site-config';
 import type { CmsWindow } from '../../cms/types';
 import styles from './styles.module.css';
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 
 const DECAP_SCRIPT_ID = 'alternun-decap-cms';
 const DECAP_SCRIPT_SRC = 'https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js';
@@ -30,9 +31,13 @@ function loadDecapCms(): Promise<void> {
   if (existingScript) {
     return new Promise((resolve, reject) => {
       existingScript.addEventListener('load', () => resolve(), { once: true });
-      existingScript.addEventListener('error', () => reject(new Error('Decap CMS failed to load.')), {
-        once: true,
-      });
+      existingScript.addEventListener(
+        'error',
+        () => reject(new Error('Decap CMS failed to load.')),
+        {
+          once: true,
+        }
+      );
     });
   }
 
@@ -49,7 +54,7 @@ function loadDecapCms(): Promise<void> {
 
 export default function DocsCmsAdminPage(): JSX.Element {
   const config = useDocsCmsConfig();
-  const userManager = useMemo<UserManager>(() => createDocsCmsUserManager(config), [config]);
+  const userManager = createDocsCmsUserManager(config);
   const [state, setState] = useState<'loading' | 'ready' | 'locked'>('loading');
   const [message, setMessage] = useState('Checking editor session...');
   const [error, setError] = useState<string | null>(() => {
@@ -65,7 +70,8 @@ export default function DocsCmsAdminPage(): JSX.Element {
   const [initialized, setInitialized] = useState(false);
   const [identitySummary, setIdentitySummary] = useState<string>('Not signed in');
 
-  const cmsBackendConfigured = config.backend.mode === 'github' && config.backend.baseUrl.length > 0;
+  const cmsBackendConfigured =
+    config.backend.mode === 'github' && config.backend.baseUrl.length > 0;
 
   useEffect(() => {
     let disposed = false;
@@ -77,9 +83,7 @@ export default function DocsCmsAdminPage(): JSX.Element {
       const session = await getActiveCmsSession(userManager);
       const identity = extractCmsIdentity(session);
       setIdentitySummary(
-        identity
-          ? [identity.name, identity.email].filter(Boolean).join(' · ')
-          : 'Not signed in'
+        identity ? [identity.name, identity.email].filter(Boolean).join(' · ') : 'Not signed in'
       );
 
       if (!session) {
@@ -119,9 +123,7 @@ export default function DocsCmsAdminPage(): JSX.Element {
         }
 
         setState('locked');
-        setError(
-          cmsError instanceof Error ? cmsError.message : 'Decap CMS failed to initialize.'
-        );
+        setError(cmsError instanceof Error ? cmsError.message : 'Decap CMS failed to initialize.');
       }
     }
 
@@ -136,9 +138,9 @@ export default function DocsCmsAdminPage(): JSX.Element {
     setError(null);
     setMessage('Redirecting to Authentik...');
     await userManager.removeUser();
+    // Reuse any existing Authentik session here; the callback still enforces
+    // the CMS group allowlist before Decap loads.
     await userManager.signinRedirect({
-      prompt: 'login',
-      max_age: 0,
       state: {
         returnTo: '/admin',
       },
@@ -160,8 +162,8 @@ export default function DocsCmsAdminPage(): JSX.Element {
             <p className={styles.eyebrow}>Alternun Docs CMS</p>
             <h1 className={styles.title}>Documentation editor</h1>
             <p className={styles.copy}>
-              Authentik controls access to the editor. Decap loads only after an approved
-              Alternun admin/editor session is active.
+              Authentik controls access to the editor. Decap loads only after an approved Alternun
+              admin/editor session is active.
             </p>
 
             <div className={styles.metaGrid}>
@@ -185,7 +187,11 @@ export default function DocsCmsAdminPage(): JSX.Element {
 
             <div className={styles.actions}>
               {state !== 'ready' ? (
-                <button className={styles.primaryAction} type='button' onClick={() => void handleLogin()}>
+                <button
+                  className={styles.primaryAction}
+                  type='button'
+                  onClick={() => void handleLogin()}
+                >
                   Continue with Authentik
                 </button>
               ) : (
