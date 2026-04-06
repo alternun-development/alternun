@@ -45,7 +45,14 @@ function normalizeBrowserOrigin(browserOrigin) {
     if (!normalizedBrowserOrigin) {
         return undefined;
     }
-    return normalizedBrowserOrigin.replace(/\/+$/, '');
+    let endIndex = normalizedBrowserOrigin.length;
+    while (endIndex > 0 && normalizedBrowserOrigin.charAt(endIndex - 1) === '/') {
+        endIndex -= 1;
+    }
+    if (endIndex === 0) {
+        return undefined;
+    }
+    return normalizedBrowserOrigin.slice(0, endIndex);
 }
 export function buildAuthentikWebCallbackUrl(browserOrigin, callbackPath = AUTHENTIK_WEB_CALLBACK_PATH) {
     const normalizedOrigin = normalizeBrowserOrigin(browserOrigin);
