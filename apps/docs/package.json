@@ -19,6 +19,7 @@
     "@docusaurus/core": "3.5.2",
     "@docusaurus/preset-classic": "3.5.2",
     "@docusaurus/theme-mermaid": "3.5.2",
+    "@alternun/auth": "workspace:*",
     "@mdx-js/react": "^3.0.0",
     "oidc-client-ts": "^3.4.1",
     "@react-three/fiber": "^8.17.10",

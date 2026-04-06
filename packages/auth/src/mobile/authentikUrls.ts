@@ -10,6 +10,14 @@ export interface BuildAuthentikOAuthFlowStartUrlInput {
   providerSourceSlugs?: Record<string, string>;
 }
 
+export interface BuildAuthentikLoginEntryUrlInput {
+  issuer: string;
+  authorizeUrl: string;
+  providerHint?: string | null;
+  providerFlowSlugs?: Record<string, string | undefined>;
+  providerSourceSlugs?: Record<string, string | undefined>;
+}
+
 const DEFAULT_SCOPE = 'openid profile email';
 export const DEFAULT_AUTHENTIK_CLIENT_ID = 'alternun-mobile';
 export const AUTHENTIK_WEB_CALLBACK_PATH = '/auth/callback';
@@ -148,6 +156,44 @@ export function getAuthentikEndpointBaseFromIssuer(issuer: string): string {
   return issuer.replace(/\/$/, '').replace(/\/[^/]+$/, '/');
 }
 
+export function buildAuthentikLoginEntryUrl({
+  issuer,
+  authorizeUrl,
+  providerHint,
+  providerFlowSlugs,
+  providerSourceSlugs,
+}: BuildAuthentikLoginEntryUrlInput): string {
+  const trimmedAuthorizeUrl = authorizeUrl.trim();
+  const normalizedProviderHint = providerHint?.trim();
+
+  if (!trimmedAuthorizeUrl) {
+    throw new Error('CONFIG_ERROR: authorizeUrl is required');
+  }
+
+  if (!normalizedProviderHint) {
+    return trimmedAuthorizeUrl;
+  }
+
+  const authentikOrigin = new URL(issuer).origin;
+  const flowSlug = providerFlowSlugs?.[normalizedProviderHint]?.trim();
+
+  if (flowSlug) {
+    return `${authentikOrigin}/if/flow/${encodeURIComponent(flowSlug)}/?next=${encodeURIComponent(
+      trimmedAuthorizeUrl
+    )}`;
+  }
+
+  const sourceSlugCandidate = providerSourceSlugs?.[normalizedProviderHint];
+  const sourceSlug =
+    sourceSlugCandidate != null && sourceSlugCandidate.trim().length > 0
+      ? sourceSlugCandidate.trim()
+      : normalizedProviderHint;
+
+  return `${authentikOrigin}/source/oauth/login/${encodeURIComponent(
+    sourceSlug
+  )}/?next=${encodeURIComponent(trimmedAuthorizeUrl)}`;
+}
+
 export function buildAuthentikOAuthFlowStartUrl({
   providerHint,
   issuer,
@@ -172,21 +218,11 @@ export function buildAuthentikOAuthFlowStartUrl({
   authorizeUrl.searchParams.set('code_challenge', codeChallenge);
   authorizeUrl.searchParams.set('code_challenge_method', 'S256');
 
-  const authentikOrigin = new URL(issuer).origin;
-  const flowSlug = providerFlowSlugs?.[providerHint]?.trim();
-
-  if (flowSlug) {
-    return `${authentikOrigin}/if/flow/${encodeURIComponent(flowSlug)}/?next=${encodeURIComponent(
-      authorizeUrl.toString()
-    )}`;
-  }
-
-  const sourceSlugCandidate = providerSourceSlugs?.[providerHint];
-  const sourceSlug =
-    sourceSlugCandidate != null && sourceSlugCandidate.trim().length > 0
-      ? sourceSlugCandidate.trim()
-      : providerHint;
-  return `${authentikOrigin}/source/oauth/login/${encodeURIComponent(
-    sourceSlug
-  )}/?next=${encodeURIComponent(authorizeUrl.toString())}`;
+  return buildAuthentikLoginEntryUrl({
+    issuer,
+    authorizeUrl: authorizeUrl.toString(),
+    providerHint,
+    providerFlowSlugs,
+    providerSourceSlugs,
+  });
 }

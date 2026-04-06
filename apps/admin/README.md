@@ -7,7 +7,7 @@ Internal Refine-based admin frontend for Alternun.
 - authenticate internal operators against Authentik
 - consume the NestJS backend API in `apps/api`
 - provide CRUD-heavy admin flows without introducing a second backend platform
-- reuse the current Authentik session when possible, then validate access in the callback before opening `/dashboard`
+- reuse the current Authentik session when possible, start Google login from an app-owned relay route, then validate access in the callback before opening `/dashboard`
 
 ## Local development
 
