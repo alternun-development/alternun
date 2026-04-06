@@ -177,6 +177,7 @@ function VersionBadge({
   version,
   date,
   compareUrl,
+  tagUrl,
   isLatest,
   accentColor,
   textColor,
@@ -186,6 +187,7 @@ function VersionBadge({
   version: string;
   date: string;
   compareUrl?: string;
+  tagUrl?: string;
   isLatest: boolean;
   accentColor: string;
   textColor: string;
@@ -213,16 +215,28 @@ function VersionBadge({
         )}
         <Text style={[innerStyles.dateText, { color: mutedColor }]}>{date}</Text>
       </View>
-      {compareUrl ? (
-        <TouchableOpacity
-          onPress={() => {
-            void Linking.openURL(compareUrl);
-          }}
-          activeOpacity={0.7}
-        >
-          <Text style={[innerStyles.compareLink, { color: accentColor }]}>diff ↗</Text>
-        </TouchableOpacity>
-      ) : null}
+      <View style={innerStyles.versionLinks}>
+        {tagUrl ? (
+          <TouchableOpacity
+            onPress={() => {
+              void Linking.openURL(tagUrl);
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={[innerStyles.versionLink, { color: accentColor }]}>tag ↗</Text>
+          </TouchableOpacity>
+        ) : null}
+        {compareUrl ? (
+          <TouchableOpacity
+            onPress={() => {
+              void Linking.openURL(compareUrl);
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={[innerStyles.versionLink, { color: accentColor }]}>diff ↗</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -349,152 +363,163 @@ export function ChangelogDrawer({
       <Modal
         visible={open}
         transparent
-        animationType='slide'
+        animationType='fade'
         statusBarTranslucent
         onRequestClose={handleClose}
         accessibilityViewIsModal
       >
-        {/* Backdrop */}
-        <Pressable
-          style={[innerStyles.backdrop, { backgroundColor: overlayBg }]}
-          onPress={handleClose}
-        />
-
-        {/* Sheet */}
-        <View style={[innerStyles.sheet, { backgroundColor: sheetBg, borderColor }]}>
-          {/* Handle */}
-          <View
-            style={[
-              innerStyles.handle,
-              { backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)' },
-            ]}
+        <View style={innerStyles.modalContainer}>
+          {/* Backdrop */}
+          <Pressable
+            style={[innerStyles.backdrop, { backgroundColor: overlayBg }]}
+            onPress={handleClose}
           />
 
-          {/* Header */}
-          <View style={[innerStyles.sheetHeader, { borderBottomColor: borderColor }]}>
-            <View style={innerStyles.sheetHeaderLeft}>
-              <Text style={[innerStyles.sheetTitle, { color: textPrimary }]}>
-                Release History
-                {latestVersion ? ` • v${latestVersion}` : ''}
-              </Text>
-              {totalPages > 1 && (
-                <Text style={[innerStyles.pageLabel, { color: textMuted }]}>
-                  {page + 1}/{totalPages}
+          {/* Sheet */}
+          <View style={[innerStyles.sheet, { backgroundColor: sheetBg, borderColor }]}>
+            {/* Handle */}
+            <View
+              style={[
+                innerStyles.handle,
+                { backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)' },
+              ]}
+            />
+
+            {/* Header */}
+            <View style={[innerStyles.sheetHeader, { borderBottomColor: borderColor }]}>
+              <View style={innerStyles.sheetHeaderLeft}>
+                <Text style={[innerStyles.sheetTitle, { color: textPrimary }]}>
+                  Release History
+                  {latestVersion ? ` • v${latestVersion}` : ''}
                 </Text>
-              )}
+                {totalPages > 1 && (
+                  <Text style={[innerStyles.pageLabel, { color: textMuted }]}>
+                    {page + 1}/{totalPages}
+                  </Text>
+                )}
+              </View>
+              <TouchableOpacity
+                onPress={handleClose}
+                activeOpacity={0.75}
+                style={innerStyles.closeBtn}
+              >
+                <Text style={[innerStyles.closeBtnText, { color: textMuted }]}>✕</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={handleClose}
-              activeOpacity={0.75}
-              style={innerStyles.closeBtn}
+
+            {/* Entries */}
+            <ScrollView
+              style={innerStyles.entriesScroll}
+              contentContainerStyle={innerStyles.entriesContent}
+              showsVerticalScrollIndicator={false}
             >
-              <Text style={[innerStyles.closeBtnText, { color: textMuted }]}>✕</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Entries */}
-          <ScrollView
-            style={innerStyles.entriesScroll}
-            contentContainerStyle={innerStyles.entriesContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {visibleEntries.length === 0 ? (
-              <Text style={[innerStyles.emptyState, { color: textMuted }]}>
-                No changelog entries found.
-              </Text>
-            ) : (
-              visibleEntries.map((entry, idx) => (
-                <View
-                  key={entry.version}
-                  style={[
-                    innerStyles.entryCard,
-                    {
-                      backgroundColor: cardBg,
-                      borderColor,
-                      marginBottom: idx < visibleEntries.length - 1 ? spacing[3] : 0,
-                    },
-                  ]}
-                >
-                  <VersionBadge
-                    version={entry.version}
-                    date={entry.date}
-                    compareUrl={entry.compareUrl}
-                    isLatest={highlightLatest && idx === 0 && page === 0}
-                    accentColor={accent}
-                    textColor={textPrimary}
-                    mutedColor={textMuted}
-                    borderColor={borderColor}
-                  />
-                  <View style={innerStyles.entryBody}>
-                    {entry.hasContent ? (
-                      entry.sections.map((section, sIdx) => (
-                        <SectionBlock
-                          key={sIdx}
-                          section={section}
-                          accentColor={accent}
-                          textColor={textPrimary}
-                          mutedColor={textMuted}
-                        />
-                      ))
-                    ) : (
-                      <EmptyEntry textColor={textMuted} />
-                    )}
+              {visibleEntries.length === 0 ? (
+                <Text style={[innerStyles.emptyState, { color: textMuted }]}>
+                  No changelog entries found.
+                </Text>
+              ) : (
+                visibleEntries.map((entry, idx) => (
+                  <View
+                    key={entry.version}
+                    style={[
+                      innerStyles.entryCard,
+                      {
+                        backgroundColor: cardBg,
+                        borderColor,
+                        marginBottom: idx < visibleEntries.length - 1 ? spacing[3] : 0,
+                      },
+                    ]}
+                  >
+                    <VersionBadge
+                      version={entry.version}
+                      date={entry.date}
+                      compareUrl={entry.compareUrl}
+                      tagUrl={
+                        githubUrl
+                          ? `${githubUrl.replace(/\/$/, '')}/releases/tag/v${entry.version}`
+                          : undefined
+                      }
+                      isLatest={highlightLatest && idx === 0 && page === 0}
+                      accentColor={accent}
+                      textColor={textPrimary}
+                      mutedColor={textMuted}
+                      borderColor={borderColor}
+                    />
+                    <View style={innerStyles.entryBody}>
+                      {entry.hasContent ? (
+                        entry.sections.map((section, sIdx) => (
+                          <SectionBlock
+                            key={sIdx}
+                            section={section}
+                            accentColor={accent}
+                            textColor={textPrimary}
+                            mutedColor={textMuted}
+                          />
+                        ))
+                      ) : (
+                        <EmptyEntry textColor={textMuted} />
+                      )}
+                    </View>
                   </View>
-                </View>
-              ))
-            )}
-          </ScrollView>
+                ))
+              )}
+            </ScrollView>
 
-          {/* Pagination + GitHub link */}
-          <View style={[innerStyles.sheetFooter, { borderTopColor: borderColor }]}>
-            {/* Pagination */}
-            <View style={innerStyles.pagination}>
-              <TouchableOpacity
-                style={[
-                  innerStyles.pageBtn,
-                  { borderColor },
-                  page === 0 && innerStyles.pageBtnDisabled,
-                ]}
-                onPress={prevPage}
-                disabled={page === 0}
-                activeOpacity={0.75}
-              >
-                <Text style={[innerStyles.pageBtnText, { color: page === 0 ? textMuted : accent }]}>
-                  ← Newer
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  innerStyles.pageBtn,
-                  { borderColor },
-                  page >= totalPages - 1 && innerStyles.pageBtnDisabled,
-                ]}
-                onPress={nextPage}
-                disabled={page >= totalPages - 1}
-                activeOpacity={0.75}
-              >
-                <Text
+            {/* Pagination + GitHub link */}
+            <View style={[innerStyles.sheetFooter, { borderTopColor: borderColor }]}>
+              {/* Pagination */}
+              <View style={innerStyles.pagination}>
+                <TouchableOpacity
                   style={[
-                    innerStyles.pageBtnText,
-                    { color: page >= totalPages - 1 ? textMuted : accent },
+                    innerStyles.pageBtn,
+                    { borderColor },
+                    page === 0 && innerStyles.pageBtnDisabled,
                   ]}
+                  onPress={prevPage}
+                  disabled={page === 0}
+                  activeOpacity={0.75}
                 >
-                  Older →
-                </Text>
-              </TouchableOpacity>
-            </View>
+                  <Text
+                    style={[innerStyles.pageBtnText, { color: page === 0 ? textMuted : accent }]}
+                  >
+                    ← Newer
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    innerStyles.pageBtn,
+                    { borderColor },
+                    page >= totalPages - 1 && innerStyles.pageBtnDisabled,
+                  ]}
+                  onPress={nextPage}
+                  disabled={page >= totalPages - 1}
+                  activeOpacity={0.75}
+                >
+                  <Text
+                    style={[
+                      innerStyles.pageBtnText,
+                      { color: page >= totalPages - 1 ? textMuted : accent },
+                    ]}
+                  >
+                    Older →
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-            {/* GitHub releases link */}
-            {releasesUrl ? (
-              <TouchableOpacity
-                onPress={() => {
-                  void Linking.openURL(releasesUrl);
-                }}
-                activeOpacity={0.75}
-              >
-                <Text style={[innerStyles.githubLink, { color: accent }]}>View all releases ↗</Text>
-              </TouchableOpacity>
-            ) : null}
+              {/* GitHub releases link */}
+              {releasesUrl ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    void Linking.openURL(releasesUrl);
+                  }}
+                  activeOpacity={0.75}
+                >
+                  <Text style={[innerStyles.githubLink, { color: accent }]}>
+                    View all releases ↗
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
           </View>
         </View>
       </Modal>
@@ -505,6 +530,12 @@ export function ChangelogDrawer({
 // ── Styles ─────────────────────────────────────────────────────────────────────
 
 const innerStyles = StyleSheet.create({
+  // Modal layout
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+
   // Trigger
   triggerPill: {
     flexDirection: 'row',
@@ -643,6 +674,15 @@ const innerStyles = StyleSheet.create({
   dateText: {
     fontSize: fontSize.xs,
     fontWeight: '500',
+  },
+  versionLinks: {
+    flexDirection: 'row',
+    gap: spacing[2],
+  },
+  versionLink: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    letterSpacing: 0.1,
   },
   compareLink: {
     fontSize: fontSize.xs,
