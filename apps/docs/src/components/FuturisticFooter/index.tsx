@@ -1,11 +1,39 @@
-import React from 'react';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access */
+
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import ChangelogDrawerWeb from '../ChangelogDrawerWeb';
+import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 import styles from './styles.module.css';
 
-const FuturisticFooter = () => {
+const FuturisticFooter = (): React.JSX.Element => {
   const { i18n } = useDocusaurusContext();
   const currentYear = new Date().getFullYear();
+  const [changelogContent, setChangelogContent] = useState<string>('');
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadChangelog = async (): Promise<void> => {
+      try {
+        const content = await getChangelogContent();
+        if (isMounted && content) {
+          setChangelogContent(content);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.warn('Failed to load changelog:', error);
+      }
+    };
+
+    // Load changelog on client side
+    void loadChangelog();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Translations
   const t = {
@@ -200,11 +228,21 @@ const FuturisticFooter = () => {
             <div className='row'>
               <div className='col col--12'>
                 <div className={styles.copyright}>
-                  <p>{translations.copyright}</p>
-                  <div className={styles.footerTech}>
-                    <span className={styles.techBadge}>{translations.builtWith}</span>
-                    <span className={styles.techBadge}>{translations.poweredBy}</span>
+                  <div className={styles.copyrightContent}>
+                    <p>{translations.copyright}</p>
+                    <div className={styles.footerTech}>
+                      <span className={styles.techBadge}>{translations.builtWith}</span>
+                      <span className={styles.techBadge}>{translations.poweredBy}</span>
+                    </div>
                   </div>
+                  {changelogContent && changelogContent.trim().length > 0 && (
+                    <ChangelogDrawerWeb
+                      changelog={changelogContent}
+                      githubUrl={GITHUB_REPO_URL}
+                      pageSize={3}
+                      triggerLabel='v1.0.18'
+                    />
+                  )}
                 </div>
               </div>
             </div>
