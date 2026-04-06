@@ -13,6 +13,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import { ChangelogDrawer } from '@alternun/ui';
 import { createTypographyStyles } from '../theme/typography';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -26,15 +27,15 @@ import {
   FooterTextLink,
   SocialPill,
   SOCIAL_LINKS,
-  resolveVersionMetadata,
 } from './Footer.shared';
+import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 
 export default function AppInfoFooter(): React.JSX.Element {
   const { themeMode, language, motionLevel } = useAppPreferences();
   const { width } = useWindowDimensions();
   const { t } = useAppTranslation('mobile');
   const isDark = themeMode === 'dark';
-  const versionMetadata = useMemo(resolveVersionMetadata, []);
+  const changelogContent = useMemo(getChangelogContent, []);
 
   const isMobile = width < 720;
   const isWide = width >= 1120;
@@ -263,16 +264,7 @@ export default function AppInfoFooter(): React.JSX.Element {
           ]}
         >
           <FooterCopyright color={palette.title} />
-          <View
-            style={[
-              styles.versionBadge,
-              { borderColor: isDark ? 'rgba(30,230,181,0.2)' : 'rgba(11,90,95,0.15)' },
-            ]}
-          >
-            <Text numberOfLines={1} style={[styles.bottomMeta, { color: palette.accent }]}>
-              v{versionMetadata.version}
-            </Text>
-          </View>
+          <ChangelogDrawer changelog={changelogContent} githubUrl={GITHUB_REPO_URL} pageSize={3} />
         </View>
       </View>
     </View>
