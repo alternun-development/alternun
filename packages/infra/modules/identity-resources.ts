@@ -810,6 +810,9 @@ export function deployIdentityInfrastructure(
             defaultApplicationPublisher:
               args.settings.integration.bootstrap.defaultApplication.publisher,
             defaultApplicationSlug: args.settings.integration.bootstrap.defaultApplication.slug,
+            // Non-production identity stages should let any social-login user register and
+            // reach the Authentik interface. Production keeps the domain gate.
+            internalUserPromotionMode: productionIdentityStage ? 'domain' : 'any',
             googleClientId: args.settings.integration.google.clientId,
             googleClientSecret: args.settings.integration.google.clientSecret,
             googleSourceLoginFlowSlug: args.settings.integration.google.loginFlowSlug,
