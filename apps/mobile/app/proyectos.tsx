@@ -222,6 +222,7 @@ const styles = StyleSheet.create({
     width: 36,
   },
   content: {
+    flexGrow: 1,
     paddingHorizontal: 16,
     gap: 0,
   },
