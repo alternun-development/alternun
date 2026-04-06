@@ -1,3 +1,15 @@
+## [1.0.19](https://github.com/alternun-development/alternun/compare/v1.0.18...v1.0.19) (2026-04-06)
+
+### Bug Fixes
+
+- **security:** remove regex from browser origin normalization ([919ff18](https://github.com/alternun-development/alternun/commit/919ff180f221de09feea06be104b0f91b1051f5a))
+
+## [1.0.19](https://github.com/alternun-development/alternun/compare/v1.0.18...v1.0.19) (2026-04-06)
+
+### Bug Fixes
+
+- **security:** remove regex from browser origin normalization ([919ff18](https://github.com/alternun-development/alternun/commit/919ff180f221de09feea06be104b0f91b1051f5a))
+
 ## [1.0.18](https://github.com/alternun-development/alternun/compare/v1.0.17...v1.0.18) (2026-04-05)
 
 ## [1.0.18](https://github.com/alternun-development/alternun/compare/v1.0.17...v1.0.18) (2026-04-05)
