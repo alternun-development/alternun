@@ -1,3 +1,15 @@
+## [1.0.22](https://github.com/alternun-development/alternun/compare/v1.0.21...v1.0.22) (2026-04-06)
+
+### Bug Fixes
+
+- **mobile:** improve changelog loading fallback for all environments ([cbee46c](https://github.com/alternun-development/alternun/commit/cbee46cff3f368f358e3b7ba83379e63574684c9))
+
+## [1.0.22](https://github.com/alternun-development/alternun/compare/v1.0.21...v1.0.22) (2026-04-06)
+
+### Bug Fixes
+
+- **mobile:** improve changelog loading fallback for all environments ([cbee46c](https://github.com/alternun-development/alternun/commit/cbee46cff3f368f358e3b7ba83379e63574684c9))
+
 ## [1.0.21](https://github.com/alternun-development/alternun/compare/v1.0.20...v1.0.21) (2026-04-06)
 
 ### Bug Fixes
