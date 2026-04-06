@@ -105,7 +105,28 @@ return False
 """.strip()
 
 
-def build_internal_user_promotion_expression(allowed_domain: str):
+def build_internal_user_promotion_expression(promotion_mode: str, allowed_domain: str):
+    normalized_mode = (promotion_mode or "domain").strip().lower()
+
+    if normalized_mode == "any":
+        return """
+plan = request.context.get("flow_plan")
+
+user = getattr(request, "user", None)
+if user and getattr(user, "is_authenticated", False):
+    if getattr(user, "type", "") != "internal":
+        user.type = "internal"
+        user.save(update_fields=["type"])
+    return True
+
+if not plan:
+    return True
+
+context = getattr(plan, "context", {})
+context["user_type"] = "internal"
+return True
+""".strip()
+
     return f"""
 allowed_domain = {json.dumps(allowed_domain.lower())}
 plan = request.context.get("flow_plan")
@@ -510,6 +531,9 @@ admin_oidc_application_slug = read_env(
 admin_allowed_email_domain = read_env(
     "ALTERNUN_BOOTSTRAP_ADMIN_ALLOWED_EMAIL_DOMAIN", "alternun.io"
 )
+internal_user_promotion_mode = (
+    read_env("ALTERNUN_BOOTSTRAP_INTERNAL_USER_PROMOTION_MODE", "domain") or "domain"
+).lower()
 admin_oidc_provider_name = read_env(
     "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_PROVIDER_NAME", "Alternun Admin OIDC"
 )
@@ -602,7 +626,19 @@ if admin_username and admin_email:
 else:
     results["admin_user"] = "missing_inputs"
 
-if admin_allowed_email_domain:
+if internal_user_promotion_mode == "any":
+    promoted_usernames = []
+    for internal_user in user_model.objects.exclude(type="internal"):
+        internal_user.type = "internal"
+        internal_user.save(update_fields=["type"])
+        promoted_usernames.append(internal_user.username)
+
+    results["internal_domain_users"] = {
+        "status": "updated" if promoted_usernames else "unchanged",
+        "count": len(promoted_usernames),
+        "usernames": promoted_usernames,
+    }
+elif admin_allowed_email_domain:
     promoted_usernames = []
     for internal_user in user_model.objects.filter(
         email__iendswith=f"@{admin_allowed_email_domain}"
@@ -928,7 +964,10 @@ if admin_allowed_email_domain:
     internal_user_promotion_policy, promotion_policy_created, promotion_policy_changed = (
         upsert_expression_policy(
             "alternun-internal-user-promotion",
-            build_internal_user_promotion_expression(admin_allowed_email_domain),
+            build_internal_user_promotion_expression(
+                internal_user_promotion_mode,
+                admin_allowed_email_domain,
+            ),
         )
     )
 else:
