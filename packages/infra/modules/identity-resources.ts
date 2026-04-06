@@ -752,6 +752,8 @@ export function deployIdentityInfrastructure(
   const mobileOidcLaunchUrl =
     args.settings.integration.mobileOidc.launchUrl.trim() ||
     `https://${mobileAirsStageDomain}/auth?next=/`;
+  const defaultApplicationLaunchUrl =
+    args.settings.integration.bootstrap.defaultApplication.launchUrl.trim() || adminOidcLaunchUrl;
   const docsCmsSiteUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.siteUrl);
   const docsCmsLocalDevUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.localDevUrl);
   const docsCmsOidcRedirectUrls = [docsCmsSiteUrl, docsCmsLocalDevUrl]
@@ -800,8 +802,7 @@ export function deployIdentityInfrastructure(
             defaultApplicationEnabled:
               args.settings.integration.bootstrap.defaultApplication.enabled,
             defaultApplicationGroup: args.settings.integration.bootstrap.defaultApplication.group,
-            defaultApplicationLaunchUrl:
-              args.settings.integration.bootstrap.defaultApplication.launchUrl,
+            defaultApplicationLaunchUrl,
             defaultApplicationName: args.settings.integration.bootstrap.defaultApplication.name,
             defaultApplicationOpenInNewTab:
               args.settings.integration.bootstrap.defaultApplication.openInNewTab,

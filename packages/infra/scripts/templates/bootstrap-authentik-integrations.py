@@ -990,6 +990,10 @@ default_application_launch_url = read_env(
     "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_LAUNCH_URL",
     f"https://{identity_domain}/if/user/#/library" if identity_domain else "",
 )
+if not default_application_launch_url:
+    default_application_launch_url = (
+        admin_oidc_launch_url or f"https://{identity_domain}/if/user/#/library"
+    )
 default_application_open_in_new_tab = read_bool_env(
     "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_OPEN_IN_NEW_TAB", False
 )
