@@ -13,6 +13,7 @@ const NON_EXPO_PIPELINE_ENV = {
   INFRA_ENABLE_PREDEPLOY_CHECKS: 'false',
   INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'false',
   INFRA_ENABLE_REACHABILITY_CHECK: 'false',
+  INFRA_ENFORCE_PIPELINE_DELETE_GUARD: 'true',
 } as const;
 
 export function pickString(...values: Array<string | undefined>): string | undefined {

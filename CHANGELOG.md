@@ -2,33 +2,13 @@
 
 ### Bug Fixes
 
-- **mobile:** show version number on changelog drawer trigger pill ([557d825](https://github.com/alternun-development/alternun/commit/557d8255e8299ca9358a4b83ccf3988469b23086))
-- **mobile:** use localhost URLs for docs and project links in development ([341801d](https://github.com/alternun-development/alternun/commit/341801dec2c993828811b34f98faf31c8aa69207))
-- **ui:** fix modal expansion and add direct GitHub tag links ([b253d8e](https://github.com/alternun-development/alternun/commit/b253d8e98e68302236844121518ffdc25265ba02))
-- **ui:** improve ChangelogDrawer sheet expansion and header display ([ef632ae](https://github.com/alternun-development/alternun/commit/ef632ae1f78f7dcdd318ea6a1dd43060367ce306))
-
-### Features
-
-- **docs:** integrate ChangelogDrawer into Docusaurus footer ([40437ed](https://github.com/alternun-development/alternun/commit/40437edfdac4ca5cb7a0f21ee8d20af117885430))
-- **mobile:** comprehensive responsive design improvements ([773dc91](https://github.com/alternun-development/alternun/commit/773dc9191a3af320ff8be650e9aeddd48d87d953))
-- **mobile:** integrate ChangelogDrawer into landing and app footers ([86e880b](https://github.com/alternun-development/alternun/commit/86e880b537e541b81634eb4d787bff1f2aa11fc7))
-- **ui,release:** add ChangelogDrawer component and empty-changelog guard ([957038d](https://github.com/alternun-development/alternun/commit/957038d3c98abbe914958c5d5424a4eac1b6fdc4))
+- **infra:** README, shared, identity-resources, bootstrap-authentik-integrations ([47c7006](https://github.com/alternun-development/alternun/commit/47c70064e9618c9155a1f928700a753089507370))
 
 ## [1.0.20](https://github.com/alternun-development/alternun/compare/v1.0.19...v1.0.20) (2026-04-06)
 
 ### Bug Fixes
 
-- **mobile:** show version number on changelog drawer trigger pill ([557d825](https://github.com/alternun-development/alternun/commit/557d8255e8299ca9358a4b83ccf3988469b23086))
-- **mobile:** use localhost URLs for docs and project links in development ([341801d](https://github.com/alternun-development/alternun/commit/341801dec2c993828811b34f98faf31c8aa69207))
-- **ui:** fix modal expansion and add direct GitHub tag links ([b253d8e](https://github.com/alternun-development/alternun/commit/b253d8e98e68302236844121518ffdc25265ba02))
-- **ui:** improve ChangelogDrawer sheet expansion and header display ([ef632ae](https://github.com/alternun-development/alternun/commit/ef632ae1f78f7dcdd318ea6a1dd43060367ce306))
-
-### Features
-
-- **docs:** integrate ChangelogDrawer into Docusaurus footer ([40437ed](https://github.com/alternun-development/alternun/commit/40437edfdac4ca5cb7a0f21ee8d20af117885430))
-- **mobile:** comprehensive responsive design improvements ([773dc91](https://github.com/alternun-development/alternun/commit/773dc9191a3af320ff8be650e9aeddd48d87d953))
-- **mobile:** integrate ChangelogDrawer into landing and app footers ([86e880b](https://github.com/alternun-development/alternun/commit/86e880b537e541b81634eb4d787bff1f2aa11fc7))
-- **ui,release:** add ChangelogDrawer component and empty-changelog guard ([957038d](https://github.com/alternun-development/alternun/commit/957038d3c98abbe914958c5d5424a4eac1b6fdc4))
+- **infra:** README, shared, identity-resources, bootstrap-authentik-integrations ([47c7006](https://github.com/alternun-development/alternun/commit/47c70064e9618c9155a1f928700a753089507370))
 
 ## [1.0.19](https://github.com/alternun-development/alternun/compare/v1.0.18...v1.0.19) (2026-04-06)
 
