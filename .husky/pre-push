@@ -4,3 +4,6 @@
 # Check versioning before push
 npm run version:validate
 npm run version:check-secrets
+
+# Guard against empty changelog entries on tagged releases
+npm run changelog:check

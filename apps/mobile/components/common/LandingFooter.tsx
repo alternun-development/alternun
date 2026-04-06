@@ -13,6 +13,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import { ChangelogDrawer } from '@alternun/ui';
 import { createTypographyStyles } from '../theme/typography';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -27,6 +28,7 @@ import {
   SOCIAL_LINKS,
   resolveVersionMetadata,
 } from './Footer.shared';
+import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 
 export default function LandingFooter(): React.JSX.Element {
   const { themeMode, language } = useAppPreferences();
@@ -34,6 +36,7 @@ export default function LandingFooter(): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
   const isDark = themeMode === 'dark';
   const versionMetadata = useMemo(resolveVersionMetadata, []);
+  const changelogContent = useMemo(getChangelogContent, []);
 
   const isMobile = width < 720;
   const isWide = width >= 1120;
@@ -308,9 +311,12 @@ export default function LandingFooter(): React.JSX.Element {
           ]}
         >
           <FooterCopyright color={palette.title} />
-          <Text numberOfLines={1} style={[styles.bottomMeta, { color: palette.muted }]}>
-            v{versionMetadata.version}
-          </Text>
+          <ChangelogDrawer
+            changelog={changelogContent}
+            githubUrl={GITHUB_REPO_URL}
+            pageSize={3}
+            triggerLabel={`v${versionMetadata.version}`}
+          />
         </View>
       </View>
     </View>

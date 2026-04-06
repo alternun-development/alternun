@@ -1,30 +1,8 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import type { User } from '../auth/AppAuthProvider';
-import {
-  View,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-} from 'react-native';
-import Animated, {
-  cancelAnimation,
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
-import { ChevronsUp, type LucideProps } from 'lucide-react-native';
+import { View, ScrollView, StatusBar, Text, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAppTranslation } from '../i18n/useAppTranslation';
 
-const BackIcon = ChevronsUp as React.FC<LucideProps>;
-const AnimatedView = Animated.View as unknown as React.FC<
-  React.ComponentProps<typeof View> & { style?: any }
->;
 import AppInfoFooter from '../common/AppInfoFooter';
 import { createTypographyStyles } from '../theme/typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -37,6 +15,8 @@ import DashboardSummaryCards from './DashboardSummaryCards';
 import WalletConnectModal from './WalletConnectModal';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { ToastSystem, type ToastItem, type ToastType } from '@alternun/ui';
+import { useBackToTop } from '../../hooks/useBackToTop';
+import { BackToTopButton } from '../common/BackToTopButton';
 
 let toastIdCounter = 0;
 
@@ -295,8 +275,6 @@ export default function Dashboard({
 }: DashboardProps) {
   const [walletModalVisible, setWalletModalVisible] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const [showBackToTop, setShowBackToTop] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
   const scrollTopInset = isMobile ? 82 : 62;
@@ -305,45 +283,10 @@ export default function Dashboard({
     useAppPreferences();
   const router = useRouter();
   const isDark = themeMode === 'dark';
-  const { t } = useAppTranslation('mobile');
 
-  const bounce = useSharedValue(0);
-
-  const bounceStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: bounce.value }],
-  }));
-
-  const handleScroll = useCallback(
-    (e: { nativeEvent: { contentOffset: { y: number } } }) => {
-      const nextVisible = e.nativeEvent.contentOffset.y > 200;
-
-      setShowBackToTop((currentVisible) => {
-        if (currentVisible === nextVisible) {
-          return currentVisible;
-        }
-
-        if (nextVisible) {
-          bounce.value = withRepeat(
-            withSequence(
-              withTiming(-5, { duration: 420, easing: Easing.out(Easing.quad) }),
-              withTiming(0, { duration: 380, easing: Easing.in(Easing.quad) })
-            ),
-            -1
-          );
-        } else {
-          cancelAnimation(bounce);
-          bounce.value = 0;
-        }
-
-        return nextVisible;
-      });
-    },
-    [bounce]
-  );
-
-  const scrollToTop = useCallback(() => {
-    scrollRef.current?.scrollTo({ y: 0, animated: true });
-  }, []);
+  const { scrollRef, showBackToTop, handleScroll, scrollToTop, bounceStyle } = useBackToTop({
+    scrollThreshold: 200,
+  });
 
   const addToast = useCallback((type: ToastType, title: string, message: string) => {
     const id = `toast-${++toastIdCounter}`;
@@ -470,37 +413,13 @@ export default function Dashboard({
           </ScrollView>
 
           <View style={styles.stickyBottom}>
-            {showBackToTop && (
-              <TouchableOpacity
-                style={[
-                  styles.backToTopPill,
-                  isMobile ? styles.backToTopMobile : styles.backToTopDesktop,
-                  {
-                    backgroundColor: isDark ? '#0a1520' : '#0d2235',
-                    borderWidth: 1,
-                    borderColor: isDark ? 'rgba(28,203,161,0.25)' : 'rgba(28,203,161,0.35)',
-                  },
-                ]}
-                onPress={scrollToTop}
-                activeOpacity={0.85}
-              >
-                <View
-                  style={[
-                    styles.backToTopIconWrap,
-                    { backgroundColor: isDark ? 'rgba(28,203,161,0.18)' : 'rgba(28,203,161,0.22)' },
-                  ]}
-                >
-                  <AnimatedView style={bounceStyle}>
-                    <BackIcon size={16} color='#1ccba1' strokeWidth={2.5} />
-                  </AnimatedView>
-                </View>
-                {!isMobile && (
-                  <Text style={styles.backToTopText}>
-                    {t('dashboard.backToTop', undefined, 'Back to Top').toUpperCase()}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            )}
+            <BackToTopButton
+              visible={showBackToTop}
+              onPress={scrollToTop}
+              isDark={isDark}
+              isMobile={isMobile}
+              bounceStyle={bounceStyle}
+            />
             <AppInfoFooter />
           </View>
 
@@ -623,47 +542,6 @@ const styles = createTypographyStyles({
   },
   stickyBottom: {
     position: 'relative',
-  },
-  backToTopPill: {
-    position: 'absolute',
-    zIndex: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 999,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  backToTopMobile: {
-    right: 14,
-    bottom: 18,
-    width: 42,
-    height: 42,
-    padding: 3,
-    justifyContent: 'center',
-  },
-  backToTopDesktop: {
-    right: 24,
-    top: -62,
-    height: 48,
-    padding: 5,
-    paddingRight: 22,
-    gap: 12,
-  },
-  backToTopIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backToTopText: {
-    color: '#ffffff',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 2.2,
   },
   footerOverlay: {
     position: 'absolute',

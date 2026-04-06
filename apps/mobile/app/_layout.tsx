@@ -43,7 +43,7 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): any {
       <ThemeProvider value={navigationTheme}>
         <View style={styles.appShell} onLayout={handleLayout}>
           <View style={styles.stackContainer}>
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack screenOptions={{ headerShown: false, header: () => null }}>
               <Stack.Screen name='index' options={{ headerShown: false }} />
               <Stack.Screen
                 name='auth'
@@ -72,17 +72,16 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): any {
               <Stack.Screen
                 name='settings'
                 options={{
-                  headerShown: true,
-                  title: 'Settings',
-                  headerBackTitle: 'Back',
+                  headerShown: false,
+                  animationEnabled: false,
                 }}
               />
               <Stack.Screen
                 name='profile'
                 options={{
-                  headerShown: true,
-                  title: 'Profile',
-                  headerBackTitle: 'Back',
+                  headerShown: false,
+                  animationEnabled: false,
+                  contentStyle: { backgroundColor: 'transparent' },
                 }}
               />
               <Stack.Screen
