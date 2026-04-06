@@ -1,3 +1,15 @@
+## [1.0.25-dev.1](https://github.com/alternun-development/alternun/compare/v1.0.25...v1.0.25-dev.1) (2026-04-06)
+
+### Bug Fixes
+
+- **admin,docs,mobile:** README, authProvider, page, router ([98ea507](https://github.com/alternun-development/alternun/commit/98ea5071f44a7ea0176fc9c64566d2b00fe250fb))
+
+## [1.0.25-dev.1](https://github.com/alternun-development/alternun/compare/v1.0.25...v1.0.25-dev.1) (2026-04-06)
+
+### Bug Fixes
+
+- **admin,docs,mobile:** README, authProvider, page, router ([98ea507](https://github.com/alternun-development/alternun/commit/98ea5071f44a7ea0176fc9c64566d2b00fe250fb))
+
 ## [1.0.25](https://github.com/alternun-development/alternun/compare/v1.0.24...v1.0.25) (2026-04-06)
 
 ### Bug Fixes
