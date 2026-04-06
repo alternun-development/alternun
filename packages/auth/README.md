@@ -46,3 +46,4 @@ Do not treat Expo web as native auth.
 - Popup auth is not part of the supported contract.
 - Custom Authentik provider flow slugs are optional and explicit-only. They are ignored unless `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=true`.
 - Web callback URLs default to `https://<origin>/auth/callback` when a browser origin is available.
+- AIRS web can force a fresh Authentik session before social source login when shared SSO sessions would otherwise keep the wrong Authentik user active during callback handoff.
