@@ -1,3 +1,15 @@
+## [1.0.35](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.35) (2026-04-07)
+
+### Features
+
+- add web hover tooltip trigger for info icon ([e3780ee](https://github.com/alternun-development/alternun/commit/e3780ee66eadfc4d87c3ee8987dc6b8884547def))
+
+## [1.0.35](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.35) (2026-04-07)
+
+### Features
+
+- add web hover tooltip trigger for info icon ([e3780ee](https://github.com/alternun-development/alternun/commit/e3780ee66eadfc4d87c3ee8987dc6b8884547def))
+
 ## [1.0.34](https://github.com/alternun-development/alternun/compare/v1.0.33...v1.0.34) (2026-04-07)
 
 ### Bug Fixes
