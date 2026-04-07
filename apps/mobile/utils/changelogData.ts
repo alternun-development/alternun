@@ -9,7 +9,19 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.38](https://github.com/alternun-development/alternun/compare/v1.0.37...v1.0.38) (2026-04-07)
+export const CHANGELOG_TEXT = `## [1.0.39](https://github.com/alternun-development/alternun/compare/v1.0.38...v1.0.39) (2026-04-07)
+
+### Bug Fixes
+
+- move tooltip inside card bounds, near icon ([c0247d7](https://github.com/alternun-development/alternun/commit/c0247d700d893258708ab6aea0d9c9a47388f6ae))
+
+## [1.0.39](https://github.com/alternun-development/alternun/compare/v1.0.38...v1.0.39) (2026-04-07)
+
+### Bug Fixes
+
+- move tooltip inside card bounds, near icon ([c0247d7](https://github.com/alternun-development/alternun/commit/c0247d700d893258708ab6aea0d9c9a47388f6ae))
+
+## [1.0.38](https://github.com/alternun-development/alternun/compare/v1.0.37...v1.0.38) (2026-04-07)
 
 ### Bug Fixes
 

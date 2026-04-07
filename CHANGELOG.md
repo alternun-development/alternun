@@ -1,3 +1,10 @@
+## [1.0.40](https://github.com/alternun-development/alternun/compare/v1.0.39...v1.0.40) (2026-04-07)
+
+### Bug Fixes
+
+- consolidate ts-expect-error comment ([cb6d190](https://github.com/alternun-development/alternun/commit/cb6d19063223a497c652440605f01dabc237dc3d))
+- increase tooltip width while maintaining center positioning, add return type ([6fe3988](https://github.com/alternun-development/alternun/commit/6fe398858b7164d200b0f807a8772eecf82e1683))
+
 ## [1.0.39](https://github.com/alternun-development/alternun/compare/v1.0.38...v1.0.39) (2026-04-07)
 
 ### Bug Fixes
