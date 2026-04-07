@@ -447,9 +447,31 @@ wait_for_authentik_django() {
   return 1
 }
 
+run_authentik_migrations() {
+  local max_attempts=12
+  local attempt=1
+
+  while [ "${attempt}" -le "${max_attempts}" ]; do
+    if docker compose -f /opt/alternun/identity/docker-compose.yml exec -T \
+      server sh -lc '/ak-root/.venv/bin/python /manage.py migrate --noinput'; then
+      return 0
+    fi
+
+    sleep 5
+    attempt=$((attempt + 1))
+  done
+
+  return 1
+}
+
 if ! wait_for_authentik_django; then
   echo "WARN: Authentik did not become ready for integration bootstrap; skipping integration configuration."
   exit 0
+fi
+
+if ! run_authentik_migrations; then
+  echo "ERROR: Authentik migrations did not complete before integration bootstrap."
+  exit 1
 fi
 
 BOOTSTRAP_STDERR_FILE="$(mktemp)"
