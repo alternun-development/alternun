@@ -9,27 +9,37 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.36](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.36) (2026-04-07)
+export const CHANGELOG_TEXT = `## [1.0.37](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.37) (2026-04-07)
 
+### Bug Fixes
+
+- move tooltip above icon, closer to top ([da9693f](https://github.com/alternun-development/alternun/commit/da9693f64cfee90ed3a35c38d0e7b79ce852bebd))
 
 ### Features
 
-* add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
+- add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
 
+## [1.0.37](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.37) (2026-04-07)
 
+### Bug Fixes
 
+- move tooltip above icon, closer to top ([da9693f](https://github.com/alternun-development/alternun/commit/da9693f64cfee90ed3a35c38d0e7b79ce852bebd))
 
+### Features
+
+- add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
 
 ## [1.0.36](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.36) (2026-04-07)
 
+### Features
+
+- add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
+
+## [1.0.36](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.36) (2026-04-07)
 
 ### Features
 
-* add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
-
-
-
-
+- add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
 
 ## [1.0.35](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.35) (2026-04-07)
 
