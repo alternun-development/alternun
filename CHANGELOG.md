@@ -1,3 +1,15 @@
+## [1.0.31](https://github.com/alternun-development/alternun/compare/v1.0.30...v1.0.31) (2026-04-07)
+
+### Bug Fixes
+
+- **release:** sync mobile changelog data ([c98382d](https://github.com/alternun-development/alternun/commit/c98382d3fe447cf8b63ed2ffd564c20d1e043b7d))
+
+## [1.0.31](https://github.com/alternun-development/alternun/compare/v1.0.30...v1.0.31) (2026-04-07)
+
+### Bug Fixes
+
+- **release:** sync mobile changelog data ([c98382d](https://github.com/alternun-development/alternun/commit/c98382d3fe447cf8b63ed2ffd564c20d1e043b7d))
+
 ## [1.0.30](https://github.com/alternun-development/alternun/compare/v1.0.29...v1.0.30) (2026-04-07)
 
 ### Bug Fixes
