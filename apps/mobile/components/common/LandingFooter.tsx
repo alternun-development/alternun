@@ -18,6 +18,7 @@ import { createTypographyStyles } from '../theme/typography';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { resolvePrimaryLinksForViewport } from './AppInfoFooter.links';
+import SupportButton from './SupportButton';
 import {
   AIRS_LOGOTIPO_DARK,
   AIRS_LOGOTIPO_LIGHT,
@@ -311,12 +312,15 @@ export default function LandingFooter(): React.JSX.Element {
           ]}
         >
           <FooterCopyright color={palette.title} />
-          <ChangelogDrawer
-            changelog={changelogContent}
-            githubUrl={GITHUB_REPO_URL}
-            pageSize={3}
-            triggerLabel={`v${versionMetadata.version}`}
-          />
+          <View style={styles.bottomRightSection}>
+            <SupportButton supportEmail='support@alternun.co' palette={palette} />
+            <ChangelogDrawer
+              changelog={changelogContent}
+              githubUrl={GITHUB_REPO_URL}
+              pageSize={3}
+              triggerLabel={`v${versionMetadata.version}`}
+            />
+          </View>
         </View>
       </View>
     </View>
@@ -452,5 +456,10 @@ const styles = createTypographyStyles({
     flexShrink: 1,
     minWidth: 0,
     fontSize: 10,
+  },
+  bottomRightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 });
