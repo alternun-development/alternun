@@ -13,13 +13,12 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { ChangelogDrawer } from '@alternun/ui';
+import { ChangelogDrawer, SupportButton } from '@alternun/ui';
 import { createTypographyStyles } from '../theme/typography';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { resolvePrimaryLinksForViewport } from './AppInfoFooter.links';
 import ParticleBubbles from '../dashboard/ParticleBubbles';
-import SupportButton from './SupportButton';
 import {
   AIRS_LOGOTIPO_DARK,
   AIRS_LOGOTIPO_LIGHT,
@@ -51,7 +50,7 @@ export default function AppInfoFooter(): React.JSX.Element {
 
   useEffect(() => {
     if (motionLevel === 'off') return;
-    const makeFloat = (duration: number) =>
+    const makeFloat = (duration: number): ReturnType<typeof withRepeat> =>
       withRepeat(
         withSequence(
           withTiming(1, { duration, easing: Easing.inOut(Easing.sin) }),

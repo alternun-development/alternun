@@ -196,5 +196,20 @@
     "site": {
       "title": "เอกสาร Alternun"
     }
+  },
+  "support": {
+    "dialog": "เราช่วยเหลืออะไรได้บ้าง?",
+    "chat": "แชทกับเรา",
+    "chatDescription": "เริ่มการสนทนากับทีมสนับสนุนของเรา",
+    "email": "ส่งอีเมล",
+    "telegram": "เข้าร่วม Telegram",
+    "telegramDescription": "แชทกับชุมชนของเรา",
+    "whatsappMessage": "ส่งข้อความ WhatsApp",
+    "whatsappMessageDescription": "ส่งข้อความถึงเราโดยตรง",
+    "whatsappGroup": "เข้าร่วมกลุ่ม WhatsApp",
+    "whatsappGroupDescription": "เชื่อมต่อกับชุมชนของเรา",
+    "liveChat": "เริ่มแชทสดใจ",
+    "liveChatDescription": "แชทกับตัวแทนสนับสนุน",
+    "back": "กลับ"
   }
 }
