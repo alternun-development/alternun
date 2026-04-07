@@ -327,7 +327,7 @@ export function HeroPanel({
                   style={styles.progressBar}
                   showPercentage={false}
                 />
-                <SkeletonLoader width='82%' height={13} borderRadius={4} />
+                <SkeletonLoader width='82%' height={17} borderRadius={4} style={{ marginTop: 2 }} />
               </>
             ) : (
               <>

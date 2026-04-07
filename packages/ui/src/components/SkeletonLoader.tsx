@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View, type ViewStyle } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
+import { spacing } from '../tokens/spacing';
 
 interface SkeletonLoaderProps {
   width: number | string;
@@ -121,22 +122,29 @@ export function PillRowSkeleton({ count = 4 }: { count?: number }) {
 
 /** Skeleton for score number only */
 export function ScoreNumberSkeleton() {
-  return <SkeletonLoader width={140} height={52} borderRadius={8} />;
+  return <SkeletonLoader width={140} height={56} borderRadius={8} />;
 }
 
 /** Skeleton for status tier badge */
 export function StatusBadgeSkeleton() {
-  return <SkeletonLoader width={130} height={30} borderRadius={999} />;
+  return (
+    <SkeletonLoader
+      width={130}
+      height={26}
+      borderRadius={999}
+      style={{ marginBottom: spacing[4] }}
+    />
+  );
 }
 
 /** Skeleton for progress numbers (e.g., "0 / 1,000 Airs") */
 export function ProgressNumbersSkeleton() {
-  return <SkeletonLoader width={88} height={13} borderRadius={4} />;
+  return <SkeletonLoader width={88} height={14} borderRadius={4} />;
 }
 
 /** Skeleton for progress percentage */
 export function ProgressPercentageSkeleton() {
-  return <SkeletonLoader width={32} height={13} borderRadius={4} />;
+  return <SkeletonLoader width={32} height={14} borderRadius={4} />;
 }
 
 const styles = StyleSheet.create({
