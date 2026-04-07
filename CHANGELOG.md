@@ -1,3 +1,15 @@
+## [1.0.32](https://github.com/alternun-development/alternun/compare/v1.0.31...v1.0.32) (2026-04-07)
+
+### Bug Fixes
+
+- improve tooltip positioning, z-index layering, and last-update timestamp ([963223b](https://github.com/alternun-development/alternun/commit/963223b322801f496325e3fd53266456824bd7f5))
+
+## [1.0.32](https://github.com/alternun-development/alternun/compare/v1.0.31...v1.0.32) (2026-04-07)
+
+### Bug Fixes
+
+- improve tooltip positioning, z-index layering, and last-update timestamp ([963223b](https://github.com/alternun-development/alternun/commit/963223b322801f496325e3fd53266456824bd7f5))
+
 ## [1.0.31](https://github.com/alternun-development/alternun/compare/v1.0.30...v1.0.31) (2026-04-07)
 
 ### Bug Fixes
