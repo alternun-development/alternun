@@ -18,7 +18,7 @@
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { RotateCcw, type LucideProps } from 'lucide-react-native';
+import { RotateCcw, Info, type LucideProps } from 'lucide-react-native';
 import { palette } from '../tokens/colors';
 import { fontSize, radius, spacing } from '../tokens/spacing';
 import { ProgressBar } from './ProgressBar';
@@ -30,6 +30,7 @@ import {
   SkeletonLoader,
 } from './SkeletonLoader';
 import { ThemeProvider } from '../theme/ThemeContext';
+import { useTooltip } from './Tooltip';
 
 // ─── Tier system ──────────────────────────────────────────────────────────────
 
@@ -121,6 +122,8 @@ export interface HeroPanelProps {
   isDark?: boolean;
   /** When false, ambient orb animations are skipped and orbs render statically. Default: true. */
   animateOrbs?: boolean;
+  /** Validity end date for status tier (ISO string). Shows in info tooltip. */
+  tierValidUntil?: string;
 }
 
 export function HeroPanel({
@@ -133,7 +136,8 @@ export function HeroPanel({
   brandMark,
   isDark = true,
   animateOrbs = true,
-}: HeroPanelProps) {
+  tierValidUntil,
+}: HeroPanelProps): React.JSX.Element {
   const safeScore = score ?? 0;
   const tier = previewMode || score == null ? 'bronze' : resolveTier(safeScore);
   const tierSpec = TIERS[tier];
@@ -240,6 +244,37 @@ export function HeroPanel({
 
   // Cast icon for React Native compatibility
   const ReloadIcon = RotateCcw as React.FC<LucideProps>;
+  const InfoIcon = Info as React.FC<LucideProps>;
+
+  // Tooltip for status tier info
+  const { isVisible: showStatusTooltip, toggle: toggleStatusTooltip } = useTooltip(false);
+
+  const formatDate = (isoString?: string): string => {
+    if (!isoString) return 'N/A';
+    try {
+      const date = new Date(isoString);
+      return new Intl.DateTimeFormat('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(date);
+    } catch {
+      return 'N/A';
+    }
+  };
+
+  const statusTooltipContent = (
+    <View>
+      <Text style={{ color: textMuted, fontSize: fontSize.xs, lineHeight: 16 }}>
+        {`Actualizado al: ${formatDate(_updatedAt)}`}
+      </Text>
+      {tierValidUntil && (
+        <Text style={{ color: textMuted, fontSize: fontSize.xs, lineHeight: 16, marginTop: 4 }}>
+          {`Válido hasta: ${formatDate(tierValidUntil)}`}
+        </Text>
+      )}
+    </View>
+  );
 
   return (
     <ThemeProvider mode={isDark ? 'dark' : 'light'}>
@@ -292,15 +327,37 @@ export function HeroPanel({
           )}
         </View>
 
-        {/* Tier badge */}
+        {/* Tier badge with info icon */}
         {isLoading ? (
           <StatusBadgeSkeleton />
         ) : (
-          <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
-            <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
-            <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
-              {`Status ${tierSpec.label.toUpperCase()}`}
-            </Text>
+          <View style={styles.tierBadgeRow}>
+            <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
+              <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
+              <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
+                {`Status ${tierSpec.label.toUpperCase()}`}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={toggleStatusTooltip}
+              accessibilityRole='button'
+              accessibilityLabel='Información del estado'
+            >
+              <InfoIcon size={16} color={accentColor} strokeWidth={2} />
+            </TouchableOpacity>
+            {showStatusTooltip && (
+              <View
+                style={[
+                  styles.statusTooltip,
+                  {
+                    backgroundColor: isDark ? 'rgba(5,15,12,0.95)' : 'rgba(234,248,243,0.95)',
+                    borderColor: accentColor,
+                  },
+                ]}
+              >
+                {statusTooltipContent}
+              </View>
+            )}
           </View>
         )}
 
@@ -458,16 +515,20 @@ const styles = StyleSheet.create({
   },
 
   /* Tier badge */
+  tierBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+    marginBottom: spacing[4],
+  },
   tierBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    alignSelf: 'flex-start',
     borderWidth: 1,
     borderRadius: radius.full,
     paddingHorizontal: spacing[3],
     paddingVertical: 5,
-    marginBottom: spacing[4],
   },
   tierDot: {
     width: 8,
@@ -478,6 +539,17 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: '700',
     letterSpacing: 0.6,
+  },
+  statusTooltip: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
+    zIndex: 100,
+    minWidth: 180,
   },
 
   divider: {

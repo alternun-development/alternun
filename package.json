@@ -79,7 +79,9 @@
     }
   },
   "dependencies": {
-    "three": "^0.169.0"
+    "expo-build-properties": "^55.0.11",
+    "three": "^0.169.0",
+    "universal-tooltip": "1.1.0"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
