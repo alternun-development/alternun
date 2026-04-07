@@ -123,7 +123,10 @@
       "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",
       "links": {
         "documentation": "Documentacion",
-        "project": "El Proyecto"
+        "project": "Ir a Alternun.io",
+        "privacy": "Privacidad",
+        "terms": "Términos",
+        "support": "Soporte"
       },
       "tagline": "Una \"manera diferente de hacer las cosas\" - Alternun"
     },

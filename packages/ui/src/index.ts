@@ -62,3 +62,7 @@ export type {
   ChangelogSection,
   ChangelogItem,
 } from './components/ChangelogDrawer';
+
+// ── Policies ──────────────────────────────────────────────────────────────────
+export { PolicyDrawer } from './components/PolicyDrawer';
+export type { PolicyDrawerProps } from './components/PolicyDrawer';

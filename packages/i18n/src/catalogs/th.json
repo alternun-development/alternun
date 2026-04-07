@@ -123,7 +123,10 @@
       "copyright": "(c) {{year}} Alternun. สงวนลิขสิทธิ์ทั้งหมด.",
       "links": {
         "documentation": "เอกสาร",
-        "project": "โครงการ"
+        "project": "ไปที่ Alternun.io",
+        "privacy": "นโยบายความเป็นส่วนตัว",
+        "terms": "เงื่อนไข",
+        "support": "ส่วนสนับสนุน"
       },
       "tagline": "\"วิธีที่แตกต่างในการทำสิ่งต่าง ๆ\" - Alternun"
     },
