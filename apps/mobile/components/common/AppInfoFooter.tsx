@@ -13,7 +13,8 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { ChangelogDrawer, SupportButton } from '@alternun/ui';
+import { ChangelogDrawer } from '@alternun/ui';
+import SupportButton from './SupportButton';
 import { createTypographyStyles } from '../theme/typography';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
