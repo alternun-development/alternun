@@ -6,6 +6,7 @@ import {
   extractCmsIdentity,
   getActiveCmsSession,
 } from '../../cms/auth';
+import { buildDocsCmsAuthentikRelayPath } from '../../cms/authRelay';
 import { useDocsCmsConfig } from '../../cms/site-config';
 import type { CmsWindow } from '../../cms/types';
 import styles from './styles.module.css';
@@ -46,8 +47,8 @@ function loadDecapCms(): Promise<void> {
     script.id = DECAP_SCRIPT_ID;
     script.src = DECAP_SCRIPT_SRC;
     script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Decap CMS failed to load.'));
+    script.onload = (): void => resolve();
+    script.onerror = (): void => reject(new Error('Decap CMS failed to load.'));
     document.head.appendChild(script);
   });
 }
@@ -134,7 +135,13 @@ export default function DocsCmsAdminPage(): JSX.Element {
     };
   }, [config, userManager]);
 
-  const handleLogin = async (): Promise<void> => {
+  const handleGoogleLogin = (): void => {
+    setError(null);
+    setMessage('Redirecting to Google...');
+    window.location.assign(buildDocsCmsAuthentikRelayPath('google', '/admin'));
+  };
+
+  const handlePasswordLogin = async (): Promise<void> => {
     setError(null);
     setMessage('Redirecting to Authentik...');
     await userManager.removeUser();
@@ -162,7 +169,8 @@ export default function DocsCmsAdminPage(): JSX.Element {
             <p className={styles.eyebrow}>Alternun Docs CMS</p>
             <h1 className={styles.title}>Documentation editor</h1>
             <p className={styles.copy}>
-              Authentik controls access to the editor. Decap loads only after an approved Alternun
+              Authentik controls access to the editor. Google sign-in now starts from an
+              Alternun-owned relay route, and Decap loads only after an approved Alternun
               admin/editor session is active.
             </p>
 
@@ -187,13 +195,22 @@ export default function DocsCmsAdminPage(): JSX.Element {
 
             <div className={styles.actions}>
               {state !== 'ready' ? (
-                <button
-                  className={styles.primaryAction}
-                  type='button'
-                  onClick={() => void handleLogin()}
-                >
-                  Continue with Authentik
-                </button>
+                <>
+                  <button
+                    className={styles.primaryAction}
+                    type='button'
+                    onClick={() => void handleGoogleLogin()}
+                  >
+                    Continue with Google
+                  </button>
+                  <button
+                    className={styles.secondaryAction}
+                    type='button'
+                    onClick={() => void handlePasswordLogin()}
+                  >
+                    Use email and password
+                  </button>
+                </>
               ) : (
                 <button
                   className={styles.secondaryAction}

@@ -1,6 +1,6 @@
 {
   "name": "@alternun/admin",
-  "version": "1.0.24",
+  "version": "1.0.25-dev.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,6 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@alternun/auth": "workspace:*",
     "@refinedev/core": "^5.0.0",
     "boneyard-js": "^1.6.2",
     "oidc-client-ts": "^3.1.0",

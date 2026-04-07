@@ -756,6 +756,11 @@ export function deployIdentityInfrastructure(
     args.settings.integration.bootstrap.defaultApplication.launchUrl.trim() || adminOidcLaunchUrl;
   const docsCmsSiteUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.siteUrl);
   const docsCmsLocalDevUrl = normalizeBaseUrl(args.settings.integration.docsCmsOidc.localDevUrl);
+  const docsCmsOidcLaunchUrl = docsCmsSiteUrl
+    ? `${docsCmsSiteUrl}/admin`
+    : docsCmsLocalDevUrl
+    ? `${docsCmsLocalDevUrl}/admin`
+    : '';
   const docsCmsOidcRedirectUrls = [docsCmsSiteUrl, docsCmsLocalDevUrl]
     .filter(Boolean)
     .map((url) => `${url}/admin/auth/callback`);
@@ -794,6 +799,7 @@ export function deployIdentityInfrastructure(
             docsCmsOidcApplicationSlug: args.settings.integration.docsCmsOidc.applicationSlug,
             docsCmsOidcClientId: args.settings.integration.docsCmsOidc.clientId,
             docsCmsOidcClientSecret: docsCmsClientSecret,
+            docsCmsOidcLaunchUrl,
             docsCmsOidcPostLogoutRedirectUrls,
             docsCmsOidcProviderName: args.settings.integration.docsCmsOidc.providerName,
             docsCmsOidcRedirectUrls,
