@@ -13,11 +13,22 @@ export interface LegalContent {
 
 @Injectable()
 export class LegalService {
+  private readonly ALLOWED_LOCALES: Locale[] = ['en', 'es', 'th'];
+  private readonly ALLOWED_TYPES: LegalType[] = ['privacy', 'terms'];
+
   /**
    * Reads legal markdown content (privacy policy or terms)
    * Falls back to English if locale file not found
    */
   getContent(type: LegalType, locale: Locale = 'en'): LegalContent {
+    // Validate input to prevent path traversal
+    if (!this.ALLOWED_TYPES.includes(type)) {
+      throw new NotFoundException(`Invalid legal content type: ${type}`);
+    }
+    if (!this.ALLOWED_LOCALES.includes(locale)) {
+      throw new NotFoundException(`Invalid locale: ${locale}`);
+    }
+
     const monorepoRoot = join(__dirname, '../../../../..');
     const filePath = this.resolveFilePath(monorepoRoot, type, locale);
 
