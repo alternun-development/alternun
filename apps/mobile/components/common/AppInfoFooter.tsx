@@ -59,8 +59,8 @@ export default function AppInfoFooter(): React.JSX.Element {
         ),
         -1
       );
-    orbLeft.value = makeFloat(5800);
-    orbRight.value = makeFloat(7200);
+    orbLeft.value = makeFloat(5800) as unknown as number;
+    orbRight.value = makeFloat(7200) as unknown as number;
     return () => {
       cancelAnimation(orbLeft);
       cancelAnimation(orbRight);
@@ -219,40 +219,38 @@ export default function AppInfoFooter(): React.JSX.Element {
         {/* Mobile layout — minimal */}
         {isMobile && (
           <View style={styles.mobileLayout}>
-            {/* Links and icons on same line */}
-            <View style={styles.mobileLinksIconsRow}>
-              {/* Links — left side */}
-              <View style={styles.mobileLinksSection}>
-                {primaryLinks.map((link, index) => (
-                  <React.Fragment key={link.labelKey}>
-                    <FooterTextLink
-                      label={t(link.labelKey, undefined, link.fallbackLabel)}
-                      url={link.url}
-                      textColor={palette.accent}
-                      compact
-                    />
-                    {index < primaryLinks.length - 1 && (
-                      <Text style={[styles.linkDivider, { color: palette.muted }]}>•</Text>
-                    )}
-                  </React.Fragment>
-                ))}
-              </View>
-
-              {/* Social icons — right side */}
-              <View style={styles.socialRowMobileCompact}>
-                {SOCIAL_LINKS.map((link) => (
-                  <SocialPill
-                    key={link.label}
-                    {...link}
+            <View style={styles.mobileLinkRow}>
+              {primaryLinks.map((link, index) => (
+                <React.Fragment key={link.labelKey}>
+                  <FooterTextLink
+                    label={t(link.labelKey, undefined, link.fallbackLabel)}
+                    url={link.url}
+                    textColor={palette.title}
+                    hoverColor={palette.accent}
                     compact
-                    mobileMini
-                    iconColor={palette.accent}
-                    backgroundColor={palette.socialBg}
-                    borderColor={palette.socialBorder}
-                    hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
+                    align='center'
+                    singleLine
                   />
-                ))}
-              </View>
+                  {index < primaryLinks.length - 1 && (
+                    <Text style={[styles.mobileLinkSeparator, { color: palette.muted }]}>•</Text>
+                  )}
+                </React.Fragment>
+              ))}
+            </View>
+
+            <View style={styles.mobileSocialRow}>
+              {SOCIAL_LINKS.map((link) => (
+                <SocialPill
+                  key={link.label}
+                  {...link}
+                  compact
+                  mobileMini
+                  iconColor={palette.accent}
+                  backgroundColor={palette.socialBg}
+                  borderColor={palette.socialBorder}
+                  hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
+                />
+              ))}
             </View>
           </View>
         )}
@@ -366,43 +364,25 @@ const styles = createTypographyStyles({
 
   /* Mobile */
   mobileLayout: {
-    gap: 2,
-  },
-  mobileLinksIconsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     gap: 8,
   },
-  mobileLinksSection: {
+  mobileLinkRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 0,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,
-    flex: 1,
   },
-  linkDivider: {
-    fontSize: 10,
-    fontWeight: '500',
+  mobileLinkSeparator: {
+    marginHorizontal: 5,
+    fontSize: 13,
+    fontWeight: '700',
   },
-  brandHeaderMobile: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  bylineTextMobile: {
-    fontSize: 11,
-  },
-  socialRowMobile: {
+  mobileSocialRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
     justifyContent: 'center',
-  },
-  socialRowMobileCompact: {
-    flexDirection: 'row',
-    gap: 3,
-    flexShrink: 0,
-    alignItems: 'center',
   },
   /* Bottom bar */
   bottomBar: {

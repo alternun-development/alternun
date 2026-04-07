@@ -371,7 +371,17 @@ function TokenRow({
   );
 }
 
-function ATNCard({ p, compact = false }: { p: ReturnType<typeof getPalette>; compact?: boolean }) {
+function ATNCard({
+  p,
+  compact = false,
+  dense = false,
+}: {
+  p: ReturnType<typeof getPalette>;
+  compact?: boolean;
+  dense?: boolean;
+}) {
+  const useDenseLayout = compact || dense;
+
   return (
     <SummaryCard p={p} compact={compact}>
       <CardTitle label='Mis ATN' sub='Tus tokens regenerativos' p={p} compact={compact} />
@@ -413,11 +423,12 @@ function ATNCard({ p, compact = false }: { p: ReturnType<typeof getPalette>; com
       <View
         style={[
           styles.walletPanel,
+          useDenseLayout && styles.walletPanelDense,
           compact && styles.walletPanelCompact,
           { backgroundColor: p.panelBg, borderColor: p.panelBorder },
         ]}
       >
-        <View style={styles.walletPanelTop}>
+        <View style={[styles.walletPanelTop, useDenseLayout && styles.walletPanelTopDense]}>
           <Text
             style={[
               styles.walletPanelLabel,
@@ -430,6 +441,7 @@ function ATNCard({ p, compact = false }: { p: ReturnType<typeof getPalette>; com
           <Text
             style={[
               styles.walletPanelMeta,
+              useDenseLayout && styles.walletPanelMetaDense,
               compact && styles.walletPanelMetaCompact,
               { color: p.muted },
             ]}
@@ -438,16 +450,22 @@ function ATNCard({ p, compact = false }: { p: ReturnType<typeof getPalette>; com
           </Text>
         </View>
         <Text
-          numberOfLines={1}
-          style={[styles.walletAddress, compact && styles.walletAddressCompact, { color: p.copy }]}
+          numberOfLines={useDenseLayout ? 2 : 1}
+          style={[
+            styles.walletAddress,
+            useDenseLayout && styles.walletAddressDense,
+            compact && styles.walletAddressCompact,
+            { color: p.copy },
+          ]}
         >
           0xA8f9...Wq77E4c2
         </Text>
-        <View style={styles.walletLinkRow}>
+        <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense]}>
           <WalletIcon size={15} color={p.title} />
           <Text
             style={[
               styles.walletLinkText,
+              useDenseLayout && styles.walletLinkTextDense,
               compact && styles.walletLinkTextCompact,
               { color: p.title },
             ]}
@@ -465,6 +483,7 @@ export default function DashboardSummaryCards({ isDark }: DashboardSummaryCardsP
   const { width } = useWindowDimensions();
   const isMobile = width < 920;
   const isCompactMobile = width < 520;
+  const isDenseAtnCard = width < 720;
 
   return (
     <View style={[styles.root, isCompactMobile && styles.rootCompact]}>
@@ -482,7 +501,7 @@ export default function DashboardSummaryCards({ isDark }: DashboardSummaryCardsP
           <RBICard p={p} compact={isCompactMobile} />
         </View>
         <View style={styles.cardSlot}>
-          <ATNCard p={p} compact={isCompactMobile} />
+          <ATNCard p={p} compact={isCompactMobile} dense={isDenseAtnCard} />
         </View>
       </View>
     </View>
@@ -749,6 +768,11 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 4,
   },
+  tipRowDense: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 6,
+  },
   tipRowCompact: {
     gap: 8,
     marginTop: 2,
@@ -764,6 +788,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 16,
     flexWrap: 'wrap',
+  },
+  tipTextDense: {
+    fontSize: 11,
+    lineHeight: 16,
   },
 
   tokenRow: {
@@ -847,6 +875,9 @@ const styles = StyleSheet.create({
     gap: 10,
     overflow: 'hidden',
   },
+  walletPanelDense: {
+    gap: 8,
+  },
   walletPanelCompact: {
     borderRadius: 16,
     paddingHorizontal: 12,
@@ -860,6 +891,11 @@ const styles = StyleSheet.create({
     gap: 12,
     minWidth: 0,
   },
+  walletPanelTopDense: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 4,
+  },
   walletPanelLabel: {
     fontSize: 14,
     fontWeight: '800',
@@ -871,6 +907,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
+  walletPanelMetaDense: {
+    alignSelf: 'flex-start',
+  },
   walletPanelMetaCompact: {
     fontSize: 12,
   },
@@ -879,6 +918,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     letterSpacing: -0.1,
     minWidth: 0,
+  },
+  walletAddressDense: {
+    fontSize: 14,
+    lineHeight: 18,
   },
   walletAddressCompact: {
     fontSize: 14,
@@ -889,9 +932,16 @@ const styles = StyleSheet.create({
     gap: 6,
     minWidth: 0,
   },
+  walletLinkRowDense: {
+    flexWrap: 'wrap',
+    alignItems: 'center',
+  },
   walletLinkText: {
     fontSize: 14,
     fontWeight: '800',
+  },
+  walletLinkTextDense: {
+    fontSize: 13,
   },
   walletLinkTextCompact: {
     fontSize: 13,

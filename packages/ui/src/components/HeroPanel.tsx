@@ -27,6 +27,7 @@ import {
   StatusBadgeSkeleton,
   ProgressNumbersSkeleton,
   ProgressPercentageSkeleton,
+  SkeletonLoader,
 } from './SkeletonLoader';
 import { ThemeProvider } from '../theme/ThemeContext';
 
@@ -141,6 +142,10 @@ export function HeroPanel({
     if (tierSpec.max == null || previewMode || score == null) return 0;
     return Math.min((safeScore - tierSpec.min) / (tierSpec.max - tierSpec.min), 1);
   }, [safeScore, tier, tierSpec, previewMode, score]);
+  const showProgressSection =
+    tierSpec.max != null && tierSpec.next != null && !previewMode && (isLoading || score != null);
+  const progressMax = tierSpec.max ?? 0;
+  const progressNextLabel = tierSpec.nextLabel ?? '';
 
   const firstName = displayName?.trim().split(/\s+/)[0] ?? '';
 
@@ -258,7 +263,7 @@ export function HeroPanel({
             accessibilityRole='button'
             accessibilityLabel='Recargar puntuación'
           >
-            <Animated.View style={[reloadRotateStyle]}>
+            <Animated.View style={reloadRotateStyle}>
               <ReloadIcon size={16} color={accentColor} strokeWidth={2.5} />
             </Animated.View>
           </TouchableOpacity>
@@ -269,9 +274,7 @@ export function HeroPanel({
           <Text style={[styles.greeting, { color: textPrimary }]}>{`Hola, ${firstName}`}</Text>
         ) : null}
 
-        <Text style={[styles.subtitle, { color: textMuted }]}>
-          Tu puntuación regenerativa es:
-        </Text>
+        <Text style={[styles.subtitle, { color: textMuted }]}>Tu puntuación regenerativa es:</Text>
 
         {/* Score row */}
         <View style={styles.scoreRow}>
@@ -304,34 +307,60 @@ export function HeroPanel({
         <View style={[styles.divider, { backgroundColor: divider }]} />
 
         {/* Progress to next tier */}
-        {tierSpec.max != null && tierSpec.next != null && !previewMode && score != null && (
+        {showProgressSection && (
           <View style={styles.progressSection}>
-            <View style={styles.progressLabelRow}>
-              <Text style={[styles.progressLeft, { color: textPrimary }]} numberOfLines={1}>
-                {`Progreso a ${tierSpec.nextLabel} — `}
-              </Text>
-              {isLoading ? (
-                <>
-                  <ProgressPercentageSkeleton />
-                  <ProgressNumbersSkeleton />
-                </>
-              ) : (
-                <Text style={[styles.progressRight, { color: textMuted }]} numberOfLines={1}>
-                  {`${Math.round(progressPct * 100)}% ${fmtScore(safeScore)} / ${fmtScore(tierSpec.max)} Airs`}
+            {isLoading ? (
+              <>
+                <View style={styles.progressLabelRow}>
+                  <View style={styles.progressLeftGroup}>
+                    <SkeletonLoader width='50%' height={14} borderRadius={4} />
+                    <ProgressPercentageSkeleton />
+                  </View>
+                  <View style={styles.progressLoadingRight}>
+                    <ProgressNumbersSkeleton />
+                  </View>
+                </View>
+                <ProgressBar
+                  progress={0}
+                  color={tierSpec.color}
+                  height={7}
+                  style={styles.progressBar}
+                  showPercentage={false}
+                />
+                <SkeletonLoader width='82%' height={13} borderRadius={4} />
+              </>
+            ) : (
+              <>
+                <View style={styles.progressLabelRow}>
+                  <View style={styles.progressLeftGroup}>
+                    <Text style={[styles.progressLeft, { color: textPrimary }]} numberOfLines={1}>
+                      {`Progreso a ${progressNextLabel} —`}
+                    </Text>
+                    <Text
+                      style={[styles.progressPercent, { color: textPrimary }]}
+                      numberOfLines={1}
+                    >
+                      {`${Math.round(progressPct * 100)}%`}
+                    </Text>
+                  </View>
+                  <Text style={[styles.progressRight, { color: textMuted }]} numberOfLines={1}>
+                    {`${fmtScore(safeScore)} / ${fmtScore(progressMax)} Airs`}
+                  </Text>
+                </View>
+                <ProgressBar
+                  progress={progressPct}
+                  color={tierSpec.color}
+                  height={7}
+                  style={styles.progressBar}
+                  showPercentage={false}
+                />
+                <Text style={[styles.progressHint, { color: textMuted }]}>
+                  {`Te faltan ${fmtScore(
+                    progressMax - safeScore
+                  )} Airs para alcanzar ${progressNextLabel} y desbloquear beneficios exclusivos`}
                 </Text>
-              )}
-            </View>
-            <ProgressBar
-              progress={progressPct}
-              color={tierSpec.color}
-              height={7}
-              style={styles.progressBar}
-            />
-            <Text style={[styles.progressHint, { color: textMuted }]}>
-              {`Te faltan ${fmtScore(tierSpec.max - safeScore)} Airs para alcanzar ${
-                tierSpec.nextLabel
-              } y desbloquear beneficios exclusivos`}
-            </Text>
+              </>
+            )}
           </View>
         )}
 
@@ -467,17 +496,36 @@ const styles = StyleSheet.create({
     gap: spacing[2],
     flexWrap: 'nowrap',
   },
+  progressLeftGroup: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing[1],
+    flexShrink: 1,
+    minWidth: 0,
+  },
   progressLeft: {
     fontSize: fontSize.sm,
     fontWeight: '700',
     flexShrink: 0,
   },
+  progressPercent: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+    letterSpacing: -0.1,
+    flexShrink: 0,
+  },
   progressRight: {
     fontSize: fontSize.xs,
     fontWeight: '500',
-    flexShrink: 1,
+    flexShrink: 0,
     textAlign: 'right',
     minWidth: 0,
+  },
+  progressLoadingRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    flexShrink: 0,
   },
   progressBar: {
     marginVertical: 2,
