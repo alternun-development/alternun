@@ -173,7 +173,7 @@ export function HeroPanel({
   useEffect(() => {
     if (!animateOrbs) return;
 
-    const makeFloat = (val: Animated.Value, duration: number) =>
+    const makeFloat = (val: Animated.Value, duration: number): Animated.CompositeAnimation =>
       Animated.loop(
         Animated.sequence([
           Animated.timing(val, {
@@ -398,6 +398,14 @@ export function HeroPanel({
               </View>
               <TouchableOpacity
                 onPress={toggleStatusTooltip}
+                // @ts-expect-error - web hover support
+                onMouseEnter={() => {
+                  if (!showStatusTooltip) toggleStatusTooltip();
+                }}
+                // @ts-expect-error - web hover support
+                onMouseLeave={() => {
+                  if (showStatusTooltip) toggleStatusTooltip();
+                }}
                 accessibilityRole='button'
                 accessibilityLabel='Información del estado'
               >
@@ -615,14 +623,15 @@ const styles = StyleSheet.create({
   },
   tooltipOverlay: {
     position: 'absolute',
-    top: 32,
-    left: 70,
+    top: 26,
+    left: '50%',
+    marginLeft: -95,
     zIndex: 1000,
-    maxWidth: 220,
+    maxWidth: 190,
   },
   statusTooltip: {
-    minWidth: 200,
-    maxWidth: 260,
+    minWidth: 190,
+    maxWidth: 190,
     paddingHorizontal: spacing[3],
     paddingVertical: spacing[2],
     borderRadius: 10,
@@ -636,7 +645,7 @@ const styles = StyleSheet.create({
   tooltipArrow: {
     position: 'absolute',
     top: -5,
-    right: 18,
+    right: 20,
     width: 0,
     height: 0,
     borderLeftWidth: 5,
