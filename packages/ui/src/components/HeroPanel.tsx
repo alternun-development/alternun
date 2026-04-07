@@ -615,8 +615,8 @@ const styles = StyleSheet.create({
   },
   tooltipOverlay: {
     position: 'absolute',
-    top: -68,
-    left: 15,
+    top: -58,
+    left: 45,
     zIndex: 1000,
     maxWidth: 260,
   },
