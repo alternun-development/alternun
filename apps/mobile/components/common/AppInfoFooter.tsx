@@ -245,6 +245,7 @@ export default function AppInfoFooter(): React.JSX.Element {
                     key={link.label}
                     {...link}
                     compact
+                    mobileMini
                     iconColor={palette.accent}
                     backgroundColor={palette.socialBg}
                     borderColor={palette.socialBorder}
@@ -399,8 +400,9 @@ const styles = createTypographyStyles({
   },
   socialRowMobileCompact: {
     flexDirection: 'row',
-    gap: 4,
+    gap: 3,
     flexShrink: 0,
+    alignItems: 'center',
   },
   /* Bottom bar */
   bottomBar: {

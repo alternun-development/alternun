@@ -105,12 +105,14 @@ export function SocialPill({
   borderColor,
   compact = false,
   hoverColor,
+  mobileMini = false,
 }: FooterLink & {
   iconColor: string;
   backgroundColor: string;
   borderColor: string;
   compact?: boolean;
   hoverColor?: string;
+  mobileMini?: boolean;
 }): React.JSX.Element | null {
   if (!Icon) {
     return null;
@@ -123,6 +125,7 @@ export function SocialPill({
       style={({ hovered, pressed }) => [
         styles.socialPill,
         compact && styles.socialPillCompact,
+        mobileMini && styles.socialPillMobileMini,
         hovered && styles.socialPillHovered,
         pressed && styles.socialPillPressed,
         {
@@ -131,7 +134,7 @@ export function SocialPill({
         },
       ]}
     >
-      <Icon size={compact ? 14 : 16} color={iconColor} strokeWidth={2.1} />
+      <Icon size={mobileMini ? 12 : compact ? 14 : 16} color={iconColor} strokeWidth={2.1} />
     </Pressable>
   );
 }
@@ -200,6 +203,11 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
+  },
+  socialPillMobileMini: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
   },
   socialPillHovered: {
     transform: [{ translateY: -1 }, { scale: 1.04 }],
