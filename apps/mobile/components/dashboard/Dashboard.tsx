@@ -1,6 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import type { User } from '../auth/AppAuthProvider';
-import { View, ScrollView, StatusBar, Text, useWindowDimensions } from 'react-native';
+import {
+  View,
+  ScrollView,
+  StatusBar,
+  Text,
+  useWindowDimensions,
+  RefreshControl,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 
 import AppInfoFooter from '../common/AppInfoFooter';
@@ -278,6 +285,7 @@ export default function Dashboard({
 }: DashboardProps) {
   const [walletModalVisible, setWalletModalVisible] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
   const scrollTopInset = isMobile ? 82 : 62;
@@ -290,6 +298,23 @@ export default function Dashboard({
   const { scrollRef, showBackToTop, handleScroll, scrollToTop, bounceStyle } = useBackToTop({
     scrollThreshold: 200,
   });
+
+  // Reload handler for both pull-to-refresh and button tap
+  const handleRefresh = useCallback((): void => {
+    setIsRefreshing(true);
+    try {
+      // Call the onReload callback from auth provider to refresh user data
+      if (onReload) {
+        onReload();
+      }
+      // Simulate a small delay to show loading state (in practice, auth refresh takes time)
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 800);
+    } catch (error) {
+      setIsRefreshing(false);
+    }
+  }, [onReload]);
 
   const addToast = useCallback((type: ToastType, title: string, message: string) => {
     const id = `toast-${++toastIdCounter}`;
@@ -382,6 +407,13 @@ export default function Dashboard({
             showsVerticalScrollIndicator={false}
             onScroll={handleScroll}
             scrollEventThrottle={100}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+                tintColor={isDark ? '#1ee6b5' : '#0b5a5f'}
+              />
+            }
           >
             <View style={styles.scrollInner}>
               <HeroStats
@@ -389,8 +421,8 @@ export default function Dashboard({
                 activePositions={userStats ? userStats.activePositions : null}
                 tokensHeld={userStats ? userStats.tokensHeld : null}
                 compensationsCompleted={userStats ? userStats.compensationsCompleted : null}
-                isLoading={isLoading}
-                onReload={onReload}
+                isLoading={isLoading || isRefreshing}
+                onReload={handleRefresh}
                 previewMode={!user}
                 isDark={isDark}
                 displayName={profileInfo.displayName}
