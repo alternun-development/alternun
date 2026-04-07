@@ -1,3 +1,17 @@
+## [1.0.38](https://github.com/alternun-development/alternun/compare/v1.0.37...v1.0.38) (2026-04-07)
+
+### Bug Fixes
+
+- adjust tooltip position closer to icon view ([a1f27e8](https://github.com/alternun-development/alternun/commit/a1f27e8b30a41ddf4c002117cee508d5d8089a30))
+- position tooltip top-right of icon, tighter ([1e90e77](https://github.com/alternun-development/alternun/commit/1e90e776ebd6c481ff879bf48d25bdedc7552da7))
+
+## [1.0.38](https://github.com/alternun-development/alternun/compare/v1.0.37...v1.0.38) (2026-04-07)
+
+### Bug Fixes
+
+- adjust tooltip position closer to icon view ([a1f27e8](https://github.com/alternun-development/alternun/commit/a1f27e8b30a41ddf4c002117cee508d5d8089a30))
+- position tooltip top-right of icon, tighter ([1e90e77](https://github.com/alternun-development/alternun/commit/1e90e776ebd6c481ff879bf48d25bdedc7552da7))
+
 ## [1.0.37](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.37) (2026-04-07)
 
 ### Bug Fixes
