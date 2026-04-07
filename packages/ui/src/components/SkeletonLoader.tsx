@@ -131,12 +131,12 @@ export function StatusBadgeSkeleton() {
 
 /** Skeleton for progress numbers (e.g., "0 / 1,000 Airs") */
 export function ProgressNumbersSkeleton() {
-  return <SkeletonLoader width={100} height={13} borderRadius={4} />;
+  return <SkeletonLoader width={88} height={13} borderRadius={4} />;
 }
 
 /** Skeleton for progress percentage */
 export function ProgressPercentageSkeleton() {
-  return <SkeletonLoader width={40} height={13} borderRadius={4} />;
+  return <SkeletonLoader width={32} height={13} borderRadius={4} />;
 }
 
 const styles = StyleSheet.create({
