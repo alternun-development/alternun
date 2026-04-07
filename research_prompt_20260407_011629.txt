@@ -1,0 +1,26 @@
+Research the following three tooltip libraries for React Native/Expo. This is a detailed, specific prompt - skip enhancement questions and go straight to research.
+
+1. react-native-copilot (npm package, GitHub: https://github.com/mohebifar/react-native-copilot)
+   - Exact current npm version
+   - Expo managed workflow compatibility (does it require native modules / config plugins?)
+   - Full API surface: CopilotProvider props, walkthroughable() HOC signature, useCopilot hook return type, step() decorator props (name, text, order, before, after)
+   - Peer dependencies list (especially react-native-svg, react-native-modal)
+   - Known issues or workarounds for Expo managed workflow
+
+2. react-native-walkthrough-tooltip (npm: https://www.npmjs.com/package/react-native-walkthrough-tooltip)
+   - Exact current npm version
+   - Full Tooltip component prop types: isVisible, content, placement, onClose, childless, arrowSize, backgroundColor, tooltipStyle, contentStyle, arrowStyle, displayInsets, disableShadow, useInteractionManager, useReactNativeModal, topAdjustment, allowChildInteraction, closeOnChildInteraction, closeOnContentInteraction
+   - How it wraps children (does it measure child position with measure()?)
+   - Any native module requirements or pure JS?
+   - Peer dependencies
+
+3. universal-tooltip (npm package name, GitHub: https://github.com/alantoa/universal-tooltip)
+   - Exact current npm version and npm package name
+   - How it handles web vs native (separate entry points? platform files?)
+   - Full API surface: Tooltip, Tooltip.Trigger, Tooltip.Content, Tooltip.Text props
+   - Installation for Expo managed workflow (config plugin? native module?)
+   - Installation for web (Next.js, Docusaurus) - any special setup?
+   - Peer dependencies (react-native-svg? expo-modules-core? @radix-ui/react-tooltip?)
+   - Whether it truly works zero-config in both Expo managed AND Next.js web
+
+Focus on exact TypeScript prop types, exact version numbers, and what peer dependencies are required to build a unified tooltip facade that works on React Native (Expo managed) AND web (Next.js / Docusaurus).
