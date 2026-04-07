@@ -1,3 +1,17 @@
+## [1.0.29](https://github.com/alternun-development/alternun/compare/v1.0.28...v1.0.29) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile:** SearchFilterBar, ActivityFeed ([f1da5a5](https://github.com/alternun-development/alternun/commit/f1da5a5cce98214ee0f3eb19ac9468c77b23b844))
+- **release:** dedupe v1.0.28 changelog ([4bae2c6](https://github.com/alternun-development/alternun/commit/4bae2c6b5f583206a958ba59bb05ec7ee6df7bcb))
+
+## [1.0.29](https://github.com/alternun-development/alternun/compare/v1.0.28...v1.0.29) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile:** SearchFilterBar, ActivityFeed ([f1da5a5](https://github.com/alternun-development/alternun/commit/f1da5a5cce98214ee0f3eb19ac9468c77b23b844))
+- **release:** dedupe v1.0.28 changelog ([4bae2c6](https://github.com/alternun-development/alternun/commit/4bae2c6b5f583206a958ba59bb05ec7ee6df7bcb))
+
 ## [1.0.28](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.28) (2026-04-07)
 
 ### Bug Fixes
