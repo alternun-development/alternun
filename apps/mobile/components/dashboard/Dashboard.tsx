@@ -286,6 +286,7 @@ export default function Dashboard({
   const [walletModalVisible, setWalletModalVisible] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [footerHeight, setFooterHeight] = useState(0);
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
   const scrollTopInset = isMobile ? 82 : 62;
@@ -448,16 +449,23 @@ export default function Dashboard({
             </View>
           </ScrollView>
 
-          <View style={styles.stickyBottom}>
-            <BackToTopButton
-              visible={showBackToTop}
-              onPress={scrollToTop}
-              isDark={isDark}
-              isMobile={isMobile}
-              bounceStyle={bounceStyle}
-            />
-            <AppInfoFooter />
+          <View
+            style={styles.stickyBottom}
+            onLayout={(event) => {
+              setFooterHeight(event.nativeEvent.layout.height);
+            }}
+          >
+            <AppInfoFooter containerStyle={{ marginTop: 0 }} />
           </View>
+
+          <BackToTopButton
+            visible={showBackToTop}
+            onPress={scrollToTop}
+            isDark={isDark}
+            isMobile={isMobile}
+            footerBottomOffset={isMobile ? footerHeight + 18 : undefined}
+            bounceStyle={bounceStyle}
+          />
 
           <WalletConnectModal
             visible={walletModalVisible}
@@ -546,6 +554,7 @@ const styles = createTypographyStyles({
   },
   container: {
     flex: 1,
+    position: 'relative',
   },
   scroll: {
     flex: 1,
@@ -577,13 +586,6 @@ const styles = createTypographyStyles({
     height: 12,
   },
   stickyBottom: {
-    position: 'relative',
-  },
-  footerOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
+    marginTop: 'auto',
   },
 });

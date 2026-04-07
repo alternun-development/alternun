@@ -2,7 +2,14 @@ import { useAppTranslation } from '../i18n/useAppTranslation';
 import { BlurView } from 'expo-blur';
 import { Image as ExpoImage } from 'expo-image';
 import React, { useEffect, useMemo } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -32,7 +39,11 @@ import {
 } from './Footer.shared';
 import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 
-export default function AppInfoFooter(): React.JSX.Element {
+interface AppInfoFooterProps {
+  containerStyle?: StyleProp<ViewStyle>;
+}
+
+export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): React.JSX.Element {
   const { themeMode, language, motionLevel } = useAppPreferences();
   const { width } = useWindowDimensions();
   const { t } = useAppTranslation('mobile');
@@ -83,8 +94,8 @@ export default function AppInfoFooter(): React.JSX.Element {
 
   const palette = isDark
     ? {
-        shellBg: motionLevel === 'off' ? 'rgba(6,18,17,0.98)' : 'rgba(6, 18, 17, 0.92)',
-        shellBorder: 'rgba(142, 255, 223, 0.18)',
+        shellBg: motionLevel === 'off' ? 'rgba(6,18,17,0.60)' : 'rgba(6, 18, 17, 0.46)',
+        shellBorder: 'rgba(142, 255, 223, 0.24)',
         glowA: 'rgba(30, 230, 181, 0.16)',
         glowB: 'rgba(98, 208, 255, 0.12)',
         title: '#effff9',
@@ -97,8 +108,8 @@ export default function AppInfoFooter(): React.JSX.Element {
         bottomBar: 'rgba(0,0,0,0.12)',
       }
     : {
-        shellBg: motionLevel === 'off' ? 'rgba(245,255,252,0.99)' : 'rgba(245, 255, 252, 0.96)',
-        shellBorder: 'rgba(11, 90, 95, 0.14)',
+        shellBg: motionLevel === 'off' ? 'rgba(245,255,252,0.84)' : 'rgba(245, 255, 252, 0.72)',
+        shellBorder: 'rgba(11, 90, 95, 0.16)',
         glowA: 'rgba(30, 230, 181, 0.12)',
         glowB: 'rgba(11, 90, 95, 0.08)',
         title: '#0b2d31',
@@ -117,12 +128,14 @@ export default function AppInfoFooter(): React.JSX.Element {
   const wordmarkHeight = isWide ? 28 : isMobile ? 20 : 24;
 
   return (
-    <View style={styles.outer}>
+    <View style={[styles.outer, containerStyle]}>
       <View
         style={[
           styles.shell,
           {
             backgroundColor: palette.shellBg,
+            borderColor: palette.shellBorder,
+            borderWidth: 1,
             padding: shellPadding,
           },
         ]}
@@ -289,7 +302,6 @@ const styles = createTypographyStyles({
   },
   shell: {
     overflow: 'hidden',
-    borderWidth: 0,
     position: 'relative',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -390,7 +402,7 @@ const styles = createTypographyStyles({
     borderRadius: 0,
     borderWidth: 0,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
+    borderTopColor: 'rgba(255,255,255,0.08)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
