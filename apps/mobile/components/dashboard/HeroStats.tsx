@@ -11,6 +11,7 @@ interface HeroStatsProps {
   tokensHeld: number | null;
   compensationsCompleted: number | null;
   isLoading?: boolean;
+  onReload?: () => void;
   previewMode?: boolean;
   isDark?: boolean;
   displayName?: string;
@@ -19,6 +20,7 @@ interface HeroStatsProps {
 export default function HeroStats({
   totalAIRS,
   isLoading = false,
+  onReload,
   previewMode = false,
   isDark = true,
   displayName,
@@ -33,6 +35,7 @@ export default function HeroStats({
         displayName={displayName}
         score={totalAIRS}
         isLoading={isLoading}
+        onReload={onReload}
         previewMode={previewMode}
         isDark={isDark}
         animateOrbs={motionLevel !== 'off'}

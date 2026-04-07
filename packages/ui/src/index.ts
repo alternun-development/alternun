@@ -52,6 +52,7 @@ export {
   LedgerRowSkeleton,
   SectionHeaderSkeleton,
   PillRowSkeleton,
+  HeroPanelSkeleton,
 } from './components/SkeletonLoader';
 
 // ── Changelog ─────────────────────────────────────────────────────────────────
