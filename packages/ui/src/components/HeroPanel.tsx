@@ -142,6 +142,9 @@ export function HeroPanel({
   const tier = previewMode || score == null ? 'bronze' : resolveTier(safeScore);
   const tierSpec = TIERS[tier];
 
+  // Compute last updated time: use provided updatedAt or fallback to now (initial load)
+  const lastUpdatedAt = _updatedAt ?? new Date().toISOString();
+
   const progressPct = useMemo(() => {
     if (tierSpec.max == null || previewMode || score == null) return 0;
     return Math.min((safeScore - tierSpec.min) / (tierSpec.max - tierSpec.min), 1);
@@ -269,7 +272,9 @@ export function HeroPanel({
       <View style={styles.tooltipDivider} />
       <View style={styles.tooltipLine}>
         <Text style={[styles.tooltipKey, { color: textMuted }]}>Actualizado:</Text>
-        <Text style={[styles.tooltipValue, { color: textPrimary }]}>{formatDate(_updatedAt)}</Text>
+        <Text style={[styles.tooltipValue, { color: textPrimary }]}>
+          {formatDate(lastUpdatedAt)}
+        </Text>
       </View>
       {tierValidUntil && (
         <View style={styles.tooltipLine}>
@@ -337,28 +342,30 @@ export function HeroPanel({
         {isLoading ? (
           <StatusBadgeSkeleton />
         ) : (
-          <View style={styles.tierBadgeRow}>
-            <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
-              <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
-              <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
-                {`Status ${tierSpec.label.toUpperCase()}`}
-              </Text>
+          <>
+            <View style={styles.tierBadgeRow}>
+              <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
+                <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
+                <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
+                  {`Status ${tierSpec.label.toUpperCase()}`}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={toggleStatusTooltip}
+                accessibilityRole='button'
+                accessibilityLabel='Información del estado'
+              >
+                <InfoIcon size={16} color={accentColor} strokeWidth={2} />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={toggleStatusTooltip}
-              accessibilityRole='button'
-              accessibilityLabel='Información del estado'
-            >
-              <InfoIcon size={16} color={accentColor} strokeWidth={2} />
-            </TouchableOpacity>
             {showStatusTooltip && (
-              <View style={styles.tooltipContainer}>
+              <View style={styles.tooltipOverlay}>
                 <View
                   style={[
                     styles.statusTooltip,
                     {
                       backgroundColor: isDark ? '#050f0c' : '#ffffff',
-                      shadowColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.1)',
+                      shadowColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.2)',
                     },
                   ]}
                 >
@@ -369,7 +376,7 @@ export function HeroPanel({
                 />
               </View>
             )}
-          </View>
+          </>
         )}
 
         <View style={[styles.divider, { backgroundColor: divider }]} />
@@ -531,6 +538,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing[2],
     marginBottom: spacing[4],
+    zIndex: 1,
   },
   tierBadge: {
     flexDirection: 'row',
@@ -551,28 +559,30 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.6,
   },
-  tooltipContainer: {
+  tooltipOverlay: {
     position: 'absolute',
     top: 36,
-    left: -12,
-    zIndex: 100,
+    right: -8,
+    zIndex: 1000,
+    maxWidth: '90%',
   },
   statusTooltip: {
-    minWidth: 200,
+    minWidth: 220,
+    maxWidth: 280,
     paddingHorizontal: spacing[3],
     paddingVertical: spacing[2],
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(30,230,181,0.24)',
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 12,
   },
   tooltipArrow: {
     position: 'absolute',
     top: -6,
-    left: 24,
+    right: 20,
     width: 0,
     height: 0,
     borderLeftWidth: 6,
