@@ -3,7 +3,8 @@ import Constants from 'expo-constants';
 import { Image as ExpoImage } from 'expo-image';
 import React from 'react';
 import { Instagram, Send, Twitter, Youtube } from 'lucide-react-native';
-import { Linking, Pressable, StyleSheet, Text } from 'react-native';
+import { Linking, Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native';
+import mobilePackageJson from '../../package.json';
 import type { FooterPrimaryLink } from './AppInfoFooter.links';
 
 export type LinkIconProps = {
@@ -25,21 +26,18 @@ export interface VersionMetadata {
   source: string;
 }
 
-type MobilePackageJson = { version?: string | null };
-
 type ExpoImageSource = React.ComponentProps<typeof ExpoImage>['source'];
 
 // Metro asset loading still relies on require() for local image modules here.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as ExpoImageSource;
+// prettier-ignore
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGOTIPO_LIGHT =
-  require('../../assets/AIRS-logotipo-light.svg') as ExpoImageSource;
+export const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg',) as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png') as ExpoImageSource;
 // Keep footer version aligned with the app package version used in this workspace.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const MOBILE_PACKAGE = require('../../package.json') as MobilePackageJson;
+const MOBILE_PACKAGE = mobilePackageJson as { version?: string | null };
 
 export const SOCIAL_LINKS: FooterLink[] = [
   { label: 'Telegram', url: 'https://t.me/+4dPOLQ3otkE4NjIx#', icon: Send },
@@ -145,12 +143,18 @@ export function FooterTextLink({
   textColor,
   compact = false,
   hoverColor,
+  align = 'left',
+  singleLine = false,
+  style,
 }: {
   label: string;
   url: FooterPrimaryLink['url'];
   textColor: string;
   compact?: boolean;
   hoverColor?: string;
+  align?: 'left' | 'center';
+  singleLine?: boolean;
+  style?: StyleProp<ViewStyle>;
 }): React.JSX.Element {
   return (
     <Pressable
@@ -160,13 +164,17 @@ export function FooterTextLink({
         compact && styles.textLinkPressableCompact,
         hovered && styles.textLinkPressableHovered,
         pressed && styles.textLinkPressablePressed,
+        style,
       ]}
     >
       {({ hovered, pressed }) => (
         <Text
+          numberOfLines={singleLine ? 1 : undefined}
+          ellipsizeMode={singleLine ? 'clip' : undefined}
           style={[
             styles.textLinkText,
             compact && styles.textLinkTextCompact,
+            align === 'center' && styles.textLinkTextCenter,
             hovered && styles.textLinkTextHovered,
             pressed && styles.textLinkTextPressed,
             { color: hovered ? hoverColor ?? textColor : textColor },
@@ -221,7 +229,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   textLinkPressableCompact: {
-    minHeight: 20,
+    minHeight: 22,
   },
   textLinkPressableHovered: {
     transform: [{ translateY: -1 }],
@@ -235,7 +243,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.12,
   },
   textLinkTextCompact: {
-    fontSize: 12,
+    fontSize: 13,
+  },
+  textLinkTextCenter: {
+    textAlign: 'center',
   },
   textLinkTextHovered: {
     textDecorationLine: 'underline',

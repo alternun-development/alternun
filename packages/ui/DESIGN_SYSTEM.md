@@ -303,7 +303,7 @@ import { ProgressBar } from '@alternun/ui';
 />
 ```
 
-**Props:** `progress` (0–1), `color?`, `height?`, `showLabel?`, `label?`, `trailingLabel?`, `animate?`
+**Props:** `progress` (0–1), `color?`, `height?`, `showLabel?`, `label?`, `trailingLabel?`, `showPercentage?`, `animate?`
 
 ---
 

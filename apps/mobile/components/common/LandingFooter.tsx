@@ -58,8 +58,8 @@ export default function LandingFooter(): React.JSX.Element {
         ),
         -1
       );
-    orbLeft.value = makeFloat(5800);
-    orbRight.value = makeFloat(7200);
+    orbLeft.value = makeFloat(5800) as unknown as number;
+    orbRight.value = makeFloat(7200) as unknown as number;
     return () => {
       cancelAnimation(orbLeft);
       cancelAnimation(orbRight);
@@ -269,15 +269,22 @@ export default function LandingFooter(): React.JSX.Element {
               {t('footer.tagline')}
             </Text>
 
-            <View style={styles.linkRow}>
-              {primaryLinks.map((link) => (
-                <FooterTextLink
-                  key={link.labelKey}
-                  label={t(link.labelKey, undefined, link.fallbackLabel)}
-                  url={link.url}
-                  textColor={palette.title}
-                  hoverColor={palette.accent}
-                />
+            <View style={styles.compactLinkGrid}>
+              {primaryLinks.map((link, index) => (
+                <React.Fragment key={link.labelKey}>
+                  <FooterTextLink
+                    label={t(link.labelKey, undefined, link.fallbackLabel)}
+                    url={link.url}
+                    textColor={palette.title}
+                    hoverColor={palette.accent}
+                    compact
+                    align='center'
+                    singleLine
+                  />
+                  {index < primaryLinks.length - 1 && (
+                    <Text style={[styles.compactLinkSeparator, { color: palette.muted }]}>•</Text>
+                  )}
+                </React.Fragment>
               ))}
             </View>
 
@@ -426,10 +433,23 @@ const styles = createTypographyStyles({
     fontSize: 11,
     lineHeight: 16,
   },
+  compactLinkGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  compactLinkSeparator: {
+    marginHorizontal: 5,
+    fontSize: 13,
+    fontWeight: '700',
+  },
   compactSocialRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
+    justifyContent: 'center',
   },
   taglineText: {
     fontSize: 12,
