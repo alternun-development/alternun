@@ -703,6 +703,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 12,
     paddingVertical: 12,
+    overflow: 'hidden',
   },
   calloutCardCompact: {
     gap: 10,
@@ -746,19 +747,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
+    marginTop: 4,
   },
   tipRowCompact: {
     gap: 8,
+    marginTop: 2,
   },
   tipText: {
     flex: 1,
     fontSize: 12,
     lineHeight: 18,
     fontWeight: '600',
+    flexWrap: 'wrap',
   },
   tipTextCompact: {
     fontSize: 11,
     lineHeight: 16,
+    flexWrap: 'wrap',
   },
 
   tokenRow: {
@@ -840,6 +845,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     gap: 10,
+    overflow: 'hidden',
   },
   walletPanelCompact: {
     borderRadius: 16,
@@ -852,6 +858,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
+    minWidth: 0,
   },
   walletPanelLabel: {
     fontSize: 14,
@@ -871,6 +878,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     letterSpacing: -0.1,
+    minWidth: 0,
   },
   walletAddressCompact: {
     fontSize: 14,
@@ -879,6 +887,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    minWidth: 0,
   },
   walletLinkText: {
     fontSize: 14,
