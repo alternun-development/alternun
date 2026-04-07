@@ -209,6 +209,8 @@ That is now the default derived callback URL when the browser origin is availabl
 
 If an older env still points at the site root, the shared web resolver prefers the dedicated callback route on the same origin instead of staying on the stale root redirect.
 
+When the browser is running on a local loopback origin, the active browser origin wins over stale testnet or localhost callback values so local testing stays on the current app instance.
+
 For native, use an explicit runtime-appropriate redirect/deep-link URI.
 
 ## Custom Authentik Flow Slugs
