@@ -9,7 +9,7 @@ import {
   ArrowLeft,
 } from 'lucide-react-native';
 
-interface SupportButtonProps {
+export interface SupportButtonProps {
   supportEmail: string;
   palette: {
     title: string;
@@ -22,10 +22,7 @@ interface SupportButtonProps {
   };
 }
 
-export default function SupportButton({
-  supportEmail,
-  palette,
-}: SupportButtonProps): React.JSX.Element {
+function SupportButton({ supportEmail, palette }: SupportButtonProps): React.JSX.Element {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showChatOptions, setShowChatOptions] = useState(false);
 
@@ -88,10 +85,10 @@ export default function SupportButton({
       {/* Support button */}
       <Pressable
         onPress={() => setDialogOpen(true)}
-        style={({ pressed, hovered }) => [
+        style={({ pressed }) => [
           styles.supportButton,
           {
-            backgroundColor: hovered || pressed ? `${palette.accent}18` : 'transparent',
+            backgroundColor: pressed ? `${palette.accent}18` : 'transparent',
             borderColor: palette.muted,
           },
         ]}
@@ -400,3 +397,5 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
 });
+
+export default SupportButton;
