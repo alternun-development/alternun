@@ -351,12 +351,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing[4],
     right: spacing[4],
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
   },
 
   /* Ambient orbs — top-right + bottom-left (mirrored vs footer) */
