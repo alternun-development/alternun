@@ -9,27 +9,51 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.34](https://github.com/alternun-development/alternun/compare/v1.0.33...v1.0.34) (2026-04-07)
+export const CHANGELOG_TEXT = `## [1.0.36](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.36) (2026-04-07)
 
 
-### Bug Fixes
+### Features
 
-* move tooltip closer to info icon with float animation ([e497f40](https://github.com/alternun-development/alternun/commit/e497f40d0d574e6e158af1257a53684866053ab5))
-
-
+* add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
 
 
+
+
+
+## [1.0.36](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.36) (2026-04-07)
+
+
+### Features
+
+* add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
+
+
+
+
+
+## [1.0.35](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.35) (2026-04-07)
+
+### Features
+
+- add web hover tooltip trigger for info icon ([e3780ee](https://github.com/alternun-development/alternun/commit/e3780ee66eadfc4d87c3ee8987dc6b8884547def))
+
+## [1.0.35](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.35) (2026-04-07)
+
+### Features
+
+- add web hover tooltip trigger for info icon ([e3780ee](https://github.com/alternun-development/alternun/commit/e3780ee66eadfc4d87c3ee8987dc6b8884547def))
 
 ## [1.0.34](https://github.com/alternun-development/alternun/compare/v1.0.33...v1.0.34) (2026-04-07)
 
+### Bug Fixes
+
+- move tooltip closer to info icon with float animation ([e497f40](https://github.com/alternun-development/alternun/commit/e497f40d0d574e6e158af1257a53684866053ab5))
+
+## [1.0.34](https://github.com/alternun-development/alternun/compare/v1.0.33...v1.0.34) (2026-04-07)
 
 ### Bug Fixes
 
-* move tooltip closer to info icon with float animation ([e497f40](https://github.com/alternun-development/alternun/commit/e497f40d0d574e6e158af1257a53684866053ab5))
-
-
-
-
+- move tooltip closer to info icon with float animation ([e497f40](https://github.com/alternun-development/alternun/commit/e497f40d0d574e6e158af1257a53684866053ab5))
 
 ## [1.0.33](https://github.com/alternun-development/alternun/compare/v1.0.32...v1.0.33) (2026-04-07)
 
