@@ -26,9 +26,9 @@ interface TooltipProps extends TooltipConfig {
  *   </Tooltip>
  */
 export function Tooltip({
-  _content,
-  _placement = 'top',
-  _delayDuration = 0,
+  content: _content,
+  placement: _placement = 'top',
+  delayDuration: _delayDuration = 0,
   children,
   style,
 }: TooltipProps): React.JSX.Element {
