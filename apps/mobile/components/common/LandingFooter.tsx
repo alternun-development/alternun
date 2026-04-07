@@ -25,6 +25,7 @@ import {
   ALTERNUN_POWERED_BY_LOGO,
   FooterCopyright,
   FooterTextLink,
+  FooterTopFade,
   SocialPill,
   SOCIAL_LINKS,
   resolveVersionMetadata,
@@ -82,8 +83,9 @@ export default function LandingFooter(): React.JSX.Element {
 
   const palette = isDark
     ? {
-        shellBg: 'rgba(6, 18, 17, 0.48)',
-        shellBorder: 'rgba(142, 255, 223, 0.18)',
+        shellBodyBg: 'rgba(6, 18, 17, 0.48)',
+        shellTopBg: 'rgba(6, 18, 17, 0.10)',
+        shellBorder: 'rgba(142, 255, 223, 0.12)',
         glowA: 'rgba(30, 230, 181, 0.16)',
         glowB: 'rgba(98, 208, 255, 0.12)',
         title: '#effff9',
@@ -96,8 +98,9 @@ export default function LandingFooter(): React.JSX.Element {
         bottomBar: 'rgba(0,0,0,0.12)',
       }
     : {
-        shellBg: 'rgba(250, 255, 253, 0.72)',
-        shellBorder: 'rgba(11, 90, 95, 0.14)',
+        shellBodyBg: 'rgba(250, 255, 253, 0.72)',
+        shellTopBg: 'rgba(250, 255, 253, 0.14)',
+        shellBorder: 'rgba(11, 90, 95, 0.08)',
         glowA: 'rgba(30, 230, 181, 0.12)',
         glowB: 'rgba(11, 90, 95, 0.08)',
         title: '#0b2d31',
@@ -112,6 +115,7 @@ export default function LandingFooter(): React.JSX.Element {
 
   const shellPadding = isWide ? 20 : isMobile ? 12 : 14;
   const shellRadius = isWide ? 26 : isMobile ? 16 : 20;
+  const shellRevealHeight = isWide ? 20 : isMobile ? 12 : 14;
   const brandMarkSize = isWide ? 52 : isMobile ? 36 : 42;
   const wordmarkWidth = isWide ? 126 : isMobile ? 88 : 104;
   const wordmarkHeight = isWide ? 44 : isMobile ? 30 : 36;
@@ -131,7 +135,6 @@ export default function LandingFooter(): React.JSX.Element {
         style={[
           styles.shell,
           {
-            backgroundColor: palette.shellBg,
             borderColor: palette.shellBorder,
             borderRadius: shellRadius,
             padding: shellPadding,
@@ -139,10 +142,18 @@ export default function LandingFooter(): React.JSX.Element {
         ]}
       >
         <BlurView
-          intensity={isWide ? 42 : 30}
+          intensity={isWide ? 48 : 34}
           tint={isDark ? 'dark' : 'light'}
           style={[StyleSheet.absoluteFillObject, { borderRadius: shellRadius }]}
         />
+        <View
+          pointerEvents='none'
+          style={[
+            styles.shellSurfaceBody,
+            { top: shellRevealHeight, backgroundColor: palette.shellBodyBg },
+          ]}
+        />
+        <FooterTopFade height={shellRevealHeight} color={palette.shellTopBg} />
         <Animated.View
           pointerEvents='none'
           style={[
@@ -343,6 +354,18 @@ const styles = createTypographyStyles({
     overflow: 'hidden',
     borderWidth: 1,
     position: 'relative',
+  },
+  shellSurfaceBody: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  shellSurfaceTop: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
   },
   glowOrb: {
     position: 'absolute',
