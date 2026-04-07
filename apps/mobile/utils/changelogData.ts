@@ -9,16 +9,22 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.27](https://github.com/alternun-development/alternun/compare/v1.0.26...v1.0.27) (2026-04-07)
+export const CHANGELOG_TEXT = `## [1.0.28](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.28) (2026-04-07)
 
 
 ### Bug Fixes
 
-* **mobile,ui:** AppInfoFooter, Footer.shared, LandingFooter, DashboardSummaryCards ([a9707f8](https://github.com/alternun-development/alternun/commit/a9707f8ce6b5042c5474151359c14677483e8878))
+* **mobile,ui:** AppInfoFooter, BackToTopButton, ScreenShell, Dashboard ([a6ea41d](https://github.com/alternun-development/alternun/commit/a6ea41df9fda8c882fbbe63b0e64ea0b19f5ba76))
 
 
 
 
+
+## [1.0.27](https://github.com/alternun-development/alternun/compare/v1.0.26...v1.0.27) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile,ui:** AppInfoFooter, Footer.shared, LandingFooter, DashboardSummaryCards ([a9707f8](https://github.com/alternun-development/alternun/commit/a9707f8ce6b5042c5474151359c14677483e8878))
 
 ## [1.0.26](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.26) (2026-04-07)
 
