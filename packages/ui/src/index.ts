@@ -52,7 +52,10 @@ export {
   LedgerRowSkeleton,
   SectionHeaderSkeleton,
   PillRowSkeleton,
-  HeroPanelSkeleton,
+  ScoreNumberSkeleton,
+  StatusBadgeSkeleton,
+  ProgressNumbersSkeleton,
+  ProgressPercentageSkeleton,
 } from './components/SkeletonLoader';
 
 // ── Changelog ─────────────────────────────────────────────────────────────────
