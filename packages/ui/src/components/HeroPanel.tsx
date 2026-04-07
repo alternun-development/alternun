@@ -17,7 +17,7 @@
  */
 
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Animated, Easing, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RotateCcw, Info, type LucideProps } from 'lucide-react-native';
 import { palette } from '../tokens/colors';
 import { fontSize, radius, spacing } from '../tokens/spacing';
@@ -396,23 +396,13 @@ export function HeroPanel({
                   {`Status ${tierSpec.label.toUpperCase()}`}
                 </Text>
               </View>
-              {Platform.OS === 'web' ? (
-                <View
-                  onMouseEnter={() => !showStatusTooltip && toggleStatusTooltip()}
-                  onMouseLeave={() => showStatusTooltip && toggleStatusTooltip()}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <InfoIcon size={16} color={accentColor} strokeWidth={2} />
-                </View>
-              ) : (
-                <TouchableOpacity
-                  onPress={toggleStatusTooltip}
-                  accessibilityRole='button'
-                  accessibilityLabel='Información del estado'
-                >
-                  <InfoIcon size={16} color={accentColor} strokeWidth={2} />
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity
+                onPress={toggleStatusTooltip}
+                accessibilityRole='button'
+                accessibilityLabel='Información del estado'
+              >
+                <InfoIcon size={16} color={accentColor} strokeWidth={2} />
+              </TouchableOpacity>
             </View>
             {showStatusTooltip && (
               <Animated.View
@@ -625,8 +615,8 @@ const styles = StyleSheet.create({
   },
   tooltipOverlay: {
     position: 'absolute',
-    top: 28,
-    left: 50,
+    top: -92,
+    left: 15,
     zIndex: 1000,
     maxWidth: 260,
   },
