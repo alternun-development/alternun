@@ -123,7 +123,10 @@
       "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",
       "links": {
         "documentation": "Documentacion",
-        "project": "El Proyecto"
+        "project": "Ir a Alternun.io",
+        "privacy": "Privacidad",
+        "terms": "Términos",
+        "support": "Soporte"
       },
       "tagline": "Una \"manera diferente de hacer las cosas\" - Alternun"
     },
@@ -193,5 +196,20 @@
     "site": {
       "title": "Documentacion de Alternun"
     }
+  },
+  "support": {
+    "dialog": "¿Cómo podemos ayudarte?",
+    "chat": "Chatear con nosotros",
+    "chatDescription": "Inicia una conversación con nuestro equipo de soporte",
+    "email": "Enviar un correo electrónico",
+    "telegram": "Unirse a Telegram",
+    "telegramDescription": "Chatear con nuestra comunidad",
+    "whatsappMessage": "Enviar mensaje de WhatsApp",
+    "whatsappMessageDescription": "Envíanos un mensaje directamente",
+    "whatsappGroup": "Unirse al grupo de WhatsApp",
+    "whatsappGroupDescription": "Conectar con nuestra comunidad",
+    "liveChat": "Iniciar chat en vivo",
+    "liveChatDescription": "Chatear con un agente de soporte",
+    "back": "Atrás"
   }
 }

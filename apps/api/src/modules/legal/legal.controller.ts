@@ -1,10 +1,9 @@
-import { Controller, Get, Param, Query, Version } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LegalService, type LegalContent } from './legal.service';
 
 @Controller('legal')
 @ApiTags('Legal')
-@Version('1')
 export class LegalController {
   constructor(private readonly legalService: LegalService) {}
 
