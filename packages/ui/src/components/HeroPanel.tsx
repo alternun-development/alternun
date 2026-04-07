@@ -252,6 +252,26 @@ export function HeroPanel({
   // Tooltip for status tier info
   const { isVisible: showStatusTooltip, toggle: toggleStatusTooltip } = useTooltip(false);
 
+  const formatDateWithTime = (isoString?: string): string => {
+    if (!isoString) return 'N/A';
+    try {
+      const date = new Date(isoString);
+      const dateStr = new Intl.DateTimeFormat('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(date);
+      const timeStr = new Intl.DateTimeFormat('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).format(date);
+      return `${dateStr} ${timeStr}`;
+    } catch {
+      return 'N/A';
+    }
+  };
+
   const formatDate = (isoString?: string): string => {
     if (!isoString) return 'N/A';
     try {
@@ -273,7 +293,7 @@ export function HeroPanel({
       <View style={styles.tooltipLine}>
         <Text style={[styles.tooltipKey, { color: textMuted }]}>Actualizado:</Text>
         <Text style={[styles.tooltipValue, { color: textPrimary }]}>
-          {formatDate(lastUpdatedAt)}
+          {formatDateWithTime(lastUpdatedAt)}
         </Text>
       </View>
       {tierValidUntil && (
@@ -561,66 +581,72 @@ const styles = StyleSheet.create({
   },
   tooltipOverlay: {
     position: 'absolute',
-    top: 36,
-    right: -8,
+    top: 28,
+    right: -4,
     zIndex: 1000,
     maxWidth: '90%',
   },
   statusTooltip: {
-    minWidth: 220,
-    maxWidth: 280,
+    minWidth: 200,
+    maxWidth: 260,
     paddingHorizontal: spacing[3],
     paddingVertical: spacing[2],
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(30,230,181,0.24)',
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 12,
+    borderColor: 'rgba(30,230,181,0.28)',
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    shadowOffset: { width: 2, height: 4 },
+    elevation: 10,
   },
   tooltipArrow: {
     position: 'absolute',
-    top: -6,
-    right: 20,
+    top: -5,
+    right: 18,
     width: 0,
     height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 6,
+    borderLeftWidth: 5,
+    borderRightWidth: 5,
+    borderTopWidth: 5,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
   },
 
   /* Tooltip content */
   tooltipContent: {
-    gap: spacing[2],
+    gap: spacing[1],
   },
   tooltipLabel: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.xs,
     fontWeight: '700',
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    opacity: 0.9,
   },
   tooltipDivider: {
     height: 1,
-    backgroundColor: 'rgba(30,230,181,0.16)',
+    backgroundColor: 'rgba(30,230,181,0.2)',
+    marginVertical: spacing[1],
   },
   tooltipLine: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: spacing[2],
+    gap: spacing[1],
+    paddingVertical: 4,
   },
   tooltipKey: {
-    fontSize: fontSize.xs,
+    fontSize: 11,
     fontWeight: '600',
     flexShrink: 0,
+    letterSpacing: 0.3,
   },
   tooltipValue: {
-    fontSize: fontSize.xs,
+    fontSize: 11,
     fontWeight: '500',
     flex: 1,
     textAlign: 'right',
+    lineHeight: 16,
   },
 
   divider: {
