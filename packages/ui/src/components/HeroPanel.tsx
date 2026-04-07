@@ -264,14 +264,20 @@ export function HeroPanel({
   };
 
   const statusTooltipContent = (
-    <View>
-      <Text style={{ color: textMuted, fontSize: fontSize.xs, lineHeight: 16 }}>
-        {`Actualizado al: ${formatDate(_updatedAt)}`}
-      </Text>
+    <View style={styles.tooltipContent}>
+      <Text style={[styles.tooltipLabel, { color: accentColor }]}>Información de estado</Text>
+      <View style={styles.tooltipDivider} />
+      <View style={styles.tooltipLine}>
+        <Text style={[styles.tooltipKey, { color: textMuted }]}>Actualizado:</Text>
+        <Text style={[styles.tooltipValue, { color: textPrimary }]}>{formatDate(_updatedAt)}</Text>
+      </View>
       {tierValidUntil && (
-        <Text style={{ color: textMuted, fontSize: fontSize.xs, lineHeight: 16, marginTop: 4 }}>
-          {`Válido hasta: ${formatDate(tierValidUntil)}`}
-        </Text>
+        <View style={styles.tooltipLine}>
+          <Text style={[styles.tooltipKey, { color: textMuted }]}>Válido hasta:</Text>
+          <Text style={[styles.tooltipValue, { color: textPrimary }]}>
+            {formatDate(tierValidUntil)}
+          </Text>
+        </View>
       )}
     </View>
   );
@@ -346,16 +352,21 @@ export function HeroPanel({
               <InfoIcon size={16} color={accentColor} strokeWidth={2} />
             </TouchableOpacity>
             {showStatusTooltip && (
-              <View
-                style={[
-                  styles.statusTooltip,
-                  {
-                    backgroundColor: isDark ? 'rgba(5,15,12,0.95)' : 'rgba(234,248,243,0.95)',
-                    borderColor: accentColor,
-                  },
-                ]}
-              >
-                {statusTooltipContent}
+              <View style={styles.tooltipContainer}>
+                <View
+                  style={[
+                    styles.statusTooltip,
+                    {
+                      backgroundColor: isDark ? '#050f0c' : '#ffffff',
+                      shadowColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.1)',
+                    },
+                  ]}
+                >
+                  {statusTooltipContent}
+                </View>
+                <View
+                  style={[styles.tooltipArrow, { borderTopColor: isDark ? '#050f0c' : '#ffffff' }]}
+                />
               </View>
             )}
           </View>
@@ -540,16 +551,66 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.6,
   },
-  statusTooltip: {
+  tooltipContainer: {
     position: 'absolute',
-    top: 40,
-    left: 0,
-    borderWidth: 1,
-    borderRadius: 8,
+    top: 36,
+    left: -12,
+    zIndex: 100,
+  },
+  statusTooltip: {
+    minWidth: 200,
     paddingHorizontal: spacing[3],
     paddingVertical: spacing[2],
-    zIndex: 100,
-    minWidth: 180,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(30,230,181,0.24)',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  tooltipArrow: {
+    position: 'absolute',
+    top: -6,
+    left: 24,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderTopWidth: 6,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+  },
+
+  /* Tooltip content */
+  tooltipContent: {
+    gap: spacing[2],
+  },
+  tooltipLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  tooltipDivider: {
+    height: 1,
+    backgroundColor: 'rgba(30,230,181,0.16)',
+  },
+  tooltipLine: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing[2],
+  },
+  tooltipKey: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    flexShrink: 0,
+  },
+  tooltipValue: {
+    fontSize: fontSize.xs,
+    fontWeight: '500',
+    flex: 1,
+    textAlign: 'right',
   },
 
   divider: {
