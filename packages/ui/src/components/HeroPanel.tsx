@@ -252,6 +252,32 @@ export function HeroPanel({
   // Tooltip for status tier info
   const { isVisible: showStatusTooltip, toggle: toggleStatusTooltip } = useTooltip(false);
 
+  // Floating animation for tooltip
+  const tooltipOpacity = useRef(new Animated.Value(0)).current;
+  const tooltipTranslateY = useRef(new Animated.Value(10)).current;
+
+  useEffect(() => {
+    if (showStatusTooltip) {
+      Animated.parallel([
+        Animated.timing(tooltipOpacity, {
+          toValue: 1,
+          duration: 200,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(tooltipTranslateY, {
+          toValue: 0,
+          duration: 200,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      tooltipOpacity.setValue(0);
+      tooltipTranslateY.setValue(10);
+    }
+  }, [showStatusTooltip, tooltipOpacity, tooltipTranslateY]);
+
   const formatDateWithTime = (isoString?: string): string => {
     if (!isoString) return 'N/A';
     try {
@@ -379,7 +405,15 @@ export function HeroPanel({
               </TouchableOpacity>
             </View>
             {showStatusTooltip && (
-              <View style={styles.tooltipOverlay}>
+              <Animated.View
+                style={[
+                  styles.tooltipOverlay,
+                  {
+                    opacity: tooltipOpacity,
+                    transform: [{ translateY: tooltipTranslateY }],
+                  },
+                ]}
+              >
                 <View
                   style={[
                     styles.statusTooltip,
@@ -394,7 +428,7 @@ export function HeroPanel({
                 <View
                   style={[styles.tooltipArrow, { borderTopColor: isDark ? '#050f0c' : '#ffffff' }]}
                 />
-              </View>
+              </Animated.View>
             )}
           </>
         )}
@@ -582,9 +616,9 @@ const styles = StyleSheet.create({
   tooltipOverlay: {
     position: 'absolute',
     top: 28,
-    right: -4,
+    left: 50,
     zIndex: 1000,
-    maxWidth: '90%',
+    maxWidth: 260,
   },
   statusTooltip: {
     minWidth: 200,
