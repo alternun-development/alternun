@@ -70,3 +70,25 @@ export type {
 // ── Policies ──────────────────────────────────────────────────────────────────
 export { PolicyDrawer } from './components/PolicyDrawer';
 export type { PolicyDrawerProps } from './components/PolicyDrawer';
+
+// ── Tooltips ──────────────────────────────────────────────────────────────────
+export {
+  Tooltip,
+  TooltipProvider,
+  WalkthroughTour,
+  useTooltip,
+  useTooltipContext,
+  getTooltipTheme,
+} from './components/Tooltip';
+export type {
+  TooltipConfig,
+  TooltipPlacement,
+  WalkthroughStep,
+  WalkthroughConfig,
+  UseTooltipState,
+  TooltipTheme,
+} from './components/Tooltip';
+
+// ── Hooks ──────────────────────────────────────────────────────────────────────
+export { useAirsRefresh } from './hooks/useAirsRefresh';
+export type { AirsRefreshMetadata } from './hooks/useAirsRefresh';
