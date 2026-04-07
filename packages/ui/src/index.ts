@@ -66,3 +66,7 @@ export type {
 // ── Policies ──────────────────────────────────────────────────────────────────
 export { PolicyDrawer } from './components/PolicyDrawer';
 export type { PolicyDrawerProps } from './components/PolicyDrawer';
+
+// ── Support ────────────────────────────────────────────────────────────────────
+export { default as SupportButton } from './components/SupportButton';
+export type { SupportButtonProps } from './components/SupportButton';
