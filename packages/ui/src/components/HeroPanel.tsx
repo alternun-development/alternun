@@ -22,7 +22,12 @@ import { RotateCcw, type LucideProps } from 'lucide-react-native';
 import { palette } from '../tokens/colors';
 import { fontSize, radius, spacing } from '../tokens/spacing';
 import { ProgressBar } from './ProgressBar';
-import { HeroPanelSkeleton } from './SkeletonLoader';
+import {
+  ScoreNumberSkeleton,
+  StatusBadgeSkeleton,
+  ProgressNumbersSkeleton,
+  ProgressPercentageSkeleton,
+} from './SkeletonLoader';
 import { ThemeProvider } from '../theme/ThemeContext';
 
 // ─── Tier system ──────────────────────────────────────────────────────────────
@@ -254,79 +259,87 @@ export function HeroPanel({
             accessibilityLabel='Recargar puntuación'
           >
             <Animated.View style={[reloadRotateStyle]}>
-              <ReloadIcon size={18} color={accentColor} strokeWidth={2} />
+              <ReloadIcon size={16} color={accentColor} strokeWidth={2.5} />
             </Animated.View>
           </TouchableOpacity>
         )}
 
-        {/* Loading skeleton or real content */}
-        {isLoading ? (
-          <HeroPanelSkeleton />
-        ) : (
-          <>
-            {/* Greeting */}
-            {firstName ? (
-              <Text style={[styles.greeting, { color: textPrimary }]}>{`Hola, ${firstName}`}</Text>
-            ) : null}
+        {/* Greeting */}
+        {firstName ? (
+          <Text style={[styles.greeting, { color: textPrimary }]}>{`Hola, ${firstName}`}</Text>
+        ) : null}
 
-            <Text style={[styles.subtitle, { color: textMuted }]}>
-              Tu puntuación regenerativa es:
+        <Text style={[styles.subtitle, { color: textMuted }]}>
+          Tu puntuación regenerativa es:
+        </Text>
+
+        {/* Score row */}
+        <View style={styles.scoreRow}>
+          {brandMark ?? <View style={[styles.defaultMark, { borderColor: accentColor }]} />}
+          {isLoading ? (
+            <ScoreNumberSkeleton />
+          ) : (
+            <Text
+              style={[styles.scoreValue, { color: textPrimary }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {score != null ? fmtScore(safeScore) : '—'}
             </Text>
+          )}
+        </View>
 
-            {/* Score row */}
-            <View style={styles.scoreRow}>
-              {brandMark ?? <View style={[styles.defaultMark, { borderColor: accentColor }]} />}
-              <Text
-                style={[styles.scoreValue, { color: textPrimary }]}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
-                {score != null ? fmtScore(safeScore) : '—'}
+        {/* Tier badge */}
+        {isLoading ? (
+          <StatusBadgeSkeleton />
+        ) : (
+          <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
+            <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
+            <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
+              {`Status ${tierSpec.label.toUpperCase()}`}
+            </Text>
+          </View>
+        )}
+
+        <View style={[styles.divider, { backgroundColor: divider }]} />
+
+        {/* Progress to next tier */}
+        {tierSpec.max != null && tierSpec.next != null && !previewMode && score != null && (
+          <View style={styles.progressSection}>
+            <View style={styles.progressLabelRow}>
+              <Text style={[styles.progressLeft, { color: textPrimary }]} numberOfLines={1}>
+                {`Progreso a ${tierSpec.nextLabel} — `}
               </Text>
-            </View>
-
-            {/* Tier badge */}
-            <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
-              <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
-              <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
-                {`Status ${tierSpec.label.toUpperCase()}`}
-              </Text>
-            </View>
-
-            <View style={[styles.divider, { backgroundColor: divider }]} />
-
-            {/* Progress to next tier */}
-            {tierSpec.max != null && tierSpec.next != null && !previewMode && score != null && (
-              <View style={styles.progressSection}>
-                <View style={styles.progressLabelRow}>
-                  <Text style={[styles.progressLeft, { color: textPrimary }]} numberOfLines={1}>
-                    {`Progreso a ${tierSpec.nextLabel} — ${Math.round(progressPct * 100)}%`}
-                  </Text>
-                  <Text style={[styles.progressRight, { color: textMuted }]} numberOfLines={1}>
-                    {`${fmtScore(safeScore)} / ${fmtScore(tierSpec.max)} Airs`}
-                  </Text>
-                </View>
-                <ProgressBar
-                  progress={progressPct}
-                  color={tierSpec.color}
-                  height={7}
-                  style={styles.progressBar}
-                />
-                <Text style={[styles.progressHint, { color: textMuted }]}>
-                  {`Te faltan ${fmtScore(tierSpec.max - safeScore)} Airs para alcanzar ${
-                    tierSpec.nextLabel
-                  } y desbloquear beneficios exclusivos`}
+              {isLoading ? (
+                <>
+                  <ProgressPercentageSkeleton />
+                  <ProgressNumbersSkeleton />
+                </>
+              ) : (
+                <Text style={[styles.progressRight, { color: textMuted }]} numberOfLines={1}>
+                  {`${Math.round(progressPct * 100)}% ${fmtScore(safeScore)} / ${fmtScore(tierSpec.max)} Airs`}
                 </Text>
-              </View>
-            )}
+              )}
+            </View>
+            <ProgressBar
+              progress={progressPct}
+              color={tierSpec.color}
+              height={7}
+              style={styles.progressBar}
+            />
+            <Text style={[styles.progressHint, { color: textMuted }]}>
+              {`Te faltan ${fmtScore(tierSpec.max - safeScore)} Airs para alcanzar ${
+                tierSpec.nextLabel
+              } y desbloquear beneficios exclusivos`}
+            </Text>
+          </View>
+        )}
 
-            {/* Platinum — max tier */}
-            {tierSpec.max == null && !previewMode && score != null && (
-              <Text style={[styles.progressHint, { color: tierSpec.color }]}>
-                Has alcanzado el nivel máximo Platinum
-              </Text>
-            )}
-          </>
+        {/* Platinum — max tier */}
+        {tierSpec.max == null && !previewMode && score != null && (
+          <Text style={[styles.progressHint, { color: tierSpec.color }]}>
+            Has alcanzado el nivel máximo Platinum
+          </Text>
         )}
       </View>
     </ThemeProvider>
@@ -349,17 +362,17 @@ const styles = StyleSheet.create({
   /* Reload button — top-right corner */
   reloadButton: {
     position: 'absolute',
-    top: spacing[4],
+    top: spacing[5],
     right: spacing[4],
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
-    backgroundColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: 'rgba(30,230,181,0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(30,230,181,0.16)',
   },
 
   /* Ambient orbs — top-right + bottom-left (mirrored vs footer) */
@@ -452,17 +465,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'baseline',
     gap: spacing[2],
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
   },
   progressLeft: {
     fontSize: fontSize.sm,
     fontWeight: '700',
-    flexShrink: 1,
+    flexShrink: 0,
   },
   progressRight: {
     fontSize: fontSize.xs,
     fontWeight: '500',
-    flexShrink: 0,
+    flexShrink: 1,
+    textAlign: 'right',
+    minWidth: 0,
   },
   progressBar: {
     marginVertical: 2,
