@@ -398,11 +398,10 @@ export function HeroPanel({
               </View>
               <TouchableOpacity
                 onPress={toggleStatusTooltip}
-                // @ts-expect-error - web hover support
+                // @ts-expect-error - web hover support (onMouseEnter/onMouseLeave)
                 onMouseEnter={() => {
                   if (!showStatusTooltip) toggleStatusTooltip();
                 }}
-                // @ts-expect-error - web hover support
                 onMouseLeave={() => {
                   if (showStatusTooltip) toggleStatusTooltip();
                 }}
