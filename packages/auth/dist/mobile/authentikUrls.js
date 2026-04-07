@@ -13,6 +13,12 @@ function shouldPreferBrowserOrigin(explicitRedirectUri, browserOrigin) {
     }
     try {
         const explicitUrl = new URL(explicitRedirectUri);
+        const browserUrl = new URL(normalizedBrowserOrigin);
+        // Local browser sessions should always finish on the active app origin,
+        // even if an explicit redirect env still points at testnet.
+        if (isLoopbackHostname(browserUrl.hostname)) {
+            return true;
+        }
         if (isLoopbackHostname(explicitUrl.hostname)) {
             return true;
         }
