@@ -9,7 +9,13 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.32](https://github.com/alternun-development/alternun/compare/v1.0.31...v1.0.32) (2026-04-07)
+export const CHANGELOG_TEXT = `## [1.0.33](https://github.com/alternun-development/alternun/compare/v1.0.32...v1.0.33) (2026-04-07)
+
+### Bug Fixes
+
+- improve tooltip positioning, time display, and visual polish ([7618e18](https://github.com/alternun-development/alternun/commit/7618e18))
+
+## [1.0.32](https://github.com/alternun-development/alternun/compare/v1.0.31...v1.0.32) (2026-04-07)
 
 ### Bug Fixes
 
