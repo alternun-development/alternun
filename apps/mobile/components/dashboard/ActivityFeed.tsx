@@ -15,6 +15,7 @@ import {
   UserPlus,
   Award,
   Gift,
+  SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
   type LucideProps,
@@ -27,6 +28,7 @@ const UserCheckIcon = UserCheck as React.FC<LucideProps>;
 const UserPlusIcon = UserPlus as React.FC<LucideProps>;
 const AwardIcon = Award as React.FC<LucideProps>;
 const GiftIcon = Gift as React.FC<LucideProps>;
+const AllIcon = SlidersHorizontal as React.FC<LucideProps>;
 const PrevIcon = ChevronLeft as React.FC<LucideProps>;
 const NextIcon = ChevronRight as React.FC<LucideProps>;
 
@@ -158,12 +160,12 @@ const TYPE_LABELS: Record<ActivityType, string> = {
 };
 
 const FILTERS: SearchFilterOption[] = [
-  { key: 'all', label: 'Todos' },
-  { key: 'compensation', label: 'Compensación' },
-  { key: 'purchase', label: 'Compra' },
-  { key: 'profile', label: 'Perfil' },
-  { key: 'account', label: 'Cuenta' },
-  { key: 'reward', label: 'Recompensa' },
+  { key: 'all', label: 'Todos', icon: AllIcon },
+  { key: 'compensation', label: 'Compensación', icon: LeafIcon },
+  { key: 'purchase', label: 'Compra', icon: CartIcon },
+  { key: 'profile', label: 'Perfil', icon: UserCheckIcon },
+  { key: 'account', label: 'Cuenta', icon: UserPlusIcon },
+  { key: 'reward', label: 'Recompensa', icon: GiftIcon },
 ];
 
 function getIcon(type: ActivityType, color: string): React.ReactNode {
@@ -437,6 +439,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 24,
     paddingBottom: 8,
+    position: 'relative',
+    zIndex: 20,
   },
   sectionHeader: {
     flexDirection: 'row',
