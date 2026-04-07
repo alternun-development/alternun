@@ -334,6 +334,8 @@ Important behavior:
 - production identity defaults to ALB + ACM, with the ALB terminating TLS and forwarding HTTPS to the instance
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google social source + Supabase OIDC application/provider
 - the default internal application tile falls back to the stage-specific admin dashboard origin, so it opens the dashboard instead of the Authentik library unless you override `INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL`
+- the dedicated identity pipelines intentionally leave `INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL` unset so the internal tile keeps that admin-dashboard fallback; only the mobile tile should point at the AIRS auth entrypoint
+- the Docs CMS Authentik application tile now points at the configured docs `/admin` entry route so its Google relay starts from the app instead of the Authentik library
 - non-production identity stages promote any authenticated social-login user to `internal`, so testnet signup reaches the interface; production stays on the `alternun.io` domain gate
 - the Google source bootstrap binds a username-mapping policy to `default-source-enrollment-prompt`, so first-time Google enrollments reuse the upstream email as the username and skip the manual Authentik username screen
 - the `Alternun Mobile` Authentik application tile defaults to the stage-specific AIRS auth entrypoint (`/auth?next=/`) so the tile opens the app instead of the Authentik library

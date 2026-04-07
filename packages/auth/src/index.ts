@@ -62,6 +62,7 @@ export {
 
 export {
   buildAuthentikOAuthFlowStartUrl,
+  buildAuthentikLoginEntryUrl,
   isAuthentikConfigured,
   hasPendingAuthentikCallback,
   startAuthentikOAuthFlow,
@@ -86,6 +87,7 @@ export {
   validateAuthentikConfig,
   validateFullConfig,
   type AlternunAuthentikOAuthFlowOptions,
+  type BuildAuthentikLoginEntryUrlInput,
   type OidcClaims,
   type OidcSession,
   type OidcProvider,

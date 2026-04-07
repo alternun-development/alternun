@@ -3,14 +3,16 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from './components/app-shell';
 import { ForbiddenPage } from './components/forbidden-page';
 import { AuthCallbackPage } from './pages/auth/callback-page';
+import { AuthRelayPage } from './pages/auth/relay-page';
 import { DashboardPage } from './pages/dashboard/page';
 import { LoginPage } from './pages/login/page';
 import { ResourceListPage } from './pages/resources/resource-list-page';
 import { ResourceShowPage } from './pages/resources/resource-show-page';
 import { adminResources } from './resources/catalog';
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function AdminRouter() {
-  const dataResources = adminResources.filter(resource => resource.name !== 'dashboard');
+  const dataResources = adminResources.filter((resource) => resource.name !== 'dashboard');
 
   return (
     <BrowserRouter>
@@ -24,6 +26,7 @@ export function AdminRouter() {
           }
         />
         <Route path='/auth/callback' element={<AuthCallbackPage />} />
+        <Route path='/auth/relay' element={<AuthRelayPage />} />
 
         <Route
           element={
@@ -42,7 +45,7 @@ export function AdminRouter() {
             }
           />
 
-          {dataResources.map(resource => (
+          {dataResources.map((resource) => (
             <Route
               key={`${resource.name}-list`}
               path={resource.list}
@@ -55,8 +58,8 @@ export function AdminRouter() {
           ))}
 
           {dataResources
-            .filter(resource => resource.show)
-            .map(resource => (
+            .filter((resource) => resource.show)
+            .map((resource) => (
               <Route
                 key={`${resource.name}-show`}
                 path={resource.show}

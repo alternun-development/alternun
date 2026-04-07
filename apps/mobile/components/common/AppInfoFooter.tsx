@@ -14,6 +14,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { ChangelogDrawer } from '@alternun/ui';
+import SupportButton from './SupportButton';
 import { createTypographyStyles } from '../theme/typography';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -50,7 +51,7 @@ export default function AppInfoFooter(): React.JSX.Element {
 
   useEffect(() => {
     if (motionLevel === 'off') return;
-    const makeFloat = (duration: number) =>
+    const makeFloat = (duration: number): ReturnType<typeof withRepeat> =>
       withRepeat(
         withSequence(
           withTiming(1, { duration, easing: Easing.inOut(Easing.sin) }),
@@ -266,12 +267,15 @@ export default function AppInfoFooter(): React.JSX.Element {
           ]}
         >
           <FooterCopyright color={palette.title} />
-          <ChangelogDrawer
-            changelog={changelogContent}
-            githubUrl={GITHUB_REPO_URL}
-            pageSize={3}
-            triggerLabel={`v${versionMetadata.version}`}
-          />
+          <View style={styles.bottomRightSection}>
+            <SupportButton supportEmail='support@alternun.co' palette={palette} />
+            <ChangelogDrawer
+              changelog={changelogContent}
+              githubUrl={GITHUB_REPO_URL}
+              pageSize={3}
+              triggerLabel={`v${versionMetadata.version}`}
+            />
+          </View>
         </View>
       </View>
     </View>
@@ -398,7 +402,6 @@ const styles = createTypographyStyles({
     gap: 4,
     flexShrink: 0,
   },
-
   /* Bottom bar */
   bottomBar: {
     marginTop: 12,
@@ -425,5 +428,10 @@ const styles = createTypographyStyles({
     fontSize: 10,
     fontWeight: '600',
     letterSpacing: 0.3,
+  },
+  bottomRightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 });

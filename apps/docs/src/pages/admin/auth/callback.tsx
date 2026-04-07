@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import { createDocsCmsUserManager, canAccessCms } from '../../../cms/auth';
 import { useDocsCmsConfig } from '../../../cms/site-config';
@@ -13,7 +14,7 @@ export default function DocsCmsAuthCallbackPage(): JSX.Element {
 
     void userManager
       .signinRedirectCallback()
-      .then(async user => {
+      .then(async (user) => {
         if (disposed) {
           return;
         }
@@ -26,7 +27,15 @@ export default function DocsCmsAuthCallbackPage(): JSX.Element {
           return;
         }
 
-        window.location.replace('/admin');
+        const returnTo =
+          typeof user.state === 'object' &&
+          user.state !== null &&
+          'returnTo' in user.state &&
+          typeof user.state.returnTo === 'string'
+            ? user.state.returnTo
+            : '/admin';
+
+        window.location.replace(returnTo);
       })
       .catch((error: unknown) => {
         if (disposed) {

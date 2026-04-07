@@ -35,7 +35,9 @@ function RootApp(): React.JSX.Element {
     pathname !== '/auth' &&
     pathname !== '/auth-relay' &&
     pathname !== '/auth/callback' &&
-    pathname !== '/';
+    pathname !== '/' &&
+    pathname !== '/privacy' &&
+    pathname !== '/terms';
 
   return (
     <AppAuthProvider>
@@ -105,6 +107,14 @@ function RootApp(): React.JSX.Element {
               />
               <Stack.Screen
                 name='wallet'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='privacy'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='terms'
                 options={{ headerShown: false, animation: 'slide_from_right' }}
               />
             </Stack>

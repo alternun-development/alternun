@@ -119,6 +119,38 @@ export function PillRowSkeleton({ count = 4 }: { count?: number }) {
   );
 }
 
+/** Full skeleton for HeroPanel (matches HeroPanel layout) */
+export function HeroPanelSkeleton() {
+  return (
+    <View style={styles.heroPanelSkeleton}>
+      {/* Greeting */}
+      <SkeletonLoader width='60%' height={24} borderRadius={6} style={{ marginBottom: 8 }} />
+
+      {/* Subtitle */}
+      <SkeletonLoader width='80%' height={13} borderRadius={4} style={{ marginBottom: 20 }} />
+
+      {/* Score row: brand mark + score */}
+      <View style={styles.scoreRowSkeleton}>
+        <SkeletonLoader width={36} height={36} borderRadius={18} />
+        <SkeletonLoader width={160} height={52} borderRadius={8} />
+      </View>
+
+      {/* Tier badge */}
+      <SkeletonLoader width={130} height={30} borderRadius={999} style={{ marginBottom: 16 }} />
+
+      {/* Divider */}
+      <SkeletonLoader width='100%' height={1} style={{ marginBottom: 16 }} />
+
+      {/* Progress section */}
+      <View style={styles.progressSectionSkeleton}>
+        <SkeletonLoader width='70%' height={13} borderRadius={4} style={{ marginBottom: 8 }} />
+        <SkeletonLoader width='100%' height={7} borderRadius={4} style={{ marginBottom: 8 }} />
+        <SkeletonLoader width='90%' height={11} borderRadius={4} />
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   wrapper: {
     overflow: 'hidden',
@@ -155,5 +187,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginBottom: 12,
+  },
+  heroPanelSkeleton: {
+    gap: 8,
+  },
+  scoreRowSkeleton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+  },
+  progressSectionSkeleton: {
+    gap: 8,
   },
 });

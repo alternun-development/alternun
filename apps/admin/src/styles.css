@@ -339,6 +339,12 @@ select {
   margin: 1.5rem 0;
 }
 
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .auth-methods {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

@@ -559,6 +559,7 @@ docs_cms_oidc_client_id = read_env(
     "ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_CLIENT_ID", "alternun-docs-cms"
 )
 docs_cms_oidc_client_secret = read_env("ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_CLIENT_SECRET")
+docs_cms_oidc_launch_url = read_env("ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_LAUNCH_URL")
 docs_cms_oidc_redirect_urls = read_list_env(
     "ALTERNUN_BOOTSTRAP_DOCS_CMS_OIDC_REDIRECT_URLS"
 )
@@ -914,6 +915,7 @@ if docs_cms_oidc_application_slug and docs_cms_oidc_client_id and docs_cms_oidc_
         defaults={
             "name": docs_cms_oidc_application_name,
             "provider": provider,
+            "meta_launch_url": docs_cms_oidc_launch_url,
         },
     )
 
@@ -923,6 +925,13 @@ if docs_cms_oidc_application_slug and docs_cms_oidc_client_id and docs_cms_oidc_
         application_changed = True
     if application.provider_id != provider.pk:
         application.provider = provider
+        application_changed = True
+    if (
+        docs_cms_oidc_launch_url
+        and hasattr(application, "meta_launch_url")
+        and application.meta_launch_url != docs_cms_oidc_launch_url
+    ):
+        application.meta_launch_url = docs_cms_oidc_launch_url
         application_changed = True
 
     if application_created or application_changed:

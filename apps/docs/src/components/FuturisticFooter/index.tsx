@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import ChangelogDrawerWeb from '../ChangelogDrawerWeb';
+import SupportButtonWeb from '../SupportButtonWeb';
 import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 import styles from './styles.module.css';
 
@@ -235,14 +236,17 @@ const FuturisticFooter = (): React.JSX.Element => {
                       <span className={styles.techBadge}>{translations.poweredBy}</span>
                     </div>
                   </div>
-                  {changelogContent && changelogContent.trim().length > 0 && (
-                    <ChangelogDrawerWeb
-                      changelog={changelogContent}
-                      githubUrl={GITHUB_REPO_URL}
-                      pageSize={3}
-                      triggerLabel='v1.0.18'
-                    />
-                  )}
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <SupportButtonWeb supportEmail='support@alternun.co' />
+                    {changelogContent && changelogContent.trim().length > 0 && (
+                      <ChangelogDrawerWeb
+                        changelog={changelogContent}
+                        githubUrl={GITHUB_REPO_URL}
+                        pageSize={3}
+                        triggerLabel='v1.0.18'
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
