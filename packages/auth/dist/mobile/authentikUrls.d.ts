@@ -9,6 +9,13 @@ export interface BuildAuthentikOAuthFlowStartUrlInput {
   providerFlowSlugs?: Record<string, string>;
   providerSourceSlugs?: Record<string, string>;
 }
+export interface BuildAuthentikLoginEntryUrlInput {
+  issuer: string;
+  authorizeUrl: string;
+  providerHint?: string | null;
+  providerFlowSlugs?: Record<string, string | undefined>;
+  providerSourceSlugs?: Record<string, string | undefined>;
+}
 export declare const DEFAULT_AUTHENTIK_CLIENT_ID = 'alternun-mobile';
 export declare const AUTHENTIK_WEB_CALLBACK_PATH = '/auth/callback';
 export declare function buildAuthentikWebCallbackUrl(
@@ -28,6 +35,13 @@ export declare function resolveAuthentikRedirectUri(
   browserOrigin?: string | null
 ): string | undefined;
 export declare function getAuthentikEndpointBaseFromIssuer(issuer: string): string;
+export declare function buildAuthentikLoginEntryUrl({
+  issuer,
+  authorizeUrl,
+  providerHint,
+  providerFlowSlugs,
+  providerSourceSlugs,
+}: BuildAuthentikLoginEntryUrlInput): string;
 export declare function buildAuthentikOAuthFlowStartUrl({
   providerHint,
   issuer,

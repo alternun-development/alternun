@@ -16,7 +16,7 @@ import '../global.css';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 void SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout(): any {
+export default function RootLayout(): React.JSX.Element {
   const [loaded] = useFonts({
     // Expo expects a bundled asset module reference here.
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -30,7 +30,7 @@ export default function RootLayout(): any {
   );
 }
 
-function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): any {
+function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
   const { themeMode } = useAppPreferences();
   const navigationTheme = themeMode === 'dark' ? DarkTheme : DefaultTheme;
   const handleLayout = useCallback(() => {
@@ -106,6 +106,14 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): any {
               />
               <Stack.Screen
                 name='wallet'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='privacy'
+                options={{ headerShown: false, animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name='terms'
                 options={{ headerShown: false, animation: 'slide_from_right' }}
               />
             </Stack>

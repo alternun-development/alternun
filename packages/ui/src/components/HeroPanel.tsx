@@ -17,10 +17,12 @@
  */
 
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RotateCcw, type LucideProps } from 'lucide-react-native';
 import { palette } from '../tokens/colors';
 import { fontSize, radius, spacing } from '../tokens/spacing';
 import { ProgressBar } from './ProgressBar';
+import { HeroPanelSkeleton } from './SkeletonLoader';
 import { ThemeProvider } from '../theme/ThemeContext';
 
 // ─── Tier system ──────────────────────────────────────────────────────────────
@@ -99,6 +101,8 @@ export interface HeroPanelProps {
   score: number | null;
   /** Renders skeleton-safe placeholders when true. */
   isLoading?: boolean;
+  /** Called when user taps the reload button (top-right). If not provided, no reload button is shown. */
+  onReload?: () => void;
   /** Hides score / tier when user is not signed in. */
   previewMode?: boolean;
   /** ISO date string for the "last updated" line. */
@@ -116,7 +120,8 @@ export interface HeroPanelProps {
 export function HeroPanel({
   displayName,
   score,
-  isLoading: _isLoading = false,
+  isLoading = false,
+  onReload,
   previewMode = false,
   updatedAt: _updatedAt,
   brandMark,
@@ -146,6 +151,7 @@ export function HeroPanel({
   // ─── Orb float animations ─────────────────────────────────────────────────
   const orbTR = useRef(new Animated.Value(0)).current;
   const orbBL = useRef(new Animated.Value(0)).current;
+  const reloadRotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!animateOrbs) return;
@@ -178,6 +184,25 @@ export function HeroPanel({
     };
   }, [orbTR, orbBL, animateOrbs]);
 
+  // Reload button spin animation
+  useEffect(() => {
+    if (!isLoading) {
+      reloadRotation.setValue(0);
+      return;
+    }
+
+    const spin = Animated.loop(
+      Animated.timing(reloadRotation, {
+        toValue: 1,
+        duration: 800,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    spin.start();
+    return () => spin.stop();
+  }, [isLoading, reloadRotation]);
+
   const orbTRStyle = {
     transform: [
       { translateX: orbTR.interpolate({ inputRange: [0, 1], outputRange: [0, -22] }) },
@@ -192,6 +217,20 @@ export function HeroPanel({
     ],
   };
 
+  const reloadRotateStyle = {
+    transform: [
+      {
+        rotate: reloadRotation.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['0deg', '360deg'],
+        }),
+      },
+    ],
+  };
+
+  // Cast icon for React Native compatibility
+  const ReloadIcon = RotateCcw as React.FC<LucideProps>;
+
   return (
     <ThemeProvider mode={isDark ? 'dark' : 'light'}>
       <View style={[styles.container, { backgroundColor: heroBg }]}>
@@ -205,65 +244,89 @@ export function HeroPanel({
           style={[styles.orbBL, { backgroundColor: orbB }, orbBLStyle]}
         />
 
-        {/* Greeting */}
-        {firstName ? (
-          <Text style={[styles.greeting, { color: textPrimary }]}>{`Hola, ${firstName}`}</Text>
-        ) : null}
-
-        <Text style={[styles.subtitle, { color: textMuted }]}>Tu puntuación regenerativa es:</Text>
-
-        {/* Score row */}
-        <View style={styles.scoreRow}>
-          {brandMark ?? <View style={[styles.defaultMark, { borderColor: accentColor }]} />}
-          <Text
-            style={[styles.scoreValue, { color: textPrimary }]}
-            numberOfLines={1}
-            adjustsFontSizeToFit
+        {/* Reload button (top-right) — shown when onReload is provided */}
+        {onReload && (
+          <TouchableOpacity
+            style={styles.reloadButton}
+            onPress={onReload}
+            disabled={isLoading}
+            accessibilityRole='button'
+            accessibilityLabel='Recargar puntuación'
           >
-            {score != null ? fmtScore(safeScore) : '—'}
-          </Text>
-        </View>
-
-        {/* Tier badge */}
-        <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
-          <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
-          <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
-            {`Status ${tierSpec.label.toUpperCase()}`}
-          </Text>
-        </View>
-
-        <View style={[styles.divider, { backgroundColor: divider }]} />
-
-        {/* Progress to next tier */}
-        {tierSpec.max != null && tierSpec.next != null && !previewMode && score != null && (
-          <View style={styles.progressSection}>
-            <View style={styles.progressLabelRow}>
-              <Text style={[styles.progressLeft, { color: textPrimary }]} numberOfLines={1}>
-                {`Progreso a ${tierSpec.nextLabel} — ${Math.round(progressPct * 100)}%`}
-              </Text>
-              <Text style={[styles.progressRight, { color: textMuted }]} numberOfLines={1}>
-                {`${fmtScore(safeScore)} / ${fmtScore(tierSpec.max)} Airs`}
-              </Text>
-            </View>
-            <ProgressBar
-              progress={progressPct}
-              color={tierSpec.color}
-              height={7}
-              style={styles.progressBar}
-            />
-            <Text style={[styles.progressHint, { color: textMuted }]}>
-              {`Te faltan ${fmtScore(tierSpec.max - safeScore)} Airs para alcanzar ${
-                tierSpec.nextLabel
-              } y desbloquear beneficios exclusivos`}
-            </Text>
-          </View>
+            <Animated.View style={[reloadRotateStyle]}>
+              <ReloadIcon size={18} color={accentColor} strokeWidth={2} />
+            </Animated.View>
+          </TouchableOpacity>
         )}
 
-        {/* Platinum — max tier */}
-        {tierSpec.max == null && !previewMode && score != null && (
-          <Text style={[styles.progressHint, { color: tierSpec.color }]}>
-            Has alcanzado el nivel máximo Platinum
-          </Text>
+        {/* Loading skeleton or real content */}
+        {isLoading ? (
+          <HeroPanelSkeleton />
+        ) : (
+          <>
+            {/* Greeting */}
+            {firstName ? (
+              <Text style={[styles.greeting, { color: textPrimary }]}>{`Hola, ${firstName}`}</Text>
+            ) : null}
+
+            <Text style={[styles.subtitle, { color: textMuted }]}>
+              Tu puntuación regenerativa es:
+            </Text>
+
+            {/* Score row */}
+            <View style={styles.scoreRow}>
+              {brandMark ?? <View style={[styles.defaultMark, { borderColor: accentColor }]} />}
+              <Text
+                style={[styles.scoreValue, { color: textPrimary }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+              >
+                {score != null ? fmtScore(safeScore) : '—'}
+              </Text>
+            </View>
+
+            {/* Tier badge */}
+            <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
+              <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
+              <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
+                {`Status ${tierSpec.label.toUpperCase()}`}
+              </Text>
+            </View>
+
+            <View style={[styles.divider, { backgroundColor: divider }]} />
+
+            {/* Progress to next tier */}
+            {tierSpec.max != null && tierSpec.next != null && !previewMode && score != null && (
+              <View style={styles.progressSection}>
+                <View style={styles.progressLabelRow}>
+                  <Text style={[styles.progressLeft, { color: textPrimary }]} numberOfLines={1}>
+                    {`Progreso a ${tierSpec.nextLabel} — ${Math.round(progressPct * 100)}%`}
+                  </Text>
+                  <Text style={[styles.progressRight, { color: textMuted }]} numberOfLines={1}>
+                    {`${fmtScore(safeScore)} / ${fmtScore(tierSpec.max)} Airs`}
+                  </Text>
+                </View>
+                <ProgressBar
+                  progress={progressPct}
+                  color={tierSpec.color}
+                  height={7}
+                  style={styles.progressBar}
+                />
+                <Text style={[styles.progressHint, { color: textMuted }]}>
+                  {`Te faltan ${fmtScore(tierSpec.max - safeScore)} Airs para alcanzar ${
+                    tierSpec.nextLabel
+                  } y desbloquear beneficios exclusivos`}
+                </Text>
+              </View>
+            )}
+
+            {/* Platinum — max tier */}
+            {tierSpec.max == null && !previewMode && score != null && (
+              <Text style={[styles.progressHint, { color: tierSpec.color }]}>
+                Has alcanzado el nivel máximo Platinum
+              </Text>
+            )}
+          </>
         )}
       </View>
     </ThemeProvider>
@@ -281,6 +344,22 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
     borderRadius: 20,
+  },
+
+  /* Reload button — top-right corner */
+  reloadButton: {
+    position: 'absolute',
+    top: spacing[4],
+    right: spacing[4],
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
   },
 
   /* Ambient orbs — top-right + bottom-left (mirrored vs footer) */

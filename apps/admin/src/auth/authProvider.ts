@@ -6,6 +6,7 @@ import {
   getAdminRolesFromSession,
   oidcClient,
 } from './oidc-client';
+import { buildAdminAuthentikRelayPath } from './authentikRelay';
 
 function currentReturnTo(): string {
   if (typeof window === 'undefined') {
@@ -17,13 +18,20 @@ function currentReturnTo(): string {
 }
 
 export const authProvider: AuthProvider = {
-  login: async () => {
+  login: async (params?: { provider?: 'google' | 'password' }) => {
     const session = await getActiveAdminSession();
 
     if (session && canAccessAdminDashboard(session)) {
       return {
         success: true,
         redirectTo: '/dashboard',
+      };
+    }
+
+    if (params?.provider === 'google' && typeof window !== 'undefined') {
+      window.location.assign(buildAdminAuthentikRelayPath('google', currentReturnTo()));
+      return {
+        success: true,
       };
     }
 
