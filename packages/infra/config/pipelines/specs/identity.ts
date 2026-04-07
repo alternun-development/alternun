@@ -18,6 +18,7 @@ export function buildIdentityPipelineSpecs({
     '';
   const googleAuthClientSecretKey = 'INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET';
   const devGoogleLoginFlowSlug = resolveDevGoogleLoginFlowSlug(env);
+  const clearedDefaultApplicationLaunchUrl = '';
 
   return {
     'identity-dev': {
@@ -43,6 +44,7 @@ export function buildIdentityPipelineSpecs({
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
         INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
         INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: devGoogleLoginFlowSlug,
+        INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL: clearedDefaultApplicationLaunchUrl,
         [googleAuthClientSecretKey]: googleAuthClientSecret,
       }),
     },
@@ -66,6 +68,7 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
         INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
+        INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL: clearedDefaultApplicationLaunchUrl,
         [googleAuthClientSecretKey]: googleAuthClientSecret,
       }),
     },

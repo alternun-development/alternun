@@ -6,8 +6,6 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
 import { RandomPassword } from '@pulumi/random';
-import { readFileSync } from 'node:fs';
-import { resolve as resolvePath } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { buildStageDomains } from '../config/infrastructure-specs.js';
 import type { IdentityDatabaseMode, IdentitySettings } from './identity.js';
@@ -111,25 +109,6 @@ const ARM_INSTANCE_PREFIXES = [
   't4g.',
   'x2gd.',
 ];
-
-function readIdentityTemplate(fileName: string): string {
-  const runtimePath = resolvePath(process.cwd(), 'scripts', 'templates', fileName);
-  try {
-    return readFileSync(runtimePath, 'utf8').trimEnd();
-  } catch {
-    const sourcePath = new URL(`../scripts/templates/${fileName}`, import.meta.url);
-    return readFileSync(sourcePath, 'utf8').trimEnd();
-  }
-}
-
-const DEPLOY_AUTHENTIK_SCRIPT_TEMPLATE = readIdentityTemplate('deploy-authentik.sh');
-const DOCKER_COMPOSE_EC2_ROUTE53_TEMPLATE = readIdentityTemplate('docker-compose.ec2.yml');
-const DOCKER_COMPOSE_RDS_ROUTE53_TEMPLATE = readIdentityTemplate('docker-compose.rds.yml');
-const DOCKER_COMPOSE_EC2_ALB_TEMPLATE = readIdentityTemplate('docker-compose.ec2.alb.yml');
-const DOCKER_COMPOSE_RDS_ALB_TEMPLATE = readIdentityTemplate('docker-compose.rds.alb.yml');
-const AUTHENTIK_INTEGRATION_BOOTSTRAP_SCRIPT_TEMPLATE = readIdentityTemplate(
-  'bootstrap-authentik-integrations.py'
-);
 
 function isArmInstanceType(instanceType: string): boolean {
   return ARM_INSTANCE_PREFIXES.some((prefix) => instanceType.startsWith(prefix));
@@ -323,13 +302,6 @@ fi
 
 docker compose version
 
-install -d -o ec2-user -g ec2-user /opt/alternun/identity
-install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik
-install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/data
-install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/certs
-install -d -o ec2-user -g ec2-user /opt/alternun/identity/authentik/custom-templates
-install -d -o ec2-user -g ec2-user /opt/alternun/identity/templates
-
 cat >/etc/alternun-identity.env <<'ENVEOF'
 ALTERNUN_APP_NAME=${args.appName}
 ALTERNUN_ROOT_DOMAIN=${args.rootDomain}
@@ -354,42 +326,6 @@ ENVEOF
 chmod 0600 /etc/alternun-identity.env
 chown root:root /etc/alternun-identity.env
 
-cat >/opt/alternun/identity/deploy-authentik.sh <<'SCRIPTEOF'
-${DEPLOY_AUTHENTIK_SCRIPT_TEMPLATE}
-SCRIPTEOF
-
-cat >/opt/alternun/identity/templates/docker-compose.ec2.yml <<'COMPOSEEC2EOF'
-${DOCKER_COMPOSE_EC2_ROUTE53_TEMPLATE}
-COMPOSEEC2EOF
-
-cat >/opt/alternun/identity/templates/docker-compose.rds.yml <<'COMPOSERDSEOF'
-${DOCKER_COMPOSE_RDS_ROUTE53_TEMPLATE}
-COMPOSERDSEOF
-
-cat >/opt/alternun/identity/templates/docker-compose.ec2.alb.yml <<'COMPOSEEC2ALBEOF'
-${DOCKER_COMPOSE_EC2_ALB_TEMPLATE}
-COMPOSEEC2ALBEOF
-
-cat >/opt/alternun/identity/templates/docker-compose.rds.alb.yml <<'COMPOSERDSALBEOF'
-${DOCKER_COMPOSE_RDS_ALB_TEMPLATE}
-COMPOSERDSALBEOF
-
-cat >/opt/alternun/identity/templates/bootstrap-authentik-integrations.py <<'BOOTSTRAPEOF'
-${AUTHENTIK_INTEGRATION_BOOTSTRAP_SCRIPT_TEMPLATE}
-BOOTSTRAPEOF
-
-chmod 0755 /opt/alternun/identity/deploy-authentik.sh
-chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml
-chmod 0644 /opt/alternun/identity/templates/docker-compose.rds.yml
-chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.alb.yml
-chmod 0644 /opt/alternun/identity/templates/docker-compose.rds.alb.yml
-chmod 0644 /opt/alternun/identity/templates/bootstrap-authentik-integrations.py
-chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml
-chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.rds.yml
-chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.alb.yml
-chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.rds.alb.yml
-chown ec2-user:ec2-user /opt/alternun/identity/templates/bootstrap-authentik-integrations.py
-
 cat >/etc/systemd/system/alternun-authentik.service <<'SERVICEEOF'
 [Unit]
 Description=Alternun Authentik Runtime
@@ -409,7 +345,7 @@ WantedBy=multi-user.target
 SERVICEEOF
 
 systemctl daemon-reload
-systemctl enable --now alternun-authentik.service
+systemctl enable alternun-authentik.service
 `
     );
 }
@@ -1157,6 +1093,9 @@ export function deployIdentityInfrastructure(
   let identityTargetGroup: aws.lb.TargetGroup | undefined;
 
   if (useAlbIngress) {
+    const identityTargetGroupName = `${resourceBaseName}-tg`;
+    const identityLoadBalancerName = `${resourceBaseName}-alb`;
+
     identityTargetGroup = new aws.lb.TargetGroup(`${resourceBaseName}-tg`, {
       deregistrationDelay: 30,
       healthCheck: {
@@ -1170,6 +1109,7 @@ export function deployIdentityInfrastructure(
         timeout: 5,
         unhealthyThreshold: 3,
       },
+      name: identityTargetGroupName,
       port: 443,
       protocol: 'HTTPS',
       targetType: 'instance',
@@ -1193,6 +1133,7 @@ export function deployIdentityInfrastructure(
         idleTimeout: args.settings.ingress.alb.idleTimeoutSeconds,
         internal: false,
         loadBalancerType: 'application',
+        name: identityLoadBalancerName,
         securityGroups: [loadBalancerSecurityGroup!.id],
         subnets: publicSubnetIds,
         tags: {
