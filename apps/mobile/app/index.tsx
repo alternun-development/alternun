@@ -8,7 +8,7 @@ import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 export default function HomeScreen(): React.JSX.Element {
-  const { user, loading, signIn, signOutUser } = useAuth();
+  const { user, loading, signIn, signOutUser, refresh } = useAuth();
   const { showAirsIntro, setShowAirsIntro } = useAppPreferences();
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
@@ -50,6 +50,9 @@ export default function HomeScreen(): React.JSX.Element {
   return (
     <Dashboard
       user={user ?? null}
+      isLoading={loading}
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      onReload={refresh}
       onRequireSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
       onOpenProfilePage={() => router.push('/profile')}
       onOpenSettingsPage={() => router.push('/settings')}

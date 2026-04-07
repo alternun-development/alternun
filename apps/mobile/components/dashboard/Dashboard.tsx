@@ -24,6 +24,8 @@ interface DashboardProps {
   user: User | null;
   /** When true the hero stats and section headers render as skeletons */
   isLoading?: boolean;
+  /** Called when user taps the reload button in HeroStats */
+  onReload?: () => void;
   onRequireSignIn: () => void;
   onOpenProfilePage: () => void;
   onOpenSettingsPage: () => void;
@@ -267,6 +269,7 @@ function getAuthMethodLabel(user: User | null): string {
 export default function Dashboard({
   user,
   isLoading = false,
+  onReload,
   onRequireSignIn,
   onOpenProfilePage,
   onOpenSettingsPage,
@@ -387,6 +390,7 @@ export default function Dashboard({
                 tokensHeld={userStats ? userStats.tokensHeld : null}
                 compensationsCompleted={userStats ? userStats.compensationsCompleted : null}
                 isLoading={isLoading}
+                onReload={onReload}
                 previewMode={!user}
                 isDark={isDark}
                 displayName={profileInfo.displayName}
