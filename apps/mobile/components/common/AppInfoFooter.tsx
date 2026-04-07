@@ -33,6 +33,7 @@ import {
   ALTERNUN_POWERED_BY_LOGO,
   FooterCopyright,
   FooterTextLink,
+  FooterTopFade,
   SocialPill,
   SOCIAL_LINKS,
   resolveVersionMetadata,
@@ -94,8 +95,9 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
 
   const palette = isDark
     ? {
-        shellBg: motionLevel === 'off' ? 'rgba(6,18,17,0.60)' : 'rgba(6, 18, 17, 0.46)',
-        shellBorder: 'rgba(142, 255, 223, 0.24)',
+        shellBodyBg: motionLevel === 'off' ? 'rgba(6,18,17,0.58)' : 'rgba(6, 18, 17, 0.46)',
+        shellTopBg: motionLevel === 'off' ? 'rgba(6,18,17,0.16)' : 'rgba(6, 18, 17, 0.08)',
+        shellBorder: 'rgba(142, 255, 223, 0.16)',
         glowA: 'rgba(30, 230, 181, 0.16)',
         glowB: 'rgba(98, 208, 255, 0.12)',
         title: '#effff9',
@@ -108,8 +110,9 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
         bottomBar: 'rgba(0,0,0,0.12)',
       }
     : {
-        shellBg: motionLevel === 'off' ? 'rgba(245,255,252,0.84)' : 'rgba(245, 255, 252, 0.72)',
-        shellBorder: 'rgba(11, 90, 95, 0.16)',
+        shellBodyBg: motionLevel === 'off' ? 'rgba(245,255,252,0.84)' : 'rgba(245, 255, 252, 0.72)',
+        shellTopBg: motionLevel === 'off' ? 'rgba(245,255,252,0.22)' : 'rgba(245, 255, 252, 0.12)',
+        shellBorder: 'rgba(11, 90, 95, 0.10)',
         glowA: 'rgba(30, 230, 181, 0.12)',
         glowB: 'rgba(11, 90, 95, 0.08)',
         title: '#0b2d31',
@@ -123,6 +126,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
       };
 
   const shellPadding = isWide ? 8 : isMobile ? 6 : 9;
+  const shellRevealHeight = isWide ? 18 : isMobile ? 12 : 14;
   const brandMarkSize = isWide ? 34 : isMobile ? 26 : 30;
   const wordmarkWidth = isWide ? 84 : isMobile ? 64 : 76;
   const wordmarkHeight = isWide ? 28 : isMobile ? 20 : 24;
@@ -133,7 +137,6 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
         style={[
           styles.shell,
           {
-            backgroundColor: palette.shellBg,
             borderColor: palette.shellBorder,
             borderWidth: 1,
             padding: shellPadding,
@@ -142,14 +145,19 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
       >
         {motionLevel !== 'off' && (
           <BlurView
-            intensity={isWide ? 42 : 30}
+            intensity={isWide ? 48 : 34}
             tint={isDark ? 'dark' : 'light'}
             style={StyleSheet.absoluteFillObject}
           />
         )}
-        {motionLevel === 'off' && (
-          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: palette.shellBg }]} />
-        )}
+        <View
+          pointerEvents='none'
+          style={[
+            styles.shellSurfaceBody,
+            { top: shellRevealHeight, backgroundColor: palette.shellBodyBg },
+          ]}
+        />
+        <FooterTopFade height={shellRevealHeight} color={palette.shellTopBg} />
         {motionLevel === 'full' && (
           <ParticleBubbles color={isDark ? 'rgba(28,203,161,0.22)' : 'rgba(13,148,136,0.18)'} />
         )}
@@ -305,6 +313,18 @@ const styles = createTypographyStyles({
     position: 'relative',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+  },
+  shellSurfaceBody: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  shellSurfaceTop: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
   },
   glowOrb: {
     position: 'absolute',

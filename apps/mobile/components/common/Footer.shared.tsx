@@ -3,7 +3,8 @@ import Constants from 'expo-constants';
 import { Image as ExpoImage } from 'expo-image';
 import React from 'react';
 import { Instagram, Send, Twitter, Youtube } from 'lucide-react-native';
-import { Linking, Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native';
+import { Linking, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import mobilePackageJson from '../../package.json';
 import type { FooterPrimaryLink } from './AppInfoFooter.links';
 
@@ -187,6 +188,31 @@ export function FooterTextLink({
   );
 }
 
+export function FooterTopFade({
+  height,
+  color,
+}: {
+  height: number;
+  color: string;
+}): React.JSX.Element {
+  const gradientId = React.useId().replace(/[:]/g, '');
+
+  return (
+    <View pointerEvents='none' style={[styles.footerTopFade, { height }]}>
+      <Svg width='100%' height='100%' viewBox='0 0 100 100' preserveAspectRatio='none'>
+        <Defs>
+          <LinearGradient id={gradientId} x1='0' y1='0' x2='0' y2='1'>
+            <Stop offset='0%' stopColor={color} stopOpacity='0' />
+            <Stop offset='30%' stopColor={color} stopOpacity='0.04' />
+            <Stop offset='100%' stopColor={color} stopOpacity='0.92' />
+          </LinearGradient>
+        </Defs>
+        <Rect x='0' y='0' width='100' height='100' fill={`url(#${gradientId})`} />
+      </Svg>
+    </View>
+  );
+}
+
 export function FooterCopyright({ color }: { color: string }): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
   const footerYear = new Date().getFullYear();
@@ -253,6 +279,13 @@ const styles = StyleSheet.create({
   },
   textLinkTextPressed: {
     opacity: 0.7,
+  },
+  footerTopFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    overflow: 'hidden',
   },
   copyrightText: {
     fontSize: 11,
