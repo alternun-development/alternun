@@ -1,3 +1,25 @@
+## [1.0.30](https://github.com/alternun-development/alternun/compare/v1.0.29...v1.0.30) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile,auth,ui:** AppInfoFooter, Footer.shared, LandingFooter, Tooltip ([ed3db36](https://github.com/alternun-development/alternun/commit/ed3db36ee181dfdfbba7702217a962556146cbfa))
+- **release:** sync mobile changelog data ([8e103c7](https://github.com/alternun-development/alternun/commit/8e103c7ac331f277bdbc56d9165398c4634d2ad6))
+
+### Features
+
+- implement cross-platform tooltip system with status update info ([c37bcac](https://github.com/alternun-development/alternun/commit/c37bcac7a7b7c394c4da76dcafad174361a48f31))
+
+## [1.0.30](https://github.com/alternun-development/alternun/compare/v1.0.29...v1.0.30) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile,auth,ui:** AppInfoFooter, Footer.shared, LandingFooter, Tooltip ([ed3db36](https://github.com/alternun-development/alternun/commit/ed3db36ee181dfdfbba7702217a962556146cbfa))
+- **release:** sync mobile changelog data ([8e103c7](https://github.com/alternun-development/alternun/commit/8e103c7ac331f277bdbc56d9165398c4634d2ad6))
+
+### Features
+
+- implement cross-platform tooltip system with status update info ([c37bcac](https://github.com/alternun-development/alternun/commit/c37bcac7a7b7c394c4da76dcafad174361a48f31))
+
 ## [1.0.29](https://github.com/alternun-development/alternun/compare/v1.0.28...v1.0.29) (2026-04-07)
 
 ### Bug Fixes
