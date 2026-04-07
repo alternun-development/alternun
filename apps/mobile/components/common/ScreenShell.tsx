@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useRef, useCallback, useState } from 'react';
 import { View, StyleSheet, useWindowDimensions, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -125,6 +125,7 @@ export default function ScreenShell({
   const router = useRouter();
   const isDark = themeMode === 'dark';
   const isMobile = width < 720;
+  const [footerHeight, setFooterHeight] = useState(0);
 
   // Back-to-top state
   const scrollRefInternal = useRef<ScrollView>(null);
@@ -178,17 +179,24 @@ export default function ScreenShell({
           {/* Main content — paddingTop reserves space for the floating TopNav */}
           <View style={styles.body}>{children}</View>
 
-          {/* Back-to-top button */}
+          <View
+            style={styles.footerStack}
+            onLayout={(event) => {
+              setFooterHeight(event.nativeEvent.layout.height);
+            }}
+          >
+            <AppInfoFooter containerStyle={{ marginTop: 0 }} />
+          </View>
+
+          {/* Back-to-top button floats above the footer without shifting it upward. */}
           <BackToTopButton
             visible={showBackToTop}
             onPress={scrollToTop}
             isDark={isDark}
             isMobile={isMobile}
+            footerBottomOffset={isMobile ? footerHeight + 18 : undefined}
             bounceStyle={bounceStyle}
           />
-
-          {/* Footer pinned below content */}
-          <AppInfoFooter />
 
           {/* Floating TopNav — rendered last so it layers over content */}
           <View style={styles.floatingNav} pointerEvents='box-none'>
@@ -229,6 +237,9 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     paddingTop: 62, // space for the floating TopNav
+  },
+  footerStack: {
+    marginTop: 'auto',
   },
   floatingNav: {
     position: 'absolute',

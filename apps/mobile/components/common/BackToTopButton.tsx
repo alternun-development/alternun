@@ -9,11 +9,14 @@ const AnimatedView = Animated.View as unknown as React.FC<
   React.ComponentProps<typeof View> & { style?: ViewStyle }
 >;
 
+const DESKTOP_BOTTOM_OFFSET = 104;
+
 export interface BackToTopButtonProps {
   visible: boolean;
   onPress: () => void;
   isDark: boolean;
   isMobile: boolean;
+  footerBottomOffset?: number;
   bounceStyle?: ViewStyle;
 }
 
@@ -22,6 +25,7 @@ export function BackToTopButton({
   onPress,
   isDark,
   isMobile,
+  footerBottomOffset,
   bounceStyle,
 }: BackToTopButtonProps) {
   const { width } = useWindowDimensions();
@@ -38,10 +42,14 @@ export function BackToTopButton({
       // Tablet/Large mobile: 100px from bottom
       return 100;
     } else {
-      // Desktop: 24px from bottom
-      return 24;
+      // Desktop: keep the button above the footer row.
+      return DESKTOP_BOTTOM_OFFSET;
     }
   }, [width]);
+
+  const resolvedBottomPosition = footerBottomOffset
+    ? Math.max(bottomPosition, footerBottomOffset)
+    : bottomPosition;
 
   if (!visible) return null;
 
@@ -50,7 +58,7 @@ export function BackToTopButton({
       style={[
         styles.backToTopPill,
         isMobile ? styles.backToTopMobile : styles.backToTopDesktop,
-        { bottom: bottomPosition },
+        { bottom: resolvedBottomPosition },
         {
           backgroundColor: isDark ? '#0a1520' : '#0d2235',
           borderWidth: 1,
