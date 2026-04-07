@@ -492,9 +492,6 @@ importers:
 
   packages/ui:
     dependencies:
-      lucide-react-native:
-        specifier: '>=0.400.0'
-        version: 0.479.0(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@18.2.0))(react@18.2.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@18.2.0))(react@18.2.0)
       react:
         specifier: '>=18.2.0'
         version: 18.2.0
@@ -514,6 +511,9 @@ importers:
       '@types/react-native':
         specifier: ^0.71.6
         version: 0.71.13
+      lucide-react-native:
+        specifier: ^0.479.0
+        version: 0.479.0(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@18.2.0))(react@18.2.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@10.2.2(@babel/core@7.29.0)(bufferutil@4.1.0)(encoding@0.1.13))(@types/react@19.1.17)(bufferutil@4.1.0)(react@18.2.0))(react@18.2.0)
       typescript:
         specifier: ^5.0.4
         version: 5.5.4
@@ -26451,7 +26451,7 @@ snapshots:
       metro-babel-transformer: 0.73.10
       metro-cache: 0.73.10
       metro-cache-key: 0.73.10
-      metro-config: 0.73.10(bufferutil@4.1.0)(encoding@0.1.13)(utf-8-validate@6.0.6)
+      metro-config: 0.73.10(bufferutil@4.1.0)(encoding@0.1.13)
       metro-core: 0.73.10
       metro-file-map: 0.73.10
       metro-hermes-compiler: 0.73.10
