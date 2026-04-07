@@ -1,3 +1,17 @@
+## [1.0.25](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.25) (2026-04-07)
+
+### Features
+
+- add reload icon and skeleton loading to HeroPanel ([29e8902](https://github.com/alternun-development/alternun/commit/29e8902a7a263603548690e87be9b03643ba413e))
+- implement complete reload system with pull-to-refresh and visible reload button ([b78116b](https://github.com/alternun-development/alternun/commit/b78116bb35d07349a19a1e58669b660e02bec37e))
+
+## [1.0.25](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.25) (2026-04-07)
+
+### Features
+
+- add reload icon and skeleton loading to HeroPanel ([29e8902](https://github.com/alternun-development/alternun/commit/29e8902a7a263603548690e87be9b03643ba413e))
+- implement complete reload system with pull-to-refresh and visible reload button ([b78116b](https://github.com/alternun-development/alternun/commit/b78116bb35d07349a19a1e58669b660e02bec37e))
+
 ## [1.0.25-dev.1](https://github.com/alternun-development/alternun/compare/v1.0.25...v1.0.25-dev.1) (2026-04-06)
 
 ### Bug Fixes

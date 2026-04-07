@@ -1,6 +1,6 @@
 {
   "name": "@alternun/ui",
-  "version": "1.0.25-dev.1",
+  "version": "1.0.25",
   "description": "Common UI components for Alternun",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,6 +13,7 @@
     "@types/react": "^19.1.17",
     "@types/react-dom": "^19.1.17",
     "@types/react-native": "^0.71.6",
+    "lucide-react-native": "^0.479.0",
     "typescript": "^5.0.4"
   },
   "peerDependencies": {
