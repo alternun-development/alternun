@@ -1,3 +1,15 @@
+## [1.0.28](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.28) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile,ui:** AppInfoFooter, BackToTopButton, ScreenShell, Dashboard ([a6ea41d](https://github.com/alternun-development/alternun/commit/a6ea41df9fda8c882fbbe63b0e64ea0b19f5ba76))
+
+## [1.0.28](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.28) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile,ui:** AppInfoFooter, BackToTopButton, ScreenShell, Dashboard ([a6ea41d](https://github.com/alternun-development/alternun/commit/a6ea41df9fda8c882fbbe63b0e64ea0b19f5ba76))
+
 ## [1.0.27](https://github.com/alternun-development/alternun/compare/v1.0.26...v1.0.27) (2026-04-07)
 
 ### Bug Fixes
