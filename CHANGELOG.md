@@ -1,3 +1,23 @@
+## [1.0.48](https://github.com/alternun-development/alternun/compare/v1.0.47...v1.0.48) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([9f37b5c](https://github.com/alternun-development/alternun/commit/9f37b5c8ccd3c4726730c06b1f09b52ca06d54a2))
+
+### Features
+
+- add tooltip info to notification badge ([89e3ae4](https://github.com/alternun-development/alternun/commit/89e3ae4243a85efb66b72e829ce7124c72d1d098))
+
+## [1.0.48](https://github.com/alternun-development/alternun/compare/v1.0.47...v1.0.48) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([9f37b5c](https://github.com/alternun-development/alternun/commit/9f37b5c8ccd3c4726730c06b1f09b52ca06d54a2))
+
+### Features
+
+- add tooltip info to notification badge ([89e3ae4](https://github.com/alternun-development/alternun/commit/89e3ae4243a85efb66b72e829ce7124c72d1d098))
+
 ## [1.0.47](https://github.com/alternun-development/alternun/compare/v1.0.46...v1.0.47) (2026-04-10)
 
 ### Bug Fixes
