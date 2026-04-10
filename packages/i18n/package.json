@@ -1,6 +1,6 @@
 {
   "name": "@alternun/i18n",
-  "version": "1.0.45",
+  "version": "1.0.46",
   "description": "Shared translation catalogs and locale helpers for Alternun apps",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
