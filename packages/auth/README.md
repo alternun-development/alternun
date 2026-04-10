@@ -4,6 +4,13 @@ Shared auth wrapper for Alternun.
 
 This package sits on top of `@edcalderon/auth`, but it carries Alternun-specific browser callback behavior, Authentik defaults, provisioning hooks, and runtime wiring.
 
+The package is currently in a staged migration from a Supabase-first wrapper to a provider-agnostic facade:
+
+- Better Auth is the target execution layer.
+- Authentik remains the canonical issuer.
+- Supabase remains a compatibility path during rollout.
+- `AUTH_EXCHANGE_URL` lets the issuer provider hand off execution identities to the backend exchange endpoint. If the backend runtime has `AUTHENTIK_JWT_SIGNING_KEY`, it can mint issuer-owned JWTs; otherwise the package keeps a compatibility fallback.
+
 ## Contract
 
 The package is runtime-explicit.
@@ -49,3 +56,11 @@ Do not treat Expo web as native auth.
 - Web callback URLs default to `https://<origin>/auth/callback` when a browser origin is available.
 - AIRS web can force a fresh Authentik session before social source login when shared SSO sessions would otherwise keep the wrong Authentik user active during callback handoff.
 - Static apps such as admin/docs can wrap their own OIDC authorize URLs with `buildAuthentikLoginEntryUrl(...)` to start Google-style login from an app-owned relay route instead of dropping users into the Authentik library.
+
+## Migration Docs
+
+- `MIGRATION_BETTER_AUTH.md`
+- `ARCHITECTURE.md`
+- `CONFIG_CONTRACT.md`
+- `BACKEND_HANDOFF.md`
+- `DEPRECATION_MAP.md`

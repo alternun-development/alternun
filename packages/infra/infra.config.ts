@@ -349,6 +349,10 @@ const commonBuildEnv = {
   INFRA_BACKEND_API_AUTHENTIK_AUDIENCE: backendApiSettings.auth.audience,
   INFRA_BACKEND_API_AUTHENTIK_ISSUER: backendApiSettings.auth.issuer,
   INFRA_BACKEND_API_AUTHENTIK_JWKS_URL: backendApiSettings.auth.jwksUrl,
+  INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY:
+    process.env.INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY ??
+    backendApiSettings.environment.AUTHENTIK_JWT_SIGNING_KEY ??
+    '',
   INFRA_BACKEND_API_DATABASE_URL: process.env.INFRA_BACKEND_API_DATABASE_URL ?? '',
   INFRA_BACKEND_API_DECAP_PUBLIC_BASE_URL:
     process.env.INFRA_BACKEND_API_DECAP_PUBLIC_BASE_URL ??
@@ -538,6 +542,7 @@ export function createInfrastructure() {
   const backendApiInfrastructure = backendApiEnabledForStage
     ? deployBackendApiInfrastructure({
         appName,
+        authentikJwtSigningKey: identityInfrastructure?.secrets.jwtSigningKey.value,
         hostedZoneId: process.env.INFRA_ROUTE53_HOSTED_ZONE_ID,
         rootDomain,
         settings: backendApiSettings,

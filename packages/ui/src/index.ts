@@ -46,6 +46,9 @@ export type { StatusPreset } from './components/Pill';
 export { Toast, ToastSystem } from './components/Toast';
 export type { ToastItem, ToastType } from './components/Toast';
 
+export { ReleaseUpdateToast } from './components/ReleaseUpdateToast';
+export type { ReleaseUpdateToastProps } from './components/ReleaseUpdateToast';
+
 // ── Skeleton loaders ───────────────────────────────────────────────────────────
 export {
   SkeletonLoader,

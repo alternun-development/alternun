@@ -158,6 +158,7 @@ Enable/configure through env or local config:
 - `INFRA_BACKEND_API_AUTHENTIK_AUDIENCE`
 - `INFRA_BACKEND_API_AUTHENTIK_ISSUER`
 - `INFRA_BACKEND_API_AUTHENTIK_JWKS_URL`
+- `INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY` (preferred: sourced from the identity stack's JWT secret output; the `sst-deploy.sh` hydration remains a compatibility fallback)
 - `INFRA_BACKEND_API_DATABASE_URL`
 
 Important behavior:
@@ -165,6 +166,7 @@ Important behavior:
 - backend provisioning is isolated to dedicated stacks by default (`api-dev`, `api-prod`) to avoid mixing API runtime changes into the Expo stacks
 - dedicated backend pipelines force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy or modify the static app site
 - the current backend target is Lambda + API Gateway, which keeps the first provisioning increment aligned with the existing SST pipeline model
+- backend deploys now receive `AUTHENTIK_JWT_SIGNING_KEY` from the matching identity-stage secret output so `/auth/exchange` can mint issuer-owned JWTs without manual secret copying; the deploy script still hydrates it as a compatibility fallback for older flows
 - approved runtime direction is Lambda for development/testnet and a dedicated `t4g.small` host for the first production backend target
 - SST outputs expose backend API deployment metadata including invoke URL, Lambda identifiers, log group, and custom domain when present
 - for dependent admin + API releases, prefer the combined `dashboard-dev` / `dashboard-prod` pipelines
@@ -238,7 +240,7 @@ The mobile provider also uses a dedicated invalidation flow with `User Logout` p
 
 ### Release Update Banner
 
-The shared release-update package lives in `packages/update` and is used by the web surfaces to detect when a newer build is available.
+The shared release-update package lives in `packages/update` and is used by the web and Expo surfaces to detect when a newer build is available.
 It generates a version manifest and a tiny service worker from the current package version during each app build.
 
 Build entrypoints:
@@ -256,6 +258,8 @@ Recommended values:
 - deployed Expo builds: `on`
 - localhost or loopback development: `auto`
 - temporary opt-out: `off`
+
+Expo builds also receive `EXPO_PUBLIC_ORIGIN` so the runtime can resolve the deployed manifest URL even when the shell is not running in a browser.
 
 Enable/configure through env or local config:
 

@@ -27,8 +27,8 @@
  *   const { endSessionUrl } = await auth.logoutHandler({ accessToken, idToken });
  *   window.location.assign(endSessionUrl);
  */
-import { createAuthentikPreset, createAuthentikRelayHandler, createAuthentikLogoutHandler, createProvisioningAdapter, } from '../authentik';
-import { upsertOidcUser } from '../AuthentikOidcClient';
+import { createAuthentikPreset, createAuthentikRelayHandler, createAuthentikLogoutHandler, createProvisioningAdapter, } from '../authentik.js';
+import { upsertOidcUser } from '../compat/upsertOidcUser.js';
 /**
  * Strip the per-app slug from an Authentik issuer URL to get the shared
  * endpoint base that Authentik places token/userinfo/authorize under.

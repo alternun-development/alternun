@@ -6,7 +6,8 @@
     "dev": "nodemon --watch src --ext ts --signal SIGTERM --exec \"node -r ts-node/register/transpile-only src/main.ts\"",
     "build": "./build.sh",
     "start": "node dist/src/main.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "node -r ts-node/register/transpile-only --test test/*.test.js"
   },
   "dependencies": {
     "@fastify/aws-lambda": "^5.1.0",

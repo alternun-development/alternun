@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.renderReleaseWorkerSource = exports.RELEASE_WORKER_FILENAME = exports.RELEASE_UPDATE_AVAILABLE_MESSAGE_TYPE = exports.RELEASE_SKIP_WAITING_MESSAGE_TYPE = exports.RELEASE_MANIFEST_FILENAME = exports.RELEASE_CHECK_MESSAGE_TYPE = exports.useReleaseUpdate = exports.normalizeReleaseUpdateMode = exports.isReleaseUpdateEnabled = exports.buildReleaseWorkerSource = exports.buildReleaseManifestJson = exports.serializeReleaseManifest = exports.parseReleaseManifest = exports.normalizeReleaseVersion = exports.createReleaseManifest = void 0;
+exports.renderReleaseWorkerSource = exports.RELEASE_WORKER_FILENAME = exports.RELEASE_UPDATE_AVAILABLE_MESSAGE_TYPE = exports.RELEASE_SKIP_WAITING_MESSAGE_TYPE = exports.RELEASE_MANIFEST_FILENAME = exports.RELEASE_CHECK_MESSAGE_TYPE = exports.useReleaseUpdate = exports.resolveReleaseUpdateRuntime = exports.normalizeReleaseUpdateMode = exports.isReleaseUpdateEnabled = exports.buildReleaseWorkerSource = exports.buildReleaseManifestJson = exports.serializeReleaseManifest = exports.parseReleaseManifest = exports.normalizeReleaseVersion = exports.createReleaseManifest = void 0;
 var manifest_1 = require("./manifest");
 Object.defineProperty(exports, "createReleaseManifest", { enumerable: true, get: function () { return manifest_1.createReleaseManifest; } });
 Object.defineProperty(exports, "normalizeReleaseVersion", { enumerable: true, get: function () { return manifest_1.normalizeReleaseVersion; } });
@@ -11,6 +11,7 @@ Object.defineProperty(exports, "buildReleaseManifestJson", { enumerable: true, g
 Object.defineProperty(exports, "buildReleaseWorkerSource", { enumerable: true, get: function () { return useReleaseUpdate_1.buildReleaseWorkerSource; } });
 Object.defineProperty(exports, "isReleaseUpdateEnabled", { enumerable: true, get: function () { return useReleaseUpdate_1.isReleaseUpdateEnabled; } });
 Object.defineProperty(exports, "normalizeReleaseUpdateMode", { enumerable: true, get: function () { return useReleaseUpdate_1.normalizeReleaseUpdateMode; } });
+Object.defineProperty(exports, "resolveReleaseUpdateRuntime", { enumerable: true, get: function () { return useReleaseUpdate_1.resolveReleaseUpdateRuntime; } });
 Object.defineProperty(exports, "useReleaseUpdate", { enumerable: true, get: function () { return useReleaseUpdate_1.useReleaseUpdate; } });
 var service_worker_1 = require("./service-worker");
 Object.defineProperty(exports, "RELEASE_CHECK_MESSAGE_TYPE", { enumerable: true, get: function () { return service_worker_1.RELEASE_CHECK_MESSAGE_TYPE; } });

@@ -15,6 +15,7 @@ export SST_STAGE="${SST_STAGE:-$STACK}"
 
 stage_normalized=$(echo "$STACK" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 is_identity_stage=false
+is_backend_api_stage=false
 is_dedicated_non_expo_stage=false
 if [ "$stage_normalized" = "identity-dev" ] || \
   [ "$stage_normalized" = "identity-prod" ] || \
@@ -25,6 +26,12 @@ if [ "$stage_normalized" = "identity-dev" ] || \
   [ "$stage_normalized" = "authentik-prod" ]; then
   is_identity_stage=true
 fi
+
+case "$stage_normalized" in
+  api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod|dashboard-dev|dashboard-prod|dashboard-production)
+    is_backend_api_stage=true
+    ;;
+esac
 
 case "$stage_normalized" in
   identity-dev|identity-prod|identity-production|auth-dev|auth-prod|authentik-dev|authentik-prod|api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod|admin-dev|admin-prod|admin-production|backoffice-dev|backoffice-prod|backoffice-admin-dev|backoffice-admin-prod|dashboard-dev|dashboard-prod|dashboard-production)
@@ -159,6 +166,20 @@ scope_secret_name() {
   echo "${normalized}/${stage_name}"
 }
 
+resolve_backend_api_identity_stage() {
+  case "$stage_normalized" in
+    *prod* | *production*)
+      echo "identity-prod"
+      ;;
+    *mobile* | *preview*)
+      echo "identity-mobile"
+      ;;
+    *)
+      echo "identity-dev"
+      ;;
+  esac
+}
+
 validate_identity_database_mode_transition() {
   if [ "$is_identity_stage" != "true" ]; then
     return 0
@@ -226,6 +247,53 @@ validate_identity_database_mode_transition() {
   echo "ERROR: Refusing deploy because identity database mode would change (${current_mode} -> ${expected_mode})." >&2
   echo "ERROR: This can cause downtime/data loss. Set INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE=true only for planned migrations." >&2
   exit 1
+}
+
+hydrate_backend_api_jwt_signing_key() {
+  if [ "$is_backend_api_stage" != "true" ]; then
+    return 0
+  fi
+
+  if [ -n "${INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY:-}" ]; then
+    return 0
+  fi
+
+  if ! command -v aws >/dev/null 2>&1; then
+    echo "WARN: aws CLI not found; backend API JWT signing key cannot be hydrated automatically." >&2
+    return 0
+  fi
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "WARN: jq not found; backend API JWT signing key cannot be hydrated automatically." >&2
+    return 0
+  fi
+
+  local identity_stage identity_secret_name secret_json signing_key
+  identity_stage=$(resolve_backend_api_identity_stage)
+  identity_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/jwt-signing-key}" "$identity_stage")
+
+  if [ -z "$identity_secret_name" ]; then
+    echo "WARN: Could not resolve a backend API JWT signing secret name; /auth/exchange will remain compatibility-only." >&2
+    return 0
+  fi
+
+  if ! secret_json=$(aws secretsmanager get-secret-value \
+    --region "${AWS_REGION:-us-east-1}" \
+    --secret-id "$identity_secret_name" \
+    --query SecretString \
+    --output text 2>/dev/null); then
+    echo "WARN: Could not load backend API JWT signing secret ${identity_secret_name}; /auth/exchange will remain compatibility-only." >&2
+    return 0
+  fi
+
+  signing_key=$(printf '%s' "$secret_json" | jq -r '.key // empty' 2>/dev/null || true)
+  if [ -z "$signing_key" ] || [ "$signing_key" = "null" ]; then
+    echo "WARN: Secret ${identity_secret_name} did not contain a JWT signing key value." >&2
+    return 0
+  fi
+
+  export INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY="$signing_key"
+  echo "Hydrated INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY from ${identity_secret_name}."
 }
 
 remove_state_resource() {
@@ -440,6 +508,8 @@ if [ "${RUN_PREDEPLOY_CHECKS:-true}" != "false" ]; then
 fi
 
 validate_identity_database_mode_transition
+
+hydrate_backend_api_jwt_signing_key
 
 selected_pipeline_csv=$(resolve_selected_pipeline_csv)
 assert_pipeline_reconciliation_safe "$selected_pipeline_csv" "$STACK"

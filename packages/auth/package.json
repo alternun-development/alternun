@@ -26,6 +26,7 @@
     "build": "./build.sh",
     "dev": "tsc -w",
     "clean": "rm -rf dist",
+    "test": "pnpm run build && node --loader ./scripts/node-extension-loader.mjs --test test/*.test.js",
     "type-check": "tsc --noEmit",
     "ses:bootstrap": "node infra/ses/scripts/01-bootstrap-identity.cjs",
     "ses:route53": "node infra/ses/scripts/02-apply-route53.cjs",
