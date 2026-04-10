@@ -293,7 +293,6 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
               githubUrl={GITHUB_REPO_URL}
               pageSize={3}
               triggerLabel={`v${versionMetadata.version}`}
-              style={styles.unifiedButton}
             />
             <SupportButton supportEmail='support@alternun.co' palette={palette} />
           </View>
@@ -463,14 +462,7 @@ const styles = createTypographyStyles({
   bottomRightSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  unifiedButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: 10,
+    justifyContent: 'flex-end',
   },
 });
