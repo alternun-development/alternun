@@ -261,7 +261,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 6,
     borderWidth: 0.8,
-    zIndex: 1000,
+    zIndex: 9999,
+    elevation: 9999,
     minWidth: 90,
     alignItems: 'center',
     justifyContent: 'center',
@@ -269,7 +270,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    elevation: 4,
   },
   tooltipText: {
     fontSize: 11,
