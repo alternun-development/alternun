@@ -9,7 +9,13 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.44](https://github.com/alternun-development/alternun/compare/v1.0.43...v1.0.44) (2026-04-10)
+export const CHANGELOG_TEXT = `## [1.0.45](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.45) (2026-04-10)
+
+
+
+
+
+## [1.0.45](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.45) (2026-04-10)
 
 
 
@@ -17,9 +23,11 @@ export const CHANGELOG_TEXT = `## [1.0.44](https://github.com/alternun-developme
 
 ## [1.0.44](https://github.com/alternun-development/alternun/compare/v1.0.43...v1.0.44) (2026-04-10)
 
+### Bug Fixes
 
-
-
+- refactor \`packages/auth\` into a facade/provider model with Better Auth execution and Authentik issuer exchange
+- keep the docs CMS auth relay browser-safe by avoiding the package-root auth import
+- sync generated auth release artifacts for the new release flow
 
 ## [1.0.43](https://github.com/alternun-development/alternun/compare/v1.0.42...v1.0.43) (2026-04-10)
 
