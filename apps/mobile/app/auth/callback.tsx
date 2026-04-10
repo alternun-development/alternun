@@ -7,11 +7,11 @@ import {
   type OidcSession,
   type OidcTokens,
 } from '@alternun/auth';
-import { useLocalSearchParams, useRootNavigationState, useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useAppTranslation } from '../../components/i18n/useAppTranslation';
-import { useAuth } from '../../components/auth/AppAuthProvider';
+import { useLocalSearchParams, useRootNavigationState, useRouter, } from 'expo-router';
+import React, { useEffect, useMemo, useRef, useState, } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, } from 'react-native';
+import { useAppTranslation, } from '../../components/i18n/useAppTranslation';
+import { useAuth, } from '../../components/auth/AppAuthProvider';
 import {
   authentikPreset,
   oidcSessionToUser,
@@ -24,8 +24,8 @@ const INITIAL_CALLBACK_HASH = typeof window !== 'undefined' ? window.location.ha
 
 type AuthCallbackHref = Parameters<ReturnType<typeof useRouter>['replace']>[0];
 
-function readSearchParam(value: string | string[] | undefined): string | null {
-  if (Array.isArray(value)) {
+function readSearchParam(value: string | string[] | undefined,): string | null {
+  if (Array.isArray(value,)) {
     return value[0] ?? null;
   }
 
@@ -37,19 +37,19 @@ function readSearchParam(value: string | string[] | undefined): string | null {
 }
 
 function readCallbackPayload() {
-  const hashValue = INITIAL_CALLBACK_HASH.startsWith('#')
-    ? INITIAL_CALLBACK_HASH.slice(1)
+  const hashValue = INITIAL_CALLBACK_HASH.startsWith('#',)
+    ? INITIAL_CALLBACK_HASH.slice(1,)
     : INITIAL_CALLBACK_HASH;
-  const hashParams = new URLSearchParams(hashValue);
-  const queryParams = new URLSearchParams(INITIAL_CALLBACK_SEARCH);
-  const readParam = (key: string): string | null => hashParams.get(key) ?? queryParams.get(key);
+  const hashParams = new URLSearchParams(hashValue,);
+  const queryParams = new URLSearchParams(INITIAL_CALLBACK_SEARCH,);
+  const readParam = (key: string,): string | null => hashParams.get(key,) ?? queryParams.get(key,);
 
-  const accessToken = readParam('access_token');
-  const refreshToken = readParam('refresh_token');
-  const callbackType = readParam('type');
-  const callbackError = readParam('error');
-  const callbackErrorDescription = readParam('error_description');
-  const callbackErrorCode = readParam('error_code');
+  const accessToken = readParam('access_token',);
+  const refreshToken = readParam('refresh_token',);
+  const callbackType = readParam('type',);
+  const callbackError = readParam('error',);
+  const callbackErrorDescription = readParam('error_description',);
+  const callbackErrorCode = readParam('error_code',);
 
   return {
     accessToken,
@@ -65,23 +65,23 @@ function readCallbackPayload() {
       callbackError,
       callbackErrorDescription,
       callbackErrorCode,
-    ].some((value) => Boolean((value?.length ?? 0) > 0)),
+    ].some((value,) => Boolean((value?.length ?? 0) > 0,),),
   };
 }
 
 export default function AuthCallbackRoute(): React.JSX.Element {
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
-  const { next } = useLocalSearchParams<{ next?: string | string[] }>();
-  const { client } = useAuth();
-  const { t } = useAppTranslation('mobile');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const hasHandledRef = useRef(false);
-  const isNavigationReady = Boolean(rootNavigationState?.key);
+  const { next, } = useLocalSearchParams<{ next?: string | string[] }>();
+  const { client, } = useAuth();
+  const { t, } = useAppTranslation('mobile',);
+  const [errorMessage, setErrorMessage,] = useState<string | null>(null,);
+  const hasHandledRef = useRef(false,);
+  const isNavigationReady = Boolean(rootNavigationState?.key,);
 
   const redirectTarget = useMemo(() => {
-    return resolveAuthReturnTo(readSearchParam(next) ?? readAuthReturnTo());
-  }, [next]);
+    return resolveAuthReturnTo(readSearchParam(next,) ?? readAuthReturnTo(),);
+  }, [next,],);
 
   useEffect(() => {
     if (!isNavigationReady || hasHandledRef.current || typeof window === 'undefined') {
@@ -93,26 +93,26 @@ export default function AuthCallbackRoute(): React.JSX.Element {
     const callbackClient = client as CallbackCapableAuthClient;
     const finishRedirect = () => {
       clearAuthReturnTo();
-      router.replace(redirectTarget as AuthCallbackHref);
+      router.replace(redirectTarget as AuthCallbackHref,);
     };
 
-    if (hasPendingAuthentikCallback(INITIAL_CALLBACK_SEARCH)) {
+    if (hasPendingAuthentikCallback(INITIAL_CALLBACK_SEARCH,)) {
       let supabaseUserId: string | undefined;
 
       void handleAuthentikCallback(INITIAL_CALLBACK_SEARCH, {
-        onSessionReady: async (_claims, _tokens: OidcTokens, session: OidcSession) => {
-          supabaseUserId = await authentikPreset.onSessionReady(session.claims, session.provider);
+        onSessionReady: async (_claims, _tokens: OidcTokens, session: OidcSession,) => {
+          supabaseUserId = await authentikPreset.onSessionReady(session.claims, session.provider,);
         },
-      })
-        .then((session) => {
-          callbackClient.setOidcUser?.(oidcSessionToUser(session, supabaseUserId));
+      },)
+        .then((session,) => {
+          callbackClient.setOidcUser?.(oidcSessionToUser(session, supabaseUserId,),);
           finishRedirect();
-        })
-        .catch((error: unknown) => {
+        },)
+        .catch((error: unknown,) => {
           setErrorMessage(
-            error instanceof Error ? error.message : t('authCallback.errors.finalizeFailed')
+            error instanceof Error ? error.message : t('authCallback.errors.finalizeFailed',),
           );
-        });
+        },);
       return;
     }
 
@@ -122,25 +122,25 @@ export default function AuthCallbackRoute(): React.JSX.Element {
       return;
     }
 
-    stripAuthCallbackTokensFromUrl(window.location.href);
+    stripAuthCallbackTokensFromUrl(window.location.href,);
 
     const callbackError =
       callbackPayload.callbackErrorDescription ??
       callbackPayload.callbackError ??
       callbackPayload.callbackErrorCode;
     if (callbackError) {
-      setErrorMessage(callbackError);
+      setErrorMessage(callbackError,);
       return;
     }
 
     if (!callbackPayload.accessToken || !callbackPayload.refreshToken) {
-      setErrorMessage(t('authCallback.errors.missingSession'));
+      setErrorMessage(t('authCallback.errors.missingSession',),);
       return;
     }
 
     const authModule = callbackClient.supabase?.auth;
     if (!authModule || typeof authModule.setSession !== 'function') {
-      setErrorMessage(t('authCallback.errors.unsupportedClient'));
+      setErrorMessage(t('authCallback.errors.unsupportedClient',),);
       return;
     }
 
@@ -148,38 +148,38 @@ export default function AuthCallbackRoute(): React.JSX.Element {
       .setSession({
         access_token: callbackPayload.accessToken,
         refresh_token: callbackPayload.refreshToken,
-      })
-      .then((result) => {
+      },)
+      .then((result,) => {
         if (result.error?.message) {
-          setErrorMessage(result.error.message);
+          setErrorMessage(result.error.message,);
           return;
         }
 
         finishRedirect();
-      })
-      .catch((error: unknown) => {
+      },)
+      .catch((error: unknown,) => {
         setErrorMessage(
-          error instanceof Error ? error.message : t('authCallback.errors.finalizeFailed')
+          error instanceof Error ? error.message : t('authCallback.errors.finalizeFailed',),
         );
-      });
-  }, [client, isNavigationReady, redirectTarget, router, t]);
+      },);
+  }, [client, isNavigationReady, redirectTarget, router, t,],);
 
   if (errorMessage) {
     return (
       <View style={styles.screen}>
         <View style={styles.card}>
           <Text style={styles.title}>
-            {t('authCallback.errors.title', undefined, 'Sign-in failed')}
+            {t('authCallback.errors.title', undefined, 'Sign-in failed',)}
           </Text>
           <Text style={styles.message}>{errorMessage}</Text>
           <Pressable
             onPress={() => {
-              router.replace({ pathname: '/auth', params: { next: redirectTarget } });
+              router.replace({ pathname: '/auth', params: { next: redirectTarget, }, },);
             }}
             style={styles.button}
           >
             <Text style={styles.buttonLabel}>
-              {t('authModal.actions.backToSignIn', undefined, 'Back to sign in')}
+              {t('authModal.actions.backToSignIn', undefined, 'Back to sign in',)}
             </Text>
           </Pressable>
         </View>
@@ -234,4 +234,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-});
+},);

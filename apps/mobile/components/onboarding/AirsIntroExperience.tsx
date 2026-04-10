@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/explicit-function-return-type */
-import { getLocaleLabel } from '@alternun/i18n';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { getLocaleLabel, } from '@alternun/i18n';
+import React, { useCallback, useEffect, useMemo, useRef, useState, } from 'react';
 import {
   Animated,
   Linking,
@@ -12,9 +12,9 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { createTypographyStyles } from '../theme/typography';
-import { Image as ExpoImage } from 'expo-image';
-import { useIsFocused } from '@react-navigation/native';
+import { createTypographyStyles, } from '../theme/typography';
+import { Image as ExpoImage, } from 'expo-image';
+import { useIsFocused, } from '@react-navigation/native';
 import {
   Check,
   ChevronDown,
@@ -31,9 +31,9 @@ import {
 } from 'lucide-react-native';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import LandingFooter from '../common/LandingFooter';
-import { useAppTranslation } from '../i18n/useAppTranslation';
-import { getAirsIntroVideoUrl } from './airsIntroVideoSource';
-import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { useAppTranslation, } from '../i18n/useAppTranslation';
+import { getAirsIntroVideoUrl, } from './airsIntroVideoSource';
+import { useAppPreferences, } from '../settings/AppPreferencesProvider';
 
 const AIRS_VIDEO_POSTER =
   'https://images.pexels.com/videos/5752729/space-earth-universe-cosmos-5752729.jpeg';
@@ -45,11 +45,11 @@ const AUTO_UNMUTE_SCROLL_Y = 88;
 const TOP_PAUSE_SCROLL_Y = 6;
 const INTRO_PREVIEW_SECONDS = 6;
 
-const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg');
-const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg');
-const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png');
-const ALTERNUN_PILL_LOGO_LIGHT = require('../../assets/alternun-black.svg');
-const ALTERNUN_PILL_LOGO_DARK = require('../../assets/alternun-white.svg');
+const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg',);
+const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg',);
+const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png',);
+const ALTERNUN_PILL_LOGO_LIGHT = require('../../assets/alternun-black.svg',);
+const ALTERNUN_PILL_LOGO_DARK = require('../../assets/alternun-white.svg',);
 // const AIRS_BG_DARK = require('../../assets/images/water_falls-alternun-digital-forge.png'); //TODO CRAFT a same resolutions BG imagen
 const AIRS_BG_DARK = 'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS';
 
@@ -63,7 +63,7 @@ function buildVideoHtml(
   posterUrl: string,
   muted: boolean,
   previewMode: boolean,
-  previewSeconds: number
+  previewSeconds: number,
 ): string {
   return `
     <!DOCTYPE html>
@@ -78,8 +78,8 @@ function buildVideoHtml(
       <body>
         <video id="airsVideo" playsinline webkit-playsinline loop></video>
         <script>
-          const videoSource = ${JSON.stringify(videoUrl)};
-          const videoPoster = ${JSON.stringify(posterUrl)};
+          const videoSource = ${JSON.stringify(videoUrl,)};
+          const videoPoster = ${JSON.stringify(posterUrl,)};
           const initialMuted = ${muted ? 'true' : 'false'};
           const initialPreviewMode = ${previewMode ? 'true' : 'false'};
           const previewLoopSeconds = ${previewSeconds};
@@ -174,31 +174,31 @@ function buildVideoHtml(
 export default function AirsIntroExperience({
   onContinueToDashboard,
   onSignIn,
-}: AirsIntroExperienceProps) {
-  const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
-  const { t } = useAppTranslation('mobile');
-  const [dontShowAgain, setDontShowAgain] = useState(false);
-  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
-  const [settingsExpanded, setSettingsExpanded] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [hasManualAudioChoice, setHasManualAudioChoice] = useState(false);
-  const [hasAutoUnmuted, setHasAutoUnmuted] = useState(false);
-  const [hasScrollActivatedPlayback, setHasScrollActivatedPlayback] = useState(false);
-  const [isInTopZone, setIsInTopZone] = useState(true);
+}: AirsIntroExperienceProps,) {
+  const { themeMode, language, toggleThemeMode, cycleLanguage, } = useAppPreferences();
+  const { t, } = useAppTranslation('mobile',);
+  const [dontShowAgain, setDontShowAgain,] = useState(false,);
+  const [profileMenuVisible, setProfileMenuVisible,] = useState(false,);
+  const [settingsExpanded, setSettingsExpanded,] = useState(false,);
+  const [isMuted, setIsMuted,] = useState(true,);
+  const [isVideoPlaying, setIsVideoPlaying,] = useState(false,);
+  const [hasManualAudioChoice, setHasManualAudioChoice,] = useState(false,);
+  const [hasAutoUnmuted, setHasAutoUnmuted,] = useState(false,);
+  const [hasScrollActivatedPlayback, setHasScrollActivatedPlayback,] = useState(false,);
+  const [isInTopZone, setIsInTopZone,] = useState(true,);
   const isScreenFocused = useIsFocused();
   const isDark = themeMode === 'dark';
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const webVideoRef = useRef<any>(null);
-  const webViewRef = useRef<any>(null);
-  const isMutedRef = useRef(isMuted);
-  const hasManualAudioChoiceRef = useRef(hasManualAudioChoice);
-  const hasAutoUnmutedRef = useRef(hasAutoUnmuted);
-  const hasScrollActivatedPlaybackRef = useRef(hasScrollActivatedPlayback);
-  const isInTopZoneRef = useRef(true);
-  const isScreenFocusedRef = useRef(isScreenFocused);
-  const videoUri = useMemo(() => getAirsIntroVideoUrl(language), [language]);
+  const { width: screenWidth, height: screenHeight, } = useWindowDimensions();
+  const scrollY = useRef(new Animated.Value(0,),).current;
+  const webVideoRef = useRef<any>(null,);
+  const webViewRef = useRef<any>(null,);
+  const isMutedRef = useRef(isMuted,);
+  const hasManualAudioChoiceRef = useRef(hasManualAudioChoice,);
+  const hasAutoUnmutedRef = useRef(hasAutoUnmuted,);
+  const hasScrollActivatedPlaybackRef = useRef(hasScrollActivatedPlayback,);
+  const isInTopZoneRef = useRef(true,);
+  const isScreenFocusedRef = useRef(isScreenFocused,);
+  const videoUri = useMemo(() => getAirsIntroVideoUrl(language,), [language,],);
 
   const WebView = useMemo(() => {
     if (Platform.OS === 'web') {
@@ -206,52 +206,52 @@ export default function AirsIntroExperience({
     }
 
     try {
-      return require('react-native-webview').WebView;
+      return require('react-native-webview',).WebView;
     } catch {
       return null;
     }
-  }, []);
+  }, [],);
 
   useEffect(() => {
-    setIsMuted(true);
-    setIsVideoPlaying(false);
-    setHasManualAudioChoice(false);
-    setHasAutoUnmuted(false);
-    setHasScrollActivatedPlayback(false);
-    setIsInTopZone(true);
+    setIsMuted(true,);
+    setIsVideoPlaying(false,);
+    setHasManualAudioChoice(false,);
+    setHasAutoUnmuted(false,);
+    setHasScrollActivatedPlayback(false,);
+    setIsInTopZone(true,);
     isInTopZoneRef.current = true;
     hasScrollActivatedPlaybackRef.current = false;
-  }, [language]);
+  }, [language,],);
 
   useEffect(() => {
     isMutedRef.current = isMuted;
     hasManualAudioChoiceRef.current = hasManualAudioChoice;
     hasAutoUnmutedRef.current = hasAutoUnmuted;
     hasScrollActivatedPlaybackRef.current = hasScrollActivatedPlayback;
-  }, [hasAutoUnmuted, hasManualAudioChoice, hasScrollActivatedPlayback, isMuted]);
+  }, [hasAutoUnmuted, hasManualAudioChoice, hasScrollActivatedPlayback, isMuted,],);
 
   useEffect(() => {
     isScreenFocusedRef.current = isScreenFocused;
-  }, [isScreenFocused]);
+  }, [isScreenFocused,],);
 
-  const syncTopZoneState = useCallback((scrollOffset: number) => {
+  const syncTopZoneState = useCallback((scrollOffset: number,) => {
     const atTop = scrollOffset <= TOP_PAUSE_SCROLL_Y;
     if (isInTopZoneRef.current === atTop) {
       if (!hasScrollActivatedPlaybackRef.current && scrollOffset > TOP_PAUSE_SCROLL_Y) {
         hasScrollActivatedPlaybackRef.current = true;
-        setHasScrollActivatedPlayback(true);
+        setHasScrollActivatedPlayback(true,);
       }
       return;
     }
     isInTopZoneRef.current = atTop;
-    setIsInTopZone(atTop);
+    setIsInTopZone(atTop,);
     if (!hasScrollActivatedPlaybackRef.current && scrollOffset > TOP_PAUSE_SCROLL_Y) {
       hasScrollActivatedPlaybackRef.current = true;
-      setHasScrollActivatedPlayback(true);
+      setHasScrollActivatedPlayback(true,);
     }
-  }, []);
+  }, [],);
 
-  const maybeAutoUnmuteFromScroll = useCallback((scrollOffset: number) => {
+  const maybeAutoUnmuteFromScroll = useCallback((scrollOffset: number,) => {
     if (scrollOffset <= AUTO_UNMUTE_SCROLL_Y) {
       return;
     }
@@ -261,20 +261,20 @@ export default function AirsIntroExperience({
     }
 
     hasAutoUnmutedRef.current = true;
-    setHasAutoUnmuted(true);
-    setIsMuted(false);
-  }, []);
+    setHasAutoUnmuted(true,);
+    setIsMuted(false,);
+  }, [],);
 
   useEffect(() => {
-    const listenerId = scrollY.addListener(({ value }) => {
-      maybeAutoUnmuteFromScroll(value);
-      syncTopZoneState(value);
-    });
+    const listenerId = scrollY.addListener(({ value, },) => {
+      maybeAutoUnmuteFromScroll(value,);
+      syncTopZoneState(value,);
+    },);
 
     return () => {
-      scrollY.removeListener(listenerId);
+      scrollY.removeListener(listenerId,);
     };
-  }, [maybeAutoUnmuteFromScroll, scrollY, syncTopZoneState]);
+  }, [maybeAutoUnmuteFromScroll, scrollY, syncTopZoneState,],);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -293,34 +293,34 @@ export default function AirsIntroExperience({
 
     if (!isScreenFocused) {
       video.pause?.();
-      setIsVideoPlaying(false);
+      setIsVideoPlaying(false,);
       return;
     }
 
     const playResult = video.play?.();
     if (!shouldPlayMainTrack) {
-      setIsVideoPlaying(false);
+      setIsVideoPlaying(false,);
       return;
     }
     if (playResult && typeof playResult.then === 'function') {
       playResult
         .then(() => {
-          setIsVideoPlaying(true);
-        })
+          setIsVideoPlaying(true,);
+        },)
         .catch(() => {
-          setIsVideoPlaying(false);
-        });
+          setIsVideoPlaying(false,);
+        },);
       return;
     }
 
     if (playResult && typeof playResult.catch === 'function') {
       playResult.catch(() => {
-        setIsVideoPlaying(false);
-      });
+        setIsVideoPlaying(false,);
+      },);
     }
 
-    setIsVideoPlaying(Boolean(!video.paused && !video.ended));
-  }, [hasScrollActivatedPlayback, isMuted, isScreenFocused, videoUri]);
+    setIsVideoPlaying(Boolean(!video.paused && !video.ended,),);
+  }, [hasScrollActivatedPlayback, isMuted, isScreenFocused, videoUri,],);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -339,16 +339,16 @@ export default function AirsIntroExperience({
         video.currentTime = 0;
         const playResult = video.play?.();
         if (playResult && typeof playResult.catch === 'function') {
-          playResult.catch(() => {});
+          playResult.catch(() => {},);
         }
       }
     };
 
-    video.addEventListener?.('timeupdate', enforcePreviewLoop);
+    video.addEventListener?.('timeupdate', enforcePreviewLoop,);
     return () => {
-      video.removeEventListener?.('timeupdate', enforcePreviewLoop);
+      video.removeEventListener?.('timeupdate', enforcePreviewLoop,);
     };
-  }, [videoUri]);
+  }, [videoUri,],);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -362,30 +362,30 @@ export default function AirsIntroExperience({
 
     const syncPlaybackState = () => {
       if (!isScreenFocusedRef.current || !hasScrollActivatedPlaybackRef.current) {
-        setIsVideoPlaying(false);
+        setIsVideoPlaying(false,);
         return;
       }
-      const playing = Boolean(!video.paused && !video.ended && video.readyState > 2);
-      setIsVideoPlaying(playing);
+      const playing = Boolean(!video.paused && !video.ended && video.readyState > 2,);
+      setIsVideoPlaying(playing,);
     };
 
     syncPlaybackState();
-    const intervalId = setInterval(syncPlaybackState, 300);
-    video.addEventListener?.('play', syncPlaybackState);
-    video.addEventListener?.('pause', syncPlaybackState);
-    video.addEventListener?.('ended', syncPlaybackState);
-    video.addEventListener?.('waiting', syncPlaybackState);
-    video.addEventListener?.('playing', syncPlaybackState);
+    const intervalId = setInterval(syncPlaybackState, 300,);
+    video.addEventListener?.('play', syncPlaybackState,);
+    video.addEventListener?.('pause', syncPlaybackState,);
+    video.addEventListener?.('ended', syncPlaybackState,);
+    video.addEventListener?.('waiting', syncPlaybackState,);
+    video.addEventListener?.('playing', syncPlaybackState,);
 
     return () => {
-      clearInterval(intervalId);
-      video.removeEventListener?.('play', syncPlaybackState);
-      video.removeEventListener?.('pause', syncPlaybackState);
-      video.removeEventListener?.('ended', syncPlaybackState);
-      video.removeEventListener?.('waiting', syncPlaybackState);
-      video.removeEventListener?.('playing', syncPlaybackState);
+      clearInterval(intervalId,);
+      video.removeEventListener?.('play', syncPlaybackState,);
+      video.removeEventListener?.('pause', syncPlaybackState,);
+      video.removeEventListener?.('ended', syncPlaybackState,);
+      video.removeEventListener?.('waiting', syncPlaybackState,);
+      video.removeEventListener?.('playing', syncPlaybackState,);
     };
-  }, [videoUri]);
+  }, [videoUri,],);
 
   useEffect(() => {
     if (Platform.OS === 'web') {
@@ -409,164 +409,164 @@ export default function AirsIntroExperience({
         window.__setPlayback(${shouldPlayAny ? 'true' : 'false'});
       }
       true;
-    `);
+    `,);
     if (!shouldPlayMainTrack) {
-      setIsVideoPlaying(false);
+      setIsVideoPlaying(false,);
     }
-  }, [hasScrollActivatedPlayback, isMuted, isScreenFocused, videoUri]);
+  }, [hasScrollActivatedPlayback, isMuted, isScreenFocused, videoUri,],);
 
   const effectiveMuted = isMuted || !hasScrollActivatedPlayback || !isScreenFocused;
-  const showVideoControls = Boolean(videoUri && hasScrollActivatedPlayback && isScreenFocused);
+  const showVideoControls = Boolean(videoUri && hasScrollActivatedPlayback && isScreenFocused,);
   const webVideoHtml = useMemo(
-    () => buildVideoHtml(videoUri, AIRS_VIDEO_POSTER, true, true, INTRO_PREVIEW_SECONDS),
-    [videoUri]
+    () => buildVideoHtml(videoUri, AIRS_VIDEO_POSTER, true, true, INTRO_PREVIEW_SECONDS,),
+    [videoUri,],
   );
   const handleScroll = useMemo(
     () =>
-      Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+      Animated.event([{ nativeEvent: { contentOffset: { y: scrollY, }, }, },], {
         useNativeDriver: false,
-        listener: (event: any) => {
+        listener: (event: any,) => {
           const scrollOffset = event?.nativeEvent?.contentOffset?.y;
           if (typeof scrollOffset === 'number') {
-            maybeAutoUnmuteFromScroll(scrollOffset);
-            syncTopZoneState(scrollOffset);
+            maybeAutoUnmuteFromScroll(scrollOffset,);
+            syncTopZoneState(scrollOffset,);
           }
         },
-      }),
-    [maybeAutoUnmuteFromScroll, scrollY, syncTopZoneState]
+      },),
+    [maybeAutoUnmuteFromScroll, scrollY, syncTopZoneState,],
   );
 
   const VideoTag = 'video' as any;
   const SourceTag = 'source' as any;
 
-  const heroHeight = Math.max(screenHeight * 1.05, 740);
-  const cardStartWidth = Math.min(screenWidth * 0.56, 700);
-  const cardEndWidth = Math.min(screenWidth - 24, 1220);
+  const heroHeight = Math.max(screenHeight * 1.05, 740,);
+  const cardStartWidth = Math.min(screenWidth * 0.56, 700,);
+  const cardEndWidth = Math.min(screenWidth - 24, 1220,);
   const videoControlsIconOnly = cardStartWidth < 220;
-  const cardStartHeight = Math.max(cardStartWidth * 0.58, 220);
-  const cardEndHeight = Math.min(Math.max(screenHeight * 0.72, 360), 760);
-  const mediaTagTitleSize = Math.min(Math.max(screenWidth * 0.031, 14), 26);
+  const cardStartHeight = Math.max(cardStartWidth * 0.58, 220,);
+  const cardEndHeight = Math.min(Math.max(screenHeight * 0.72, 360,), 760,);
+  const mediaTagTitleSize = Math.min(Math.max(screenWidth * 0.031, 14,), 26,);
   const mediaTagTitleLineHeight = mediaTagTitleSize * 1.02;
-  const mediaTagSubtitleSize = Math.min(Math.max(screenWidth * 0.056, 20), 52);
+  const mediaTagSubtitleSize = Math.min(Math.max(screenWidth * 0.056, 20,), 52,);
   const mediaTagSubtitleLineHeight = mediaTagSubtitleSize * 1.12;
-  const mediaTagPillWidth = Math.min(Math.max(screenWidth * 0.34, 150), 300);
-  const mediaTagPillHeight = Math.min(Math.max(screenWidth * 0.058, 34), 48);
+  const mediaTagPillWidth = Math.min(Math.max(screenWidth * 0.34, 150,), 300,);
+  const mediaTagPillHeight = Math.min(Math.max(screenWidth * 0.058, 34,), 48,);
   const mediaTagPillLogoWidth = mediaTagPillWidth * 0.74;
   const mediaTagPillLogoHeight = mediaTagPillHeight * 0.58;
   const heroBrandSecondaryColor = isDark ? 'rgba(210,255,245,0.9)' : '#0f766e';
-  const heroWordmarkHeight = Math.min(Math.max(screenWidth * 0.066, 38), 66);
-  const heroWordmarkWidth = Math.round(heroWordmarkHeight * 2.68);
-  const heroBylineSize = Math.min(Math.max(screenWidth * 0.016, 10), 15);
+  const heroWordmarkHeight = Math.min(Math.max(screenWidth * 0.066, 38,), 66,);
+  const heroWordmarkWidth = Math.round(heroWordmarkHeight * 2.68,);
+  const heroBylineSize = Math.min(Math.max(screenWidth * 0.016, 10,), 15,);
   const heroBylineLineHeight = heroBylineSize * 1.03;
   const heroBylineWidth = heroWordmarkWidth * 0.34;
-  const heroBylineLogoSize = Math.min(Math.max(screenWidth * 0.022, 12), 18);
-  const heroLogoSize = Math.min(Math.max(screenWidth * 0.084, 50), 84);
+  const heroBylineLogoSize = Math.min(Math.max(screenWidth * 0.022, 12,), 18,);
+  const heroLogoSize = Math.min(Math.max(screenWidth * 0.084, 50,), 84,);
   const heroBrandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
   const heroBrandMarkCutout = isDark ? '#03292f' : '#d8fff4';
 
   const cardWidth = scrollY.interpolate({
-    inputRange: [0, HERO_EXPANSION_RANGE],
-    outputRange: [cardStartWidth, cardEndWidth],
+    inputRange: [0, HERO_EXPANSION_RANGE,],
+    outputRange: [cardStartWidth, cardEndWidth,],
     extrapolate: 'clamp',
-  });
+  },);
   const cardHeight = scrollY.interpolate({
-    inputRange: [0, HERO_EXPANSION_RANGE],
-    outputRange: [cardStartHeight, cardEndHeight],
+    inputRange: [0, HERO_EXPANSION_RANGE,],
+    outputRange: [cardStartHeight, cardEndHeight,],
     extrapolate: 'clamp',
-  });
+  },);
   const cardTranslateY = scrollY.interpolate({
-    inputRange: [0, HERO_EXPANSION_RANGE],
-    outputRange: [88, -22],
+    inputRange: [0, HERO_EXPANSION_RANGE,],
+    outputRange: [88, -22,],
     extrapolate: 'clamp',
-  });
+  },);
   const heroBgImageOpacity = scrollY.interpolate({
-    inputRange: [0, HERO_SOLID_SWAP_SCROLL],
-    outputRange: [1, 0],
+    inputRange: [0, HERO_SOLID_SWAP_SCROLL,],
+    outputRange: [1, 0,],
     extrapolate: 'clamp',
-  });
+  },);
   const heroSolidFadeOpacity = scrollY.interpolate({
-    inputRange: [0, HERO_SOLID_SWAP_SCROLL],
-    outputRange: [0, 1],
+    inputRange: [0, HERO_SOLID_SWAP_SCROLL,],
+    outputRange: [0, 1,],
     extrapolate: 'clamp',
-  });
+  },);
   const bgScale = scrollY.interpolate({
-    inputRange: [0, HERO_EXPANSION_RANGE],
-    outputRange: [1, 1.08],
+    inputRange: [0, HERO_EXPANSION_RANGE,],
+    outputRange: [1, 1.08,],
     extrapolate: 'clamp',
-  });
+  },);
   const shadeStartOpacity = isDark ? 0.42 : 0.24;
   const shadeEndOpacity = isDark ? 0.02 : 0;
   const shadeOpacity = scrollY.interpolate({
-    inputRange: [0, HERO_SOLID_SWAP_SCROLL],
-    outputRange: [shadeStartOpacity, shadeEndOpacity],
+    inputRange: [0, HERO_SOLID_SWAP_SCROLL,],
+    outputRange: [shadeStartOpacity, shadeEndOpacity,],
     extrapolate: 'clamp',
-  });
+  },);
   const footerOpacity = scrollY.interpolate({
-    inputRange: [0, HERO_EXPANSION_RANGE * 0.65],
-    outputRange: [1, 0],
+    inputRange: [0, HERO_EXPANSION_RANGE * 0.65,],
+    outputRange: [1, 0,],
     extrapolate: 'clamp',
-  });
+  },);
   const footerTranslateY = scrollY.interpolate({
-    inputRange: [0, HERO_EXPANSION_RANGE * 0.7],
-    outputRange: [0, 24],
+    inputRange: [0, HERO_EXPANSION_RANGE * 0.7,],
+    outputRange: [0, 24,],
     extrapolate: 'clamp',
-  });
+  },);
   const contentOpacity = scrollY.interpolate({
-    inputRange: [0, 120],
-    outputRange: [0.94, 1],
+    inputRange: [0, 120,],
+    outputRange: [0.94, 1,],
     extrapolate: 'clamp',
-  });
+  },);
   const contentTranslateY = scrollY.interpolate({
-    inputRange: [0, 120],
-    outputRange: [10, 0],
+    inputRange: [0, 120,],
+    outputRange: [10, 0,],
     extrapolate: 'clamp',
-  });
+  },);
   const mediaTagOpacity = scrollY.interpolate({
-    inputRange: [0, 28, 72],
-    outputRange: [1, 0.72, 0],
+    inputRange: [0, 28, 72,],
+    outputRange: [1, 0.72, 0,],
     extrapolate: 'clamp',
-  });
+  },);
   const mediaTagTranslateY = scrollY.interpolate({
-    inputRange: [0, 72],
-    outputRange: [0, 18],
+    inputRange: [0, 72,],
+    outputRange: [0, 18,],
     extrapolate: 'clamp',
-  });
+  },);
   const mediaTagTitleAnchorY = Animated.add(
-    Animated.multiply(Animated.divide(cardHeight, 2), -1),
-    new Animated.Value(-96)
+    Animated.multiply(Animated.divide(cardHeight, 2,), -1,),
+    new Animated.Value(-96,),
   );
   const mediaTagSubtitleAnchorY = Animated.add(
-    Animated.divide(cardHeight, 2),
-    new Animated.Value(26)
+    Animated.divide(cardHeight, 2,),
+    new Animated.Value(26,),
   );
-  const mediaTagTitleFinalTranslateY = Animated.add(mediaTagTitleAnchorY, mediaTagTranslateY);
+  const mediaTagTitleFinalTranslateY = Animated.add(mediaTagTitleAnchorY, mediaTagTranslateY,);
   const mediaTagPillFinalTranslateY = Animated.add(
     mediaTagTitleFinalTranslateY,
-    new Animated.Value(-76)
+    new Animated.Value(-76,),
   );
-  const mediaTagSubtitleFinalTranslateY = Animated.add(mediaTagSubtitleAnchorY, mediaTagTranslateY);
+  const mediaTagSubtitleFinalTranslateY = Animated.add(mediaTagSubtitleAnchorY, mediaTagTranslateY,);
 
   const palette = isDark
     ? {
-        pageBg: '#050510',
-        contentCard: '#0d0d1f',
-        contentBorder: 'rgba(255,255,255,0.1)',
-        textPrimary: '#e8e8ff',
-        textMuted: 'rgba(232,232,255,0.74)',
-        accent: '#1ccba1',
-        mutedButtonBg: 'rgba(255,255,255,0.03)',
-        mutedButtonBorder: 'rgba(255,255,255,0.16)',
-      }
+      pageBg: '#050510',
+      contentCard: '#0d0d1f',
+      contentBorder: 'rgba(255,255,255,0.1)',
+      textPrimary: '#e8e8ff',
+      textMuted: 'rgba(232,232,255,0.74)',
+      accent: '#1ccba1',
+      mutedButtonBg: 'rgba(255,255,255,0.03)',
+      mutedButtonBorder: 'rgba(255,255,255,0.16)',
+    }
     : {
-        pageBg: '#f6f8fc',
-        contentCard: '#ffffff',
-        contentBorder: 'rgba(15,23,42,0.12)',
-        textPrimary: '#0f172a',
-        textMuted: '#334155',
-        accent: '#0f766e',
-        mutedButtonBg: 'rgba(15,23,42,0.03)',
-        mutedButtonBorder: 'rgba(15,23,42,0.16)',
-      };
+      pageBg: '#f6f8fc',
+      contentCard: '#ffffff',
+      contentBorder: 'rgba(15,23,42,0.12)',
+      textPrimary: '#0f172a',
+      textMuted: '#334155',
+      accent: '#0f766e',
+      mutedButtonBg: 'rgba(15,23,42,0.03)',
+      mutedButtonBorder: 'rgba(15,23,42,0.16)',
+    };
 
   const ThemeIcon = isDark ? Sun : Moon;
   const MuteIcon = effectiveMuted ? VolumeX : Volume2;
@@ -577,20 +577,20 @@ export default function AirsIntroExperience({
     : 'rgba(229, 245, 242, 0.96)';
   const mediaTagPillBorderColor = isDark ? 'rgba(34, 248, 199, 0.34)' : 'rgba(0, 70, 70, 0.42)';
   const mediaTagPillShadowColor = isDark ? 'rgba(0,0,0,0.48)' : 'rgba(0, 43, 61, 0.28)';
-  const heroBackgroundSource = (isDark ? AIRS_BG_DARK : { uri: AIRS_BG_LIGHT_SRC }) as any;
+  const heroBackgroundSource = (isDark ? AIRS_BG_DARK : { uri: AIRS_BG_LIGHT_SRC, }) as any;
   const heroFooterTextColor = isDark ? 'rgba(248,251,255,0.96)' : '#020617';
   const heroFooterShadowColor = isDark ? 'rgba(0,0,0,0.28)' : 'transparent';
-  const languageLabel = getLocaleLabel(language, language);
+  const languageLabel = getLocaleLabel(language, language,);
 
   const closeProfileMenu = () => {
-    setProfileMenuVisible(false);
-    setSettingsExpanded(false);
+    setProfileMenuVisible(false,);
+    setSettingsExpanded(false,);
   };
 
   const toggleMute = () => {
-    setHasManualAudioChoice(true);
-    setHasAutoUnmuted(true);
-    setIsMuted((prev) => !prev);
+    setHasManualAudioChoice(true,);
+    setHasAutoUnmuted(true,);
+    setIsMuted((prev,) => !prev,);
   };
 
   const restartVideo = () => {
@@ -602,9 +602,9 @@ export default function AirsIntroExperience({
       video.currentTime = 0;
       const playResult = video.play?.();
       if (playResult && typeof playResult.catch === 'function') {
-        playResult.catch(() => {});
+        playResult.catch(() => {},);
       }
-      setIsVideoPlaying(hasScrollActivatedPlayback && isScreenFocused);
+      setIsVideoPlaying(hasScrollActivatedPlayback && isScreenFocused,);
       return;
     }
 
@@ -619,36 +619,36 @@ export default function AirsIntroExperience({
         window.__setPlayback(true);
       }
       true;
-    `);
-    setIsVideoPlaying(hasScrollActivatedPlayback && isScreenFocused);
+    `,);
+    setIsVideoPlaying(hasScrollActivatedPlayback && isScreenFocused,);
   };
 
   const handleWebVideoPlay = () => {
     if (!isScreenFocusedRef.current || !hasScrollActivatedPlaybackRef.current) {
-      setIsVideoPlaying(false);
+      setIsVideoPlaying(false,);
       return;
     }
-    setIsVideoPlaying(true);
+    setIsVideoPlaying(true,);
   };
 
   const handleWebVideoPause = () => {
-    setIsVideoPlaying(false);
+    setIsVideoPlaying(false,);
   };
 
-  const handleWebViewMessage = (event: any) => {
+  const handleWebViewMessage = (event: any,) => {
     const payload = event?.nativeEvent?.data;
     if (typeof payload !== 'string' || payload.length === 0) {
       return;
     }
 
     try {
-      const data = JSON.parse(payload) as { type?: string; isPlaying?: boolean };
+      const data = JSON.parse(payload,) as { type?: string; isPlaying?: boolean };
       if (data.type === 'playback' && typeof data.isPlaying === 'boolean') {
         if (!isScreenFocusedRef.current || !hasScrollActivatedPlaybackRef.current) {
-          setIsVideoPlaying(false);
+          setIsVideoPlaying(false,);
           return;
         }
-        setIsVideoPlaying(data.isPlaying);
+        setIsVideoPlaying(data.isPlaying,);
       }
     } catch {
       // Ignore messages not related to playback state.
@@ -656,13 +656,13 @@ export default function AirsIntroExperience({
   };
 
   return (
-    <View style={[styles.page, { backgroundColor: palette.pageBg }]}>
+    <View style={[styles.page, { backgroundColor: palette.pageBg, },]}>
       <View pointerEvents='none' style={styles.floatingLeftTop}>
         <View style={styles.heroBrandRow}>
           <View style={styles.heroBrandTextBlock}>
             <ExpoImage
               source={heroWordmarkSource}
-              style={{ width: heroWordmarkWidth, height: heroWordmarkHeight }}
+              style={{ width: heroWordmarkWidth, height: heroWordmarkHeight, }}
               contentFit='contain'
             />
             <View
@@ -683,7 +683,7 @@ export default function AirsIntroExperience({
                   },
                 ]}
               >
-                {t('labels.by')}
+                {t('labels.by',)}
               </Text>
               <ExpoImage
                 source={ALTERNUN_POWERED_BY_LOGO}
@@ -710,13 +710,13 @@ export default function AirsIntroExperience({
         <TouchableOpacity
           style={[
             styles.floatingProfileTrigger,
-            { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
+            { backgroundColor: palette.contentCard, borderColor: palette.contentBorder, },
           ]}
           activeOpacity={0.86}
-          onPress={() => setProfileMenuVisible((prev) => !prev)}
+          onPress={() => setProfileMenuVisible((prev,) => !prev,)}
         >
-          <View style={[styles.floatingAvatar, { backgroundColor: `${palette.accent}22` }]}>
-            <Text style={[styles.floatingAvatarText, { color: palette.accent }]}>U</Text>
+          <View style={[styles.floatingAvatar, { backgroundColor: `${palette.accent}22`, },]}>
+            <Text style={[styles.floatingAvatarText, { color: palette.accent, },]}>U</Text>
           </View>
           <ChevronDown size={14} color={palette.textPrimary} />
         </TouchableOpacity>
@@ -725,11 +725,11 @@ export default function AirsIntroExperience({
           <View
             style={[
               styles.floatingMenu,
-              { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
+              { backgroundColor: palette.contentCard, borderColor: palette.contentBorder, },
             ]}
           >
             <TouchableOpacity
-              style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg }]}
+              style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg, },]}
               onPress={() => {
                 closeProfileMenu();
                 onSignIn();
@@ -737,19 +737,19 @@ export default function AirsIntroExperience({
               activeOpacity={0.82}
             >
               <LogIn size={14} color={palette.textPrimary} />
-              <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                {t('labels.signIn')}
+              <Text style={[styles.floatingMenuText, { color: palette.textPrimary, },]}>
+                {t('labels.signIn',)}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg }]}
-              onPress={() => setSettingsExpanded((prev) => !prev)}
+              style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg, },]}
+              onPress={() => setSettingsExpanded((prev,) => !prev,)}
               activeOpacity={0.82}
             >
               <SettingsIcon size={14} color={palette.textPrimary} />
-              <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                {t('labels.settings')}
+              <Text style={[styles.floatingMenuText, { color: palette.textPrimary, },]}>
+                {t('labels.settings',)}
               </Text>
               <View style={styles.floatingMenuItemRight}>
                 {settingsExpanded ? (
@@ -763,32 +763,32 @@ export default function AirsIntroExperience({
             {settingsExpanded ? (
               <>
                 <TouchableOpacity
-                  style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg }]}
+                  style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg, },]}
                   onPress={toggleThemeMode}
                   activeOpacity={0.82}
                 >
                   <ThemeIcon size={14} color={palette.textPrimary} />
-                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                    {t('labels.theme')}
+                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary, },]}>
+                    {t('labels.theme',)}
                   </Text>
                   <View style={styles.floatingMenuItemRight}>
-                    <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
-                      {isDark ? t('labels.dark') : t('labels.light')}
+                    <Text style={[styles.floatingMenuValue, { color: palette.accent, },]}>
+                      {isDark ? t('labels.dark',) : t('labels.light',)}
                     </Text>
                   </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg }]}
+                  style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg, },]}
                   onPress={cycleLanguage}
                   activeOpacity={0.82}
                 >
                   <Languages size={14} color={palette.textPrimary} />
-                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                    {t('labels.language')}
+                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary, },]}>
+                    {t('labels.language',)}
                   </Text>
                   <View style={styles.floatingMenuItemRight}>
-                    <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
+                    <Text style={[styles.floatingMenuValue, { color: palette.accent, },]}>
                       {languageLabel}
                     </Text>
                   </View>
@@ -797,11 +797,11 @@ export default function AirsIntroExperience({
             ) : null}
 
             <TouchableOpacity
-              style={[styles.floatingCaptionItem, { backgroundColor: palette.mutedButtonBg }]}
+              style={[styles.floatingCaptionItem, { backgroundColor: palette.mutedButtonBg, },]}
               onPress={() => {
-                setDontShowAgain(true);
+                setDontShowAgain(true,);
                 closeProfileMenu();
-                onContinueToDashboard(true);
+                onContinueToDashboard(true,);
               }}
               activeOpacity={0.82}
             >
@@ -816,8 +816,8 @@ export default function AirsIntroExperience({
               >
                 <Check size={11} color={palette.accent} />
               </View>
-              <Text style={[styles.floatingCaptionText, { color: palette.textMuted }]}>
-                {t('onboarding.dontShowIntroAgain')}
+              <Text style={[styles.floatingCaptionText, { color: palette.textMuted, },]}>
+                {t('onboarding.dontShowIntroAgain',)}
               </Text>
             </TouchableOpacity>
           </View>
@@ -834,25 +834,25 @@ export default function AirsIntroExperience({
         onScroll={handleScroll}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={[styles.heroSection, { height: heroHeight, backgroundColor: palette.pageBg }]}>
+        <View style={[styles.heroSection, { height: heroHeight, backgroundColor: palette.pageBg, },]}>
           <Animated.Image
             source={heroBackgroundSource}
             style={[
               styles.heroBackground,
-              { opacity: heroBgImageOpacity, transform: [{ scale: bgScale }] },
+              { opacity: heroBgImageOpacity, transform: [{ scale: bgScale, },], },
             ]}
             resizeMode='cover'
           />
           <Animated.View
             style={[
               styles.heroSolidFadeLayer,
-              { backgroundColor: palette.pageBg, opacity: heroSolidFadeOpacity },
+              { backgroundColor: palette.pageBg, opacity: heroSolidFadeOpacity, },
             ]}
           />
-          <Animated.View style={[styles.heroShade, { opacity: shadeOpacity }]} />
+          <Animated.View style={[styles.heroShade, { opacity: shadeOpacity, },]} />
 
           <Animated.View
-            style={[styles.heroMediaStage, { transform: [{ translateY: cardTranslateY }] }]}
+            style={[styles.heroMediaStage, { transform: [{ translateY: cardTranslateY, },], },]}
           >
             <Animated.View
               style={[
@@ -883,8 +883,8 @@ export default function AirsIntroExperience({
                 <WebView
                   key={videoUri}
                   ref={webViewRef}
-                  originWhitelist={['*']}
-                  source={{ html: webVideoHtml }}
+                  originWhitelist={['*',]}
+                  source={{ html: webVideoHtml, }}
                   allowsInlineMediaPlayback
                   mediaPlaybackRequiresUserAction={false}
                   onMessage={handleWebViewMessage}
@@ -895,14 +895,14 @@ export default function AirsIntroExperience({
                   style={styles.videoFallback}
                   onPress={() => {
                     if (videoUri) {
-                      void Linking.openURL(videoUri);
+                      void Linking.openURL(videoUri,);
                     }
                   }}
                   activeOpacity={0.85}
                 >
                   <PlayCircle size={20} color='#ffffff' />
                   <Text style={styles.videoFallbackText}>
-                    {videoUri ? t('landing.video.openIntro') : t('landing.video.loadingIntro')}
+                    {videoUri ? t('landing.video.openIntro',) : t('landing.video.loadingIntro',)}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -918,21 +918,21 @@ export default function AirsIntroExperience({
                 >
                   <RotateCcw size={14} color='#f8fbff' />
                   {!videoControlsIconOnly && (
-                    <Text style={styles.videoControlText}>{t('landing.video.restart')}</Text>
+                    <Text style={styles.videoControlText}>{t('landing.video.restart',)}</Text>
                   )}
                 </TouchableOpacity>
               ) : null}
 
               {showVideoControls ? (
                 <TouchableOpacity
-                  style={[styles.muteControl, videoControlsIconOnly && styles.videoControlIconOnly]}
+                  style={[styles.muteControl, videoControlsIconOnly && styles.videoControlIconOnly,]}
                   onPress={toggleMute}
                   activeOpacity={0.85}
                 >
                   <MuteIcon size={14} color='#f8fbff' />
                   {!videoControlsIconOnly && (
                     <Text style={styles.videoControlText}>
-                      {effectiveMuted ? t('landing.video.muted') : t('landing.video.soundOn')}
+                      {effectiveMuted ? t('landing.video.muted',) : t('landing.video.soundOn',)}
                     </Text>
                   )}
                 </TouchableOpacity>
@@ -948,7 +948,7 @@ export default function AirsIntroExperience({
                     {
                       width: cardWidth,
                       opacity: mediaTagOpacity,
-                      transform: [{ translateY: mediaTagPillFinalTranslateY }],
+                      transform: [{ translateY: mediaTagPillFinalTranslateY, },],
                     },
                   ]}
                 >
@@ -982,7 +982,7 @@ export default function AirsIntroExperience({
                     {
                       width: cardWidth,
                       opacity: mediaTagOpacity,
-                      transform: [{ translateY: mediaTagTitleFinalTranslateY }],
+                      transform: [{ translateY: mediaTagTitleFinalTranslateY, },],
                     },
                   ]}
                 >
@@ -995,7 +995,7 @@ export default function AirsIntroExperience({
                       },
                     ]}
                   >
-                    {t('landing.media.title')}
+                    {t('landing.media.title',)}
                   </Text>
                 </Animated.View>
 
@@ -1006,7 +1006,7 @@ export default function AirsIntroExperience({
                     {
                       width: cardWidth,
                       opacity: mediaTagOpacity,
-                      transform: [{ translateY: mediaTagSubtitleFinalTranslateY }],
+                      transform: [{ translateY: mediaTagSubtitleFinalTranslateY, },],
                     },
                   ]}
                 >
@@ -1019,7 +1019,7 @@ export default function AirsIntroExperience({
                       },
                     ]}
                   >
-                    {t('landing.media.subtitle')}
+                    {t('landing.media.subtitle',)}
                   </Text>
                 </Animated.View>
               </>
@@ -1029,7 +1029,7 @@ export default function AirsIntroExperience({
           <Animated.View
             style={[
               styles.heroFooter,
-              { opacity: footerOpacity, transform: [{ translateY: footerTranslateY }] },
+              { opacity: footerOpacity, transform: [{ translateY: footerTranslateY, },], },
             ]}
           >
             <View style={styles.heroMetaLeftBlock}>
@@ -1038,19 +1038,19 @@ export default function AirsIntroExperience({
                 ellipsizeMode='tail'
                 style={[
                   styles.heroMetaLeft,
-                  { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor },
+                  { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor, },
                 ]}
               >
-                {t('landing.hero.presentedBy')}
+                {t('landing.hero.presentedBy',)}
               </Text>
             </View>
             <Text
               style={[
                 styles.heroMetaRight,
-                { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor },
+                { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor, },
               ]}
             >
-              {t('landing.hero.scrollToInteract')}
+              {t('landing.hero.scrollToInteract',)}
             </Text>
           </Animated.View>
         </View>
@@ -1060,7 +1060,7 @@ export default function AirsIntroExperience({
             styles.contentCard,
             {
               opacity: contentOpacity,
-              transform: [{ translateY: contentTranslateY }],
+              transform: [{ translateY: contentTranslateY, },],
             },
           ]}
         >
@@ -1071,19 +1071,19 @@ export default function AirsIntroExperience({
               contentFit='contain'
             />
           </View>
-          <Text style={[styles.contentText, { color: palette.textMuted }]}>
-            {t('landing.info.scoreLine')}
+          <Text style={[styles.contentText, { color: palette.textMuted, },]}>
+            {t('landing.info.scoreLine',)}
           </Text>
-          <Text style={[styles.contentText, { color: palette.textMuted }]}>
-            {t('landing.info.summaryLine')}
+          <Text style={[styles.contentText, { color: palette.textMuted, },]}>
+            {t('landing.info.summaryLine',)}
           </Text>
           <View style={styles.minimalActions}>
             <TouchableOpacity
               activeOpacity={0.75}
-              onPress={() => onContinueToDashboard(dontShowAgain)}
+              onPress={() => onContinueToDashboard(dontShowAgain,)}
             >
-              <Text style={[styles.linkAction, { color: palette.accent }]}>
-                {t('landing.actions.goToDashboard')}
+              <Text style={[styles.linkAction, { color: palette.accent, },]}>
+                {t('landing.actions.goToDashboard',)}
               </Text>
             </TouchableOpacity>
           </View>
@@ -1287,7 +1287,7 @@ const styles = createTypographyStyles({
     fontWeight: '700',
     letterSpacing: 0.2,
     textShadowColor: 'rgba(0,0,0,0.28)',
-    textShadowOffset: { width: 0, height: 1 },
+    textShadowOffset: { width: 0, height: 1, },
     textShadowRadius: 4,
   },
   heroMetaRight: {
@@ -1295,7 +1295,7 @@ const styles = createTypographyStyles({
     fontSize: 15,
     fontWeight: '700',
     textShadowColor: 'rgba(0,0,0,0.28)',
-    textShadowOffset: { width: 0, height: 1 },
+    textShadowOffset: { width: 0, height: 1, },
     textShadowRadius: 4,
   },
   webVideo: {
@@ -1385,7 +1385,7 @@ const styles = createTypographyStyles({
     letterSpacing: 0.35,
     textAlign: 'center',
     textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowOffset: { width: 0, height: 1 },
+    textShadowOffset: { width: 0, height: 1, },
     textShadowRadius: 3,
     width: '100%',
   },
@@ -1394,7 +1394,7 @@ const styles = createTypographyStyles({
     fontWeight: '900',
     textAlign: 'center',
     textShadowColor: 'rgba(0,0,0,0.35)',
-    textShadowOffset: { width: 0, height: 2 },
+    textShadowOffset: { width: 0, height: 2, },
     textShadowRadius: 10,
     letterSpacing: 0.1,
     marginTop: 0,
@@ -1446,4 +1446,4 @@ const styles = createTypographyStyles({
     fontWeight: '700',
     textDecorationLine: 'underline',
   },
-});
+},);

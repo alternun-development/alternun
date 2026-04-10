@@ -1,3 +1,25 @@
+## [1.0.41](https://github.com/alternun-development/alternun/compare/v1.0.40...v1.0.41) (2026-04-10)
+
+
+### Bug Fixes
+
+* **mobile,ui,repo:** app, HeroPanel, .versioning ([138f80b](https://github.com/alternun-development/alternun/commit/138f80b82435849f9a015dc2cd5936cfb30f1244))
+
+
+
+
+
+## [1.0.41](https://github.com/alternun-development/alternun/compare/v1.0.40...v1.0.41) (2026-04-10)
+
+
+### Bug Fixes
+
+* **mobile,ui,repo:** app, HeroPanel, .versioning ([138f80b](https://github.com/alternun-development/alternun/commit/138f80b82435849f9a015dc2cd5936cfb30f1244))
+
+
+
+
+
 ## [1.0.40](https://github.com/alternun-development/alternun/compare/v1.0.39...v1.0.40) (2026-04-07)
 
 ### Bug Fixes

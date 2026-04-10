@@ -1,24 +1,24 @@
-import { useAuth } from '../components/auth/AppAuthProvider';
+import { useAuth, } from '../components/auth/AppAuthProvider';
 import Dashboard from '../components/dashboard/Dashboard';
 import AirsIntroExperience from '../components/onboarding/AirsIntroExperience';
-import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
-import { readPendingAuthentikOAuthProvider } from '@alternun/auth';
-import { Redirect, useRootNavigationState, useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useAppPreferences, } from '../components/settings/AppPreferencesProvider';
+import { readPendingAuthentikOAuthProvider, } from '@alternun/auth';
+import { Redirect, useRootNavigationState, useRouter, } from 'expo-router';
+import React, { useMemo, useState, } from 'react';
+import { ActivityIndicator, StyleSheet, View, } from 'react-native';
 
 export default function HomeScreen(): React.JSX.Element {
-  const { user, loading, signIn, signOutUser, refresh } = useAuth();
-  const { showAirsIntro, setShowAirsIntro } = useAppPreferences();
+  const { user, loading, signIn, signOutUser, refresh, } = useAuth();
+  const { showAirsIntro, setShowAirsIntro, } = useAppPreferences();
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
-  const [introDismissedThisSession, setIntroDismissedThisSession] = useState(false);
+  const [introDismissedThisSession, setIntroDismissedThisSession,] = useState(false,);
   const pendingAuthentikProvider = readPendingAuthentikOAuthProvider();
-  const isNavigationReady = Boolean(rootNavigationState?.key);
+  const isNavigationReady = Boolean(rootNavigationState?.key,);
 
   const shouldShowAirsIntro = useMemo(
     () => !user && showAirsIntro && !introDismissedThisSession,
-    [introDismissedThisSession, showAirsIntro, user]
+    [introDismissedThisSession, showAirsIntro, user,],
   );
 
   if (loading || !isNavigationReady) {
@@ -30,19 +30,19 @@ export default function HomeScreen(): React.JSX.Element {
   }
 
   if (!user && pendingAuthentikProvider) {
-    return <Redirect href={{ pathname: '/auth', params: { next: '/' } }} />;
+    return <Redirect href={{ pathname: '/auth', params: { next: '/', }, }} />;
   }
 
   if (shouldShowAirsIntro) {
     return (
       <AirsIntroExperience
-        onContinueToDashboard={(dontShowAgain) => {
+        onContinueToDashboard={(dontShowAgain,) => {
           if (dontShowAgain) {
-            setShowAirsIntro(false);
+            setShowAirsIntro(false,);
           }
-          setIntroDismissedThisSession(true);
+          setIntroDismissedThisSession(true,);
         }}
-        onSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
+        onSignIn={() => router.push({ pathname: '/auth', params: { next: '/', }, },)}
       />
     );
   }
@@ -53,17 +53,17 @@ export default function HomeScreen(): React.JSX.Element {
       isLoading={loading}
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       onReload={refresh}
-      onRequireSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
-      onOpenProfilePage={() => router.push('/profile')}
-      onOpenSettingsPage={() => router.push('/settings')}
-      onWalletConnect={async (walletType: string) => {
+      onRequireSignIn={() => router.push({ pathname: '/auth', params: { next: '/', }, },)}
+      onOpenProfilePage={() => router.push('/profile',)}
+      onOpenSettingsPage={() => router.push('/settings',)}
+      onWalletConnect={async (walletType: string,) => {
         await signIn({
           provider: walletType,
           flow: 'native',
-        });
+        },);
       }}
       onSignOut={async () => {
-        setIntroDismissedThisSession(false);
+        setIntroDismissedThisSession(false,);
         await signOutUser();
       }}
     />
@@ -77,4 +77,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-});
+},);

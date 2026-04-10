@@ -1,8 +1,8 @@
-import { useAppTranslation } from '../i18n/useAppTranslation';
-import { BlurView } from 'expo-blur';
-import { Image as ExpoImage } from 'expo-image';
-import React, { useEffect, useMemo } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useAppTranslation, } from '../i18n/useAppTranslation';
+import { BlurView, } from 'expo-blur';
+import { Image as ExpoImage, } from 'expo-image';
+import React, { useEffect, useMemo, } from 'react';
+import { StyleSheet, Text, useWindowDimensions, View, } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -13,12 +13,12 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { ChangelogDrawer } from '@alternun/ui';
+import { ChangelogDrawer, } from '@alternun/ui';
 import SupportButton from './SupportButton';
-import { createTypographyStyles } from '../theme/typography';
+import { createTypographyStyles, } from '../theme/typography';
 import AirsBrandMark from '../branding/AirsBrandMark';
-import { useAppPreferences } from '../settings/AppPreferencesProvider';
-import { resolvePrimaryLinksForViewport } from './AppInfoFooter.links';
+import { useAppPreferences, } from '../settings/AppPreferencesProvider';
+import { resolvePrimaryLinksForViewport, } from './AppInfoFooter.links';
 import {
   AIRS_LOGOTIPO_DARK,
   AIRS_LOGOTIPO_LIGHT,
@@ -30,88 +30,88 @@ import {
   SOCIAL_LINKS,
   resolveVersionMetadata,
 } from './Footer.shared';
-import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
+import { getChangelogContent, GITHUB_REPO_URL, } from '../../utils/getChangelog';
 
 export default function LandingFooter(): React.JSX.Element {
-  const { themeMode, language } = useAppPreferences();
-  const { width } = useWindowDimensions();
-  const { t } = useAppTranslation('mobile');
+  const { themeMode, language, } = useAppPreferences();
+  const { width, } = useWindowDimensions();
+  const { t, } = useAppTranslation('mobile',);
   const isDark = themeMode === 'dark';
-  const versionMetadata = useMemo(resolveVersionMetadata, []);
-  const changelogContent = useMemo(getChangelogContent, []);
+  const versionMetadata = useMemo(resolveVersionMetadata, [],);
+  const changelogContent = useMemo(getChangelogContent, [],);
 
   const isMobile = width < 720;
   const isWide = width >= 1120;
   const useCompactFooter = !isWide;
   const wordmarkSource = isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK;
-  const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
+  const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide, }, language,);
 
   // Floating orb animations
-  const orbLeft = useSharedValue(0);
-  const orbRight = useSharedValue(0);
+  const orbLeft = useSharedValue(0,);
+  const orbRight = useSharedValue(0,);
 
   useEffect(() => {
-    const makeFloat = (duration: number): ReturnType<typeof withRepeat> =>
+    const makeFloat = (duration: number,): ReturnType<typeof withRepeat> =>
       withRepeat(
         withSequence(
-          withTiming(1, { duration, easing: Easing.inOut(Easing.sin) }),
-          withTiming(0, { duration, easing: Easing.inOut(Easing.sin) })
+          withTiming(1, { duration, easing: Easing.inOut(Easing.sin,), },),
+          withTiming(0, { duration, easing: Easing.inOut(Easing.sin,), },),
         ),
-        -1
+        -1,
       );
-    orbLeft.value = makeFloat(5800) as unknown as number;
-    orbRight.value = makeFloat(7200) as unknown as number;
+    orbLeft.value = makeFloat(5800,) as unknown as number;
+    orbRight.value = makeFloat(7200,) as unknown as number;
     return () => {
-      cancelAnimation(orbLeft);
-      cancelAnimation(orbRight);
+      cancelAnimation(orbLeft,);
+      cancelAnimation(orbRight,);
     };
-  }, [orbLeft, orbRight]);
+  }, [orbLeft, orbRight,],);
 
   const orbLeftStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: interpolate(orbLeft.value, [0, 1], [0, 22]) },
-      { translateY: interpolate(orbLeft.value, [0, 1], [0, 18]) },
+      { translateX: interpolate(orbLeft.value, [0, 1,], [0, 22,],), },
+      { translateY: interpolate(orbLeft.value, [0, 1,], [0, 18,],), },
     ],
-  }));
+  }),);
 
   const orbRightStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: interpolate(orbRight.value, [0, 1], [0, -18]) },
-      { translateY: interpolate(orbRight.value, [0, 1], [0, -22]) },
+      { translateX: interpolate(orbRight.value, [0, 1,], [0, -18,],), },
+      { translateY: interpolate(orbRight.value, [0, 1,], [0, -22,],), },
     ],
-  }));
+  }),);
 
   const palette = isDark
     ? {
-        shellBodyBg: 'rgba(6, 18, 17, 0.48)',
-        shellTopBg: 'rgba(6, 18, 17, 0.10)',
-        shellBorder: 'rgba(142, 255, 223, 0.12)',
-        glowA: 'rgba(30, 230, 181, 0.16)',
-        glowB: 'rgba(98, 208, 255, 0.12)',
-        title: '#effff9',
-        text: 'rgba(239,255,249,0.82)',
-        muted: 'rgba(220,255,246,0.62)',
-        socialBg: 'rgba(30,230,181,0.18)',
-        socialBorder: 'rgba(173,255,233,0.24)',
-        accent: '#1ee6b5',
-        markCutout: '#063339',
-        bottomBar: 'rgba(0,0,0,0.12)',
-      }
+      shellBodyBg: 'rgba(6, 18, 17, 0.48)',
+      shellTopBg: 'rgba(6, 18, 17, 0.10)',
+      shellBorder: 'rgba(142, 255, 223, 0.12)',
+      glowA: 'rgba(30, 230, 181, 0.16)',
+      glowB: 'rgba(98, 208, 255, 0.12)',
+      title: '#effff9',
+      text: 'rgba(239,255,249,0.82)',
+      muted: 'rgba(220,255,246,0.62)',
+      socialBg: 'rgba(30,230,181,0.18)',
+      socialBorder: 'rgba(173,255,233,0.24)',
+      accent: '#1ee6b5',
+      markCutout: '#063339',
+      bottomBar: 'rgba(0,0,0,0.12)',
+    }
     : {
-        shellBodyBg: 'rgba(250, 255, 253, 0.72)',
-        shellTopBg: 'rgba(250, 255, 253, 0.14)',
-        shellBorder: 'rgba(11, 90, 95, 0.08)',
-        glowA: 'rgba(30, 230, 181, 0.12)',
-        glowB: 'rgba(11, 90, 95, 0.08)',
-        title: '#0b2d31',
-        text: 'rgba(11,45,49,0.82)',
-        muted: 'rgba(11,45,49,0.58)',
-        socialBg: 'rgba(11,90,95,0.08)',
-        socialBorder: 'rgba(11,90,95,0.14)',
-        accent: '#0b5a5f',
-        markCutout: '#dffcf3',
-        bottomBar: 'rgba(255,255,255,0.2)',
-      };
+      shellBodyBg: 'rgba(250, 255, 253, 0.72)',
+      shellTopBg: 'rgba(250, 255, 253, 0.14)',
+      shellBorder: 'rgba(11, 90, 95, 0.08)',
+      glowA: 'rgba(30, 230, 181, 0.12)',
+      glowB: 'rgba(11, 90, 95, 0.08)',
+      title: '#0b2d31',
+      text: 'rgba(11,45,49,0.82)',
+      muted: 'rgba(11,45,49,0.58)',
+      socialBg: 'rgba(11,90,95,0.08)',
+      socialBorder: 'rgba(11,90,95,0.14)',
+      accent: '#0b5a5f',
+      markCutout: '#dffcf3',
+      bottomBar: 'rgba(255,255,255,0.2)',
+    };
 
   const shellPadding = isWide ? 20 : isMobile ? 12 : 14;
   const shellRadius = isWide ? 26 : isMobile ? 16 : 20;
@@ -144,13 +144,13 @@ export default function LandingFooter(): React.JSX.Element {
         <BlurView
           intensity={isWide ? 48 : 34}
           tint={isDark ? 'dark' : 'light'}
-          style={[StyleSheet.absoluteFillObject, { borderRadius: shellRadius }]}
+          style={[StyleSheet.absoluteFillObject, { borderRadius: shellRadius, },]}
         />
         <View
           pointerEvents='none'
           style={[
             styles.shellSurfaceBody,
-            { top: shellRevealHeight, backgroundColor: palette.shellBodyBg },
+            { top: shellRevealHeight, backgroundColor: palette.shellBodyBg, },
           ]}
         />
         <FooterTopFade height={shellRevealHeight} color={palette.shellTopBg} />
@@ -159,7 +159,7 @@ export default function LandingFooter(): React.JSX.Element {
           style={[
             styles.glowOrb,
             styles.glowOrbLeft,
-            { backgroundColor: palette.glowA },
+            { backgroundColor: palette.glowA, },
             orbLeftStyle,
           ]}
         />
@@ -168,19 +168,19 @@ export default function LandingFooter(): React.JSX.Element {
           style={[
             styles.glowOrb,
             styles.glowOrbRight,
-            { backgroundColor: palette.glowB },
+            { backgroundColor: palette.glowB, },
             orbRightStyle,
           ]}
         />
 
         {isWide ? (
           <>
-            <View style={[styles.topRow, styles.topRowWide]}>
-              <View style={[styles.brandBlock, styles.brandBlockWide]}>
+            <View style={[styles.topRow, styles.topRowWide,]}>
+              <View style={[styles.brandBlock, styles.brandBlockWide,]}>
                 <View style={styles.brandHeader}>
                   <ExpoImage
                     source={wordmarkSource}
-                    style={{ width: wordmarkWidth, height: wordmarkHeight }}
+                    style={{ width: wordmarkWidth, height: wordmarkHeight, }}
                     contentFit='contain'
                   />
                   <AirsBrandMark
@@ -190,8 +190,8 @@ export default function LandingFooter(): React.JSX.Element {
                   />
                 </View>
                 <View style={styles.bylineRow}>
-                  <Text style={[styles.bylineText, { color: palette.accent }]}>
-                    {t('labels.by')}
+                  <Text style={[styles.bylineText, { color: palette.accent, },]}>
+                    {t('labels.by',)}
                   </Text>
                   <ExpoImage
                     source={ALTERNUN_POWERED_BY_LOGO}
@@ -201,23 +201,23 @@ export default function LandingFooter(): React.JSX.Element {
                 </View>
               </View>
 
-              <View style={[styles.linksArea, styles.linksAreaWide]}>
-                <View style={[styles.linkRow, styles.desktopLinkRow]}>
-                  {primaryLinks.map((link) => (
+              <View style={[styles.linksArea, styles.linksAreaWide,]}>
+                <View style={[styles.linkRow, styles.desktopLinkRow,]}>
+                  {primaryLinks.map((link,) => (
                     <FooterTextLink
                       key={link.labelKey}
-                      label={t(link.labelKey, undefined, link.fallbackLabel)}
+                      label={t(link.labelKey, undefined, link.fallbackLabel,)}
                       url={link.url}
                       textColor={palette.title}
                       hoverColor={palette.accent}
                     />
-                  ))}
+                  ),)}
                 </View>
               </View>
 
               <View style={styles.socialBlock}>
                 <View style={styles.socialRow}>
-                  {SOCIAL_LINKS.map((link) => (
+                  {SOCIAL_LINKS.map((link,) => (
                     <SocialPill
                       key={link.label}
                       {...link}
@@ -226,7 +226,7 @@ export default function LandingFooter(): React.JSX.Element {
                       borderColor={palette.socialBorder}
                       hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
                     />
-                  ))}
+                  ),)}
                 </View>
               </View>
             </View>
@@ -241,16 +241,16 @@ export default function LandingFooter(): React.JSX.Element {
                 },
               ]}
             >
-              {t('footer.tagline')}
+              {t('footer.tagline',)}
             </Text>
           </>
         ) : (
           <View style={styles.compactSection}>
             <View style={styles.brandBlock}>
-              <View style={[styles.brandHeader, styles.brandHeaderCompact]}>
+              <View style={[styles.brandHeader, styles.brandHeaderCompact,]}>
                 <ExpoImage
                   source={wordmarkSource}
-                  style={{ width: wordmarkWidth, height: wordmarkHeight }}
+                  style={{ width: wordmarkWidth, height: wordmarkHeight, }}
                   contentFit='contain'
                 />
                 <AirsBrandMark
@@ -261,9 +261,9 @@ export default function LandingFooter(): React.JSX.Element {
               </View>
               <View style={styles.bylineRow}>
                 <Text
-                  style={[styles.bylineText, styles.bylineTextCompact, { color: palette.accent }]}
+                  style={[styles.bylineText, styles.bylineTextCompact, { color: palette.accent, },]}
                 >
-                  {t('labels.by')}
+                  {t('labels.by',)}
                 </Text>
                 <ExpoImage
                   source={ALTERNUN_POWERED_BY_LOGO}
@@ -275,16 +275,16 @@ export default function LandingFooter(): React.JSX.Element {
 
             <Text
               numberOfLines={isMobile ? 2 : 1}
-              style={[styles.compactTagline, { color: palette.text }]}
+              style={[styles.compactTagline, { color: palette.text, },]}
             >
-              {t('footer.tagline')}
+              {t('footer.tagline',)}
             </Text>
 
             <View style={styles.compactLinkGrid}>
-              {primaryLinks.map((link, index) => (
+              {primaryLinks.map((link, index,) => (
                 <React.Fragment key={link.labelKey}>
                   <FooterTextLink
-                    label={t(link.labelKey, undefined, link.fallbackLabel)}
+                    label={t(link.labelKey, undefined, link.fallbackLabel,)}
                     url={link.url}
                     textColor={palette.title}
                     hoverColor={palette.accent}
@@ -293,14 +293,14 @@ export default function LandingFooter(): React.JSX.Element {
                     singleLine
                   />
                   {index < primaryLinks.length - 1 && (
-                    <Text style={[styles.compactLinkSeparator, { color: palette.muted }]}>•</Text>
+                    <Text style={[styles.compactLinkSeparator, { color: palette.muted, },]}>•</Text>
                   )}
                 </React.Fragment>
-              ))}
+              ),)}
             </View>
 
             <View style={styles.compactSocialRow}>
-              {SOCIAL_LINKS.map((link) => (
+              {SOCIAL_LINKS.map((link,) => (
                 <SocialPill
                   key={link.label}
                   {...link}
@@ -310,7 +310,7 @@ export default function LandingFooter(): React.JSX.Element {
                   borderColor={palette.socialBorder}
                   hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
                 />
-              ))}
+              ),)}
             </View>
           </View>
         )}
@@ -505,4 +505,4 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     gap: 8,
   },
-});
+},);
