@@ -7,6 +7,7 @@ import type { NotificationItem } from '../dashboard/NotificationDropdown';
 
 type NotificationsAction =
   | { type: 'MARK_READ'; id: string }
+  | { type: 'MARK_UNREAD'; id: string }
   | { type: 'MARK_ALL_READ' }
   | { type: 'ARCHIVE'; id: string }
   | { type: 'UNARCHIVE'; id: string }
@@ -16,6 +17,7 @@ interface NotificationsContextType {
   items: NotificationItem[];
   unreadCount: number;
   markRead: (id: string) => void;
+  markUnread: (id: string) => void;
   markAllRead: () => void;
   archive: (id: string) => void;
   unarchive: (id: string) => void;
@@ -73,6 +75,9 @@ function notificationsReducer(
     case 'MARK_READ':
       return state.map((n) => (n.id === action.id ? { ...n, read: true } : n));
 
+    case 'MARK_UNREAD':
+      return state.map((n) => (n.id === action.id ? { ...n, read: false } : n));
+
     case 'MARK_ALL_READ':
       return state.map((n) => (!n.archived ? { ...n, read: true } : n));
 
@@ -99,6 +104,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'MARK_READ', id });
   };
 
+  const markUnread = (id: string) => {
+    dispatch({ type: 'MARK_UNREAD', id });
+  };
+
   const markAllRead = () => {
     dispatch({ type: 'MARK_ALL_READ' });
   };
@@ -119,6 +128,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     items,
     unreadCount,
     markRead,
+    markUnread,
     markAllRead,
     archive,
     unarchive,
