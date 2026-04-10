@@ -253,10 +253,10 @@ const styles = StyleSheet.create({
   },
   tooltip: {
     position: 'absolute',
-    bottom: '100%',
+    top: '100%',
     left: '50%',
     marginLeft: -45,
-    marginBottom: 8,
+    marginTop: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,

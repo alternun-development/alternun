@@ -367,10 +367,10 @@ export default function MiPerfilScreen(): React.JSX.Element {
   return (
     <ScreenShell activeSection='mi-perfil' backgroundColor={c.bg}>
       <View style={[styles.root, { backgroundColor: c.bg, },]}>
-        <View style={styles.pageHeader}>
+        <View style={styles.headerBar}>
           <Text style={[styles.pageTitle, { color: c.text, },]}>My Profile</Text>
+          <PageTabBar tabs={TABS} activeTab={activeTab} onChangeTab={setActiveTab} isDark={isDark} accent={c.accent} muted={c.muted} />
         </View>
-        <PageTabBar tabs={TABS} activeTab={activeTab} onChangeTab={setActiveTab} isDark={isDark} accent={c.accent} muted={c.muted} />
         <Animated.View style={[styles.tabContent, { opacity: fadeAnim, transform: [{ translateY: slideAnim, },], },]}>
           {activeTab === 'ranking' && <RankingTab isDark={isDark} c={c} />}
           {activeTab === 'wallet' && <WalletTab isDark={isDark} c={c} />}
@@ -385,7 +385,7 @@ export default function MiPerfilScreen(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   root: { flex: 1, },
-  pageHeader: { paddingHorizontal: 16, paddingVertical: 12, alignItems: 'center', },
+  headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 8, },
   pageTitle: { fontSize: 20, fontWeight: '700', },
   tabContent: { flex: 1, },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, },
