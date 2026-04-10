@@ -43,7 +43,8 @@ type FilterTab = 'inbox' | 'archived';
 export default function NotificationsScreen(): React.JSX.Element {
   const router = useRouter();
   const { themeMode } = useAppPreferences();
-  const { items, markRead, markAllRead, archive, unarchive, deleteNotif } = useNotifications();
+  const { items, markRead, markUnread, markAllRead, archive, unarchive, deleteNotif } =
+    useNotifications();
   const isDark = themeMode === 'dark';
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
@@ -253,18 +254,22 @@ export default function NotificationsScreen(): React.JSX.Element {
 
                         {/* Action buttons */}
                         <View style={styles.actionButtons}>
-                          {!notif.read && (
-                            <TouchableOpacity
-                              style={[styles.actionBtn, { backgroundColor: c.buttonBg }]}
-                              onPress={() => markRead(notif.id)}
-                              activeOpacity={0.7}
-                            >
-                              <CheckCheck size={14} color={c.buttonText} />
-                              <Text style={[styles.actionBtnText, { color: c.buttonText }]}>
-                                Mark read
-                              </Text>
-                            </TouchableOpacity>
-                          )}
+                          <TouchableOpacity
+                            style={[styles.actionBtn, { backgroundColor: c.buttonBg }]}
+                            onPress={() => {
+                              if (notif.read) {
+                                markUnread(notif.id);
+                              } else {
+                                markRead(notif.id);
+                              }
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            <CheckCheck size={14} color={c.buttonText} />
+                            <Text style={[styles.actionBtnText, { color: c.buttonText }]}>
+                              {notif.read ? 'Mark unread' : 'Mark read'}
+                            </Text>
+                          </TouchableOpacity>
 
                           <TouchableOpacity
                             style={[styles.actionBtn, { backgroundColor: c.buttonBg }]}
