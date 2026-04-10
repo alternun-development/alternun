@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState, } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View, } from 'react-native';
-import { Coins, TrendingUp, Check, Gift, Lock, type LucideProps, } from 'lucide-react-native';
+import { Coins, TrendingUp, Check, Gift, Lock, ShieldCheck, type LucideProps, } from 'lucide-react-native';
 import { GlassCard, SectionContainer, StatCard, StatusPill, } from '@alternun/ui';
 import { useAppPreferences, } from '../components/settings/AppPreferencesProvider';
 import HorizontalCardScroller from '../components/common/HorizontalCardScroller';
@@ -13,6 +13,7 @@ const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
 const CheckIcon = Check as React.FC<LucideProps>;
 const GiftIcon = Gift as React.FC<LucideProps>;
 const LockIcon = Lock as React.FC<LucideProps>;
+const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
