@@ -3,12 +3,14 @@
 import { useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
+import { useTheme } from '@/hooks/useTheme';
 
 gsap.registerPlugin(useGSAP);
-import { HelpCircle, Globe, ExternalLink } from 'lucide-react';
+import { HelpCircle, Globe, ExternalLink, Moon, Sun, Monitor } from 'lucide-react';
 
 export default function TopBar() {
   const barRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme, theme, toggleTheme, setSystemTheme, mounted } = useTheme();
 
   useGSAP(
     () => {
@@ -45,6 +47,36 @@ export default function TopBar() {
         <Globe size={14} />
         Español
       </a>
+
+      {/* Theme Toggle */}
+      {mounted && (
+        <div className='flex items-center gap-2'>
+          <button
+            onClick={() => setSystemTheme()}
+            title='Usar tema del sistema'
+            className={`p-1.5 rounded-lg transition-colors ${
+              theme === 'system' ? 'bg-teal/20 text-teal' : 'text-white/70 hover:text-white'
+            }`}
+          >
+            <Monitor size={14} />
+          </button>
+          <button
+            onClick={() => {
+              if ('startViewTransition' in document) {
+                (document as any).startViewTransition(() => {
+                  import('@/hooks/useTheme').then(() => {});
+                });
+              }
+              toggleTheme();
+            }}
+            title={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            className='p-1.5 rounded-lg text-white/70 hover:text-teal transition-colors'
+          >
+            {resolvedTheme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+        </div>
+      )}
+
       <a
         href='#'
         className='flex items-center gap-1.5 text-white/70 hover:text-teal transition-colors'
