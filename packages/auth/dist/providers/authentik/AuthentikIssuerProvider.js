@@ -389,7 +389,9 @@ export function oidcSessionToExecutionSession(session) {
         idToken: (_b = session.tokens.idToken) !== null && _b !== void 0 ? _b : null,
         expiresAt: (_c = session.tokens.expiresAt) !== null && _c !== void 0 ? _c : null,
         externalIdentity: claimsToExternalIdentity(session.provider, session.claims),
-        linkedAccounts: [externalIdentityToLinkedAccount(claimsToExternalIdentity(session.provider, session.claims), 'oidc')],
+        linkedAccounts: [
+            externalIdentityToLinkedAccount(claimsToExternalIdentity(session.provider, session.claims), 'oidc'),
+        ],
         raw: {
             oidcSession: session,
         },

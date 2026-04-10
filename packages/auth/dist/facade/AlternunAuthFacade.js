@@ -1,5 +1,5 @@
 import { AlternunProviderError, toAlternunAuthError } from '../core/errors.js';
-import { createAlternunSession, executionSessionToUser, issuerSessionToUser, principalToUser } from '../core/session.js';
+import { createAlternunSession, executionSessionToUser, issuerSessionToUser, principalToUser, } from '../core/session.js';
 function uniqueFlows(...candidates) {
     return Array.from(new Set(candidates.filter(Boolean)));
 }
@@ -62,7 +62,10 @@ export class AlternunAuthFacade {
         }
     }
     attachExecutionSubscription() {
-        if (this.providerUnsubscribe || !this.executionProvider.onAuthStateChange) {
+        if (this.providerUnsubscribe) {
+            return;
+        }
+        if (!this.executionProvider.onAuthStateChange) {
             return;
         }
         this.providerUnsubscribe = this.executionProvider.onAuthStateChange((user) => {
@@ -76,7 +79,10 @@ export class AlternunAuthFacade {
         });
     }
     detachExecutionSubscription() {
-        if (!this.providerUnsubscribe || this.listeners.size > 0) {
+        if (!this.providerUnsubscribe) {
+            return;
+        }
+        if (this.listeners.size > 0) {
             return;
         }
         this.providerUnsubscribe();

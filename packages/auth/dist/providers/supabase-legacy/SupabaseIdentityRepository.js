@@ -12,7 +12,9 @@ function toOidcClaimsFromProjection(input) {
         iss: input.principal.issuer,
         email: input.email,
         email_verified: Boolean(input.metadata.emailVerified),
-        name: (_a = input.displayName) !== null && _a !== void 0 ? _a : (typeof (externalIdentity === null || externalIdentity === void 0 ? void 0 : externalIdentity.displayName) === 'string' ? externalIdentity.displayName : undefined),
+        name: (_a = input.displayName) !== null && _a !== void 0 ? _a : (typeof (externalIdentity === null || externalIdentity === void 0 ? void 0 : externalIdentity.displayName) === 'string'
+            ? externalIdentity.displayName
+            : undefined),
         picture: (_b = input.avatarUrl) !== null && _b !== void 0 ? _b : (typeof (externalIdentity === null || externalIdentity === void 0 ? void 0 : externalIdentity.avatarUrl) === 'string' ? externalIdentity.avatarUrl : undefined),
         ...input.metadata.rawClaims,
     };
