@@ -1,11 +1,11 @@
-import { useLocalSearchParams, useRootNavigationState, useRouter, } from 'expo-router';
-import React, { useEffect, useMemo, useRef, } from 'react';
-import { ActivityIndicator, StyleSheet, View, } from 'react-native';
-import { resolveAuthentikLoginStrategy, webRedirectSignIn, } from '@alternun/auth';
-import { useAuth, } from '../components/auth/AppAuthProvider';
+import { useLocalSearchParams, useRootNavigationState, useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { resolveAuthentikLoginStrategy, webRedirectSignIn } from '@alternun/auth';
+import { useAuth } from '../components/auth/AppAuthProvider';
 
-function readParam(value: string | string[] | undefined,): string | null {
-  if (Array.isArray(value,)) {
+function readParam(value: string | string[] | undefined): string | null {
+  if (Array.isArray(value)) {
     return value[0] ?? null;
   }
 
@@ -16,17 +16,17 @@ function readParam(value: string | string[] | undefined,): string | null {
   return null;
 }
 
-function readBooleanParam(value: string | string[] | undefined, defaultValue: boolean,): boolean {
-  const normalized = readParam(value,)?.toLowerCase();
+function readBooleanParam(value: string | string[] | undefined, defaultValue: boolean): boolean {
+  const normalized = readParam(value)?.toLowerCase();
   if (normalized == null) {
     return defaultValue;
   }
 
-  if (['0', 'false', 'no', 'off',].includes(normalized,)) {
+  if (['0', 'false', 'no', 'off'].includes(normalized)) {
     return false;
   }
 
-  if (['1', 'true', 'yes', 'on',].includes(normalized,)) {
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) {
     return true;
   }
 
@@ -36,22 +36,22 @@ function readBooleanParam(value: string | string[] | undefined, defaultValue: bo
 export default function AuthRelayRoute(): React.JSX.Element {
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
-  const { client, } = useAuth();
-  const { provider, fresh, next, } = useLocalSearchParams<{
+  const { client } = useAuth();
+  const { provider, fresh, next } = useLocalSearchParams<{
     provider?: string | string[];
     fresh?: string | string[];
     next?: string | string[];
   }>();
-  const hasStartedRef = useRef(false,);
-  const isNavigationReady = Boolean(rootNavigationState?.key,);
+  const hasStartedRef = useRef(false);
+  const isNavigationReady = Boolean(rootNavigationState?.key);
 
   const providerHint = useMemo(() => {
-    const resolved = readParam(provider,);
+    const resolved = readParam(provider);
     return resolved === 'google' || resolved === 'discord' ? resolved : null;
-  }, [provider,],);
+  }, [provider]);
 
-  const nextTarget = useMemo(() => readParam(next,), [next,],);
-  const forceFreshSession = useMemo(() => readBooleanParam(fresh, false,), [fresh,],);
+  const nextTarget = useMemo(() => readParam(next), [next]);
+  const forceFreshSession = useMemo(() => readBooleanParam(fresh, false), [fresh]);
   const loginStrategy = resolveAuthentikLoginStrategy();
 
   useEffect(() => {
@@ -64,8 +64,22 @@ export default function AuthRelayRoute(): React.JSX.Element {
     }
     hasStartedRef.current = true;
 
+    if (loginStrategy.executionProvider === 'better-auth' && providerHint === 'google') {
+      void webRedirectSignIn({
+        client,
+        provider: providerHint,
+        authentikProviderHint: providerHint,
+        redirectTo: nextTarget,
+        forceFreshSession,
+        strategy: loginStrategy,
+      }).catch(() => {
+        router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
+      });
+      return;
+    }
+
     if (loginStrategy.socialMode === 'supabase' || !providerHint) {
-      router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget, }, } : '/auth',);
+      router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
       return;
     }
 
@@ -76,18 +90,19 @@ export default function AuthRelayRoute(): React.JSX.Element {
       redirectTo: nextTarget,
       forceFreshSession,
       strategy: loginStrategy,
-    },).catch(() => {
-      router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget, }, } : '/auth',);
-    },);
+    }).catch(() => {
+      router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
+    });
   }, [
     client,
     forceFreshSession,
     isNavigationReady,
+    loginStrategy.executionProvider,
     loginStrategy.socialMode,
     nextTarget,
     providerHint,
     router,
-  ],);
+  ]);
 
   return (
     <View style={styles.loadingScreen}>
@@ -103,4 +118,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-},);
+});

@@ -27,6 +27,18 @@ function resolveAuthentikProviderFlowSlugsForStage(
   return env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS ?? '';
 }
 
+function resolveAuthExecutionProviderForStage(
+  stage: PipelineStage,
+  env: NodeJS.ProcessEnv
+): string {
+  const explicit = env.AUTH_EXECUTION_PROVIDER ?? env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER;
+  if (explicit?.trim()) {
+    return explicit.trim();
+  }
+
+  return stage === 'production' ? 'supabase' : 'better-auth';
+}
+
 export function buildCorePipelineSpecs({
   env,
   pipeline,
@@ -50,6 +62,11 @@ export function buildCorePipelineSpecs({
         INFRA_ENABLE_EXPO_SITE: 'true',
         INFRA_IDENTITY_ENABLED: 'false',
         INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
+        AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage('production', env),
+        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage(
+          'production',
+          env
+        ),
         EXPO_PUBLIC_AUTHENTIK_ISSUER: env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? 'alternun-mobile',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('production', env),
@@ -70,6 +87,8 @@ export function buildCorePipelineSpecs({
         INFRA_ENABLE_EXPO_SITE: 'true',
         INFRA_IDENTITY_ENABLED: 'false',
         INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
+        AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage('dev', env),
+        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage('dev', env),
         EXPO_PUBLIC_AUTHENTIK_ISSUER: env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? 'alternun-mobile',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('dev', env),
@@ -90,6 +109,8 @@ export function buildCorePipelineSpecs({
         INFRA_ENABLE_EXPO_SITE: 'true',
         INFRA_IDENTITY_ENABLED: 'false',
         INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
+        AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage('mobile', env),
+        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage('mobile', env),
         EXPO_PUBLIC_AUTHENTIK_ISSUER: env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? 'alternun-mobile',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('mobile', env),

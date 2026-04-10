@@ -23,24 +23,26 @@ It covers:
 
 These variables are read by `packages/auth/src/runtime/config.ts`.
 
-| Variable                             | Required                           | Purpose                                                                      |
-| ------------------------------------ | ---------------------------------- | ---------------------------------------------------------------------------- |
-| `AUTH_EXECUTION_PROVIDER`            | No                                 | Selects Better Auth or legacy Supabase execution                             |
-| `AUTH_ISSUER_PROVIDER`               | No                                 | Selects Authentik or the legacy issuer bridge                                |
-| `AUTH_EMAIL_PROVIDER`                | No                                 | Selects the email provider path                                              |
-| `AUTH_BETTER_AUTH_URL`               | Yes for Better Auth rollout        | Base URL for the Better Auth service                                         |
-| `AUTH_BETTER_AUTH_CLIENT_ID`         | No                                 | Reserved for Better Auth client/runtime integration                          |
-| `AUTH_BETTER_AUTH_API_KEY`           | No                                 | Reserved for service-to-service Better Auth calls if needed                  |
-| `AUTH_EXCHANGE_URL`                  | Yes for canonical exchange rollout | Backend endpoint used to exchange execution identity into the issuer session |
-| `EXPO_PUBLIC_SUPABASE_URL`           | Yes for legacy fallback            | Legacy Supabase URL                                                          |
-| `EXPO_PUBLIC_SUPABASE_KEY`           | Yes for legacy fallback            | Legacy Supabase key                                                          |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY`      | Optional                           | Legacy anon key alias                                                        |
-| `EXPO_PUBLIC_AUTHENTIK_ISSUER`       | Yes                                | Canonical Authentik issuer URL                                               |
-| `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID`    | Yes                                | Public OIDC client id                                                        |
-| `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` | Optional                           | Explicit redirect URI override                                               |
-| `EMAIL_FROM`                         | Yes for non-Supabase email rollout | Sender email                                                                 |
-| `EMAIL_SENDER_NAME`                  | Optional                           | Sender display name                                                          |
-| `EMAIL_LOCALE`                       | Optional                           | Default email locale                                                         |
+| Variable                              | Required                           | Purpose                                                                      |
+| ------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------- |
+| `AUTH_EXECUTION_PROVIDER`             | No                                 | Selects Better Auth or legacy Supabase execution                             |
+| `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` | No                                 | Client-side mirror of the execution provider for mobile/web bundles          |
+| `AUTH_ISSUER_PROVIDER`                | No                                 | Selects Authentik or the legacy issuer bridge                                |
+| `AUTH_EMAIL_PROVIDER`                 | No                                 | Selects the email provider path                                              |
+| `AUTH_BETTER_AUTH_URL`                | Yes for Better Auth rollout        | Base URL for the Better Auth service                                         |
+| `EXPO_PUBLIC_BETTER_AUTH_URL`         | No                                 | Client-side mirror of the Better Auth base URL                               |
+| `AUTH_BETTER_AUTH_CLIENT_ID`          | No                                 | Reserved for Better Auth client/runtime integration                          |
+| `AUTH_BETTER_AUTH_API_KEY`            | No                                 | Reserved for service-to-service Better Auth calls if needed                  |
+| `AUTH_EXCHANGE_URL`                   | Yes for canonical exchange rollout | Backend endpoint used to exchange execution identity into the issuer session |
+| `EXPO_PUBLIC_SUPABASE_URL`            | Yes for legacy fallback            | Legacy Supabase URL                                                          |
+| `EXPO_PUBLIC_SUPABASE_KEY`            | Yes for legacy fallback            | Legacy Supabase key                                                          |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY`       | Optional                           | Legacy anon key alias                                                        |
+| `EXPO_PUBLIC_AUTHENTIK_ISSUER`        | Yes                                | Canonical Authentik issuer URL                                               |
+| `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID`     | Yes                                | Public OIDC client id                                                        |
+| `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI`  | Optional                           | Explicit redirect URI override                                               |
+| `EMAIL_FROM`                          | Yes for non-Supabase email rollout | Sender email                                                                 |
+| `EMAIL_SENDER_NAME`                   | Optional                           | Sender display name                                                          |
+| `EMAIL_LOCALE`                        | Optional                           | Default email locale                                                         |
 
 ## Compatibility Aliases
 
@@ -48,6 +50,7 @@ These aliases are still accepted:
 
 - `EMAIL_PROVIDER`
 - `EMAIL_SMTP_PROVIDER`
+- `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER`
 - `SUPABASE_URL`
 - `SUPABASE_KEY`
 - `SUPABASE_ANON_KEY`
@@ -117,8 +120,9 @@ The first real rollout should use:
 - `AUTH_EXECUTION_PROVIDER=better-auth`
 - `AUTH_ISSUER_PROVIDER=authentik`
 - `AUTH_EMAIL_PROVIDER=postmark` or `ses`
-- `AUTH_BETTER_AUTH_URL=https://testnet.<better-auth-domain>`
+- `AUTH_BETTER_AUTH_URL=https://testnet-auth.alternun.co`
 - `AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange`
+- Better Auth handles the social providers that the app routes through the execution layer, and the facade exchanges the resulting external identity into the canonical Authentik session.
 
 Do not switch shared environments to this shape until the testnet execution plan gates pass.
 

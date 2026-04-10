@@ -132,6 +132,10 @@ export const IDENTITY_INFRA_DEFAULTS = {
       sourceName: 'Google',
       sourceSlug: 'google',
     },
+    discord: {
+      sourceName: 'Discord',
+      sourceSlug: 'discord',
+    },
     supabase: {
       applicationName: 'Alternun Supabase',
       applicationSlug: 'alternun-supabase',

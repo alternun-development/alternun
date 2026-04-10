@@ -433,6 +433,10 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
       }
 
       if (result.redirectUrl) {
+        if (this.runtime === 'web' && typeof window !== 'undefined') {
+          window.location.assign(result.redirectUrl);
+        }
+
         this.log('execution-provider', 'signIn', 'skipped', {
           redirectUrl: result.redirectUrl,
         });

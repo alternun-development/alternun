@@ -1,5 +1,6 @@
-const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
-const TRUTHY_ENV_VALUES = new Set(['1', 'true', 'yes', 'on']);
+import { resolveAuthProviderSelection, } from '../runtime/config.js';
+const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0',]);
+const TRUTHY_ENV_VALUES = new Set(['1', 'true', 'yes', 'on',]);
 const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE = 'source';
 const DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE = 'authentik';
 function normalizeHostname(value) {
@@ -11,6 +12,13 @@ function isTruthy(value) {
     }
     const normalized = value === null || value === void 0 ? void 0 : value.trim().toLowerCase();
     return Boolean(normalized && TRUTHY_ENV_VALUES.has(normalized));
+}
+function normalizeExecutionProvider(value) {
+    const normalized = value === null || value === void 0 ? void 0 : value.trim().toLowerCase();
+    if (normalized === 'better-auth' || normalized === 'supabase') {
+        return normalized;
+    }
+    return null;
 }
 export function parseAuthentikProviderFlowSlugs(value) {
     if (!value) {
@@ -64,17 +72,20 @@ export function getAuthentikSocialLoginMode() {
     return normalizeAuthentikSocialLoginMode(process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE);
 }
 export function shouldUseAuthentikRelayEntry() {
-    return getAuthentikLoginEntryMode() === 'relay';
+    return (getAuthentikLoginEntryMode() === 'relay' &&
+        resolveAuthProviderSelection().executionProvider !== 'better-auth');
 }
 export function resolveAuthentikLoginStrategy(options) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
+    const selection = resolveAuthProviderSelection();
     return {
         mode: normalizeAuthentikLoginEntryMode((_a = options === null || options === void 0 ? void 0 : options.entryMode) !== null && _a !== void 0 ? _a : process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE),
         socialMode: normalizeAuthentikSocialLoginMode((_b = options === null || options === void 0 ? void 0 : options.socialMode) !== null && _b !== void 0 ? _b : process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE),
+        executionProvider: (_c = normalizeExecutionProvider(options === null || options === void 0 ? void 0 : options.executionProvider)) !== null && _c !== void 0 ? _c : selection.executionProvider,
         providerFlowSlugs: resolveAuthentikProviderFlowSlugs({
             hostname: options === null || options === void 0 ? void 0 : options.hostname,
-            value: (_c = options === null || options === void 0 ? void 0 : options.providerFlowSlugsValue) !== null && _c !== void 0 ? _c : process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS,
-            allowCustomProviderFlowSlugs: (_d = options === null || options === void 0 ? void 0 : options.allowCustomProviderFlowSlugs) !== null && _d !== void 0 ? _d : process.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS,
+            value: (_d = options === null || options === void 0 ? void 0 : options.providerFlowSlugsValue) !== null && _d !== void 0 ? _d : process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS,
+            allowCustomProviderFlowSlugs: (_e = options === null || options === void 0 ? void 0 : options.allowCustomProviderFlowSlugs) !== null && _e !== void 0 ? _e : process.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS,
         }),
     };
 }
