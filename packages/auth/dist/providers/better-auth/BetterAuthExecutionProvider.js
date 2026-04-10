@@ -12,7 +12,9 @@ function normalizeSession(input, fallbackProvider) {
             ? claimsToExternalIdentity(fallbackProvider, raw.user)
             : null;
     return {
-        provider: typeof raw.provider === 'string' ? raw.provider : (_a = identityCandidate === null || identityCandidate === void 0 ? void 0 : identityCandidate.provider) !== null && _a !== void 0 ? _a : fallbackProvider,
+        provider: typeof raw.provider === 'string'
+            ? raw.provider
+            : (_a = identityCandidate === null || identityCandidate === void 0 ? void 0 : identityCandidate.provider) !== null && _a !== void 0 ? _a : fallbackProvider,
         accessToken: typeof raw.accessToken === 'string' ? raw.accessToken : null,
         refreshToken: typeof raw.refreshToken === 'string' ? raw.refreshToken : null,
         idToken: typeof raw.idToken === 'string' ? raw.idToken : null,

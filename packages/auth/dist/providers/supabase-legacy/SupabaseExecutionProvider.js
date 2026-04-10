@@ -41,7 +41,8 @@ function extractLinkedAccounts(user) {
                 continue;
             }
             const typedEntry = entry;
-            if (typeof typedEntry.provider !== 'string' || typeof typedEntry.providerUserId !== 'string') {
+            if (typeof typedEntry.provider !== 'string' ||
+                typeof typedEntry.providerUserId !== 'string') {
                 continue;
             }
             linkedAccounts.push({
@@ -153,7 +154,7 @@ export class SupabaseExecutionProvider {
             externalIdentity: (_a = session === null || session === void 0 ? void 0 : session.externalIdentity) !== null && _a !== void 0 ? _a : null,
             needsEmailVerification: typeof outcome === 'object' && outcome !== null && 'needsEmailVerification' in outcome
                 ? Boolean(outcome.needsEmailVerification)
-                : !Boolean(session),
+                : !session,
             emailAlreadyRegistered: typeof outcome === 'object' && outcome !== null && 'emailAlreadyRegistered' in outcome
                 ? Boolean(outcome.emailAlreadyRegistered)
                 : false,

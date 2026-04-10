@@ -1,9 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
-import { buildAuthentikLoginEntryUrl, resolveSafeRedirect } from '@alternun/auth';
 import { OidcClient } from 'oidc-client-ts';
 import type { DocsCmsUserManager } from './auth';
 
 export type DocsCmsAuthentikRelayProvider = 'google';
+
+interface SafeRedirectOptions {
+  allowedOrigins: string[];
+  fallbackUrl: string;
+}
+
+interface BuildAuthentikLoginEntryUrlInput {
+  issuer: string;
+  authorizeUrl: string;
+  providerHint?: string | null;
+}
 
 function normalizeInternalHref(target: string): string {
   if (target.startsWith('/') && !target.startsWith('//')) {
@@ -16,6 +26,47 @@ function normalizeInternalHref(target: string): string {
   } catch {
     return '/admin';
   }
+}
+
+function resolveSafeRedirect(target: string, options: SafeRedirectOptions): string {
+  const fallbackUrl = normalizeInternalHref(options.fallbackUrl);
+
+  if (target.startsWith('/') && !target.startsWith('//')) {
+    return normalizeInternalHref(target);
+  }
+
+  try {
+    const url = new URL(target);
+    if (options.allowedOrigins.includes(url.origin)) {
+      return normalizeInternalHref(`${url.pathname}${url.search}${url.hash}` || fallbackUrl);
+    }
+  } catch {
+    return fallbackUrl;
+  }
+
+  return fallbackUrl;
+}
+
+function buildAuthentikLoginEntryUrl({
+  issuer,
+  authorizeUrl,
+  providerHint,
+}: BuildAuthentikLoginEntryUrlInput): string {
+  const trimmedAuthorizeUrl = authorizeUrl.trim();
+  const normalizedProviderHint = providerHint?.trim();
+
+  if (!trimmedAuthorizeUrl) {
+    throw new Error('CONFIG_ERROR: authorizeUrl is required');
+  }
+
+  if (!normalizedProviderHint) {
+    return trimmedAuthorizeUrl;
+  }
+
+  const authentikOrigin = new URL(issuer).origin;
+  return `${authentikOrigin}/source/oauth/login/${encodeURIComponent(
+    normalizedProviderHint
+  )}/?next=${encodeURIComponent(trimmedAuthorizeUrl)}`;
 }
 
 export function resolveDocsCmsRelayReturnTo(target: string | null | undefined): string {
