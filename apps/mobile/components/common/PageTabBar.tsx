@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions, Platform } from 'react-native';
+import {
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+  Platform,
+} from 'react-native';
 import type { LucideProps } from 'lucide-react-native';
 
 export interface TabItem {
@@ -118,7 +126,11 @@ function TabButton({
   };
 
   const bgColor = isActive ? `${accent}18` : 'transparent';
-  const borderColor = isActive ? `${accent}44` : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(15,23,42,0.08)';
+  const borderColor = isActive
+    ? `${accent}44`
+    : isDark
+    ? 'rgba(255,255,255,0.04)'
+    : 'rgba(15,23,42,0.08)';
   const iconColor = isActive ? accent : muted;
 
   return (
