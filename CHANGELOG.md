@@ -1,3 +1,35 @@
+## [1.0.43](https://github.com/alternun-development/alternun/compare/v1.0.42...v1.0.43) (2026-04-10)
+
+### Bug Fixes
+
+- hide scroll arrows when not needed in horizontal scroller ([4752b43](https://github.com/alternun-development/alternun/commit/4752b4322700587ea6a753c3a5b526769e389a2e))
+- improve mobile PWA behavior and show full app name on topbar ([7bb5d90](https://github.com/alternun-development/alternun/commit/7bb5d90cfe2303f1134f0f4400ba7df7990bf086))
+- resolve eslint errors with trailing commas and type safety ([14e99b4](https://github.com/alternun-development/alternun/commit/14e99b45d5caa4fa11408e6bab66fabf13360e85))
+- restore footer copyright text with hover underline on Alternun link ([6261869](https://github.com/alternun-development/alternun/commit/6261869977cf655be2566d9c942bd93e5c1f1075))
+- restore trailing commas and formatting after prettier ([77958bf](https://github.com/alternun-development/alternun/commit/77958bf33d5a0ab4d403e5b9542b1235a53ab990))
+- upgrade mobile footer layout with improved spacing and smaller social icons ([7a38e78](https://github.com/alternun-development/alternun/commit/7a38e78c2dcf3082d0237f08f866324f18667451))
+
+### Features
+
+- add modern KPI card component and update copyright link ([0d0d255](https://github.com/alternun-development/alternun/commit/0d0d255a5323dd9e0a93d8b16b2083e8924759b3))
+- add standalone notification center page ([6aa375f](https://github.com/alternun-development/alternun/commit/6aa375fb9e4b4532dcc25ec04e2ff4356b8f3e6e))
+
+## [1.0.43](https://github.com/alternun-development/alternun/compare/v1.0.42...v1.0.43) (2026-04-10)
+
+### Bug Fixes
+
+- hide scroll arrows when not needed in horizontal scroller ([4752b43](https://github.com/alternun-development/alternun/commit/4752b4322700587ea6a753c3a5b526769e389a2e))
+- improve mobile PWA behavior and show full app name on topbar ([7bb5d90](https://github.com/alternun-development/alternun/commit/7bb5d90cfe2303f1134f0f4400ba7df7990bf086))
+- resolve eslint errors with trailing commas and type safety ([14e99b4](https://github.com/alternun-development/alternun/commit/14e99b45d5caa4fa11408e6bab66fabf13360e85))
+- restore footer copyright text with hover underline on Alternun link ([6261869](https://github.com/alternun-development/alternun/commit/6261869977cf655be2566d9c942bd93e5c1f1075))
+- restore trailing commas and formatting after prettier ([77958bf](https://github.com/alternun-development/alternun/commit/77958bf33d5a0ab4d403e5b9542b1235a53ab990))
+- upgrade mobile footer layout with improved spacing and smaller social icons ([7a38e78](https://github.com/alternun-development/alternun/commit/7a38e78c2dcf3082d0237f08f866324f18667451))
+
+### Features
+
+- add modern KPI card component and update copyright link ([0d0d255](https://github.com/alternun-development/alternun/commit/0d0d255a5323dd9e0a93d8b16b2083e8924759b3))
+- add standalone notification center page ([6aa375f](https://github.com/alternun-development/alternun/commit/6aa375fb9e4b4532dcc25ec04e2ff4356b8f3e6e))
+
 ## [1.0.42](https://github.com/alternun-development/alternun/compare/v1.0.40...v1.0.42) (2026-04-10)
 
 ### Bug Fixes
