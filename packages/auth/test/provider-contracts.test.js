@@ -39,6 +39,20 @@ test('BetterAuthExecutionProvider normalizes social sign-in results', async () =
   assert.equal((await provider.getExecutionSession())?.accessToken, 'exec-token');
 });
 
+test('BetterAuthExecutionProvider surfaces a trusted-origin hint on fetch failure', async () => {
+  const provider = new BetterAuthExecutionProvider({
+    baseUrl: 'https://testnet-auth.alternun.co',
+    fetchFn: async () => {
+      throw new TypeError('NetworkError when attempting to fetch resource.');
+    },
+  });
+
+  await assert.rejects(
+    provider.signIn({ provider: 'google', flow: 'redirect' }),
+    /BETTER_AUTH_TRUSTED_ORIGINS/
+  );
+});
+
 test('SupabaseExecutionProvider adapts legacy auth client behavior', async () => {
   let signOutCalled = false;
   const client = {
