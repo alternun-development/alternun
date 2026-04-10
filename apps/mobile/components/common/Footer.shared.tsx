@@ -1,4 +1,3 @@
-import { useAppTranslation } from '../i18n/useAppTranslation';
 import Constants from 'expo-constants';
 import { Image as ExpoImage } from 'expo-image';
 import React from 'react';
@@ -214,15 +213,27 @@ export function FooterTopFade({
 }
 
 export function FooterCopyright({ color }: { color: string }): React.JSX.Element {
-  const { t } = useAppTranslation('mobile');
   const footerYear = new Date().getFullYear();
+  const [isHovered, setIsHovered] = React.useState(false);
 
   return (
-    <Pressable onPress={() => openExternalUrl('https://alternun.io')}>
+    <View onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <Text style={[styles.copyrightText, { color }]}>
-        {t('footer.copyright', { year: footerYear }, `(c) ${footerYear} Alternun.io`)}
+        {`(c) ${footerYear} `}
+        <Pressable onPress={() => openExternalUrl('https://alternun.io')}>
+          <Text
+            style={[
+              styles.copyrightText,
+              { color },
+              isHovered && { textDecorationLine: 'underline' },
+            ]}
+          >
+            Alternun
+          </Text>
+        </Pressable>
+        {'. All rights reserved.'}
       </Text>
-    </Pressable>
+    </View>
   );
 }
 
