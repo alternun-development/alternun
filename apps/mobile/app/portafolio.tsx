@@ -292,7 +292,10 @@ export default function PortafolioScreen(): React.JSX.Element {
       <View style={[styles.root, { backgroundColor: c.bg, },]}>
         {/* Page Header + Tab Bar (Single Line) */}
         <View style={styles.headerBar}>
-          <Text style={[styles.pageTitle, { color: c.text, },]}>Portfolio</Text>
+          <View style={styles.titleWithIcon}>
+            <ShieldCheckIcon size={24} color={c.accent} strokeWidth={1.8} />
+            <Text style={[styles.pageTitle, { color: c.text, },]}>Portfolio</Text>
+          </View>
           <PageTabBar
             tabs={TABS}
             activeTab={activeTab}
@@ -328,6 +331,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 8,
+  },
+  titleWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   pageTitle: {
     fontSize: 20,

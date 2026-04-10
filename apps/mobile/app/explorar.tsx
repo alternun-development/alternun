@@ -290,7 +290,10 @@ export default function ExplorarScreen(): React.JSX.Element {
       <View style={[styles.root, { backgroundColor: c.bg, },]}>
         {/* Page Header + Tab Bar (Single Line) */}
         <View style={styles.headerBar}>
-          <Text style={[styles.pageTitle, { color: c.text, },]}>Explore</Text>
+          <View style={styles.titleWithIcon}>
+            <LeafIcon size={24} color={c.accent} strokeWidth={1.8} />
+            <Text style={[styles.pageTitle, { color: c.text, },]}>Explore</Text>
+          </View>
           <PageTabBar
             tabs={TABS}
             activeTab={activeTab}
@@ -330,6 +333,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 8,
+  },
+  titleWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   pageTitle: {
     fontSize: 20,

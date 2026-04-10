@@ -8,6 +8,7 @@ import {
   LogOut,
   Settings,
   Shield,
+  ShieldCheck,
   Trophy,
   UserCircle2,
   Wallet,
@@ -36,6 +37,7 @@ const TrophyIcon = Trophy as React.FC<LucideProps>;
 const SettingsIcon = Settings as React.FC<LucideProps>;
 const LogOutIcon = LogOut as React.FC<LucideProps>;
 const ShieldIcon = Shield as React.FC<LucideProps>;
+const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
 const UserCircle2Icon = UserCircle2 as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
 const CheckIcon = Check as React.FC<LucideProps>;
@@ -368,7 +370,10 @@ export default function MiPerfilScreen(): React.JSX.Element {
     <ScreenShell activeSection='mi-perfil' backgroundColor={c.bg}>
       <View style={[styles.root, { backgroundColor: c.bg, },]}>
         <View style={styles.headerBar}>
-          <Text style={[styles.pageTitle, { color: c.text, },]}>My Profile</Text>
+          <View style={styles.titleWithIcon}>
+            <ShieldCheckIcon size={24} color={c.accent} strokeWidth={1.8} />
+            <Text style={[styles.pageTitle, { color: c.text, },]}>My Profile</Text>
+          </View>
           <PageTabBar tabs={TABS} activeTab={activeTab} onChangeTab={setActiveTab} isDark={isDark} accent={c.accent} muted={c.muted} />
         </View>
         <Animated.View style={[styles.tabContent, { opacity: fadeAnim, transform: [{ translateY: slideAnim, },], },]}>
@@ -386,6 +391,7 @@ export default function MiPerfilScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   root: { flex: 1, },
   headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 8, },
+  titleWithIcon: { flexDirection: 'row', alignItems: 'center', gap: 10, },
   pageTitle: { fontSize: 20, fontWeight: '700', },
   tabContent: { flex: 1, },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, },
