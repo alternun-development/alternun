@@ -146,7 +146,24 @@ export function KpiCard({
         },
         style,
       ]}
+      pointerEvents='none'
     >
+      {/* Decorative circles */}
+      <View
+        style={[
+          styles.decorativeCircle,
+          styles.decorativeCircleSmall,
+          { backgroundColor: toneStyle.value },
+        ]}
+      />
+      <View
+        style={[
+          styles.decorativeCircle,
+          styles.decorativeCircleLarge,
+          { backgroundColor: toneStyle.value },
+        ]}
+      />
+
       <View style={styles.content}>
         <View style={styles.leftSection}>
           <Text
@@ -230,12 +247,33 @@ const styles = StyleSheet.create({
     minWidth: '45%' as unknown as number,
     borderWidth: 1,
     borderRadius: radius.xl,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  decorativeCircle: {
+    position: 'absolute',
+    borderRadius: 999,
+    opacity: 0.08,
+  },
+  decorativeCircleSmall: {
+    width: 60,
+    height: 60,
+    top: -20,
+    right: -20,
+  },
+  decorativeCircleLarge: {
+    width: 100,
+    height: 100,
+    bottom: -40,
+    left: -30,
   },
   content: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     gap: spacing[3],
+    position: 'relative',
+    zIndex: 1,
   },
   leftSection: {
     flex: 1,
