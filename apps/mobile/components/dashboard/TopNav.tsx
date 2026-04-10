@@ -149,7 +149,7 @@ export default function TopNav({
 }: TopNavProps,) {
   const [menuVisible, setMenuVisible,] = useState(false,);
   const [notifVisible, setNotifVisible,] = useState(false,);
-  const [settingsExpanded, setSettingsExpanded,] = useState(false,);
+  const [settingsExpanded, setSettingsExpanded,] = useState(true,);
   const { t, } = useAppTranslation('mobile',);
   const { width, height, } = useWindowDimensions();
   const isDark = themeMode === 'dark';
