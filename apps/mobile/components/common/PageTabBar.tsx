@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, } from 'react';
 import {
   Animated,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
   Platform,
 } from 'react-native';
-import type { LucideProps } from 'lucide-react-native';
+import type { LucideProps, } from 'lucide-react-native';
 
 export interface TabItem {
   key: string;
@@ -32,13 +32,13 @@ export function PageTabBar({
   isDark,
   accent,
   muted,
-}: PageTabBarProps): React.JSX.Element {
-  const { width } = useWindowDimensions();
+}: PageTabBarProps,): React.JSX.Element {
+  const { width, } = useWindowDimensions();
   const isLargeScreen = width >= 768;
 
   return (
     <View style={styles.container}>
-      {tabs.map((tab) => {
+      {tabs.map((tab,) => {
         const isActive = activeTab === tab.key;
         return (
           <TabButton
@@ -50,10 +50,10 @@ export function PageTabBar({
             muted={muted}
             isDark={isDark}
             isLargeScreen={isLargeScreen}
-            onPress={() => onChangeTab(tab.key)}
+            onPress={() => onChangeTab(tab.key,)}
           />
         );
-      })}
+      },)}
     </View>
   );
 }
@@ -76,13 +76,13 @@ function TabButton({
   isDark: boolean;
   isLargeScreen: boolean;
   onPress: () => void;
-}): React.JSX.Element {
-  const [showTooltip, setShowTooltip] = useState(false);
+},): React.JSX.Element {
+  const [showTooltip, setShowTooltip,] = useState(false,);
 
-  const scaleAnim = useRef(new Animated.Value(isActive ? 1 : 0)).current;
-  const opacityAnim = useRef(new Animated.Value(isActive ? 1 : 0)).current;
-  const iconScaleAnim = useRef(new Animated.Value(1)).current;
-  const underlineScaleAnim = useRef(new Animated.Value(isActive ? 1 : 0)).current;
+  const scaleAnim = useRef(new Animated.Value(isActive ? 1 : 0,),).current;
+  const opacityAnim = useRef(new Animated.Value(isActive ? 1 : 0,),).current;
+  const iconScaleAnim = useRef(new Animated.Value(1,),).current;
+  const underlineScaleAnim = useRef(new Animated.Value(isActive ? 1 : 0,),).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -91,37 +91,37 @@ function TabButton({
         useNativeDriver: true,
         speed: 18,
         bounciness: 8,
-      }),
+      },),
       Animated.spring(opacityAnim, {
         toValue: isActive ? 1 : 0,
         useNativeDriver: true,
         speed: 20,
         bounciness: 5,
-      }),
+      },),
       Animated.spring(iconScaleAnim, {
         toValue: isActive ? 0.85 : 1,
         useNativeDriver: true,
         speed: 18,
         bounciness: 8,
-      }),
+      },),
       Animated.spring(underlineScaleAnim, {
         toValue: isActive ? 1 : 0,
         useNativeDriver: false,
         speed: 18,
         bounciness: 8,
-      }),
-    ]).start();
-  }, [isActive, scaleAnim, opacityAnim, iconScaleAnim, underlineScaleAnim]);
+      },),
+    ],).start();
+  }, [isActive, scaleAnim, opacityAnim, iconScaleAnim, underlineScaleAnim,],);
 
   const handleMouseEnter = (): void => {
     if (!isLargeScreen && !isActive && Platform.OS === 'web') {
-      setShowTooltip(true);
+      setShowTooltip(true,);
     }
   };
 
   const handleMouseLeave = (): void => {
     if (Platform.OS === 'web') {
-      setShowTooltip(false);
+      setShowTooltip(false,);
     }
   };
 
@@ -129,8 +129,8 @@ function TabButton({
   const borderColor = isActive
     ? `${accent}44`
     : isDark
-    ? 'rgba(255,255,255,0.04)'
-    : 'rgba(15,23,42,0.08)';
+      ? 'rgba(255,255,255,0.04)'
+      : 'rgba(15,23,42,0.08)';
   const iconColor = isActive ? accent : muted;
 
   return (
@@ -154,7 +154,7 @@ function TabButton({
           {IconComponent && (
             <Animated.View
               style={{
-                transform: [{ scale: iconScaleAnim }],
+                transform: [{ scale: iconScaleAnim, },],
               }}
             >
               <IconComponent size={18} color={iconColor} strokeWidth={2.2} />
@@ -167,7 +167,7 @@ function TabButton({
                 styles.labelWrapper,
                 {
                   opacity: isLargeScreen && !isActive ? 1 : opacityAnim,
-                  transform: [{ scaleX: isLargeScreen && !isActive ? 1 : scaleAnim }],
+                  transform: [{ scaleX: isLargeScreen && !isActive ? 1 : scaleAnim, },],
                 },
               ]}
             >
@@ -193,7 +193,7 @@ function TabButton({
               styles.activeUnderline,
               {
                 backgroundColor: accent,
-                transform: [{ scaleX: underlineScaleAnim }],
+                transform: [{ scaleX: underlineScaleAnim, },],
               },
             ]}
           />
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 4, },
     shadowOpacity: 0.35,
     shadowRadius: 8,
   },
@@ -289,4 +289,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.3,
   },
-});
+},);

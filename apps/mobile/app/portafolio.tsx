@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState, } from 'react';
+import { Animated, ScrollView, StyleSheet, Text, View, } from 'react-native';
 import {
   Coins,
   TrendingUp,
@@ -9,12 +9,12 @@ import {
   ShieldCheck,
   type LucideProps,
 } from 'lucide-react-native';
-import { GlassCard, SectionContainer, StatCard, StatusPill } from '@alternun/ui';
-import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import { GlassCard, SectionContainer, StatCard, StatusPill, } from '@alternun/ui';
+import { useAppPreferences, } from '../components/settings/AppPreferencesProvider';
 import HorizontalCardScroller from '../components/common/HorizontalCardScroller';
 import ScreenShell from '../components/common/ScreenShell';
-import { PageTabBar, type TabItem } from '../components/common/PageTabBar';
-import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
+import { PageTabBar, type TabItem, } from '../components/common/PageTabBar';
+import SearchFilterBar, { type SearchFilterOption, } from '../components/common/SearchFilterBar';
 
 const CoinsIcon = Coins as React.FC<LucideProps>;
 const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
@@ -34,52 +34,52 @@ interface ColorPalette {
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-const ATN_FILTERS = ['Todos', 'Libre', 'Depositado', 'Retirado'];
-const ATN_FILTER_OPTIONS: SearchFilterOption[] = ATN_FILTERS.map((label) => ({
+const ATN_FILTERS = ['Todos', 'Libre', 'Depositado', 'Retirado',];
+const ATN_FILTER_OPTIONS: SearchFilterOption[] = ATN_FILTERS.map((label,) => ({
   key: label,
   label,
-}));
+}),);
 
 type TokenStatus = 'Free' | 'Deposited' | 'Consumed';
 
 const TOKENS: { id: string; project: string; price: string; status: TokenStatus }[] = [
-  { id: 'ATN-001', project: 'Reforestación Amazonas', price: '$48.20', status: 'Free' },
-  { id: 'ATN-002', project: 'Energía Solar Bolivia', price: '$51.00', status: 'Deposited' },
-  { id: 'ATN-003', project: 'Manglares Colombia', price: '$44.75', status: 'Free' },
-  { id: 'ATN-004', project: 'Biodiversidad Perú', price: '$39.90', status: 'Consumed' },
+  { id: 'ATN-001', project: 'Reforestación Amazonas', price: '$48.20', status: 'Free', },
+  { id: 'ATN-002', project: 'Energía Solar Bolivia', price: '$51.00', status: 'Deposited', },
+  { id: 'ATN-003', project: 'Manglares Colombia', price: '$44.75', status: 'Free', },
+  { id: 'ATN-004', project: 'Biodiversidad Perú', price: '$39.90', status: 'Consumed', },
 ];
 
 type Tier = 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
 
 const TIER_COLORS: Record<Tier, { bg: string; text: string; border: string }> = {
-  Bronze: { bg: 'rgba(205,127,50,0.14)', text: '#cd7f32', border: 'rgba(205,127,50,0.3)' },
-  Silver: { bg: 'rgba(168,184,204,0.14)', text: '#a8b8cc', border: 'rgba(168,184,204,0.3)' },
-  Gold: { bg: 'rgba(212,185,106,0.14)', text: '#d4b96a', border: 'rgba(212,185,106,0.3)' },
-  Platinum: { bg: 'rgba(155,169,196,0.14)', text: '#9ba9c4', border: 'rgba(155,169,196,0.3)' },
+  Bronze: { bg: 'rgba(205,127,50,0.14)', text: '#cd7f32', border: 'rgba(205,127,50,0.3)', },
+  Silver: { bg: 'rgba(168,184,204,0.14)', text: '#a8b8cc', border: 'rgba(168,184,204,0.3)', },
+  Gold: { bg: 'rgba(212,185,106,0.14)', text: '#d4b96a', border: 'rgba(212,185,106,0.3)', },
+  Platinum: { bg: 'rgba(155,169,196,0.14)', text: '#9ba9c4', border: 'rgba(155,169,196,0.3)', },
 };
 
 const BENEFITS: { title: string; tier: Tier; unlocked: boolean }[] = [
-  { title: 'Reporte de Impacto', tier: 'Bronze', unlocked: true },
-  { title: 'Certificado NFT', tier: 'Silver', unlocked: true },
-  { title: 'Acceso Premium', tier: 'Gold', unlocked: false },
-  { title: 'Mentoría Verde', tier: 'Platinum', unlocked: false },
+  { title: 'Reporte de Impacto', tier: 'Bronze', unlocked: true, },
+  { title: 'Certificado NFT', tier: 'Silver', unlocked: true, },
+  { title: 'Acceso Premium', tier: 'Gold', unlocked: false, },
+  { title: 'Mentoría Verde', tier: 'Platinum', unlocked: false, },
 ];
 
 const BENEFITS_FILTER_OPTIONS: SearchFilterOption[] = [
-  { key: 'all', label: 'Todos' },
-  { key: 'unlocked', label: 'Desbloqueados' },
-  { key: 'locked', label: 'Bloqueados' },
+  { key: 'all', label: 'Todos', },
+  { key: 'unlocked', label: 'Desbloqueados', },
+  { key: 'locked', label: 'Bloqueados', },
 ];
 
 // ─── Tab components ──────────────────────────────────────────────────────────
 
-function MisAtnTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.JSX.Element {
-  const [activeFilter, setActiveFilter] = useState('Todos');
-  const [search, setSearch] = useState('');
+function MisAtnTab({ isDark, c, }: { isDark: boolean; c: ColorPalette },): React.JSX.Element {
+  const [activeFilter, setActiveFilter,] = useState('Todos',);
+  const [search, setSearch,] = useState('',);
 
   const filteredTokens = useMemo(() => {
     const normalizedQuery = search.trim().toLowerCase();
-    return TOKENS.filter((token) => {
+    return TOKENS.filter((token,) => {
       const matchesFilter =
         activeFilter === 'Todos' ||
         (activeFilter === 'Libre' && token.status === 'Free') ||
@@ -87,15 +87,15 @@ function MisAtnTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.J
         (activeFilter === 'Retirado' && token.status === 'Consumed');
       const matchesSearch =
         !normalizedQuery ||
-        token.id.toLowerCase().includes(normalizedQuery) ||
-        token.project.toLowerCase().includes(normalizedQuery);
+        token.id.toLowerCase().includes(normalizedQuery,) ||
+        token.project.toLowerCase().includes(normalizedQuery,);
       return matchesFilter && matchesSearch;
-    });
-  }, [activeFilter, search]);
+    },);
+  }, [activeFilter, search,],);
 
   return (
     <ScrollView
-      contentContainerStyle={[styles.content, { paddingBottom: 100 }]}
+      contentContainerStyle={[styles.content, { paddingBottom: 100, },]}
       showsVerticalScrollIndicator={false}
     >
       {/* Stat cards */}
@@ -135,7 +135,7 @@ function MisAtnTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.J
       {/* Token list */}
       <SectionContainer title='Tokens'>
         <GlassCard style={styles.listCard}>
-          {filteredTokens.map((token, idx) => (
+          {filteredTokens.map((token, idx,) => (
             <View
               key={token.id}
               style={[
@@ -146,48 +146,48 @@ function MisAtnTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.J
                 },
               ]}
             >
-              <View style={[styles.tokenIdBox, { backgroundColor: `${c.accent}14` }]}>
-                <Text style={[styles.tokenId, { color: c.accent }]}>{token.id}</Text>
+              <View style={[styles.tokenIdBox, { backgroundColor: `${c.accent}14`, },]}>
+                <Text style={[styles.tokenId, { color: c.accent, },]}>{token.id}</Text>
               </View>
               <View style={styles.rowBody}>
-                <Text style={[styles.rowTitle, { color: c.text }]}>{token.project}</Text>
-                <Text style={[styles.rowSub, { color: c.muted }]}>{token.price}</Text>
+                <Text style={[styles.rowTitle, { color: c.text, },]}>{token.project}</Text>
+                <Text style={[styles.rowSub, { color: c.muted, },]}>{token.price}</Text>
               </View>
               <StatusPill status={token.status} size='sm' />
             </View>
-          ))}
+          ),)}
         </GlassCard>
       </SectionContainer>
     </ScrollView>
   );
 }
 
-function BeneficiosTab({ _isDark, c }: { _isDark: boolean; c: ColorPalette }): React.JSX.Element {
-  const [search, setSearch] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
+function BeneficiosTab({ _isDark, c, }: { _isDark: boolean; c: ColorPalette },): React.JSX.Element {
+  const [search, setSearch,] = useState('',);
+  const [activeFilter, setActiveFilter,] = useState('all',);
 
   const filteredBenefits = useMemo(() => {
     const normalizedQuery = search.trim().toLowerCase();
-    return BENEFITS.filter((benefit) => {
+    return BENEFITS.filter((benefit,) => {
       const matchesFilter =
         activeFilter === 'all' ||
         (activeFilter === 'unlocked' && benefit.unlocked) ||
         (activeFilter === 'locked' && !benefit.unlocked);
       const matchesSearch =
         !normalizedQuery ||
-        benefit.title.toLowerCase().includes(normalizedQuery) ||
-        benefit.tier.toLowerCase().includes(normalizedQuery);
+        benefit.title.toLowerCase().includes(normalizedQuery,) ||
+        benefit.tier.toLowerCase().includes(normalizedQuery,);
       return matchesFilter && matchesSearch;
-    });
-  }, [activeFilter, search]);
+    },);
+  }, [activeFilter, search,],);
 
   return (
     <ScrollView
-      contentContainerStyle={[styles.content, { paddingBottom: 100 }]}
+      contentContainerStyle={[styles.content, { paddingBottom: 100, },]}
       showsVerticalScrollIndicator={false}
     >
       {/* Subtitle */}
-      <Text style={[styles.subtitle, { color: c.muted }]}>
+      <Text style={[styles.subtitle, { color: c.muted, },]}>
         Desbloquea beneficios según tu nivel AIRS
       </Text>
 
@@ -202,7 +202,7 @@ function BeneficiosTab({ _isDark, c }: { _isDark: boolean; c: ColorPalette }): R
           onChangeFilter={setActiveFilter}
         />
         <GlassCard style={styles.listCard}>
-          {filteredBenefits.map((benefit, idx) => {
+          {filteredBenefits.map((benefit, idx,) => {
             const tc = TIER_COLORS[benefit.tier];
             return (
               <View
@@ -229,13 +229,13 @@ function BeneficiosTab({ _isDark, c }: { _isDark: boolean; c: ColorPalette }): R
                   <GiftIcon size={18} color={benefit.unlocked ? c.accent : c.muted} />
                 </View>
                 <View style={styles.rowBody}>
-                  <Text style={[styles.rowTitle, { color: benefit.unlocked ? c.text : c.muted }]}>
+                  <Text style={[styles.rowTitle, { color: benefit.unlocked ? c.text : c.muted, },]}>
                     {benefit.title}
                   </Text>
                   <View
-                    style={[styles.tierBadge, { backgroundColor: tc.bg, borderColor: tc.border }]}
+                    style={[styles.tierBadge, { backgroundColor: tc.bg, borderColor: tc.border, },]}
                   >
-                    <Text style={[styles.tierText, { color: tc.text }]}>{benefit.tier}</Text>
+                    <Text style={[styles.tierText, { color: tc.text, },]}>{benefit.tier}</Text>
                   </View>
                 </View>
                 <View
@@ -256,7 +256,7 @@ function BeneficiosTab({ _isDark, c }: { _isDark: boolean; c: ColorPalette }): R
                 </View>
               </View>
             );
-          })}
+          },)}
         </GlassCard>
       </SectionContainer>
     </ScrollView>
@@ -266,51 +266,51 @@ function BeneficiosTab({ _isDark, c }: { _isDark: boolean; c: ColorPalette }): R
 // ─── Main page ───────────────────────────────────────────────────────────────
 
 const TABS: TabItem[] = [
-  { key: 'mis-atn', label: 'My ATN', icon: CoinsIcon },
-  { key: 'beneficios', label: 'Benefits', icon: GiftIcon },
+  { key: 'mis-atn', label: 'My ATN', icon: CoinsIcon, },
+  { key: 'beneficios', label: 'Benefits', icon: GiftIcon, },
 ];
 
 export default function PortafolioScreen(): React.JSX.Element {
-  const { themeMode } = useAppPreferences();
+  const { themeMode, } = useAppPreferences();
   const isDark = themeMode === 'dark';
-  const [activeTab, setActiveTab] = useState<string>('mis-atn');
+  const [activeTab, setActiveTab,] = useState<string>('mis-atn',);
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(24)).current;
+  const fadeAnim = useRef(new Animated.Value(0,),).current;
+  const slideAnim = useRef(new Animated.Value(24,),).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 380, useNativeDriver: false }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 380, useNativeDriver: false }),
-    ]).start();
-  }, [fadeAnim, slideAnim]);
+      Animated.timing(fadeAnim, { toValue: 1, duration: 380, useNativeDriver: false, },),
+      Animated.timing(slideAnim, { toValue: 0, duration: 380, useNativeDriver: false, },),
+    ],).start();
+  }, [fadeAnim, slideAnim,],);
 
   const c = isDark
     ? {
-        bg: '#050f0c',
-        cardBg: 'rgba(255,255,255,0.04)',
-        border: 'rgba(255,255,255,0.08)',
-        text: '#e8fff6',
-        muted: 'rgba(232,255,246,0.6)',
-        accent: '#1EE6B5',
-      }
+      bg: '#050f0c',
+      cardBg: 'rgba(255,255,255,0.04)',
+      border: 'rgba(255,255,255,0.08)',
+      text: '#e8fff6',
+      muted: 'rgba(232,255,246,0.6)',
+      accent: '#1EE6B5',
+    }
     : {
-        bg: '#f0fdf9',
-        cardBg: 'rgba(255,255,255,0.85)',
-        border: 'rgba(11,90,95,0.12)',
-        text: '#0b2d31',
-        muted: 'rgba(11,45,49,0.6)',
-        accent: '#0d9488',
-      };
+      bg: '#f0fdf9',
+      cardBg: 'rgba(255,255,255,0.85)',
+      border: 'rgba(11,90,95,0.12)',
+      text: '#0b2d31',
+      muted: 'rgba(11,45,49,0.6)',
+      accent: '#0d9488',
+    };
 
   return (
     <ScreenShell activeSection='portafolio' backgroundColor={c.bg}>
-      <View style={[styles.root, { backgroundColor: c.bg }]}>
+      <View style={[styles.root, { backgroundColor: c.bg, },]}>
         {/* Page Header + Tab Bar (Single Line) */}
         <View style={styles.headerBar}>
           <View style={styles.titleWithIcon}>
             <ShieldCheckIcon size={24} color={c.accent} strokeWidth={1.8} />
-            <Text style={[styles.pageTitle, { color: c.text }]}>Portfolio</Text>
+            <Text style={[styles.pageTitle, { color: c.text, },]}>Portfolio</Text>
           </View>
           <PageTabBar
             tabs={TABS}
@@ -324,7 +324,7 @@ export default function PortafolioScreen(): React.JSX.Element {
 
         {/* Tab Content */}
         <Animated.View
-          style={[styles.tabContent, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
+          style={[styles.tabContent, { opacity: fadeAnim, transform: [{ translateY: slideAnim, },], },]}
         >
           {activeTab === 'mis-atn' && <MisAtnTab isDark={isDark} c={c} />}
           {activeTab === 'beneficios' && <BeneficiosTab isDark={isDark} c={c} />}
@@ -429,4 +429,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+},);
