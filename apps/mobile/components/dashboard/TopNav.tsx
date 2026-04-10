@@ -30,7 +30,6 @@ import {
   Zap,
   Menu,
   X,
-  Info,
   type LucideProps,
 } from 'lucide-react-native';
 import AirsBrandMark from '../branding/AirsBrandMark';
@@ -64,7 +63,6 @@ const SunIcon = Sun as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
 const MenuIcon = Menu as React.FC<LucideProps>;
 const CloseIcon = X as React.FC<LucideProps>;
-const InfoIcon = Info as React.FC<LucideProps>;
 const EMPTY_NOTIFICATIONS: NotificationItem[] = [];
 
 // ── Nav sections ──────────────────────────────────────────────────────────────
@@ -145,7 +143,6 @@ export default function TopNav({
 }: TopNavProps) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
-  const [notifTooltipVisible, setNotifTooltipVisible] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(true);
   const { t } = useAppTranslation('mobile');
   const { width, height } = useWindowDimensions();
@@ -392,55 +389,28 @@ export default function TopNav({
                   </View>
                 )}
 
-                {/* Notification badge with tooltip */}
-                <View style={styles.notifContainer}>
-                  <TouchableOpacity
-                    style={[
-                      styles.notifBadge,
-                      isMobile && styles.notifBadgeMobile,
-                      { backgroundColor: 'rgba(255,255,255,0.18)' },
-                    ]}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      toggleNotif();
-                    }}
-                    hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
-                  >
-                    <BellIcon size={11} color='rgba(255,255,255,0.85)' />
-                    {unreadCount > 0 && (
-                      <View style={[styles.badgeOverlay, { backgroundColor: p.badgeBg }]}>
-                        <Text style={[styles.badgeCount, { color: p.badgeText }]}>
-                          {unreadCount > 9 ? '9+' : unreadCount}
-                        </Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-
-                  {/* Info icon with tooltip */}
+                {/* Notification badge */}
+                <TouchableOpacity
+                  style={[
+                    styles.notifBadge,
+                    isMobile && styles.notifBadgeMobile,
+                    { backgroundColor: 'rgba(255,255,255,0.18)' },
+                  ]}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    toggleNotif();
+                  }}
+                  hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+                >
+                  <BellIcon size={11} color='rgba(255,255,255,0.85)' />
                   {unreadCount > 0 && (
-                    <TouchableOpacity
-                      onPress={() => setNotifTooltipVisible(!notifTooltipVisible)}
-                      hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
-                    >
-                      <InfoIcon size={12} color={p.badgeText} opacity={0.7} />
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Tooltip popup */}
-                  {notifTooltipVisible && unreadCount > 0 && (
-                    <View
-                      style={[
-                        styles.notifTooltip,
-                        { backgroundColor: p.dropBg, borderColor: p.dropBorder },
-                      ]}
-                    >
-                      <Text style={[styles.notifTooltipText, { color: p.dropText }]}>
-                        {unreadCount}{' '}
-                        {unreadCount === 1 ? 'unread notification' : 'unread notifications'}
+                    <View style={[styles.badgeOverlay, { backgroundColor: p.badgeBg }]}>
+                      <Text style={[styles.badgeCount, { color: p.badgeText }]}>
+                        {unreadCount > 9 ? '9+' : unreadCount}
                       </Text>
                     </View>
                   )}
-                </View>
+                </TouchableOpacity>
 
                 {/* Dropdown chevron (hidden on extra small screens) */}
                 {!isExtraSmall &&
@@ -916,28 +886,6 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: '900',
     lineHeight: 10,
-  },
-  notifContainer: {
-    position: 'relative',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  notifTooltip: {
-    position: 'absolute',
-    top: 32,
-    right: 0,
-    minWidth: 120,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-    zIndex: 1000,
-  },
-  notifTooltipText: {
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
   },
 
   // ── Dropdown ────────────────────────────────────────────────────────────
