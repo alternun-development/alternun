@@ -7,6 +7,8 @@ tags: [refi, gold, alternun, sustainability]
 
 Welcome to the Global ReFi Community! Today, we are excited to introduce you to **ALTERNUN Gold Backed Tokens (GBT)** and the innovative approach we are taking to address the challenges of traditional gold mining.
 
+<!-- truncate -->
+
 ## Understanding the Problems
 
 The current extractive model of gold mining has significant environmental and social consequences. Approximately 90% of extracted gold is used as a store of value, but the extraction process is fraught with issues:
