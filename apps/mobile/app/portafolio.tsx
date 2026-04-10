@@ -290,20 +290,18 @@ export default function PortafolioScreen(): React.JSX.Element {
   return (
     <ScreenShell activeSection='portafolio' backgroundColor={c.bg}>
       <View style={[styles.root, { backgroundColor: c.bg, },]}>
-        {/* Page Header */}
-        <View style={styles.pageHeader}>
+        {/* Page Header + Tab Bar (Single Line) */}
+        <View style={styles.headerBar}>
           <Text style={[styles.pageTitle, { color: c.text, },]}>Portfolio</Text>
+          <PageTabBar
+            tabs={TABS}
+            activeTab={activeTab}
+            onChangeTab={setActiveTab}
+            isDark={isDark}
+            accent={c.accent}
+            muted={c.muted}
+          />
         </View>
-
-        {/* Tab Bar */}
-        <PageTabBar
-          tabs={TABS}
-          activeTab={activeTab}
-          onChangeTab={setActiveTab}
-          isDark={isDark}
-          accent={c.accent}
-          muted={c.muted}
-        />
 
         {/* Tab Content */}
         <Animated.View
@@ -324,10 +322,12 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  pageHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  headerBar: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   pageTitle: {
     fontSize: 20,
