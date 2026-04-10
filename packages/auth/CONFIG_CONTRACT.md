@@ -100,6 +100,7 @@ Validated against Better Auth official docs on `2026-04-09`:
 - Better Auth needs a database for standard session and account persistence unless you deliberately choose a stateless mode.
 - Better Auth defaults to cookie-based session handling. Alternun should treat those cookies as execution-layer state, not as the final application session.
 - Better Auth rate limiting defaults are not enough to define an Alternun production posture by themselves. For multi-instance testnet or production, use database or secondary storage instead of in-memory defaults.
+- Better Auth must trust the browser origins that call `/auth/sign-in` from the app bundle. For the current testnet rollout, include `https://testnet.airs.alternun.co` and the local web origins you actually run during development, such as `http://localhost:8081` and `http://127.0.0.1:8081`.
 - Apple requires HTTPS and cannot use localhost return URLs.
 - Apple requires `https://appleid.apple.com` in trusted origins for the Better Auth config.
 - GitHub flows require the `user:email` scope.

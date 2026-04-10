@@ -27,14 +27,26 @@ function normalizeSession(input, fallbackProvider) {
     };
 }
 async function callJson(fetchFn, baseUrl, path, body, apiKey) {
-    const response = await fetchFn(new URL(path, baseUrl).toString(), {
-        method: 'POST',
-        headers: {
-            'content-type': 'application/json',
-            ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
-        },
-        body: JSON.stringify(body),
-    });
+    const url = new URL(path, baseUrl).toString();
+    let response;
+    try {
+        response = await fetchFn(url, {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+                ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
+            },
+            body: JSON.stringify(body),
+        });
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : typeof error === 'string' ? error : String(error);
+        throw new AlternunProviderError([
+            `Better Auth request to ${url} failed before a response was received.`,
+            'If this is a browser request, verify that the Better Auth service trusts the current app origin in BETTER_AUTH_TRUSTED_ORIGINS.',
+            `Original error: ${message}`,
+        ].join(' '));
+    }
     if (!response.ok) {
         const text = await response.text().catch(() => '');
         throw new AlternunProviderError(`Better Auth request failed (${response.status} ${response.statusText}): ${text}`);
