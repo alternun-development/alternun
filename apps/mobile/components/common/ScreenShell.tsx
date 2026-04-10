@@ -8,6 +8,7 @@ import AppInfoFooter from './AppInfoFooter';
 import { useAuth } from '../auth/AppAuthProvider';
 import type { User } from '../auth/AppAuthProvider';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { useNotifications } from '../notifications/NotificationsContext';
 import { useBackToTop } from '../../hooks/useBackToTop';
 import { BackToTopButton } from './BackToTopButton';
 
@@ -121,6 +122,11 @@ export default function ScreenShell({
   const { user, signOutUser } = useAuth();
   const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel } =
     useAppPreferences();
+  const {
+    items: notificationItems,
+    markAllRead: markAllNotificationsRead,
+    deleteNotif: dismissNotification,
+  } = useNotifications();
   const { width } = useWindowDimensions();
   const router = useRouter();
   const isDark = themeMode === 'dark';
@@ -215,6 +221,9 @@ export default function ScreenShell({
               }}
               onNavigate={handleNavigate}
               onNavigateToNotifications={() => router.push('/notifications')}
+              notifications={notificationItems.filter((n) => !n.archived)}
+              onMarkAllNotificationsRead={markAllNotificationsRead}
+              onDismissNotification={dismissNotification}
             />
           </View>
         </SafeAreaView>
