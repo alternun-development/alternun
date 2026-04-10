@@ -1,3 +1,29 @@
+## [1.0.47](https://github.com/alternun-development/alternun/compare/v1.0.46...v1.0.47) (2026-04-10)
+
+### Bug Fixes
+
+- improve notification badge styling with circular container and overlay badge ([7b73a14](https://github.com/alternun-development/alternun/commit/7b73a14561e16415980ecc5aaf63db8c8d84a136))
+
+### Features
+
+- Add animated counters and wallet navigation to dashboard cards ([0861a2f](https://github.com/alternun-development/alternun/commit/0861a2fbe45461a90dea9ef3b767c5aa9e971b83))
+- Add view-transition effects and system theme detection to web app ([8c2f07e](https://github.com/alternun-development/alternun/commit/8c2f07e1af091a7c06d458aeebf6b9a512af66fd))
+- Complete notification system upgrade with context, search filters, and actions ([a8a8848](https://github.com/alternun-development/alternun/commit/a8a884855be4012702071194e4892eea3d76b181))
+- Wire up notification center navigation from dropdown ([d592c49](https://github.com/alternun-development/alternun/commit/d592c49da58510f70369cc37f60b06564723e4e4))
+
+## [1.0.47](https://github.com/alternun-development/alternun/compare/v1.0.46...v1.0.47) (2026-04-10)
+
+### Bug Fixes
+
+- improve notification badge styling with circular container and overlay badge ([7b73a14](https://github.com/alternun-development/alternun/commit/7b73a14561e16415980ecc5aaf63db8c8d84a136))
+
+### Features
+
+- Add animated counters and wallet navigation to dashboard cards ([0861a2f](https://github.com/alternun-development/alternun/commit/0861a2fbe45461a90dea9ef3b767c5aa9e971b83))
+- Add view-transition effects and system theme detection to web app ([8c2f07e](https://github.com/alternun-development/alternun/commit/8c2f07e1af091a7c06d458aeebf6b9a512af66fd))
+- Complete notification system upgrade with context, search filters, and actions ([a8a8848](https://github.com/alternun-development/alternun/commit/a8a884855be4012702071194e4892eea3d76b181))
+- Wire up notification center navigation from dropdown ([d592c49](https://github.com/alternun-development/alternun/commit/d592c49da58510f70369cc37f60b06564723e4e4))
+
 ## [1.0.46](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.46) (2026-04-10)
 
 ### Bug Fixes
