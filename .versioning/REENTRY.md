@@ -1,7 +1,7 @@
 # Re-entry Status
 
 Schema: 1.1
-Version: 1.0.40
+Version: 1.0.42
 Phase: staging
 
 Next micro-step: Verify deployment and update documentation

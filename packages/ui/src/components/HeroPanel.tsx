@@ -639,7 +639,6 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: 'rgba(30,230,181,0.16)',
     backgroundColor: 'rgba(5,15,12,0.95)',
-    backdropFilter: 'blur(8px)',
     shadowOpacity: 0.2,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },

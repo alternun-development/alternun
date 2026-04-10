@@ -25,7 +25,7 @@ export function StatCard({
   icon,
   isLoading = false,
   style,
-}: StatCardProps) {
+}: StatCardProps): React.ReactNode {
   const { theme } = useTheme();
 
   // Entrance animations
@@ -68,10 +68,7 @@ export function StatCard({
           backgroundColor: theme.cardBg,
           borderColor: theme.cardBorder,
           opacity: opacityAnim,
-          transform: [
-            { scale: scaleAnim },
-            { translateY: slideAnim },
-          ],
+          transform: [{ scale: scaleAnim }, { translateY: slideAnim }],
         },
         style,
       ]}
@@ -108,8 +105,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.xl,
     padding: spacing[4],
-    boxShadow: '0px 10px 24px rgba(0, 0, 30, 0.16)',
-    background: 'linear-gradient(135deg, rgba(30,230,181,0.08) 0%, rgba(99,179,237,0.08) 100%)',
   },
   cardTop: {
     flexDirection: 'row',
@@ -123,13 +118,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
   },
   deltaBadge: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: radius.full,
-    backdropFilter: 'blur(8px)',
   },
   deltaPositive: {
     backgroundColor: 'rgba(28,203,161,0.18)',

@@ -9,7 +9,51 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.39](https://github.com/alternun-development/alternun/compare/v1.0.38...v1.0.39) (2026-04-07)
+export const CHANGELOG_TEXT = `## [1.0.42](https://github.com/alternun-development/alternun/compare/v1.0.40...v1.0.42) (2026-04-10)
+
+### Bug Fixes
+
+- **infra:** auto-allow protected instance replacement when deployment changes require it ([7813aac](https://github.com/alternun-development/alternun/commit/7813aac9a2e9dbf3224756b31f0d73dc8019e3ac))
+- **mobile,ui,repo:** app, HeroPanel, .versioning ([138f80b](https://github.com/alternun-development/alternun/commit/138f80b82435849f9a015dc2cd5936cfb30f1244))
+- **mobile,ui:** add ShieldCheckIcon, enhance cards, and fix tooltip z-index ([d9ad72a](https://github.com/alternun-development/alternun/commit/d9ad72ae223e441b95c2a707367d5072b1fda2cf))
+- **mobile:** improve tooltip visibility and layering ([8a745be](https://github.com/alternun-development/alternun/commit/8a745beda0f93e6e856b7f96378f0bf50478150e))
+- **mobile:** open settings dropdown by default in TopNav ([64e84d7](https://github.com/alternun-development/alternun/commit/64e84d7681a8366224cc737443c2f47ea7714ce5))
+- **mobile:** single-line page header with safe tooltip positioning ([e5ad469](https://github.com/alternun-development/alternun/commit/e5ad46904d99764365284d96de0de6180d7c46b8))
+
+### Features
+
+- **mobile:** add navbar-consistent icons to page headers ([8d7fdd1](https://github.com/alternun-development/alternun/commit/8d7fdd1907e27807d09c642fd9efb2962fabb63c))
+- **mobile:** consolidate navigation into 3 tab-based views ([115d551](https://github.com/alternun-development/alternun/commit/115d55144482779e90d8bea7151cbbfa0f137318))
+- **ui:** add elegant spring animations to StatCard ([befb082](https://github.com/alternun-development/alternun/commit/befb08298315349f15e5676fcf6f5ab1d7e198c6))
+
+## [1.0.41](https://github.com/alternun-development/alternun/compare/v1.0.40...v1.0.41) (2026-04-10)
+
+### Features
+
+- **mobile:** consolidate navigation into 3 tab-based views - Consolidate 7 separate pages into 3 modern tab-based views (Explorar, Portafolio, Mi Perfil) with responsive tab bar, elegant hover tooltips, and spring animations
+
+### Bug Fixes
+
+- **mobile,ui,repo:** app, HeroPanel, .versioning ([138f80b](https://github.com/alternun-development/alternun/commit/138f80b82435849f9a015dc2cd5936cfb30f1244))
+
+## [1.0.41](https://github.com/alternun-development/alternun/compare/v1.0.40...v1.0.41) (2026-04-10)
+
+### Features
+
+- **mobile:** consolidate navigation into 3 tab-based views - Consolidate 7 separate pages into 3 modern tab-based views (Explorar, Portafolio, Mi Perfil) with responsive tab bar, elegant hover tooltips, and spring animations
+
+### Bug Fixes
+
+- **mobile,ui,repo:** app, HeroPanel, .versioning ([138f80b](https://github.com/alternun-development/alternun/commit/138f80b82435849f9a015dc2cd5936cfb30f1244))
+
+## [1.0.40](https://github.com/alternun-development/alternun/compare/v1.0.39...v1.0.40) (2026-04-07)
+
+### Bug Fixes
+
+- consolidate ts-expect-error comment ([cb6d190](https://github.com/alternun-development/alternun/commit/cb6d19063223a497c652440605f01dabc237dc3d))
+- increase tooltip width while maintaining center positioning, add return type ([6fe3988](https://github.com/alternun-development/alternun/commit/6fe398858b7164d200b0f807a8772eecf82e1683))
+
+## [1.0.39](https://github.com/alternun-development/alternun/compare/v1.0.38...v1.0.39) (2026-04-07)
 
 ### Bug Fixes
 
