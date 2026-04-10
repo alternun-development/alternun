@@ -9,11 +9,14 @@ import {
   parseAuthentikProviderFlowSlugs,
   resolveAuthentikLoginStrategy,
   resolveAuthentikProviderFlowSlugs,
-} from '@alternun/auth/mobile/authEntry';
+  shouldUseAuthentikRelayEntry,
+} from '../../../../../packages/auth/src/mobile/authEntry';
 
 describe('authEntry', () => {
   const originalMode = process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE;
   const originalSocialMode = process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE;
+  const originalExecutionProvider = process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER;
+  const originalAuthExecutionProvider = process.env.AUTH_EXECUTION_PROVIDER;
   const originalFlowSlugs = process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS;
   const originalAllowCustomFlowSlugs =
     process.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS;
@@ -35,6 +38,18 @@ describe('authEntry', () => {
       delete process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE;
     } else {
       process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE = originalSocialMode;
+    }
+
+    if (originalExecutionProvider === undefined) {
+      delete process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER;
+    } else {
+      process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER = originalExecutionProvider;
+    }
+
+    if (originalAuthExecutionProvider === undefined) {
+      delete process.env.AUTH_EXECUTION_PROVIDER;
+    } else {
+      process.env.AUTH_EXECUTION_PROVIDER = originalAuthExecutionProvider;
     }
 
     if (originalAllowCustomFlowSlugs === undefined) {
@@ -62,6 +77,26 @@ describe('authEntry', () => {
   it('defaults social login mode to authentik when the env var is absent', () => {
     delete process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE;
     expect(getAuthentikSocialLoginMode()).toBe('authentik');
+  });
+
+  it('defaults execution provider to supabase when the env var is absent', () => {
+    delete process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER;
+    delete process.env.AUTH_EXECUTION_PROVIDER;
+
+    expect(resolveAuthentikLoginStrategy({}).executionProvider).toBe('supabase');
+  });
+
+  it('reads the public execution provider env alias', () => {
+    process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER = 'better-auth';
+
+    expect(resolveAuthentikLoginStrategy({}).executionProvider).toBe('better-auth');
+  });
+
+  it('disables the Authentik relay entry when Better Auth execution is enabled', () => {
+    process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE = 'relay';
+    process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER = 'better-auth';
+
+    expect(shouldUseAuthentikRelayEntry()).toBe(false);
   });
 
   it('normalizes invalid social login modes back to authentik', () => {
@@ -158,6 +193,8 @@ describe('authEntry', () => {
 
   it('keeps provider flow slugs disabled in the full login strategy unless explicitly allowed', () => {
     delete process.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS;
+    delete process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER;
+    delete process.env.AUTH_EXECUTION_PROVIDER;
 
     expect(
       resolveAuthentikLoginStrategy({
@@ -169,6 +206,7 @@ describe('authEntry', () => {
     ).toEqual({
       mode: 'relay',
       socialMode: 'authentik',
+      executionProvider: 'supabase',
       providerFlowSlugs: {},
     });
 
@@ -183,6 +221,7 @@ describe('authEntry', () => {
     ).toEqual({
       mode: 'source',
       socialMode: 'supabase',
+      executionProvider: 'supabase',
       providerFlowSlugs: {
         google: 'alternun-google-login',
       },

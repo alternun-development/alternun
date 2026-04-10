@@ -110,6 +110,22 @@ function shouldUseAuthentikWebFlow(
   return authentikReady;
 }
 
+function shouldUseBetterAuthWebFlow(
+  strategy: AuthentikLoginStrategy,
+  provider: string,
+  authentikProviderHint?: OidcProvider
+): boolean {
+  // Better Auth owns the social-login migration path here; the facade will
+  // exchange the resulting external identity into the canonical Authentik
+  // session after callback completion.
+  const normalizedProvider = provider.trim().toLowerCase();
+  return (
+    strategy.executionProvider === 'better-auth' &&
+    (normalizedProvider === 'google' || normalizedProvider === 'discord') &&
+    authentikProviderHint === normalizedProvider
+  );
+}
+
 export async function webRedirectSignIn({
   client,
   provider,
@@ -117,7 +133,7 @@ export async function webRedirectSignIn({
   authentikProviderHint,
   forceFreshSession = false,
   strategy = resolveAuthentikLoginStrategy(),
-}: WebRedirectSignInOptions): Promise<'authentik' | 'supabase'> {
+}: WebRedirectSignInOptions): Promise<'authentik' | 'supabase' | 'better-auth'> {
   if (!canUseBrowserRuntime()) {
     throw new Error('CONFIG_ERROR: webRedirectSignIn requires a browser runtime');
   }
@@ -128,6 +144,15 @@ export async function webRedirectSignIn({
   });
 
   storeAuthReturnTo(redirectTo);
+
+  if (shouldUseBetterAuthWebFlow(strategy, provider, authentikProviderHint)) {
+    await client.signIn({
+      provider,
+      flow: 'redirect',
+      redirectUri: callbackUrl,
+    });
+    return 'better-auth';
+  }
 
   if (shouldUseAuthentikWebFlow(strategy, authentikReady, authentikProviderHint)) {
     if (!authentikReady || !authentikProviderHint) {

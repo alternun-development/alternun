@@ -31,7 +31,10 @@
       "output": "dist"
     },
     "publicEnv": {
-      "authentikLoginEntryMode": "relay",
+      "authentikLoginEntryMode": "source",
+      "authExecutionProvider": "better-auth",
+      "authExchangeUrl": "https://testnet.api.alternun.co/auth/exchange",
+      "betterAuthUrl": "https://testnet-auth.alternun.co",
       "authentikSocialLoginMode": "authentik",
       "authentikAllowCustomProviderFlowSlugs": false,
       "releaseUpdateMode": "auto"
@@ -185,6 +188,13 @@
         "sourceSlug": "google",
         "loginFlowSlug": "",
         "allowCustomProviderFlowSlugs": false
+      },
+      "discord": {
+        "clientId": "",
+        "clientSecret": "",
+        "sourceName": "Discord",
+        "sourceSlug": "discord",
+        "loginFlowSlug": ""
       },
       "supabase": {
         "applicationName": "Alternun Supabase",

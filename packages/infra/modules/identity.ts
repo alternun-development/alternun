@@ -79,6 +79,13 @@ export interface IdentityLocalConfig {
       loginFlowSlug?: string;
       allowCustomProviderFlowSlugs?: boolean;
     };
+    discord?: {
+      clientId?: string;
+      clientSecret?: string;
+      sourceName?: string;
+      sourceSlug?: string;
+      loginFlowSlug?: string;
+    };
     supabase?: {
       applicationName?: string;
       applicationSlug?: string;
@@ -211,6 +218,13 @@ export interface IdentitySettings {
       sourceSlug: string;
       loginFlowSlug: string;
       allowCustomProviderFlowSlugs: boolean;
+    };
+    discord: {
+      clientId: string;
+      clientSecret: string;
+      sourceName: string;
+      sourceSlug: string;
+      loginFlowSlug: string;
     };
     supabase: {
       applicationName: string;
@@ -642,6 +656,31 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
             ''
           : '',
         allowCustomProviderFlowSlugs,
+      },
+      discord: {
+        clientId:
+          args.env.INFRA_IDENTITY_DISCORD_AUTH_CLIENT_ID ??
+          localConfig?.integration?.discord?.clientId ??
+          args.env.DISCORD_CLIENT_ID ??
+          '',
+        clientSecret:
+          args.env.INFRA_IDENTITY_DISCORD_AUTH_CLIENT_SECRET ??
+          localConfig?.integration?.discord?.clientSecret ??
+          args.env.DISCORD_CLIENT_SECRET ??
+          '',
+        sourceName:
+          args.env.INFRA_IDENTITY_DISCORD_SOURCE_NAME ??
+          localConfig?.integration?.discord?.sourceName ??
+          IDENTITY_INFRA_DEFAULTS.integration.discord.sourceName,
+        sourceSlug:
+          args.env.INFRA_IDENTITY_DISCORD_SOURCE_SLUG ??
+          localConfig?.integration?.discord?.sourceSlug ??
+          IDENTITY_INFRA_DEFAULTS.integration.discord.sourceSlug,
+        loginFlowSlug: allowCustomProviderFlowSlugs
+          ? args.env.INFRA_IDENTITY_DISCORD_LOGIN_FLOW_SLUG ??
+            localConfig?.integration?.discord?.loginFlowSlug ??
+            ''
+          : '',
       },
       supabase: {
         applicationName:
