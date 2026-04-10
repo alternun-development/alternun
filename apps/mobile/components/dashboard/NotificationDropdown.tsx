@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import {
   CheckCircle,
   AlertCircle,
@@ -27,14 +27,15 @@ interface NotificationDropdownProps {
   onMarkAllRead: () => void;
   onDismiss: (id: string) => void;
   onClose: () => void;
+  onSeeAll?: () => void;
 }
 
-function timeAgo(date: Date,): string {
-  const diff = Math.floor((Date.now() - date.getTime()) / 1000,);
+function timeAgo(date: Date): string {
+  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
   if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60,)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600,)}h ago`;
-  return `${Math.floor(diff / 86400,)}d ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
 }
 
 const TYPE_CONFIG: Record<NotifType, { icon: React.FC<any>; color: string; bg: string }> = {
@@ -66,44 +67,45 @@ export default function NotificationDropdown({
   onMarkAllRead,
   onDismiss,
   onClose,
-}: NotificationDropdownProps,) {
+  onSeeAll,
+}: NotificationDropdownProps) {
   const p = isDark
     ? {
-      bg: '#0b0f1e',
-      border: 'rgba(255,255,255,0.10)',
-      header: '#e8e8ff',
-      sub: 'rgba(232,232,255,0.55)',
-      itemBg: 'rgba(255,255,255,0.04)',
-      itemBorder: 'rgba(255,255,255,0.06)',
-      unreadDot: '#1ccba1',
-      markAll: '#1ccba1',
-      emptyIcon: 'rgba(232,232,255,0.2)',
-      emptyText: 'rgba(232,232,255,0.45)',
-      divider: 'rgba(255,255,255,0.07)',
-    }
+        bg: '#0b0f1e',
+        border: 'rgba(255,255,255,0.10)',
+        header: '#e8e8ff',
+        sub: 'rgba(232,232,255,0.55)',
+        itemBg: 'rgba(255,255,255,0.04)',
+        itemBorder: 'rgba(255,255,255,0.06)',
+        unreadDot: '#1ccba1',
+        markAll: '#1ccba1',
+        emptyIcon: 'rgba(232,232,255,0.2)',
+        emptyText: 'rgba(232,232,255,0.45)',
+        divider: 'rgba(255,255,255,0.07)',
+      }
     : {
-      bg: '#ffffff',
-      border: 'rgba(15,23,42,0.14)',
-      header: '#0f172a',
-      sub: '#64748b',
-      itemBg: 'rgba(15,23,42,0.03)',
-      itemBorder: 'rgba(15,23,42,0.08)',
-      unreadDot: '#0d9488',
-      markAll: '#0d9488',
-      emptyIcon: 'rgba(15,23,42,0.18)',
-      emptyText: '#94a3b8',
-      divider: 'rgba(15,23,42,0.08)',
-    };
+        bg: '#ffffff',
+        border: 'rgba(15,23,42,0.14)',
+        header: '#0f172a',
+        sub: '#64748b',
+        itemBg: 'rgba(15,23,42,0.03)',
+        itemBorder: 'rgba(15,23,42,0.08)',
+        unreadDot: '#0d9488',
+        markAll: '#0d9488',
+        emptyIcon: 'rgba(15,23,42,0.18)',
+        emptyText: '#94a3b8',
+        divider: 'rgba(15,23,42,0.08)',
+      };
 
-  const unreadCount = notifications.filter((n,) => !n.read,).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <View style={[styles.panel, { backgroundColor: p.bg, borderColor: p.border, },]}>
+    <View style={[styles.panel, { backgroundColor: p.bg, borderColor: p.border }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: p.divider, },]}>
+      <View style={[styles.header, { borderBottomColor: p.divider }]}>
         <View style={styles.headerLeft}>
           <Bell size={14} color={p.header} />
-          <Text style={[styles.headerTitle, { color: p.header, },]}>Notifications</Text>
+          <Text style={[styles.headerTitle, { color: p.header }]}>Notifications</Text>
           {unreadCount > 0 && (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
@@ -118,7 +120,7 @@ export default function NotificationDropdown({
               style={styles.markAllBtn}
             >
               <CheckCheck size={12} color={p.markAll} />
-              <Text style={[styles.markAllText, { color: p.markAll, },]}>Mark all read</Text>
+              <Text style={[styles.markAllText, { color: p.markAll }]}>Mark all read</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity onPress={onClose} activeOpacity={0.75}>
@@ -131,7 +133,7 @@ export default function NotificationDropdown({
       {notifications.length === 0 ? (
         <View style={styles.empty}>
           <Bell size={28} color={p.emptyIcon} />
-          <Text style={[styles.emptyText, { color: p.emptyText, },]}>No notifications yet</Text>
+          <Text style={[styles.emptyText, { color: p.emptyText }]}>No notifications yet</Text>
         </View>
       ) : (
         <ScrollView
@@ -139,7 +141,7 @@ export default function NotificationDropdown({
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
         >
-          {notifications.map((notif,) => {
+          {notifications.map((notif) => {
             const cfg = TYPE_CONFIG[notif.type];
             const IconComp = cfg.icon;
             return (
@@ -147,12 +149,12 @@ export default function NotificationDropdown({
                 key={notif.id}
                 style={[
                   styles.item,
-                  { backgroundColor: p.itemBg, borderColor: p.itemBorder, },
+                  { backgroundColor: p.itemBg, borderColor: p.itemBorder },
                   !notif.read && styles.itemUnread,
                 ]}
               >
                 {/* Type icon */}
-                <View style={[styles.iconWrap, { backgroundColor: cfg.bg, },]}>
+                <View style={[styles.iconWrap, { backgroundColor: cfg.bg }]}>
                   <IconComp size={14} color={cfg.color} />
                 </View>
 
@@ -162,18 +164,18 @@ export default function NotificationDropdown({
                     <Text
                       style={[
                         styles.itemTitle,
-                        { color: p.header, },
+                        { color: p.header },
                         !notif.read && styles.itemTitleBold,
                       ]}
                       numberOfLines={1}
                     >
                       {notif.title}
                     </Text>
-                    <Text style={[styles.itemTime, { color: p.sub, },]}>
-                      {timeAgo(notif.timestamp,)}
+                    <Text style={[styles.itemTime, { color: p.sub }]}>
+                      {timeAgo(notif.timestamp)}
                     </Text>
                   </View>
-                  <Text style={[styles.itemDesc, { color: p.sub, },]} numberOfLines={2}>
+                  <Text style={[styles.itemDesc, { color: p.sub }]} numberOfLines={2}>
                     {notif.body}
                   </Text>
                 </View>
@@ -181,20 +183,29 @@ export default function NotificationDropdown({
                 {/* Unread dot + dismiss */}
                 <View style={styles.itemActions}>
                   {!notif.read && (
-                    <View style={[styles.unreadDot, { backgroundColor: p.unreadDot, },]} />
+                    <View style={[styles.unreadDot, { backgroundColor: p.unreadDot }]} />
                   )}
                   <TouchableOpacity
-                    onPress={() => onDismiss(notif.id,)}
+                    onPress={() => onDismiss(notif.id)}
                     activeOpacity={0.7}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8, }}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
                     <X size={12} color={p.sub} />
                   </TouchableOpacity>
                 </View>
               </View>
             );
-          },)}
+          })}
         </ScrollView>
+      )}
+
+      {/* Footer with "See all" button */}
+      {notifications.length > 0 && onSeeAll && (
+        <View style={[styles.footer, { borderTopColor: p.divider }]}>
+          <TouchableOpacity onPress={onSeeAll} activeOpacity={0.7} style={styles.seeAllBtn}>
+            <Text style={[styles.seeAllText, { color: p.markAll }]}>See all notifications</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
@@ -331,4 +342,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
   },
-},);
+  footer: {
+    borderTopWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  seeAllBtn: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  seeAllText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+});
