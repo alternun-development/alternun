@@ -4,17 +4,17 @@ sidebar_position: 4.5
 
 # Release Update Flow
 
-Alternun uses a small shared release-update package to keep web surfaces aware of new builds.
-The goal is simple: when the deployment layer publishes a newer release, the browser should notice it and offer a reload prompt.
+Alternun uses a small shared release-update package to keep web and Expo surfaces aware of new builds.
+The goal is simple: when the deployment layer publishes a newer release, the app should notice it and offer a reload toast or dialog.
 
 ## Why This Exists
 
-Web apps can keep running an older bundle long after a new release has been deployed.
+Web and Expo bundles can keep running an older bundle long after a new release has been deployed.
 For Alternun that matters because:
 
 - auth and session changes should arrive without a hard refresh hunt
 - deployment changes should not leave the user on stale UI state
-- the reload prompt needs to be reusable across Next.js and Expo web surfaces
+- the reload prompt needs to be reusable across Next.js, Expo web, and Expo app shells
 
 ## What Powers It
 
@@ -23,8 +23,8 @@ The implementation lives in `packages/update` and is shared by the web apps.
 It provides three pieces:
 
 1. a manifest format that records the current release version
-2. a small service worker that compares the manifest against the running build
-3. a React hook that drives the banner or reload prompt UI
+2. a small service worker that compares the manifest against the running build on web
+3. a React hook that drives the toast or reload prompt UI on web and Expo runtimes
 
 The worker and manifest are generated from the current package version during each app build.
 
@@ -44,13 +44,14 @@ The actual app build then ships those files as part of the static bundle.
 
 ## Runtime Flow
 
-At runtime the banner logic:
+At runtime the update logic:
 
 1. reads the current app version from the app package
-2. registers the release worker
-3. fetches the release manifest
-4. compares the remote version with the active version
-5. prompts the user to reload when a newer build is detected
+2. resolves the current app origin
+3. registers the release worker on web
+4. fetches the release manifest
+5. compares the remote version with the active version
+6. prompts the user to reload when a newer build is detected
 
 The hook persists dismissals locally so the banner does not keep reappearing after the user chooses to postpone.
 
@@ -68,17 +69,18 @@ Recommended defaults:
 - deployed Expo testnet / production: `on`
 - temporary disable: `off`
 
-For deployed Expo builds, infra injects `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on`.
+For deployed Expo builds, infra injects `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` and `EXPO_PUBLIC_ORIGIN` so the update check can resolve the deployed manifest URL.
 Local environment files can keep the mode on `auto` to avoid service-worker noise on loopback hosts.
 
 ## Where It Is Mounted
 
-The banner is mounted in the web shell for:
+The prompt is mounted in the shell for:
 
 - `apps/web`
 - `apps/mobile` web output
+- `apps/mobile` native app shell
 
-Native mobile builds do not use the service worker.
+Native mobile builds do not use the service worker, but they still poll the manifest and surface the same reload prompt.
 
 ## Relationship To Versioning
 

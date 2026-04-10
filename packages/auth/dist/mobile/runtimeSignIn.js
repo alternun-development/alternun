@@ -1,7 +1,7 @@
 import { resolveSafeRedirect } from '@edcalderon/auth/authentik';
-import { isAuthentikConfigured, startAuthentikOAuthFlow } from './authentikClient';
-import { resolveAuthentikLoginStrategy } from './authEntry';
-import { buildAuthentikWebCallbackUrl } from './authentikUrls';
+import { isAuthentikConfigured, startAuthentikOAuthFlow } from './authentikClient.js';
+import { resolveAuthentikLoginStrategy } from './authEntry.js';
+import { buildAuthentikWebCallbackUrl } from './authentikUrls.js';
 const AUTH_RETURN_TO_STORAGE_KEY = 'alternun:auth:return-to';
 function canUseBrowserRuntime() {
     return typeof window !== 'undefined' && typeof document !== 'undefined';

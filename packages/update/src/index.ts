@@ -11,9 +11,11 @@ export {
   buildReleaseWorkerSource,
   isReleaseUpdateEnabled,
   normalizeReleaseUpdateMode,
+  resolveReleaseUpdateRuntime,
   useReleaseUpdate,
   type ReleaseUpdateMode,
   type ReleaseUpdateOptions,
+  type ReleaseUpdateRuntime,
   type ReleaseUpdateState,
 } from './useReleaseUpdate';
 

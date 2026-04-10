@@ -43,6 +43,7 @@ export interface IdentityInfrastructureResources {
     jwtSigningKey: {
       arn: pulumi.Output<string>;
       name: pulumi.Output<string>;
+      value: pulumi.Output<string>;
     };
     smtpCredentials: {
       arn: pulumi.Output<string>;
@@ -1265,6 +1266,7 @@ export function deployIdentityInfrastructure(
       jwtSigningKey: {
         arn: jwtSigningKeySecret.arn,
         name: jwtSigningKeySecret.name,
+        value: jwtSigningKey.result,
       },
       smtpCredentials: {
         arn: smtpCredentialsSecret.arn,

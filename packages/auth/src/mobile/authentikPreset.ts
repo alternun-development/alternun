@@ -40,7 +40,7 @@ import {
   type ProvisioningResult,
 } from '../authentik';
 import type { OidcClaims } from '@edcalderon/auth';
-import { upsertOidcUser } from '../AuthentikOidcClient';
+import { upsertOidcUser } from '../compat/upsertOidcUser';
 
 /**
  * Strip the per-app slug from an Authentik issuer URL to get the shared
