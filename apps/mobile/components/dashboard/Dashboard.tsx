@@ -529,6 +529,9 @@ export default function Dashboard({
                   router.push('/mi-perfil');
                 }
               }}
+              onNavigateToNotifications={() => {
+                router.push('/notifications');
+              }}
             />
           </View>
 
