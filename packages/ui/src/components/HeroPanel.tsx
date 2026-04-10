@@ -396,47 +396,46 @@ export function HeroPanel({
                   {`Status ${tierSpec.label.toUpperCase()}`}
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={toggleStatusTooltip}
-                // @ts-expect-error - web hover support (onMouseEnter/onMouseLeave)
-                onMouseEnter={() => {
-                  if (!showStatusTooltip) toggleStatusTooltip();
-                }}
-                onMouseLeave={() => {
-                  if (showStatusTooltip) toggleStatusTooltip();
-                }}
-                accessibilityRole='button'
-                accessibilityLabel='Información del estado'
-              >
-                <InfoIcon size={16} color={accentColor} strokeWidth={2} />
-              </TouchableOpacity>
-            </View>
-            {showStatusTooltip && (
-              <Animated.View
-                style={[
-                  styles.tooltipOverlay,
-                  {
-                    opacity: tooltipOpacity,
-                    transform: [{ translateY: tooltipTranslateY }],
-                  },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.statusTooltip,
-                    {
-                      backgroundColor: isDark ? '#050f0c' : '#ffffff',
-                      shadowColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.2)',
-                    },
-                  ]}
+              <View style={styles.iconButtonWrapper}>
+                <TouchableOpacity
+                  onPress={toggleStatusTooltip}
+                  // @ts-expect-error - web hover support (onMouseEnter/onMouseLeave)
+                  onMouseEnter={() => {
+                    if (!showStatusTooltip) toggleStatusTooltip();
+                  }}
+                  onMouseLeave={() => {
+                    if (showStatusTooltip) toggleStatusTooltip();
+                  }}
+                  accessibilityRole='button'
+                  accessibilityLabel='Información del estado'
                 >
-                  {statusTooltipContent}
-                </View>
-                <View
-                  style={[styles.tooltipArrow, { borderTopColor: isDark ? '#050f0c' : '#ffffff' }]}
-                />
-              </Animated.View>
-            )}
+                  <InfoIcon size={16} color={accentColor} strokeWidth={2} />
+                </TouchableOpacity>
+                {showStatusTooltip && (
+                  <Animated.View
+                    style={[
+                      styles.tooltipOverlay,
+                      {
+                        opacity: tooltipOpacity,
+                        transform: [{ translateY: tooltipTranslateY }],
+                      },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.statusTooltip,
+                        {
+                          backgroundColor: isDark ? 'rgba(5,15,12,0.95)' : 'rgba(255,255,255,0.98)',
+                          shadowColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.12)',
+                        },
+                      ]}
+                    >
+                      {statusTooltipContent}
+                    </View>
+                  </Animated.View>
+                )}
+              </View>
+            </View>
           </>
         )}
 
@@ -519,7 +518,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[4],
     paddingTop: spacing[6],
     paddingBottom: spacing[5],
-    overflow: 'hidden',
+    overflow: 'visible',
     position: 'relative',
     borderRadius: 20,
   },
@@ -601,6 +600,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing[4],
     zIndex: 1,
   },
+  iconButtonWrapper: {
+    position: 'relative',
+  },
   tierBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -623,71 +625,73 @@ const styles = StyleSheet.create({
   tooltipOverlay: {
     position: 'absolute',
     top: 26,
-    left: '50%',
-    marginLeft: -95,
+    right: -100,
     zIndex: 1000,
-    maxWidth: 190,
+    minWidth: 220,
+    maxWidth: 340,
   },
   statusTooltip: {
-    minWidth: 190,
-    maxWidth: 190,
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[2],
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(30,230,181,0.28)',
-    shadowOpacity: 0.35,
-    shadowRadius: 14,
-    shadowOffset: { width: 2, height: 4 },
-    elevation: 10,
+    minWidth: 220,
+    maxWidth: 320,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: 'rgba(30,230,181,0.16)',
+    backgroundColor: 'rgba(5,15,12,0.95)',
+    backdropFilter: 'blur(8px)',
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
   },
   tooltipArrow: {
     position: 'absolute',
-    top: -5,
-    right: 20,
+    top: -6,
+    right: 16,
     width: 0,
     height: 0,
-    borderLeftWidth: 5,
-    borderRightWidth: 5,
-    borderTopWidth: 5,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderTopWidth: 6,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
+    borderTopColor: 'rgba(30,230,181,0.12)',
   },
 
   /* Tooltip content */
   tooltipContent: {
-    gap: spacing[1],
+    gap: spacing[2],
   },
   tooltipLabel: {
-    fontSize: fontSize.xs,
-    fontWeight: '700',
-    letterSpacing: 0.6,
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
-    opacity: 0.9,
+    opacity: 0.85,
   },
   tooltipDivider: {
-    height: 1,
-    backgroundColor: 'rgba(30,230,181,0.2)',
+    height: 0.5,
+    backgroundColor: 'rgba(30,230,181,0.12)',
     marginVertical: spacing[1],
   },
   tooltipLine: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: spacing[1],
-    paddingVertical: 4,
+    flexDirection: 'column',
+    gap: 4,
+    paddingVertical: 2,
   },
   tooltipKey: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '500',
     flexShrink: 0,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
+    opacity: 0.7,
   },
   tooltipValue: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
     flex: 1,
-    textAlign: 'right',
+    textAlign: 'left',
     lineHeight: 16,
   },
 
