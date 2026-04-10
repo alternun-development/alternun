@@ -32,6 +32,7 @@ export { HeroPanel, resolveTier, TIERS } from './components/HeroPanel';
 export type { HeroPanelProps, AirsTier, TierSpec } from './components/HeroPanel';
 
 export { StatCard } from './components/StatCard';
+export { KpiCard } from './components/KpiCard';
 export { SectionContainer } from './components/SectionContainer';
 export { GlassCard, GlassChip } from './components/GlassCard';
 export { IconBadge } from './components/IconBadge';

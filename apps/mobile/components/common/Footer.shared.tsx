@@ -218,9 +218,11 @@ export function FooterCopyright({ color }: { color: string }): React.JSX.Element
   const footerYear = new Date().getFullYear();
 
   return (
-    <Text style={[styles.copyrightText, { color }]}>
-      {t('footer.copyright', { year: footerYear }, `(c) ${footerYear} Alternun.`)}
-    </Text>
+    <Pressable onPress={() => openExternalUrl('https://alternun.io')}>
+      <Text style={[styles.copyrightText, { color }]}>
+        {t('footer.copyright', { year: footerYear }, `(c) ${footerYear} Alternun.io`)}
+      </Text>
+    </Pressable>
   );
 }
 
