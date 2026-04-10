@@ -27,7 +27,7 @@ interface NotificationDropdownProps {
   onMarkAllRead: () => void;
   onDismiss: (id: string) => void;
   onClose: () => void;
-  onSeeAll?: () => void;
+  onNavigateToCenter?: () => void;
 }
 
 function timeAgo(date: Date): string {
@@ -67,7 +67,7 @@ export default function NotificationDropdown({
   onMarkAllRead,
   onDismiss,
   onClose,
-  onSeeAll,
+  onNavigateToCenter,
 }: NotificationDropdownProps) {
   const p = isDark
     ? {
@@ -199,11 +199,17 @@ export default function NotificationDropdown({
         </ScrollView>
       )}
 
-      {/* Footer with "See all" button */}
-      {notifications.length > 0 && onSeeAll && (
+      {/* Footer with "View Notification Center" button */}
+      {onNavigateToCenter && (
         <View style={[styles.footer, { borderTopColor: p.divider }]}>
-          <TouchableOpacity onPress={onSeeAll} activeOpacity={0.7} style={styles.seeAllBtn}>
-            <Text style={[styles.seeAllText, { color: p.markAll }]}>See all notifications</Text>
+          <TouchableOpacity
+            onPress={onNavigateToCenter}
+            activeOpacity={0.7}
+            style={styles.seeAllBtn}
+          >
+            <Text style={[styles.seeAllText, { color: p.markAll }]}>
+              {notifications.length === 0 ? 'View Notification Center' : 'See all notifications'}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
