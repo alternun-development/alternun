@@ -1,3 +1,15 @@
+## [1.0.46](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.46) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([143c63a](https://github.com/alternun-development/alternun/commit/143c63a2abe0eed8e53660c6b6171a86f8c7bc40))
+
+## [1.0.46](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.46) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([143c63a](https://github.com/alternun-development/alternun/commit/143c63a2abe0eed8e53660c6b6171a86f8c7bc40))
+
 ## [1.0.45](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.45) (2026-04-10)
 
 ## [1.0.45](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.45) (2026-04-10)
