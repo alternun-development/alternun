@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useState, } from 'react';
-import type { User, } from '../auth/AppAuthProvider';
+import React, { useCallback, useMemo, useState } from 'react';
+import type { User } from '../auth/AppAuthProvider';
 import {
   View,
   ScrollView,
@@ -8,22 +8,22 @@ import {
   useWindowDimensions,
   RefreshControl,
 } from 'react-native';
-import { useRouter, } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 import AppInfoFooter from '../common/AppInfoFooter';
-import { createTypographyStyles, } from '../theme/typography';
-import { SafeAreaView, } from 'react-native-safe-area-context';
-import { ThemeProvider, } from '@alternun/ui';
+import { createTypographyStyles } from '../theme/typography';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ThemeProvider } from '@alternun/ui';
 
 import TopNav from './TopNav';
 import HeroStats from './HeroStats';
 import ActivityFeed from './ActivityFeed';
 import DashboardSummaryCards from './DashboardSummaryCards';
 import WalletConnectModal from './WalletConnectModal';
-import { useAppPreferences, } from '../settings/AppPreferencesProvider';
-import { ToastSystem, type ToastItem, type ToastType, } from '@alternun/ui';
-import { useBackToTop, } from '../../hooks/useBackToTop';
-import { BackToTopButton, } from '../common/BackToTopButton';
+import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { ToastSystem, type ToastItem, type ToastType } from '@alternun/ui';
+import { useBackToTop } from '../../hooks/useBackToTop';
+import { BackToTopButton } from '../common/BackToTopButton';
 
 let toastIdCounter = 0;
 
@@ -53,7 +53,7 @@ interface ProfileInfo {
   email?: string;
 }
 
-function getMetadata(user: User | null,): UserMetadata {
+function getMetadata(user: User | null): UserMetadata {
   if (!user?.metadata || typeof user.metadata !== 'object') {
     return {};
   }
@@ -61,14 +61,14 @@ function getMetadata(user: User | null,): UserMetadata {
   return user.metadata as UserMetadata;
 }
 
-function readNumber(value: unknown,): number | null {
-  if (typeof value === 'number' && Number.isFinite(value,)) {
+function readNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
     return value;
   }
 
   if (typeof value === 'string' && value.trim().length > 0) {
-    const parsed = Number(value,);
-    if (Number.isFinite(parsed,)) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
       return parsed;
     }
   }
@@ -78,7 +78,7 @@ function readNumber(value: unknown,): number | null {
 
 function firstValidNumber(...candidates: unknown[]): number | null {
   for (const candidate of candidates) {
-    const value = readNumber(candidate,);
+    const value = readNumber(candidate);
     if (value !== null) {
       return value;
     }
@@ -87,20 +87,20 @@ function firstValidNumber(...candidates: unknown[]): number | null {
   return null;
 }
 
-function clampToPositiveInteger(value: number,): number {
-  if (!Number.isFinite(value,) || value < 0) {
+function clampToPositiveInteger(value: number): number {
+  if (!Number.isFinite(value) || value < 0) {
     return 0;
   }
 
-  return Math.floor(value,);
+  return Math.floor(value);
 }
 
-function getUserDashboardStats(user: User | null,): DashboardStats | null {
+function getUserDashboardStats(user: User | null): DashboardStats | null {
   if (!user) {
     return null;
   }
 
-  const metadata = getMetadata(user,);
+  const metadata = getMetadata(user);
   const stats =
     typeof metadata.stats === 'object' && metadata.stats !== null
       ? (metadata.stats as UserMetadata)
@@ -115,54 +115,54 @@ function getUserDashboardStats(user: User | null,): DashboardStats | null {
         metadata.totalAIRS,
         metadata.totalAirs,
         metadata.total_airs,
-        metadata.airs,
-      ) ?? 0,
+        metadata.airs
+      ) ?? 0
     ),
     activePositions: clampToPositiveInteger(
       firstValidNumber(
         stats.activePositions,
         stats.active_positions,
         metadata.activePositions,
-        metadata.active_positions,
-      ) ?? 0,
+        metadata.active_positions
+      ) ?? 0
     ),
     tokensHeld: clampToPositiveInteger(
       firstValidNumber(
         stats.tokensHeld,
         stats.tokens_held,
         metadata.tokensHeld,
-        metadata.tokens_held,
-      ) ?? 0,
+        metadata.tokens_held
+      ) ?? 0
     ),
     compensationsCompleted: clampToPositiveInteger(
       firstValidNumber(
         stats.compensationsCompleted,
         stats.compensations_completed,
         metadata.compensationsCompleted,
-        metadata.compensations_completed,
-      ) ?? 0,
+        metadata.compensations_completed
+      ) ?? 0
     ),
   };
 }
 
-function getUserProfileInfo(user: User | null,): ProfileInfo {
+function getUserProfileInfo(user: User | null): ProfileInfo {
   if (!user) {
-    return { displayName: 'Guest', };
+    return { displayName: 'Guest' };
   }
 
-  const metadata = getMetadata(user,);
+  const metadata = getMetadata(user);
   const firstName =
     typeof metadata.firstName === 'string'
       ? metadata.firstName
       : typeof metadata.first_name === 'string'
-        ? metadata.first_name
-        : '';
+      ? metadata.first_name
+      : '';
   const lastName =
     typeof metadata.lastName === 'string'
       ? metadata.lastName
       : typeof metadata.last_name === 'string'
-        ? metadata.last_name
-        : '';
+      ? metadata.last_name
+      : '';
 
   const fullNameFromParts = `${firstName} ${lastName}`.trim();
 
@@ -176,12 +176,12 @@ function getUserProfileInfo(user: User | null,): ProfileInfo {
   ];
 
   const nameCandidate = rawNameCandidates.find(
-    (entry,): entry is string => typeof entry === 'string' && entry.trim().length > 0,
+    (entry): entry is string => typeof entry === 'string' && entry.trim().length > 0
   );
 
   const emailLocalPart =
-    typeof user.email === 'string' && user.email.includes('@',)
-      ? user.email.split('@',)[0]
+    typeof user.email === 'string' && user.email.includes('@')
+      ? user.email.split('@')[0]
       : undefined;
 
   return {
@@ -190,12 +190,12 @@ function getUserProfileInfo(user: User | null,): ProfileInfo {
   };
 }
 
-function getWalletAddress(user: User | null,): string {
+function getWalletAddress(user: User | null): string {
   if (!user) {
     return '';
   }
 
-  const metadata = getMetadata(user,);
+  const metadata = getMetadata(user);
   const walletObject =
     typeof metadata.wallet === 'object' && metadata.wallet !== null
       ? (metadata.wallet as Record<string, unknown>)
@@ -210,17 +210,17 @@ function getWalletAddress(user: User | null,): string {
   ];
 
   for (const candidate of metadataCandidates) {
-    if (typeof candidate === 'string' && candidate.startsWith('0x',) && candidate.length >= 10) {
+    if (typeof candidate === 'string' && candidate.startsWith('0x') && candidate.length >= 10) {
       return candidate;
     }
   }
 
-  if (typeof user.providerUserId === 'string' && user.providerUserId.startsWith('0x',)) {
+  if (typeof user.providerUserId === 'string' && user.providerUserId.startsWith('0x')) {
     return user.providerUserId;
   }
 
-  if (user.id.includes('0x',)) {
-    const candidate = user.id.slice(user.id.indexOf('0x',),);
+  if (user.id.includes('0x')) {
+    const candidate = user.id.slice(user.id.indexOf('0x'));
     if (candidate.length >= 10) {
       return candidate;
     }
@@ -229,40 +229,40 @@ function getWalletAddress(user: User | null,): string {
   return '';
 }
 
-function getWalletProvider(user: User | null,): string | null {
+function getWalletProvider(user: User | null): string | null {
   if (!user) {
     return null;
   }
 
-  const metadata = getMetadata(user,);
+  const metadata = getMetadata(user);
   const provider =
     typeof metadata.walletProvider === 'string'
       ? metadata.walletProvider
       : typeof metadata.wallet_provider === 'string'
-        ? metadata.wallet_provider
-        : null;
+      ? metadata.wallet_provider
+      : null;
 
   if (provider && provider.trim().length > 0) {
     return provider.toLowerCase();
   }
 
-  if (typeof user.provider === 'string' && user.provider.startsWith('wallet:',)) {
-    return user.provider.replace('wallet:', '',).toLowerCase();
+  if (typeof user.provider === 'string' && user.provider.startsWith('wallet:')) {
+    return user.provider.replace('wallet:', '').toLowerCase();
   }
 
   return null;
 }
 
-function getAuthMethodLabel(user: User | null,): string {
+function getAuthMethodLabel(user: User | null): string {
   if (!user) {
     return 'guest';
   }
 
-  if (user.provider && !user.provider.startsWith('wallet:',)) {
+  if (user.provider && !user.provider.startsWith('wallet:')) {
     return `auth: ${user.provider}`;
   }
 
-  if (user.provider && user.provider.startsWith('wallet:',)) {
+  if (user.provider && user.provider.startsWith('wallet:')) {
     return 'auth: wallet';
   }
 
@@ -282,27 +282,27 @@ export default function Dashboard({
   onOpenSettingsPage,
   onWalletConnect,
   onSignOut,
-}: DashboardProps,) {
-  const [walletModalVisible, setWalletModalVisible,] = useState(false,);
-  const [toasts, setToasts,] = useState<ToastItem[]>([],);
-  const [isRefreshing, setIsRefreshing,] = useState(false,);
-  const [footerHeight, setFooterHeight,] = useState(0,);
-  const { width, } = useWindowDimensions();
+}: DashboardProps) {
+  const [walletModalVisible, setWalletModalVisible] = useState(false);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [footerHeight, setFooterHeight] = useState(0);
+  const { width } = useWindowDimensions();
   const isMobile = width < 720;
   const scrollTopInset = isMobile ? 82 : 62;
   const scrollBottomInset = isMobile ? 18 : 8;
-  const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel, } =
+  const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel } =
     useAppPreferences();
   const router = useRouter();
   const isDark = themeMode === 'dark';
 
-  const { scrollRef, showBackToTop, handleScroll, scrollToTop, bounceStyle, } = useBackToTop({
+  const { scrollRef, showBackToTop, handleScroll, scrollToTop, bounceStyle } = useBackToTop({
     scrollThreshold: 200,
-  },);
+  });
 
   // Reload handler for both pull-to-refresh and button tap
   const handleRefresh = useCallback((): void => {
-    setIsRefreshing(true,);
+    setIsRefreshing(true);
     try {
       // Call the onReload callback from auth provider to refresh user data
       if (onReload) {
@@ -310,59 +310,59 @@ export default function Dashboard({
       }
       // Simulate a small delay to show loading state (in practice, auth refresh takes time)
       setTimeout(() => {
-        setIsRefreshing(false,);
-      }, 800,);
+        setIsRefreshing(false);
+      }, 800);
     } catch (error) {
-      setIsRefreshing(false,);
+      setIsRefreshing(false);
     }
-  }, [onReload,],);
+  }, [onReload]);
 
-  const addToast = useCallback((type: ToastType, title: string, message: string,) => {
+  const addToast = useCallback((type: ToastType, title: string, message: string) => {
     const id = `toast-${++toastIdCounter}`;
-    setToasts((prev,) => [...prev, { id, type, title, message, },],);
+    setToasts((prev) => [...prev, { id, type, title, message }]);
     setTimeout(() => {
-      setToasts((prev,) => prev.filter((t,) => t.id !== id,),);
-    }, 4000,);
-  }, [],);
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  }, []);
 
-  const dismissToast = useCallback((id: string,) => {
-    setToasts((prev,) => prev.filter((t,) => t.id !== id,),);
-  }, [],);
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
-  const walletAddress = getWalletAddress(user,);
-  const walletProvider = getWalletProvider(user,);
-  const walletConnected = Boolean(walletAddress || walletProvider,);
-  const authMethodLabel = getAuthMethodLabel(user,);
-  const userStats = useMemo(() => getUserDashboardStats(user,), [user,],);
-  const profileInfo = useMemo(() => getUserProfileInfo(user,), [user,],);
+  const walletAddress = getWalletAddress(user);
+  const walletProvider = getWalletProvider(user);
+  const walletConnected = Boolean(walletAddress || walletProvider);
+  const authMethodLabel = getAuthMethodLabel(user);
+  const userStats = useMemo(() => getUserDashboardStats(user), [user]);
+  const profileInfo = useMemo(() => getUserProfileInfo(user), [user]);
 
   const handleRequireSignIn = useCallback(() => {
     onRequireSignIn();
-  }, [onRequireSignIn,],);
+  }, [onRequireSignIn]);
 
   const handleOpenWalletConnect = useCallback(() => {
     if (!user) {
-      addToast('info', 'Sign In Required', 'Sign in first to connect a wallet.',);
+      addToast('info', 'Sign In Required', 'Sign in first to connect a wallet.');
       onRequireSignIn();
       return;
     }
 
-    setWalletModalVisible(true,);
-  }, [addToast, onRequireSignIn, user,],);
+    setWalletModalVisible(true);
+  }, [addToast, onRequireSignIn, user]);
 
   const handleConnect = useCallback(
-    async (walletType: string,) => {
-      setWalletModalVisible(false,);
+    async (walletType: string) => {
+      setWalletModalVisible(false);
       try {
-        await onWalletConnect(walletType,);
-        addToast('success', 'Wallet Connected', 'Wallet authentication completed.',);
+        await onWalletConnect(walletType);
+        addToast('success', 'Wallet Connected', 'Wallet authentication completed.');
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Unable to connect wallet at this time.';
-        addToast('error', 'Wallet Connection Failed', message,);
+        addToast('error', 'Wallet Connection Failed', message);
       }
     },
-    [addToast, onWalletConnect,],
+    [addToast, onWalletConnect]
   );
 
   const handleSignOut = useCallback(async () => {
@@ -375,17 +375,36 @@ export default function Dashboard({
       await onSignOut();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to sign out right now.';
-      addToast('error', 'Sign Out Failed', message,);
+      addToast('error', 'Sign Out Failed', message);
     }
-  }, [addToast, onRequireSignIn, onSignOut, user,],);
+  }, [addToast, onRequireSignIn, onSignOut, user]);
 
   const handleOpenProfile = useCallback(() => {
     onOpenProfilePage();
-  }, [onOpenProfilePage,],);
+  }, [onOpenProfilePage]);
 
   const handleOpenSettings = useCallback(() => {
     onOpenSettingsPage();
-  }, [onOpenSettingsPage,],);
+  }, [onOpenSettingsPage]);
+
+  const handleNavigate = useCallback(
+    (key: string) => {
+      switch (key) {
+        case 'mi-perfil':
+          onOpenProfilePage();
+          break;
+        case 'portafolio':
+          router.push('/portafolio');
+          break;
+        case 'explorar':
+          router.push('/explorar');
+          break;
+        default:
+          break;
+      }
+    },
+    [onOpenProfilePage, router]
+  );
 
   return (
     <ThemeProvider mode={isDark ? 'dark' : 'light'}>
@@ -394,7 +413,7 @@ export default function Dashboard({
           barStyle={isDark ? 'light-content' : 'dark-content'}
           backgroundColor={isDark ? '#050510' : '#f6f8fc'}
         />
-        <View style={[styles.container, { backgroundColor: isDark ? '#050510' : '#f6f8fc', },]}>
+        <View style={[styles.container, { backgroundColor: isDark ? '#050510' : '#f6f8fc' }]}>
           <ScrollView
             ref={scrollRef}
             style={styles.scroll}
@@ -434,7 +453,7 @@ export default function Dashboard({
                   <Text
                     style={[
                       styles.authHintText,
-                      { color: isDark ? 'rgba(232,232,255,0.72)' : '#475569', },
+                      { color: isDark ? 'rgba(232,232,255,0.72)' : '#475569' },
                     ]}
                   >
                     Sign in from the top-right profile menu to activate actions.
@@ -445,17 +464,17 @@ export default function Dashboard({
               {/* ── Recent Activity + Summary Cards ─────────────────────── */}
               <SectionDivider isDark={isDark} />
               <ActivityFeed isDark={isDark} />
-              <DashboardSummaryCards isDark={isDark} />
+              <DashboardSummaryCards isDark={isDark} onNavigate={handleNavigate} />
             </View>
           </ScrollView>
 
           <View
             style={styles.stickyBottom}
-            onLayout={(event,) => {
-              setFooterHeight(event.nativeEvent.layout.height,);
+            onLayout={(event) => {
+              setFooterHeight(event.nativeEvent.layout.height);
             }}
           >
-            <AppInfoFooter containerStyle={{ marginTop: 0, }} />
+            <AppInfoFooter containerStyle={{ marginTop: 0 }} />
           </View>
 
           <BackToTopButton
@@ -469,9 +488,9 @@ export default function Dashboard({
 
           <WalletConnectModal
             visible={walletModalVisible}
-            onClose={() => setWalletModalVisible(false,)}
-            onConnect={(walletType,) => {
-              void handleConnect(walletType,);
+            onClose={() => setWalletModalVisible(false)}
+            onConnect={(walletType) => {
+              void handleConnect(walletType);
             }}
           />
 
@@ -479,7 +498,7 @@ export default function Dashboard({
           <View style={styles.floatingNav} pointerEvents='box-none'>
             <TopNav
               key={user ? 'topnav-signed-in' : 'topnav-signed-out'}
-              signedIn={Boolean(user,)}
+              signedIn={Boolean(user)}
               walletConnected={walletConnected}
               walletAddress={walletAddress}
               themeMode={themeMode}
@@ -499,15 +518,15 @@ export default function Dashboard({
               onSignOut={() => {
                 void handleSignOut();
               }}
-              onNavigate={(key,) => {
+              onNavigate={(key) => {
                 if (key === 'dashboard') {
-                  scrollRef.current?.scrollTo({ y: 0, animated: true, },);
+                  scrollRef.current?.scrollTo({ y: 0, animated: true });
                 } else if (key === 'explorar') {
-                  router.push('/explorar',);
+                  router.push('/explorar');
                 } else if (key === 'portafolio') {
-                  router.push('/portafolio',);
+                  router.push('/portafolio');
                 } else if (key === 'mi-perfil') {
-                  router.push('/mi-perfil',);
+                  router.push('/mi-perfil');
                 }
               }}
             />
@@ -520,12 +539,12 @@ export default function Dashboard({
   );
 }
 
-function SectionDivider({ isDark, }: { isDark: boolean },) {
+function SectionDivider({ isDark }: { isDark: boolean }) {
   return (
     <View
       style={[
         sectionStyles.divider,
-        { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.12)', },
+        { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.12)' },
       ]}
     />
   );
@@ -537,7 +556,7 @@ const sectionStyles = createTypographyStyles({
     marginVertical: 8,
     marginHorizontal: 16,
   },
-},);
+});
 
 const styles = createTypographyStyles({
   safeArea: {
@@ -580,4 +599,4 @@ const styles = createTypographyStyles({
   stickyBottom: {
     marginTop: 'auto',
   },
-},);
+});
