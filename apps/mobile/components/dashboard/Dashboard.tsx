@@ -21,6 +21,7 @@ import ActivityFeed from './ActivityFeed';
 import DashboardSummaryCards from './DashboardSummaryCards';
 import WalletConnectModal from './WalletConnectModal';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { useNotifications } from '../notifications/NotificationsContext';
 import { ToastSystem, type ToastItem, type ToastType } from '@alternun/ui';
 import { useBackToTop } from '../../hooks/useBackToTop';
 import { BackToTopButton } from '../common/BackToTopButton';
@@ -293,6 +294,11 @@ export default function Dashboard({
   const scrollBottomInset = isMobile ? 18 : 8;
   const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel } =
     useAppPreferences();
+  const {
+    items: notificationItems,
+    markAllRead: markAllNotificationsRead,
+    deleteNotif: dismissNotification,
+  } = useNotifications();
   const router = useRouter();
   const isDark = themeMode === 'dark';
 
@@ -532,6 +538,9 @@ export default function Dashboard({
               onNavigateToNotifications={() => {
                 router.push('/notifications');
               }}
+              notifications={notificationItems.filter((n) => !n.archived)}
+              onMarkAllNotificationsRead={markAllNotificationsRead}
+              onDismissNotification={dismissNotification}
             />
           </View>
 

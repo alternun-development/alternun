@@ -1,240 +1,184 @@
-import React, { useMemo, useRef, useState, } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
+import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
-  Animated,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  TextInput,
-} from 'react-native';
-import { Bell, ArrowLeft, Search, Archive, Inbox, } from 'lucide-react-native';
-import { useRouter, } from 'expo-router';
+  Bell,
+  ArrowLeft,
+  Archive,
+  Inbox,
+  CheckCheck,
+  Trash2,
+  type LucideProps,
+} from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import ScreenShell from '../components/common/ScreenShell';
-import { useAppPreferences, } from '../components/settings/AppPreferencesProvider';
-import { NotificationItem, } from '../components/dashboard/NotificationDropdown';
+import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
+import { PageTabBar, type TabItem } from '../components/common/PageTabBar';
+import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import { useNotifications } from '../components/notifications/NotificationsContext';
+import { TYPE_CONFIG } from '../components/dashboard/NotificationDropdown';
 
-function timeAgo(date: Date,): string {
-  const diff = Math.floor((Date.now() - date.getTime()) / 1000,);
+const BellIcon = Bell as React.FC<LucideProps>;
+const ArchiveIcon = Archive as React.FC<LucideProps>;
+const InboxIcon = Inbox as React.FC<LucideProps>;
+
+function timeAgo(date: Date): string {
+  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
   if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60,)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600,)}h ago`;
-  return `${Math.floor(diff / 86400,)}d ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
 }
 
-const TYPE_CONFIG: Record<string, { icon: React.FC<any>; color: string; bg: string }> = {
-  success: {
-    icon: Bell as React.FC<any>,
-    color: '#1ccba1',
-    bg: 'rgba(28,203,161,0.12)',
-  },
-  error: {
-    icon: Bell as React.FC<any>,
-    color: '#f87171',
-    bg: 'rgba(248,113,113,0.12)',
-  },
-  info: {
-    icon: Bell as React.FC<any>,
-    color: '#818cf8',
-    bg: 'rgba(129,140,248,0.12)',
-  },
-  warning: {
-    icon: Bell as React.FC<any>,
-    color: '#f59e0b',
-    bg: 'rgba(245,158,11,0.12)',
-  },
-};
-
-// Mock notifications - in real app, these would come from state/context
-const MOCK_NOTIFICATIONS: (NotificationItem & { archived?: boolean })[] = [
-  {
-    id: '1',
-    type: 'success',
-    title: 'Transaction confirmed',
-    body: 'Your transaction of 100 AIRS has been successfully processed.',
-    timestamp: new Date(Date.now() - 5 * 60000,),
-    read: false,
-    archived: false,
-  },
-  {
-    id: '2',
-    type: 'info',
-    title: 'New feature available',
-    body: 'Check out our new dashboard analytics for better insights.',
-    timestamp: new Date(Date.now() - 2 * 3600000,),
-    read: false,
-    archived: false,
-  },
-  {
-    id: '3',
-    type: 'warning',
-    title: 'Low balance',
-    body: 'Your AIRS balance is below 50. Consider adding more.',
-    timestamp: new Date(Date.now() - 1 * 86400000,),
-    read: true,
-    archived: false,
-  },
-  {
-    id: '4',
-    type: 'success',
-    title: 'Reward earned',
-    body: 'You earned 50 AIRS from community contribution.',
-    timestamp: new Date(Date.now() - 3 * 86400000,),
-    read: true,
-    archived: true,
-  },
+const FILTER_OPTIONS: SearchFilterOption[] = [
+  { key: 'all', label: 'Todos' },
+  { key: 'unread', label: 'No leídos' },
+  { key: 'success', label: 'Éxito' },
+  { key: 'error', label: 'Error' },
+  { key: 'info', label: 'Info' },
+  { key: 'warning', label: 'Alerta' },
 ];
 
 type FilterTab = 'inbox' | 'archived';
 
 export default function NotificationsScreen(): React.JSX.Element {
   const router = useRouter();
-  const { themeMode, } = useAppPreferences();
+  const { themeMode } = useAppPreferences();
+  const { items, markRead, markAllRead, archive, unarchive, deleteNotif } = useNotifications();
   const isDark = themeMode === 'dark';
-  const [searchQuery, setSearchQuery,] = useState('',);
-  const [activeTab, setActiveTab,] = useState<FilterTab>('inbox',);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState<FilterTab>('inbox');
 
-  const fadeAnim = useRef(new Animated.Value(0,),).current;
-  const slideAnim = useRef(new Animated.Value(24,),).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(24)).current;
 
   React.useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 380, useNativeDriver: false, },),
-      Animated.timing(slideAnim, { toValue: 0, duration: 380, useNativeDriver: false, },),
-    ],).start();
-  }, [fadeAnim, slideAnim,],);
+      Animated.timing(fadeAnim, { toValue: 1, duration: 380, useNativeDriver: false }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 380, useNativeDriver: false }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
 
   const c = isDark
     ? {
-      bg: '#050f0c',
-      cardBg: 'rgba(255,255,255,0.04)',
-      border: 'rgba(255,255,255,0.08)',
-      text: '#e8fff6',
-      muted: 'rgba(232,255,246,0.6)',
-      accent: '#1EE6B5',
-      headerText: '#e8e8ff',
-      itemBg: 'rgba(255,255,255,0.04)',
-      itemBorder: 'rgba(255,255,255,0.06)',
-      unreadDot: '#1ccba1',
-      inputBg: 'rgba(255,255,255,0.04)',
-      inputBorder: 'rgba(255,255,255,0.08)',
-      inputText: '#e8fff6',
-      tabActive: '#1EE6B5',
-      tabInactive: 'rgba(232,255,246,0.4)',
-    }
+        bg: '#050f0c',
+        cardBg: 'rgba(255,255,255,0.04)',
+        border: 'rgba(255,255,255,0.08)',
+        text: '#e8fff6',
+        muted: 'rgba(232,255,246,0.6)',
+        accent: '#1EE6B5',
+        headerText: '#e8e8ff',
+        itemBg: 'rgba(255,255,255,0.04)',
+        itemBorder: 'rgba(255,255,255,0.06)',
+        unreadDot: '#1ccba1',
+        buttonBg: 'rgba(255,255,255,0.08)',
+        buttonText: '#1EE6B5',
+        tabActive: '#1EE6B5',
+        tabInactive: 'rgba(232,255,246,0.4)',
+        divider: 'rgba(255,255,255,0.07)',
+      }
     : {
-      bg: '#f0fdf9',
-      cardBg: 'rgba(255,255,255,0.85)',
-      border: 'rgba(11,90,95,0.12)',
-      text: '#0b2d31',
-      muted: 'rgba(11,45,49,0.6)',
-      accent: '#0d9488',
-      headerText: '#0f172a',
-      itemBg: 'rgba(15,23,42,0.03)',
-      itemBorder: 'rgba(15,23,42,0.08)',
-      unreadDot: '#0d9488',
-      inputBg: 'rgba(15,23,42,0.04)',
-      inputBorder: 'rgba(11,90,95,0.12)',
-      inputText: '#0b2d31',
-      tabActive: '#0d9488',
-      tabInactive: 'rgba(11,45,49,0.4)',
-    };
+        bg: '#f0fdf9',
+        cardBg: 'rgba(255,255,255,0.85)',
+        border: 'rgba(11,90,95,0.12)',
+        text: '#0b2d31',
+        muted: 'rgba(11,45,49,0.6)',
+        accent: '#0d9488',
+        headerText: '#0f172a',
+        itemBg: 'rgba(15,23,42,0.03)',
+        itemBorder: 'rgba(15,23,42,0.08)',
+        unreadDot: '#0d9488',
+        buttonBg: 'rgba(13,148,136,0.12)',
+        buttonText: '#0d9488',
+        tabActive: '#0d9488',
+        tabInactive: 'rgba(11,45,49,0.4)',
+        divider: 'rgba(15,23,42,0.08)',
+      };
 
-  // Filter notifications based on active tab and search
+  // Filter notifications based on active tab, search, and type filter
   const filteredNotifications = useMemo(() => {
-    let notifs = MOCK_NOTIFICATIONS.filter((n,) =>
-      activeTab === 'inbox' ? !n.archived : n.archived,
-    );
+    let notifs = items.filter((n) => (activeTab === 'inbox' ? !n.archived : n.archived));
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       notifs = notifs.filter(
-        (n,) => n.title.toLowerCase().includes(query,) || n.body.toLowerCase().includes(query,),
+        (n) => n.title.toLowerCase().includes(query) || n.body.toLowerCase().includes(query)
       );
     }
 
-    return notifs;
-  }, [activeTab, searchQuery,],);
+    if (activeFilter !== 'all' && activeFilter !== 'unread') {
+      notifs = notifs.filter((n) => n.type === activeFilter);
+    } else if (activeFilter === 'unread') {
+      notifs = notifs.filter((n) => !n.read);
+    }
 
-  const unreadCount = useMemo(
-    () => MOCK_NOTIFICATIONS.filter((n,) => !n.read && !n.archived,).length,
-    [],
-  );
+    return notifs;
+  }, [activeTab, searchQuery, activeFilter, items]);
+
+  const inboxUnreadCount = items.filter((n) => !n.read && !n.archived).length;
+
+  const tabs: TabItem[] = [
+    { key: 'inbox', label: 'Inbox', icon: InboxIcon },
+    { key: 'archived', label: 'Archived', icon: ArchiveIcon },
+  ];
 
   return (
     <ScreenShell activeSection='notifications' backgroundColor={c.bg}>
-      <View style={[styles.root, { backgroundColor: c.bg, },]}>
-        {/* Header with back button */}
+      <View style={[styles.root, { backgroundColor: c.bg }]}>
+        {/* Header with back button and unread badge */}
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
-            hitSlop={{ top: 8, left: 8, right: 12, bottom: 8, }}
+            hitSlop={{ top: 8, left: 8, right: 12, bottom: 8 }}
           >
             <ArrowLeft size={24} color={c.text} strokeWidth={2} />
           </TouchableOpacity>
           <View style={styles.headerTitle}>
-            <Text style={[styles.title, { color: c.text, },]}>Notifications</Text>
-            {unreadCount > 0 && (
+            <Text style={[styles.title, { color: c.text }]}>Notifications</Text>
+            {inboxUnreadCount > 0 && (
               <View style={styles.unreadBadge}>
-                <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+                <Text style={styles.unreadBadgeText}>{inboxUnreadCount}</Text>
               </View>
             )}
           </View>
           <View style={styles.headerSpacer} />
         </View>
 
-        {/* Search bar */}
+        {/* SearchFilterBar */}
         <View style={styles.searchContainer}>
-          <Search size={16} color={c.muted} style={styles.searchIcon} />
-          <TextInput
-            style={[
-              styles.searchInput,
-              {
-                backgroundColor: c.inputBg,
-                borderColor: c.inputBorder,
-                color: c.inputText,
-              },
-            ]}
-            placeholder='Search notifications...'
-            placeholderTextColor={c.muted}
+          <SearchFilterBar
             value={searchQuery}
             onChangeText={setSearchQuery}
+            placeholder='Buscar notificaciones...'
+            filters={FILTER_OPTIONS}
+            activeFilter={activeFilter}
+            onChangeFilter={setActiveFilter}
           />
         </View>
 
-        {/* Filter tabs */}
-        <View style={styles.tabsContainer}>
-          <TouchableOpacity
-            onPress={() => setActiveTab('inbox',)}
-            style={[
-              styles.tab,
-              {
-                borderBottomColor: activeTab === 'inbox' ? c.tabActive : 'transparent',
-              },
-            ]}
-          >
-            <Inbox size={16} color={activeTab === 'inbox' ? c.accent : c.muted} />
-            <Text style={[styles.tabLabel, { color: activeTab === 'inbox' ? c.accent : c.muted, },]}>
-              Inbox
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab('archived',)}
-            style={[
-              styles.tab,
-              {
-                borderBottomColor: activeTab === 'archived' ? c.tabActive : 'transparent',
-              },
-            ]}
-          >
-            <Archive size={16} color={activeTab === 'archived' ? c.accent : c.muted} />
-            <Text
-              style={[styles.tabLabel, { color: activeTab === 'archived' ? c.accent : c.muted, },]}
+        {/* PageTabBar */}
+        <PageTabBar
+          tabs={tabs}
+          activeTab={activeTab}
+          onChangeTab={(key) => setActiveTab(key as FilterTab)}
+          isDark={isDark}
+          accent={c.accent}
+          muted={c.muted}
+        />
+
+        {/* Bulk actions strip (only in inbox tab with items) */}
+        {activeTab === 'inbox' && filteredNotifications.length > 0 && inboxUnreadCount > 0 && (
+          <View style={[styles.bulkActionsStrip, { borderBottomColor: c.divider }]}>
+            <TouchableOpacity
+              style={[styles.bulkActionBtn, { backgroundColor: c.buttonBg }]}
+              onPress={markAllRead}
+              activeOpacity={0.7}
             >
-              Archived
-            </Text>
-          </TouchableOpacity>
-        </View>
+              <CheckCheck size={16} color={c.buttonText} />
+              <Text style={[styles.bulkActionText, { color: c.buttonText }]}>Mark all read</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Notifications list */}
         <Animated.View
@@ -242,7 +186,7 @@ export default function NotificationsScreen(): React.JSX.Element {
             styles.content,
             {
               opacity: fadeAnim,
-              transform: [{ translateY: slideAnim, },],
+              transform: [{ translateY: slideAnim }],
             },
           ]}
         >
@@ -252,16 +196,21 @@ export default function NotificationsScreen(): React.JSX.Element {
           >
             {filteredNotifications.length === 0 ? (
               <View style={styles.empty}>
-                <Bell size={48} color={c.muted} />
-                <Text style={[styles.emptyText, { color: c.muted, },]}>
-                  {activeTab === 'inbox' ? 'No notifications' : 'No archived notifications'}
+                <BellIcon size={48} color={c.muted} />
+                <Text style={[styles.emptyText, { color: c.muted }]}>
+                  {activeTab === 'inbox'
+                    ? 'No notifications'
+                    : activeFilter === 'all'
+                    ? 'No archived notifications'
+                    : 'No matching notifications'}
                 </Text>
               </View>
             ) : (
               <View style={styles.notificationsList}>
-                {filteredNotifications.map((notif,) => {
+                {filteredNotifications.map((notif) => {
                   const cfg = TYPE_CONFIG[notif.type];
                   const IconComp = cfg.icon;
+
                   return (
                     <View
                       key={notif.id}
@@ -278,7 +227,7 @@ export default function NotificationsScreen(): React.JSX.Element {
                       ]}
                     >
                       {/* Icon */}
-                      <View style={[styles.iconWrap, { backgroundColor: cfg.bg, },]}>
+                      <View style={[styles.iconWrap, { backgroundColor: cfg.bg }]}>
                         <IconComp size={18} color={cfg.color} />
                       </View>
 
@@ -296,20 +245,70 @@ export default function NotificationsScreen(): React.JSX.Element {
                           >
                             {notif.title}
                           </Text>
-                          <Text style={[styles.itemTime, { color: c.muted, },]}>
-                            {timeAgo(notif.timestamp,)}
+                          <Text style={[styles.itemTime, { color: c.muted }]}>
+                            {timeAgo(notif.timestamp)}
                           </Text>
                         </View>
-                        <Text style={[styles.itemDesc, { color: c.muted, },]}>{notif.body}</Text>
-                      </View>
+                        <Text style={[styles.itemDesc, { color: c.muted }]}>{notif.body}</Text>
 
-                      {/* Unread indicator */}
-                      {!notif.read && (
-                        <View style={[styles.unreadIndicator, { backgroundColor: c.unreadDot, },]} />
-                      )}
+                        {/* Action buttons */}
+                        <View style={styles.actionButtons}>
+                          {!notif.read && (
+                            <TouchableOpacity
+                              style={[styles.actionBtn, { backgroundColor: c.buttonBg }]}
+                              onPress={() => markRead(notif.id)}
+                              activeOpacity={0.7}
+                            >
+                              <CheckCheck size={14} color={c.buttonText} />
+                              <Text style={[styles.actionBtnText, { color: c.buttonText }]}>
+                                Mark read
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+
+                          <TouchableOpacity
+                            style={[styles.actionBtn, { backgroundColor: c.buttonBg }]}
+                            onPress={() => {
+                              if (notif.archived) {
+                                unarchive(notif.id);
+                              } else {
+                                archive(notif.id);
+                              }
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            {notif.archived ? (
+                              <>
+                                <InboxIcon size={14} color={c.buttonText} />
+                                <Text style={[styles.actionBtnText, { color: c.buttonText }]}>
+                                  Unarchive
+                                </Text>
+                              </>
+                            ) : (
+                              <>
+                                <ArchiveIcon size={14} color={c.buttonText} />
+                                <Text style={[styles.actionBtnText, { color: c.buttonText }]}>
+                                  Archive
+                                </Text>
+                              </>
+                            )}
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={[styles.actionBtn, { backgroundColor: c.buttonBg }]}
+                            onPress={() => deleteNotif(notif.id)}
+                            activeOpacity={0.7}
+                          >
+                            <Trash2 size={14} color={c.buttonText} />
+                            <Text style={[styles.actionBtnText, { color: c.buttonText }]}>
+                              Delete
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
                     </View>
                   );
-                },)}
+                })}
               </View>
             )}
           </ScrollView>
@@ -357,40 +356,27 @@ const styles = StyleSheet.create({
     width: 24,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    gap: 8,
   },
-  searchIcon: {
-    marginTop: 4,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    fontSize: 14,
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
-  },
-  tab: {
-    flex: 1,
+  bulkActionsStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
+    gap: 10,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 2,
+    borderBottomWidth: 1,
   },
-  tabLabel: {
-    fontSize: 13,
+  bulkActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  bulkActionText: {
+    fontSize: 12,
     fontWeight: '600',
   },
   content: {
@@ -423,7 +409,7 @@ const styles = StyleSheet.create({
   },
   itemBody: {
     flex: 1,
-    gap: 6,
+    gap: 8,
   },
   itemHeader: {
     flexDirection: 'row',
@@ -443,11 +429,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
-  unreadIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    flexShrink: 0,
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+    marginTop: 4,
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  actionBtnText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   empty: {
     alignItems: 'center',
@@ -459,4 +457,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-},);
+});
