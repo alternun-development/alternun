@@ -394,7 +394,7 @@ export default function TopNav({
                   style={[
                     styles.notifBadge,
                     isMobile && styles.notifBadgeMobile,
-                    { backgroundColor: unreadCount > 0 ? p.badgeBg : 'rgba(255,255,255,0.18)' },
+                    { backgroundColor: 'rgba(255,255,255,0.18)' },
                   ]}
                   onPress={(e) => {
                     e.stopPropagation();
@@ -402,12 +402,13 @@ export default function TopNav({
                   }}
                   hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                 >
-                  {unreadCount > 0 ? (
-                    <Text style={[styles.notifBadgeText, { color: p.badgeText }]}>
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </Text>
-                  ) : (
-                    <BellIcon size={11} color='rgba(255,255,255,0.85)' />
+                  <BellIcon size={11} color='rgba(255,255,255,0.85)' />
+                  {unreadCount > 0 && (
+                    <View style={[styles.badgeOverlay, { backgroundColor: p.badgeBg }]}>
+                      <Text style={[styles.badgeCount, { color: p.badgeText }]}>
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </Text>
+                    </View>
                   )}
                 </TouchableOpacity>
 
@@ -859,24 +860,32 @@ const styles = StyleSheet.create({
     lineHeight: 11,
   },
   notifBadge: {
-    flexDirection: 'row',
+    position: 'relative',
     alignItems: 'center',
-    gap: 3,
-    borderRadius: 999,
-    minWidth: 20,
-    height: 22,
     justifyContent: 'center',
-    paddingHorizontal: 7,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
   },
   notifBadgeMobile: {
-    minWidth: 18,
-    height: 20,
-    paddingHorizontal: 6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
   },
-  notifBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    lineHeight: 13,
+  badgeOverlay: {
+    position: 'absolute',
+    top: -3,
+    right: -6,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeCount: {
+    fontSize: 8,
+    fontWeight: '900',
+    lineHeight: 10,
   },
 
   // ── Dropdown ────────────────────────────────────────────────────────────
