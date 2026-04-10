@@ -1,6 +1,6 @@
 {
   "name": "@alternun/auth",
-  "version": "1.0.46",
+  "version": "1.0.47",
   "description": "Alternun auth wrapper package built on top of @edcalderon/auth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
