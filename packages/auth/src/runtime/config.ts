@@ -29,7 +29,10 @@ export function resolveAuthRuntimeConfig(
   env: Record<string, string | undefined> = getProcessEnv()
 ): AuthRuntimeConfig {
   const selection = parseAuthProviderSelection({
-    executionProvider: readEnvValue(env, ['AUTH_EXECUTION_PROVIDER']),
+    executionProvider: readEnvValue(env, [
+      'AUTH_EXECUTION_PROVIDER',
+      'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER',
+    ]),
     issuerProvider: readEnvValue(env, ['AUTH_ISSUER_PROVIDER']),
     emailProvider: readEnvValue(env, [
       'AUTH_EMAIL_PROVIDER',

@@ -182,6 +182,9 @@ const expoPublicWalletConnectProjectId = expoConfig.publicEnv.walletConnectProje
 const expoPublicWalletConnectChainId = expoConfig.publicEnv.walletConnectChainId;
 const expoPublicEnableMockWalletAuth = expoConfig.publicEnv.enableMockWalletAuth;
 const expoPublicEnableWalletOnlyAuth = expoConfig.publicEnv.enableWalletOnlyAuth;
+const expoPublicAuthExecutionProvider = expoConfig.publicEnv.authExecutionProvider;
+const expoPublicAuthExchangeUrl = expoConfig.publicEnv.authExchangeUrl;
+const expoPublicBetterAuthUrl = expoConfig.publicEnv.betterAuthUrl;
 const expoPublicAuthentikIssuer = expoConfig.publicEnv.authentikIssuer;
 const expoPublicAuthentikClientId = expoConfig.publicEnv.authentikClientId;
 const expoPublicAuthentikRedirectUri = expoConfig.publicEnv.authentikRedirectUri;
@@ -392,6 +395,12 @@ const commonBuildEnv = {
   EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: expoPublicWalletConnectChainId ?? '',
   EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH: expoPublicEnableMockWalletAuth ?? '',
   EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH: expoPublicEnableWalletOnlyAuth ?? '',
+  AUTH_EXECUTION_PROVIDER: expoPublicAuthExecutionProvider ?? '',
+  EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: expoPublicAuthExecutionProvider ?? '',
+  AUTH_EXCHANGE_URL: expoPublicAuthExchangeUrl ?? '',
+  EXPO_PUBLIC_AUTH_EXCHANGE_URL: expoPublicAuthExchangeUrl ?? '',
+  AUTH_BETTER_AUTH_URL: expoPublicBetterAuthUrl ?? '',
+  EXPO_PUBLIC_BETTER_AUTH_URL: expoPublicBetterAuthUrl ?? '',
   EXPO_PUBLIC_AUTHENTIK_ISSUER: expoPublicAuthentikIssuer ?? '',
   EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId ?? '',
   EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: expoPublicAuthentikRedirectUri ?? '',
@@ -664,6 +673,9 @@ export function createInfrastructure() {
   if (enableExpoSiteForStage) {
     const assetBucketName = assetBucketNames[expoDeploymentStage];
     const assetBaseUrl = createAssetBaseUrl(assetBucketName);
+    const expoAuthExecutionProvider =
+      expoPublicAuthExecutionProvider ??
+      (expoDeploymentStage === 'production' ? 'supabase' : 'better-auth');
     const introVideoAssets = {
       en: buildPublicAssetFile(
         resolvedExpoAppPath,
@@ -736,6 +748,12 @@ export function createInfrastructure() {
         EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: expoPublicWalletConnectChainId,
         EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH: expoPublicEnableMockWalletAuth,
         EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH: expoPublicEnableWalletOnlyAuth,
+        AUTH_EXECUTION_PROVIDER: expoAuthExecutionProvider,
+        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: expoAuthExecutionProvider,
+        AUTH_EXCHANGE_URL: expoPublicAuthExchangeUrl,
+        EXPO_PUBLIC_AUTH_EXCHANGE_URL: expoPublicAuthExchangeUrl,
+        AUTH_BETTER_AUTH_URL: expoPublicBetterAuthUrl,
+        EXPO_PUBLIC_BETTER_AUTH_URL: expoPublicBetterAuthUrl,
         EXPO_PUBLIC_ASSET_BASE_URL: assetBaseUrl,
         EXPO_PUBLIC_AIRS_VIDEO_EN_URL: introVideoAssets.en.url,
         EXPO_PUBLIC_AIRS_VIDEO_ES_URL: introVideoAssets.es.url,

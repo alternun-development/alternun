@@ -53,6 +53,7 @@ Do not treat Expo web as native auth.
 
 - Popup auth is not part of the supported contract.
 - Custom Authentik provider flow slugs are optional and explicit-only. They are ignored unless `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=true`.
+- When `AUTH_EXECUTION_PROVIDER` or `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` is `better-auth`, Google and Discord social login should go through the Better Auth execution path before the issuer exchange.
 - Web callback URLs default to `https://<origin>/auth/callback` when a browser origin is available.
 - AIRS web can force a fresh Authentik session before social source login when shared SSO sessions would otherwise keep the wrong Authentik user active during callback handoff.
 - Static apps such as admin/docs can wrap their own OIDC authorize URLs with `buildAuthentikLoginEntryUrl(...)` to start Google-style login from an app-owned relay route instead of dropping users into the Authentik library.
