@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { StatCardSkeleton } from './SkeletonLoader';
 import { radius, fontSize, spacing } from '../tokens/spacing';
@@ -28,30 +28,76 @@ export function StatCard({
 }: StatCardProps) {
   const { theme } = useTheme();
 
+  // Entrance animations
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(8)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        speed: 12,
+        bounciness: 8,
+      }),
+      Animated.spring(opacityAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        speed: 14,
+        bounciness: 6,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        speed: 12,
+        bounciness: 8,
+      }),
+    ]).start();
+  }, [scaleAnim, opacityAnim, slideAnim]);
+
   if (isLoading) {
     return <StatCardSkeleton />;
   }
 
   return (
-    <View
-      style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }, style]}
+    <Animated.View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.cardBg,
+          borderColor: theme.cardBorder,
+          opacity: opacityAnim,
+          transform: [
+            { scale: scaleAnim },
+            { translateY: slideAnim },
+          ],
+        },
+        style,
+      ]}
     >
       <View style={styles.cardTop}>
         <View style={[styles.iconBg, { backgroundColor: `${accentColor}18` }]}>{icon}</View>
-        <View
-          style={[styles.deltaBadge, deltaPositive ? styles.deltaPositive : styles.deltaNegative]}
+        <Animated.View
+          style={[
+            styles.deltaBadge,
+            deltaPositive ? styles.deltaPositive : styles.deltaNegative,
+            {
+              opacity: opacityAnim,
+            },
+          ]}
         >
           <Text style={[styles.deltaText, { color: deltaPositive ? '#1ccba1' : '#ef4444' }]}>
             {delta}
           </Text>
-        </View>
+        </Animated.View>
       </View>
 
       <Text style={[styles.value, { color: theme.textPrimary }]}>
         {typeof value === 'number' ? value.toLocaleString() : value}
       </Text>
       <Text style={[styles.label, { color: theme.textMuted }]}>{label}</Text>
-    </View>
+    </Animated.View>
   );
 }
 
