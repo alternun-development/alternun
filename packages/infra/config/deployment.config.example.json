@@ -86,7 +86,8 @@
         "DECAP_GITHUB_OAUTH_CLIENT_SECRET": "",
         "DECAP_GITHUB_OAUTH_REPO_PRIVATE": "false",
         "DECAP_GITHUB_OAUTH_SCOPE": "",
-        "DECAP_OAUTH_STATE_SECRET": ""
+        "DECAP_OAUTH_STATE_SECRET": "",
+        "AUTHENTIK_JWT_SIGNING_KEY": ""
       }
     }
   },
