@@ -1,3 +1,15 @@
+## [1.0.52](https://github.com/alternun-development/alternun/compare/v1.0.51...v1.0.52) (2026-04-10)
+
+### Bug Fixes
+
+- **docs:** tags ([7d289b4](https://github.com/alternun-development/alternun/commit/7d289b48f57929974fd3091411464752f2ba3c8e))
+
+## [1.0.52](https://github.com/alternun-development/alternun/compare/v1.0.51...v1.0.52) (2026-04-10)
+
+### Bug Fixes
+
+- **docs:** tags ([7d289b4](https://github.com/alternun-development/alternun/commit/7d289b48f57929974fd3091411464752f2ba3c8e))
+
 ## [1.0.51](https://github.com/alternun-development/alternun/compare/v1.0.50...v1.0.51) (2026-04-10)
 
 ### Bug Fixes
