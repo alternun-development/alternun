@@ -1,5 +1,5 @@
 import { claimsToExternalIdentity } from '../identity/claims.js';
-import { externalIdentityToLinkedAccount, externalIdentityToPrincipal, principalToUserProjection } from '../identity/mapping.js';
+import { externalIdentityToLinkedAccount, externalIdentityToPrincipal, principalToUserProjection, } from '../identity/mapping.js';
 import { createSupabaseIdentityRepository } from '../providers/supabase-legacy/SupabaseIdentityRepository.js';
 import { resolveAuthRuntimeConfig } from '../runtime/config.js';
 /**

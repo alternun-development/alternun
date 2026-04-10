@@ -10,8 +10,8 @@ export { SupabaseIdentityRepository, } from './providers/supabase-legacy/Supabas
 export { SupabaseEmailProvider } from './providers/email/SupabaseEmailProvider.js';
 export { PostmarkEmailProvider } from './providers/email/PostmarkEmailProvider.js';
 export { SesEmailProvider } from './providers/email/SesEmailProvider.js';
-export { resolveAuthRuntimeConfig, resolveAuthProviderSelection, } from './runtime/config.js';
-export { upsertOidcUser as upsertCompatOidcUser, } from './compat/upsertOidcUser.js';
+export { resolveAuthRuntimeConfig, resolveAuthProviderSelection } from './runtime/config.js';
+export { upsertOidcUser as upsertCompatOidcUser } from './compat/upsertOidcUser.js';
 export { createAlternunAuthentikPreset, } from './mobile/authentikPreset.js';
 export { buildAuthentikRelayPath, buildAuthentikRelayRoute, getAuthentikLoginEntryMode, getAuthentikSocialLoginMode, normalizeAuthentikLoginEntryMode, normalizeAuthentikSocialLoginMode, parseAuthentikProviderFlowSlugs, resolveAuthentikLoginStrategy, resolveAuthentikProviderFlowSlugs, shouldUseAuthentikRelayEntry, } from './mobile/authEntry.js';
 export { clearAuthReturnTo, getAuthentikWebCallbackUrl, nativeSignIn, readAuthReturnTo, resolveAuthReturnTo, resolveAuthRuntime, storeAuthReturnTo, webRedirectSignIn, } from './mobile/runtimeSignIn.js';

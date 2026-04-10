@@ -21,7 +21,11 @@ export function resolveAuthRuntimeConfig(env = getProcessEnv()) {
     const selection = parseAuthProviderSelection({
         executionProvider: readEnvValue(env, ['AUTH_EXECUTION_PROVIDER']),
         issuerProvider: readEnvValue(env, ['AUTH_ISSUER_PROVIDER']),
-        emailProvider: readEnvValue(env, ['AUTH_EMAIL_PROVIDER', 'EMAIL_PROVIDER', 'EMAIL_SMTP_PROVIDER']),
+        emailProvider: readEnvValue(env, [
+            'AUTH_EMAIL_PROVIDER',
+            'EMAIL_PROVIDER',
+            'EMAIL_SMTP_PROVIDER',
+        ]),
     });
     return {
         runtime: resolveAuthRuntime(),
@@ -41,7 +45,10 @@ export function resolveAuthRuntimeConfig(env = getProcessEnv()) {
         ]),
         supabaseAnonKey: readEnvValue(env, ['EXPO_PUBLIC_SUPABASE_ANON_KEY', 'SUPABASE_ANON_KEY']),
         authentikIssuer: readEnvValue(env, ['EXPO_PUBLIC_AUTHENTIK_ISSUER', 'AUTHENTIK_ISSUER']),
-        authentikClientId: readEnvValue(env, ['EXPO_PUBLIC_AUTHENTIK_CLIENT_ID', 'AUTHENTIK_CLIENT_ID']),
+        authentikClientId: readEnvValue(env, [
+            'EXPO_PUBLIC_AUTHENTIK_CLIENT_ID',
+            'AUTHENTIK_CLIENT_ID',
+        ]),
         authentikRedirectUri: readEnvValue(env, [
             'EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI',
             'AUTHENTIK_REDIRECT_URI',
@@ -51,10 +58,7 @@ export function resolveAuthRuntimeConfig(env = getProcessEnv()) {
             'BETTER_AUTH_URL',
             'EXPO_PUBLIC_BETTER_AUTH_URL',
         ]),
-        betterAuthClientId: readEnvValue(env, [
-            'AUTH_BETTER_AUTH_CLIENT_ID',
-            'BETTER_AUTH_CLIENT_ID',
-        ]),
+        betterAuthClientId: readEnvValue(env, ['AUTH_BETTER_AUTH_CLIENT_ID', 'BETTER_AUTH_CLIENT_ID']),
         betterAuthApiKey: readEnvValue(env, ['AUTH_BETTER_AUTH_API_KEY', 'BETTER_AUTH_API_KEY']),
         authExchangeUrl: readEnvValue(env, ['AUTH_EXCHANGE_URL', 'EXPO_PUBLIC_AUTH_EXCHANGE_URL']),
         emailFrom: readEnvValue(env, ['EMAIL_FROM', 'AUTH_EMAIL_FROM']),

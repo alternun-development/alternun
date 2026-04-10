@@ -48,7 +48,7 @@ function resolveRuntimeOrigin(explicitOrigin) {
             return browserOrigin;
         }
     }
-    return (_a = trimReleaseValue(process.env.EXPO_PUBLIC_ORIGIN)) !== null && _a !== void 0 ? _a : trimReleaseValue(process.env.NEXT_PUBLIC_ORIGIN);
+    return ((_a = trimReleaseValue(process.env.EXPO_PUBLIC_ORIGIN)) !== null && _a !== void 0 ? _a : trimReleaseValue(process.env.NEXT_PUBLIC_ORIGIN));
 }
 function resolveRuntimeHostname(origin) {
     if (!origin) {
@@ -138,7 +138,9 @@ function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST
     const [lastCheckedAt, setLastCheckedAt] = (0, react_1.useState)(null);
     const registrationRef = (0, react_1.useRef)(null);
     const registrationPromiseRef = (0, react_1.useRef)(null);
-    const hasServiceWorkerSupport = typeof window !== 'undefined' && typeof navigator !== 'undefined' && 'serviceWorker' in navigator;
+    const hasServiceWorkerSupport = typeof window !== 'undefined' &&
+        typeof navigator !== 'undefined' &&
+        'serviceWorker' in navigator;
     const ensureServiceWorkerRegistration = (0, react_1.useCallback)(async () => {
         if (!hasServiceWorkerSupport) {
             return null;
@@ -251,7 +253,13 @@ function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST
             cancelled = true;
             navigator.serviceWorker.removeEventListener('message', handleWorkerMessage);
         };
-    }, [enabled, ensureServiceWorkerRegistration, hasServiceWorkerSupport, normalizedCurrentVersion, storageKey]);
+    }, [
+        enabled,
+        ensureServiceWorkerRegistration,
+        hasServiceWorkerSupport,
+        normalizedCurrentVersion,
+        storageKey,
+    ]);
     (0, react_1.useEffect)(() => {
         if (!enabled) {
             return;

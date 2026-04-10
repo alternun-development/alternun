@@ -1,5 +1,5 @@
 import { resolveAuthRuntimeConfig } from '../runtime/config.js';
-import { AlternunMobileAuthClient } from '../mobile/AlternunMobileAuthClient.js';
+import { AlternunMobileAuthClient, } from '../mobile/AlternunMobileAuthClient.js';
 import { BetterAuthExecutionProvider } from '../providers/better-auth/BetterAuthExecutionProvider.js';
 import { AuthentikIssuerProvider } from '../providers/authentik/AuthentikIssuerProvider.js';
 import { SupabaseLegacyIssuerProvider } from '../providers/supabase-legacy/SupabaseLegacyIssuerProvider.js';
