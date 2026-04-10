@@ -9,17 +9,33 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.48](https://github.com/alternun-development/alternun/compare/v1.0.47...v1.0.48) (2026-04-10)
+export const CHANGELOG_TEXT = `## [1.0.49](https://github.com/alternun-development/alternun/compare/v1.0.48...v1.0.49) (2026-04-10)
 
 
 ### Bug Fixes
 
-* **mobile:** changelogData ([9f37b5c](https://github.com/alternun-development/alternun/commit/9f37b5c8ccd3c4726730c06b1f09b52ca06d54a2))
+* **mobile:** changelogData ([71cc6cd](https://github.com/alternun-development/alternun/commit/71cc6cdec917a25b10e4f741f20e0567cf7e6748))
 
 
 ### Features
 
-* add tooltip info to notification badge ([89e3ae4](https://github.com/alternun-development/alternun/commit/89e3ae4243a85efb66b72e829ce7124c72d1d098))
+* add mark as unread functionality to notifications ([6b5a696](https://github.com/alternun-development/alternun/commit/6b5a696fd69f7da6871cff77271ee4ae5e26f2f0))
+
+
+
+
+
+## [1.0.49](https://github.com/alternun-development/alternun/compare/v1.0.48...v1.0.49) (2026-04-10)
+
+
+### Bug Fixes
+
+* **mobile:** changelogData ([71cc6cd](https://github.com/alternun-development/alternun/commit/71cc6cdec917a25b10e4f741f20e0567cf7e6748))
+
+
+### Features
+
+* add mark as unread functionality to notifications ([6b5a696](https://github.com/alternun-development/alternun/commit/6b5a696fd69f7da6871cff77271ee4ae5e26f2f0))
 
 
 
@@ -27,19 +43,23 @@ export const CHANGELOG_TEXT = `## [1.0.48](https://github.com/alternun-developme
 
 ## [1.0.48](https://github.com/alternun-development/alternun/compare/v1.0.47...v1.0.48) (2026-04-10)
 
-
 ### Bug Fixes
 
-* **mobile:** changelogData ([9f37b5c](https://github.com/alternun-development/alternun/commit/9f37b5c8ccd3c4726730c06b1f09b52ca06d54a2))
-
+- **mobile:** changelogData ([9f37b5c](https://github.com/alternun-development/alternun/commit/9f37b5c8ccd3c4726730c06b1f09b52ca06d54a2))
 
 ### Features
 
-* add tooltip info to notification badge ([89e3ae4](https://github.com/alternun-development/alternun/commit/89e3ae4243a85efb66b72e829ce7124c72d1d098))
+- add tooltip info to notification badge ([89e3ae4](https://github.com/alternun-development/alternun/commit/89e3ae4243a85efb66b72e829ce7124c72d1d098))
 
+## [1.0.48](https://github.com/alternun-development/alternun/compare/v1.0.47...v1.0.48) (2026-04-10)
 
+### Bug Fixes
 
+- **mobile:** changelogData ([9f37b5c](https://github.com/alternun-development/alternun/commit/9f37b5c8ccd3c4726730c06b1f09b52ca06d54a2))
 
+### Features
+
+- add tooltip info to notification badge ([89e3ae4](https://github.com/alternun-development/alternun/commit/89e3ae4243a85efb66b72e829ce7124c72d1d098))
 
 ## [1.0.47](https://github.com/alternun-development/alternun/compare/v1.0.46...v1.0.47) (2026-04-10)
 

@@ -1,3 +1,23 @@
+## [1.0.49](https://github.com/alternun-development/alternun/compare/v1.0.48...v1.0.49) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([71cc6cd](https://github.com/alternun-development/alternun/commit/71cc6cdec917a25b10e4f741f20e0567cf7e6748))
+
+### Features
+
+- add mark as unread functionality to notifications ([6b5a696](https://github.com/alternun-development/alternun/commit/6b5a696fd69f7da6871cff77271ee4ae5e26f2f0))
+
+## [1.0.49](https://github.com/alternun-development/alternun/compare/v1.0.48...v1.0.49) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([71cc6cd](https://github.com/alternun-development/alternun/commit/71cc6cdec917a25b10e4f741f20e0567cf7e6748))
+
+### Features
+
+- add mark as unread functionality to notifications ([6b5a696](https://github.com/alternun-development/alternun/commit/6b5a696fd69f7da6871cff77271ee4ae5e26f2f0))
+
 ## [1.0.48](https://github.com/alternun-development/alternun/compare/v1.0.47...v1.0.48) (2026-04-10)
 
 ### Bug Fixes
