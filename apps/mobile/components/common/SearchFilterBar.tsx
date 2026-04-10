@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, } from 'react';
 import {
   Pressable,
   Modal,
@@ -17,7 +17,7 @@ import {
   SlidersHorizontal,
   type LucideProps,
 } from 'lucide-react-native';
-import { useTheme } from '@alternun/ui';
+import { useTheme, } from '@alternun/ui';
 
 const SearchIcon = Search as React.FC<LucideProps>;
 const FilterIcon = SlidersHorizontal as React.FC<LucideProps>;
@@ -57,52 +57,52 @@ export default function SearchFilterBar({
   onChangeFilter,
   style,
   dropdownWidth = 208,
-}: SearchFilterBarProps) {
-  const { theme } = useTheme();
-  const { width: windowWidth } = useWindowDimensions();
-  const filterButtonRef = useRef<View>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [anchorRect, setAnchorRect] = useState<AnchorRect | null>(null);
-  const dropdownActualWidth = Math.max(0, Math.min(dropdownWidth, windowWidth - 24));
+}: SearchFilterBarProps,) {
+  const { theme, } = useTheme();
+  const { width: windowWidth, } = useWindowDimensions();
+  const filterButtonRef = useRef<View>(null,);
+  const [isOpen, setIsOpen,] = useState(false,);
+  const [anchorRect, setAnchorRect,] = useState<AnchorRect | null>(null,);
+  const dropdownActualWidth = Math.max(0, Math.min(dropdownWidth, windowWidth - 24,),);
 
   const activeOption = useMemo(
-    () => filters.find((option) => option.key === activeFilter) ?? filters[0],
-    [activeFilter, filters]
+    () => filters.find((option,) => option.key === activeFilter,) ?? filters[0],
+    [activeFilter, filters,],
   );
   const ActiveFilterIcon = activeOption?.icon ?? FilterIcon;
 
   useEffect(() => {
     if (!isOpen) {
-      setAnchorRect(null);
+      setAnchorRect(null,);
       return;
     }
 
     const frame = requestAnimationFrame(() => {
       filterButtonRef.current?.measureInWindow(
-        (x: number, y: number, width: number, height: number) => {
-          setAnchorRect({ x, y, width, height });
-        }
+        (x: number, y: number, width: number, height: number,) => {
+          setAnchorRect({ x, y, width, height, },);
+        },
       );
-    });
+    },);
 
     return () => {
-      cancelAnimationFrame(frame);
+      cancelAnimationFrame(frame,);
     };
-  }, [isOpen]);
+  }, [isOpen,],);
 
   const dropdownLeft = anchorRect
     ? Math.max(
-        12,
-        Math.min(
-          anchorRect.x + anchorRect.width - dropdownActualWidth,
-          windowWidth - dropdownActualWidth - 12
-        )
-      )
+      12,
+      Math.min(
+        anchorRect.x + anchorRect.width - dropdownActualWidth,
+        windowWidth - dropdownActualWidth - 12,
+      ),
+    )
     : windowWidth - dropdownActualWidth - 12;
   const dropdownTop = anchorRect ? anchorRect.y + anchorRect.height + 8 : 58;
 
   return (
-    <View style={[styles.root, style, isOpen && styles.rootOpen]}>
+    <View style={[styles.root, style, isOpen && styles.rootOpen,]}>
       <View
         style={[
           styles.bar,
@@ -114,17 +114,17 @@ export default function SearchFilterBar({
       >
         <SearchIcon size={16} color={theme.iconMuted} />
         <TextInput
-          style={[styles.input, { color: theme.textPrimary }]}
+          style={[styles.input, { color: theme.textPrimary, },]}
           placeholder={placeholder}
           placeholderTextColor={theme.textPlaceholder}
           value={value}
           onChangeText={onChangeText}
-          onFocus={() => setIsOpen(false)}
+          onFocus={() => setIsOpen(false,)}
         />
         <View ref={filterButtonRef} collapsable={false} style={styles.filterButtonAnchor}>
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => setIsOpen((open) => !open)}
+            onPress={() => setIsOpen((open,) => !open,)}
             style={[
               styles.filterButton,
               {
@@ -157,10 +157,10 @@ export default function SearchFilterBar({
         transparent
         visible={isOpen}
         animationType='none'
-        onRequestClose={() => setIsOpen(false)}
+        onRequestClose={() => setIsOpen(false,)}
       >
         <View style={styles.modalRoot}>
-          <Pressable style={styles.modalBackdrop} onPress={() => setIsOpen(false)} />
+          <Pressable style={styles.modalBackdrop} onPress={() => setIsOpen(false,)} />
           <View
             style={[
               styles.dropdown,
@@ -176,8 +176,8 @@ export default function SearchFilterBar({
               },
             ]}
           >
-            <Text style={[styles.dropdownLabel, { color: theme.dropdownMuted }]}>Filtrar por</Text>
-            {filters.map((option, index) => {
+            <Text style={[styles.dropdownLabel, { color: theme.dropdownMuted, },]}>Filtrar por</Text>
+            {filters.map((option, index,) => {
               const active = option.key === activeFilter;
               const OptionIcon = option.icon;
               return (
@@ -185,8 +185,8 @@ export default function SearchFilterBar({
                   key={option.key}
                   activeOpacity={0.8}
                   onPress={() => {
-                    onChangeFilter(option.key);
-                    setIsOpen(false);
+                    onChangeFilter(option.key,);
+                    setIsOpen(false,);
                   }}
                   style={[
                     styles.optionRow,
@@ -207,7 +207,7 @@ export default function SearchFilterBar({
                     <Text
                       style={[
                         styles.optionText,
-                        { color: active ? theme.dropdownValue : theme.dropdownText },
+                        { color: active ? theme.dropdownValue : theme.dropdownText, },
                       ]}
                     >
                       {option.label}
@@ -216,7 +216,7 @@ export default function SearchFilterBar({
                   {active ? <CheckIcon size={14} color={theme.dropdownValue} /> : null}
                 </TouchableOpacity>
               );
-            })}
+            },)}
           </View>
         </View>
       </Modal>
@@ -320,4 +320,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
-});
+},);

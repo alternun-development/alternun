@@ -1,5 +1,5 @@
-import { getLocaleLabel } from '@alternun/i18n';
-import React, { useEffect, useMemo, useState } from 'react';
+import { getLocaleLabel, } from '@alternun/i18n';
+import React, { useEffect, useMemo, useState, } from 'react';
 import {
   Pressable,
   View,
@@ -8,8 +8,8 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
-import { BlurView as BlurViewRaw } from 'expo-blur';
-import { Image as ExpoImageRaw } from 'expo-image';
+import { BlurView as BlurViewRaw, } from 'expo-blur';
+import { Image as ExpoImageRaw, } from 'expo-image';
 
 const BlurView = BlurViewRaw as unknown as React.FC<any>;
 import {
@@ -37,16 +37,16 @@ import {
   type LucideProps,
 } from 'lucide-react-native';
 import AirsBrandMark from '../branding/AirsBrandMark';
-import { useAppTranslation } from '../i18n/useAppTranslation';
-import type { AppLanguage, MotionLevel, ThemeMode } from '../settings/AppPreferencesProvider';
-import NotificationDropdown, { type NotificationItem } from './NotificationDropdown';
+import { useAppTranslation, } from '../i18n/useAppTranslation';
+import type { AppLanguage, MotionLevel, ThemeMode, } from '../settings/AppPreferencesProvider';
+import NotificationDropdown, { type NotificationItem, } from './NotificationDropdown';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as number;
+const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg',) as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
+const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg',) as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const ALTERNUN_LOGO = require('../../assets/logo.png') as number;
+const ALTERNUN_LOGO = require('../../assets/logo.png',) as number;
 
 // ── JSX-safe casts ────────────────────────────────────────────────────────────
 const ExpoImage = ExpoImageRaw as unknown as React.FC<any>;
@@ -81,14 +81,10 @@ export interface NavSection {
 }
 
 export const NAV_SECTIONS: NavSection[] = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
-  { key: 'compensation', label: 'Compensaciones', icon: LeafIcon },
-  { key: 'portfolio', label: 'Mis ATN', icon: ShieldCheckIcon },
-  { key: 'proyectos', label: 'Proyectos', icon: FolderKanbanIcon },
-  { key: 'beneficios', label: 'Beneficios', icon: GiftIcon },
-  { key: 'ranking', label: 'Ranking', icon: TrophyIcon },
-  { key: 'wallet', label: 'Wallet', icon: WalletIcon },
-  { key: 'profile', label: 'Mi Perfil', icon: CircleUserRoundIcon },
+  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon, },
+  { key: 'explorar', label: 'Explore', icon: LeafIcon, },
+  { key: 'portafolio', label: 'Portfolio', icon: ShieldCheckIcon, },
+  { key: 'mi-perfil', label: 'My Profile', icon: CircleUserRoundIcon, },
 ];
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -118,11 +114,11 @@ interface TopNavProps {
   onDismissNotification?: (id: string) => void;
 }
 
-function getInitials(name?: string): string {
+function getInitials(name?: string,): string {
   if (!name?.trim()) return 'U';
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
-  return `${parts[0].slice(0, 1)}${parts[1].slice(0, 1)}`.toUpperCase();
+  const parts = name.trim().split(/\s+/,).filter(Boolean,);
+  if (parts.length === 1) return parts[0].slice(0, 1,).toUpperCase();
+  return `${parts[0].slice(0, 1,)}${parts[1].slice(0, 1,)}`.toUpperCase();
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -150,12 +146,12 @@ export default function TopNav({
   onNavigate,
   onMarkAllNotificationsRead,
   onDismissNotification,
-}: TopNavProps) {
-  const [menuVisible, setMenuVisible] = useState(false);
-  const [notifVisible, setNotifVisible] = useState(false);
-  const [settingsExpanded, setSettingsExpanded] = useState(false);
-  const { t } = useAppTranslation('mobile');
-  const { width, height } = useWindowDimensions();
+}: TopNavProps,) {
+  const [menuVisible, setMenuVisible,] = useState(false,);
+  const [notifVisible, setNotifVisible,] = useState(false,);
+  const [settingsExpanded, setSettingsExpanded,] = useState(false,);
+  const { t, } = useAppTranslation('mobile',);
+  const { width, height, } = useWindowDimensions();
   const isDark = themeMode === 'dark';
   const isMobile = width < 720;
   const isExtraSmall = width < 360;
@@ -164,88 +160,88 @@ export default function TopNav({
   const brandMarkCutout = isDark ? '#03292f' : '#d9fff4';
   const wordmarkSource = isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK;
   const ThemeIconComp = isDark ? SunIcon : MoonIcon;
-  const themeLabel = isDark ? t('labels.dark') : t('labels.light');
+  const themeLabel = isDark ? t('labels.dark',) : t('labels.light',);
 
   // ── Palette ────────────────────────────────────────────────────────────────
   const p = isDark
     ? {
-        navBg: 'rgba(5,5,22,0.55)',
-        navBorder: 'rgba(255,255,255,0.10)',
-        pillBg: '#1EE6B5',
-        pillBorder: 'transparent',
-        pillText: '#064A4B',
-        pillSub: 'rgba(232,232,255,0.50)',
-        avatarBg: 'rgba(6,74,75,0.20)',
-        avatarText: '#064A4B',
-        scoreText: 'rgba(6,74,75,0.80)',
-        chevron: '#064A4B',
-        badgeBg: '#3b5bdb',
-        badgeText: '#ffffff',
-        accent: '#1EE6B5',
-        dropBg: '#0d1020',
-        dropBorder: 'rgba(255,255,255,0.10)',
-        dropDivider: 'rgba(255,255,255,0.07)',
-        dropText: '#e8e8ff',
-        dropSub: 'rgba(232,232,255,0.55)',
-        navActive: 'rgba(28,203,161,0.14)',
-        navActiveBorder: 'rgba(28,203,161,0.32)',
-        navActiveText: '#1EE6B5',
-        iconIdle: 'rgba(232,232,255,0.55)',
-        danger: '#f87171',
-        dangerBg: 'rgba(248,113,113,0.09)',
-      }
+      navBg: 'rgba(5,5,22,0.55)',
+      navBorder: 'rgba(255,255,255,0.10)',
+      pillBg: '#1EE6B5',
+      pillBorder: 'transparent',
+      pillText: '#064A4B',
+      pillSub: 'rgba(232,232,255,0.50)',
+      avatarBg: 'rgba(6,74,75,0.20)',
+      avatarText: '#064A4B',
+      scoreText: 'rgba(6,74,75,0.80)',
+      chevron: '#064A4B',
+      badgeBg: '#3b5bdb',
+      badgeText: '#ffffff',
+      accent: '#1EE6B5',
+      dropBg: '#0d1020',
+      dropBorder: 'rgba(255,255,255,0.10)',
+      dropDivider: 'rgba(255,255,255,0.07)',
+      dropText: '#e8e8ff',
+      dropSub: 'rgba(232,232,255,0.55)',
+      navActive: 'rgba(28,203,161,0.14)',
+      navActiveBorder: 'rgba(28,203,161,0.32)',
+      navActiveText: '#1EE6B5',
+      iconIdle: 'rgba(232,232,255,0.55)',
+      danger: '#f87171',
+      dangerBg: 'rgba(248,113,113,0.09)',
+    }
     : {
-        navBg: 'rgba(255,255,255,0.55)',
-        navBorder: 'rgba(15,23,42,0.12)',
-        pillBg: '#064A4B',
-        pillBorder: 'transparent',
-        pillText: '#ffffff',
-        pillSub: '#64748b',
-        avatarBg: 'rgba(0,0,0,0.25)',
-        avatarText: '#1EE6B5',
-        scoreText: '#1EE6B5',
-        chevron: 'rgba(255,255,255,0.85)',
-        badgeBg: '#3b5bdb',
-        badgeText: '#ffffff',
-        accent: '#0d9488',
-        dropBg: '#ffffff',
-        dropBorder: 'rgba(15,23,42,0.14)',
-        dropDivider: 'rgba(15,23,42,0.08)',
-        dropText: '#0f172a',
-        dropSub: '#64748b',
-        navActive: 'rgba(13,148,136,0.11)',
-        navActiveBorder: 'rgba(13,148,136,0.28)',
-        navActiveText: '#0d9488',
-        iconIdle: '#64748b',
-        danger: '#ef4444',
-        dangerBg: 'rgba(239,68,68,0.08)',
-      };
+      navBg: 'rgba(255,255,255,0.55)',
+      navBorder: 'rgba(15,23,42,0.12)',
+      pillBg: '#064A4B',
+      pillBorder: 'transparent',
+      pillText: '#ffffff',
+      pillSub: '#64748b',
+      avatarBg: 'rgba(0,0,0,0.25)',
+      avatarText: '#1EE6B5',
+      scoreText: '#1EE6B5',
+      chevron: 'rgba(255,255,255,0.85)',
+      badgeBg: '#3b5bdb',
+      badgeText: '#ffffff',
+      accent: '#0d9488',
+      dropBg: '#ffffff',
+      dropBorder: 'rgba(15,23,42,0.14)',
+      dropDivider: 'rgba(15,23,42,0.08)',
+      dropText: '#0f172a',
+      dropSub: '#64748b',
+      navActive: 'rgba(13,148,136,0.11)',
+      navActiveBorder: 'rgba(13,148,136,0.28)',
+      navActiveText: '#0d9488',
+      iconIdle: '#64748b',
+      danger: '#ef4444',
+      dangerBg: 'rgba(239,68,68,0.08)',
+    };
 
   const profileName = userDisplayName?.trim() ?? 'Account';
-  const initials = useMemo(() => getInitials(profileName), [profileName]);
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const initials = useMemo(() => getInitials(profileName,), [profileName,],);
+  const unreadCount = notifications.filter((n,) => !n.read,).length;
 
   useEffect(() => {
-    if (!menuVisible) setSettingsExpanded(false);
-  }, [menuVisible]);
+    if (!menuVisible) setSettingsExpanded(false,);
+  }, [menuVisible,],);
 
   const toggleMenu = () => {
-    setNotifVisible(false);
-    setMenuVisible((v) => !v);
+    setNotifVisible(false,);
+    setMenuVisible((v,) => !v,);
   };
   const toggleNotif = () => {
-    setMenuVisible(false);
-    setNotifVisible((v) => !v);
+    setMenuVisible(false,);
+    setNotifVisible((v,) => !v,);
   };
   const handleBrandPress = () => {
     dismissAll();
-    onNavigate?.('dashboard');
+    onNavigate?.('dashboard',);
   };
 
   const anyOpen = menuVisible || notifVisible;
   const dismissAll = () => {
-    setMenuVisible(false);
-    setNotifVisible(false);
+    setMenuVisible(false,);
+    setNotifVisible(false,);
   };
 
   return (
@@ -253,19 +249,19 @@ export default function TopNav({
     <View style={styles.wrapper}>
       {/* ── Full-screen dismiss overlay (closes dropdown on outside tap) ── */}
       {anyOpen && (
-        <Pressable style={[styles.dismissOverlay, { width, height }]} onPress={dismissAll} />
+        <Pressable style={[styles.dismissOverlay, { width, height, },]} onPress={dismissAll} />
       )}
 
       {/* ── Glass nav bar ────────────────────────────────────────────────── */}
       <View
-        style={[styles.navBar, isMobile && styles.navBarMobile, { borderBottomColor: p.navBorder }]}
+        style={[styles.navBar, isMobile && styles.navBarMobile, { borderBottomColor: p.navBorder, },]}
       >
         {/* Glass background — clipped separately so dropdown can overflow */}
         <View
           style={[
             styles.navBarGlass,
             isMobile && styles.navBarGlassMobile,
-            { borderBottomColor: p.navBorder },
+            { borderBottomColor: p.navBorder, },
           ]}
         >
           <BlurView
@@ -273,7 +269,7 @@ export default function TopNav({
             tint={isDark ? 'dark' : 'light'}
             style={StyleSheet.absoluteFillObject}
           />
-          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: p.navBg }]} />
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: p.navBg, },]} />
         </View>
 
         {/* Left: Airs wordmark + brand mark + byline */}
@@ -282,7 +278,7 @@ export default function TopNav({
             accessibilityRole='button'
             accessibilityLabel='Return to dashboard'
             onPress={handleBrandPress}
-            style={({ pressed }) => [
+            style={({ pressed, },) => [
               styles.logoButton,
               isMobile && styles.logoButtonMobile,
               pressed && styles.logoButtonPressed,
@@ -290,7 +286,7 @@ export default function TopNav({
           >
             <View style={styles.logoBrand}>
               {/* Wordmark row: "Airs" SVG + mark */}
-              <View style={[styles.logoMarkRow, isMobile && styles.logoMarkRowMobile]}>
+              <View style={[styles.logoMarkRow, isMobile && styles.logoMarkRowMobile,]}>
                 <ExpoImage
                   source={wordmarkSource}
                   style={isMobile ? styles.wordmarkMobile : styles.wordmark}
@@ -304,10 +300,10 @@ export default function TopNav({
               </View>
               {/* Byline: "By [Alternun logo]" + subtitle on desktop */}
               <View style={styles.bylineRow}>
-                <Text style={[styles.bylineBy, { color: p.pillSub }]}>{t('labels.by')}</Text>
+                <Text style={[styles.bylineBy, { color: p.pillSub, },]}>{t('labels.by',)}</Text>
                 <ExpoImage source={ALTERNUN_LOGO} style={styles.bylineLogo} contentFit='contain' />
                 {!isMobile && (
-                  <Text style={[styles.bylineSubtitle, { color: p.pillSub }]} numberOfLines={1}>
+                  <Text style={[styles.bylineSubtitle, { color: p.pillSub, },]} numberOfLines={1}>
                     Alternun Impact & Reputation Score
                   </Text>
                 )}
@@ -321,7 +317,7 @@ export default function TopNav({
           {/* ── Hamburger menu button (extra small screens only) ────────── */}
           {isExtraSmall && (
             <TouchableOpacity
-              style={[styles.hamburgerButton, { backgroundColor: p.pillBg }]}
+              style={[styles.hamburgerButton, { backgroundColor: p.pillBg, },]}
               onPress={toggleMenu}
               activeOpacity={0.85}
             >
@@ -341,7 +337,7 @@ export default function TopNav({
                   styles.profilePill,
                   isMobile && styles.profilePillMobile,
                   isExtraSmall && styles.profilePillExtraSmall,
-                  { backgroundColor: p.pillBg, borderColor: p.pillBorder },
+                  { backgroundColor: p.pillBg, borderColor: p.pillBorder, },
                 ]}
                 onPress={toggleMenu}
                 activeOpacity={0.85}
@@ -352,11 +348,11 @@ export default function TopNav({
                     styles.avatar,
                     isMobile && styles.avatarMobile,
                     isExtraSmall && styles.avatarExtraSmall,
-                    { backgroundColor: p.avatarBg },
+                    { backgroundColor: p.avatarBg, },
                   ]}
                 >
                   {signedIn ? (
-                    <Text style={[styles.avatarText, { color: p.avatarText }]}>{initials}</Text>
+                    <Text style={[styles.avatarText, { color: p.avatarText, },]}>{initials}</Text>
                   ) : (
                     <AirsBrandMark
                       size={13}
@@ -368,12 +364,12 @@ export default function TopNav({
 
                 {/* Name + score (hidden on extra small screens) */}
                 {signedIn && !isExtraSmall && (
-                  <View style={[styles.nameBlock, isMobile && styles.nameBlockMobile]}>
+                  <View style={[styles.nameBlock, isMobile && styles.nameBlockMobile,]}>
                     <Text
                       style={[
                         styles.pillName,
                         isMobile && styles.pillNameMobile,
-                        { color: p.pillText },
+                        { color: p.pillText, },
                       ]}
                       numberOfLines={1}
                     >
@@ -384,7 +380,7 @@ export default function TopNav({
                         style={[
                           styles.pillScore,
                           isMobile && styles.pillScoreMobile,
-                          { color: p.scoreText },
+                          { color: p.scoreText, },
                         ]}
                         numberOfLines={1}
                       >
@@ -399,16 +395,16 @@ export default function TopNav({
                   style={[
                     styles.notifBadge,
                     isMobile && styles.notifBadgeMobile,
-                    { backgroundColor: unreadCount > 0 ? p.badgeBg : 'rgba(255,255,255,0.18)' },
+                    { backgroundColor: unreadCount > 0 ? p.badgeBg : 'rgba(255,255,255,0.18)', },
                   ]}
-                  onPress={(e) => {
+                  onPress={(e,) => {
                     e.stopPropagation();
                     toggleNotif();
                   }}
-                  hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+                  hitSlop={{ top: 6, bottom: 6, left: 4, right: 4, }}
                 >
                   {unreadCount > 0 ? (
-                    <Text style={[styles.notifBadgeText, { color: p.badgeText }]}>
+                    <Text style={[styles.notifBadgeText, { color: p.badgeText, },]}>
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </Text>
                   ) : (
@@ -430,7 +426,7 @@ export default function TopNav({
                 <View
                   style={[
                     styles.dropdownOverlay,
-                    { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)' },
+                    { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)', },
                   ]}
                 />
               )}
@@ -440,7 +436,7 @@ export default function TopNav({
                   style={[
                     styles.dropdown,
                     isExtraSmall && styles.dropdownExtraSmall,
-                    { backgroundColor: p.dropBg, borderColor: p.dropBorder },
+                    { backgroundColor: p.dropBg, borderColor: p.dropBorder, },
                   ]}
                 >
                   {/* User header */}
@@ -449,32 +445,32 @@ export default function TopNav({
                       style={[
                         styles.dropHeader,
                         isExtraSmall && styles.dropHeaderExtraSmall,
-                        { borderBottomColor: p.dropDivider },
+                        { borderBottomColor: p.dropDivider, },
                       ]}
                     >
-                      <View style={[styles.dropAvatar, { backgroundColor: p.avatarBg }]}>
-                        <Text style={[styles.dropAvatarText, { color: p.avatarText }]}>
+                      <View style={[styles.dropAvatar, { backgroundColor: p.avatarBg, },]}>
+                        <Text style={[styles.dropAvatarText, { color: p.avatarText, },]}>
                           {initials}
                         </Text>
                       </View>
                       <View style={styles.dropHeaderInfo}>
                         <Text
-                          style={[styles.dropHeaderName, { color: p.dropText }]}
+                          style={[styles.dropHeaderName, { color: p.dropText, },]}
                           numberOfLines={1}
                         >
                           {profileName}
                         </Text>
                         {userEmail ? (
                           <Text
-                            style={[styles.dropHeaderEmail, { color: p.dropSub }]}
+                            style={[styles.dropHeaderEmail, { color: p.dropSub, },]}
                             numberOfLines={1}
                           >
                             {userEmail}
                           </Text>
                         ) : null}
                         {airsScore != null && (
-                          <View style={[styles.dropScorePill, { backgroundColor: p.navActive }]}>
-                            <Text style={[styles.dropScoreText, { color: p.accent }]}>
+                          <View style={[styles.dropScorePill, { backgroundColor: p.navActive, },]}>
+                            <Text style={[styles.dropScoreText, { color: p.accent, },]}>
                               {airsScore.toLocaleString()} Airs
                             </Text>
                           </View>
@@ -489,24 +485,24 @@ export default function TopNav({
                       style={[
                         styles.navItem,
                         isExtraSmall && styles.navItemExtraSmall,
-                        { backgroundColor: 'transparent' },
+                        { backgroundColor: 'transparent', },
                       ]}
                       onPress={() => {
-                        setMenuVisible(false);
+                        setMenuVisible(false,);
                         onSignIn();
                       }}
                       activeOpacity={0.8}
                     >
                       <LogInIcon size={15} color={p.accent} />
-                      <Text style={[styles.navItemText, { color: p.dropText }]}>
-                        {t('labels.signIn')}
+                      <Text style={[styles.navItemText, { color: p.dropText, },]}>
+                        {t('labels.signIn',)}
                       </Text>
                     </TouchableOpacity>
                   )}
 
                   {/* Nav items */}
-                  <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
-                    {NAV_SECTIONS.map((section) => {
+                  <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider, },]}>
+                    {NAV_SECTIONS.map((section,) => {
                       const isActive = activeSection === section.key;
                       const IconComp = section.icon;
                       return (
@@ -522,16 +518,8 @@ export default function TopNav({
                             },
                           ]}
                           onPress={() => {
-                            setMenuVisible(false);
-                            if (section.key === 'profile') {
-                              onOpenProfile();
-                              return;
-                            }
-                            if (section.key === 'wallet') {
-                              onConnectWallet();
-                              return;
-                            }
-                            onNavigate?.(section.key);
+                            setMenuVisible(false,);
+                            onNavigate?.(section.key,);
                           }}
                           activeOpacity={0.8}
                         >
@@ -539,18 +527,18 @@ export default function TopNav({
                           <Text
                             style={[
                               styles.navItemText,
-                              { color: isActive ? p.navActiveText : p.dropText },
+                              { color: isActive ? p.navActiveText : p.dropText, },
                               isActive && styles.navItemTextActive,
                             ]}
                           >
                             {section.label}
                           </Text>
                           {isActive && (
-                            <View style={[styles.activeIndicator, { backgroundColor: p.accent }]} />
+                            <View style={[styles.activeIndicator, { backgroundColor: p.accent, },]} />
                           )}
                         </TouchableOpacity>
                       );
-                    })}
+                    },)}
                   </View>
 
                   {/* Settings expandable */}
@@ -558,14 +546,14 @@ export default function TopNav({
                     style={[
                       styles.navItem,
                       isExtraSmall && styles.navItemExtraSmall,
-                      { backgroundColor: 'transparent' },
+                      { backgroundColor: 'transparent', },
                     ]}
-                    onPress={() => setSettingsExpanded((v) => !v)}
+                    onPress={() => setSettingsExpanded((v,) => !v,)}
                     activeOpacity={0.8}
                   >
                     <SettingsIcon size={15} color={p.iconIdle} />
-                    <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                      {t('labels.settings')}
+                    <Text style={[styles.navItemText, { color: p.dropText, flex: 1, },]}>
+                      {t('labels.settings',)}
                     </Text>
                     {settingsExpanded ? (
                       <ChevronDownIcon size={13} color={p.chevron} />
@@ -577,56 +565,56 @@ export default function TopNav({
                   {settingsExpanded && (
                     <>
                       <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                        style={[styles.navSubItem, { backgroundColor: 'transparent', },]}
                         onPress={onCycleLanguage}
                         activeOpacity={0.8}
                       >
                         <LanguagesIcon size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                          {t('labels.language')}
+                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1, },]}>
+                          {t('labels.language',)}
                         </Text>
-                        <Text style={[styles.navItemValue, { color: p.accent }]}>
-                          {getLocaleLabel(language, language)}
+                        <Text style={[styles.navItemValue, { color: p.accent, },]}>
+                          {getLocaleLabel(language, language,)}
                         </Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                        style={[styles.navSubItem, { backgroundColor: 'transparent', },]}
                         onPress={onToggleTheme}
                         activeOpacity={0.8}
                       >
                         <ThemeIconComp size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                          {t('labels.theme')}
+                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1, },]}>
+                          {t('labels.theme',)}
                         </Text>
-                        <Text style={[styles.navItemValue, { color: p.accent }]}>{themeLabel}</Text>
+                        <Text style={[styles.navItemValue, { color: p.accent, },]}>{themeLabel}</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                        style={[styles.navSubItem, { backgroundColor: 'transparent', },]}
                         onPress={() => onCycleMotionLevel?.()}
                         activeOpacity={0.8}
                       >
                         <ZapIcon size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1, },]}>
                           Animación
                         </Text>
-                        <Text style={[styles.navItemValue, { color: p.accent }]}>
+                        <Text style={[styles.navItemValue, { color: p.accent, },]}>
                           {motionLevel === 'full' ? 'Full' : motionLevel === 'low' ? 'Low' : 'Off'}
                         </Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                        style={[styles.navSubItem, { backgroundColor: 'transparent', },]}
                         onPress={() => {
-                          setMenuVisible(false);
+                          setMenuVisible(false,);
                           onOpenSettings();
                         }}
                         activeOpacity={0.8}
                       >
                         <SettingsIcon size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText }]}>
-                          {t('navigation.moreSettings')}
+                        <Text style={[styles.navItemText, { color: p.dropText, },]}>
+                          {t('navigation.moreSettings',)}
                         </Text>
                       </TouchableOpacity>
                     </>
@@ -638,16 +626,16 @@ export default function TopNav({
                       style={[
                         styles.navItem,
                         isExtraSmall && styles.navItemExtraSmall,
-                        { backgroundColor: p.dangerBg },
+                        { backgroundColor: p.dangerBg, },
                       ]}
                       onPress={() => {
-                        setMenuVisible(false);
+                        setMenuVisible(false,);
                         onSignOut();
                       }}
                       activeOpacity={0.8}
                     >
                       <LogOutIcon size={15} color={p.danger} />
-                      <Text style={[styles.navItemText, { color: p.danger }]}>Sign Out</Text>
+                      <Text style={[styles.navItemText, { color: p.danger, },]}>Sign Out</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -664,8 +652,8 @@ export default function TopNav({
             notifications={notifications}
             isDark={isDark}
             onMarkAllRead={() => onMarkAllNotificationsRead?.()}
-            onDismiss={(id) => onDismissNotification?.(id)}
-            onClose={() => setNotifVisible(false)}
+            onDismiss={(id,) => onDismissNotification?.(id,)}
+            onClose={() => setNotifVisible(false,)}
           />
         </View>
       )}
@@ -1028,4 +1016,4 @@ const styles = StyleSheet.create({
     right: 14,
     zIndex: 1300,
   },
-});
+},);

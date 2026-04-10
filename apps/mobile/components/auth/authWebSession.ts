@@ -44,19 +44,19 @@ export const authentikPreset = createAlternunAuthentikPreset({
     resolveAuthentikIssuer(
       process.env.EXPO_PUBLIC_AUTHENTIK_ISSUER,
       typeof window !== 'undefined' ? window.location.origin : undefined,
-      resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID)
+      resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID,),
     ) ?? '',
-  clientId: resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID),
+  clientId: resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID,),
   redirectUri:
     resolveAuthentikRedirectUri(
       process.env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI,
-      typeof window !== 'undefined' ? window.location.origin : undefined
+      typeof window !== 'undefined' ? window.location.origin : undefined,
     ) ?? '',
-});
+},);
 
 export function oidcSessionToUser(
   session: OidcSession,
-  supabaseUserId?: string
+  supabaseUserId?: string,
 ): import('@alternun/auth').User {
   return {
     id: supabaseUserId ?? session.claims.sub,
@@ -72,25 +72,25 @@ export function oidcSessionToUser(
   };
 }
 
-export function stripAuthCallbackTokensFromUrl(urlValue: string): void {
+export function stripAuthCallbackTokensFromUrl(urlValue: string,): void {
   const runtimeWindow = typeof window === 'undefined' ? undefined : window;
 
   try {
-    const parsedUrl = new URL(urlValue);
-    const searchParams = new URLSearchParams(parsedUrl.search);
+    const parsedUrl = new URL(urlValue,);
+    const searchParams = new URLSearchParams(parsedUrl.search,);
     for (const key of AUTH_CALLBACK_QUERY_KEYS) {
-      searchParams.delete(key);
+      searchParams.delete(key,);
     }
 
     const nextSearch = searchParams.toString();
     const nextPath = `${parsedUrl.pathname}${nextSearch ? `?${nextSearch}` : ''}`;
     if (runtimeWindow?.history?.replaceState) {
-      runtimeWindow.history.replaceState({}, '', nextPath);
+      runtimeWindow.history.replaceState({}, '', nextPath,);
     }
   } catch {
     const fallbackPathname = runtimeWindow?.location?.pathname;
     if (runtimeWindow?.history?.replaceState && fallbackPathname) {
-      runtimeWindow.history.replaceState({}, '', fallbackPathname);
+      runtimeWindow.history.replaceState({}, '', fallbackPathname,);
     }
   }
 }

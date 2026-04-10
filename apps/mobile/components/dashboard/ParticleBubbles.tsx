@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState, } from 'react';
+import { Animated, Easing, StyleSheet, View, type LayoutChangeEvent, } from 'react-native';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,8 +23,8 @@ function FloatingParticle({
   containerWidth,
   containerHeight,
   onDone,
-}: FloatingParticleProps) {
-  const isMounted = useRef(true);
+}: FloatingParticleProps,) {
+  const isMounted = useRef(true,);
 
   // Randomise characteristics on mount
   const params = useRef({
@@ -33,10 +33,10 @@ function FloatingParticle({
     siner: 20 + Math.random() * 60,
     rotDir: Math.random() < 0.5 ? 1 : -1,
     speed: (1 + Math.random()) * 0.09,
-    size: 20 + Math.floor(Math.random() * 15),
-  }).current;
+    size: 20 + Math.floor(Math.random() * 15,),
+  },).current;
 
-  const progress = useRef(new Animated.Value(0)).current;
+  const progress = useRef(new Animated.Value(0,),).current;
 
   useEffect(() => {
     isMounted.current = true;
@@ -52,19 +52,19 @@ function FloatingParticle({
       duration,
       easing: Easing.linear,
       useNativeDriver: false,
-    });
+    },);
 
-    anim.start(({ finished }) => {
+    anim.start(({ finished, },) => {
       if (finished && isMounted.current) {
-        onDone(id);
+        onDone(id,);
       }
-    });
+    },);
 
     return () => {
       isMounted.current = false;
       anim.stop();
     };
-  }, []); // intentional: run only on mount
+  }, [],); // intentional: run only on mount
 
   // Build 41-keyframe sine-wave translateX output range
   const steps = containerHeight / 2;
@@ -74,31 +74,31 @@ function FloatingParticle({
   const xOutputRange: number[] = [];
   for (let i = 0; i < KEYFRAME_COUNT; i++) {
     const t = i / (KEYFRAME_COUNT - 1);
-    xInputRange.push(t);
+    xInputRange.push(t,);
     const position = containerHeight + params.size - t * totalDist;
-    const x = params.x + Math.sin((position * Math.PI) / steps) * params.siner;
-    xOutputRange.push(x);
+    const x = params.x + Math.sin((position * Math.PI) / steps,) * params.siner;
+    xOutputRange.push(x,);
   }
 
   const translateY = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [containerHeight + params.size, -params.size],
-  });
+    inputRange: [0, 1,],
+    outputRange: [containerHeight + params.size, -params.size,],
+  },);
 
   const translateX = progress.interpolate({
     inputRange: xInputRange,
     outputRange: xOutputRange,
-  });
+  },);
 
   const rotate = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', `${params.rotDir * 360}deg`],
-  });
+    inputRange: [0, 1,],
+    outputRange: ['0deg', `${params.rotDir * 360}deg`,],
+  },);
 
   const opacity = progress.interpolate({
-    inputRange: [0, 0.1, 0.9, 1],
-    outputRange: [0, 0.6, 0.6, 0],
-  });
+    inputRange: [0, 0.1, 0.9, 1,],
+    outputRange: [0, 0.6, 0.6, 0,],
+  },);
 
   return (
     <Animated.View
@@ -111,7 +111,7 @@ function FloatingParticle({
           borderRadius: params.size / 2,
           backgroundColor: color,
           opacity,
-          transform: [{ translateY }, { translateX }, { rotate }, { scale: params.scale }],
+          transform: [{ translateY, }, { translateX, }, { rotate, }, { scale: params.scale, },],
         },
       ]}
     />
@@ -130,39 +130,39 @@ let particleIdCounter = 0;
 export default function ParticleBubbles({
   color = 'rgba(28,203,161,0.28)',
   interval = 220,
-}: ParticleBubblesProps) {
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-  const [particles, setParticles] = useState<Particle[]>([]);
+}: ParticleBubblesProps,) {
+  const [containerSize, setContainerSize,] = useState({ width: 0, height: 0, },);
+  const [particles, setParticles,] = useState<Particle[]>([],);
 
-  const onLayout = useCallback((e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    setContainerSize({ width, height });
-  }, []);
+  const onLayout = useCallback((e: LayoutChangeEvent,) => {
+    const { width, height, } = e.nativeEvent.layout;
+    setContainerSize({ width, height, },);
+  }, [],);
 
-  const handleDone = useCallback((id: number) => {
-    setParticles((prev) => prev.filter((p) => p.id !== id));
-  }, []);
+  const handleDone = useCallback((id: number,) => {
+    setParticles((prev,) => prev.filter((p,) => p.id !== id,),);
+  }, [],);
 
   useEffect(() => {
     if (containerSize.width === 0 || containerSize.height === 0) return;
 
     const MAX_PARTICLES = 12;
     const timer = setInterval(() => {
-      setParticles((prev) => {
+      setParticles((prev,) => {
         if (prev.length >= MAX_PARTICLES) return prev;
         particleIdCounter += 1;
-        return [...prev, { id: particleIdCounter }];
-      });
-    }, interval);
+        return [...prev, { id: particleIdCounter, },];
+      },);
+    }, interval,);
 
-    return () => clearInterval(timer);
-  }, [containerSize.width, containerSize.height, interval]);
+    return () => clearInterval(timer,);
+  }, [containerSize.width, containerSize.height, interval,],);
 
   return (
     <View style={styles.container} onLayout={onLayout} pointerEvents='none'>
       {containerSize.width > 0 &&
         containerSize.height > 0 &&
-        particles.map((p) => (
+        particles.map((p,) => (
           <FloatingParticle
             key={p.id}
             id={p.id}
@@ -171,7 +171,7 @@ export default function ParticleBubbles({
             containerHeight={containerSize.height}
             onDone={handleDone}
           />
-        ))}
+        ),)}
     </View>
   );
 }
@@ -192,4 +192,4 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
   },
-});
+},);

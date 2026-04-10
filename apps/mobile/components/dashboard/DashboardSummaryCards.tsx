@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View, } from 'react-native';
 import {
   Coins,
   Flag,
@@ -23,48 +23,48 @@ interface DashboardSummaryCardsProps {
   isDark: boolean;
 }
 
-function getPalette(isDark: boolean) {
+function getPalette(isDark: boolean,) {
   return isDark
     ? {
-        cardBg: 'rgba(11,18,27,0.96)',
-        cardBorder: 'rgba(124,146,182,0.18)',
-        cardShadow: 'rgba(0,0,0,0.34)',
-        title: '#DCE5FF',
-        subtitle: '#93A4C8',
-        copy: '#B5C0D6',
-        muted: '#7F8AA4',
-        accent: '#27C8A3',
-        accentSoft: 'rgba(39,200,163,0.12)',
-        accentStrong: '#4DE2BC',
-        warning: '#E6B44E',
-        warningSoft: 'rgba(230,180,78,0.14)',
-        line: 'rgba(154,170,202,0.14)',
-        panelBg: 'rgba(18,27,39,0.86)',
-        panelBorder: 'rgba(128,146,184,0.18)',
-        iconBg: 'rgba(58,78,124,0.28)',
-        iconColor: '#9FB2FF',
-        heroBadgeBg: '#3140A8',
-      }
+      cardBg: 'rgba(11,18,27,0.96)',
+      cardBorder: 'rgba(124,146,182,0.18)',
+      cardShadow: 'rgba(0,0,0,0.34)',
+      title: '#DCE5FF',
+      subtitle: '#93A4C8',
+      copy: '#B5C0D6',
+      muted: '#7F8AA4',
+      accent: '#27C8A3',
+      accentSoft: 'rgba(39,200,163,0.12)',
+      accentStrong: '#4DE2BC',
+      warning: '#E6B44E',
+      warningSoft: 'rgba(230,180,78,0.14)',
+      line: 'rgba(154,170,202,0.14)',
+      panelBg: 'rgba(18,27,39,0.86)',
+      panelBorder: 'rgba(128,146,184,0.18)',
+      iconBg: 'rgba(58,78,124,0.28)',
+      iconColor: '#9FB2FF',
+      heroBadgeBg: '#3140A8',
+    }
     : {
-        cardBg: '#FBFCFE',
-        cardBorder: 'rgba(112,124,151,0.22)',
-        cardShadow: 'rgba(12,18,38,0.14)',
-        title: '#313A91',
-        subtitle: '#566287',
-        copy: '#636A82',
-        muted: '#7A8098',
-        accent: '#11826B',
-        accentSoft: 'rgba(17,130,107,0.10)',
-        accentStrong: '#0E8D71',
-        warning: '#D2A12F',
-        warningSoft: 'rgba(210,161,47,0.16)',
-        line: 'rgba(69,80,118,0.12)',
-        panelBg: '#F1F4F8',
-        panelBorder: 'rgba(119,126,155,0.22)',
-        iconBg: 'rgba(49,58,145,0.08)',
-        iconColor: '#313A91',
-        heroBadgeBg: '#313A91',
-      };
+      cardBg: '#FBFCFE',
+      cardBorder: 'rgba(112,124,151,0.22)',
+      cardShadow: 'rgba(12,18,38,0.14)',
+      title: '#313A91',
+      subtitle: '#566287',
+      copy: '#636A82',
+      muted: '#7A8098',
+      accent: '#11826B',
+      accentSoft: 'rgba(17,130,107,0.10)',
+      accentStrong: '#0E8D71',
+      warning: '#D2A12F',
+      warningSoft: 'rgba(210,161,47,0.16)',
+      line: 'rgba(69,80,118,0.12)',
+      panelBg: '#F1F4F8',
+      panelBorder: 'rgba(119,126,155,0.22)',
+      iconBg: 'rgba(49,58,145,0.08)',
+      iconColor: '#313A91',
+      heroBadgeBg: '#313A91',
+    };
 }
 
 function SummaryCard({
@@ -75,7 +75,7 @@ function SummaryCard({
   children: React.ReactNode;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-}) {
+},) {
   return (
     <View
       style={[
@@ -103,22 +103,22 @@ function CardTitle({
   sub: string;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-}) {
+},) {
   return (
-    <View style={[styles.titleBlock, compact && styles.titleBlockCompact]}>
-      <Text style={[styles.title, compact && styles.titleCompact, { color: p.title }]}>
+    <View style={[styles.titleBlock, compact && styles.titleBlockCompact,]}>
+      <Text style={[styles.title, compact && styles.titleCompact, { color: p.title, },]}>
         {label}
       </Text>
-      <Text style={[styles.subtitle, compact && styles.subtitleCompact, { color: p.subtitle }]}>
+      <Text style={[styles.subtitle, compact && styles.subtitleCompact, { color: p.subtitle, },]}>
         {sub}
       </Text>
     </View>
   );
 }
 
-function Divider({ p, compact = false }: { p: ReturnType<typeof getPalette>; compact?: boolean }) {
+function Divider({ p, compact = false, }: { p: ReturnType<typeof getPalette>; compact?: boolean },) {
   return (
-    <View style={[styles.divider, compact && styles.dividerCompact, { backgroundColor: p.line }]} />
+    <View style={[styles.divider, compact && styles.dividerCompact, { backgroundColor: p.line, },]} />
   );
 }
 
@@ -134,25 +134,25 @@ function PositionRow({
   value: string;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-}) {
+},) {
   return (
-    <View style={[styles.positionRow, compact && styles.positionRowCompact]}>
+    <View style={[styles.positionRow, compact && styles.positionRowCompact,]}>
       <View
         style={[
           styles.positionIcon,
           compact && styles.positionIconCompact,
-          { backgroundColor: p.iconBg },
+          { backgroundColor: p.iconBg, },
         ]}
       >
         {icon}
       </View>
       <Text
-        style={[styles.positionLabel, compact && styles.positionLabelCompact, { color: p.title }]}
+        style={[styles.positionLabel, compact && styles.positionLabelCompact, { color: p.title, },]}
       >
         {label}
       </Text>
       <Text
-        style={[styles.positionValue, compact && styles.positionValueCompact, { color: p.title }]}
+        style={[styles.positionValue, compact && styles.positionValueCompact, { color: p.title, },]}
       >
         {value}
       </Text>
@@ -166,7 +166,7 @@ function PositionCard({
 }: {
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-}) {
+},) {
   return (
     <SummaryCard p={p} compact={compact}>
       <CardTitle
@@ -176,7 +176,7 @@ function PositionCard({
         compact={compact}
       />
 
-      <View style={[styles.positionList, compact && styles.positionListCompact]}>
+      <View style={[styles.positionList, compact && styles.positionListCompact,]}>
         <PositionRow
           icon={<GlobeIcon size={18} color={p.accent} />}
           label='Global'
@@ -204,14 +204,14 @@ function PositionCard({
         style={[
           styles.positionFooter,
           compact && styles.positionFooterCompact,
-          { borderTopColor: p.line },
+          { borderTopColor: p.line, },
         ]}
       >
         <Text
           style={[
             styles.positionFootnote,
             compact && styles.positionFootnoteCompact,
-            { color: p.muted },
+            { color: p.muted, },
           ]}
         >
           Ranking basado en Airs acumulados
@@ -233,17 +233,17 @@ function RBIStatRow({
   valueColor?: string;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-}) {
+},) {
   return (
     <View style={styles.statRow}>
-      <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
+      <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy, },]}>
         {label}
       </Text>
       <Text
         style={[
           styles.statValue,
           compact && styles.statValueCompact,
-          { color: valueColor ?? p.title },
+          { color: valueColor ?? p.title, },
         ]}
       >
         {value}
@@ -252,7 +252,7 @@ function RBIStatRow({
   );
 }
 
-function RBICard({ p, compact = false }: { p: ReturnType<typeof getPalette>; compact?: boolean }) {
+function RBICard({ p, compact = false, }: { p: ReturnType<typeof getPalette>; compact?: boolean },) {
   return (
     <SummaryCard p={p} compact={compact}>
       <CardTitle
@@ -262,15 +262,15 @@ function RBICard({ p, compact = false }: { p: ReturnType<typeof getPalette>; com
         compact={compact}
       />
 
-      <View style={[styles.rbiHero, compact && styles.rbiHeroCompact]}>
-        <Text style={[styles.rbiValue, compact && styles.rbiValueCompact, { color: p.accent }]}>
+      <View style={[styles.rbiHero, compact && styles.rbiHeroCompact,]}>
+        <Text style={[styles.rbiValue, compact && styles.rbiValueCompact, { color: p.accent, },]}>
           ≈ 14.2 ATN
         </Text>
         <View
           style={[
             styles.heroBadge,
             compact && styles.heroBadgeCompact,
-            { backgroundColor: p.heroBadgeBg },
+            { backgroundColor: p.heroBadgeBg, },
           ]}
         >
           <CoinsIcon size={14} color='#F8FAFC' />
@@ -279,7 +279,7 @@ function RBICard({ p, compact = false }: { p: ReturnType<typeof getPalette>; com
 
       <Divider p={p} compact={compact} />
 
-      <View style={[styles.statList, compact && styles.statListCompact]}>
+      <View style={[styles.statList, compact && styles.statListCompact,]}>
         <RBIStatRow label='Pool RBI estimado:' value='$120.000' p={p} compact={compact} />
         <RBIStatRow label='Usuarios elegibles:' value='8.420' p={p} compact={compact} />
         <RBIStatRow
@@ -297,14 +297,14 @@ function RBICard({ p, compact = false }: { p: ReturnType<typeof getPalette>; com
         style={[
           styles.calloutCard,
           compact && styles.calloutCardCompact,
-          { backgroundColor: p.warningSoft },
+          { backgroundColor: p.warningSoft, },
         ]}
       >
         <View
           style={[
             styles.calloutIcon,
             compact && styles.calloutIconCompact,
-            { backgroundColor: 'rgba(255,255,255,0.48)' },
+            { backgroundColor: 'rgba(255,255,255,0.48)', },
           ]}
         >
           <SparklesIcon size={18} color={p.warning} />
@@ -314,13 +314,13 @@ function RBICard({ p, compact = false }: { p: ReturnType<typeof getPalette>; com
             style={[
               styles.calloutTitle,
               compact && styles.calloutTitleCompact,
-              { color: p.warning },
+              { color: p.warning, },
             ]}
           >
             Boost activo
           </Text>
           <Text
-            style={[styles.calloutText, compact && styles.calloutTextCompact, { color: p.copy }]}
+            style={[styles.calloutText, compact && styles.calloutTextCompact, { color: p.copy, },]}
           >
             El RBI está +32% por incentivos especiales.
           </Text>
@@ -329,9 +329,9 @@ function RBICard({ p, compact = false }: { p: ReturnType<typeof getPalette>; com
 
       <Divider p={p} compact={compact} />
 
-      <View style={[styles.tipRow, compact && styles.tipRowCompact]}>
+      <View style={[styles.tipRow, compact && styles.tipRowCompact,]}>
         <FlagIcon size={16} color={p.title} />
-        <Text style={[styles.tipText, compact && styles.tipTextCompact, { color: p.copy }]}>
+        <Text style={[styles.tipText, compact && styles.tipTextCompact, { color: p.copy, },]}>
           Tip: Si alcanzas Platinum este mes, tu proyección subiría a ≈ 21 ATN.
         </Text>
       </View>
@@ -351,20 +351,20 @@ function TokenRow({
   value: string;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-}) {
+},) {
   return (
-    <View style={[styles.tokenRow, compact && styles.tokenRowCompact]}>
+    <View style={[styles.tokenRow, compact && styles.tokenRowCompact,]}>
       <View style={styles.tokenLabelBlock}>
-        <Text style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}>
+        <Text style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title, },]}>
           {label}
         </Text>
         <Text
-          style={[styles.tokenSubLabel, compact && styles.tokenSubLabelCompact, { color: p.muted }]}
+          style={[styles.tokenSubLabel, compact && styles.tokenSubLabelCompact, { color: p.muted, },]}
         >
           {sublabel}
         </Text>
       </View>
-      <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
+      <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title, },]}>
         {value}
       </Text>
     </View>
@@ -379,7 +379,7 @@ function ATNCard({
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
   dense?: boolean;
-}) {
+},) {
   const useDenseLayout = compact || dense;
 
   return (
@@ -402,8 +402,8 @@ function ATNCard({
         compact={compact}
       />
 
-      <View style={[styles.totalRow, compact && styles.totalRowCompact]}>
-        <Text style={[styles.totalLabel, compact && styles.totalLabelCompact, { color: p.title }]}>
+      <View style={[styles.totalRow, compact && styles.totalRowCompact,]}>
+        <Text style={[styles.totalLabel, compact && styles.totalLabelCompact, { color: p.title, },]}>
           Total ATN
         </Text>
         <View style={styles.totalValueWrap}>
@@ -412,7 +412,7 @@ function ATNCard({
             style={[
               styles.totalValue,
               compact && styles.totalValueCompact,
-              { color: p.accentStrong },
+              { color: p.accentStrong, },
             ]}
           >
             4.240
@@ -425,15 +425,15 @@ function ATNCard({
           styles.walletPanel,
           useDenseLayout && styles.walletPanelDense,
           compact && styles.walletPanelCompact,
-          { backgroundColor: p.panelBg, borderColor: p.panelBorder },
+          { backgroundColor: p.panelBg, borderColor: p.panelBorder, },
         ]}
       >
-        <View style={[styles.walletPanelTop, useDenseLayout && styles.walletPanelTopDense]}>
+        <View style={[styles.walletPanelTop, useDenseLayout && styles.walletPanelTopDense,]}>
           <Text
             style={[
               styles.walletPanelLabel,
               compact && styles.walletPanelLabelCompact,
-              { color: p.title },
+              { color: p.title, },
             ]}
           >
             Wallet principal
@@ -443,7 +443,7 @@ function ATNCard({
               styles.walletPanelMeta,
               useDenseLayout && styles.walletPanelMetaDense,
               compact && styles.walletPanelMetaCompact,
-              { color: p.muted },
+              { color: p.muted, },
             ]}
           >
             Interna
@@ -455,19 +455,19 @@ function ATNCard({
             styles.walletAddress,
             useDenseLayout && styles.walletAddressDense,
             compact && styles.walletAddressCompact,
-            { color: p.copy },
+            { color: p.copy, },
           ]}
         >
           0xA8f9...Wq77E4c2
         </Text>
-        <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense]}>
+        <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense,]}>
           <WalletIcon size={15} color={p.title} />
           <Text
             style={[
               styles.walletLinkText,
               useDenseLayout && styles.walletLinkTextDense,
               compact && styles.walletLinkTextCompact,
-              { color: p.title },
+              { color: p.title, },
             ]}
           >
             Gestionar wallet
@@ -478,15 +478,15 @@ function ATNCard({
   );
 }
 
-export default function DashboardSummaryCards({ isDark }: DashboardSummaryCardsProps) {
-  const p = getPalette(isDark);
-  const { width } = useWindowDimensions();
+export default function DashboardSummaryCards({ isDark, }: DashboardSummaryCardsProps,) {
+  const p = getPalette(isDark,);
+  const { width, } = useWindowDimensions();
   const isMobile = width < 920;
   const isCompactMobile = width < 520;
   const isDenseAtnCard = width < 720;
 
   return (
-    <View style={[styles.root, isCompactMobile && styles.rootCompact]}>
+    <View style={[styles.root, isCompactMobile && styles.rootCompact,]}>
       <View
         style={[
           styles.grid,
@@ -946,4 +946,4 @@ const styles = StyleSheet.create({
   walletLinkTextCompact: {
     fontSize: 13,
   },
-});
+},);

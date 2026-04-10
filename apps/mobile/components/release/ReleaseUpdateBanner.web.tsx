@@ -1,15 +1,15 @@
-import { useReleaseUpdate } from '@alternun/update';
-import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useReleaseUpdate, } from '@alternun/update';
+import { useMemo, } from 'react';
+import { Pressable, StyleSheet, Text, View, } from 'react-native';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: currentVersion } = require('../../package.json') as { version: string };
+const { version: currentVersion, } = require('../../package.json',) as { version: string };
 
 export default function ReleaseUpdateBanner() {
   const state = useReleaseUpdate({
     currentVersion,
     mode: process.env.EXPO_PUBLIC_RELEASE_UPDATE_MODE ?? 'auto',
-  });
+  },);
 
   const message = useMemo(() => {
     if (!state.remoteVersion) {
@@ -17,7 +17,7 @@ export default function ReleaseUpdateBanner() {
     }
 
     return `Release ${state.remoteVersion} is ready.`;
-  }, [state.remoteVersion]);
+  }, [state.remoteVersion,],);
 
   if (!state.enabled || !state.available) {
     return null;
@@ -118,4 +118,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-});
+},);

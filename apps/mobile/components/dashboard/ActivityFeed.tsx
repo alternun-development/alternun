@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -20,7 +20,7 @@ import {
   ChevronRight,
   type LucideProps,
 } from 'lucide-react-native';
-import SearchFilterBar, { type SearchFilterOption } from '../common/SearchFilterBar';
+import SearchFilterBar, { type SearchFilterOption, } from '../common/SearchFilterBar';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const CartIcon = ShoppingCart as React.FC<LucideProps>;
@@ -160,16 +160,16 @@ const TYPE_LABELS: Record<ActivityType, string> = {
 };
 
 const FILTERS: SearchFilterOption[] = [
-  { key: 'all', label: 'Todos', icon: AllIcon },
-  { key: 'compensation', label: 'Compensación', icon: LeafIcon },
-  { key: 'purchase', label: 'Compra', icon: CartIcon },
-  { key: 'profile', label: 'Perfil', icon: UserCheckIcon },
-  { key: 'account', label: 'Cuenta', icon: UserPlusIcon },
-  { key: 'reward', label: 'Recompensa', icon: GiftIcon },
+  { key: 'all', label: 'Todos', icon: AllIcon, },
+  { key: 'compensation', label: 'Compensación', icon: LeafIcon, },
+  { key: 'purchase', label: 'Compra', icon: CartIcon, },
+  { key: 'profile', label: 'Perfil', icon: UserCheckIcon, },
+  { key: 'account', label: 'Cuenta', icon: UserPlusIcon, },
+  { key: 'reward', label: 'Recompensa', icon: GiftIcon, },
 ];
 
-function getIcon(type: ActivityType, color: string): React.ReactNode {
-  const props = { size: 16, color };
+function getIcon(type: ActivityType, color: string,): React.ReactNode {
+  const props = { size: 16, color, };
   switch (type) {
     case 'compensation':
       return <LeafIcon {...props} />;
@@ -195,7 +195,7 @@ interface RowProps {
   animValue: Animated.Value;
 }
 
-function ActivityRow({ item, isDark, isLast, animValue }: RowProps) {
+function ActivityRow({ item, isDark, isLast, animValue, }: RowProps,) {
   const accent = isDark ? '#1EE6B5' : '#0d9488';
   const textColor = isDark ? '#e8fff6' : '#0b2d31';
   const mutedColor = isDark ? 'rgba(232,255,246,0.55)' : 'rgba(11,45,49,0.55)';
@@ -205,11 +205,11 @@ function ActivityRow({ item, isDark, isLast, animValue }: RowProps) {
     <Animated.View
       style={[
         styles.row,
-        !isLast && { borderBottomWidth: 1, borderBottomColor: divColor },
+        !isLast && { borderBottomWidth: 1, borderBottomColor: divColor, },
         {
           opacity: animValue,
           transform: [
-            { translateX: animValue.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }) },
+            { translateX: animValue.interpolate({ inputRange: [0, 1,], outputRange: [-12, 0,], },), },
           ],
         },
       ]}
@@ -219,21 +219,21 @@ function ActivityRow({ item, isDark, isLast, animValue }: RowProps) {
         <View
           style={[
             styles.iconWrap,
-            { backgroundColor: isDark ? 'rgba(30,230,181,0.10)' : 'rgba(13,148,136,0.08)' },
+            { backgroundColor: isDark ? 'rgba(30,230,181,0.10)' : 'rgba(13,148,136,0.08)', },
           ]}
         >
-          {getIcon(item.type, accent)}
+          {getIcon(item.type, accent,)}
         </View>
-        <Text style={[styles.rowActionText, { color: textColor }]} numberOfLines={1}>
+        <Text style={[styles.rowActionText, { color: textColor, },]} numberOfLines={1}>
           {item.action}
         </Text>
       </View>
       {/* Source */}
-      <Text style={[styles.rowSource, { color: mutedColor }]}>{item.source}</Text>
+      <Text style={[styles.rowSource, { color: mutedColor, },]}>{item.source}</Text>
       {/* Airs */}
-      <Text style={[styles.rowAirs, { color: accent }]}>+{item.airs}</Text>
+      <Text style={[styles.rowAirs, { color: accent, },]}>+{item.airs}</Text>
       {/* Date */}
-      <Text style={[styles.rowDate, { color: mutedColor }]}>{item.date}</Text>
+      <Text style={[styles.rowDate, { color: mutedColor, },]}>{item.date}</Text>
     </Animated.View>
   );
 }
@@ -244,14 +244,14 @@ interface ActivityFeedProps {
   isDark: boolean;
 }
 
-export default function ActivityFeed({ isDark }: ActivityFeedProps) {
-  const [search, setSearch] = useState('');
-  const [activeFilter, setActiveFilter] = useState<ActivityType | 'all'>('all');
-  const [page, setPage] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
-  const rowAnims = useRef<Record<string, Animated.Value>>({});
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+export default function ActivityFeed({ isDark, }: ActivityFeedProps,) {
+  const [search, setSearch,] = useState('',);
+  const [activeFilter, setActiveFilter,] = useState<ActivityType | 'all'>('all',);
+  const [page, setPage,] = useState(0,);
+  const [isRefreshing, setIsRefreshing,] = useState(false,);
+  const [activities, setActivities,] = useState<ActivityItem[]>(MOCK_ACTIVITIES,);
+  const rowAnims = useRef<Record<string, Animated.Value>>({},);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null,);
 
   const accent = isDark ? '#1EE6B5' : '#0d9488';
   const bg = isDark ? '#050f0c' : '#f0fdf9';
@@ -262,67 +262,67 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
   const headerBg = isDark ? 'rgba(30,230,181,0.06)' : 'rgba(13,148,136,0.06)';
 
   // Filtered + searched list
-  const filtered = activities.filter((a) => {
+  const filtered = activities.filter((a,) => {
     const matchesFilter = activeFilter === 'all' || a.type === activeFilter;
     const q = search.toLowerCase();
     const matchesSearch =
-      !q || a.action.toLowerCase().includes(q) || a.source.toLowerCase().includes(q);
+      !q || a.action.toLowerCase().includes(q,) || a.source.toLowerCase().includes(q,);
     return matchesFilter && matchesSearch;
-  });
+  },);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageItems = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE,),);
+  const pageItems = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE,);
 
   // Animate new rows
-  const animateRow = useCallback((id: string) => {
+  const animateRow = useCallback((id: string,) => {
     if (!rowAnims.current[id]) {
-      rowAnims.current[id] = new Animated.Value(0);
+      rowAnims.current[id] = new Animated.Value(0,);
     }
     Animated.timing(rowAnims.current[id], {
       toValue: 1,
       duration: 320,
-      easing: Easing.out(Easing.cubic),
+      easing: Easing.out(Easing.cubic,),
       useNativeDriver: false,
-    }).start();
-  }, []);
+    },).start();
+  }, [],);
 
   useEffect(() => {
-    pageItems.forEach((item) => animateRow(item.id));
-  }, [page, activeFilter, search, animateRow, pageItems]);
+    pageItems.forEach((item,) => animateRow(item.id,),);
+  }, [page, activeFilter, search, animateRow, pageItems,],);
 
   // Simulated real-time polling
   useEffect(() => {
     let idCounter = MOCK_ACTIVITIES.length + 1;
     pollRef.current = setInterval(() => {
       const newItem: ActivityItem = {
-        id: String(idCounter++),
+        id: String(idCounter++,),
         type: 'compensation',
         action: 'Compensación ambiental',
         source: 'Live update',
         airs: 120,
         date: 'Ahora',
       };
-      setActivities((prev) => [newItem, ...prev]);
-    }, 30000); // every 30s simulate a new event
+      setActivities((prev,) => [newItem, ...prev,],);
+    }, 30000,); // every 30s simulate a new event
 
     return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
+      if (pollRef.current) clearInterval(pollRef.current,);
     };
-  }, []);
+  }, [],);
 
   const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 800);
+    setIsRefreshing(true,);
+    setTimeout(() => setIsRefreshing(false,), 800,);
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: bg }]}>
+    <View style={[styles.container, { backgroundColor: bg, },]}>
       {/* Section header */}
       <View style={styles.sectionHeader}>
         <View>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>Actividad reciente</Text>
-          <Text style={[styles.sectionSubtitle, { color: mutedColor }]}>
-            Así has acumulado tus <Text style={{ fontWeight: '700', color: textColor }}>Airs</Text>{' '}
+          <Text style={[styles.sectionTitle, { color: textColor, },]}>Actividad reciente</Text>
+          <Text style={[styles.sectionSubtitle, { color: mutedColor, },]}>
+            Así has acumulado tus <Text style={{ fontWeight: '700', color: textColor, }}>Airs</Text>{' '}
             By Alternun.
           </Text>
         </View>
@@ -330,9 +330,9 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
           {isRefreshing ? (
             <ActivityIndicator size='small' color={accent} />
           ) : (
-            <View style={[styles.liveIndicator, { borderColor: accent }]}>
-              <View style={[styles.liveDot, { backgroundColor: accent }]} />
-              <Text style={[styles.liveText, { color: accent }]}>Live</Text>
+            <View style={[styles.liveIndicator, { borderColor: accent, },]}>
+              <View style={[styles.liveDot, { backgroundColor: accent, },]} />
+              <Text style={[styles.liveText, { color: accent, },]}>Live</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -340,27 +340,27 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
 
       <SearchFilterBar
         value={search}
-        onChangeText={(value) => {
-          setSearch(value);
-          setPage(0);
+        onChangeText={(value,) => {
+          setSearch(value,);
+          setPage(0,);
         }}
         placeholder='Buscar actividad o fuente...'
         filters={FILTERS}
         activeFilter={activeFilter}
-        onChangeFilter={(filterKey) => {
-          setActiveFilter(filterKey as ActivityType | 'all');
-          setPage(0);
+        onChangeFilter={(filterKey,) => {
+          setActiveFilter(filterKey as ActivityType | 'all',);
+          setPage(0,);
         }}
       />
 
       {/* Table */}
-      <View style={[styles.table, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+      <View style={[styles.table, { backgroundColor: cardBg, borderColor: cardBorder, },]}>
         {/* Table header */}
-        <View style={[styles.tableHeader, { backgroundColor: headerBg }]}>
-          <Text style={[styles.thAction, { color: accent }]}>Acción</Text>
-          <Text style={[styles.thCell, { color: accent }]}>Fuente</Text>
-          <Text style={[styles.thCell, { color: accent }]}>Airs</Text>
-          <Text style={[styles.thCell, { color: accent }]}>Fecha</Text>
+        <View style={[styles.tableHeader, { backgroundColor: headerBg, },]}>
+          <Text style={[styles.thAction, { color: accent, },]}>Acción</Text>
+          <Text style={[styles.thCell, { color: accent, },]}>Fuente</Text>
+          <Text style={[styles.thCell, { color: accent, },]}>Airs</Text>
+          <Text style={[styles.thCell, { color: accent, },]}>Fecha</Text>
         </View>
 
         {/* Rows */}
@@ -370,14 +370,14 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
           </View>
         ) : pageItems.length === 0 ? (
           <View style={styles.emptyBox}>
-            <Text style={[styles.emptyText, { color: mutedColor }]}>
+            <Text style={[styles.emptyText, { color: mutedColor, },]}>
               Sin actividad para esta búsqueda.
             </Text>
           </View>
         ) : (
-          pageItems.map((item, idx) => {
+          pageItems.map((item, idx,) => {
             if (!rowAnims.current[item.id]) {
-              rowAnims.current[item.id] = new Animated.Value(0);
+              rowAnims.current[item.id] = new Animated.Value(0,);
             }
             return (
               <ActivityRow
@@ -388,36 +388,36 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
                 animValue={rowAnims.current[item.id]}
               />
             );
-          })
+          },)
         )}
       </View>
 
       {/* Pagination */}
       <View style={styles.pagination}>
-        <Text style={[styles.pageInfo, { color: mutedColor }]}>
-          {`${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, filtered.length)} de ${
+        <Text style={[styles.pageInfo, { color: mutedColor, },]}>
+          {`${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, filtered.length,)} de ${
             filtered.length
           }`}
         </Text>
         <View style={styles.pageButtons}>
           <TouchableOpacity
-            onPress={() => setPage((p) => Math.max(0, p - 1))}
+            onPress={() => setPage((p,) => Math.max(0, p - 1,),)}
             disabled={page === 0}
             activeOpacity={0.7}
-            style={[styles.pageBtn, { borderColor: cardBorder, opacity: page === 0 ? 0.35 : 1 }]}
+            style={[styles.pageBtn, { borderColor: cardBorder, opacity: page === 0 ? 0.35 : 1, },]}
           >
             <PrevIcon size={15} color={textColor} />
           </TouchableOpacity>
-          <Text style={[styles.pageNum, { color: accent }]}>
+          <Text style={[styles.pageNum, { color: accent, },]}>
             {page + 1} / {totalPages}
           </Text>
           <TouchableOpacity
-            onPress={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            onPress={() => setPage((p,) => Math.min(totalPages - 1, p + 1,),)}
             disabled={page >= totalPages - 1}
             activeOpacity={0.7}
             style={[
               styles.pageBtn,
-              { borderColor: cardBorder, opacity: page >= totalPages - 1 ? 0.35 : 1 },
+              { borderColor: cardBorder, opacity: page >= totalPages - 1 ? 0.35 : 1, },
             ]}
           >
             <NextIcon size={15} color={textColor} />
@@ -429,8 +429,8 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
 }
 
 // ─── Type export (for external use) ──────────────────────────────────────────
-export type { ActivityType, ActivityItem };
-export { TYPE_LABELS };
+export type { ActivityType, ActivityItem, };
+export { TYPE_LABELS, };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
@@ -580,4 +580,4 @@ const styles = StyleSheet.create({
     minWidth: 40,
     textAlign: 'center',
   },
-});
+},);

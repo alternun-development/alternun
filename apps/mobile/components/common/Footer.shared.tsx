@@ -1,12 +1,12 @@
-import { useAppTranslation } from '../i18n/useAppTranslation';
+import { useAppTranslation, } from '../i18n/useAppTranslation';
 import Constants from 'expo-constants';
-import { Image as ExpoImage } from 'expo-image';
+import { Image as ExpoImage, } from 'expo-image';
 import React from 'react';
-import { Instagram, Send, Twitter, Youtube } from 'lucide-react-native';
-import { Linking, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { Instagram, Send, Twitter, Youtube, } from 'lucide-react-native';
+import { Linking, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle, } from 'react-native';
+import Svg, { Defs, LinearGradient, Rect, Stop, } from 'react-native-svg';
 import mobilePackageJson from '../../package.json';
-import type { FooterPrimaryLink } from './AppInfoFooter.links';
+import type { FooterPrimaryLink, } from './AppInfoFooter.links';
 
 export type LinkIconProps = {
   size?: number | string;
@@ -31,20 +31,20 @@ type ExpoImageSource = React.ComponentProps<typeof ExpoImage>['source'];
 
 // Metro asset loading still relies on require() for local image modules here.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as ExpoImageSource;
+export const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg',) as ExpoImageSource;
 // prettier-ignore
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg',) as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png') as ExpoImageSource;
+export const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png',) as ExpoImageSource;
 // Keep footer version aligned with the app package version used in this workspace.
 const MOBILE_PACKAGE = mobilePackageJson as { version?: string | null };
 
 export const SOCIAL_LINKS: FooterLink[] = [
-  { label: 'Telegram', url: 'https://t.me/+4dPOLQ3otkE4NjIx#', icon: Send },
-  { label: 'X', url: 'https://x.com/Alternun_io', icon: Twitter },
-  { label: 'Instagram', url: 'https://www.instagram.com/Alternun.io/', icon: Instagram },
-  { label: 'YouTube', url: 'https://www.youtube.com/@alternun_io', icon: Youtube },
+  { label: 'Telegram', url: 'https://t.me/+4dPOLQ3otkE4NjIx#', icon: Send, },
+  { label: 'X', url: 'https://x.com/Alternun_io', icon: Twitter, },
+  { label: 'Instagram', url: 'https://www.instagram.com/Alternun.io/', icon: Instagram, },
+  { label: 'YouTube', url: 'https://www.youtube.com/@alternun_io', icon: Youtube, },
 ];
 
 export function resolveVersionMetadata(): VersionMetadata {
@@ -91,8 +91,8 @@ export function resolveVersionMetadata(): VersionMetadata {
   };
 }
 
-export function openExternalUrl(url: string): void {
-  void Linking.openURL(url).catch(() => undefined);
+export function openExternalUrl(url: string,): void {
+  void Linking.openURL(url,).catch(() => undefined,);
 }
 
 export function SocialPill({
@@ -112,7 +112,7 @@ export function SocialPill({
   compact?: boolean;
   hoverColor?: string;
   mobileMini?: boolean;
-}): React.JSX.Element | null {
+},): React.JSX.Element | null {
   if (!Icon) {
     return null;
   }
@@ -120,8 +120,8 @@ export function SocialPill({
   return (
     <Pressable
       accessibilityLabel={label}
-      onPress={() => openExternalUrl(url)}
-      style={({ hovered, pressed }) => [
+      onPress={() => openExternalUrl(url,)}
+      style={({ hovered, pressed, },) => [
         styles.socialPill,
         compact && styles.socialPillCompact,
         mobileMini && styles.socialPillMobileMini,
@@ -156,11 +156,11 @@ export function FooterTextLink({
   align?: 'left' | 'center';
   singleLine?: boolean;
   style?: StyleProp<ViewStyle>;
-}): React.JSX.Element {
+},): React.JSX.Element {
   return (
     <Pressable
-      onPress={() => openExternalUrl(url)}
-      style={({ hovered, pressed }) => [
+      onPress={() => openExternalUrl(url,)}
+      style={({ hovered, pressed, },) => [
         styles.textLinkPressable,
         compact && styles.textLinkPressableCompact,
         hovered && styles.textLinkPressableHovered,
@@ -168,7 +168,7 @@ export function FooterTextLink({
         style,
       ]}
     >
-      {({ hovered, pressed }) => (
+      {({ hovered, pressed, },) => (
         <Text
           numberOfLines={singleLine ? 1 : undefined}
           ellipsizeMode={singleLine ? 'clip' : undefined}
@@ -178,7 +178,7 @@ export function FooterTextLink({
             align === 'center' && styles.textLinkTextCenter,
             hovered && styles.textLinkTextHovered,
             pressed && styles.textLinkTextPressed,
-            { color: hovered ? hoverColor ?? textColor : textColor },
+            { color: hovered ? hoverColor ?? textColor : textColor, },
           ]}
         >
           {label}
@@ -194,11 +194,11 @@ export function FooterTopFade({
 }: {
   height: number;
   color: string;
-}): React.JSX.Element {
-  const gradientId = React.useId().replace(/[:]/g, '');
+},): React.JSX.Element {
+  const gradientId = React.useId().replace(/[:]/g, '',);
 
   return (
-    <View pointerEvents='none' style={[styles.footerTopFade, { height }]}>
+    <View pointerEvents='none' style={[styles.footerTopFade, { height, },]}>
       <Svg width='100%' height='100%' viewBox='0 0 100 100' preserveAspectRatio='none'>
         <Defs>
           <LinearGradient id={gradientId} x1='0' y1='0' x2='0' y2='1'>
@@ -213,13 +213,13 @@ export function FooterTopFade({
   );
 }
 
-export function FooterCopyright({ color }: { color: string }): React.JSX.Element {
-  const { t } = useAppTranslation('mobile');
+export function FooterCopyright({ color, }: { color: string },): React.JSX.Element {
+  const { t, } = useAppTranslation('mobile',);
   const footerYear = new Date().getFullYear();
 
   return (
-    <Text style={[styles.copyrightText, { color }]}>
-      {t('footer.copyright', { year: footerYear }, `(c) ${footerYear} Alternun.`)}
+    <Text style={[styles.copyrightText, { color, },]}>
+      {t('footer.copyright', { year: footerYear, }, `(c) ${footerYear} Alternun.`,)}
     </Text>
   );
 }
@@ -244,11 +244,11 @@ const styles = StyleSheet.create({
     borderRadius: 13,
   },
   socialPillHovered: {
-    transform: [{ translateY: -1 }, { scale: 1.04 }],
+    transform: [{ translateY: -1, }, { scale: 1.04, },],
     boxShadow: '0px 8px 18px rgba(30, 230, 181, 0.18)',
   },
   socialPillPressed: {
-    transform: [{ scale: 0.98 }],
+    transform: [{ scale: 0.98, },],
   },
   textLinkPressable: {
     minHeight: 22,
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     minHeight: 22,
   },
   textLinkPressableHovered: {
-    transform: [{ translateY: -1 }],
+    transform: [{ translateY: -1, },],
   },
   textLinkPressablePressed: {
     opacity: 0.65,
@@ -291,4 +291,4 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
-});
+},);
