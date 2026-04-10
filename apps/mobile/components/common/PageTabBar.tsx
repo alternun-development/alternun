@@ -193,8 +193,8 @@ function TabButton({
           style={[
             styles.tooltip,
             {
-              backgroundColor: isDark ? 'rgba(15,15,15,0.95)' : 'rgba(0,0,0,0.88)',
-              borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+              backgroundColor: isDark ? 'rgba(10,10,10,1)' : 'rgba(0,0,0,1)',
+              borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.15)',
             },
           ]}
         >
@@ -202,7 +202,7 @@ function TabButton({
             style={[
               styles.tooltipText,
               {
-                color: isDark ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.95)',
+                color: '#fff',
               },
             ]}
           >
@@ -257,24 +257,24 @@ const styles = StyleSheet.create({
     left: '50%',
     marginLeft: -45,
     marginTop: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 0.8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
     zIndex: 9999,
     elevation: 9999,
     minWidth: 90,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
   },
   tooltipText: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
     textAlign: 'center',
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
 });
