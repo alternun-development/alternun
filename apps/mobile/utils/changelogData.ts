@@ -9,7 +9,15 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.50](https://github.com/alternun-development/alternun/compare/v1.0.48...v1.0.50) (2026-04-10)
+export const CHANGELOG_TEXT = `## [1.0.51](https://github.com/alternun-development/alternun/compare/v1.0.50...v1.0.51) (2026-04-10)
+
+### Bug Fixes
+
+- wire Better Auth execution through mobile and web auth flows
+- align infra envs and release build output with the new Better Auth testnet setup
+- rebuild the auth package before Expo export so the bundled runtime picks up current auth config
+
+## [1.0.50](https://github.com/alternun-development/alternun/compare/v1.0.48...v1.0.50) (2026-04-10)
 
 ### Bug Fixes
 
