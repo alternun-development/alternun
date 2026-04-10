@@ -1,6 +1,6 @@
-import { resolveAuthProviderSelection, } from '../runtime/config.js';
-const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0',]);
-const TRUTHY_ENV_VALUES = new Set(['1', 'true', 'yes', 'on',]);
+import { resolveAuthProviderSelection } from '../runtime/config.js';
+const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
+const TRUTHY_ENV_VALUES = new Set(['1', 'true', 'yes', 'on']);
 const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE = 'source';
 const DEFAULT_AUTHENTIK_SOCIAL_LOGIN_MODE = 'authentik';
 function normalizeHostname(value) {
