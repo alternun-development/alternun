@@ -322,12 +322,22 @@ export function AuthFooter({
 
         {/* Privacy & Terms as text links — centered, single line */}
         <View style={innerStyles.policyRow}>
-          <TouchableOpacity onPress={handlePrivacyOpen} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handlePrivacyOpen}
+            activeOpacity={0.7}
+            style={innerStyles.linkContainer}
+          >
             <Text style={[innerStyles.linkText, { color: p.accent }]}>{t('footer.privacy')}</Text>
+            <View style={[innerStyles.linkUnderline, { backgroundColor: p.accent }]} />
           </TouchableOpacity>
           <Text style={[innerStyles.separator, { color: p.textMuted }]}>·</Text>
-          <TouchableOpacity onPress={handleTermsOpen} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handleTermsOpen}
+            activeOpacity={0.7}
+            style={innerStyles.linkContainer}
+          >
             <Text style={[innerStyles.linkText, { color: p.accent }]}>{t('footer.terms')}</Text>
+            <View style={[innerStyles.linkUnderline, { backgroundColor: p.accent }]} />
           </TouchableOpacity>
         </View>
 
@@ -657,10 +667,19 @@ const innerStyles = StyleSheet.create({
   },
 
   // Text link style for Privacy/Terms
+  linkContainer: {
+    alignItems: 'center',
+    gap: 2,
+  },
   linkText: {
     fontSize: fontSize.xs,
     fontWeight: '600',
     letterSpacing: 0.2,
+  },
+  linkUnderline: {
+    height: 1.5,
+    width: '100%',
+    borderRadius: 1,
   },
 
   // Separator between items
