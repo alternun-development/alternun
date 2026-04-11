@@ -469,9 +469,9 @@ const styles = createTypographyStyles({
   },
   bottomCenterSection: {
     flex: 1,
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     gap: 6,
   },
   bottomControlsRow: {
