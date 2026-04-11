@@ -9,59 +9,75 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.57](https://github.com/alternun-development/alternun/compare/v1.0.53...v1.0.57) (2026-04-11)
-
+export const CHANGELOG_TEXT = `## [1.0.59](https://github.com/alternun-development/alternun/compare/v1.0.58...v1.0.59) (2026-04-11)
 
 ### Bug Fixes
 
-* add i18n translations to FooterCopyright component ([880dce9](https://github.com/alternun-development/alternun/commit/880dce9aa06634976b952fcdef7676eb388167ac))
-* center align mobile landing footer bottom bar in compact mode ([c50ac5a](https://github.com/alternun-development/alternun/commit/c50ac5aae4c639d0e9ec7beb4c6942f75bd130b4))
-* **mobile,auth,i18n:** changelogData ([a50c703](https://github.com/alternun-development/alternun/commit/a50c703fb472cb6164d7d0da43d4b2fe2d1301df))
-* **mobile:** center footer bottom bar content layout ([6b4d9b7](https://github.com/alternun-development/alternun/commit/6b4d9b7a84dde923e7700a49f79e3fe35b6721a5))
-* **mobile:** show underline on hover only for privacy & terms links ([7f4aea8](https://github.com/alternun-development/alternun/commit/7f4aea8fc3ceff674cd746a4999449d8ec1eaef0))
-* remove duplicate v1.0.56 changelog entry ([a974799](https://github.com/alternun-development/alternun/commit/a974799f067b8764f01b6d463f12f5181fdb5b9f))
-* reorder footer icons (version first) and ensure consistent 32px heights ([fbb16a7](https://github.com/alternun-development/alternun/commit/fbb16a7e75fb6c59b6ffbfa62964bedc5129f070))
-* **web:** center landing footer content ([6243466](https://github.com/alternun-development/alternun/commit/624346617b935cd3233fed751911de48416ea3e3))
-* **web:** properly center landing footer and add accessibility labels ([18c0c33](https://github.com/alternun-development/alternun/commit/18c0c33a9da301123e8ade33f2f1dd1d5d9abb9f))
+- fix the mobile auth bridge so the initial null session no longer triggers an Authentik logout during Better Auth Google sign-in
+- make the legacy Authentik fresh-session policy execution-provider aware so Better Auth keeps the new flow end to end
+- add regression coverage for the auth session bridge and provider-aware web sign-in policy
 
+## [1.0.58](https://github.com/alternun-development/alternun/compare/v1.0.57...v1.0.58) (2026-04-11)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([21d6a2f](https://github.com/alternun-development/alternun/commit/21d6a2f5e9f6ffa55a53f132b2e46da02b196b5a))
 
 ### Features
 
-* **i18n,web:** add footer translations to web i18n catalogs ([ae7e2ee](https://github.com/alternun-development/alternun/commit/ae7e2ee7b9717b73c0232b4a803ce19536ecef12))
-* **mobile,api:** add auth footer with policy & help drawers ([c3e3654](https://github.com/alternun-development/alternun/commit/c3e365401595bcc719521245d968ade9f02d5876))
-* **mobile:** add underline effect to privacy & terms links ([4405ef0](https://github.com/alternun-development/alternun/commit/4405ef0ae41f037f61a7b7320f30d437e137d6cb))
-* **web:** use proper translations in landing footer ([d1818f5](https://github.com/alternun-development/alternun/commit/d1818f57070d0d2d870e14442bfceeb305f08805))
+- add web3 login feature flag to hide connect wallet option ([aed9bf2](https://github.com/alternun-development/alternun/commit/aed9bf2f04ecbe0f0526b2f9087c2d0c548a601b))
 
+## [1.0.58](https://github.com/alternun-development/alternun/compare/v1.0.57...v1.0.58) (2026-04-11)
 
+### Bug Fixes
 
+- **mobile:** changelogData ([21d6a2f](https://github.com/alternun-development/alternun/commit/21d6a2f5e9f6ffa55a53f132b2e46da02b196b5a))
 
+### Features
+
+- add web3 login feature flag to hide connect wallet option ([aed9bf2](https://github.com/alternun-development/alternun/commit/aed9bf2f04ecbe0f0526b2f9087c2d0c548a601b))
 
 ## [1.0.57](https://github.com/alternun-development/alternun/compare/v1.0.53...v1.0.57) (2026-04-11)
 
-
 ### Bug Fixes
 
-* add i18n translations to FooterCopyright component ([880dce9](https://github.com/alternun-development/alternun/commit/880dce9aa06634976b952fcdef7676eb388167ac))
-* center align mobile landing footer bottom bar in compact mode ([c50ac5a](https://github.com/alternun-development/alternun/commit/c50ac5aae4c639d0e9ec7beb4c6942f75bd130b4))
-* **mobile,auth,i18n:** changelogData ([a50c703](https://github.com/alternun-development/alternun/commit/a50c703fb472cb6164d7d0da43d4b2fe2d1301df))
-* **mobile:** center footer bottom bar content layout ([6b4d9b7](https://github.com/alternun-development/alternun/commit/6b4d9b7a84dde923e7700a49f79e3fe35b6721a5))
-* **mobile:** show underline on hover only for privacy & terms links ([7f4aea8](https://github.com/alternun-development/alternun/commit/7f4aea8fc3ceff674cd746a4999449d8ec1eaef0))
-* remove duplicate v1.0.56 changelog entry ([a974799](https://github.com/alternun-development/alternun/commit/a974799f067b8764f01b6d463f12f5181fdb5b9f))
-* reorder footer icons (version first) and ensure consistent 32px heights ([fbb16a7](https://github.com/alternun-development/alternun/commit/fbb16a7e75fb6c59b6ffbfa62964bedc5129f070))
-* **web:** center landing footer content ([6243466](https://github.com/alternun-development/alternun/commit/624346617b935cd3233fed751911de48416ea3e3))
-* **web:** properly center landing footer and add accessibility labels ([18c0c33](https://github.com/alternun-development/alternun/commit/18c0c33a9da301123e8ade33f2f1dd1d5d9abb9f))
-
+- add i18n translations to FooterCopyright component ([880dce9](https://github.com/alternun-development/alternun/commit/880dce9aa06634976b952fcdef7676eb388167ac))
+- center align mobile landing footer bottom bar in compact mode ([c50ac5a](https://github.com/alternun-development/alternun/commit/c50ac5aae4c639d0e9ec7beb4c6942f75bd130b4))
+- **mobile,auth,i18n:** changelogData ([a50c703](https://github.com/alternun-development/alternun/commit/a50c703fb472cb6164d7d0da43d4b2fe2d1301df))
+- **mobile:** center footer bottom bar content layout ([6b4d9b7](https://github.com/alternun-development/alternun/commit/6b4d9b7a84dde923e7700a49f79e3fe35b6721a5))
+- **mobile:** show underline on hover only for privacy & terms links ([7f4aea8](https://github.com/alternun-development/alternun/commit/7f4aea8fc3ceff674cd746a4999449d8ec1eaef0))
+- remove duplicate v1.0.56 changelog entry ([a974799](https://github.com/alternun-development/alternun/commit/a974799f067b8764f01b6d463f12f5181fdb5b9f))
+- reorder footer icons (version first) and ensure consistent 32px heights ([fbb16a7](https://github.com/alternun-development/alternun/commit/fbb16a7e75fb6c59b6ffbfa62964bedc5129f070))
+- **web:** center landing footer content ([6243466](https://github.com/alternun-development/alternun/commit/624346617b935cd3233fed751911de48416ea3e3))
+- **web:** properly center landing footer and add accessibility labels ([18c0c33](https://github.com/alternun-development/alternun/commit/18c0c33a9da301123e8ade33f2f1dd1d5d9abb9f))
 
 ### Features
 
-* **i18n,web:** add footer translations to web i18n catalogs ([ae7e2ee](https://github.com/alternun-development/alternun/commit/ae7e2ee7b9717b73c0232b4a803ce19536ecef12))
-* **mobile,api:** add auth footer with policy & help drawers ([c3e3654](https://github.com/alternun-development/alternun/commit/c3e365401595bcc719521245d968ade9f02d5876))
-* **mobile:** add underline effect to privacy & terms links ([4405ef0](https://github.com/alternun-development/alternun/commit/4405ef0ae41f037f61a7b7320f30d437e137d6cb))
-* **web:** use proper translations in landing footer ([d1818f5](https://github.com/alternun-development/alternun/commit/d1818f57070d0d2d870e14442bfceeb305f08805))
+- **i18n,web:** add footer translations to web i18n catalogs ([ae7e2ee](https://github.com/alternun-development/alternun/commit/ae7e2ee7b9717b73c0232b4a803ce19536ecef12))
+- **mobile,api:** add auth footer with policy & help drawers ([c3e3654](https://github.com/alternun-development/alternun/commit/c3e365401595bcc719521245d968ade9f02d5876))
+- **mobile:** add underline effect to privacy & terms links ([4405ef0](https://github.com/alternun-development/alternun/commit/4405ef0ae41f037f61a7b7320f30d437e137d6cb))
+- **web:** use proper translations in landing footer ([d1818f5](https://github.com/alternun-development/alternun/commit/d1818f57070d0d2d870e14442bfceeb305f08805))
 
+## [1.0.57](https://github.com/alternun-development/alternun/compare/v1.0.53...v1.0.57) (2026-04-11)
 
+### Bug Fixes
 
+- add i18n translations to FooterCopyright component ([880dce9](https://github.com/alternun-development/alternun/commit/880dce9aa06634976b952fcdef7676eb388167ac))
+- center align mobile landing footer bottom bar in compact mode ([c50ac5a](https://github.com/alternun-development/alternun/commit/c50ac5aae4c639d0e9ec7beb4c6942f75bd130b4))
+- **mobile,auth,i18n:** changelogData ([a50c703](https://github.com/alternun-development/alternun/commit/a50c703fb472cb6164d7d0da43d4b2fe2d1301df))
+- **mobile:** center footer bottom bar content layout ([6b4d9b7](https://github.com/alternun-development/alternun/commit/6b4d9b7a84dde923e7700a49f79e3fe35b6721a5))
+- **mobile:** show underline on hover only for privacy & terms links ([7f4aea8](https://github.com/alternun-development/alternun/commit/7f4aea8fc3ceff674cd746a4999449d8ec1eaef0))
+- remove duplicate v1.0.56 changelog entry ([a974799](https://github.com/alternun-development/alternun/commit/a974799f067b8764f01b6d463f12f5181fdb5b9f))
+- reorder footer icons (version first) and ensure consistent 32px heights ([fbb16a7](https://github.com/alternun-development/alternun/commit/fbb16a7e75fb6c59b6ffbfa62964bedc5129f070))
+- **web:** center landing footer content ([6243466](https://github.com/alternun-development/alternun/commit/624346617b935cd3233fed751911de48416ea3e3))
+- **web:** properly center landing footer and add accessibility labels ([18c0c33](https://github.com/alternun-development/alternun/commit/18c0c33a9da301123e8ade33f2f1dd1d5d9abb9f))
 
+### Features
+
+- **i18n,web:** add footer translations to web i18n catalogs ([ae7e2ee](https://github.com/alternun-development/alternun/commit/ae7e2ee7b9717b73c0232b4a803ce19536ecef12))
+- **mobile,api:** add auth footer with policy & help drawers ([c3e3654](https://github.com/alternun-development/alternun/commit/c3e365401595bcc719521245d968ade9f02d5876))
+- **mobile:** add underline effect to privacy & terms links ([4405ef0](https://github.com/alternun-development/alternun/commit/4405ef0ae41f037f61a7b7320f30d437e137d6cb))
+- **web:** use proper translations in landing footer ([d1818f5](https://github.com/alternun-development/alternun/commit/d1818f57070d0d2d870e14442bfceeb305f08805))
 
 ## [1.0.56](https://github.com/alternun-development/alternun/compare/v1.0.52...v1.0.56) (2026-04-11)
 
