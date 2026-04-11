@@ -289,13 +289,13 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
           <View style={styles.bottomCenterSection}>
             <FooterCopyright color={palette.title} />
             <View style={styles.bottomControlsRow}>
-              <SupportButton supportEmail='support@alternun.co' palette={palette} />
               <ChangelogDrawer
                 changelog={changelogContent}
                 githubUrl={GITHUB_REPO_URL}
                 pageSize={3}
                 triggerLabel={`v${versionMetadata.version}`}
               />
+              <SupportButton supportEmail='support@alternun.co' palette={palette} />
             </View>
           </View>
         </View>
