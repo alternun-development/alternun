@@ -276,7 +276,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
           </View>
         )}
 
-        {/* Bottom bar */}
+        {/* Bottom bar — centered layout */}
         <View
           style={[
             styles.bottomBar,
@@ -286,15 +286,17 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
             },
           ]}
         >
-          <FooterCopyright color={palette.title} />
-          <View style={styles.bottomRightSection}>
-            <ChangelogDrawer
-              changelog={changelogContent}
-              githubUrl={GITHUB_REPO_URL}
-              pageSize={3}
-              triggerLabel={`v${versionMetadata.version}`}
-            />
-            <SupportButton supportEmail='support@alternun.co' palette={palette} />
+          <View style={styles.bottomCenterSection}>
+            <FooterCopyright color={palette.title} />
+            <View style={styles.bottomControlsRow}>
+              <SupportButton supportEmail='support@alternun.co' palette={palette} />
+              <ChangelogDrawer
+                changelog={changelogContent}
+                githubUrl={GITHUB_REPO_URL}
+                pageSize={3}
+                triggerLabel={`v${versionMetadata.version}`}
+              />
+            </View>
           </View>
         </View>
       </View>
@@ -464,5 +466,18 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     gap: 10,
     justifyContent: 'flex-end',
+  },
+  bottomCenterSection: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  bottomControlsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
 });
