@@ -3,9 +3,26 @@
 import { HelpCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+type Locale = 'en' | 'es' | 'th';
+
+const TRANSLATIONS: Record<Locale, Record<string, string>> = {
+  en: {
+    copyright: '(c) {{year}} Alternun. All rights reserved.',
+    help: 'Help',
+  },
+  es: {
+    copyright: '(c) {{year}} Alternun. Todos los derechos reservados.',
+    help: 'Ayuda',
+  },
+  th: {
+    copyright: '(c) {{year}} Alternun. สงวนลิขสิทธิ์ทั้งหมด.',
+    help: 'ช่วยเหลือ',
+  },
+};
+
 export default function LandingFooter() {
   const [version, setVersion] = useState('1.0.0');
-  const currentYear = new Date().getFullYear();
+  const [locale, setLocale] = useState<Locale>('en');
 
   useEffect(() => {
     // Load version from package.json
@@ -15,7 +32,22 @@ export default function LandingFooter() {
     } catch (e) {
       // Fallback to default
     }
+
+    // Get locale from browser or document
+    const htmlLang = (document.documentElement.lang || 'en').split('-')[0];
+    const supportedLocale: Locale = (
+      ['en', 'es', 'th'].includes(htmlLang) ? htmlLang : 'en'
+    ) as Locale;
+    setLocale(supportedLocale);
   }, []);
+
+  const t = (key: string, params?: { year: number }): string => {
+    let text = TRANSLATIONS[locale][key] || TRANSLATIONS.en[key] || key;
+    if (params) {
+      text = text.replace(/\{\{\s*year\s*\}\}/g, String(params.year));
+    }
+    return text;
+  };
 
   return (
     <footer className='w-full bg-white/40 backdrop-blur-sm border-t border-gray-200/30 center'>
@@ -23,7 +55,7 @@ export default function LandingFooter() {
         <div className='flex flex-col items-center gap-4'>
           {/* Copyright — centered */}
           <p className='text-gray-900 font-semibold text-center'>
-            (c) {currentYear} Alternun. All rights reserved.
+            {t('copyright', { year: new Date().getFullYear() })}
           </p>
 
           {/* Version and Help Icon — centered below */}
@@ -31,8 +63,8 @@ export default function LandingFooter() {
             {/* Help Icon Button */}
             <button
               className='p-2 rounded-full border border-gray-300/50 bg-white/60 hover:bg-white transition-colors'
-              aria-label='Help'
-              title='Help'
+              aria-label={t('help')}
+              title={t('help')}
             >
               <HelpCircle size={18} className='text-gray-600' strokeWidth={1.5} />
             </button>
