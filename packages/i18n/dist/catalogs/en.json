@@ -121,6 +121,9 @@
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. All rights reserved.",
+      "help": "Help",
+      "privacy": "Privacy",
+      "terms": "Terms",
       "links": {
         "documentation": "Documentation",
         "project": "Go Alternun.io",
@@ -190,6 +193,10 @@
     "home": {
       "title": "Alternun Web Application",
       "welcome": "Welcome to the Next.js application."
+    },
+    "footer": {
+      "copyright": "(c) {{year}} Alternun. All rights reserved.",
+      "help": "Help"
     }
   },
   "docs": {

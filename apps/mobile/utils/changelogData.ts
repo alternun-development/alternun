@@ -9,15 +9,7 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.53](https://github.com/alternun-development/alternun/compare/v1.0.52...v1.0.53) (2026-04-10)
-
-### Bug Fixes
-
-- allow local Better Auth testing by routing the issuer exchange to the local API
-- document Better Auth trusted origins and local auth envs
-- surface a trusted-origin hint when Better Auth preflight requests fail
-
-## [1.0.52](https://github.com/alternun-development/alternun/compare/v1.0.51...v1.0.52) (2026-04-10)
+export const CHANGELOG_TEXT = `## [1.0.52](https://github.com/alternun-development/alternun/compare/v1.0.51...v1.0.52) (2026-04-10)
 
 ### Bug Fixes
 
