@@ -1,3 +1,11 @@
+## [1.0.59](https://github.com/alternun-development/alternun/compare/v1.0.58...v1.0.59) (2026-04-11)
+
+### Bug Fixes
+
+- fix the mobile auth bridge so the initial null session no longer triggers an Authentik logout during Better Auth Google sign-in
+- make the legacy Authentik fresh-session policy execution-provider aware so Better Auth keeps the new flow end to end
+- add regression coverage for the auth session bridge and provider-aware web sign-in policy
+
 ## [1.0.58](https://github.com/alternun-development/alternun/compare/v1.0.57...v1.0.58) (2026-04-11)
 
 ### Bug Fixes
