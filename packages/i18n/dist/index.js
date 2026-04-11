@@ -7,6 +7,7 @@ exports.rawCatalogs = exports.DEFAULT_LOCALE = exports.TRANSLATION_NAMESPACES = 
 exports.listSupportedLocales = listSupportedLocales;
 exports.isSupportedLocale = isSupportedLocale;
 exports.normalizeLocale = normalizeLocale;
+exports.resolveBrowserLocale = resolveBrowserLocale;
 exports.getCatalog = getCatalog;
 exports.resolveMessages = resolveMessages;
 exports.translate = translate;
@@ -15,8 +16,8 @@ exports.getLocaleLabel = getLocaleLabel;
 const en_json_1 = __importDefault(require("./catalogs/en.json"));
 const es_json_1 = __importDefault(require("./catalogs/es.json"));
 const th_json_1 = __importDefault(require("./catalogs/th.json"));
-exports.SUPPORTED_LOCALES = ['en', 'es', 'th',];
-exports.TRANSLATION_NAMESPACES = ['shared', 'mobile', 'web', 'docs',];
+exports.SUPPORTED_LOCALES = ['en', 'es', 'th'];
+exports.TRANSLATION_NAMESPACES = ['shared', 'mobile', 'web', 'docs'];
 exports.DEFAULT_LOCALE = 'en';
 const catalogs = {
     en: en_json_1.default,
@@ -27,8 +28,8 @@ function isTree(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 function deepMerge(base, override) {
-    const result = { ...base, };
-    for (const [key, value,] of Object.entries(override)) {
+    const result = { ...base };
+    for (const [key, value] of Object.entries(override)) {
         const baseValue = result[key];
         if (isTree(baseValue) && isTree(value)) {
             result[key] = deepMerge(baseValue, value);
@@ -77,6 +78,27 @@ function normalizeLocale(value, fallbackLocale = exports.DEFAULT_LOCALE) {
     }
     const baseLocale = normalized.split('-')[0];
     return isSupportedLocale(baseLocale) ? baseLocale : fallbackLocale;
+}
+function normalizeBrowserLocaleCandidate(value) {
+    if (!value) {
+        return null;
+    }
+    const normalized = value.toLowerCase().replace('_', '-');
+    if (isSupportedLocale(normalized)) {
+        return normalized;
+    }
+    const baseLocale = normalized.split('-')[0];
+    return isSupportedLocale(baseLocale) ? baseLocale : null;
+}
+function resolveBrowserLocale({ documentLang, navigatorLanguage, navigatorLanguages, fallbackLocale = exports.DEFAULT_LOCALE, } = {}) {
+    const candidates = [documentLang, ...(navigatorLanguages !== null && navigatorLanguages !== void 0 ? navigatorLanguages : []), navigatorLanguage];
+    for (const candidate of candidates) {
+        const resolved = normalizeBrowserLocaleCandidate(candidate);
+        if (resolved) {
+            return resolved;
+        }
+    }
+    return fallbackLocale;
 }
 function getCatalog(locale) {
     return catalogs[normalizeLocale(locale)];

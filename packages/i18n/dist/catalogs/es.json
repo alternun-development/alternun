@@ -133,6 +133,15 @@
       },
       "tagline": "Una \"manera diferente de hacer las cosas\" - Alternun"
     },
+    "releaseUpdate": {
+      "eyebrow": "Nueva versión disponible",
+      "titleReady": "La versión {{version}} ya está lista.",
+      "titleFallback": "Hay una nueva versión disponible.",
+      "messageReady": "Estás en la v{{currentVersion}}. Recarga para cambiar a la v{{remoteVersion}}.",
+      "messageFallback": "Recarga para cargar los últimos cambios y recursos.",
+      "later": "Más tarde",
+      "reload": "Recargar"
+    },
     "landing": {
       "actions": {
         "goToDashboard": "Ir al panel"

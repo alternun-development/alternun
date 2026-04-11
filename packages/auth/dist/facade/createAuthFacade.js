@@ -53,7 +53,8 @@ function createLegacyExecutionClient(runtime, options) {
     };
 }
 function hasLegacyEmailSupport(runtime) {
-    return Boolean(runtime.supabaseUrl && (runtime.supabaseKey || runtime.supabaseAnonKey));
+    var _a;
+    return Boolean(runtime.supabaseUrl && ((_a = runtime.supabaseKey) !== null && _a !== void 0 ? _a : runtime.supabaseAnonKey));
 }
 function createExecutionProvider(runtime, options) {
     var _a;

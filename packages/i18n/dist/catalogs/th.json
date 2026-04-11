@@ -133,6 +133,15 @@
       },
       "tagline": "\"วิธีที่แตกต่างในการทำสิ่งต่าง ๆ\" - Alternun"
     },
+    "releaseUpdate": {
+      "eyebrow": "มีเวอร์ชันใหม่พร้อมใช้งาน",
+      "titleReady": "เวอร์ชัน {{version}} พร้อมแล้ว",
+      "titleFallback": "มีเวอร์ชันใหม่พร้อมใช้งาน",
+      "messageReady": "คุณกำลังใช้ v{{currentVersion}} อยู่ รีโหลดเพื่อสลับไปยัง v{{remoteVersion}}",
+      "messageFallback": "รีโหลดเพื่อรับการเปลี่ยนแปลงและไฟล์ล่าสุด",
+      "later": "ภายหลัง",
+      "reload": "รีโหลด"
+    },
     "landing": {
       "actions": {
         "goToDashboard": "ไปที่แดชบอร์ด"
