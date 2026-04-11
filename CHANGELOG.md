@@ -1,3 +1,23 @@
+## [1.0.58](https://github.com/alternun-development/alternun/compare/v1.0.57...v1.0.58) (2026-04-11)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([21d6a2f](https://github.com/alternun-development/alternun/commit/21d6a2f5e9f6ffa55a53f132b2e46da02b196b5a))
+
+### Features
+
+- add web3 login feature flag to hide connect wallet option ([aed9bf2](https://github.com/alternun-development/alternun/commit/aed9bf2f04ecbe0f0526b2f9087c2d0c548a601b))
+
+## [1.0.58](https://github.com/alternun-development/alternun/compare/v1.0.57...v1.0.58) (2026-04-11)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([21d6a2f](https://github.com/alternun-development/alternun/commit/21d6a2f5e9f6ffa55a53f132b2e46da02b196b5a))
+
+### Features
+
+- add web3 login feature flag to hide connect wallet option ([aed9bf2](https://github.com/alternun-development/alternun/commit/aed9bf2f04ecbe0f0526b2f9087c2d0c548a601b))
+
 ## [1.0.57](https://github.com/alternun-development/alternun/compare/v1.0.53...v1.0.57) (2026-04-11)
 
 ### Bug Fixes
