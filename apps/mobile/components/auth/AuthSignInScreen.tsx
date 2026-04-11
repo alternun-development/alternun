@@ -53,6 +53,10 @@ import { shouldForceFreshAuthentikSocialSession } from './authentikWebSessionPol
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { AuthFooter } from './AuthFooter';
 const RESEND_COOLDOWN_SECONDS = 45;
+
+// Feature flags
+const ENABLE_WEB3_LOGIN = false; // Temporarily disabled: full web3 login flow not implemented
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -1137,27 +1141,31 @@ export default function AuthSignInScreen({
                       </TouchableOpacity>
                     ) : null}
 
-                    <TouchableOpacity
-                      activeOpacity={0.85}
-                      disabled={isBusy}
-                      onPress={() => setWalletModalVisible(true)}
-                      style={[
-                        styles.secondaryButton,
-                        { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
-                        isBusy && styles.buttonDisabled,
-                      ]}
-                    >
-                      {submitMode === 'wallet' ? (
-                        <ActivityIndicator color={p.secondaryBtnText} size='small' />
-                      ) : (
-                        <>
-                          <Wallet size={16} color={p.secondaryBtnText} />
-                          <Text style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}>
-                            {t('authModal.actions.connectWallet')}
-                          </Text>
-                        </>
-                      )}
-                    </TouchableOpacity>
+                    {ENABLE_WEB3_LOGIN && (
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        disabled={isBusy}
+                        onPress={() => setWalletModalVisible(true)}
+                        style={[
+                          styles.secondaryButton,
+                          { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
+                          isBusy && styles.buttonDisabled,
+                        ]}
+                      >
+                        {submitMode === 'wallet' ? (
+                          <ActivityIndicator color={p.secondaryBtnText} size='small' />
+                        ) : (
+                          <>
+                            <Wallet size={16} color={p.secondaryBtnText} />
+                            <Text
+                              style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}
+                            >
+                              {t('authModal.actions.connectWallet')}
+                            </Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    )}
                   </>
                 ) : null}
 
