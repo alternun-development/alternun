@@ -266,6 +266,8 @@ export function AuthFooter({
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [privacyHovered, setPrivacyHovered] = useState(false);
+  const [termsHovered, setTermsHovered] = useState(false);
 
   // Detect environment and set documentation base URL
   const getDocsBaseUrl = useCallback(() => {
@@ -326,18 +328,26 @@ export function AuthFooter({
             onPress={handlePrivacyOpen}
             activeOpacity={0.7}
             style={innerStyles.linkContainer}
+            onMouseEnter={() => setPrivacyHovered(true)}
+            onMouseLeave={() => setPrivacyHovered(false)}
           >
             <Text style={[innerStyles.linkText, { color: p.accent }]}>{t('footer.privacy')}</Text>
-            <View style={[innerStyles.linkUnderline, { backgroundColor: p.accent }]} />
+            {privacyHovered && (
+              <View style={[innerStyles.linkUnderline, { backgroundColor: p.accent }]} />
+            )}
           </TouchableOpacity>
           <Text style={[innerStyles.separator, { color: p.textMuted }]}>·</Text>
           <TouchableOpacity
             onPress={handleTermsOpen}
             activeOpacity={0.7}
             style={innerStyles.linkContainer}
+            onMouseEnter={() => setTermsHovered(true)}
+            onMouseLeave={() => setTermsHovered(false)}
           >
             <Text style={[innerStyles.linkText, { color: p.accent }]}>{t('footer.terms')}</Text>
-            <View style={[innerStyles.linkUnderline, { backgroundColor: p.accent }]} />
+            {termsHovered && (
+              <View style={[innerStyles.linkUnderline, { backgroundColor: p.accent }]} />
+            )}
           </TouchableOpacity>
         </View>
 
@@ -670,6 +680,7 @@ const innerStyles = StyleSheet.create({
   linkContainer: {
     alignItems: 'center',
     gap: 2,
+    minHeight: 22, // Reserve space for text + underline to prevent height shift
   },
   linkText: {
     fontSize: fontSize.xs,
