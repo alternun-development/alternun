@@ -121,6 +121,9 @@
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. All rights reserved.",
+      "help": "Help",
+      "privacy": "Privacy",
+      "terms": "Terms",
       "links": {
         "documentation": "Documentation",
         "project": "Go Alternun.io",

@@ -51,6 +51,7 @@ import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
 import { shouldForceFreshAuthentikSocialSession } from './authentikWebSessionPolicy';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { AuthFooter } from './AuthFooter';
 const RESEND_COOLDOWN_SECONDS = 45;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
@@ -1392,6 +1393,13 @@ export default function AuthSignInScreen({
                 </TouchableOpacity>
               </>
             )}
+
+            {/* Footer with Privacy, Terms, Version, Help */}
+            <AuthFooter
+              apiUrl={process.env.EXPO_PUBLIC_API_URL}
+              locale={locale}
+              appVersion={process.env.EXPO_PUBLIC_APP_VERSION ?? '1.0.0'}
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
