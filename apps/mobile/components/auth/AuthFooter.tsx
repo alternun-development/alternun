@@ -351,8 +351,16 @@ export function AuthFooter({
           </TouchableOpacity>
         </View>
 
-        {/* Help icon + Version pill — centered, matching landing footer */}
+        {/* Version pill + Help icon — centered, matching landing footer */}
         <View style={innerStyles.controlsRow}>
+          {/* Changelog drawer — version pill opens changelog */}
+          <ChangelogDrawer
+            changelog={CHANGELOG_TEXT}
+            githubUrl='https://github.com/alternun-development/alternun'
+            triggerLabel={`v${appVersion}`}
+            highlightLatest
+          />
+
           {/* Help icon button — opens help modal */}
           <TouchableOpacity
             onPress={handleHelpOpen}
@@ -369,14 +377,6 @@ export function AuthFooter({
           >
             <HelpCircle size={16} color={p.textMuted} strokeWidth={1.5} />
           </TouchableOpacity>
-
-          {/* Changelog drawer — version pill opens changelog */}
-          <ChangelogDrawer
-            changelog={CHANGELOG_TEXT}
-            githubUrl='https://github.com/alternun-development/alternun'
-            triggerLabel={`v${appVersion}`}
-            highlightLatest
-          />
         </View>
       </View>
 
