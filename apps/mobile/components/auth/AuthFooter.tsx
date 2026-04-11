@@ -23,9 +23,11 @@ import {
 } from 'react-native';
 import { HelpCircle } from 'lucide-react-native';
 import { ChangelogDrawer, fontSize, radius, spacing } from '@alternun/ui';
+import { resolveVersionMetadata } from '../common/Footer.shared';
 import { useAppPalette } from '../theme/useAppPalette';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { CHANGELOG_TEXT } from '../../utils/changelogData';
+import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 
 // ── Helper: Policy content fetcher and formatter ──────────────────────────────
 
@@ -256,11 +258,7 @@ export interface AuthFooterProps {
   appVersion?: string;
 }
 
-export function AuthFooter({
-  apiUrl = process.env.EXPO_PUBLIC_API_URL ?? 'https://api.alternun.io',
-  locale = 'en',
-  appVersion = '1.0.0',
-}: AuthFooterProps): JSX.Element {
+export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProps): JSX.Element {
   const p = useAppPalette();
   const { t } = useAppTranslation('mobile');
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -268,10 +266,12 @@ export function AuthFooter({
   const [helpOpen, setHelpOpen] = useState(false);
   const [privacyHovered, setPrivacyHovered] = useState(false);
   const [termsHovered, setTermsHovered] = useState(false);
+  const resolvedApiUrl = resolveMobileApiBaseUrl(apiUrl);
+  const resolvedAppVersion = appVersion?.trim() ?? resolveVersionMetadata().version;
 
   // Detect environment and set documentation base URL
   const getDocsBaseUrl = useCallback(() => {
-    const normalizedApiUrl = apiUrl.toLowerCase();
+    const normalizedApiUrl = resolvedApiUrl.toLowerCase();
 
     // Local development
     if (normalizedApiUrl.includes('localhost') || normalizedApiUrl.includes('127.0.0.1')) {
@@ -285,7 +285,7 @@ export function AuthFooter({
 
     // Production (default)
     return 'https://docs.alternun.io';
-  }, [apiUrl]);
+  }, [resolvedApiUrl]);
 
   const docsBaseUrl = getDocsBaseUrl();
 
@@ -357,7 +357,7 @@ export function AuthFooter({
           <ChangelogDrawer
             changelog={CHANGELOG_TEXT}
             githubUrl='https://github.com/alternun-development/alternun'
-            triggerLabel={`v${appVersion}`}
+            triggerLabel={`v${resolvedAppVersion}`}
             highlightLatest
           />
 
@@ -437,7 +437,7 @@ export function AuthFooter({
             </View>
             <PolicyDrawerContent
               type='privacy'
-              apiUrl={apiUrl}
+              apiUrl={resolvedApiUrl}
               locale={locale}
               textPrimary={p.textPrimary}
               textMuted={p.textMuted}
@@ -524,7 +524,7 @@ export function AuthFooter({
             </View>
             <PolicyDrawerContent
               type='terms'
-              apiUrl={apiUrl}
+              apiUrl={resolvedApiUrl}
               locale={locale}
               textPrimary={p.textPrimary}
               textMuted={p.textMuted}

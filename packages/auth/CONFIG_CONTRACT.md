@@ -133,4 +133,5 @@ Do not switch shared environments to this shape until the testnet execution plan
 - `AppAuthProvider` should keep app ergonomics stable while switching the underlying provider graph.
 - `createAuthFacade` can accept explicit provider instances for tests and server-side orchestration.
 - `AUTH_BETTER_AUTH_CLIENT_ID` and `AUTH_BETTER_AUTH_API_KEY` are reserved for the rollout even though the current package implementation does not yet require them end to end.
+- When `AUTH_EXECUTION_PROVIDER=better-auth`, the package routes social login through Better Auth and keeps email/password on the legacy Supabase-compatible execution path when that fallback client is available.
 - `AUTHENTIK_JWT_SIGNING_KEY` is required only when the backend should mint issuer-owned JWTs instead of returning compatibility fallback tokens.

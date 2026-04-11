@@ -39,8 +39,8 @@ The architecture layer is implemented, but the runtime migration is still partia
 
 ### Execution
 
-- `BetterAuthExecutionProvider` is the new execution layer for Google, GitHub, Apple placeholder, and email/password.
-- `SupabaseExecutionProvider` remains the compatibility path for legacy flows.
+- `BetterAuthExecutionProvider` is the new execution layer for Google, GitHub, and Apple placeholder social login.
+- `SupabaseExecutionProvider` remains the compatibility path for legacy email/password flows and other fallback execution paths.
 
 ### Issuer
 
@@ -61,6 +61,8 @@ The architecture layer is implemented, but the runtime migration is still partia
 ## Compatibility Layer
 
 `AlternunMobileAuthClient` is still exported for backward compatibility, but new app setup should use the facade path.
+
+Better Auth and email/password are intentionally split: social login routes through Better Auth, while email/password stays on the legacy compatibility path when the fallback client is present.
 
 The current compatibility surface still includes:
 
