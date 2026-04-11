@@ -1,6 +1,7 @@
 import { getLocaleLabel } from '@alternun/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Animated,
   Pressable,
   View,
   Text,
@@ -144,6 +145,9 @@ export default function TopNav({
   const [menuVisible, setMenuVisible] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(true);
+  const [dropdownAnimated] = useState(() => new Animated.Value(0));
+  const [notifAnimated] = useState(() => new Animated.Value(0));
+
   const { t } = useAppTranslation('mobile');
   const { width, height } = useWindowDimensions();
   const isDark = themeMode === 'dark';
@@ -218,6 +222,22 @@ export default function TopNav({
   useEffect(() => {
     if (!menuVisible) setSettingsExpanded(false);
   }, [menuVisible]);
+
+  useEffect(() => {
+    Animated.timing(dropdownAnimated, {
+      toValue: menuVisible ? 1 : 0,
+      duration: 280,
+      useNativeDriver: true,
+    }).start();
+  }, [menuVisible, dropdownAnimated]);
+
+  useEffect(() => {
+    Animated.timing(notifAnimated, {
+      toValue: notifVisible ? 1 : 0,
+      duration: 260,
+      useNativeDriver: true,
+    }).start();
+  }, [notifVisible, notifAnimated]);
 
   const toggleMenu = () => {
     setNotifVisible(false);
@@ -422,24 +442,53 @@ export default function TopNav({
               </TouchableOpacity>
 
               {/* ── Profile + Nav dropdown ─────────────────────────────────── */}
-              {menuVisible && isExtraSmall && (
-                <View
-                  style={[
-                    styles.dropdownOverlay,
-                    { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)' },
-                  ]}
-                />
-              )}
-
               {menuVisible && (
-                <View
+                <Animated.View
                   style={[
                     styles.dropdown,
                     isExtraSmall && styles.dropdownExtraSmall,
                     { backgroundColor: p.dropBg, borderColor: p.dropBorder },
+                    {
+                      opacity: dropdownAnimated,
+                      transform: [
+                        {
+                          scale: dropdownAnimated.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.92, 1],
+                          }),
+                        },
+                        {
+                          translateY: dropdownAnimated.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [-8, 0],
+                          }),
+                        },
+                      ],
+                    },
+                    { overflow: 'hidden' },
                   ]}
                 >
-                  {/* User header */}
+                  <Animated.View
+                    style={{
+                      ...StyleSheet.absoluteFillObject,
+                      borderRadius: 16,
+                      opacity: dropdownAnimated.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 1],
+                      }),
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: dropdownAnimated.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 0.28],
+                      }),
+                      shadowRadius: dropdownAnimated.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [2, 12],
+                      }),
+                      shadowColor: '#05100d',
+                    }}
+                    pointerEvents='none'
+                  />
                   {signedIn && (
                     <View
                       style={[
@@ -638,7 +687,7 @@ export default function TopNav({
                       <Text style={[styles.navItemText, { color: p.danger }]}>Sign Out</Text>
                     </TouchableOpacity>
                   )}
-                </View>
+                </Animated.View>
               )}
             </View>
           )}
@@ -646,8 +695,18 @@ export default function TopNav({
       </View>
 
       {/* ── Notification dropdown (portal-like, outside nav bar) ─────────── */}
-      {notifVisible && (
-        <View style={styles.notifDropdownWrapper}>
+      <Animated.View
+        style={[
+          styles.notifDropdownWrapper,
+          {
+            opacity: notifAnimated,
+            transform: [
+              { scale: notifAnimated.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1] }) },
+            ],
+          },
+        ]}
+      >
+        {notifVisible && (
           <NotificationDropdown
             notifications={notifications}
             isDark={isDark}
@@ -659,8 +718,8 @@ export default function TopNav({
               onNavigateToNotifications?.();
             }}
           />
-        </View>
-      )}
+        )}
+      </Animated.View>
     </View>
   );
 }
@@ -710,6 +769,7 @@ const styles = StyleSheet.create({
   logoArea: {
     flex: 1,
     minWidth: 0,
+    maxWidth: '55%',
     justifyContent: 'center',
   },
   logoButton: {
@@ -775,6 +835,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     flexShrink: 0,
+    maxWidth: '45%',
   },
 
   // ── Profile pill ────────────────────────────────────────────────────────
@@ -903,7 +964,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 46,
     right: 0,
-    width: 236,
+    width: 220,
     borderWidth: 1,
     borderRadius: 16,
     paddingVertical: 6,
