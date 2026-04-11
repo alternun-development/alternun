@@ -36,6 +36,8 @@ import {
   Sun,
   Volume2,
   VolumeX,
+  Menu,
+  X,
 } from 'lucide-react-native';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import LandingFooter from '../common/LandingFooter';
@@ -205,14 +207,18 @@ const AirsIntroExperience = forwardRef(
     }: AirsIntroExperienceProps,
     ref
   ) => {
-    const scrollRef = useRef<typeof Animated.ScrollView>(null);
+    const scrollRef = useRef<any>(null);
 
     // Expose scroll method via ref
     useImperativeHandle(
       ref,
       () => ({
         scrollToSection: (offset: number) => {
-          scrollRef.current?.scrollTo({ y: Math.max(0, offset - 60), animated: true });
+          if (scrollRef.current?.scrollTo) {
+            scrollRef.current.scrollTo({ y: Math.max(0, offset - 60), animated: true });
+          } else if (scrollRef.current?.getNode?.()?.scrollTo) {
+            scrollRef.current.getNode().scrollTo({ y: Math.max(0, offset - 60), animated: true });
+          }
         },
       }),
       []
@@ -232,6 +238,19 @@ const AirsIntroExperience = forwardRef(
     const [isInTopZone, setIsInTopZone] = useState(true);
     const isScreenFocused = useIsFocused();
     const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+    const isMobile = screenWidth < 720;
+    const [headerNavMobileMenuVisible, setHeaderNavMobileMenuVisible] = useState(false);
+    const headerNavMobileMenuAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+      Animated.spring(headerNavMobileMenuAnim, {
+        toValue: headerNavMobileMenuVisible ? 1 : 0,
+        useNativeDriver: true,
+        friction: 8,
+        tension: 40,
+      }).start();
+    }, [headerNavMobileMenuVisible, headerNavMobileMenuAnim]);
+
     const scrollY = useRef(new Animated.Value(0)).current;
     const webVideoRef = useRef<any>(null);
     const webViewRef = useRef<any>(null);
@@ -781,43 +800,140 @@ const AirsIntroExperience = forwardRef(
           headerNavLinks.length > 0 &&
           (showCta ? (
             /* Logged-out: pill container with solid background + CTA */
-            <Animated.View
-              style={[
-                styles.headerNavPill,
-                { backgroundColor: isDark ? 'rgba(13,148,136,0.85)' : 'rgba(13,148,136,0.85)' },
-              ]}
-            >
-              {headerNavLinks.map((link) => (
-                <TouchableOpacity
-                  key={link.id}
-                  onPress={link.onPress}
-                  activeOpacity={0.7}
-                  style={styles.headerNavPillItem}
-                >
-                  <Text
+            <>
+              {isMobile ? (
+                <View style={styles.headerNavMobileContainer}>
+                  <TouchableOpacity
+                    onPress={() => setHeaderNavMobileMenuVisible((v) => !v)}
+                    activeOpacity={0.75}
                     style={[
-                      styles.headerNavPillText,
+                      styles.headerNavMobileTrigger,
                       {
-                        color: link.isActive ? '#ffffff' : 'rgba(255,255,255,0.8)',
-                        fontWeight: link.isActive ? '700' : '500',
+                        backgroundColor: isDark ? 'rgba(13,148,136,0.85)' : 'rgba(13,148,136,0.85)',
                       },
                     ]}
                   >
-                    {link.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-              {/* CTA Button */}
-              <TouchableOpacity
-                onPress={onSignIn}
-                activeOpacity={0.75}
-                style={[styles.headerNavCtaButton, { backgroundColor: palette.accent }]}
-              >
-                <Text style={[styles.headerNavCtaText, { color: isDark ? '#050510' : '#ffffff' }]}>
-                  {ctaLabel ?? t('labels.signIn')}
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
+                    {headerNavMobileMenuVisible ? (
+                      <X size={18} color='#ffffff' />
+                    ) : (
+                      <Menu size={18} color='#ffffff' />
+                    )}
+                  </TouchableOpacity>
+
+                  <Animated.View
+                    style={[
+                      styles.headerNavMobileDropdown,
+                      { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
+                      {
+                        opacity: headerNavMobileMenuAnim,
+                        transform: [
+                          {
+                            scale: headerNavMobileMenuAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0.95, 1],
+                            }),
+                          },
+                          {
+                            translateY: headerNavMobileMenuAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [-10, 0],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                    pointerEvents={headerNavMobileMenuVisible ? 'auto' : 'none'}
+                  >
+                    {headerNavLinks.map((link) => (
+                      <TouchableOpacity
+                        key={link.id}
+                        onPress={() => {
+                          setHeaderNavMobileMenuVisible(false);
+                          link.onPress();
+                        }}
+                        activeOpacity={0.7}
+                        style={styles.headerNavMobileItem}
+                      >
+                        <Text
+                          style={[
+                            styles.headerNavMobileText,
+                            {
+                              color: link.isActive ? palette.accent : palette.textPrimary,
+                              fontWeight: link.isActive ? '700' : '500',
+                            },
+                          ]}
+                        >
+                          {link.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                    <View
+                      style={[
+                        styles.headerNavMobileDivider,
+                        { backgroundColor: palette.contentBorder },
+                      ]}
+                    />
+                    <TouchableOpacity
+                      onPress={() => {
+                        setHeaderNavMobileMenuVisible(false);
+                        onSignIn();
+                      }}
+                      activeOpacity={0.75}
+                      style={[styles.headerNavMobileCta, { backgroundColor: palette.accent }]}
+                    >
+                      <Text
+                        style={[
+                          styles.headerNavMobileCtaText,
+                          { color: isDark ? '#050510' : '#ffffff' },
+                        ]}
+                      >
+                        {ctaLabel ?? t('labels.signIn')}
+                      </Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                </View>
+              ) : (
+                <Animated.View
+                  style={[
+                    styles.headerNavPill,
+                    { backgroundColor: isDark ? 'rgba(13,148,136,0.85)' : 'rgba(13,148,136,0.85)' },
+                  ]}
+                >
+                  {headerNavLinks.map((link) => (
+                    <TouchableOpacity
+                      key={link.id}
+                      onPress={link.onPress}
+                      activeOpacity={0.7}
+                      style={styles.headerNavPillItem}
+                    >
+                      <Text
+                        style={[
+                          styles.headerNavPillText,
+                          {
+                            color: link.isActive ? '#ffffff' : 'rgba(255,255,255,0.8)',
+                            fontWeight: link.isActive ? '700' : '500',
+                          },
+                        ]}
+                      >
+                        {link.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                  {/* CTA Button */}
+                  <TouchableOpacity
+                    onPress={onSignIn}
+                    activeOpacity={0.75}
+                    style={[styles.headerNavCtaButton, { backgroundColor: palette.accent }]}
+                  >
+                    <Text
+                      style={[styles.headerNavCtaText, { color: isDark ? '#050510' : '#ffffff' }]}
+                    >
+                      {ctaLabel ?? t('labels.signIn')}
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              )}
+            </>
           ) : (
             /* Logged-in: clean nav links with underline + avatar */
             <View style={styles.headerNavLoggedInContainer}>
@@ -920,7 +1036,7 @@ const AirsIntroExperience = forwardRef(
                     onPress={toggleThemeMode}
                     activeOpacity={0.82}
                   >
-                    {(isDark ? Sun : Moon) as React.FC<any>}
+                    <ThemeIcon size={14} color={palette.textPrimary} />
                     <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
                       {t('labels.theme')}
                     </Text>
@@ -1737,11 +1853,68 @@ const styles = createTypographyStyles({
     textDecorationLine: 'underline',
   },
 
+  // ── Logged-out: mobile dropdown nav ───────────────────────────────────────
+  headerNavMobileContainer: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 50,
+  },
+  headerNavMobileTrigger: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  headerNavMobileDropdown: {
+    position: 'absolute',
+    top: 44,
+    right: 0,
+    width: 180,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  headerNavMobileItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  headerNavMobileText: {
+    fontSize: 14,
+  },
+  headerNavMobileDivider: {
+    height: 1,
+    marginVertical: 4,
+    marginHorizontal: 12,
+  },
+  headerNavMobileCta: {
+    marginHorizontal: 12,
+    marginTop: 4,
+    marginBottom: 4,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  headerNavMobileCtaText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
   // ── Logged-out: pill nav container ────────────────────────────────────────
   headerNavPill: {
     position: 'absolute',
     top: 16,
-    left: 160,
     right: 16,
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -1751,6 +1924,7 @@ const styles = createTypographyStyles({
     paddingVertical: 6,
     gap: 4,
     zIndex: 50,
+    maxWidth: '65%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
