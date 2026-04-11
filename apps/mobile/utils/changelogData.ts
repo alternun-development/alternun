@@ -9,27 +9,44 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.60](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.60) (2026-04-11)
-
+export const CHANGELOG_TEXT = `## [1.0.62](https://github.com/alternun-development/alternun/compare/v1.0.60...v1.0.62) (2026-04-11)
 
 ### Bug Fixes
 
-* dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
+- wire Better Auth social login and the legacy email/password fallback through separate execution paths
+- fix changelog/version rendering for mobile, web, and docs so the release pill and history show the current version
+- fix banner, drawer, and locale plumbing so update notices and legal links resolve the right origin/API in each surface
 
+### Features
 
+- apply Anek Latin as the default font across mobile, web, and docs
+- propagate Better Auth and release env settings through infra and build scripts
 
+## [1.0.61](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.61) (2026-04-11)
 
+### Bug Fixes
+
+- dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([ef8ad01](https://github.com/alternun-development/alternun/commit/ef8ad01ddcb994da34cb2e6aff89b672434bff67))
+
+## [1.0.61](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.61) (2026-04-11)
+
+### Bug Fixes
+
+- dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([ef8ad01](https://github.com/alternun-development/alternun/commit/ef8ad01ddcb994da34cb2e6aff89b672434bff67))
 
 ## [1.0.60](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.60) (2026-04-11)
 
+### Bug Fixes
+
+- dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
+
+## [1.0.60](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.60) (2026-04-11)
 
 ### Bug Fixes
 
-* dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
-
-
-
-
+- dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
 
 ## [1.0.59](https://github.com/alternun-development/alternun/compare/v1.0.58...v1.0.59) (2026-04-11)
 
@@ -1126,4 +1143,4 @@ All notable changes to this project will be documented in this file.
 /**
  * Version extracted from package.json for display purposes.
  */
-export const APP_VERSION = '1.0.22';
+export const APP_VERSION = '1.0.62';

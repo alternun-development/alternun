@@ -1,6 +1,15 @@
 ## [1.0.62](https://github.com/alternun-development/alternun/compare/v1.0.60...v1.0.62) (2026-04-11)
 
-## [1.0.62](https://github.com/alternun-development/alternun/compare/v1.0.60...v1.0.62) (2026-04-11)
+### Bug Fixes
+
+- wire Better Auth social login and the legacy email/password fallback through separate execution paths
+- fix changelog/version rendering for mobile, web, and docs so the release pill and history show the current version
+- fix banner, drawer, and locale plumbing so update notices and legal links resolve the right origin/API in each surface
+
+### Features
+
+- apply Anek Latin as the default font across mobile, web, and docs
+- propagate Better Auth and release env settings through infra and build scripts
 
 ## [1.0.61](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.61) (2026-04-11)
 
