@@ -27,7 +27,7 @@ export default function LandingFooter() {
   useEffect(() => {
     // Load version from package.json
     try {
-      const pkg = require('../../package.json') as { version: string };
+      const pkg = require('../package.json') as { version: string };
       setVersion(pkg.version);
     } catch (e) {
       // Fallback to default

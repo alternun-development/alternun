@@ -35,10 +35,11 @@ Testnet should look like this:
 
 1. App calls `@alternun/auth`.
 2. `@alternun/auth` uses `AUTH_EXECUTION_PROVIDER=better-auth`.
-3. Better Auth executes Google, GitHub, Apple, and email/password flows.
-4. Backend `POST /auth/exchange` reconciles the Better Auth identity to an Alternun principal.
-5. Authentik-aligned issuer claims become the final application session.
-6. App authorization depends on canonical issuer claims and app-owned persistence, not Better Auth cookies and not Supabase user metadata.
+3. Better Auth executes Google, GitHub, and Apple social login flows.
+4. Email/password continues through the legacy compatibility execution path and does not depend on Better Auth.
+5. Backend `POST /auth/exchange` reconciles the Better Auth identity to an Alternun principal.
+6. Authentik-aligned issuer claims become the final application session.
+7. App authorization depends on canonical issuer claims and app-owned persistence, not Better Auth cookies and not Supabase user metadata.
 
 ## Self-Hosted Better Auth Resources
 
@@ -83,7 +84,7 @@ Deliverables:
 - Real Better Auth server runtime
 - Real Better Auth client wiring
 - Google and GitHub providers enabled
-- Email/password enabled
+- Email/password remains available through the legacy compatibility path
 - Apple configured or explicitly deferred
 
 Tasks:
@@ -103,7 +104,7 @@ Exit criteria:
 - Better Auth health check passes on the testnet domain.
 - Google sign-in reaches the Better Auth callback successfully.
 - GitHub sign-in reaches the Better Auth callback successfully.
-- Email/password sign-up and sign-in work in testnet.
+- Email/password sign-up and sign-in work in testnet through the legacy-compatible execution path.
 
 ## Workstream 2: NestJS Exchange Endpoint
 

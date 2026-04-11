@@ -1,5 +1,6 @@
 import { AlternunConfigError, AlternunProviderError } from '../../core/errors.js';
 import { claimsToExternalIdentity } from '../../identity/claims.js';
+import { SupabaseExecutionProvider, } from '../supabase-legacy/SupabaseExecutionProvider.js';
 function normalizeSession(input, fallbackProvider) {
     var _a;
     if (!input || typeof input !== 'object') {
@@ -57,6 +58,9 @@ export class BetterAuthExecutionProvider {
     constructor(options) {
         this.options = options;
         this.name = 'better-auth';
+        this.emailFallbackProvider = options.emailFallbackClient
+            ? new SupabaseExecutionProvider(options.emailFallbackClient)
+            : null;
     }
     get client() {
         var _a;
@@ -70,6 +74,17 @@ export class BetterAuthExecutionProvider {
         const trimmed = provider === null || provider === void 0 ? void 0 : provider.trim();
         return trimmed && trimmed.length > 0 ? trimmed : null;
     }
+    async getFallbackExecutionSession() {
+        if (!this.emailFallbackProvider) {
+            return null;
+        }
+        try {
+            return await this.emailFallbackProvider.getExecutionSession();
+        }
+        catch {
+            return null;
+        }
+    }
     requireBaseUrl() {
         var _a;
         if ((_a = this.options.baseUrl) === null || _a === void 0 ? void 0 : _a.trim()) {
@@ -81,6 +96,9 @@ export class BetterAuthExecutionProvider {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         const client = this.client;
         const provider = (_b = (_a = this.normalizeProvider(options.provider)) !== null && _a !== void 0 ? _a : this.normalizeProvider(this.options.defaultProvider)) !== null && _b !== void 0 ? _b : 'google';
+        if (provider === 'email' && this.emailFallbackProvider) {
+            return this.emailFallbackProvider.signIn(options);
+        }
         if (client === null || client === void 0 ? void 0 : client.signIn) {
             const result = await client.signIn({
                 provider,
@@ -127,6 +145,9 @@ export class BetterAuthExecutionProvider {
     }
     async signUp(input) {
         var _a, _b, _c;
+        if (this.emailFallbackProvider) {
+            return this.emailFallbackProvider.signUp(input);
+        }
         const client = this.client;
         if (client === null || client === void 0 ? void 0 : client.signUp) {
             const result = await client.signUp(input);
@@ -168,6 +189,9 @@ export class BetterAuthExecutionProvider {
     }
     async signOut() {
         var _a, _b, _c;
+        if (this.emailFallbackProvider) {
+            await this.emailFallbackProvider.signOut().catch(() => undefined);
+        }
         if ((_a = this.client) === null || _a === void 0 ? void 0 : _a.signOut) {
             await this.client.signOut();
             return;
@@ -180,6 +204,10 @@ export class BetterAuthExecutionProvider {
     }
     async getExecutionSession() {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+        const fallbackSession = await this.getFallbackExecutionSession();
+        if (fallbackSession) {
+            return fallbackSession;
+        }
         if ((_a = this.client) === null || _a === void 0 ? void 0 : _a.getSession) {
             const session = await this.client.getSession();
             const normalized = normalizeSession(session, (_b = this.options.defaultProvider) !== null && _b !== void 0 ? _b : 'better-auth');
@@ -212,6 +240,10 @@ export class BetterAuthExecutionProvider {
     }
     async refreshExecutionSession() {
         var _a, _b, _c, _d;
+        const fallbackSession = await this.getFallbackExecutionSession();
+        if (fallbackSession) {
+            return fallbackSession;
+        }
         if ((_a = this.client) === null || _a === void 0 ? void 0 : _a.refreshSession) {
             const session = await this.client.refreshSession();
             return normalizeSession(session, (_b = this.options.defaultProvider) !== null && _b !== void 0 ? _b : 'better-auth');
@@ -263,6 +295,9 @@ export class BetterAuthExecutionProvider {
         });
     }
     async signInWithEmail(email, password) {
+        if (this.emailFallbackProvider) {
+            return this.emailFallbackProvider.signInWithEmail(email, password);
+        }
         const result = await this.signIn({
             provider: 'email',
             flow: 'native',
@@ -282,16 +317,27 @@ export class BetterAuthExecutionProvider {
         throw new AlternunProviderError('Better Auth email sign-in did not return a user session.');
     }
     async signUpWithEmail(email, password, locale) {
+        if (this.emailFallbackProvider) {
+            return this.emailFallbackProvider.signUp({ email, password, locale });
+        }
         return this.signUp({ email, password, locale });
     }
     async resendEmailConfirmation(email) {
+        if (this.emailFallbackProvider) {
+            await this.emailFallbackProvider.resendEmailConfirmation(email);
+            return;
+        }
         await this.signIn({
             provider: 'email',
             flow: 'native',
             email,
         });
     }
-    verifyEmailConfirmationCode() {
+    async verifyEmailConfirmationCode(email, code) {
+        if (this.emailFallbackProvider) {
+            await this.emailFallbackProvider.verifyEmailConfirmationCode(email, code);
+            return;
+        }
         return Promise.resolve();
     }
     async signInWithGoogle(redirectTo) {

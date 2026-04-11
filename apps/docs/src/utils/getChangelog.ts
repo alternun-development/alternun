@@ -182,7 +182,9 @@ export async function getChangelogContent(): Promise<string> {
 
   // Try to read from public assets (works in browser and at build time)
   try {
-    const response = await fetch('/CHANGELOG.md');
+    const response = await fetch('/CHANGELOG.md', {
+      cache: 'no-store',
+    });
     if (response.ok) {
       const content = await response.text();
       cachedChangelog = content;

@@ -1,7 +1,14 @@
 import type { Metadata } from 'next';
+import localFont from 'next/font/local';
 import ReleaseUpdateBanner from '../components/release/ReleaseUpdateBanner';
 import ThemeProvider from '../components/ThemeProvider';
 import './globals.css';
+
+const anekLatin = localFont({
+  src: '../../mobile/assets/fonts/Anek_latin/AnekLatin-VariableFont_wdth,wght.ttf',
+  variable: '--font-anek-latin',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Airs by Alternun',
@@ -10,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang='es' suppressHydrationWarning>
+    <html lang='es' className={anekLatin.variable} suppressHydrationWarning>
       <head>
         {/* Prevent flash of unstyled content during theme initialization */}
         <script
@@ -30,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className='bg-navy min-h-screen antialiased'>
+      <body className='bg-navy min-h-screen antialiased font-sans'>
         <ThemeProvider>
           {children}
           <ReleaseUpdateBanner />

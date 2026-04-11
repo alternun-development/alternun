@@ -60,20 +60,10 @@ function createIdentityRepository(
   );
 }
 
-function createExecutionProvider(runtime: AuthRuntimeConfig, options: CreateAuthFacadeOptions) {
-  if (options.executionProvider) {
-    return options.executionProvider;
-  }
-
-  if (runtime.executionProvider === 'better-auth') {
-    return new BetterAuthExecutionProvider({
-      baseUrl: runtime.betterAuthBaseUrl,
-      fetchFn: options.fetchFn,
-      defaultProvider: 'google',
-      walletBridge: options.walletBridge ?? null,
-    });
-  }
-
+function createLegacyExecutionClient(
+  runtime: AuthRuntimeConfig,
+  options: CreateAuthFacadeOptions
+): LegacyExecutionClientLike {
   const legacyClient = new AlternunMobileAuthClient({
     supabaseUrl: runtime.supabaseUrl,
     supabaseKey: runtime.supabaseKey,
@@ -85,7 +75,7 @@ function createExecutionProvider(runtime: AuthRuntimeConfig, options: CreateAuth
       options.allowWalletOnlySession ?? runtime.allowWalletOnlySession ?? false,
   } satisfies AlternunMobileAuthClientOptions);
 
-  const legacyExecutionClient: LegacyExecutionClientLike = {
+  return {
     runtime: legacyClient.runtime,
     getUser: legacyClient.getUser.bind(legacyClient),
     signInWithEmail: legacyClient.signInWithEmail.bind(legacyClient),
@@ -100,9 +90,31 @@ function createExecutionProvider(runtime: AuthRuntimeConfig, options: CreateAuth
     verifyEmailConfirmationCode: legacyClient.verifyEmailConfirmationCode.bind(legacyClient),
     setOidcUser: legacyClient.setOidcUser.bind(legacyClient),
     supabase: (legacyClient as unknown as { supabase?: unknown }).supabase,
-  };
+  } satisfies LegacyExecutionClientLike;
+}
 
-  return new SupabaseExecutionProvider(legacyExecutionClient);
+function hasLegacyEmailSupport(runtime: AuthRuntimeConfig): boolean {
+  return Boolean(runtime.supabaseUrl && (runtime.supabaseKey ?? runtime.supabaseAnonKey));
+}
+
+function createExecutionProvider(runtime: AuthRuntimeConfig, options: CreateAuthFacadeOptions) {
+  if (options.executionProvider) {
+    return options.executionProvider;
+  }
+
+  const legacyClient = createLegacyExecutionClient(runtime, options);
+
+  if (runtime.executionProvider === 'better-auth') {
+    return new BetterAuthExecutionProvider({
+      baseUrl: runtime.betterAuthBaseUrl,
+      fetchFn: options.fetchFn,
+      defaultProvider: 'google',
+      walletBridge: options.walletBridge ?? null,
+      emailFallbackClient: hasLegacyEmailSupport(runtime) ? legacyClient : null,
+    });
+  }
+
+  return new SupabaseExecutionProvider(legacyClient);
 }
 
 function createIssuerProvider(

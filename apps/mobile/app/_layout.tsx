@@ -13,17 +13,15 @@ import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import 'react-native-reanimated';
 import ReleaseUpdateBanner from '../components/release/ReleaseUpdateBanner.native';
+import { appFonts, installAppFontDefaults } from '../components/theme/fonts';
 import '../global.css';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 void SplashScreen.preventAutoHideAsync();
+installAppFontDefaults();
 
 export default function RootLayout(): React.JSX.Element {
-  const [loaded] = useFonts({
-    // Expo expects a bundled asset module reference here.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const [loaded] = useFonts(appFonts);
 
   return (
     <AppPreferencesProvider>

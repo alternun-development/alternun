@@ -10,6 +10,7 @@ import type {
   WalletConnectionBridge,
 } from '../../core/types';
 import type { AuthExecutionProvider } from '../../core/contracts';
+import { type LegacyExecutionClientLike } from '../supabase-legacy/SupabaseExecutionProvider';
 export interface BetterAuthClientLike {
   runtime?: AuthRuntime;
   signIn?(options: SignInOptions & Record<string, unknown>): Promise<unknown>;
@@ -26,6 +27,7 @@ export interface BetterAuthExecutionProviderOptions {
   client?: BetterAuthClientLike | null;
   baseUrl?: string;
   fetchFn?: typeof fetch;
+  emailFallbackClient?: LegacyExecutionClientLike | null;
   signInPath?: string;
   signUpPath?: string;
   signOutPath?: string;
@@ -39,10 +41,12 @@ export interface BetterAuthExecutionProviderOptions {
 export declare class BetterAuthExecutionProvider implements AuthExecutionProvider {
   private readonly options;
   readonly name: 'better-auth';
+  private readonly emailFallbackProvider;
   constructor(options: BetterAuthExecutionProviderOptions);
   private get client();
   private get fetchFn();
   private normalizeProvider;
+  private getFallbackExecutionSession;
   private requireBaseUrl;
   signIn(options: AuthExecutionSignInOptions): Promise<AuthExecutionResult>;
   signUp(input: AuthExecutionSignUpInput): Promise<AuthExecutionResult>;
@@ -54,7 +58,7 @@ export declare class BetterAuthExecutionProvider implements AuthExecutionProvide
   signInWithEmail(email: string, password: string): Promise<User>;
   signUpWithEmail(email: string, password: string, locale?: string): Promise<AuthExecutionResult>;
   resendEmailConfirmation(email: string): Promise<void>;
-  verifyEmailConfirmationCode(): Promise<void>;
+  verifyEmailConfirmationCode(email: string, code: string): Promise<void>;
   signInWithGoogle(redirectTo?: string): Promise<void>;
   capabilities(): AuthCapabilities;
   getUser(): Promise<User | null>;

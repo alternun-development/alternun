@@ -25,28 +25,17 @@ function createIdentityRepository(runtime, options) {
         legacyUpsertFn: upsertOidcUser,
     }));
 }
-function createExecutionProvider(runtime, options) {
-    var _a, _b, _c, _d, _e, _f;
-    if (options.executionProvider) {
-        return options.executionProvider;
-    }
-    if (runtime.executionProvider === 'better-auth') {
-        return new BetterAuthExecutionProvider({
-            baseUrl: runtime.betterAuthBaseUrl,
-            fetchFn: options.fetchFn,
-            defaultProvider: 'google',
-            walletBridge: (_a = options.walletBridge) !== null && _a !== void 0 ? _a : null,
-        });
-    }
+function createLegacyExecutionClient(runtime, options) {
+    var _a, _b, _c, _d, _e;
     const legacyClient = new AlternunMobileAuthClient({
         supabaseUrl: runtime.supabaseUrl,
         supabaseKey: runtime.supabaseKey,
         supabaseAnonKey: runtime.supabaseAnonKey,
-        walletBridge: (_b = options.walletBridge) !== null && _b !== void 0 ? _b : undefined,
-        allowMockWalletFallback: (_d = (_c = options.allowMockWalletFallback) !== null && _c !== void 0 ? _c : runtime.allowMockWalletFallback) !== null && _d !== void 0 ? _d : false,
-        allowWalletOnlySession: (_f = (_e = options.allowWalletOnlySession) !== null && _e !== void 0 ? _e : runtime.allowWalletOnlySession) !== null && _f !== void 0 ? _f : false,
+        walletBridge: (_a = options.walletBridge) !== null && _a !== void 0 ? _a : undefined,
+        allowMockWalletFallback: (_c = (_b = options.allowMockWalletFallback) !== null && _b !== void 0 ? _b : runtime.allowMockWalletFallback) !== null && _c !== void 0 ? _c : false,
+        allowWalletOnlySession: (_e = (_d = options.allowWalletOnlySession) !== null && _d !== void 0 ? _d : runtime.allowWalletOnlySession) !== null && _e !== void 0 ? _e : false,
     });
-    const legacyExecutionClient = {
+    return {
         runtime: legacyClient.runtime,
         getUser: legacyClient.getUser.bind(legacyClient),
         signInWithEmail: legacyClient.signInWithEmail.bind(legacyClient),
@@ -62,7 +51,26 @@ function createExecutionProvider(runtime, options) {
         setOidcUser: legacyClient.setOidcUser.bind(legacyClient),
         supabase: legacyClient.supabase,
     };
-    return new SupabaseExecutionProvider(legacyExecutionClient);
+}
+function hasLegacyEmailSupport(runtime) {
+    return Boolean(runtime.supabaseUrl && (runtime.supabaseKey || runtime.supabaseAnonKey));
+}
+function createExecutionProvider(runtime, options) {
+    var _a;
+    if (options.executionProvider) {
+        return options.executionProvider;
+    }
+    const legacyClient = createLegacyExecutionClient(runtime, options);
+    if (runtime.executionProvider === 'better-auth') {
+        return new BetterAuthExecutionProvider({
+            baseUrl: runtime.betterAuthBaseUrl,
+            fetchFn: options.fetchFn,
+            defaultProvider: 'google',
+            walletBridge: (_a = options.walletBridge) !== null && _a !== void 0 ? _a : null,
+            emailFallbackClient: hasLegacyEmailSupport(runtime) ? legacyClient : null,
+        });
+    }
+    return new SupabaseExecutionProvider(legacyClient);
 }
 function createIssuerProvider(runtime, options, identityRepository) {
     if (options.issuerProvider) {

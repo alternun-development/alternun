@@ -243,7 +243,6 @@ const FuturisticFooter = (): React.JSX.Element => {
                         changelog={changelogContent}
                         githubUrl={GITHUB_REPO_URL}
                         pageSize={3}
-                        triggerLabel='v1.0.18'
                       />
                     )}
                   </div>

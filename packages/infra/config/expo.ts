@@ -34,6 +34,7 @@ export interface ResolvedExpoConfig {
     walletConnectChainId?: string;
     enableMockWalletAuth?: string;
     enableWalletOnlyAuth?: string;
+    apiUrl?: string;
     authExecutionProvider?: string;
     authExchangeUrl?: string;
     betterAuthUrl?: string;
@@ -238,6 +239,7 @@ export function resolveExpoConfig({
       (localConfig.expo?.publicEnv?.enableWalletOnlyAuth !== undefined
         ? String(localConfig.expo.publicEnv.enableWalletOnlyAuth)
         : undefined),
+    apiUrl: env.EXPO_PUBLIC_API_URL ?? localConfig.expo?.publicEnv?.apiUrl,
     authExecutionProvider:
       env.AUTH_EXECUTION_PROVIDER ??
       env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER ??

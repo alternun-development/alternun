@@ -1,13 +1,15 @@
 'use client';
 
-import { ReleaseUpdateToast } from '@alternun/ui';
+import { ReleaseUpdateToast, ThemeProvider as UiThemeProvider } from '@alternun/ui';
 import { useReleaseUpdate } from '@alternun/update';
 import { useMemo } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: currentVersion } = require('../../package.json') as { version: string };
 
 export default function ReleaseUpdateBanner() {
+  const { resolvedTheme, mounted } = useTheme();
   const state = useReleaseUpdate({
     currentVersion,
     mode: process.env.NEXT_PUBLIC_RELEASE_UPDATE_MODE ?? 'auto',
@@ -21,20 +23,22 @@ export default function ReleaseUpdateBanner() {
     return `Release ${state.remoteVersion} is ready.`;
   }, [state.remoteVersion]);
 
-  if (!state.enabled || !state.available) {
+  if (!mounted || !state.enabled || !state.available) {
     return null;
   }
 
   return (
-    <ReleaseUpdateToast
-      eyebrow='Update available'
-      title={title}
-      message='Reload to pick up the latest changes and assets.'
-      laterLabel='Later'
-      reloadLabel='Reload'
-      bottomOffset={16}
-      onLater={state.dismiss}
-      onReload={state.reload}
-    />
+    <UiThemeProvider mode={resolvedTheme}>
+      <ReleaseUpdateToast
+        eyebrow='Update available'
+        title={title}
+        message='Reload to pick up the latest changes and assets.'
+        laterLabel='Later'
+        reloadLabel='Reload'
+        bottomOffset={16}
+        onLater={state.dismiss}
+        onReload={state.reload}
+      />
+    </UiThemeProvider>
   );
 }

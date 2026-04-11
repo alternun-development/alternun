@@ -2,13 +2,14 @@
 
 ## Summary
 
-Alternun needs `@edcalderon/auth` to stay the public `AuthClient` / `AuthProvider` surface while gaining a first-class Better Auth execution path.
+Alternun needs `@edcalderon/auth` to stay the public `AuthClient` / `AuthProvider` surface while gaining a first-class Better Auth execution path for social login.
 
 This is a compatibility request, not a fork request.
 
 ## Why
 
-- Better Auth should handle execution flows such as Google, GitHub, Apple placeholder, and email/password.
+- Better Auth should handle execution flows such as Google, GitHub, and Apple placeholder.
+- Email/password should remain independently swappable so Alternun can keep a legacy-compatible execution path during migration.
 - Authentik should remain the canonical issuer / token authority.
 - The package should not require Alternun to own a parallel auth stack long-term.
 
@@ -16,7 +17,7 @@ This is a compatibility request, not a fork request.
 
 - Keep `AuthClient`, `AuthProvider`, and `useAuth`
 - Add Better Auth execution support behind the existing client contract
-- Preserve social and email sign-in ergonomics
+- Preserve social sign-in ergonomics and keep email/password compatible through a separate execution adapter
 - Keep callback/session helpers composable so issuer exchange can remain externalized
 
 ## Current Alternun Integration Points

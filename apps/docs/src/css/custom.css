@@ -4,8 +4,12 @@
  * work well for content-centric websites.
  */
 
+@import url('https://fonts.googleapis.com/css2?family=Anek+Latin:wght@300;400;500;600;700;800&display=swap');
+
 /* You can override the default Infima variables here. */
 :root {
+  --ifm-font-family-base: 'Anek Latin', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ifm-heading-font-family: 'Anek Latin', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --ifm-color-primary: #2e8555;
   --ifm-color-primary-dark: #29784c;
   --ifm-color-primary-darker: #277148;
@@ -80,4 +84,8 @@
   fill: #253345 !important;
   stroke: #8fa5ba !important;
   background-color: #253345 !important;
+}
+
+body {
+  font-family: var(--ifm-font-family-base);
 }
