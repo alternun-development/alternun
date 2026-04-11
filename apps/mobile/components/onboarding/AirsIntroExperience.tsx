@@ -1494,10 +1494,15 @@ const AirsIntroExperience = forwardRef(
 
           <LandingFooter />
         </Animated.ScrollView>
+
+        {/* Back to top button */}
+        <BackToTopButton onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })} />
       </View>
     );
   }
 );
+
+AirsIntroExperience.displayName = 'AirsIntroExperience';
 
 export default AirsIntroExperience;
 
