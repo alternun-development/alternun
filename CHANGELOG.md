@@ -1,3 +1,17 @@
+## [1.0.61](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.61) (2026-04-11)
+
+### Bug Fixes
+
+- dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([ef8ad01](https://github.com/alternun-development/alternun/commit/ef8ad01ddcb994da34cb2e6aff89b672434bff67))
+
+## [1.0.61](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.61) (2026-04-11)
+
+### Bug Fixes
+
+- dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([ef8ad01](https://github.com/alternun-development/alternun/commit/ef8ad01ddcb994da34cb2e6aff89b672434bff67))
+
 ## [1.0.60](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.60) (2026-04-11)
 
 ### Bug Fixes
