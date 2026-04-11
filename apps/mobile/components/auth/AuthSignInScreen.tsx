@@ -1406,11 +1406,7 @@ export default function AuthSignInScreen({
             )}
 
             {/* Footer with Privacy, Terms, Version, Help */}
-            <AuthFooter
-              apiUrl={process.env.EXPO_PUBLIC_API_URL}
-              locale={locale}
-              appVersion={process.env.EXPO_PUBLIC_APP_VERSION ?? '1.0.0'}
-            />
+            <AuthFooter locale={locale} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

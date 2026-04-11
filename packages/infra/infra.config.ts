@@ -97,6 +97,23 @@ function buildPublicAssetFile(
   };
 }
 
+function buildApiUrlFromStageDomain(stageDomain: string): string {
+  try {
+    const url = new URL(`https://${stageDomain}`);
+    const hostnameParts = url.hostname.split('.');
+    const airsIndex = hostnameParts.indexOf('airs');
+
+    if (airsIndex >= 0) {
+      hostnameParts[airsIndex] = 'api';
+      return `${url.protocol}//${hostnameParts.join('.')}`;
+    }
+
+    return url.origin;
+  } catch {
+    return `https://${stageDomain}`;
+  }
+}
+
 const rootDomain =
   process.env.INFRA_ROOT_DOMAIN ?? localConfig.rootDomain ?? INFRA_CORE_DEFAULTS.rootDomain;
 const appName = process.env.INFRA_APP_NAME ?? localConfig.appName ?? INFRA_CORE_DEFAULTS.appName;
@@ -182,6 +199,7 @@ const expoPublicWalletConnectProjectId = expoConfig.publicEnv.walletConnectProje
 const expoPublicWalletConnectChainId = expoConfig.publicEnv.walletConnectChainId;
 const expoPublicEnableMockWalletAuth = expoConfig.publicEnv.enableMockWalletAuth;
 const expoPublicEnableWalletOnlyAuth = expoConfig.publicEnv.enableWalletOnlyAuth;
+const expoPublicApiUrl = expoConfig.publicEnv.apiUrl;
 const expoPublicAuthExecutionProvider = expoConfig.publicEnv.authExecutionProvider;
 const expoPublicAuthExchangeUrl = expoConfig.publicEnv.authExchangeUrl;
 const expoPublicBetterAuthUrl = expoConfig.publicEnv.betterAuthUrl;
@@ -748,6 +766,8 @@ export function createInfrastructure() {
         EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: expoPublicWalletConnectChainId,
         EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH: expoPublicEnableMockWalletAuth,
         EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH: expoPublicEnableWalletOnlyAuth,
+        EXPO_PUBLIC_API_URL:
+          expoPublicApiUrl ?? buildApiUrlFromStageDomain(expoStageMap[expoDeploymentStage]),
         AUTH_EXECUTION_PROVIDER: expoAuthExecutionProvider,
         EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: expoAuthExecutionProvider,
         AUTH_EXCHANGE_URL: expoPublicAuthExchangeUrl,

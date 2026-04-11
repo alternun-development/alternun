@@ -1,6 +1,7 @@
 import React from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, usePathname } from 'expo-router';
+import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { AppAuthProvider } from '../components/auth/AppAuthProvider';
 import AppInfoFooter from '../components/common/AppInfoFooter';
@@ -13,17 +14,22 @@ import { useColorScheme } from 'nativewind';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import ReleaseUpdateBanner from '../components/release/ReleaseUpdateBanner.web';
+import { appFonts, installAppFontDefaults } from '../components/theme/fonts';
 import '../global.css';
 
+installAppFontDefaults();
+
 export default function RootLayout(): React.JSX.Element {
+  const [loaded] = useFonts(appFonts);
+
   return (
     <AppPreferencesProvider>
-      <RootApp />
+      <RootApp fontsLoaded={loaded} />
     </AppPreferencesProvider>
   );
 }
 
-function RootApp(): React.JSX.Element {
+function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
   const { themeMode } = useAppPreferences();
   const colorScheme = useColorScheme();
   const navigationTheme = themeMode === 'dark' ? DarkTheme : DefaultTheme;
@@ -39,6 +45,14 @@ function RootApp(): React.JSX.Element {
     pathname !== '/' &&
     pathname !== '/privacy' &&
     pathname !== '/terms';
+
+  if (!fontsLoaded) {
+    return (
+      <View
+        style={[styles.appShell, { backgroundColor: themeMode === 'dark' ? '#050510' : '#f6f8fc' }]}
+      />
+    );
+  }
 
   return (
     <NotificationsProvider>

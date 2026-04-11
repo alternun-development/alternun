@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -19,7 +17,7 @@
 
 html, body {
   height: 100%;
-  font-family: 'Inter', 'Space Grotesk', sans-serif;
+  font-family: var(--font-anek-latin), sans-serif;
   background: var(--navy);
   color: #fff;
   overflow-x: hidden;

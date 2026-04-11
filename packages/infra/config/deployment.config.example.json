@@ -31,6 +31,7 @@
       "output": "dist"
     },
     "publicEnv": {
+      "apiUrl": "https://testnet.api.alternun.co",
       "authentikLoginEntryMode": "source",
       "authExecutionProvider": "better-auth",
       "authExchangeUrl": "https://testnet.api.alternun.co/auth/exchange",

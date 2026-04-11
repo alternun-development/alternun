@@ -16,6 +16,33 @@ function buildAuthentikRedirectUriForStage(stage: PipelineStage, env: NodeJS.Pro
   return `${stageUrls[stage]}/auth/callback`;
 }
 
+function buildApiUrlForStage(stage: PipelineStage, env: NodeJS.ProcessEnv): string {
+  const explicitApiUrl = env.EXPO_PUBLIC_API_URL?.trim();
+  if (explicitApiUrl) {
+    return explicitApiUrl.replace(/\/+$/, '');
+  }
+
+  const stageUrls = buildStageUrls(
+    env.INFRA_EXPO_SUBDOMAIN ?? 'airs',
+    env.INFRA_ROOT_DOMAIN ?? 'alternun.co'
+  );
+
+  try {
+    const stageUrl = new URL(stageUrls[stage]);
+    const hostnameParts = stageUrl.hostname.split('.');
+    const airsIndex = hostnameParts.indexOf('airs');
+
+    if (airsIndex >= 0) {
+      hostnameParts[airsIndex] = 'api';
+      return `${stageUrl.protocol}//${hostnameParts.join('.')}`;
+    }
+
+    return stageUrl.origin;
+  } catch {
+    return stageUrls[stage];
+  }
+}
+
 function resolveAuthentikProviderFlowSlugsForStage(
   env: NodeJS.ProcessEnv,
   allowCustomProviderFlowSlugs: boolean
@@ -72,6 +99,7 @@ export function buildCorePipelineSpecs({
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('production', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
         EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
+        EXPO_PUBLIC_API_URL: buildApiUrlForStage('production', env),
         EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
           authentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,
@@ -94,6 +122,7 @@ export function buildCorePipelineSpecs({
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('dev', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
         EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
+        EXPO_PUBLIC_API_URL: buildApiUrlForStage('dev', env),
         EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
           authentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,
@@ -116,6 +145,7 @@ export function buildCorePipelineSpecs({
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('mobile', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
         EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
+        EXPO_PUBLIC_API_URL: buildApiUrlForStage('mobile', env),
         EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
           authentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,
