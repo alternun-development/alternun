@@ -234,7 +234,10 @@ export default function AuthSignInScreen({
   const ThemeIcon = p.isDark ? Sun : Moon;
   const themeLabel = p.isDark ? t('labels.dark') : t('labels.light');
   const loginStrategy = resolveAuthentikLoginStrategy();
-  const forceFreshSocialSession = shouldForceFreshAuthentikSocialSession(Platform.OS);
+  const forceFreshSocialSession = shouldForceFreshAuthentikSocialSession(
+    Platform.OS,
+    loginStrategy.executionProvider
+  );
   const authentikSocialLoginMode = loginStrategy.socialMode;
   const authentikConfigured = isAuthentikConfigured();
   const shouldUseAuthentikSocialLogin = authentikSocialLoginMode !== 'supabase';
