@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires */
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useCallback, useEffect, } from 'react';
 import {
   View,
   Text,
@@ -25,9 +25,9 @@ import {
   type LucideProps,
 } from 'lucide-react-native';
 
-import { useAppPreferences } from '../settings/AppPreferencesProvider';
-import { useAppTranslation } from '../i18n/useAppTranslation';
-import { createTypographyStyles } from '../theme/typography';
+import { useAppPreferences, } from '../settings/AppPreferencesProvider';
+import { useAppTranslation, } from '../i18n/useAppTranslation';
+import { createTypographyStyles, } from '../theme/typography';
 import AirsIntroExperience from '../onboarding/AirsIntroExperience';
 import AirsBrandMark from '../branding/AirsBrandMark';
 
@@ -57,16 +57,18 @@ interface PublicLandingPageProps {
 }
 
 const NAV_ITEMS = [
-  { id: 'inicio', label: 'Inicio' },
-  { id: 'el-proyecto', label: 'El proyecto' },
-  { id: 'como-funciona', label: 'Cómo funciona' },
-  { id: 'beneficios', label: 'Beneficios' },
+  { id: 'inicio', label: 'Inicio', },
+  { id: 'el-proyecto', label: 'El proyecto', },
+  { id: 'como-funciona', label: 'Cómo funciona', },
+  { id: 'beneficios', label: 'Beneficios', },
 ];
 
-export default function PublicLandingPage({ onSignIn }: PublicLandingPageProps): React.JSX.Element {
-  const { themeMode } = useAppPreferences();
+export default function PublicLandingPage({
+  onSignIn,
+}: PublicLandingPageProps,): React.JSX.Element {
+  const { themeMode, } = useAppPreferences();
   const isDark = themeMode === 'dark';
-  const { width } = useWindowDimensions();
+  const { width, } = useWindowDimensions();
   const isMobile = width < 720;
 
   const accentColor = isDark ? '#1EE6B5' : '#0d9488';
@@ -75,16 +77,14 @@ export default function PublicLandingPage({ onSignIn }: PublicLandingPageProps):
   const cardBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.1)';
 
   // Section offset tracking for anchor nav
-  const sectionOffsetsRef = useRef<{ [key: string]: number }>({});
-  const [activeSection, setActiveSection] = useState('inicio');
+  const sectionOffsetsRef = useRef<{ [key: string]: number }>({},);
+  const [activeSection, setActiveSection,] = useState('inicio',);
 
   const extraSections = (
     <>
       {/* El Proyecto */}
       <View
-        onLayout={(e) => {
-          sectionOffsetsRef.current['el-proyecto'] = e.nativeEvent.layout.y;
-        }}
+        onLayout={(e,) => { sectionOffsetsRef.current['el-proyecto'] = e.nativeEvent.layout.y; }}
       >
         <ElProyectoSection
           isDark={isDark}
@@ -98,9 +98,7 @@ export default function PublicLandingPage({ onSignIn }: PublicLandingPageProps):
 
       {/* Cómo funciona */}
       <View
-        onLayout={(e) => {
-          sectionOffsetsRef.current['como-funciona'] = e.nativeEvent.layout.y;
-        }}
+        onLayout={(e,) => { sectionOffsetsRef.current['como-funciona'] = e.nativeEvent.layout.y; }}
       >
         <ComoFuncionaSection
           isDark={isDark}
@@ -112,9 +110,7 @@ export default function PublicLandingPage({ onSignIn }: PublicLandingPageProps):
 
       {/* Beneficios */}
       <View
-        onLayout={(e) => {
-          sectionOffsetsRef.current['beneficios'] = e.nativeEvent.layout.y;
-        }}
+        onLayout={(e,) => { sectionOffsetsRef.current['beneficios'] = e.nativeEvent.layout.y; }}
       >
         <BeneficiosSection
           isDark={isDark}
@@ -162,43 +158,38 @@ function PublicLandingPageWrapper({
   isDark,
   accentColor,
   isMobile: _isMobile,
-}: PublicLandingPageWrapperProps): React.JSX.Element {
-  const { t } = useAppTranslation('mobile');
-  const airsIntroRef = useRef<any>(null);
-  const { height: screenHeight } = useWindowDimensions();
-  const heroHeight = Math.max(screenHeight * 1.05, 740);
+}: PublicLandingPageWrapperProps,): React.JSX.Element {
+  const { t, } = useAppTranslation('mobile',);
+  const airsIntroRef = useRef<any>(null,);
+  const { height: screenHeight, } = useWindowDimensions();
+  const heroHeight = Math.max(screenHeight * 1.05, 740,);
 
-  const handleNavPress = useCallback(
-    (sectionId: string) => {
-      setActiveSection(sectionId);
-      // Scroll to section with smooth animation
-      const sectionOffset = sectionOffsetsRef.current[sectionId];
-      if (sectionOffset !== undefined && airsIntroRef.current) {
-        // Call the exposed scrollToSection method
-        airsIntroRef.current?.scrollToSection?.(sectionOffset);
-      }
-    },
-    [setActiveSection, sectionOffsetsRef, airsIntroRef]
-  );
+  const handleNavPress = useCallback((sectionId: string,) => {
+    setActiveSection(sectionId,);
+    // Scroll to section with smooth animation
+    const sectionOffset = sectionOffsetsRef.current[sectionId];
+    if (sectionOffset !== undefined && airsIntroRef.current) {
+      // Call the exposed scrollToSection method
+      airsIntroRef.current?.scrollToSection?.(sectionOffset,);
+    }
+  }, [setActiveSection, sectionOffsetsRef, airsIntroRef,],);
 
   // Callback for scroll-based section tracking
-  const handleActiveSectionChange = useCallback(
-    (sectionId: string) => {
-      setActiveSection(sectionId);
-    },
-    [setActiveSection]
-  );
+  const handleActiveSectionChange = useCallback((sectionId: string,) => {
+    setActiveSection(sectionId,);
+  }, [setActiveSection,],);
 
   // Nav links to inject into AirsIntroExperience as headerNavLinks
-  const headerNavLinks = NAV_ITEMS.map((item) => ({
+  const headerNavLinks = NAV_ITEMS.map((item,) => ({
     id: item.id,
     label: item.label,
     isActive: activeSection === item.id,
-    onPress: () => handleNavPress(item.id),
-  }));
+    onPress: () => handleNavPress(item.id,),
+  }),);
 
   return (
     <View style={styles.publicLandingContainer}>
+      {/* AirsIntroExperience with nav links integrated into header */}
       <AirsIntroExperience
         ref={airsIntroRef}
         onContinueToDashboard={() => onSignIn()}
@@ -208,7 +199,7 @@ function PublicLandingPageWrapper({
         accentColor={accentColor}
         isDark={isDark}
         showCta={true}
-        ctaLabel={t('landing.nav.signInCta')}
+        ctaLabel={t('landing.nav.signInCta',)}
         onActiveSectionChange={handleActiveSectionChange}
         sectionOffsets={sectionOffsetsRef.current}
         heroHeight={heroHeight}
@@ -248,20 +239,20 @@ function TokenCard({
   overview,
   accentColor: _accentColor,
   isDark: _isDark,
-}: TokenCardProps): React.JSX.Element {
-  const [expanded, setExpanded] = useState(false);
+}: TokenCardProps,): React.JSX.Element {
+  const [expanded, setExpanded,] = useState(false,);
 
   // Cross-fade animations for title/subtitle vs. overview
-  const titleOpacity = useRef(new Animated.Value(1)).current;
-  const overviewOpacity = useRef(new Animated.Value(0)).current;
+  const titleOpacity = useRef(new Animated.Value(1,),).current;
+  const overviewOpacity = useRef(new Animated.Value(0,),).current;
   // Smooth scale transition for fluid entrance
-  const contentScale = useRef(new Animated.Value(1)).current;
+  const contentScale = useRef(new Animated.Value(1,),).current;
   // Chevron rotation
-  const chevronRotate = useRef(new Animated.Value(0)).current;
+  const chevronRotate = useRef(new Animated.Value(0,),).current;
 
   const toggle = useCallback(() => {
     const toExpanded = !expanded;
-    setExpanded(toExpanded);
+    setExpanded(toExpanded,);
     // Smooth fluid animation: cross-fade + subtle scale
     Animated.parallel([
       // Title fades out, overview fades in (staggered for smoothness)
@@ -269,38 +260,38 @@ function TokenCard({
         toValue: toExpanded ? 0 : 1,
         duration: 280,
         useNativeDriver: true,
-      }),
+      },),
       Animated.timing(overviewOpacity, {
         toValue: toExpanded ? 1 : 0,
         duration: toExpanded ? 300 : 240,
         useNativeDriver: true,
-      }),
+      },),
       // Content scales slightly during transition for fluid feel
       Animated.timing(contentScale, {
         toValue: toExpanded ? 1.02 : 1,
         duration: 280,
         useNativeDriver: true,
-      }),
+      },),
       // Chevron rotates smoothly
       Animated.timing(chevronRotate, {
         toValue: toExpanded ? 1 : 0,
         duration: 320,
         useNativeDriver: true,
-      }),
-    ]).start();
-  }, [expanded, titleOpacity, overviewOpacity, contentScale, chevronRotate]);
+      },),
+    ],).start();
+  }, [expanded, titleOpacity, overviewOpacity, contentScale, chevronRotate,],);
 
   const chevronAngle = chevronRotate.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
+    inputRange: [0, 1,],
+    outputRange: ['0deg', '180deg',],
+  },);
 
   return (
     <View style={styles.travelCard}>
       <TouchableOpacity activeOpacity={0.9} onPress={toggle}>
         {/* Fixed-height image — card height never changes */}
         <ImageBackground
-          source={{ uri: imageUrl }}
+          source={{ uri: imageUrl, }}
           style={styles.travelCardImage}
           imageStyle={styles.travelCardImageStyle}
         >
@@ -310,17 +301,17 @@ function TokenCard({
               styles.travelCardGradientBottom,
               {
                 opacity: titleOpacity,
-                transform: [{ scale: contentScale }],
+                transform: [{ scale: contentScale, },],
               },
             ]}
           >
             <View style={styles.travelCardTitleRow}>
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 1, }}>
                 <Text style={styles.travelCardTitle}>{title}</Text>
                 <Text style={styles.travelCardSubtitle}>{subtitle}</Text>
               </View>
-              <Animated.View style={{ transform: [{ rotate: chevronAngle }] }}>
-                <ChevronDownIcon size={20} color='#fff' strokeWidth={2.5} />
+              <Animated.View style={{ transform: [{ rotate: chevronAngle, },], }}>
+                <ChevronDownIcon size={20} color="#fff" strokeWidth={2.5} />
               </Animated.View>
             </View>
           </Animated.View>
@@ -335,10 +326,10 @@ function TokenCard({
                 left: 0,
                 right: 0,
                 opacity: overviewOpacity,
-                transform: [{ scale: contentScale }],
+                transform: [{ scale: contentScale, },],
               },
             ]}
-            pointerEvents='none'
+            pointerEvents="none"
           >
             <Text style={styles.travelCardOverview}>{overview}</Text>
           </Animated.View>
@@ -354,64 +345,39 @@ function ElProyectoSection({
   accentColor,
   textColor,
   isMobile,
-}: SectionProps): React.JSX.Element {
-  const { t } = useAppTranslation('mobile');
+}: SectionProps,): React.JSX.Element {
+  const { t, } = useAppTranslation('mobile',);
 
   // Fade-in on mount
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(20)).current;
+  const fadeAnim = useRef(new Animated.Value(0,),).current;
+  const slideAnim = useRef(new Animated.Value(20,),).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
-      Animated.spring(slideAnim, { toValue: 0, friction: 7, tension: 80, useNativeDriver: true }),
-    ]).start();
-  }, []);
+      Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true, },),
+      Animated.spring(slideAnim, { toValue: 0, friction: 7, tension: 80, useNativeDriver: true, },),
+    ],).start();
+  }, [],);
 
   const tokens = [
-    {
-      key: 'airs',
-      imageUrl: TOKEN_IMAGES.airs,
-      logo: StarIcon,
-      title: t('landing.elProyecto.airs.title'),
-      subtitle: t('landing.elProyecto.airs.subtitle'),
-      overview: t('landing.elProyecto.airs.overview'),
-    },
-    {
-      key: 'rbi',
-      imageUrl: TOKEN_IMAGES.rbi,
-      logo: AwardIcon,
-      title: t('landing.elProyecto.rbi.title'),
-      subtitle: t('landing.elProyecto.rbi.subtitle'),
-      overview: t('landing.elProyecto.rbi.overview'),
-    },
-    {
-      key: 'atn',
-      imageUrl: TOKEN_IMAGES.atn,
-      logo: CoinsIcon,
-      title: t('landing.elProyecto.atn.title'),
-      subtitle: t('landing.elProyecto.atn.subtitle'),
-      overview: t('landing.elProyecto.atn.overview'),
-    },
+    { key: 'airs', imageUrl: TOKEN_IMAGES.airs, logo: StarIcon, title: t('landing.elProyecto.airs.title',), subtitle: t('landing.elProyecto.airs.subtitle',), overview: t('landing.elProyecto.airs.overview',), },
+    { key: 'rbi', imageUrl: TOKEN_IMAGES.rbi, logo: AwardIcon, title: t('landing.elProyecto.rbi.title',), subtitle: t('landing.elProyecto.rbi.subtitle',), overview: t('landing.elProyecto.rbi.overview',), },
+    { key: 'atn', imageUrl: TOKEN_IMAGES.atn, logo: CoinsIcon, title: t('landing.elProyecto.atn.title',), subtitle: t('landing.elProyecto.atn.subtitle',), overview: t('landing.elProyecto.atn.overview',), },
   ];
 
   return (
     <Animated.View
       style={[
         styles.section,
-        {
-          backgroundColor: isDark ? '#050510' : '#f6f8fc',
-          opacity: fadeAnim,
-          transform: [{ translateY: slideAnim }],
-        },
+        { backgroundColor: isDark ? '#050510' : '#f6f8fc', opacity: fadeAnim, transform: [{ translateY: slideAnim, },], },
       ]}
     >
-      <Text style={[styles.sectionTitle, { color: textColor }]}>
-        {t('landing.elProyecto.sectionTitle')}
+      <Text style={[styles.sectionTitle, { color: textColor, },]}>
+        {t('landing.elProyecto.sectionTitle',)}
       </Text>
 
-      <View style={[styles.tokenCardsContainer, isMobile && styles.tokenCardsContainerMobile]}>
-        {tokens.map((token) => (
+      <View style={[styles.tokenCardsContainer, isMobile && styles.tokenCardsContainerMobile,]}>
+        {tokens.map((token,) => (
           <TokenCard
             key={token.key}
             imageUrl={token.imageUrl}
@@ -422,7 +388,7 @@ function ElProyectoSection({
             accentColor={accentColor}
             isDark={isDark}
           />
-        ))}
+        ),)}
       </View>
     </Animated.View>
   );
@@ -455,10 +421,10 @@ function StepCard({
   isDark,
   isMobile,
   onPress,
-}: StepCardProps): React.JSX.Element {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const glowAnim = useRef(new Animated.Value(0)).current;
-  const contentOpacity = useRef(new Animated.Value(0)).current;
+}: StepCardProps,): React.JSX.Element {
+  const scaleAnim = useRef(new Animated.Value(1,),).current;
+  const glowAnim = useRef(new Animated.Value(0,),).current;
+  const contentOpacity = useRef(new Animated.Value(0,),).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -467,143 +433,84 @@ function StepCard({
         friction: 6,
         tension: 180,
         useNativeDriver: true,
-      }),
+      },),
       Animated.timing(glowAnim, {
         toValue: isActive ? 1 : 0,
         duration: 300,
         useNativeDriver: false,
-      }),
+      },),
       Animated.timing(contentOpacity, {
         toValue: isActive ? 1 : 0.55,
         duration: 280,
         useNativeDriver: true,
-      }),
-    ]).start();
-  }, [isActive, scaleAnim, glowAnim, contentOpacity]);
+      },),
+    ],).start();
+  }, [isActive, scaleAnim, glowAnim, contentOpacity,],);
 
   const cardBorderColor = glowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.1)', accentColor],
-  });
+    inputRange: [0, 1,],
+    outputRange: [
+      isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.1)',
+      accentColor,
+    ],
+  },);
 
   const cardBgColor = glowAnim.interpolate({
-    inputRange: [0, 1],
+    inputRange: [0, 1,],
     outputRange: [
       isDark ? 'rgba(255,255,255,0.03)' : '#ffffff',
       isDark ? 'rgba(30,230,181,0.07)' : 'rgba(13,148,136,0.06)',
     ],
-  });
+  },);
 
   const descColor = isDark ? 'rgba(232,232,255,0.65)' : '#64748b';
   const stepNumBg = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9';
   const stepNumColor = isDark ? '#e8e8ff' : '#0f172a';
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={onPress}
-      style={[styles.stepCardTouchable, isMobile && styles.stepCardMobile]}
-    >
+    <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.stepCardTouchable, isMobile && styles.stepCardMobile,]}>
       <Animated.View
         style={[
           styles.stepCard,
           {
             backgroundColor: cardBgColor,
             borderColor: cardBorderColor,
-            transform: [{ scale: scaleAnim }],
+            transform: [{ scale: scaleAnim, },],
             opacity: contentOpacity,
           },
         ]}
       >
         {/* Icon badge */}
-        <View
-          style={[
-            styles.stepIconBadge,
-            {
-              backgroundColor: isActive
-                ? `${accentColor}28`
-                : isDark
-                ? 'rgba(255,255,255,0.06)'
-                : '#f1f5f9',
-            },
-          ]}
-        >
-          <StepIcon
-            size={22}
-            color={isActive ? accentColor : isDark ? 'rgba(232,232,255,0.4)' : '#94a3b8'}
-            strokeWidth={1.8}
-          />
+        <View style={[styles.stepIconBadge, { backgroundColor: isActive ? `${accentColor}28` : (isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9'), },]}>
+          <StepIcon size={22} color={isActive ? accentColor : (isDark ? 'rgba(232,232,255,0.4)' : '#94a3b8')} strokeWidth={1.8} />
         </View>
 
         {/* Mobile step number badge (top-right) */}
         {isMobile && (
-          <View
-            style={[
-              styles.stepMobileNumber,
-              { backgroundColor: isActive ? accentColor : stepNumBg },
-            ]}
-          >
-            <Text
-              style={[
-                styles.stepIndicatorText,
-                { color: isActive ? (isDark ? '#050510' : '#fff') : stepNumColor },
-              ]}
-            >
+          <View style={[styles.stepMobileNumber, { backgroundColor: isActive ? accentColor : stepNumBg, },]}>
+            <Text style={[styles.stepIndicatorText, { color: isActive ? (isDark ? '#050510' : '#fff') : stepNumColor, },]}>
               {number}
             </Text>
           </View>
         )}
 
-        <Text
-          style={[
-            styles.stepTitle,
-            {
-              color: isActive
-                ? isDark
-                  ? '#e8e8ff'
-                  : '#0f172a'
-                : isDark
-                ? 'rgba(232,232,255,0.6)'
-                : '#94a3b8',
-            },
-          ]}
-        >
+        <Text style={[styles.stepTitle, { color: isActive ? (isDark ? '#e8e8ff' : '#0f172a') : (isDark ? 'rgba(232,232,255,0.6)' : '#94a3b8'), },]}>
           {title}
         </Text>
-        <Text style={[styles.stepDescription, { color: descColor }]}>{description}</Text>
+        <Text style={[styles.stepDescription, { color: descColor, },]}>
+          {description}
+        </Text>
 
         {/* Benefits — only fully visible when active */}
         <View style={styles.stepBenefitsList}>
-          {benefits.map((benefit, idx) => (
+          {benefits.map((benefit, idx,) => (
             <View key={idx} style={styles.stepBenefitItem}>
-              <View
-                style={[
-                  styles.stepBenefitDotOuter,
-                  {
-                    backgroundColor: isActive
-                      ? `${accentColor}28`
-                      : isDark
-                      ? 'rgba(255,255,255,0.06)'
-                      : '#f1f5f9',
-                  },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.stepBenefitDotInner,
-                    {
-                      backgroundColor: isActive
-                        ? accentColor
-                        : isDark
-                        ? 'rgba(232,232,255,0.2)'
-                        : '#cbd5e1',
-                    },
-                  ]}
-                />
+              <View style={[styles.stepBenefitDotOuter, { backgroundColor: isActive ? `${accentColor}28` : (isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9'), },]}>
+                <View style={[styles.stepBenefitDotInner, { backgroundColor: isActive ? accentColor : (isDark ? 'rgba(232,232,255,0.2)' : '#cbd5e1'), },]} />
               </View>
-              <Text style={[styles.stepBenefitText, { color: descColor }]}>{benefit}</Text>
+              <Text style={[styles.stepBenefitText, { color: descColor, },]}>{benefit}</Text>
             </View>
-          ))}
+          ),)}
         </View>
       </Animated.View>
     </TouchableOpacity>
@@ -616,94 +523,51 @@ function ComoFuncionaSection({
   accentColor,
   textColor,
   isMobile,
-}: SectionProps): React.JSX.Element {
-  const { t } = useAppTranslation('mobile');
-  const [activeStep, setActiveStep] = useState(0);
-  const loopTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+}: SectionProps,): React.JSX.Element {
+  const { t, } = useAppTranslation('mobile',);
+  const [activeStep, setActiveStep,] = useState(0,);
+  const loopTimerRef = useRef<ReturnType<typeof setInterval> | null>(null,);
 
   // Section fade-in
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(24)).current;
+  const fadeAnim = useRef(new Animated.Value(0,),).current;
+  const slideAnim = useRef(new Animated.Value(24,),).current;
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
-      Animated.spring(slideAnim, { toValue: 0, friction: 7, tension: 70, useNativeDriver: true }),
-    ]).start();
-  }, []);
+      Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true, },),
+      Animated.spring(slideAnim, { toValue: 0, friction: 7, tension: 70, useNativeDriver: true, },),
+    ],).start();
+  }, [],);
 
   const steps = [
-    {
-      number: '1',
-      icon: LeafIcon,
-      title: t('landing.comoFunciona.steps.s1.title'),
-      description: t('landing.comoFunciona.steps.s1.description'),
-      benefits: [
-        t('landing.comoFunciona.steps.s1.b1'),
-        t('landing.comoFunciona.steps.s1.b2'),
-        t('landing.comoFunciona.steps.s1.b3'),
-      ],
-    },
-    {
-      number: '2',
-      icon: ZapIcon,
-      title: t('landing.comoFunciona.steps.s2.title'),
-      description: t('landing.comoFunciona.steps.s2.description'),
-      benefits: [
-        t('landing.comoFunciona.steps.s2.b1'),
-        t('landing.comoFunciona.steps.s2.b2'),
-        t('landing.comoFunciona.steps.s2.b3'),
-      ],
-    },
-    {
-      number: '3',
-      icon: TrendingUpIcon,
-      title: t('landing.comoFunciona.steps.s3.title'),
-      description: t('landing.comoFunciona.steps.s3.description'),
-      benefits: [
-        t('landing.comoFunciona.steps.s3.b1'),
-        t('landing.comoFunciona.steps.s3.b2'),
-        t('landing.comoFunciona.steps.s3.b3'),
-      ],
-    },
-    {
-      number: '4',
-      icon: ShoppingBagIcon,
-      title: t('landing.comoFunciona.steps.s4.title'),
-      description: t('landing.comoFunciona.steps.s4.description'),
-      benefits: [
-        t('landing.comoFunciona.steps.s4.b1'),
-        t('landing.comoFunciona.steps.s4.b2'),
-        t('landing.comoFunciona.steps.s4.b3'),
-      ],
-    },
+    { number: '1', icon: LeafIcon, title: t('landing.comoFunciona.steps.s1.title',), description: t('landing.comoFunciona.steps.s1.description',), benefits: [t('landing.comoFunciona.steps.s1.b1',), t('landing.comoFunciona.steps.s1.b2',), t('landing.comoFunciona.steps.s1.b3',),], },
+    { number: '2', icon: ZapIcon, title: t('landing.comoFunciona.steps.s2.title',), description: t('landing.comoFunciona.steps.s2.description',), benefits: [t('landing.comoFunciona.steps.s2.b1',), t('landing.comoFunciona.steps.s2.b2',), t('landing.comoFunciona.steps.s2.b3',),], },
+    { number: '3', icon: TrendingUpIcon, title: t('landing.comoFunciona.steps.s3.title',), description: t('landing.comoFunciona.steps.s3.description',), benefits: [t('landing.comoFunciona.steps.s3.b1',), t('landing.comoFunciona.steps.s3.b2',), t('landing.comoFunciona.steps.s3.b3',),], },
+    { number: '4', icon: ShoppingBagIcon, title: t('landing.comoFunciona.steps.s4.title',), description: t('landing.comoFunciona.steps.s4.description',), benefits: [t('landing.comoFunciona.steps.s4.b1',), t('landing.comoFunciona.steps.s4.b2',), t('landing.comoFunciona.steps.s4.b3',),], },
   ];
 
   // Start/restart the auto-loop
   const startLoop = useCallback(() => {
-    if (loopTimerRef.current) clearInterval(loopTimerRef.current);
+    if (loopTimerRef.current) clearInterval(loopTimerRef.current,);
     loopTimerRef.current = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % steps.length);
-    }, STEP_LOOP_INTERVAL);
-  }, [steps.length]);
+      setActiveStep((prev,) => (prev + 1) % steps.length,);
+    }, STEP_LOOP_INTERVAL,);
+  }, [steps.length,],);
 
   useEffect(() => {
     startLoop();
     return () => {
-      if (loopTimerRef.current) clearInterval(loopTimerRef.current);
+      if (loopTimerRef.current) clearInterval(loopTimerRef.current,);
     };
-  }, [startLoop]);
+  }, [startLoop,],);
 
-  const handleStepPress = useCallback(
-    (idx: number) => {
-      setActiveStep(idx);
-      // Restart auto-loop after 8 s idle
-      if (loopTimerRef.current) clearInterval(loopTimerRef.current);
-      loopTimerRef.current = setInterval(() => {
-        setActiveStep((prev) => (prev + 1) % steps.length);
-      }, STEP_LOOP_INTERVAL);
-    },
-    [steps.length]
-  );
+  const handleStepPress = useCallback((idx: number,) => {
+    setActiveStep(idx,);
+    // Restart auto-loop after 8 s idle
+    if (loopTimerRef.current) clearInterval(loopTimerRef.current,);
+    loopTimerRef.current = setInterval(() => {
+      setActiveStep((prev,) => (prev + 1) % steps.length,);
+    }, STEP_LOOP_INTERVAL,);
+  }, [steps.length,],);
 
   const bgColor = isDark ? '#050510' : '#f6f8fc';
   const connectorColor = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.10)';
@@ -712,39 +576,39 @@ function ComoFuncionaSection({
   const descriptionColor = isDark ? 'rgba(232,232,255,0.65)' : '#64748b';
 
   // Progress bar animation
-  const progressAnim = useRef(new Animated.Value(0)).current;
+  const progressAnim = useRef(new Animated.Value(0,),).current;
   useEffect(() => {
-    progressAnim.setValue(0);
+    progressAnim.setValue(0,);
     const anim = Animated.timing(progressAnim, {
       toValue: 1,
       duration: STEP_LOOP_INTERVAL,
       useNativeDriver: false,
-    });
+    },);
     anim.start();
     return () => anim.stop();
-  }, [activeStep, progressAnim]);
+  }, [activeStep, progressAnim,],);
 
   return (
     <Animated.View
       style={[
         styles.comoFuncionaSection,
-        { backgroundColor: bgColor, opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+        { backgroundColor: bgColor, opacity: fadeAnim, transform: [{ translateY: slideAnim, },], },
       ]}
     >
       {/* Header */}
       <View style={styles.comoFuncionaHeader}>
-        <Text style={[styles.sectionTitle, { color: textColor }]}>
-          {t('landing.comoFunciona.sectionTitle')}
+        <Text style={[styles.sectionTitle, { color: textColor, },]}>
+          {t('landing.comoFunciona.sectionTitle',)}
         </Text>
-        <Text style={[styles.comoFuncionaSubtitle, { color: descriptionColor }]}>
-          {t('landing.comoFunciona.subtitle')}
+        <Text style={[styles.comoFuncionaSubtitle, { color: descriptionColor, },]}>
+          {t('landing.comoFunciona.subtitle',)}
         </Text>
       </View>
 
       {/* Step indicators with connector line — desktop only */}
       {!isMobile && (
         <View style={styles.stepIndicatorsRow}>
-          <View style={[styles.stepConnectorLine, { backgroundColor: connectorColor }]} />
+          <View style={[styles.stepConnectorLine, { backgroundColor: connectorColor, },]} />
           {/* Active progress overlay */}
           <Animated.View
             style={[
@@ -752,17 +616,17 @@ function ComoFuncionaSection({
               {
                 backgroundColor: accentColor,
                 width: progressAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0%', `${(activeStep / (steps.length - 1)) * 100}%`],
-                }),
+                  inputRange: [0, 1,],
+                  outputRange: ['0%', `${(activeStep / (steps.length - 1)) * 100}%`,],
+                },),
               },
             ]}
           />
-          {steps.map((step, idx) => (
+          {steps.map((step, idx,) => (
             <TouchableOpacity
               key={step.number}
               style={styles.stepIndicatorCell}
-              onPress={() => handleStepPress(idx)}
+              onPress={() => handleStepPress(idx,)}
               activeOpacity={0.8}
             >
               <View
@@ -775,32 +639,27 @@ function ComoFuncionaSection({
                   },
                 ]}
               >
-                <Text
-                  style={[
-                    styles.stepIndicatorText,
-                    { color: idx === activeStep ? (isDark ? '#050510' : '#fff') : stepNumColor },
-                  ]}
-                >
+                <Text style={[styles.stepIndicatorText, { color: idx === activeStep ? (isDark ? '#050510' : '#fff') : stepNumColor, },]}>
                   {step.number}
                 </Text>
               </View>
             </TouchableOpacity>
-          ))}
+          ),)}
         </View>
       )}
 
       {/* Progress bar (mobile only) */}
       {isMobile && (
-        <View style={[styles.mobileProgressTrack, { backgroundColor: connectorColor }]}>
+        <View style={[styles.mobileProgressTrack, { backgroundColor: connectorColor, },]}>
           <Animated.View
             style={[
               styles.mobileProgressFill,
               {
                 backgroundColor: accentColor,
                 width: progressAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0%', '100%'],
-                }),
+                  inputRange: [0, 1,],
+                  outputRange: ['0%', '100%',],
+                },),
               },
             ]}
           />
@@ -808,8 +667,8 @@ function ComoFuncionaSection({
       )}
 
       {/* Step cards */}
-      <View style={[styles.stepsContainer, isMobile && styles.stepsContainerMobile]}>
-        {steps.map((step, idx) => (
+      <View style={[styles.stepsContainer, isMobile && styles.stepsContainerMobile,]}>
+        {steps.map((step, idx,) => (
           <StepCard
             key={step.number}
             number={step.number}
@@ -821,9 +680,9 @@ function ComoFuncionaSection({
             accentColor={accentColor}
             isDark={isDark}
             isMobile={isMobile}
-            onPress={() => handleStepPress(idx)}
+            onPress={() => handleStepPress(idx,)}
           />
-        ))}
+        ),)}
       </View>
     </Animated.View>
   );
@@ -867,50 +726,43 @@ function PlaceCard({
   accentColor,
   isDark,
   onPress,
-}: PlaceCardData): React.JSX.Element {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [overlayVisible, setOverlayVisible] = useState(false);
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const fadeInAnim = useRef(new Animated.Value(0)).current;
-  const overlayAnim = useRef(new Animated.Value(0)).current;
-  const autoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+}: PlaceCardData,): React.JSX.Element {
+  const [currentIndex, setCurrentIndex,] = useState(0,);
+  const [overlayVisible, setOverlayVisible,] = useState(false,);
+  const scaleAnim = useRef(new Animated.Value(1,),).current;
+  const fadeInAnim = useRef(new Animated.Value(0,),).current;
+  const overlayAnim = useRef(new Animated.Value(0,),).current;
+  const autoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null,);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null,);
 
   // Card mount fade-in
   useEffect(() => {
-    Animated.timing(fadeInAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
-  }, []);
+    Animated.timing(fadeInAnim, { toValue: 1, duration: 500, useNativeDriver: true, },).start();
+  }, [],);
 
   // Auto-slide gallery
   useEffect(() => {
     if (images.length <= 1) return;
     autoSlideRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, CARD_AUTO_SLIDE_MS);
-    return () => {
-      if (autoSlideRef.current) clearInterval(autoSlideRef.current);
-    };
-  }, [images.length]);
+      setCurrentIndex((prev,) => (prev + 1) % images.length,);
+    }, CARD_AUTO_SLIDE_MS,);
+    return () => { if (autoSlideRef.current) clearInterval(autoSlideRef.current,); };
+  }, [images.length,],);
 
   // Overlay show/hide animation
   const showOverlay = useCallback(() => {
-    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    setOverlayVisible(true);
-    Animated.timing(overlayAnim, { toValue: 1, duration: 180, useNativeDriver: true }).start();
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current,);
+    setOverlayVisible(true,);
+    Animated.timing(overlayAnim, { toValue: 1, duration: 180, useNativeDriver: true, },).start();
     hideTimerRef.current = setTimeout(() => {
-      Animated.timing(overlayAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start(() =>
-        setOverlayVisible(false)
-      );
-    }, OVERLAY_HIDE_DELAY_MS);
-  }, [overlayAnim]);
+      Animated.timing(overlayAnim, { toValue: 0, duration: 300, useNativeDriver: true, },).start(() => setOverlayVisible(false,),);
+    }, OVERLAY_HIDE_DELAY_MS,);
+  }, [overlayAnim,],);
 
-  useEffect(
-    () => () => {
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-      if (autoSlideRef.current) clearInterval(autoSlideRef.current);
-    },
-    []
-  );
+  useEffect(() => () => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current,);
+    if (autoSlideRef.current) clearInterval(autoSlideRef.current,);
+  }, [],);
 
   const currentImage = images[currentIndex] ?? images[0];
 
@@ -920,53 +772,35 @@ function PlaceCard({
   const descColor = isDark ? 'rgba(232,232,255,0.65)' : '#64748b';
   const metaColor = isDark ? 'rgba(232,232,255,0.45)' : '#94a3b8';
 
-  const manualChangeImage = useCallback(
-    (dir: number) => {
-      if (autoSlideRef.current) clearInterval(autoSlideRef.current);
-      setCurrentIndex((prev) => {
-        const next = prev + dir;
-        if (next < 0) return images.length - 1;
-        if (next >= images.length) return 0;
-        return next;
-      });
-      // restart auto-slide
-      autoSlideRef.current = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % images.length);
-      }, CARD_AUTO_SLIDE_MS);
-      showOverlay();
-    },
-    [images.length, showOverlay]
-  );
+  const manualChangeImage = useCallback((dir: number,) => {
+    if (autoSlideRef.current) clearInterval(autoSlideRef.current,);
+    setCurrentIndex((prev,) => {
+      const next = prev + dir;
+      if (next < 0) return images.length - 1;
+      if (next >= images.length) return 0;
+      return next;
+    },);
+    // restart auto-slide
+    autoSlideRef.current = setInterval(() => {
+      setCurrentIndex((prev,) => (prev + 1) % images.length,);
+    }, CARD_AUTO_SLIDE_MS,);
+    showOverlay();
+  }, [images.length, showOverlay,],);
 
   const handlePressIn = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 1.03,
-      useNativeDriver: true,
-      friction: 6,
-      tension: 200,
-    }).start();
+    Animated.spring(scaleAnim, { toValue: 1.03, useNativeDriver: true, friction: 6, tension: 200, },).start();
     showOverlay();
-  }, [scaleAnim, showOverlay]);
+  }, [scaleAnim, showOverlay,],);
 
   const handlePressOut = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      friction: 6,
-      tension: 200,
-    }).start();
-  }, [scaleAnim]);
+    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, friction: 6, tension: 200, },).start();
+  }, [scaleAnim,],);
 
   return (
     <Animated.View
       style={[
         styles.placeCard,
-        {
-          backgroundColor: cardBgColor,
-          borderColor: cardBorderColor,
-          transform: [{ scale: scaleAnim }],
-          opacity: fadeInAnim,
-        },
+        { backgroundColor: cardBgColor, borderColor: cardBorderColor, transform: [{ scale: scaleAnim, },], opacity: fadeInAnim, },
       ]}
     >
       <TouchableOpacity
@@ -978,26 +812,23 @@ function PlaceCard({
       >
         {/* Image carousel */}
         <View style={styles.placeCardImageWrap}>
-          <Image source={{ uri: currentImage }} style={styles.placeCardImage} resizeMode='cover' />
+          <Image source={{ uri: currentImage, }} style={styles.placeCardImage} resizeMode="cover" />
 
           {/* Overlay controls — visible only when user interacts */}
           {overlayVisible && (
-            <Animated.View
-              style={[styles.imageOverlay, { opacity: overlayAnim }]}
-              pointerEvents='box-none'
-            >
+            <Animated.View style={[styles.imageOverlay, { opacity: overlayAnim, },]} pointerEvents="box-none">
               {/* Tags top-left */}
-              <View style={styles.placeCardTagsRow} pointerEvents='none'>
-                {tags.map((tag) => (
+              <View style={styles.placeCardTagsRow} pointerEvents="none">
+                {tags.map((tag,) => (
                   <View key={tag} style={styles.placeCardTag}>
                     <Text style={styles.placeCardTagText}>{tag}</Text>
                   </View>
-                ))}
+                ),)}
               </View>
 
               {/* Rating top-right */}
-              <View style={styles.placeCardRatingBadge} pointerEvents='none'>
-                <StarIcon size={12} color='#facc15' strokeWidth={0} fill='#facc15' />
+              <View style={styles.placeCardRatingBadge} pointerEvents="none">
+                <StarIcon size={12} color="#facc15" strokeWidth={0} fill="#facc15" />
                 <Text style={styles.placeCardRatingText}>{rating}</Text>
               </View>
 
@@ -1005,18 +836,18 @@ function PlaceCard({
               {images.length > 1 && (
                 <>
                   <TouchableOpacity
-                    style={[styles.carouselArrow, styles.carouselArrowLeft]}
-                    onPress={() => manualChangeImage(-1)}
-                    hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+                    style={[styles.carouselArrow, styles.carouselArrowLeft,]}
+                    onPress={() => manualChangeImage(-1,)}
+                    hitSlop={{ top: 8, bottom: 8, left: 4, right: 4, }}
                   >
-                    <ChevronLeftIcon size={18} color='#fff' strokeWidth={2.5} />
+                    <ChevronLeftIcon size={18} color="#fff" strokeWidth={2.5} />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.carouselArrow, styles.carouselArrowRight]}
-                    onPress={() => manualChangeImage(1)}
-                    hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+                    style={[styles.carouselArrow, styles.carouselArrowRight,]}
+                    onPress={() => manualChangeImage(1,)}
+                    hitSlop={{ top: 8, bottom: 8, left: 4, right: 4, }}
                   >
-                    <ChevronRightIcon size={18} color='#fff' strokeWidth={2.5} />
+                    <ChevronRightIcon size={18} color="#fff" strokeWidth={2.5} />
                   </TouchableOpacity>
                 </>
               )}
@@ -1025,18 +856,13 @@ function PlaceCard({
 
           {/* Pagination dots — always visible, small */}
           {images.length > 1 && (
-            <View style={styles.paginationDotsRow} pointerEvents='none'>
-              {images.map((_, idx) => (
+            <View style={styles.paginationDotsRow} pointerEvents="none">
+              {images.map((_, idx,) => (
                 <View
                   key={idx}
-                  style={[
-                    styles.paginationDot,
-                    idx === currentIndex
-                      ? styles.paginationDotActive
-                      : styles.paginationDotInactive,
-                  ]}
+                  style={[styles.paginationDot, idx === currentIndex ? styles.paginationDotActive : styles.paginationDotInactive,]}
                 />
-              ))}
+              ),)}
             </View>
           )}
         </View>
@@ -1044,40 +870,26 @@ function PlaceCard({
         {/* Body */}
         <View style={styles.placeCardBody}>
           <View style={styles.placeCardTitleRow}>
-            <Text style={[styles.placeCardTitle, { color: titleColor }]} numberOfLines={1}>
-              {title}
-            </Text>
+            <Text style={[styles.placeCardTitle, { color: titleColor, },]} numberOfLines={1}>{title}</Text>
             {isTopRated && (
-              <View style={[styles.topRatedBadge, { borderColor: accentColor }]}>
-                <Text style={[styles.topRatedText, { color: accentColor }]}>{topRatedLabel}</Text>
+              <View style={[styles.topRatedBadge, { borderColor: accentColor, },]}>
+                <Text style={[styles.topRatedText, { color: accentColor, },]}>{topRatedLabel}</Text>
               </View>
             )}
           </View>
-          <Text style={[styles.placeCardMeta, { color: metaColor }]}>{meta}</Text>
-          <Text style={[styles.placeCardDescription, { color: descColor }]} numberOfLines={3}>
-            {description}
-          </Text>
+          <Text style={[styles.placeCardMeta, { color: metaColor, },]}>{meta}</Text>
+          <Text style={[styles.placeCardDescription, { color: descColor, },]} numberOfLines={3}>{description}</Text>
           <View style={styles.placeCardFooter}>
             {/* ATN price with coin logo */}
             <View style={styles.placeCardPriceRow}>
-              <AirsBrandMark
-                size={18}
-                fillColor={accentColor}
-                cutoutColor={isDark ? '#050510' : '#ffffff'}
-              />
-              <Text style={[styles.placeCardPrice, { color: titleColor }]}>
+              <AirsBrandMark size={18} fillColor={accentColor} cutoutColor={isDark ? '#050510' : '#ffffff'} />
+              <Text style={[styles.placeCardPrice, { color: titleColor, },]}>
                 {atnLabel}{' '}
-                <Text style={[styles.placeCardPriceSub, { color: metaColor }]}>{atnUnit}</Text>
+                <Text style={[styles.placeCardPriceSub, { color: metaColor, },]}>{atnUnit}</Text>
               </Text>
             </View>
-            <TouchableOpacity
-              style={[styles.placeCardButton, { backgroundColor: accentColor }]}
-              onPress={onPress}
-              activeOpacity={0.82}
-            >
-              <Text style={[styles.placeCardButtonText, { color: isDark ? '#050510' : '#fff' }]}>
-                {ctaLabel}
-              </Text>
+            <TouchableOpacity style={[styles.placeCardButton, { backgroundColor: accentColor, },]} onPress={onPress} activeOpacity={0.82}>
+              <Text style={[styles.placeCardButtonText, { color: isDark ? '#050510' : '#fff', },]}>{ctaLabel}</Text>
               <ArrowRightIcon size={14} color={isDark ? '#050510' : '#fff'} strokeWidth={2.5} />
             </TouchableOpacity>
           </View>
@@ -1093,84 +905,66 @@ function BeneficiosSection({
   accentColor,
   textColor,
   isMobile,
-}: SectionProps): React.JSX.Element {
-  const { t } = useAppTranslation('mobile');
+}: SectionProps,): React.JSX.Element {
+  const { t, } = useAppTranslation('mobile',);
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(24)).current;
+  const fadeAnim = useRef(new Animated.Value(0,),).current;
+  const slideAnim = useRef(new Animated.Value(24,),).current;
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
-      Animated.spring(slideAnim, { toValue: 0, friction: 7, tension: 70, useNativeDriver: true }),
-    ]).start();
-  }, []);
+      Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true, },),
+      Animated.spring(slideAnim, { toValue: 0, friction: 7, tension: 70, useNativeDriver: true, },),
+    ],).start();
+  }, [],);
 
-  const topRatedLabel = t('landing.beneficios.topRated');
-  const atnUnit = t('landing.beneficios.atnUnit');
-  const ctaLabel = t('landing.beneficios.cta');
+  const topRatedLabel = t('landing.beneficios.topRated',);
+  const atnUnit = t('landing.beneficios.atnUnit',);
+  const ctaLabel = t('landing.beneficios.cta',);
 
   const benefits = [
     {
       key: 'eco',
-      images: [
-        'https://images.unsplash.com/photo-1542601906897-ecd3e6a7fbe1?q=80&w=2013&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=2070&auto=format&fit=crop',
-      ],
-      tags: [t('landing.beneficios.cards.eco.tag1'), t('landing.beneficios.cards.eco.tag2')],
+      images: ['https://images.unsplash.com/photo-1542601906897-ecd3e6a7fbe1?q=80&w=2013&auto=format&fit=crop', 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=2070&auto=format&fit=crop',],
+      tags: [t('landing.beneficios.cards.eco.tag1',), t('landing.beneficios.cards.eco.tag2',),],
       rating: 4.8,
-      title: t('landing.beneficios.cards.eco.title'),
-      meta: t('landing.beneficios.cards.eco.meta'),
+      title: t('landing.beneficios.cards.eco.title',),
+      meta: t('landing.beneficios.cards.eco.meta',),
       isTopRated: true,
-      description: t('landing.beneficios.cards.eco.description'),
-      atnLabel: t('landing.beneficios.cards.eco.atn'),
+      description: t('landing.beneficios.cards.eco.description',),
+      atnLabel: t('landing.beneficios.cards.eco.atn',),
     },
     {
       key: 'experiencias',
-      images: [
-        'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=2070&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop',
-      ],
-      tags: [
-        t('landing.beneficios.cards.experiencias.tag1'),
-        t('landing.beneficios.cards.experiencias.tag2'),
-      ],
+      images: ['https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=2070&auto=format&fit=crop', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop',],
+      tags: [t('landing.beneficios.cards.experiencias.tag1',), t('landing.beneficios.cards.experiencias.tag2',),],
       rating: 4.9,
-      title: t('landing.beneficios.cards.experiencias.title'),
-      meta: t('landing.beneficios.cards.experiencias.meta'),
+      title: t('landing.beneficios.cards.experiencias.title',),
+      meta: t('landing.beneficios.cards.experiencias.meta',),
       isTopRated: false,
-      description: t('landing.beneficios.cards.experiencias.description'),
-      atnLabel: t('landing.beneficios.cards.experiencias.atn'),
+      description: t('landing.beneficios.cards.experiencias.description',),
+      atnLabel: t('landing.beneficios.cards.experiencias.atn',),
     },
     {
       key: 'premium',
-      images: [
-        'https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?q=80&w=1974&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2069&auto=format&fit=crop',
-      ],
-      tags: [
-        t('landing.beneficios.cards.premium.tag1'),
-        t('landing.beneficios.cards.premium.tag2'),
-      ],
+      images: ['https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?q=80&w=1974&auto=format&fit=crop', 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2069&auto=format&fit=crop',],
+      tags: [t('landing.beneficios.cards.premium.tag1',), t('landing.beneficios.cards.premium.tag2',),],
       rating: 4.7,
-      title: t('landing.beneficios.cards.premium.title'),
-      meta: t('landing.beneficios.cards.premium.meta'),
+      title: t('landing.beneficios.cards.premium.title',),
+      meta: t('landing.beneficios.cards.premium.meta',),
       isTopRated: false,
-      description: t('landing.beneficios.cards.premium.description'),
-      atnLabel: t('landing.beneficios.cards.premium.atn'),
+      description: t('landing.beneficios.cards.premium.description',),
+      atnLabel: t('landing.beneficios.cards.premium.atn',),
     },
     {
       key: 'cursos',
-      images: [
-        'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop',
-      ],
-      tags: [t('landing.beneficios.cards.cursos.tag1'), t('landing.beneficios.cards.cursos.tag2')],
+      images: ['https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop', 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop',],
+      tags: [t('landing.beneficios.cards.cursos.tag1',), t('landing.beneficios.cards.cursos.tag2',),],
       rating: 4.6,
-      title: t('landing.beneficios.cards.cursos.title'),
-      meta: t('landing.beneficios.cards.cursos.meta'),
+      title: t('landing.beneficios.cards.cursos.title',),
+      meta: t('landing.beneficios.cards.cursos.meta',),
       isTopRated: false,
-      description: t('landing.beneficios.cards.cursos.description'),
-      atnLabel: t('landing.beneficios.cards.cursos.atn'),
+      description: t('landing.beneficios.cards.cursos.description',),
+      atnLabel: t('landing.beneficios.cards.cursos.atn',),
     },
   ];
 
@@ -1178,26 +972,18 @@ function BeneficiosSection({
     <Animated.View
       style={[
         styles.section,
-        {
-          backgroundColor: isDark ? '#050510' : '#f6f8fc',
-          opacity: fadeAnim,
-          transform: [{ translateY: slideAnim }],
-        },
+        { backgroundColor: isDark ? '#050510' : '#f6f8fc', opacity: fadeAnim, transform: [{ translateY: slideAnim, },], },
       ]}
     >
-      <Text style={[styles.sectionTitle, { color: textColor }]}>
-        {t('landing.beneficios.sectionTitle')}
+      <Text style={[styles.sectionTitle, { color: textColor, },]}>
+        {t('landing.beneficios.sectionTitle',)}
       </Text>
-      <Text
-        style={[styles.beneficiosSubtitle, { color: isDark ? 'rgba(232,232,255,0.7)' : '#64748b' }]}
-      >
-        {t('landing.beneficios.subtitle')}
+      <Text style={[styles.beneficiosSubtitle, { color: isDark ? 'rgba(232,232,255,0.7)' : '#64748b', },]}>
+        {t('landing.beneficios.subtitle',)}
       </Text>
 
-      <View
-        style={[styles.benefitsCardsContainer, isMobile && styles.benefitsCardsContainerMobile]}
-      >
-        {benefits.map((benefit) => (
+      <View style={[styles.benefitsCardsContainer, isMobile && styles.benefitsCardsContainerMobile,]}>
+        {benefits.map((benefit,) => (
           <PlaceCard
             key={benefit.key}
             images={benefit.images}
@@ -1214,7 +1000,7 @@ function BeneficiosSection({
             accentColor={accentColor}
             isDark={isDark}
           />
-        ))}
+        ),)}
       </View>
     </Animated.View>
   );
@@ -1297,7 +1083,7 @@ const styles = createTypographyStyles({
     overflow: 'hidden',
     backgroundColor: '#111',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 8, },
     shadowOpacity: 0.32,
     shadowRadius: 18,
     elevation: 12,
@@ -1328,7 +1114,7 @@ const styles = createTypographyStyles({
     color: '#ffffff',
     letterSpacing: 0.1,
     textShadowColor: 'rgba(0,0,0,0.6)',
-    textShadowOffset: { width: 0, height: 1 },
+    textShadowOffset: { width: 0, height: 1, },
     textShadowRadius: 4,
   },
   travelCardSubtitle: {
@@ -1338,7 +1124,7 @@ const styles = createTypographyStyles({
     letterSpacing: 0.2,
     marginTop: 3,
     textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 0, height: 1 },
+    textShadowOffset: { width: 0, height: 1, },
     textShadowRadius: 3,
   },
   travelCardOverview: {
@@ -1347,7 +1133,7 @@ const styles = createTypographyStyles({
     lineHeight: 19,
     color: 'rgba(255,255,255,0.92)',
     textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowOffset: { width: 0, height: 1 },
+    textShadowOffset: { width: 0, height: 1, },
     textShadowRadius: 2,
   },
 
@@ -1524,7 +1310,7 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 6, },
     shadowOpacity: 0.22,
     shadowRadius: 14,
     elevation: 8,
@@ -1557,8 +1343,8 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     zIndex: 2,
   },
-  carouselArrowLeft: { left: 8 },
-  carouselArrowRight: { right: 8 },
+  carouselArrowLeft: { left: 8, },
+  carouselArrowRight: { right: 8, },
   placeCardTagsRow: {
     position: 'absolute',
     top: 10,
@@ -1610,8 +1396,8 @@ const styles = createTypographyStyles({
     height: 5,
     borderRadius: 3,
   },
-  paginationDotActive: { width: 14, backgroundColor: '#fff' },
-  paginationDotInactive: { width: 5, backgroundColor: 'rgba(255,255,255,0.45)' },
+  paginationDotActive: { width: 14, backgroundColor: '#fff', },
+  paginationDotInactive: { width: 5, backgroundColor: 'rgba(255,255,255,0.45)', },
   placeCardBody: {
     padding: 16,
     gap: 8,
@@ -1677,4 +1463,4 @@ const styles = createTypographyStyles({
     fontSize: 13,
     fontWeight: '600',
   },
-});
+},);
