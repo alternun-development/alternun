@@ -193,6 +193,10 @@
     "home": {
       "title": "Aplicacion web de Alternun",
       "welcome": "Bienvenido a la aplicacion de Next.js."
+    },
+    "footer": {
+      "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",
+      "help": "Ayuda"
     }
   },
   "docs": {
