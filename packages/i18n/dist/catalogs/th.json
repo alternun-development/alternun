@@ -121,6 +121,9 @@
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. สงวนลิขสิทธิ์ทั้งหมด.",
+      "help": "ช่วยเหลือ",
+      "privacy": "นโยบายความเป็นส่วนตัว",
+      "terms": "เงื่อนไข",
       "links": {
         "documentation": "เอกสาร",
         "project": "ไปที่ Alternun.io",
@@ -190,6 +193,10 @@
     "home": {
       "title": "เว็บแอปพลิเคชัน Alternun",
       "welcome": "ยินดีต้อนรับสู่แอปพลิเคชัน Next.js"
+    },
+    "footer": {
+      "copyright": "(c) {{year}} Alternun. สงวนลิขสิทธิ์ทั้งหมด.",
+      "help": "ช่วยเหลือ"
     }
   },
   "docs": {

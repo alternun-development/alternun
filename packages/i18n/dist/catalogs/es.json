@@ -121,6 +121,9 @@
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",
+      "help": "Ayuda",
+      "privacy": "Privacidad",
+      "terms": "Términos",
       "links": {
         "documentation": "Documentacion",
         "project": "Ir a Alternun.io",
@@ -190,6 +193,10 @@
     "home": {
       "title": "Aplicacion web de Alternun",
       "welcome": "Bienvenido a la aplicacion de Next.js."
+    },
+    "footer": {
+      "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",
+      "help": "Ayuda"
     }
   },
   "docs": {
