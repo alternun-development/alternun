@@ -41,6 +41,7 @@ import {
 } from 'lucide-react-native';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import LandingFooter from '../common/LandingFooter';
+import BackToTopButton from '../common/BackToTopButton';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { getAirsIntroVideoUrl } from './airsIntroVideoSource';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -190,7 +191,10 @@ function buildVideoHtml(
   `;
 }
 
-const AirsIntroExperience = forwardRef(
+const AirsIntroExperience = forwardRef<
+  { scrollToSection: (offset: number) => void },
+  AirsIntroExperienceProps
+>(
   (
     {
       onContinueToDashboard,
@@ -204,7 +208,7 @@ const AirsIntroExperience = forwardRef(
       onActiveSectionChange,
       sectionOffsets,
       heroHeight: heroHeightProp,
-    }: AirsIntroExperienceProps,
+    },
     ref
   ) => {
     const scrollRef = useRef<any>(null);
