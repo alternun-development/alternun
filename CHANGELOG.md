@@ -1,10 +1,21 @@
-## [1.0.53](https://github.com/alternun-development/alternun/compare/v1.0.52...v1.0.53) (2026-04-10)
+## [1.0.56](https://github.com/alternun-development/alternun/compare/v1.0.52...v1.0.56) (2026-04-11)
 
 ### Bug Fixes
 
-- allow local Better Auth testing by routing the issuer exchange to the local API
-- document Better Auth trusted origins and local auth envs
-- surface a trusted-origin hint when Better Auth preflight requests fail
+- add i18n translations to FooterCopyright component ([f599b20](https://github.com/alternun-development/alternun/commit/f599b20ee183f157b42253a85b3df5269d00c85e))
+- center align mobile landing footer bottom bar in compact mode ([64608f4](https://github.com/alternun-development/alternun/commit/64608f4f580872fbed1444659cef548f964e5c4c))
+- **mobile,auth,i18n:** changelogData ([a9ae766](https://github.com/alternun-development/alternun/commit/a9ae766e7e0c2409a3eb5013678739e07d6206cb))
+- **mobile:** center footer bottom bar content layout ([0c73add](https://github.com/alternun-development/alternun/commit/0c73add66e8ed0ee4d806ebd7d4ec1a997831a94))
+- **mobile:** show underline on hover only for privacy & terms links ([6ddd9a8](https://github.com/alternun-development/alternun/commit/6ddd9a80bcc72e57be5b2f9bb3ac7f9e3605577a))
+- **web:** center landing footer content ([a24dd46](https://github.com/alternun-development/alternun/commit/a24dd46a269c9a9009bfb7d8bf99a8f60e76c349))
+- **web:** properly center landing footer and add accessibility labels ([9d8635f](https://github.com/alternun-development/alternun/commit/9d8635f0d119c58fd6735322f5672ec16cedf328))
+
+### Features
+
+- **i18n,web:** add footer translations to web i18n catalogs ([f556415](https://github.com/alternun-development/alternun/commit/f556415291ae9fc1195f38bf7cae0759407e7a9e))
+- **mobile,api:** add auth footer with policy & help drawers ([3133d53](https://github.com/alternun-development/alternun/commit/3133d53d53f95df1c2eb32512b1ea5f180a8d35d))
+- **mobile:** add underline effect to privacy & terms links ([e027b07](https://github.com/alternun-development/alternun/commit/e027b07577ccef08c25f93a17920b63e1ee3d54d))
+- **web:** use proper translations in landing footer ([1cb8863](https://github.com/alternun-development/alternun/commit/1cb8863f7390075d7a00d586cfb5825b54f4048d))
 
 ## [1.0.52](https://github.com/alternun-development/alternun/compare/v1.0.51...v1.0.52) (2026-04-10)
 
