@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 export default function LandingFooter() {
   const [version, setVersion] = useState('1.0.0');
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     // Load version from package.json
@@ -17,12 +18,12 @@ export default function LandingFooter() {
   }, []);
 
   return (
-    <footer className='w-full bg-white/40 backdrop-blur-sm border-t border-gray-200/30'>
+    <footer className='w-full bg-white/40 backdrop-blur-sm border-t border-gray-200/30 center'>
       <div className='w-full px-8 py-6 flex justify-center'>
         <div className='flex flex-col items-center gap-4'>
           {/* Copyright — centered */}
           <p className='text-gray-900 font-semibold text-center'>
-            (c) 2026 Alternun. All rights reserved.
+            (c) {currentYear} Alternun. All rights reserved.
           </p>
 
           {/* Version and Help Icon — centered below */}
