@@ -121,6 +121,9 @@
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. สงวนลิขสิทธิ์ทั้งหมด.",
+      "help": "ช่วยเหลือ",
+      "privacy": "นโยบายความเป็นส่วนตัว",
+      "terms": "เงื่อนไข",
       "links": {
         "documentation": "เอกสาร",
         "project": "ไปที่ Alternun.io",
