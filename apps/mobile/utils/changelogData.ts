@@ -9,7 +9,49 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.62](https://github.com/alternun-development/alternun/compare/v1.0.60...v1.0.62) (2026-04-11)
+export const CHANGELOG_TEXT = `## [1.0.63](https://github.com/alternun-development/alternun/compare/v1.0.62...v1.0.63) (2026-04-12)
+
+
+### Bug Fixes
+
+* **mobile:** landing extra sections and header nav ([e25c236](https://github.com/alternun-development/alternun/commit/e25c23654a8019d2920600e93e875cd75991399f))
+* **mobile:** landing nav bar styles and restore extra sections correctly ([56043fe](https://github.com/alternun-development/alternun/commit/56043fe0dbe849b916dd27b6b11391eee3d71531))
+* **mobile:** restore BackToTopButton and fix forwardRef export in AirsIntroExperience ([845f47f](https://github.com/alternun-development/alternun/commit/845f47f97a4314fbd3b1befe36d776cef47c6197))
+* **mobile:** restore BackToTopButton and properly type forwardRef export ([783a9ce](https://github.com/alternun-development/alternun/commit/783a9ce009a12313c60a017aca998ebb9672dfab))
+* **mobile:** TopNav dropdown animations and layout width ([b36e80b](https://github.com/alternun-development/alternun/commit/b36e80b1475465f3109a9d36dd8658787b69a9c8))
+* **repo,mobile,auth:** settings, airs, atn, rbi ([3e82a94](https://github.com/alternun-development/alternun/commit/3e82a94acd18e95d3da353d1ceb4d3f2951fc772))
+
+
+### Features
+
+* **mobile:** show PublicLandingPage for unauthenticated users with header nav ([57fb86d](https://github.com/alternun-development/alternun/commit/57fb86d7216ab89260dd053ed3db4c1100ff0942))
+
+
+
+
+
+## [1.0.63](https://github.com/alternun-development/alternun/compare/v1.0.62...v1.0.63) (2026-04-12)
+
+
+### Bug Fixes
+
+* **mobile:** landing extra sections and header nav ([e25c236](https://github.com/alternun-development/alternun/commit/e25c23654a8019d2920600e93e875cd75991399f))
+* **mobile:** landing nav bar styles and restore extra sections correctly ([56043fe](https://github.com/alternun-development/alternun/commit/56043fe0dbe849b916dd27b6b11391eee3d71531))
+* **mobile:** restore BackToTopButton and fix forwardRef export in AirsIntroExperience ([845f47f](https://github.com/alternun-development/alternun/commit/845f47f97a4314fbd3b1befe36d776cef47c6197))
+* **mobile:** restore BackToTopButton and properly type forwardRef export ([783a9ce](https://github.com/alternun-development/alternun/commit/783a9ce009a12313c60a017aca998ebb9672dfab))
+* **mobile:** TopNav dropdown animations and layout width ([b36e80b](https://github.com/alternun-development/alternun/commit/b36e80b1475465f3109a9d36dd8658787b69a9c8))
+* **repo,mobile,auth:** settings, airs, atn, rbi ([3e82a94](https://github.com/alternun-development/alternun/commit/3e82a94acd18e95d3da353d1ceb4d3f2951fc772))
+
+
+### Features
+
+* **mobile:** show PublicLandingPage for unauthenticated users with header nav ([57fb86d](https://github.com/alternun-development/alternun/commit/57fb86d7216ab89260dd053ed3db4c1100ff0942))
+
+
+
+
+
+## [1.0.62](https://github.com/alternun-development/alternun/compare/v1.0.60...v1.0.62) (2026-04-11)
 
 ### Bug Fixes
 
@@ -1143,4 +1185,4 @@ All notable changes to this project will be documented in this file.
 /**
  * Version extracted from package.json for display purposes.
  */
-export const APP_VERSION = '1.0.62';
+export const APP_VERSION = '1.0.63';
