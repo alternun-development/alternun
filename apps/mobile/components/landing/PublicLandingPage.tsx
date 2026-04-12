@@ -3,13 +3,14 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
-  ImageBackground,
   Image,
   TouchableOpacity,
   Animated,
   StyleSheet,
   useWindowDimensions,
+  type ImageSourcePropType,
 } from 'react-native';
+import { Image as ExpoImage, type ImageContentPosition } from 'expo-image';
 import {
   Leaf,
   Zap,
@@ -43,10 +44,55 @@ const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
 const ArrowRightIcon = ArrowRight as React.FC<LucideProps>;
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 
-const TOKEN_IMAGES = {
-  airs: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2071&auto=format&fit=crop',
-  rbi: 'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?q=80&w=1974&auto=format&fit=crop',
-  atn: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?q=80&w=1975&auto=format&fit=crop',
+const TOKEN_IMAGES: Record<'airs' | 'rbi' | 'atn', ImageSourcePropType> = {
+  airs: require('../../assets/images/benefits/airs.png'),
+  rbi: require('../../assets/images/benefits/rbi.png'),
+  atn: require('../../assets/images/benefits/atn.png'),
+};
+
+const BENEFIT_IMAGES: Record<'eco' | 'experiencias' | 'premium' | 'cursos', ImageSourcePropType[]> =
+  {
+    eco: [
+      {
+        uri: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=2070&auto=format&fit=crop',
+      },
+      {
+        uri: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2070&auto=format&fit=crop',
+      },
+    ],
+    experiencias: [
+      {
+        uri: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=2070&auto=format&fit=crop',
+      },
+      {
+        uri: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop',
+      },
+    ],
+    premium: [
+      {
+        uri: 'https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?q=80&w=1974&auto=format&fit=crop',
+      },
+      {
+        uri: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2069&auto=format&fit=crop',
+      },
+    ],
+    cursos: [
+      {
+        uri: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop',
+      },
+      {
+        uri: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop',
+      },
+    ],
+  };
+
+const TOKEN_IMAGE_FOCI: Record<
+  'airs' | 'rbi' | 'atn',
+  { contentPosition: ImageContentPosition; zoom: number }
+> = {
+  airs: { contentPosition: 'center top', zoom: 1.1 },
+  rbi: { contentPosition: 'center', zoom: 1.06 },
+  atn: { contentPosition: 'center bottom', zoom: 1.18 },
 };
 
 // ── Auto-loop interval for ComoFunciona steps (ms) ────────────────────────────
@@ -54,17 +100,26 @@ const STEP_LOOP_INTERVAL = 3200;
 
 interface PublicLandingPageProps {
   onSignIn: () => void;
+  /** Optional handler for "continue to dashboard" with dontShowAgain flag */
+  onContinueToDashboard?: (dontShowAgain: boolean) => void;
+  onOpenSettings?: () => void;
 }
 
-const NAV_ITEMS = [
-  { id: 'inicio', label: 'Inicio' },
-  { id: 'el-proyecto', label: 'El proyecto' },
-  { id: 'como-funciona', label: 'Cómo funciona' },
-  { id: 'beneficios', label: 'Beneficios' },
+const NAV_ITEM_IDS = ['inicio', 'el-proyecto', 'como-funciona', 'beneficios'];
+const NAV_ITEM_LABEL_KEYS = [
+  'landing.nav.start',
+  'landing.nav.project',
+  'landing.nav.howItWorks',
+  'landing.nav.benefits',
 ];
 
-export default function PublicLandingPage({ onSignIn }: PublicLandingPageProps): React.JSX.Element {
+export default function PublicLandingPage({
+  onSignIn,
+  onContinueToDashboard,
+  onOpenSettings,
+}: PublicLandingPageProps): React.JSX.Element {
   const { themeMode } = useAppPreferences();
+  const { t } = useAppTranslation('mobile');
   const isDark = themeMode === 'dark';
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
@@ -77,6 +132,12 @@ export default function PublicLandingPage({ onSignIn }: PublicLandingPageProps):
   // Section offset tracking for anchor nav
   const sectionOffsetsRef = useRef<{ [key: string]: number }>({});
   const [activeSection, setActiveSection] = useState('inicio');
+
+  // Build nav items with translated labels
+  const navItems = NAV_ITEM_IDS.map((id, idx) => ({
+    id,
+    label: t(NAV_ITEM_LABEL_KEYS[idx]),
+  }));
 
   const extraSections = (
     <>
@@ -131,7 +192,10 @@ export default function PublicLandingPage({ onSignIn }: PublicLandingPageProps):
   return (
     <PublicLandingPageWrapper
       onSignIn={onSignIn}
+      onContinueToDashboard={onContinueToDashboard}
+      onOpenSettings={onOpenSettings}
       extraSections={extraSections}
+      navItems={navItems}
       sectionOffsetsRef={sectionOffsetsRef}
       activeSection={activeSection}
       setActiveSection={setActiveSection}
@@ -144,7 +208,10 @@ export default function PublicLandingPage({ onSignIn }: PublicLandingPageProps):
 
 interface PublicLandingPageWrapperProps {
   onSignIn: () => void;
+  onContinueToDashboard?: (dontShowAgain: boolean) => void;
+  onOpenSettings?: () => void;
   extraSections: React.ReactNode;
+  navItems: Array<{ id: string; label: string }>;
   sectionOffsetsRef: React.MutableRefObject<{ [key: string]: number }>;
   activeSection: string;
   setActiveSection: (section: string) => void;
@@ -153,9 +220,16 @@ interface PublicLandingPageWrapperProps {
   isMobile: boolean;
 }
 
+interface AirsIntroExperienceHandle {
+  scrollToSection(offset: number): void;
+}
+
 function PublicLandingPageWrapper({
   onSignIn,
+  onContinueToDashboard,
+  onOpenSettings,
   extraSections,
+  navItems,
   sectionOffsetsRef,
   activeSection,
   setActiveSection,
@@ -163,8 +237,13 @@ function PublicLandingPageWrapper({
   accentColor,
   isMobile: _isMobile,
 }: PublicLandingPageWrapperProps): React.JSX.Element {
-  const { t } = useAppTranslation('mobile');
-  const airsIntroRef = useRef<any>(null);
+  const airsIntroRef = useRef<AirsIntroExperienceHandle | null>(null);
+  const handleContinueToDashboard = useCallback(
+    (_: boolean): void => {
+      onSignIn();
+    },
+    [onSignIn]
+  );
   const { height: screenHeight } = useWindowDimensions();
   const heroHeight = Math.max(screenHeight * 1.05, 740);
 
@@ -172,7 +251,8 @@ function PublicLandingPageWrapper({
     (sectionId: string) => {
       setActiveSection(sectionId);
       // Scroll to section with smooth animation
-      const sectionOffset = sectionOffsetsRef.current[sectionId];
+      // For 'inicio' (home/hero), scroll to top (0)
+      const sectionOffset = sectionId === 'inicio' ? 0 : sectionOffsetsRef.current[sectionId];
       if (sectionOffset !== undefined && airsIntroRef.current) {
         // Call the exposed scrollToSection method
         airsIntroRef.current?.scrollToSection?.(sectionOffset);
@@ -190,7 +270,7 @@ function PublicLandingPageWrapper({
   );
 
   // Nav links to inject into AirsIntroExperience as headerNavLinks
-  const headerNavLinks = NAV_ITEMS.map((item) => ({
+  const headerNavLinks = navItems.map((item) => ({
     id: item.id,
     label: item.label,
     isActive: activeSection === item.id,
@@ -201,14 +281,14 @@ function PublicLandingPageWrapper({
     <View style={styles.publicLandingContainer}>
       <AirsIntroExperience
         ref={airsIntroRef}
-        onContinueToDashboard={() => onSignIn()}
+        onContinueToDashboard={onContinueToDashboard ?? handleContinueToDashboard}
         onSignIn={onSignIn}
+        onOpenSettings={onOpenSettings}
         extraSections={extraSections}
         headerNavLinks={headerNavLinks}
         accentColor={accentColor}
         isDark={isDark}
         showCta={true}
-        ctaLabel={t('landing.nav.signInCta')}
         onActiveSectionChange={handleActiveSectionChange}
         sectionOffsets={sectionOffsetsRef.current}
         heroHeight={heroHeight}
@@ -231,7 +311,9 @@ interface SectionProps {
 // TokenCard — tap to reveal overview (collapsed by default, overview on press)
 // ─────────────────────────────────────────────────────────────────────────────
 interface TokenCardProps {
-  imageUrl: string;
+  imageSource: ImageSourcePropType;
+  contentPosition: ImageContentPosition;
+  imageZoom: number;
   logo: React.FC<LucideProps>;
   title: string;
   subtitle: string;
@@ -241,7 +323,9 @@ interface TokenCardProps {
 }
 
 function TokenCard({
-  imageUrl,
+  imageSource,
+  contentPosition,
+  imageZoom,
   logo: _LogoIcon,
   title,
   subtitle,
@@ -299,11 +383,18 @@ function TokenCard({
     <View style={styles.travelCard}>
       <TouchableOpacity activeOpacity={0.9} onPress={toggle}>
         {/* Fixed-height image — card height never changes */}
-        <ImageBackground
-          source={{ uri: imageUrl }}
-          style={styles.travelCardImage}
-          imageStyle={styles.travelCardImageStyle}
-        >
+        <View style={styles.travelCardImage}>
+          <ExpoImage
+            source={imageSource}
+            contentFit='cover'
+            contentPosition={contentPosition}
+            style={[
+              StyleSheet.absoluteFillObject,
+              {
+                transform: [{ scale: imageZoom }],
+              },
+            ]}
+          />
           {/* Strong gradient from bottom for contrast */}
           <Animated.View
             style={[
@@ -342,7 +433,7 @@ function TokenCard({
           >
             <Text style={styles.travelCardOverview}>{overview}</Text>
           </Animated.View>
-        </ImageBackground>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -371,7 +462,9 @@ function ElProyectoSection({
   const tokens = [
     {
       key: 'airs',
-      imageUrl: TOKEN_IMAGES.airs,
+      imageSource: TOKEN_IMAGES.airs,
+      contentPosition: TOKEN_IMAGE_FOCI.airs.contentPosition,
+      imageZoom: TOKEN_IMAGE_FOCI.airs.zoom,
       logo: StarIcon,
       title: t('landing.elProyecto.airs.title'),
       subtitle: t('landing.elProyecto.airs.subtitle'),
@@ -379,7 +472,9 @@ function ElProyectoSection({
     },
     {
       key: 'rbi',
-      imageUrl: TOKEN_IMAGES.rbi,
+      imageSource: TOKEN_IMAGES.rbi,
+      contentPosition: TOKEN_IMAGE_FOCI.rbi.contentPosition,
+      imageZoom: TOKEN_IMAGE_FOCI.rbi.zoom,
       logo: AwardIcon,
       title: t('landing.elProyecto.rbi.title'),
       subtitle: t('landing.elProyecto.rbi.subtitle'),
@@ -387,7 +482,9 @@ function ElProyectoSection({
     },
     {
       key: 'atn',
-      imageUrl: TOKEN_IMAGES.atn,
+      imageSource: TOKEN_IMAGES.atn,
+      contentPosition: TOKEN_IMAGE_FOCI.atn.contentPosition,
+      imageZoom: TOKEN_IMAGE_FOCI.atn.zoom,
       logo: CoinsIcon,
       title: t('landing.elProyecto.atn.title'),
       subtitle: t('landing.elProyecto.atn.subtitle'),
@@ -414,7 +511,9 @@ function ElProyectoSection({
         {tokens.map((token) => (
           <TokenCard
             key={token.key}
-            imageUrl={token.imageUrl}
+            imageSource={token.imageSource}
+            contentPosition={token.contentPosition}
+            imageZoom={token.imageZoom}
             logo={token.logo}
             title={token.title}
             subtitle={token.subtitle}
@@ -429,6 +528,155 @@ function ElProyectoSection({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// ── Custom inline SVG icons for each step ────────────────────────────────────
+function WalletSvgIcon({ color, size }: { color: string; size: number }): React.JSX.Element {
+  const Svg = 'svg' as any;
+  const Rect = 'rect' as any;
+  const Path = 'path' as any;
+  const Circle = 'circle' as any;
+  return (
+    <View style={{ width: size, height: size }}>
+      <Svg width={size} height={size} viewBox='0 0 24 24' fill='none'>
+        <Rect x='2' y='5' width='20' height='15' rx='3' stroke={color} strokeWidth='1.6' />
+        <Path d='M2 9h20' stroke={color} strokeWidth='1.6' />
+        <Circle cx='17' cy='14' r='1.5' fill={color} />
+        <Path d='M6 5V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1' stroke={color} strokeWidth='1.6' />
+      </Svg>
+    </View>
+  );
+}
+
+function ImpactSvgIcon({ color, size }: { color: string; size: number }): React.JSX.Element {
+  const Svg = 'svg' as any;
+  const Path = 'path' as any;
+  return (
+    <View style={{ width: size, height: size }}>
+      <Svg width={size} height={size} viewBox='0 0 24 24' fill='none'>
+        <Path
+          d='M13 2L3 14h9l-1 8 10-12h-9l1-8z'
+          stroke={color}
+          strokeWidth='1.6'
+          strokeLinejoin='round'
+        />
+      </Svg>
+    </View>
+  );
+}
+
+function RbiSvgIcon({ color, size }: { color: string; size: number }): React.JSX.Element {
+  const Svg = 'svg' as any;
+  const Path = 'path' as any;
+  const Circle = 'circle' as any;
+  return (
+    <View style={{ width: size, height: size }}>
+      <Svg width={size} height={size} viewBox='0 0 24 24' fill='none'>
+        <Path
+          d='M3 17l4-8 4 4 4-6 4 10'
+          stroke={color}
+          strokeWidth='1.6'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+        />
+        <Circle cx='19' cy='17' r='2' fill={color} opacity='0.7' />
+      </Svg>
+    </View>
+  );
+}
+
+function ExchangeSvgIcon({ color, size }: { color: string; size: number }): React.JSX.Element {
+  const Svg = 'svg' as any;
+  const Path = 'path' as any;
+  const Circle = 'circle' as any;
+  return (
+    <View style={{ width: size, height: size }}>
+      <Svg width={size} height={size} viewBox='0 0 24 24' fill='none'>
+        <Path
+          d='M7 16V4m0 0L4 7m3-3l3 3'
+          stroke={color}
+          strokeWidth='1.6'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+        />
+        <Path
+          d='M17 8v12m0 0l3-3m-3 3l-3-3'
+          stroke={color}
+          strokeWidth='1.6'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+        />
+        <Circle cx='7' cy='18' r='2' fill={color} opacity='0.5' />
+        <Circle cx='17' cy='6' r='2' fill={color} opacity='0.5' />
+      </Svg>
+    </View>
+  );
+}
+
+const STEP_SVG_ICONS = [WalletSvgIcon, ImpactSvgIcon, RbiSvgIcon, ExchangeSvgIcon] as const;
+
+// ── AnimatedBullet — slides + fades in on entrance ────────────────────────────
+function AnimatedBullet({
+  text,
+  index,
+  isActive,
+  accentColor,
+  isDark,
+}: {
+  text: string;
+  index: number;
+  isActive: boolean;
+  accentColor: string;
+  isDark: boolean;
+}): React.JSX.Element {
+  const translateX = useRef(new Animated.Value(isActive ? 0 : -14)).current;
+  const opacity = useRef(new Animated.Value(isActive ? 1 : 0)).current;
+  const dotScale = useRef(new Animated.Value(isActive ? 1 : 0)).current;
+
+  useEffect(() => {
+    if (isActive) {
+      Animated.sequence([
+        Animated.delay(index * 90),
+        Animated.parallel([
+          Animated.spring(translateX, {
+            toValue: 0,
+            friction: 7,
+            tension: 130,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, { toValue: 1, duration: 260, useNativeDriver: true }),
+          Animated.spring(dotScale, {
+            toValue: 1,
+            friction: 5,
+            tension: 220,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(translateX, { toValue: -14, duration: 160, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0, duration: 140, useNativeDriver: true }),
+        Animated.timing(dotScale, { toValue: 0, duration: 140, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [isActive, index, translateX, opacity, dotScale]);
+
+  const descColor = isDark ? 'rgba(232,232,255,0.72)' : '#475569';
+
+  return (
+    <Animated.View style={[styles.stepBenefitItem, { opacity, transform: [{ translateX }] }]}>
+      <Animated.View
+        style={[
+          styles.stepBulletDotWrap,
+          { transform: [{ scale: dotScale }], backgroundColor: `${accentColor}22` },
+        ]}
+      >
+        <View style={[styles.stepBulletDotInner, { backgroundColor: accentColor }]} />
+      </Animated.View>
+      <Text style={[styles.stepBenefitText, { color: descColor }]}>{text}</Text>
+    </Animated.View>
+  );
+}
+
 // StepCard — used in ComoFunciona, highlights with scale + border glow
 // ─────────────────────────────────────────────────────────────────────────────
 interface StepCardProps {
@@ -442,11 +690,11 @@ interface StepCardProps {
   isDark: boolean;
   isMobile: boolean;
   onPress: () => void;
+  stepIndex: number;
 }
 
 function StepCard({
   number,
-  icon: StepIcon,
   title,
   description,
   benefits,
@@ -455,52 +703,107 @@ function StepCard({
   isDark,
   isMobile,
   onPress,
+  stepIndex,
 }: StepCardProps): React.JSX.Element {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
-  const contentOpacity = useRef(new Animated.Value(0)).current;
+  const contentOpacity = useRef(new Animated.Value(isActive ? 1 : 0.52)).current;
+  const iconScaleAnim = useRef(new Animated.Value(1)).current;
+  const titleTranslate = useRef(new Animated.Value(0)).current;
+  const badgeScale = useRef(new Animated.Value(isActive ? 1.12 : 1)).current;
+
+  const SvgIcon = STEP_SVG_ICONS[stepIndex % STEP_SVG_ICONS.length];
 
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scaleAnim, {
-        toValue: isActive ? 1.04 : 1,
+        toValue: isActive ? (isMobile ? 1.01 : 1.03) : 1,
         friction: 6,
-        tension: 180,
+        tension: 160,
         useNativeDriver: true,
       }),
       Animated.timing(glowAnim, {
         toValue: isActive ? 1 : 0,
-        duration: 300,
+        duration: 360,
         useNativeDriver: false,
       }),
       Animated.timing(contentOpacity, {
-        toValue: isActive ? 1 : 0.55,
-        duration: 280,
+        toValue: isActive ? 1 : 0.52,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.spring(badgeScale, {
+        toValue: isActive ? 1.12 : 1,
+        friction: 5,
+        tension: 200,
+        useNativeDriver: true,
+      }),
+      ...(isActive
+        ? [
+            Animated.sequence([
+              Animated.spring(iconScaleAnim, {
+                toValue: 1.3,
+                friction: 4,
+                tension: 220,
+                useNativeDriver: true,
+              }),
+              Animated.spring(iconScaleAnim, {
+                toValue: 1,
+                friction: 5,
+                tension: 180,
+                useNativeDriver: true,
+              }),
+            ]),
+          ]
+        : [Animated.timing(iconScaleAnim, { toValue: 1, duration: 200, useNativeDriver: true })]),
+      Animated.spring(titleTranslate, {
+        toValue: isActive ? 0 : 4,
+        friction: 7,
+        tension: 100,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [isActive, scaleAnim, glowAnim, contentOpacity]);
+  }, [
+    isActive,
+    scaleAnim,
+    glowAnim,
+    contentOpacity,
+    iconScaleAnim,
+    titleTranslate,
+    badgeScale,
+    isMobile,
+  ]);
 
   const cardBorderColor = glowAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.1)', accentColor],
+    outputRange: [isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.10)', accentColor],
   });
-
   const cardBgColor = glowAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [
       isDark ? 'rgba(255,255,255,0.03)' : '#ffffff',
-      isDark ? 'rgba(30,230,181,0.07)' : 'rgba(13,148,136,0.06)',
+      isDark ? 'rgba(30,230,181,0.08)' : 'rgba(13,148,136,0.055)',
     ],
+  });
+  const iconBgColor = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9', `${accentColor}30`],
   });
 
   const descColor = isDark ? 'rgba(232,232,255,0.65)' : '#64748b';
   const stepNumBg = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9';
   const stepNumColor = isDark ? '#e8e8ff' : '#0f172a';
+  const titleColor = isActive
+    ? isDark
+      ? '#e8e8ff'
+      : '#0f172a'
+    : isDark
+    ? 'rgba(232,232,255,0.55)'
+    : '#94a3b8';
 
   return (
     <TouchableOpacity
-      activeOpacity={0.9}
+      activeOpacity={0.88}
       onPress={onPress}
       style={[styles.stepCardTouchable, isMobile && styles.stepCardMobile]}
     >
@@ -515,32 +818,26 @@ function StepCard({
           },
         ]}
       >
-        {/* Icon badge */}
-        <View
-          style={[
-            styles.stepIconBadge,
-            {
-              backgroundColor: isActive
-                ? `${accentColor}28`
-                : isDark
-                ? 'rgba(255,255,255,0.06)'
-                : '#f1f5f9',
-            },
-          ]}
-        >
-          <StepIcon
-            size={22}
-            color={isActive ? accentColor : isDark ? 'rgba(232,232,255,0.4)' : '#94a3b8'}
-            strokeWidth={1.8}
-          />
-        </View>
-
-        {/* Mobile step number badge (top-right) */}
-        {isMobile && (
-          <View
+        {/* Top row: SVG icon + step number badge */}
+        <View style={styles.stepCardTopRow}>
+          <Animated.View
+            style={[
+              styles.stepIconBadge,
+              { backgroundColor: iconBgColor, transform: [{ scale: iconScaleAnim }] },
+            ]}
+          >
+            <SvgIcon
+              color={isActive ? accentColor : isDark ? 'rgba(232,232,255,0.35)' : '#94a3b8'}
+              size={22}
+            />
+          </Animated.View>
+          <Animated.View
             style={[
               styles.stepMobileNumber,
-              { backgroundColor: isActive ? accentColor : stepNumBg },
+              {
+                backgroundColor: isActive ? accentColor : stepNumBg,
+                transform: [{ scale: badgeScale }],
+              },
             ]}
           >
             <Text
@@ -551,58 +848,32 @@ function StepCard({
             >
               {number}
             </Text>
-          </View>
-        )}
+          </Animated.View>
+        </View>
 
-        <Text
+        {/* Title with entrance animation */}
+        <Animated.Text
           style={[
             styles.stepTitle,
-            {
-              color: isActive
-                ? isDark
-                  ? '#e8e8ff'
-                  : '#0f172a'
-                : isDark
-                ? 'rgba(232,232,255,0.6)'
-                : '#94a3b8',
-            },
+            { color: titleColor, transform: [{ translateY: titleTranslate }] },
           ]}
         >
           {title}
-        </Text>
+        </Animated.Text>
+
         <Text style={[styles.stepDescription, { color: descColor }]}>{description}</Text>
 
-        {/* Benefits — only fully visible when active */}
+        {/* Benefits — staggered animated bullets */}
         <View style={styles.stepBenefitsList}>
           {benefits.map((benefit, idx) => (
-            <View key={idx} style={styles.stepBenefitItem}>
-              <View
-                style={[
-                  styles.stepBenefitDotOuter,
-                  {
-                    backgroundColor: isActive
-                      ? `${accentColor}28`
-                      : isDark
-                      ? 'rgba(255,255,255,0.06)'
-                      : '#f1f5f9',
-                  },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.stepBenefitDotInner,
-                    {
-                      backgroundColor: isActive
-                        ? accentColor
-                        : isDark
-                        ? 'rgba(232,232,255,0.2)'
-                        : '#cbd5e1',
-                    },
-                  ]}
-                />
-              </View>
-              <Text style={[styles.stepBenefitText, { color: descColor }]}>{benefit}</Text>
-            </View>
+            <AnimatedBullet
+              key={idx}
+              text={benefit}
+              index={idx}
+              isActive={isActive}
+              accentColor={accentColor}
+              isDark={isDark}
+            />
           ))}
         </View>
       </Animated.View>
@@ -822,6 +1093,7 @@ function ComoFuncionaSection({
             isDark={isDark}
             isMobile={isMobile}
             onPress={() => handleStepPress(idx)}
+            stepIndex={idx}
           />
         ))}
       </View>
@@ -833,7 +1105,7 @@ function ComoFuncionaSection({
 // PlaceCard — image carousel + press-scale + top-rated badge
 // ─────────────────────────────────────────────────────────────────────────────
 interface PlaceCardData {
-  images: string[];
+  images: ImageSourcePropType[];
   tags: string[];
   rating: number;
   title: string;
@@ -912,7 +1184,7 @@ function PlaceCard({
     []
   );
 
-  const currentImage = images[currentIndex] ?? images[0];
+  const currentImage = images[currentIndex] ?? images[0] ?? TOKEN_IMAGES.rbi;
 
   const cardBgColor = isDark ? '#141420' : '#ffffff';
   const cardBorderColor = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.10)';
@@ -978,7 +1250,7 @@ function PlaceCard({
       >
         {/* Image carousel */}
         <View style={styles.placeCardImageWrap}>
-          <Image source={{ uri: currentImage }} style={styles.placeCardImage} resizeMode='cover' />
+          <Image source={currentImage} style={styles.placeCardImage} resizeMode='cover' />
 
           {/* Overlay controls — visible only when user interacts */}
           {overlayVisible && (
@@ -1112,10 +1384,7 @@ function BeneficiosSection({
   const benefits = [
     {
       key: 'eco',
-      images: [
-        'https://images.unsplash.com/photo-1542601906897-ecd3e6a7fbe1?q=80&w=2013&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=2070&auto=format&fit=crop',
-      ],
+      images: BENEFIT_IMAGES.eco,
       tags: [t('landing.beneficios.cards.eco.tag1'), t('landing.beneficios.cards.eco.tag2')],
       rating: 4.8,
       title: t('landing.beneficios.cards.eco.title'),
@@ -1126,10 +1395,7 @@ function BeneficiosSection({
     },
     {
       key: 'experiencias',
-      images: [
-        'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=2070&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop',
-      ],
+      images: BENEFIT_IMAGES.experiencias,
       tags: [
         t('landing.beneficios.cards.experiencias.tag1'),
         t('landing.beneficios.cards.experiencias.tag2'),
@@ -1143,10 +1409,7 @@ function BeneficiosSection({
     },
     {
       key: 'premium',
-      images: [
-        'https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?q=80&w=1974&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2069&auto=format&fit=crop',
-      ],
+      images: BENEFIT_IMAGES.premium,
       tags: [
         t('landing.beneficios.cards.premium.tag1'),
         t('landing.beneficios.cards.premium.tag2'),
@@ -1160,10 +1423,7 @@ function BeneficiosSection({
     },
     {
       key: 'cursos',
-      images: [
-        'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop',
-      ],
+      images: BENEFIT_IMAGES.cursos,
       tags: [t('landing.beneficios.cards.cursos.tag1'), t('landing.beneficios.cards.cursos.tag2')],
       rating: 4.6,
       title: t('landing.beneficios.cards.cursos.title'),
@@ -1306,9 +1566,6 @@ const styles = createTypographyStyles({
     height: 220,
     justifyContent: 'flex-end',
   },
-  travelCardImageStyle: {
-    borderRadius: 20,
-  },
   travelCardGradientBottom: {
     paddingHorizontal: 16,
     paddingBottom: 16,
@@ -1432,26 +1689,30 @@ const styles = createTypographyStyles({
   },
   stepCard: {
     padding: 20,
-    borderRadius: 20,
+    borderRadius: 22,
     borderWidth: 1.5,
     gap: 10,
     alignItems: 'flex-start',
+    overflow: 'hidden',
   },
   stepCardMobile: {
     minWidth: '100%',
     maxWidth: '100%',
   },
+  stepCardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
   stepIconBadge: {
     width: 48,
     height: 48,
-    borderRadius: 12,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
   stepMobileNumber: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -1475,9 +1736,23 @@ const styles = createTypographyStyles({
   },
   stepBenefitItem: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 10,
   },
+  stepBulletDotWrap: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  stepBulletDotInner: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  // kept for backwards compat if referenced elsewhere
   stepBenefitDotOuter: {
     width: 16,
     height: 16,
