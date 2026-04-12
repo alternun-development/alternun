@@ -37,6 +37,7 @@ import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import type { AppLanguage, MotionLevel, ThemeMode } from '../settings/AppPreferencesProvider';
 import NotificationDropdown, { type NotificationItem } from './NotificationDropdown';
+import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as number;
@@ -611,63 +612,61 @@ export default function TopNav({
                     )}
                   </TouchableOpacity>
 
-                  {settingsExpanded && (
-                    <>
-                      <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                        onPress={onCycleLanguage}
-                        activeOpacity={0.8}
-                      >
-                        <LanguagesIcon size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                          {t('labels.language')}
-                        </Text>
-                        <Text style={[styles.navItemValue, { color: p.accent }]}>
-                          {getLocaleLabel(language, language)}
-                        </Text>
-                      </TouchableOpacity>
+                  <AnimatedCollapsibleContent expanded={settingsExpanded}>
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={onCycleLanguage}
+                      activeOpacity={0.8}
+                    >
+                      <LanguagesIcon size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        {t('labels.language')}
+                      </Text>
+                      <Text style={[styles.navItemValue, { color: p.accent }]}>
+                        {getLocaleLabel(language, language)}
+                      </Text>
+                    </TouchableOpacity>
 
-                      <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                        onPress={onToggleTheme}
-                        activeOpacity={0.8}
-                      >
-                        <ThemeIconComp size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                          {t('labels.theme')}
-                        </Text>
-                        <Text style={[styles.navItemValue, { color: p.accent }]}>{themeLabel}</Text>
-                      </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={onToggleTheme}
+                      activeOpacity={0.8}
+                    >
+                      <ThemeIconComp size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        {t('labels.theme')}
+                      </Text>
+                      <Text style={[styles.navItemValue, { color: p.accent }]}>{themeLabel}</Text>
+                    </TouchableOpacity>
 
-                      <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                        onPress={() => onCycleMotionLevel?.()}
-                        activeOpacity={0.8}
-                      >
-                        <ZapIcon size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                          Animación
-                        </Text>
-                        <Text style={[styles.navItemValue, { color: p.accent }]}>
-                          {motionLevel === 'full' ? 'Full' : motionLevel === 'low' ? 'Low' : 'Off'}
-                        </Text>
-                      </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={() => onCycleMotionLevel?.()}
+                      activeOpacity={0.8}
+                    >
+                      <ZapIcon size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        Animación
+                      </Text>
+                      <Text style={[styles.navItemValue, { color: p.accent }]}>
+                        {motionLevel === 'full' ? 'Full' : motionLevel === 'low' ? 'Low' : 'Off'}
+                      </Text>
+                    </TouchableOpacity>
 
-                      <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                        onPress={() => {
-                          setMenuVisible(false);
-                          onOpenSettings();
-                        }}
-                        activeOpacity={0.8}
-                      >
-                        <SettingsIcon size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText }]}>
-                          {t('navigation.moreSettings')}
-                        </Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={() => {
+                        setMenuVisible(false);
+                        onOpenSettings();
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <SettingsIcon size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText }]}>
+                        {t('navigation.moreSettings')}
+                      </Text>
+                    </TouchableOpacity>
+                  </AnimatedCollapsibleContent>
 
                   {/* Sign out */}
                   {signedIn && (

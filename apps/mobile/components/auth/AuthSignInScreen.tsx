@@ -51,6 +51,7 @@ import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
 import { shouldForceFreshAuthentikSocialSession } from './authentikWebSessionPolicy';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { AuthFooter } from './AuthFooter';
 const RESEND_COOLDOWN_SECONDS = 45;
 
@@ -819,47 +820,46 @@ export default function AuthSignInScreen({
                   >
                     <Settings size={15} color={settingsMenuOpen ? p.accent : p.iconDefault} />
                   </TouchableOpacity>
-                  {settingsMenuOpen ? (
+                  <AnimatedCollapsibleContent
+                    expanded={settingsMenuOpen}
+                    style={[
+                      styles.settingsDropdown,
+                      { backgroundColor: p.dropdownBg, borderColor: p.dropdownBorder },
+                    ]}
+                  >
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => cycleLanguage()}
+                      style={styles.settingsDropdownItem}
+                    >
+                      <Languages size={13} color={p.iconDefault} />
+                      <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
+                        {t('labels.language')}
+                      </Text>
+                      <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
+                        {getLocaleLabel(language, language)}
+                      </Text>
+                    </TouchableOpacity>
                     <View
                       style={[
-                        styles.settingsDropdown,
-                        { backgroundColor: p.dropdownBg, borderColor: p.dropdownBorder },
+                        styles.settingsDropdownDivider,
+                        { backgroundColor: p.dropdownDivider },
                       ]}
+                    />
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => toggleThemeMode()}
+                      style={styles.settingsDropdownItem}
                     >
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => cycleLanguage()}
-                        style={styles.settingsDropdownItem}
-                      >
-                        <Languages size={13} color={p.iconDefault} />
-                        <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
-                          {t('labels.language')}
-                        </Text>
-                        <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
-                          {getLocaleLabel(language, language)}
-                        </Text>
-                      </TouchableOpacity>
-                      <View
-                        style={[
-                          styles.settingsDropdownDivider,
-                          { backgroundColor: p.dropdownDivider },
-                        ]}
-                      />
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => toggleThemeMode()}
-                        style={styles.settingsDropdownItem}
-                      >
-                        <ThemeIcon size={13} color={p.iconDefault} />
-                        <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
-                          {t('labels.theme')}
-                        </Text>
-                        <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
-                          {themeLabel}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : null}
+                      <ThemeIcon size={13} color={p.iconDefault} />
+                      <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
+                        {t('labels.theme')}
+                      </Text>
+                      <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
+                        {themeLabel}
+                      </Text>
+                    </TouchableOpacity>
+                  </AnimatedCollapsibleContent>
                 </View>
                 {onCancel ? (
                   <TouchableOpacity

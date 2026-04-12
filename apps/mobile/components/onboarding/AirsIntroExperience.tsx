@@ -23,10 +23,11 @@ import {
 import { createTypographyStyles } from '../theme/typography';
 import { Image as ExpoImage } from 'expo-image';
 import { useIsFocused } from '@react-navigation/native';
+import { BlurView } from 'expo-blur';
 import {
-  Check,
   ChevronDown,
   ChevronRight,
+  ChevronUp,
   Languages,
   LogIn,
   Moon,
@@ -36,12 +37,13 @@ import {
   Sun,
   Volume2,
   VolumeX,
-  Menu,
-  X,
+  User,
 } from 'lucide-react-native';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import LandingFooter from '../common/LandingFooter';
-import BackToTopButton from '../common/BackToTopButton';
+import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
+import { BackToTopButton } from '../common/BackToTopButton';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { getAirsIntroVideoUrl } from './airsIntroVideoSource';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -67,12 +69,12 @@ const AIRS_BG_DARK = 'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXP
 interface AirsIntroExperienceProps {
   onContinueToDashboard: (dontShowAgain: boolean) => void;
   onSignIn: () => void;
+  onOpenSettings?: () => void;
   extraSections?: React.ReactNode;
   headerNavLinks?: Array<{ id: string; label: string; isActive: boolean; onPress: () => void }>;
   accentColor?: string;
   isDark?: boolean;
   showCta?: boolean;
-  ctaLabel?: string;
   onActiveSectionChange?: (sectionId: string) => void;
   sectionOffsets?: Record<string, number>;
   heroHeight?: number;
@@ -199,12 +201,12 @@ const AirsIntroExperience = forwardRef<
     {
       onContinueToDashboard,
       onSignIn,
+      onOpenSettings: _onOpenSettings,
       extraSections,
       headerNavLinks,
       accentColor: accentColorProp,
       isDark: isDarkProp,
       showCta = false,
-      ctaLabel,
       onActiveSectionChange,
       sectionOffsets,
       heroHeight: heroHeightProp,
@@ -231,7 +233,6 @@ const AirsIntroExperience = forwardRef<
     const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
     const { t } = useAppTranslation('mobile');
     const isDark = isDarkProp ?? themeMode === 'dark';
-    const [dontShowAgain, setDontShowAgain] = useState(false);
     const [profileMenuVisible, setProfileMenuVisible] = useState(false);
     const [settingsExpanded, setSettingsExpanded] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
@@ -240,6 +241,7 @@ const AirsIntroExperience = forwardRef<
     const [hasAutoUnmuted, setHasAutoUnmuted] = useState(false);
     const [hasScrollActivatedPlayback, setHasScrollActivatedPlayback] = useState(false);
     const [isInTopZone, setIsInTopZone] = useState(true);
+    const [showBackToTop, setShowBackToTop] = useState(false);
     const isScreenFocused = useIsFocused();
     const { width: screenWidth, height: screenHeight } = useWindowDimensions();
     const isMobile = screenWidth < 720;
@@ -335,6 +337,7 @@ const AirsIntroExperience = forwardRef<
       const listenerId = scrollY.addListener(({ value }) => {
         maybeAutoUnmuteFromScroll(value);
         syncTopZoneState(value);
+        setShowBackToTop(value > 400);
 
         // Track active section based on scroll position
         if (onActiveSectionChange && sectionOffsets && heroHeightProp) {
@@ -550,7 +553,8 @@ const AirsIntroExperience = forwardRef<
     const heroBylineLogoSize = Math.min(Math.max(screenWidth * 0.022, 12), 18);
     const heroLogoSize = Math.min(Math.max(screenWidth * 0.084, 50), 84);
     const heroBrandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
-    const heroBrandMarkCutout = isDark ? '#03292f' : '#d8fff4';
+    const heroBrandMarkCutout = isDark ? '#0b5a5f' : '#ffffff';
+    const pillBgColor = isDark ? 'rgba(30,230,181,0.85)' : 'rgba(11,90,95,0.85)';
 
     const cardWidth = scrollY.interpolate({
       inputRange: [0, HERO_EXPANSION_RANGE],
@@ -674,6 +678,41 @@ const AirsIntroExperience = forwardRef<
     const heroFooterTextColor = isDark ? 'rgba(248,251,255,0.96)' : '#020617';
     const heroFooterShadowColor = isDark ? 'rgba(0,0,0,0.28)' : 'transparent';
     const languageLabel = getLocaleLabel(language, language);
+    const settingsMenuContent = (
+      <>
+        <TouchableOpacity
+          style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg }]}
+          onPress={toggleThemeMode}
+          activeOpacity={0.82}
+        >
+          <ThemeIcon size={14} color={palette.textPrimary} />
+          <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+            {t('labels.theme')}
+          </Text>
+          <View style={styles.floatingMenuItemRight}>
+            <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
+              {isDark ? t('labels.dark') : t('labels.light')}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg }]}
+          onPress={cycleLanguage}
+          activeOpacity={0.82}
+        >
+          <Languages size={14} color={palette.textPrimary} />
+          <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+            {t('labels.language')}
+          </Text>
+          <View style={styles.floatingMenuItemRight}>
+            <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
+              {languageLabel}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </>
+    );
 
     const closeProfileMenu = () => {
       setProfileMenuVisible(false);
@@ -748,8 +787,44 @@ const AirsIntroExperience = forwardRef<
       }
     };
 
+    const headerBarOpacity = scrollY.interpolate({
+      inputRange: [0, 80],
+      outputRange: [0, 1],
+      extrapolate: 'clamp',
+    });
+    const blurTint = isDark ? 'dark' : 'light';
+    const blurHeaderGradientId = React.useId().replace(/[:]/g, '');
+    const headerBarGlassColor = isDark ? '#050510' : '#f6f8fc';
+
     return (
       <View style={[styles.page, { backgroundColor: palette.pageBg }]}>
+        {/* Progressive blur header — smooth glass effect that fades in on scroll */}
+        <Animated.View
+          pointerEvents='none'
+          style={[styles.progressiveBlurHeader, { opacity: headerBarOpacity }]}
+        >
+          {/* Blur layer with a feathered glass fade at the bottom edge */}
+          <BlurView intensity={85} tint={blurTint} style={StyleSheet.absoluteFillObject} />
+          <Svg
+            pointerEvents='none'
+            style={StyleSheet.absoluteFillObject}
+            width='100%'
+            height='100%'
+            viewBox='0 0 100 100'
+            preserveAspectRatio='none'
+          >
+            <Defs>
+              <LinearGradient id={blurHeaderGradientId} x1='0' y1='0' x2='0' y2='1'>
+                <Stop offset='0%' stopColor={headerBarGlassColor} stopOpacity='0.94' />
+                <Stop offset='56%' stopColor={headerBarGlassColor} stopOpacity='0.68' />
+                <Stop offset='84%' stopColor={headerBarGlassColor} stopOpacity='0.24' />
+                <Stop offset='100%' stopColor={headerBarGlassColor} stopOpacity='0' />
+              </LinearGradient>
+            </Defs>
+            <Rect x='0' y='0' width='100' height='100' fill={`url(#${blurHeaderGradientId})`} />
+          </Svg>
+        </Animated.View>
+
         <View pointerEvents='none' style={styles.floatingLeftTop}>
           <View style={styles.heroBrandRow}>
             <View style={styles.heroBrandTextBlock}>
@@ -803,66 +878,149 @@ const AirsIntroExperience = forwardRef<
         {headerNavLinks &&
           headerNavLinks.length > 0 &&
           (showCta ? (
-            /* Logged-out: pill container with solid background + CTA */
+            /* Logged-out: pill with nav links + compact avatar dropdown */
             <>
               {isMobile ? (
-                <View style={styles.headerNavMobileContainer}>
+                /* Mobile: avatar-style trigger → dropdown with nav links + sign in */
+                <View style={styles.headerNavMobileContainer} pointerEvents='box-none'>
                   <TouchableOpacity
                     onPress={() => setHeaderNavMobileMenuVisible((v) => !v)}
                     activeOpacity={0.75}
-                    style={[
-                      styles.headerNavMobileTrigger,
-                      {
-                        backgroundColor: isDark ? 'rgba(13,148,136,0.85)' : 'rgba(13,148,136,0.85)',
-                      },
-                    ]}
+                    style={[styles.headerNavMobileAvatarTrigger, { backgroundColor: pillBgColor }]}
                   >
-                    {headerNavMobileMenuVisible ? (
-                      <X size={18} color='#ffffff' />
-                    ) : (
-                      <Menu size={18} color='#ffffff' />
-                    )}
+                    <View style={styles.headerNavMobileAvatarCircle}>
+                      <User size={16} color='#ffffff' />
+                    </View>
+                    <ChevronDown
+                      size={13}
+                      color='#ffffff'
+                      style={{
+                        transform: [{ rotate: headerNavMobileMenuVisible ? '180deg' : '0deg' }],
+                      }}
+                    />
                   </TouchableOpacity>
 
-                  <Animated.View
-                    style={[
-                      styles.headerNavMobileDropdown,
-                      { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
-                      {
-                        opacity: headerNavMobileMenuAnim,
-                        transform: [
-                          {
-                            scale: headerNavMobileMenuAnim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0.95, 1],
-                            }),
-                          },
-                          {
-                            translateY: headerNavMobileMenuAnim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [-10, 0],
-                            }),
-                          },
-                        ],
-                      },
-                    ]}
-                    pointerEvents={headerNavMobileMenuVisible ? 'auto' : 'none'}
-                  >
+                  {headerNavMobileMenuVisible && (
+                    <Animated.View
+                      style={[
+                        styles.floatingMenu,
+                        styles.headerNavMobileDropdown,
+                        {
+                          backgroundColor: palette.contentCard,
+                          borderColor: palette.contentBorder,
+                        },
+                        {
+                          opacity: headerNavMobileMenuAnim,
+                          transform: [
+                            {
+                              scale: headerNavMobileMenuAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0.95, 1],
+                              }),
+                            },
+                            {
+                              translateY: headerNavMobileMenuAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [-10, 0],
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                      pointerEvents='auto'
+                    >
+                      {/* Nav links to scroll to sections */}
+                      {headerNavLinks.map((link) => (
+                        <TouchableOpacity
+                          key={link.id}
+                          onPress={() => {
+                            setHeaderNavMobileMenuVisible(false);
+                            link.onPress();
+                          }}
+                          activeOpacity={0.7}
+                          style={styles.headerNavMobileItem}
+                        >
+                          <Text
+                            style={[
+                              styles.headerNavMobileText,
+                              {
+                                color: link.isActive ? palette.accent : palette.textPrimary,
+                                fontWeight: link.isActive ? '700' : '500',
+                              },
+                            ]}
+                          >
+                            {link.label}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+
+                      <View
+                        style={[
+                          styles.headerNavMobileDivider,
+                          { backgroundColor: palette.contentBorder },
+                        ]}
+                      />
+
+                      <TouchableOpacity
+                        style={[
+                          styles.floatingMenuItem,
+                          { backgroundColor: palette.mutedButtonBg },
+                        ]}
+                        onPress={() => {
+                          setHeaderNavMobileMenuVisible(false);
+                          onSignIn();
+                        }}
+                        activeOpacity={0.82}
+                      >
+                        <LogIn size={14} color={palette.textPrimary} />
+                        <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                          {t('labels.signIn')}
+                        </Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[
+                          styles.floatingMenuItem,
+                          { backgroundColor: palette.mutedButtonBg },
+                        ]}
+                        onPress={() => setSettingsExpanded((prev) => !prev)}
+                        activeOpacity={0.82}
+                      >
+                        <SettingsIcon size={14} color={palette.textPrimary} />
+                        <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                          {t('labels.settings')}
+                        </Text>
+                        <View style={styles.floatingMenuItemRight}>
+                          {settingsExpanded ? (
+                            <ChevronDown size={14} color={palette.textPrimary} />
+                          ) : (
+                            <ChevronRight size={14} color={palette.textPrimary} />
+                          )}
+                        </View>
+                      </TouchableOpacity>
+
+                      <AnimatedCollapsibleContent expanded={settingsExpanded}>
+                        {settingsMenuContent}
+                      </AnimatedCollapsibleContent>
+                    </Animated.View>
+                  )}
+                </View>
+              ) : (
+                /* Desktop: pill with nav links + compact avatar button → dropdown outside pill */
+                <View style={styles.headerNavDesktopWrapper} pointerEvents='box-none'>
+                  <Animated.View style={[styles.headerNavPill, { backgroundColor: pillBgColor }]}>
                     {headerNavLinks.map((link) => (
                       <TouchableOpacity
                         key={link.id}
-                        onPress={() => {
-                          setHeaderNavMobileMenuVisible(false);
-                          link.onPress();
-                        }}
+                        onPress={link.onPress}
                         activeOpacity={0.7}
-                        style={styles.headerNavMobileItem}
+                        style={styles.headerNavPillItem}
                       >
                         <Text
                           style={[
-                            styles.headerNavMobileText,
+                            styles.headerNavPillText,
                             {
-                              color: link.isActive ? palette.accent : palette.textPrimary,
+                              color: link.isActive ? '#ffffff' : 'rgba(255,255,255,0.8)',
                               fontWeight: link.isActive ? '700' : '500',
                             },
                           ]}
@@ -871,71 +1029,94 @@ const AirsIntroExperience = forwardRef<
                         </Text>
                       </TouchableOpacity>
                     ))}
-                    <View
-                      style={[
-                        styles.headerNavMobileDivider,
-                        { backgroundColor: palette.contentBorder },
-                      ]}
-                    />
+
+                    {/* Avatar trigger — last item inside pill */}
                     <TouchableOpacity
-                      onPress={() => {
-                        setHeaderNavMobileMenuVisible(false);
-                        onSignIn();
-                      }}
+                      onPress={() => setProfileMenuVisible((prev) => !prev)}
                       activeOpacity={0.75}
-                      style={[styles.headerNavMobileCta, { backgroundColor: palette.accent }]}
+                      style={[
+                        styles.headerNavDesktopAvatarTrigger,
+                        {
+                          backgroundColor: palette.contentCard,
+                          borderColor: palette.contentBorder,
+                        },
+                      ]}
                     >
-                      <Text
+                      <View
                         style={[
-                          styles.headerNavMobileCtaText,
-                          { color: isDark ? '#050510' : '#ffffff' },
+                          styles.headerNavDesktopAvatarCircle,
+                          { backgroundColor: `${palette.accent}22` },
                         ]}
                       >
-                        {ctaLabel ?? t('labels.signIn')}
-                      </Text>
+                        <User size={15} color={palette.accent} />
+                      </View>
+                      {profileMenuVisible ? (
+                        <ChevronUp size={14} color={palette.textPrimary} />
+                      ) : (
+                        <ChevronDown size={14} color={palette.textPrimary} />
+                      )}
                     </TouchableOpacity>
                   </Animated.View>
-                </View>
-              ) : (
-                <Animated.View
-                  style={[
-                    styles.headerNavPill,
-                    { backgroundColor: isDark ? 'rgba(13,148,136,0.85)' : 'rgba(13,148,136,0.85)' },
-                  ]}
-                >
-                  {headerNavLinks.map((link) => (
-                    <TouchableOpacity
-                      key={link.id}
-                      onPress={link.onPress}
-                      activeOpacity={0.7}
-                      style={styles.headerNavPillItem}
+
+                  {/* Dropdown rendered OUTSIDE the pill so it is never clipped */}
+                  {profileMenuVisible && (
+                    <View
+                      style={[
+                        styles.floatingMenu,
+                        styles.headerNavDesktopAvatarDropdown,
+                        {
+                          backgroundColor: palette.contentCard,
+                          borderColor: palette.contentBorder,
+                        },
+                      ]}
+                      pointerEvents='auto'
                     >
-                      <Text
+                      <TouchableOpacity
                         style={[
-                          styles.headerNavPillText,
-                          {
-                            color: link.isActive ? '#ffffff' : 'rgba(255,255,255,0.8)',
-                            fontWeight: link.isActive ? '700' : '500',
-                          },
+                          styles.floatingMenuItem,
+                          { backgroundColor: palette.mutedButtonBg },
                         ]}
+                        onPress={() => {
+                          closeProfileMenu();
+                          onSignIn();
+                        }}
+                        activeOpacity={0.82}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       >
-                        {link.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                  {/* CTA Button */}
-                  <TouchableOpacity
-                    onPress={onSignIn}
-                    activeOpacity={0.75}
-                    style={[styles.headerNavCtaButton, { backgroundColor: palette.accent }]}
-                  >
-                    <Text
-                      style={[styles.headerNavCtaText, { color: isDark ? '#050510' : '#ffffff' }]}
-                    >
-                      {ctaLabel ?? t('labels.signIn')}
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
+                        <LogIn size={14} color={palette.textPrimary} />
+                        <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                          {t('labels.signIn')}
+                        </Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[
+                          styles.floatingMenuItem,
+                          { backgroundColor: palette.mutedButtonBg },
+                        ]}
+                        onPress={() => setSettingsExpanded((prev) => !prev)}
+                        activeOpacity={0.82}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <SettingsIcon size={14} color={palette.textPrimary} />
+                        <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                          {t('labels.settings')}
+                        </Text>
+                        <View style={styles.floatingMenuItemRight}>
+                          {settingsExpanded ? (
+                            <ChevronDown size={14} color={palette.textPrimary} />
+                          ) : (
+                            <ChevronRight size={14} color={palette.textPrimary} />
+                          )}
+                        </View>
+                      </TouchableOpacity>
+
+                      <AnimatedCollapsibleContent expanded={settingsExpanded}>
+                        {settingsMenuContent}
+                      </AnimatedCollapsibleContent>
+                    </View>
+                  )}
+                </View>
               )}
             </>
           ) : (
@@ -986,7 +1167,11 @@ const AirsIntroExperience = forwardRef<
                 <View style={[styles.headerAvatar, { backgroundColor: `${palette.accent}22` }]}>
                   <Text style={[styles.headerAvatarText, { color: palette.accent }]}>U</Text>
                 </View>
-                <ChevronDown size={14} color={palette.textPrimary} />
+                {profileMenuVisible ? (
+                  <ChevronUp size={14} color={palette.textPrimary} />
+                ) : (
+                  <ChevronDown size={14} color={palette.textPrimary} />
+                )}
               </TouchableOpacity>
             </View>
           ))}
@@ -1033,64 +1218,9 @@ const AirsIntroExperience = forwardRef<
                 </View>
               </TouchableOpacity>
 
-              {settingsExpanded && (
-                <>
-                  <TouchableOpacity
-                    style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg }]}
-                    onPress={toggleThemeMode}
-                    activeOpacity={0.82}
-                  >
-                    <ThemeIcon size={14} color={palette.textPrimary} />
-                    <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                      {t('labels.theme')}
-                    </Text>
-                    <View style={styles.floatingMenuItemRight}>
-                      <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
-                        {isDark ? t('labels.dark') : t('labels.light')}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg }]}
-                    onPress={cycleLanguage}
-                    activeOpacity={0.82}
-                  >
-                    <Languages size={14} color={palette.textPrimary} />
-                    <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                      {t('labels.language')}
-                    </Text>
-                    <View style={styles.floatingMenuItemRight}>
-                      <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
-                        {getLocaleLabel(language, language)}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                </>
-              )}
-
-              <TouchableOpacity
-                style={[styles.floatingCaptionItem, { backgroundColor: palette.mutedButtonBg }]}
-                onPress={() => {
-                  setDontShowAgain(true);
-                  setProfileMenuVisible(false);
-                  setSettingsExpanded(false);
-                  onContinueToDashboard(true);
-                }}
-                activeOpacity={0.82}
-              >
-                <View
-                  style={[
-                    styles.floatingCheckbox,
-                    { borderColor: palette.accent, backgroundColor: `${palette.accent}22` },
-                  ]}
-                >
-                  <Check size={11} color={palette.accent} />
-                </View>
-                <Text style={[styles.floatingCaptionText, { color: palette.textMuted }]}>
-                  {t('onboarding.dontShowIntroAgain')}
-                </Text>
-              </TouchableOpacity>
+              <AnimatedCollapsibleContent expanded={settingsExpanded}>
+                {settingsMenuContent}
+              </AnimatedCollapsibleContent>
             </View>
           </View>
         )}
@@ -1105,123 +1235,68 @@ const AirsIntroExperience = forwardRef<
           />
         )}
 
-        <View style={styles.floatingRightTop}>
-          <TouchableOpacity
-            style={[
-              styles.floatingProfileTrigger,
-              { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
-            ]}
-            activeOpacity={0.86}
-            onPress={() => setProfileMenuVisible((prev) => !prev)}
-          >
-            <View style={[styles.floatingAvatar, { backgroundColor: `${palette.accent}22` }]}>
-              <Text style={[styles.floatingAvatarText, { color: palette.accent }]}>U</Text>
-            </View>
-            <ChevronDown size={14} color={palette.textPrimary} />
-          </TouchableOpacity>
-
-          {profileMenuVisible ? (
-            <View
+        {!showCta && (
+          <View style={styles.floatingRightTop}>
+            <TouchableOpacity
               style={[
-                styles.floatingMenu,
+                styles.floatingProfileTrigger,
                 { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
               ]}
+              activeOpacity={0.86}
+              onPress={() => setProfileMenuVisible((prev) => !prev)}
             >
-              <TouchableOpacity
-                style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg }]}
-                onPress={() => {
-                  closeProfileMenu();
-                  onSignIn();
-                }}
-                activeOpacity={0.82}
+              <View style={[styles.floatingAvatar, { backgroundColor: `${palette.accent}22` }]}>
+                <Text style={[styles.floatingAvatarText, { color: palette.accent }]}>U</Text>
+              </View>
+              <ChevronDown size={14} color={palette.textPrimary} />
+            </TouchableOpacity>
+
+            {profileMenuVisible ? (
+              <View
+                style={[
+                  styles.floatingMenu,
+                  { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
+                ]}
               >
-                <LogIn size={14} color={palette.textPrimary} />
-                <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                  {t('labels.signIn')}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg }]}
-                onPress={() => setSettingsExpanded((prev) => !prev)}
-                activeOpacity={0.82}
-              >
-                <SettingsIcon size={14} color={palette.textPrimary} />
-                <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                  {t('labels.settings')}
-                </Text>
-                <View style={styles.floatingMenuItemRight}>
-                  {settingsExpanded ? (
-                    <ChevronDown size={13} color={palette.textMuted} />
-                  ) : (
-                    <ChevronRight size={13} color={palette.textMuted} />
-                  )}
-                </View>
-              </TouchableOpacity>
-
-              {settingsExpanded ? (
-                <>
-                  <TouchableOpacity
-                    style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg }]}
-                    onPress={toggleThemeMode}
-                    activeOpacity={0.82}
-                  >
-                    <ThemeIcon size={14} color={palette.textPrimary} />
-                    <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                      {t('labels.theme')}
-                    </Text>
-                    <View style={styles.floatingMenuItemRight}>
-                      <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
-                        {isDark ? t('labels.dark') : t('labels.light')}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg }]}
-                    onPress={cycleLanguage}
-                    activeOpacity={0.82}
-                  >
-                    <Languages size={14} color={palette.textPrimary} />
-                    <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                      {t('labels.language')}
-                    </Text>
-                    <View style={styles.floatingMenuItemRight}>
-                      <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
-                        {languageLabel}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                </>
-              ) : null}
-
-              <TouchableOpacity
-                style={[styles.floatingCaptionItem, { backgroundColor: palette.mutedButtonBg }]}
-                onPress={() => {
-                  setDontShowAgain(true);
-                  closeProfileMenu();
-                  onContinueToDashboard(true);
-                }}
-                activeOpacity={0.82}
-              >
-                <View
-                  style={[
-                    styles.floatingCheckbox,
-                    {
-                      borderColor: palette.accent,
-                      backgroundColor: `${palette.accent}22`,
-                    },
-                  ]}
+                <TouchableOpacity
+                  style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg }]}
+                  onPress={() => {
+                    closeProfileMenu();
+                    onSignIn();
+                  }}
+                  activeOpacity={0.82}
                 >
-                  <Check size={11} color={palette.accent} />
-                </View>
-                <Text style={[styles.floatingCaptionText, { color: palette.textMuted }]}>
-                  {t('onboarding.dontShowIntroAgain')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : null}
-        </View>
+                  <LogIn size={14} color={palette.textPrimary} />
+                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                    {t('labels.signIn')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg }]}
+                  onPress={() => setSettingsExpanded((prev) => !prev)}
+                  activeOpacity={0.82}
+                >
+                  <SettingsIcon size={14} color={palette.textPrimary} />
+                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                    {t('labels.settings')}
+                  </Text>
+                  <View style={styles.floatingMenuItemRight}>
+                    {settingsExpanded ? (
+                      <ChevronDown size={13} color={palette.textMuted} />
+                    ) : (
+                      <ChevronRight size={13} color={palette.textMuted} />
+                    )}
+                  </View>
+                </TouchableOpacity>
+
+                <AnimatedCollapsibleContent expanded={settingsExpanded}>
+                  {settingsMenuContent}
+                </AnimatedCollapsibleContent>
+              </View>
+            ) : null}
+          </View>
+        )}
 
         {profileMenuVisible ? (
           <Pressable style={styles.floatingBackdrop} onPress={closeProfileMenu} />
@@ -1483,10 +1558,7 @@ const AirsIntroExperience = forwardRef<
               {t('landing.info.summaryLine')}
             </Text>
             <View style={styles.minimalActions}>
-              <TouchableOpacity
-                activeOpacity={0.75}
-                onPress={() => onContinueToDashboard(dontShowAgain)}
-              >
+              <TouchableOpacity activeOpacity={0.75} onPress={() => onContinueToDashboard(false)}>
                 <Text style={[styles.linkAction, { color: palette.accent }]}>
                   {t('landing.actions.goToDashboard')}
                 </Text>
@@ -1500,7 +1572,12 @@ const AirsIntroExperience = forwardRef<
         </Animated.ScrollView>
 
         {/* Back to top button */}
-        <BackToTopButton onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })} />
+        <BackToTopButton
+          visible={showBackToTop}
+          onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+          isDark={isDark}
+          isMobile={isMobile}
+        />
       </View>
     );
   }
@@ -1529,8 +1606,9 @@ const styles = createTypographyStyles({
     alignItems: 'flex-end',
   },
   floatingBackdrop: {
+    // Keep the dismiss layer behind the menu so web clicks reach the items.
     ...StyleSheet.absoluteFillObject,
-    zIndex: 60,
+    zIndex: 40,
   },
   floatingProfileTrigger: {
     borderWidth: 1,
@@ -1862,12 +1940,44 @@ const styles = createTypographyStyles({
     textDecorationLine: 'underline',
   },
 
+  // ── Progressive blur header bar ──────────────────────────────────────────
+  progressiveBlurHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 104,
+    zIndex: 40,
+    overflow: 'hidden',
+  },
+
   // ── Logged-out: mobile dropdown nav ───────────────────────────────────────
   headerNavMobileContainer: {
     position: 'absolute',
     top: 16,
     right: 16,
     zIndex: 50,
+  },
+  headerNavMobileAvatarTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  headerNavMobileAvatarCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   headerNavMobileTrigger: {
     width: 36,
@@ -1920,20 +2030,57 @@ const styles = createTypographyStyles({
     fontWeight: '700',
   },
 
-  // ── Logged-out: pill nav container ────────────────────────────────────────
-  headerNavPill: {
+  // ── Logged-out: desktop pill with avatar inside ───────────────────────────
+  headerNavDesktopWrapper: {
     position: 'absolute',
     top: 16,
     right: 16,
+    zIndex: 50,
+  },
+  headerNavDesktopAvatarWrap: {
+    position: 'relative',
+    marginLeft: 4,
+  },
+  headerNavDesktopAvatarTrigger: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  headerNavDesktopAvatarCircle: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerNavDesktopAvatarDropdown: {
+    position: 'absolute',
+    top: 52,
+    right: 0,
+    minWidth: 180,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 6,
+    zIndex: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+
+  // ── Logged-out: pill nav container ────────────────────────────────────────
+  headerNavPill: {
+    flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 999,
     paddingHorizontal: 6,
     paddingVertical: 6,
     gap: 4,
-    zIndex: 50,
-    maxWidth: '65%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,

@@ -158,6 +158,116 @@
         "subtitle": "The definitive loyalty program for people protecting the planet.",
         "title": "Alternun Impact & Reputation Score"
       },
+      "nav": {
+        "benefits": "Benefits",
+        "howItWorks": "How it works",
+        "project": "The project",
+        "signInCta": "Sign In / Create Account",
+        "start": "Home"
+      },
+      "elProyecto": {
+        "sectionTitle": "A regenerative economy that benefits you",
+        "airs": {
+          "overview": "Airs is your positive footprint on Alternun. It is bought, earned and lost based on your regenerative actions and determines your Regenerative Basic Income (RBI).",
+          "subtitle": "Your Regenerative Reputation",
+          "title": "Airs"
+        },
+        "atn": {
+          "overview": "ATN is the utility and governance token of the Alternun ecosystem. It allows you to participate in decisions, access premium features and reward impact actions.",
+          "subtitle": "Governance Token",
+          "title": "ATN"
+        },
+        "rbi": {
+          "overview": "RBI is a regenerative basic income that is automatically distributed based on your Airs score. The higher your positive impact, the higher your RBI.",
+          "subtitle": "Regenerative Basic Income",
+          "title": "RBI"
+        }
+      },
+      "comoFunciona": {
+        "sectionTitle": "How it works",
+        "subtitle": "Four simple steps to start your regenerative journey",
+        "steps": {
+          "s1": {
+            "b1": "Connect your Web3 wallet",
+            "b2": "Complete your impact profile",
+            "b3": "Start generating Airs score",
+            "description": "Sign up and connect your wallet to start your regenerative journey on Alternun.",
+            "title": "Connect your wallet"
+          },
+          "s2": {
+            "b1": "Complete verified impact actions",
+            "b2": "Earn Airs points for each action",
+            "b3": "Build your regenerative reputation",
+            "description": "Perform positive impact actions and earn Airs points for each verified action.",
+            "title": "Generate impact"
+          },
+          "s3": {
+            "b1": "Your RBI is calculated based on your Airs",
+            "b2": "Receive automatic compensation",
+            "b3": "Grow with the ecosystem",
+            "description": "As your Airs grows, your Regenerative Basic Income increases automatically.",
+            "title": "Receive your RBI"
+          },
+          "s4": {
+            "b1": "Redeem in the marketplace",
+            "b2": "Access products and services",
+            "b3": "Support regenerative projects",
+            "description": "Use your ATN and RBI tokens to access products, services and projects in the ecosystem.",
+            "title": "Redeem and grow"
+          }
+        }
+      },
+      "beneficios": {
+        "atnUnit": "ATN",
+        "cards": {
+          "eco": {
+            "tag1": "Organic",
+            "tag2": "Sustainable",
+            "description": "Organic and sustainable products verified by the Alternun ecosystem.",
+            "atn": "120",
+            "meta": "Regenerative agriculture",
+            "title": "Eco Products"
+          },
+          "experiencias": {
+            "tag1": "Travel",
+            "tag2": "Adventure",
+            "description": "Discover curated trips, retreats, and experiences designed to reward positive impact.",
+            "atn": "240",
+            "meta": "Curated escapes",
+            "title": "Experiences"
+          },
+          "marketplace": {
+            "description": "Access a marketplace of regenerative products and services.",
+            "meta": "Marketplace",
+            "title": "Marketplace"
+          },
+          "premium": {
+            "tag1": "Exclusive",
+            "tag2": "Members",
+            "description": "Unlock exclusive perks, priority access, and elevated support across the ecosystem.",
+            "atn": "400",
+            "meta": "Premium access",
+            "title": "Premium"
+          },
+          "cursos": {
+            "tag1": "Learning",
+            "tag2": "Verified",
+            "description": "Learn practical regenerative skills with courses, workshops, and verified guidance.",
+            "atn": "80",
+            "meta": "Education",
+            "title": "Courses"
+          },
+          "services": {
+            "description": "Verified services that contribute to positive impact.",
+            "meta": "Services",
+            "title": "Services"
+          }
+        },
+        "cta": "Explore marketplace",
+        "sectionTitle": "Benefits",
+        "subtitle": "Discover everything you can get with Alternun",
+        "topRated": "Top rated"
+      },
       "video": {
         "loadingIntro": "Loading Airs Intro Video",
         "muted": "Muted",

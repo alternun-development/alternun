@@ -1,6 +1,5 @@
 import { useAuth } from '../components/auth/AppAuthProvider';
 import Dashboard from '../components/dashboard/Dashboard';
-import AirsIntroExperience from '../components/onboarding/AirsIntroExperience';
 import PublicLandingPage from '../components/landing/PublicLandingPage';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import { readPendingAuthentikOAuthProvider } from '@alternun/auth';
@@ -9,19 +8,22 @@ import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 export default function HomeScreen(): React.JSX.Element {
-  const { user, loading, signIn, signOutUser, refresh } = useAuth();
-  const { showAirsIntro, setShowAirsIntro, themeMode } = useAppPreferences();
+  const { user, loading, signIn, signOutUser, client } = useAuth();
+  const { showAirsIntro, setShowAirsIntro } = useAppPreferences();
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
   const [introDismissedThisSession, setIntroDismissedThisSession] = useState(false);
   const pendingAuthentikProvider = readPendingAuthentikOAuthProvider();
   const isNavigationReady = Boolean(rootNavigationState?.key);
-  const isDark = themeMode === 'dark';
 
-  const shouldShowAirsIntro = useMemo(
+  const shouldShowLandingPage = useMemo(
     () => !user && showAirsIntro && !introDismissedThisSession,
     [introDismissedThisSession, showAirsIntro, user]
   );
+
+  const handleReload = (): void => {
+    void client.getUser();
+  };
 
   if (loading || !isNavigationReady) {
     return (
@@ -35,16 +37,17 @@ export default function HomeScreen(): React.JSX.Element {
     return <Redirect href={{ pathname: '/auth', params: { next: '/' } }} />;
   }
 
-  if (shouldShowAirsIntro) {
+  if (shouldShowLandingPage) {
     return (
-      <AirsIntroExperience
+      <PublicLandingPage
+        onSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
+        onOpenSettings={() => router.push('/settings')}
         onContinueToDashboard={(dontShowAgain) => {
           if (dontShowAgain) {
             setShowAirsIntro(false);
           }
           setIntroDismissedThisSession(true);
         }}
-        onSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
       />
     );
   }
@@ -53,6 +56,7 @@ export default function HomeScreen(): React.JSX.Element {
     return (
       <PublicLandingPage
         onSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
+        onOpenSettings={() => router.push('/settings')}
       />
     );
   }
@@ -61,7 +65,7 @@ export default function HomeScreen(): React.JSX.Element {
     <Dashboard
       user={user ?? null}
       isLoading={loading}
-      onReload={refresh}
+      onReload={handleReload}
       onRequireSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
       onOpenProfilePage={() => router.push('/profile')}
       onOpenSettingsPage={() => router.push('/settings')}
