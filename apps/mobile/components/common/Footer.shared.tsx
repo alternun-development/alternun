@@ -121,17 +121,19 @@ export function SocialPill({
     <Pressable
       accessibilityLabel={label}
       onPress={() => openExternalUrl(url)}
-      style={({ hovered, pressed }) => [
-        styles.socialPill,
-        compact && styles.socialPillCompact,
-        mobileMini && styles.socialPillMobileMini,
-        hovered && styles.socialPillHovered,
-        pressed && styles.socialPillPressed,
-        {
-          backgroundColor: pressed || hovered ? hoverColor ?? borderColor : backgroundColor,
-          borderColor: hovered ? iconColor : borderColor,
-        },
-      ]}
+      style={({ hovered, pressed }) =>
+        [
+          styles.socialPill,
+          compact && styles.socialPillCompact,
+          mobileMini && styles.socialPillMobileMini,
+          hovered && styles.socialPillHovered,
+          pressed && styles.socialPillPressed,
+          {
+            backgroundColor: pressed || hovered ? hoverColor ?? borderColor : backgroundColor,
+            borderColor: hovered ? iconColor : borderColor,
+          },
+        ] as StyleProp<ViewStyle>
+      }
     >
       <Icon size={mobileMini ? 10 : compact ? 14 : 16} color={iconColor} strokeWidth={2.1} />
     </Pressable>
@@ -160,13 +162,15 @@ export function FooterTextLink({
   return (
     <Pressable
       onPress={() => openExternalUrl(url)}
-      style={({ hovered, pressed }) => [
-        styles.textLinkPressable,
-        compact && styles.textLinkPressableCompact,
-        hovered && styles.textLinkPressableHovered,
-        pressed && styles.textLinkPressablePressed,
-        style,
-      ]}
+      style={({ hovered, pressed }) =>
+        [
+          styles.textLinkPressable,
+          compact && styles.textLinkPressableCompact,
+          hovered && styles.textLinkPressableHovered,
+          pressed && styles.textLinkPressablePressed,
+          style,
+        ] as StyleProp<ViewStyle>
+      }
     >
       {({ hovered, pressed }) => (
         <Text

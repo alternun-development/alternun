@@ -259,6 +259,7 @@ The current architecture reduces Authentik friction by keeping the browser path 
 
 - AIRS web starts from `/auth`
 - Authentik uses direct source login by default
+- web forces a fresh Authentik social session whenever social login is still Authentik-managed, so a stale shared SSO session does not apply the wrong user
 - browser callback finalization happens on `/auth/callback`
 - AIRS restores the intended destination after callback completion
 - first-time Google enrollments should auto-fill the username from the upstream Google email instead of stopping on the Authentik username screen
@@ -281,6 +282,7 @@ These are the concrete regressions that have already happened in this repo:
 - direct-source mode with `default-source-authentication` missing `UserLoginStage`
 - custom outer source-stage flow enabled in Authentik while the AIRS app bundle is already in direct-source mode
 - AIRS bundle built from stale shared package output rather than current auth package source
+- deployed or exported bundle still containing stale `/better-auth/*` web login paths
 - web callback state handled inside UI components instead of a dedicated callback route
 - local loopback redirect URIs leaking into deployed web assumptions
 - hidden Authentik fallback behavior caused by `hybrid` social mode or stale emitted JS defaults
@@ -330,6 +332,7 @@ If you need to change the current flow, start here:
 ## Troubleshooting
 
 - If AIRS web shows the Supabase social path on testnet, check the deployed bundle env first, especially `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`.
+- If Authentik shows "Flow does not apply to current user", the live source auth flow is stale or was re-locked. Redeploy identity so `default-source-authentication.authentication=none` is restored, then confirm the web build is still forcing a fresh Authentik-managed social session.
 - If Google loops between Authentik and Google, check whether a custom provider flow slug is enabled unintentionally.
 - If Authentik returns to the wrong place, check the effective redirect URI and make sure `/auth/callback` is allowed on the provider.
 - If localhost behaves differently from testnet, confirm you are testing the web callback route and not a native-style redirect path.

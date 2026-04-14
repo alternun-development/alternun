@@ -6,9 +6,10 @@ const APP_MONO_FAMILY = 'SpaceMono';
 
 export const appFonts = {
   // Metro asset loading still requires require() for bundled local font modules.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+  /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment */
   [APP_FONT_FAMILY]:
     require('../../assets/fonts/Anek_latin/AnekLatin-VariableFont_wdth,wght.ttf') as FontSource,
+  /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment */
   // Metro asset loading still requires require() for bundled local font modules.
   // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
   [APP_MONO_FAMILY]: require('../../assets/fonts/SpaceMono-Regular.ttf') as FontSource,

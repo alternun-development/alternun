@@ -10,7 +10,7 @@ import type {
 } from '../../../../../packages/auth/src/core/contracts';
 import type { AuthRuntimeConfig } from '../../../../../packages/auth/src/core/types';
 
-const redirectUrl = 'https://testnet-auth.alternun.co/oauth/start';
+const redirectUrl = 'https://auth.example.com/oauth/start';
 const assign = jest.fn();
 const executionSignIn = jest.fn().mockResolvedValue({
   redirectUrl,

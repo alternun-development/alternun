@@ -94,6 +94,7 @@ The fix was:
 - direct-source mode must ensure `default-source-authentication-login`
 - direct-source mode must ensure `default-source-enrollment-login`
 - custom outer flow mode strips those stages and lets the outer `SourceStage` own the handoff
+- a separate logout-first custom mode can frontload `User Logout` before `SourceStage` when a stale browser session is the problem
 
 ## Final Expected State
 
@@ -108,14 +109,18 @@ The fix was:
 
 - Google source `authentication_flow = default-source-authentication`
 - Google source `enrollment_flow = default-source-enrollment`
+- `default-source-authentication.authentication = none`
+- `default-source-enrollment.authentication = none`
 - `default-source-authentication` contains `default-source-authentication-login`
 - `default-source-enrollment` contains prompt + write + `default-source-enrollment-login`
+- if a custom Google starter flow is enabled, `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE=source` keeps the one-stage outer `SourceStage` path and `logout-then-source` inserts `UserLogoutStage` before `SourceStage`
 
 ### Browser routing
 
 - AIRS login page: `/auth`
 - AIRS callback page: `/auth/callback`
 - AIRS relay page: `/auth-relay` only when explicitly chosen
+- mobile logout returns to the AIRS app root via the mobile launch URL origin when no explicit post-logout redirect list is set
 
 ## What We Changed
 
@@ -124,11 +129,14 @@ The main durable changes were:
 - explicit runtime split in the shared auth package
 - explicit browser callback route
 - explicit social-login mode switch
+- web fresh-session handling now follows whether social login is still Authentik-managed, not whether the dormant Better Auth execution path exists
 - explicit allow flag for custom provider-flow slugs
+- source auth/enrollment flows now stay open (`authentication=none`) so the browser can resume after the upstream Google callback instead of hitting the current-user gate
 - direct-source default for deployed bundles
 - Google source enrollment now auto-fills the username from the upstream Google email, so first-time logins do not stop on the Authentik username screen
 - removal of hidden custom-flow derivation
 - Authentik bootstrap fix to restore `UserLoginStage` in direct-source mode
+- export and predeploy guards now fail builds that still embed stale Better Auth web login paths into AIRS web bundles or env
 
 ## Operational Checks
 

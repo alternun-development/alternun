@@ -760,6 +760,7 @@ export function deployIdentityInfrastructure(
             googleClientId: args.settings.integration.google.clientId,
             googleClientSecret: args.settings.integration.google.clientSecret,
             googleSourceLoginFlowSlug: args.settings.integration.google.loginFlowSlug,
+            googleSourceLoginFlowMode: args.settings.integration.google.loginFlowMode,
             googleSourceName: args.settings.integration.google.sourceName,
             googleSourceSlug: args.settings.integration.google.sourceSlug,
             discordClientId: args.settings.integration.discord.clientId,

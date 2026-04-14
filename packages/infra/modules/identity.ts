@@ -5,6 +5,10 @@ import {
   buildIdentitySecretNameDefaults,
   buildStageDomains,
 } from '../config/infrastructure-specs.js';
+import {
+  normalizeGoogleSourceLoginFlowMode,
+  type IdentitySourceLoginFlowMode,
+} from '../config/google-source-login-flow.js';
 
 export type IdentityEmailProvider = 'ses' | 'postmark';
 export type IdentityDatabaseMode = 'rds' | 'ec2';
@@ -77,6 +81,7 @@ export interface IdentityLocalConfig {
       sourceName?: string;
       sourceSlug?: string;
       loginFlowSlug?: string;
+      loginFlowMode?: IdentitySourceLoginFlowMode;
       allowCustomProviderFlowSlugs?: boolean;
     };
     discord?: {
@@ -217,6 +222,7 @@ export interface IdentitySettings {
       sourceName: string;
       sourceSlug: string;
       loginFlowSlug: string;
+      loginFlowMode: IdentitySourceLoginFlowMode;
       allowCustomProviderFlowSlugs: boolean;
     };
     discord: {
@@ -450,6 +456,10 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
     parseBoolean(args.env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS, false) ||
     parseBoolean(args.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS, false) ||
     Boolean(localConfig?.integration?.google?.allowCustomProviderFlowSlugs);
+  const googleLoginFlowMode = normalizeGoogleSourceLoginFlowMode(
+    args.env.INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE ??
+      localConfig?.integration?.google?.loginFlowMode
+  );
 
   return {
     enabled: parseBoolean(
@@ -655,6 +665,7 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
             localConfig?.integration?.google?.loginFlowSlug ??
             ''
           : '',
+        loginFlowMode: googleLoginFlowMode,
         allowCustomProviderFlowSlugs,
       },
       discord: {

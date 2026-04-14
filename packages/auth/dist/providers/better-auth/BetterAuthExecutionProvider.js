@@ -28,7 +28,7 @@ function normalizeSession(input, fallbackProvider) {
     };
 }
 async function callJson(fetchFn, baseUrl, path, body, apiKey) {
-    const url = new URL(path, baseUrl).toString();
+    const url = buildUrlWithBasePath(baseUrl, path);
     let response;
     try {
         response = await fetchFn(url, {
@@ -54,13 +54,20 @@ async function callJson(fetchFn, baseUrl, path, body, apiKey) {
     }
     return response.json().catch(() => ({}));
 }
+function buildUrlWithBasePath(baseUrl, path) {
+    const normalizedBaseUrl = baseUrl.trim().replace(/\/+$/, '');
+    const normalizedPath = path.trim().replace(/^\/+/, '');
+    return new URL(normalizedPath, `${normalizedBaseUrl}/`).toString();
+}
 export class BetterAuthExecutionProvider {
     constructor(options) {
+        var _a;
         this.options = options;
         this.name = 'better-auth';
         this.emailFallbackProvider = options.emailFallbackClient
             ? new SupabaseExecutionProvider(options.emailFallbackClient)
             : null;
+        this.allowLegacySessionFallback = (_a = options.allowLegacySessionFallback) !== null && _a !== void 0 ? _a : false;
     }
     get client() {
         var _a;
@@ -96,9 +103,6 @@ export class BetterAuthExecutionProvider {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         const client = this.client;
         const provider = (_b = (_a = this.normalizeProvider(options.provider)) !== null && _a !== void 0 ? _a : this.normalizeProvider(this.options.defaultProvider)) !== null && _b !== void 0 ? _b : 'google';
-        if (provider === 'email' && this.emailFallbackProvider) {
-            return this.emailFallbackProvider.signIn(options);
-        }
         if (client === null || client === void 0 ? void 0 : client.signIn) {
             const result = await client.signIn({
                 provider,
@@ -115,6 +119,9 @@ export class BetterAuthExecutionProvider {
                 externalIdentity: (_d = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _d !== void 0 ? _d : null,
                 redirectUrl: (_e = options.redirectUri) !== null && _e !== void 0 ? _e : null,
             };
+        }
+        if (provider === 'email' && this.emailFallbackProvider) {
+            return this.emailFallbackProvider.signIn(options);
         }
         const response = await callJson(this.fetchFn, this.requireBaseUrl(), (_f = this.options.signInPath) !== null && _f !== void 0 ? _f : '/auth/sign-in', {
             provider,
@@ -145,9 +152,6 @@ export class BetterAuthExecutionProvider {
     }
     async signUp(input) {
         var _a, _b, _c;
-        if (this.emailFallbackProvider) {
-            return this.emailFallbackProvider.signUp(input);
-        }
         const client = this.client;
         if (client === null || client === void 0 ? void 0 : client.signUp) {
             const result = await client.signUp(input);
@@ -165,6 +169,9 @@ export class BetterAuthExecutionProvider {
                     ? result.confirmationEmailSent
                     : undefined,
             };
+        }
+        if (this.emailFallbackProvider) {
+            return this.emailFallbackProvider.signUp(input);
         }
         const response = await callJson(this.fetchFn, this.requireBaseUrl(), (_b = this.options.signUpPath) !== null && _b !== void 0 ? _b : '/auth/sign-up', {
             email: input.email,
@@ -189,12 +196,11 @@ export class BetterAuthExecutionProvider {
     }
     async signOut() {
         var _a, _b, _c;
-        if (this.emailFallbackProvider) {
-            await this.emailFallbackProvider.signOut().catch(() => undefined);
-        }
         if ((_a = this.client) === null || _a === void 0 ? void 0 : _a.signOut) {
             await this.client.signOut();
-            return;
+        }
+        if (this.emailFallbackProvider) {
+            await this.emailFallbackProvider.signOut().catch(() => undefined);
         }
         const baseUrl = (_b = this.options.baseUrl) === null || _b === void 0 ? void 0 : _b.trim();
         if (!baseUrl) {
@@ -204,10 +210,6 @@ export class BetterAuthExecutionProvider {
     }
     async getExecutionSession() {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-        const fallbackSession = await this.getFallbackExecutionSession();
-        if (fallbackSession) {
-            return fallbackSession;
-        }
         if ((_a = this.client) === null || _a === void 0 ? void 0 : _a.getSession) {
             const session = await this.client.getSession();
             const normalized = normalizeSession(session, (_b = this.options.defaultProvider) !== null && _b !== void 0 ? _b : 'better-auth');
@@ -218,19 +220,24 @@ export class BetterAuthExecutionProvider {
         if (((_c = this.client) === null || _c === void 0 ? void 0 : _c.getUser) && this.client.getSessionToken) {
             const user = await this.client.getUser();
             const token = await this.client.getSessionToken();
-            if (!user) {
-                return null;
+            if (user) {
+                return {
+                    provider: (_e = (_d = user.provider) !== null && _d !== void 0 ? _d : this.options.defaultProvider) !== null && _e !== void 0 ? _e : 'better-auth',
+                    accessToken: token !== null && token !== void 0 ? token : null,
+                    refreshToken: null,
+                    idToken: null,
+                    expiresAt: null,
+                    externalIdentity: claimsToExternalIdentity((_g = (_f = user.provider) !== null && _f !== void 0 ? _f : this.options.defaultProvider) !== null && _g !== void 0 ? _g : 'better-auth', (_h = user.metadata) !== null && _h !== void 0 ? _h : {}, (_j = user.providerUserId) !== null && _j !== void 0 ? _j : user.id),
+                    linkedAccounts: [],
+                    raw: { user },
+                };
             }
-            return {
-                provider: (_e = (_d = user.provider) !== null && _d !== void 0 ? _d : this.options.defaultProvider) !== null && _e !== void 0 ? _e : 'better-auth',
-                accessToken: token !== null && token !== void 0 ? token : null,
-                refreshToken: null,
-                idToken: null,
-                expiresAt: null,
-                externalIdentity: claimsToExternalIdentity((_g = (_f = user.provider) !== null && _f !== void 0 ? _f : this.options.defaultProvider) !== null && _g !== void 0 ? _g : 'better-auth', (_h = user.metadata) !== null && _h !== void 0 ? _h : {}, (_j = user.providerUserId) !== null && _j !== void 0 ? _j : user.id),
-                linkedAccounts: [],
-                raw: { user },
-            };
+        }
+        if (this.allowLegacySessionFallback) {
+            const fallbackSession = await this.getFallbackExecutionSession();
+            if (fallbackSession) {
+                return fallbackSession;
+            }
         }
         if (!this.options.baseUrl) {
             return null;
@@ -240,13 +247,15 @@ export class BetterAuthExecutionProvider {
     }
     async refreshExecutionSession() {
         var _a, _b, _c, _d;
-        const fallbackSession = await this.getFallbackExecutionSession();
-        if (fallbackSession) {
-            return fallbackSession;
-        }
         if ((_a = this.client) === null || _a === void 0 ? void 0 : _a.refreshSession) {
             const session = await this.client.refreshSession();
             return normalizeSession(session, (_b = this.options.defaultProvider) !== null && _b !== void 0 ? _b : 'better-auth');
+        }
+        if (this.allowLegacySessionFallback) {
+            const fallbackSession = await this.getFallbackExecutionSession();
+            if (fallbackSession) {
+                return fallbackSession;
+            }
         }
         if (!this.options.baseUrl) {
             return this.getExecutionSession();
@@ -295,6 +304,26 @@ export class BetterAuthExecutionProvider {
         });
     }
     async signInWithEmail(email, password) {
+        var _a;
+        if ((_a = this.client) === null || _a === void 0 ? void 0 : _a.signIn) {
+            const result = await this.signIn({
+                provider: 'email',
+                flow: 'native',
+                email,
+                password,
+            });
+            if (result.externalIdentity) {
+                return {
+                    id: result.externalIdentity.providerUserId,
+                    email: result.externalIdentity.email,
+                    avatarUrl: result.externalIdentity.avatarUrl,
+                    provider: result.externalIdentity.provider,
+                    providerUserId: result.externalIdentity.providerUserId,
+                    metadata: result.externalIdentity.rawClaims,
+                };
+            }
+            throw new AlternunProviderError('Better Auth email sign-in did not return a user session.');
+        }
         if (this.emailFallbackProvider) {
             return this.emailFallbackProvider.signInWithEmail(email, password);
         }
@@ -317,9 +346,6 @@ export class BetterAuthExecutionProvider {
         throw new AlternunProviderError('Better Auth email sign-in did not return a user session.');
     }
     async signUpWithEmail(email, password, locale) {
-        if (this.emailFallbackProvider) {
-            return this.emailFallbackProvider.signUp({ email, password, locale });
-        }
         return this.signUp({ email, password, locale });
     }
     async resendEmailConfirmation(email) {

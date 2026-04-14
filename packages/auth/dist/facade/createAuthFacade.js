@@ -67,6 +67,7 @@ function createExecutionProvider(runtime, options) {
             baseUrl: runtime.betterAuthBaseUrl,
             fetchFn: options.fetchFn,
             defaultProvider: 'google',
+            allowLegacySessionFallback: false,
             walletBridge: (_a = options.walletBridge) !== null && _a !== void 0 ? _a : null,
             emailFallbackClient: hasLegacyEmailSupport(runtime) ? legacyClient : null,
         });

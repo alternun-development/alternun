@@ -230,17 +230,17 @@ The mobile web auth surface supports two Authentik entry patterns:
 
 Control the mode with `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE` in repo env, pipeline env, or `packages/infra/config/deployment.config.json`.
 The default is `source`, which is the smoothest option and avoids an extra relay hop unless you explicitly opt in.
-Use `AUTH_EXECUTION_PROVIDER` or `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` to choose the login execution engine. Set it to `better-auth` for the new Google/Discord execution path or `supabase` for the legacy path.
+Use `AUTH_EXECUTION_PROVIDER` or `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` to choose the login execution engine. Set it to `better-auth` only when you are testing a real Better Auth deployment, or `supabase` for the working legacy path.
 Use `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` to control whether the app uses Authentik-only social login, the hybrid Authentik/Supabase fallback path, or Supabase-only login. This is not the Better Auth switch.
-The default is `authentik` for deployed bundles so testnet/prod stay Authentik-first unless you explicitly opt into another mode, while non-production Expo bundles now default the execution provider to `better-auth`.
+The default is `authentik` for deployed bundles so testnet/prod stay Authentik-first unless you explicitly opt into another mode, while non-production Expo bundles now default the execution provider to `supabase`.
 Use `hybrid` only when you intentionally want Supabase fallback while iterating locally.
 The Expo build also receives `EXPO_PUBLIC_API_URL` for the matching stage API origin so the auth footer and privacy/terms drawers fetch legal content from the correct backend without guessing.
-For local testing against the shared testnet stack, keep `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` on `https://testnet-auth.alternun.co`. If you want the issuer handoff to stay on your machine, point `AUTH_EXCHANGE_URL` / `EXPO_PUBLIC_AUTH_EXCHANGE_URL` at `http://localhost:8082/auth/exchange`; otherwise leave it on `https://testnet.api.alternun.co/auth/exchange`.
-The Better Auth service itself must also allow the app origin in its `trustedOrigins` config. If the browser shows a CORS or preflight failure on `https://testnet-auth.alternun.co/auth/sign-in`, the service is missing the current app origin from `BETTER_AUTH_TRUSTED_ORIGINS`.
-The core web pipelines set `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` to `better-auth` on dev and mobile bundles, keep `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`, `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`, inject `EXPO_PUBLIC_API_URL` for the matching stage API origin, and set `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` so testnet/mobile bundles stay on the shortest stable Authentik path, use Better Auth for the social execution layer, fetch policy content from the correct API, and get a reload prompt when a new release is detected. Production stays on the legacy execution path unless you explicitly override it.
+If you later stand up a real Better Auth service, point `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` at that reachable endpoint and update the backend Lambda upstream accordingly. The repo no longer ships with the old dedicated testnet host wired in.
+The core web pipelines set `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` to `supabase` on dev and mobile bundles, keep `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`, `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`, inject `EXPO_PUBLIC_API_URL` for the matching stage API origin, and set `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` so testnet/mobile bundles stay on the stable Authentik-first path, fetch policy content from the correct API, and get a reload prompt when a new release is detected. Production stays on the legacy execution path unless you explicitly override it.
 `EXPO_PUBLIC_AUTHENTIK_ISSUER` and `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID` should be present in env, but deployed web builds now derive sane defaults from the live `airs` origin if they are omitted. `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` is also optional in deployed web builds; when omitted, the shared auth helpers derive `https://<airs-domain>/auth/callback` from the current browser origin. During local web development, the active browser origin wins over stale loopback or testnet redirect values so callbacks stay on the current app instance.
-Custom Authentik provider-flow slugs are now explicit only. Set `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=true` and `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` or `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS=true` and `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` / `INFRA_IDENTITY_DISCORD_LOGIN_FLOW_SLUG` only when you intentionally want a custom starter flow. When those values are blank, the app uses the direct source-login path and the identity bootstrap stays on the direct source-login flows.
-The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages so logout returns to the app instead of stopping on Authentik's success page.
+Custom Authentik provider-flow slugs are now explicit only. Set `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=true` and `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` or `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS=true` and `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` / `INFRA_IDENTITY_DISCORD_LOGIN_FLOW_SLUG` only when you intentionally want a custom starter flow. When those values are blank, the app uses the direct source-login path and the identity bootstrap stays on the direct source-login flows. For Google, `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE=logout-then-source` is available when you intentionally want the custom flow to start with a logout stage before the `SourceStage`; leave it at `source` for the existing single-stage custom flow.
+The deploy path now validates that non-Better-Auth web builds do not carry Better Auth URLs in env, and the Expo web export fails if the emitted bundle still contains stale `/better-auth/*` login paths or an inlined non-production `better-auth` execution default.
+The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages, and the bootstrap derives the app-root post-logout redirect from the mobile launch URL when no explicit list is provided, so logout returns to the app instead of stopping on Authentik's success page.
 
 ### Release Update Banner
 
@@ -299,6 +299,7 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_GOOGLE_SOURCE_NAME`
 - `INFRA_IDENTITY_GOOGLE_SOURCE_SLUG`
 - `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` (optional; set only when you intentionally want a custom outer Authentik starter flow, otherwise leave it empty for direct source login)
+- `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE` (optional; `source` keeps the current single-stage custom flow, `logout-then-source` frontloads a logout stage before `SourceStage`)
 - `INFRA_IDENTITY_DISCORD_AUTH_CLIENT_ID`
 - `INFRA_IDENTITY_DISCORD_AUTH_CLIENT_SECRET`
 - `INFRA_IDENTITY_DISCORD_SOURCE_NAME`
@@ -327,9 +328,8 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_DEFAULT_APPLICATION_PUBLISHER`
 - `INFRA_IDENTITY_DEFAULT_APPLICATION_DESCRIPTION`
 - `INFRA_IDENTITY_DEFAULT_APPLICATION_POLICY_ENGINE_MODE` (`any` or `all`)
-- `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` (`better-auth` for the new Google/Discord execution path; leave `supabase` for the legacy path)
+- `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` (`supabase` for the stable path; use `better-auth` only when you are testing a real Better Auth deployment)
 - `EXPO_PUBLIC_API_URL` (stage API origin used by the auth footer and legal drawers; `https://testnet.api.alternun.co` on testnet)
-- `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` (`https://testnet-auth.alternun.co` for the shared testnet Better Auth host)
 - `AUTH_EXCHANGE_URL` / `EXPO_PUBLIC_AUTH_EXCHANGE_URL` (`https://testnet.api.alternun.co/auth/exchange` for the canonical issuer handoff)
 - `INFRA_IDENTITY_USERDATA_REPLACE_ON_CHANGE` (default `false`, prevents instance replacement on user-data/template edits)
 - `INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION` (default `true` on production identity stacks)
@@ -355,9 +355,10 @@ Important behavior:
 - the Docs CMS Authentik application tile now points at the configured docs `/admin` entry route so its Google relay starts from the app instead of the Authentik library
 - non-production identity stages promote any authenticated social-login user to `internal`, so testnet signup reaches the interface; production stays on the `alternun.io` domain gate
 - the Google source bootstrap binds a username-mapping policy to `default-source-enrollment-prompt`, so first-time Google enrollments reuse the upstream email as the username and skip the manual Authentik username screen
+- the custom Google starter flow can optionally run `User Logout` before `SourceStage` when `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE=logout-then-source` is set, which helps clear a stale browser session before the source handoff
 - the `Alternun Mobile` Authentik application tile defaults to the stage-specific AIRS auth entrypoint (`/auth?next=/`) so the tile opens the app instead of the Authentik library
-- `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` (`better-auth` routes Google/Discord through Better Auth before the Authentik issuer exchange; keep `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` for the social source path on Authentik)
-- in direct source mode, Authentik must keep `default-source-authentication-login` and `default-source-enrollment-login`; clearing those stages causes Google callback loops instead of dashboard redirects
+- `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` (`supabase` keeps the current stable path; keep `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` for the social source path on Authentik)
+- in direct source mode, Authentik must keep `default-source-authentication-login` and `default-source-enrollment-login`, and the source auth/enrollment flows stay open (`authentication=none`); clearing those stages or re-locking the flow causes Google callback loops or permission-denied pages instead of dashboard redirects
 - local development can point the default internal app tile, the admin app tile/callbacks, the mobile app tile launch URL, and the mobile OIDC callbacks and post-logout redirects at localhost via `INFRA_IDENTITY_ADMIN_OIDC_LOCAL_DEV_URL`, `INFRA_IDENTITY_MOBILE_OIDC_LAUNCH_URL`, `INFRA_MOBILE_OIDC_REDIRECT_URLS`, and `INFRA_MOBILE_OIDC_POST_LOGOUT_REDIRECT_URLS`
 - when Supabase management token/project ref are provided, infra patches Supabase `external_keycloak_*` settings automatically
 - SST outputs now expose the provisioned identity instance, database, VPC, DNS, and secret metadata
