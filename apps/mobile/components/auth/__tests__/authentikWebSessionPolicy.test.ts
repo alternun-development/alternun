@@ -13,16 +13,20 @@ const { describe, expect, it } = globalThis as unknown as {
 };
 
 describe('authentikWebSessionPolicy', () => {
-  it('forces a fresh Authentik session on web social sign-in for legacy execution', () => {
-    expect(shouldForceFreshAuthentikSocialSession('web', 'supabase')).toBe(true);
+  it('forces a fresh Authentik session on web when social login stays on Authentik', () => {
+    expect(shouldForceFreshAuthentikSocialSession('web', 'authentik')).toBe(true);
   });
 
-  it('does not force an Authentik logout when Better Auth is the execution provider', () => {
-    expect(shouldForceFreshAuthentikSocialSession('web', 'better-auth')).toBe(false);
+  it('also forces a fresh Authentik session on web for hybrid mode', () => {
+    expect(shouldForceFreshAuthentikSocialSession('web', 'hybrid')).toBe(true);
+  });
+
+  it('does not force an Authentik logout when social login bypasses Authentik', () => {
+    expect(shouldForceFreshAuthentikSocialSession('web', 'supabase')).toBe(false);
   });
 
   it('keeps native social sign-in on the current runtime session', () => {
-    expect(shouldForceFreshAuthentikSocialSession('ios')).toBe(false);
-    expect(shouldForceFreshAuthentikSocialSession('android')).toBe(false);
+    expect(shouldForceFreshAuthentikSocialSession('ios', 'authentik')).toBe(false);
+    expect(shouldForceFreshAuthentikSocialSession('android', 'authentik')).toBe(false);
   });
 });

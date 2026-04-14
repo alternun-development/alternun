@@ -36,6 +36,7 @@ export interface BetterAuthExecutionProviderOptions {
   baseUrl?: string;
   fetchFn?: typeof fetch;
   emailFallbackClient?: LegacyExecutionClientLike | null;
+  allowLegacySessionFallback?: boolean;
   signInPath?: string;
   signUpPath?: string;
   signOutPath?: string;
@@ -84,7 +85,7 @@ async function callJson(
   body: unknown,
   apiKey?: string
 ): Promise<unknown> {
-  const url = new URL(path, baseUrl).toString();
+  const url = buildUrlWithBasePath(baseUrl, path);
   let response: Response;
 
   try {
@@ -118,14 +119,22 @@ async function callJson(
   return response.json().catch(() => ({}));
 }
 
+function buildUrlWithBasePath(baseUrl: string, path: string): string {
+  const normalizedBaseUrl = baseUrl.trim().replace(/\/+$/, '');
+  const normalizedPath = path.trim().replace(/^\/+/, '');
+  return new URL(normalizedPath, `${normalizedBaseUrl}/`).toString();
+}
+
 export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   readonly name = 'better-auth' as const;
   private readonly emailFallbackProvider: SupabaseExecutionProvider | null;
+  private readonly allowLegacySessionFallback: boolean;
 
   constructor(private readonly options: BetterAuthExecutionProviderOptions) {
     this.emailFallbackProvider = options.emailFallbackClient
       ? new SupabaseExecutionProvider(options.emailFallbackClient)
       : null;
+    this.allowLegacySessionFallback = options.allowLegacySessionFallback ?? false;
   }
 
   private get client(): BetterAuthClientLike | null {
@@ -170,10 +179,6 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       this.normalizeProvider(this.options.defaultProvider) ??
       'google';
 
-    if (provider === 'email' && this.emailFallbackProvider) {
-      return this.emailFallbackProvider.signIn(options);
-    }
-
     if (client?.signIn) {
       const result = await client.signIn({
         provider,
@@ -191,6 +196,10 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         externalIdentity: normalizedSession?.externalIdentity ?? null,
         redirectUrl: options.redirectUri ?? null,
       };
+    }
+
+    if (provider === 'email' && this.emailFallbackProvider) {
+      return this.emailFallbackProvider.signIn(options);
     }
 
     const response = await callJson(
@@ -232,10 +241,6 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signUp(input: AuthExecutionSignUpInput): Promise<AuthExecutionResult> {
-    if (this.emailFallbackProvider) {
-      return this.emailFallbackProvider.signUp(input);
-    }
-
     const client = this.client;
     if (client?.signUp) {
       const result = await client.signUp(
@@ -258,6 +263,10 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
             ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
             : undefined,
       };
+    }
+
+    if (this.emailFallbackProvider) {
+      return this.emailFallbackProvider.signUp(input);
     }
 
     const response = await callJson(
@@ -292,13 +301,12 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signOut(): Promise<void> {
-    if (this.emailFallbackProvider) {
-      await this.emailFallbackProvider.signOut().catch(() => undefined);
-    }
-
     if (this.client?.signOut) {
       await this.client.signOut();
-      return;
+    }
+
+    if (this.emailFallbackProvider) {
+      await this.emailFallbackProvider.signOut().catch(() => undefined);
     }
 
     const baseUrl = this.options.baseUrl?.trim();
@@ -315,11 +323,6 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async getExecutionSession(): Promise<ExecutionSession | null> {
-    const fallbackSession = await this.getFallbackExecutionSession();
-    if (fallbackSession) {
-      return fallbackSession;
-    }
-
     if (this.client?.getSession) {
       const session = await this.client.getSession();
       const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
@@ -331,24 +334,29 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     if (this.client?.getUser && this.client.getSessionToken) {
       const user = await this.client.getUser();
       const token = await this.client.getSessionToken();
-      if (!user) {
-        return null;
+      if (user) {
+        return {
+          provider: user.provider ?? this.options.defaultProvider ?? 'better-auth',
+          accessToken: token ?? null,
+          refreshToken: null,
+          idToken: null,
+          expiresAt: null,
+          externalIdentity: claimsToExternalIdentity(
+            user.provider ?? this.options.defaultProvider ?? 'better-auth',
+            user.metadata ?? {},
+            user.providerUserId ?? user.id
+          ),
+          linkedAccounts: [],
+          raw: { user },
+        };
       }
+    }
 
-      return {
-        provider: user.provider ?? this.options.defaultProvider ?? 'better-auth',
-        accessToken: token ?? null,
-        refreshToken: null,
-        idToken: null,
-        expiresAt: null,
-        externalIdentity: claimsToExternalIdentity(
-          user.provider ?? this.options.defaultProvider ?? 'better-auth',
-          user.metadata ?? {},
-          user.providerUserId ?? user.id
-        ),
-        linkedAccounts: [],
-        raw: { user },
-      };
+    if (this.allowLegacySessionFallback) {
+      const fallbackSession = await this.getFallbackExecutionSession();
+      if (fallbackSession) {
+        return fallbackSession;
+      }
     }
 
     if (!this.options.baseUrl) {
@@ -365,14 +373,16 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async refreshExecutionSession(): Promise<ExecutionSession | null> {
-    const fallbackSession = await this.getFallbackExecutionSession();
-    if (fallbackSession) {
-      return fallbackSession;
-    }
-
     if (this.client?.refreshSession) {
       const session = await this.client.refreshSession();
       return normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
+    }
+
+    if (this.allowLegacySessionFallback) {
+      const fallbackSession = await this.getFallbackExecutionSession();
+      if (fallbackSession) {
+        return fallbackSession;
+      }
     }
 
     if (!this.options.baseUrl) {
@@ -430,6 +440,28 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signInWithEmail(email: string, password: string): Promise<User> {
+    if (this.client?.signIn) {
+      const result = await this.signIn({
+        provider: 'email',
+        flow: 'native',
+        email,
+        password,
+      });
+
+      if (result.externalIdentity) {
+        return {
+          id: result.externalIdentity.providerUserId,
+          email: result.externalIdentity.email,
+          avatarUrl: result.externalIdentity.avatarUrl,
+          provider: result.externalIdentity.provider,
+          providerUserId: result.externalIdentity.providerUserId,
+          metadata: result.externalIdentity.rawClaims,
+        };
+      }
+
+      throw new AlternunProviderError('Better Auth email sign-in did not return a user session.');
+    }
+
     if (this.emailFallbackProvider) {
       return this.emailFallbackProvider.signInWithEmail(email, password);
     }
@@ -460,10 +492,6 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     password: string,
     locale?: string
   ): Promise<AuthExecutionResult> {
-    if (this.emailFallbackProvider) {
-      return this.emailFallbackProvider.signUp({ email, password, locale });
-    }
-
     return this.signUp({ email, password, locale });
   }
 
