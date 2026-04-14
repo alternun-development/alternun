@@ -1,8 +1,8 @@
-import React, { useState, } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, } from 'react-native';
-import { createTypographyStyles, } from '../theme/typography';
-import { Leaf, ChevronDown, CreditCard, Check, X, } from 'lucide-react-native';
-import { Project, } from './types';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { createTypographyStyles } from '../theme/typography';
+import { Leaf, ChevronDown, CreditCard, Check, X } from 'lucide-react-native';
+import { Project } from './types';
 
 interface CompensationFlowProps {
   projects: Project[];
@@ -11,31 +11,28 @@ interface CompensationFlowProps {
 
 type Step = 1 | 2 | 3 | 4;
 
-export default function CompensationFlow({ projects, onCompensate, }: CompensationFlowProps,) {
-  const [currentStep, setCurrentStep,] = useState<Step>(1,);
-  const [selectedProject, setSelectedProject,] = useState<Project | null>(null,);
-  const [amount, setAmount,] = useState('',);
-  const [projectPickerVisible, setProjectPickerVisible,] = useState(false,);
-  const [success, setSuccess,] = useState(false,);
+export default function CompensationFlow({ projects, onCompensate }: CompensationFlowProps) {
+  const [currentStep, setCurrentStep] = useState<Step>(1);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [amount, setAmount] = useState('');
+  const [projectPickerVisible, setProjectPickerVisible] = useState(false);
 
-  const steps = ['Choose Project', 'Set Amount', 'Pay', 'Certificate',];
+  const steps = ['Choose Project', 'Set Amount', 'Pay', 'Certificate'];
 
   const handleCompensate = () => {
     if (!selectedProject || !amount) return;
-    setCurrentStep(3,);
+    setCurrentStep(3);
     // Simulate payment
     setTimeout(() => {
-      onCompensate(selectedProject.id, parseFloat(amount,),);
-      setCurrentStep(4,);
-      setSuccess(true,);
-    }, 1500,);
+      onCompensate(selectedProject.id, parseFloat(amount));
+      setCurrentStep(4);
+    }, 1500);
   };
 
   const handleReset = () => {
-    setCurrentStep(1,);
-    setSelectedProject(null,);
-    setAmount('',);
-    setSuccess(false,);
+    setCurrentStep(1);
+    setSelectedProject(null);
+    setAmount('');
   };
 
   return (
@@ -43,7 +40,7 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <View style={styles.iconWrapper}>
-            <Leaf size={18} color="#1ccba1" />
+            <Leaf size={18} color='#1ccba1' />
           </View>
           <View style={styles.cardHeaderText}>
             <Text style={styles.cardTitle}>Carbon Compensation</Text>
@@ -53,35 +50,56 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
 
         {/* Step Indicator */}
         <View style={styles.stepIndicator}>
-          {steps.map((step, index,) => {
+          {steps.map((step, index) => {
             const stepNum = (index + 1) as Step;
             const isActive = stepNum === currentStep;
             const isCompleted = stepNum < currentStep;
             return (
               <React.Fragment key={step}>
                 <View style={styles.stepItem}>
-                  <View style={[
-                    styles.stepDot,
-                    isCompleted ? styles.stepDotCompleted : isActive ? styles.stepDotActive : styles.stepDotInactive,
-                  ]}>
+                  <View
+                    style={[
+                      styles.stepDot,
+                      isCompleted
+                        ? styles.stepDotCompleted
+                        : isActive
+                        ? styles.stepDotActive
+                        : styles.stepDotInactive,
+                    ]}
+                  >
                     {isCompleted ? (
-                      <Check size={10} color="#050510" />
+                      <Check size={10} color='#050510' />
                     ) : (
-                      <Text style={[styles.stepDotText, isActive ? styles.stepDotTextActive : styles.stepDotTextInactive,]}>
+                      <Text
+                        style={[
+                          styles.stepDotText,
+                          isActive ? styles.stepDotTextActive : styles.stepDotTextInactive,
+                        ]}
+                      >
                         {stepNum}
                       </Text>
                     )}
                   </View>
-                  <Text style={[styles.stepLabel, isActive ? styles.stepLabelActive : styles.stepLabelInactive,]}>
+                  <Text
+                    style={[
+                      styles.stepLabel,
+                      isActive ? styles.stepLabelActive : styles.stepLabelInactive,
+                    ]}
+                  >
                     {step}
                   </Text>
                 </View>
                 {index < steps.length - 1 && (
-                  <View style={[styles.stepLine, isCompleted ? styles.stepLineCompleted : styles.stepLineInactive,]} />
+                  <View
+                    style={[
+                      styles.stepLine,
+                      isCompleted ? styles.stepLineCompleted : styles.stepLineInactive,
+                    ]}
+                  />
                 )}
               </React.Fragment>
             );
-          },)}
+          })}
         </View>
 
         {/* Step Content */}
@@ -90,13 +108,13 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
             <Text style={styles.stepContentTitle}>Select a Project</Text>
             <TouchableOpacity
               style={styles.projectSelector}
-              onPress={() => setProjectPickerVisible(true,)}
+              onPress={() => setProjectPickerVisible(true)}
               activeOpacity={0.8}
             >
               {selectedProject ? (
                 <View style={styles.selectedProject}>
                   <View style={styles.projectIconSmall}>
-                    <Leaf size={12} color="#1ccba1" />
+                    <Leaf size={12} color='#1ccba1' />
                   </View>
                   <View>
                     <Text style={styles.selectedProjectName}>{selectedProject.name}</Text>
@@ -106,14 +124,16 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
               ) : (
                 <Text style={styles.selectorPlaceholder}>Choose a climate project...</Text>
               )}
-              <ChevronDown size={16} color="rgba(232,232,255,0.4)" />
+              <ChevronDown size={16} color='rgba(232,232,255,0.4)' />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.nextButton, !selectedProject && styles.nextButtonDisabled,]}
-              onPress={() => selectedProject && setCurrentStep(2,)}
+              style={[styles.nextButton, !selectedProject && styles.nextButtonDisabled]}
+              onPress={() => selectedProject && setCurrentStep(2)}
               activeOpacity={0.8}
             >
-              <Text style={[styles.nextButtonText, !selectedProject && styles.nextButtonTextDisabled,]}>
+              <Text
+                style={[styles.nextButtonText, !selectedProject && styles.nextButtonTextDisabled]}
+              >
                 Continue →
               </Text>
             </TouchableOpacity>
@@ -129,36 +149,45 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
                 style={styles.amountInput}
                 value={amount}
                 onChangeText={setAmount}
-                keyboardType="decimal-pad"
-                placeholder="0.00"
-                placeholderTextColor="rgba(232,232,255,0.2)"
+                keyboardType='decimal-pad'
+                placeholder='0.00'
+                placeholderTextColor='rgba(232,232,255,0.2)'
               />
               <Text style={styles.currencyLabel}>USD</Text>
             </View>
             <View style={styles.quickAmounts}>
-              {['10', '25', '50', '100',].map((preset,) => (
+              {['10', '25', '50', '100'].map((preset) => (
                 <TouchableOpacity
                   key={preset}
-                  style={[styles.quickAmount, amount === preset && styles.quickAmountActive,]}
-                  onPress={() => setAmount(preset,)}
+                  style={[styles.quickAmount, amount === preset && styles.quickAmountActive]}
+                  onPress={() => setAmount(preset)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.quickAmountText, amount === preset && styles.quickAmountTextActive,]}>
+                  <Text
+                    style={[
+                      styles.quickAmountText,
+                      amount === preset && styles.quickAmountTextActive,
+                    ]}
+                  >
                     ${preset}
                   </Text>
                 </TouchableOpacity>
-              ),)}
+              ))}
             </View>
             <View style={styles.rowButtons}>
-              <TouchableOpacity style={styles.backButton} onPress={() => setCurrentStep(1,)} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => setCurrentStep(1)}
+                activeOpacity={0.8}
+              >
                 <Text style={styles.backButtonText}>Back</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.compensateButton, !amount && styles.nextButtonDisabled,]}
+                style={[styles.compensateButton, !amount && styles.nextButtonDisabled]}
                 onPress={handleCompensate}
                 activeOpacity={0.8}
               >
-                <CreditCard size={14} color="#050510" />
+                <CreditCard size={14} color='#050510' />
                 <Text style={styles.compensateButtonText}>Compensate Now</Text>
               </TouchableOpacity>
             </View>
@@ -169,7 +198,7 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
           <View style={styles.stepContent}>
             <View style={styles.processingContainer}>
               <View style={styles.processingIcon}>
-                <CreditCard size={24} color="#1ccba1" />
+                <CreditCard size={24} color='#1ccba1' />
               </View>
               <Text style={styles.processingTitle}>Processing Payment...</Text>
               <Text style={styles.processingDesc}>Connecting to payment provider</Text>
@@ -181,16 +210,21 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
           <View style={styles.stepContent}>
             <View style={styles.successContainer}>
               <View style={styles.successIcon}>
-                <Check size={28} color="#050510" />
+                <Check size={28} color='#050510' />
               </View>
               <Text style={styles.successTitle}>Compensation Complete!</Text>
               <Text style={styles.successDesc}>
-                You've offset {selectedProject?.name} for ${amount} USD. Your SBT certificate has been issued.
+                You've offset {selectedProject?.name} for ${amount} USD. Your SBT certificate has
+                been issued.
               </Text>
               <TouchableOpacity style={styles.viewCertButton} activeOpacity={0.8}>
                 <Text style={styles.viewCertButtonText}>View Certificate</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.resetButton} onPress={handleReset} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.resetButton}
+                onPress={handleReset}
+                activeOpacity={0.8}
+              >
                 <Text style={styles.resetButtonText}>Compensate Again</Text>
               </TouchableOpacity>
             </View>
@@ -199,38 +233,39 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
       </View>
 
       {/* Project Picker Modal */}
-      <Modal visible={projectPickerVisible} transparent animationType="slide">
+      <Modal visible={projectPickerVisible} transparent animationType='slide'>
         <View style={styles.pickerOverlay}>
           <View style={styles.pickerSheet}>
             <View style={styles.pickerHandle} />
             <View style={styles.pickerHeader}>
               <Text style={styles.pickerTitle}>Choose Project</Text>
-              <TouchableOpacity onPress={() => setProjectPickerVisible(false,)}>
-                <X size={20} color="rgba(232,232,255,0.6)" />
+              <TouchableOpacity onPress={() => setProjectPickerVisible(false)}>
+                <X size={20} color='rgba(232,232,255,0.6)' />
               </TouchableOpacity>
             </View>
-            {projects.map((project,) => (
+            {projects.map((project) => (
               <TouchableOpacity
                 key={project.id}
-                style={[styles.projectOption, selectedProject?.id === project.id && styles.projectOptionSelected,]}
+                style={[
+                  styles.projectOption,
+                  selectedProject?.id === project.id && styles.projectOptionSelected,
+                ]}
                 onPress={() => {
-                  setSelectedProject(project,);
-                  setProjectPickerVisible(false,);
+                  setSelectedProject(project);
+                  setProjectPickerVisible(false);
                 }}
                 activeOpacity={0.8}
               >
                 <View style={styles.projectOptionIcon}>
-                  <Leaf size={14} color="#1ccba1" />
+                  <Leaf size={14} color='#1ccba1' />
                 </View>
                 <View style={styles.projectOptionText}>
                   <Text style={styles.projectOptionName}>{project.name}</Text>
                   <Text style={styles.projectOptionDesc}>{project.description}</Text>
                 </View>
-                {selectedProject?.id === project.id && (
-                  <Check size={16} color="#1ccba1" />
-                )}
+                {selectedProject?.id === project.id && <Check size={16} color='#1ccba1' />}
               </TouchableOpacity>
-            ),)}
+            ))}
           </View>
         </View>
       </Modal>
@@ -250,7 +285,7 @@ const styles = createTypographyStyles({
     borderRadius: 20,
     padding: 20,
     shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8, },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.5,
     shadowRadius: 14,
     elevation: 5,
@@ -304,7 +339,7 @@ const styles = createTypographyStyles({
   stepDotActive: {
     backgroundColor: '#1ccba1',
     shadowColor: '#1ccba1',
-    shadowOffset: { width: 0, height: 0, },
+    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 6,
   },
@@ -532,7 +567,7 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#1ccba1',
-    shadowOffset: { width: 0, height: 0, },
+    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 14,
     elevation: 6,
@@ -637,4 +672,4 @@ const styles = createTypographyStyles({
     fontSize: 11,
     marginTop: 2,
   },
-},);
+});

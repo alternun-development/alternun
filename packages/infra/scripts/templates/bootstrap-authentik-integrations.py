@@ -1,11 +1,13 @@
 import json
 import os
+from urllib.parse import urlparse
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 
 from authentik.core.models import Application, Group
 from authentik.events.models import Event, EventAction, NotificationTransport, NotificationRule, NotificationSeverity
-from authentik.flows.models import Flow, FlowStageBinding
+from authentik.flows.models import Flow, FlowStageBinding, FlowToken
 from authentik.policies.expression.models import ExpressionPolicy
 from authentik.policies.models import PolicyBinding
 from authentik.providers.oauth2.models import OAuth2Provider, ScopeMapping
@@ -54,6 +56,20 @@ def build_redirect_uris(urls):
     return [build_redirect_uri(url) for url in urls if url]
 
 
+def derive_origin_redirect(url: str):
+    parsed = urlparse(url or "")
+    if parsed.scheme and parsed.netloc:
+        return f"{parsed.scheme}://{parsed.netloc}/"
+    return ""
+
+
+def derive_auth_callback_redirect(url: str):
+    parsed = urlparse(url or "")
+    if parsed.scheme and parsed.netloc:
+        return f"{parsed.scheme}://{parsed.netloc}/auth/callback"
+    return ""
+
+
 def read_bool_env(name: str, default: bool) -> bool:
     value = os.environ.get(name)
     if value is None:
@@ -77,6 +93,13 @@ def read_list_env(name: str, default=None):
 def normalize_policy_mode(value: str) -> str:
     normalized = value.strip().lower()
     return "all" if normalized == "all" else "any"
+
+
+def normalize_google_source_login_flow_mode(value: str) -> str:
+    normalized = (value or "").strip().lower().replace("_", "-")
+    if normalized in {"logout-then-source", "logout-first", "logout-before-source"}:
+        return "logout-then-source"
+    return "source"
 
 
 def build_admin_access_expression(allowed_domain: str, allowed_groups):
@@ -278,6 +301,24 @@ def ensure_named_user_login_stage(name: str):
     return stage, created
 
 
+def ensure_named_user_logout_stage(name: str):
+    stage, created = UserLogoutStage.objects.get_or_create(name=name)
+    return stage, created
+
+
+def ensure_flow_authentication(flow, authentication: str = "none"):
+    if not flow:
+        return False
+
+    changed = False
+    if hasattr(flow, "authentication") and flow.authentication != authentication:
+        flow.authentication = authentication
+        changed = True
+    if changed:
+        flow.save()
+    return changed
+
+
 def ensure_direct_source_login_bindings(authentication_flow, enrollment_flow):
     changed = False
 
@@ -354,8 +395,16 @@ def delete_source_stage_flows(source, keep_slugs=None):
     if not flow_ids:
         return 0
 
-    deleted_count, _ = Flow.objects.filter(pk__in=flow_ids).delete()
-    return deleted_count
+    token_deleted_count, _ = FlowToken.objects.filter(flow_id__in=flow_ids).delete()
+    try:
+        deleted_count, _ = Flow.objects.filter(pk__in=flow_ids).delete()
+    except IntegrityError:
+        # If other stale references still exist, leave the remaining flow behind
+        # rather than failing the bootstrap. The token cleanup above removes the
+        # common resume-path blocker so direct source logins keep working.
+        return token_deleted_count
+
+    return deleted_count + token_deleted_count
 
 
 def upsert_authentication_flow(
@@ -363,6 +412,7 @@ def upsert_authentication_flow(
     name: str,
     title: str,
     *,
+    authentication: str = "none",
     policy_engine_mode: str = "any",
     compatibility_mode: bool = True,
     layout: str = "stacked",
@@ -372,6 +422,7 @@ def upsert_authentication_flow(
         "name": name,
         "title": title,
         "designation": "authentication",
+        "authentication": authentication,
         "policy_engine_mode": policy_engine_mode,
         "compatibility_mode": compatibility_mode,
         "layout": layout,
@@ -448,6 +499,7 @@ def upsert_source_stage_flow(
     stage_name: str,
     source,
     *,
+    starter_mode: str = "source",
     resume_timeout: str = "minutes=15",
 ):
     flow, flow_created, flow_changed = upsert_authentication_flow(
@@ -459,6 +511,8 @@ def upsert_source_stage_flow(
     if not SourceStage or not source:
         return flow, flow_created, flow_changed, None, False, False
 
+    normalized_starter_mode = normalize_google_source_login_flow_mode(starter_mode)
+    logout_stage = None
     stage, stage_created = SourceStage.objects.get_or_create(
         name=stage_name,
         defaults={
@@ -479,14 +533,32 @@ def upsert_source_stage_flow(
         stage.save()
         flow_changed = True
 
-    stage_binding_created, stage_binding_changed = ensure_flow_stage_binding(flow, stage, order=0)
+    stage_binding_created, stage_binding_changed = ensure_flow_stage_binding(
+        flow,
+        stage,
+        order=1 if normalized_starter_mode == "logout-then-source" else 0,
+    )
     if stage_binding_created or stage_binding_changed:
         flow_changed = True
 
+    if normalized_starter_mode == "logout-then-source":
+        logout_stage_name = f"{stage_name.removesuffix('-stage')}-logout"
+        logout_stage, logout_stage_created = ensure_named_user_logout_stage(logout_stage_name)
+        logout_stage_binding_created, logout_stage_binding_changed = ensure_flow_stage_binding(
+            flow,
+            logout_stage,
+            order=0,
+        )
+        if logout_stage_created or logout_stage_binding_created or logout_stage_binding_changed:
+            flow_changed = True
+
     # Keep these source-login flows deterministic. If an earlier bootstrap run
     # created a different stage for the same source, prune the stale binding so
-    # the flow stays a single-stage relay instead of accumulating leftovers.
-    stale_bindings = FlowStageBinding.objects.filter(target=flow).exclude(stage_id=stage.pk)
+    # the flow keeps the configured stage order instead of accumulating leftovers.
+    keep_stage_ids = [stage.pk]
+    if logout_stage:
+        keep_stage_ids.append(logout_stage.pk)
+    stale_bindings = FlowStageBinding.objects.filter(target=flow).exclude(stage_id__in=keep_stage_ids)
     stale_binding_count = stale_bindings.count()
     if stale_binding_count:
         stale_bindings.delete()
@@ -507,6 +579,7 @@ results = {
     "google_source": "skipped",
     "discord_source": "skipped",
     "google_source_flow": "skipped",
+    "google_source_flow_mode": "skipped",
     "google_source_username_mapping": "skipped",
     "discord_source_flow": "skipped",
     "mobile_oidc_provider": "skipped",
@@ -1077,6 +1150,9 @@ else:
 google_client_id = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_CLIENT_ID")
 google_client_secret = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_CLIENT_SECRET")
 google_login_flow_slug = read_env("ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_LOGIN_FLOW_SLUG")
+google_login_flow_mode = normalize_google_source_login_flow_mode(
+    read_env("ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_LOGIN_FLOW_MODE", "source")
+)
 allow_custom_provider_flow_slugs = read_bool_env(
     "ALTERNUN_BOOTSTRAP_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS",
     False,
@@ -1098,6 +1174,8 @@ if google_client_id and google_client_secret:
     source_authentication_flow_pruned = 0
     source_enrollment_flow_pruned = 0
     source_direct_bindings_ensured = False
+    source_authentication_flow_opened = ensure_flow_authentication(source_authentication_flow)
+    source_enrollment_flow_opened = ensure_flow_authentication(source_enrollment_flow)
 
     if google_login_flow_slug:
         source_authentication_flow_pruned = prune_flow_stage_bindings(
@@ -1162,6 +1240,8 @@ if google_client_id and google_client_secret:
         source_authentication_flow_pruned
         or source_enrollment_flow_pruned
         or source_direct_bindings_ensured
+        or source_authentication_flow_opened
+        or source_enrollment_flow_opened
     ):
         source_changed = True
 
@@ -1172,6 +1252,7 @@ if google_client_id and google_client_secret:
             "Alternun Google Login",
             "alternun-google-source-stage",
             source,
+            starter_mode=google_login_flow_mode,
         )
         if google_login_stage:
             if source.authentication_flow_id != google_login_flow.pk:
@@ -1190,6 +1271,7 @@ if google_client_id and google_client_secret:
                 results["google_source_flow"] = "updated"
             else:
                 results["google_source_flow"] = "unchanged"
+            results["google_source_flow_mode"] = google_login_flow_mode
         else:
             results["google_source_flow"] = "disabled"
     else:
@@ -1215,6 +1297,7 @@ if google_client_id and google_client_secret:
         if google_source_flow_deleted:
             source_changed = True
         results["google_source_flow"] = "direct"
+        results["google_source_flow_mode"] = "direct"
 
     if source_created or source_changed:
         source.save()
@@ -1505,6 +1588,8 @@ if discord_client_id and discord_client_secret:
     source_authentication_flow_pruned = 0
     source_enrollment_flow_pruned = 0
     source_direct_bindings_ensured = False
+    source_authentication_flow_opened = ensure_flow_authentication(source_authentication_flow)
+    source_enrollment_flow_opened = ensure_flow_authentication(source_enrollment_flow)
 
     if discord_login_flow_slug:
         source_authentication_flow_pruned = prune_flow_stage_bindings(
@@ -1567,6 +1652,8 @@ if discord_client_id and discord_client_secret:
         source_authentication_flow_pruned
         or source_enrollment_flow_pruned
         or source_direct_bindings_ensured
+        or source_authentication_flow_opened
+        or source_enrollment_flow_opened
     ):
         discord_source_changed = True
 
@@ -1667,181 +1754,207 @@ mobile_oidc_provider_name = read_env(
     "ALTERNUN_BOOTSTRAP_MOBILE_OIDC_PROVIDER_NAME", "Alternun Mobile OIDC"
 )
 mobile_oidc_redirect_urls = read_list_env("ALTERNUN_BOOTSTRAP_MOBILE_OIDC_REDIRECT_URLS")
+if not mobile_oidc_redirect_urls and mobile_oidc_launch_url:
+    mobile_oidc_redirect_fallback = derive_auth_callback_redirect(mobile_oidc_launch_url)
+    if mobile_oidc_redirect_fallback:
+        mobile_oidc_redirect_urls = [mobile_oidc_redirect_fallback]
 mobile_oidc_post_logout_redirect_urls = read_list_env(
     "ALTERNUN_BOOTSTRAP_MOBILE_OIDC_POST_LOGOUT_REDIRECT_URLS"
 )
+if not mobile_oidc_post_logout_redirect_urls and mobile_oidc_launch_url:
+    mobile_logout_redirect_fallback = derive_origin_redirect(mobile_oidc_launch_url)
+    if mobile_logout_redirect_fallback:
+        mobile_oidc_post_logout_redirect_urls = [mobile_logout_redirect_fallback]
 
-if mobile_oidc_client_id and mobile_oidc_redirect_urls:
-    mobile_scope_mapping_ids = [
-        "goauthentik.io/providers/oauth2/scope-openid",
-        "goauthentik.io/providers/oauth2/scope-email",
-        "goauthentik.io/providers/oauth2/scope-profile",
-    ]
-    authorization_flow = Flow.objects.filter(
-        slug="default-provider-authorization-implicit-consent"
-    ).first()
-    mobile_invalidation_flow, mobile_invalidation_flow_created, mobile_invalidation_flow_changed = (
-        upsert_invalidation_flow(
-            "alternun-mobile-provider-invalidation-flow",
-            "Alternun Mobile Provider Invalidation",
-            "Log out of Alternun Mobile",
-        )
-    )
-    logout_stage = UserLogoutStage.objects.filter(name="default-invalidation-logout").first()
-    if logout_stage and not FlowStageBinding.objects.filter(
-        target=mobile_invalidation_flow, stage=logout_stage
-    ).exists():
-        ensure_flow_stage_binding(mobile_invalidation_flow, logout_stage, order=0)
-        mobile_invalidation_flow_changed = True
-
-    mobile_logout_redirect_url = (
-        mobile_oidc_post_logout_redirect_urls[0]
-        if mobile_oidc_post_logout_redirect_urls
-        else ""
-    )
-    mobile_logout_redirect_stage = None
-    mobile_logout_redirect_stage_created = False
-    mobile_logout_redirect_stage_changed = False
-    if mobile_logout_redirect_url:
-        mobile_logout_redirect_stage, mobile_logout_redirect_stage_created, mobile_logout_redirect_stage_changed = (
-            upsert_redirect_stage(
-                "alternun-mobile-provider-invalidation-redirect",
-                mobile_logout_redirect_url,
-                keep_context=True,
+if mobile_oidc_client_id:
+    effective_mobile_oidc_redirect_urls = mobile_oidc_redirect_urls
+    if not effective_mobile_oidc_redirect_urls and mobile_oidc_launch_url:
+        mobile_oidc_redirect_fallback = derive_auth_callback_redirect(mobile_oidc_launch_url)
+        if mobile_oidc_redirect_fallback:
+            effective_mobile_oidc_redirect_urls = [mobile_oidc_redirect_fallback]
+    if not effective_mobile_oidc_redirect_urls:
+        results["mobile_oidc_provider"] = "missing_redirect_urls"
+    else:
+        mobile_scope_mapping_ids = [
+            "goauthentik.io/providers/oauth2/scope-openid",
+            "goauthentik.io/providers/oauth2/scope-email",
+            "goauthentik.io/providers/oauth2/scope-profile",
+        ]
+        authorization_flow = Flow.objects.filter(
+            slug="default-provider-authorization-implicit-consent"
+        ).first()
+        mobile_invalidation_flow, mobile_invalidation_flow_created, mobile_invalidation_flow_changed = (
+            upsert_invalidation_flow(
+                "alternun-mobile-provider-invalidation-flow",
+                "Alternun Mobile Provider Invalidation",
+                "Log out of Alternun Mobile",
             )
         )
-        if not FlowStageBinding.objects.filter(
-            target=mobile_invalidation_flow, stage=mobile_logout_redirect_stage
+        logout_stage = UserLogoutStage.objects.filter(name="default-invalidation-logout").first()
+        if logout_stage and not FlowStageBinding.objects.filter(
+            target=mobile_invalidation_flow, stage=logout_stage
         ).exists():
-            ensure_flow_stage_binding(mobile_invalidation_flow, mobile_logout_redirect_stage, order=1)
-            mobile_invalidation_flow_changed = True
-        elif mobile_logout_redirect_stage_created or mobile_logout_redirect_stage_changed:
+            ensure_flow_stage_binding(mobile_invalidation_flow, logout_stage, order=0)
             mobile_invalidation_flow_changed = True
 
-    expected_redirects = normalize_redirects(build_redirect_uris(mobile_oidc_redirect_urls))
-
-    mobile_provider, mobile_provider_created = OAuth2Provider.objects.get_or_create(
-        name=mobile_oidc_provider_name,
-        defaults={
-            "client_id": mobile_oidc_client_id,
-            # Public client — no client secret; PKCE enforced.
-            "client_secret": "",
-            "client_type": "public",
-            "_redirect_uris": build_redirect_uris(mobile_oidc_redirect_urls),
-            "authorization_flow": authorization_flow,
-            "invalidation_flow": mobile_invalidation_flow,
-            # Use user_uuid so sub is stable even if email changes.
-            "sub_mode": "user_uuid",
-        },
-    )
-
-    mobile_provider_changed = False
-
-    if getattr(mobile_provider, "client_id", None) != mobile_oidc_client_id:
-        mobile_provider.client_id = mobile_oidc_client_id
-        mobile_provider_changed = True
-    if hasattr(mobile_provider, "client_type") and mobile_provider.client_type != "public":
-        mobile_provider.client_type = "public"
-        mobile_provider_changed = True
-    if hasattr(mobile_provider, "sub_mode") and mobile_provider.sub_mode != "user_uuid":
-        mobile_provider.sub_mode = "user_uuid"
-        mobile_provider_changed = True
-
-    current_redirects = normalize_redirects(getattr(mobile_provider, "_redirect_uris", []))
-    if current_redirects != expected_redirects:
-        mobile_provider._redirect_uris = build_redirect_uris(mobile_oidc_redirect_urls)
-        mobile_provider_changed = True
-
-    if authorization_flow and mobile_provider.authorization_flow_id != authorization_flow.pk:
-        mobile_provider.authorization_flow = authorization_flow
-        mobile_provider_changed = True
-    if (
-        mobile_invalidation_flow
-        and mobile_provider.invalidation_flow_id != mobile_invalidation_flow.pk
-    ):
-        mobile_provider.invalidation_flow = mobile_invalidation_flow
-        mobile_provider_changed = True
-
-    if mobile_oidc_post_logout_redirect_urls and hasattr(mobile_provider, "post_logout_redirect_uris"):
-        current_logout_redirects = normalize_redirects(
-            getattr(mobile_provider, "post_logout_redirect_uris", [])
+        mobile_logout_redirect_url = (
+            mobile_oidc_post_logout_redirect_urls[0]
+            if mobile_oidc_post_logout_redirect_urls
+            else ""
         )
-        expected_logout_redirects = normalize_redirects(
-            build_redirect_uris(mobile_oidc_post_logout_redirect_urls)
+        mobile_logout_redirect_stage = None
+        mobile_logout_redirect_stage_created = False
+        mobile_logout_redirect_stage_changed = False
+        if mobile_logout_redirect_url:
+            mobile_logout_redirect_stage, mobile_logout_redirect_stage_created, mobile_logout_redirect_stage_changed = (
+                upsert_redirect_stage(
+                    "alternun-mobile-provider-invalidation-redirect",
+                    mobile_logout_redirect_url,
+                    keep_context=True,
+                )
+            )
+            if not FlowStageBinding.objects.filter(
+                target=mobile_invalidation_flow, stage=mobile_logout_redirect_stage
+            ).exists():
+                ensure_flow_stage_binding(
+                    mobile_invalidation_flow, mobile_logout_redirect_stage, order=1
+                )
+                mobile_invalidation_flow_changed = True
+            elif mobile_logout_redirect_stage_created or mobile_logout_redirect_stage_changed:
+                mobile_invalidation_flow_changed = True
+
+        expected_redirects = normalize_redirects(
+            build_redirect_uris(effective_mobile_oidc_redirect_urls)
         )
-        if current_logout_redirects != expected_logout_redirects:
-            mobile_provider.post_logout_redirect_uris = build_redirect_uris(
-                mobile_oidc_post_logout_redirect_urls
+
+        mobile_provider, mobile_provider_created = OAuth2Provider.objects.get_or_create(
+            name=mobile_oidc_provider_name,
+            defaults={
+                "client_id": mobile_oidc_client_id,
+                # Public client — no client secret; PKCE enforced.
+                "client_secret": "",
+                "client_type": "public",
+                "_redirect_uris": build_redirect_uris(effective_mobile_oidc_redirect_urls),
+                "authorization_flow": authorization_flow,
+                "invalidation_flow": mobile_invalidation_flow,
+                # Use user_uuid so sub is stable even if email changes.
+                "sub_mode": "user_uuid",
+            },
+        )
+
+        mobile_provider_changed = False
+
+        if getattr(mobile_provider, "client_id", None) != mobile_oidc_client_id:
+            mobile_provider.client_id = mobile_oidc_client_id
+            mobile_provider_changed = True
+        if hasattr(mobile_provider, "client_type") and mobile_provider.client_type != "public":
+            mobile_provider.client_type = "public"
+            mobile_provider_changed = True
+        if hasattr(mobile_provider, "sub_mode") and mobile_provider.sub_mode != "user_uuid":
+            mobile_provider.sub_mode = "user_uuid"
+            mobile_provider_changed = True
+
+        current_redirects = normalize_redirects(getattr(mobile_provider, "_redirect_uris", []))
+        if current_redirects != expected_redirects:
+            mobile_provider._redirect_uris = build_redirect_uris(
+                effective_mobile_oidc_redirect_urls
             )
             mobile_provider_changed = True
 
-    if mobile_provider_created or mobile_provider_changed:
-        mobile_provider.save()
+        if authorization_flow and mobile_provider.authorization_flow_id != authorization_flow.pk:
+            mobile_provider.authorization_flow = authorization_flow
+            mobile_provider_changed = True
+        if (
+            mobile_invalidation_flow
+            and mobile_provider.invalidation_flow_id != mobile_invalidation_flow.pk
+        ):
+            mobile_provider.invalidation_flow = mobile_invalidation_flow
+            mobile_provider_changed = True
 
-    if mobile_invalidation_flow_created or mobile_invalidation_flow_changed:
-        results["mobile_oidc_invalidation_flow"] = (
-            "created" if mobile_invalidation_flow_created else "updated"
+        if mobile_oidc_post_logout_redirect_urls and hasattr(
+            mobile_provider, "post_logout_redirect_uris"
+        ):
+            current_logout_redirects = normalize_redirects(
+                getattr(mobile_provider, "post_logout_redirect_uris", [])
+            )
+            expected_logout_redirects = normalize_redirects(
+                build_redirect_uris(mobile_oidc_post_logout_redirect_urls)
+            )
+            if current_logout_redirects != expected_logout_redirects:
+                mobile_provider.post_logout_redirect_uris = build_redirect_uris(
+                    mobile_oidc_post_logout_redirect_urls
+                )
+                mobile_provider_changed = True
+
+        if mobile_provider_created or mobile_provider_changed:
+            mobile_provider.save()
+
+        if mobile_invalidation_flow_created or mobile_invalidation_flow_changed:
+            results["mobile_oidc_invalidation_flow"] = (
+                "created" if mobile_invalidation_flow_created else "updated"
+            )
+        if mobile_logout_redirect_stage_created or mobile_logout_redirect_stage_changed:
+            results["mobile_oidc_logout_redirect_stage"] = (
+                "created" if mobile_logout_redirect_stage_created else "updated"
+            )
+
+        desired_scope_mappings, missing_scope_mapping_ids = resolve_scope_mappings(
+            mobile_scope_mapping_ids
         )
-    if mobile_logout_redirect_stage_created or mobile_logout_redirect_stage_changed:
-        results["mobile_oidc_logout_redirect_stage"] = (
-            "created" if mobile_logout_redirect_stage_created else "updated"
+        current_scope_mapping_ids = set(
+            mobile_provider.property_mappings.values_list("pk", flat=True)
+        )
+        desired_scope_mapping_pks = {mapping.pk for mapping in desired_scope_mappings}
+        if current_scope_mapping_ids != desired_scope_mapping_pks:
+            mobile_provider.property_mappings.set(desired_scope_mappings)
+            mobile_provider_changed = True
+
+        mobile_application, mobile_application_created = Application.objects.get_or_create(
+            slug=mobile_oidc_application_slug,
+            defaults={
+                "name": mobile_oidc_application_name,
+                "provider": mobile_provider,
+                "meta_launch_url": mobile_oidc_launch_url,
+            },
         )
 
-    desired_scope_mappings, missing_scope_mapping_ids = resolve_scope_mappings(
-        mobile_scope_mapping_ids
-    )
-    current_scope_mapping_ids = set(mobile_provider.property_mappings.values_list("pk", flat=True))
-    desired_scope_mapping_pks = {mapping.pk for mapping in desired_scope_mappings}
-    if current_scope_mapping_ids != desired_scope_mapping_pks:
-        mobile_provider.property_mappings.set(desired_scope_mappings)
-        mobile_provider_changed = True
+        mobile_application_changed = False
+        if mobile_application.name != mobile_oidc_application_name:
+            mobile_application.name = mobile_oidc_application_name
+            mobile_application_changed = True
+        if mobile_application.provider_id != mobile_provider.pk:
+            mobile_application.provider = mobile_provider
+            mobile_application_changed = True
+        if (
+            mobile_oidc_launch_url
+            and hasattr(mobile_application, "meta_launch_url")
+            and mobile_application.meta_launch_url != mobile_oidc_launch_url
+        ):
+            mobile_application.meta_launch_url = mobile_oidc_launch_url
+            mobile_application_changed = True
 
-    mobile_application, mobile_application_created = Application.objects.get_or_create(
-        slug=mobile_oidc_application_slug,
-        defaults={
-            "name": mobile_oidc_application_name,
-            "provider": mobile_provider,
-            "meta_launch_url": mobile_oidc_launch_url,
-        },
-    )
+        if mobile_application_created or mobile_application_changed:
+            mobile_application.save()
 
-    mobile_application_changed = False
-    if mobile_application.name != mobile_oidc_application_name:
-        mobile_application.name = mobile_oidc_application_name
-        mobile_application_changed = True
-    if mobile_application.provider_id != mobile_provider.pk:
-        mobile_application.provider = mobile_provider
-        mobile_application_changed = True
-    if (
-        mobile_oidc_launch_url
-        and hasattr(mobile_application, "meta_launch_url")
-        and mobile_application.meta_launch_url != mobile_oidc_launch_url
-    ):
-        mobile_application.meta_launch_url = mobile_oidc_launch_url
-        mobile_application_changed = True
+        if missing_scope_mapping_ids:
+            results["mobile_oidc_scope_mappings"] = {
+                "status": "missing_defaults",
+                "missing": missing_scope_mapping_ids,
+            }
 
-    if mobile_application_created or mobile_application_changed:
-        mobile_application.save()
+        if mobile_provider_created or mobile_application_created:
+            results["mobile_oidc_provider"] = "created"
+        elif mobile_provider_changed or mobile_application_changed:
+            results["mobile_oidc_provider"] = "updated"
+        else:
+            results["mobile_oidc_provider"] = "unchanged"
 
-    if missing_scope_mapping_ids:
-        results["mobile_oidc_scope_mappings"] = {
-            "status": "missing_defaults",
-            "missing": missing_scope_mapping_ids,
-        }
-
-    if mobile_provider_created or mobile_application_created:
-        results["mobile_oidc_provider"] = "created"
-    elif mobile_provider_changed or mobile_application_changed:
-        results["mobile_oidc_provider"] = "updated"
-    else:
-        results["mobile_oidc_provider"] = "unchanged"
-
-    if identity_domain:
-        results["mobile_oidc_issuer"] = (
-            f"https://{identity_domain}/application/o/{mobile_oidc_application_slug}/"
-        )
-        results["mobile_oidc_client_id"] = mobile_oidc_client_id
-        results["mobile_oidc_launch_url"] = mobile_oidc_launch_url
+        if identity_domain:
+            results["mobile_oidc_issuer"] = (
+                f"https://{identity_domain}/application/o/{mobile_oidc_application_slug}/"
+            )
+            results["mobile_oidc_client_id"] = mobile_oidc_client_id
+            results["mobile_oidc_launch_url"] = mobile_oidc_launch_url
 else:
     results["mobile_oidc_provider"] = "missing_inputs"
 

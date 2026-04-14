@@ -75,6 +75,7 @@ export interface BackendApiInfrastructureArgs {
   stage: string;
   hostedZoneId?: string;
   authentikJwtSigningKey?: pulumi.Input<string>;
+  env: NodeJS.ProcessEnv;
   settings: BackendApiSettings;
 }
 
@@ -352,6 +353,17 @@ export function deployBackendApiInfrastructure(
           AUTHENTIK_JWKS_URL: authJwksUrl,
           NODE_ENV: 'production',
           ...args.settings.environment,
+          ...(args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL
+            ? {
+                AUTH_BETTER_AUTH_URL: args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL,
+              }
+            : {}),
+          ...(args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_REQUEST_TIMEOUT_MS
+            ? {
+                AUTH_BETTER_AUTH_REQUEST_TIMEOUT_MS:
+                  args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_REQUEST_TIMEOUT_MS,
+              }
+            : {}),
           AUTHENTIK_JWT_SIGNING_KEY:
             args.authentikJwtSigningKey ??
             args.settings.environment.AUTHENTIK_JWT_SIGNING_KEY ??

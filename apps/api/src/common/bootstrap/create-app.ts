@@ -17,6 +17,7 @@ export async function createApp(): Promise<NestFastifyApplication> {
   });
   app.enableCors({
     origin: true,
+    credentials: true,
   });
   app.useGlobalPipes(
     new ValidationPipe({

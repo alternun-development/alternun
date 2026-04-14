@@ -237,7 +237,7 @@ export default function AuthSignInScreen({
   const loginStrategy = resolveAuthentikLoginStrategy();
   const forceFreshSocialSession = shouldForceFreshAuthentikSocialSession(
     Platform.OS,
-    loginStrategy.executionProvider
+    loginStrategy.socialMode
   );
   const authentikSocialLoginMode = loginStrategy.socialMode;
   const authentikConfigured = isAuthentikConfigured();

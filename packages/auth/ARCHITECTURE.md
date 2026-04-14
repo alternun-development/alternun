@@ -23,6 +23,7 @@ The architecture layer is implemented, but the runtime migration is still partia
 - `apps/api/src/modules/auth-exchange/*` now exposes `POST /auth/exchange`, which can mint issuer-owned tokens when the backend signing key is available.
 - The `dashboard-dev` backend stack already receives that signing key from the identity stack output, so the live testnet exchange path is issuer-owned instead of compatibility-only.
 - `AuthentikIssuerProvider` now prefers `AUTH_EXCHANGE_URL` when configured and only falls back to local issuer synthesis when the backend path or signing key is unavailable.
+- `BetterAuthExecutionProvider` now keeps the Better Auth session ahead of legacy Supabase compatibility state unless explicit fallback is enabled.
 - Supabase compatibility paths still exist for execution, persistence, and email while rollout is incomplete.
 - The real backend exchange contract is still incomplete, so issuer session creation is only partially backend-owned.
 

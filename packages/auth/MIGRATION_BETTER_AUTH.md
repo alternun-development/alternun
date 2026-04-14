@@ -22,6 +22,7 @@ Status as of `2026-04-09`.
 - `AlternunAuthFacade` is implemented and exported.
 - `AppAuthProvider` now creates the facade instead of instantiating the legacy mobile client directly.
 - `BetterAuthExecutionProvider` exists as an execution adapter for social login and can delegate email/password to the legacy compatibility client when configured.
+- `BetterAuthExecutionProvider` now keeps Better Auth session state ahead of legacy Supabase session state unless compatibility fallback is explicitly enabled.
 - `AuthentikIssuerProvider` exists as an issuer adapter and now prefers `AUTH_EXCHANGE_URL` when present.
 - `apps/api/src/modules/auth-exchange/*` now exposes `POST /auth/exchange` as a reconciliation endpoint that can mint issuer-owned JWTs when `AUTHENTIK_JWT_SIGNING_KEY` is available.
 - The `dashboard-dev` backend stack now receives `AUTHENTIK_JWT_SIGNING_KEY` from the identity stack output, so the live `/auth/exchange` path returns `exchangeMode: "issuer-owned"` without depending on manual secret copying.

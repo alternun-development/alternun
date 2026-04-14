@@ -3,6 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
@@ -12,6 +13,7 @@
     "*.ts",
     "config/**/*.ts",
     "modules/**/*.ts",
+    "test/**/*.ts",
     "sst-env.d.ts",
     ".sst/platform/config.d.ts"
   ]

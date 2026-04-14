@@ -2,14 +2,17 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import type { AuthClient } from '@edcalderon/auth';
 
+const mockIsAuthentikConfigured = jest.fn(() => false);
+const mockStartAuthentikOAuthFlow = jest.fn();
+
 jest.mock('@edcalderon/auth/authentik', () => ({
   resolveSafeRedirect: (target: string, options?: { fallbackUrl?: string }): string =>
     target ?? options?.fallbackUrl ?? '/',
 }));
 
 jest.mock('../../../../../packages/auth/src/mobile/authentikClient', () => ({
-  isAuthentikConfigured: (): boolean => false,
-  startAuthentikOAuthFlow: jest.fn(),
+  isAuthentikConfigured: mockIsAuthentikConfigured,
+  startAuthentikOAuthFlow: mockStartAuthentikOAuthFlow,
 }));
 
 type SessionStorageMock = {
@@ -48,6 +51,9 @@ const { webRedirectSignIn } = require('../../../../../packages/auth/src/mobile/r
 describe('runtimeSignIn', () => {
   beforeEach(() => {
     browserWindow.sessionStorage.clear.mockClear();
+    mockIsAuthentikConfigured.mockReset();
+    mockIsAuthentikConfigured.mockReturnValue(false);
+    mockStartAuthentikOAuthFlow.mockReset();
   });
 
   it('routes google social login through Better Auth when the execution provider is better-auth', async () => {
@@ -104,6 +110,37 @@ describe('runtimeSignIn', () => {
         provider: 'discord',
         flow: 'redirect',
         redirectUri: expect.stringContaining('/auth/callback'),
+      })
+    );
+  });
+
+  it('routes google web social login through Authentik on the stable supabase path', async () => {
+    mockIsAuthentikConfigured.mockReturnValue(true);
+    const signIn = jest.fn().mockResolvedValue(undefined);
+    const client = {
+      signIn,
+    } satisfies Pick<AuthClient, 'signIn'>;
+
+    const result = await webRedirectSignIn({
+      client: client as AuthClient,
+      provider: 'google',
+      redirectTo: '/dashboard',
+      authentikProviderHint: 'google',
+      strategy: {
+        mode: 'source',
+        socialMode: 'authentik',
+        executionProvider: 'supabase',
+        providerFlowSlugs: {},
+      },
+    });
+
+    expect(result).toBe('authentik');
+    expect(signIn).not.toHaveBeenCalled();
+    expect(mockStartAuthentikOAuthFlow).toHaveBeenCalledWith(
+      'google',
+      expect.objectContaining({
+        redirectUri: expect.stringContaining('/auth/callback'),
+        forceFreshSession: false,
       })
     );
   });

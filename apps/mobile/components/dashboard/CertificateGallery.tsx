@@ -1,19 +1,19 @@
-import React, { useState, } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, } from 'react-native';
-import { createTypographyStyles, } from '../theme/typography';
-import { Award, ExternalLink, X, Share2, Download, } from 'lucide-react-native';
-import { SBTCertificate, } from './types';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import { createTypographyStyles } from '../theme/typography';
+import { Award, ExternalLink, X, Share2, Download } from 'lucide-react-native';
+import { SBTCertificate } from './types';
 
 interface CertificateGalleryProps {
   certificates: SBTCertificate[];
 }
 
-function formatDate(date: Date,): string {
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', },);
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function CertificateGallery({ certificates, }: CertificateGalleryProps,) {
-  const [selected, setSelected,] = useState<SBTCertificate | null>(null,);
+export default function CertificateGallery({ certificates }: CertificateGalleryProps) {
+  const [selected, setSelected] = useState<SBTCertificate | null>(null);
 
   return (
     <View style={styles.section}>
@@ -23,50 +23,56 @@ export default function CertificateGallery({ certificates, }: CertificateGallery
           <Text style={styles.sectionSubtitle}>{certificates.length} issued certificates</Text>
         </View>
         <View style={styles.badgeCount}>
-          <Award size={12} color="#1ccba1" />
+          <Award size={12} color='#1ccba1' />
           <Text style={styles.badgeCountText}>{certificates.length}</Text>
         </View>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {certificates.map((cert,) => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {certificates.map((cert) => (
           <TouchableOpacity
             key={cert.id}
             style={styles.certCard}
-            onPress={() => setSelected(cert,)}
+            onPress={() => setSelected(cert)}
             activeOpacity={0.85}
           >
             <View style={styles.certCardGlow} />
             <View style={styles.certHeader}>
               <View style={styles.certIconWrapper}>
-                <Award size={20} color="#1ccba1" />
+                <Award size={20} color='#1ccba1' />
               </View>
               <View style={styles.certBadge}>
                 <Text style={styles.certBadgeText}>SBT</Text>
               </View>
             </View>
-            <Text style={styles.certProject} numberOfLines={2}>{cert.projectName}</Text>
+            <Text style={styles.certProject} numberOfLines={2}>
+              {cert.projectName}
+            </Text>
             <View style={styles.certImpact}>
               <Text style={styles.certImpactValue}>{cert.impactAmount}</Text>
               <Text style={styles.certImpactUnit}>{cert.impactUnit}</Text>
             </View>
-            <Text style={styles.certDate}>{formatDate(cert.date,)}</Text>
+            <Text style={styles.certDate}>{formatDate(cert.date)}</Text>
             <View style={styles.certViewBtn}>
               <Text style={styles.certViewBtnText}>View Certificate</Text>
-              <ExternalLink size={10} color="#1ccba1" />
+              <ExternalLink size={10} color='#1ccba1' />
             </View>
           </TouchableOpacity>
-        ),)}
+        ))}
       </ScrollView>
 
       {/* Certificate Detail Modal */}
-      <Modal visible={!!selected} transparent animationType="fade">
+      <Modal visible={!!selected} transparent animationType='fade'>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Certificate Details</Text>
-              <TouchableOpacity onPress={() => setSelected(null,)}>
-                <X size={20} color="rgba(232,232,255,0.6)" />
+              <TouchableOpacity onPress={() => setSelected(null)}>
+                <X size={20} color='rgba(232,232,255,0.6)' />
               </TouchableOpacity>
             </View>
             {selected && (
@@ -74,7 +80,7 @@ export default function CertificateGallery({ certificates, }: CertificateGallery
                 <View style={styles.certDetailCard}>
                   <View style={styles.certDetailIconRow}>
                     <View style={styles.certDetailIconBig}>
-                      <Award size={32} color="#1ccba1" />
+                      <Award size={32} color='#1ccba1' />
                     </View>
                     <View style={styles.certDetailInfo}>
                       <Text style={styles.certDetailId}>{selected.id}</Text>
@@ -91,33 +97,41 @@ export default function CertificateGallery({ certificates, }: CertificateGallery
                 </View>
 
                 <View style={styles.metadataSection}>
-                  {Object.entries(selected.metadata,).map(([key, val,],) => (
+                  {Object.entries(selected.metadata).map(([key, val]) => (
                     <View key={key} style={styles.metaRow}>
-                      <Text style={styles.metaKey}>{key.charAt(0,).toUpperCase() + key.slice(1,)}</Text>
+                      <Text style={styles.metaKey}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)}
+                      </Text>
                       <Text style={styles.metaValue}>{val}</Text>
                     </View>
-                  ),)}
+                  ))}
                   <View style={styles.metaRow}>
                     <Text style={styles.metaKey}>Issue Date</Text>
-                    <Text style={styles.metaValue}>{formatDate(selected.date,)}</Text>
+                    <Text style={styles.metaValue}>{formatDate(selected.date)}</Text>
                   </View>
                 </View>
 
                 <View style={styles.hashSection}>
                   <Text style={styles.hashSectionLabel}>On-Chain Reference</Text>
-                  <Text style={styles.hashValue} numberOfLines={1}>{selected.onChainRef}</Text>
+                  <Text style={styles.hashValue} numberOfLines={1}>
+                    {selected.onChainRef}
+                  </Text>
                 </View>
 
                 <View style={styles.modalActions}>
                   <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
-                    <Share2 size={14} color="rgba(232,232,255,0.7)" />
+                    <Share2 size={14} color='rgba(232,232,255,0.7)' />
                     <Text style={styles.actionButtonText}>Share</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
-                    <Download size={14} color="rgba(232,232,255,0.7)" />
+                    <Download size={14} color='rgba(232,232,255,0.7)' />
                     <Text style={styles.actionButtonText}>Download</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.closeModalBtn} onPress={() => setSelected(null,)} activeOpacity={0.8}>
+                  <TouchableOpacity
+                    style={styles.closeModalBtn}
+                    onPress={() => setSelected(null)}
+                    activeOpacity={0.8}
+                  >
                     <Text style={styles.closeModalBtnText}>Close</Text>
                   </TouchableOpacity>
                 </View>
@@ -181,7 +195,7 @@ const styles = createTypographyStyles({
     borderRadius: 16,
     padding: 16,
     shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8, },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 4,
@@ -427,4 +441,4 @@ const styles = createTypographyStyles({
     fontSize: 13,
     fontWeight: '700',
   },
-},);
+});

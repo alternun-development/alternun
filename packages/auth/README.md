@@ -61,6 +61,8 @@ Do not treat Expo web as native auth.
 
 ## Migration Docs
 
+- `AUDIT.md`
+- `CONFIG.md`
 - `MIGRATION_BETTER_AUTH.md`
 - `ARCHITECTURE.md`
 - `CONFIG_CONTRACT.md`

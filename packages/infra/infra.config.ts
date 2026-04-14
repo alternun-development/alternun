@@ -570,6 +570,7 @@ export function createInfrastructure() {
     ? deployBackendApiInfrastructure({
         appName,
         authentikJwtSigningKey: identityInfrastructure?.secrets.jwtSigningKey.value,
+        env: process.env,
         hostedZoneId: process.env.INFRA_ROUTE53_HOSTED_ZONE_ID,
         rootDomain,
         settings: backendApiSettings,
@@ -691,9 +692,7 @@ export function createInfrastructure() {
   if (enableExpoSiteForStage) {
     const assetBucketName = assetBucketNames[expoDeploymentStage];
     const assetBaseUrl = createAssetBaseUrl(assetBucketName);
-    const expoAuthExecutionProvider =
-      expoPublicAuthExecutionProvider ??
-      (expoDeploymentStage === 'production' ? 'supabase' : 'better-auth');
+    const expoAuthExecutionProvider = expoPublicAuthExecutionProvider ?? 'supabase';
     const introVideoAssets = {
       en: buildPublicAssetFile(
         resolvedExpoAppPath,
@@ -779,14 +778,19 @@ export function createInfrastructure() {
         EXPO_PUBLIC_AIRS_VIDEO_ES_URL: introVideoAssets.es.url,
         EXPO_PUBLIC_AUTHENTIK_ISSUER: expoPublicAuthentikIssuer,
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId,
+        EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: expoPublicAuthentikLoginEntryMode,
         EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: expoPublicAuthentikSocialLoginMode,
+        EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: expoPublicAuthentikProviderFlowSlugs,
+        EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
+          expoPublicAuthentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_RELEASE_UPDATE_MODE: expoPublicReleaseUpdateMode,
         // Auto-derive the redirect URI from the deployed expo domain when not explicitly set.
-        // This ensures the OIDC callback always points at the correct deployed origin.
+        // This ensures the OIDC callback always points at the dedicated callback route
+        // on the correct deployed origin.
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI:
           expoPublicAuthentikRedirectUri ??
           (enableCustomDomain && expoStageMap[expoDeploymentStage]
-            ? `https://${expoStageMap[expoDeploymentStage]}/`
+            ? `https://${expoStageMap[expoDeploymentStage]}/auth/callback`
             : undefined),
       },
       build: {

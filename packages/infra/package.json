@@ -19,6 +19,8 @@
     "diff:production": "sst diff --stage production",
     "remove:dev": "sst remove --stage dev",
     "remove:production": "sst remove --stage production",
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "type-check": "tsc --noEmit",
     "ensure:pipelines": "bash scripts/ensure-pipelines.sh",
     "ensure:secrets": "bash scripts/ensure-secrets.sh",
     "sync:develop-master": "bash scripts/sync-develop-master.sh",

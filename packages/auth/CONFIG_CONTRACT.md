@@ -29,7 +29,7 @@ These variables are read by `packages/auth/src/runtime/config.ts`.
 | `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` | No                                 | Client-side mirror of the execution provider for mobile/web bundles          |
 | `AUTH_ISSUER_PROVIDER`                | No                                 | Selects Authentik or the legacy issuer bridge                                |
 | `AUTH_EMAIL_PROVIDER`                 | No                                 | Selects the email provider path                                              |
-| `AUTH_BETTER_AUTH_URL`                | Yes for Better Auth rollout        | Base URL for the Better Auth service                                         |
+| `AUTH_BETTER_AUTH_URL`                | Yes for a real Better Auth rollout | Base URL for the Better Auth service                                         |
 | `EXPO_PUBLIC_BETTER_AUTH_URL`         | No                                 | Client-side mirror of the Better Auth base URL                               |
 | `AUTH_BETTER_AUTH_CLIENT_ID`          | No                                 | Reserved for Better Auth client/runtime integration                          |
 | `AUTH_BETTER_AUTH_API_KEY`            | No                                 | Reserved for service-to-service Better Auth calls if needed                  |
@@ -100,7 +100,7 @@ Validated against Better Auth official docs on `2026-04-09`:
 - Better Auth needs a database for standard session and account persistence unless you deliberately choose a stateless mode.
 - Better Auth defaults to cookie-based session handling. Alternun should treat those cookies as execution-layer state, not as the final application session.
 - Better Auth rate limiting defaults are not enough to define an Alternun production posture by themselves. For multi-instance testnet or production, use database or secondary storage instead of in-memory defaults.
-- Better Auth must trust the browser origins that call `/auth/sign-in` from the app bundle. For the current testnet rollout, include `https://testnet.airs.alternun.co` and the local web origins you actually run during development, such as `http://localhost:8081` and `http://127.0.0.1:8081`.
+- Better Auth must trust the browser origins that call `/api/auth/sign-in` from the app bundle. For the current testnet rollout, include `https://testnet.airs.alternun.co` and the local web origins you actually run during development, such as `http://localhost:8081` and `http://127.0.0.1:8081`.
 - Apple requires HTTPS and cannot use localhost return URLs.
 - Apple requires `https://appleid.apple.com` in trusted origins for the Better Auth config.
 - GitHub flows require the `user:email` scope.
@@ -118,12 +118,11 @@ Validated against Better Auth official docs on `2026-04-09`:
 
 The first real rollout should use:
 
-- `AUTH_EXECUTION_PROVIDER=better-auth`
+- `AUTH_EXECUTION_PROVIDER=supabase`
 - `AUTH_ISSUER_PROVIDER=authentik`
 - `AUTH_EMAIL_PROVIDER=postmark` or `ses`
-- `AUTH_BETTER_AUTH_URL=https://testnet-auth.alternun.co`
 - `AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange`
-- Better Auth handles the social providers that the app routes through the execution layer, and the facade exchanges the resulting external identity into the canonical Authentik session.
+- Better Auth is only used when `AUTH_BETTER_AUTH_URL` points at a real, reachable service; the stable testnet path stays on Authentik/Supabase.
 
 Do not switch shared environments to this shape until the testnet execution plan gates pass.
 
@@ -133,5 +132,7 @@ Do not switch shared environments to this shape until the testnet execution plan
 - `AppAuthProvider` should keep app ergonomics stable while switching the underlying provider graph.
 - `createAuthFacade` can accept explicit provider instances for tests and server-side orchestration.
 - `AUTH_BETTER_AUTH_CLIENT_ID` and `AUTH_BETTER_AUTH_API_KEY` are reserved for the rollout even though the current package implementation does not yet require them end to end.
-- When `AUTH_EXECUTION_PROVIDER=better-auth`, the package routes social login through Better Auth and keeps email/password on the legacy Supabase-compatible execution path when that fallback client is available.
+- The backend API can expose a `/better-auth` compatibility route when it is backed by a real Better Auth service; the repo no longer assumes a dedicated shared host.
+- When `AUTH_EXECUTION_PROVIDER=better-auth`, the package routes social login through Better Auth and prefers the Better Auth client for email/password flows when that client is available.
+- Legacy Supabase session state is not allowed to override a Better Auth session unless compatibility fallback is enabled explicitly in code.
 - `AUTHENTIK_JWT_SIGNING_KEY` is required only when the backend should mint issuer-owned JWTs instead of returning compatibility fallback tokens.

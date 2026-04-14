@@ -71,7 +71,7 @@ Provision these before enabling Better Auth on testnet:
 
 Use explicit testnet domains instead of overloading current Authentik domains.
 
-- Better Auth execution service: `https://testnet-auth.alternun.co`
+- Better Auth execution service: API-owned compatibility route or a dedicated reachable host
 - Authentik issuer remains under `https://testnet.sso.alternun.co/...`
 - Backend exchange remains under the testnet API domain
 

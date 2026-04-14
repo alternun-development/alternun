@@ -33,9 +33,8 @@
     "publicEnv": {
       "apiUrl": "https://testnet.api.alternun.co",
       "authentikLoginEntryMode": "source",
-      "authExecutionProvider": "better-auth",
+      "authExecutionProvider": "supabase",
       "authExchangeUrl": "https://testnet.api.alternun.co/auth/exchange",
-      "betterAuthUrl": "https://testnet-auth.alternun.co",
       "authentikSocialLoginMode": "authentik",
       "authentikAllowCustomProviderFlowSlugs": false,
       "releaseUpdateMode": "auto"
@@ -188,6 +187,7 @@
         "sourceName": "Google",
         "sourceSlug": "google",
         "loginFlowSlug": "",
+        "loginFlowMode": "source",
         "allowCustomProviderFlowSlugs": false
       },
       "discord": {

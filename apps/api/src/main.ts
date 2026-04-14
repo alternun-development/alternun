@@ -1,3 +1,4 @@
+import './bootstrap-env';
 import 'reflect-metadata';
 import { createApp } from './common/bootstrap/create-app';
 

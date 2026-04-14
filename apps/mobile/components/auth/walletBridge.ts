@@ -3,8 +3,7 @@ import type {
   WalletConnectionResult,
   WalletProvider,
 } from '@alternun/auth';
-import { Platform, } from 'react-native';
-import type { EthereumProvider, } from '@walletconnect/ethereum-provider';
+import { Platform } from 'react-native';
 
 interface Eip1193RequestArguments {
   method: string;
@@ -30,23 +29,23 @@ declare global {
   }
 }
 
-function getErrorMessage(error: unknown,): string {
+function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
 
-  return String(error,);
+  return String(error);
 }
 
-function normalizeWalletAddress(result: unknown,): string {
-  if (Array.isArray(result,)) {
-    const first = result.find((entry,) => typeof entry === 'string',);
+function normalizeWalletAddress(result: unknown): string {
+  if (Array.isArray(result)) {
+    const first = result.find((entry) => typeof entry === 'string');
     if (typeof first === 'string' && first.length > 0) {
       return first;
     }
   }
 
-  throw new Error('PROVIDER_ERROR: Wallet did not return an account address.',);
+  throw new Error('PROVIDER_ERROR: Wallet did not return an account address.');
 }
 
 function getInjectedProviderCandidates(): Eip1193Provider[] {
@@ -55,14 +54,14 @@ function getInjectedProviderCandidates(): Eip1193Provider[] {
   }
 
   const rootProvider = window.ethereum;
-  if (Array.isArray(rootProvider.providers,) && rootProvider.providers.length > 0) {
+  if (Array.isArray(rootProvider.providers) && rootProvider.providers.length > 0) {
     return rootProvider.providers;
   }
 
-  return [rootProvider,];
+  return [rootProvider];
 }
 
-function getProviderHint(provider: WalletProvider,): string {
+function getProviderHint(provider: WalletProvider): string {
   if (provider === 'metamask') {
     return 'Install MetaMask browser extension and unlock it, then retry.';
   }
@@ -70,11 +69,11 @@ function getProviderHint(provider: WalletProvider,): string {
   return 'Set EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID and retry to open WalletConnect QR.';
 }
 
-function pickInjectedProvider(provider: WalletProvider,): Eip1193Provider | null {
+function pickInjectedProvider(provider: WalletProvider): Eip1193Provider | null {
   const candidates = getInjectedProviderCandidates();
 
   if (provider === 'metamask') {
-    const explicitMetaMask = candidates.find((candidate,) => candidate.isMetaMask,);
+    const explicitMetaMask = candidates.find((candidate) => candidate.isMetaMask);
     if (explicitMetaMask) {
       return explicitMetaMask;
     }
@@ -97,8 +96,8 @@ let walletConnectProvider: WalletConnectEip1193Provider | null = null;
 
 function getWalletConnectChainId(): number {
   const rawChainId = process.env.EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID ?? '1';
-  const parsed = Number.parseInt(rawChainId, 10,);
-  if (Number.isNaN(parsed,) || parsed <= 0) {
+  const parsed = Number.parseInt(rawChainId, 10);
+  if (Number.isNaN(parsed) || parsed <= 0) {
     return 1;
   }
   return parsed;
@@ -112,7 +111,7 @@ async function getWalletConnectProvider(): Promise<WalletConnectEip1193Provider>
   const projectId = process.env.EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID;
   if (!projectId || projectId.trim().length === 0) {
     throw new Error(
-      'UNSUPPORTED_FLOW: Missing EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID in environment.',
+      'UNSUPPORTED_FLOW: Missing EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID in environment.'
     );
   }
 
@@ -120,10 +119,10 @@ async function getWalletConnectProvider(): Promise<WalletConnectEip1193Provider>
   const EthereumProviderConstructor = module.EthereumProvider;
   const provider = (await EthereumProviderConstructor.init({
     projectId,
-    chains: [getWalletConnectChainId(),],
+    chains: [getWalletConnectChainId()],
     showQrModal: true,
-    methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTypedData_v4',],
-  },)) as unknown as WalletConnectEip1193Provider;
+    methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTypedData_v4'],
+  })) as unknown as WalletConnectEip1193Provider;
 
   walletConnectProvider = provider;
   return provider;
@@ -131,14 +130,14 @@ async function getWalletConnectProvider(): Promise<WalletConnectEip1193Provider>
 
 async function connectInjectedWallet(
   provider: Eip1193Provider,
-  providerName: WalletProvider,
+  providerName: WalletProvider
 ): Promise<WalletConnectionResult> {
   try {
     const accountResult = await provider.request({
       method: 'eth_requestAccounts',
-    },);
-    const walletAddress = normalizeWalletAddress(accountResult,);
-    const chainResult = await provider.request({ method: 'eth_chainId', },);
+    });
+    const walletAddress = normalizeWalletAddress(accountResult);
+    const chainResult = await provider.request({ method: 'eth_chainId' });
     const chainId = typeof chainResult === 'string' ? chainResult : null;
 
     return {
@@ -152,20 +151,20 @@ async function connectInjectedWallet(
       },
     };
   } catch (error) {
-    throw new Error(`PROVIDER_ERROR: ${getErrorMessage(error,)}`,);
+    throw new Error(`PROVIDER_ERROR: ${getErrorMessage(error)}`);
   }
 }
 
-function getUnsupportedNativeMessage(provider: WalletProvider,): string {
+function getUnsupportedNativeMessage(provider: WalletProvider): string {
   const providerName = provider === 'metamask' ? 'MetaMask' : 'WalletConnect';
   return `UNSUPPORTED_FLOW: ${providerName} native login is not configured yet. Use web wallet login or configure native wallet bridge.`;
 }
 
 export function createWeb3WalletBridge(): WalletConnectionBridge {
   return {
-    async connect(provider,): Promise<WalletConnectionResult> {
+    async connect(provider): Promise<WalletConnectionResult> {
       if (Platform.OS !== 'web') {
-        throw new Error(getUnsupportedNativeMessage(provider,),);
+        throw new Error(getUnsupportedNativeMessage(provider));
       }
 
       if (provider === 'walletconnect') {
@@ -173,19 +172,17 @@ export function createWeb3WalletBridge(): WalletConnectionBridge {
         if (!wcProvider.session) {
           await wcProvider.connect();
         }
-        return connectInjectedWallet(wcProvider, provider,);
+        return connectInjectedWallet(wcProvider, provider);
       }
 
-      const selectedProvider = pickInjectedProvider(provider,);
+      const selectedProvider = pickInjectedProvider(provider);
       if (!selectedProvider) {
-        throw new Error(
-          `UNSUPPORTED_FLOW: ${getProviderHint(provider,)}`,
-        );
+        throw new Error(`UNSUPPORTED_FLOW: ${getProviderHint(provider)}`);
       }
 
-      return connectInjectedWallet(selectedProvider, provider,);
+      return connectInjectedWallet(selectedProvider, provider);
     },
-    async disconnect(provider,): Promise<void> {
+    async disconnect(provider): Promise<void> {
       if (provider !== 'walletconnect') {
         return;
       }
