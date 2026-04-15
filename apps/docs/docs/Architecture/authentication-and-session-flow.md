@@ -223,6 +223,9 @@ For deployed AIRS web builds, the intended default is:
 - `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`
 - `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`
 
+`EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER` is a legacy alias for the Authentik fallback path only. When `AUTH_EXECUTION_PROVIDER=better-auth`, the social login code resolves the Google branch regardless of that alias so the Better Auth migration path cannot be hijacked by a stale `keycloak` value.
+If the Better Auth URL is present but the execution flag is missing, the runtime promotes to `better-auth` automatically, which keeps the rollout aligned with the deployed URL config instead of a stale local alias.
+
 ## Redirect URI Contract
 
 For web, the effective callback target is:

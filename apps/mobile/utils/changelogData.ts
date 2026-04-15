@@ -9,7 +9,21 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.74](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.74) (2026-04-15)
+export const CHANGELOG_TEXT = `## [1.0.75](https://github.com/alternun-development/alternun/compare/v1.0.74...v1.0.75) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only and better-auth exports from main index ([c7d9a48](https://github.com/alternun-development/alternun/commit/c7d9a480a22b1000ee391df88a90426e67e18661))
+- **mobile:** changelogData ([44d7260](https://github.com/alternun-development/alternun/commit/44d7260ca641e9b907a27f96d7dbfbb4f09c4628))
+
+## [1.0.75](https://github.com/alternun-development/alternun/compare/v1.0.74...v1.0.75) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only and better-auth exports from main index ([c7d9a48](https://github.com/alternun-development/alternun/commit/c7d9a480a22b1000ee391df88a90426e67e18661))
+- **mobile:** changelogData ([44d7260](https://github.com/alternun-development/alternun/commit/44d7260ca641e9b907a27f96d7dbfbb4f09c4628))
+
+## [1.0.74](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.74) (2026-04-15)
 
 ### Bug Fixes
 
@@ -1336,4 +1350,4 @@ All notable changes to this project will be documented in this file.
 /**
  * Version extracted from package.json for display purposes.
  */
-export const APP_VERSION = '1.0.74';
+export const APP_VERSION = '1.0.75';

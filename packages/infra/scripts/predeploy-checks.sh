@@ -305,22 +305,36 @@ validate_custom_authentik_provider_flow_slugs() {
 }
 
 validate_better_auth_web_env() {
-  local auth_execution_provider=${AUTH_EXECUTION_PROVIDER:-${EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER:-}}
+  local auth_execution_provider=${AUTH_EXECUTION_PROVIDER:-}
+  local expo_public_auth_execution_provider=${EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER:-}
   local auth_better_auth_url=${AUTH_BETTER_AUTH_URL:-}
   local expo_public_better_auth_url=${EXPO_PUBLIC_BETTER_AUTH_URL:-}
+  local has_better_auth_url=false
 
-  if [ "${auth_execution_provider}" = "better-auth" ]; then
+  if [ -n "$auth_better_auth_url" ] || [ -n "$expo_public_better_auth_url" ]; then
+    has_better_auth_url=true
+  fi
+
+  if [ "${auth_execution_provider}" = "better-auth" ] || [ "${expo_public_auth_execution_provider}" = "better-auth" ]; then
     return 0
   fi
 
-  if [ -z "$auth_better_auth_url" ] && [ -z "$expo_public_better_auth_url" ]; then
+  if [ "${auth_execution_provider}" = "supabase" ] || [ "${expo_public_auth_execution_provider}" = "supabase" ]; then
+    if [ "$has_better_auth_url" = "true" ]; then
+      echo "ERROR: Better Auth web URLs are set while the execution provider is pinned to Supabase." >&2
+      echo "Set AUTH_EXECUTION_PROVIDER=better-auth (and EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth when needed) only when you intentionally want Better Auth to own web social login." >&2
+      echo "Otherwise leave AUTH_BETTER_AUTH_URL and EXPO_PUBLIC_BETTER_AUTH_URL empty so AIRS web stays on the direct Authentik source-login path." >&2
+      return 1
+    fi
+
     return 0
   fi
 
-  echo "ERROR: Better Auth web URLs are set without opting the AIRS web bundle into Better Auth." >&2
-  echo "Set AUTH_EXECUTION_PROVIDER=better-auth (and EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth when needed) only when you intentionally want Better Auth to own web social login." >&2
-  echo "Otherwise leave AUTH_BETTER_AUTH_URL and EXPO_PUBLIC_BETTER_AUTH_URL empty so AIRS web stays on the direct Authentik source-login path." >&2
-  return 1
+  if [ "$has_better_auth_url" = "true" ]; then
+    return 0
+  fi
+
+  return 0
 }
 
 validate_mobile_oidc_launch_url() {
