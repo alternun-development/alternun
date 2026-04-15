@@ -9,7 +9,35 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.72](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.72) (2026-04-15)
+export const CHANGELOG_TEXT = `## [1.0.74](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.74) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove better-auth and server-only exports to prevent web bundling ([80ec073](https://github.com/alternun-development/alternun/commit/80ec07368b8cb90da7d9ace935ce02391ea08b60))
+- **docs,mobile,auth:** CHANGELOG, changelogData ([8db9657](https://github.com/alternun-development/alternun/commit/8db9657a8b6c4d5b71adc32ec219afd1ceb449a2))
+
+## [1.0.74](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.74) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove better-auth and server-only exports to prevent web bundling ([80ec073](https://github.com/alternun-development/alternun/commit/80ec07368b8cb90da7d9ace935ce02391ea08b60))
+- **docs,mobile,auth:** CHANGELOG, changelogData ([8db9657](https://github.com/alternun-development/alternun/commit/8db9657a8b6c4d5b71adc32ec219afd1ceb449a2))
+
+## [1.0.73](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.73) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove better-auth and server-only exports to prevent web bundling ([4b1f25a](https://github.com/alternun-development/alternun/commit/4b1f25a7b94f897d9f43b5bcfc4dcdd8c7430db5))
+- **docs,mobile,auth:** CHANGELOG, changelogData ([09d4a11](https://github.com/alternun-development/alternun/commit/09d4a11bc7dc5bb87199f4f9ab717dad58bcb40d))
+
+## [1.0.73](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.73) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove better-auth and server-only exports to prevent web bundling ([4b1f25a](https://github.com/alternun-development/alternun/commit/4b1f25a7b94f897d9f43b5bcfc4dcdd8c7430db5))
+- **docs,mobile,auth:** CHANGELOG, changelogData ([09d4a11](https://github.com/alternun-development/alternun/commit/09d4a11bc7dc5bb87199f4f9ab717dad58bcb40d))
+
+## [1.0.72](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.72) (2026-04-15)
 
 ### Bug Fixes
 
@@ -17,29 +45,6 @@ export const CHANGELOG_TEXT = `## [1.0.72](https://github.com/alternun-developme
 - **docs,repo,auth:** authentication-and-session-flow, CHANGELOG, alternun-better-auth-testnet-execution-plan, .env ([be3dacb](https://github.com/alternun-development/alternun/commit/be3dacb9a4819e5b83f4cee33b81445d3e02da3c))
 - **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
 - **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
-
-
-### Bug Fixes
-
-* **auth:** remove server-only exports from main package to fix web bundling ([f2229b8](https://github.com/alternun-development/alternun/commit/f2229b8801c66e565a9f1238f74cb31b29750187))
-* **docs,repo,auth:** authentication-and-session-flow, CHANGELOG, alternun-better-auth-testnet-execution-plan, .env ([be3dacb](https://github.com/alternun-development/alternun/commit/be3dacb9a4819e5b83f4cee33b81445d3e02da3c))
-* **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
-* **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
-
-
-
-
-
-## [1.0.72](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.72) (2026-04-15)
-
-
-### Bug Fixes
-
-* **auth:** remove server-only exports from main package to fix web bundling ([f2229b8](https://github.com/alternun-development/alternun/commit/f2229b8801c66e565a9f1238f74cb31b29750187))
-* **docs,repo,auth:** authentication-and-session-flow, CHANGELOG, alternun-better-auth-testnet-execution-plan, .env ([be3dacb](https://github.com/alternun-development/alternun/commit/be3dacb9a4819e5b83f4cee33b81445d3e02da3c))
-* **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
-* **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
-
 
 ## [1.0.72](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.72) (2026-04-15)
 
@@ -1331,4 +1336,4 @@ All notable changes to this project will be documented in this file.
 /**
  * Version extracted from package.json for display purposes.
  */
-export const APP_VERSION = '1.0.72';
+export const APP_VERSION = '1.0.74';
