@@ -15,6 +15,16 @@ void test('bootstrap keeps source authentication flows open by default', () => {
     template,
     /source_authentication_flow_opened = ensure_flow_authentication\(source_authentication_flow\)/
   );
+  assert.match(
+    template,
+    /source_authentication_flow_pruned = prune_flow_stage_bindings\(\s*source_authentication_flow, UserLoginStage\s*\)/
+  );
+  assert.match(
+    template,
+    /source_enrollment_flow_pruned = prune_flow_stage_bindings\(\s*source_enrollment_flow, UserLoginStage\s*\)/
+  );
+  assert.doesNotMatch(template, /default-source-authentication-login/);
+  assert.doesNotMatch(template, /default-source-enrollment-login/);
   assert.match(template, /derive_origin_redirect\(url: str\)/);
   assert.match(template, /derive_auth_callback_redirect\(url: str\)/);
   assert.match(template, /if not mobile_oidc_redirect_urls and mobile_oidc_launch_url:/);
