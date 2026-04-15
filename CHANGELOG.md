@@ -1,3 +1,17 @@
+## [1.0.74](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.74) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove better-auth and server-only exports to prevent web bundling ([80ec073](https://github.com/alternun-development/alternun/commit/80ec07368b8cb90da7d9ace935ce02391ea08b60))
+- **docs,mobile,auth:** CHANGELOG, changelogData ([8db9657](https://github.com/alternun-development/alternun/commit/8db9657a8b6c4d5b71adc32ec219afd1ceb449a2))
+
+## [1.0.74](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.74) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove better-auth and server-only exports to prevent web bundling ([80ec073](https://github.com/alternun-development/alternun/commit/80ec07368b8cb90da7d9ace935ce02391ea08b60))
+- **docs,mobile,auth:** CHANGELOG, changelogData ([8db9657](https://github.com/alternun-development/alternun/commit/8db9657a8b6c4d5b71adc32ec219afd1ceb449a2))
+
 ## [1.0.73](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.73) (2026-04-15)
 
 ### Bug Fixes
