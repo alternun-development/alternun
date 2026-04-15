@@ -245,11 +245,11 @@ On the Authentik side, the expected direct-source configuration is:
 
 - Google `authentication_flow = default-source-authentication`
 - Google `enrollment_flow = default-source-enrollment`
-- `default-source-authentication` must include `default-source-authentication-login`
-- `default-source-enrollment` must end with `default-source-enrollment-login`
+- `default-source-authentication` must stay open and must not contain `UserLoginStage`
+- `default-source-enrollment` must stay open and must not contain `UserLoginStage`
 - Google enrollment should also bind a username-mapping policy on `default-source-enrollment-prompt` so the upstream Google email becomes the username automatically on first enrollment
 
-If those login stages are missing, Google can complete upstream auth but fail to establish the Authentik-side user session, which shows up as loops or repeated Authentik/Google handoffs.
+If those login stages are present, Google can complete upstream auth but fail to resume the source flow cleanly, which shows up as loops or `token.flow` crashes instead of dashboard redirects.
 
 For deployed AIRS web, custom outer starter flows such as `alternun-google-login` are not the default operating mode.
 
@@ -279,7 +279,7 @@ If the browser bounces through additional Authentik flow screens before returnin
 
 These are the concrete regressions that have already happened in this repo:
 
-- direct-source mode with `default-source-authentication` missing `UserLoginStage`
+- direct-source mode with `default-source-authentication` or `default-source-enrollment` still carrying `UserLoginStage`
 - custom outer source-stage flow enabled in Authentik while the AIRS app bundle is already in direct-source mode
 - AIRS bundle built from stale shared package output rather than current auth package source
 - deployed or exported bundle still containing stale `/better-auth/*` web login paths

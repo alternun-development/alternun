@@ -13,11 +13,11 @@ const { describe, expect, it } = globalThis as unknown as {
 };
 
 describe('authentikWebSessionPolicy', () => {
-  it('forces a fresh Authentik session on web when social login stays on Authentik', () => {
-    expect(shouldForceFreshAuthentikSocialSession('web', 'authentik')).toBe(true);
+  it('does not force a logout on the direct Authentik web path', () => {
+    expect(shouldForceFreshAuthentikSocialSession('web', 'authentik')).toBe(false);
   });
 
-  it('also forces a fresh Authentik session on web for hybrid mode', () => {
+  it('still allows the explicit hybrid relay path to force a fresh session', () => {
     expect(shouldForceFreshAuthentikSocialSession('web', 'hybrid')).toBe(true);
   });
 
