@@ -2,6 +2,7 @@ import { useAuth } from '../components/auth/AppAuthProvider';
 import Dashboard from '../components/dashboard/Dashboard';
 import PublicLandingPage from '../components/landing/PublicLandingPage';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import { isBetterAuthExecutionEnabled } from '../components/auth/authExecutionMode';
 import { readPendingAuthentikOAuthProvider } from '@alternun/auth';
 import { Redirect, useRootNavigationState, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
@@ -14,6 +15,7 @@ export default function HomeScreen(): React.JSX.Element {
   const rootNavigationState = useRootNavigationState();
   const [introDismissedThisSession, setIntroDismissedThisSession] = useState(false);
   const pendingAuthentikProvider = readPendingAuthentikOAuthProvider();
+  const isBetterAuthExecution = isBetterAuthExecutionEnabled();
   const isNavigationReady = Boolean(rootNavigationState?.key);
 
   const shouldShowLandingPage = useMemo(
@@ -33,7 +35,7 @@ export default function HomeScreen(): React.JSX.Element {
     );
   }
 
-  if (!user && pendingAuthentikProvider) {
+  if (!user && pendingAuthentikProvider && !isBetterAuthExecution) {
     return <Redirect href={{ pathname: '/auth', params: { next: '/' } }} />;
   }
 

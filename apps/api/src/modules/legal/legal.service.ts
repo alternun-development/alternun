@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 type LegalType = 'privacy' | 'terms';
@@ -51,6 +51,13 @@ export class LegalService {
   }
 
   private resolveFilePath(monorepoRoot: string, type: LegalType, locale: Locale): string {
+    // Lambda bundle: legal files are copied to legal/ next to lambda.js at build time
+    const bundledPath = join(__dirname, 'legal', `${type}.${locale}.md`);
+    if (existsSync(bundledPath)) {
+      return bundledPath;
+    }
+
+    // Development / monorepo: read directly from docusaurus source
     if (locale === 'en') {
       return join(monorepoRoot, `apps/docs/src/pages/${type}.md`);
     }

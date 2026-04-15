@@ -158,6 +158,7 @@ Enable/configure through env or local config:
 - `INFRA_BACKEND_API_AUTHENTIK_AUDIENCE`
 - `INFRA_BACKEND_API_AUTHENTIK_ISSUER`
 - `INFRA_BACKEND_API_AUTHENTIK_JWKS_URL`
+- `INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED` (set `true` to make `/auth/exchange` fail closed when issuer-owned minting is unavailable)
 - `INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY` (preferred: sourced from the identity stack's JWT secret output; the `sst-deploy.sh` hydration remains a compatibility fallback)
 - `INFRA_BACKEND_API_DATABASE_URL`
 
@@ -166,7 +167,7 @@ Important behavior:
 - backend provisioning is isolated to dedicated stacks by default (`api-dev`, `api-prod`) to avoid mixing API runtime changes into the Expo stacks
 - dedicated backend pipelines force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy or modify the static app site
 - the current backend target is Lambda + API Gateway, which keeps the first provisioning increment aligned with the existing SST pipeline model
-- backend deploys now receive `AUTHENTIK_JWT_SIGNING_KEY` from the matching identity-stage secret output so `/auth/exchange` can mint issuer-owned JWTs without manual secret copying; the deploy script still hydrates it as a compatibility fallback for older flows
+- backend deploys now receive `AUTHENTIK_JWT_SIGNING_KEY` from the matching identity-stage secret output so `/auth/exchange` can mint issuer-owned JWTs without manual secret copying; the deploy script still hydrates it as a compatibility fallback for older flows, and `INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` makes the backend fail closed instead of accepting compatibility fallback
 - approved runtime direction is Lambda for development/testnet and a dedicated `t4g.small` host for the first production backend target
 - SST outputs expose backend API deployment metadata including invoke URL, Lambda identifiers, log group, and custom domain when present
 - for dependent admin + API releases, prefer the combined `dashboard-dev` / `dashboard-prod` pipelines
@@ -235,11 +236,11 @@ Use `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` to control whether the app uses Au
 The default is `authentik` for deployed bundles so testnet/prod stay Authentik-first unless you explicitly opt into another mode, while non-production Expo bundles now default the execution provider to `supabase`.
 Use `hybrid` only when you intentionally want Supabase fallback while iterating locally.
 The Expo build also receives `EXPO_PUBLIC_API_URL` for the matching stage API origin so the auth footer and privacy/terms drawers fetch legal content from the correct backend without guessing.
-If you later stand up a real Better Auth service, point `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` at that reachable endpoint and update the backend Lambda upstream accordingly. The repo no longer ships with the old dedicated testnet host wired in.
-The core web pipelines set `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` to `supabase` on dev and mobile bundles, keep `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`, `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`, inject `EXPO_PUBLIC_API_URL` for the matching stage API origin, and set `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` so testnet/mobile bundles stay on the stable Authentik-first path, fetch policy content from the correct API, and get a reload prompt when a new release is detected. Production stays on the legacy execution path unless you explicitly override it.
+If you later stand up a real Better Auth service, keep the browser-facing URL on the API origin (`https://<api-host>/auth`) and point the API's internal Better Auth process at the private dev target. The public `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` should stay on the canonical API route; the internal dev server can remain on `http://localhost:9083` during local development behind the API proxy. The repo no longer ships with the old dedicated testnet host wired in.
+The core web pipelines set `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` to `supabase` on dev and mobile bundles, keep `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`, `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`, inject `EXPO_PUBLIC_API_URL` for the matching stage API origin, and set `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` so testnet/mobile bundles stay on the stable Authentik-first path, fetch policy content from the correct API, and get a reload prompt when a new release is detected. When Better Auth is enabled, the browser still talks to the API `/auth` route rather than a separate public auth port. Production stays on the legacy execution path unless you explicitly override it.
 `EXPO_PUBLIC_AUTHENTIK_ISSUER` and `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID` should be present in env, but deployed web builds now derive sane defaults from the live `airs` origin if they are omitted. `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` is also optional in deployed web builds; when omitted, the shared auth helpers derive `https://<airs-domain>/auth/callback` from the current browser origin. During local web development, the active browser origin wins over stale loopback or testnet redirect values so callbacks stay on the current app instance.
 Custom Authentik provider-flow slugs are now explicit only. Set `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=true` and `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` or `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS=true` and `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` / `INFRA_IDENTITY_DISCORD_LOGIN_FLOW_SLUG` only when you intentionally want a custom starter flow. When those values are blank, the app uses the direct source-login path and the identity bootstrap stays on the direct source-login flows. For Google, `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE=logout-then-source` is still experimental; leave it at `source` unless you are deliberately testing the logout-first custom flow.
-The deploy path now validates that non-Better-Auth web builds do not carry Better Auth URLs in env, and the Expo web export fails if the emitted bundle still contains stale `/better-auth/*` login paths or an inlined non-production `better-auth` execution default.
+The deploy path now validates that non-Better-Auth web builds do not carry Better Auth URLs in env, and the Expo web export fails if the emitted bundle still contains stale direct Better Auth host paths such as `http://localhost:9083/auth/*`, legacy `/better-auth/*` login paths, or an inlined non-production `better-auth` execution default.
 The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages, and the bootstrap derives the app-root post-logout redirect from the mobile launch URL when no explicit list is provided, so logout returns to the app instead of stopping on Authentik's success page.
 
 ### Release Update Banner
@@ -330,6 +331,7 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_DEFAULT_APPLICATION_POLICY_ENGINE_MODE` (`any` or `all`)
 - `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` (`supabase` for the stable path; use `better-auth` only when you are testing a real Better Auth deployment)
 - `EXPO_PUBLIC_API_URL` (stage API origin used by the auth footer and legal drawers; `https://testnet.api.alternun.co` on testnet)
+- `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` (`https://testnet.api.alternun.co/auth` for the canonical browser-facing Better Auth route)
 - `AUTH_EXCHANGE_URL` / `EXPO_PUBLIC_AUTH_EXCHANGE_URL` (`https://testnet.api.alternun.co/auth/exchange` for the canonical issuer handoff)
 - `INFRA_IDENTITY_USERDATA_REPLACE_ON_CHANGE` (default `false`, prevents instance replacement on user-data/template edits)
 - `INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION` (default `true` on production identity stacks)

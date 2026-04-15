@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
+const { ServiceUnavailableException } = require('@nestjs/common');
 
 const { AuthExchangeService } = require('../src/modules/auth-exchange/auth-exchange.service.ts');
 
@@ -68,6 +69,7 @@ test('AuthExchangeService mints issuer-owned tokens when a signing key is config
     process.env.AUTHENTIK_ISSUER = 'https://testnet.sso.alternun.co/application/o/alternun-mobile/';
     process.env.AUTH_AUDIENCE = 'alternun-app';
     process.env.AUTHENTIK_JWT_SIGNING_KEY = 'test-signing-key';
+    process.env.AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED = 'true';
     delete process.env.SUPABASE_URL;
     delete process.env.EXPO_PUBLIC_SUPABASE_URL;
     delete process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -113,6 +115,58 @@ test('AuthExchangeService mints issuer-owned tokens when a signing key is config
     assert.equal(idClaims.token_use, 'id');
     assert.equal(idClaims.principal_id, response.principal.subject);
     assert.equal(response.issuerRefreshToken, null);
+  } finally {
+    process.env = originalEnv;
+  }
+});
+
+test('AuthExchangeService fails closed when issuer-owned exchange is required but the signing key is missing', async () => {
+  const originalEnv = { ...process.env };
+
+  try {
+    process.env.AUTHENTIK_ISSUER = 'https://testnet.sso.alternun.co/application/o/alternun-mobile/';
+    process.env.AUTH_AUDIENCE = 'alternun-app';
+    process.env.AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED = 'true';
+    delete process.env.AUTHENTIK_JWT_SIGNING_KEY;
+    delete process.env.AUTHENTIK_JWT_SIGNING_SECRET;
+    delete process.env.AUTH_SESSION_SIGNING_KEY;
+    delete process.env.SUPABASE_URL;
+    delete process.env.EXPO_PUBLIC_SUPABASE_URL;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.SUPABASE_ANON_KEY;
+    delete process.env.EXPO_PUBLIC_SUPABASE_KEY;
+
+    const service = new AuthExchangeService();
+
+    await assert.rejects(
+      service.exchangeIdentity({
+        externalIdentity: {
+          provider: 'google',
+          providerUserId: 'google-123',
+          email: 'ada@example.com',
+          emailVerified: true,
+          displayName: 'Ada Lovelace',
+          avatarUrl: 'https://example.com/avatar.png',
+          rawClaims: { sub: 'google-123' },
+        },
+        executionSession: {
+          provider: 'better-auth',
+          accessToken: 'execution-token',
+          refreshToken: 'execution-refresh',
+          idToken: 'execution-id',
+          expiresAt: 1730000000,
+        },
+        context: {
+          trigger: 'oauth-callback',
+          runtime: 'web',
+          app: 'mobile',
+        },
+      }),
+      (error) =>
+        error instanceof ServiceUnavailableException &&
+        error.getStatus() === 503 &&
+        String(error.message).includes('AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED')
+    );
   } finally {
     process.env = originalEnv;
   }

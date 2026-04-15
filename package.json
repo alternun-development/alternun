@@ -5,7 +5,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "dev:all": "concurrently -k --names api,admin,mobile,docs --prefix-colors blue,green,magenta,cyan \"pnpm --filter @alternun/api run dev\" \"pnpm --filter @alternun/admin run dev:local\" \"pnpm --filter @alternun/mobile run web:local\" \"pnpm --filter alternun-docs run dev:local\"",
+    "dev:all": "concurrently -k --names api,better-auth,admin,mobile,docs --prefix-colors blue,yellow,green,magenta,cyan \"pnpm --filter @alternun/api run dev\" \"pnpm --filter @alternun/api run dev:better-auth\" \"pnpm --filter @alternun/admin run dev:local\" \"pnpm --filter @alternun/mobile run web:local\" \"pnpm --filter alternun-docs run dev:local\"",
     "admin": "pnpm --filter @alternun/admin dev",
     "mobile": "pnpm --filter ./apps/mobile start",
     "lint": "turbo run lint",

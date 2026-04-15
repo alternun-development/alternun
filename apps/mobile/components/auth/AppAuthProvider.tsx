@@ -12,6 +12,7 @@ import {
   type CallbackCapableAuthClient,
 } from './authWebSession';
 import { shouldClearOidcSessionOnAuthStateChange } from './authSessionBridge';
+import { isBetterAuthExecutionEnabled } from './authExecutionMode';
 
 function getAllowMockWalletFallback(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH === 'true';
@@ -33,10 +34,17 @@ function AuthSessionBridge(): null {
   const { client } = useAlternunAuth();
   const hasReceivedAuthStateRef = useRef(false);
   const previousUserRef = useRef<import('@alternun/auth').User | null | undefined>(undefined);
+  const isBetterAuthExecution = isBetterAuthExecutionEnabled();
 
   // Restore stored OIDC session on mount (survives page reload)
   useEffect(() => {
     if (Platform.OS !== 'web') return;
+
+    if (isBetterAuthExecution) {
+      clearOidcSession();
+      return;
+    }
+
     const session = readOidcSession();
     if (!session) return;
     const callbackClient = client as CallbackCapableAuthClient;
@@ -49,11 +57,17 @@ function AuthSessionBridge(): null {
       .catch(() => {
         callbackClient.setOidcUser?.(oidcSessionToUser(session));
       });
-  }, [client]);
+  }, [client, isBetterAuthExecution]);
 
   // Clear OIDC session and revoke token when user signs out
   useEffect(() => {
     if (Platform.OS !== 'web') return;
+
+    if (isBetterAuthExecution) {
+      clearOidcSession();
+      return;
+    }
+
     return client.onAuthStateChange((user) => {
       const shouldClearOidcSession = shouldClearOidcSessionOnAuthStateChange({
         hasReceivedAuthState: hasReceivedAuthStateRef.current,
@@ -84,7 +98,7 @@ function AuthSessionBridge(): null {
           });
       }
     });
-  }, [client]);
+  }, [client, isBetterAuthExecution]);
 
   return null;
 }

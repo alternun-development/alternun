@@ -31,14 +31,58 @@ export interface BetterAuthClientLike {
   getSessionToken?(): Promise<string | null>;
 }
 
+export interface BetterAuthBrowserSocialSignInOptions {
+  provider: string;
+  callbackURL?: string;
+  errorCallbackURL?: string;
+  newUserCallbackURL?: string;
+  disableRedirect?: boolean;
+  [key: string]: unknown;
+}
+
+export interface BetterAuthBrowserClientLike {
+  signIn?: {
+    social?(options: BetterAuthBrowserSocialSignInOptions): Promise<unknown>;
+    email?(options: {
+      email: string;
+      password: string;
+      callbackURL?: string;
+      errorCallbackURL?: string;
+      newUserCallbackURL?: string;
+      [key: string]: unknown;
+    }): Promise<unknown>;
+  };
+  signUp?: {
+    email?(options: {
+      email: string;
+      password: string;
+      callbackURL?: string;
+      [key: string]: unknown;
+    }): Promise<unknown>;
+  };
+  signOut?(): Promise<unknown>;
+  getSession?(): Promise<unknown>;
+  refreshSession?(): Promise<unknown>;
+  linkSocial?(input: AuthLinkProviderInput): Promise<unknown>;
+  unlinkSocial?(input: AuthUnlinkProviderInput): Promise<unknown>;
+}
+
 export interface BetterAuthExecutionProviderOptions {
   client?: BetterAuthClientLike | null;
+  browserClient?: BetterAuthBrowserClientLike | null;
+  browserClientFactory?: () =>
+    | Promise<BetterAuthBrowserClientLike | null>
+    | BetterAuthBrowserClientLike
+    | null;
   baseUrl?: string;
   fetchFn?: typeof fetch;
   emailFallbackClient?: LegacyExecutionClientLike | null;
   allowLegacySessionFallback?: boolean;
   signInPath?: string;
+  signInSocialPath?: string;
+  signInEmailPath?: string;
   signUpPath?: string;
+  signUpEmailPath?: string;
   signOutPath?: string;
   sessionPath?: string;
   refreshPath?: string;
@@ -54,28 +98,148 @@ function normalizeSession(input: unknown, fallbackProvider: string): ExecutionSe
   }
 
   const raw = input as Record<string, unknown>;
-  const identityCandidate =
-    raw.externalIdentity && typeof raw.externalIdentity === 'object'
-      ? (raw.externalIdentity as ExternalIdentity)
-      : raw.user && typeof raw.user === 'object'
-      ? claimsToExternalIdentity(fallbackProvider, raw.user as Record<string, unknown>)
+  const payload = isRecord(raw.data) ? raw.data : raw;
+  const sessionPayload = isRecord(payload.session) ? payload.session : null;
+  const userPayload = isRecord(payload.user) ? payload.user : null;
+  const externalIdentityPayload =
+    isRecord(payload.externalIdentity) && payload.externalIdentity
+      ? (payload.externalIdentity as unknown as ExternalIdentity)
+      : userPayload
+      ? claimsToExternalIdentity(
+          fallbackProvider,
+          {
+            ...userPayload,
+            sub:
+              typeof userPayload.sub === 'string' && userPayload.sub.trim().length > 0
+                ? userPayload.sub
+                : typeof userPayload.id === 'string' && userPayload.id.trim().length > 0
+                ? userPayload.id
+                : typeof sessionPayload?.userId === 'string' &&
+                  sessionPayload.userId.trim().length > 0
+                ? sessionPayload.userId
+                : undefined,
+            email:
+              typeof userPayload.email === 'string' && userPayload.email.trim().length > 0
+                ? userPayload.email
+                : undefined,
+            email_verified:
+              typeof userPayload.email_verified === 'boolean'
+                ? userPayload.email_verified
+                : typeof userPayload.emailVerified === 'boolean'
+                ? userPayload.emailVerified
+                : undefined,
+            name:
+              typeof userPayload.name === 'string' && userPayload.name.trim().length > 0
+                ? userPayload.name
+                : typeof userPayload.displayName === 'string' &&
+                  userPayload.displayName.trim().length > 0
+                ? userPayload.displayName
+                : undefined,
+            picture:
+              typeof userPayload.picture === 'string' && userPayload.picture.trim().length > 0
+                ? userPayload.picture
+                : typeof userPayload.image === 'string' && userPayload.image.trim().length > 0
+                ? userPayload.image
+                : typeof userPayload.avatarUrl === 'string' &&
+                  userPayload.avatarUrl.trim().length > 0
+                ? userPayload.avatarUrl
+                : undefined,
+          },
+          typeof userPayload.sub === 'string' && userPayload.sub.trim().length > 0
+            ? userPayload.sub
+            : typeof userPayload.id === 'string' && userPayload.id.trim().length > 0
+            ? userPayload.id
+            : typeof sessionPayload?.userId === 'string' && sessionPayload.userId.trim().length > 0
+            ? sessionPayload.userId
+            : undefined
+        )
       : null;
+  const identityCandidate = externalIdentityPayload;
+  const accessTokenCandidate =
+    typeof payload.accessToken === 'string'
+      ? payload.accessToken
+      : typeof sessionPayload?.token === 'string'
+      ? sessionPayload.token
+      : typeof sessionPayload?.id === 'string'
+      ? sessionPayload.id
+      : typeof sessionPayload?.sessionToken === 'string'
+      ? sessionPayload.sessionToken
+      : null;
+  const refreshTokenCandidate =
+    typeof payload.refreshToken === 'string'
+      ? payload.refreshToken
+      : typeof sessionPayload?.refreshToken === 'string'
+      ? sessionPayload.refreshToken
+      : null;
+  const idTokenCandidate =
+    typeof payload.idToken === 'string'
+      ? payload.idToken
+      : typeof sessionPayload?.idToken === 'string'
+      ? sessionPayload.idToken
+      : null;
+  const expiresAtCandidate =
+    normalizeMaybeDate(payload.expiresAt) ??
+    normalizeMaybeDate(sessionPayload?.expiresAt) ??
+    normalizeMaybeDate(sessionPayload?.expires_at) ??
+    null;
 
   return {
     provider:
-      typeof raw.provider === 'string'
-        ? raw.provider
+      typeof payload.provider === 'string'
+        ? payload.provider
         : identityCandidate?.provider ?? fallbackProvider,
-    accessToken: typeof raw.accessToken === 'string' ? raw.accessToken : null,
-    refreshToken: typeof raw.refreshToken === 'string' ? raw.refreshToken : null,
-    idToken: typeof raw.idToken === 'string' ? raw.idToken : null,
-    expiresAt: typeof raw.expiresAt === 'number' ? raw.expiresAt : null,
+    accessToken: accessTokenCandidate,
+    refreshToken: refreshTokenCandidate,
+    idToken: idTokenCandidate,
+    expiresAt: expiresAtCandidate,
     externalIdentity: identityCandidate,
-    linkedAccounts: Array.isArray(raw.linkedAccounts)
-      ? (raw.linkedAccounts as LinkedAuthAccount[])
+    linkedAccounts: Array.isArray(payload.linkedAccounts)
+      ? (payload.linkedAccounts as LinkedAuthAccount[])
       : [],
     raw,
   };
+}
+
+function extractRedirectUrl(input: unknown): string | null {
+  if (!input || typeof input !== 'object') {
+    return null;
+  }
+
+  const raw = input as Record<string, unknown>;
+  const redirectUrlCandidate =
+    typeof raw.redirectUrl === 'string'
+      ? raw.redirectUrl
+      : typeof raw.redirectURL === 'string'
+      ? raw.redirectURL
+      : typeof raw.url === 'string'
+      ? raw.url
+      : typeof raw.location === 'string'
+      ? raw.location
+      : null;
+
+  const trimmed = redirectUrlCandidate?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === 'object');
+}
+
+function normalizeMaybeDate(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value > 1e12 ? value : value * 1000;
+  }
+
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+
+  return null;
 }
 
 async function callJson(
@@ -91,6 +255,7 @@ async function callJson(
   try {
     response = await fetchFn(url, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'content-type': 'application/json',
         ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
@@ -121,14 +286,30 @@ async function callJson(
 
 function buildUrlWithBasePath(baseUrl: string, path: string): string {
   const normalizedBaseUrl = baseUrl.trim().replace(/\/+$/, '');
-  const normalizedPath = path.trim().replace(/^\/+/, '');
+  const normalizedPath = path.trim();
   return new URL(normalizedPath, `${normalizedBaseUrl}/`).toString();
+}
+
+function resolveBrowserClientBaseUrl(baseUrl: string): string {
+  const trimmedBaseUrl = baseUrl.trim().replace(/\/+$/, '');
+
+  try {
+    const url = new URL(trimmedBaseUrl);
+    if (url.pathname && url.pathname !== '/') {
+      return trimmedBaseUrl;
+    }
+
+    return `${trimmedBaseUrl}/auth`;
+  } catch {
+    return `${trimmedBaseUrl}/auth`;
+  }
 }
 
 export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   readonly name = 'better-auth' as const;
   private readonly emailFallbackProvider: SupabaseExecutionProvider | null;
   private readonly allowLegacySessionFallback: boolean;
+  private browserClientPromise: Promise<BetterAuthBrowserClientLike | null> | null = null;
 
   constructor(private readonly options: BetterAuthExecutionProviderOptions) {
     this.emailFallbackProvider = options.emailFallbackClient
@@ -143,6 +324,41 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
 
   private get fetchFn(): typeof fetch {
     return this.options.fetchFn ?? fetch;
+  }
+
+  private async resolveBrowserClient(): Promise<BetterAuthBrowserClientLike | null> {
+    if (this.options.browserClient) {
+      return this.options.browserClient;
+    }
+
+    if (this.options.browserClientFactory) {
+      const created = await this.options.browserClientFactory();
+      if (created) {
+        this.options.browserClient = created;
+      }
+      return created;
+    }
+
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return null;
+    }
+
+    if (!this.options.baseUrl?.trim()) {
+      return null;
+    }
+
+    if (!this.browserClientPromise) {
+      this.browserClientPromise = import('better-auth/client')
+        .then(
+          ({ createAuthClient }) =>
+            createAuthClient({
+              baseURL: resolveBrowserClientBaseUrl(this.requireBaseUrl()),
+            }) as unknown as BetterAuthBrowserClientLike
+        )
+        .catch(() => null);
+    }
+
+    return this.browserClientPromise;
   }
 
   private normalizeProvider(provider?: string | null): string | null {
@@ -179,6 +395,8 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       this.normalizeProvider(this.options.defaultProvider) ??
       'google';
 
+    const browserClient = await this.resolveBrowserClient();
+
     if (client?.signIn) {
       const result = await client.signIn({
         provider,
@@ -198,18 +416,57 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       };
     }
 
+    if (browserClient?.signIn) {
+      if (provider === 'email' && browserClient.signIn.email && options.password) {
+        const result = await browserClient.signIn.email({
+          email: options.email ?? '',
+          password: options.password,
+          callbackURL: options.redirectUri,
+          errorCallbackURL: options.redirectUri,
+          newUserCallbackURL: options.redirectUri,
+        });
+        const normalizedSession = normalizeSession(result, 'email');
+        return {
+          session: normalizedSession,
+          externalIdentity: normalizedSession?.externalIdentity ?? null,
+          redirectUrl: extractRedirectUrl(result),
+        };
+      }
+
+      if (browserClient.signIn.social) {
+        const result = await browserClient.signIn.social({
+          provider,
+          callbackURL: options.redirectUri,
+          errorCallbackURL: options.redirectUri,
+          newUserCallbackURL: options.redirectUri,
+          disableRedirect: false,
+        });
+        const normalizedSession = normalizeSession(result, provider);
+        return {
+          session: normalizedSession,
+          externalIdentity: normalizedSession?.externalIdentity ?? null,
+          redirectUrl: extractRedirectUrl(result),
+        };
+      }
+    }
+
     if (provider === 'email' && this.emailFallbackProvider) {
       return this.emailFallbackProvider.signIn(options);
     }
 
+    const isEmailProvider = provider === 'email';
     const response = await callJson(
       this.fetchFn,
       this.requireBaseUrl(),
-      this.options.signInPath ?? '/auth/sign-in',
+      isEmailProvider
+        ? this.options.signInEmailPath ?? this.options.signInPath ?? '/auth/sign-in/email'
+        : this.options.signInSocialPath ?? this.options.signInPath ?? '/auth/sign-in/social',
       {
         provider,
         flow: options.flow ?? (provider === 'email' ? 'native' : 'redirect'),
-        redirectUri: options.redirectUri,
+        callbackURL: options.redirectUri,
+        errorCallbackURL: options.redirectUri,
+        newUserCallbackURL: options.redirectUri,
         email: options.email,
         password: options.password,
         web3: options.web3,
@@ -269,14 +526,44 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       return this.emailFallbackProvider.signUp(input);
     }
 
+    const browserClient = await this.resolveBrowserClient();
+    if (browserClient?.signUp?.email) {
+      const signUpOptions = {
+        email: input.email,
+        password: input.password,
+        callbackURL: undefined,
+        locale: input.locale,
+        metadata: input.metadata,
+      } as Parameters<NonNullable<NonNullable<BetterAuthBrowserClientLike['signUp']>['email']>>[0];
+      const result = await browserClient.signUp.email(signUpOptions);
+      const normalizedSession = normalizeSession(result, 'email');
+      return {
+        session: normalizedSession,
+        externalIdentity: normalizedSession?.externalIdentity ?? null,
+        needsEmailVerification:
+          typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
+            ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
+            : undefined,
+        emailAlreadyRegistered:
+          typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
+            ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
+            : undefined,
+        confirmationEmailSent:
+          typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
+            ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
+            : undefined,
+      };
+    }
+
     const response = await callJson(
       this.fetchFn,
       this.requireBaseUrl(),
-      this.options.signUpPath ?? '/auth/sign-up',
+      this.options.signUpEmailPath ?? this.options.signUpPath ?? '/auth/sign-up/email',
       {
         email: input.email,
         password: input.password,
         locale: input.locale,
+        callbackURL: undefined,
         metadata: input.metadata,
       }
     );
@@ -323,6 +610,15 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async getExecutionSession(): Promise<ExecutionSession | null> {
+    const browserClient = await this.resolveBrowserClient();
+    if (browserClient?.getSession) {
+      const session = await browserClient.getSession();
+      const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
+      if (normalized) {
+        return normalized;
+      }
+    }
+
     if (this.client?.getSession) {
       const session = await this.client.getSession();
       const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
@@ -373,6 +669,15 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async refreshExecutionSession(): Promise<ExecutionSession | null> {
+    const browserClient = await this.resolveBrowserClient();
+    if (browserClient?.refreshSession) {
+      const session = await browserClient.refreshSession();
+      const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
+      if (normalized) {
+        return normalized;
+      }
+    }
+
     if (this.client?.refreshSession) {
       const session = await this.client.refreshSession();
       return normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
@@ -399,6 +704,18 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async linkProvider(input: AuthLinkProviderInput): Promise<LinkedAuthAccount | null> {
+    const browserClient = await this.resolveBrowserClient();
+    if (browserClient?.linkSocial) {
+      await browserClient.linkSocial(input);
+      return {
+        provider: input.provider,
+        providerUserId: input.providerUserId,
+        type: input.type,
+        email: input.email,
+        metadata: input.metadata ?? {},
+      };
+    }
+
     if (this.client?.linkProvider) {
       await this.client.linkProvider(input);
     } else if (this.options.baseUrl) {
@@ -423,6 +740,12 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async unlinkProvider(input: AuthUnlinkProviderInput): Promise<void> {
+    const browserClient = await this.resolveBrowserClient();
+    if (browserClient?.unlinkSocial) {
+      await browserClient.unlinkSocial(input);
+      return;
+    }
+
     if (this.client?.unlinkProvider) {
       await this.client.unlinkProvider(input);
       return;
@@ -440,6 +763,26 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signInWithEmail(email: string, password: string): Promise<User> {
+    const browserClient = await this.resolveBrowserClient();
+    if (browserClient?.signIn?.email) {
+      const result = await browserClient.signIn.email({
+        email,
+        password,
+      });
+
+      const session = normalizeSession(result, 'email');
+      if (session?.externalIdentity) {
+        return {
+          id: session.externalIdentity.providerUserId,
+          email: session.externalIdentity.email,
+          avatarUrl: session.externalIdentity.avatarUrl,
+          provider: session.externalIdentity.provider,
+          providerUserId: session.externalIdentity.providerUserId,
+          metadata: session.externalIdentity.rawClaims,
+        };
+      }
+    }
+
     if (this.client?.signIn) {
       const result = await this.signIn({
         provider: 'email',
@@ -518,6 +861,15 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signInWithGoogle(redirectTo?: string): Promise<void> {
+    const browserClient = await this.resolveBrowserClient();
+    if (browserClient?.signIn?.social) {
+      await browserClient.signIn.social({
+        provider: 'google',
+        callbackURL: redirectTo,
+      });
+      return;
+    }
+
     await this.signIn({
       provider: 'google',
       flow: 'redirect',

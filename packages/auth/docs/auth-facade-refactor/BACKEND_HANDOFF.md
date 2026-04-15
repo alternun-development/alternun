@@ -6,9 +6,9 @@
 
 Without this endpoint, `packages/auth` can only simulate the issuer session locally. That is good enough for package tests and adapter wiring, but not good enough for real testnet rollout.
 
-The package now calls `AUTH_EXCHANGE_URL` when it is configured, which means the backend exchange path is already part of the runtime graph. The current backend implementation can mint issuer-owned JWTs when `AUTHENTIK_JWT_SIGNING_KEY` is configured, but it still keeps a compatibility fallback when that signing key or backend path is not available.
+The package now calls `AUTH_EXCHANGE_URL` when it is configured, which means the backend exchange path is already part of the runtime graph. The current backend implementation can mint issuer-owned JWTs when `AUTHENTIK_JWT_SIGNING_KEY` is configured, and it can now fail closed when `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` and the signing key is not available.
 
-The current implementation now exists in `apps/api/src/modules/auth-exchange/*`, and it supports an issuer-owned mode plus a fallback compatibility mode. The compatibility mode is still the default safety net, not the target end state.
+The current implementation now exists in `apps/api/src/modules/auth-exchange/*`, and it supports an issuer-owned mode plus a fallback compatibility mode. The compatibility mode is still the default safety net, but the strict rollout flag lets testnet or production fail closed instead of silently accepting compatibility fallback.
 
 ## Required Endpoint
 
@@ -108,6 +108,7 @@ The issuer session returned to apps must include or derive:
 - `exp`
 - `roles` or `alternun_roles`
 - `exchangeMode` should distinguish `issuer-owned` from `compatibility`
+- `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` should force the backend to reject compatibility fallback when issuer-owned minting is not available
 
 ## Required Persistence Outcomes
 
@@ -172,6 +173,6 @@ Log these events with stable fields:
 
 ## Current Gap
 
-Today the package-side `AuthentikIssuerProvider` prefers the backend exchange URL when configured. The `dashboard-dev` deployment already mints issuer-owned JWTs through `POST /auth/exchange`; the local compatibility synthesis path remains only as a fallback when the backend runtime cannot mint issuer-owned tokens.
+Today the package-side `AuthentikIssuerProvider` prefers the backend exchange URL when configured. The `dashboard-dev` deployment already mints issuer-owned JWTs through `POST /auth/exchange`; the local compatibility synthesis path remains only as a fallback when the backend runtime cannot mint issuer-owned tokens, and `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` is the switch that retires the fallback for a given deployment.
 
 That fallback behavior must be retired before Better Auth becomes the main execution path on testnet.

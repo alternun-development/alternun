@@ -1,14 +1,9 @@
 import {
-  buildAuthentikRelayRoute,
-  clearPendingAuthentikOAuthProvider,
   isAuthentikConfigured,
-  nativeSignIn,
   parseEmailAddress,
   parseSignUpPassword,
-  readPendingAuthentikOAuthProvider,
   resolveAuthentikLoginStrategy,
-  shouldUseAuthentikRelayEntry as shouldUseAuthentikRelayEntryFromConfig,
-  webRedirectSignIn,
+  type AuthentikRelayRoute,
 } from '@alternun/auth';
 import { Image as ExpoImage } from 'expo-image';
 import {
@@ -50,6 +45,11 @@ import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
 import { shouldForceFreshAuthentikSocialSession } from './authentikWebSessionPolicy';
+import {
+  readPendingAuthentikOAuthProvider,
+  resumePendingSocialSignIn,
+  startSocialSignIn,
+} from './authWebSession';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { AuthFooter } from './AuthFooter';
@@ -245,8 +245,6 @@ export default function AuthSignInScreen({
   const shouldForceAuthentikSocialLogin = authentikSocialLoginMode === 'authentik';
   const shouldShowAuthentikSocialButtons =
     shouldUseAuthentikSocialLogin && (shouldForceAuthentikSocialLogin || authentikConfigured);
-  const shouldUseAuthentikRelayEntry =
-    shouldUseAuthentikRelayEntryFromConfig() && shouldShowAuthentikSocialButtons;
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -312,24 +310,17 @@ export default function AuthSignInScreen({
       return;
     }
 
-    clearPendingAuthentikOAuthProvider();
     setSubmitMode(pendingProvider);
-    if (shouldUseAuthentikRelayEntry) {
-      router.replace(
-        buildAuthentikRelayRoute(pendingProvider, {
-          next: authReturnTo,
-          forceFreshSession: false,
-        })
-      );
-      return;
-    }
-
-    void webRedirectSignIn({
+    void resumePendingSocialSignIn({
       client,
-      provider: pendingProvider,
-      authentikProviderHint: pendingProvider,
       redirectTo: authReturnTo,
+      forceFreshSession: false,
       strategy: loginStrategy,
+      resolveProvider: (pendingProvider: 'google' | 'discord') =>
+        pendingProvider === 'google' ? googleProvider : pendingProvider,
+      onRelayRoute: (route: AuthentikRelayRoute) => {
+        router.replace(route);
+      },
     })
       .catch((authError: unknown) => {
         setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
@@ -337,7 +328,7 @@ export default function AuthSignInScreen({
       .finally(() => {
         setSubmitMode(null);
       });
-  }, [authReturnTo, client, loginStrategy, router, shouldUseAuthentikRelayEntry, t]);
+  }, [authReturnTo, client, googleProvider, loginStrategy, router, t]);
 
   const transitionToStep = (step: AuthStep): void => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -649,35 +640,20 @@ export default function AuthSignInScreen({
     }
   };
 
-  const handleGoogleSignIn = async (): Promise<void> => {
+  const handleSocialSignIn = async (provider: 'google' | 'discord'): Promise<void> => {
     resetMessages();
-    setSubmitMode('google');
+    setSubmitMode(provider);
     try {
-      if (Platform.OS === 'web' && shouldUseAuthentikRelayEntry) {
-        router.replace(
-          buildAuthentikRelayRoute('google', {
-            next: authReturnTo,
-            forceFreshSession: forceFreshSocialSession,
-          })
-        );
-        return;
-      }
-
-      if (Platform.OS === 'web') {
-        await webRedirectSignIn({
-          client,
-          provider: googleProvider,
-          authentikProviderHint: 'google',
-          redirectTo: authReturnTo,
-          forceFreshSession: forceFreshSocialSession,
-          strategy: loginStrategy,
-        });
-        return;
-      }
-
-      await nativeSignIn({
+      await startSocialSignIn({
         client,
-        provider: googleProvider,
+        provider: provider === 'google' ? googleProvider : provider,
+        authentikProviderHint: provider,
+        redirectTo: authReturnTo,
+        forceFreshSession: forceFreshSocialSession,
+        strategy: loginStrategy,
+        onRelayRoute: (route: AuthentikRelayRoute) => {
+          router.replace(route);
+        },
       });
     } catch (oidcError) {
       setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
@@ -686,41 +662,12 @@ export default function AuthSignInScreen({
     }
   };
 
+  const handleGoogleSignIn = async (): Promise<void> => {
+    await handleSocialSignIn('google');
+  };
+
   const handleDiscordSignIn = async (): Promise<void> => {
-    resetMessages();
-    setSubmitMode('discord');
-    try {
-      if (Platform.OS === 'web' && shouldUseAuthentikRelayEntry) {
-        router.replace(
-          buildAuthentikRelayRoute('discord', {
-            next: authReturnTo,
-            forceFreshSession: forceFreshSocialSession,
-          })
-        );
-        return;
-      }
-
-      if (Platform.OS === 'web') {
-        await webRedirectSignIn({
-          client,
-          provider: 'discord',
-          authentikProviderHint: 'discord',
-          redirectTo: authReturnTo,
-          forceFreshSession: forceFreshSocialSession,
-          strategy: loginStrategy,
-        });
-        return;
-      }
-
-      await nativeSignIn({
-        client,
-        provider: 'discord',
-      });
-    } catch (oidcError) {
-      setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
-    } finally {
-      setSubmitMode(null);
-    }
+    await handleSocialSignIn('discord');
   };
 
   const handleWalletConnect = async (walletType: string): Promise<void> => {

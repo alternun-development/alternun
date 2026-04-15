@@ -61,10 +61,18 @@ Do not treat Expo web as native auth.
 
 ## Migration Docs
 
+- `docs/auth-facade-refactor/README.md`
+
+The full auth refactor workspace lives in `docs/auth-facade-refactor/`:
+
+- `SPEC.md`
+- `PLAN.md`
+- `TASKS.md`
 - `AUDIT.md`
-- `CONFIG.md`
-- `MIGRATION_BETTER_AUTH.md`
 - `ARCHITECTURE.md`
-- `CONFIG_CONTRACT.md`
+- `MIGRATION_BETTER_AUTH.md`
+- `CONFIG.md`
 - `BACKEND_HANDOFF.md`
+- `CONFIG_CONTRACT.md`
 - `DEPRECATION_MAP.md`
+- `UPSTREAM_BETTER_AUTH_REQUEST.md`

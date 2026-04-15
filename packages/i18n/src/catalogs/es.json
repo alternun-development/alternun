@@ -226,7 +226,8 @@
             "description": "Productos orgánicos y sostenibles verificados por el ecosistema Alternun.",
             "atn": "120",
             "meta": "Agricultura regenerativa",
-            "title": "Productos Eco"
+            "title": "Productos Eco",
+            "cta": "Comprar Ahora"
           },
           "experiencias": {
             "tag1": "Viajes",
@@ -234,7 +235,8 @@
             "description": "Descubre viajes, retiros y experiencias diseñados para recompensar tu impacto positivo.",
             "atn": "240",
             "meta": "Escapadas curadas",
-            "title": "Experiencias"
+            "title": "Experiencias",
+            "cta": "Explorar Experiencias"
           },
           "marketplace": {
             "description": "Accede a un marketplace de productos y servicios regenerativos.",
@@ -247,7 +249,8 @@
             "description": "Desbloquea beneficios exclusivos, acceso prioritario y soporte mejorado en todo el ecosistema.",
             "atn": "400",
             "meta": "Acceso premium",
-            "title": "Premium"
+            "title": "Premium",
+            "cta": "Vivir la Experiencia"
           },
           "cursos": {
             "tag1": "Aprendizaje",
@@ -255,7 +258,8 @@
             "description": "Aprende habilidades regenerativas practicas con cursos, talleres y guia verificada.",
             "atn": "80",
             "meta": "Educacion",
-            "title": "Cursos"
+            "title": "Cursos",
+            "cta": "Empezar a Aprender"
           },
           "services": {
             "description": "Servicios verificados que contribuyen al impacto positivo.",
