@@ -84,7 +84,7 @@
     "universal-tooltip": "1.1.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "*.{ts,tsx,d.ts}": [
       "eslint --fix",
       "prettier --write"
     ],
