@@ -15,6 +15,11 @@ export {
   type AuthentikIssuerProviderOptions,
 } from './providers/authentik/AuthentikIssuerProvider';
 export {
+  BetterAuthExecutionProvider,
+  type BetterAuthExecutionProviderOptions,
+  type BetterAuthClientLike,
+} from './providers/better-auth/BetterAuthExecutionProvider';
+export {
   SupabaseExecutionProvider,
   type SupabaseExecutionProviderOptions,
   type LegacyExecutionClientLike,

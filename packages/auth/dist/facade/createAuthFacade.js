@@ -1,5 +1,6 @@
 import { resolveAuthRuntimeConfig } from '../runtime/config.js';
 import { AlternunMobileAuthClient, } from '../mobile/AlternunMobileAuthClient.js';
+import { BetterAuthExecutionProvider } from '../providers/better-auth/BetterAuthExecutionProvider.js';
 import { AuthentikIssuerProvider } from '../providers/authentik/AuthentikIssuerProvider.js';
 import { SupabaseLegacyIssuerProvider } from '../providers/supabase-legacy/SupabaseLegacyIssuerProvider.js';
 import { SupabaseExecutionProvider, } from '../providers/supabase-legacy/SupabaseExecutionProvider.js';
@@ -9,7 +10,6 @@ import { SesEmailProvider } from '../providers/email/SesEmailProvider.js';
 import { SupabaseEmailProvider } from '../providers/email/SupabaseEmailProvider.js';
 import { upsertOidcUser } from '../compat/upsertOidcUser.js';
 import { AlternunAuthFacade } from './AlternunAuthFacade.js';
-import { LazyBetterAuthExecutionProvider } from '../providers/better-auth/LazyBetterAuthExecutionProvider.js';
 function resolveRuntimeConfig(input) {
     const { env, ...overrides } = input !== null && input !== void 0 ? input : {};
     return {
@@ -57,26 +57,20 @@ function hasLegacyEmailSupport(runtime) {
     return Boolean(runtime.supabaseUrl && ((_a = runtime.supabaseKey) !== null && _a !== void 0 ? _a : runtime.supabaseAnonKey));
 }
 function createExecutionProvider(runtime, options) {
+    var _a;
     if (options.executionProvider) {
         return options.executionProvider;
     }
     const legacyClient = createLegacyExecutionClient(runtime, options);
-    if (process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER === 'better-auth') {
-        return new LazyBetterAuthExecutionProvider(async () => {
-            var _a;
-            const { BetterAuthExecutionProvider } = await import('../providers/better-auth/BetterAuthExecutionProvider');
-            return new BetterAuthExecutionProvider({
-                baseUrl: runtime.betterAuthBaseUrl,
-                fetchFn: options.fetchFn,
-                defaultProvider: 'google',
-                allowLegacySessionFallback: false,
-                walletBridge: (_a = options.walletBridge) !== null && _a !== void 0 ? _a : null,
-                emailFallbackClient: hasLegacyEmailSupport(runtime) ? legacyClient : null,
-            });
-        });
-    }
     if (runtime.executionProvider === 'better-auth') {
-        throw new Error('BetterAuthExecutionProvider was not bundled. Set EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth at build time.');
+        return new BetterAuthExecutionProvider({
+            baseUrl: runtime.betterAuthBaseUrl,
+            fetchFn: options.fetchFn,
+            defaultProvider: 'google',
+            allowLegacySessionFallback: false,
+            walletBridge: (_a = options.walletBridge) !== null && _a !== void 0 ? _a : null,
+            emailFallbackClient: hasLegacyEmailSupport(runtime) ? legacyClient : null,
+        });
     }
     return new SupabaseExecutionProvider(legacyClient);
 }
