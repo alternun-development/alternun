@@ -154,9 +154,12 @@ export default function LandingFooter(): React.JSX.Element {
         style={[
           styles.outer,
           {
-            marginHorizontal: isWide ? 20 : isMobile ? 14 : 18,
+            marginHorizontal: isWide ? 0 : isMobile ? 14 : 18,
             marginTop: isWide ? 36 : 28,
             marginBottom: isWide ? 30 : 22,
+            maxWidth: isWide ? 1100 : undefined,
+            width: isWide ? '100%' : undefined,
+            alignSelf: isWide ? 'center' : 'stretch',
           },
         ]}
       >

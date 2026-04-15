@@ -227,7 +227,8 @@
             "atn": "120",
             "meta": "Agricultura regenerativa",
             "title": "Productos Eco",
-            "cta": "Comprar Ahora"
+            "cta": "Comprar Ahora",
+            "infoBody": "Accede a descuentos exclusivos en productos sostenibles de nuestras marcas aliadas. Desde ropa orgánica hasta productos de limpieza ecológicos."
           },
           "experiencias": {
             "tag1": "Viajes",
@@ -236,7 +237,8 @@
             "atn": "240",
             "meta": "Escapadas curadas",
             "title": "Experiencias",
-            "cta": "Explorar Experiencias"
+            "cta": "Explorar Experiencias",
+            "infoBody": "Descubre viajes, retiros y experiencias en la naturaleza diseñadas para recompensar tu impacto positivo. Cada experiencia te conecta con ecosistemas regenerativos alrededor del mundo."
           },
           "marketplace": {
             "description": "Accede a un marketplace de productos y servicios regenerativos.",
@@ -250,7 +252,8 @@
             "atn": "400",
             "meta": "Acceso premium",
             "title": "Premium",
-            "cta": "Vivir la Experiencia"
+            "cta": "Vivir la Experiencia",
+            "infoBody": "Disfruta de acceso prioritario, soporte mejorado y beneficios exclusivos en todo el ecosistema. La membresía Premium desbloquea lo mejor que Alternun tiene para ofrecer, incluidos eventos privados y orientación personalizada."
           },
           "cursos": {
             "tag1": "Aprendizaje",
@@ -259,7 +262,8 @@
             "atn": "80",
             "meta": "Educacion",
             "title": "Cursos",
-            "cta": "Empezar a Aprender"
+            "cta": "Empezar a Aprender",
+            "infoBody": "Aprende habilidades regenerativas prácticas con cursos, talleres y certificaciones verificadas dirigidos por expertos. Construye conocimiento que se traduce directamente en impacto positivo."
           },
           "services": {
             "description": "Servicios verificados que contribuyen al impacto positivo.",
@@ -270,7 +274,9 @@
         "cta": "Explorar marketplace",
         "sectionTitle": "Beneficios",
         "subtitle": "Descubre todo lo que puedes obtener con Alternun",
-        "topRated": "Mejor valorado"
+        "topRated": "Mejor valorado",
+        "redeemCta": "Redimir este beneficio",
+        "availableFrom": "Disponible desde {{atn}} ATN"
       },
       "video": {
         "loadingIntro": "Cargando video introductorio de Airs",

@@ -1536,6 +1536,11 @@ const AirsIntroExperience = forwardRef<
                 opacity: contentOpacity,
                 transform: [{ translateY: contentTranslateY }],
               },
+              !isMobile && {
+                maxWidth: Math.min(cardStartWidth + 40, 760),
+                alignSelf: 'center',
+                width: '100%',
+              },
             ]}
           >
             <View style={styles.contentTitleWrap}>
