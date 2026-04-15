@@ -1,14 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(pnpm *)",
-      "Bash(git checkout *)",
-      "Bash(npx *)",
-      "Bash(node *)",
-      "Bash(git rebase *)",
-      "Bash(git tag *)",
-      "Bash(git ls-remote *)"
-    ]
+    "allow": ["Bash(pnpm *)", "Bash(git checkout *)", "Bash(npx *)", "Bash(node *)"]
   },
   "$version": 3
 }

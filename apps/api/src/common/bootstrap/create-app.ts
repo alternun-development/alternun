@@ -29,9 +29,11 @@ export async function createApp(): Promise<NestFastifyApplication> {
   );
 
   setupOpenApi(app);
-  if (process.env.BETTER_AUTH_URL?.trim()) {
+  const betterAuthUrl =
+    process.env.BETTER_AUTH_URL?.trim() ?? process.env.AUTH_BETTER_AUTH_URL?.trim();
+  if (betterAuthUrl) {
     registerBetterAuthProxy(app.getHttpAdapter().getInstance(), {
-      targetBaseUrl: process.env.BETTER_AUTH_URL.trim(),
+      targetBaseUrl: betterAuthUrl,
     });
   }
   return app;

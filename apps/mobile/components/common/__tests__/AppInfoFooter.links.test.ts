@@ -5,11 +5,12 @@ import {
 } from '../AppInfoFooter.links';
 
 describe('AppInfoFooter links parity', () => {
-  it('keeps privacy, terms, and documentation as footer primary link definitions', () => {
+  it('keeps project, documentation, privacy, and terms as footer primary link definitions', () => {
     expect(FOOTER_PRIMARY_LINK_DEFINITIONS).toEqual([
-      { labelKey: 'footer.links.privacy', fallbackLabel: 'Privacy' },
-      { labelKey: 'footer.links.terms', fallbackLabel: 'Terms' },
-      { labelKey: 'footer.links.documentation', fallbackLabel: 'Docs' },
+      { labelKey: 'footer.links.project', fallbackLabel: 'Go Alternun.io' },
+      { labelKey: 'footer.links.documentation', fallbackLabel: 'Documentacion' },
+      { labelKey: 'footer.links.privacy', fallbackLabel: 'Privacidad' },
+      { labelKey: 'footer.links.terms', fallbackLabel: 'Términos' },
     ]);
   });
 
@@ -22,19 +23,24 @@ describe('AppInfoFooter links parity', () => {
     expect(tablet).toEqual(mobile);
     expect(desktop).toEqual([
       {
+        labelKey: 'footer.links.project',
+        fallbackLabel: 'Go Alternun.io',
+        url: 'https://alternun.io',
+      },
+      {
+        labelKey: 'footer.links.documentation',
+        fallbackLabel: 'Documentacion',
+        url: 'https://docs.alternun.io/',
+      },
+      {
         labelKey: 'footer.links.privacy',
-        fallbackLabel: 'Privacy',
+        fallbackLabel: 'Privacidad',
         url: 'https://docs.alternun.io/privacy',
       },
       {
         labelKey: 'footer.links.terms',
-        fallbackLabel: 'Terms',
+        fallbackLabel: 'Términos',
         url: 'https://docs.alternun.io/terms',
-      },
-      {
-        labelKey: 'footer.links.documentation',
-        fallbackLabel: 'Docs',
-        url: 'https://docs.alternun.io/',
       },
     ]);
   });
@@ -43,7 +49,7 @@ describe('AppInfoFooter links parity', () => {
     const spanish = resolvePrimaryLinksForViewport({ isWide: false, isMobile: true }, 'es');
     const thai = resolvePrimaryLinksForViewport({ isWide: false, isMobile: true }, 'th');
 
-    expect(spanish[2]?.url).toBe('https://docs.alternun.io/es/');
-    expect(thai[2]?.url).toBe('https://docs.alternun.io/th/');
+    expect(spanish[1]?.url).toBe('https://docs.alternun.io/es/');
+    expect(thai[1]?.url).toBe('https://docs.alternun.io/th/');
   });
 });
