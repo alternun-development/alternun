@@ -1,3 +1,19 @@
+## [1.0.71](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.71) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only exports from main package to fix web bundling
+- **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
+- **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
+
+## [1.0.71](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.71) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only exports from main package to fix web bundling
+- **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
+- **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
+
 ## [1.0.70](https://github.com/alternun-development/alternun/compare/v1.0.64...v1.0.70) (2026-04-15)
 
 ### Bug Fixes
