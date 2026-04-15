@@ -5,6 +5,7 @@ import { useGSAP } from '@gsap/react';
 import TopBar from '@/components/TopBar';
 import NavBar from '@/components/NavBar';
 import HeroSection from '@/components/HeroSection';
+import LandingFooter from '@/components/LandingFooter';
 
 gsap.registerPlugin(useGSAP);
 
@@ -39,6 +40,7 @@ export default function HomePage() {
           nextTier={MOCK_USER.nextTier}
         />
       </main>
+      <LandingFooter />
     </div>
   );
 }

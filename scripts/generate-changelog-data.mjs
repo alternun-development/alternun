@@ -23,12 +23,23 @@ if (!appPath) {
 
 // Read the CHANGELOG.md from root
 const changelogPath = path.resolve(__dirname, '..', 'CHANGELOG.md');
+const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
 let changelogContent = '';
+let appVersion = '';
 
 try {
   changelogContent = fs.readFileSync(changelogPath, 'utf-8');
 } catch (error) {
   console.warn(`[generate-changelog-data] Failed to read CHANGELOG.md: ${error.message}`);
+}
+
+try {
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+  if (typeof packageJson.version === 'string' && packageJson.version.length > 0) {
+    appVersion = packageJson.version;
+  }
+} catch (error) {
+  console.warn(`[generate-changelog-data] Failed to read package.json: ${error.message}`);
 }
 
 // Escape backticks and other special characters for safe embedding in template literals
@@ -62,7 +73,7 @@ export const CHANGELOG_TEXT = \`${escapedContent}\`;
 /**
  * Version extracted from package.json for display purposes.
  */
-export const APP_VERSION = '1.0.22';
+export const APP_VERSION = '${appVersion}';
 `;
 
 fs.writeFileSync(outputPath, templateContent, 'utf-8');

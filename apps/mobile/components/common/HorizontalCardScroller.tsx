@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -10,21 +10,21 @@ import {
   type NativeSyntheticEvent,
   type ViewStyle,
 } from 'react-native';
-import { ChevronLeft, ChevronRight, type LucideProps } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, type LucideProps, } from 'lucide-react-native';
 
 const ChevronLeftIcon = ChevronLeft as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
 
-function resolveChildKey(child: React.ReactNode): string {
-  if (React.isValidElement(child)) {
+function resolveChildKey(child: React.ReactNode,): string {
+  if (React.isValidElement(child,)) {
     if (child.key != null) {
-      return String(child.key);
+      return String(child.key,);
     }
 
     const props = child.props as Record<string, unknown>;
     const typeRef =
       typeof child.type === 'string'
-        ? { displayName: child.type, name: child.type }
+        ? { displayName: child.type, name: child.type, }
         : (child.type as { displayName?: string; name?: string });
     const typeName = typeRef.displayName ?? typeRef.name ?? 'node';
     const stableValue =
@@ -37,7 +37,7 @@ function resolveChildKey(child: React.ReactNode): string {
     return typeName;
   }
 
-  return typeof child === 'string' || typeof child === 'number' ? String(child) : 'card-node';
+  return typeof child === 'string' || typeof child === 'number' ? String(child,) : 'card-node';
 }
 
 interface HorizontalCardScrollerProps {
@@ -54,18 +54,18 @@ export default function HorizontalCardScroller({
   style,
   hintLabel = 'Desliza para ver más',
   itemWidth,
-}: HorizontalCardScrollerProps) {
-  const scrollRef = useRef<ScrollView>(null);
-  const { width } = useWindowDimensions();
-  const items = useMemo(() => React.Children.toArray(children), [children]);
-  const [containerWidth, setContainerWidth] = useState(0);
-  const [contentWidth, setContentWidth] = useState(0);
-  const [scrollX, setScrollX] = useState(0);
-  const [trackHeight, setTrackHeight] = useState(0);
+}: HorizontalCardScrollerProps,) {
+  const scrollRef = useRef<ScrollView>(null,);
+  const { width, } = useWindowDimensions();
+  const items = useMemo(() => React.Children.toArray(children,), [children,],);
+  const [containerWidth, setContainerWidth,] = useState(0,);
+  const [contentWidth, setContentWidth,] = useState(0,);
+  const [scrollX, setScrollX,] = useState(0,);
+  const [trackHeight, setTrackHeight,] = useState(0,);
 
   const resolvedItemWidth =
     itemWidth ??
-    (width >= 1320 ? 360 : width >= 1100 ? 330 : width >= 900 ? 300 : Math.min(width - 72, 292));
+    (width >= 1320 ? 360 : width >= 1100 ? 330 : width >= 900 ? 300 : Math.min(width - 72, 292,));
   const gap = 12;
   const isScrollable = contentWidth > containerWidth + 6;
   const canScrollLeft = scrollX > 6;
@@ -74,106 +74,100 @@ export default function HorizontalCardScroller({
 
   const palette = isDark
     ? {
-        hint: 'rgba(232,255,246,0.64)',
-        buttonBg: 'rgba(8,22,30,0.84)',
-        buttonBorder: 'rgba(255,255,255,0.10)',
-        buttonActive: '#1EE6B5',
-        buttonMuted: 'rgba(232,255,246,0.3)',
-        edgeFade: 'rgba(6, 15, 12, 0.12)',
-      }
+      hint: 'rgba(232,255,246,0.64)',
+      buttonBg: 'rgba(8,22,30,0.84)',
+      buttonBorder: 'rgba(255,255,255,0.10)',
+      buttonActive: '#1EE6B5',
+      buttonMuted: 'rgba(232,255,246,0.3)',
+      edgeFade: 'rgba(6, 15, 12, 0.12)',
+    }
     : {
-        hint: 'rgba(11,45,49,0.58)',
-        buttonBg: 'rgba(248,252,251,0.96)',
-        buttonBorder: 'rgba(11,90,95,0.12)',
-        buttonActive: '#0d9488',
-        buttonMuted: 'rgba(11,45,49,0.28)',
-        edgeFade: 'rgba(11, 90, 95, 0.08)',
-      };
+      hint: 'rgba(11,45,49,0.58)',
+      buttonBg: 'rgba(248,252,251,0.96)',
+      buttonBorder: 'rgba(11,90,95,0.12)',
+      buttonActive: '#0d9488',
+      buttonMuted: 'rgba(11,45,49,0.28)',
+      edgeFade: 'rgba(11, 90, 95, 0.08)',
+    };
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    setScrollX(event.nativeEvent.contentOffset.x);
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>,) => {
+    setScrollX(event.nativeEvent.contentOffset.x,);
   };
 
-  const scrollBy = (direction: 'left' | 'right') => {
+  const scrollBy = (direction: 'left' | 'right',) => {
     if (!scrollRef.current) {
       return;
     }
 
-    const step = Math.max(resolvedItemWidth + gap, containerWidth * 0.84);
+    const step = Math.max(resolvedItemWidth + gap, containerWidth * 0.84,);
     const nextOffset =
       direction === 'right'
-        ? Math.min(scrollX + step, Math.max(contentWidth - containerWidth, 0))
-        : Math.max(scrollX - step, 0);
+        ? Math.min(scrollX + step, Math.max(contentWidth - containerWidth, 0,),)
+        : Math.max(scrollX - step, 0,);
 
-    scrollRef.current.scrollTo({ x: nextOffset, animated: true });
+    scrollRef.current.scrollTo({ x: nextOffset, animated: true, },);
   };
 
   return (
-    <View style={[styles.root, style]}>
+    <View style={[styles.root, style,]}>
       <View style={styles.headerRow}>
-        <Text style={[styles.hintLabel, { color: palette.hint }]}>
+        <Text style={[styles.hintLabel, { color: palette.hint, },]}>
           {isScrollable ? hintLabel : 'Resumen'}
         </Text>
       </View>
 
       <View
         style={styles.trackShell}
-        onLayout={(event) => {
-          setContainerWidth(event.nativeEvent.layout.width);
-          setTrackHeight(event.nativeEvent.layout.height);
+        onLayout={(event,) => {
+          setContainerWidth(event.nativeEvent.layout.width,);
+          setTrackHeight(event.nativeEvent.layout.height,);
         }}
       >
         {isScrollable ? (
           <>
             <View
               pointerEvents='none'
-              style={[styles.edgeFade, styles.edgeFadeLeft, { backgroundColor: palette.edgeFade }]}
+              style={[styles.edgeFade, styles.edgeFadeLeft, { backgroundColor: palette.edgeFade, },]}
             />
             <View
               pointerEvents='none'
-              style={[styles.edgeFade, styles.edgeFadeRight, { backgroundColor: palette.edgeFade }]}
+              style={[styles.edgeFade, styles.edgeFadeRight, { backgroundColor: palette.edgeFade, },]}
             />
             <View pointerEvents='box-none' style={styles.overlayControls}>
-              <Pressable
-                accessibilityLabel='Scroll stat cards left'
-                onPress={() => scrollBy('left')}
-                disabled={!canScrollLeft}
-                style={[
-                  styles.arrowButton,
-                  styles.leftArrowButton,
-                  {
-                    top: Math.max((trackHeight - 38) / 2, 8),
-                    backgroundColor: palette.buttonBg,
-                    borderColor: palette.buttonBorder,
-                  },
-                  !canScrollLeft && styles.arrowButtonDisabled,
-                ]}
-              >
-                <ChevronLeftIcon
-                  size={16}
-                  color={canScrollLeft ? palette.buttonActive : palette.buttonMuted}
-                />
-              </Pressable>
-              <Pressable
-                accessibilityLabel='Scroll stat cards right'
-                onPress={() => scrollBy('right')}
-                disabled={!canScrollRight}
-                style={[
-                  styles.arrowButton,
-                  styles.rightArrowButton,
-                  {
-                    top: Math.max((trackHeight - 38) / 2, 8),
-                    backgroundColor: palette.buttonBg,
-                    borderColor: palette.buttonBorder,
-                  },
-                  !canScrollRight && styles.arrowButtonDisabled,
-                ]}
-              >
-                <ChevronRightIcon
-                  size={16}
-                  color={canScrollRight ? palette.buttonActive : palette.buttonMuted}
-                />
-              </Pressable>
+              {canScrollLeft && (
+                <Pressable
+                  accessibilityLabel='Scroll stat cards left'
+                  onPress={() => scrollBy('left',)}
+                  style={[
+                    styles.arrowButton,
+                    styles.leftArrowButton,
+                    {
+                      top: Math.max((trackHeight - 38) / 2, 8,),
+                      backgroundColor: palette.buttonBg,
+                      borderColor: palette.buttonBorder,
+                    },
+                  ]}
+                >
+                  <ChevronLeftIcon size={16} color={palette.buttonActive} />
+                </Pressable>
+              )}
+              {canScrollRight && (
+                <Pressable
+                  accessibilityLabel='Scroll stat cards right'
+                  onPress={() => scrollBy('right',)}
+                  style={[
+                    styles.arrowButton,
+                    styles.rightArrowButton,
+                    {
+                      top: Math.max((trackHeight - 38) / 2, 8,),
+                      backgroundColor: palette.buttonBg,
+                      borderColor: palette.buttonBorder,
+                    },
+                  ]}
+                >
+                  <ChevronRightIcon size={16} color={palette.buttonActive} />
+                </Pressable>
+              )}
             </View>
           </>
         ) : null}
@@ -183,8 +177,8 @@ export default function HorizontalCardScroller({
           decelerationRate='fast'
           disableIntervalMomentum
           showsHorizontalScrollIndicator={false}
-          onContentSizeChange={(w) => {
-            setContentWidth(w);
+          onContentSizeChange={(w,) => {
+            setContentWidth(w,);
           }}
           onScroll={handleScroll}
           scrollEventThrottle={16}
@@ -192,9 +186,9 @@ export default function HorizontalCardScroller({
           snapToInterval={snapInterval}
           contentContainerStyle={styles.scrollContent}
         >
-          {items.map((child, index) => (
+          {items.map((child, index,) => (
             <View
-              key={resolveChildKey(child)}
+              key={resolveChildKey(child,)}
               style={[
                 styles.itemSlot,
                 {
@@ -205,7 +199,7 @@ export default function HorizontalCardScroller({
             >
               {child}
             </View>
-          ))}
+          ),)}
         </ScrollView>
       </View>
     </View>
@@ -247,9 +241,6 @@ const styles = StyleSheet.create({
   rightArrowButton: {
     right: -2,
   },
-  arrowButtonDisabled: {
-    opacity: 0.4,
-  },
   scrollContent: {
     paddingHorizontal: 2,
     paddingBottom: 1,
@@ -276,4 +267,4 @@ const styles = StyleSheet.create({
   edgeFadeRight: {
     right: 0,
   },
-});
+},);

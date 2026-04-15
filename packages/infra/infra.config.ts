@@ -5,8 +5,6 @@
 /* eslint-disable indent */
 /* eslint-disable security/detect-non-literal-fs-filename */
 /* eslint-disable security/detect-object-injection */
-// / <reference path="./sst-env.d.ts" />
-
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -97,6 +95,23 @@ function buildPublicAssetFile(
   };
 }
 
+function buildApiUrlFromStageDomain(stageDomain: string): string {
+  try {
+    const url = new URL(`https://${stageDomain}`);
+    const hostnameParts = url.hostname.split('.');
+    const airsIndex = hostnameParts.indexOf('airs');
+
+    if (airsIndex >= 0) {
+      hostnameParts[airsIndex] = 'api';
+      return `${url.protocol}//${hostnameParts.join('.')}`;
+    }
+
+    return url.origin;
+  } catch {
+    return `https://${stageDomain}`;
+  }
+}
+
 const rootDomain =
   process.env.INFRA_ROOT_DOMAIN ?? localConfig.rootDomain ?? INFRA_CORE_DEFAULTS.rootDomain;
 const appName = process.env.INFRA_APP_NAME ?? localConfig.appName ?? INFRA_CORE_DEFAULTS.appName;
@@ -182,6 +197,10 @@ const expoPublicWalletConnectProjectId = expoConfig.publicEnv.walletConnectProje
 const expoPublicWalletConnectChainId = expoConfig.publicEnv.walletConnectChainId;
 const expoPublicEnableMockWalletAuth = expoConfig.publicEnv.enableMockWalletAuth;
 const expoPublicEnableWalletOnlyAuth = expoConfig.publicEnv.enableWalletOnlyAuth;
+const expoPublicApiUrl = expoConfig.publicEnv.apiUrl;
+const expoPublicAuthExecutionProvider = expoConfig.publicEnv.authExecutionProvider;
+const expoPublicAuthExchangeUrl = expoConfig.publicEnv.authExchangeUrl;
+const expoPublicBetterAuthUrl = expoConfig.publicEnv.betterAuthUrl;
 const expoPublicAuthentikIssuer = expoConfig.publicEnv.authentikIssuer;
 const expoPublicAuthentikClientId = expoConfig.publicEnv.authentikClientId;
 const expoPublicAuthentikRedirectUri = expoConfig.publicEnv.authentikRedirectUri;
@@ -349,6 +368,12 @@ const commonBuildEnv = {
   INFRA_BACKEND_API_AUTHENTIK_AUDIENCE: backendApiSettings.auth.audience,
   INFRA_BACKEND_API_AUTHENTIK_ISSUER: backendApiSettings.auth.issuer,
   INFRA_BACKEND_API_AUTHENTIK_JWKS_URL: backendApiSettings.auth.jwksUrl,
+  INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED:
+    process.env.INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED ?? '',
+  INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY:
+    process.env.INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY ??
+    backendApiSettings.environment.AUTHENTIK_JWT_SIGNING_KEY ??
+    '',
   INFRA_BACKEND_API_DATABASE_URL: process.env.INFRA_BACKEND_API_DATABASE_URL ?? '',
   INFRA_BACKEND_API_DECAP_PUBLIC_BASE_URL:
     process.env.INFRA_BACKEND_API_DECAP_PUBLIC_BASE_URL ??
@@ -388,6 +413,12 @@ const commonBuildEnv = {
   EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: expoPublicWalletConnectChainId ?? '',
   EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH: expoPublicEnableMockWalletAuth ?? '',
   EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH: expoPublicEnableWalletOnlyAuth ?? '',
+  AUTH_EXECUTION_PROVIDER: expoPublicAuthExecutionProvider ?? '',
+  EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: expoPublicAuthExecutionProvider ?? '',
+  AUTH_EXCHANGE_URL: expoPublicAuthExchangeUrl ?? '',
+  EXPO_PUBLIC_AUTH_EXCHANGE_URL: expoPublicAuthExchangeUrl ?? '',
+  AUTH_BETTER_AUTH_URL: expoPublicBetterAuthUrl ?? '',
+  EXPO_PUBLIC_BETTER_AUTH_URL: expoPublicBetterAuthUrl ?? '',
   EXPO_PUBLIC_AUTHENTIK_ISSUER: expoPublicAuthentikIssuer ?? '',
   EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId ?? '',
   EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: expoPublicAuthentikRedirectUri ?? '',
@@ -538,6 +569,8 @@ export function createInfrastructure() {
   const backendApiInfrastructure = backendApiEnabledForStage
     ? deployBackendApiInfrastructure({
         appName,
+        authentikJwtSigningKey: identityInfrastructure?.secrets.jwtSigningKey.value,
+        env: process.env,
         hostedZoneId: process.env.INFRA_ROUTE53_HOSTED_ZONE_ID,
         rootDomain,
         settings: backendApiSettings,
@@ -659,6 +692,7 @@ export function createInfrastructure() {
   if (enableExpoSiteForStage) {
     const assetBucketName = assetBucketNames[expoDeploymentStage];
     const assetBaseUrl = createAssetBaseUrl(assetBucketName);
+    const expoAuthExecutionProvider = expoPublicAuthExecutionProvider ?? 'supabase';
     const introVideoAssets = {
       en: buildPublicAssetFile(
         resolvedExpoAppPath,
@@ -731,19 +765,32 @@ export function createInfrastructure() {
         EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: expoPublicWalletConnectChainId,
         EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH: expoPublicEnableMockWalletAuth,
         EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH: expoPublicEnableWalletOnlyAuth,
+        EXPO_PUBLIC_API_URL:
+          expoPublicApiUrl ?? buildApiUrlFromStageDomain(expoStageMap[expoDeploymentStage]),
+        AUTH_EXECUTION_PROVIDER: expoAuthExecutionProvider,
+        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: expoAuthExecutionProvider,
+        AUTH_EXCHANGE_URL: expoPublicAuthExchangeUrl,
+        EXPO_PUBLIC_AUTH_EXCHANGE_URL: expoPublicAuthExchangeUrl,
+        AUTH_BETTER_AUTH_URL: expoPublicBetterAuthUrl,
+        EXPO_PUBLIC_BETTER_AUTH_URL: expoPublicBetterAuthUrl,
         EXPO_PUBLIC_ASSET_BASE_URL: assetBaseUrl,
         EXPO_PUBLIC_AIRS_VIDEO_EN_URL: introVideoAssets.en.url,
         EXPO_PUBLIC_AIRS_VIDEO_ES_URL: introVideoAssets.es.url,
         EXPO_PUBLIC_AUTHENTIK_ISSUER: expoPublicAuthentikIssuer,
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: expoPublicAuthentikClientId,
+        EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: expoPublicAuthentikLoginEntryMode,
         EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: expoPublicAuthentikSocialLoginMode,
+        EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: expoPublicAuthentikProviderFlowSlugs,
+        EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
+          expoPublicAuthentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_RELEASE_UPDATE_MODE: expoPublicReleaseUpdateMode,
         // Auto-derive the redirect URI from the deployed expo domain when not explicitly set.
-        // This ensures the OIDC callback always points at the correct deployed origin.
+        // This ensures the OIDC callback always points at the dedicated callback route
+        // on the correct deployed origin.
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI:
           expoPublicAuthentikRedirectUri ??
           (enableCustomDomain && expoStageMap[expoDeploymentStage]
-            ? `https://${expoStageMap[expoDeploymentStage]}/`
+            ? `https://${expoStageMap[expoDeploymentStage]}/auth/callback`
             : undefined),
       },
       build: {

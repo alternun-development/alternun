@@ -12,8 +12,8 @@ module.exports = {
         'text-primary': '#e8e8ff',
       },
       fontFamily: {
-        sans: ['IBM Plex Sans', 'sans-serif'],
-        mono: ['IBM Plex Mono', 'monospace'],
+        sans: ['AnekLatin', 'sans-serif'],
+        mono: ['SpaceMono', 'monospace'],
       },
     },
   },

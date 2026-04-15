@@ -15,6 +15,7 @@ export SST_STAGE="${SST_STAGE:-$STACK}"
 
 stage_normalized=$(echo "$STACK" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 is_identity_stage=false
+is_backend_api_stage=false
 is_dedicated_non_expo_stage=false
 if [ "$stage_normalized" = "identity-dev" ] || \
   [ "$stage_normalized" = "identity-prod" ] || \
@@ -25,6 +26,12 @@ if [ "$stage_normalized" = "identity-dev" ] || \
   [ "$stage_normalized" = "authentik-prod" ]; then
   is_identity_stage=true
 fi
+
+case "$stage_normalized" in
+  api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod|dashboard-dev|dashboard-prod|dashboard-production)
+    is_backend_api_stage=true
+    ;;
+esac
 
 case "$stage_normalized" in
   identity-dev|identity-prod|identity-production|auth-dev|auth-prod|authentik-dev|authentik-prod|api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod|admin-dev|admin-prod|admin-production|backoffice-dev|backoffice-prod|backoffice-admin-dev|backoffice-admin-prod|dashboard-dev|dashboard-prod|dashboard-production)
@@ -159,6 +166,20 @@ scope_secret_name() {
   echo "${normalized}/${stage_name}"
 }
 
+resolve_backend_api_identity_stage() {
+  case "$stage_normalized" in
+    *prod* | *production*)
+      echo "identity-prod"
+      ;;
+    *mobile* | *preview*)
+      echo "identity-mobile"
+      ;;
+    *)
+      echo "identity-dev"
+      ;;
+  esac
+}
+
 validate_identity_database_mode_transition() {
   if [ "$is_identity_stage" != "true" ]; then
     return 0
@@ -226,6 +247,53 @@ validate_identity_database_mode_transition() {
   echo "ERROR: Refusing deploy because identity database mode would change (${current_mode} -> ${expected_mode})." >&2
   echo "ERROR: This can cause downtime/data loss. Set INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE=true only for planned migrations." >&2
   exit 1
+}
+
+hydrate_backend_api_jwt_signing_key() {
+  if [ "$is_backend_api_stage" != "true" ]; then
+    return 0
+  fi
+
+  if [ -n "${INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY:-}" ]; then
+    return 0
+  fi
+
+  if ! command -v aws >/dev/null 2>&1; then
+    echo "WARN: aws CLI not found; backend API JWT signing key cannot be hydrated automatically." >&2
+    return 0
+  fi
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "WARN: jq not found; backend API JWT signing key cannot be hydrated automatically." >&2
+    return 0
+  fi
+
+  local identity_stage identity_secret_name secret_json signing_key
+  identity_stage=$(resolve_backend_api_identity_stage)
+  identity_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/jwt-signing-key}" "$identity_stage")
+
+  if [ -z "$identity_secret_name" ]; then
+    echo "WARN: Could not resolve a backend API JWT signing secret name; /auth/exchange will remain compatibility-only." >&2
+    return 0
+  fi
+
+  if ! secret_json=$(aws secretsmanager get-secret-value \
+    --region "${AWS_REGION:-us-east-1}" \
+    --secret-id "$identity_secret_name" \
+    --query SecretString \
+    --output text 2>/dev/null); then
+    echo "WARN: Could not load backend API JWT signing secret ${identity_secret_name}; /auth/exchange will remain compatibility-only." >&2
+    return 0
+  fi
+
+  signing_key=$(printf '%s' "$secret_json" | jq -r '.key // empty' 2>/dev/null || true)
+  if [ -z "$signing_key" ] || [ "$signing_key" = "null" ]; then
+    echo "WARN: Secret ${identity_secret_name} did not contain a JWT signing key value." >&2
+    return 0
+  fi
+
+  export INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY="$signing_key"
+  echo "Hydrated INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY from ${identity_secret_name}."
 }
 
 remove_state_resource() {
@@ -441,6 +509,8 @@ fi
 
 validate_identity_database_mode_transition
 
+hydrate_backend_api_jwt_signing_key
+
 selected_pipeline_csv=$(resolve_selected_pipeline_csv)
 assert_pipeline_reconciliation_safe "$selected_pipeline_csv" "$STACK"
 
@@ -470,17 +540,37 @@ echo "APPROVE=true detected — running sst deploy"
 echo "Attempting to clear any stale SST lock for stage ${STACK} (no-op if none)"
 (cd "$INFRA_DIR" && SST_TELEMETRY_DISABLED=1 npx sst unlock --stage "$STACK") || true
 
+# Auto-allow instance replacement if protection error occurs (safe retry)
+auto_allow_instance_replacement="${INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT:-false}"
+
 run_sst_deploy() {
   local log_file=$1
   local exit_code=0
+  local allow_replacement="${auto_allow_instance_replacement}"
 
   set +e
   (
     cd "$INFRA_DIR"
-    env SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "$STACK" --yes
+    env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT="${allow_replacement}" npx sst deploy --stage "$STACK" --yes
   ) 2>&1 | tee "$log_file"
   exit_code=${PIPESTATUS[0]}
   set -e
+
+  # If protection error detected and replacement not yet allowed, retry with auto-allow
+  if [ "$exit_code" -ne 0 ] && grep -q "marked for protection" "$log_file" && [ "${allow_replacement}" = "false" ]; then
+    echo "Protection conflict detected. Configuration changes require instance update."
+    echo "Auto-allowing instance replacement for safe deployment..."
+    auto_allow_instance_replacement="true"
+    allow_replacement="true"
+
+    # Retry deployment with replacement allowed
+    echo "Retrying deployment with INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT=true"
+    (
+      cd "$INFRA_DIR"
+      env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT="true" npx sst deploy --stage "$STACK" --yes
+    ) 2>&1 | tee -a "$log_file"
+    exit_code=${PIPESTATUS[0]}
+  fi
 
   return "$exit_code"
 }
@@ -575,7 +665,7 @@ sync_identity_runtime_templates() {
     return 1
   fi
 
-  local instance_id deploy_b64 bootstrap_b64 ec2_compose_b64 rds_compose_b64 ec2_alb_compose_b64 rds_alb_compose_b64 identity_domain identity_ingress_mode identity_tls_mode identity_acme_email identity_route53_zone_id identity_acme_backup_bucket identity_acme_backup_prefix identity_root_domain identity_app_name identity_authentik_image_tag identity_database_mode params_json command_id
+  local instance_id deploy_b64 bootstrap_b64 ec2_compose_b64 rds_compose_b64 ec2_alb_compose_b64 rds_alb_compose_b64 identity_domain identity_ingress_mode identity_tls_mode identity_acme_email identity_route53_zone_id identity_acme_backup_bucket identity_acme_backup_prefix identity_root_domain identity_app_name identity_authentik_image_tag identity_database_mode identity_authentik_secret_name identity_database_credentials_secret_name identity_smtp_credentials_secret_name identity_jwt_signing_secret_name identity_integration_config_secret_name params_json command_id
   instance_id=$(resolve_identity_instance_id)
 
   case "$stage_normalized" in
@@ -600,6 +690,11 @@ sync_identity_runtime_templates() {
   identity_root_domain="${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-alternun.co}}"
   identity_authentik_image_tag="${INFRA_IDENTITY_AUTHENTIK_IMAGE_TAG:-2026.2}"
   identity_database_mode="${INFRA_IDENTITY_DATABASE_MODE:-rds}"
+  identity_authentik_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_AUTHENTIK_KEY_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/authentik-secret-key}" "$STACK")
+  identity_database_credentials_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/database-credentials}" "$STACK")
+  identity_smtp_credentials_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_SMTP_CREDENTIALS_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/smtp-credentials}" "$STACK")
+  identity_jwt_signing_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/jwt-signing-key}" "$STACK")
+  identity_integration_config_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/integration-config}" "$STACK")
   identity_allow_custom_provider_flow_slugs="$(
     if is_truthy "${INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS:-${EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:-false}}"; then
       echo "true"
@@ -627,7 +722,7 @@ sync_identity_runtime_templates() {
     jq -nc \
       --arg c1 'set -euo pipefail' \
       --arg c2 'install -d -o ec2-user -g ec2-user /opt/alternun/identity /opt/alternun/identity/templates /opt/alternun/identity/authentik/custom-templates' \
-      --arg c3 "tmp_env=\$(mktemp); grep -vE '^(ALTERNUN_APP_NAME|ALTERNUN_ROOT_DOMAIN|ALTERNUN_STAGE|ALTERNUN_IDENTITY_DOMAIN|ALTERNUN_IDENTITY_INGRESS_MODE|ALTERNUN_IDENTITY_TLS_MODE|ALTERNUN_IDENTITY_TLS_ACME_EMAIL|ALTERNUN_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS|ALTERNUN_ROUTE53_HOSTED_ZONE_ID|ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET|ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX|AUTHENTIK_IMAGE_TAG|AUTHENTIK_DATABASE_MODE)=' /etc/alternun-identity.env > \"\$tmp_env\" || true; printf '%s\n' 'ALTERNUN_APP_NAME=$identity_app_name' 'ALTERNUN_ROOT_DOMAIN=$identity_root_domain' 'ALTERNUN_STAGE=$STACK' 'ALTERNUN_IDENTITY_DOMAIN=$identity_domain' 'ALTERNUN_IDENTITY_INGRESS_MODE=$identity_ingress_mode' 'ALTERNUN_IDENTITY_TLS_MODE=$identity_tls_mode' 'ALTERNUN_IDENTITY_TLS_ACME_EMAIL=$identity_acme_email' 'ALTERNUN_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=$identity_allow_custom_provider_flow_slugs' 'ALTERNUN_ROUTE53_HOSTED_ZONE_ID=$identity_route53_zone_id' 'ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET=$identity_acme_backup_bucket' 'ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX=$identity_acme_backup_prefix' 'AUTHENTIK_IMAGE_TAG=$identity_authentik_image_tag' 'AUTHENTIK_DATABASE_MODE=$identity_database_mode' >> \"\$tmp_env\"; install -m 600 \"\$tmp_env\" /etc/alternun-identity.env; rm -f \"\$tmp_env\"" \
+      --arg c3 "tmp_env=\$(mktemp); grep -vE '^(ALTERNUN_APP_NAME|ALTERNUN_ROOT_DOMAIN|ALTERNUN_STAGE|ALTERNUN_IDENTITY_DOMAIN|ALTERNUN_IDENTITY_INGRESS_MODE|ALTERNUN_IDENTITY_TLS_MODE|ALTERNUN_IDENTITY_TLS_ACME_EMAIL|ALTERNUN_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS|ALTERNUN_ROUTE53_HOSTED_ZONE_ID|ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET|ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX|AUTHENTIK_IMAGE_TAG|AUTHENTIK_DATABASE_MODE|AUTHENTIK_SECRET_ARN|AUTHENTIK_DATABASE_SECRET_ARN|AUTHENTIK_SMTP_SECRET_ARN|AUTHENTIK_JWT_SIGNING_SECRET_ARN|AUTHENTIK_INTEGRATION_CONFIG_SECRET_ARN)=' /etc/alternun-identity.env > \"\$tmp_env\" || true; printf '%s\n' 'ALTERNUN_APP_NAME=$identity_app_name' 'ALTERNUN_ROOT_DOMAIN=$identity_root_domain' 'ALTERNUN_STAGE=$STACK' 'ALTERNUN_IDENTITY_DOMAIN=$identity_domain' 'ALTERNUN_IDENTITY_INGRESS_MODE=$identity_ingress_mode' 'ALTERNUN_IDENTITY_TLS_MODE=$identity_tls_mode' 'ALTERNUN_IDENTITY_TLS_ACME_EMAIL=$identity_acme_email' 'ALTERNUN_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=$identity_allow_custom_provider_flow_slugs' 'ALTERNUN_ROUTE53_HOSTED_ZONE_ID=$identity_route53_zone_id' 'ALTERNUN_IDENTITY_ACME_BACKUP_BUCKET=$identity_acme_backup_bucket' 'ALTERNUN_IDENTITY_ACME_BACKUP_PREFIX=$identity_acme_backup_prefix' 'AUTHENTIK_IMAGE_TAG=$identity_authentik_image_tag' 'AUTHENTIK_DATABASE_MODE=$identity_database_mode' 'AUTHENTIK_SECRET_ARN=$identity_authentik_secret_name' 'AUTHENTIK_DATABASE_SECRET_ARN=$identity_database_credentials_secret_name' 'AUTHENTIK_SMTP_SECRET_ARN=$identity_smtp_credentials_secret_name' 'AUTHENTIK_JWT_SIGNING_SECRET_ARN=$identity_jwt_signing_secret_name' 'AUTHENTIK_INTEGRATION_CONFIG_SECRET_ARN=$identity_integration_config_secret_name' >> \"\$tmp_env\"; install -m 600 \"\$tmp_env\" /etc/alternun-identity.env; rm -f \"\$tmp_env\"" \
       --arg c4 "printf '%s' '$deploy_b64' | base64 -d | gzip -d > /opt/alternun/identity/deploy-authentik.sh" \
       --arg c5 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/bootstrap-authentik-integrations.py" \
       --arg c6 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py" \

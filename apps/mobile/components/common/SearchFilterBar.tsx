@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, } from 'react';
 import {
   Pressable,
+  Modal,
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   TouchableOpacity,
   View,
   type ViewStyle,
@@ -15,7 +17,7 @@ import {
   SlidersHorizontal,
   type LucideProps,
 } from 'lucide-react-native';
-import { useTheme } from '@alternun/ui';
+import { useTheme, } from '@alternun/ui';
 
 const SearchIcon = Search as React.FC<LucideProps>;
 const FilterIcon = SlidersHorizontal as React.FC<LucideProps>;
@@ -25,6 +27,14 @@ const CheckIcon = Check as React.FC<LucideProps>;
 export interface SearchFilterOption {
   key: string;
   label: string;
+  icon?: React.FC<LucideProps>;
+}
+
+interface AnchorRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 interface SearchFilterBarProps {
@@ -47,19 +57,52 @@ export default function SearchFilterBar({
   onChangeFilter,
   style,
   dropdownWidth = 208,
-}: SearchFilterBarProps) {
-  const { theme } = useTheme();
-  const [isOpen, setIsOpen] = useState(false);
+}: SearchFilterBarProps,) {
+  const { theme, } = useTheme();
+  const { width: windowWidth, } = useWindowDimensions();
+  const filterButtonRef = useRef<View>(null,);
+  const [isOpen, setIsOpen,] = useState(false,);
+  const [anchorRect, setAnchorRect,] = useState<AnchorRect | null>(null,);
+  const dropdownActualWidth = Math.max(0, Math.min(dropdownWidth, windowWidth - 24,),);
 
   const activeOption = useMemo(
-    () => filters.find((option) => option.key === activeFilter) ?? filters[0],
-    [activeFilter, filters]
+    () => filters.find((option,) => option.key === activeFilter,) ?? filters[0],
+    [activeFilter, filters,],
   );
+  const ActiveFilterIcon = activeOption?.icon ?? FilterIcon;
+
+  useEffect(() => {
+    if (!isOpen) {
+      setAnchorRect(null,);
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      filterButtonRef.current?.measureInWindow(
+        (x: number, y: number, width: number, height: number,) => {
+          setAnchorRect({ x, y, width, height, },);
+        },
+      );
+    },);
+
+    return () => {
+      cancelAnimationFrame(frame,);
+    };
+  }, [isOpen,],);
+
+  const dropdownLeft = anchorRect
+    ? Math.max(
+      12,
+      Math.min(
+        anchorRect.x + anchorRect.width - dropdownActualWidth,
+        windowWidth - dropdownActualWidth - 12,
+      ),
+    )
+    : windowWidth - dropdownActualWidth - 12;
+  const dropdownTop = anchorRect ? anchorRect.y + anchorRect.height + 8 : 58;
 
   return (
-    <View style={[styles.root, style, isOpen && styles.rootOpen]}>
-      {isOpen ? <Pressable style={styles.backdrop} onPress={() => setIsOpen(false)} /> : null}
-
+    <View style={[styles.root, style, isOpen && styles.rootOpen,]}>
       <View
         style={[
           styles.bar,
@@ -71,87 +114,112 @@ export default function SearchFilterBar({
       >
         <SearchIcon size={16} color={theme.iconMuted} />
         <TextInput
-          style={[styles.input, { color: theme.textPrimary }]}
+          style={[styles.input, { color: theme.textPrimary, },]}
           placeholder={placeholder}
           placeholderTextColor={theme.textPlaceholder}
           value={value}
           onChangeText={onChangeText}
-          onFocus={() => setIsOpen(false)}
+          onFocus={() => setIsOpen(false,)}
         />
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => setIsOpen((open) => !open)}
-          style={[
-            styles.filterButton,
-            {
-              backgroundColor:
-                activeOption?.key !== filters[0]?.key || isOpen ? theme.accentMuted : 'transparent',
-              borderColor: isOpen ? theme.inputBorderFocus : theme.inputBorder,
-            },
-          ]}
-        >
-          <FilterIcon size={14} color={isOpen ? theme.accent : theme.iconDefault} />
-          <Text
-            numberOfLines={1}
+        <View ref={filterButtonRef} collapsable={false} style={styles.filterButtonAnchor}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => setIsOpen((open,) => !open,)}
             style={[
-              styles.filterLabel,
-              { color: activeOption?.key !== filters[0]?.key ? theme.accent : theme.textSecondary },
+              styles.filterButton,
+              {
+                backgroundColor:
+                  activeOption?.key !== filters[0]?.key || isOpen
+                    ? theme.accentMuted
+                    : 'transparent',
+                borderColor: isOpen ? theme.inputBorderFocus : theme.inputBorder,
+              },
             ]}
           >
-            {activeOption?.label ?? 'Filtro'}
-          </Text>
-          <ChevronDownIcon size={14} color={theme.iconMuted} />
-        </TouchableOpacity>
+            <ActiveFilterIcon size={14} color={isOpen ? theme.accent : theme.iconDefault} />
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.filterLabel,
+                {
+                  color: activeOption?.key !== filters[0]?.key ? theme.accent : theme.textSecondary,
+                },
+              ]}
+            >
+              {activeOption?.label ?? 'Filtro'}
+            </Text>
+            <ChevronDownIcon size={14} color={theme.iconMuted} />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {isOpen ? (
-        <View
-          style={[
-            styles.dropdown,
-            {
-              width: dropdownWidth,
-              backgroundColor: theme.dropdownBg,
-              borderColor: theme.dropdownBorder,
-              boxShadow: theme.isDark
-                ? '0px 18px 34px rgba(5, 16, 13, 0.34)'
-                : '0px 18px 34px rgba(15, 23, 42, 0.12)',
-            },
-          ]}
-        >
-          <Text style={[styles.dropdownLabel, { color: theme.dropdownMuted }]}>Filtrar por</Text>
-          {filters.map((option, index) => {
-            const active = option.key === activeFilter;
-            return (
-              <TouchableOpacity
-                key={option.key}
-                activeOpacity={0.8}
-                onPress={() => {
-                  onChangeFilter(option.key);
-                  setIsOpen(false);
-                }}
-                style={[
-                  styles.optionRow,
-                  {
-                    borderBottomColor: theme.dropdownDivider,
-                    backgroundColor: active ? theme.accentMuted : 'transparent',
-                  },
-                  index === filters.length - 1 && styles.optionRowLast,
-                ]}
-              >
-                <Text
+      <Modal
+        transparent
+        visible={isOpen}
+        animationType='none'
+        onRequestClose={() => setIsOpen(false,)}
+      >
+        <View style={styles.modalRoot}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setIsOpen(false,)} />
+          <View
+            style={[
+              styles.dropdown,
+              {
+                left: dropdownLeft,
+                top: dropdownTop,
+                width: dropdownActualWidth,
+                backgroundColor: theme.dropdownBg,
+                borderColor: theme.dropdownBorder,
+                boxShadow: theme.isDark
+                  ? '0px 18px 34px rgba(5, 16, 13, 0.34)'
+                  : '0px 18px 34px rgba(15, 23, 42, 0.12)',
+              },
+            ]}
+          >
+            <Text style={[styles.dropdownLabel, { color: theme.dropdownMuted, },]}>Filtrar por</Text>
+            {filters.map((option, index,) => {
+              const active = option.key === activeFilter;
+              const OptionIcon = option.icon;
+              return (
+                <TouchableOpacity
+                  key={option.key}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    onChangeFilter(option.key,);
+                    setIsOpen(false,);
+                  }}
                   style={[
-                    styles.optionText,
-                    { color: active ? theme.dropdownValue : theme.dropdownText },
+                    styles.optionRow,
+                    {
+                      borderBottomColor: theme.dropdownDivider,
+                      backgroundColor: active ? theme.accentMuted : 'transparent',
+                    },
+                    index === filters.length - 1 && styles.optionRowLast,
                   ]}
                 >
-                  {option.label}
-                </Text>
-                {active ? <CheckIcon size={14} color={theme.dropdownValue} /> : null}
-              </TouchableOpacity>
-            );
-          })}
+                  <View style={styles.optionContent}>
+                    {OptionIcon ? (
+                      <OptionIcon
+                        size={14}
+                        color={active ? theme.dropdownValue : theme.dropdownText}
+                      />
+                    ) : null}
+                    <Text
+                      style={[
+                        styles.optionText,
+                        { color: active ? theme.dropdownValue : theme.dropdownText, },
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </View>
+                  {active ? <CheckIcon size={14} color={theme.dropdownValue} /> : null}
+                </TouchableOpacity>
+              );
+            },)}
+          </View>
         </View>
-      ) : null}
+      </Modal>
     </View>
   );
 }
@@ -165,13 +233,15 @@ const styles = StyleSheet.create({
   rootOpen: {
     zIndex: 40,
   },
-  backdrop: {
+  modalRoot: {
+    flex: 1,
+  },
+  modalBackdrop: {
     ...StyleSheet.absoluteFillObject,
-    top: -12,
-    left: -12,
-    right: -12,
-    bottom: -220,
     zIndex: 1,
+  },
+  filterButtonAnchor: {
+    alignSelf: 'flex-start',
   },
   bar: {
     flexDirection: 'row',
@@ -194,16 +264,17 @@ const styles = StyleSheet.create({
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
     borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    maxWidth: 148,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    maxWidth: 154,
+    minHeight: 38,
   },
   filterLabel: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
     flexShrink: 1,
   },
   dropdown: {
@@ -211,28 +282,35 @@ const styles = StyleSheet.create({
     top: 58,
     right: 0,
     borderWidth: 1,
-    borderRadius: 18,
-    padding: 8,
+    borderRadius: 20,
+    padding: 6,
     zIndex: 10,
   },
   dropdownLabel: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '700',
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingTop: 2,
-    paddingBottom: 8,
+    paddingBottom: 10,
   },
   optionRow: {
-    minHeight: 42,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    minHeight: 44,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
     borderBottomWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
+  },
+  optionContent: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
   optionRowLast: {
@@ -242,4 +320,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
-});
+},);

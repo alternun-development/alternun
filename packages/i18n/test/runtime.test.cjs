@@ -16,12 +16,25 @@ const spanishMobile = i18n.createTranslator({
   locale: 'es-MX',
   namespace: 'mobile',
 });
+const englishMobile = i18n.createTranslator({
+  locale: 'en',
+  namespace: 'mobile',
+});
+const thaiMobile = i18n.createTranslator({
+  locale: 'th',
+  namespace: 'mobile',
+});
 
 assert.equal(spanishMobile.locale, 'es');
 assert.equal(spanishMobile.t('settingsScreen.title'), 'Configuracion');
 assert.equal(spanishMobile.t('labels.theme'), 'Tema');
 assert.equal(spanishMobile.t('labels.dark'), 'Oscuro');
 assert.equal(spanishMobile.t('missing.key'), 'missing.key');
+assert.equal(spanishMobile.t('landing.beneficios.cards.cursos.meta'), 'Educacion');
+assert.equal(englishMobile.t('landing.beneficios.cards.experiencias.title'), 'Experiences');
+assert.equal(englishMobile.t('landing.beneficios.cards.premium.atn'), '400');
+assert.equal(thaiMobile.t('landing.comoFunciona.sectionTitle'), 'วิธีการทำงาน');
+assert.equal(thaiMobile.t('landing.beneficios.cards.eco.tag2'), 'ยั่งยืน');
 
 assert.equal(i18n.getLocaleLabel('th', 'es'), 'Tailandes');
 assert.equal(

@@ -18,12 +18,19 @@
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { RotateCcw, type LucideProps } from 'lucide-react-native';
+import { RotateCcw, Info, type LucideProps } from 'lucide-react-native';
 import { palette } from '../tokens/colors';
 import { fontSize, radius, spacing } from '../tokens/spacing';
 import { ProgressBar } from './ProgressBar';
-import { HeroPanelSkeleton } from './SkeletonLoader';
+import {
+  ScoreNumberSkeleton,
+  StatusBadgeSkeleton,
+  ProgressNumbersSkeleton,
+  ProgressPercentageSkeleton,
+  SkeletonLoader,
+} from './SkeletonLoader';
 import { ThemeProvider } from '../theme/ThemeContext';
+import { useTooltip } from './Tooltip';
 
 // ─── Tier system ──────────────────────────────────────────────────────────────
 
@@ -115,6 +122,8 @@ export interface HeroPanelProps {
   isDark?: boolean;
   /** When false, ambient orb animations are skipped and orbs render statically. Default: true. */
   animateOrbs?: boolean;
+  /** Validity end date for status tier (ISO string). Shows in info tooltip. */
+  tierValidUntil?: string;
 }
 
 export function HeroPanel({
@@ -127,15 +136,23 @@ export function HeroPanel({
   brandMark,
   isDark = true,
   animateOrbs = true,
-}: HeroPanelProps) {
+  tierValidUntil,
+}: HeroPanelProps): React.JSX.Element {
   const safeScore = score ?? 0;
   const tier = previewMode || score == null ? 'bronze' : resolveTier(safeScore);
   const tierSpec = TIERS[tier];
+
+  // Compute last updated time: use provided updatedAt or fallback to now (initial load)
+  const lastUpdatedAt = _updatedAt ?? new Date().toISOString();
 
   const progressPct = useMemo(() => {
     if (tierSpec.max == null || previewMode || score == null) return 0;
     return Math.min((safeScore - tierSpec.min) / (tierSpec.max - tierSpec.min), 1);
   }, [safeScore, tier, tierSpec, previewMode, score]);
+  const showProgressSection =
+    tierSpec.max != null && tierSpec.next != null && !previewMode && (isLoading || score != null);
+  const progressMax = tierSpec.max ?? 0;
+  const progressNextLabel = tierSpec.nextLabel ?? '';
 
   const firstName = displayName?.trim().split(/\s+/)[0] ?? '';
 
@@ -156,7 +173,7 @@ export function HeroPanel({
   useEffect(() => {
     if (!animateOrbs) return;
 
-    const makeFloat = (val: Animated.Value, duration: number) =>
+    const makeFloat = (val: Animated.Value, duration: number): Animated.CompositeAnimation =>
       Animated.loop(
         Animated.sequence([
           Animated.timing(val, {
@@ -230,6 +247,91 @@ export function HeroPanel({
 
   // Cast icon for React Native compatibility
   const ReloadIcon = RotateCcw as React.FC<LucideProps>;
+  const InfoIcon = Info as React.FC<LucideProps>;
+
+  // Tooltip for status tier info
+  const { isVisible: showStatusTooltip, toggle: toggleStatusTooltip } = useTooltip(false);
+
+  // Floating animation for tooltip
+  const tooltipOpacity = useRef(new Animated.Value(0)).current;
+  const tooltipTranslateY = useRef(new Animated.Value(10)).current;
+
+  useEffect(() => {
+    if (showStatusTooltip) {
+      Animated.parallel([
+        Animated.timing(tooltipOpacity, {
+          toValue: 1,
+          duration: 200,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(tooltipTranslateY, {
+          toValue: 0,
+          duration: 200,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      tooltipOpacity.setValue(0);
+      tooltipTranslateY.setValue(10);
+    }
+  }, [showStatusTooltip, tooltipOpacity, tooltipTranslateY]);
+
+  const formatDateWithTime = (isoString?: string): string => {
+    if (!isoString) return 'N/A';
+    try {
+      const date = new Date(isoString);
+      const dateStr = new Intl.DateTimeFormat('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(date);
+      const timeStr = new Intl.DateTimeFormat('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).format(date);
+      return `${dateStr} ${timeStr}`;
+    } catch {
+      return 'N/A';
+    }
+  };
+
+  const formatDate = (isoString?: string): string => {
+    if (!isoString) return 'N/A';
+    try {
+      const date = new Date(isoString);
+      return new Intl.DateTimeFormat('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(date);
+    } catch {
+      return 'N/A';
+    }
+  };
+
+  const statusTooltipContent = (
+    <View style={styles.tooltipContent}>
+      <Text style={[styles.tooltipLabel, { color: accentColor }]}>Información de estado</Text>
+      <View style={styles.tooltipDivider} />
+      <View style={styles.tooltipLine}>
+        <Text style={[styles.tooltipKey, { color: textMuted }]}>Actualizado:</Text>
+        <Text style={[styles.tooltipValue, { color: textPrimary }]}>
+          {formatDateWithTime(lastUpdatedAt)}
+        </Text>
+      </View>
+      {tierValidUntil && (
+        <View style={styles.tooltipLine}>
+          <Text style={[styles.tooltipKey, { color: textMuted }]}>Válido hasta:</Text>
+          <Text style={[styles.tooltipValue, { color: textPrimary }]}>
+            {formatDate(tierValidUntil)}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
 
   return (
     <ThemeProvider mode={isDark ? 'dark' : 'light'}>
@@ -253,57 +355,131 @@ export function HeroPanel({
             accessibilityRole='button'
             accessibilityLabel='Recargar puntuación'
           >
-            <Animated.View style={[reloadRotateStyle]}>
-              <ReloadIcon size={18} color={accentColor} strokeWidth={2} />
+            <Animated.View style={reloadRotateStyle}>
+              <ReloadIcon size={16} color={accentColor} strokeWidth={2.5} />
             </Animated.View>
           </TouchableOpacity>
         )}
 
-        {/* Loading skeleton or real content */}
+        {/* Greeting */}
+        {firstName ? (
+          <Text style={[styles.greeting, { color: textPrimary }]}>{`Hola, ${firstName}`}</Text>
+        ) : null}
+
+        <Text style={[styles.subtitle, { color: textMuted }]}>Tu puntuación regenerativa es:</Text>
+
+        {/* Score row */}
+        <View style={styles.scoreRow}>
+          {brandMark ?? <View style={[styles.defaultMark, { borderColor: accentColor }]} />}
+          {isLoading ? (
+            <ScoreNumberSkeleton />
+          ) : (
+            <Text
+              style={[styles.scoreValue, { color: textPrimary }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {score != null ? fmtScore(safeScore) : '—'}
+            </Text>
+          )}
+        </View>
+
+        {/* Tier badge with info icon */}
         {isLoading ? (
-          <HeroPanelSkeleton />
+          <StatusBadgeSkeleton />
         ) : (
           <>
-            {/* Greeting */}
-            {firstName ? (
-              <Text style={[styles.greeting, { color: textPrimary }]}>{`Hola, ${firstName}`}</Text>
-            ) : null}
-
-            <Text style={[styles.subtitle, { color: textMuted }]}>
-              Tu puntuación regenerativa es:
-            </Text>
-
-            {/* Score row */}
-            <View style={styles.scoreRow}>
-              {brandMark ?? <View style={[styles.defaultMark, { borderColor: accentColor }]} />}
-              <Text
-                style={[styles.scoreValue, { color: textPrimary }]}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
-                {score != null ? fmtScore(safeScore) : '—'}
-              </Text>
+            <View style={styles.tierBadgeRow}>
+              <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
+                <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
+                <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
+                  {`Status ${tierSpec.label.toUpperCase()}`}
+                </Text>
+              </View>
+              <View style={styles.iconButtonWrapper}>
+                <TouchableOpacity
+                  onPress={toggleStatusTooltip}
+                  // @ts-expect-error - web hover support (onMouseEnter/onMouseLeave)
+                  onMouseEnter={() => {
+                    if (!showStatusTooltip) toggleStatusTooltip();
+                  }}
+                  onMouseLeave={() => {
+                    if (showStatusTooltip) toggleStatusTooltip();
+                  }}
+                  accessibilityRole='button'
+                  accessibilityLabel='Información del estado'
+                >
+                  <InfoIcon size={16} color={accentColor} strokeWidth={2} />
+                </TouchableOpacity>
+                {showStatusTooltip && (
+                  <Animated.View
+                    style={[
+                      styles.tooltipOverlay,
+                      {
+                        opacity: tooltipOpacity,
+                        transform: [{ translateY: tooltipTranslateY }],
+                      },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.statusTooltip,
+                        {
+                          backgroundColor: isDark ? 'rgba(5,15,12,0.95)' : 'rgba(255,255,255,0.98)',
+                          shadowColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.12)',
+                        },
+                      ]}
+                    >
+                      {statusTooltipContent}
+                    </View>
+                  </Animated.View>
+                )}
+              </View>
             </View>
+          </>
+        )}
 
-            {/* Tier badge */}
-            <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
-              <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
-              <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
-                {`Status ${tierSpec.label.toUpperCase()}`}
-              </Text>
-            </View>
+        <View style={[styles.divider, { backgroundColor: divider }]} />
 
-            <View style={[styles.divider, { backgroundColor: divider }]} />
-
-            {/* Progress to next tier */}
-            {tierSpec.max != null && tierSpec.next != null && !previewMode && score != null && (
-              <View style={styles.progressSection}>
+        {/* Progress to next tier */}
+        {showProgressSection && (
+          <View style={styles.progressSection}>
+            {isLoading ? (
+              <>
                 <View style={styles.progressLabelRow}>
-                  <Text style={[styles.progressLeft, { color: textPrimary }]} numberOfLines={1}>
-                    {`Progreso a ${tierSpec.nextLabel} — ${Math.round(progressPct * 100)}%`}
-                  </Text>
+                  <View style={styles.progressLeftGroup}>
+                    <SkeletonLoader width='50%' height={14} borderRadius={4} />
+                    <ProgressPercentageSkeleton />
+                  </View>
+                  <View style={styles.progressLoadingRight}>
+                    <ProgressNumbersSkeleton />
+                  </View>
+                </View>
+                <ProgressBar
+                  progress={0}
+                  color={tierSpec.color}
+                  height={7}
+                  style={styles.progressBar}
+                  showPercentage={false}
+                />
+                <SkeletonLoader width='82%' height={17} borderRadius={4} style={{ marginTop: 2 }} />
+              </>
+            ) : (
+              <>
+                <View style={styles.progressLabelRow}>
+                  <View style={styles.progressLeftGroup}>
+                    <Text style={[styles.progressLeft, { color: textPrimary }]} numberOfLines={1}>
+                      {`Progreso a ${progressNextLabel} —`}
+                    </Text>
+                    <Text
+                      style={[styles.progressPercent, { color: textPrimary }]}
+                      numberOfLines={1}
+                    >
+                      {`${Math.round(progressPct * 100)}%`}
+                    </Text>
+                  </View>
                   <Text style={[styles.progressRight, { color: textMuted }]} numberOfLines={1}>
-                    {`${fmtScore(safeScore)} / ${fmtScore(tierSpec.max)} Airs`}
+                    {`${fmtScore(safeScore)} / ${fmtScore(progressMax)} Airs`}
                   </Text>
                 </View>
                 <ProgressBar
@@ -311,22 +487,23 @@ export function HeroPanel({
                   color={tierSpec.color}
                   height={7}
                   style={styles.progressBar}
+                  showPercentage={false}
                 />
                 <Text style={[styles.progressHint, { color: textMuted }]}>
-                  {`Te faltan ${fmtScore(tierSpec.max - safeScore)} Airs para alcanzar ${
-                    tierSpec.nextLabel
-                  } y desbloquear beneficios exclusivos`}
+                  {`Te faltan ${fmtScore(
+                    progressMax - safeScore
+                  )} Airs para alcanzar ${progressNextLabel} y desbloquear beneficios exclusivos`}
                 </Text>
-              </View>
+              </>
             )}
+          </View>
+        )}
 
-            {/* Platinum — max tier */}
-            {tierSpec.max == null && !previewMode && score != null && (
-              <Text style={[styles.progressHint, { color: tierSpec.color }]}>
-                Has alcanzado el nivel máximo Platinum
-              </Text>
-            )}
-          </>
+        {/* Platinum — max tier */}
+        {tierSpec.max == null && !previewMode && score != null && (
+          <Text style={[styles.progressHint, { color: tierSpec.color }]}>
+            Has alcanzado el nivel máximo Platinum
+          </Text>
         )}
       </View>
     </ThemeProvider>
@@ -341,7 +518,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[4],
     paddingTop: spacing[6],
     paddingBottom: spacing[5],
-    overflow: 'hidden',
+    overflow: 'visible',
     position: 'relative',
     borderRadius: 20,
   },
@@ -349,17 +526,17 @@ const styles = StyleSheet.create({
   /* Reload button — top-right corner */
   reloadButton: {
     position: 'absolute',
-    top: spacing[4],
+    top: spacing[5],
     right: spacing[4],
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
-    backgroundColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: 'rgba(30,230,181,0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(30,230,181,0.16)',
   },
 
   /* Ambient orbs — top-right + bottom-left (mirrored vs footer) */
@@ -416,16 +593,24 @@ const styles = StyleSheet.create({
   },
 
   /* Tier badge */
+  tierBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+    marginBottom: spacing[4],
+    zIndex: 1,
+  },
+  iconButtonWrapper: {
+    position: 'relative',
+  },
   tierBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    alignSelf: 'flex-start',
     borderWidth: 1,
     borderRadius: radius.full,
     paddingHorizontal: spacing[3],
     paddingVertical: 5,
-    marginBottom: spacing[4],
   },
   tierDot: {
     width: 8,
@@ -436,6 +621,77 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: '700',
     letterSpacing: 0.6,
+  },
+  tooltipOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 30,
+    zIndex: 1000,
+    minWidth: 240,
+    maxWidth: 340,
+  },
+  statusTooltip: {
+    minWidth: 220,
+    maxWidth: 320,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: 'rgba(30,230,181,0.16)',
+    backgroundColor: 'rgba(5,15,12,0.95)',
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  tooltipArrow: {
+    position: 'absolute',
+    top: -6,
+    right: 16,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderTopWidth: 6,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: 'rgba(30,230,181,0.12)',
+  },
+
+  /* Tooltip content */
+  tooltipContent: {
+    gap: spacing[2],
+  },
+  tooltipLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    opacity: 0.85,
+  },
+  tooltipDivider: {
+    height: 0.5,
+    backgroundColor: 'rgba(30,230,181,0.12)',
+    marginVertical: spacing[1],
+  },
+  tooltipLine: {
+    flexDirection: 'column',
+    gap: 4,
+    paddingVertical: 2,
+  },
+  tooltipKey: {
+    fontSize: 10,
+    fontWeight: '500',
+    flexShrink: 0,
+    letterSpacing: 0.2,
+    opacity: 0.7,
+  },
+  tooltipValue: {
+    fontSize: 12,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'left',
+    lineHeight: 16,
   },
 
   divider: {
@@ -452,16 +708,37 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'baseline',
     gap: spacing[2],
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
+  },
+  progressLeftGroup: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing[1],
+    flexShrink: 1,
+    minWidth: 0,
   },
   progressLeft: {
     fontSize: fontSize.sm,
     fontWeight: '700',
-    flexShrink: 1,
+    flexShrink: 0,
+  },
+  progressPercent: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+    letterSpacing: -0.1,
+    flexShrink: 0,
   },
   progressRight: {
     fontSize: fontSize.xs,
     fontWeight: '500',
+    flexShrink: 0,
+    textAlign: 'right',
+    minWidth: 0,
+  },
+  progressLoadingRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
     flexShrink: 0,
   },
   progressBar: {

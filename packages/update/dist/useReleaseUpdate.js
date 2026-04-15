@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.normalizeReleaseUpdateMode = normalizeReleaseUpdateMode;
 exports.isReleaseUpdateEnabled = isReleaseUpdateEnabled;
+exports.resolveReleaseUpdateRuntime = resolveReleaseUpdateRuntime;
 exports.buildReleaseManifestJson = buildReleaseManifestJson;
 exports.buildReleaseWorkerSource = buildReleaseWorkerSource;
 exports.useReleaseUpdate = useReleaseUpdate;
@@ -13,6 +14,7 @@ const DEFAULT_STORAGE_KEY = 'alternun.release.dismissed-version';
 const DEFAULT_MANIFEST_URL = `/${service_worker_1.RELEASE_MANIFEST_FILENAME}`;
 const DEFAULT_WORKER_URL = '/alternun-release-worker.js';
 const DEFAULT_POLL_INTERVAL_MS = 5 * 60 * 1000;
+const dismissedVersionsInMemory = new Map();
 function normalizeReleaseUpdateMode(value) {
     const normalized = value === null || value === void 0 ? void 0 : value.trim().toLowerCase();
     if (normalized === 'on' || normalized === 'off' || normalized === 'auto') {
@@ -30,9 +32,63 @@ function isReleaseUpdateEnabled(mode, hostname) {
     const normalizedHostname = (hostname !== null && hostname !== void 0 ? hostname : '').trim().toLowerCase();
     return !LOOPBACK_HOSTNAMES.has(normalizedHostname);
 }
-function readStoredDismissedVersion(storageKey) {
-    if (typeof window === 'undefined') {
+function trimReleaseValue(value) {
+    const trimmed = value === null || value === void 0 ? void 0 : value.trim();
+    return trimmed ? trimmed : null;
+}
+function resolveRuntimeOrigin(explicitOrigin) {
+    var _a;
+    const trimmedExplicitOrigin = trimReleaseValue(explicitOrigin);
+    if (trimmedExplicitOrigin) {
+        return trimmedExplicitOrigin;
+    }
+    if (typeof window !== 'undefined') {
+        const browserOrigin = trimReleaseValue(window.location.origin);
+        if (browserOrigin) {
+            return browserOrigin;
+        }
+    }
+    return ((_a = trimReleaseValue(process.env.EXPO_PUBLIC_ORIGIN)) !== null && _a !== void 0 ? _a : trimReleaseValue(process.env.NEXT_PUBLIC_ORIGIN));
+}
+function resolveRuntimeHostname(origin) {
+    if (!origin) {
         return null;
+    }
+    try {
+        return new URL(origin).hostname.trim().toLowerCase();
+    }
+    catch {
+        return origin.trim().toLowerCase();
+    }
+}
+function resolveReleaseAssetUrl(fileName, explicitUrl, origin, fallbackUrl) {
+    const trimmedExplicitUrl = trimReleaseValue(explicitUrl);
+    if (trimmedExplicitUrl) {
+        return trimmedExplicitUrl;
+    }
+    if (origin) {
+        try {
+            return new URL(fileName, origin).toString();
+        }
+        catch {
+            // Fall through to the local fallback path.
+        }
+    }
+    return fallbackUrl;
+}
+function resolveReleaseUpdateRuntime({ origin, manifestUrl, workerUrl, } = {}) {
+    const resolvedOrigin = resolveRuntimeOrigin(origin);
+    return {
+        origin: resolvedOrigin,
+        hostname: resolveRuntimeHostname(resolvedOrigin),
+        manifestUrl: resolveReleaseAssetUrl(service_worker_1.RELEASE_MANIFEST_FILENAME, manifestUrl !== null && manifestUrl !== void 0 ? manifestUrl : undefined, resolvedOrigin, DEFAULT_MANIFEST_URL),
+        workerUrl: resolveReleaseAssetUrl(service_worker_1.RELEASE_WORKER_FILENAME, workerUrl !== null && workerUrl !== void 0 ? workerUrl : undefined, resolvedOrigin, DEFAULT_WORKER_URL),
+    };
+}
+function readStoredDismissedVersion(storageKey) {
+    var _a;
+    if (typeof window === 'undefined') {
+        return (_a = dismissedVersionsInMemory.get(storageKey)) !== null && _a !== void 0 ? _a : null;
     }
     try {
         const value = window.localStorage.getItem(storageKey);
@@ -44,6 +100,7 @@ function readStoredDismissedVersion(storageKey) {
 }
 function writeStoredDismissedVersion(storageKey, version) {
     if (typeof window === 'undefined') {
+        dismissedVersionsInMemory.set(storageKey, version);
         return;
     }
     try {
@@ -65,46 +122,81 @@ function buildReleaseWorkerSource(currentVersion, manifestUrl = DEFAULT_MANIFEST
         manifestUrl,
     });
 }
-function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST_URL, workerUrl = DEFAULT_WORKER_URL, pollIntervalMs = DEFAULT_POLL_INTERVAL_MS, storageKey = DEFAULT_STORAGE_KEY, }) {
+function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST_URL, workerUrl = DEFAULT_WORKER_URL, appOrigin, pollIntervalMs = DEFAULT_POLL_INTERVAL_MS, storageKey = DEFAULT_STORAGE_KEY, onReload, }) {
     const normalizedCurrentVersion = (0, react_1.useMemo)(() => (0, manifest_1.normalizeReleaseVersion)(currentVersion), [currentVersion]);
     const normalizedMode = normalizeReleaseUpdateMode(mode);
-    const hostname = typeof window !== 'undefined' ? window.location.hostname : null;
-    const enabled = isReleaseUpdateEnabled(normalizedMode, hostname);
+    const runtime = (0, react_1.useMemo)(() => resolveReleaseUpdateRuntime({
+        origin: appOrigin,
+        manifestUrl,
+        workerUrl,
+    }), [appOrigin, manifestUrl, workerUrl]);
+    const enabled = isReleaseUpdateEnabled(normalizedMode, runtime.hostname);
     const [checking, setChecking] = (0, react_1.useState)(false);
     const [available, setAvailable] = (0, react_1.useState)(false);
     const [remoteVersion, setRemoteVersion] = (0, react_1.useState)(null);
     const [error, setError] = (0, react_1.useState)(null);
     const [lastCheckedAt, setLastCheckedAt] = (0, react_1.useState)(null);
     const registrationRef = (0, react_1.useRef)(null);
+    const registrationPromiseRef = (0, react_1.useRef)(null);
+    const hasServiceWorkerSupport = typeof window !== 'undefined' &&
+        typeof navigator !== 'undefined' &&
+        'serviceWorker' in navigator;
+    const ensureServiceWorkerRegistration = (0, react_1.useCallback)(async () => {
+        if (!hasServiceWorkerSupport) {
+            return null;
+        }
+        if (registrationRef.current) {
+            return registrationRef.current;
+        }
+        if (registrationPromiseRef.current) {
+            return registrationPromiseRef.current;
+        }
+        registrationPromiseRef.current = navigator.serviceWorker
+            .register(runtime.workerUrl, { scope: '/' })
+            .then((registration) => {
+            registrationRef.current = registration;
+            return registration;
+        })
+            .catch(() => null)
+            .finally(() => {
+            registrationPromiseRef.current = null;
+        });
+        try {
+            return await registrationPromiseRef.current;
+        }
+        catch {
+            registrationPromiseRef.current = null;
+            return null;
+        }
+    }, [hasServiceWorkerSupport, runtime.workerUrl]);
     const refresh = (0, react_1.useCallback)(async () => {
-        var _a, _b, _c;
-        if (!enabled || typeof window === 'undefined') {
+        var _a, _b;
+        if (!enabled) {
             return;
         }
         setChecking(true);
         setError(null);
         try {
-            if ('serviceWorker' in navigator) {
-                const registration = (_a = registrationRef.current) !== null && _a !== void 0 ? _a : (await navigator.serviceWorker.register(workerUrl, { scope: '/' }).catch(() => null));
+            if (hasServiceWorkerSupport) {
+                const registration = await ensureServiceWorkerRegistration();
                 if (registration) {
-                    registrationRef.current = registration;
-                    (_b = registration.active) === null || _b === void 0 ? void 0 : _b.postMessage({
+                    (_a = registration.active) === null || _a === void 0 ? void 0 : _a.postMessage({
                         type: service_worker_1.RELEASE_CHECK_MESSAGE_TYPE,
-                        manifestUrl,
+                        manifestUrl: runtime.manifestUrl,
                     });
                 }
             }
-            const response = await fetch(manifestUrl, {
+            const response = await fetch(runtime.manifestUrl, {
                 cache: 'no-store',
                 credentials: 'same-origin',
             });
             if (!response.ok) {
-                setAvailable(false);
+                setError(`Release manifest request failed with HTTP ${response.status}.`);
                 setLastCheckedAt(Date.now());
                 return;
             }
             const manifest = (0, manifest_1.parseReleaseManifest)(await response.json());
-            const nextVersion = (_c = manifest === null || manifest === void 0 ? void 0 : manifest.version) !== null && _c !== void 0 ? _c : null;
+            const nextVersion = (_b = manifest === null || manifest === void 0 ? void 0 : manifest.version) !== null && _b !== void 0 ? _b : null;
             const dismissedVersion = readStoredDismissedVersion(storageKey);
             const isUpdateAvailable = Boolean(nextVersion) &&
                 nextVersion !== normalizedCurrentVersion &&
@@ -120,9 +212,16 @@ function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST
         finally {
             setChecking(false);
         }
-    }, [enabled, manifestUrl, normalizedCurrentVersion, storageKey, workerUrl]);
+    }, [
+        enabled,
+        ensureServiceWorkerRegistration,
+        hasServiceWorkerSupport,
+        normalizedCurrentVersion,
+        runtime.manifestUrl,
+        storageKey,
+    ]);
     (0, react_1.useEffect)(() => {
-        if (!enabled || typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+        if (!enabled || !hasServiceWorkerSupport) {
             return;
         }
         let cancelled = false;
@@ -143,46 +242,57 @@ function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST
             setAvailable(true);
             setLastCheckedAt(Date.now());
         };
-        void navigator.serviceWorker
-            .register(workerUrl, { scope: '/' })
-            .then((registration) => {
-            if (cancelled) {
+        void ensureServiceWorkerRegistration().then((registration) => {
+            if (cancelled || !registration) {
                 return;
             }
             registrationRef.current = registration;
-        })
-            .catch(() => undefined);
+        });
         navigator.serviceWorker.addEventListener('message', handleWorkerMessage);
         return () => {
             cancelled = true;
             navigator.serviceWorker.removeEventListener('message', handleWorkerMessage);
         };
-    }, [enabled, normalizedCurrentVersion, storageKey, workerUrl]);
+    }, [
+        enabled,
+        ensureServiceWorkerRegistration,
+        hasServiceWorkerSupport,
+        normalizedCurrentVersion,
+        storageKey,
+    ]);
     (0, react_1.useEffect)(() => {
-        if (!enabled || typeof window === 'undefined') {
+        if (!enabled) {
             return;
         }
         void refresh();
         if (pollIntervalMs <= 0) {
             return;
         }
-        const intervalId = window.setInterval(() => {
+        const intervalId = setInterval(() => {
             void refresh();
         }, pollIntervalMs);
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
+            if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
                 void refresh();
             }
         };
         const handleWindowFocus = () => {
             void refresh();
         };
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('focus', handleWindowFocus);
+        if (typeof document !== 'undefined') {
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
+        if (typeof window !== 'undefined') {
+            window.addEventListener('focus', handleWindowFocus);
+        }
         return () => {
-            window.clearInterval(intervalId);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('focus', handleWindowFocus);
+            clearInterval(intervalId);
+            if (typeof document !== 'undefined') {
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+            }
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('focus', handleWindowFocus);
+            }
         };
     }, [enabled, pollIntervalMs, refresh]);
     const dismiss = (0, react_1.useCallback)(() => {
@@ -194,17 +304,27 @@ function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST
         setAvailable(false);
     }, [remoteVersion, storageKey]);
     const reload = (0, react_1.useCallback)(() => {
-        if (typeof window === 'undefined') {
-            return;
-        }
         const registration = registrationRef.current;
         if (registration === null || registration === void 0 ? void 0 : registration.waiting) {
             registration.waiting.postMessage({
                 type: service_worker_1.RELEASE_SKIP_WAITING_MESSAGE_TYPE,
             });
         }
-        window.location.reload();
-    }, []);
+        if (onReload) {
+            onReload();
+            return;
+        }
+        if (typeof window !== 'undefined' && typeof window.location.reload === 'function') {
+            window.location.reload();
+            return;
+        }
+        if (typeof globalThis !== 'undefined') {
+            const globalLocation = globalThis.location;
+            if (typeof (globalLocation === null || globalLocation === void 0 ? void 0 : globalLocation.reload) === 'function') {
+                globalLocation.reload();
+            }
+        }
+    }, [onReload]);
     return {
         enabled,
         checking,

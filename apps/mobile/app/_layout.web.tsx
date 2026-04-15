@@ -1,6 +1,7 @@
 import React from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, usePathname } from 'expo-router';
+import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { AppAuthProvider } from '../components/auth/AppAuthProvider';
 import AppInfoFooter from '../components/common/AppInfoFooter';
@@ -8,21 +9,27 @@ import {
   AppPreferencesProvider,
   useAppPreferences,
 } from '../components/settings/AppPreferencesProvider';
+import { NotificationsProvider } from '../components/notifications/NotificationsContext';
 import { useColorScheme } from 'nativewind';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import ReleaseUpdateBanner from '../components/release/ReleaseUpdateBanner.web';
+import { appFonts, installAppFontDefaults } from '../components/theme/fonts';
 import '../global.css';
 
+installAppFontDefaults();
+
 export default function RootLayout(): React.JSX.Element {
+  const [loaded] = useFonts(appFonts);
+
   return (
     <AppPreferencesProvider>
-      <RootApp />
+      <RootApp fontsLoaded={loaded} />
     </AppPreferencesProvider>
   );
 }
 
-function RootApp(): React.JSX.Element {
+function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
   const { themeMode } = useAppPreferences();
   const colorScheme = useColorScheme();
   const navigationTheme = themeMode === 'dark' ? DarkTheme : DefaultTheme;
@@ -39,96 +46,81 @@ function RootApp(): React.JSX.Element {
     pathname !== '/privacy' &&
     pathname !== '/terms';
 
+  if (!fontsLoaded) {
+    return (
+      <View
+        style={[styles.appShell, { backgroundColor: themeMode === 'dark' ? '#050510' : '#f6f8fc' }]}
+      />
+    );
+  }
+
   return (
-    <AppAuthProvider>
-      <ThemeProvider value={navigationTheme}>
-        <View style={styles.appShell}>
-          <View style={styles.stackContainer}>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name='index' options={{ headerShown: false }} />
-              <Stack.Screen
-                name='auth'
-                options={{
-                  headerShown: false,
-                  presentation: 'transparentModal',
-                  animation: 'fade',
-                  contentStyle: { backgroundColor: 'transparent' },
-                }}
-              />
-              <Stack.Screen
-                name='auth-relay'
-                options={{
-                  headerShown: false,
-                  presentation: 'transparentModal',
-                  animation: 'fade',
-                  contentStyle: { backgroundColor: 'transparent' },
-                }}
-              />
-              <Stack.Screen
-                name='auth/callback'
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name='settings'
-                options={{
-                  title: 'Settings',
-                  headerBackTitle: 'Back',
-                }}
-              />
-              <Stack.Screen
-                name='profile'
-                options={{
-                  headerShown: true,
-                  title: 'Profile',
-                  headerBackTitle: 'Back',
-                }}
-              />
-              <Stack.Screen
-                name='compensaciones'
-                options={{ headerShown: false, animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name='mis-atn'
-                options={{ headerShown: false, animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name='proyectos'
-                options={{ headerShown: false, animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name='beneficios'
-                options={{ headerShown: false, animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name='ranking'
-                options={{ headerShown: false, animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name='wallet'
-                options={{ headerShown: false, animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name='privacy'
-                options={{ headerShown: false, animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name='terms'
-                options={{ headerShown: false, animation: 'slide_from_right' }}
-              />
-            </Stack>
-          </View>
-          {showLayoutFooter ? (
-            <View pointerEvents='box-none' style={styles.footerOverlay}>
-              <AppInfoFooter />
+    <NotificationsProvider>
+      <AppAuthProvider>
+        <ThemeProvider value={navigationTheme}>
+          <View style={styles.appShell}>
+            <View style={styles.stackContainer}>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name='index' options={{ headerShown: false }} />
+                <Stack.Screen
+                  name='auth'
+                  options={{
+                    headerShown: false,
+                    presentation: 'transparentModal',
+                    animation: 'fade',
+                    contentStyle: { backgroundColor: 'transparent' },
+                  }}
+                />
+                <Stack.Screen
+                  name='auth-relay'
+                  options={{
+                    headerShown: false,
+                    presentation: 'transparentModal',
+                    animation: 'fade',
+                    contentStyle: { backgroundColor: 'transparent' },
+                  }}
+                />
+                <Stack.Screen
+                  name='auth/callback'
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen name='settings' options={{ headerShown: false }} />
+                <Stack.Screen
+                  name='explorar'
+                  options={{ headerShown: false, animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name='portafolio'
+                  options={{ headerShown: false, animation: 'slide_from_right' }}
+                />
+                <Stack.Screen name='mi-perfil' options={{ headerShown: false }} />
+                <Stack.Screen
+                  name='privacy'
+                  options={{ headerShown: false, animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name='terms'
+                  options={{ headerShown: false, animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name='notifications'
+                  options={{ headerShown: false, animation: 'slide_from_right' }}
+                />
+              </Stack>
             </View>
-          ) : null}
-          <ReleaseUpdateBanner />
-        </View>
-        <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
-      </ThemeProvider>
-    </AppAuthProvider>
+            {showLayoutFooter ? (
+              <View pointerEvents='box-none' style={styles.footerOverlay}>
+                <AppInfoFooter />
+              </View>
+            ) : null}
+            <ReleaseUpdateBanner />
+          </View>
+          <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
+        </ThemeProvider>
+      </AppAuthProvider>
+    </NotificationsProvider>
   );
 }
 

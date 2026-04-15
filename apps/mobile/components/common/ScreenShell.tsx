@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useRef, useCallback, useState } from 'react';
 import { View, StyleSheet, useWindowDimensions, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -8,6 +8,7 @@ import AppInfoFooter from './AppInfoFooter';
 import { useAuth } from '../auth/AppAuthProvider';
 import type { User } from '../auth/AppAuthProvider';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { useNotifications } from '../notifications/NotificationsContext';
 import { useBackToTop } from '../../hooks/useBackToTop';
 import { BackToTopButton } from './BackToTopButton';
 
@@ -121,10 +122,16 @@ export default function ScreenShell({
   const { user, signOutUser } = useAuth();
   const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel } =
     useAppPreferences();
+  const {
+    items: notificationItems,
+    markAllRead: markAllNotificationsRead,
+    deleteNotif: dismissNotification,
+  } = useNotifications();
   const { width } = useWindowDimensions();
   const router = useRouter();
   const isDark = themeMode === 'dark';
   const isMobile = width < 720;
+  const [footerHeight, setFooterHeight] = useState(0);
 
   // Back-to-top state
   const scrollRefInternal = useRef<ScrollView>(null);
@@ -149,20 +156,12 @@ export default function ScreenShell({
   const handleNavigate = (key: string) => {
     if (key === 'dashboard') {
       router.replace('/');
-    } else if (key === 'compensation') {
-      router.push('/compensaciones');
-    } else if (key === 'portfolio') {
-      router.push('/mis-atn');
-    } else if (key === 'proyectos') {
-      router.push('/proyectos');
-    } else if (key === 'beneficios') {
-      router.push('/beneficios');
-    } else if (key === 'ranking') {
-      router.push('/ranking');
-    } else if (key === 'wallet') {
-      router.push('/wallet');
-    } else if (key === 'profile') {
-      router.push('/profile');
+    } else if (key === 'explorar') {
+      router.push('/explorar');
+    } else if (key === 'portafolio') {
+      router.push('/portafolio');
+    } else if (key === 'mi-perfil') {
+      router.push('/mi-perfil');
     }
   };
 
@@ -178,17 +177,24 @@ export default function ScreenShell({
           {/* Main content — paddingTop reserves space for the floating TopNav */}
           <View style={styles.body}>{children}</View>
 
-          {/* Back-to-top button */}
+          <View
+            style={styles.footerStack}
+            onLayout={(event) => {
+              setFooterHeight(event.nativeEvent.layout.height);
+            }}
+          >
+            <AppInfoFooter containerStyle={{ marginTop: 0 }} />
+          </View>
+
+          {/* Back-to-top button floats above the footer without shifting it upward. */}
           <BackToTopButton
             visible={showBackToTop}
             onPress={scrollToTop}
             isDark={isDark}
             isMobile={isMobile}
+            footerBottomOffset={isMobile ? footerHeight + 18 : undefined}
             bounceStyle={bounceStyle}
           />
-
-          {/* Footer pinned below content */}
-          <AppInfoFooter />
 
           {/* Floating TopNav — rendered last so it layers over content */}
           <View style={styles.floatingNav} pointerEvents='box-none'>
@@ -204,16 +210,20 @@ export default function ScreenShell({
               airsScore={airsScore}
               activeSection={activeSection}
               onSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
-              onConnectWallet={() => router.push('/wallet')}
+              onConnectWallet={() => router.push('/mi-perfil')}
               onToggleTheme={toggleThemeMode}
               onCycleLanguage={cycleLanguage}
               onCycleMotionLevel={cycleMotionLevel}
-              onOpenProfile={() => router.push('/profile')}
+              onOpenProfile={() => router.push('/mi-perfil')}
               onOpenSettings={() => router.push('/settings')}
               onSignOut={() => {
                 void signOutUser();
               }}
               onNavigate={handleNavigate}
+              onNavigateToNotifications={() => router.push('/notifications')}
+              notifications={notificationItems.filter((n) => !n.archived)}
+              onMarkAllNotificationsRead={markAllNotificationsRead}
+              onDismissNotification={dismissNotification}
             />
           </View>
         </SafeAreaView>
@@ -229,6 +239,9 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     paddingTop: 62, // space for the floating TopNav
+  },
+  footerStack: {
+    marginTop: 'auto',
   },
   floatingNav: {
     position: 'absolute',

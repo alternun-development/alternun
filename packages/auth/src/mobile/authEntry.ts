@@ -1,3 +1,6 @@
+import { resolveAuthProviderSelection } from '../runtime/config';
+import type { AuthExecutionProviderName } from '../core/types';
+
 export type AuthentikLoginEntryMode = 'relay' | 'source';
 export type AuthentikSocialLoginMode = 'authentik' | 'hybrid' | 'supabase';
 export type AuthentikRelayProvider = 'google' | 'discord';
@@ -6,6 +9,7 @@ export type AuthentikProviderFlowSlugs = Partial<Record<AuthentikRelayProvider, 
 export interface AuthentikLoginStrategy {
   mode: AuthentikLoginEntryMode;
   socialMode: AuthentikSocialLoginMode;
+  executionProvider: AuthExecutionProviderName;
   providerFlowSlugs: AuthentikProviderFlowSlugs;
 }
 
@@ -13,6 +17,7 @@ export interface ResolveAuthentikLoginStrategyOptions {
   hostname?: string | null;
   entryMode?: string | undefined | null;
   socialMode?: string | undefined | null;
+  executionProvider?: string | undefined | null;
   providerFlowSlugsValue?: string | undefined | null;
   allowCustomProviderFlowSlugs?: boolean | string | undefined | null;
 }
@@ -33,6 +38,17 @@ function isTruthy(value: boolean | string | undefined | null): boolean {
 
   const normalized = value?.trim().toLowerCase();
   return Boolean(normalized && TRUTHY_ENV_VALUES.has(normalized));
+}
+
+function normalizeExecutionProvider(
+  value: string | undefined | null
+): AuthExecutionProviderName | null {
+  const normalized = value?.trim().toLowerCase();
+  if (normalized === 'better-auth' || normalized === 'supabase') {
+    return normalized;
+  }
+
+  return null;
 }
 
 export function parseAuthentikProviderFlowSlugs(
@@ -114,12 +130,16 @@ export function getAuthentikSocialLoginMode(): AuthentikSocialLoginMode {
 }
 
 export function shouldUseAuthentikRelayEntry(): boolean {
-  return getAuthentikLoginEntryMode() === 'relay';
+  return (
+    getAuthentikLoginEntryMode() === 'relay' &&
+    resolveAuthProviderSelection().executionProvider !== 'better-auth'
+  );
 }
 
 export function resolveAuthentikLoginStrategy(
   options?: ResolveAuthentikLoginStrategyOptions
 ): AuthentikLoginStrategy {
+  const selection = resolveAuthProviderSelection();
   return {
     mode: normalizeAuthentikLoginEntryMode(
       options?.entryMode ?? process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE
@@ -127,6 +147,8 @@ export function resolveAuthentikLoginStrategy(
     socialMode: normalizeAuthentikSocialLoginMode(
       options?.socialMode ?? process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE
     ),
+    executionProvider:
+      normalizeExecutionProvider(options?.executionProvider) ?? selection.executionProvider,
     providerFlowSlugs: resolveAuthentikProviderFlowSlugs({
       hostname: options?.hostname,
       value:

@@ -1,6 +1,6 @@
 {
   "name": "@alternun/auth",
-  "version": "1.0.25-dev.1",
+  "version": "1.0.72",
   "description": "Alternun auth wrapper package built on top of @edcalderon/auth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,6 +8,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./facade": {
+      "types": "./dist/facade/createAuthFacade.d.ts",
+      "default": "./dist/facade/createAuthFacade.js"
     },
     "./mobile/authentikClient": {
       "types": "./dist/mobile/authentikClient.d.ts",
@@ -26,6 +30,7 @@
     "build": "./build.sh",
     "dev": "tsc -w",
     "clean": "rm -rf dist",
+    "test": "pnpm run build && node --loader ./scripts/node-extension-loader.mjs --test test/*.test.js",
     "type-check": "tsc --noEmit",
     "ses:bootstrap": "node infra/ses/scripts/01-bootstrap-identity.cjs",
     "ses:route53": "node infra/ses/scripts/02-apply-route53.cjs",
@@ -45,6 +50,7 @@
   },
   "dependencies": {
     "@edcalderon/auth": "1.4.2",
+    "better-auth": "^1.6.3",
     "@supabase/supabase-js": "^2.98.0",
     "zod": "^3.24.2"
   },

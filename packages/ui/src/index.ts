@@ -32,6 +32,7 @@ export { HeroPanel, resolveTier, TIERS } from './components/HeroPanel';
 export type { HeroPanelProps, AirsTier, TierSpec } from './components/HeroPanel';
 
 export { StatCard } from './components/StatCard';
+export { KpiCard } from './components/KpiCard';
 export { SectionContainer } from './components/SectionContainer';
 export { GlassCard, GlassChip } from './components/GlassCard';
 export { IconBadge } from './components/IconBadge';
@@ -45,6 +46,9 @@ export type { StatusPreset } from './components/Pill';
 export { Toast, ToastSystem } from './components/Toast';
 export type { ToastItem, ToastType } from './components/Toast';
 
+export { ReleaseUpdateToast } from './components/ReleaseUpdateToast';
+export type { ReleaseUpdateToastProps } from './components/ReleaseUpdateToast';
+
 // ── Skeleton loaders ───────────────────────────────────────────────────────────
 export {
   SkeletonLoader,
@@ -52,7 +56,10 @@ export {
   LedgerRowSkeleton,
   SectionHeaderSkeleton,
   PillRowSkeleton,
-  HeroPanelSkeleton,
+  ScoreNumberSkeleton,
+  StatusBadgeSkeleton,
+  ProgressNumbersSkeleton,
+  ProgressPercentageSkeleton,
 } from './components/SkeletonLoader';
 
 // ── Changelog ─────────────────────────────────────────────────────────────────
@@ -67,3 +74,25 @@ export type {
 // ── Policies ──────────────────────────────────────────────────────────────────
 export { PolicyDrawer } from './components/PolicyDrawer';
 export type { PolicyDrawerProps } from './components/PolicyDrawer';
+
+// ── Tooltips ──────────────────────────────────────────────────────────────────
+export {
+  Tooltip,
+  TooltipProvider,
+  WalkthroughTour,
+  useTooltip,
+  useTooltipContext,
+  getTooltipTheme,
+} from './components/Tooltip';
+export type {
+  TooltipConfig,
+  TooltipPlacement,
+  WalkthroughStep,
+  WalkthroughConfig,
+  UseTooltipState,
+  TooltipTheme,
+} from './components/Tooltip';
+
+// ── Hooks ──────────────────────────────────────────────────────────────────────
+export { useAirsRefresh } from './hooks/useAirsRefresh';
+export type { AirsRefreshMetadata } from './hooks/useAirsRefresh';

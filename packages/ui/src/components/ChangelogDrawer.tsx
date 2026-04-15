@@ -598,11 +598,12 @@ const innerStyles = StyleSheet.create({
   triggerPill: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
     borderRadius: radius.full,
     borderWidth: 1,
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    minHeight: 32,
     alignSelf: 'flex-start',
   },
   triggerText: {

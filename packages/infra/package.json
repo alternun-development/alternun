@@ -1,6 +1,6 @@
 {
   "name": "@alternun/infra",
-  "version": "1.0.25-dev.1",
+  "version": "1.0.72",
   "private": true,
   "type": "module",
   "description": "Alternun AWS/SST infrastructure wrapper for Expo web deployments.",
@@ -19,6 +19,8 @@
     "diff:production": "sst diff --stage production",
     "remove:dev": "sst remove --stage dev",
     "remove:production": "sst remove --stage production",
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "type-check": "tsc --noEmit",
     "ensure:pipelines": "bash scripts/ensure-pipelines.sh",
     "ensure:secrets": "bash scripts/ensure-secrets.sh",
     "sync:develop-master": "bash scripts/sync-develop-master.sh",

@@ -2,7 +2,7 @@ import {
   AppAuthProvider as AlternunAuthProvider,
   useAuth as useAlternunAuth,
 } from '@alternun/auth';
-import { useEffect, useMemo, type PropsWithChildren } from 'react';
+import { useEffect, useMemo, useRef, type PropsWithChildren } from 'react';
 import { Platform } from 'react-native';
 import { createWeb3WalletBridge } from './walletBridge';
 import { clearOidcSession, readOidcSession } from '@alternun/auth';
@@ -11,6 +11,8 @@ import {
   oidcSessionToUser,
   type CallbackCapableAuthClient,
 } from './authWebSession';
+import { shouldClearOidcSessionOnAuthStateChange } from './authSessionBridge';
+import { isBetterAuthExecutionEnabled } from './authExecutionMode';
 
 function getAllowMockWalletFallback(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH === 'true';
@@ -30,10 +32,19 @@ function getSupabaseKey(): string | undefined {
 
 function AuthSessionBridge(): null {
   const { client } = useAlternunAuth();
+  const hasReceivedAuthStateRef = useRef(false);
+  const previousUserRef = useRef<import('@alternun/auth').User | null | undefined>(undefined);
+  const isBetterAuthExecution = isBetterAuthExecutionEnabled();
 
   // Restore stored OIDC session on mount (survives page reload)
   useEffect(() => {
     if (Platform.OS !== 'web') return;
+
+    if (isBetterAuthExecution) {
+      clearOidcSession();
+      return;
+    }
+
     const session = readOidcSession();
     if (!session) return;
     const callbackClient = client as CallbackCapableAuthClient;
@@ -46,33 +57,48 @@ function AuthSessionBridge(): null {
       .catch(() => {
         callbackClient.setOidcUser?.(oidcSessionToUser(session));
       });
-  }, [client]);
+  }, [client, isBetterAuthExecution]);
 
   // Clear OIDC session and revoke token when user signs out
   useEffect(() => {
     if (Platform.OS !== 'web') return;
+
+    if (isBetterAuthExecution) {
+      clearOidcSession();
+      return;
+    }
+
     return client.onAuthStateChange((user) => {
-      if (!user) {
-        const session = readOidcSession();
-        clearOidcSession();
-        if (session?.tokens.accessToken ?? session?.tokens.idToken) {
-          void authentikPreset
-            .logoutHandler({
-              accessToken: session.tokens.accessToken,
-              idToken: session.tokens.idToken,
-            })
-            .then((result: { endSessionUrl?: string }) => {
-              if (typeof window !== 'undefined' && result.endSessionUrl) {
-                window.location.assign(result.endSessionUrl);
-              }
-            })
-            .catch(() => {
-              // Best-effort token revocation — local session already cleared
-            });
-        }
+      const shouldClearOidcSession = shouldClearOidcSessionOnAuthStateChange({
+        hasReceivedAuthState: hasReceivedAuthStateRef.current,
+        previousUser: previousUserRef.current,
+        nextUser: user,
+      });
+
+      hasReceivedAuthStateRef.current = true;
+      previousUserRef.current = user;
+
+      if (!shouldClearOidcSession) return;
+
+      const session = readOidcSession();
+      clearOidcSession();
+      if (session?.tokens.accessToken ?? session?.tokens.idToken) {
+        void authentikPreset
+          .logoutHandler({
+            accessToken: session.tokens.accessToken,
+            idToken: session.tokens.idToken,
+          })
+          .then((result: { endSessionUrl?: string }) => {
+            if (typeof window !== 'undefined' && result.endSessionUrl) {
+              window.location.assign(result.endSessionUrl);
+            }
+          })
+          .catch(() => {
+            // Best-effort token revocation — local session already cleared
+          });
       }
     });
-  }, [client]);
+  }, [client, isBetterAuthExecution]);
 
   return null;
 }

@@ -4,8 +4,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable comma-dangle */
-// / <reference path="./sst-env.d.ts" />
-
 /**
  * Template: sst.config.ts
  *
