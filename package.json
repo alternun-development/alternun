@@ -14,8 +14,7 @@
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",
     "test:coverage": "turbo run test:coverage",
-    "security:audit": "npm audit",
-    "security:fix": "npm audit fix",
+    "security:audit": "node scripts/security-audit.mjs",
     "type-check": "turbo run type-check",
     "clean": "turbo run clean",
     "infra:deploy:dev": "pnpm --filter @alternun/infra run deploy:dev",
@@ -73,6 +72,7 @@
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
+      "axios": "1.15.0",
       "fast-xml-parser": "4.5.4",
       "handlebars": "4.7.9",
       "simple-git": "3.32.3"
