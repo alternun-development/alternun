@@ -29,7 +29,7 @@ These variables are read by `packages/auth/src/runtime/config.ts`.
 | `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` | No                                 | Client-side mirror of the execution provider for mobile/web bundles             |
 | `AUTH_ISSUER_PROVIDER`                | No                                 | Selects Authentik or the legacy issuer bridge                                   |
 | `AUTH_EMAIL_PROVIDER`                 | No                                 | Selects the email provider path                                                 |
-| `AUTH_BETTER_AUTH_URL`                | Yes for a real Better Auth rollout | Canonical browser-facing Better Auth base URL on the API origin (`/auth`)       |
+| `AUTH_BETTER_AUTH_URL`                | Yes for a real Better Auth rollout | Canonical browser-facing Better Auth base URL on the API origin root            |
 | `EXPO_PUBLIC_BETTER_AUTH_URL`         | No                                 | Client-side mirror of the canonical Better Auth base URL                        |
 | `AUTH_BETTER_AUTH_CLIENT_ID`          | No                                 | Reserved for Better Auth client/runtime integration                             |
 | `AUTH_BETTER_AUTH_API_KEY`            | No                                 | Reserved for service-to-service Better Auth calls if needed                     |
@@ -138,7 +138,7 @@ Do not switch shared environments to this shape until the testnet execution plan
 - `AppAuthProvider` should keep app ergonomics stable while switching the underlying provider graph.
 - `createAuthFacade` can accept explicit provider instances for tests and server-side orchestration.
 - `AUTH_BETTER_AUTH_CLIENT_ID` and `AUTH_BETTER_AUTH_API_KEY` are reserved for the rollout even though the current package implementation does not yet require them end to end.
-- The backend API can proxy `/auth/*` to a private Better Auth service when it is backed by a real Better Auth service; the repo no longer assumes a dedicated public Better Auth host.
+- The backend API can proxy `/auth/*` to a private Better Auth service when it is backed by a real Better Auth service; the repo no longer assumes a dedicated public Better Auth host. Public Better Auth URLs should stay on the API origin root, with the client/proxy layers appending `/auth` internally.
 - In local development, that private Better Auth service is expected to listen on `http://localhost:9083`.
 - The API proxy should answer browser `OPTIONS` preflight locally for `/auth/*`; only the actual Better Auth request should be forwarded to the private service.
 - When `AUTH_EXECUTION_PROVIDER=better-auth`, the package routes web social login through the Better Auth browser client when possible and falls back to the explicit Better Auth social/email routes only when the browser client cannot be created. Email/password flows still prefer the Better Auth client when that client is available.
