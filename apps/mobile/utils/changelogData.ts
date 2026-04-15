@@ -18,6 +18,29 @@ export const CHANGELOG_TEXT = `## [1.0.72](https://github.com/alternun-developme
 - **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
 - **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
 
+
+### Bug Fixes
+
+* **auth:** remove server-only exports from main package to fix web bundling ([f2229b8](https://github.com/alternun-development/alternun/commit/f2229b8801c66e565a9f1238f74cb31b29750187))
+* **docs,repo,auth:** authentication-and-session-flow, CHANGELOG, alternun-better-auth-testnet-execution-plan, .env ([be3dacb](https://github.com/alternun-development/alternun/commit/be3dacb9a4819e5b83f4cee33b81445d3e02da3c))
+* **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
+* **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
+
+
+
+
+
+## [1.0.72](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.72) (2026-04-15)
+
+
+### Bug Fixes
+
+* **auth:** remove server-only exports from main package to fix web bundling ([f2229b8](https://github.com/alternun-development/alternun/commit/f2229b8801c66e565a9f1238f74cb31b29750187))
+* **docs,repo,auth:** authentication-and-session-flow, CHANGELOG, alternun-better-auth-testnet-execution-plan, .env ([be3dacb](https://github.com/alternun-development/alternun/commit/be3dacb9a4819e5b83f4cee33b81445d3e02da3c))
+* **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
+* **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
+
+
 ## [1.0.72](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.72) (2026-04-15)
 
 ### Bug Fixes
