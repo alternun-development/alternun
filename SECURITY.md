@@ -138,17 +138,11 @@ if (error) {
 
 ### Vulnerability Scanning
 
-We use automated tools to scan for vulnerabilities:
+We use an automated lockfile scan against the npm bulk advisory endpoint:
 
 ```bash
-# Check for known vulnerabilities
-npm audit
-
-# Fix vulnerabilities
-npm audit fix
-
 # Run security audit
-npm run security:audit
+pnpm run security:audit
 ```
 
 ### Dependency Management
@@ -260,7 +254,7 @@ npm run security:audit
 
 - **Static Analysis**: ESLint security rules, TypeScript strict mode
 - **Dynamic Analysis**: OWASP ZAP, Burp Suite
-- **Dependency Scanning**: npm audit, Snyk
+- **Dependency Scanning**: lockfile audit against the npm bulk advisory endpoint, Snyk
 - **Container Security**: Docker security scanning
 
 ### Monitoring and Logging
