@@ -1,4 +1,8 @@
 export { AuthProvider } from '@edcalderon/auth';
+export { AppAuthProvider, useAuth } from './mobile/AppAuthProvider.js';
+export { AlternunAuthFacade } from './facade/AlternunAuthFacade.js';
+export { createAuthFacade } from './facade/createAuthFacade.js';
+export { BetterAuthExecutionProvider, } from './providers/better-auth/BetterAuthExecutionProvider.js';
 export { AuthentikIssuerProvider, } from './providers/authentik/AuthentikIssuerProvider.js';
 export { SupabaseExecutionProvider, } from './providers/supabase-legacy/SupabaseExecutionProvider.js';
 export { SupabaseLegacyIssuerProvider, } from './providers/supabase-legacy/SupabaseLegacyIssuerProvider.js';

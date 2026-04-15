@@ -44,6 +44,7 @@ import ShaderBackground from './ShaderBackground';
 import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
+import { resolvePrimaryOAuthProvider } from './authExecutionMode';
 import { shouldForceFreshAuthentikSocialSession } from './authentikWebSessionPolicy';
 import {
   readPendingAuthentikOAuthProvider,
@@ -98,15 +99,6 @@ export interface AuthSignInScreenProps {
   onCancel?: () => void;
   presentation?: 'screen' | 'modal';
   authReturnTo?: string;
-}
-
-function resolveGoogleProvider(): string {
-  const configuredProvider = process.env.EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER?.trim().toLowerCase();
-  if (configuredProvider === 'keycloak') {
-    return 'keycloak';
-  }
-
-  return 'google';
 }
 
 function stripKnownErrorPrefix(message: string): string {
@@ -271,7 +263,7 @@ export default function AuthSignInScreen({
   const confirmPasswordInputRef = useRef<TextInput>(null);
   const confirmationCodeInputRef = useRef<TextInput>(null);
 
-  const googleProvider = resolveGoogleProvider();
+  const googleProvider = resolvePrimaryOAuthProvider();
 
   const rawEffectiveError = localError ?? error;
   const effectiveError = rawEffectiveError

@@ -4,6 +4,7 @@ export interface FooterPrimaryLink {
   labelKey: string;
   fallbackLabel: string;
   url: string;
+  action?: FooterPrimaryLinkAction;
 }
 
 export interface FooterViewport {
@@ -11,18 +12,23 @@ export interface FooterViewport {
   isWide: boolean;
 }
 
+export type FooterPrimaryLinkAction = 'privacy' | 'terms';
+
 export const FOOTER_PRIMARY_LINK_DEFINITIONS = [
   {
     labelKey: 'footer.links.privacy',
     fallbackLabel: 'Privacy',
+    action: 'privacy',
   },
   {
     labelKey: 'footer.links.terms',
     fallbackLabel: 'Terms',
+    action: 'terms',
   },
   {
     labelKey: 'footer.links.documentation',
     fallbackLabel: 'Docs',
+    action: undefined,
   },
 ] as const;
 
@@ -58,16 +64,30 @@ export function resolvePrimaryLinksForViewport(
       labelKey: FOOTER_PRIMARY_LINK_DEFINITIONS[0].labelKey,
       fallbackLabel: FOOTER_PRIMARY_LINK_DEFINITIONS[0].fallbackLabel,
       url: `${docsBaseUrl}/privacy`,
+      action: FOOTER_PRIMARY_LINK_DEFINITIONS[0].action,
     },
     {
       labelKey: FOOTER_PRIMARY_LINK_DEFINITIONS[1].labelKey,
       fallbackLabel: FOOTER_PRIMARY_LINK_DEFINITIONS[1].fallbackLabel,
       url: `${docsBaseUrl}/terms`,
+      action: FOOTER_PRIMARY_LINK_DEFINITIONS[1].action,
     },
     {
       labelKey: FOOTER_PRIMARY_LINK_DEFINITIONS[2].labelKey,
       fallbackLabel: FOOTER_PRIMARY_LINK_DEFINITIONS[2].fallbackLabel,
       url: resolveDocumentationUrl(resolvedLocale),
+      action: FOOTER_PRIMARY_LINK_DEFINITIONS[2].action,
     },
   ];
+}
+
+export function resolvePrimaryLinkPressHandler(
+  link: FooterPrimaryLink,
+  handlers: Record<FooterPrimaryLinkAction, () => void>
+): (() => void) | undefined {
+  if (!link.action) {
+    return undefined;
+  }
+
+  return handlers[link.action];
 }

@@ -244,8 +244,9 @@ The mobile web auth surface supports two Authentik entry patterns:
 
 Control the mode with `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE` in repo env, pipeline env, or `packages/infra/config/deployment.config.json`.
 The default is `source`, which is the smoothest option and avoids an extra relay hop unless you explicitly opt in.
-Use `AUTH_EXECUTION_PROVIDER` or `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` to choose the login execution engine. Current testnet uses `better-auth`; keep `supabase` only for rollback/legacy testing.
+Use `AUTH_EXECUTION_PROVIDER` or `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` to choose the login execution engine. Current testnet uses `better-auth`; keep `supabase` only for rollback/legacy testing. If the Better Auth URL is configured but the execution flag is omitted, the runtime now promotes to `better-auth` automatically so a stale legacy alias cannot force Authentik.
 Use `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` to control whether the app uses Authentik-only social login, the hybrid Authentik/Supabase fallback path, or Supabase-only login. This is not the Better Auth switch, and the `EXPO_PUBLIC_AUTHENTIK_*` entry flags remain on the direct source-login path because they only control the Authentik fallback.
+`EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER` is only a legacy alias for the Authentik fallback path. Better Auth mode always resolves the Google branch, so a stale `keycloak` value cannot override the testnet Better Auth flow.
 The default is `authentik` for deployed bundles so testnet/prod stay Authentik-first unless you explicitly opt into another mode, while non-production Expo bundles now default the execution provider to `supabase` unless you override it.
 Use `hybrid` only when you intentionally want Supabase fallback while iterating locally.
 The Expo build also receives `EXPO_PUBLIC_API_URL` for the matching stage API origin so the auth footer and privacy/terms drawers fetch legal content from the correct backend without guessing.

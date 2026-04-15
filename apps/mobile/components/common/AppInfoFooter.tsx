@@ -30,7 +30,10 @@ import SupportButton from './SupportButton';
 import { createTypographyStyles } from '../theme/typography';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
-import { resolvePrimaryLinksForViewport } from './AppInfoFooter.links';
+import {
+  resolvePrimaryLinkPressHandler,
+  resolvePrimaryLinksForViewport,
+} from './AppInfoFooter.links';
 import ParticleBubbles from '../dashboard/ParticleBubbles';
 import {
   AIRS_LOGOTIPO_DARK,
@@ -64,6 +67,10 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
   const handlePrivacyClose = useCallback(() => setPrivacyOpen(false), []);
   const handleTermsOpen = useCallback(() => setTermsOpen(true), []);
   const handleTermsClose = useCallback(() => setTermsOpen(false), []);
+  const primaryLinkPressHandlers = {
+    privacy: handlePrivacyOpen,
+    terms: handleTermsOpen,
+  };
 
   const drawerColors = {
     bg: isDark ? '#0d0d1f' : '#f8fafb',
@@ -239,13 +246,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
                       key={link.labelKey}
                       label={t(link.labelKey, undefined, link.fallbackLabel)}
                       url={link.url}
-                      onPress={
-                        link.labelKey === 'footer.links.privacy'
-                          ? handlePrivacyOpen
-                          : link.labelKey === 'footer.links.terms'
-                          ? handleTermsOpen
-                          : undefined
-                      }
+                      onPress={resolvePrimaryLinkPressHandler(link, primaryLinkPressHandlers)}
                       textColor={palette.title}
                       hoverColor={palette.accent}
                     />
@@ -279,6 +280,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
                     <FooterTextLink
                       label={t(link.labelKey, undefined, link.fallbackLabel)}
                       url={link.url}
+                      onPress={resolvePrimaryLinkPressHandler(link, primaryLinkPressHandlers)}
                       textColor={palette.title}
                       hoverColor={palette.accent}
                       compact

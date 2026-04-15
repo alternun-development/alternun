@@ -14,15 +14,28 @@ function readEnvValue(env, keys, fallback) {
     }
     return fallback;
 }
+function resolveExecutionProvider(env) {
+    const explicit = readEnvValue(env, [
+        'AUTH_EXECUTION_PROVIDER',
+        'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER',
+    ]);
+    const normalized = explicit === null || explicit === void 0 ? void 0 : explicit.trim().toLowerCase();
+    if (normalized === 'better-auth' || normalized === 'supabase') {
+        return normalized;
+    }
+    const betterAuthBaseUrl = readEnvValue(env, [
+        'AUTH_BETTER_AUTH_URL',
+        'BETTER_AUTH_URL',
+        'EXPO_PUBLIC_BETTER_AUTH_URL',
+    ]);
+    return betterAuthBaseUrl ? 'better-auth' : 'supabase';
+}
 export function resolveAuthRuntime() {
     return typeof window !== 'undefined' && typeof document !== 'undefined' ? 'web' : 'native';
 }
 export function resolveAuthRuntimeConfig(env = getProcessEnv()) {
     const selection = parseAuthProviderSelection({
-        executionProvider: readEnvValue(env, [
-            'AUTH_EXECUTION_PROVIDER',
-            'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER',
-        ]),
+        executionProvider: resolveExecutionProvider(env),
         issuerProvider: readEnvValue(env, ['AUTH_ISSUER_PROVIDER']),
         emailProvider: readEnvValue(env, [
             'AUTH_EMAIL_PROVIDER',
