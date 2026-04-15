@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Animated,
   StyleSheet,
+  Modal,
+  Pressable,
   useWindowDimensions,
   type ImageSourcePropType,
 } from 'react-native';
@@ -23,6 +25,9 @@ import {
   ChevronRight,
   ArrowRight,
   ChevronDown,
+  Info,
+  CheckCircle2,
+  X,
   type LucideProps,
 } from 'lucide-react-native';
 
@@ -31,6 +36,7 @@ import { useAppTranslation } from '../i18n/useAppTranslation';
 import { createTypographyStyles } from '../theme/typography';
 import AirsIntroExperience from '../onboarding/AirsIntroExperience';
 import AirsBrandMark from '../branding/AirsBrandMark';
+import { getStepTimelineProgressRange, getStepTimelineTrackMetrics } from './stepTimeline';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
@@ -43,6 +49,9 @@ const ChevronLeftIcon = ChevronLeft as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
 const ArrowRightIcon = ArrowRight as React.FC<LucideProps>;
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
+const InfoIcon = Info as React.FC<LucideProps>;
+const CheckCircle2Icon = CheckCircle2 as React.FC<LucideProps>;
+const CloseIcon = X as React.FC<LucideProps>;
 
 const TOKEN_IMAGES: Record<'airs' | 'rbi' | 'atn', ImageSourcePropType> = {
   airs: require('../../assets/images/benefits/airs.png'),
@@ -683,6 +692,7 @@ interface StepCardProps {
   description: string;
   benefits: string[];
   isActive: boolean;
+  isCompleted: boolean;
   accentColor: string;
   isDark: boolean;
   isMobile: boolean;
@@ -696,6 +706,7 @@ function StepCard({
   description,
   benefits,
   isActive,
+  isCompleted,
   accentColor,
   isDark,
   isMobile,
@@ -704,10 +715,12 @@ function StepCard({
 }: StepCardProps): React.JSX.Element {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
-  const contentOpacity = useRef(new Animated.Value(isActive ? 1 : 0.52)).current;
+  const contentOpacity = useRef(
+    new Animated.Value(isActive ? 1 : isCompleted ? 0.82 : 0.52)
+  ).current;
   const iconScaleAnim = useRef(new Animated.Value(1)).current;
   const titleTranslate = useRef(new Animated.Value(0)).current;
-  const badgeScale = useRef(new Animated.Value(isActive ? 1.12 : 1)).current;
+  const badgeScale = useRef(new Animated.Value(isActive ? 1.12 : isCompleted ? 1.04 : 1)).current;
 
   const SvgIcon = STEP_SVG_ICONS[stepIndex % STEP_SVG_ICONS.length];
 
@@ -720,17 +733,17 @@ function StepCard({
         useNativeDriver: true,
       }),
       Animated.timing(glowAnim, {
-        toValue: isActive ? 1 : 0,
+        toValue: isActive ? 1 : isCompleted ? 0.5 : 0,
         duration: 360,
         useNativeDriver: false,
       }),
       Animated.timing(contentOpacity, {
-        toValue: isActive ? 1 : 0.52,
+        toValue: isActive ? 1 : isCompleted ? 0.82 : 0.52,
         duration: 300,
         useNativeDriver: true,
       }),
       Animated.spring(badgeScale, {
-        toValue: isActive ? 1.12 : 1,
+        toValue: isActive ? 1.12 : isCompleted ? 1.04 : 1,
         friction: 5,
         tension: 200,
         useNativeDriver: true,
@@ -752,9 +765,16 @@ function StepCard({
               }),
             ]),
           ]
-        : [Animated.timing(iconScaleAnim, { toValue: 1, duration: 200, useNativeDriver: true })]),
+        : [
+            Animated.spring(iconScaleAnim, {
+              toValue: isCompleted ? 1.05 : 1,
+              friction: 6,
+              tension: 180,
+              useNativeDriver: true,
+            }),
+          ]),
       Animated.spring(titleTranslate, {
-        toValue: isActive ? 0 : 4,
+        toValue: isActive ? 0 : isCompleted ? 1 : 4,
         friction: 7,
         tension: 100,
         useNativeDriver: true,
@@ -762,6 +782,7 @@ function StepCard({
     ]).start();
   }, [
     isActive,
+    isCompleted,
     scaleAnim,
     glowAnim,
     contentOpacity,
@@ -771,28 +792,49 @@ function StepCard({
     isMobile,
   ]);
 
+  const inactiveBorderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.10)';
+  const completedBorderColor = isDark ? 'rgba(30,230,181,0.36)' : 'rgba(13,148,136,0.28)';
+  const completedCardBg = isDark ? 'rgba(30,230,181,0.07)' : 'rgba(13,148,136,0.05)';
+  const activeCardBg = isDark ? 'rgba(30,230,181,0.11)' : 'rgba(13,148,136,0.09)';
+  const completedIconBg = isDark ? 'rgba(30,230,181,0.11)' : 'rgba(13,148,136,0.08)';
+
   const cardBorderColor = glowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.10)', accentColor],
+    inputRange: [0, 0.5, 1],
+    outputRange: [inactiveBorderColor, completedBorderColor, accentColor],
   });
   const cardBgColor = glowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [
-      isDark ? 'rgba(255,255,255,0.03)' : '#ffffff',
-      isDark ? 'rgba(30,230,181,0.08)' : 'rgba(13,148,136,0.055)',
-    ],
+    inputRange: [0, 0.5, 1],
+    outputRange: [isDark ? 'rgba(255,255,255,0.03)' : '#ffffff', completedCardBg, activeCardBg],
   });
   const iconBgColor = glowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9', `${accentColor}30`],
+    inputRange: [0, 0.5, 1],
+    outputRange: [
+      isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9',
+      completedIconBg,
+      `${accentColor}30`,
+    ],
   });
 
-  const descColor = isDark ? 'rgba(232,232,255,0.65)' : '#64748b';
+  const descColor = isActive
+    ? isDark
+      ? 'rgba(232,232,255,0.78)'
+      : '#475569'
+    : isCompleted
+    ? isDark
+      ? 'rgba(232,232,255,0.7)'
+      : '#5b6b80'
+    : isDark
+    ? 'rgba(232,232,255,0.65)'
+    : '#64748b';
   const stepNumBg = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9';
   const stepNumColor = isDark ? '#e8e8ff' : '#0f172a';
   const titleColor = isActive
     ? isDark
       ? '#e8e8ff'
+      : '#0f172a'
+    : isCompleted
+    ? isDark
+      ? 'rgba(232,232,255,0.88)'
       : '#0f172a'
     : isDark
     ? 'rgba(232,232,255,0.55)'
@@ -832,15 +874,19 @@ function StepCard({
             style={[
               styles.stepMobileNumber,
               {
-                backgroundColor: isActive ? accentColor : stepNumBg,
+                backgroundColor: isActive || isCompleted ? accentColor : stepNumBg,
                 transform: [{ scale: badgeScale }],
+                borderColor: isActive || isCompleted ? accentColor : 'transparent',
+                borderWidth: isActive || isCompleted ? 1 : 0,
               },
             ]}
           >
             <Text
               style={[
                 styles.stepIndicatorText,
-                { color: isActive ? (isDark ? '#050510' : '#fff') : stepNumColor },
+                {
+                  color: isActive || isCompleted ? (isDark ? '#050510' : '#fff') : stepNumColor,
+                },
               ]}
             >
               {number}
@@ -978,6 +1024,13 @@ function ComoFuncionaSection({
   const stepNumBg = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9';
   const stepNumColor = isDark ? '#e8e8ff' : '#0f172a';
   const descriptionColor = isDark ? 'rgba(232,232,255,0.65)' : '#64748b';
+  const timelineMetrics = getStepTimelineTrackMetrics(steps.length);
+  const desktopProgressRange = getStepTimelineProgressRange(
+    activeStep,
+    steps.length,
+    timelineMetrics.trackSpanPercent
+  );
+  const mobileProgressRange = getStepTimelineProgressRange(activeStep, steps.length, 100);
 
   // Progress bar animation
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -1012,7 +1065,16 @@ function ComoFuncionaSection({
       {/* Step indicators with connector line — desktop only */}
       {!isMobile && (
         <View style={styles.stepIndicatorsRow}>
-          <View style={[styles.stepConnectorLine, { backgroundColor: connectorColor }]} />
+          <View
+            style={[
+              styles.stepConnectorLine,
+              {
+                backgroundColor: connectorColor,
+                left: `${timelineMetrics.trackInsetPercent}%`,
+                right: `${timelineMetrics.trackInsetPercent}%`,
+              },
+            ]}
+          />
           {/* Active progress overlay */}
           <Animated.View
             style={[
@@ -1021,8 +1083,12 @@ function ComoFuncionaSection({
                 backgroundColor: accentColor,
                 width: progressAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: ['0%', `${(activeStep / (steps.length - 1)) * 100}%`],
+                  outputRange: [
+                    `${desktopProgressRange.startPercent}%`,
+                    `${desktopProgressRange.endPercent}%`,
+                  ],
                 }),
+                left: `${timelineMetrics.trackInsetPercent}%`,
               },
             ]}
           />
@@ -1037,16 +1103,43 @@ function ComoFuncionaSection({
                 style={[
                   styles.stepIndicatorBadge,
                   {
-                    backgroundColor: idx === activeStep ? accentColor : stepNumBg,
+                    backgroundColor: stepNumBg,
                     borderColor: idx <= activeStep ? accentColor : 'transparent',
                     borderWidth: 2,
                   },
                 ]}
               >
+                {idx < activeStep && (
+                  <View style={[styles.stepIndicatorBadgeFill, { backgroundColor: accentColor }]} />
+                )}
+                {idx === activeStep && (
+                  <Animated.View
+                    style={[
+                      styles.stepIndicatorBadgeFill,
+                      {
+                        backgroundColor: accentColor,
+                        opacity: progressAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.35, 1],
+                        }),
+                        transform: [
+                          {
+                            scale: progressAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0.72, 1],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  />
+                )}
                 <Text
                   style={[
                     styles.stepIndicatorText,
-                    { color: idx === activeStep ? (isDark ? '#050510' : '#fff') : stepNumColor },
+                    {
+                      color: idx <= activeStep ? (isDark ? '#050510' : '#fff') : stepNumColor,
+                    },
                   ]}
                 >
                   {step.number}
@@ -1067,7 +1160,10 @@ function ComoFuncionaSection({
                 backgroundColor: accentColor,
                 width: progressAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: ['0%', '100%'],
+                  outputRange: [
+                    `${mobileProgressRange.startPercent}%`,
+                    `${mobileProgressRange.endPercent}%`,
+                  ],
                 }),
               },
             ]}
@@ -1086,6 +1182,7 @@ function ComoFuncionaSection({
             description={step.description}
             benefits={step.benefits}
             isActive={idx === activeStep}
+            isCompleted={idx < activeStep}
             accentColor={accentColor}
             isDark={isDark}
             isMobile={isMobile}
@@ -1115,7 +1212,11 @@ interface PlaceCardData {
   topRatedLabel: string;
   accentColor: string;
   isDark: boolean;
+  infoBody: string;
+  availableFromLabel: string;
+  redeemCtaLabel: string;
   onPress?: () => void;
+  onInfoPress: () => void;
 }
 
 const CARD_AUTO_SLIDE_MS = 3000;
@@ -1136,6 +1237,7 @@ function PlaceCard({
   accentColor,
   isDark,
   onPress,
+  onInfoPress,
 }: PlaceCardData): React.JSX.Element {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [overlayVisible, setOverlayVisible] = useState(false);
@@ -1238,11 +1340,11 @@ function PlaceCard({
         },
       ]}
     >
+      {/* Image area — tap shows overlay controls only, no auth */}
       <TouchableOpacity
         activeOpacity={1}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        onPress={onPress}
         style={styles.placeCardTouchable}
       >
         {/* Image carousel */}
@@ -1309,36 +1411,49 @@ function PlaceCard({
             </View>
           )}
         </View>
+      </TouchableOpacity>
 
-        {/* Body */}
-        <View style={styles.placeCardBody}>
-          <View style={styles.placeCardTitleRow}>
-            <Text style={[styles.placeCardTitle, { color: titleColor }]} numberOfLines={1}>
-              {title}
-            </Text>
-            {isTopRated && (
-              <View style={[styles.topRatedBadge, { borderColor: accentColor }]}>
-                <Text style={[styles.topRatedText, { color: accentColor }]}>{topRatedLabel}</Text>
-              </View>
-            )}
-          </View>
-          <Text style={[styles.placeCardMeta, { color: metaColor }]}>{meta}</Text>
-          <Text style={[styles.placeCardDescription, { color: descColor }]} numberOfLines={3}>
-            {description}
+      {/* Body — separate from image tap so only CTA triggers auth */}
+      <View style={styles.placeCardBody}>
+        <View style={styles.placeCardTitleRow}>
+          <Text style={[styles.placeCardTitle, { color: titleColor }]} numberOfLines={1}>
+            {title}
           </Text>
-          <View style={styles.placeCardFooter}>
-            {/* ATN price with coin logo */}
-            <View style={styles.placeCardPriceRow}>
-              <AirsBrandMark
-                size={18}
-                fillColor={accentColor}
-                cutoutColor={isDark ? '#050510' : '#ffffff'}
-              />
-              <Text style={[styles.placeCardPrice, { color: titleColor }]}>
-                {atnLabel}{' '}
-                <Text style={[styles.placeCardPriceSub, { color: metaColor }]}>{atnUnit}</Text>
-              </Text>
+          {isTopRated && (
+            <View style={[styles.topRatedBadge, { borderColor: accentColor }]}>
+              <Text style={[styles.topRatedText, { color: accentColor }]}>{topRatedLabel}</Text>
             </View>
+          )}
+        </View>
+        <Text style={[styles.placeCardMeta, { color: metaColor }]}>{meta}</Text>
+        <Text style={[styles.placeCardDescription, { color: descColor }]} numberOfLines={3}>
+          {description}
+        </Text>
+        <View style={styles.placeCardFooter}>
+          {/* ATN price with coin logo */}
+          <View style={styles.placeCardPriceRow}>
+            <AirsBrandMark
+              size={18}
+              fillColor={accentColor}
+              cutoutColor={isDark ? '#050510' : '#ffffff'}
+            />
+            <Text style={[styles.placeCardPrice, { color: titleColor }]}>
+              {atnLabel}{' '}
+              <Text style={[styles.placeCardPriceSub, { color: metaColor }]}>{atnUnit}</Text>
+            </Text>
+          </View>
+          <View style={styles.placeCardFooterActions}>
+            {/* Info icon — same level as CTA */}
+            <TouchableOpacity
+              onPress={onInfoPress}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              style={[
+                styles.infoCircleButton,
+                { borderColor: `${accentColor}55`, backgroundColor: `${accentColor}14` },
+              ]}
+            >
+              <InfoIcon size={14} color={accentColor} strokeWidth={2.5} />
+            </TouchableOpacity>
             <TouchableOpacity
               style={[styles.placeCardButton, { backgroundColor: accentColor }]}
               onPress={onPress}
@@ -1351,10 +1466,196 @@ function PlaceCard({
             </TouchableOpacity>
           </View>
         </View>
-      </TouchableOpacity>
+      </View>
     </Animated.View>
   );
 }
+
+// ── BenefitInfoModal ──────────────────────────────────────────────────────────
+interface BenefitInfoModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onRedeem: () => void;
+  title: string;
+  infoBody: string;
+  atnLabel: string;
+  atnUnit: string;
+  availableFromLabel: string;
+  redeemCtaLabel: string;
+  accentColor: string;
+  isDark: boolean;
+  image: ImageSourcePropType;
+}
+
+function BenefitInfoModal({
+  visible,
+  onClose,
+  onRedeem,
+  title,
+  infoBody,
+  atnLabel,
+  atnUnit,
+  availableFromLabel,
+  redeemCtaLabel,
+  accentColor,
+  isDark,
+  image,
+}: BenefitInfoModalProps): React.JSX.Element {
+  const bg = isDark ? '#0d0d1f' : '#ffffff';
+  const border = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.08)';
+  const titleColor = isDark ? '#e8e8ff' : '#0f172a';
+  const bodyColor = isDark ? 'rgba(232,232,255,0.75)' : '#475569';
+  const badgeBg = isDark ? 'rgba(28,203,161,0.14)' : 'rgba(11,90,95,0.07)';
+  const closeBg = isDark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.85)';
+  const backdrop = isDark ? 'rgba(0,0,0,0.78)' : 'rgba(0,0,0,0.45)';
+  const availableText = `${availableFromLabel.replace('{{atn}}', atnLabel)} ${atnUnit}`;
+
+  return (
+    <Modal visible={visible} transparent animationType='fade' onRequestClose={onClose}>
+      {/* Backdrop */}
+      <Pressable
+        style={[infoModalStyles.backdrop, { backgroundColor: backdrop }]}
+        onPress={onClose}
+      />
+
+      {/* Centered card */}
+      <View style={infoModalStyles.centeredWrapper} pointerEvents='box-none'>
+        <View style={[infoModalStyles.card, { backgroundColor: bg, borderColor: border }]}>
+          {/* Hero image with close button overlay */}
+          <View style={infoModalStyles.imageWrap}>
+            <Image source={image} style={infoModalStyles.heroImage} resizeMode='cover' />
+            {/* Gradient-like dark overlay at bottom of image */}
+            <View style={infoModalStyles.imageGradient} />
+            {/* Close button floating top-right */}
+            <TouchableOpacity
+              onPress={onClose}
+              style={[infoModalStyles.closeButton, { backgroundColor: closeBg }]}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            >
+              <CloseIcon size={16} color={isDark ? '#e8e8ff' : '#0f172a'} strokeWidth={2.5} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Content */}
+          <View style={infoModalStyles.content}>
+            <Text style={[infoModalStyles.title, { color: titleColor }]}>{title}</Text>
+            <Text style={[infoModalStyles.body, { color: bodyColor }]}>{infoBody}</Text>
+
+            {/* ATN available badge */}
+            <View style={[infoModalStyles.availableBadge, { backgroundColor: badgeBg }]}>
+              <CheckCircle2Icon size={15} color={accentColor} strokeWidth={2.5} />
+              <Text style={[infoModalStyles.availableText, { color: accentColor }]}>
+                {availableText}
+              </Text>
+            </View>
+
+            {/* Redeem CTA */}
+            <TouchableOpacity
+              style={[infoModalStyles.redeemButton, { backgroundColor: accentColor }]}
+              onPress={onRedeem}
+              activeOpacity={0.82}
+            >
+              <Text
+                style={[infoModalStyles.redeemButtonText, { color: isDark ? '#050510' : '#fff' }]}
+              >
+                {redeemCtaLabel}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const infoModalStyles = StyleSheet.create({
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  centeredWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 24,
+    borderWidth: 1,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.35,
+    shadowRadius: 32,
+    elevation: 20,
+  },
+  imageWrap: {
+    height: 200,
+    position: 'relative',
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imageGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+    background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.45))',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  content: {
+    padding: 22,
+    gap: 14,
+  },
+  title: {
+    fontSize: 19,
+    fontWeight: '700',
+    lineHeight: 26,
+  },
+  body: {
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  availableBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  availableText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  redeemButton: {
+    paddingVertical: 14,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  redeemButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+});
 
 // ── BeneficiosSection ─────────────────────────────────────────────────────────
 function BeneficiosSection({
@@ -1375,8 +1676,21 @@ function BeneficiosSection({
     ]).start();
   }, []);
 
+  const [openInfoKey, setOpenInfoKey] = useState<string | null>(null);
+  const closeInfo = useCallback(() => setOpenInfoKey(null), []);
+  const handleRedeem = useCallback(() => {
+    setOpenInfoKey(null);
+    onSignIn?.();
+  }, [onSignIn]);
+
   const topRatedLabel = t('landing.beneficios.topRated');
   const atnUnit = t('landing.beneficios.atnUnit');
+  const redeemCtaLabel = t('landing.beneficios.redeemCta', undefined, 'Redeem this benefit');
+  const availableFromLabel = t(
+    'landing.beneficios.availableFrom',
+    undefined,
+    'Available from {{atn}} ATN'
+  );
 
   const benefits = [
     {
@@ -1388,6 +1702,7 @@ function BeneficiosSection({
       meta: t('landing.beneficios.cards.eco.meta'),
       isTopRated: true,
       description: t('landing.beneficios.cards.eco.description'),
+      infoBody: t('landing.beneficios.cards.eco.infoBody', undefined, ''),
       atnLabel: t('landing.beneficios.cards.eco.atn'),
       ctaLabel: t('landing.beneficios.cards.eco.cta'),
     },
@@ -1403,6 +1718,7 @@ function BeneficiosSection({
       meta: t('landing.beneficios.cards.experiencias.meta'),
       isTopRated: false,
       description: t('landing.beneficios.cards.experiencias.description'),
+      infoBody: t('landing.beneficios.cards.experiencias.infoBody', undefined, ''),
       atnLabel: t('landing.beneficios.cards.experiencias.atn'),
       ctaLabel: t('landing.beneficios.cards.experiencias.cta'),
     },
@@ -1418,6 +1734,7 @@ function BeneficiosSection({
       meta: t('landing.beneficios.cards.premium.meta'),
       isTopRated: false,
       description: t('landing.beneficios.cards.premium.description'),
+      infoBody: t('landing.beneficios.cards.premium.infoBody', undefined, ''),
       atnLabel: t('landing.beneficios.cards.premium.atn'),
       ctaLabel: t('landing.beneficios.cards.premium.cta'),
     },
@@ -1430,55 +1747,84 @@ function BeneficiosSection({
       meta: t('landing.beneficios.cards.cursos.meta'),
       isTopRated: false,
       description: t('landing.beneficios.cards.cursos.description'),
+      infoBody: t('landing.beneficios.cards.cursos.infoBody', undefined, ''),
       atnLabel: t('landing.beneficios.cards.cursos.atn'),
       ctaLabel: t('landing.beneficios.cards.cursos.cta'),
     },
   ];
 
-  return (
-    <Animated.View
-      style={[
-        styles.section,
-        {
-          backgroundColor: isDark ? '#050510' : '#f6f8fc',
-          opacity: fadeAnim,
-          transform: [{ translateY: slideAnim }],
-        },
-      ]}
-    >
-      <Text style={[styles.sectionTitle, { color: textColor }]}>
-        {t('landing.beneficios.sectionTitle')}
-      </Text>
-      <Text
-        style={[styles.beneficiosSubtitle, { color: isDark ? 'rgba(232,232,255,0.7)' : '#64748b' }]}
-      >
-        {t('landing.beneficios.subtitle')}
-      </Text>
+  const openBenefit = benefits.find((b) => b.key === openInfoKey);
 
-      <View
-        style={[styles.benefitsCardsContainer, isMobile && styles.benefitsCardsContainerMobile]}
+  return (
+    <>
+      <Animated.View
+        style={[
+          styles.section,
+          {
+            backgroundColor: isDark ? '#050510' : '#f6f8fc',
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
       >
-        {benefits.map((benefit) => (
-          <PlaceCard
-            key={benefit.key}
-            images={benefit.images}
-            tags={benefit.tags}
-            rating={benefit.rating}
-            title={benefit.title}
-            meta={benefit.meta}
-            isTopRated={benefit.isTopRated}
-            description={benefit.description}
-            atnLabel={benefit.atnLabel}
-            atnUnit={atnUnit}
-            ctaLabel={benefit.ctaLabel}
-            topRatedLabel={topRatedLabel}
-            accentColor={accentColor}
-            isDark={isDark}
-            onPress={onSignIn}
-          />
-        ))}
-      </View>
-    </Animated.View>
+        <Text style={[styles.sectionTitle, { color: textColor }]}>
+          {t('landing.beneficios.sectionTitle')}
+        </Text>
+        <Text
+          style={[
+            styles.beneficiosSubtitle,
+            { color: isDark ? 'rgba(232,232,255,0.7)' : '#64748b' },
+          ]}
+        >
+          {t('landing.beneficios.subtitle')}
+        </Text>
+
+        <View
+          style={[styles.benefitsCardsContainer, isMobile && styles.benefitsCardsContainerMobile]}
+        >
+          {benefits.map((benefit) => (
+            <PlaceCard
+              key={benefit.key}
+              images={benefit.images}
+              tags={benefit.tags}
+              rating={benefit.rating}
+              title={benefit.title}
+              meta={benefit.meta}
+              isTopRated={benefit.isTopRated}
+              description={benefit.description}
+              infoBody={benefit.infoBody}
+              atnLabel={benefit.atnLabel}
+              atnUnit={atnUnit}
+              ctaLabel={benefit.ctaLabel}
+              availableFromLabel={availableFromLabel}
+              redeemCtaLabel={redeemCtaLabel}
+              topRatedLabel={topRatedLabel}
+              accentColor={accentColor}
+              isDark={isDark}
+              onPress={onSignIn}
+              onInfoPress={() => setOpenInfoKey(benefit.key)}
+            />
+          ))}
+        </View>
+      </Animated.View>
+
+      {openBenefit && (
+        <BenefitInfoModal
+          visible={!!openInfoKey}
+          onClose={closeInfo}
+          onRedeem={handleRedeem}
+          title={openBenefit.title}
+          infoBody={openBenefit.infoBody}
+          atnLabel={openBenefit.atnLabel}
+          atnUnit={atnUnit}
+          availableFromLabel={availableFromLabel}
+          redeemCtaLabel={redeemCtaLabel}
+          accentColor={accentColor}
+          isDark={isDark}
+          image={openBenefit.images[0] ?? openBenefit.images[0]}
+        />
+      )}
+    </>
   );
 }
 
@@ -1663,10 +2009,20 @@ const styles = createTypographyStyles({
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  stepIndicatorBadgeFill: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    borderRadius: 16,
   },
   stepIndicatorText: {
     fontSize: 13,
     fontWeight: '700',
+    zIndex: 1,
   },
   mobileProgressTrack: {
     height: 3,
@@ -1901,6 +2257,27 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 8,
+  },
+  placeCardTitleActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  infoIconButton: {
+    padding: 2,
+  },
+  placeCardFooterActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  infoCircleButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   placeCardTitle: {
     flex: 1,
