@@ -1,6 +1,12 @@
 {
   "permissions": {
-    "allow": ["Bash(pnpm *)", "Bash(git checkout *)", "Bash(npx *)", "Bash(node *)"]
+    "allow": [
+      "Bash(pnpm *)",
+      "Bash(git checkout *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(git rebase *)"
+    ]
   },
   "$version": 3
 }
