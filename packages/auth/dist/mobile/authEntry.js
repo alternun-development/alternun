@@ -1,4 +1,4 @@
-import { resolveAuthProviderSelection } from '../runtime/config.js';
+import { resolveAuthProviderSelection } from '../runtime/config';
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
 const TRUTHY_ENV_VALUES = new Set(['1', 'true', 'yes', 'on']);
 const DEFAULT_AUTHENTIK_LOGIN_ENTRY_MODE = 'source';

@@ -1,6 +1,6 @@
-import { AlternunConfigError, AlternunProviderError } from '../../core/errors.js';
-import { claimsToExternalIdentity } from '../../identity/claims.js';
-import { SupabaseExecutionProvider, } from '../supabase-legacy/SupabaseExecutionProvider.js';
+import { AlternunConfigError, AlternunProviderError } from '../../core/errors';
+import { claimsToExternalIdentity } from '../../identity/claims';
+import { SupabaseExecutionProvider, } from '../supabase-legacy/SupabaseExecutionProvider';
 function normalizeSession(input, fallbackProvider) {
     var _a, _b, _c, _d;
     if (!input || typeof input !== 'object') {
@@ -19,7 +19,8 @@ function normalizeSession(input, fallbackProvider) {
                     ? userPayload.sub
                     : typeof userPayload.id === 'string' && userPayload.id.trim().length > 0
                         ? userPayload.id
-                        : typeof (sessionPayload === null || sessionPayload === void 0 ? void 0 : sessionPayload.userId) === 'string' && sessionPayload.userId.trim().length > 0
+                        : typeof (sessionPayload === null || sessionPayload === void 0 ? void 0 : sessionPayload.userId) === 'string' &&
+                            sessionPayload.userId.trim().length > 0
                             ? sessionPayload.userId
                             : undefined,
                 email: typeof userPayload.email === 'string' && userPayload.email.trim().length > 0
@@ -40,7 +41,8 @@ function normalizeSession(input, fallbackProvider) {
                     ? userPayload.picture
                     : typeof userPayload.image === 'string' && userPayload.image.trim().length > 0
                         ? userPayload.image
-                        : typeof userPayload.avatarUrl === 'string' && userPayload.avatarUrl.trim().length > 0
+                        : typeof userPayload.avatarUrl === 'string' &&
+                            userPayload.avatarUrl.trim().length > 0
                             ? userPayload.avatarUrl
                             : undefined,
             }, typeof userPayload.sub === 'string' && userPayload.sub.trim().length > 0

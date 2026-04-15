@@ -1,1 +1,1 @@
-export { upsertOidcUser } from './upsertOidcUser.js';
+export { upsertOidcUser } from './upsertOidcUser';
