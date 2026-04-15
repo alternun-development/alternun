@@ -16,9 +16,9 @@ const HOP_BY_HOP_HEADERS = new Set([
 type BetterAuthRequestHeaderValue = string | string[] | number | undefined;
 type BetterAuthRequestHeaders = Record<string, BetterAuthRequestHeaderValue>;
 
-interface ResponseHeadersWithCookies extends Headers {
+type ResponseHeadersWithCookies = Omit<Headers, 'getSetCookie'> & {
   getSetCookie?: () => string[];
-}
+};
 
 function normalizeRequestUrl(requestUrl: string): URL {
   return new URL(requestUrl, 'http://alternun.local');

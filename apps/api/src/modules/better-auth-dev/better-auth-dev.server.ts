@@ -35,9 +35,7 @@ function buildOAuthProxyPlugin(
   });
 }
 
-export function createBetterAuthDevAuth(
-  config: BetterAuthDevConfig
-): ReturnType<typeof betterAuth> {
+export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
   const oauthProxyPlugin = buildOAuthProxyPlugin(config.oauthProxy);
   const effectiveRedirectBaseURL =
     config.oauthProxy.enabled && config.oauthProxy.productionURL
