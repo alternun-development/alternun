@@ -1,3 +1,19 @@
+## [1.0.68](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.68) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([2aab253](https://github.com/alternun-development/alternun/commit/2aab253058b154cc813686a858cd954567ed0446))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([b9e841d](https://github.com/alternun-development/alternun/commit/b9e841ddb4810b3abba77e1212d9ead0086e8821))
+
+## [1.0.68](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.68) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([2aab253](https://github.com/alternun-development/alternun/commit/2aab253058b154cc813686a858cd954567ed0446))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([b9e841d](https://github.com/alternun-development/alternun/commit/b9e841ddb4810b3abba77e1212d9ead0086e8821))
+
 ## [1.0.67](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.67) (2026-04-15)
 
 ### Bug Fixes
