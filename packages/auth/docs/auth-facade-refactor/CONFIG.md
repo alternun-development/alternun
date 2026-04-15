@@ -37,7 +37,7 @@ Accepted aliases include:
 - Authentik remains the issuer/trust layer.
 - `AUTH_EXCHANGE_URL` is the backend handoff point for canonical issuer exchange.
 - `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` is the strict rollout mode for the backend handoff; it disables compatibility fallback when canonical issuer minting is missing.
-- The canonical browser-facing Better Auth URL should stay on the API origin at `/auth`; the internal dev service stays on `http://localhost:9083` during local development and can remain behind the API proxy in deployed environments.
+- The canonical browser-facing Better Auth URL should stay on the API origin root; the client/proxy layers append `/auth` internally. The internal dev service stays on `http://localhost:9083` during local development and can remain behind the API proxy in deployed environments.
 - The API proxy answers browser `OPTIONS` preflight locally for `/auth/*` and only forwards the actual Better Auth request to the private service.
 - The mobile web callback now refreshes the Better Auth execution session before returning to the dashboard, and it clears stale legacy OIDC state on Better Auth runs so the app does not rehydrate the wrong session source after redirect.
 
