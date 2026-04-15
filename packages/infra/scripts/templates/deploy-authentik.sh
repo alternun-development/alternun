@@ -232,6 +232,43 @@ chown root:root "${ENV_FILE}"
 docker compose -f /opt/alternun/identity/docker-compose.yml pull
 docker compose -f /opt/alternun/identity/docker-compose.yml up -d --remove-orphans
 
+apply_authentik_source_stage_hotfix() {
+  docker compose -f /opt/alternun/identity/docker-compose.yml exec -u root -T \
+    server /ak-root/.venv/bin/python - <<'PY'
+from pathlib import Path
+
+path = Path('/authentik/enterprise/stages/source/stage.py')
+text = path.read_text()
+
+marker = 'self.request.session.pop(SESSION_KEY_OVERRIDE_FLOW_TOKEN, None)'
+if marker in text:
+    print('Authentik source-stage hotfix already present.')
+    raise SystemExit(0)
+
+needle = '''        response = plan.to_redirect(self.request, token.flow)
+        token.delete()
+'''
+replacement = '''        response = plan.to_redirect(self.request, token.flow)
+        self.request.session.pop(SESSION_KEY_OVERRIDE_FLOW_TOKEN, None)
+        self.request.session.pop(SESSION_KEY_SOURCE_FLOW_STAGES, None)
+        self.request.session.pop(SESSION_KEY_SOURCE_FLOW_CONTEXT, None)
+        try:
+            token.delete()
+        except ValueError:
+            self.logger.warning(
+                "Skipping source flow token delete after redirect because token_ptr_id was already cleared"
+            )
+'''
+
+if needle not in text:
+    raise SystemExit('Expected source-stage finalizer pattern not found in stage.py')
+
+path.write_text(text.replace(needle, replacement, 1))
+print('Applied Authentik source-stage hotfix.')
+PY
+  docker compose -f /opt/alternun/identity/docker-compose.yml restart server >/dev/null
+}
+
 traefik_container_id() {
   docker compose -f /opt/alternun/identity/docker-compose.yml ps -q traefik 2>/dev/null || true
 }
@@ -473,6 +510,16 @@ fi
 
 if ! run_authentik_migrations; then
   echo "ERROR: Authentik migrations did not complete before integration bootstrap."
+  exit 1
+fi
+
+if ! apply_authentik_source_stage_hotfix; then
+  echo "ERROR: Authentik source-stage runtime hotfix could not be applied."
+  exit 1
+fi
+
+if ! wait_for_authentik_django; then
+  echo "ERROR: Authentik did not become ready after applying the source-stage runtime hotfix."
   exit 1
 fi
 
