@@ -1,6 +1,6 @@
-import { AlternunConfigError, AlternunProviderError } from '../../core/errors';
-import { claimsToExternalIdentity } from '../../identity/claims';
-import { SupabaseExecutionProvider, } from '../supabase-legacy/SupabaseExecutionProvider';
+import { AlternunConfigError, AlternunProviderError } from '../../core/errors.js';
+import { claimsToExternalIdentity } from '../../identity/claims.js';
+import { SupabaseExecutionProvider, } from '../supabase-legacy/SupabaseExecutionProvider.js';
 function normalizeSession(input, fallbackProvider) {
     var _a, _b, _c, _d;
     if (!input || typeof input !== 'object') {

@@ -1,4 +1,4 @@
-import { parseAuthProviderSelection, parseBooleanLike } from '../validation/providerConfig';
+import { parseAuthProviderSelection, parseBooleanLike } from '../validation/providerConfig.js';
 export function getProcessEnv() {
     var _a;
     const maybeProcess = globalThis.process;

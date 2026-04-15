@@ -1,6 +1,6 @@
-import { buildAuthentikRelayRoute, shouldUseAuthentikRelayEntry } from './authEntry';
-import { clearPendingAuthentikOAuthProvider, readPendingAuthentikOAuthProvider, } from './authentikClient';
-import { nativeSignIn, resolveAuthRuntime, webRedirectSignIn } from './runtimeSignIn';
+import { buildAuthentikRelayRoute, shouldUseAuthentikRelayEntry } from './authEntry.js';
+import { clearPendingAuthentikOAuthProvider, readPendingAuthentikOAuthProvider, } from './authentikClient.js';
+import { nativeSignIn, resolveAuthRuntime, webRedirectSignIn } from './runtimeSignIn.js';
 function resolveRuntime(dependencies) {
     var _a, _b;
     return (_b = (_a = dependencies === null || dependencies === void 0 ? void 0 : dependencies.resolveRuntime) === null || _a === void 0 ? void 0 : _a.call(dependencies)) !== null && _b !== void 0 ? _b : resolveAuthRuntime();

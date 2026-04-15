@@ -9,27 +9,55 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.64](https://github.com/alternun-development/alternun/compare/v1.0.63...v1.0.64) (2026-04-15)
+export const CHANGELOG_TEXT = `## [1.0.66](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.66) (2026-04-15)
 
 
 ### Bug Fixes
 
-* **mobile:** resolve all lint and type-check build failures ([c0fcff2](https://github.com/alternun-development/alternun/commit/c0fcff2b0b43c6d54465f3620b1409e4c7ad8546))
+* **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
 
 
 
 
+
+## [1.0.66](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.66) (2026-04-15)
+
+
+### Bug Fixes
+
+* **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+
+
+
+
+
+## [1.0.65](https://github.com/alternun-development/alternun/compare/v1.0.64...v1.0.65) (2026-04-15)
+
+### Bug Fixes
+
+- **api:** satisfy better auth dev build types ([ab2d488](https://github.com/alternun-development/alternun/commit/ab2d4884aae97f9c2cdedbfce79a95ae51a70d27))
+- canonicalize better auth public base url ([1202905](https://github.com/alternun-development/alternun/commit/12029050454408be3f7b545db9a7a910c97e4164))
+- **mobile,i18n,repo:** LandingFooter, PublicLandingPage, AirsIntroExperience, en ([dbd6ac4](https://github.com/alternun-development/alternun/commit/dbd6ac4a0435fa804b0eb9973aa333db03f58699))
+
+## [1.0.65](https://github.com/alternun-development/alternun/compare/v1.0.64...v1.0.65) (2026-04-15)
+
+### Bug Fixes
+
+- **api:** satisfy better auth dev build types ([ab2d488](https://github.com/alternun-development/alternun/commit/ab2d4884aae97f9c2cdedbfce79a95ae51a70d27))
+- canonicalize better auth public base url ([1202905](https://github.com/alternun-development/alternun/commit/12029050454408be3f7b545db9a7a910c97e4164))
+- **mobile,i18n,repo:** LandingFooter, PublicLandingPage, AirsIntroExperience, en ([dbd6ac4](https://github.com/alternun-development/alternun/commit/dbd6ac4a0435fa804b0eb9973aa333db03f58699))
 
 ## [1.0.64](https://github.com/alternun-development/alternun/compare/v1.0.63...v1.0.64) (2026-04-15)
 
+### Bug Fixes
+
+- **mobile:** resolve all lint and type-check build failures ([c0fcff2](https://github.com/alternun-development/alternun/commit/c0fcff2b0b43c6d54465f3620b1409e4c7ad8546))
+
+## [1.0.64](https://github.com/alternun-development/alternun/compare/v1.0.63...v1.0.64) (2026-04-15)
 
 ### Bug Fixes
 
-* **mobile:** resolve all lint and type-check build failures ([c0fcff2](https://github.com/alternun-development/alternun/commit/c0fcff2b0b43c6d54465f3620b1409e4c7ad8546))
-
-
-
-
+- **mobile:** resolve all lint and type-check build failures ([c0fcff2](https://github.com/alternun-development/alternun/commit/c0fcff2b0b43c6d54465f3620b1409e4c7ad8546))
 
 ## [1.0.63](https://github.com/alternun-development/alternun/compare/v1.0.62...v1.0.63) (2026-04-12)
 
@@ -1195,4 +1223,4 @@ All notable changes to this project will be documented in this file.
 /**
  * Version extracted from package.json for display purposes.
  */
-export const APP_VERSION = '1.0.64';
+export const APP_VERSION = '1.0.66';

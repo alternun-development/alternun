@@ -1,5 +1,5 @@
-import { AlternunProviderError, toAlternunAuthError } from '../core/errors';
-import { createAlternunSession, executionSessionToUser, issuerSessionToUser, principalToUser, } from '../core/session';
+import { AlternunProviderError, toAlternunAuthError } from '../core/errors.js';
+import { createAlternunSession, executionSessionToUser, issuerSessionToUser, principalToUser, } from '../core/session.js';
 function uniqueFlows(...candidates) {
     return Array.from(new Set(candidates.filter(Boolean)));
 }
