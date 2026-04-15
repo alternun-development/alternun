@@ -102,6 +102,7 @@ Validated against Better Auth official docs on `2026-04-09`:
 
 - Better Auth needs an explicit `BETTER_AUTH_URL` or `baseURL` for the private service to avoid OAuth callback mismatches.
 - Local development uses `BETTER_AUTH_URL`; deployed stacks can supply the proxy target as `AUTH_BETTER_AUTH_URL` in the API runtime, while the Expo bundle still consumes the browser-facing `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` public URL.
+- When a Better Auth URL is present but the execution flag is omitted, the runtime now promotes to `better-auth` automatically so the configured URL stays authoritative. An explicit `supabase` flag still wins for rollback.
 - Better Auth needs a database for standard session and account persistence unless you deliberately choose a stateless mode.
 - Better Auth defaults to cookie-based session handling. Alternun should treat those cookies as execution-layer state, not as the final application session.
 - Better Auth rate limiting defaults are not enough to define an Alternun production posture by themselves. For multi-instance testnet or production, use database or secondary storage instead of in-memory defaults.
@@ -130,6 +131,7 @@ The first real rollout should use:
 - `AUTH_EMAIL_PROVIDER=postmark` or `ses`
 - `AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange`
 - The current testnet rollout uses Better Auth when `AUTH_EXECUTION_PROVIDER=better-auth` and `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` point at the API-origin `/auth` route; keep Supabase as the rollback path.
+- If the Better Auth URL is present and the execution flag is missing, the runtime still promotes to Better Auth so a stale legacy alias cannot force Authentik.
 
 Do not switch production/shared rollback environments to this shape until the testnet execution plan gates pass.
 

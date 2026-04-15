@@ -8,6 +8,14 @@ export type {
   User,
 } from '@edcalderon/auth';
 
+export { AppAuthProvider, useAuth, type AppAuthProviderProps } from './mobile/AppAuthProvider';
+export { AlternunAuthFacade } from './facade/AlternunAuthFacade';
+export { createAuthFacade } from './facade/createAuthFacade';
+export {
+  BetterAuthExecutionProvider,
+  type BetterAuthExecutionProviderOptions,
+  type BetterAuthClientLike,
+} from './providers/better-auth/BetterAuthExecutionProvider';
 export {
   AuthentikIssuerProvider,
   type AuthentikIssuerProviderOptions,

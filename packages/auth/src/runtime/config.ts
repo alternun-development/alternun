@@ -1,4 +1,4 @@
-import type { AuthRuntimeConfig } from '../core/types';
+import type { AuthExecutionProviderName, AuthRuntimeConfig } from '../core/types';
 import { parseAuthProviderSelection, parseBooleanLike } from '../validation/providerConfig';
 
 export function getProcessEnv(): Record<string, string | undefined> {
@@ -21,6 +21,28 @@ function readEnvValue(
   return fallback;
 }
 
+function resolveExecutionProvider(
+  env: Record<string, string | undefined>
+): AuthExecutionProviderName {
+  const explicit = readEnvValue(env, [
+    'AUTH_EXECUTION_PROVIDER',
+    'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER',
+  ]);
+  const normalized = explicit?.trim().toLowerCase();
+
+  if (normalized === 'better-auth' || normalized === 'supabase') {
+    return normalized;
+  }
+
+  const betterAuthBaseUrl = readEnvValue(env, [
+    'AUTH_BETTER_AUTH_URL',
+    'BETTER_AUTH_URL',
+    'EXPO_PUBLIC_BETTER_AUTH_URL',
+  ]);
+
+  return betterAuthBaseUrl ? 'better-auth' : 'supabase';
+}
+
 export function resolveAuthRuntime(): 'web' | 'native' {
   return typeof window !== 'undefined' && typeof document !== 'undefined' ? 'web' : 'native';
 }
@@ -29,10 +51,7 @@ export function resolveAuthRuntimeConfig(
   env: Record<string, string | undefined> = getProcessEnv()
 ): AuthRuntimeConfig {
   const selection = parseAuthProviderSelection({
-    executionProvider: readEnvValue(env, [
-      'AUTH_EXECUTION_PROVIDER',
-      'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER',
-    ]),
+    executionProvider: resolveExecutionProvider(env),
     issuerProvider: readEnvValue(env, ['AUTH_ISSUER_PROVIDER']),
     emailProvider: readEnvValue(env, [
       'AUTH_EMAIL_PROVIDER',
