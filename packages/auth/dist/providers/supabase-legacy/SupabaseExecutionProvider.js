@@ -1,4 +1,4 @@
-import { AlternunProviderError } from '../../core/errors';
+import { AlternunProviderError } from '../../core/errors.js';
 function extractMetadata(user) {
     if (!(user === null || user === void 0 ? void 0 : user.metadata) || typeof user.metadata !== 'object') {
         return {};

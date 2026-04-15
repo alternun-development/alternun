@@ -1,15 +1,15 @@
-import { resolveAuthRuntimeConfig } from '../runtime/config';
-import { AlternunMobileAuthClient, } from '../mobile/AlternunMobileAuthClient';
-import { BetterAuthExecutionProvider } from '../providers/better-auth/BetterAuthExecutionProvider';
-import { AuthentikIssuerProvider } from '../providers/authentik/AuthentikIssuerProvider';
-import { SupabaseLegacyIssuerProvider } from '../providers/supabase-legacy/SupabaseLegacyIssuerProvider';
-import { SupabaseExecutionProvider, } from '../providers/supabase-legacy/SupabaseExecutionProvider';
-import { SupabaseIdentityRepository } from '../providers/supabase-legacy/SupabaseIdentityRepository';
-import { PostmarkEmailProvider } from '../providers/email/PostmarkEmailProvider';
-import { SesEmailProvider } from '../providers/email/SesEmailProvider';
-import { SupabaseEmailProvider } from '../providers/email/SupabaseEmailProvider';
-import { upsertOidcUser } from '../compat/upsertOidcUser';
-import { AlternunAuthFacade } from './AlternunAuthFacade';
+import { resolveAuthRuntimeConfig } from '../runtime/config.js';
+import { AlternunMobileAuthClient, } from '../mobile/AlternunMobileAuthClient.js';
+import { BetterAuthExecutionProvider } from '../providers/better-auth/BetterAuthExecutionProvider.js';
+import { AuthentikIssuerProvider } from '../providers/authentik/AuthentikIssuerProvider.js';
+import { SupabaseLegacyIssuerProvider } from '../providers/supabase-legacy/SupabaseLegacyIssuerProvider.js';
+import { SupabaseExecutionProvider, } from '../providers/supabase-legacy/SupabaseExecutionProvider.js';
+import { SupabaseIdentityRepository } from '../providers/supabase-legacy/SupabaseIdentityRepository.js';
+import { PostmarkEmailProvider } from '../providers/email/PostmarkEmailProvider.js';
+import { SesEmailProvider } from '../providers/email/SesEmailProvider.js';
+import { SupabaseEmailProvider } from '../providers/email/SupabaseEmailProvider.js';
+import { upsertOidcUser } from '../compat/upsertOidcUser.js';
+import { AlternunAuthFacade } from './AlternunAuthFacade.js';
 function resolveRuntimeConfig(input) {
     const { env, ...overrides } = input !== null && input !== void 0 ? input : {};
     return {
