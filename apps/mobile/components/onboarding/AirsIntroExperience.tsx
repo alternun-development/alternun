@@ -67,6 +67,7 @@ interface AirsIntroExperienceProps {
   onActiveSectionChange?: (sectionId: string) => void;
   sectionOffsets?: Record<string, number>;
   heroHeight?: number;
+  onHeroNavigate?: (sectionId: string) => void;
 }
 
 const AirsIntroExperience = forwardRef<
@@ -86,6 +87,7 @@ const AirsIntroExperience = forwardRef<
       onActiveSectionChange,
       sectionOffsets,
       heroHeight: heroHeightProp,
+      onHeroNavigate,
     },
     ref
   ) => {
@@ -1093,6 +1095,26 @@ const AirsIntroExperience = forwardRef<
                   {t('landing.actions.goToDashboard')}
                 </Text>
               </TouchableOpacity>
+              {onHeroNavigate && (
+                <>
+                  <TouchableOpacity
+                    activeOpacity={0.75}
+                    onPress={() => onHeroNavigate('como-funciona')}
+                  >
+                    <Text style={[styles.linkAction, { color: palette.accent }]}>
+                      {t('landing.nav.howItWorks')}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.75}
+                    onPress={() => onHeroNavigate('beneficios')}
+                  >
+                    <Text style={[styles.linkAction, { color: palette.accent }]}>
+                      {t('landing.nav.benefits')}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
           </Animated.View>
 

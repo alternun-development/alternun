@@ -268,7 +268,7 @@ function PublicLandingPageWrapper({
         airsIntroRef.current?.scrollToSection?.(sectionOffset);
       }
     },
-    [setActiveSection, sectionOffsetsRef, airsIntroRef]
+    [setActiveSection, sectionOffsetsRef]
   );
 
   // Callback for scroll-based section tracking
@@ -302,6 +302,7 @@ function PublicLandingPageWrapper({
         onActiveSectionChange={handleActiveSectionChange}
         sectionOffsets={sectionOffsetsRef.current}
         heroHeight={heroHeight}
+        onHeroNavigate={handleNavPress}
       />
     </View>
   );
@@ -1893,7 +1894,7 @@ const styles = createTypographyStyles({
     gap: 16,
     justifyContent: 'center',
     flexWrap: 'wrap',
-    alignItems: 'stretch',
+    alignItems: 'center',
   },
   tokenCardsContainerMobile: {
     flexDirection: 'column',
@@ -2039,6 +2040,7 @@ const styles = createTypographyStyles({
     gap: 14,
     flexWrap: 'wrap',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   stepsContainerMobile: {
     flexDirection: 'column',
@@ -2148,6 +2150,7 @@ const styles = createTypographyStyles({
     gap: 16,
     flexWrap: 'wrap',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   benefitsCardsContainerMobile: {
     flexDirection: 'column',
@@ -2156,6 +2159,7 @@ const styles = createTypographyStyles({
   placeCard: {
     width: '100%',
     maxWidth: 400,
+    minWidth: 240,
     borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
@@ -2166,7 +2170,7 @@ const styles = createTypographyStyles({
     elevation: 8,
   },
   placeCardTouchable: {
-    flex: 1,
+    width: '100%',
   },
   placeCardImageWrap: {
     height: 200,
