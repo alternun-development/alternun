@@ -19,8 +19,9 @@ What is already true:
 - `packages/auth` has a provider-agnostic facade and compatibility adapters.
 - Better Auth has an execution adapter in code.
 - Authentik remains the configured issuer default.
-- Legacy Supabase execution still remains the default runtime path.
+- Legacy Supabase execution still remains the rollback/legacy path, while the current testnet env already opts into Better Auth.
 - The issuer provider already prefers `AUTH_EXCHANGE_URL` when it is configured.
+- Current testnet ownership is split across `dev` for the Expo bundle, `dashboard-dev` for the live API/admin runtime, and `identity-dev` for Authentik. `api-dev` is a backend-only escape hatch.
 
 What is not true yet:
 
@@ -71,7 +72,7 @@ Provision these before enabling Better Auth on testnet:
 
 Use explicit testnet domains instead of overloading current Authentik domains.
 
-- Better Auth execution service: API-owned compatibility route or a dedicated reachable host
+- Better Auth execution service: the live testnet API/auth runtime is owned by `dashboard-dev`; `api-dev` stays a backend-only escape hatch
 - Authentik issuer remains under `https://testnet.sso.alternun.co/...`
 - Backend exchange remains under the testnet API domain
 
@@ -217,8 +218,8 @@ Acceptance checks:
 
 ## Rollout Sequence
 
-1. Deploy Better Auth service to testnet.
-2. Deploy backend exchange endpoint to testnet and wire the signing key runtime.
+1. Deploy the owning `dashboard-dev` stack so the live testnet API/auth runtime carries the current Better Auth config.
+2. Deploy `identity-dev` and wire the signing key runtime.
 3. Wire `packages/auth` to call the exchange endpoint.
 4. Enable `AUTH_EXECUTION_PROVIDER=better-auth` for testnet clients only.
 5. Run the validation matrix.

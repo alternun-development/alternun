@@ -50,12 +50,12 @@ Supabase is the application auth/data layer and legacy compatibility path.
 
 It owns:
 
-- the application session once AIRS finalizes auth
+- the application session in the compatibility path
 - app-user provisioning and synchronization
 - row-level authorization and app data access
 - email/password auth and wallet auth
 
-For AIRS web social login, Supabase is not the visible identity broker. Authentik is the issuer boundary, and Better Auth can execute the browser sign-in when selected.
+For AIRS web social login, Supabase is not the visible identity broker. Authentik is the issuer boundary, and Better Auth can execute the browser sign-in when selected. When `AUTH_EXECUTION_PROVIDER=better-auth`, the browser still ends up with the canonical issuer-backed application session rather than a Better Auth cookie.
 
 ## Runtime Split
 
@@ -85,6 +85,10 @@ Native auth remains separate from the web callback route. It should use runtime-
 Popup login is **not** part of the package contract.
 
 If popup auth is added later, it should be implemented as a separate explicit API, not implied by a generic `signIn({ flow })` wrapper.
+
+## Deployment Note
+
+On the current testnet rollout, the user-facing bundle is deployed from `dev`, the live API/auth runtime is owned by `dashboard-dev`, and Authentik lives in `identity-dev`. `api-dev` is a backend-only escape hatch, not the owning stack for `testnet.api.alternun.co`.
 
 ## Shared Package Contract
 
