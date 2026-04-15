@@ -7,18 +7,10 @@ export type {
   SignInOptions,
   User,
 } from '@edcalderon/auth';
-export { AppAuthProvider, useAuth, type AppAuthProviderProps } from './mobile/AppAuthProvider';
-export { AlternunAuthFacade } from './facade/AlternunAuthFacade';
-export { createAuthFacade } from './facade/createAuthFacade';
 export {
   AuthentikIssuerProvider,
   type AuthentikIssuerProviderOptions,
 } from './providers/authentik/AuthentikIssuerProvider';
-export {
-  BetterAuthExecutionProvider,
-  type BetterAuthExecutionProviderOptions,
-  type BetterAuthClientLike,
-} from './providers/better-auth/BetterAuthExecutionProvider';
 export {
   SupabaseExecutionProvider,
   type SupabaseExecutionProviderOptions,
