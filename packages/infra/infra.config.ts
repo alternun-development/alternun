@@ -5,8 +5,6 @@
 /* eslint-disable indent */
 /* eslint-disable security/detect-non-literal-fs-filename */
 /* eslint-disable security/detect-object-injection */
-// / <reference path="./sst-env.d.ts" />
-
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';

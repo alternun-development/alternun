@@ -67,9 +67,9 @@ function parseChangelog(raw) {
 
     const date = m[2] ?? m[3] ?? '';
 
-    // Detect whether any ### section has at least one "- " or "* " item
+    // Detect whether any ### section has at least one "- " item
     const hasSection = /^### /m.test(block);
-    const hasItem = /^[-*] /m.test(block.replace(/^[^#]*/s, '').replace(/^## .*/m, ''));
+    const hasItem = /^- /m.test(block.replace(/^[^#]*/s, '').replace(/^## .*/m, ''));
 
     // Collect sections for richer reporting
     const sections = [];
@@ -119,13 +119,7 @@ function run() {
     target = entries.find((e) => e.version === args.targetVersion);
     if (!target) {
       console.error(`check-changelog: version ${args.targetVersion} not found in CHANGELOG.md.`);
-      console.error(
-        '  Available versions:',
-        entries
-          .slice(0, 5)
-          .map((e) => e.version)
-          .join(', ')
-      );
+      console.error('  Available versions:', entries.slice(0, 5).map((e) => e.version).join(', '));
       process.exit(1);
     }
   } else {
@@ -153,10 +147,9 @@ function run() {
     process.exit(1);
   }
 
-  const sectionSummary =
-    target.sections.length > 0
-      ? `  Sections: ${target.sections.join(', ')}`
-      : '  (no named sections)';
+  const sectionSummary = target.sections.length > 0
+    ? `  Sections: ${target.sections.join(', ')}`
+    : '  (no named sections)';
 
   console.log(`check-changelog: ✅  v${target.version} (${target.date}) has documented changes.`);
   console.log(sectionSummary);
