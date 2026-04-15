@@ -34,7 +34,7 @@
       "apiUrl": "https://testnet.api.alternun.co",
       "betterAuthUrl": "https://testnet.api.alternun.co",
       "authentikLoginEntryMode": "source",
-      "authExecutionProvider": "supabase",
+      "authExecutionProvider": "better-auth",
       "authExchangeUrl": "https://testnet.api.alternun.co/auth/exchange",
       "authentikSocialLoginMode": "authentik",
       "authentikAllowCustomProviderFlowSlugs": false,
