@@ -10,6 +10,14 @@ test('resolveAuthRuntimeConfig infers better-auth from the Better Auth url when 
   assert.equal(config.executionProvider, 'better-auth');
 });
 
+test('resolveAuthRuntimeConfig honors the public execution flag directly', () => {
+  const config = resolveAuthRuntimeConfig({
+    EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+  });
+
+  assert.equal(config.executionProvider, 'better-auth');
+});
+
 test('resolveAuthRuntimeConfig still honors an explicit supabase rollback flag', () => {
   const config = resolveAuthRuntimeConfig({
     AUTH_EXECUTION_PROVIDER: 'supabase',
