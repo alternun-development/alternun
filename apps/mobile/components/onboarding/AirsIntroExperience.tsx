@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/explicit-function-return-type */
-import { getLocaleLabel } from '@alternun/i18n';
 import React, {
   forwardRef,
   useCallback,
@@ -11,8 +10,6 @@ import React, {
 } from 'react';
 import {
   Animated,
-  Linking,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -28,15 +25,8 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronUp,
-  Languages,
   LogIn,
-  Moon,
-  PlayCircle,
-  RotateCcw,
   Settings as SettingsIcon,
-  Sun,
-  Volume2,
-  VolumeX,
   User,
 } from 'lucide-react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -45,19 +35,17 @@ import LandingFooter from '../common/LandingFooter';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { BackToTopButton } from '../common/BackToTopButton';
 import { useAppTranslation } from '../i18n/useAppTranslation';
-import { getAirsIntroVideoUrl, resolveLocalAssetUri } from './airsIntroVideoSource';
+import { getAirsIntroVideoUrl } from './airsIntroVideoSource';
+import AirsIntroSettingsMenu from './AirsIntroSettingsMenu';
+import AirsIntroVideoCard from './AirsIntroVideoCard';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 
-const AIRS_VIDEO_POSTER =
-  resolveLocalAssetUri(require('../../assets/images/water_falls-alternun-digital-forge.webp')) ||
-  'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS';
 const AIRS_BG_LIGHT_SRC =
   'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS';
 const HERO_EXPANSION_RANGE = 420;
 const HERO_SOLID_SWAP_SCROLL = 180;
 const AUTO_UNMUTE_SCROLL_Y = 88;
 const TOP_PAUSE_SCROLL_Y = 6;
-const INTRO_PREVIEW_SECONDS = 6;
 
 const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg');
 const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg');
@@ -79,119 +67,6 @@ interface AirsIntroExperienceProps {
   onActiveSectionChange?: (sectionId: string) => void;
   sectionOffsets?: Record<string, number>;
   heroHeight?: number;
-}
-
-function buildVideoHtml(
-  videoUrl: string,
-  posterUrl: string,
-  muted: boolean,
-  previewMode: boolean,
-  previewSeconds: number
-): string {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <style>
-          html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #04040f; overflow: hidden; }
-          #airsVideo { width: 100%; height: 100%; object-fit: cover; background: #04040f; }
-        </style>
-      </head>
-      <body>
-        <video id="airsVideo" playsinline webkit-playsinline loop></video>
-        <script>
-          const videoSource = ${JSON.stringify(videoUrl)};
-          const videoPoster = ${JSON.stringify(posterUrl)};
-          const initialMuted = ${muted ? 'true' : 'false'};
-          const initialPreviewMode = ${previewMode ? 'true' : 'false'};
-          const previewLoopSeconds = ${previewSeconds};
-          const video = document.getElementById('airsVideo');
-          if (video) {
-            let isPreviewMode = initialPreviewMode;
-            video.poster = videoPoster;
-            video.autoplay = true;
-            video.loop = true;
-            const source = document.createElement('source');
-            source.src = videoSource;
-            source.type = 'video/mp4';
-            video.appendChild(source);
-            const setMuted = (value) => {
-              const muted = !!value;
-              video.defaultMuted = muted;
-              video.muted = muted;
-              video.volume = muted ? 0 : 1;
-            };
-            const restartVideo = () => {
-              video.currentTime = 0;
-              const playResult = video.play();
-              if (playResult && typeof playResult.catch === 'function') {
-                playResult.catch(() => {});
-              }
-            };
-            const setPlayback = (shouldPlay) => {
-              if (shouldPlay) {
-                const playResult = video.play();
-                if (playResult && typeof playResult.catch === 'function') {
-                  playResult.catch(() => {});
-                }
-                return;
-              }
-              video.pause();
-            };
-            const setPreviewMode = (enabled) => {
-              isPreviewMode = !!enabled;
-              if (isPreviewMode && video.currentTime >= previewLoopSeconds) {
-                video.currentTime = 0;
-              }
-              const playResult = video.play();
-              if (playResult && typeof playResult.catch === 'function') {
-                playResult.catch(() => {});
-              }
-              postPlaybackState();
-            };
-            const handlePreviewLoop = () => {
-              if (!isPreviewMode) {
-                return;
-              }
-              if (video.currentTime >= previewLoopSeconds) {
-                video.currentTime = 0;
-                const playResult = video.play();
-                if (playResult && typeof playResult.catch === 'function') {
-                  playResult.catch(() => {});
-                }
-              }
-            };
-            const postPlaybackState = () => {
-              const isPlaying = !isPreviewMode && !video.paused && !video.ended;
-              if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({
-                  type: 'playback',
-                  isPlaying
-                }));
-              }
-            };
-            window.__setMuted = setMuted;
-            window.__restartVideo = restartVideo;
-            window.__setPlayback = setPlayback;
-            window.__setPreviewMode = setPreviewMode;
-            const tryPlay = () => video.play().catch(() => {});
-            setMuted(initialMuted);
-            tryPlay();
-            video.addEventListener('play', postPlaybackState);
-            video.addEventListener('pause', postPlaybackState);
-            video.addEventListener('ended', postPlaybackState);
-            video.addEventListener('waiting', postPlaybackState);
-            video.addEventListener('timeupdate', handlePreviewLoop);
-            postPlaybackState();
-            document.addEventListener('visibilitychange', () => {
-              if (!document.hidden) tryPlay();
-            });
-          }
-        </script>
-      </body>
-    </html>
-  `;
 }
 
 const AirsIntroExperience = forwardRef<
@@ -231,7 +106,7 @@ const AirsIntroExperience = forwardRef<
       []
     );
 
-    const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
+    const { themeMode, language } = useAppPreferences();
     const { t } = useAppTranslation('mobile');
     const isDark = isDarkProp ?? themeMode === 'dark';
     const [profileMenuVisible, setProfileMenuVisible] = useState(false);
@@ -259,27 +134,12 @@ const AirsIntroExperience = forwardRef<
     }, [headerNavMobileMenuVisible, headerNavMobileMenuAnim]);
 
     const scrollY = useRef(new Animated.Value(0)).current;
-    const webVideoRef = useRef<any>(null);
-    const webViewRef = useRef<any>(null);
     const isMutedRef = useRef(isMuted);
     const hasManualAudioChoiceRef = useRef(hasManualAudioChoice);
     const hasAutoUnmutedRef = useRef(hasAutoUnmuted);
     const hasScrollActivatedPlaybackRef = useRef(hasScrollActivatedPlayback);
     const isInTopZoneRef = useRef(true);
-    const isScreenFocusedRef = useRef(isScreenFocused);
     const videoUri = useMemo(() => getAirsIntroVideoUrl(language), [language]);
-
-    const WebView = useMemo(() => {
-      if (Platform.OS === 'web') {
-        return null;
-      }
-
-      try {
-        return require('react-native-webview').WebView;
-      } catch {
-        return null;
-      }
-    }, []);
 
     useEffect(() => {
       setIsMuted(true);
@@ -298,10 +158,6 @@ const AirsIntroExperience = forwardRef<
       hasAutoUnmutedRef.current = hasAutoUnmuted;
       hasScrollActivatedPlaybackRef.current = hasScrollActivatedPlayback;
     }, [hasAutoUnmuted, hasManualAudioChoice, hasScrollActivatedPlayback, isMuted]);
-
-    useEffect(() => {
-      isScreenFocusedRef.current = isScreenFocused;
-    }, [isScreenFocused]);
 
     const syncTopZoneState = useCallback((scrollOffset: number) => {
       const atTop = scrollOffset <= TOP_PAUSE_SCROLL_Y;
@@ -368,151 +224,6 @@ const AirsIntroExperience = forwardRef<
       heroHeightProp,
     ]);
 
-    useEffect(() => {
-      if (Platform.OS !== 'web') {
-        return;
-      }
-      const video = webVideoRef.current;
-      if (!video) {
-        return;
-      }
-
-      const shouldPlayMainTrack = hasScrollActivatedPlayback && isScreenFocused;
-      const effectiveMuted = isMuted || !shouldPlayMainTrack;
-      video.defaultMuted = effectiveMuted;
-      video.muted = effectiveMuted;
-      video.volume = effectiveMuted ? 0 : 1;
-
-      if (!isScreenFocused) {
-        video.pause?.();
-        setIsVideoPlaying(false);
-        return;
-      }
-
-      const playResult = video.play?.();
-      if (!shouldPlayMainTrack) {
-        setIsVideoPlaying(false);
-        return;
-      }
-      if (playResult && typeof playResult.then === 'function') {
-        playResult
-          .then(() => {
-            setIsVideoPlaying(true);
-          })
-          .catch(() => {
-            setIsVideoPlaying(false);
-          });
-        return;
-      }
-
-      if (playResult && typeof playResult.catch === 'function') {
-        playResult.catch(() => {
-          setIsVideoPlaying(false);
-        });
-      }
-
-      setIsVideoPlaying(Boolean(!video.paused && !video.ended));
-    }, [hasScrollActivatedPlayback, isMuted, isScreenFocused, videoUri]);
-
-    useEffect(() => {
-      if (Platform.OS !== 'web') {
-        return;
-      }
-      const video = webVideoRef.current;
-      if (!video) {
-        return;
-      }
-
-      const enforcePreviewLoop = () => {
-        if (hasScrollActivatedPlaybackRef.current) {
-          return;
-        }
-        if (video.currentTime >= INTRO_PREVIEW_SECONDS) {
-          video.currentTime = 0;
-          const playResult = video.play?.();
-          if (playResult && typeof playResult.catch === 'function') {
-            playResult.catch(() => {});
-          }
-        }
-      };
-
-      video.addEventListener?.('timeupdate', enforcePreviewLoop);
-      return () => {
-        video.removeEventListener?.('timeupdate', enforcePreviewLoop);
-      };
-    }, [videoUri]);
-
-    useEffect(() => {
-      if (Platform.OS !== 'web') {
-        return;
-      }
-
-      const video = webVideoRef.current;
-      if (!video) {
-        return;
-      }
-
-      const syncPlaybackState = () => {
-        if (!isScreenFocusedRef.current || !hasScrollActivatedPlaybackRef.current) {
-          setIsVideoPlaying(false);
-          return;
-        }
-        const playing = Boolean(!video.paused && !video.ended && video.readyState > 2);
-        setIsVideoPlaying(playing);
-      };
-
-      syncPlaybackState();
-      const intervalId = setInterval(syncPlaybackState, 300);
-      video.addEventListener?.('play', syncPlaybackState);
-      video.addEventListener?.('pause', syncPlaybackState);
-      video.addEventListener?.('ended', syncPlaybackState);
-      video.addEventListener?.('waiting', syncPlaybackState);
-      video.addEventListener?.('playing', syncPlaybackState);
-
-      return () => {
-        clearInterval(intervalId);
-        video.removeEventListener?.('play', syncPlaybackState);
-        video.removeEventListener?.('pause', syncPlaybackState);
-        video.removeEventListener?.('ended', syncPlaybackState);
-        video.removeEventListener?.('waiting', syncPlaybackState);
-        video.removeEventListener?.('playing', syncPlaybackState);
-      };
-    }, [videoUri]);
-
-    useEffect(() => {
-      if (Platform.OS === 'web') {
-        return;
-      }
-      if (!webViewRef.current) {
-        return;
-      }
-      const shouldPlayMainTrack = hasScrollActivatedPlayback && isScreenFocused;
-      const effectiveMuted = isMuted || !shouldPlayMainTrack;
-      const shouldPreview = isScreenFocused && !hasScrollActivatedPlayback;
-      const shouldPlayAny = isScreenFocused;
-      webViewRef.current.injectJavaScript(`
-      if (window.__setPreviewMode) {
-        window.__setPreviewMode(${shouldPreview ? 'true' : 'false'});
-      }
-      if (window.__setMuted) {
-        window.__setMuted(${effectiveMuted ? 'true' : 'false'});
-      }
-      if (window.__setPlayback) {
-        window.__setPlayback(${shouldPlayAny ? 'true' : 'false'});
-      }
-      true;
-    `);
-      if (!shouldPlayMainTrack) {
-        setIsVideoPlaying(false);
-      }
-    }, [hasScrollActivatedPlayback, isMuted, isScreenFocused, videoUri]);
-
-    const effectiveMuted = isMuted || !hasScrollActivatedPlayback || !isScreenFocused;
-    const showVideoControls = Boolean(videoUri && hasScrollActivatedPlayback && isScreenFocused);
-    const webVideoHtml = useMemo(
-      () => buildVideoHtml(videoUri, AIRS_VIDEO_POSTER, true, true, INTRO_PREVIEW_SECONDS),
-      [videoUri]
-    );
     const handleScroll = useMemo(
       () =>
         Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
@@ -527,9 +238,6 @@ const AirsIntroExperience = forwardRef<
         }),
       [maybeAutoUnmuteFromScroll, scrollY, syncTopZoneState]
     );
-
-    const VideoTag = 'video' as any;
-    const SourceTag = 'source' as any;
 
     const heroHeight = Math.max(screenHeight * 1.05, 740);
     const cardStartWidth = Math.min(screenWidth * 0.56, 700);
@@ -666,8 +374,6 @@ const AirsIntroExperience = forwardRef<
           mutedButtonBorder: 'rgba(15,23,42,0.16)',
         };
 
-    const ThemeIcon = isDark ? Sun : Moon;
-    const MuteIcon = effectiveMuted ? VolumeX : Volume2;
     const heroWordmarkSource = isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK;
     const mediaTagPillLogoSource = isDark ? ALTERNUN_PILL_LOGO_DARK : ALTERNUN_PILL_LOGO_LIGHT;
     const mediaTagPillBackgroundColor = isDark
@@ -678,43 +384,6 @@ const AirsIntroExperience = forwardRef<
     const heroBackgroundSource = (isDark ? AIRS_BG_DARK : { uri: AIRS_BG_LIGHT_SRC }) as any;
     const heroFooterTextColor = isDark ? 'rgba(248,251,255,0.96)' : '#020617';
     const heroFooterShadowColor = isDark ? 'rgba(0,0,0,0.28)' : 'transparent';
-    const languageLabel = getLocaleLabel(language, language);
-    const settingsMenuContent = (
-      <>
-        <TouchableOpacity
-          style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg }]}
-          onPress={toggleThemeMode}
-          activeOpacity={0.82}
-        >
-          <ThemeIcon size={14} color={palette.textPrimary} />
-          <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-            {t('labels.theme')}
-          </Text>
-          <View style={styles.floatingMenuItemRight}>
-            <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
-              {isDark ? t('labels.dark') : t('labels.light')}
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.floatingSubMenuItem, { backgroundColor: palette.mutedButtonBg }]}
-          onPress={cycleLanguage}
-          activeOpacity={0.82}
-        >
-          <Languages size={14} color={palette.textPrimary} />
-          <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-            {t('labels.language')}
-          </Text>
-          <View style={styles.floatingMenuItemRight}>
-            <Text style={[styles.floatingMenuValue, { color: palette.accent }]}>
-              {languageLabel}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </>
-    );
-
     const closeProfileMenu = () => {
       setProfileMenuVisible(false);
       setSettingsExpanded(false);
@@ -724,68 +393,6 @@ const AirsIntroExperience = forwardRef<
       setHasManualAudioChoice(true);
       setHasAutoUnmuted(true);
       setIsMuted((prev) => !prev);
-    };
-
-    const restartVideo = () => {
-      if (Platform.OS === 'web') {
-        const video = webVideoRef.current;
-        if (!video) {
-          return;
-        }
-        video.currentTime = 0;
-        const playResult = video.play?.();
-        if (playResult && typeof playResult.catch === 'function') {
-          playResult.catch(() => {});
-        }
-        setIsVideoPlaying(hasScrollActivatedPlayback && isScreenFocused);
-        return;
-      }
-
-      if (!webViewRef.current) {
-        return;
-      }
-      webViewRef.current.injectJavaScript(`
-      if (window.__restartVideo) {
-        window.__restartVideo();
-      }
-      if (window.__setPlayback) {
-        window.__setPlayback(true);
-      }
-      true;
-    `);
-      setIsVideoPlaying(hasScrollActivatedPlayback && isScreenFocused);
-    };
-
-    const handleWebVideoPlay = () => {
-      if (!isScreenFocusedRef.current || !hasScrollActivatedPlaybackRef.current) {
-        setIsVideoPlaying(false);
-        return;
-      }
-      setIsVideoPlaying(true);
-    };
-
-    const handleWebVideoPause = () => {
-      setIsVideoPlaying(false);
-    };
-
-    const handleWebViewMessage = (event: any) => {
-      const payload = event?.nativeEvent?.data;
-      if (typeof payload !== 'string' || payload.length === 0) {
-        return;
-      }
-
-      try {
-        const data = JSON.parse(payload) as { type?: string; isPlaying?: boolean };
-        if (data.type === 'playback' && typeof data.isPlaying === 'boolean') {
-          if (!isScreenFocusedRef.current || !hasScrollActivatedPlaybackRef.current) {
-            setIsVideoPlaying(false);
-            return;
-          }
-          setIsVideoPlaying(data.isPlaying);
-        }
-      } catch {
-        // Ignore messages not related to playback state.
-      }
     };
 
     const headerBarOpacity = scrollY.interpolate({
@@ -994,7 +601,7 @@ const AirsIntroExperience = forwardRef<
                       </TouchableOpacity>
 
                       <AnimatedCollapsibleContent expanded={settingsExpanded}>
-                        {settingsMenuContent}
+                        <AirsIntroSettingsMenu palette={palette} />
                       </AnimatedCollapsibleContent>
                     </Animated.View>
                   )}
@@ -1106,7 +713,7 @@ const AirsIntroExperience = forwardRef<
                       </TouchableOpacity>
 
                       <AnimatedCollapsibleContent expanded={settingsExpanded}>
-                        {settingsMenuContent}
+                        <AirsIntroSettingsMenu palette={palette} />
                       </AnimatedCollapsibleContent>
                     </View>
                   )}
@@ -1213,7 +820,7 @@ const AirsIntroExperience = forwardRef<
               </TouchableOpacity>
 
               <AnimatedCollapsibleContent expanded={settingsExpanded}>
-                {settingsMenuContent}
+                <AirsIntroSettingsMenu palette={palette} />
               </AnimatedCollapsibleContent>
             </View>
           </View>
@@ -1285,7 +892,7 @@ const AirsIntroExperience = forwardRef<
                 </TouchableOpacity>
 
                 <AnimatedCollapsibleContent expanded={settingsExpanded}>
-                  {settingsMenuContent}
+                  <AirsIntroSettingsMenu palette={palette} />
                 </AnimatedCollapsibleContent>
               </View>
             ) : null}
@@ -1325,179 +932,103 @@ const AirsIntroExperience = forwardRef<
             <Animated.View
               style={[styles.heroMediaStage, { transform: [{ translateY: cardTranslateY }] }]}
             >
-              <Animated.View
-                style={[
-                  styles.heroMediaCard,
-                  {
-                    width: cardWidth,
-                    height: cardHeight,
-                  },
-                ]}
+              <AirsIntroVideoCard
+                style={{ width: cardWidth, height: cardHeight }}
+                videoUri={videoUri}
+                isMuted={isMuted}
+                isScreenFocused={isScreenFocused}
+                shouldPlayMainTrack={hasScrollActivatedPlayback && isScreenFocused}
+                showControls={Boolean(videoUri && hasScrollActivatedPlayback && isScreenFocused)}
+                controlsIconOnly={videoControlsIconOnly}
+                onToggleMute={toggleMute}
+                onPlaybackChange={setIsVideoPlaying}
               >
-                {Platform.OS === 'web' && videoUri ? (
-                  <VideoTag
-                    ref={webVideoRef}
-                    autoPlay
-                    muted={effectiveMuted}
-                    loop
-                    onPlay={handleWebVideoPlay}
-                    onPause={handleWebVideoPause}
-                    onEnded={handleWebVideoPause}
-                    playsInline
-                    preload='auto'
-                    poster={AIRS_VIDEO_POSTER}
-                    style={styles.webVideo}
-                  >
-                    <SourceTag src={videoUri} type='video/mp4' />
-                  </VideoTag>
-                ) : WebView && videoUri ? (
-                  <WebView
-                    key={videoUri}
-                    ref={webViewRef}
-                    originWhitelist={['*']}
-                    source={{ html: webVideoHtml }}
-                    allowsInlineMediaPlayback
-                    mediaPlaybackRequiresUserAction={false}
-                    onMessage={handleWebViewMessage}
-                    style={styles.videoWebView}
-                  />
-                ) : (
-                  <TouchableOpacity
-                    style={styles.videoFallback}
-                    onPress={() => {
-                      if (videoUri) {
-                        void Linking.openURL(videoUri);
-                      }
-                    }}
-                    activeOpacity={0.85}
-                  >
-                    <PlayCircle size={20} color='#ffffff' />
-                    <Text style={styles.videoFallbackText}>
-                      {videoUri ? t('landing.video.openIntro') : t('landing.video.loadingIntro')}
-                    </Text>
-                  </TouchableOpacity>
-                )}
+                {videoUri && (!hasScrollActivatedPlayback || isInTopZone || !isVideoPlaying) ? (
+                  <>
+                    <Animated.View
+                      pointerEvents='none'
+                      style={[
+                        styles.mediaTagPillOverlay,
+                        {
+                          width: cardWidth,
+                          opacity: mediaTagOpacity,
+                          transform: [{ translateY: mediaTagPillFinalTranslateY }],
+                        },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.mediaTagPill,
+                          {
+                            width: mediaTagPillWidth,
+                            minHeight: mediaTagPillHeight,
+                            backgroundColor: mediaTagPillBackgroundColor,
+                            borderColor: mediaTagPillBorderColor,
+                            boxShadow: `0px 8px 18px 0px ${mediaTagPillShadowColor}`,
+                          },
+                        ]}
+                      >
+                        <ExpoImage
+                          source={mediaTagPillLogoSource}
+                          style={{
+                            width: mediaTagPillLogoWidth,
+                            height: mediaTagPillLogoHeight,
+                          }}
+                          contentFit='contain'
+                        />
+                      </View>
+                    </Animated.View>
 
-                {showVideoControls ? (
-                  <TouchableOpacity
-                    style={[
-                      styles.restartControl,
-                      videoControlsIconOnly && styles.videoControlIconOnly,
-                    ]}
-                    onPress={restartVideo}
-                    activeOpacity={0.85}
-                  >
-                    <RotateCcw size={14} color='#f8fbff' />
-                    {!videoControlsIconOnly && (
-                      <Text style={styles.videoControlText}>{t('landing.video.restart')}</Text>
-                    )}
-                  </TouchableOpacity>
-                ) : null}
-
-                {showVideoControls ? (
-                  <TouchableOpacity
-                    style={[
-                      styles.muteControl,
-                      videoControlsIconOnly && styles.videoControlIconOnly,
-                    ]}
-                    onPress={toggleMute}
-                    activeOpacity={0.85}
-                  >
-                    <MuteIcon size={14} color='#f8fbff' />
-                    {!videoControlsIconOnly && (
-                      <Text style={styles.videoControlText}>
-                        {effectiveMuted ? t('landing.video.muted') : t('landing.video.soundOn')}
+                    <Animated.View
+                      pointerEvents='none'
+                      style={[
+                        styles.mediaTagTitleOverlay,
+                        {
+                          width: cardWidth,
+                          opacity: mediaTagOpacity,
+                          transform: [{ translateY: mediaTagTitleFinalTranslateY }],
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.mediaTagTitle,
+                          {
+                            fontSize: mediaTagTitleSize,
+                            lineHeight: mediaTagTitleLineHeight,
+                          },
+                        ]}
+                      >
+                        {t('landing.media.title')}
                       </Text>
-                    )}
-                  </TouchableOpacity>
+                    </Animated.View>
+
+                    <Animated.View
+                      pointerEvents='none'
+                      style={[
+                        styles.mediaTagSubtitleOverlay,
+                        {
+                          width: cardWidth,
+                          opacity: mediaTagOpacity,
+                          transform: [{ translateY: mediaTagSubtitleFinalTranslateY }],
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.mediaTagSubtitle,
+                          {
+                            fontSize: mediaTagSubtitleSize,
+                            lineHeight: mediaTagSubtitleLineHeight,
+                          },
+                        ]}
+                      >
+                        {t('landing.media.subtitle')}
+                      </Text>
+                    </Animated.View>
+                  </>
                 ) : null}
-              </Animated.View>
-
-              {videoUri && (!hasScrollActivatedPlayback || isInTopZone || !isVideoPlaying) ? (
-                <>
-                  <Animated.View
-                    pointerEvents='none'
-                    style={[
-                      styles.mediaTagPillOverlay,
-                      {
-                        width: cardWidth,
-                        opacity: mediaTagOpacity,
-                        transform: [{ translateY: mediaTagPillFinalTranslateY }],
-                      },
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.mediaTagPill,
-                        {
-                          width: mediaTagPillWidth,
-                          minHeight: mediaTagPillHeight,
-                          backgroundColor: mediaTagPillBackgroundColor,
-                          borderColor: mediaTagPillBorderColor,
-                          boxShadow: `0px 8px 18px 0px ${mediaTagPillShadowColor}`,
-                        },
-                      ]}
-                    >
-                      <ExpoImage
-                        source={mediaTagPillLogoSource}
-                        style={{
-                          width: mediaTagPillLogoWidth,
-                          height: mediaTagPillLogoHeight,
-                        }}
-                        contentFit='contain'
-                      />
-                    </View>
-                  </Animated.View>
-
-                  <Animated.View
-                    pointerEvents='none'
-                    style={[
-                      styles.mediaTagTitleOverlay,
-                      {
-                        width: cardWidth,
-                        opacity: mediaTagOpacity,
-                        transform: [{ translateY: mediaTagTitleFinalTranslateY }],
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.mediaTagTitle,
-                        {
-                          fontSize: mediaTagTitleSize,
-                          lineHeight: mediaTagTitleLineHeight,
-                        },
-                      ]}
-                    >
-                      {t('landing.media.title')}
-                    </Text>
-                  </Animated.View>
-
-                  <Animated.View
-                    pointerEvents='none'
-                    style={[
-                      styles.mediaTagSubtitleOverlay,
-                      {
-                        width: cardWidth,
-                        opacity: mediaTagOpacity,
-                        transform: [{ translateY: mediaTagSubtitleFinalTranslateY }],
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.mediaTagSubtitle,
-                        {
-                          fontSize: mediaTagSubtitleSize,
-                          lineHeight: mediaTagSubtitleLineHeight,
-                        },
-                      ]}
-                    >
-                      {t('landing.media.subtitle')}
-                    </Text>
-                  </Animated.View>
-                </>
-              ) : null}
+              </AirsIntroVideoCard>
             </Animated.View>
 
             <Animated.View
@@ -1647,39 +1178,14 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     gap: 8,
   },
-  floatingCaptionItem: {
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  floatingSubMenuItem: {
-    marginLeft: 12,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   floatingMenuText: {
     fontSize: 12,
     fontWeight: '700',
-  },
-  floatingCaptionText: {
-    fontSize: 10,
-    fontWeight: '600',
   },
   floatingMenuItemRight: {
     marginLeft: 'auto',
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  floatingMenuValue: {
-    fontSize: 11,
-    fontWeight: '700',
   },
   floatingCheckbox: {
     width: 16,
@@ -1750,14 +1256,6 @@ const styles = createTypographyStyles({
     justifyContent: 'center',
     zIndex: 2,
   },
-  heroMediaCard: {
-    borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.24)',
-    backgroundColor: '#04040f',
-    boxShadow: '0px 16px 28px 0px rgba(0, 0, 0, 0.32)',
-  },
   heroFooter: {
     position: 'absolute',
     left: 24,
@@ -1789,51 +1287,6 @@ const styles = createTypographyStyles({
     textShadowColor: 'rgba(0,0,0,0.28)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
-  },
-  webVideo: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    backgroundColor: '#04040f',
-  },
-  restartControl: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    zIndex: 8,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: 'rgba(4,4,15,0.56)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.26)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  muteControl: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    zIndex: 8,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: 'rgba(4,4,15,0.56)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.26)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  videoControlIconOnly: {
-    paddingHorizontal: 7,
-    paddingVertical: 7,
-  },
-  videoControlText: {
-    color: '#f8fbff',
-    fontSize: 11,
-    fontWeight: '700',
   },
   mediaTagTitleOverlay: {
     position: 'absolute',
@@ -1891,22 +1344,6 @@ const styles = createTypographyStyles({
     letterSpacing: 0.1,
     marginTop: 0,
     width: '100%',
-  },
-  videoWebView: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  videoFallback: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#04040f',
-  },
-  videoFallbackText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
   },
   contentCard: {
     marginHorizontal: 20,
