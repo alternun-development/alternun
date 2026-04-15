@@ -1,13 +1,9 @@
 import {
-  buildAuthentikRelayRoute,
-  clearPendingAuthentikOAuthProvider,
   isAuthentikConfigured,
-  nativeSignIn,
   parseEmailAddress,
   parseSignUpPassword,
-  readPendingAuthentikOAuthProvider,
   resolveAuthentikLoginStrategy,
-  webRedirectSignIn,
+  type AuthentikRelayRoute,
 } from '@alternun/auth';
 import { Image as ExpoImage } from 'expo-image';
 import {
@@ -49,8 +45,19 @@ import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
 import { shouldForceFreshAuthentikSocialSession } from './authentikWebSessionPolicy';
+import {
+  readPendingAuthentikOAuthProvider,
+  resumePendingSocialSignIn,
+  startSocialSignIn,
+} from './authWebSession';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
+import { AuthFooter } from './AuthFooter';
 const RESEND_COOLDOWN_SECONDS = 45;
+
+// Feature flags
+const ENABLE_WEB3_LOGIN = false; // Temporarily disabled: full web3 login flow not implemented
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -228,18 +235,16 @@ export default function AuthSignInScreen({
   const ThemeIcon = p.isDark ? Sun : Moon;
   const themeLabel = p.isDark ? t('labels.dark') : t('labels.light');
   const loginStrategy = resolveAuthentikLoginStrategy();
-  const forceFreshSocialSession = shouldForceFreshAuthentikSocialSession(Platform.OS);
-  const authentikLoginEntryMode = loginStrategy.mode;
+  const forceFreshSocialSession = shouldForceFreshAuthentikSocialSession(
+    Platform.OS,
+    loginStrategy.socialMode
+  );
   const authentikSocialLoginMode = loginStrategy.socialMode;
   const authentikConfigured = isAuthentikConfigured();
   const shouldUseAuthentikSocialLogin = authentikSocialLoginMode !== 'supabase';
   const shouldForceAuthentikSocialLogin = authentikSocialLoginMode === 'authentik';
   const shouldShowAuthentikSocialButtons =
     shouldUseAuthentikSocialLogin && (shouldForceAuthentikSocialLogin || authentikConfigured);
-  const shouldUseAuthentikRelayEntry =
-    authentikLoginEntryMode === 'relay' &&
-    shouldShowAuthentikSocialButtons &&
-    (authentikSocialLoginMode !== 'authentik' || authentikConfigured);
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -305,24 +310,17 @@ export default function AuthSignInScreen({
       return;
     }
 
-    clearPendingAuthentikOAuthProvider();
     setSubmitMode(pendingProvider);
-    if (shouldUseAuthentikRelayEntry) {
-      router.replace(
-        buildAuthentikRelayRoute(pendingProvider, {
-          next: authReturnTo,
-          forceFreshSession: false,
-        })
-      );
-      return;
-    }
-
-    void webRedirectSignIn({
+    void resumePendingSocialSignIn({
       client,
-      provider: pendingProvider,
-      authentikProviderHint: pendingProvider,
       redirectTo: authReturnTo,
+      forceFreshSession: false,
       strategy: loginStrategy,
+      resolveProvider: (pendingProvider: 'google' | 'discord') =>
+        pendingProvider === 'google' ? googleProvider : pendingProvider,
+      onRelayRoute: (route: AuthentikRelayRoute) => {
+        router.replace(route);
+      },
     })
       .catch((authError: unknown) => {
         setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
@@ -330,7 +328,7 @@ export default function AuthSignInScreen({
       .finally(() => {
         setSubmitMode(null);
       });
-  }, [authReturnTo, client, loginStrategy, router, shouldUseAuthentikRelayEntry, t]);
+  }, [authReturnTo, client, googleProvider, loginStrategy, router, t]);
 
   const transitionToStep = (step: AuthStep): void => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -642,35 +640,20 @@ export default function AuthSignInScreen({
     }
   };
 
-  const handleGoogleSignIn = async (): Promise<void> => {
+  const handleSocialSignIn = async (provider: 'google' | 'discord'): Promise<void> => {
     resetMessages();
-    setSubmitMode('google');
+    setSubmitMode(provider);
     try {
-      if (Platform.OS === 'web' && shouldUseAuthentikRelayEntry) {
-        router.replace(
-          buildAuthentikRelayRoute('google', {
-            next: authReturnTo,
-            forceFreshSession: forceFreshSocialSession,
-          })
-        );
-        return;
-      }
-
-      if (Platform.OS === 'web') {
-        await webRedirectSignIn({
-          client,
-          provider: googleProvider,
-          authentikProviderHint: 'google',
-          redirectTo: authReturnTo,
-          forceFreshSession: forceFreshSocialSession,
-          strategy: loginStrategy,
-        });
-        return;
-      }
-
-      await nativeSignIn({
+      await startSocialSignIn({
         client,
-        provider: googleProvider,
+        provider: provider === 'google' ? googleProvider : provider,
+        authentikProviderHint: provider,
+        redirectTo: authReturnTo,
+        forceFreshSession: forceFreshSocialSession,
+        strategy: loginStrategy,
+        onRelayRoute: (route: AuthentikRelayRoute) => {
+          router.replace(route);
+        },
       });
     } catch (oidcError) {
       setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
@@ -679,41 +662,12 @@ export default function AuthSignInScreen({
     }
   };
 
+  const handleGoogleSignIn = async (): Promise<void> => {
+    await handleSocialSignIn('google');
+  };
+
   const handleDiscordSignIn = async (): Promise<void> => {
-    resetMessages();
-    setSubmitMode('discord');
-    try {
-      if (Platform.OS === 'web' && shouldUseAuthentikRelayEntry) {
-        router.replace(
-          buildAuthentikRelayRoute('discord', {
-            next: authReturnTo,
-            forceFreshSession: forceFreshSocialSession,
-          })
-        );
-        return;
-      }
-
-      if (Platform.OS === 'web') {
-        await webRedirectSignIn({
-          client,
-          provider: 'discord',
-          authentikProviderHint: 'discord',
-          redirectTo: authReturnTo,
-          forceFreshSession: forceFreshSocialSession,
-          strategy: loginStrategy,
-        });
-        return;
-      }
-
-      await nativeSignIn({
-        client,
-        provider: 'discord',
-      });
-    } catch (oidcError) {
-      setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
-    } finally {
-      setSubmitMode(null);
-    }
+    await handleSocialSignIn('discord');
   };
 
   const handleWalletConnect = async (walletType: string): Promise<void> => {
@@ -813,47 +767,46 @@ export default function AuthSignInScreen({
                   >
                     <Settings size={15} color={settingsMenuOpen ? p.accent : p.iconDefault} />
                   </TouchableOpacity>
-                  {settingsMenuOpen ? (
+                  <AnimatedCollapsibleContent
+                    expanded={settingsMenuOpen}
+                    style={[
+                      styles.settingsDropdown,
+                      { backgroundColor: p.dropdownBg, borderColor: p.dropdownBorder },
+                    ]}
+                  >
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => cycleLanguage()}
+                      style={styles.settingsDropdownItem}
+                    >
+                      <Languages size={13} color={p.iconDefault} />
+                      <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
+                        {t('labels.language')}
+                      </Text>
+                      <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
+                        {getLocaleLabel(language, language)}
+                      </Text>
+                    </TouchableOpacity>
                     <View
                       style={[
-                        styles.settingsDropdown,
-                        { backgroundColor: p.dropdownBg, borderColor: p.dropdownBorder },
+                        styles.settingsDropdownDivider,
+                        { backgroundColor: p.dropdownDivider },
                       ]}
+                    />
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => toggleThemeMode()}
+                      style={styles.settingsDropdownItem}
                     >
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => cycleLanguage()}
-                        style={styles.settingsDropdownItem}
-                      >
-                        <Languages size={13} color={p.iconDefault} />
-                        <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
-                          {t('labels.language')}
-                        </Text>
-                        <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
-                          {getLocaleLabel(language, language)}
-                        </Text>
-                      </TouchableOpacity>
-                      <View
-                        style={[
-                          styles.settingsDropdownDivider,
-                          { backgroundColor: p.dropdownDivider },
-                        ]}
-                      />
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => toggleThemeMode()}
-                        style={styles.settingsDropdownItem}
-                      >
-                        <ThemeIcon size={13} color={p.iconDefault} />
-                        <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
-                          {t('labels.theme')}
-                        </Text>
-                        <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
-                          {themeLabel}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : null}
+                      <ThemeIcon size={13} color={p.iconDefault} />
+                      <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
+                        {t('labels.theme')}
+                      </Text>
+                      <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
+                        {themeLabel}
+                      </Text>
+                    </TouchableOpacity>
+                  </AnimatedCollapsibleContent>
                 </View>
                 {onCancel ? (
                   <TouchableOpacity
@@ -1138,27 +1091,31 @@ export default function AuthSignInScreen({
                       </TouchableOpacity>
                     ) : null}
 
-                    <TouchableOpacity
-                      activeOpacity={0.85}
-                      disabled={isBusy}
-                      onPress={() => setWalletModalVisible(true)}
-                      style={[
-                        styles.secondaryButton,
-                        { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
-                        isBusy && styles.buttonDisabled,
-                      ]}
-                    >
-                      {submitMode === 'wallet' ? (
-                        <ActivityIndicator color={p.secondaryBtnText} size='small' />
-                      ) : (
-                        <>
-                          <Wallet size={16} color={p.secondaryBtnText} />
-                          <Text style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}>
-                            {t('authModal.actions.connectWallet')}
-                          </Text>
-                        </>
-                      )}
-                    </TouchableOpacity>
+                    {ENABLE_WEB3_LOGIN && (
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        disabled={isBusy}
+                        onPress={() => setWalletModalVisible(true)}
+                        style={[
+                          styles.secondaryButton,
+                          { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
+                          isBusy && styles.buttonDisabled,
+                        ]}
+                      >
+                        {submitMode === 'wallet' ? (
+                          <ActivityIndicator color={p.secondaryBtnText} size='small' />
+                        ) : (
+                          <>
+                            <Wallet size={16} color={p.secondaryBtnText} />
+                            <Text
+                              style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}
+                            >
+                              {t('authModal.actions.connectWallet')}
+                            </Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    )}
                   </>
                 ) : null}
 
@@ -1394,6 +1351,9 @@ export default function AuthSignInScreen({
                 </TouchableOpacity>
               </>
             )}
+
+            {/* Footer with Privacy, Terms, Version, Help */}
+            <AuthFooter locale={locale} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

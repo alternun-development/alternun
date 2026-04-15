@@ -64,6 +64,20 @@ export default function AuthRelayRoute(): React.JSX.Element {
     }
     hasStartedRef.current = true;
 
+    if (loginStrategy.executionProvider === 'better-auth' && providerHint === 'google') {
+      void webRedirectSignIn({
+        client,
+        provider: providerHint,
+        authentikProviderHint: providerHint,
+        redirectTo: nextTarget,
+        forceFreshSession,
+        strategy: loginStrategy,
+      }).catch(() => {
+        router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
+      });
+      return;
+    }
+
     if (loginStrategy.socialMode === 'supabase' || !providerHint) {
       router.replace(nextTarget ? { pathname: '/auth', params: { next: nextTarget } } : '/auth');
       return;
@@ -83,6 +97,7 @@ export default function AuthRelayRoute(): React.JSX.Element {
     client,
     forceFreshSession,
     isNavigationReady,
+    loginStrategy.executionProvider,
     loginStrategy.socialMode,
     nextTarget,
     providerHint,

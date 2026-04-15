@@ -18,7 +18,7 @@
 
 ---
 
-Alternun is a Turborepo monorepo containing all platform surfaces and shared packages. TypeScript throughout. Auth via Authentik (OIDC). Data via Supabase. Deployed on AWS.
+Alternun is a Turborepo monorepo containing all platform surfaces and shared packages. TypeScript throughout. Auth is handled through the Alternun auth facade, with Better Auth as the execution layer, Authentik as the canonical issuer, and Supabase as the data/compatibility layer. Deployed on AWS.
 
 ## Repo Structure
 
@@ -32,7 +32,7 @@ alternun/
 │   └── docs/         # Docusaurus public documentation
 └── packages/
     ├── ui/           # Cross-platform React components
-    ├── auth/         # Authentik OIDC helpers (@edcalderon/auth)
+    ├── auth/         # Auth facade and Alternun auth helpers (@edcalderon/auth)
     ├── infra/        # AWS CDK deploy + pipeline scripts (@alternun/infra)
     ├── i18n/         # Shared translations
     ├── email-templates/
@@ -49,7 +49,7 @@ alternun/
 | Web / Admin | Next.js (App Router)                               |
 | Mobile      | Expo / React Native                                |
 | Docs        | Docusaurus 3.5+                                    |
-| Auth        | Authentik (OIDC)                                   |
+| Auth        | Better Auth execution + Authentik issuer           |
 | Data        | Supabase (PostgreSQL + RLS)                        |
 | Infra       | AWS (CDK, CodePipeline, EC2, SSM, Secrets Manager) |
 | Styling     | Tailwind CSS                                       |
@@ -62,7 +62,7 @@ alternun/
 git clone https://github.com/alternun-development/alternun.git
 cd alternun
 pnpm install
-pnpm dev:all        # starts api, admin, mobile, docs concurrently
+pnpm dev:all        # starts api, better-auth, admin, mobile, docs concurrently
 ```
 
 ### Common Commands
@@ -107,7 +107,7 @@ pnpm release -- --promote # promote current release (no version bump)
 pnpm version:check-secrets # scan staged files for secrets
 ```
 
-Current version: **1.0.16**
+Current version: **1.0.69**
 
 ## Security
 

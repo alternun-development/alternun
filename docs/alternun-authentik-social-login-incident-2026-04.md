@@ -91,9 +91,11 @@ That left Google callback without a valid session-completion path inside Authent
 
 The fix was:
 
-- direct-source mode must ensure `default-source-authentication-login`
-- direct-source mode must ensure `default-source-enrollment-login`
-- custom outer flow mode strips those stages and lets the outer `SourceStage` own the handoff
+- direct-source mode must keep `default-source-authentication` and `default-source-enrollment` open (`authentication=none`)
+- direct-source mode must prune `UserLoginStage` from both flows
+- custom outer flow mode also prunes those stages and lets the outer `SourceStage` own the handoff
+- the web app should not force a logout on the direct `authentik` social path by default; stale browser/session state is handled better by starting from a clean source flow than by replaying logout-first on every attempt
+- a separate logout-first custom mode is still experimental and should not be treated as the default fix for stale browser sessions
 
 ## Final Expected State
 
@@ -108,14 +110,18 @@ The fix was:
 
 - Google source `authentication_flow = default-source-authentication`
 - Google source `enrollment_flow = default-source-enrollment`
-- `default-source-authentication` contains `default-source-authentication-login`
-- `default-source-enrollment` contains prompt + write + `default-source-enrollment-login`
+- `default-source-authentication.authentication = none`
+- `default-source-enrollment.authentication = none`
+- `default-source-authentication` does not contain `UserLoginStage`
+- `default-source-enrollment` does not contain `UserLoginStage`
+- if a custom Google starter flow is enabled, `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE=source` keeps the direct source path and `logout-then-source` remains experimental while it inserts `UserLogoutStage` before `SourceStage`
 
 ### Browser routing
 
 - AIRS login page: `/auth`
 - AIRS callback page: `/auth/callback`
 - AIRS relay page: `/auth-relay` only when explicitly chosen
+- mobile logout returns to the AIRS app root via the mobile launch URL origin when no explicit post-logout redirect list is set
 
 ## What We Changed
 
@@ -124,11 +130,15 @@ The main durable changes were:
 - explicit runtime split in the shared auth package
 - explicit browser callback route
 - explicit social-login mode switch
+- web fresh-session handling now follows whether social login is still Authentik-managed, not whether the dormant Better Auth execution path exists
 - explicit allow flag for custom provider-flow slugs
+- source auth/enrollment flows now stay open (`authentication=none`) so the browser can resume after the upstream Google callback instead of hitting the current-user gate
 - direct-source default for deployed bundles
 - Google source enrollment now auto-fills the username from the upstream Google email, so first-time logins do not stop on the Authentik username screen
 - removal of hidden custom-flow derivation
-- Authentik bootstrap fix to restore `UserLoginStage` in direct-source mode
+- Authentik bootstrap fix to prune `UserLoginStage` from direct-source mode
+- the identity deploy template now reapplies the Authentik source-stage runtime hotfix on every identity rollout so the live container does not regress to the `FlowToken` delete crash after redeploys
+- export and predeploy guards now fail builds that still embed stale Better Auth web login paths into AIRS web bundles or env
 
 ## Operational Checks
 

@@ -1,12 +1,14 @@
 {
   "name": "@alternun/api",
-  "version": "1.0.25-dev.1",
+  "version": "1.0.72",
   "private": true,
   "scripts": {
     "dev": "nodemon --watch src --ext ts --signal SIGTERM --exec \"node -r ts-node/register/transpile-only src/main.ts\"",
+    "dev:better-auth": "node ./scripts/dev-better-auth.mjs",
     "build": "./build.sh",
     "start": "node dist/src/main.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "node -r ts-node/register/transpile-only --test test/*.test.js"
   },
   "dependencies": {
     "@fastify/aws-lambda": "^5.1.0",
@@ -16,6 +18,7 @@
     "@nestjs/core": "^10.4.20",
     "@nestjs/platform-fastify": "^10.4.20",
     "@nestjs/swagger": "^8.1.1",
+    "better-auth": "^1.6.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "fastify": "4.28.1",

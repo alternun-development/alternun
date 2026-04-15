@@ -1,7 +1,7 @@
 import { resolveSafeRedirect } from '@edcalderon/auth/authentik';
-import { isAuthentikConfigured, startAuthentikOAuthFlow } from './authentikClient';
-import { resolveAuthentikLoginStrategy } from './authEntry';
-import { buildAuthentikWebCallbackUrl } from './authentikUrls';
+import { isAuthentikConfigured, startAuthentikOAuthFlow } from './authentikClient.js';
+import { resolveAuthentikLoginStrategy } from './authEntry.js';
+import { buildAuthentikWebCallbackUrl } from './authentikUrls.js';
 const AUTH_RETURN_TO_STORAGE_KEY = 'alternun:auth:return-to';
 function canUseBrowserRuntime() {
     return typeof window !== 'undefined' && typeof document !== 'undefined';
@@ -69,6 +69,15 @@ function shouldUseAuthentikWebFlow(strategy, authentikReady, authentikProviderHi
     }
     return authentikReady;
 }
+function shouldUseBetterAuthWebFlow(strategy, provider, authentikProviderHint) {
+    // Better Auth owns the social-login migration path here; the facade will
+    // exchange the resulting external identity into the canonical Authentik
+    // session after callback completion.
+    const normalizedProvider = provider.trim().toLowerCase();
+    return (strategy.executionProvider === 'better-auth' &&
+        (normalizedProvider === 'google' || normalizedProvider === 'discord') &&
+        authentikProviderHint === normalizedProvider);
+}
 export async function webRedirectSignIn({ client, provider, redirectTo, authentikProviderHint, forceFreshSession = false, strategy = resolveAuthentikLoginStrategy(), }) {
     if (!canUseBrowserRuntime()) {
         throw new Error('CONFIG_ERROR: webRedirectSignIn requires a browser runtime');
@@ -78,6 +87,14 @@ export async function webRedirectSignIn({ client, provider, redirectTo, authenti
         redirectUri: callbackUrl,
     });
     storeAuthReturnTo(redirectTo);
+    if (shouldUseBetterAuthWebFlow(strategy, provider, authentikProviderHint)) {
+        await client.signIn({
+            provider,
+            flow: 'redirect',
+            redirectUri: callbackUrl,
+        });
+        return 'better-auth';
+    }
     if (shouldUseAuthentikWebFlow(strategy, authentikReady, authentikProviderHint)) {
         if (!authentikReady || !authentikProviderHint) {
             throw new Error('CONFIG_ERROR: Missing Authentik issuer, clientId, or redirectUri');

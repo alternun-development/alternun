@@ -1,6 +1,7 @@
 import { getLocaleLabel } from '@alternun/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Animated,
   Pressable,
   View,
   Text,
@@ -23,13 +24,9 @@ import {
   Moon,
   Sun,
   LogIn,
-  Wallet,
   LayoutDashboard,
   Leaf,
   ShieldCheck,
-  FolderKanban,
-  Gift,
-  Trophy,
   CircleUserRound,
   Zap,
   Menu,
@@ -40,6 +37,8 @@ import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import type { AppLanguage, MotionLevel, ThemeMode } from '../settings/AppPreferencesProvider';
 import NotificationDropdown, { type NotificationItem } from './NotificationDropdown';
+import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
+import { getFirstName } from './userDisplayName';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as number;
@@ -56,13 +55,9 @@ const SettingsIcon = Settings as React.FC<LucideProps>;
 const LogOutIcon = LogOut as React.FC<LucideProps>;
 const LanguagesIcon = Languages as React.FC<LucideProps>;
 const LogInIcon = LogIn as React.FC<LucideProps>;
-const WalletIcon = Wallet as React.FC<LucideProps>;
 const LayoutDashboardIcon = LayoutDashboard as React.FC<LucideProps>;
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
-const FolderKanbanIcon = FolderKanban as React.FC<LucideProps>;
-const GiftIcon = Gift as React.FC<LucideProps>;
-const TrophyIcon = Trophy as React.FC<LucideProps>;
 const BellIcon = Bell as React.FC<LucideProps>;
 const ChevronUpIcon = ChevronUp as React.FC<LucideProps>;
 const CircleUserRoundIcon = CircleUserRound as React.FC<LucideProps>;
@@ -82,13 +77,9 @@ export interface NavSection {
 
 export const NAV_SECTIONS: NavSection[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
-  { key: 'compensation', label: 'Compensaciones', icon: LeafIcon },
-  { key: 'portfolio', label: 'Mis ATN', icon: ShieldCheckIcon },
-  { key: 'proyectos', label: 'Proyectos', icon: FolderKanbanIcon },
-  { key: 'beneficios', label: 'Beneficios', icon: GiftIcon },
-  { key: 'ranking', label: 'Ranking', icon: TrophyIcon },
-  { key: 'wallet', label: 'Wallet', icon: WalletIcon },
-  { key: 'profile', label: 'Mi Perfil', icon: CircleUserRoundIcon },
+  { key: 'explorar', label: 'Explore', icon: LeafIcon },
+  { key: 'portafolio', label: 'Portfolio', icon: ShieldCheckIcon },
+  { key: 'mi-perfil', label: 'My Profile', icon: CircleUserRoundIcon },
 ];
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -116,6 +107,7 @@ interface TopNavProps {
   onNavigate?: (sectionKey: string) => void;
   onMarkAllNotificationsRead?: () => void;
   onDismissNotification?: (id: string) => void;
+  onNavigateToNotifications?: () => void;
 }
 
 function getInitials(name?: string): string {
@@ -140,20 +132,25 @@ export default function TopNav({
   notifications = EMPTY_NOTIFICATIONS,
   activeSection = 'dashboard',
   onSignIn,
-  onConnectWallet,
+  _onConnectWallet,
   onToggleTheme,
   onCycleLanguage,
   onCycleMotionLevel,
-  onOpenProfile,
+  _onOpenProfile,
   onOpenSettings,
   onSignOut,
   onNavigate,
   onMarkAllNotificationsRead,
   onDismissNotification,
+  onNavigateToNotifications,
 }: TopNavProps) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
-  const [settingsExpanded, setSettingsExpanded] = useState(false);
+  const [settingsExpanded, setSettingsExpanded] = useState(true);
+  const [dropdownAnimated] = useState(() => new Animated.Value(0));
+  const [notifAnimated] = useState(() => new Animated.Value(0));
+  const [badgePulseAnimated] = useState(() => new Animated.Value(1));
+
   const { t } = useAppTranslation('mobile');
   const { width, height } = useWindowDimensions();
   const isDark = themeMode === 'dark';
@@ -222,12 +219,47 @@ export default function TopNav({
       };
 
   const profileName = userDisplayName?.trim() ?? 'Account';
+  const profileFirstName = useMemo(() => getFirstName(profileName), [profileName]);
   const initials = useMemo(() => getInitials(profileName), [profileName]);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
     if (!menuVisible) setSettingsExpanded(false);
   }, [menuVisible]);
+
+  useEffect(() => {
+    Animated.timing(dropdownAnimated, {
+      toValue: menuVisible ? 1 : 0,
+      duration: 280,
+      useNativeDriver: true,
+    }).start();
+  }, [menuVisible, dropdownAnimated]);
+
+  useEffect(() => {
+    Animated.timing(notifAnimated, {
+      toValue: notifVisible ? 1 : 0,
+      duration: 260,
+      useNativeDriver: true,
+    }).start();
+  }, [notifVisible, notifAnimated]);
+
+  useEffect(() => {
+    if (unreadCount > 0) {
+      badgePulseAnimated.setValue(0);
+      Animated.sequence([
+        Animated.timing(badgePulseAnimated, {
+          toValue: 1.2,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(badgePulseAnimated, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [unreadCount, badgePulseAnimated]);
 
   const toggleMenu = () => {
     setNotifVisible(false);
@@ -302,15 +334,20 @@ export default function TopNav({
                   cutoutColor={brandMarkCutout}
                 />
               </View>
-              {/* Byline: "By [Alternun logo]" + subtitle on desktop */}
+              {/* Byline: "By [Alternun logo]" + subtitle */}
               <View style={styles.bylineRow}>
                 <Text style={[styles.bylineBy, { color: p.pillSub }]}>{t('labels.by')}</Text>
                 <ExpoImage source={ALTERNUN_LOGO} style={styles.bylineLogo} contentFit='contain' />
-                {!isMobile && (
-                  <Text style={[styles.bylineSubtitle, { color: p.pillSub }]} numberOfLines={1}>
-                    Alternun Impact & Reputation Score
-                  </Text>
-                )}
+                <Text
+                  style={[
+                    styles.bylineSubtitle,
+                    { color: p.pillSub },
+                    isMobile && styles.bylineSubtitleMobile,
+                  ]}
+                  numberOfLines={1}
+                >
+                  Alternun Impact & Reputation Score
+                </Text>
               </View>
             </View>
           </Pressable>
@@ -377,7 +414,7 @@ export default function TopNav({
                       ]}
                       numberOfLines={1}
                     >
-                      {profileName}
+                      {profileFirstName}
                     </Text>
                     {airsScore != null && (
                       <Text
@@ -399,7 +436,7 @@ export default function TopNav({
                   style={[
                     styles.notifBadge,
                     isMobile && styles.notifBadgeMobile,
-                    { backgroundColor: unreadCount > 0 ? p.badgeBg : 'rgba(255,255,255,0.18)' },
+                    { backgroundColor: 'rgba(255,255,255,0.18)' },
                   ]}
                   onPress={(e) => {
                     e.stopPropagation();
@@ -407,12 +444,25 @@ export default function TopNav({
                   }}
                   hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                 >
-                  {unreadCount > 0 ? (
-                    <Text style={[styles.notifBadgeText, { color: p.badgeText }]}>
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </Text>
-                  ) : (
-                    <BellIcon size={11} color='rgba(255,255,255,0.85)' />
+                  <BellIcon size={11} color='rgba(255,255,255,0.85)' />
+                  {unreadCount > 0 && (
+                    <Animated.View
+                      style={[
+                        styles.badgeOverlay,
+                        { backgroundColor: p.badgeBg },
+                        {
+                          transform: [
+                            {
+                              scale: badgePulseAnimated,
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.badgeCount, { color: p.badgeText }]}>
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </Text>
+                    </Animated.View>
                   )}
                 </TouchableOpacity>
 
@@ -426,24 +476,53 @@ export default function TopNav({
               </TouchableOpacity>
 
               {/* ── Profile + Nav dropdown ─────────────────────────────────── */}
-              {menuVisible && isExtraSmall && (
-                <View
-                  style={[
-                    styles.dropdownOverlay,
-                    { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)' },
-                  ]}
-                />
-              )}
-
               {menuVisible && (
-                <View
+                <Animated.View
                   style={[
                     styles.dropdown,
                     isExtraSmall && styles.dropdownExtraSmall,
                     { backgroundColor: p.dropBg, borderColor: p.dropBorder },
+                    {
+                      opacity: dropdownAnimated,
+                      transform: [
+                        {
+                          scale: dropdownAnimated.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.92, 1],
+                          }),
+                        },
+                        {
+                          translateY: dropdownAnimated.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [-8, 0],
+                          }),
+                        },
+                      ],
+                    },
+                    { overflow: 'hidden' },
                   ]}
                 >
-                  {/* User header */}
+                  <Animated.View
+                    style={{
+                      ...StyleSheet.absoluteFillObject,
+                      borderRadius: 16,
+                      opacity: dropdownAnimated.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 1],
+                      }),
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: dropdownAnimated.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 0.28],
+                      }),
+                      shadowRadius: dropdownAnimated.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [2, 12],
+                      }),
+                      shadowColor: '#05100d',
+                    }}
+                    pointerEvents='none'
+                  />
                   {signedIn && (
                     <View
                       style={[
@@ -523,14 +602,6 @@ export default function TopNav({
                           ]}
                           onPress={() => {
                             setMenuVisible(false);
-                            if (section.key === 'profile') {
-                              onOpenProfile();
-                              return;
-                            }
-                            if (section.key === 'wallet') {
-                              onConnectWallet();
-                              return;
-                            }
                             onNavigate?.(section.key);
                           }}
                           activeOpacity={0.8}
@@ -574,63 +645,61 @@ export default function TopNav({
                     )}
                   </TouchableOpacity>
 
-                  {settingsExpanded && (
-                    <>
-                      <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                        onPress={onCycleLanguage}
-                        activeOpacity={0.8}
-                      >
-                        <LanguagesIcon size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                          {t('labels.language')}
-                        </Text>
-                        <Text style={[styles.navItemValue, { color: p.accent }]}>
-                          {getLocaleLabel(language, language)}
-                        </Text>
-                      </TouchableOpacity>
+                  <AnimatedCollapsibleContent expanded={settingsExpanded}>
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={onCycleLanguage}
+                      activeOpacity={0.8}
+                    >
+                      <LanguagesIcon size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        {t('labels.language')}
+                      </Text>
+                      <Text style={[styles.navItemValue, { color: p.accent }]}>
+                        {getLocaleLabel(language, language)}
+                      </Text>
+                    </TouchableOpacity>
 
-                      <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                        onPress={onToggleTheme}
-                        activeOpacity={0.8}
-                      >
-                        <ThemeIconComp size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                          {t('labels.theme')}
-                        </Text>
-                        <Text style={[styles.navItemValue, { color: p.accent }]}>{themeLabel}</Text>
-                      </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={onToggleTheme}
+                      activeOpacity={0.8}
+                    >
+                      <ThemeIconComp size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        {t('labels.theme')}
+                      </Text>
+                      <Text style={[styles.navItemValue, { color: p.accent }]}>{themeLabel}</Text>
+                    </TouchableOpacity>
 
-                      <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                        onPress={() => onCycleMotionLevel?.()}
-                        activeOpacity={0.8}
-                      >
-                        <ZapIcon size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                          Animación
-                        </Text>
-                        <Text style={[styles.navItemValue, { color: p.accent }]}>
-                          {motionLevel === 'full' ? 'Full' : motionLevel === 'low' ? 'Low' : 'Off'}
-                        </Text>
-                      </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={() => onCycleMotionLevel?.()}
+                      activeOpacity={0.8}
+                    >
+                      <ZapIcon size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        Animación
+                      </Text>
+                      <Text style={[styles.navItemValue, { color: p.accent }]}>
+                        {motionLevel === 'full' ? 'Full' : motionLevel === 'low' ? 'Low' : 'Off'}
+                      </Text>
+                    </TouchableOpacity>
 
-                      <TouchableOpacity
-                        style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                        onPress={() => {
-                          setMenuVisible(false);
-                          onOpenSettings();
-                        }}
-                        activeOpacity={0.8}
-                      >
-                        <SettingsIcon size={14} color={p.iconIdle} />
-                        <Text style={[styles.navItemText, { color: p.dropText }]}>
-                          {t('navigation.moreSettings')}
-                        </Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
+                    <TouchableOpacity
+                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+                      onPress={() => {
+                        setMenuVisible(false);
+                        onOpenSettings();
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <SettingsIcon size={14} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText }]}>
+                        {t('navigation.moreSettings')}
+                      </Text>
+                    </TouchableOpacity>
+                  </AnimatedCollapsibleContent>
 
                   {/* Sign out */}
                   {signedIn && (
@@ -650,7 +719,7 @@ export default function TopNav({
                       <Text style={[styles.navItemText, { color: p.danger }]}>Sign Out</Text>
                     </TouchableOpacity>
                   )}
-                </View>
+                </Animated.View>
               )}
             </View>
           )}
@@ -658,17 +727,31 @@ export default function TopNav({
       </View>
 
       {/* ── Notification dropdown (portal-like, outside nav bar) ─────────── */}
-      {notifVisible && (
-        <View style={styles.notifDropdownWrapper}>
+      <Animated.View
+        style={[
+          styles.notifDropdownWrapper,
+          {
+            opacity: notifAnimated,
+            transform: [
+              { scale: notifAnimated.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1] }) },
+            ],
+          },
+        ]}
+      >
+        {notifVisible && (
           <NotificationDropdown
             notifications={notifications}
             isDark={isDark}
             onMarkAllRead={() => onMarkAllNotificationsRead?.()}
             onDismiss={(id) => onDismissNotification?.(id)}
             onClose={() => setNotifVisible(false)}
+            onNavigateToCenter={() => {
+              setNotifVisible(false);
+              onNavigateToNotifications?.();
+            }}
           />
-        </View>
-      )}
+        )}
+      </Animated.View>
     </View>
   );
 }
@@ -718,6 +801,7 @@ const styles = StyleSheet.create({
   logoArea: {
     flex: 1,
     minWidth: 0,
+    maxWidth: '55%',
     justifyContent: 'center',
   },
   logoButton: {
@@ -774,11 +858,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.05,
     flexShrink: 1,
   },
+  bylineSubtitleMobile: {
+    fontSize: 9,
+    fontWeight: '400',
+  },
   rightArea: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     flexShrink: 0,
+    maxWidth: '45%',
   },
 
   // ── Profile pill ────────────────────────────────────────────────────────
@@ -864,24 +953,32 @@ const styles = StyleSheet.create({
     lineHeight: 11,
   },
   notifBadge: {
-    flexDirection: 'row',
+    position: 'relative',
     alignItems: 'center',
-    gap: 3,
-    borderRadius: 999,
-    minWidth: 20,
-    height: 22,
     justifyContent: 'center',
-    paddingHorizontal: 7,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
   },
   notifBadgeMobile: {
-    minWidth: 18,
-    height: 20,
-    paddingHorizontal: 6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
   },
-  notifBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    lineHeight: 13,
+  badgeOverlay: {
+    position: 'absolute',
+    top: -3,
+    right: -6,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeCount: {
+    fontSize: 8,
+    fontWeight: '900',
+    lineHeight: 10,
   },
 
   // ── Dropdown ────────────────────────────────────────────────────────────
@@ -899,7 +996,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 46,
     right: 0,
-    width: 236,
+    width: 220,
     borderWidth: 1,
     borderRadius: 16,
     paddingVertical: 6,

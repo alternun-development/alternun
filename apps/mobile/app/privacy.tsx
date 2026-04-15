@@ -3,8 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import ScreenShell from '../components/common/ScreenShell';
+import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+const API_URL = resolveMobileApiBaseUrl();
 
 interface TextSpan {
   text: string;

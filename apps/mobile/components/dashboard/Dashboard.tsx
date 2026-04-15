@@ -21,6 +21,7 @@ import ActivityFeed from './ActivityFeed';
 import DashboardSummaryCards from './DashboardSummaryCards';
 import WalletConnectModal from './WalletConnectModal';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { useNotifications } from '../notifications/NotificationsContext';
 import { ToastSystem, type ToastItem, type ToastType } from '@alternun/ui';
 import { useBackToTop } from '../../hooks/useBackToTop';
 import { BackToTopButton } from '../common/BackToTopButton';
@@ -286,12 +287,18 @@ export default function Dashboard({
   const [walletModalVisible, setWalletModalVisible] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [footerHeight, setFooterHeight] = useState(0);
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
   const scrollTopInset = isMobile ? 82 : 62;
   const scrollBottomInset = isMobile ? 18 : 8;
   const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel } =
     useAppPreferences();
+  const {
+    items: notificationItems,
+    markAllRead: markAllNotificationsRead,
+    deleteNotif: dismissNotification,
+  } = useNotifications();
   const router = useRouter();
   const isDark = themeMode === 'dark';
 
@@ -386,6 +393,25 @@ export default function Dashboard({
     onOpenSettingsPage();
   }, [onOpenSettingsPage]);
 
+  const handleNavigate = useCallback(
+    (key: string) => {
+      switch (key) {
+        case 'mi-perfil':
+          onOpenProfilePage();
+          break;
+        case 'portafolio':
+          router.push('/portafolio');
+          break;
+        case 'explorar':
+          router.push('/explorar');
+          break;
+        default:
+          break;
+      }
+    },
+    [onOpenProfilePage, router]
+  );
+
   return (
     <ThemeProvider mode={isDark ? 'dark' : 'light'}>
       <SafeAreaView style={styles.safeArea}>
@@ -444,20 +470,27 @@ export default function Dashboard({
               {/* ── Recent Activity + Summary Cards ─────────────────────── */}
               <SectionDivider isDark={isDark} />
               <ActivityFeed isDark={isDark} />
-              <DashboardSummaryCards isDark={isDark} />
+              <DashboardSummaryCards isDark={isDark} onNavigate={handleNavigate} />
             </View>
           </ScrollView>
 
-          <View style={styles.stickyBottom}>
-            <BackToTopButton
-              visible={showBackToTop}
-              onPress={scrollToTop}
-              isDark={isDark}
-              isMobile={isMobile}
-              bounceStyle={bounceStyle}
-            />
-            <AppInfoFooter />
+          <View
+            style={styles.stickyBottom}
+            onLayout={(event) => {
+              setFooterHeight(event.nativeEvent.layout.height);
+            }}
+          >
+            <AppInfoFooter containerStyle={{ marginTop: 0 }} />
           </View>
+
+          <BackToTopButton
+            visible={showBackToTop}
+            onPress={scrollToTop}
+            isDark={isDark}
+            isMobile={isMobile}
+            footerBottomOffset={isMobile ? footerHeight + 18 : undefined}
+            bounceStyle={bounceStyle}
+          />
 
           <WalletConnectModal
             visible={walletModalVisible}
@@ -494,22 +527,20 @@ export default function Dashboard({
               onNavigate={(key) => {
                 if (key === 'dashboard') {
                   scrollRef.current?.scrollTo({ y: 0, animated: true });
-                } else if (key === 'compensation') {
-                  router.push('/compensaciones');
-                } else if (key === 'portfolio') {
-                  router.push('/mis-atn');
-                } else if (key === 'proyectos') {
-                  router.push('/proyectos');
-                } else if (key === 'beneficios') {
-                  router.push('/beneficios');
-                } else if (key === 'ranking') {
-                  router.push('/ranking');
-                } else if (key === 'wallet') {
-                  router.push('/wallet');
-                } else if (key === 'profile') {
-                  router.push('/profile');
+                } else if (key === 'explorar') {
+                  router.push('/explorar');
+                } else if (key === 'portafolio') {
+                  router.push('/portafolio');
+                } else if (key === 'mi-perfil') {
+                  router.push('/mi-perfil');
                 }
               }}
+              onNavigateToNotifications={() => {
+                router.push('/notifications');
+              }}
+              notifications={notificationItems.filter((n) => !n.archived)}
+              onMarkAllNotificationsRead={markAllNotificationsRead}
+              onDismissNotification={dismissNotification}
             />
           </View>
 
@@ -546,6 +577,7 @@ const styles = createTypographyStyles({
   },
   container: {
     flex: 1,
+    position: 'relative',
   },
   scroll: {
     flex: 1,
@@ -577,13 +609,6 @@ const styles = createTypographyStyles({
     height: 12,
   },
   stickyBottom: {
-    position: 'relative',
-  },
-  footerOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
+    marginTop: 'auto',
   },
 });

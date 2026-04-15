@@ -29,3 +29,15 @@ swagger_ui_dir=$(
 
 mkdir -p dist-lambda/swagger-ui
 cp -R "${swagger_ui_dir}/." dist-lambda/swagger-ui/
+
+# Bundle legal markdown files so Lambda can read them at runtime
+mkdir -p dist-lambda/legal
+repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
+cp "${repo_root}/apps/docs/src/pages/privacy.md" dist-lambda/legal/privacy.en.md
+cp "${repo_root}/apps/docs/src/pages/terms.md"   dist-lambda/legal/terms.en.md
+for locale in es th; do
+  for doc in privacy terms; do
+    src="${repo_root}/apps/docs/i18n/${locale}/docusaurus-plugin-content-docs/current/${doc}.md"
+    [ -f "$src" ] && cp "$src" "dist-lambda/legal/${doc}.${locale}.md" || true
+  done
+done

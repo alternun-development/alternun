@@ -5,6 +5,10 @@ function resolveDevGoogleLoginFlowSlug(env: NodeJS.ProcessEnv): string {
   return env.INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG?.trim() ?? '';
 }
 
+function resolveDevDiscordLoginFlowSlug(env: NodeJS.ProcessEnv): string {
+  return env.INFRA_IDENTITY_DISCORD_LOGIN_FLOW_SLUG?.trim() ?? '';
+}
+
 export function buildIdentityPipelineSpecs({
   env,
   pipeline,
@@ -17,7 +21,14 @@ export function buildIdentityPipelineSpecs({
     env.GOOGLEA_AUTH_CLIENT_SECRET ??
     '';
   const googleAuthClientSecretKey = 'INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET';
+  const discordAuthClientId =
+    env.INFRA_IDENTITY_DISCORD_AUTH_CLIENT_ID ?? env.DISCORD_CLIENT_ID ?? '';
+  const discordAuthClientSecret =
+    env.INFRA_IDENTITY_DISCORD_AUTH_CLIENT_SECRET ?? env.DISCORD_CLIENT_SECRET ?? '';
+  const discordAuthClientSecretKey = 'INFRA_IDENTITY_DISCORD_AUTH_CLIENT_SECRET';
   const devGoogleLoginFlowSlug = resolveDevGoogleLoginFlowSlug(env);
+  const devDiscordLoginFlowSlug = resolveDevDiscordLoginFlowSlug(env);
+  const clearedDefaultApplicationLaunchUrl = '';
 
   return {
     'identity-dev': {
@@ -43,7 +54,11 @@ export function buildIdentityPipelineSpecs({
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
         INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
         INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: devGoogleLoginFlowSlug,
+        INFRA_IDENTITY_DISCORD_AUTH_CLIENT_ID: discordAuthClientId,
+        INFRA_IDENTITY_DISCORD_LOGIN_FLOW_SLUG: devDiscordLoginFlowSlug,
+        INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL: clearedDefaultApplicationLaunchUrl,
         [googleAuthClientSecretKey]: googleAuthClientSecret,
+        [discordAuthClientSecretKey]: discordAuthClientSecret,
       }),
     },
     'identity-prod': {
@@ -66,7 +81,10 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
         INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
+        INFRA_IDENTITY_DISCORD_AUTH_CLIENT_ID: discordAuthClientId,
+        INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL: clearedDefaultApplicationLaunchUrl,
         [googleAuthClientSecretKey]: googleAuthClientSecret,
+        [discordAuthClientSecretKey]: discordAuthClientSecret,
       }),
     },
   };

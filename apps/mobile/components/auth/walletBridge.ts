@@ -4,7 +4,6 @@ import type {
   WalletProvider,
 } from '@alternun/auth';
 import { Platform } from 'react-native';
-import type { EthereumProvider } from '@walletconnect/ethereum-provider';
 
 interface Eip1193RequestArguments {
   method: string;
@@ -50,7 +49,7 @@ function normalizeWalletAddress(result: unknown): string {
 }
 
 function getInjectedProviderCandidates(): Eip1193Provider[] {
-  if (typeof window === 'undefined' || !window.ethereum) {
+  if (!window?.ethereum) {
     return [];
   }
 
@@ -83,7 +82,7 @@ function pickInjectedProvider(provider: WalletProvider): Eip1193Provider | null 
       return candidates[0];
     }
 
-    if (typeof window !== 'undefined' && window.ethereum) {
+    if (window?.ethereum) {
       return window.ethereum;
     }
 
@@ -112,12 +111,12 @@ async function getWalletConnectProvider(): Promise<WalletConnectEip1193Provider>
   const projectId = process.env.EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID;
   if (!projectId || projectId.trim().length === 0) {
     throw new Error(
-      'UNSUPPORTED_FLOW: Missing EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID in environment.',
+      'UNSUPPORTED_FLOW: Missing EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID in environment.'
     );
   }
 
   const module = await import('@walletconnect/ethereum-provider');
-  const EthereumProviderConstructor = module.EthereumProvider as typeof EthereumProvider;
+  const EthereumProviderConstructor = module.EthereumProvider;
   const provider = (await EthereumProviderConstructor.init({
     projectId,
     chains: [getWalletConnectChainId()],
@@ -131,7 +130,7 @@ async function getWalletConnectProvider(): Promise<WalletConnectEip1193Provider>
 
 async function connectInjectedWallet(
   provider: Eip1193Provider,
-  providerName: WalletProvider,
+  providerName: WalletProvider
 ): Promise<WalletConnectionResult> {
   try {
     const accountResult = await provider.request({
@@ -178,9 +177,7 @@ export function createWeb3WalletBridge(): WalletConnectionBridge {
 
       const selectedProvider = pickInjectedProvider(provider);
       if (!selectedProvider) {
-        throw new Error(
-          `UNSUPPORTED_FLOW: ${getProviderHint(provider)}`,
-        );
+        throw new Error(`UNSUPPORTED_FLOW: ${getProviderHint(provider)}`);
       }
 
       return connectInjectedWallet(selectedProvider, provider);

@@ -5,6 +5,10 @@ import {
   buildIdentitySecretNameDefaults,
   buildStageDomains,
 } from '../config/infrastructure-specs.js';
+import {
+  normalizeGoogleSourceLoginFlowMode,
+  type IdentitySourceLoginFlowMode,
+} from '../config/google-source-login-flow.js';
 
 export type IdentityEmailProvider = 'ses' | 'postmark';
 export type IdentityDatabaseMode = 'rds' | 'ec2';
@@ -77,7 +81,15 @@ export interface IdentityLocalConfig {
       sourceName?: string;
       sourceSlug?: string;
       loginFlowSlug?: string;
+      loginFlowMode?: IdentitySourceLoginFlowMode;
       allowCustomProviderFlowSlugs?: boolean;
+    };
+    discord?: {
+      clientId?: string;
+      clientSecret?: string;
+      sourceName?: string;
+      sourceSlug?: string;
+      loginFlowSlug?: string;
     };
     supabase?: {
       applicationName?: string;
@@ -210,7 +222,15 @@ export interface IdentitySettings {
       sourceName: string;
       sourceSlug: string;
       loginFlowSlug: string;
+      loginFlowMode: IdentitySourceLoginFlowMode;
       allowCustomProviderFlowSlugs: boolean;
+    };
+    discord: {
+      clientId: string;
+      clientSecret: string;
+      sourceName: string;
+      sourceSlug: string;
+      loginFlowSlug: string;
     };
     supabase: {
       applicationName: string;
@@ -436,6 +456,10 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
     parseBoolean(args.env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS, false) ||
     parseBoolean(args.env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS, false) ||
     Boolean(localConfig?.integration?.google?.allowCustomProviderFlowSlugs);
+  const googleLoginFlowMode = normalizeGoogleSourceLoginFlowMode(
+    args.env.INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE ??
+      localConfig?.integration?.google?.loginFlowMode
+  );
 
   return {
     enabled: parseBoolean(
@@ -641,7 +665,33 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
             localConfig?.integration?.google?.loginFlowSlug ??
             ''
           : '',
+        loginFlowMode: googleLoginFlowMode,
         allowCustomProviderFlowSlugs,
+      },
+      discord: {
+        clientId:
+          args.env.INFRA_IDENTITY_DISCORD_AUTH_CLIENT_ID ??
+          localConfig?.integration?.discord?.clientId ??
+          args.env.DISCORD_CLIENT_ID ??
+          '',
+        clientSecret:
+          args.env.INFRA_IDENTITY_DISCORD_AUTH_CLIENT_SECRET ??
+          localConfig?.integration?.discord?.clientSecret ??
+          args.env.DISCORD_CLIENT_SECRET ??
+          '',
+        sourceName:
+          args.env.INFRA_IDENTITY_DISCORD_SOURCE_NAME ??
+          localConfig?.integration?.discord?.sourceName ??
+          IDENTITY_INFRA_DEFAULTS.integration.discord.sourceName,
+        sourceSlug:
+          args.env.INFRA_IDENTITY_DISCORD_SOURCE_SLUG ??
+          localConfig?.integration?.discord?.sourceSlug ??
+          IDENTITY_INFRA_DEFAULTS.integration.discord.sourceSlug,
+        loginFlowSlug: allowCustomProviderFlowSlugs
+          ? args.env.INFRA_IDENTITY_DISCORD_LOGIN_FLOW_SLUG ??
+            localConfig?.integration?.discord?.loginFlowSlug ??
+            ''
+          : '',
       },
       supabase: {
         applicationName:

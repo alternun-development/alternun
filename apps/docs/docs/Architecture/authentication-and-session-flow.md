@@ -6,20 +6,33 @@ sidebar_position: 2.5
 
 This is the current AIRS auth architecture.
 
-It is intentionally split by runtime:
+It is intentionally split by runtime and execution layer:
 
 - web uses a browser redirect flow with a dedicated callback route
 - native uses the client runtime directly and stays separate from the web callback contract
-- Authentik owns identity
-- Supabase owns application session persistence, app-user provisioning, data, and authorization
+- Better Auth can execute social login when selected by config
+- Authentik owns the canonical issuer boundary
+- Supabase owns application session persistence, app-user provisioning, data, and authorization for the compatibility path
 
 The main rule is simple: deployed web builds should not silently drift between Authentik and Supabase because of hidden defaults.
 
 ## Responsibilities
 
+### Better Auth
+
+Better Auth is the execution layer when `AUTH_EXECUTION_PROVIDER=better-auth`.
+
+It owns:
+
+- browser social login execution
+- the browser client flow on the API-origin `/auth` route
+- provider-specific execution tokens before issuer exchange
+
+It does **not** own the canonical AIRS session authority.
+
 ### Authentik
 
-Authentik is the identity provider boundary.
+Authentik is the issuer boundary.
 
 It owns:
 
@@ -27,21 +40,22 @@ It owns:
 - the OIDC authorization/code exchange boundary
 - upstream logout and IdP session state
 - identity-side app/provider configuration
+- issuer-aligned session exchange for the canonical application session
 
 It does **not** own the AIRS web callback page or AIRS route state.
 
 ### Supabase
 
-Supabase is the application auth/data layer.
+Supabase is the application auth/data layer and legacy compatibility path.
 
 It owns:
 
-- the application session once AIRS finalizes auth
+- the application session in the compatibility path
 - app-user provisioning and synchronization
 - row-level authorization and app data access
 - email/password auth and wallet auth
 
-For AIRS web social login, Supabase is not the visible identity broker. Authentik is.
+For AIRS web social login, Supabase is not the visible identity broker. Authentik is the issuer boundary, and Better Auth can execute the browser sign-in when selected. When `AUTH_EXECUTION_PROVIDER=better-auth`, the browser still ends up with the canonical issuer-backed application session rather than a Better Auth cookie.
 
 ## Runtime Split
 
@@ -54,7 +68,9 @@ Use browser redirects.
 - `webRedirectSignIn(...)`
 - callback route: `/auth/callback`
 
-Web social login stores the intended destination, redirects to Authentik, finalizes the callback on `/auth/callback`, then returns to the requested route.
+Web social login stores the intended destination, starts the selected execution provider, finalizes the callback on `/auth/callback`, then returns to the requested route.
+
+When `AUTH_EXECUTION_PROVIDER=better-auth`, the browser client starts through the API-origin `/auth` route and the final application session is still resolved through the issuer exchange path.
 
 ### Native
 
@@ -69,6 +85,10 @@ Native auth remains separate from the web callback route. It should use runtime-
 Popup login is **not** part of the package contract.
 
 If popup auth is added later, it should be implemented as a separate explicit API, not implied by a generic `signIn({ flow })` wrapper.
+
+## Deployment Note
+
+On the current testnet rollout, the user-facing bundle is deployed from `dev`, the live API/auth runtime is owned by `dashboard-dev`, and Authentik lives in `identity-dev`. `api-dev` is a backend-only escape hatch, not the owning stack for `testnet.api.alternun.co`.
 
 ## Shared Package Contract
 
@@ -104,16 +124,18 @@ The deployed AIRS web flow is:
 sequenceDiagram
   participant User
   participant App as /auth
-  participant Auth as Authentik
+  participant Exec as Better Auth
+  participant Issuer as Authentik / auth-exchange
   participant Callback as /auth/callback
   participant Provider as AppAuthProvider
   participant Supabase as Supabase
 
   User->>App: Open /auth?next=/dashboard
-  App->>Auth: webRedirectSignIn(provider, redirectTo)
-  Auth->>Auth: Social login / OIDC
-  Auth-->>Callback: Redirect with code/state
-  Callback->>Supabase: Provision / finalize app session
+  App->>Exec: webRedirectSignIn(provider, redirectTo)
+  Exec->>Exec: Social login / browser execution
+  Exec-->>Callback: Redirect with code/state
+  Callback->>Issuer: Exchange external identity for canonical session
+  Callback->>Supabase: Provision / finalize compatibility session
   Callback->>Provider: setOidcUser(...)
   Callback-->>User: Redirect to stored next route
 ```
@@ -124,6 +146,8 @@ Important implementation rules:
 - `/auth/callback` is the browser callback boundary
 - callback finalization does not live in a UI button component
 - the intended destination is stored explicitly and restored after success
+- Better Auth execution tokens are not the final app session
+- the issuer exchange remains the canonical session boundary
 
 ## Native Flow
 
@@ -164,7 +188,7 @@ This is intentionally cleaner than embedding callback handling inside `AppAuthPr
 
 ## Entry Modes
 
-The package still supports two Authentik entry styles.
+When the Authentik-managed execution path is active, the package still supports two Authentik entry styles.
 
 ### `source`
 
@@ -209,6 +233,8 @@ That is now the default derived callback URL when the browser origin is availabl
 
 If an older env still points at the site root, the shared web resolver prefers the dedicated callback route on the same origin instead of staying on the stale root redirect.
 
+When the browser is running on a local loopback origin, the active browser origin wins over stale testnet or localhost callback values so local testing stays on the current app instance.
+
 For native, use an explicit runtime-appropriate redirect/deep-link URI.
 
 ## Custom Authentik Flow Slugs
@@ -243,11 +269,11 @@ On the Authentik side, the expected direct-source configuration is:
 
 - Google `authentication_flow = default-source-authentication`
 - Google `enrollment_flow = default-source-enrollment`
-- `default-source-authentication` must include `default-source-authentication-login`
-- `default-source-enrollment` must end with `default-source-enrollment-login`
+- `default-source-authentication` must stay open and must not contain `UserLoginStage`
+- `default-source-enrollment` must stay open and must not contain `UserLoginStage`
 - Google enrollment should also bind a username-mapping policy on `default-source-enrollment-prompt` so the upstream Google email becomes the username automatically on first enrollment
 
-If those login stages are missing, Google can complete upstream auth but fail to establish the Authentik-side user session, which shows up as loops or repeated Authentik/Google handoffs.
+If those login stages are present, Google can complete upstream auth but fail to resume the source flow cleanly, which shows up as loops or `token.flow` crashes instead of dashboard redirects.
 
 For deployed AIRS web, custom outer starter flows such as `alternun-google-login` are not the default operating mode.
 
@@ -257,6 +283,7 @@ The current architecture reduces Authentik friction by keeping the browser path 
 
 - AIRS web starts from `/auth`
 - Authentik uses direct source login by default
+- web forces a fresh Authentik social session whenever social login is still Authentik-managed, so a stale shared SSO session does not apply the wrong user
 - browser callback finalization happens on `/auth/callback`
 - AIRS restores the intended destination after callback completion
 - first-time Google enrollments should auto-fill the username from the upstream Google email instead of stopping on the Authentik username screen
@@ -276,9 +303,10 @@ If the browser bounces through additional Authentik flow screens before returnin
 
 These are the concrete regressions that have already happened in this repo:
 
-- direct-source mode with `default-source-authentication` missing `UserLoginStage`
+- direct-source mode with `default-source-authentication` or `default-source-enrollment` still carrying `UserLoginStage`
 - custom outer source-stage flow enabled in Authentik while the AIRS app bundle is already in direct-source mode
 - AIRS bundle built from stale shared package output rather than current auth package source
+- deployed or exported bundle still containing stale `/better-auth/*` web login paths
 - web callback state handled inside UI components instead of a dedicated callback route
 - local loopback redirect URIs leaking into deployed web assumptions
 - hidden Authentik fallback behavior caused by `hybrid` social mode or stale emitted JS defaults
@@ -328,6 +356,7 @@ If you need to change the current flow, start here:
 ## Troubleshooting
 
 - If AIRS web shows the Supabase social path on testnet, check the deployed bundle env first, especially `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`.
+- If Authentik shows "Flow does not apply to current user", the live source auth flow is stale or was re-locked. Redeploy identity so `default-source-authentication.authentication=none` is restored, then confirm the web build is still forcing a fresh Authentik-managed social session.
 - If Google loops between Authentik and Google, check whether a custom provider flow slug is enabled unintentionally.
 - If Authentik returns to the wrong place, check the effective redirect URI and make sure `/auth/callback` is allowed on the provider.
 - If localhost behaves differently from testnet, confirm you are testing the web callback route and not a native-style redirect path.

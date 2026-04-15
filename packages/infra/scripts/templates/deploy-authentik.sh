@@ -68,6 +68,7 @@ fi
 GOOGLE_AUTH_CLIENT_ID="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.googleClientId // empty')"
 GOOGLE_AUTH_CLIENT_SECRET="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.googleClientSecret // empty')"
 GOOGLE_SOURCE_LOGIN_FLOW_SLUG="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.googleSourceLoginFlowSlug // empty')"
+GOOGLE_SOURCE_LOGIN_FLOW_MODE="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.googleSourceLoginFlowMode // empty')"
 GOOGLE_SOURCE_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.googleSourceName // "Google"')"
 GOOGLE_SOURCE_SLUG="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.googleSourceSlug // "google"')"
 
@@ -78,6 +79,7 @@ USER_SYNC_RULE_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.userSy
 
 DISCORD_CLIENT_ID="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.discordClientId // empty')"
 DISCORD_CLIENT_SECRET="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.discordClientSecret // empty')"
+DISCORD_SOURCE_LOGIN_FLOW_SLUG="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.discordSourceLoginFlowSlug // empty')"
 DISCORD_SOURCE_NAME="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.discordSourceName // "Discord"')"
 DISCORD_SOURCE_SLUG="$(printf '%s' "${INTEGRATION_SECRET_JSON}" | jq -r '.discordSourceSlug // "discord"')"
 
@@ -229,6 +231,43 @@ chown root:root "${ENV_FILE}"
 
 docker compose -f /opt/alternun/identity/docker-compose.yml pull
 docker compose -f /opt/alternun/identity/docker-compose.yml up -d --remove-orphans
+
+apply_authentik_source_stage_hotfix() {
+  docker compose -f /opt/alternun/identity/docker-compose.yml exec -u root -T \
+    server /ak-root/.venv/bin/python - <<'PY'
+from pathlib import Path
+
+path = Path('/authentik/enterprise/stages/source/stage.py')
+text = path.read_text()
+
+marker = 'self.request.session.pop(SESSION_KEY_OVERRIDE_FLOW_TOKEN, None)'
+if marker in text:
+    print('Authentik source-stage hotfix already present.')
+    raise SystemExit(0)
+
+needle = '''        response = plan.to_redirect(self.request, token.flow)
+        token.delete()
+'''
+replacement = '''        response = plan.to_redirect(self.request, token.flow)
+        self.request.session.pop(SESSION_KEY_OVERRIDE_FLOW_TOKEN, None)
+        self.request.session.pop(SESSION_KEY_SOURCE_FLOW_STAGES, None)
+        self.request.session.pop(SESSION_KEY_SOURCE_FLOW_CONTEXT, None)
+        try:
+            token.delete()
+        except ValueError:
+            self.logger.warning(
+                "Skipping source flow token delete after redirect because token_ptr_id was already cleared"
+            )
+'''
+
+if needle not in text:
+    raise SystemExit('Expected source-stage finalizer pattern not found in stage.py')
+
+path.write_text(text.replace(needle, replacement, 1))
+print('Applied Authentik source-stage hotfix.')
+PY
+  docker compose -f /opt/alternun/identity/docker-compose.yml restart server >/dev/null
+}
 
 traefik_container_id() {
   docker compose -f /opt/alternun/identity/docker-compose.yml ps -q traefik 2>/dev/null || true
@@ -447,9 +486,41 @@ wait_for_authentik_django() {
   return 1
 }
 
+run_authentik_migrations() {
+  local max_attempts=12
+  local attempt=1
+
+  while [ "${attempt}" -le "${max_attempts}" ]; do
+    if docker compose -f /opt/alternun/identity/docker-compose.yml exec -T \
+      server sh -lc '/ak-root/.venv/bin/python /manage.py migrate --noinput'; then
+      return 0
+    fi
+
+    sleep 5
+    attempt=$((attempt + 1))
+  done
+
+  return 1
+}
+
 if ! wait_for_authentik_django; then
   echo "WARN: Authentik did not become ready for integration bootstrap; skipping integration configuration."
   exit 0
+fi
+
+if ! run_authentik_migrations; then
+  echo "ERROR: Authentik migrations did not complete before integration bootstrap."
+  exit 1
+fi
+
+if ! apply_authentik_source_stage_hotfix; then
+  echo "ERROR: Authentik source-stage runtime hotfix could not be applied."
+  exit 1
+fi
+
+if ! wait_for_authentik_django; then
+  echo "ERROR: Authentik did not become ready after applying the source-stage runtime hotfix."
+  exit 1
 fi
 
 BOOTSTRAP_STDERR_FILE="$(mktemp)"
@@ -491,6 +562,7 @@ if ! BOOTSTRAP_RESULTS="$(docker compose -f /opt/alternun/identity/docker-compos
   -e ALTERNUN_BOOTSTRAP_GOOGLE_CLIENT_ID="${GOOGLE_AUTH_CLIENT_ID}" \
   -e ALTERNUN_BOOTSTRAP_GOOGLE_CLIENT_SECRET="${GOOGLE_AUTH_CLIENT_SECRET}" \
   -e ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_LOGIN_FLOW_SLUG="${GOOGLE_SOURCE_LOGIN_FLOW_SLUG}" \
+  -e ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_LOGIN_FLOW_MODE="${GOOGLE_SOURCE_LOGIN_FLOW_MODE}" \
   -e ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_NAME="${GOOGLE_SOURCE_NAME}" \
   -e ALTERNUN_BOOTSTRAP_GOOGLE_SOURCE_SLUG="${GOOGLE_SOURCE_SLUG}" \
   -e ALTERNUN_BOOTSTRAP_USER_SYNC_WEBHOOK_URL="${USER_SYNC_WEBHOOK_URL}" \
@@ -499,6 +571,7 @@ if ! BOOTSTRAP_RESULTS="$(docker compose -f /opt/alternun/identity/docker-compos
   -e ALTERNUN_BOOTSTRAP_USER_SYNC_RULE_NAME="${USER_SYNC_RULE_NAME}" \
   -e ALTERNUN_BOOTSTRAP_DISCORD_CLIENT_ID="${DISCORD_CLIENT_ID}" \
   -e ALTERNUN_BOOTSTRAP_DISCORD_CLIENT_SECRET="${DISCORD_CLIENT_SECRET}" \
+  -e ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_LOGIN_FLOW_SLUG="${DISCORD_SOURCE_LOGIN_FLOW_SLUG}" \
   -e ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_NAME="${DISCORD_SOURCE_NAME}" \
   -e ALTERNUN_BOOTSTRAP_DISCORD_SOURCE_SLUG="${DISCORD_SOURCE_SLUG}" \
   -e ALTERNUN_BOOTSTRAP_MOBILE_OIDC_CLIENT_ID="${MOBILE_OIDC_CLIENT_ID}" \

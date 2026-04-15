@@ -121,6 +121,9 @@
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",
+      "help": "Ayuda",
+      "privacy": "Privacidad",
+      "terms": "Términos",
       "links": {
         "documentation": "Documentacion",
         "project": "Ir a Alternun.io",
@@ -129,6 +132,15 @@
         "support": "Soporte"
       },
       "tagline": "Una \"manera diferente de hacer las cosas\" - Alternun"
+    },
+    "releaseUpdate": {
+      "eyebrow": "Nueva versión disponible",
+      "titleReady": "La versión {{version}} ya está lista.",
+      "titleFallback": "Hay una nueva versión disponible.",
+      "messageReady": "Estás en la v{{currentVersion}}. Recarga para cambiar a la v{{remoteVersion}}.",
+      "messageFallback": "Recarga para cargar los últimos cambios y recursos.",
+      "later": "Más tarde",
+      "reload": "Recargar"
     },
     "landing": {
       "actions": {
@@ -145,6 +157,126 @@
       "media": {
         "subtitle": "El programa de lealtad definitivo para quienes protegen el planeta.",
         "title": "Puntaje de impacto y reputacion de Alternun"
+      },
+      "nav": {
+        "benefits": "Beneficios",
+        "howItWorks": "Cómo funciona",
+        "project": "El proyecto",
+        "signInCta": "Ingresar / Crear cuenta",
+        "start": "Inicio"
+      },
+      "elProyecto": {
+        "sectionTitle": "Una economía regenerativa que te beneficia",
+        "airs": {
+          "overview": "Airs es tu huella positiva en Alternun. Se compra, se gana y se pierde según tus acciones regenerativas y determina tu Ingreso Básico Regenerativo (RBI).",
+          "subtitle": "Tu Reputación Regenerativa",
+          "title": "Airs"
+        },
+        "atn": {
+          "overview": "ATN es el token de utilidad y gobernanza del ecosistema Alternun. Permite participar en decisiones, acceder a funcionalidades premium y recompensar acciones de impacto.",
+          "subtitle": "Token de Gobernanza",
+          "title": "ATN"
+        },
+        "rbi": {
+          "overview": "RBI es un ingreso básico regenerativo que se distribuye automáticamente según tu puntuación Airs. Cuanto mayor sea tu impacto positivo, mayor será tu RBI.",
+          "subtitle": "Ingreso Básico Regenerativo",
+          "title": "RBI"
+        }
+      },
+      "comoFunciona": {
+        "sectionTitle": "Cómo funciona",
+        "subtitle": "Cuatro pasos simples para comenzar tu viaje regenerativo",
+        "steps": {
+          "s1": {
+            "b1": "Conecta tu billetera Web3",
+            "b2": "Completa tu perfil de impacto",
+            "b3": "Comienza a generar puntuación Airs",
+            "description": "Regístrate y conecta tu billetera para comenzar tu viaje regenerativo en Alternun.",
+            "title": "Conecta tu billetera"
+          },
+          "s2": {
+            "b1": "Completa acciones de impacto verificadas",
+            "b2": "Gana puntos Airs por cada acción",
+            "b3": "Construye tu reputación regenerativa",
+            "description": "Realiza acciones de impacto positivo y gana puntos Airs por cada acción verificada.",
+            "title": "Genera impacto"
+          },
+          "s3": {
+            "b1": "Tu RBI se calcula según tu Airs",
+            "b2": "Recibe compensación automática",
+            "b3": "Crece con el ecosistema",
+            "description": "A medida que crece tu Airs, tu Ingreso Básico Regenerativo aumenta automáticamente.",
+            "title": "Recibe tu RBI"
+          },
+          "s4": {
+            "b1": "Canjea en el marketplace",
+            "b2": "Accede a productos y servicios",
+            "b3": "Apoya proyectos regenerativos",
+            "description": "Usa tus tokens ATN y RBI para acceder a productos, servicios y proyectos en el ecosistema.",
+            "title": "Canjea y crece"
+          }
+        }
+      },
+      "beneficios": {
+        "atnUnit": "ATN",
+        "cards": {
+          "eco": {
+            "tag1": "Orgánico",
+            "tag2": "Sostenible",
+            "description": "Productos orgánicos y sostenibles verificados por el ecosistema Alternun.",
+            "atn": "120",
+            "meta": "Agricultura regenerativa",
+            "title": "Productos Eco",
+            "cta": "Comprar Ahora",
+            "infoBody": "Accede a descuentos exclusivos en productos sostenibles de nuestras marcas aliadas. Desde ropa orgánica hasta productos de limpieza ecológicos."
+          },
+          "experiencias": {
+            "tag1": "Viajes",
+            "tag2": "Aventura",
+            "description": "Descubre viajes, retiros y experiencias diseñados para recompensar tu impacto positivo.",
+            "atn": "240",
+            "meta": "Escapadas curadas",
+            "title": "Experiencias",
+            "cta": "Explorar Experiencias",
+            "infoBody": "Descubre viajes, retiros y experiencias en la naturaleza diseñadas para recompensar tu impacto positivo. Cada experiencia te conecta con ecosistemas regenerativos alrededor del mundo."
+          },
+          "marketplace": {
+            "description": "Accede a un marketplace de productos y servicios regenerativos.",
+            "meta": "Marketplace",
+            "title": "Marketplace"
+          },
+          "premium": {
+            "tag1": "Exclusivo",
+            "tag2": "Miembros",
+            "description": "Desbloquea beneficios exclusivos, acceso prioritario y soporte mejorado en todo el ecosistema.",
+            "atn": "400",
+            "meta": "Acceso premium",
+            "title": "Premium",
+            "cta": "Vivir la Experiencia",
+            "infoBody": "Disfruta de acceso prioritario, soporte mejorado y beneficios exclusivos en todo el ecosistema. La membresía Premium desbloquea lo mejor que Alternun tiene para ofrecer, incluidos eventos privados y orientación personalizada."
+          },
+          "cursos": {
+            "tag1": "Aprendizaje",
+            "tag2": "Verificado",
+            "description": "Aprende habilidades regenerativas practicas con cursos, talleres y guia verificada.",
+            "atn": "80",
+            "meta": "Educacion",
+            "title": "Cursos",
+            "cta": "Empezar a Aprender",
+            "infoBody": "Aprende habilidades regenerativas prácticas con cursos, talleres y certificaciones verificadas dirigidos por expertos. Construye conocimiento que se traduce directamente en impacto positivo."
+          },
+          "services": {
+            "description": "Servicios verificados que contribuyen al impacto positivo.",
+            "meta": "Servicios",
+            "title": "Servicios"
+          }
+        },
+        "cta": "Explorar marketplace",
+        "sectionTitle": "Beneficios",
+        "subtitle": "Descubre todo lo que puedes obtener con Alternun",
+        "topRated": "Mejor valorado",
+        "redeemCta": "Redimir este beneficio",
+        "availableFrom": "Disponible desde {{atn}} ATN"
       },
       "video": {
         "loadingIntro": "Cargando video introductorio de Airs",
@@ -190,6 +322,10 @@
     "home": {
       "title": "Aplicacion web de Alternun",
       "welcome": "Bienvenido a la aplicacion de Next.js."
+    },
+    "footer": {
+      "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",
+      "help": "Ayuda"
     }
   },
   "docs": {

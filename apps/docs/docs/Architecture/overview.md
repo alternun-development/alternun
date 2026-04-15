@@ -22,7 +22,7 @@ Today the repo contains several connected surfaces:
 - **AIRS**: the public application experience delivered from the Expo-based client stack
 - **Admin**: the internal operational console for managed workflows
 - **API**: the custom backend service used for operational and integration endpoints
-- **Identity**: the Authentik-based authentication and OIDC layer
+- **Identity**: the Alternun auth facade, with Better Auth execution and Authentik issuer/OIDC layers
 - **Docs**: the public Docusaurus documentation site and protected CMS editor
 - **Infra**: the SST and Pulumi code that provisions AWS resources and deployment pipelines
 
@@ -111,7 +111,7 @@ What is already clear and active:
 
 - public AIRS app delivery
 - AWS-managed deployment topology
-- Authentik-based identity direction
+- auth facade with Better Auth execution and Authentik issuer direction
 - Docusaurus docs and Decap editing flow
 - admin and API deployment stacks
 

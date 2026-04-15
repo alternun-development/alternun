@@ -290,6 +290,9 @@ export default function SettingsScreen() {
               router.replace('/');
             }}
             onNavigate={handleNavigate}
+            onNavigateToNotifications={() => {
+              router.push('/notifications');
+            }}
           />
         </View>
       </View>

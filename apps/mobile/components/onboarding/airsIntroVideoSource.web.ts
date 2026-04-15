@@ -1,7 +1,7 @@
 import AIRS_VIDEO_EN from '../../assets/videos/AIRS-intro-videoplayback-EN.mp4';
 import AIRS_VIDEO_ES from '../../assets/videos/AIRS-intro-videoplayback-ES.mp4';
 
-function resolveLocalAssetUri(assetModule: unknown): string {
+export function resolveLocalAssetUri(assetModule: unknown): string {
   if (typeof assetModule === 'string') {
     return assetModule;
   }

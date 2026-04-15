@@ -19,6 +19,7 @@ export interface NotificationItem {
   body: string;
   timestamp: Date;
   read: boolean;
+  archived: boolean;
 }
 
 interface NotificationDropdownProps {
@@ -27,6 +28,7 @@ interface NotificationDropdownProps {
   onMarkAllRead: () => void;
   onDismiss: (id: string) => void;
   onClose: () => void;
+  onNavigateToCenter?: () => void;
 }
 
 function timeAgo(date: Date): string {
@@ -37,7 +39,7 @@ function timeAgo(date: Date): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-const TYPE_CONFIG: Record<NotifType, { icon: React.FC<any>; color: string; bg: string }> = {
+export const TYPE_CONFIG: Record<NotifType, { icon: React.FC<any>; color: string; bg: string }> = {
   success: {
     icon: CheckCircle as React.FC<any>,
     color: '#1ccba1',
@@ -66,6 +68,7 @@ export default function NotificationDropdown({
   onMarkAllRead,
   onDismiss,
   onClose,
+  onNavigateToCenter,
 }: NotificationDropdownProps) {
   const p = isDark
     ? {
@@ -195,6 +198,21 @@ export default function NotificationDropdown({
             );
           })}
         </ScrollView>
+      )}
+
+      {/* Footer with "View Notification Center" button */}
+      {onNavigateToCenter && (
+        <View style={[styles.footer, { borderTopColor: p.divider }]}>
+          <TouchableOpacity
+            onPress={onNavigateToCenter}
+            activeOpacity={0.7}
+            style={styles.seeAllBtn}
+          >
+            <Text style={[styles.seeAllText, { color: p.markAll }]}>
+              {notifications.length === 0 ? 'View Notification Center' : 'See all notifications'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
@@ -330,5 +348,18 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 13,
     fontWeight: '500',
+  },
+  footer: {
+    borderTopWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  seeAllBtn: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  seeAllText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

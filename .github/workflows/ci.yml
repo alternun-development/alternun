@@ -127,7 +127,7 @@ jobs:
         run: pnpm install
 
       - name: Run security audit
-        run: pnpm audit --audit-level critical
+        run: pnpm run security:audit
 
   build:
     name: Build
@@ -190,7 +190,7 @@ jobs:
         run: pnpm install
 
       - name: Build documentation
-        run: pnpm build -- --filter=docs
+        run: pnpm --filter alternun-docs run build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

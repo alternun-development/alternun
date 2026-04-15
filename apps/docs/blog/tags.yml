@@ -3,6 +3,26 @@ facebook:
   permalink: /facebook
   description: Facebook tag description
 
+gold:
+  label: Gold
+  permalink: /gold
+  description: Gold-backed token and gold mining topics
+
+alternun:
+  label: Alternun
+  permalink: /alternun
+  description: Alternun announcements and updates
+
+refi:
+  label: ReFi
+  permalink: /refi
+  description: Regenerative finance topics
+
+sustainability:
+  label: Sustainability
+  permalink: /sustainability
+  description: Sustainability and ESG topics
+
 hello:
   label: Hello
   permalink: /hello

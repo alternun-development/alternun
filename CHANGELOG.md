@@ -1,3 +1,708 @@
+## [1.0.72](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.72) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only exports from main package to fix web bundling ([f2229b8](https://github.com/alternun-development/alternun/commit/f2229b8801c66e565a9f1238f74cb31b29750187))
+- **docs,repo,auth:** authentication-and-session-flow, CHANGELOG, alternun-better-auth-testnet-execution-plan, .env ([be3dacb](https://github.com/alternun-development/alternun/commit/be3dacb9a4819e5b83f4cee33b81445d3e02da3c))
+- **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
+- **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
+
+## [1.0.72](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.72) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only exports from main package to fix web bundling ([f2229b8](https://github.com/alternun-development/alternun/commit/f2229b8801c66e565a9f1238f74cb31b29750187))
+- **docs,repo,auth:** authentication-and-session-flow, CHANGELOG, alternun-better-auth-testnet-execution-plan, .env ([be3dacb](https://github.com/alternun-development/alternun/commit/be3dacb9a4819e5b83f4cee33b81445d3e02da3c))
+- **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
+- **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
+
+## [1.0.71](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.71) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only exports from main package to fix web bundling
+- **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
+- **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
+
+## [1.0.71](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.71) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only exports from main package to fix web bundling
+- **lint:** add .d.ts to lint-staged pattern ([33205d0](https://github.com/alternun-development/alternun/commit/33205d05bb24d6e7539b94941eda8e71af832a29))
+- **repo:** replace deprecated audit endpoint ([0c48ae8](https://github.com/alternun-development/alternun/commit/0c48ae81cc28e220cda0e345912a226d30b35e0e))
+
+## [1.0.70](https://github.com/alternun-development/alternun/compare/v1.0.64...v1.0.70) (2026-04-15)
+
+### Bug Fixes
+
+- **api:** satisfy better auth dev build types ([ab2d488](https://github.com/alternun-development/alternun/commit/ab2d4884aae97f9c2cdedbfce79a95ae51a70d27))
+- **auth:** sync canonical docs and mobile build ([8bd68d8](https://github.com/alternun-development/alternun/commit/8bd68d815911b5f2f861f754394e8008773c0ba1))
+- canonicalize better auth public base url ([1202905](https://github.com/alternun-development/alternun/commit/12029050454408be3f7b545db9a7a910c97e4164))
+- **mobile,i18n,repo:** LandingFooter, PublicLandingPage, AirsIntroExperience, en ([dbd6ac4](https://github.com/alternun-development/alternun/commit/dbd6ac4a0435fa804b0eb9973aa333db03f58699))
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([2aab253](https://github.com/alternun-development/alternun/commit/2aab253058b154cc813686a858cd954567ed0446))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([b9e841d](https://github.com/alternun-development/alternun/commit/b9e841ddb4810b3abba77e1212d9ead0086e8821))
+
+## [1.0.70](https://github.com/alternun-development/alternun/compare/v1.0.64...v1.0.70) (2026-04-15)
+
+### Bug Fixes
+
+- **api:** satisfy better auth dev build types ([ab2d488](https://github.com/alternun-development/alternun/commit/ab2d4884aae97f9c2cdedbfce79a95ae51a70d27))
+- **auth:** sync canonical docs and mobile build ([8bd68d8](https://github.com/alternun-development/alternun/commit/8bd68d815911b5f2f861f754394e8008773c0ba1))
+- canonicalize better auth public base url ([1202905](https://github.com/alternun-development/alternun/commit/12029050454408be3f7b545db9a7a910c97e4164))
+- **mobile,i18n,repo:** LandingFooter, PublicLandingPage, AirsIntroExperience, en ([dbd6ac4](https://github.com/alternun-development/alternun/commit/dbd6ac4a0435fa804b0eb9973aa333db03f58699))
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([2aab253](https://github.com/alternun-development/alternun/commit/2aab253058b154cc813686a858cd954567ed0446))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([b9e841d](https://github.com/alternun-development/alternun/commit/b9e841ddb4810b3abba77e1212d9ead0086e8821))
+
+## [1.0.69](https://github.com/alternun-development/alternun/compare/v1.0.68...v1.0.69) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** read the mobile env files when validating the exported web auth bundle so Better Auth builds do not fail on stale shell-only defaults
+- **docs:** update the public and auth-facade docs to reflect the current Better Auth execution layer, Authentik issuer boundary, and API-origin `/auth` proxy shape
+
+## [1.0.68](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.68) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([2aab253](https://github.com/alternun-development/alternun/commit/2aab253058b154cc813686a858cd954567ed0446))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([b9e841d](https://github.com/alternun-development/alternun/commit/b9e841ddb4810b3abba77e1212d9ead0086e8821))
+
+## [1.0.68](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.68) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([2aab253](https://github.com/alternun-development/alternun/commit/2aab253058b154cc813686a858cd954567ed0446))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([b9e841d](https://github.com/alternun-development/alternun/commit/b9e841ddb4810b3abba77e1212d9ead0086e8821))
+
+## [1.0.67](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.67) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([b9e841d](https://github.com/alternun-development/alternun/commit/b9e841ddb4810b3abba77e1212d9ead0086e8821))
+
+## [1.0.67](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.67) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([b9e841d](https://github.com/alternun-development/alternun/commit/b9e841ddb4810b3abba77e1212d9ead0086e8821))
+
+## [1.0.66](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.66) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+
+## [1.0.66](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.66) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+
+## [1.0.65](https://github.com/alternun-development/alternun/compare/v1.0.64...v1.0.65) (2026-04-15)
+
+### Bug Fixes
+
+- **api:** satisfy better auth dev build types ([ab2d488](https://github.com/alternun-development/alternun/commit/ab2d4884aae97f9c2cdedbfce79a95ae51a70d27))
+- canonicalize better auth public base url ([1202905](https://github.com/alternun-development/alternun/commit/12029050454408be3f7b545db9a7a910c97e4164))
+- **mobile,i18n,repo:** LandingFooter, PublicLandingPage, AirsIntroExperience, en ([dbd6ac4](https://github.com/alternun-development/alternun/commit/dbd6ac4a0435fa804b0eb9973aa333db03f58699))
+
+## [1.0.65](https://github.com/alternun-development/alternun/compare/v1.0.64...v1.0.65) (2026-04-15)
+
+### Bug Fixes
+
+- **api:** satisfy better auth dev build types ([ab2d488](https://github.com/alternun-development/alternun/commit/ab2d4884aae97f9c2cdedbfce79a95ae51a70d27))
+- canonicalize better auth public base url ([1202905](https://github.com/alternun-development/alternun/commit/12029050454408be3f7b545db9a7a910c97e4164))
+- **mobile,i18n,repo:** LandingFooter, PublicLandingPage, AirsIntroExperience, en ([dbd6ac4](https://github.com/alternun-development/alternun/commit/dbd6ac4a0435fa804b0eb9973aa333db03f58699))
+
+## [1.0.64](https://github.com/alternun-development/alternun/compare/v1.0.63...v1.0.64) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** resolve all lint and type-check build failures ([c0fcff2](https://github.com/alternun-development/alternun/commit/c0fcff2b0b43c6d54465f3620b1409e4c7ad8546))
+
+## [1.0.64](https://github.com/alternun-development/alternun/compare/v1.0.63...v1.0.64) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** resolve all lint and type-check build failures ([c0fcff2](https://github.com/alternun-development/alternun/commit/c0fcff2b0b43c6d54465f3620b1409e4c7ad8546))
+
+## [1.0.63](https://github.com/alternun-development/alternun/compare/v1.0.62...v1.0.63) (2026-04-12)
+
+### Bug Fixes
+
+- **mobile:** landing extra sections and header nav ([e25c236](https://github.com/alternun-development/alternun/commit/e25c23654a8019d2920600e93e875cd75991399f))
+- **mobile:** landing nav bar styles and restore extra sections correctly ([56043fe](https://github.com/alternun-development/alternun/commit/56043fe0dbe849b916dd27b6b11391eee3d71531))
+- **mobile:** restore BackToTopButton and fix forwardRef export in AirsIntroExperience ([845f47f](https://github.com/alternun-development/alternun/commit/845f47f97a4314fbd3b1befe36d776cef47c6197))
+- **mobile:** restore BackToTopButton and properly type forwardRef export ([783a9ce](https://github.com/alternun-development/alternun/commit/783a9ce009a12313c60a017aca998ebb9672dfab))
+- **mobile:** TopNav dropdown animations and layout width ([b36e80b](https://github.com/alternun-development/alternun/commit/b36e80b1475465f3109a9d36dd8658787b69a9c8))
+- **repo,mobile,auth:** settings, airs, atn, rbi ([3e82a94](https://github.com/alternun-development/alternun/commit/3e82a94acd18e95d3da353d1ceb4d3f2951fc772))
+
+### Features
+
+- **mobile:** show PublicLandingPage for unauthenticated users with header nav ([57fb86d](https://github.com/alternun-development/alternun/commit/57fb86d7216ab89260dd053ed3db4c1100ff0942))
+
+## [1.0.63](https://github.com/alternun-development/alternun/compare/v1.0.62...v1.0.63) (2026-04-12)
+
+### Bug Fixes
+
+- **mobile:** landing extra sections and header nav ([e25c236](https://github.com/alternun-development/alternun/commit/e25c23654a8019d2920600e93e875cd75991399f))
+- **mobile:** landing nav bar styles and restore extra sections correctly ([56043fe](https://github.com/alternun-development/alternun/commit/56043fe0dbe849b916dd27b6b11391eee3d71531))
+- **mobile:** restore BackToTopButton and fix forwardRef export in AirsIntroExperience ([845f47f](https://github.com/alternun-development/alternun/commit/845f47f97a4314fbd3b1befe36d776cef47c6197))
+- **mobile:** restore BackToTopButton and properly type forwardRef export ([783a9ce](https://github.com/alternun-development/alternun/commit/783a9ce009a12313c60a017aca998ebb9672dfab))
+- **mobile:** TopNav dropdown animations and layout width ([b36e80b](https://github.com/alternun-development/alternun/commit/b36e80b1475465f3109a9d36dd8658787b69a9c8))
+- **repo,mobile,auth:** settings, airs, atn, rbi ([3e82a94](https://github.com/alternun-development/alternun/commit/3e82a94acd18e95d3da353d1ceb4d3f2951fc772))
+
+### Features
+
+- **mobile:** show PublicLandingPage for unauthenticated users with header nav ([57fb86d](https://github.com/alternun-development/alternun/commit/57fb86d7216ab89260dd053ed3db4c1100ff0942))
+
+## [1.0.62](https://github.com/alternun-development/alternun/compare/v1.0.60...v1.0.62) (2026-04-11)
+
+### Bug Fixes
+
+- wire Better Auth social login and the legacy email/password fallback through separate execution paths
+- fix changelog/version rendering for mobile, web, and docs so the release pill and history show the current version
+- fix banner, drawer, and locale plumbing so update notices and legal links resolve the right origin/API in each surface
+
+### Features
+
+- apply Anek Latin as the default font across mobile, web, and docs
+- propagate Better Auth and release env settings through infra and build scripts
+
+## [1.0.61](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.61) (2026-04-11)
+
+### Bug Fixes
+
+- dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([ef8ad01](https://github.com/alternun-development/alternun/commit/ef8ad01ddcb994da34cb2e6aff89b672434bff67))
+
+## [1.0.61](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.61) (2026-04-11)
+
+### Bug Fixes
+
+- dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([ef8ad01](https://github.com/alternun-development/alternun/commit/ef8ad01ddcb994da34cb2e6aff89b672434bff67))
+
+## [1.0.60](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.60) (2026-04-11)
+
+### Bug Fixes
+
+- dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
+
+## [1.0.60](https://github.com/alternun-development/alternun/compare/v1.0.59...v1.0.60) (2026-04-11)
+
+### Bug Fixes
+
+- dashboard footer layout - align copyright and controls on same line ([4ae9e00](https://github.com/alternun-development/alternun/commit/4ae9e0054ebcf6506e79963e9bb2b70749cf2d8a))
+
+## [1.0.59](https://github.com/alternun-development/alternun/compare/v1.0.58...v1.0.59) (2026-04-11)
+
+### Bug Fixes
+
+- fix the mobile auth bridge so the initial null session no longer triggers an Authentik logout during Better Auth Google sign-in
+- make the legacy Authentik fresh-session policy execution-provider aware so Better Auth keeps the new flow end to end
+- add regression coverage for the auth session bridge and provider-aware web sign-in policy
+
+## [1.0.58](https://github.com/alternun-development/alternun/compare/v1.0.57...v1.0.58) (2026-04-11)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([21d6a2f](https://github.com/alternun-development/alternun/commit/21d6a2f5e9f6ffa55a53f132b2e46da02b196b5a))
+
+### Features
+
+- add web3 login feature flag to hide connect wallet option ([aed9bf2](https://github.com/alternun-development/alternun/commit/aed9bf2f04ecbe0f0526b2f9087c2d0c548a601b))
+
+## [1.0.58](https://github.com/alternun-development/alternun/compare/v1.0.57...v1.0.58) (2026-04-11)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([21d6a2f](https://github.com/alternun-development/alternun/commit/21d6a2f5e9f6ffa55a53f132b2e46da02b196b5a))
+
+### Features
+
+- add web3 login feature flag to hide connect wallet option ([aed9bf2](https://github.com/alternun-development/alternun/commit/aed9bf2f04ecbe0f0526b2f9087c2d0c548a601b))
+
+## [1.0.57](https://github.com/alternun-development/alternun/compare/v1.0.53...v1.0.57) (2026-04-11)
+
+### Bug Fixes
+
+- add i18n translations to FooterCopyright component ([880dce9](https://github.com/alternun-development/alternun/commit/880dce9aa06634976b952fcdef7676eb388167ac))
+- center align mobile landing footer bottom bar in compact mode ([c50ac5a](https://github.com/alternun-development/alternun/commit/c50ac5aae4c639d0e9ec7beb4c6942f75bd130b4))
+- **mobile,auth,i18n:** changelogData ([a50c703](https://github.com/alternun-development/alternun/commit/a50c703fb472cb6164d7d0da43d4b2fe2d1301df))
+- **mobile:** center footer bottom bar content layout ([6b4d9b7](https://github.com/alternun-development/alternun/commit/6b4d9b7a84dde923e7700a49f79e3fe35b6721a5))
+- **mobile:** show underline on hover only for privacy & terms links ([7f4aea8](https://github.com/alternun-development/alternun/commit/7f4aea8fc3ceff674cd746a4999449d8ec1eaef0))
+- remove duplicate v1.0.56 changelog entry ([a974799](https://github.com/alternun-development/alternun/commit/a974799f067b8764f01b6d463f12f5181fdb5b9f))
+- reorder footer icons (version first) and ensure consistent 32px heights ([fbb16a7](https://github.com/alternun-development/alternun/commit/fbb16a7e75fb6c59b6ffbfa62964bedc5129f070))
+- **web:** center landing footer content ([6243466](https://github.com/alternun-development/alternun/commit/624346617b935cd3233fed751911de48416ea3e3))
+- **web:** properly center landing footer and add accessibility labels ([18c0c33](https://github.com/alternun-development/alternun/commit/18c0c33a9da301123e8ade33f2f1dd1d5d9abb9f))
+
+### Features
+
+- **i18n,web:** add footer translations to web i18n catalogs ([ae7e2ee](https://github.com/alternun-development/alternun/commit/ae7e2ee7b9717b73c0232b4a803ce19536ecef12))
+- **mobile,api:** add auth footer with policy & help drawers ([c3e3654](https://github.com/alternun-development/alternun/commit/c3e365401595bcc719521245d968ade9f02d5876))
+- **mobile:** add underline effect to privacy & terms links ([4405ef0](https://github.com/alternun-development/alternun/commit/4405ef0ae41f037f61a7b7320f30d437e137d6cb))
+- **web:** use proper translations in landing footer ([d1818f5](https://github.com/alternun-development/alternun/commit/d1818f57070d0d2d870e14442bfceeb305f08805))
+
+## [1.0.57](https://github.com/alternun-development/alternun/compare/v1.0.53...v1.0.57) (2026-04-11)
+
+### Bug Fixes
+
+- add i18n translations to FooterCopyright component ([880dce9](https://github.com/alternun-development/alternun/commit/880dce9aa06634976b952fcdef7676eb388167ac))
+- center align mobile landing footer bottom bar in compact mode ([c50ac5a](https://github.com/alternun-development/alternun/commit/c50ac5aae4c639d0e9ec7beb4c6942f75bd130b4))
+- **mobile,auth,i18n:** changelogData ([a50c703](https://github.com/alternun-development/alternun/commit/a50c703fb472cb6164d7d0da43d4b2fe2d1301df))
+- **mobile:** center footer bottom bar content layout ([6b4d9b7](https://github.com/alternun-development/alternun/commit/6b4d9b7a84dde923e7700a49f79e3fe35b6721a5))
+- **mobile:** show underline on hover only for privacy & terms links ([7f4aea8](https://github.com/alternun-development/alternun/commit/7f4aea8fc3ceff674cd746a4999449d8ec1eaef0))
+- remove duplicate v1.0.56 changelog entry ([a974799](https://github.com/alternun-development/alternun/commit/a974799f067b8764f01b6d463f12f5181fdb5b9f))
+- reorder footer icons (version first) and ensure consistent 32px heights ([fbb16a7](https://github.com/alternun-development/alternun/commit/fbb16a7e75fb6c59b6ffbfa62964bedc5129f070))
+- **web:** center landing footer content ([6243466](https://github.com/alternun-development/alternun/commit/624346617b935cd3233fed751911de48416ea3e3))
+- **web:** properly center landing footer and add accessibility labels ([18c0c33](https://github.com/alternun-development/alternun/commit/18c0c33a9da301123e8ade33f2f1dd1d5d9abb9f))
+
+### Features
+
+- **i18n,web:** add footer translations to web i18n catalogs ([ae7e2ee](https://github.com/alternun-development/alternun/commit/ae7e2ee7b9717b73c0232b4a803ce19536ecef12))
+- **mobile,api:** add auth footer with policy & help drawers ([c3e3654](https://github.com/alternun-development/alternun/commit/c3e365401595bcc719521245d968ade9f02d5876))
+- **mobile:** add underline effect to privacy & terms links ([4405ef0](https://github.com/alternun-development/alternun/commit/4405ef0ae41f037f61a7b7320f30d437e137d6cb))
+- **web:** use proper translations in landing footer ([d1818f5](https://github.com/alternun-development/alternun/commit/d1818f57070d0d2d870e14442bfceeb305f08805))
+
+## [1.0.56](https://github.com/alternun-development/alternun/compare/v1.0.52...v1.0.56) (2026-04-11)
+
+### Bug Fixes
+
+- add i18n translations to FooterCopyright component ([f599b20](https://github.com/alternun-development/alternun/commit/f599b20ee183f157b42253a85b3df5269d00c85e))
+- center align mobile landing footer bottom bar in compact mode ([64608f4](https://github.com/alternun-development/alternun/commit/64608f4f580872fbed1444659cef548f964e5c4c))
+- **mobile,auth,i18n:** changelogData ([a9ae766](https://github.com/alternun-development/alternun/commit/a9ae766e7e0c2409a3eb5013678739e07d6206cb))
+- **mobile:** center footer bottom bar content layout ([0c73add](https://github.com/alternun-development/alternun/commit/0c73add66e8ed0ee4d806ebd7d4ec1a997831a94))
+- **mobile:** show underline on hover only for privacy & terms links ([6ddd9a8](https://github.com/alternun-development/alternun/commit/6ddd9a80bcc72e57be5b2f9bb3ac7f9e3605577a))
+- **web:** center landing footer content ([a24dd46](https://github.com/alternun-development/alternun/commit/a24dd46a269c9a9009bfb7d8bf99a8f60e76c349))
+- **web:** properly center landing footer and add accessibility labels ([9d8635f](https://github.com/alternun-development/alternun/commit/9d8635f0d119c58fd6735322f5672ec16cedf328))
+
+### Features
+
+- **i18n,web:** add footer translations to web i18n catalogs ([f556415](https://github.com/alternun-development/alternun/commit/f556415291ae9fc1195f38bf7cae0759407e7a9e))
+- **mobile,api:** add auth footer with policy & help drawers ([3133d53](https://github.com/alternun-development/alternun/commit/3133d53d53f95df1c2eb32512b1ea5f180a8d35d))
+- **mobile:** add underline effect to privacy & terms links ([e027b07](https://github.com/alternun-development/alternun/commit/e027b07577ccef08c25f93a17920b63e1ee3d54d))
+- **web:** use proper translations in landing footer ([1cb8863](https://github.com/alternun-development/alternun/commit/1cb8863f7390075d7a00d586cfb5825b54f4048d))
+
+## [1.0.52](https://github.com/alternun-development/alternun/compare/v1.0.51...v1.0.52) (2026-04-10)
+
+### Bug Fixes
+
+- **docs:** tags ([7d289b4](https://github.com/alternun-development/alternun/commit/7d289b48f57929974fd3091411464752f2ba3c8e))
+
+## [1.0.52](https://github.com/alternun-development/alternun/compare/v1.0.51...v1.0.52) (2026-04-10)
+
+### Bug Fixes
+
+- **docs:** tags ([7d289b4](https://github.com/alternun-development/alternun/commit/7d289b48f57929974fd3091411464752f2ba3c8e))
+
+## [1.0.51](https://github.com/alternun-development/alternun/compare/v1.0.50...v1.0.51) (2026-04-10)
+
+### Bug Fixes
+
+- wire Better Auth execution through mobile and web auth flows
+- align infra envs and release build output with the new Better Auth testnet setup
+- rebuild the auth package before Expo export so the bundled runtime picks up current auth config
+
+## [1.0.50](https://github.com/alternun-development/alternun/compare/v1.0.48...v1.0.50) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([71cc6cd](https://github.com/alternun-development/alternun/commit/71cc6cdec917a25b10e4f741f20e0567cf7e6748))
+- prevent footer icon overlap and improve consistency ([c00508c](https://github.com/alternun-development/alternun/commit/c00508c272bd156542630eef8b6f1c9a5a052e70))
+- reorder footer buttons and unify styling ([35d89a4](https://github.com/alternun-development/alternun/commit/35d89a4a5fdfe95b05695a5b102109172f5fbf21))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([904f885](https://github.com/alternun-development/alternun/commit/904f885abb658a4751c4b616969f3ecebc143baf))
+
+### Features
+
+- add landing page footer with version and help icon ([ffc265d](https://github.com/alternun-development/alternun/commit/ffc265d8c86ff960ca85acaca0d29b2468ff4d21))
+- add mark as unread functionality to notifications ([6b5a696](https://github.com/alternun-development/alternun/commit/6b5a696fd69f7da6871cff77271ee4ae5e26f2f0))
+
+## [1.0.50](https://github.com/alternun-development/alternun/compare/v1.0.48...v1.0.50) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([71cc6cd](https://github.com/alternun-development/alternun/commit/71cc6cdec917a25b10e4f741f20e0567cf7e6748))
+- prevent footer icon overlap and improve consistency ([c00508c](https://github.com/alternun-development/alternun/commit/c00508c272bd156542630eef8b6f1c9a5a052e70))
+- reorder footer buttons and unify styling ([35d89a4](https://github.com/alternun-development/alternun/commit/35d89a4a5fdfe95b05695a5b102109172f5fbf21))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([904f885](https://github.com/alternun-development/alternun/commit/904f885abb658a4751c4b616969f3ecebc143baf))
+
+### Features
+
+- add landing page footer with version and help icon ([ffc265d](https://github.com/alternun-development/alternun/commit/ffc265d8c86ff960ca85acaca0d29b2468ff4d21))
+- add mark as unread functionality to notifications ([6b5a696](https://github.com/alternun-development/alternun/commit/6b5a696fd69f7da6871cff77271ee4ae5e26f2f0))
+
+## [1.0.49](https://github.com/alternun-development/alternun/compare/v1.0.48...v1.0.49) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([71cc6cd](https://github.com/alternun-development/alternun/commit/71cc6cdec917a25b10e4f741f20e0567cf7e6748))
+
+### Features
+
+- add mark as unread functionality to notifications ([6b5a696](https://github.com/alternun-development/alternun/commit/6b5a696fd69f7da6871cff77271ee4ae5e26f2f0))
+
+## [1.0.49](https://github.com/alternun-development/alternun/compare/v1.0.48...v1.0.49) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([71cc6cd](https://github.com/alternun-development/alternun/commit/71cc6cdec917a25b10e4f741f20e0567cf7e6748))
+
+### Features
+
+- add mark as unread functionality to notifications ([6b5a696](https://github.com/alternun-development/alternun/commit/6b5a696fd69f7da6871cff77271ee4ae5e26f2f0))
+
+## [1.0.48](https://github.com/alternun-development/alternun/compare/v1.0.47...v1.0.48) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([9f37b5c](https://github.com/alternun-development/alternun/commit/9f37b5c8ccd3c4726730c06b1f09b52ca06d54a2))
+
+### Features
+
+- add tooltip info to notification badge ([89e3ae4](https://github.com/alternun-development/alternun/commit/89e3ae4243a85efb66b72e829ce7124c72d1d098))
+
+## [1.0.48](https://github.com/alternun-development/alternun/compare/v1.0.47...v1.0.48) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([9f37b5c](https://github.com/alternun-development/alternun/commit/9f37b5c8ccd3c4726730c06b1f09b52ca06d54a2))
+
+### Features
+
+- add tooltip info to notification badge ([89e3ae4](https://github.com/alternun-development/alternun/commit/89e3ae4243a85efb66b72e829ce7124c72d1d098))
+
+## [1.0.47](https://github.com/alternun-development/alternun/compare/v1.0.46...v1.0.47) (2026-04-10)
+
+### Bug Fixes
+
+- improve notification badge styling with circular container and overlay badge ([7b73a14](https://github.com/alternun-development/alternun/commit/7b73a14561e16415980ecc5aaf63db8c8d84a136))
+
+### Features
+
+- Add animated counters and wallet navigation to dashboard cards ([0861a2f](https://github.com/alternun-development/alternun/commit/0861a2fbe45461a90dea9ef3b767c5aa9e971b83))
+- Add view-transition effects and system theme detection to web app ([8c2f07e](https://github.com/alternun-development/alternun/commit/8c2f07e1af091a7c06d458aeebf6b9a512af66fd))
+- Complete notification system upgrade with context, search filters, and actions ([a8a8848](https://github.com/alternun-development/alternun/commit/a8a884855be4012702071194e4892eea3d76b181))
+- Wire up notification center navigation from dropdown ([d592c49](https://github.com/alternun-development/alternun/commit/d592c49da58510f70369cc37f60b06564723e4e4))
+
+## [1.0.47](https://github.com/alternun-development/alternun/compare/v1.0.46...v1.0.47) (2026-04-10)
+
+### Bug Fixes
+
+- improve notification badge styling with circular container and overlay badge ([7b73a14](https://github.com/alternun-development/alternun/commit/7b73a14561e16415980ecc5aaf63db8c8d84a136))
+
+### Features
+
+- Add animated counters and wallet navigation to dashboard cards ([0861a2f](https://github.com/alternun-development/alternun/commit/0861a2fbe45461a90dea9ef3b767c5aa9e971b83))
+- Add view-transition effects and system theme detection to web app ([8c2f07e](https://github.com/alternun-development/alternun/commit/8c2f07e1af091a7c06d458aeebf6b9a512af66fd))
+- Complete notification system upgrade with context, search filters, and actions ([a8a8848](https://github.com/alternun-development/alternun/commit/a8a884855be4012702071194e4892eea3d76b181))
+- Wire up notification center navigation from dropdown ([d592c49](https://github.com/alternun-development/alternun/commit/d592c49da58510f70369cc37f60b06564723e4e4))
+
+## [1.0.46](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.46) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([143c63a](https://github.com/alternun-development/alternun/commit/143c63a2abe0eed8e53660c6b6171a86f8c7bc40))
+
+## [1.0.46](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.46) (2026-04-10)
+
+### Bug Fixes
+
+- **mobile:** changelogData ([143c63a](https://github.com/alternun-development/alternun/commit/143c63a2abe0eed8e53660c6b6171a86f8c7bc40))
+
+## [1.0.45](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.45) (2026-04-10)
+
+## [1.0.45](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.45) (2026-04-10)
+
+## [1.0.44](https://github.com/alternun-development/alternun/compare/v1.0.43...v1.0.44) (2026-04-10)
+
+### Bug Fixes
+
+- refactor `packages/auth` into a facade/provider model with Better Auth execution and Authentik issuer exchange
+- keep the docs CMS auth relay browser-safe by avoiding the package-root auth import
+- sync generated auth release artifacts for the new release flow
+
+## [1.0.43](https://github.com/alternun-development/alternun/compare/v1.0.42...v1.0.43) (2026-04-10)
+
+### Bug Fixes
+
+- hide scroll arrows when not needed in horizontal scroller ([4752b43](https://github.com/alternun-development/alternun/commit/4752b4322700587ea6a753c3a5b526769e389a2e))
+- improve mobile PWA behavior and show full app name on topbar ([7bb5d90](https://github.com/alternun-development/alternun/commit/7bb5d90cfe2303f1134f0f4400ba7df7990bf086))
+- resolve eslint errors with trailing commas and type safety ([14e99b4](https://github.com/alternun-development/alternun/commit/14e99b45d5caa4fa11408e6bab66fabf13360e85))
+- restore footer copyright text with hover underline on Alternun link ([6261869](https://github.com/alternun-development/alternun/commit/6261869977cf655be2566d9c942bd93e5c1f1075))
+- restore trailing commas and formatting after prettier ([77958bf](https://github.com/alternun-development/alternun/commit/77958bf33d5a0ab4d403e5b9542b1235a53ab990))
+- upgrade mobile footer layout with improved spacing and smaller social icons ([7a38e78](https://github.com/alternun-development/alternun/commit/7a38e78c2dcf3082d0237f08f866324f18667451))
+
+### Features
+
+- add modern KPI card component and update copyright link ([0d0d255](https://github.com/alternun-development/alternun/commit/0d0d255a5323dd9e0a93d8b16b2083e8924759b3))
+- add standalone notification center page ([6aa375f](https://github.com/alternun-development/alternun/commit/6aa375fb9e4b4532dcc25ec04e2ff4356b8f3e6e))
+
+## [1.0.43](https://github.com/alternun-development/alternun/compare/v1.0.42...v1.0.43) (2026-04-10)
+
+### Bug Fixes
+
+- hide scroll arrows when not needed in horizontal scroller ([4752b43](https://github.com/alternun-development/alternun/commit/4752b4322700587ea6a753c3a5b526769e389a2e))
+- improve mobile PWA behavior and show full app name on topbar ([7bb5d90](https://github.com/alternun-development/alternun/commit/7bb5d90cfe2303f1134f0f4400ba7df7990bf086))
+- resolve eslint errors with trailing commas and type safety ([14e99b4](https://github.com/alternun-development/alternun/commit/14e99b45d5caa4fa11408e6bab66fabf13360e85))
+- restore footer copyright text with hover underline on Alternun link ([6261869](https://github.com/alternun-development/alternun/commit/6261869977cf655be2566d9c942bd93e5c1f1075))
+- restore trailing commas and formatting after prettier ([77958bf](https://github.com/alternun-development/alternun/commit/77958bf33d5a0ab4d403e5b9542b1235a53ab990))
+- upgrade mobile footer layout with improved spacing and smaller social icons ([7a38e78](https://github.com/alternun-development/alternun/commit/7a38e78c2dcf3082d0237f08f866324f18667451))
+
+### Features
+
+- add modern KPI card component and update copyright link ([0d0d255](https://github.com/alternun-development/alternun/commit/0d0d255a5323dd9e0a93d8b16b2083e8924759b3))
+- add standalone notification center page ([6aa375f](https://github.com/alternun-development/alternun/commit/6aa375fb9e4b4532dcc25ec04e2ff4356b8f3e6e))
+
+## [1.0.42](https://github.com/alternun-development/alternun/compare/v1.0.40...v1.0.42) (2026-04-10)
+
+### Bug Fixes
+
+- **infra:** auto-allow protected instance replacement when deployment changes require it ([7813aac](https://github.com/alternun-development/alternun/commit/7813aac9a2e9dbf3224756b31f0d73dc8019e3ac))
+- **mobile,ui,repo:** app, HeroPanel, .versioning ([138f80b](https://github.com/alternun-development/alternun/commit/138f80b82435849f9a015dc2cd5936cfb30f1244))
+- **mobile,ui:** add ShieldCheckIcon, enhance cards, and fix tooltip z-index ([d9ad72a](https://github.com/alternun-development/alternun/commit/d9ad72ae223e441b95c2a707367d5072b1fda2cf))
+- **mobile:** improve tooltip visibility and layering ([8a745be](https://github.com/alternun-development/alternun/commit/8a745beda0f93e6e856b7f96378f0bf50478150e))
+- **mobile:** open settings dropdown by default in TopNav ([64e84d7](https://github.com/alternun-development/alternun/commit/64e84d7681a8366224cc737443c2f47ea7714ce5))
+- **mobile:** single-line page header with safe tooltip positioning ([e5ad469](https://github.com/alternun-development/alternun/commit/e5ad46904d99764365284d96de0de6180d7c46b8))
+
+### Features
+
+- **mobile:** add navbar-consistent icons to page headers ([8d7fdd1](https://github.com/alternun-development/alternun/commit/8d7fdd1907e27807d09c642fd9efb2962fabb63c))
+- **mobile:** consolidate navigation into 3 tab-based views ([115d551](https://github.com/alternun-development/alternun/commit/115d55144482779e90d8bea7151cbbfa0f137318))
+- **ui:** add elegant spring animations to StatCard ([befb082](https://github.com/alternun-development/alternun/commit/befb08298315349f15e5676fcf6f5ab1d7e198c6))
+
+## [1.0.41](https://github.com/alternun-development/alternun/compare/v1.0.40...v1.0.41) (2026-04-10)
+
+### Features
+
+- **mobile:** consolidate navigation into 3 tab-based views - Consolidate 7 separate pages into 3 modern tab-based views (Explorar, Portafolio, Mi Perfil) with responsive tab bar, elegant hover tooltips, and spring animations
+
+### Bug Fixes
+
+- **mobile,ui,repo:** app, HeroPanel, .versioning ([138f80b](https://github.com/alternun-development/alternun/commit/138f80b82435849f9a015dc2cd5936cfb30f1244))
+
+## [1.0.41](https://github.com/alternun-development/alternun/compare/v1.0.40...v1.0.41) (2026-04-10)
+
+### Features
+
+- **mobile:** consolidate navigation into 3 tab-based views - Consolidate 7 separate pages into 3 modern tab-based views (Explorar, Portafolio, Mi Perfil) with responsive tab bar, elegant hover tooltips, and spring animations
+
+### Bug Fixes
+
+- **mobile,ui,repo:** app, HeroPanel, .versioning ([138f80b](https://github.com/alternun-development/alternun/commit/138f80b82435849f9a015dc2cd5936cfb30f1244))
+
+## [1.0.40](https://github.com/alternun-development/alternun/compare/v1.0.39...v1.0.40) (2026-04-07)
+
+### Bug Fixes
+
+- consolidate ts-expect-error comment ([cb6d190](https://github.com/alternun-development/alternun/commit/cb6d19063223a497c652440605f01dabc237dc3d))
+- increase tooltip width while maintaining center positioning, add return type ([6fe3988](https://github.com/alternun-development/alternun/commit/6fe398858b7164d200b0f807a8772eecf82e1683))
+
+## [1.0.39](https://github.com/alternun-development/alternun/compare/v1.0.38...v1.0.39) (2026-04-07)
+
+### Bug Fixes
+
+- move tooltip inside card bounds, near icon ([c0247d7](https://github.com/alternun-development/alternun/commit/c0247d700d893258708ab6aea0d9c9a47388f6ae))
+
+## [1.0.39](https://github.com/alternun-development/alternun/compare/v1.0.38...v1.0.39) (2026-04-07)
+
+### Bug Fixes
+
+- move tooltip inside card bounds, near icon ([c0247d7](https://github.com/alternun-development/alternun/commit/c0247d700d893258708ab6aea0d9c9a47388f6ae))
+
+## [1.0.38](https://github.com/alternun-development/alternun/compare/v1.0.37...v1.0.38) (2026-04-07)
+
+### Bug Fixes
+
+- adjust tooltip position closer to icon view ([a1f27e8](https://github.com/alternun-development/alternun/commit/a1f27e8b30a41ddf4c002117cee508d5d8089a30))
+- position tooltip top-right of icon, tighter ([1e90e77](https://github.com/alternun-development/alternun/commit/1e90e776ebd6c481ff879bf48d25bdedc7552da7))
+
+## [1.0.38](https://github.com/alternun-development/alternun/compare/v1.0.37...v1.0.38) (2026-04-07)
+
+### Bug Fixes
+
+- adjust tooltip position closer to icon view ([a1f27e8](https://github.com/alternun-development/alternun/commit/a1f27e8b30a41ddf4c002117cee508d5d8089a30))
+- position tooltip top-right of icon, tighter ([1e90e77](https://github.com/alternun-development/alternun/commit/1e90e776ebd6c481ff879bf48d25bdedc7552da7))
+
+## [1.0.37](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.37) (2026-04-07)
+
+### Bug Fixes
+
+- move tooltip above icon, closer to top ([da9693f](https://github.com/alternun-development/alternun/commit/da9693f64cfee90ed3a35c38d0e7b79ce852bebd))
+
+### Features
+
+- add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
+
+## [1.0.37](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.37) (2026-04-07)
+
+### Bug Fixes
+
+- move tooltip above icon, closer to top ([da9693f](https://github.com/alternun-development/alternun/commit/da9693f64cfee90ed3a35c38d0e7b79ce852bebd))
+
+### Features
+
+- add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
+
+## [1.0.36](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.36) (2026-04-07)
+
+### Features
+
+- add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
+
+## [1.0.36](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.36) (2026-04-07)
+
+### Features
+
+- add web hover tooltip trigger for info icon ([6c6663f](https://github.com/alternun-development/alternun/commit/6c6663f9de50dc9a0ae5bc4f3284880eb597de66))
+
+## [1.0.35](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.35) (2026-04-07)
+
+### Features
+
+- add web hover tooltip trigger for info icon ([e3780ee](https://github.com/alternun-development/alternun/commit/e3780ee66eadfc4d87c3ee8987dc6b8884547def))
+
+## [1.0.35](https://github.com/alternun-development/alternun/compare/v1.0.34...v1.0.35) (2026-04-07)
+
+### Features
+
+- add web hover tooltip trigger for info icon ([e3780ee](https://github.com/alternun-development/alternun/commit/e3780ee66eadfc4d87c3ee8987dc6b8884547def))
+
+## [1.0.34](https://github.com/alternun-development/alternun/compare/v1.0.33...v1.0.34) (2026-04-07)
+
+### Bug Fixes
+
+- move tooltip closer to info icon with float animation ([e497f40](https://github.com/alternun-development/alternun/commit/e497f40d0d574e6e158af1257a53684866053ab5))
+
+## [1.0.34](https://github.com/alternun-development/alternun/compare/v1.0.33...v1.0.34) (2026-04-07)
+
+### Bug Fixes
+
+- move tooltip closer to info icon with float animation ([e497f40](https://github.com/alternun-development/alternun/commit/e497f40d0d574e6e158af1257a53684866053ab5))
+
+## [1.0.33](https://github.com/alternun-development/alternun/compare/v1.0.32...v1.0.33) (2026-04-07)
+
+### Bug Fixes
+
+- improve tooltip positioning, time display, and visual polish ([7618e18](https://github.com/alternun-development/alternun/commit/7618e18))
+
+## [1.0.32](https://github.com/alternun-development/alternun/compare/v1.0.31...v1.0.32) (2026-04-07)
+
+### Bug Fixes
+
+- improve tooltip positioning, z-index layering, and last-update timestamp ([963223b](https://github.com/alternun-development/alternun/commit/963223b322801f496325e3fd53266456824bd7f5))
+
+## [1.0.32](https://github.com/alternun-development/alternun/compare/v1.0.31...v1.0.32) (2026-04-07)
+
+### Bug Fixes
+
+- improve tooltip positioning, z-index layering, and last-update timestamp ([963223b](https://github.com/alternun-development/alternun/commit/963223b322801f496325e3fd53266456824bd7f5))
+
+## [1.0.31](https://github.com/alternun-development/alternun/compare/v1.0.30...v1.0.31) (2026-04-07)
+
+### Bug Fixes
+
+- **release:** sync mobile changelog data ([c98382d](https://github.com/alternun-development/alternun/commit/c98382d3fe447cf8b63ed2ffd564c20d1e043b7d))
+
+## [1.0.31](https://github.com/alternun-development/alternun/compare/v1.0.30...v1.0.31) (2026-04-07)
+
+### Bug Fixes
+
+- **release:** sync mobile changelog data ([c98382d](https://github.com/alternun-development/alternun/commit/c98382d3fe447cf8b63ed2ffd564c20d1e043b7d))
+
+## [1.0.30](https://github.com/alternun-development/alternun/compare/v1.0.29...v1.0.30) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile,auth,ui:** AppInfoFooter, Footer.shared, LandingFooter, Tooltip ([ed3db36](https://github.com/alternun-development/alternun/commit/ed3db36ee181dfdfbba7702217a962556146cbfa))
+- **release:** sync mobile changelog data ([8e103c7](https://github.com/alternun-development/alternun/commit/8e103c7ac331f277bdbc56d9165398c4634d2ad6))
+
+### Features
+
+- implement cross-platform tooltip system with status update info ([c37bcac](https://github.com/alternun-development/alternun/commit/c37bcac7a7b7c394c4da76dcafad174361a48f31))
+
+## [1.0.30](https://github.com/alternun-development/alternun/compare/v1.0.29...v1.0.30) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile,auth,ui:** AppInfoFooter, Footer.shared, LandingFooter, Tooltip ([ed3db36](https://github.com/alternun-development/alternun/commit/ed3db36ee181dfdfbba7702217a962556146cbfa))
+- **release:** sync mobile changelog data ([8e103c7](https://github.com/alternun-development/alternun/commit/8e103c7ac331f277bdbc56d9165398c4634d2ad6))
+
+### Features
+
+- implement cross-platform tooltip system with status update info ([c37bcac](https://github.com/alternun-development/alternun/commit/c37bcac7a7b7c394c4da76dcafad174361a48f31))
+
+## [1.0.29](https://github.com/alternun-development/alternun/compare/v1.0.28...v1.0.29) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile:** SearchFilterBar, ActivityFeed ([f1da5a5](https://github.com/alternun-development/alternun/commit/f1da5a5cce98214ee0f3eb19ac9468c77b23b844))
+- **release:** dedupe v1.0.28 changelog ([4bae2c6](https://github.com/alternun-development/alternun/commit/4bae2c6b5f583206a958ba59bb05ec7ee6df7bcb))
+
+## [1.0.29](https://github.com/alternun-development/alternun/compare/v1.0.28...v1.0.29) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile:** SearchFilterBar, ActivityFeed ([f1da5a5](https://github.com/alternun-development/alternun/commit/f1da5a5cce98214ee0f3eb19ac9468c77b23b844))
+- **release:** dedupe v1.0.28 changelog ([4bae2c6](https://github.com/alternun-development/alternun/commit/4bae2c6b5f583206a958ba59bb05ec7ee6df7bcb))
+
+## [1.0.28](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.28) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile,ui:** AppInfoFooter, BackToTopButton, ScreenShell, Dashboard ([a6ea41d](https://github.com/alternun-development/alternun/commit/a6ea41df9fda8c882fbbe63b0e64ea0b19f5ba76))
+
+## [1.0.27](https://github.com/alternun-development/alternun/compare/v1.0.26...v1.0.27) (2026-04-07)
+
+### Bug Fixes
+
+- **mobile,ui:** AppInfoFooter, Footer.shared, LandingFooter, DashboardSummaryCards ([a9707f8](https://github.com/alternun-development/alternun/commit/a9707f8ce6b5042c5474151359c14677483e8878))
+
+## [1.0.26](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.26) (2026-04-07)
+
+### Bug Fixes
+
+- **auth,update,repo:** research_prompt_20260407_011629 ([2aa71d7](https://github.com/alternun-development/alternun/commit/2aa71d7bacb7221c1438e7a2d55522efdb7b10d8))
+- optimize mobile UI layout and fix responsive issues ([f0618aa](https://github.com/alternun-development/alternun/commit/f0618aa147cbc99b219073b6745b7c2c3c8d78af))
+
+### Features
+
+- add reload icon and skeleton loading to HeroPanel ([29e8902](https://github.com/alternun-development/alternun/commit/29e8902a7a263603548690e87be9b03643ba413e))
+- implement complete reload system with pull-to-refresh and visible reload button ([b78116b](https://github.com/alternun-development/alternun/commit/b78116bb35d07349a19a1e58669b660e02bec37e))
+
+## [1.0.26](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.26) (2026-04-07)
+
+### Bug Fixes
+
+- **auth,update,repo:** research_prompt_20260407_011629 ([2aa71d7](https://github.com/alternun-development/alternun/commit/2aa71d7bacb7221c1438e7a2d55522efdb7b10d8))
+- optimize mobile UI layout and fix responsive issues ([f0618aa](https://github.com/alternun-development/alternun/commit/f0618aa147cbc99b219073b6745b7c2c3c8d78af))
+
+### Features
+
+- add reload icon and skeleton loading to HeroPanel ([29e8902](https://github.com/alternun-development/alternun/commit/29e8902a7a263603548690e87be9b03643ba413e))
+- implement complete reload system with pull-to-refresh and visible reload button ([b78116b](https://github.com/alternun-development/alternun/commit/b78116bb35d07349a19a1e58669b660e02bec37e))
+
+## [1.0.25](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.25) (2026-04-07)
+
+### Features
+
+- add reload icon and skeleton loading to HeroPanel ([29e8902](https://github.com/alternun-development/alternun/commit/29e8902a7a263603548690e87be9b03643ba413e))
+- implement complete reload system with pull-to-refresh and visible reload button ([b78116b](https://github.com/alternun-development/alternun/commit/b78116bb35d07349a19a1e58669b660e02bec37e))
+
+## [1.0.25](https://github.com/alternun-development/alternun/compare/v1.0.27...v1.0.25) (2026-04-07)
+
+### Features
+
+- add reload icon and skeleton loading to HeroPanel ([29e8902](https://github.com/alternun-development/alternun/commit/29e8902a7a263603548690e87be9b03643ba413e))
+- implement complete reload system with pull-to-refresh and visible reload button ([b78116b](https://github.com/alternun-development/alternun/commit/b78116bb35d07349a19a1e58669b660e02bec37e))
+
 ## [1.0.25-dev.1](https://github.com/alternun-development/alternun/compare/v1.0.25...v1.0.25-dev.1) (2026-04-06)
 
 ### Bug Fixes

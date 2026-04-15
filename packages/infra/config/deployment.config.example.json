@@ -31,7 +31,11 @@
       "output": "dist"
     },
     "publicEnv": {
-      "authentikLoginEntryMode": "relay",
+      "apiUrl": "https://testnet.api.alternun.co",
+      "betterAuthUrl": "https://testnet.api.alternun.co",
+      "authentikLoginEntryMode": "source",
+      "authExecutionProvider": "better-auth",
+      "authExchangeUrl": "https://testnet.api.alternun.co/auth/exchange",
       "authentikSocialLoginMode": "authentik",
       "authentikAllowCustomProviderFlowSlugs": false,
       "releaseUpdateMode": "auto"
@@ -86,7 +90,9 @@
         "DECAP_GITHUB_OAUTH_CLIENT_SECRET": "",
         "DECAP_GITHUB_OAUTH_REPO_PRIVATE": "false",
         "DECAP_GITHUB_OAUTH_SCOPE": "",
-        "DECAP_OAUTH_STATE_SECRET": ""
+        "DECAP_OAUTH_STATE_SECRET": "",
+        "AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED": "false",
+        "AUTHENTIK_JWT_SIGNING_KEY": ""
       }
     }
   },
@@ -183,7 +189,15 @@
         "sourceName": "Google",
         "sourceSlug": "google",
         "loginFlowSlug": "",
+        "loginFlowMode": "source",
         "allowCustomProviderFlowSlugs": false
+      },
+      "discord": {
+        "clientId": "",
+        "clientSecret": "",
+        "sourceName": "Discord",
+        "sourceSlug": "discord",
+        "loginFlowSlug": ""
       },
       "supabase": {
         "applicationName": "Alternun Supabase",

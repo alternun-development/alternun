@@ -74,6 +74,8 @@ export interface BackendApiInfrastructureArgs {
   rootDomain: string;
   stage: string;
   hostedZoneId?: string;
+  authentikJwtSigningKey?: pulumi.Input<string>;
+  env: NodeJS.ProcessEnv;
   settings: BackendApiSettings;
 }
 
@@ -247,6 +249,11 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
     },
     environment: {
       ...(localConfig?.environment ?? {}),
+      ...(args.env.INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY
+        ? {
+            AUTHENTIK_JWT_SIGNING_KEY: args.env.INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY,
+          }
+        : {}),
       ...(args.env.INFRA_BACKEND_API_DATABASE_URL
         ? { DATABASE_URL: args.env.INFRA_BACKEND_API_DATABASE_URL }
         : {}),
@@ -346,6 +353,27 @@ export function deployBackendApiInfrastructure(
           AUTHENTIK_JWKS_URL: authJwksUrl,
           NODE_ENV: 'production',
           ...args.settings.environment,
+          ...(args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL
+            ? {
+                AUTH_BETTER_AUTH_URL: args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL,
+              }
+            : {}),
+          ...(args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_REQUEST_TIMEOUT_MS
+            ? {
+                AUTH_BETTER_AUTH_REQUEST_TIMEOUT_MS:
+                  args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_REQUEST_TIMEOUT_MS,
+              }
+            : {}),
+          ...(args.env.INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED
+            ? {
+                AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED:
+                  args.env.INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED,
+              }
+            : {}),
+          AUTHENTIK_JWT_SIGNING_KEY:
+            args.authentikJwtSigningKey ??
+            args.settings.environment.AUTHENTIK_JWT_SIGNING_KEY ??
+            '',
         },
       },
       name: lambdaFunctionName,
