@@ -63,7 +63,7 @@ function resolveAuthExecutionProviderForStage(
     return explicit.trim();
   }
 
-  return 'supabase';
+  return stage === 'production' ? 'supabase' : 'better-auth';
 }
 
 export function buildCorePipelineSpecs({
