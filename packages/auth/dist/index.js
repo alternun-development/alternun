@@ -15,6 +15,9 @@ export { upsertOidcUser as upsertCompatOidcUser } from './compat/upsertOidcUser.
 export { createAlternunAuthentikPreset, } from './mobile/authentikPreset.js';
 export { buildAuthentikRelayPath, buildAuthentikRelayRoute, getAuthentikLoginEntryMode, getAuthentikSocialLoginMode, normalizeAuthentikLoginEntryMode, normalizeAuthentikSocialLoginMode, parseAuthentikProviderFlowSlugs, resolveAuthentikLoginStrategy, resolveAuthentikProviderFlowSlugs, shouldUseAuthentikRelayEntry, } from './mobile/authEntry.js';
 export { clearAuthReturnTo, getAuthentikWebCallbackUrl, nativeSignIn, readAuthReturnTo, resolveAuthReturnTo, resolveAuthRuntime, storeAuthReturnTo, webRedirectSignIn, } from './mobile/runtimeSignIn.js';
+export { startSocialSignIn, resumePendingSocialSignIn, } from './mobile/socialSignIn.js';
+export { oidcSessionToUser, finalizeSupabaseCallbackSession, } from './runtime/web/callbackSession.js';
+export { AUTH_CALLBACK_QUERY_KEYS, readWebAuthCallbackPayload, stripAuthCallbackTokensFromUrl, } from './runtime/web/callbackPayload.js';
 export { AlternunMobileAuthClient, SUPPORTED_WALLET_PROVIDERS, createAlternunMobileAuthClient, isWalletProvider, } from './mobile/AlternunMobileAuthClient.js';
 export { buildAuthentikOAuthFlowStartUrl, buildAuthentikLoginEntryUrl, isAuthentikConfigured, hasPendingAuthentikCallback, startAuthentikOAuthFlow, handleAuthentikCallback, readOidcSession, clearOidcSession, readPendingAuthentikOAuthProvider, clearPendingAuthentikOAuthProvider, AUTHENTIK_WEB_CALLBACK_PATH, buildAuthentikWebCallbackUrl, resolveAuthentikRedirectUri, resolveAuthentikClientId, resolveAuthentikIssuer, OIDC_INITIAL_SEARCH, createAuthentikPreset, createAuthentikRelayHandler, createAuthentikLogoutHandler, createProvisioningAdapter, handleAuthentikPresetCallback, discoverEndpoints, resolveSafeRedirect, validateAuthentikConfig, validateFullConfig, } from './authentik.js';
 export { upsertOidcUser } from './AuthentikOidcClient.js';

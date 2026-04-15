@@ -250,7 +250,6 @@ export function resolveExpoConfig({
       localConfig.expo?.publicEnv?.authExchangeUrl,
     betterAuthUrl:
       env.AUTH_BETTER_AUTH_URL ??
-      env.BETTER_AUTH_URL ??
       env.EXPO_PUBLIC_BETTER_AUTH_URL ??
       localConfig.expo?.publicEnv?.betterAuthUrl,
     authentikIssuer:

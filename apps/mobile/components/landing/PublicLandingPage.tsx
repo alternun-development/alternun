@@ -184,6 +184,7 @@ export default function PublicLandingPage({
           cardBg={cardBg}
           cardBorder={cardBorder}
           isMobile={isMobile}
+          onSignIn={onSignIn}
         />
       </View>
     </>
@@ -304,6 +305,7 @@ interface SectionProps {
   textColor: string;
   cardBg?: string;
   cardBorder?: string;
+  onSignIn?: () => void;
   isMobile: boolean;
 }
 
@@ -325,7 +327,7 @@ interface TokenCardProps {
 function TokenCard({
   imageSource,
   contentPosition,
-  imageZoom,
+  imageZoom: _imageZoom,
   logo: _LogoIcon,
   title,
   subtitle,
@@ -388,12 +390,7 @@ function TokenCard({
             source={imageSource}
             contentFit='cover'
             contentPosition={contentPosition}
-            style={[
-              StyleSheet.absoluteFillObject,
-              {
-                transform: [{ scale: imageZoom }],
-              },
-            ]}
+            style={StyleSheet.absoluteFillObject}
           />
           {/* Strong gradient from bottom for contrast */}
           <Animated.View
@@ -1365,6 +1362,7 @@ function BeneficiosSection({
   accentColor,
   textColor,
   isMobile,
+  onSignIn,
 }: SectionProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
 
@@ -1379,7 +1377,6 @@ function BeneficiosSection({
 
   const topRatedLabel = t('landing.beneficios.topRated');
   const atnUnit = t('landing.beneficios.atnUnit');
-  const ctaLabel = t('landing.beneficios.cta');
 
   const benefits = [
     {
@@ -1392,6 +1389,7 @@ function BeneficiosSection({
       isTopRated: true,
       description: t('landing.beneficios.cards.eco.description'),
       atnLabel: t('landing.beneficios.cards.eco.atn'),
+      ctaLabel: t('landing.beneficios.cards.eco.cta'),
     },
     {
       key: 'experiencias',
@@ -1406,6 +1404,7 @@ function BeneficiosSection({
       isTopRated: false,
       description: t('landing.beneficios.cards.experiencias.description'),
       atnLabel: t('landing.beneficios.cards.experiencias.atn'),
+      ctaLabel: t('landing.beneficios.cards.experiencias.cta'),
     },
     {
       key: 'premium',
@@ -1420,6 +1419,7 @@ function BeneficiosSection({
       isTopRated: false,
       description: t('landing.beneficios.cards.premium.description'),
       atnLabel: t('landing.beneficios.cards.premium.atn'),
+      ctaLabel: t('landing.beneficios.cards.premium.cta'),
     },
     {
       key: 'cursos',
@@ -1431,6 +1431,7 @@ function BeneficiosSection({
       isTopRated: false,
       description: t('landing.beneficios.cards.cursos.description'),
       atnLabel: t('landing.beneficios.cards.cursos.atn'),
+      ctaLabel: t('landing.beneficios.cards.cursos.cta'),
     },
   ];
 
@@ -1469,10 +1470,11 @@ function BeneficiosSection({
             description={benefit.description}
             atnLabel={benefit.atnLabel}
             atnUnit={atnUnit}
-            ctaLabel={ctaLabel}
+            ctaLabel={benefit.ctaLabel}
             topRatedLabel={topRatedLabel}
             accentColor={accentColor}
             isDark={isDark}
+            onPress={onSignIn}
           />
         ))}
       </View>
@@ -1545,6 +1547,7 @@ const styles = createTypographyStyles({
     gap: 16,
     justifyContent: 'center',
     flexWrap: 'wrap',
+    alignItems: 'stretch',
   },
   tokenCardsContainerMobile: {
     flexDirection: 'column',
@@ -1552,7 +1555,8 @@ const styles = createTypographyStyles({
   },
   travelCard: {
     width: '100%',
-    maxWidth: 400,
+    minWidth: 240,
+    maxWidth: 300,
     borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: '#111',
@@ -1563,7 +1567,8 @@ const styles = createTypographyStyles({
     elevation: 12,
   },
   travelCardImage: {
-    height: 220,
+    height: 340,
+    overflow: 'hidden',
     justifyContent: 'flex-end',
   },
   travelCardGradientBottom: {

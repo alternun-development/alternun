@@ -116,6 +116,30 @@ export {
 } from './mobile/runtimeSignIn';
 
 export {
+  startSocialSignIn,
+  resumePendingSocialSignIn,
+  type SocialSignInDependencies,
+  type SocialSignInOutcome,
+  type ResumePendingSocialSignInOptions,
+  type StartSocialSignInOptions,
+} from './mobile/socialSignIn';
+
+export {
+  oidcSessionToUser,
+  finalizeSupabaseCallbackSession,
+  type SupabaseCallbackClient,
+  type SupabaseCallbackSessionPayload,
+} from './runtime/web/callbackSession';
+
+export {
+  AUTH_CALLBACK_QUERY_KEYS,
+  readWebAuthCallbackPayload,
+  stripAuthCallbackTokensFromUrl,
+  type WebAuthCallbackPayload,
+  type WebCallbackWindowLike,
+} from './runtime/web/callbackPayload';
+
+export {
   AlternunMobileAuthClient,
   SUPPORTED_WALLET_PROVIDERS,
   createAlternunMobileAuthClient,

@@ -143,6 +143,7 @@ export function SocialPill({
 export function FooterTextLink({
   label,
   url,
+  onPress,
   textColor,
   compact = false,
   hoverColor,
@@ -152,6 +153,7 @@ export function FooterTextLink({
 }: {
   label: string;
   url: FooterPrimaryLink['url'];
+  onPress?: () => void;
   textColor: string;
   compact?: boolean;
   hoverColor?: string;
@@ -161,7 +163,7 @@ export function FooterTextLink({
 }): React.JSX.Element {
   return (
     <Pressable
-      onPress={() => openExternalUrl(url)}
+      onPress={onPress ?? (() => openExternalUrl(url))}
       style={({ hovered, pressed }) =>
         [
           styles.textLinkPressable,

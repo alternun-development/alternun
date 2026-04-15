@@ -32,6 +32,7 @@
     },
     "publicEnv": {
       "apiUrl": "https://testnet.api.alternun.co",
+      "betterAuthUrl": "https://testnet.api.alternun.co/auth",
       "authentikLoginEntryMode": "source",
       "authExecutionProvider": "supabase",
       "authExchangeUrl": "https://testnet.api.alternun.co/auth/exchange",
@@ -90,6 +91,7 @@
         "DECAP_GITHUB_OAUTH_REPO_PRIVATE": "false",
         "DECAP_GITHUB_OAUTH_SCOPE": "",
         "DECAP_OAUTH_STATE_SECRET": "",
+        "AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED": "false",
         "AUTHENTIK_JWT_SIGNING_KEY": ""
       }
     }

@@ -1,7 +1,7 @@
 import AIRS_VIDEO_EN from '../../assets/videos/AIRS-intro-videoplayback-EN.mp4';
 import AIRS_VIDEO_ES from '../../assets/videos/AIRS-intro-videoplayback-ES.mp4';
 
-function resolveLocalAssetUri(assetModule: unknown,): string {
+export function resolveLocalAssetUri(assetModule: unknown): string {
   if (typeof assetModule === 'string') {
     return assetModule;
   }
@@ -39,7 +39,7 @@ function resolveLocalAssetUri(assetModule: unknown,): string {
   return '';
 }
 
-export function getAirsIntroVideoUrl(language: string,): string {
+export function getAirsIntroVideoUrl(language: string): string {
   const envUrl =
     language === 'es'
       ? process.env.EXPO_PUBLIC_AIRS_VIDEO_ES_URL
@@ -49,5 +49,5 @@ export function getAirsIntroVideoUrl(language: string,): string {
     return envUrl;
   }
 
-  return resolveLocalAssetUri(language === 'es' ? AIRS_VIDEO_ES : AIRS_VIDEO_EN,);
+  return resolveLocalAssetUri(language === 'es' ? AIRS_VIDEO_ES : AIRS_VIDEO_EN);
 }

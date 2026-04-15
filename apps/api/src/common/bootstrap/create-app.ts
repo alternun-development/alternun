@@ -2,6 +2,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule } from '../../app.module';
+import { registerBetterAuthProxy } from './better-auth-proxy';
 import { setupOpenApi } from '../openapi/setup-openapi';
 
 export async function createApp(): Promise<NestFastifyApplication> {
@@ -28,5 +29,10 @@ export async function createApp(): Promise<NestFastifyApplication> {
   );
 
   setupOpenApi(app);
+  if (process.env.BETTER_AUTH_URL?.trim()) {
+    registerBetterAuthProxy(app.getHttpAdapter().getInstance(), {
+      targetBaseUrl: process.env.BETTER_AUTH_URL.trim(),
+    });
+  }
   return app;
 }

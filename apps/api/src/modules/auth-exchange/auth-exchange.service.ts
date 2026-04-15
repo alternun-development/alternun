@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import type {
   AuthExchangeContext,
   AuthExchangeExternalIdentity,
@@ -25,6 +25,11 @@ function firstNonEmptyTrimmed(values: Array<string | undefined | null>): string 
   }
 
   return null;
+}
+
+function isTruthyEnvValue(value: string | undefined | null): boolean {
+  const normalized = firstNonEmptyTrimmed([value])?.toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
 }
 
 function normalizeExternalIdentity(
@@ -95,6 +100,10 @@ export class AuthExchangeService {
     );
   }
 
+  private requiresIssuerOwnedExchange(): boolean {
+    return isTruthyEnvValue(process.env.AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED);
+  }
+
   async exchangeIdentity(input: AuthExchangeRequestShape): Promise<AuthExchangeServiceResult> {
     const externalIdentity = normalizeExternalIdentity(input.externalIdentity);
     const executionSession = normalizeExecutionSession(input.executionSession);
@@ -102,6 +111,13 @@ export class AuthExchangeService {
     const issuer = canonicalIssuerFromEnv();
     const audience = context?.audience ?? defaultAudienceFromEnv();
     const signingKey = this.resolveSigningKey();
+    const requireIssuerOwnedExchange = this.requiresIssuerOwnedExchange();
+
+    if (requireIssuerOwnedExchange && !signingKey) {
+      throw new ServiceUnavailableException(
+        'AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED is enabled, but AUTHENTIK_JWT_SIGNING_KEY is not configured.'
+      );
+    }
 
     const syncResult = await upsertOidcUserViaSupabase(
       {
