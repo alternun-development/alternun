@@ -1,3 +1,19 @@
+## [1.0.65](https://github.com/alternun-development/alternun/compare/v1.0.64...v1.0.65) (2026-04-15)
+
+### Bug Fixes
+
+- **api:** satisfy better auth dev build types ([ab2d488](https://github.com/alternun-development/alternun/commit/ab2d4884aae97f9c2cdedbfce79a95ae51a70d27))
+- canonicalize better auth public base url ([1202905](https://github.com/alternun-development/alternun/commit/12029050454408be3f7b545db9a7a910c97e4164))
+- **mobile,i18n,repo:** LandingFooter, PublicLandingPage, AirsIntroExperience, en ([dbd6ac4](https://github.com/alternun-development/alternun/commit/dbd6ac4a0435fa804b0eb9973aa333db03f58699))
+
+## [1.0.65](https://github.com/alternun-development/alternun/compare/v1.0.64...v1.0.65) (2026-04-15)
+
+### Bug Fixes
+
+- **api:** satisfy better auth dev build types ([ab2d488](https://github.com/alternun-development/alternun/commit/ab2d4884aae97f9c2cdedbfce79a95ae51a70d27))
+- canonicalize better auth public base url ([1202905](https://github.com/alternun-development/alternun/commit/12029050454408be3f7b545db9a7a910c97e4164))
+- **mobile,i18n,repo:** LandingFooter, PublicLandingPage, AirsIntroExperience, en ([dbd6ac4](https://github.com/alternun-development/alternun/commit/dbd6ac4a0435fa804b0eb9973aa333db03f58699))
+
 ## [1.0.64](https://github.com/alternun-development/alternun/compare/v1.0.63...v1.0.64) (2026-04-15)
 
 ### Bug Fixes
