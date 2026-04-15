@@ -1,3 +1,15 @@
+## [1.0.77](https://github.com/alternun-development/alternun/compare/v1.0.76...v1.0.77) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only and better-auth exports from main index ([4e391d1](https://github.com/alternun-development/alternun/commit/4e391d1c161e3f7196662e78d04a73ad27057192))
+
+## [1.0.77](https://github.com/alternun-development/alternun/compare/v1.0.76...v1.0.77) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only and better-auth exports from main index ([4e391d1](https://github.com/alternun-development/alternun/commit/4e391d1c161e3f7196662e78d04a73ad27057192))
+
 ## [1.0.76](https://github.com/alternun-development/alternun/compare/v1.0.75...v1.0.76) (2026-04-15)
 
 ### Bug Fixes
