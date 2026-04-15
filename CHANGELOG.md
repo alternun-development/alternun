@@ -1,3 +1,10 @@
+## [1.0.69](https://github.com/alternun-development/alternun/compare/v1.0.68...v1.0.69) (2026-04-15)
+
+### Bug Fixes
+
+- **mobile:** read the mobile env files when validating the exported web auth bundle so Better Auth builds do not fail on stale shell-only defaults
+- **docs:** update the public and auth-facade docs to reflect the current Better Auth execution layer, Authentik issuer boundary, and API-origin `/auth` proxy shape
+
 ## [1.0.68](https://github.com/alternun-development/alternun/compare/v1.0.65...v1.0.68) (2026-04-15)
 
 ### Bug Fixes

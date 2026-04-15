@@ -3,6 +3,7 @@ export { AppAuthProvider, useAuth } from './mobile/AppAuthProvider.js';
 export { AlternunAuthFacade } from './facade/AlternunAuthFacade.js';
 export { createAuthFacade } from './facade/createAuthFacade.js';
 export { AuthentikIssuerProvider, } from './providers/authentik/AuthentikIssuerProvider.js';
+export { BetterAuthExecutionProvider, } from './providers/better-auth/BetterAuthExecutionProvider.js';
 export { SupabaseExecutionProvider, } from './providers/supabase-legacy/SupabaseExecutionProvider.js';
 export { SupabaseLegacyIssuerProvider, } from './providers/supabase-legacy/SupabaseLegacyIssuerProvider.js';
 export { SupabaseIdentityRepository, } from './providers/supabase-legacy/SupabaseIdentityRepository.js';

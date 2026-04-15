@@ -18,7 +18,7 @@ The current architecture is:
 The architecture layer is implemented, but the runtime migration is still partial.
 
 - `AlternunAuthFacade` is real and now sits behind `AppAuthProvider`.
-- Better Auth execution is modeled through `BetterAuthExecutionProvider`, but not yet fully wired to a live Better Auth service by default.
+- Better Auth execution is modeled through `BetterAuthExecutionProvider`, and the local dev runner now serves it behind the API-origin `/auth` route; the remaining gap is testnet/production rollout.
 - Authentik still remains the configured issuer boundary.
 - `apps/api/src/modules/auth-exchange/*` now exposes `POST /auth/exchange`, which can mint issuer-owned tokens when the backend signing key is available.
 - The `dashboard-dev` backend stack already receives that signing key from the identity stack output, so the live testnet exchange path is issuer-owned instead of compatibility-only.

@@ -6,20 +6,33 @@ sidebar_position: 2.5
 
 This is the current AIRS auth architecture.
 
-It is intentionally split by runtime:
+It is intentionally split by runtime and execution layer:
 
 - web uses a browser redirect flow with a dedicated callback route
 - native uses the client runtime directly and stays separate from the web callback contract
-- Authentik owns identity
-- Supabase owns application session persistence, app-user provisioning, data, and authorization
+- Better Auth can execute social login when selected by config
+- Authentik owns the canonical issuer boundary
+- Supabase owns application session persistence, app-user provisioning, data, and authorization for the compatibility path
 
 The main rule is simple: deployed web builds should not silently drift between Authentik and Supabase because of hidden defaults.
 
 ## Responsibilities
 
+### Better Auth
+
+Better Auth is the execution layer when `AUTH_EXECUTION_PROVIDER=better-auth`.
+
+It owns:
+
+- browser social login execution
+- the browser client flow on the API-origin `/auth` route
+- provider-specific execution tokens before issuer exchange
+
+It does **not** own the canonical AIRS session authority.
+
 ### Authentik
 
-Authentik is the identity provider boundary.
+Authentik is the issuer boundary.
 
 It owns:
 
@@ -27,12 +40,13 @@ It owns:
 - the OIDC authorization/code exchange boundary
 - upstream logout and IdP session state
 - identity-side app/provider configuration
+- issuer-aligned session exchange for the canonical application session
 
 It does **not** own the AIRS web callback page or AIRS route state.
 
 ### Supabase
 
-Supabase is the application auth/data layer.
+Supabase is the application auth/data layer and legacy compatibility path.
 
 It owns:
 
@@ -41,7 +55,7 @@ It owns:
 - row-level authorization and app data access
 - email/password auth and wallet auth
 
-For AIRS web social login, Supabase is not the visible identity broker. Authentik is.
+For AIRS web social login, Supabase is not the visible identity broker. Authentik is the issuer boundary, and Better Auth can execute the browser sign-in when selected.
 
 ## Runtime Split
 
@@ -54,7 +68,9 @@ Use browser redirects.
 - `webRedirectSignIn(...)`
 - callback route: `/auth/callback`
 
-Web social login stores the intended destination, redirects to Authentik, finalizes the callback on `/auth/callback`, then returns to the requested route.
+Web social login stores the intended destination, starts the selected execution provider, finalizes the callback on `/auth/callback`, then returns to the requested route.
+
+When `AUTH_EXECUTION_PROVIDER=better-auth`, the browser client starts through the API-origin `/auth` route and the final application session is still resolved through the issuer exchange path.
 
 ### Native
 
@@ -104,16 +120,18 @@ The deployed AIRS web flow is:
 sequenceDiagram
   participant User
   participant App as /auth
-  participant Auth as Authentik
+  participant Exec as Better Auth
+  participant Issuer as Authentik / auth-exchange
   participant Callback as /auth/callback
   participant Provider as AppAuthProvider
   participant Supabase as Supabase
 
   User->>App: Open /auth?next=/dashboard
-  App->>Auth: webRedirectSignIn(provider, redirectTo)
-  Auth->>Auth: Social login / OIDC
-  Auth-->>Callback: Redirect with code/state
-  Callback->>Supabase: Provision / finalize app session
+  App->>Exec: webRedirectSignIn(provider, redirectTo)
+  Exec->>Exec: Social login / browser execution
+  Exec-->>Callback: Redirect with code/state
+  Callback->>Issuer: Exchange external identity for canonical session
+  Callback->>Supabase: Provision / finalize compatibility session
   Callback->>Provider: setOidcUser(...)
   Callback-->>User: Redirect to stored next route
 ```
@@ -124,6 +142,8 @@ Important implementation rules:
 - `/auth/callback` is the browser callback boundary
 - callback finalization does not live in a UI button component
 - the intended destination is stored explicitly and restored after success
+- Better Auth execution tokens are not the final app session
+- the issuer exchange remains the canonical session boundary
 
 ## Native Flow
 
@@ -164,7 +184,7 @@ This is intentionally cleaner than embedding callback handling inside `AppAuthPr
 
 ## Entry Modes
 
-The package still supports two Authentik entry styles.
+When the Authentik-managed execution path is active, the package still supports two Authentik entry styles.
 
 ### `source`
 

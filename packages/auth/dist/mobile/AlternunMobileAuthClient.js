@@ -1,6 +1,6 @@
 import { SupabaseClient as UniversalSupabaseClient } from '@edcalderon/auth/supabase';
 import { createClient } from '@supabase/supabase-js';
-import { getValidationErrorMessage, parseEmailAddress, parseSignInPassword, parseSignUpPassword, } from '../validation/authInputValidation';
+import { getValidationErrorMessage, parseEmailAddress, parseSignInPassword, parseSignUpPassword, } from '../validation/authInputValidation.js';
 const WALLET_PROVIDERS = ['metamask', 'walletconnect'];
 const EMAIL_TEMPLATE_LOCALES = ['en', 'es', 'th'];
 function resolveClientRuntime() {

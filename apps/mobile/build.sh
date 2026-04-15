@@ -2,13 +2,12 @@
 set -euo pipefail
 
 validate_exported_auth_bundle() {
-  local execution_provider=${AUTH_EXECUTION_PROVIDER:-${EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER:-supabase}}
+  local execution_provider
+  execution_provider="$(node ./scripts/mobile-env.cjs auth-execution-provider)"
 
   if [ "$execution_provider" = "better-auth" ]; then
     return 0
   fi
-
-  return 0
   
   local drift_matches
   drift_matches="$(
