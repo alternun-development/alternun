@@ -227,7 +227,8 @@
             "atn": "120",
             "meta": "Regenerative agriculture",
             "title": "Eco Products",
-            "cta": "Shop Now"
+            "cta": "Shop Now",
+            "infoBody": "Access exclusive discounts on sustainable products from our allied brands. From organic clothing to ecological cleaning products."
           },
           "experiencias": {
             "tag1": "Travel",
@@ -236,7 +237,8 @@
             "atn": "240",
             "meta": "Curated escapes",
             "title": "Experiences",
-            "cta": "Explore Experiences"
+            "cta": "Explore Experiences",
+            "infoBody": "Discover curated trips, retreats, and nature experiences designed to reward positive impact. Each experience connects you with regenerative ecosystems around the world."
           },
           "marketplace": {
             "description": "Access a marketplace of regenerative products and services.",
@@ -250,7 +252,8 @@
             "atn": "400",
             "meta": "Premium access",
             "title": "Premium",
-            "cta": "Live the Experience"
+            "cta": "Live the Experience",
+            "infoBody": "Enjoy priority access, elevated support, and exclusive perks throughout the ecosystem. Premium membership unlocks the best Alternun has to offer, including private events and personalized guidance."
           },
           "cursos": {
             "tag1": "Learning",
@@ -259,7 +262,8 @@
             "atn": "80",
             "meta": "Education",
             "title": "Courses",
-            "cta": "Start Learning"
+            "cta": "Start Learning",
+            "infoBody": "Learn practical regenerative skills with expert-led courses, workshops, and verified certifications. Build knowledge that translates directly into positive impact."
           },
           "services": {
             "description": "Verified services that contribute to positive impact.",
@@ -270,7 +274,9 @@
         "cta": "Explore marketplace",
         "sectionTitle": "Benefits",
         "subtitle": "Discover everything you can get with Alternun",
-        "topRated": "Top rated"
+        "topRated": "Top rated",
+        "redeemCta": "Redeem this benefit",
+        "availableFrom": "Available from {{atn}} ATN"
       },
       "video": {
         "loadingIntro": "Loading Airs Intro Video",
