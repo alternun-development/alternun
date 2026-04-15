@@ -5,7 +5,9 @@
       "Bash(git checkout *)",
       "Bash(npx *)",
       "Bash(node *)",
-      "Bash(git rebase *)"
+      "Bash(git rebase *)",
+      "Bash(git tag *)",
+      "Bash(git ls-remote *)"
     ]
   },
   "$version": 3

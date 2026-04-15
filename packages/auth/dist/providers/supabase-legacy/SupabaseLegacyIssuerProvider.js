@@ -1,7 +1,7 @@
-import { AlternunConfigError } from '../../core/errors.js';
-import { createAlternunSession, claimsToExternalIdentity } from '../../core/session.js';
-import { buildProvisioningEvent, externalIdentityToLinkedAccount, externalIdentityToPrincipal, principalToUserProjection, } from '../../identity/mapping.js';
-import { getAuthentikEndpointBaseFromIssuer, resolveAuthentikClientId, resolveAuthentikIssuer, } from '../../mobile/authentikUrls.js';
+import { AlternunConfigError } from '../../core/errors';
+import { createAlternunSession, claimsToExternalIdentity } from '../../core/session';
+import { buildProvisioningEvent, externalIdentityToLinkedAccount, externalIdentityToPrincipal, principalToUserProjection, } from '../../identity/mapping';
+import { getAuthentikEndpointBaseFromIssuer, resolveAuthentikClientId, resolveAuthentikIssuer, } from '../../mobile/authentikUrls';
 function resolveIssuer(options) {
     var _a;
     if ((_a = options.issuer) === null || _a === void 0 ? void 0 : _a.trim()) {
