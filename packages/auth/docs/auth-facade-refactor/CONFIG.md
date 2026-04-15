@@ -24,7 +24,6 @@ Accepted aliases include:
 - `AUTH_BETTER_AUTH_URL`
 - `BETTER_AUTH_URL`
 - `BETTER_AUTH_CLIENT_ID`
-- `BETTER_AUTH_API_KEY`
 - `EXPO_PUBLIC_AUTH_EXCHANGE_URL`
 
 ## Runtime Behavior
