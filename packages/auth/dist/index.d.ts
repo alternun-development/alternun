@@ -117,6 +117,7 @@ export {
   type WebAuthCallbackPayload,
   type WebCallbackWindowLike,
 } from './runtime/web/callbackPayload';
+export { AppAuthProvider, useAuth, type AppAuthProviderProps } from './mobile/AppAuthProvider';
 export {
   AlternunMobileAuthClient,
   SUPPORTED_WALLET_PROVIDERS,

@@ -13,6 +13,10 @@
       "types": "./dist/facade/createAuthFacade.d.ts",
       "default": "./dist/facade/createAuthFacade.js"
     },
+    "./mobile/AppAuthProvider": {
+      "types": "./dist/mobile/AppAuthProvider.d.ts",
+      "default": "./dist/mobile/AppAuthProvider.js"
+    },
     "./mobile/authentikClient": {
       "types": "./dist/mobile/authentikClient.d.ts",
       "default": "./dist/mobile/authentikClient.js"

@@ -9,7 +9,29 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.75](https://github.com/alternun-development/alternun/compare/v1.0.74...v1.0.75) (2026-04-15)
+export const CHANGELOG_TEXT = `## [1.0.76](https://github.com/alternun-development/alternun/compare/v1.0.75...v1.0.76) (2026-04-15)
+
+
+### Bug Fixes
+
+* **repo:** sync auth exports and footer drawers ([74f4d70](https://github.com/alternun-development/alternun/commit/74f4d702be16695f1738a9422282cc4d7dcc9b56))
+
+
+
+
+
+## [1.0.76](https://github.com/alternun-development/alternun/compare/v1.0.75...v1.0.76) (2026-04-15)
+
+
+### Bug Fixes
+
+* **repo:** sync auth exports and footer drawers ([74f4d70](https://github.com/alternun-development/alternun/commit/74f4d702be16695f1738a9422282cc4d7dcc9b56))
+
+
+
+
+
+## [1.0.75](https://github.com/alternun-development/alternun/compare/v1.0.74...v1.0.75) (2026-04-15)
 
 ### Bug Fixes
 
@@ -1350,4 +1372,4 @@ All notable changes to this project will be documented in this file.
 /**
  * Version extracted from package.json for display purposes.
  */
-export const APP_VERSION = '1.0.75';
+export const APP_VERSION = '1.0.76';
