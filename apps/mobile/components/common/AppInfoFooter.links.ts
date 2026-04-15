@@ -13,20 +13,16 @@ export interface FooterViewport {
 
 export const FOOTER_PRIMARY_LINK_DEFINITIONS = [
   {
-    labelKey: 'footer.links.project',
-    fallbackLabel: 'Go Alternun.io',
-  },
-  {
-    labelKey: 'footer.links.documentation',
-    fallbackLabel: 'Documentacion',
-  },
-  {
     labelKey: 'footer.links.privacy',
-    fallbackLabel: 'Privacidad',
+    fallbackLabel: 'Privacy',
   },
   {
     labelKey: 'footer.links.terms',
-    fallbackLabel: 'Términos',
+    fallbackLabel: 'Terms',
+  },
+  {
+    labelKey: 'footer.links.documentation',
+    fallbackLabel: 'Docs',
   },
 ] as const;
 
@@ -54,9 +50,6 @@ export function resolvePrimaryLinksForViewport(
   // Keep a single source of truth so desktop/mobile cannot drift.
   const resolvedLocale = normalizeLocale(locale);
 
-  const projectUrl =
-    process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://alternun.io';
-
   const docsBaseUrl =
     process.env.NODE_ENV === 'development' ? 'http://localhost:8083' : 'https://docs.alternun.io';
 
@@ -64,22 +57,17 @@ export function resolvePrimaryLinksForViewport(
     {
       labelKey: FOOTER_PRIMARY_LINK_DEFINITIONS[0].labelKey,
       fallbackLabel: FOOTER_PRIMARY_LINK_DEFINITIONS[0].fallbackLabel,
-      url: projectUrl,
+      url: `${docsBaseUrl}/privacy`,
     },
     {
       labelKey: FOOTER_PRIMARY_LINK_DEFINITIONS[1].labelKey,
       fallbackLabel: FOOTER_PRIMARY_LINK_DEFINITIONS[1].fallbackLabel,
-      url: resolveDocumentationUrl(resolvedLocale),
+      url: `${docsBaseUrl}/terms`,
     },
     {
       labelKey: FOOTER_PRIMARY_LINK_DEFINITIONS[2].labelKey,
       fallbackLabel: FOOTER_PRIMARY_LINK_DEFINITIONS[2].fallbackLabel,
-      url: `${docsBaseUrl}/privacy`,
-    },
-    {
-      labelKey: FOOTER_PRIMARY_LINK_DEFINITIONS[3].labelKey,
-      fallbackLabel: FOOTER_PRIMARY_LINK_DEFINITIONS[3].fallbackLabel,
-      url: `${docsBaseUrl}/terms`,
+      url: resolveDocumentationUrl(resolvedLocale),
     },
   ];
 }

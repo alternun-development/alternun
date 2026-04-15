@@ -1,9 +1,9 @@
 import React from 'react';
-import { View } from 'react-native';
-import { HeroPanel } from '@alternun/ui';
+import { View, } from 'react-native';
+import { HeroPanel, } from '@alternun/ui';
 import AirsBrandMark from '../branding/AirsBrandMark';
-import { palette } from '@alternun/ui';
-import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { palette, } from '@alternun/ui';
+import { useAppPreferences, } from '../settings/AppPreferencesProvider';
 
 interface HeroStatsProps {
   totalAIRS: number | null;
@@ -24,13 +24,13 @@ export default function HeroStats({
   previewMode = false,
   isDark = true,
   displayName,
-}: HeroStatsProps) {
-  const { motionLevel } = useAppPreferences();
+}: HeroStatsProps,) {
+  const { motionLevel, } = useAppPreferences();
   const markFill = isDark ? palette.teal : palette.tealDark;
   const markCutout = isDark ? '#050f0c' : '#eaf8f3';
 
   return (
-    <View style={{ marginHorizontal: 12 }}>
+    <View style={{ marginHorizontal: 12, }}>
       <HeroPanel
         displayName={displayName}
         score={totalAIRS}

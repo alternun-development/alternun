@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Version } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LegalService, type LegalContent } from './legal.service';
 
@@ -7,6 +7,7 @@ import { LegalService, type LegalContent } from './legal.service';
 export class LegalController {
   constructor(private readonly legalService: LegalService) {}
 
+  @Version('1')
   @Get(':type')
   @ApiOperation({ summary: 'Get legal document content (privacy or terms)' })
   @ApiOkResponse({ description: 'Legal document content in markdown format' })

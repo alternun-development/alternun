@@ -11,7 +11,7 @@
  * Usage:
  *   <PolicyDrawer
  *     type="privacy"
- *     apiUrl="https://api.alternun.io"
+ *     apiUrl="https://testnet.api.alternun.co"
  *     locale="en"
  *     triggerLabel="Privacy Policy"
  *   />
@@ -36,7 +36,7 @@ import { fontSize, radius, spacing } from '../tokens/spacing';
 export interface PolicyDrawerProps {
   /** Type of policy: 'privacy' or 'terms' */
   type: 'privacy' | 'terms';
-  /** Base API URL, e.g. "https://api.alternun.io" */
+  /** Base API URL, e.g. "https://testnet.api.alternun.co" */
   apiUrl: string;
   /** Locale code. Default: 'en' */
   locale?: 'en' | 'es' | 'th';

@@ -7,29 +7,27 @@ import {
   useMemo,
   type ComponentType,
   type PropsWithChildren,
-  type ReactNode,
   type ReactElement,
+  type ReactNode,
 } from 'react';
-import {
-  AlternunMobileAuthClient,
-  type AlternunMobileAuthClientOptions,
-} from './AlternunMobileAuthClient';
+import { createAuthFacade } from '../facade/createAuthFacade';
+import type { CreateAuthFacadeOptions } from '../facade/createAuthFacade';
+import type { AuthClient } from '@edcalderon/auth';
 
-type MobileAuthOverrideOptions = Pick<
-  AlternunMobileAuthClientOptions,
-  | 'walletBridge'
-  | 'allowMockWalletFallback'
-  | 'allowWalletOnlySession'
-  | 'supabaseUrl'
-  | 'supabaseKey'
->;
+type MobileAuthOverrideOptions = {
+  walletBridge?: CreateAuthFacadeOptions['walletBridge'];
+  allowMockWalletFallback?: boolean;
+  allowWalletOnlySession?: boolean;
+  supabaseUrl?: string;
+  supabaseKey?: string;
+};
 
 export interface AppAuthProviderProps extends PropsWithChildren {
   options?: MobileAuthOverrideOptions;
 }
 
 type UniversalAuthProviderCompatProps = {
-  client: AlternunMobileAuthClient;
+  client: AuthClient;
   children?: ReactNode;
 };
 
@@ -37,28 +35,26 @@ const UniversalAuthProviderCompat =
   UniversalAuthProvider as unknown as ComponentType<UniversalAuthProviderCompatProps>;
 
 export function AppAuthProvider({ children, options }: AppAuthProviderProps): ReactElement {
-  const supabaseUrl =
-    options?.supabaseUrl ??
-    process.env.EXPO_PUBLIC_SUPABASE_URL ??
-    process.env.EXPO_PUBLIC_SUPABASE_URI;
-  const supabaseKey =
-    options?.supabaseKey ??
-    process.env.EXPO_PUBLIC_SUPABASE_KEY ??
-    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
-  const walletBridge = options?.walletBridge;
-  const allowMockWalletFallback = options?.allowMockWalletFallback;
-  const allowWalletOnlySession = options?.allowWalletOnlySession;
-
   const client = useMemo(
     () =>
-      new AlternunMobileAuthClient({
-        supabaseUrl,
-        supabaseKey,
-        walletBridge,
-        allowMockWalletFallback,
-        allowWalletOnlySession,
+      createAuthFacade({
+        runtime: {
+          supabaseUrl: options?.supabaseUrl,
+          supabaseKey: options?.supabaseKey,
+          allowMockWalletFallback: options?.allowMockWalletFallback,
+          allowWalletOnlySession: options?.allowWalletOnlySession,
+        },
+        walletBridge: options?.walletBridge,
+        allowMockWalletFallback: options?.allowMockWalletFallback,
+        allowWalletOnlySession: options?.allowWalletOnlySession,
       }),
-    [allowMockWalletFallback, allowWalletOnlySession, supabaseKey, supabaseUrl, walletBridge]
+    [
+      options?.allowMockWalletFallback,
+      options?.allowWalletOnlySession,
+      options?.supabaseKey,
+      options?.supabaseUrl,
+      options?.walletBridge,
+    ]
   );
 
   return createElement(UniversalAuthProviderCompat, { client }, children);

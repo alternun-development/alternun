@@ -3,8 +3,9 @@
  *
  * Wraps @edcalderon/auth/authentik preset helpers with Alternun-specific
  * defaults. Derives OIDC endpoint URLs from the issuer so callers never
- * need to hardcode paths, and wires the Supabase provisioning adapter
- * (upsert_oidc_user RPC) into the preset automatically.
+ * need to hardcode paths. Callers may supply their own provisioning
+ * adapter; when they do not, the legacy Supabase compatibility adapter
+ * remains available as a fallback.
  *
  * Usage:
  *   const auth = createAlternunAuthentikPreset({
@@ -40,7 +41,7 @@ import {
   type ProvisioningResult,
 } from '../authentik';
 import type { OidcClaims } from '@edcalderon/auth';
-import { upsertOidcUser } from '../AuthentikOidcClient';
+import { upsertOidcUser } from '../compat/upsertOidcUser';
 
 /**
  * Strip the per-app slug from an Authentik issuer URL to get the shared
@@ -62,6 +63,11 @@ export interface AlternunAuthentikPresetOptions {
   redirectUri: string;
   /** URL to land on after Authentik clears its session. Defaults to redirectUri. */
   postLogoutRedirectUri?: string;
+  /**
+   * Optional provisioning adapter for identity sync.
+   * Supplying this makes the Supabase compatibility seam explicit at the app edge.
+   */
+  provisioningAdapter?: ProvisioningAdapter;
 }
 
 export interface AlternunAuthentikPreset {
@@ -79,9 +85,10 @@ export interface AlternunAuthentikPreset {
     idToken?: string;
   }) => Promise<AuthentikLogoutResult>;
   /**
-   * Provisioning bridge — syncs the OIDC identity into Supabase via the
-   * upsert_oidc_user RPC. Pass as the onSessionReady callback body.
-   * Returns the app-level Supabase UUID on success or throws on failure.
+   * Provisioning bridge used by onSessionReady.
+   * When callers pass an explicit adapter, the app edge owns the Supabase
+   * compatibility seam. If omitted, the preset falls back to the legacy
+   * upsert_oidc_user compatibility path.
    */
   onSessionReady: (claims: OidcClaims, provider: string | undefined) => Promise<string | undefined>;
 }
@@ -116,7 +123,7 @@ export function createAlternunAuthentikPreset(
     clientId,
   };
 
-  const provisioningAdapter: ProvisioningAdapter = createProvisioningAdapter(
+  const legacyProvisioningAdapter: ProvisioningAdapter = createProvisioningAdapter(
     async (payload: ProvisioningPayload): Promise<ProvisioningResult> => {
       try {
         const appUserId = await upsertOidcUser(
@@ -140,6 +147,7 @@ export function createAlternunAuthentikPreset(
       }
     }
   );
+  const provisioningAdapter = options.provisioningAdapter ?? legacyProvisioningAdapter;
 
   const preset: AuthentikPreset = createAuthentikPreset({
     relay: relayConfig,

@@ -1,6 +1,6 @@
 {
   "name": "@alternun/update",
-  "version": "1.0.25-dev.1",
+  "version": "1.0.72",
   "description": "Shared release update detection and service worker helpers for Alternun web apps",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,6 +20,7 @@
     "build": "./build.sh",
     "dev": "tsc -w",
     "clean": "rm -rf dist",
+    "test": "pnpm run build && node --test test/*.test.js",
     "type-check": "tsc --noEmit",
     "export-assets": "node scripts/export-assets.mjs"
   },

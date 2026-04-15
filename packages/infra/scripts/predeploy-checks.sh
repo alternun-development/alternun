@@ -304,6 +304,25 @@ validate_custom_authentik_provider_flow_slugs() {
   return 1
 }
 
+validate_better_auth_web_env() {
+  local auth_execution_provider=${AUTH_EXECUTION_PROVIDER:-${EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER:-}}
+  local auth_better_auth_url=${AUTH_BETTER_AUTH_URL:-}
+  local expo_public_better_auth_url=${EXPO_PUBLIC_BETTER_AUTH_URL:-}
+
+  if [ "${auth_execution_provider}" = "better-auth" ]; then
+    return 0
+  fi
+
+  if [ -z "$auth_better_auth_url" ] && [ -z "$expo_public_better_auth_url" ]; then
+    return 0
+  fi
+
+  echo "ERROR: Better Auth web URLs are set without opting the AIRS web bundle into Better Auth." >&2
+  echo "Set AUTH_EXECUTION_PROVIDER=better-auth (and EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth when needed) only when you intentionally want Better Auth to own web social login." >&2
+  echo "Otherwise leave AUTH_BETTER_AUTH_URL and EXPO_PUBLIC_BETTER_AUTH_URL empty so AIRS web stays on the direct Authentik source-login path." >&2
+  return 1
+}
+
 validate_mobile_oidc_launch_url() {
   local launch_url=${INFRA_IDENTITY_MOBILE_OIDC_LAUNCH_URL:-}
 
@@ -322,6 +341,7 @@ validate_mobile_oidc_launch_url() {
 
 validate_expo_public_auth_env
 validate_custom_authentik_provider_flow_slugs
+validate_better_auth_web_env
 validate_mobile_oidc_launch_url
 check_stage_domain_validation_cname_records
 run_extra_redirect_dns_cleanup

@@ -19,7 +19,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'Space Grotesk', 'sans-serif'],
+        sans: ['var(--font-anek-latin)', 'sans-serif'],
       },
     },
   },

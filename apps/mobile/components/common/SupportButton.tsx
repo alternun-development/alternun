@@ -304,9 +304,9 @@ function SupportButton({ supportEmail, palette }: SupportButtonProps): React.JSX
 
 const styles = StyleSheet.create({
   supportButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

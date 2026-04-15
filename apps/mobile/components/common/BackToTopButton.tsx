@@ -1,19 +1,22 @@
-import React, { useMemo } from 'react';
-import { TouchableOpacity, View, useWindowDimensions, type ViewStyle } from 'react-native';
+import React, { useMemo, } from 'react';
+import { TouchableOpacity, View, useWindowDimensions, type ViewStyle, } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { ChevronsUp, type LucideProps } from 'lucide-react-native';
-import { createTypographyStyles } from '../theme/typography';
+import { ChevronsUp, type LucideProps, } from 'lucide-react-native';
+import { createTypographyStyles, } from '../theme/typography';
 
 const BackIcon = ChevronsUp as React.FC<LucideProps>;
 const AnimatedView = Animated.View as unknown as React.FC<
   React.ComponentProps<typeof View> & { style?: ViewStyle }
 >;
 
+const DESKTOP_BOTTOM_OFFSET = 104;
+
 export interface BackToTopButtonProps {
   visible: boolean;
   onPress: () => void;
   isDark: boolean;
   isMobile: boolean;
+  footerBottomOffset?: number;
   bounceStyle?: ViewStyle;
 }
 
@@ -22,9 +25,10 @@ export function BackToTopButton({
   onPress,
   isDark,
   isMobile,
+  footerBottomOffset,
   bounceStyle,
-}: BackToTopButtonProps) {
-  const { width } = useWindowDimensions();
+}: BackToTopButtonProps,) {
+  const { width, } = useWindowDimensions();
 
   // Calculate responsive positioning
   const bottomPosition = useMemo(() => {
@@ -38,10 +42,14 @@ export function BackToTopButton({
       // Tablet/Large mobile: 100px from bottom
       return 100;
     } else {
-      // Desktop: 24px from bottom
-      return 24;
+      // Desktop: keep the button above the footer row.
+      return DESKTOP_BOTTOM_OFFSET;
     }
-  }, [width]);
+  }, [width,],);
+
+  const resolvedBottomPosition = footerBottomOffset
+    ? Math.max(bottomPosition, footerBottomOffset,)
+    : bottomPosition;
 
   if (!visible) return null;
 
@@ -50,7 +58,7 @@ export function BackToTopButton({
       style={[
         styles.backToTopPill,
         isMobile ? styles.backToTopMobile : styles.backToTopDesktop,
-        { bottom: bottomPosition },
+        { bottom: resolvedBottomPosition, },
         {
           backgroundColor: isDark ? '#0a1520' : '#0d2235',
           borderWidth: 1,
@@ -63,7 +71,7 @@ export function BackToTopButton({
       <View
         style={[
           styles.backToTopIconWrap,
-          { backgroundColor: isDark ? 'rgba(28,203,161,0.18)' : 'rgba(28,203,161,0.22)' },
+          { backgroundColor: isDark ? 'rgba(28,203,161,0.18)' : 'rgba(28,203,161,0.22)', },
         ]}
       >
         <AnimatedView style={bounceStyle}>
@@ -82,7 +90,7 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     borderRadius: 999,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 6, },
     shadowOpacity: 0.4,
     shadowRadius: 16,
     elevation: 8,
@@ -110,4 +118,4 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+},);

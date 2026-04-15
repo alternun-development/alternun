@@ -1,6 +1,6 @@
 {
   "name": "@alternun/ui",
-  "version": "1.0.25-dev.1",
+  "version": "1.0.72",
   "description": "Common UI components for Alternun",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,15 +10,19 @@
     "clean": "rm -rf dist"
   },
   "devDependencies": {
+    "@radix-ui/react-popover": "1.0.0",
+    "@radix-ui/react-tooltip": "1.0.0",
     "@types/react": "^19.1.17",
     "@types/react-dom": "^19.1.17",
     "@types/react-native": "^0.71.6",
-    "typescript": "^5.0.4"
+    "lucide-react-native": "^0.479.0",
+    "typescript": "^5.0.4",
+    "universal-tooltip": "1.1.0"
   },
   "peerDependencies": {
+    "lucide-react-native": ">=0.400.0",
     "react": ">=18.2.0",
     "react-dom": ">=18.2.0",
-    "react-native": ">=0.71.0",
-    "lucide-react-native": ">=0.400.0"
+    "react-native": ">=0.71.0"
   }
 }

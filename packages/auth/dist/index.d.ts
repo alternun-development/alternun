@@ -8,6 +8,66 @@ export type {
   User,
 } from '@edcalderon/auth';
 export { AppAuthProvider, useAuth, type AppAuthProviderProps } from './mobile/AppAuthProvider';
+export { AlternunAuthFacade } from './facade/AlternunAuthFacade';
+export { createAuthFacade } from './facade/createAuthFacade';
+export {
+  AuthentikIssuerProvider,
+  type AuthentikIssuerProviderOptions,
+} from './providers/authentik/AuthentikIssuerProvider';
+export {
+  BetterAuthExecutionProvider,
+  type BetterAuthExecutionProviderOptions,
+  type BetterAuthClientLike,
+} from './providers/better-auth/BetterAuthExecutionProvider';
+export {
+  SupabaseExecutionProvider,
+  type SupabaseExecutionProviderOptions,
+  type LegacyExecutionClientLike,
+} from './providers/supabase-legacy/SupabaseExecutionProvider';
+export {
+  SupabaseLegacyIssuerProvider,
+  type SupabaseLegacyIssuerProviderOptions,
+} from './providers/supabase-legacy/SupabaseLegacyIssuerProvider';
+export {
+  SupabaseIdentityRepository,
+  type SupabaseIdentityRepositoryOptions,
+} from './providers/supabase-legacy/SupabaseIdentityRepository';
+export { SupabaseEmailProvider } from './providers/email/SupabaseEmailProvider';
+export { PostmarkEmailProvider } from './providers/email/PostmarkEmailProvider';
+export { SesEmailProvider } from './providers/email/SesEmailProvider';
+export { resolveAuthRuntimeConfig, resolveAuthProviderSelection } from './runtime/config';
+export { upsertOidcUser as upsertCompatOidcUser } from './compat/upsertOidcUser';
+export type {
+  ExternalIdentity,
+  Principal,
+  LinkedAuthAccount,
+  ExecutionSession,
+  IssuerSession,
+  AlternunSession,
+  ClaimValidationResult,
+  IssuerDiscoveryConfig,
+  AuthRuntimeConfig,
+  AuthCompatUser,
+  AuthExecutionResult,
+  AuthExecutionSignInOptions,
+  AuthExecutionSignUpInput,
+  AuthLinkProviderInput,
+  AuthUnlinkProviderInput,
+  EmailMessageInput,
+  EmailProviderHealthcheckResult,
+  AuthExecutionProviderName,
+  IdentityIssuerProviderName,
+  EmailProviderName,
+  LinkedAuthAccountType,
+} from './core/types';
+export type {
+  AuthExecutionProvider,
+  IdentityIssuerProvider,
+  EmailProvider,
+  IdentityRepository,
+  AuthLogger,
+  CreateAuthFacadeInput,
+} from './core/contracts';
 export {
   createAlternunAuthentikPreset,
   type AlternunAuthentikPresetOptions,
@@ -44,6 +104,27 @@ export {
   type NativeSignInOptions,
   type WebRedirectSignInOptions,
 } from './mobile/runtimeSignIn';
+export {
+  startSocialSignIn,
+  resumePendingSocialSignIn,
+  type SocialSignInDependencies,
+  type SocialSignInOutcome,
+  type ResumePendingSocialSignInOptions,
+  type StartSocialSignInOptions,
+} from './mobile/socialSignIn';
+export {
+  oidcSessionToUser,
+  finalizeSupabaseCallbackSession,
+  type SupabaseCallbackClient,
+  type SupabaseCallbackSessionPayload,
+} from './runtime/web/callbackSession';
+export {
+  AUTH_CALLBACK_QUERY_KEYS,
+  readWebAuthCallbackPayload,
+  stripAuthCallbackTokensFromUrl,
+  type WebAuthCallbackPayload,
+  type WebCallbackWindowLike,
+} from './runtime/web/callbackPayload';
 export {
   AlternunMobileAuthClient,
   SUPPORTED_WALLET_PROVIDERS,

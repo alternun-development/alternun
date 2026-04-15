@@ -4,6 +4,7 @@ import {
   RELEASE_MANIFEST_FILENAME,
   RELEASE_SKIP_WAITING_MESSAGE_TYPE,
   RELEASE_UPDATE_AVAILABLE_MESSAGE_TYPE,
+  RELEASE_WORKER_FILENAME,
   renderReleaseWorkerSource,
 } from './service-worker';
 import {
@@ -18,6 +19,7 @@ const DEFAULT_STORAGE_KEY = 'alternun.release.dismissed-version';
 const DEFAULT_MANIFEST_URL = `/${RELEASE_MANIFEST_FILENAME}`;
 const DEFAULT_WORKER_URL = '/alternun-release-worker.js';
 const DEFAULT_POLL_INTERVAL_MS = 5 * 60 * 1000;
+const dismissedVersionsInMemory = new Map<string, string>();
 
 export type ReleaseUpdateMode = 'auto' | 'on' | 'off';
 
@@ -26,8 +28,17 @@ export interface ReleaseUpdateOptions {
   mode?: string | null;
   manifestUrl?: string;
   workerUrl?: string;
+  appOrigin?: string | null;
   pollIntervalMs?: number;
   storageKey?: string;
+  onReload?: () => void;
+}
+
+export interface ReleaseUpdateRuntime {
+  origin: string | null;
+  hostname: string | null;
+  manifestUrl: string;
+  workerUrl: string;
 }
 
 export interface ReleaseUpdateState {
@@ -66,9 +77,96 @@ export function isReleaseUpdateEnabled(mode: ReleaseUpdateMode, hostname?: strin
   return !LOOPBACK_HOSTNAMES.has(normalizedHostname);
 }
 
+function trimReleaseValue(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function resolveRuntimeOrigin(explicitOrigin?: string | null): string | null {
+  const trimmedExplicitOrigin = trimReleaseValue(explicitOrigin);
+  if (trimmedExplicitOrigin) {
+    return trimmedExplicitOrigin;
+  }
+
+  if (typeof window !== 'undefined') {
+    const browserOrigin = trimReleaseValue(window.location.origin);
+    if (browserOrigin) {
+      return browserOrigin;
+    }
+  }
+
+  return (
+    trimReleaseValue(process.env.EXPO_PUBLIC_ORIGIN) ??
+    trimReleaseValue(process.env.NEXT_PUBLIC_ORIGIN)
+  );
+}
+
+function resolveRuntimeHostname(origin: string | null): string | null {
+  if (!origin) {
+    return null;
+  }
+
+  try {
+    return new URL(origin).hostname.trim().toLowerCase();
+  } catch {
+    return origin.trim().toLowerCase();
+  }
+}
+
+function resolveReleaseAssetUrl(
+  fileName: string,
+  explicitUrl: string | undefined,
+  origin: string | null,
+  fallbackUrl: string
+): string {
+  const trimmedExplicitUrl = trimReleaseValue(explicitUrl);
+  if (trimmedExplicitUrl) {
+    return trimmedExplicitUrl;
+  }
+
+  if (origin) {
+    try {
+      return new URL(fileName, origin).toString();
+    } catch {
+      // Fall through to the local fallback path.
+    }
+  }
+
+  return fallbackUrl;
+}
+
+export function resolveReleaseUpdateRuntime({
+  origin,
+  manifestUrl,
+  workerUrl,
+}: {
+  origin?: string | null;
+  manifestUrl?: string | null;
+  workerUrl?: string | null;
+} = {}): ReleaseUpdateRuntime {
+  const resolvedOrigin = resolveRuntimeOrigin(origin);
+
+  return {
+    origin: resolvedOrigin,
+    hostname: resolveRuntimeHostname(resolvedOrigin),
+    manifestUrl: resolveReleaseAssetUrl(
+      RELEASE_MANIFEST_FILENAME,
+      manifestUrl ?? undefined,
+      resolvedOrigin,
+      DEFAULT_MANIFEST_URL
+    ),
+    workerUrl: resolveReleaseAssetUrl(
+      RELEASE_WORKER_FILENAME,
+      workerUrl ?? undefined,
+      resolvedOrigin,
+      DEFAULT_WORKER_URL
+    ),
+  };
+}
+
 function readStoredDismissedVersion(storageKey: string): string | null {
   if (typeof window === 'undefined') {
-    return null;
+    return dismissedVersionsInMemory.get(storageKey) ?? null;
   }
 
   try {
@@ -81,6 +179,7 @@ function readStoredDismissedVersion(storageKey: string): string | null {
 
 function writeStoredDismissedVersion(storageKey: string, version: string): void {
   if (typeof window === 'undefined') {
+    dismissedVersionsInMemory.set(storageKey, version);
     return;
   }
 
@@ -114,25 +213,72 @@ export function useReleaseUpdate({
   mode,
   manifestUrl = DEFAULT_MANIFEST_URL,
   workerUrl = DEFAULT_WORKER_URL,
+  appOrigin,
   pollIntervalMs = DEFAULT_POLL_INTERVAL_MS,
   storageKey = DEFAULT_STORAGE_KEY,
+  onReload,
 }: ReleaseUpdateOptions): ReleaseUpdateState {
   const normalizedCurrentVersion = useMemo(
     () => normalizeReleaseVersion(currentVersion),
     [currentVersion]
   );
   const normalizedMode = normalizeReleaseUpdateMode(mode);
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : null;
-  const enabled = isReleaseUpdateEnabled(normalizedMode, hostname);
+  const runtime = useMemo(
+    () =>
+      resolveReleaseUpdateRuntime({
+        origin: appOrigin,
+        manifestUrl,
+        workerUrl,
+      }),
+    [appOrigin, manifestUrl, workerUrl]
+  );
+  const enabled = isReleaseUpdateEnabled(normalizedMode, runtime.hostname);
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState(false);
   const [remoteVersion, setRemoteVersion] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastCheckedAt, setLastCheckedAt] = useState<number | null>(null);
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
+  const registrationPromiseRef = useRef<Promise<ServiceWorkerRegistration | null> | null>(null);
+  const hasServiceWorkerSupport =
+    typeof window !== 'undefined' &&
+    typeof navigator !== 'undefined' &&
+    'serviceWorker' in navigator;
+
+  const ensureServiceWorkerRegistration = useCallback(async () => {
+    if (!hasServiceWorkerSupport) {
+      return null;
+    }
+
+    if (registrationRef.current) {
+      return registrationRef.current;
+    }
+
+    if (registrationPromiseRef.current) {
+      return registrationPromiseRef.current;
+    }
+
+    registrationPromiseRef.current = navigator.serviceWorker
+      .register(runtime.workerUrl, { scope: '/' })
+      .then((registration) => {
+        registrationRef.current = registration;
+        return registration;
+      })
+      .catch(() => null)
+      .finally(() => {
+        registrationPromiseRef.current = null;
+      });
+
+    try {
+      return await registrationPromiseRef.current;
+    } catch {
+      registrationPromiseRef.current = null;
+      return null;
+    }
+  }, [hasServiceWorkerSupport, runtime.workerUrl]);
 
   const refresh = useCallback(async () => {
-    if (!enabled || typeof window === 'undefined') {
+    if (!enabled) {
       return;
     }
 
@@ -140,26 +286,23 @@ export function useReleaseUpdate({
     setError(null);
 
     try {
-      if ('serviceWorker' in navigator) {
-        const registration =
-          registrationRef.current ??
-          (await navigator.serviceWorker.register(workerUrl, { scope: '/' }).catch(() => null));
+      if (hasServiceWorkerSupport) {
+        const registration = await ensureServiceWorkerRegistration();
         if (registration) {
-          registrationRef.current = registration;
           registration.active?.postMessage({
             type: RELEASE_CHECK_MESSAGE_TYPE,
-            manifestUrl,
+            manifestUrl: runtime.manifestUrl,
           });
         }
       }
 
-      const response = await fetch(manifestUrl, {
+      const response = await fetch(runtime.manifestUrl, {
         cache: 'no-store',
         credentials: 'same-origin',
       });
 
       if (!response.ok) {
-        setAvailable(false);
+        setError(`Release manifest request failed with HTTP ${response.status}.`);
         setLastCheckedAt(Date.now());
         return;
       }
@@ -181,10 +324,17 @@ export function useReleaseUpdate({
     } finally {
       setChecking(false);
     }
-  }, [enabled, manifestUrl, normalizedCurrentVersion, storageKey, workerUrl]);
+  }, [
+    enabled,
+    ensureServiceWorkerRegistration,
+    hasServiceWorkerSupport,
+    normalizedCurrentVersion,
+    runtime.manifestUrl,
+    storageKey,
+  ]);
 
   useEffect(() => {
-    if (!enabled || typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    if (!enabled || !hasServiceWorkerSupport) {
       return;
     }
 
@@ -211,15 +361,12 @@ export function useReleaseUpdate({
       setLastCheckedAt(Date.now());
     };
 
-    void navigator.serviceWorker
-      .register(workerUrl, { scope: '/' })
-      .then((registration) => {
-        if (cancelled) {
-          return;
-        }
-        registrationRef.current = registration;
-      })
-      .catch(() => undefined);
+    void ensureServiceWorkerRegistration().then((registration) => {
+      if (cancelled || !registration) {
+        return;
+      }
+      registrationRef.current = registration;
+    });
 
     navigator.serviceWorker.addEventListener('message', handleWorkerMessage);
 
@@ -227,10 +374,16 @@ export function useReleaseUpdate({
       cancelled = true;
       navigator.serviceWorker.removeEventListener('message', handleWorkerMessage);
     };
-  }, [enabled, normalizedCurrentVersion, storageKey, workerUrl]);
+  }, [
+    enabled,
+    ensureServiceWorkerRegistration,
+    hasServiceWorkerSupport,
+    normalizedCurrentVersion,
+    storageKey,
+  ]);
 
   useEffect(() => {
-    if (!enabled || typeof window === 'undefined') {
+    if (!enabled) {
       return;
     }
 
@@ -240,12 +393,12 @@ export function useReleaseUpdate({
       return;
     }
 
-    const intervalId = window.setInterval(() => {
+    const intervalId = setInterval(() => {
       void refresh();
     }, pollIntervalMs);
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
         void refresh();
       }
     };
@@ -254,13 +407,24 @@ export function useReleaseUpdate({
       void refresh();
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleWindowFocus);
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', handleWindowFocus);
+    }
 
     return () => {
-      window.clearInterval(intervalId);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleWindowFocus);
+      clearInterval(intervalId);
+
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
+
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('focus', handleWindowFocus);
+      }
     };
   }, [enabled, pollIntervalMs, refresh]);
 
@@ -275,10 +439,6 @@ export function useReleaseUpdate({
   }, [remoteVersion, storageKey]);
 
   const reload = useCallback(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
     const registration = registrationRef.current;
     if (registration?.waiting) {
       registration.waiting.postMessage({
@@ -286,8 +446,28 @@ export function useReleaseUpdate({
       });
     }
 
-    window.location.reload();
-  }, []);
+    if (onReload) {
+      onReload();
+      return;
+    }
+
+    if (typeof window !== 'undefined' && typeof window.location.reload === 'function') {
+      window.location.reload();
+      return;
+    }
+
+    if (typeof globalThis !== 'undefined') {
+      const globalLocation = (
+        globalThis as typeof globalThis & {
+          location?: { reload?: () => void };
+        }
+      ).location;
+
+      if (typeof globalLocation?.reload === 'function') {
+        globalLocation.reload();
+      }
+    }
+  }, [onReload]);
 
   return {
     enabled,

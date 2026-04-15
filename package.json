@@ -1,11 +1,11 @@
 {
   "name": "alternun",
-  "version": "1.0.25-dev.1",
+  "version": "1.0.72",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "dev:all": "concurrently -k --names api,admin,mobile,docs --prefix-colors blue,green,magenta,cyan \"pnpm --filter @alternun/api run dev\" \"pnpm --filter @alternun/admin run dev:local\" \"pnpm --filter @alternun/mobile run web:local\" \"pnpm --filter alternun-docs run dev:local\"",
+    "dev:all": "concurrently -k --names api,better-auth,admin,mobile,docs --prefix-colors blue,yellow,green,magenta,cyan \"pnpm --filter @alternun/api run dev\" \"pnpm --filter @alternun/api run dev:better-auth\" \"pnpm --filter @alternun/admin run dev:local\" \"pnpm --filter @alternun/mobile run web:local\" \"pnpm --filter alternun-docs run dev:local\"",
     "admin": "pnpm --filter @alternun/admin dev",
     "mobile": "pnpm --filter ./apps/mobile start",
     "lint": "turbo run lint",
@@ -14,8 +14,7 @@
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",
     "test:coverage": "turbo run test:coverage",
-    "security:audit": "npm audit",
-    "security:fix": "npm audit fix",
+    "security:audit": "node scripts/security-audit.mjs",
     "type-check": "turbo run type-check",
     "clean": "turbo run clean",
     "infra:deploy:dev": "pnpm --filter @alternun/infra run deploy:dev",
@@ -73,16 +72,19 @@
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
+      "axios": "1.15.0",
       "fast-xml-parser": "4.5.4",
       "handlebars": "4.7.9",
       "simple-git": "3.32.3"
     }
   },
   "dependencies": {
-    "three": "^0.169.0"
+    "expo-build-properties": "^55.0.11",
+    "three": "^0.169.0",
+    "universal-tooltip": "1.1.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "*.{ts,tsx,d.ts}": [
       "eslint --fix",
       "prettier --write"
     ],

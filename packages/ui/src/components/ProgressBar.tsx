@@ -12,6 +12,7 @@ interface ProgressBarProps {
   showLabel?: boolean;
   label?: string;
   trailingLabel?: string;
+  showPercentage?: boolean;
   animate?: boolean;
   style?: ViewStyle;
 }
@@ -23,6 +24,7 @@ export function ProgressBar({
   showLabel = false,
   label,
   trailingLabel,
+  showPercentage = true,
   animate = true,
   style,
 }: ProgressBarProps) {
@@ -94,7 +96,11 @@ export function ProgressBar({
         />
       </View>
 
-      <Text style={[styles.percent, { color: theme.textMuted }]}>{Math.round(clamped * 100)}%</Text>
+      {showPercentage && (
+        <Text style={[styles.percent, { color: theme.textMuted }]}>
+          {Math.round(clamped * 100)}%
+        </Text>
+      )}
     </View>
   );
 }
