@@ -1,3 +1,27 @@
+## [1.0.70](https://github.com/alternun-development/alternun/compare/v1.0.64...v1.0.70) (2026-04-15)
+
+### Bug Fixes
+
+- **api:** satisfy better auth dev build types ([ab2d488](https://github.com/alternun-development/alternun/commit/ab2d4884aae97f9c2cdedbfce79a95ae51a70d27))
+- **auth:** sync canonical docs and mobile build ([8bd68d8](https://github.com/alternun-development/alternun/commit/8bd68d815911b5f2f861f754394e8008773c0ba1))
+- canonicalize better auth public base url ([1202905](https://github.com/alternun-development/alternun/commit/12029050454408be3f7b545db9a7a910c97e4164))
+- **mobile,i18n,repo:** LandingFooter, PublicLandingPage, AirsIntroExperience, en ([dbd6ac4](https://github.com/alternun-development/alternun/commit/dbd6ac4a0435fa804b0eb9973aa333db03f58699))
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([2aab253](https://github.com/alternun-development/alternun/commit/2aab253058b154cc813686a858cd954567ed0446))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([b9e841d](https://github.com/alternun-development/alternun/commit/b9e841ddb4810b3abba77e1212d9ead0086e8821))
+
+## [1.0.70](https://github.com/alternun-development/alternun/compare/v1.0.64...v1.0.70) (2026-04-15)
+
+### Bug Fixes
+
+- **api:** satisfy better auth dev build types ([ab2d488](https://github.com/alternun-development/alternun/commit/ab2d4884aae97f9c2cdedbfce79a95ae51a70d27))
+- **auth:** sync canonical docs and mobile build ([8bd68d8](https://github.com/alternun-development/alternun/commit/8bd68d815911b5f2f861f754394e8008773c0ba1))
+- canonicalize better auth public base url ([1202905](https://github.com/alternun-development/alternun/commit/12029050454408be3f7b545db9a7a910c97e4164))
+- **mobile,i18n,repo:** LandingFooter, PublicLandingPage, AirsIntroExperience, en ([dbd6ac4](https://github.com/alternun-development/alternun/commit/dbd6ac4a0435fa804b0eb9973aa333db03f58699))
+- **mobile:** update AppInfoFooter.links test to match current 3-link definitions ([88fd38c](https://github.com/alternun-development/alternun/commit/88fd38c3de1fa3d88ed05b8b3905a0ee061c92e5))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([2aab253](https://github.com/alternun-development/alternun/commit/2aab253058b154cc813686a858cd954567ed0446))
+- **repo,admin,api:** CHANGELOG, app, changelogData ([b9e841d](https://github.com/alternun-development/alternun/commit/b9e841ddb4810b3abba77e1212d9ead0086e8821))
+
 ## [1.0.69](https://github.com/alternun-development/alternun/compare/v1.0.68...v1.0.69) (2026-04-15)
 
 ### Bug Fixes
