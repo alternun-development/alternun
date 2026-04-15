@@ -45,11 +45,12 @@ import LandingFooter from '../common/LandingFooter';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { BackToTopButton } from '../common/BackToTopButton';
 import { useAppTranslation } from '../i18n/useAppTranslation';
-import { getAirsIntroVideoUrl } from './airsIntroVideoSource';
+import { getAirsIntroVideoUrl, resolveLocalAssetUri } from './airsIntroVideoSource';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 
 const AIRS_VIDEO_POSTER =
-  'https://images.pexels.com/videos/5752729/space-earth-universe-cosmos-5752729.jpeg';
+  resolveLocalAssetUri(require('../../assets/images/water_falls-alternun-digital-forge.webp')) ||
+  'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS';
 const AIRS_BG_LIGHT_SRC =
   'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS';
 const HERO_EXPANSION_RANGE = 420;
@@ -885,19 +886,12 @@ const AirsIntroExperience = forwardRef<
                 <View style={styles.headerNavMobileContainer} pointerEvents='box-none'>
                   <TouchableOpacity
                     onPress={() => setHeaderNavMobileMenuVisible((v) => !v)}
-                    activeOpacity={0.75}
+                    activeOpacity={0.7}
                     style={[styles.headerNavMobileAvatarTrigger, { backgroundColor: pillBgColor }]}
                   >
                     <View style={styles.headerNavMobileAvatarCircle}>
-                      <User size={16} color='#ffffff' />
+                      <User size={20} color='#ffffff' strokeWidth={2.5} />
                     </View>
-                    <ChevronDown
-                      size={13}
-                      color='#ffffff'
-                      style={{
-                        transform: [{ rotate: headerNavMobileMenuVisible ? '180deg' : '0deg' }],
-                      }}
-                    />
                   </TouchableOpacity>
 
                   {headerNavMobileMenuVisible && (
@@ -1961,23 +1955,25 @@ const styles = createTypographyStyles({
   headerNavMobileAvatarTrigger: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 6,
   },
   headerNavMobileAvatarCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(28,203,161,0.2)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(28,203,161,0.4)',
   },
   headerNavMobileTrigger: {
     width: 36,
@@ -1993,28 +1989,29 @@ const styles = createTypographyStyles({
   },
   headerNavMobileDropdown: {
     position: 'absolute',
-    top: 44,
+    top: 50,
     right: 0,
-    width: 180,
-    borderRadius: 14,
+    width: 200,
+    borderRadius: 20,
     borderWidth: 1,
-    paddingVertical: 8,
+    paddingVertical: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 12,
   },
   headerNavMobileItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
   },
   headerNavMobileText: {
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: '500',
   },
   headerNavMobileDivider: {
     height: 1,
-    marginVertical: 4,
+    marginVertical: 6,
     marginHorizontal: 12,
   },
   headerNavMobileCta: {

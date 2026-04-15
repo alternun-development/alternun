@@ -9,7 +9,29 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.63](https://github.com/alternun-development/alternun/compare/v1.0.62...v1.0.63) (2026-04-12)
+export const CHANGELOG_TEXT = `## [1.0.64](https://github.com/alternun-development/alternun/compare/v1.0.63...v1.0.64) (2026-04-15)
+
+
+### Bug Fixes
+
+* **mobile:** resolve all lint and type-check build failures ([c0fcff2](https://github.com/alternun-development/alternun/commit/c0fcff2b0b43c6d54465f3620b1409e4c7ad8546))
+
+
+
+
+
+## [1.0.64](https://github.com/alternun-development/alternun/compare/v1.0.63...v1.0.64) (2026-04-15)
+
+
+### Bug Fixes
+
+* **mobile:** resolve all lint and type-check build failures ([c0fcff2](https://github.com/alternun-development/alternun/commit/c0fcff2b0b43c6d54465f3620b1409e4c7ad8546))
+
+
+
+
+
+## [1.0.63](https://github.com/alternun-development/alternun/compare/v1.0.62...v1.0.63) (2026-04-12)
 
 ### Bug Fixes
 
@@ -1173,4 +1195,4 @@ All notable changes to this project will be documented in this file.
 /**
  * Version extracted from package.json for display purposes.
  */
-export const APP_VERSION = '1.0.63';
+export const APP_VERSION = '1.0.64';

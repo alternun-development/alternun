@@ -39,13 +39,88 @@ test('BetterAuthExecutionProvider normalizes social sign-in results', async () =
   assert.equal((await provider.getExecutionSession())?.accessToken, 'exec-token');
 });
 
-test('BetterAuthExecutionProvider preserves path prefixes on baseUrl joins', async () => {
-  let observedUrl;
+test('BetterAuthExecutionProvider normalizes nested Better Auth session payloads', async () => {
+  const provider = new BetterAuthExecutionProvider({
+    client: {
+      runtime: 'web',
+      getSession: async () => ({
+        data: {
+          user: {
+            id: 'better-auth-user-123',
+            email: 'ada@example.com',
+            name: 'Ada Lovelace',
+            image: 'https://example.com/avatar.png',
+            emailVerified: true,
+          },
+          session: {
+            id: 'session-token-123',
+            token: 'session-token-123',
+            refreshToken: 'refresh-token-123',
+            expiresAt: new Date(Date.now() + 60_000).toISOString(),
+            userId: 'better-auth-user-123',
+          },
+        },
+      }),
+      refreshSession: async () => null,
+      getUser: async () => null,
+      getSessionToken: async () => 'session-token-123',
+    },
+  });
+
+  const session = await provider.getExecutionSession();
+
+  assert.equal(session?.provider, 'better-auth');
+  assert.equal(session?.accessToken, 'session-token-123');
+  assert.equal(session?.refreshToken, 'refresh-token-123');
+  assert.equal(session?.externalIdentity?.providerUserId, 'better-auth-user-123');
+  assert.equal(session?.externalIdentity?.avatarUrl, 'https://example.com/avatar.png');
+});
+
+test('BetterAuthExecutionProvider prefers the Better Auth browser client for social login', async () => {
+  let observedOptions;
 
   const provider = new BetterAuthExecutionProvider({
-    baseUrl: 'http://localhost:8082/better-auth',
-    fetchFn: async (url) => {
+    browserClient: {
+      signIn: {
+        social: async (options) => {
+          observedOptions = options;
+          return {
+            user: {
+              sub: 'google-123',
+              email: 'ada@example.com',
+              name: 'Ada Lovelace',
+            },
+            accessToken: 'browser-token',
+            refreshToken: 'browser-refresh',
+            idToken: 'browser-id',
+            expiresAt: Date.now() + 60_000,
+          };
+        },
+      },
+    },
+  });
+
+  const result = await provider.signIn({
+    provider: 'google',
+    flow: 'redirect',
+    redirectUri: 'https://app.example.com/auth/callback',
+  });
+
+  assert.equal(observedOptions.provider, 'google');
+  assert.equal(observedOptions.callbackURL, 'https://app.example.com/auth/callback');
+  assert.equal(result.externalIdentity?.provider, 'google');
+  assert.equal(result.externalIdentity?.providerUserId, 'google-123');
+});
+
+test('BetterAuthExecutionProvider joins a canonical /auth baseUrl without duplicating the prefix', async () => {
+  let observedUrl;
+  let observedBody;
+
+  const provider = new BetterAuthExecutionProvider({
+    baseUrl: 'http://localhost:8082/auth',
+    fetchFn: async (url, init) => {
       observedUrl = String(url);
+      observedBody = init?.body ? JSON.parse(String(init.body)) : null;
       return {
         ok: true,
         status: 200,
@@ -64,7 +139,9 @@ test('BetterAuthExecutionProvider preserves path prefixes on baseUrl joins', asy
   });
 
   await provider.signIn({ provider: 'google', flow: 'redirect' });
-  assert.equal(observedUrl, 'http://localhost:8082/better-auth/auth/sign-in');
+  assert.equal(observedUrl, 'http://localhost:8082/auth/sign-in/social');
+  assert.equal(observedBody.provider, 'google');
+  assert.equal(observedBody.callbackURL, undefined);
 });
 
 test('BetterAuthExecutionProvider prefers the Better Auth client for email flows', async () => {

@@ -3,7 +3,7 @@ const AIRS_VIDEO_EN = require('../../assets/videos/AIRS-intro-videoplayback-EN.m
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const AIRS_VIDEO_ES = require('../../assets/videos/AIRS-intro-videoplayback-ES.mp4');
 
-function resolveLocalAssetUri(assetModule: unknown): string {
+export function resolveLocalAssetUri(assetModule: unknown): string {
   if (typeof assetModule === 'string') {
     return assetModule;
   }

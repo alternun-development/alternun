@@ -153,3 +153,84 @@ test('AlternunAuthFacade preserves email sign-up flags', async () => {
   assert.equal(result.emailAlreadyRegistered, false);
   assert.equal(result.confirmationEmailSent, false);
 });
+
+test('AlternunAuthFacade restores a native issuer session without browser-only helpers', async () => {
+  const externalIdentity = createIdentity();
+  const issuerSession = {
+    issuer: 'https://sso.example.com/application/o/alternun-mobile/',
+    accessToken: 'native-issuer-token',
+    refreshToken: 'native-issuer-refresh',
+    idToken: 'native-issuer-id',
+    expiresAt: Date.now() + 60_000,
+    principal: {
+      issuer: 'https://sso.example.com/application/o/alternun-mobile/',
+      subject: 'native-principal',
+      email: externalIdentity.email,
+      roles: ['authenticated'],
+      metadata: { runtime: 'native' },
+    },
+    claims: externalIdentity.rawClaims,
+    linkedAccounts: [
+      {
+        provider: externalIdentity.provider,
+        providerUserId: externalIdentity.providerUserId,
+        type: 'oidc',
+        email: externalIdentity.email,
+        displayName: externalIdentity.displayName,
+        metadata: {},
+      },
+    ],
+    raw: { source: 'native-test' },
+  };
+
+  const facade = new AlternunAuthFacade({
+    executionProvider: {
+      name: 'better-auth',
+      signIn: async () => ({ session: null, externalIdentity: null }),
+      signUp: async () => ({ session: null, externalIdentity: null }),
+      signOut: async () => {},
+      getExecutionSession: async () => null,
+      refreshExecutionSession: async () => null,
+      linkProvider: async () => null,
+      unlinkProvider: async () => {},
+      capabilities: () => ({ runtime: 'native', supportedFlows: ['native'] }),
+    },
+    issuerProvider: {
+      name: 'authentik',
+      exchangeIdentity: async () => {
+        throw new Error('unexpected exchange');
+      },
+      getIssuerSession: async () => issuerSession,
+      refreshIssuerSession: async () => issuerSession,
+      logoutIssuerSession: async () => {},
+      discoverIssuerConfig: async () => ({ issuer: issuerSession.issuer, authorizationEndpoint: '', tokenEndpoint: '' }),
+      validateClaims: async () => ({ valid: true, principal: issuerSession.principal, errors: [] }),
+    },
+    emailProvider: {
+      name: 'supabase',
+      sendVerificationEmail: async () => {},
+      sendPasswordResetEmail: async () => {},
+      sendMagicLink: async () => {},
+      healthcheck: async () => ({ ok: true, provider: 'supabase' }),
+    },
+    identityRepository: {
+      name: 'compat-repo',
+      upsertPrincipal: async ({ principal }) => ({ ...principal, id: 'native-principal' }),
+      findPrincipalByExternalIdentity: async () => null,
+      upsertUserProjection: async (input) => input,
+      upsertLinkedAccount: async ({ linkedAccount }) => linkedAccount,
+      recordProvisioningEvent: async () => {},
+    },
+    runtime: {
+      runtime: 'native',
+      executionProvider: 'better-auth',
+      issuerProvider: 'authentik',
+      emailProvider: 'supabase',
+    },
+  });
+
+  const user = await facade.getUser();
+  assert.equal(user?.id, 'native-principal');
+  assert.equal(user?.email, externalIdentity.email);
+  assert.equal(await facade.getSessionToken(), 'native-issuer-token');
+});

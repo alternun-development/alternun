@@ -93,7 +93,7 @@ interface PolicyDrawerContentProps {
   accent: string;
 }
 
-function PolicyDrawerContent({
+export function PolicyDrawerContent({
   type,
   apiUrl,
   locale,

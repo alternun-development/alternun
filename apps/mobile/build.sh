@@ -11,7 +11,10 @@ validate_exported_auth_bundle() {
   local drift_matches
   drift_matches="$(
     rg -n \
-      -e '/better-auth/auth/sign-in' \
+      -e '/auth/sign-in/social' \
+      -e '/auth/sign-in/email' \
+      -e 'localhost:9083/auth' \
+      -e '127.0.0.1:9083/auth' \
       -e 'testnet.api.alternun.co/better-auth' \
       -e 'authExecutionProvider:"better-auth"' \
       dist/_expo/static/js/web 2>/dev/null || true

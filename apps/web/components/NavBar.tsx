@@ -5,10 +5,10 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 
 gsap.registerPlugin(useGSAP);
-import { Bell, CheckCircle, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import UserMenu from './UserMenu';
 
-const NAV_LINKS = ['Acumula Airs', 'Usa tus Airs', 'Aliados', 'Programa Platino'];
+const NAV_LINKS = ['Home', 'El proyecto', 'Cómo funciona', 'Beneficios'];
 
 interface NavBarProps {
   userName: string;
@@ -18,30 +18,23 @@ interface NavBarProps {
 export default function NavBar({ userName, airsBalance }: NavBarProps) {
   const navRef = useRef<HTMLElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeLink, setActiveLink] = useState('Home');
 
   useGSAP(
     () => {
-      gsap.from('.nav-link-item', {
-        y: -20,
+      gsap.from('.nav-pill', {
+        y: -30,
         opacity: 0,
-        stagger: 0.08,
-        duration: 0.5,
-        ease: 'power2.out',
-        delay: 0.3,
+        duration: 0.6,
+        ease: 'power3.out',
+        delay: 0.2,
       });
       gsap.from('.nav-logo', {
-        x: -24,
+        x: -30,
         opacity: 0,
         duration: 0.6,
         ease: 'power2.out',
         delay: 0.1,
-      });
-      gsap.from('.nav-user', {
-        x: 24,
-        opacity: 0,
-        duration: 0.6,
-        ease: 'power2.out',
-        delay: 0.25,
       });
     },
     { scope: navRef }
@@ -50,94 +43,124 @@ export default function NavBar({ userName, airsBalance }: NavBarProps) {
   return (
     <nav
       ref={navRef}
-      className='relative w-full flex items-center justify-between px-6 py-3'
+      className='relative w-full flex items-center justify-between px-6 py-4'
       style={{
-        background: 'rgba(4, 15, 30, 0.85)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        background: 'rgba(4, 15, 30, 0.6)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
       }}
     >
       {/* Logo */}
-      <div className='nav-logo flex items-center gap-2'>
+      <div className='nav-logo flex items-center gap-2 flex-shrink-0'>
         <div
-          className='flex items-center justify-center w-9 h-9 rounded-full'
+          className='flex items-center justify-center w-10 h-10 rounded-full'
           style={{ background: 'linear-gradient(135deg, #1ccba1, #0fa880)' }}
         >
-          <svg width='18' height='18' viewBox='0 0 24 24' fill='none'>
+          <svg width='20' height='20' viewBox='0 0 24 24' fill='none'>
             <path d='M12 2L4 20h16L12 2z' fill='rgba(0,0,0,0.9)' />
             <circle cx='12' cy='8' r='2.5' fill='rgba(0,0,0,0.7)' />
           </svg>
         </div>
         <div>
-          <div className='font-bold text-white text-base leading-none'>Airs</div>
-          <div className='text-[10px] text-teal leading-none tracking-wide'>By Alternun</div>
+          <div className='font-bold text-white text-base leading-tight'>Airs</div>
+          <div className='text-[11px] text-teal leading-tight tracking-wide'>Alternun</div>
         </div>
       </div>
 
-      {/* Nav links */}
-      <ul className='hidden md:flex items-center gap-1'>
-        {NAV_LINKS.map((link) => (
-          <li key={link}>
+      {/* Centered pill container with nav links + user */}
+      <div
+        className='nav-pill hidden md:flex items-center gap-0 rounded-full'
+        style={{
+          background: 'linear-gradient(135deg, rgba(28,203,161,0.18), rgba(28,203,161,0.08))',
+          border: '1px solid rgba(28,203,161,0.3)',
+          backdropFilter: 'blur(20px)',
+        }}
+      >
+        {/* Nav links inside pill */}
+        <div className='flex items-center'>
+          {NAV_LINKS.map((link) => (
             <button
-              className={`nav-link-item px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                link === 'Programa Platino'
-                  ? 'text-white bg-teal/20 border border-teal/30 hover:bg-teal/30'
-                  : 'text-white/75 hover:text-white hover:bg-white/08'
-              }`}
-              style={link === 'Programa Platino' ? { color: '#1ccba1' } : {}}
+              key={link}
+              onClick={() => setActiveLink(link)}
+              className='nav-link-item px-5 py-3 text-sm font-medium transition-all duration-300 relative'
+              style={{
+                color: activeLink === link ? '#ffffff' : 'rgba(255,255,255,0.7)',
+                background: activeLink === link ? 'rgba(28,203,161,0.25)' : 'transparent',
+              }}
+              onMouseEnter={(e) => {
+                if (activeLink !== link) {
+                  gsap.to(e.currentTarget, {
+                    backgroundColor: 'rgba(28,203,161,0.12)',
+                    duration: 0.2,
+                  });
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeLink !== link) {
+                  gsap.to(e.currentTarget, {
+                    backgroundColor: 'transparent',
+                    duration: 0.2,
+                  });
+                }
+              }}
             >
               {link}
+              {activeLink === link && (
+                <div
+                  className='absolute bottom-0 left-5 right-5 h-0.5 rounded-full'
+                  style={{
+                    background: 'linear-gradient(90deg, transparent, #1ccba1, transparent)',
+                  }}
+                />
+              )}
             </button>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
 
-      {/* User badge */}
-      <div className='nav-user relative'>
+        {/* Divider */}
+        <div className='h-6 w-px mx-2' style={{ background: 'rgba(28,203,161,0.3)' }} />
+
+        {/* User avatar button - larger and integrated */}
         <button
           onClick={() => setMenuOpen((v) => !v)}
-          className='flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-200 hover:bg-white/05'
+          className='nav-user-btn flex items-center justify-center p-1 mr-1 rounded-full transition-all duration-300'
           style={{
-            background: 'rgba(28,203,161,0.12)',
-            border: '1px solid rgba(28,203,161,0.3)',
+            background: menuOpen ? 'rgba(4,15,30,0.8)' : 'rgba(4,15,30,0.6)',
+            border: '1px solid rgba(28,203,161,0.4)',
+            width: '50px',
+            height: '50px',
           }}
+          title={`${userName} - ${airsBalance.toLocaleString('es-ES')} Airs`}
         >
-          {/* Avatar */}
+          {/* Avatar circle */}
           <div
-            className='w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold'
-            style={{ background: 'linear-gradient(135deg, #1ccba1, #0d8a6e)', color: '#041119' }}
+            className='w-11 h-11 rounded-full flex items-center justify-center text-base font-bold transition-all duration-300'
+            style={{
+              background: 'linear-gradient(135deg, #1ccba1, #0d8a6e)',
+              color: '#041119',
+              boxShadow: menuOpen ? '0 0 16px rgba(28,203,161,0.4)' : 'none',
+            }}
           >
             {userName.charAt(0)}
           </div>
 
-          <div className='hidden sm:block text-left'>
-            <div className='text-white text-xs font-semibold leading-none'>{userName}</div>
-            <div className='text-teal text-[11px] leading-none mt-0.5'>
-              {airsBalance.toLocaleString('es-ES')} Airs
+          {/* User info tooltip on hover - visible on medium screens and up */}
+          <div className='absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap'>
+            <div className='bg-black/80 backdrop-blur-sm text-white text-xs font-medium px-3 py-2 rounded-lg border border-teal/30'>
+              <div>{userName}</div>
+              <div className='text-teal text-[11px]'>
+                {airsBalance.toLocaleString('es-ES')} Airs
+              </div>
             </div>
           </div>
-
-          {/* Badges */}
-          <div className='flex items-center gap-1 ml-1'>
-            <span
-              className='flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold'
-              style={{ background: 'rgba(28,203,161,0.25)', color: '#1ccba1' }}
-            >
-              3
-            </span>
-            <CheckCircle size={14} className='text-teal' />
-          </div>
-
-          <ChevronDown
-            size={12}
-            className={`text-white/50 transition-transform duration-200 ${
-              menuOpen ? 'rotate-180' : ''
-            }`}
-          />
         </button>
 
         <UserMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      </div>
+
+      {/* Mobile menu toggle */}
+      <div className='md:hidden text-teal'>
+        <button className='p-2'>☰</button>
       </div>
     </nav>
   );

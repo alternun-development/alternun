@@ -38,6 +38,7 @@ import { useAppTranslation } from '../i18n/useAppTranslation';
 import type { AppLanguage, MotionLevel, ThemeMode } from '../settings/AppPreferencesProvider';
 import NotificationDropdown, { type NotificationItem } from './NotificationDropdown';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
+import { getFirstName } from './userDisplayName';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as number;
@@ -148,6 +149,7 @@ export default function TopNav({
   const [settingsExpanded, setSettingsExpanded] = useState(true);
   const [dropdownAnimated] = useState(() => new Animated.Value(0));
   const [notifAnimated] = useState(() => new Animated.Value(0));
+  const [badgePulseAnimated] = useState(() => new Animated.Value(1));
 
   const { t } = useAppTranslation('mobile');
   const { width, height } = useWindowDimensions();
@@ -217,6 +219,7 @@ export default function TopNav({
       };
 
   const profileName = userDisplayName?.trim() ?? 'Account';
+  const profileFirstName = useMemo(() => getFirstName(profileName), [profileName]);
   const initials = useMemo(() => getInitials(profileName), [profileName]);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -239,6 +242,24 @@ export default function TopNav({
       useNativeDriver: true,
     }).start();
   }, [notifVisible, notifAnimated]);
+
+  useEffect(() => {
+    if (unreadCount > 0) {
+      badgePulseAnimated.setValue(0);
+      Animated.sequence([
+        Animated.timing(badgePulseAnimated, {
+          toValue: 1.2,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(badgePulseAnimated, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [unreadCount, badgePulseAnimated]);
 
   const toggleMenu = () => {
     setNotifVisible(false);
@@ -393,7 +414,7 @@ export default function TopNav({
                       ]}
                       numberOfLines={1}
                     >
-                      {profileName}
+                      {profileFirstName}
                     </Text>
                     {airsScore != null && (
                       <Text
@@ -425,11 +446,23 @@ export default function TopNav({
                 >
                   <BellIcon size={11} color='rgba(255,255,255,0.85)' />
                   {unreadCount > 0 && (
-                    <View style={[styles.badgeOverlay, { backgroundColor: p.badgeBg }]}>
+                    <Animated.View
+                      style={[
+                        styles.badgeOverlay,
+                        { backgroundColor: p.badgeBg },
+                        {
+                          transform: [
+                            {
+                              scale: badgePulseAnimated,
+                            },
+                          ],
+                        },
+                      ]}
+                    >
                       <Text style={[styles.badgeCount, { color: p.badgeText }]}>
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </Text>
-                    </View>
+                    </Animated.View>
                   )}
                 </TouchableOpacity>
 

@@ -25,21 +25,28 @@ Status as of `2026-04-09`.
 - `BetterAuthExecutionProvider` now keeps Better Auth session state ahead of legacy Supabase session state unless compatibility fallback is explicitly enabled.
 - `AuthentikIssuerProvider` exists as an issuer adapter and now prefers `AUTH_EXCHANGE_URL` when present.
 - `apps/api/src/modules/auth-exchange/*` now exposes `POST /auth/exchange` as a reconciliation endpoint that can mint issuer-owned JWTs when `AUTHENTIK_JWT_SIGNING_KEY` is available.
+- `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` now lets that endpoint fail closed instead of silently returning compatibility fallback when issuer-owned minting is missing.
 - The `dashboard-dev` backend stack now receives `AUTHENTIK_JWT_SIGNING_KEY` from the identity stack output, so the live `/auth/exchange` path returns `exchangeMode: "issuer-owned"` without depending on manual secret copying.
 - `SupabaseExecutionProvider`, `SupabaseIdentityRepository`, and `SupabaseEmailProvider` isolate legacy behavior behind compatibility adapters.
 - Runtime config now supports feature flags for execution, issuer, and email provider selection.
 - Package tests cover facade behavior, contract compatibility, and provider adapters.
+- `createAlternunAuthentikPreset(...)` now accepts an explicit provisioning adapter, and `apps/mobile/components/auth/authWebSession.ts` passes the legacy Supabase compatibility adapter at the app edge.
+- Browser callback payload parsing and URL token stripping now live in the shared package helper surface, so the mobile callback route can stay thinner.
+- Social sign-in dispatch now goes through a shared `startSocialSignIn(...)` helper, so the mobile screen no longer owns the relay-versus-redirect-versus-native branch logic directly.
+- Pending-provider resume handling now goes through a shared `resumePendingSocialSignIn(...)` helper, which keeps the browser callback path refresh-safe without the app route manually clearing storage and branching.
+- Better Auth web callback handling now forces a session refresh before the dashboard redirect and clears stale legacy OIDC state on Better Auth runs, which keeps the SPA-mounted auth provider from rehydrating the wrong session source after navigation.
+- The facade now has native session-restoration coverage in tests, so the app-facing API can be validated without browser-only assumptions.
 
 ### Still Legacy
 
 - Default execution provider is still `supabase`.
-- Better Auth is not yet wired to a real upstream Better Auth runtime or server deployment.
+- Better Auth is now wired to a real local dev runtime and browser client flow behind the API-origin `/auth` route; the remaining gap is upstream testnet/production rollout.
 - `POST /auth/exchange` exists in `apps/api`, and it can mint issuer-owned JWTs when the backend signing key is configured, but the reconciliation path still uses compatibility persistence until the backend owns the full principal lifecycle.
+- `POST /auth/exchange` can now fail closed with `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` when the signing key is missing, which is the rollout mode to use once testnet should no longer accept compatibility fallback.
 - `AuthentikIssuerProvider.exchangeIdentity(...)` now prefers the backend exchange URL when configured, and it falls back to local compatibility session synthesis only when the backend path or signing key is unavailable.
 - On testnet, the backend exchange path is now the normal route for `dashboard-dev`; the fallback remains only for missing-key or compatibility-only environments.
 - `SupabaseIdentityRepository` still relies on `upsert_oidc_user` for the only real persistence path.
 - Linked account persistence and provisioning events are still placeholders.
-- `createAlternunAuthentikPreset(...)` still provisions through the compatibility `upsertOidcUser` shim.
 - Email infrastructure is abstracted in code, but current operational scripts remain Supabase-oriented compatibility scripts.
 
 ### What This Means
@@ -91,6 +98,7 @@ The migration is complete only when all of the following are true:
 
 - Add a real Better Auth runtime integration instead of only the generic adapter shell.
 - Decide whether Better Auth runs inside `apps/api` or as a dedicated auth service.
+- Keep the browser-facing URL on the API origin and proxy `/auth/*` to the private Better Auth service when the runtime stays separate.
 - Wire Google, GitHub, and social login first.
 - Keep Apple as a testnet-ready placeholder unless credentials and native flow details are ready.
 

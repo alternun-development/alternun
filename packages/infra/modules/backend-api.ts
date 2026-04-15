@@ -364,6 +364,12 @@ export function deployBackendApiInfrastructure(
                   args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_REQUEST_TIMEOUT_MS,
               }
             : {}),
+          ...(args.env.INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED
+            ? {
+                AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED:
+                  args.env.INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED,
+              }
+            : {}),
           AUTHENTIK_JWT_SIGNING_KEY:
             args.authentikJwtSigningKey ??
             args.settings.environment.AUTHENTIK_JWT_SIGNING_KEY ??

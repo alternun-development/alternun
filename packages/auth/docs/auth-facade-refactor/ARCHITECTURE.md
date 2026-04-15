@@ -22,6 +22,7 @@ The architecture layer is implemented, but the runtime migration is still partia
 - Authentik still remains the configured issuer boundary.
 - `apps/api/src/modules/auth-exchange/*` now exposes `POST /auth/exchange`, which can mint issuer-owned tokens when the backend signing key is available.
 - The `dashboard-dev` backend stack already receives that signing key from the identity stack output, so the live testnet exchange path is issuer-owned instead of compatibility-only.
+- `POST /auth/exchange` can now be configured to fail closed via `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true`, so the rollout can stop accepting compatibility fallback when canonical minting must be present.
 - `AuthentikIssuerProvider` now prefers `AUTH_EXCHANGE_URL` when configured and only falls back to local issuer synthesis when the backend path or signing key is unavailable.
 - `BetterAuthExecutionProvider` now keeps the Better Auth session ahead of legacy Supabase compatibility state unless explicit fallback is enabled.
 - Supabase compatibility paths still exist for execution, persistence, and email while rollout is incomplete.
@@ -33,7 +34,7 @@ The architecture layer is implemented, but the runtime migration is still partia
 2. Alternun injects `AlternunAuthFacade` as the client.
 3. The facade delegates to the configured execution provider.
 4. If an external identity is available, the facade asks the issuer provider to exchange it for the canonical session.
-5. If `AUTH_EXCHANGE_URL` is configured, the issuer provider prefers the backend exchange endpoint before any local compatibility synthesis, and the backend should mint issuer-owned JWTs when `AUTHENTIK_JWT_SIGNING_KEY` is available.
+5. If `AUTH_EXCHANGE_URL` is configured, the issuer provider prefers the backend exchange endpoint before any local compatibility synthesis, and the backend should mint issuer-owned JWTs when `AUTHENTIK_JWT_SIGNING_KEY` is available. When `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true`, the backend must fail closed instead of returning compatibility fallback.
 6. The repository layer persists principal and linkage records when the issuer path requires it.
 
 ## Provider Roles

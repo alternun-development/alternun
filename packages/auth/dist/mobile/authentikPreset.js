@@ -3,8 +3,9 @@
  *
  * Wraps @edcalderon/auth/authentik preset helpers with Alternun-specific
  * defaults. Derives OIDC endpoint URLs from the issuer so callers never
- * need to hardcode paths, and wires the Supabase provisioning adapter
- * (upsert_oidc_user RPC) into the preset automatically.
+ * need to hardcode paths. Callers may supply their own provisioning
+ * adapter; when they do not, the legacy Supabase compatibility adapter
+ * remains available as a fallback.
  *
  * Usage:
  *   const auth = createAlternunAuthentikPreset({
@@ -44,7 +45,7 @@ function getEndpointBase(issuer) {
     return issuer.replace(/\/$/, '').replace(/\/[^/]+$/, '/');
 }
 export function createAlternunAuthentikPreset(options) {
-    var _a;
+    var _a, _b;
     const { issuer, clientId, redirectUri } = options;
     const postLogoutRedirectUri = (_a = options.postLogoutRedirectUri) !== null && _a !== void 0 ? _a : redirectUri;
     const base = getEndpointBase(issuer);
@@ -68,7 +69,7 @@ export function createAlternunAuthentikPreset(options) {
         revocationEndpoint: `${base}revoke/`,
         clientId,
     };
-    const provisioningAdapter = createProvisioningAdapter(async (payload) => {
+    const legacyProvisioningAdapter = createProvisioningAdapter(async (payload) => {
         var _a, _b, _c;
         try {
             const appUserId = await upsertOidcUser({
@@ -89,6 +90,7 @@ export function createAlternunAuthentikPreset(options) {
             };
         }
     });
+    const provisioningAdapter = (_b = options.provisioningAdapter) !== null && _b !== void 0 ? _b : legacyProvisioningAdapter;
     const preset = createAuthentikPreset({
         relay: relayConfig,
         callback: callbackConfig,
