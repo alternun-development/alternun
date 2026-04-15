@@ -32,7 +32,7 @@
     },
     "publicEnv": {
       "apiUrl": "https://testnet.api.alternun.co",
-      "betterAuthUrl": "https://testnet.api.alternun.co/auth",
+      "betterAuthUrl": "https://testnet.api.alternun.co",
       "authentikLoginEntryMode": "source",
       "authExecutionProvider": "supabase",
       "authExchangeUrl": "https://testnet.api.alternun.co/auth/exchange",
