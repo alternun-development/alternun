@@ -1,4 +1,4 @@
-import { AlternunConfigError } from '../../core/errors';
+import { AlternunConfigError } from '../../core/errors.js';
 export class SupabaseEmailProvider {
     constructor(options = {}) {
         this.options = options;
