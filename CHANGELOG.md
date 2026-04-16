@@ -1,3 +1,19 @@
+## [1.0.96](https://github.com/alternun-development/alternun/compare/v1.0.95...v1.0.96) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** feat(update): make release check interval configurable via EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS
+
+### Features
+
+- **update:** make release check interval configurable via EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS ([0b69e57](https://github.com/alternun-development/alternun/commit/0b69e57f8556837b2569e8de755c41594cb26b6c))
+
+## [1.0.96](https://github.com/alternun-development/alternun/compare/v1.0.95...v1.0.96) (2026-04-16)
+
+### Features
+
+- **update:** make release check interval configurable via EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS ([0b69e57](https://github.com/alternun-development/alternun/commit/0b69e57f8556837b2569e8de755c41594cb26b6c))
+
 ## [1.0.95](https://github.com/alternun-development/alternun/compare/v1.0.94...v1.0.95) (2026-04-16)
 
 ### Bug Fixes
