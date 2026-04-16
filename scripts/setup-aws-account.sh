@@ -10,7 +10,14 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || cd "$(dirname "$0")/.." && pwd)"
+# Detect repo root: try git first, then use script directory
+if REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+  :  # git found the repo
+else
+  # Fallback: use script directory (scripts/setup-aws-account.sh → alternun/)
+  REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+fi
+
 ENV_FILE="$REPO_ROOT/.env"
 
 if [ ! -f "$ENV_FILE" ]; then
