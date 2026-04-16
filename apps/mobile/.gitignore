@@ -45,3 +45,4 @@ node_modules
 # Release update assets
 public/alternun-release-manifest.json
 public/alternun-release-worker.js
+utils/changelogData.ts
