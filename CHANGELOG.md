@@ -1,3 +1,13 @@
+## [1.0.106](https://github.com/alternun-development/alternun/compare/v1.0.105...v1.0.106) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.105
+- **repo:** fix(mobile): ENV_SETUP.QUICK_REFERENCE, ENV_SETUP, docs
+- **repo:** docs(mobile): add comprehensive environment setup documentation
+
+## [1.0.106](https://github.com/alternun-development/alternun/compare/v1.0.105...v1.0.106) (2026-04-16)
+
 ## [1.0.105](https://github.com/alternun-development/alternun/compare/v1.0.104...v1.0.105) (2026-04-16)
 
 ### Bug Fixes
