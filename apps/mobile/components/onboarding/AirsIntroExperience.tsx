@@ -39,6 +39,7 @@ import { getAirsIntroVideoUrl } from './airsIntroVideoSource';
 import AirsIntroSettingsMenu from './AirsIntroSettingsMenu';
 import AirsIntroVideoCard from './AirsIntroVideoCard';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { SCULPIN_FONT_FAMILY } from '../theme/fonts';
 
 const AIRS_BG_LIGHT_SRC =
   'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS';
@@ -1347,8 +1348,8 @@ const styles = createTypographyStyles({
     justifyContent: 'center',
   },
   mediaTagTitle: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Medium`,
     color: 'rgba(245, 227, 162, 0.96)',
-    fontWeight: '500',
     letterSpacing: 0.35,
     textAlign: 'center',
     textShadowColor: 'rgba(0,0,0,0.3)',
@@ -1357,8 +1358,8 @@ const styles = createTypographyStyles({
     width: '100%',
   },
   mediaTagSubtitle: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Black`,
     color: 'rgba(245,250,255,0.95)',
-    fontWeight: '900',
     textAlign: 'center',
     textShadowColor: 'rgba(0,0,0,0.35)',
     textShadowOffset: { width: 0, height: 2 },
