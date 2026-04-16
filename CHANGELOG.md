@@ -1,3 +1,11 @@
+## [1.0.92](https://github.com/alternun-development/alternun/compare/v1.0.91...v1.0.92) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore: stop tracking auto-generated changelog files
+
+## [1.0.92](https://github.com/alternun-development/alternun/compare/v1.0.91...v1.0.92) (2026-04-16)
+
 ## [1.0.91](https://github.com/alternun-development/alternun/compare/v1.0.90...v1.0.91) (2026-04-16)
 
 ### Bug Fixes
