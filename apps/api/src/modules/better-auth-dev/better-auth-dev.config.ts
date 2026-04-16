@@ -217,6 +217,9 @@ export function resolveBetterAuthDevConfig(
     uniqueStrings([
       'http://localhost:8081',
       'http://127.0.0.1:8081',
+      'https://testnet.airs.alternun.co',
+      'https://airs.alternun.co',
+      'https://admin.alternun.co',
       deriveTrustedAppOrigin(env.AUTH_BETTER_AUTH_URL?.trim()),
       deriveTrustedAppOrigin(env.EXPO_PUBLIC_BETTER_AUTH_URL?.trim()),
       deriveTrustedAppOrigin(env.AUTH_EXCHANGE_URL?.trim()),
