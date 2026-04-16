@@ -28,6 +28,17 @@ test('resolveBetterAuthDevConfig accepts the legacy Better Auth secret alias', (
   assert.equal(config.googleClientSecret, 'example-legacy-secret');
 });
 
+test('resolveBetterAuthDevConfig falls back to the public Better Auth url and derives a stable secret', () => {
+  const config = resolveBetterAuthDevConfig({
+    AUTH_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+    AUTHENTIK_JWT_SIGNING_KEY: 'issuer-signing-key',
+  });
+
+  assert.equal(config.baseURL, 'https://testnet.api.alternun.co');
+  assert.equal(config.secret.length >= 32, true);
+  assert.equal(config.trustedOrigins.includes('https://testnet.airs.alternun.co'), true);
+});
+
 test('resolveBetterAuthDevConfig parses Discord credentials when present', () => {
   const config = resolveBetterAuthDevConfig({
     DISCORD_AUTH_CLIENT_ID: 'example-discord-client',

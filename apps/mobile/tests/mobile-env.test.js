@@ -5,8 +5,10 @@ const path = require('path');
 const {
   loadMobileEnv,
   loadDotEnvFile,
+  resolveFileEnv,
   resolveMobileAuthExecutionProvider,
   resolveMobilePublicAuthEnv,
+  shouldDisableExpoDotenv,
 } = require('../scripts/mobile-env.cjs');
 
 describe('mobile-env', () => {
@@ -52,6 +54,39 @@ describe('mobile-env', () => {
       publicBetterAuthUrl: 'https://testnet.api.alternun.co',
       publicAuthExchangeUrl: 'https://testnet.api.alternun.co/auth/exchange',
     });
+  });
+
+  it('disables Expo dotenv when deploy-time auth env is already provided by the shell', () => {
+    expect(
+      shouldDisableExpoDotenv({
+        EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      })
+    ).toBe(true);
+  });
+
+  it('keeps Expo dotenv enabled when the shell does not provide deploy-time auth env', () => {
+    expect(shouldDisableExpoDotenv({})).toBe(false);
+  });
+
+  it('prefers infra auth env over mobile .env during deploy-style builds', () => {
+    const env = { SST_STAGE: 'dev' };
+    const fileEnv = {
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'http://localhost:8082/auth',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'http://localhost:8082/auth/exchange',
+    };
+    const infraEnv = {
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+    };
+
+    expect(resolveFileEnv(env, { fileEnv, infraEnv })).toEqual({
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+    });
+    expect(resolveMobilePublicAuthEnv(env, { fileEnv, infraEnv }).publicBetterAuthUrl).toBe(
+      'https://testnet.api.alternun.co'
+    );
+    expect(shouldDisableExpoDotenv(env, { infraEnv })).toBe(true);
   });
 
   it('lets .env.local override .env values', () => {

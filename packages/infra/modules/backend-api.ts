@@ -154,6 +154,7 @@ function resolveBackendApiAppPath(appPath: string): string {
       ? candidatePath
       : path.resolve(candidatePath);
 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (fs.existsSync(resolvedPath)) {
       return resolvedPath;
     }
@@ -257,6 +258,57 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
       ...(args.env.INFRA_BACKEND_API_DATABASE_URL
         ? { DATABASE_URL: args.env.INFRA_BACKEND_API_DATABASE_URL }
         : {}),
+      ...(args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL
+        ? { AUTH_BETTER_AUTH_URL: args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL }
+        : args.env.AUTH_BETTER_AUTH_URL
+        ? { AUTH_BETTER_AUTH_URL: args.env.AUTH_BETTER_AUTH_URL }
+        : args.env.EXPO_PUBLIC_BETTER_AUTH_URL
+        ? { AUTH_BETTER_AUTH_URL: args.env.EXPO_PUBLIC_BETTER_AUTH_URL }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_BETTER_AUTH_SECRET
+        ? { BETTER_AUTH_SECRET: args.env.INFRA_BACKEND_API_BETTER_AUTH_SECRET }
+        : args.env.BETTER_AUTH_SECRET
+        ? { BETTER_AUTH_SECRET: args.env.BETTER_AUTH_SECRET }
+        : args.env.AUTH_SECRET
+        ? { BETTER_AUTH_SECRET: args.env.AUTH_SECRET }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_BETTER_AUTH_TRUSTED_ORIGINS
+        ? {
+            BETTER_AUTH_TRUSTED_ORIGINS: args.env.INFRA_BACKEND_API_BETTER_AUTH_TRUSTED_ORIGINS,
+          }
+        : args.env.BETTER_AUTH_TRUSTED_ORIGINS
+        ? { BETTER_AUTH_TRUSTED_ORIGINS: args.env.BETTER_AUTH_TRUSTED_ORIGINS }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID
+        ? { GOOGLE_AUTH_CLIENT_ID: args.env.INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID }
+        : args.env.GOOGLE_AUTH_CLIENT_ID
+        ? { GOOGLE_AUTH_CLIENT_ID: args.env.GOOGLE_AUTH_CLIENT_ID }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_SECRET
+        ? {
+            GOOGLE_AUTH_CLIENT_SECRET: args.env.INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_SECRET,
+          }
+        : args.env.GOOGLE_AUTH_CLIENT_SECRET
+        ? { GOOGLE_AUTH_CLIENT_SECRET: args.env.GOOGLE_AUTH_CLIENT_SECRET }
+        : args.env.GOOGLEA_AUTH_CLIENT_SECRET
+        ? { GOOGLE_AUTH_CLIENT_SECRET: args.env.GOOGLEA_AUTH_CLIENT_SECRET }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID
+        ? { DISCORD_AUTH_CLIENT_ID: args.env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID }
+        : args.env.DISCORD_AUTH_CLIENT_ID
+        ? { DISCORD_AUTH_CLIENT_ID: args.env.DISCORD_AUTH_CLIENT_ID }
+        : args.env.DISCORD_CLIENT_ID
+        ? { DISCORD_AUTH_CLIENT_ID: args.env.DISCORD_CLIENT_ID }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_SECRET
+        ? {
+            DISCORD_AUTH_CLIENT_SECRET: args.env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_SECRET,
+          }
+        : args.env.DISCORD_AUTH_CLIENT_SECRET
+        ? { DISCORD_AUTH_CLIENT_SECRET: args.env.DISCORD_AUTH_CLIENT_SECRET }
+        : args.env.DISCORD_CLIENT_SECRET
+        ? { DISCORD_AUTH_CLIENT_SECRET: args.env.DISCORD_CLIENT_SECRET }
+        : {}),
       ...(args.env.INFRA_BACKEND_API_DECAP_PUBLIC_BASE_URL
         ? { DECAP_PUBLIC_BASE_URL: args.env.INFRA_BACKEND_API_DECAP_PUBLIC_BASE_URL }
         : {}),
@@ -303,6 +355,7 @@ export function deployBackendApiInfrastructure(
   const resolvedAppPath = resolveBackendApiAppPath(args.settings.appPath);
   const bundlePath = path.resolve(resolvedAppPath, args.settings.buildOutput);
 
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   if (!fs.existsSync(bundlePath)) {
     throw new Error(
       [
@@ -353,6 +406,11 @@ export function deployBackendApiInfrastructure(
           AUTHENTIK_JWKS_URL: authJwksUrl,
           NODE_ENV: 'production',
           ...args.settings.environment,
+          ...(args.settings.environment.AUTH_BETTER_AUTH_URL
+            ? {
+                AUTH_BETTER_AUTH_URL: args.settings.environment.AUTH_BETTER_AUTH_URL,
+              }
+            : {}),
           ...(args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL
             ? {
                 AUTH_BETTER_AUTH_URL: args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL,
@@ -427,6 +485,7 @@ export function deployBackendApiInfrastructure(
   const shouldCreateCustomDomain = args.settings.enableCustomDomain && Boolean(args.hostedZoneId);
 
   let customDomain: aws.apigatewayv2.DomainName | undefined;
+  // eslint-disable-next-line security/detect-object-injection
   let certificateArn: pulumi.Input<string> | undefined =
     args.settings.certArns[stageKey] || undefined;
   if (shouldCreateCustomDomain && args.hostedZoneId) {

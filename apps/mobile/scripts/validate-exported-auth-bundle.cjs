@@ -99,6 +99,30 @@ function validateBetterAuthBundle(bundleContents, publicEnv) {
       `Exported AIRS web bundle is missing EXPO_PUBLIC_AUTH_EXCHANGE_URL="${publicEnv.publicAuthExchangeUrl}".`
     );
   }
+
+  const expectsNonLocalBetterAuthUrl =
+    typeof publicEnv.publicBetterAuthUrl === 'string' &&
+    publicEnv.publicBetterAuthUrl.length > 0 &&
+    !/^https?:\/\/(localhost|127\.0\.0\.1)(?::\d+)?/i.test(publicEnv.publicBetterAuthUrl);
+
+  if (expectsNonLocalBetterAuthUrl) {
+    const staleLocalPatterns = [
+      /EXPO_PUBLIC_BETTER_AUTH_URL:"http:\/\/localhost:8082\/auth"/g,
+      /EXPO_PUBLIC_BETTER_AUTH_URL:"http:\/\/127\.0\.0\.1:8082\/auth"/g,
+      /EXPO_PUBLIC_AUTH_EXCHANGE_URL:"http:\/\/localhost:8082\/auth\/exchange"/g,
+      /EXPO_PUBLIC_AUTH_EXCHANGE_URL:"http:\/\/127\.0\.0\.1:8082\/auth\/exchange"/g,
+    ];
+    const staleMatches = findMatches(bundleContents, staleLocalPatterns);
+
+    if (staleMatches.length > 0) {
+      throw new Error(
+        [
+          'Exported AIRS web bundle still contains localhost Better Auth web auth env.',
+          ...staleMatches.map((match) => `- ${match}`),
+        ].join('\n')
+      );
+    }
+  }
 }
 
 function validateLegacyBundle(bundleContents) {

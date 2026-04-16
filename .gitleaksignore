@@ -1,0 +1,17 @@
+# Legitimate environment variable references in infrastructure config
+# These are variable names being passed to configuration objects, not actual secrets
+
+# Infrastructure pipeline specs
+packages/infra/config/pipelines/specs/dashboard.ts:54
+packages/infra/config/pipelines/specs/dashboard.ts:81
+
+# Backend API infrastructure module
+packages/infra/modules/backend-api.ts:268
+packages/infra/modules/backend-api.ts:270
+packages/infra/modules/backend-api.ts:272
+packages/infra/modules/backend-api.ts:288
+packages/infra/modules/backend-api.ts:291
+packages/infra/modules/backend-api.ts:293
+packages/infra/modules/backend-api.ts:304
+packages/infra/modules/backend-api.ts:307
+packages/infra/modules/backend-api.ts:309
