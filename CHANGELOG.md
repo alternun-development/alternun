@@ -1,3 +1,19 @@
+## [1.0.102](https://github.com/alternun-development/alternun/compare/v1.0.101...v1.0.102) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth,update): mobile-env
+
+### Bug Fixes
+
+- **mobile,auth,update:** mobile-env ([632c1f4](https://github.com/alternun-development/alternun/commit/632c1f40c2bff58950acb7c3a1cf8966d49c64e8))
+
+## [1.0.102](https://github.com/alternun-development/alternun/compare/v1.0.101...v1.0.102) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile,auth,update:** mobile-env ([632c1f4](https://github.com/alternun-development/alternun/commit/632c1f40c2bff58950acb7c3a1cf8966d49c64e8))
+
 ## [1.0.101](https://github.com/alternun-development/alternun/compare/v1.0.100...v1.0.101) (2026-04-16)
 
 ### Bug Fixes
