@@ -34,7 +34,7 @@
     "version:sync": "node scripts/version-sync.mjs",
     "version:sync:raw": "versioning sync",
     "version:bump": "versioning bump",
-    "version:changelog": "versioning changelog",
+    "version:changelog": "versioning changelog && node scripts/changelog-auto-fill.mjs",
     "version:cleanup": "versioning cleanup",
     "version:check-secrets": "versioning check-secrets",
     "changelog:check": "node scripts/check-changelog.mjs",

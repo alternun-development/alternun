@@ -627,6 +627,13 @@ function performVersionChange(target, options, branchName) {
     const version = readRootVersion();
     run('node', ['scripts/version-sync.mjs', '--version', version], { dryRun: options.dryRun });
     run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+    if (!options.dryRun) {
+      try {
+        run('node', ['scripts/check-changelog.mjs', '--auto-fix']);
+      } catch (err) {
+        // Ignored, check-changelog will print what failed
+      }
+    }
     return version;
   }
 
@@ -637,6 +644,11 @@ function performVersionChange(target, options, branchName) {
     run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
     const version = readRootVersion();
     if (!options.dryRun) {
+      try {
+        run('node', ['scripts/check-changelog.mjs', '--auto-fix']);
+      } catch (err) {
+        // Ignored
+      }
       syncSupplementalVersionFiles(version);
     }
     return version;
@@ -647,6 +659,11 @@ function performVersionChange(target, options, branchName) {
   run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
 
   if (!options.dryRun) {
+    try {
+      run('node', ['scripts/check-changelog.mjs', '--auto-fix']);
+    } catch (err) {
+      // Ignored
+    }
     syncSupplementalVersionFiles(target);
   }
 
