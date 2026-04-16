@@ -1,6 +1,6 @@
 {
   "name": "alternun-docs",
-  "version": "1.0.87",
+  "version": "1.0.88",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",

@@ -9,7 +9,28 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.87](https://github.com/alternun-development/alternun/compare/v1.0.86...v1.0.87) (2026-04-16)
+export const CHANGELOG_TEXT = `## [1.0.88](https://github.com/alternun-development/alternun/compare/v1.0.87...v1.0.88) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(repo,docs,mobile): CHANGELOG, changelogData, check-changelog
+
+
+
+### Bug Fixes
+
+* **repo,docs,mobile:** CHANGELOG, changelogData, check-changelog ([cf368a1](https://github.com/alternun-development/alternun/commit/cf368a1b83ed109f7eaa862095a257cc4f71144a))
+
+
+
+
+
+## [1.0.88](https://github.com/alternun-development/alternun/compare/v1.0.87...v1.0.88) (2026-04-16)
+
+
+### Bug Fixes
+
+* **repo,docs,mobile:** CHANGELOG, changelogData, check-changelog ([cf368a1](https://github.com/alternun-development/alternun/commit/cf368a1b83ed109f7eaa862095a257cc4f71144a))
 
 
 
@@ -17,9 +38,12 @@ export const CHANGELOG_TEXT = `## [1.0.87](https://github.com/alternun-developme
 
 ## [1.0.87](https://github.com/alternun-development/alternun/compare/v1.0.86...v1.0.87) (2026-04-16)
 
+### Miscellaneous
 
+- chore(docs): CHANGELOG
+- infra: sync better-auth variables from ssm parameter store for mobile builds
 
-
+## [1.0.87](https://github.com/alternun-development/alternun/compare/v1.0.86...v1.0.87) (2026-04-16)
 
 ## [1.0.86](https://github.com/alternun-development/alternun/compare/v1.0.85...v1.0.86) (2026-04-16)
 
@@ -1467,4 +1491,4 @@ All notable changes to this project will be documented in this file.
 /**
  * Version extracted from package.json for display purposes.
  */
-export const APP_VERSION = '1.0.87';
+export const APP_VERSION = '1.0.88';
