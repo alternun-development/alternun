@@ -13,6 +13,7 @@ import {
 } from './authWebSession';
 import { shouldClearOidcSessionOnAuthStateChange } from './authSessionBridge';
 import { isBetterAuthExecutionEnabled } from './authExecutionMode';
+import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 
 function getAllowMockWalletFallback(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH === 'true';
@@ -28,6 +29,19 @@ function getSupabaseUrl(): string | undefined {
 
 function getSupabaseKey(): string | undefined {
   return process.env.EXPO_PUBLIC_SUPABASE_KEY ?? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+}
+
+function getBetterAuthUrl(): string | undefined {
+  const envUrl = process.env.EXPO_PUBLIC_BETTER_AUTH_URL;
+  if (envUrl?.trim()) {
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+  // Fallback: derive from window.location.origin if available
+  const origin = typeof window !== 'undefined' ? window.location?.origin : undefined;
+  if (origin) {
+    return resolveMobileApiBaseUrl(undefined, origin) ?? undefined;
+  }
+  return undefined;
 }
 
 function AuthSessionBridge(): null {
@@ -105,6 +119,7 @@ function AuthSessionBridge(): null {
 
 export function AppAuthProvider({ children }: PropsWithChildren): React.JSX.Element {
   const walletBridge = useMemo(() => createWeb3WalletBridge(), []);
+  const betterAuthBaseUrl = useMemo(() => getBetterAuthUrl(), []);
 
   return (
     <AlternunAuthProvider
@@ -114,6 +129,7 @@ export function AppAuthProvider({ children }: PropsWithChildren): React.JSX.Elem
         walletBridge,
         allowMockWalletFallback: getAllowMockWalletFallback(),
         allowWalletOnlySession: getAllowWalletOnlySession(),
+        betterAuthBaseUrl,
       }}
     >
       {children}
