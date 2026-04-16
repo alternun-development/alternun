@@ -1,3 +1,19 @@
+## [1.0.111](https://github.com/alternun-development/alternun/compare/v1.0.110...v1.0.111) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,repo): AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP
+
+### Bug Fixes
+
+- **mobile,repo:** AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP ([73fb0df](https://github.com/alternun-development/alternun/commit/73fb0dfc20b8711f5b5a671a366d12c7c11859a8))
+
+## [1.0.111](https://github.com/alternun-development/alternun/compare/v1.0.110...v1.0.111) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile,repo:** AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP ([73fb0df](https://github.com/alternun-development/alternun/commit/73fb0dfc20b8711f5b5a671a366d12c7c11859a8))
+
 ## [1.0.110](https://github.com/alternun-development/alternun/compare/v1.0.108...v1.0.110) (2026-04-16)
 
 ### Bug Fixes
