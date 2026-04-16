@@ -1,6 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
+# Ensure STACK/SST_STAGE are available from any stage indicator that SST provides.
+# SST StaticSite passes EXPO_PUBLIC_STAGE but not STACK/SST_STAGE directly.
+: "${STACK:=${SST_STAGE:-${EXPO_PUBLIC_STAGE:-${EXPO_PUBLIC_ENV:-}}}}"
+: "${SST_STAGE:=${STACK:-}}"
+export STACK SST_STAGE
+
 validate_exported_auth_bundle() {
   node ./scripts/validate-exported-auth-bundle.cjs
 }
@@ -40,12 +46,14 @@ load_env_vars() {
   load_env_file .env false
 
   # Load stage-specific environment file if deploying
-  # Priority: .env.testnet/.env.development/.env.production → .env.local → shell env
-  if [ -n "${SST_STAGE:-}" ] || [ -n "${STACK:-}" ]; then
+  # Priority: .env.development/.env.production → .env.local → shell env
+  # SST StaticSite passes EXPO_PUBLIC_STAGE as env var; also check STACK/SST_STAGE
+  local detected_stage="${SST_STAGE:-${STACK:-${EXPO_PUBLIC_STAGE:-${EXPO_PUBLIC_ENV:-}}}}"
+  if [ -n "$detected_stage" ]; then
     local stage_file=""
-    case "${SST_STAGE:-${STACK:-}}" in
-      dev|api-dev|*testnet*)
-        stage_file=".env.testnet"
+    case "${detected_stage}" in
+      dev|api-dev|*testnet*|*development*)
+        stage_file=".env.development"
         ;;
       prod|api-prod|production|*production*)
         stage_file=".env.production"
@@ -81,6 +89,17 @@ clear_metro_cache_if_needed() {
 
 # Generate changelog data file for the app
 node ../../scripts/generate-changelog-data.mjs apps/mobile
+
+# In CI/CD (CodeBuild), resolve from SSM Parameter Store instead of .env files
+# Local dev uses .env/.env.local; CI/CD uses SSM for safety (secrets not in git)
+if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  if [ -f "../../packages/infra/scripts/resolve-ssm-env.sh" ]; then
+    echo "CI/CD detected: resolving Expo env from SSM Parameter Store..."
+    # shellcheck source=/dev/null
+    source "../../packages/infra/scripts/resolve-ssm-env.sh"
+  fi
+fi
 
 # Resolve canonical auth env before local .env can backfill stale localhost values.
 seed_build_auth_env
