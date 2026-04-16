@@ -65,6 +65,48 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+## 5. Repository Organization & Cleanup
+
+**Keep root clean. Archive non-critical docs in `docs/`.**
+
+### Critical Root Files (only these .md files at root)
+
+- `AGENTS.md` — agent compatibility
+- `CHANGELOG.md` — release notes
+- `CLAUDE.md` — Claude Code compatibility
+- `CODE_OF_CONDUCT.md` — community guidelines
+- `CONTRIBUTING.md` — contribution guide
+- `README.md` — project overview
+- `SECURITY.md` — security policy
+- `LICENSE` — license file
+
+### Non-Critical Files (move to `docs/`)
+
+All other `.md` files (deployment guides, incident reports, architecture decisions, etc.) belong in the `docs/` directory.
+
+### Guards
+
+- **Pre-commit hook** (`scripts/validate-root-docs.sh`): Blocks commits with non-critical .md files at root
+- **Release script** (`scripts/release.mjs`): Validates root structure before publishing
+- **Manual check**: `bash scripts/validate-root-docs.sh false`
+
+### Usage
+
+```bash
+# Check current state
+bash scripts/validate-root-docs.sh false
+
+# Move files
+mv DEPLOYMENT_FIX_SUMMARY.md docs/
+mv ENVIRONMENT_SETUP_SUMMARY.md docs/
+
+# Pre-commit (automatic)
+git add SOME_FILE.md  # automatically validated by husky
+
+# Release (automatic)
+pnpm release          # fails if non-critical .md at root
+```
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

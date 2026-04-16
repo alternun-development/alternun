@@ -160,6 +160,6 @@ After deployment completes:
 
 ## Documentation
 
-- [`ENVIRONMENT_SETUP_SUMMARY.md`](ENVIRONMENT_SETUP_SUMMARY.md) — Complete reference
-- [`packages/infra/SSM_PARAMETERS.md`](packages/infra/SSM_PARAMETERS.md) — SSM setup guide
+- [`ENVIRONMENT_SETUP_SUMMARY.md`](./ENVIRONMENT_SETUP_SUMMARY.md) — Complete reference
+- [`packages/infra/SSM_PARAMETERS.md`](../packages/infra/SSM_PARAMETERS.md) — SSM setup guide
 - Memory: `build_script_stage_detection_fix.md` — Technical details of critical fix
