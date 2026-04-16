@@ -34,12 +34,18 @@ function getSupabaseKey(): string | undefined {
 function getBetterAuthUrl(): string | undefined {
   const envUrl = process.env.EXPO_PUBLIC_BETTER_AUTH_URL;
   if (envUrl?.trim()) {
+    // Env var is already the full auth URL (e.g., http://localhost:8082/auth or https://testnet.api.alternun.co/auth)
     return envUrl.trim().replace(/\/+$/, '');
   }
-  // Fallback: derive from window.location.origin if available
+  // Fallback: derive API base from window.location.origin, then append /auth
   const origin = typeof window !== 'undefined' ? window.location?.origin : undefined;
   if (origin) {
-    return resolveMobileApiBaseUrl(undefined, origin) ?? undefined;
+    const apiBase = resolveMobileApiBaseUrl(undefined, origin);
+    // Append /auth if not already present (single source of truth pattern)
+    if (apiBase) {
+      const normalized = apiBase.trim().replace(/\/+$/, '');
+      return normalized.endsWith('/auth') ? normalized : `${normalized}/auth`;
+    }
   }
   return undefined;
 }

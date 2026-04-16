@@ -57,35 +57,61 @@ if [ -n "$detected_stage" ]; then
 ### Fix 5: CI/CD SSM Parameter Store (NEW)
 
 - `resolve-ssm-env.sh` — resolves Expo env from AWS SSM (CI/CD safe)
-- `bootstrap-ssm-parameters.sh` — seeds SSM params (run once per AWS account)
+- `bootstrap-ssm-parameters.sh` — seeds SSM params (run once per AWS account, with stage-specific overrides)
 - `build.sh` detects `CODEBUILD_BUILD_ID` and sources SSM script
+
+### Fix 6: Auth URL Single-Source-of-Truth (2026-04-17)
+
+**Problem**: Local dev was failing with CORS because auth URLs were incomplete (missing `/auth` suffix).
+
+**Solution**: Refactored `AppAuthProvider.getBetterAuthUrl()` to ensure all auth URLs include `/auth`:
+
+```typescript
+// Before: Local dev got http://localhost:8082 (incomplete)
+// After: Local dev gets http://localhost:8082/auth (complete)
+// All endpoints automatically derived from this base URL
+```
+
+**Files**:
+
+- `apps/mobile/components/auth/AppAuthProvider.tsx` — Refactored `getBetterAuthUrl()` function
+- `apps/mobile/.env.local.example` — NEW: Local dev setup template
 
 ---
 
 ## Files Changed
 
-| File                                                 | Change                                                                                                   |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `apps/mobile/build.sh`                               | **✓ TOP-LEVEL STAGE DERIVATION** + **CRITICAL: load_env_vars() stage detection** + SSM CI/CD integration |
-| `apps/mobile/scripts/mobile-env.cjs`                 | ✓ Stage detection fallbacks                                                                              |
-| `apps/mobile/.env.development`                       | ✓ Created (from .env.testnet) with testnet config                                                        |
-| `apps/mobile/.env.testnet`                           | ✓ DELETED (consolidated into .env.development)                                                           |
-| `packages/infra/scripts/resolve-ssm-env.sh`          | ✓ NEW: SSM Parameter Store resolver                                                                      |
-| `packages/infra/scripts/bootstrap-ssm-parameters.sh` | ✓ NEW: SSM seeder                                                                                        |
-| `packages/infra/SSM_PARAMETERS.md`                   | ✓ NEW: SSM setup guide                                                                                   |
+| File                                                 | Change                                                                                                    |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `apps/mobile/build.sh`                               | **✓ TOP-LEVEL STAGE DERIVATION** + **CRITICAL: load_env_vars() stage detection** + SSM CI/CD integration  |
+| `apps/mobile/scripts/mobile-env.cjs`                 | ✓ Stage detection fallbacks                                                                               |
+| `apps/mobile/components/auth/AppAuthProvider.tsx`    | **✓ NEW**: Auth URL single-source-of-truth pattern in `getBetterAuthUrl()`                                |
+| `apps/mobile/.env.development`                       | ✓ Created (from .env.testnet) with testnet config (includes `/auth` suffix in URLs)                       |
+| `apps/mobile/.env.local.example`                     | **✓ NEW**: Local dev setup template with `http://localhost:8082/auth`                                     |
+| `apps/mobile/.env.testnet`                           | ✓ DELETED (consolidated into .env.development)                                                            |
+| `packages/infra/scripts/resolve-ssm-env.sh`          | ✓ NEW: SSM Parameter Store resolver                                                                       |
+| `packages/infra/scripts/bootstrap-ssm-parameters.sh` | ✓ NEW: SSM seeder (with stage-specific parameter overrides for `expo-public-authentik-social-login-mode`) |
+| `packages/infra/SSM_PARAMETERS.md`                   | ✓ NEW: SSM setup guide                                                                                    |
 
 ---
 
 ## Deployment History
 
-1. **First Deploy** (14:00 UTC): ❌ Bundle had `localhost:8082`
+1. **First Deploy** (2026-04-16 14:00 UTC): ❌ Bundle had localhost:8082
 
    - Root cause: `load_env_vars()` didn't check `EXPO_PUBLIC_STAGE`
    - Result: `.env.development` not loaded
 
-2. **Second Deploy** (19:30 UTC): 🔄 IN PROGRESS
+2. **Second Deploy** (2026-04-16 19:30 UTC): ⚠️ SSM params set, still showing Discord
+
    - Applied critical `load_env_vars()` fix
-   - Expected: Bundle has `testnet.api.alternun.co/auth`
+   - Bootstrapped SSM parameters for dev & production
+   - Bundle updated but auth URLs missing `/auth` suffix
+
+3. **Third Deploy** (2026-04-17): 🔄 IN PROGRESS
+   - Applied AppAuthProvider fix (single-source-of-truth URL pattern)
+   - All auth URLs now include `/auth` suffix
+   - Expected: Both local dev AND testnet work correctly
 
 ---
 
