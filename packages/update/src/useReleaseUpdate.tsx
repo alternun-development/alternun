@@ -289,10 +289,24 @@ export function useReleaseUpdate({
       if (hasServiceWorkerSupport) {
         const registration = await ensureServiceWorkerRegistration();
         if (registration) {
-          registration.active?.postMessage({
-            type: RELEASE_CHECK_MESSAGE_TYPE,
-            manifestUrl: runtime.manifestUrl,
-          });
+          if (registration.active) {
+            registration.active.postMessage({
+              type: RELEASE_CHECK_MESSAGE_TYPE,
+              manifestUrl: runtime.manifestUrl,
+            });
+          } else if (registration.installing) {
+            // SW is still installing; wait for it to activate before sending the message
+            const onStateChange = () => {
+              if (registration.active) {
+                registration.active.postMessage({
+                  type: RELEASE_CHECK_MESSAGE_TYPE,
+                  manifestUrl: runtime.manifestUrl,
+                });
+                registration.installing?.removeEventListener('statechange', onStateChange);
+              }
+            };
+            registration.installing.addEventListener('statechange', onStateChange);
+          }
         }
       }
 
@@ -368,11 +382,19 @@ export function useReleaseUpdate({
       registrationRef.current = registration;
     });
 
+    const handleControllerChange = () => {
+      if (!cancelled) {
+        void refresh();
+      }
+    };
+
     navigator.serviceWorker.addEventListener('message', handleWorkerMessage);
+    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
 
     return () => {
       cancelled = true;
       navigator.serviceWorker.removeEventListener('message', handleWorkerMessage);
+      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
   }, [
     enabled,
