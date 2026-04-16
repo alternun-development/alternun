@@ -1,3 +1,12 @@
+## [1.0.98](https://github.com/alternun-development/alternun/compare/v1.0.97...v1.0.98) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.97
+- **repo:** fix(auth): use better-auth for Google social login on testnet dev stage
+
+## [1.0.98](https://github.com/alternun-development/alternun/compare/v1.0.97...v1.0.98) (2026-04-16)
+
 ## [1.0.97](https://github.com/alternun-development/alternun/compare/v1.0.96...v1.0.97) (2026-04-16)
 
 ### Bug Fixes
