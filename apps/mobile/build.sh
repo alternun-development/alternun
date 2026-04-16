@@ -6,12 +6,18 @@ validate_exported_auth_bundle() {
 }
 
 load_env_vars() {
-  # Load environment variables from .env file
+  # Load environment variables from .env file safely (avoiding shell interpretation)
   if [ -f .env ]; then
-    set -a
-    # shellcheck disable=SC1091
-    source .env
-    set +a
+    while IFS='=' read -r key value; do
+      # Skip empty lines and comments
+      [[ -z "$key" || "$key" =~ ^# ]] && continue
+      # Remove any leading/trailing whitespace from key
+      key=$(echo "$key" | xargs)
+      # Skip if key is empty after trimming
+      [[ -z "$key" ]] && continue
+      # Export the variable (value might have quotes which is fine)
+      export "$key=$value"
+    done < .env
   fi
 }
 
