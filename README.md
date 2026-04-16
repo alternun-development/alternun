@@ -102,7 +102,7 @@ Versioning is handled by `@edcalderon/versioning`. Never edit `version` fields i
 pnpm version:validate     # validate version sync across monorepo
 pnpm version:sync         # sync versions across workspace
 pnpm release              # build release on current branch
-pnpm release patch        # bump patch, regenerate changelog, tag, push
+pnpm release patch        # bump patch, regenerate changelog, stage-aware build, tag, push
 pnpm release -- --promote # promote current release (no version bump)
 pnpm version:check-secrets # scan staged files for secrets
 ```

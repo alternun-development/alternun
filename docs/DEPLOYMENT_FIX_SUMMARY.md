@@ -77,6 +77,16 @@ if [ -n "$detected_stage" ]; then
 - `apps/mobile/components/auth/AppAuthProvider.tsx` — Refactored `getBetterAuthUrl()` function
 - `apps/mobile/.env.local.example` — NEW: Local dev setup template
 
+### Fix 7: Release Patch Stage Pinning and Auth Env Precedence (2026-04-16)
+
+**Problem**: `pnpm release patch` could build the AIRS web bundle without an explicit stage context, which let deploy-style builds drift back to `packages/infra/.env` defaults. That reintroduced the Authentik social-login path on testnet even though the manual `STACK=dev` deploy was correct.
+
+**Solution**:
+
+- `scripts/release.mjs` now pins `STACK`, `SST_STAGE`, `EXPO_PUBLIC_STAGE`, and `EXPO_PUBLIC_ENV` to the release stage before it runs the build.
+- `apps/mobile/scripts/mobile-env.cjs` now keeps stage-specific mobile auth env ahead of infra defaults instead of letting `packages/infra/.env` override the testnet values.
+- Mobile env tests now cover both the stage-pinned release flow and the Better Auth auth-bundle validation.
+
 ---
 
 ## Files Changed

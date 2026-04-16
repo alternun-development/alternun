@@ -478,8 +478,31 @@ function stageReleaseFiles(dryRun) {
   run('git', ['add', '--', ...existingPaths], { dryRun });
 }
 
-function buildReleaseArtifacts(dryRun) {
-  run('pnpm', ['exec', 'turbo', 'run', 'build', '--force'], { dryRun });
+function resolveReleaseBuildStage(branchName) {
+  const normalized = branchName.toLowerCase();
+
+  if (normalized === 'master' || normalized === 'main') {
+    return 'production';
+  }
+
+  return 'dev';
+}
+
+function buildReleaseArtifacts(dryRun, env, buildStage) {
+  // Pin the release build stage so the mobile auth bundle resolves the correct
+  // stage-specific env instead of drifting back to infra defaults.
+  const buildEnv = {
+    ...env,
+    STACK: env.STACK ?? buildStage,
+    SST_STAGE: env.SST_STAGE ?? buildStage,
+    EXPO_PUBLIC_STAGE: env.EXPO_PUBLIC_STAGE ?? buildStage,
+    EXPO_PUBLIC_ENV: env.EXPO_PUBLIC_ENV ?? buildStage,
+  };
+
+  run('pnpm', ['exec', 'turbo', 'run', 'build', '--force'], {
+    dryRun,
+    env: buildEnv,
+  });
 }
 
 function createReleaseCommit(version, dryRun) {
@@ -719,10 +742,11 @@ function main() {
 
   const currentBranch = getCurrentBranch();
   const productionBranch = resolveProductionBranch();
+  const releaseBuildStage = resolveReleaseBuildStage(currentBranch);
   const version = performVersionChange(target, options, currentBranch);
 
   if (target) {
-    buildReleaseArtifacts(options.dryRun);
+    buildReleaseArtifacts(options.dryRun, process.env, releaseBuildStage);
   }
 
   if (target && options.createCommit) {
