@@ -78,6 +78,10 @@ For AIRS, the infra package provisions:
 - stage-aware redirects
 - release-update manifest and worker assets generated from the current package version
 
+Frontend deploys also depend on stage-scoped public auth config coming from AWS SSM Parameter Store. For the public AIRS bundles, `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` and `EXPO_PUBLIC_BETTER_AUTH_URL` must be set in SSM for each frontend stage, especially `dev`/testnet and `production`, so the exported bundle stays aligned with the owning API/auth runtime instead of relying on inferred defaults.
+
+For `EXPO_PUBLIC_BETTER_AUTH_URL`, keep the value browser-facing on the stage API origin root such as `https://testnet.api.alternun.co` or `https://api.alternun.co`; the client and proxy layers append `/auth` internally.
+
 ### Backend API delivery
 
 For the custom API, the infra package provisions:
