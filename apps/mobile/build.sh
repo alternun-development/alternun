@@ -5,6 +5,16 @@ validate_exported_auth_bundle() {
   node ./scripts/validate-exported-auth-bundle.cjs
 }
 
+load_env_vars() {
+  # Load environment variables from .env file
+  if [ -f .env ]; then
+    set -a
+    # shellcheck disable=SC1091
+    source .env
+    set +a
+  fi
+}
+
 disable_expo_dotenv_if_needed() {
   local should_disable
   should_disable=$(node ./scripts/mobile-env.cjs should-disable-dotenv)
@@ -17,6 +27,9 @@ disable_expo_dotenv_if_needed() {
 
 # Generate changelog data file for the app
 node ../../scripts/generate-changelog-data.mjs apps/mobile
+
+# Load environment variables from .env
+load_env_vars
 
 pnpm --filter @alternun/auth build
 pnpm --filter @alternun/update build
