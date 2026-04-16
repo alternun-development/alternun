@@ -1,7 +1,7 @@
 # Testnet Auth Provider Regression - Complete Fix
 
-**Status**: ✅ Redeployment in progress (started ~19:30 UTC)  
-**Expected completion**: ~19:45 UTC (15 minutes)
+**Status**: ✅ Complete  
+**Verified**: 2026-04-16
 
 ---
 
@@ -60,7 +60,7 @@ if [ -n "$detected_stage" ]; then
 - `bootstrap-ssm-parameters.sh` — seeds SSM params (run once per AWS account, with stage-specific overrides)
 - `build.sh` detects `CODEBUILD_BUILD_ID` and sources SSM script
 
-### Fix 6: Auth URL Single-Source-of-Truth (2026-04-17)
+### Fix 6: Auth URL Single-Source-of-Truth (2026-04-16)
 
 **Problem**: Local dev was failing with CORS because auth URLs were incomplete (missing `/auth` suffix).
 
@@ -108,10 +108,11 @@ if [ -n "$detected_stage" ]; then
    - Bootstrapped SSM parameters for dev & production
    - Bundle updated but auth URLs missing `/auth` suffix
 
-3. **Third Deploy** (2026-04-17): 🔄 IN PROGRESS
+3. **Third Deploy** (2026-04-16): ✅ Completed
    - Applied AppAuthProvider fix (single-source-of-truth URL pattern)
    - All auth URLs now include `/auth` suffix
-   - Expected: Both local dev AND testnet work correctly
+   - Testnet now serves Better Auth on `/auth/*`
+   - Follow-up validation work is tracked in issue `#100`
 
 ---
 

@@ -96,13 +96,6 @@ function normalizeComparableUrl(value: string | undefined | null): string | null
   }
 }
 
-function hasSocialProviderCredentials(config: BetterAuthDevConfig): boolean {
-  return Boolean(
-    (config.googleClientId && config.googleClientSecret) ||
-      (config.discordClientId && config.discordClientSecret)
-  );
-}
-
 function inferRequestOrigin(
   requestHeaders: BetterAuthRequestHeaders,
   fallbackBaseUrl: string
@@ -168,7 +161,7 @@ export function resolveBetterAuthBootstrapConfig(
     ...(publicBaseUrl ? { BETTER_AUTH_URL: publicBaseUrl } : {}),
   });
 
-  if (publicBaseUrl && hasSocialProviderCredentials(runtimeConfig)) {
+  if (publicBaseUrl) {
     return {
       mode: 'embedded',
       runtimeConfig,
