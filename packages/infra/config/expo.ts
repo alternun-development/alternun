@@ -131,6 +131,32 @@ function normalizeBetterAuthBaseUrl(value: string | undefined): string | undefin
   }
 }
 
+function normalizePublicUrl(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  return trimmed.replace(/\/+$/, '');
+}
+
+function normalizeAuthExecutionProvider(value: string | undefined): string | undefined {
+  const normalized = value?.trim().toLowerCase();
+  if (normalized === 'better-auth' || normalized === 'supabase') {
+    return normalized;
+  }
+
+  return undefined;
+}
+
+function buildAuthExchangeUrl(apiUrl: string | undefined): string | undefined {
+  if (!apiUrl) {
+    return undefined;
+  }
+
+  return `${apiUrl}/auth/exchange`;
+}
+
 function resolveExpoAppPath(dirname: string, appPath: string): string {
   const candidatePaths = [
     appPath,
@@ -243,21 +269,36 @@ export function resolveExpoConfig({
     parseBoolean(env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS, false) ||
     parseBoolean(env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS, false) ||
     Boolean(localConfig.expo?.publicEnv?.authentikAllowCustomProviderFlowSlugs);
+  const apiUrl = normalizePublicUrl(env.EXPO_PUBLIC_API_URL ?? localConfig.expo?.publicEnv?.apiUrl);
+  const explicitAuthExecutionProvider = normalizeAuthExecutionProvider(
+    env.AUTH_EXECUTION_PROVIDER ??
+      env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER ??
+      localConfig.expo?.publicEnv?.authExecutionProvider
+  );
   const authExchangeUrl =
-    env.AUTH_EXCHANGE_URL ??
-    env.EXPO_PUBLIC_AUTH_EXCHANGE_URL ??
-    localConfig.expo?.publicEnv?.authExchangeUrl;
+    normalizePublicUrl(
+      env.AUTH_EXCHANGE_URL ??
+        env.EXPO_PUBLIC_AUTH_EXCHANGE_URL ??
+        localConfig.expo?.publicEnv?.authExchangeUrl
+    ) ??
+    ((explicitAuthExecutionProvider === 'better-auth' ||
+      normalizeBetterAuthBaseUrl(
+        env.AUTH_BETTER_AUTH_URL ??
+          env.EXPO_PUBLIC_BETTER_AUTH_URL ??
+          localConfig.expo?.publicEnv?.betterAuthUrl
+      )) &&
+    apiUrl
+      ? buildAuthExchangeUrl(apiUrl)
+      : undefined);
   const betterAuthUrl = normalizeBetterAuthBaseUrl(
     env.AUTH_BETTER_AUTH_URL ??
       env.EXPO_PUBLIC_BETTER_AUTH_URL ??
       localConfig.expo?.publicEnv?.betterAuthUrl ??
-      authExchangeUrl
+      authExchangeUrl ??
+      (explicitAuthExecutionProvider === 'better-auth' ? apiUrl : undefined)
   );
   const authExecutionProvider =
-    env.AUTH_EXECUTION_PROVIDER ??
-    env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER ??
-    localConfig.expo?.publicEnv?.authExecutionProvider ??
-    (betterAuthUrl ? 'better-auth' : undefined);
+    explicitAuthExecutionProvider ?? (betterAuthUrl ? 'better-auth' : undefined);
 
   const publicEnv = {
     supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL ?? localConfig.expo?.publicEnv?.supabaseUrl,
@@ -280,7 +321,7 @@ export function resolveExpoConfig({
       (localConfig.expo?.publicEnv?.enableWalletOnlyAuth !== undefined
         ? String(localConfig.expo.publicEnv.enableWalletOnlyAuth)
         : undefined),
-    apiUrl: env.EXPO_PUBLIC_API_URL ?? localConfig.expo?.publicEnv?.apiUrl,
+    apiUrl,
     authExecutionProvider,
     authExchangeUrl,
     betterAuthUrl,

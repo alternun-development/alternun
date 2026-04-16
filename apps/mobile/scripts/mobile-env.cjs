@@ -60,6 +60,8 @@ function shouldUseInfraEnvFallback(env = process.env) {
   return [
     'SST_STAGE',
     'STACK',
+    'EXPO_PUBLIC_STAGE',
+    'EXPO_PUBLIC_ENV',
     'INFRA_ROOT_DOMAIN',
     'DOMAIN_ROOT',
     'INFRA_PIPELINE_PROFILE',
@@ -191,6 +193,24 @@ function resolveMobilePublicAuthEnv(env = process.env, options = {}) {
   };
 }
 
+function resolveMobileBuildAuthEnv(env = process.env, options = {}) {
+  const publicEnv = resolveMobilePublicAuthEnv(env, options);
+  const executionProvider = publicEnv.executionProvider || publicEnv.publicExecutionProvider || '';
+  const publicExecutionProvider =
+    publicEnv.publicExecutionProvider || publicEnv.executionProvider || '';
+  const betterAuthUrl = publicEnv.publicBetterAuthUrl || '';
+  const authExchangeUrl = publicEnv.publicAuthExchangeUrl || '';
+
+  return {
+    AUTH_EXECUTION_PROVIDER: executionProvider,
+    EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: publicExecutionProvider,
+    AUTH_BETTER_AUTH_URL: betterAuthUrl,
+    EXPO_PUBLIC_BETTER_AUTH_URL: betterAuthUrl,
+    AUTH_EXCHANGE_URL: authExchangeUrl,
+    EXPO_PUBLIC_AUTH_EXCHANGE_URL: authExchangeUrl,
+  };
+}
+
 function shouldDisableExpoDotenv(env = process.env, options = {}) {
   const shellHasAuthEnv = [
     'EXPO_PUBLIC_API_URL',
@@ -247,11 +267,22 @@ function main() {
     return;
   }
 
+  if (command === 'build-auth-env') {
+    const buildEnv = resolveMobileBuildAuthEnv();
+    process.stdout.write(
+      Object.entries(buildEnv)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('\n')
+    );
+    return;
+  }
+
   process.stdout.write(
     [
       'Usage:',
       '  node ./scripts/mobile-env.cjs auth-execution-provider',
       '  node ./scripts/mobile-env.cjs should-disable-dotenv',
+      '  node ./scripts/mobile-env.cjs build-auth-env',
     ].join('\n')
   );
 }
@@ -267,6 +298,7 @@ module.exports = {
   readEnvValue,
   resolveFileEnv,
   resolveMobileAuthExecutionProvider,
+  resolveMobileBuildAuthEnv,
   resolveMobilePublicAuthEnv,
   shouldUseInfraEnvFallback,
   shouldDisableExpoDotenv,

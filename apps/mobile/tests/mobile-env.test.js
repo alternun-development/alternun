@@ -7,6 +7,7 @@ const {
   loadDotEnvFile,
   resolveFileEnv,
   resolveMobileAuthExecutionProvider,
+  resolveMobileBuildAuthEnv,
   resolveMobilePublicAuthEnv,
   shouldDisableExpoDotenv,
 } = require('../scripts/mobile-env.cjs');
@@ -113,6 +114,46 @@ describe('mobile-env', () => {
       'https://testnet.api.alternun.co'
     );
     expect(shouldDisableExpoDotenv(env, { infraEnv })).toBe(true);
+  });
+
+  it('treats Expo stage markers as deploy-style builds for infra auth fallback', () => {
+    const env = { EXPO_PUBLIC_STAGE: 'dev' };
+    const fileEnv = {
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'http://localhost:8082/auth',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'http://localhost:8082/auth/exchange',
+    };
+    const infraEnv = {
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+    };
+
+    expect(resolveFileEnv(env, { fileEnv, infraEnv })).toEqual({
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+    });
+  });
+
+  it('build auth env seeds both public and non-public Better Auth keys from infra fallback', () => {
+    const env = { EXPO_PUBLIC_STAGE: 'dev' };
+    const fileEnv = {
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'http://localhost:8082/auth',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'http://localhost:8082/auth/exchange',
+      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+    };
+    const infraEnv = {
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+    };
+
+    expect(resolveMobileBuildAuthEnv(env, { fileEnv, infraEnv })).toEqual({
+      AUTH_EXECUTION_PROVIDER: 'better-auth',
+      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+      AUTH_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+    });
   });
 
   it('lets .env.local override .env values', () => {

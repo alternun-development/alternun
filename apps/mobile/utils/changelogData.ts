@@ -9,17 +9,21 @@
 /**
  * Raw CHANGELOG.md content embedded at build time.
  */
-export const CHANGELOG_TEXT = `## [1.0.83](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.83) (2026-04-16)
+export const CHANGELOG_TEXT = `## [1.0.84](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.84) (2026-04-16)
 
+### Bug Fixes
 
+- **repo,admin,api:** CHANGELOG, app, mobile-env ([1fa63e7](https://github.com/alternun-development/alternun/commit/1fa63e7e3f88c41fc27e08696dbe6ad6c02e212f))
 
+## [1.0.84](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.84) (2026-04-16)
 
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, mobile-env ([1fa63e7](https://github.com/alternun-development/alternun/commit/1fa63e7e3f88c41fc27e08696dbe6ad6c02e212f))
 
 ## [1.0.83](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.83) (2026-04-16)
 
-
-
-
+## [1.0.83](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.83) (2026-04-16)
 
 ## [1.0.82](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.82) (2026-04-16)
 
@@ -1431,4 +1435,4 @@ All notable changes to this project will be documented in this file.
 /**
  * Version extracted from package.json for display purposes.
  */
-export const APP_VERSION = '1.0.83';
+export const APP_VERSION = '1.0.84';

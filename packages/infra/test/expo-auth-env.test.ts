@@ -5,12 +5,17 @@ import test from 'node:test';
 
 const expoConfigPath = path.resolve('config/expo.ts');
 
-void test('expo config derives Better Auth env from the auth exchange url fallback', () => {
+void test('expo config derives Better Auth env from the API origin when better-auth is selected', () => {
   const source = fs.readFileSync(expoConfigPath, 'utf8');
 
-  assert.match(source, /const authExchangeUrl =/);
+  assert.match(source, /const apiUrl = normalizePublicUrl\(/);
+  assert.match(source, /const explicitAuthExecutionProvider = normalizeAuthExecutionProvider\(/);
+  assert.match(source, /function buildAuthExchangeUrl\(apiUrl: string \| undefined\)/);
+  assert.match(source, /explicitAuthExecutionProvider === 'better-auth'/);
+  assert.match(source, /buildAuthExchangeUrl\(apiUrl\)/);
   assert.match(source, /const betterAuthUrl = normalizeBetterAuthBaseUrl\(/);
-  assert.match(source, /const authExecutionProvider =/);
-  assert.match(source, /AUTH_EXCHANGE_URL/);
-  assert.match(source, /EXPO_PUBLIC_AUTH_EXCHANGE_URL/);
+  assert.match(
+    source,
+    /explicitAuthExecutionProvider \?\?[\s\S]*betterAuthUrl \? 'better-auth' : undefined/
+  );
 });
