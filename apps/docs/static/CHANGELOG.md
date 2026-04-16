@@ -1,3 +1,7 @@
+## [1.0.83](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.83) (2026-04-16)
+
+## [1.0.83](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.83) (2026-04-16)
+
 ## [1.0.82](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.82) (2026-04-16)
 
 ### Bug Fixes
