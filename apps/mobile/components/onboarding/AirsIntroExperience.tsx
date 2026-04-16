@@ -944,93 +944,93 @@ const AirsIntroExperience = forwardRef<
                 controlsIconOnly={videoControlsIconOnly}
                 onToggleMute={toggleMute}
                 onPlaybackChange={setIsVideoPlaying}
-              >
-                {videoUri && (!hasScrollActivatedPlayback || isInTopZone || !isVideoPlaying) ? (
-                  <>
-                    <Animated.View
-                      pointerEvents='none'
-                      style={[
-                        styles.mediaTagPillOverlay,
-                        {
-                          width: cardWidth,
-                          opacity: mediaTagOpacity,
-                          transform: [{ translateY: mediaTagPillFinalTranslateY }],
-                        },
-                      ]}
-                    >
-                      <View
-                        style={[
-                          styles.mediaTagPill,
-                          {
-                            width: mediaTagPillWidth,
-                            minHeight: mediaTagPillHeight,
-                            backgroundColor: mediaTagPillBackgroundColor,
-                            borderColor: mediaTagPillBorderColor,
-                            boxShadow: `0px 8px 18px 0px ${mediaTagPillShadowColor}`,
-                          },
-                        ]}
-                      >
-                        <ExpoImage
-                          source={mediaTagPillLogoSource}
-                          style={{
-                            width: mediaTagPillLogoWidth,
-                            height: mediaTagPillLogoHeight,
-                          }}
-                          contentFit='contain'
-                        />
-                      </View>
-                    </Animated.View>
+              />
 
-                    <Animated.View
-                      pointerEvents='none'
+              {videoUri && (!hasScrollActivatedPlayback || isInTopZone || !isVideoPlaying) ? (
+                <>
+                  <Animated.View
+                    pointerEvents='none'
+                    style={[
+                      styles.mediaTagPillOverlay,
+                      {
+                        width: cardWidth,
+                        opacity: mediaTagOpacity,
+                        transform: [{ translateY: mediaTagPillFinalTranslateY }],
+                      },
+                    ]}
+                  >
+                    <View
                       style={[
-                        styles.mediaTagTitleOverlay,
+                        styles.mediaTagPill,
                         {
-                          width: cardWidth,
-                          opacity: mediaTagOpacity,
-                          transform: [{ translateY: mediaTagTitleFinalTranslateY }],
+                          width: mediaTagPillWidth,
+                          minHeight: mediaTagPillHeight,
+                          backgroundColor: mediaTagPillBackgroundColor,
+                          borderColor: mediaTagPillBorderColor,
+                          boxShadow: `0px 8px 18px 0px ${mediaTagPillShadowColor}`,
                         },
                       ]}
                     >
-                      <Text
-                        style={[
-                          styles.mediaTagTitle,
-                          {
-                            fontSize: mediaTagTitleSize,
-                            lineHeight: mediaTagTitleLineHeight,
-                          },
-                        ]}
-                      >
-                        {t('landing.media.title')}
-                      </Text>
-                    </Animated.View>
+                      <ExpoImage
+                        source={mediaTagPillLogoSource}
+                        style={{
+                          width: mediaTagPillLogoWidth,
+                          height: mediaTagPillLogoHeight,
+                        }}
+                        contentFit='contain'
+                      />
+                    </View>
+                  </Animated.View>
 
-                    <Animated.View
-                      pointerEvents='none'
+                  <Animated.View
+                    pointerEvents='none'
+                    style={[
+                      styles.mediaTagTitleOverlay,
+                      {
+                        width: cardWidth,
+                        opacity: mediaTagOpacity,
+                        transform: [{ translateY: mediaTagTitleFinalTranslateY }],
+                      },
+                    ]}
+                  >
+                    <Text
                       style={[
-                        styles.mediaTagSubtitleOverlay,
+                        styles.mediaTagTitle,
                         {
-                          width: cardWidth,
-                          opacity: mediaTagOpacity,
-                          transform: [{ translateY: mediaTagSubtitleFinalTranslateY }],
+                          fontSize: mediaTagTitleSize,
+                          lineHeight: mediaTagTitleLineHeight,
                         },
                       ]}
                     >
-                      <Text
-                        style={[
-                          styles.mediaTagSubtitle,
-                          {
-                            fontSize: mediaTagSubtitleSize,
-                            lineHeight: mediaTagSubtitleLineHeight,
-                          },
-                        ]}
-                      >
-                        {t('landing.media.subtitle')}
-                      </Text>
-                    </Animated.View>
-                  </>
-                ) : null}
-              </AirsIntroVideoCard>
+                      {t('landing.media.title')}
+                    </Text>
+                  </Animated.View>
+
+                  <Animated.View
+                    pointerEvents='none'
+                    style={[
+                      styles.mediaTagSubtitleOverlay,
+                      {
+                        width: cardWidth,
+                        opacity: mediaTagOpacity,
+                        transform: [{ translateY: mediaTagSubtitleFinalTranslateY }],
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.mediaTagSubtitle,
+                        {
+                          fontSize: mediaTagSubtitleSize,
+                          lineHeight: mediaTagSubtitleLineHeight,
+                        },
+                      ]}
+                    >
+                      {t('landing.media.subtitle')}
+                    </Text>
+                  </Animated.View>
+                </>
+              ) : null}
             </Animated.View>
 
             <Animated.View
