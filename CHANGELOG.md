@@ -1,3 +1,11 @@
+## [1.0.90](https://github.com/alternun-development/alternun/compare/v1.0.89...v1.0.90) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** docs: add EXPO_PUBLIC_BETTER_AUTH_URL and EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER to SSM parameter requirements
+
+## [1.0.90](https://github.com/alternun-development/alternun/compare/v1.0.89...v1.0.90) (2026-04-16)
+
 ## [1.0.89](https://github.com/alternun-development/alternun/compare/v1.0.88...v1.0.89) (2026-04-16)
 
 ### Bug Fixes
