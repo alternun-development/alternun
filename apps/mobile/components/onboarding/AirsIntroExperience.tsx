@@ -1358,8 +1358,8 @@ const styles = createTypographyStyles({
     width: '100%',
   },
   mediaTagSubtitle: {
-    fontFamily: `${SCULPIN_FONT_FAMILY}-Black`,
     color: 'rgba(245,250,255,0.95)',
+    fontWeight: '900',
     textAlign: 'center',
     textShadowColor: 'rgba(0,0,0,0.35)',
     textShadowOffset: { width: 0, height: 2 },
@@ -1591,6 +1591,7 @@ const styles = createTypographyStyles({
     gap: 4,
   },
   headerNavLinkText: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Medium`,
     fontSize: 15,
     fontWeight: '500',
     letterSpacing: 0.1,
