@@ -1,3 +1,15 @@
+## [1.0.84](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.84) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, mobile-env ([1fa63e7](https://github.com/alternun-development/alternun/commit/1fa63e7e3f88c41fc27e08696dbe6ad6c02e212f))
+
+## [1.0.84](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.84) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, mobile-env ([1fa63e7](https://github.com/alternun-development/alternun/commit/1fa63e7e3f88c41fc27e08696dbe6ad6c02e212f))
+
 ## [1.0.83](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.83) (2026-04-16)
 
 ## [1.0.83](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.83) (2026-04-16)

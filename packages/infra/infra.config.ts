@@ -692,7 +692,9 @@ export function createInfrastructure() {
   if (enableExpoSiteForStage) {
     const assetBucketName = assetBucketNames[expoDeploymentStage];
     const assetBaseUrl = createAssetBaseUrl(assetBucketName);
-    const expoAuthExecutionProvider = expoPublicAuthExecutionProvider ?? 'supabase';
+    const expoAuthExecutionProvider =
+      expoPublicAuthExecutionProvider ??
+      (expoPublicBetterAuthUrl ?? expoPublicAuthExchangeUrl ? 'better-auth' : 'supabase');
     const introVideoAssets = {
       en: buildPublicAssetFile(
         resolvedExpoAppPath,
