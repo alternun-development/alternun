@@ -7,6 +7,7 @@ validate_exported_auth_bundle() {
 
 load_env_file() {
   local env_file=$1
+  local allow_override=${2:-false}
 
   [ -f "${env_file}" ] || return 0
 
@@ -17,8 +18,11 @@ load_env_file() {
     key=$(echo "$key" | xargs)
     # Skip if key is empty after trimming
     [[ -z "$key" ]] && continue
-    # Keep deploy-provided env authoritative; file env is only a fallback.
-    [[ -n "${!key+x}" ]] && continue
+    # Keep deploy-provided env authoritative (from SST); file env is only a fallback.
+    # But allow stage-specific files to override .env values.
+    if [ "$allow_override" = "false" ]; then
+      [[ -n "${!key+x}" ]] && continue
+    fi
     # Export the variable (value might have quotes which is fine)
     export "$key=$value"
   done < "${env_file}"
@@ -33,7 +37,7 @@ seed_build_auth_env() {
 
 load_env_vars() {
   # Mirror Expo's local override order while keeping this script in control.
-  load_env_file .env
+  load_env_file .env false
 
   # Load stage-specific environment file if deploying
   # Priority: .env.testnet/.env.development/.env.production → .env.local → shell env
@@ -48,12 +52,13 @@ load_env_vars() {
         ;;
     esac
     if [ -n "$stage_file" ] && [ -f "$stage_file" ]; then
-      load_env_file "$stage_file"
+      # Stage-specific files can override .env values (allow_override=true)
+      load_env_file "$stage_file" true
     fi
   fi
 
-  # Local overrides (highest priority)
-  load_env_file .env.local
+  # Local overrides (highest priority, can override everything)
+  load_env_file .env.local true
 }
 
 disable_expo_dotenv_if_needed() {
