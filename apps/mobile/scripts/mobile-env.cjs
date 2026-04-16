@@ -41,10 +41,29 @@ function loadDotEnvFile(filePath, target = {}) {
   return target;
 }
 
-function loadMobileEnv(mobileRoot = path.resolve(__dirname, '..')) {
+function loadMobileEnv(mobileRoot = path.resolve(__dirname, '..'), envVars = process.env) {
   const env = {};
 
   loadDotEnvFile(path.join(mobileRoot, '.env'), env);
+
+  // Load stage-specific environment file if deploying
+  // Priority: .env.testnet/.env.development/.env.production → .env.local → shell env
+  const stage = envVars.SST_STAGE || envVars.STACK;
+  if (stage) {
+    const stageNormalized = stage.toLowerCase();
+    let stageFile = '';
+
+    if (stageNormalized === 'dev' || stageNormalized === 'api-dev' || stageNormalized.includes('testnet')) {
+      stageFile = '.env.testnet';
+    } else if (stageNormalized === 'prod' || stageNormalized === 'api-prod' || stageNormalized === 'production' || stageNormalized.includes('production')) {
+      stageFile = '.env.production';
+    }
+
+    if (stageFile) {
+      loadDotEnvFile(path.join(mobileRoot, stageFile), env);
+    }
+  }
+
   loadDotEnvFile(path.join(mobileRoot, '.env.local'), env);
 
   return env;
@@ -73,7 +92,7 @@ function shouldUseInfraEnvFallback(env = process.env) {
 }
 
 function resolveFileEnv(env = process.env, options = {}) {
-  const fileEnv = options.fileEnv ?? loadMobileEnv(options.mobileRoot);
+  const fileEnv = options.fileEnv ?? loadMobileEnv(options.mobileRoot, env);
   const useInfraEnvFallback =
     options.useInfraEnvFallback ?? shouldUseInfraEnvFallback(env);
 
