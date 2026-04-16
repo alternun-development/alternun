@@ -1,5 +1,6 @@
 export { AuthProvider } from '@edcalderon/auth';
 export { AuthentikIssuerProvider, } from './providers/authentik/AuthentikIssuerProvider.js';
+export { BetterAuthExecutionProvider, } from './providers/better-auth/BetterAuthExecutionProvider.js';
 export { SupabaseExecutionProvider, } from './providers/supabase-legacy/SupabaseExecutionProvider.js';
 export { SupabaseLegacyIssuerProvider, } from './providers/supabase-legacy/SupabaseLegacyIssuerProvider.js';
 export { SupabaseIdentityRepository, } from './providers/supabase-legacy/SupabaseIdentityRepository.js';
@@ -7,6 +8,8 @@ export { SupabaseEmailProvider } from './providers/email/SupabaseEmailProvider.j
 export { PostmarkEmailProvider } from './providers/email/PostmarkEmailProvider.js';
 export { SesEmailProvider } from './providers/email/SesEmailProvider.js';
 export { resolveAuthRuntimeConfig, resolveAuthProviderSelection } from './runtime/config.js';
+export { createAuthFacade } from './facade/createAuthFacade.js';
+export { AlternunAuthFacade } from './facade/AlternunAuthFacade.js';
 export { upsertOidcUser as upsertCompatOidcUser } from './compat/upsertOidcUser.js';
 export { createAlternunAuthentikPreset, } from './mobile/authentikPreset.js';
 export { buildAuthentikRelayPath, buildAuthentikRelayRoute, getAuthentikLoginEntryMode, getAuthentikSocialLoginMode, normalizeAuthentikLoginEntryMode, normalizeAuthentikSocialLoginMode, parseAuthentikProviderFlowSlugs, resolveAuthentikLoginStrategy, resolveAuthentikProviderFlowSlugs, shouldUseAuthentikRelayEntry, } from './mobile/authEntry.js';
