@@ -202,7 +202,7 @@ phases:
           *) _ssm_stage="dev" ;;
         esac
         echo "Resolving Authentik OIDC config from SSM (stage key: ${_ssm_stage})"
-        for _var in EXPO_PUBLIC_AUTHENTIK_ISSUER EXPO_PUBLIC_AUTHENTIK_CLIENT_ID EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI; do
+        for _var in EXPO_PUBLIC_AUTHENTIK_ISSUER EXPO_PUBLIC_AUTHENTIK_CLIENT_ID EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI EXPO_PUBLIC_BETTER_AUTH_URL EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER; do
           _ssm_path="/alternun/ci/${_ssm_stage}/expo-public/${_var}"
           _ssm_stderr=$(mktemp)
           _ssm_value=$(aws ssm get-parameter \
