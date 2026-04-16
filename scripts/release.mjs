@@ -380,6 +380,21 @@ function ensureCleanWorkingTree(options) {
   }
 }
 
+function validateRootDocumentation() {
+  // Guard: Ensure non-critical .md files are archived in docs/
+  const result = spawnSync('bash', ['scripts/validate-root-docs.sh', 'false'], {
+    cwd: REPO_ROOT,
+    stdio: 'inherit',
+  });
+
+  if ((result.status ?? 1) !== 0) {
+    throw new Error(
+      'Root documentation structure validation failed. ' +
+      'Move non-critical .md files to docs/ before releasing.'
+    );
+  }
+}
+
 function resolveProductionBranch() {
   const refs = run('git', ['for-each-ref', '--format=%(refname:short)', 'refs/heads'], {
     capture: true,
@@ -683,6 +698,7 @@ function main() {
   }
 
   ensureCleanWorkingTree(options);
+  validateRootDocumentation();
 
   const currentBranch = getCurrentBranch();
   const productionBranch = resolveProductionBranch();
