@@ -1,3 +1,21 @@
+## [1.0.109](https://github.com/alternun-development/alternun/compare/v1.0.108...v1.0.109) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): validate-aws-account
+- **repo:** chore(scripts): setup-aws-account
+- **repo:** fix(repo,infra,scripts): pre-commit, CLAUDE, bootstrap-ssm-parameters, release
+
+### Bug Fixes
+
+- **repo,infra,scripts:** pre-commit, CLAUDE, bootstrap-ssm-parameters, release ([989a409](https://github.com/alternun-development/alternun/commit/989a4097cf6a0ba1d74fc55cf738270d7c88d204))
+
+## [1.0.109](https://github.com/alternun-development/alternun/compare/v1.0.108...v1.0.109) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,infra,scripts:** pre-commit, CLAUDE, bootstrap-ssm-parameters, release ([989a409](https://github.com/alternun-development/alternun/commit/989a4097cf6a0ba1d74fc55cf738270d7c88d204))
+
 ## [1.0.108](https://github.com/alternun-development/alternun/compare/v1.0.107...v1.0.108) (2026-04-16)
 
 ### Bug Fixes
