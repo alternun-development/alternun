@@ -226,6 +226,8 @@ For deployed AIRS web builds, the intended default is:
 `EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER` is a legacy alias for the Authentik fallback path only. When `AUTH_EXECUTION_PROVIDER=better-auth`, the social login code resolves the Google branch regardless of that alias so the Better Auth migration path cannot be hijacked by a stale `keycloak` value.
 If the Better Auth URL is present but the execution flag is missing, the runtime promotes to `better-auth` automatically, which keeps the rollout aligned with the deployed URL config instead of a stale local alias.
 
+For deployed frontend bundles, do not rely on repo-local env files or that runtime promotion as the deployment contract. `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` and `EXPO_PUBLIC_BETTER_AUTH_URL` must be present in AWS SSM Parameter Store for each frontend stage, especially `dev`/testnet and `production`, so CodeBuild exports the intended browser config into the AIRS bundle.
+
 ## Redirect URI Contract
 
 For web, the effective callback target is:
@@ -323,11 +325,15 @@ When debugging, verify the live browser bundle and the live Authentik source con
 | `EXPO_PUBLIC_AUTHENTIK_ISSUER`                           | Authentik issuer URL                             | `https://testnet.sso.alternun.co/application/o/alternun-mobile/`               |
 | `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID`                        | Public OIDC client ID                            | `alternun-mobile`                                                              |
 | `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI`                     | Optional explicit callback URL                   | usually blank on deployed web; derived as `/auth/callback` from browser origin |
+| `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER`                    | Explicit web execution provider                  | set per deployed stage; `better-auth` on the current testnet rollout           |
+| `EXPO_PUBLIC_BETTER_AUTH_URL`                            | Browser-facing Better Auth base URL              | `https://testnet.api.alternun.co` or `https://api.alternun.co`                 |
 | `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE`                 | `source` or `relay`                              | `source`                                                                       |
 | `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`                | `authentik`, `hybrid`, or `supabase`             | `authentik`                                                                    |
 | `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS`              | Optional custom provider-flow JSON               | empty unless explicitly needed                                                 |
 | `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS` | Explicit opt-in for custom provider-flow slugs   | `false`                                                                        |
 | `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS`       | Infra-side opt-in for custom provider-flow slugs | `false`                                                                        |
+
+For deployed AIRS web, the two Better Auth rows above should come from AWS SSM Parameter Store instead of only local `.env` files. Keep them explicitly populated for `dev`/testnet and `production` so the frontend bundle cannot drift between auth execution modes during deploys.
 
 ## Supabase Custom OIDC Checks
 
