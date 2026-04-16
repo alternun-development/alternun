@@ -1,3 +1,19 @@
+## [1.0.97](https://github.com/alternun-development/alternun/compare/v1.0.96...v1.0.97) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(auth): use better-auth for Google social login on testnet dev stage
+
+### Bug Fixes
+
+- **auth:** use better-auth for Google social login on testnet dev stage ([b9fb0cd](https://github.com/alternun-development/alternun/commit/b9fb0cdbf1468ffc8144fee0c56444201cd3a9c7))
+
+## [1.0.97](https://github.com/alternun-development/alternun/compare/v1.0.96...v1.0.97) (2026-04-16)
+
+### Bug Fixes
+
+- **auth:** use better-auth for Google social login on testnet dev stage ([b9fb0cd](https://github.com/alternun-development/alternun/commit/b9fb0cdbf1468ffc8144fee0c56444201cd3a9c7))
+
 ## [1.0.96](https://github.com/alternun-development/alternun/compare/v1.0.95...v1.0.96) (2026-04-16)
 
 ### Bug Fixes
