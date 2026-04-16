@@ -34,6 +34,25 @@ seed_build_auth_env() {
 load_env_vars() {
   # Mirror Expo's local override order while keeping this script in control.
   load_env_file .env
+
+  # Load stage-specific environment file if deploying
+  # Priority: .env.testnet/.env.development/.env.production → .env.local → shell env
+  if [ -n "${SST_STAGE:-}" ] || [ -n "${STACK:-}" ]; then
+    local stage_file=""
+    case "${SST_STAGE:-${STACK:-}}" in
+      dev|api-dev|*testnet*)
+        stage_file=".env.testnet"
+        ;;
+      prod|api-prod|production|*production*)
+        stage_file=".env.production"
+        ;;
+    esac
+    if [ -n "$stage_file" ] && [ -f "$stage_file" ]; then
+      load_env_file "$stage_file"
+    fi
+  fi
+
+  # Local overrides (highest priority)
   load_env_file .env.local
 }
 
