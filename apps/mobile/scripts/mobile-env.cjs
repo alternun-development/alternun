@@ -51,17 +51,70 @@ function loadMobileEnv() {
   return env;
 }
 
+function readEnvValue(env, fileEnv, keys, fallback) {
+  for (const key of keys) {
+    const shellValue = env[key];
+    if (typeof shellValue === 'string' && shellValue.trim()) {
+      return shellValue.trim();
+    }
+
+    const fileValue = fileEnv[key];
+    if (typeof fileValue === 'string' && fileValue.trim()) {
+      return fileValue.trim();
+    }
+  }
+
+  return fallback;
+}
+
 function resolveMobileAuthExecutionProvider(env = process.env) {
   const fileEnv = loadMobileEnv();
-  const value =
-    env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER ??
-    env.AUTH_EXECUTION_PROVIDER ??
-    fileEnv.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER ??
-    fileEnv.AUTH_EXECUTION_PROVIDER ??
-    'supabase';
+  const value = readEnvValue(
+    env,
+    fileEnv,
+    ['EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER', 'AUTH_EXECUTION_PROVIDER'],
+    ''
+  );
 
   const normalized = String(value).trim().toLowerCase();
-  return normalized.length > 0 ? normalized : 'supabase';
+  if (normalized.length > 0) {
+    return normalized;
+  }
+
+  const betterAuthUrl = readEnvValue(
+    env,
+    fileEnv,
+    ['EXPO_PUBLIC_BETTER_AUTH_URL', 'AUTH_BETTER_AUTH_URL'],
+    ''
+  );
+
+  return betterAuthUrl ? 'better-auth' : 'supabase';
+}
+
+function resolveMobilePublicAuthEnv(env = process.env) {
+  const fileEnv = loadMobileEnv();
+
+  return {
+    executionProvider: resolveMobileAuthExecutionProvider(env),
+    publicExecutionProvider: readEnvValue(
+      env,
+      fileEnv,
+      ['EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER', 'AUTH_EXECUTION_PROVIDER'],
+      ''
+    ),
+    publicBetterAuthUrl: readEnvValue(
+      env,
+      fileEnv,
+      ['EXPO_PUBLIC_BETTER_AUTH_URL', 'AUTH_BETTER_AUTH_URL'],
+      ''
+    ),
+    publicAuthExchangeUrl: readEnvValue(
+      env,
+      fileEnv,
+      ['EXPO_PUBLIC_AUTH_EXCHANGE_URL', 'AUTH_EXCHANGE_URL'],
+      ''
+    ),
+  };
 }
 
 function main() {
@@ -87,5 +140,7 @@ if (require.main === module) {
 module.exports = {
   loadDotEnvFile,
   loadMobileEnv,
+  readEnvValue,
   resolveMobileAuthExecutionProvider,
+  resolveMobilePublicAuthEnv,
 };
