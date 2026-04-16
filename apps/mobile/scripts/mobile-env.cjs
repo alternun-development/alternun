@@ -135,18 +135,18 @@ function normalizeBetterAuthBaseUrl(rawValue) {
 
 function resolveMobileBetterAuthUrl(env = process.env, options = {}) {
   const fileEnv = resolveFileEnv(env, options);
+  const explicitBetterAuthUrl = readEnvValue(
+    env,
+    fileEnv,
+    ['EXPO_PUBLIC_BETTER_AUTH_URL', 'AUTH_BETTER_AUTH_URL'],
+    ''
+  );
+  if (explicitBetterAuthUrl) {
+    return explicitBetterAuthUrl;
+  }
+
   return normalizeBetterAuthBaseUrl(
-    readEnvValue(
-      env,
-      fileEnv,
-      [
-        'EXPO_PUBLIC_BETTER_AUTH_URL',
-        'AUTH_BETTER_AUTH_URL',
-        'EXPO_PUBLIC_AUTH_EXCHANGE_URL',
-        'AUTH_EXCHANGE_URL',
-      ],
-      ''
-    )
+    readEnvValue(env, fileEnv, ['EXPO_PUBLIC_AUTH_EXCHANGE_URL', 'AUTH_EXCHANGE_URL'], '')
   );
 }
 
