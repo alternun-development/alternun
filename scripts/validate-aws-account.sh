@@ -15,6 +15,18 @@ ALTERNUN_ACCOUNT_ID="124120088516"
 WRONG_ACCOUNT_ID="058264267235"
 ENFORCE="${1:-check}"
 
+# Auto-load credentials from .env if they exist and not already set
+if [ -f ".env" ] && [ -z "${AWS_ACCESS_KEY_ID:-}" ]; then
+  AWS_KEY_ID=$(grep "^AWS_KEY_ID=" .env | cut -d= -f2- | tr -d '\n')
+  AWS_SECRET_ACCESS_KEY=$(grep "^AWS_SECRET_ACCESS_KEY=" .env | cut -d= -f2- | tr -d '\n')
+
+  if [ -n "$AWS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+    export AWS_ACCESS_KEY_ID="$AWS_KEY_ID"
+    export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
+    export AWS_REGION="${AWS_REGION:-us-east-1}"
+  fi
+fi
+
 # Try to get caller identity; fail gracefully if not authenticated
 get_current_account() {
   aws sts get-caller-identity --query 'Account' --output text 2>/dev/null || echo "unknown"
