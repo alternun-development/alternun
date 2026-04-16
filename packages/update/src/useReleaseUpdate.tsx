@@ -19,7 +19,17 @@ const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0'])
 const DEFAULT_STORAGE_KEY = 'alternun.release.dismissed-version';
 const DEFAULT_MANIFEST_URL = `/${RELEASE_MANIFEST_FILENAME}`;
 const DEFAULT_WORKER_URL = '/alternun-release-worker.js';
-const DEFAULT_POLL_INTERVAL_MS = 5 * 60 * 1000;
+const DEFAULT_POLL_INTERVAL_MS = (() => {
+  const envInterval =
+    typeof process !== 'undefined' ? process.env.EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS : undefined;
+  if (envInterval) {
+    const parsed = parseInt(envInterval, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+  return 5 * 60 * 1000; // 5 minutes default for production
+})();
 const dismissedVersionsInMemory = new Map<string, string>();
 
 export type ReleaseUpdateMode = 'auto' | 'on' | 'off';
