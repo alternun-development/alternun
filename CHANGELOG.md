@@ -1,3 +1,11 @@
+## [1.0.115](https://github.com/alternun-development/alternun/compare/v1.0.114...v1.0.115) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** test(api,repo): better-auth-runtime, better-auth-runtime.test, DEPLOYMENT_FIX_SUMMARY, alternun-better-auth-testnet-execution-plan
+
+## [1.0.115](https://github.com/alternun-development/alternun/compare/v1.0.114...v1.0.115) (2026-04-16)
+
 ## [1.0.114](https://github.com/alternun-development/alternun/compare/v1.0.113...v1.0.114) (2026-04-16)
 
 ### Bug Fixes
