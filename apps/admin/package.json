@@ -1,6 +1,6 @@
 {
   "name": "@alternun/admin",
-  "version": "1.0.79",
+  "version": "1.0.80",
   "private": true,
   "type": "module",
   "scripts": {
