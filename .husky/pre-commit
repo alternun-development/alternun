@@ -1,6 +1,9 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Guard: ensure correct AWS account (info only, not enforced in pre-commit)
+bash scripts/validate-aws-account.sh check
+
 # Guard: prevent non-critical .md files in root (keep docs/ organized)
 bash scripts/validate-root-docs.sh true
 
