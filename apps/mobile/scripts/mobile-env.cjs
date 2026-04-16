@@ -190,6 +190,24 @@ function resolveMobilePublicAuthEnv(env = process.env, options = {}) {
       ['EXPO_PUBLIC_AUTH_EXCHANGE_URL', 'AUTH_EXCHANGE_URL'],
       ''
     ),
+    authentikSocialLoginMode: readEnvValue(
+      env,
+      fileEnv,
+      ['EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE'],
+      ''
+    ),
+    authentikIssuer: readEnvValue(
+      env,
+      fileEnv,
+      ['EXPO_PUBLIC_AUTHENTIK_ISSUER'],
+      ''
+    ),
+    authentikClientId: readEnvValue(
+      env,
+      fileEnv,
+      ['EXPO_PUBLIC_AUTHENTIK_CLIENT_ID'],
+      ''
+    ),
   };
 }
 
@@ -200,8 +218,11 @@ function resolveMobileBuildAuthEnv(env = process.env, options = {}) {
     publicEnv.publicExecutionProvider || publicEnv.executionProvider || '';
   const betterAuthUrl = publicEnv.publicBetterAuthUrl || '';
   const authExchangeUrl = publicEnv.publicAuthExchangeUrl || '';
+  const authentikSocialLoginMode = publicEnv.authentikSocialLoginMode || '';
+  const authentikIssuer = publicEnv.authentikIssuer || '';
+  const authentikClientId = publicEnv.authentikClientId || '';
 
-  return {
+  const buildEnv = {
     AUTH_EXECUTION_PROVIDER: executionProvider,
     EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: publicExecutionProvider,
     AUTH_BETTER_AUTH_URL: betterAuthUrl,
@@ -209,6 +230,19 @@ function resolveMobileBuildAuthEnv(env = process.env, options = {}) {
     AUTH_EXCHANGE_URL: authExchangeUrl,
     EXPO_PUBLIC_AUTH_EXCHANGE_URL: authExchangeUrl,
   };
+
+  // Only include Authentik env vars if they're set (prevents empty values from overriding .env)
+  if (authentikSocialLoginMode) {
+    buildEnv.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE = authentikSocialLoginMode;
+  }
+  if (authentikIssuer) {
+    buildEnv.EXPO_PUBLIC_AUTHENTIK_ISSUER = authentikIssuer;
+  }
+  if (authentikClientId) {
+    buildEnv.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID = authentikClientId;
+  }
+
+  return buildEnv;
 }
 
 function shouldDisableExpoDotenv(env = process.env, options = {}) {
