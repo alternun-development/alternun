@@ -92,7 +92,9 @@ function readEnvValue(env, fileEnv, keys, fallback) {
     if (typeof shellValue === 'string' && shellValue.trim()) {
       return shellValue.trim();
     }
+  }
 
+  for (const key of keys) {
     const fileValue = fileEnv[key];
     if (typeof fileValue === 'string' && fileValue.trim()) {
       return fileValue.trim();
@@ -100,6 +102,52 @@ function readEnvValue(env, fileEnv, keys, fallback) {
   }
 
   return fallback;
+}
+
+function normalizeBetterAuthBaseUrl(rawValue) {
+  if (typeof rawValue !== 'string') {
+    return '';
+  }
+
+  const trimmed = rawValue.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  try {
+    const url = new URL(
+      trimmed
+        .replace(/\/+$/, '')
+        .replace(/\/auth\/exchange$/, '')
+        .replace(/\/auth$/, '')
+    );
+    const pathname = url.pathname === '/' ? '' : url.pathname;
+    return `${url.origin}${pathname}`.replace(/\/+$/, '');
+  } catch {
+    return trimmed
+      .replace(/\?.*$/, '')
+      .replace(/#.*$/, '')
+      .replace(/\/+$/, '')
+      .replace(/\/auth\/exchange$/, '')
+      .replace(/\/auth$/, '');
+  }
+}
+
+function resolveMobileBetterAuthUrl(env = process.env, options = {}) {
+  const fileEnv = resolveFileEnv(env, options);
+  return normalizeBetterAuthBaseUrl(
+    readEnvValue(
+      env,
+      fileEnv,
+      [
+        'EXPO_PUBLIC_BETTER_AUTH_URL',
+        'AUTH_BETTER_AUTH_URL',
+        'EXPO_PUBLIC_AUTH_EXCHANGE_URL',
+        'AUTH_EXCHANGE_URL',
+      ],
+      ''
+    )
+  );
 }
 
 function resolveMobileAuthExecutionProvider(env = process.env, options = {}) {
@@ -116,18 +164,14 @@ function resolveMobileAuthExecutionProvider(env = process.env, options = {}) {
     return normalized;
   }
 
-  const betterAuthUrl = readEnvValue(
-    env,
-    fileEnv,
-    ['EXPO_PUBLIC_BETTER_AUTH_URL', 'AUTH_BETTER_AUTH_URL'],
-    ''
-  );
+  const betterAuthUrl = resolveMobileBetterAuthUrl(env, options);
 
   return betterAuthUrl ? 'better-auth' : 'supabase';
 }
 
 function resolveMobilePublicAuthEnv(env = process.env, options = {}) {
   const fileEnv = resolveFileEnv(env, options);
+  const publicBetterAuthUrl = resolveMobileBetterAuthUrl(env, options);
 
   return {
     executionProvider: resolveMobileAuthExecutionProvider(env, options),
@@ -137,12 +181,7 @@ function resolveMobilePublicAuthEnv(env = process.env, options = {}) {
       ['EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER', 'AUTH_EXECUTION_PROVIDER'],
       ''
     ),
-    publicBetterAuthUrl: readEnvValue(
-      env,
-      fileEnv,
-      ['EXPO_PUBLIC_BETTER_AUTH_URL', 'AUTH_BETTER_AUTH_URL'],
-      ''
-    ),
+    publicBetterAuthUrl,
     publicAuthExchangeUrl: readEnvValue(
       env,
       fileEnv,

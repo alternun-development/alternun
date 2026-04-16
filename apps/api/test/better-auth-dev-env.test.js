@@ -39,6 +39,17 @@ test('resolveBetterAuthDevConfig falls back to the public Better Auth url and de
   assert.equal(config.trustedOrigins.includes('https://testnet.airs.alternun.co'), true);
 });
 
+test('resolveBetterAuthDevConfig falls back to the auth exchange url when the Better Auth url is missing', () => {
+  const config = resolveBetterAuthDevConfig({
+    AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+    AUTHENTIK_JWT_SIGNING_KEY: 'issuer-signing-key',
+  });
+
+  assert.equal(config.baseURL, 'https://testnet.api.alternun.co');
+  assert.equal(config.secret.length >= 32, true);
+  assert.equal(config.trustedOrigins.includes('https://testnet.airs.alternun.co'), true);
+});
+
 test('resolveBetterAuthDevConfig parses Discord credentials when present', () => {
   const config = resolveBetterAuthDevConfig({
     DISCORD_AUTH_CLIENT_ID: 'example-discord-client',

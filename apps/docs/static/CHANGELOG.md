@@ -1,3 +1,29 @@
+## [1.0.82](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.82) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, build ([6039e90](https://github.com/alternun-development/alternun/commit/6039e9064b183b2969e95183331ff427f3b632d6))
+- **repo,admin,api:** CHANGELOG, app, build, changelogData ([55ac4ed](https://github.com/alternun-development/alternun/commit/55ac4ed50fafb957613a5300f508a77a23b14d99))
+
+## [1.0.82](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.82) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, build ([6039e90](https://github.com/alternun-development/alternun/commit/6039e9064b183b2969e95183331ff427f3b632d6))
+- **repo,admin,api:** CHANGELOG, app, build, changelogData ([55ac4ed](https://github.com/alternun-development/alternun/commit/55ac4ed50fafb957613a5300f508a77a23b14d99))
+
+## [1.0.81](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.81) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, build ([6039e90](https://github.com/alternun-development/alternun/commit/6039e9064b183b2969e95183331ff427f3b632d6))
+
+## [1.0.81](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.81) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, build ([6039e90](https://github.com/alternun-development/alternun/commit/6039e9064b183b2969e95183331ff427f3b632d6))
+
 ## [1.0.80](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.80) (2026-04-16)
 
 ## [1.0.80](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.80) (2026-04-16)

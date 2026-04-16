@@ -57,6 +57,47 @@ function readEnvValue(
   return fallback;
 }
 
+function normalizeBetterAuthBaseUrl(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  try {
+    const url = new URL(trimmed);
+    const normalizedPath = url.pathname
+      .replace(/\/+$/, '')
+      .replace(/\/auth\/exchange$/, '')
+      .replace(/\/auth$/, '');
+    url.pathname = normalizedPath || '/';
+    url.search = '';
+    url.hash = '';
+
+    return `${url.origin}${url.pathname === '/' ? '' : url.pathname}`.replace(/\/+$/, '');
+  } catch {
+    return trimmed
+      .replace(/\?.*$/, '')
+      .replace(/#.*$/, '')
+      .replace(/\/+$/, '')
+      .replace(/\/auth\/exchange$/, '')
+      .replace(/\/auth$/, '');
+  }
+}
+
+export function resolveBetterAuthBaseUrl(
+  env: Record<string, string | undefined>
+): string | undefined {
+  const value = readEnvValue(env, [
+    'AUTH_BETTER_AUTH_URL',
+    'BETTER_AUTH_URL',
+    'EXPO_PUBLIC_BETTER_AUTH_URL',
+    'AUTH_EXCHANGE_URL',
+    'EXPO_PUBLIC_AUTH_EXCHANGE_URL',
+  ]);
+
+  return value ? normalizeBetterAuthBaseUrl(value) : undefined;
+}
+
 function resolveExecutionProvider(
   env: Record<string, string | undefined>
 ): AuthExecutionProviderName {
@@ -70,11 +111,7 @@ function resolveExecutionProvider(
     return normalized;
   }
 
-  const betterAuthBaseUrl = readEnvValue(env, [
-    'AUTH_BETTER_AUTH_URL',
-    'BETTER_AUTH_URL',
-    'EXPO_PUBLIC_BETTER_AUTH_URL',
-  ]);
+  const betterAuthBaseUrl = resolveBetterAuthBaseUrl(env);
 
   return betterAuthBaseUrl ? 'better-auth' : 'supabase';
 }
@@ -122,11 +159,7 @@ export function resolveAuthRuntimeConfig(
       'EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI',
       'AUTHENTIK_REDIRECT_URI',
     ]),
-    betterAuthBaseUrl: readEnvValue(env, [
-      'AUTH_BETTER_AUTH_URL',
-      'BETTER_AUTH_URL',
-      'EXPO_PUBLIC_BETTER_AUTH_URL',
-    ]),
+    betterAuthBaseUrl: resolveBetterAuthBaseUrl(env),
     betterAuthClientId: readEnvValue(env, ['AUTH_BETTER_AUTH_CLIENT_ID', 'BETTER_AUTH_CLIENT_ID']),
     authExchangeUrl: readEnvValue(env, ['AUTH_EXCHANGE_URL', 'EXPO_PUBLIC_AUTH_EXCHANGE_URL']),
     emailFrom: readEnvValue(env, ['EMAIL_FROM', 'AUTH_EMAIL_FROM']),

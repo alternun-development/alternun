@@ -244,7 +244,7 @@ The mobile web auth surface supports two Authentik entry patterns:
 
 Control the mode with `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE` in repo env, pipeline env, or `packages/infra/config/deployment.config.json`.
 The default is `source`, which is the smoothest option and avoids an extra relay hop unless you explicitly opt in.
-Use `AUTH_EXECUTION_PROVIDER` or `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` to choose the login execution engine. Current testnet uses `better-auth`; keep `supabase` only for rollback/legacy testing. If the Better Auth URL is configured but the execution flag is omitted, the runtime now promotes to `better-auth` automatically so a stale legacy alias cannot force Authentik.
+Use `AUTH_EXECUTION_PROVIDER` or `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` to choose the login execution engine. Current testnet uses `better-auth`; keep `supabase` only for rollback/legacy testing. If the Better Auth URL, or the canonical exchange URL, is configured but the execution flag is omitted, the runtime now promotes to `better-auth` automatically so a stale legacy alias cannot force Authentik.
 Use `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` to control whether the app uses Authentik-only social login, the hybrid Authentik/Supabase fallback path, or Supabase-only login. This is not the Better Auth switch, and the `EXPO_PUBLIC_AUTHENTIK_*` entry flags remain on the direct source-login path because they only control the Authentik fallback.
 `EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER` is only a legacy alias for the Authentik fallback path. Better Auth mode always resolves the Google branch, so a stale `keycloak` value cannot override the testnet Better Auth flow.
 The default is `authentik` for deployed bundles so testnet/prod stay Authentik-first unless you explicitly opt into another mode, while non-production Expo bundles now default the execution provider to `supabase` unless you override it.
@@ -346,7 +346,7 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_DEFAULT_APPLICATION_POLICY_ENGINE_MODE` (`any` or `all`)
 - `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` (`better-auth` is the current testnet rollout path; use `supabase` only for rollback/legacy)
 - `EXPO_PUBLIC_API_URL` (stage API origin used by the auth footer and legal drawers; `https://testnet.api.alternun.co` on testnet)
-- `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` (`https://testnet.api.alternun.co` for the canonical browser-facing Better Auth route; `/auth` is appended by the client/proxy layers)
+- `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` (`https://testnet.api.alternun.co` for the canonical browser-facing Better Auth route; `/auth` is appended by the client/proxy layers). If that explicit base URL is missing, the infra/runtime can derive the same browser-facing origin from `AUTH_EXCHANGE_URL` / `EXPO_PUBLIC_AUTH_EXCHANGE_URL`.
 - `AUTH_EXCHANGE_URL` / `EXPO_PUBLIC_AUTH_EXCHANGE_URL` (`https://testnet.api.alternun.co/auth/exchange` for the canonical issuer handoff)
 - `INFRA_IDENTITY_USERDATA_REPLACE_ON_CHANGE` (default `false`, prevents instance replacement on user-data/template edits)
 - `INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION` (default `true` on production identity stacks)
