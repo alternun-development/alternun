@@ -1,3 +1,34 @@
+## [1.0.94](https://github.com/alternun-development/alternun/compare/v1.0.93...v1.0.94) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): rename Sculpin font files to remove spaces
+- **repo:** feat(mobile): apply Sculpin font to navbar links
+- **repo:** feat(mobile): load Sculpin font and apply to landing overlay text
+- **repo:** fix(mobile): restore overlay text and badge on landing video card
+
+### Bug Fixes
+
+- **mobile:** rename Sculpin font files to remove spaces ([4f7dff8](https://github.com/alternun-development/alternun/commit/4f7dff8a214e944aacd0f5457e347f5651e0032f))
+- **mobile:** restore overlay text and badge on landing video card ([7ae4224](https://github.com/alternun-development/alternun/commit/7ae42243860237ca4d2a968b02c752287eaba5a6))
+
+### Features
+
+- **mobile:** apply Sculpin font to navbar links ([29062fe](https://github.com/alternun-development/alternun/commit/29062fecbe7389fe875625b49bad93ed8b083e44))
+- **mobile:** load Sculpin font and apply to landing overlay text ([e30c322](https://github.com/alternun-development/alternun/commit/e30c322c860e09ce396b31198befe803b7ec0e3d))
+
+## [1.0.94](https://github.com/alternun-development/alternun/compare/v1.0.93...v1.0.94) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile:** rename Sculpin font files to remove spaces ([4f7dff8](https://github.com/alternun-development/alternun/commit/4f7dff8a214e944aacd0f5457e347f5651e0032f))
+- **mobile:** restore overlay text and badge on landing video card ([7ae4224](https://github.com/alternun-development/alternun/commit/7ae42243860237ca4d2a968b02c752287eaba5a6))
+
+### Features
+
+- **mobile:** apply Sculpin font to navbar links ([29062fe](https://github.com/alternun-development/alternun/commit/29062fecbe7389fe875625b49bad93ed8b083e44))
+- **mobile:** load Sculpin font and apply to landing overlay text ([e30c322](https://github.com/alternun-development/alternun/commit/e30c322c860e09ce396b31198befe803b7ec0e3d))
+
 ## [1.0.93](https://github.com/alternun-development/alternun/compare/v1.0.92...v1.0.93) (2026-04-16)
 
 ### Bug Fixes
