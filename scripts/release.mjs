@@ -395,6 +395,22 @@ function validateRootDocumentation() {
   }
 }
 
+function validateAwsAccount() {
+  // Guard: Ensure we're using Alternun's AWS account, not the default
+  const result = spawnSync('bash', ['scripts/validate-aws-account.sh', 'enforce'], {
+    cwd: REPO_ROOT,
+    stdio: 'inherit',
+  });
+
+  if ((result.status ?? 1) !== 0) {
+    throw new Error(
+      'AWS account validation failed. ' +
+      'You must use the Alternun AWS account (124120088516), not the default. ' +
+      'Run: bash scripts/setup-aws-account.sh'
+    );
+  }
+}
+
 function resolveProductionBranch() {
   const refs = run('git', ['for-each-ref', '--format=%(refname:short)', 'refs/heads'], {
     capture: true,
@@ -698,6 +714,7 @@ function main() {
   }
 
   ensureCleanWorkingTree(options);
+  validateAwsAccount();
   validateRootDocumentation();
 
   const currentBranch = getCurrentBranch();
