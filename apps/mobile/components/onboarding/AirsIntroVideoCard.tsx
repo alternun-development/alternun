@@ -37,7 +37,7 @@ type NativeWebViewComponent = React.ForwardRefExoticComponent<
 >;
 
 export const AIRS_VIDEO_POSTER =
-  'https://images.pexels.com/videos/5752729/space-earth-universe-cosmos-5752729.jpeg';
+  'https://images.pexels.com/photos/5752729/space-earth-universe-cosmos-5752729.jpeg';
 
 const DEFAULT_PREVIEW_SECONDS = 6;
 
