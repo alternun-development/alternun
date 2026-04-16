@@ -1,7 +1,7 @@
 {
   "name": "@alternun/mobile",
   "main": "expo-router/entry",
-  "version": "1.0.92",
+  "version": "1.0.93",
   "scripts": {
     "start": "pnpm --filter alternun changelog:sync && expo start",
     "build": "./build.sh",
