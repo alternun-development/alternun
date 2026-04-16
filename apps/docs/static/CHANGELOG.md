@@ -1,6 +1,22 @@
-## [1.0.85](https://github.com/alternun-development/alternun/compare/v1.0.84...v1.0.85) (2026-04-16)
+## [1.0.86](https://github.com/alternun-development/alternun/compare/v1.0.85...v1.0.86) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,docs,mobile:** CHANGELOG, changelogData ([2a8a94b](https://github.com/alternun-development/alternun/commit/2a8a94b871fe683241a0388ab449ee7a90566e90))
+
+## [1.0.86](https://github.com/alternun-development/alternun/compare/v1.0.85...v1.0.86) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,docs,mobile:** CHANGELOG, changelogData ([2a8a94b](https://github.com/alternun-development/alternun/commit/2a8a94b871fe683241a0388ab449ee7a90566e90))
 
 ## [1.0.85](https://github.com/alternun-development/alternun/compare/v1.0.84...v1.0.85) (2026-04-16)
+
+### Bug Fixes
+
+- **infra:** ESLint prefer-nullish-coalescing fix ([commit](https://github.com/alternun-development/alternun/commit/placeholder))
+
+## [1.0.84](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.84) (2026-04-16)
 
 ## [1.0.84](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.84) (2026-04-16)
 
