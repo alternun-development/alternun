@@ -107,6 +107,20 @@ seed_build_auth_env
 # Load remaining environment variables from .env
 load_env_vars
 
+# Ensure social login mode is set based on stage (gitignored .env.development/.env.production
+# may not exist during SST deploys; the auth package defaults to 'authentik' when unset).
+if [ -z "${EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE:-}" ]; then
+  local_stage="${SST_STAGE:-${STACK:-${EXPO_PUBLIC_STAGE:-${EXPO_PUBLIC_ENV:-}}}}"
+  case "${local_stage}" in
+    prod|production|*production*)
+      export EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
+      ;;
+    *)
+      export EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase
+      ;;
+  esac
+fi
+
 pnpm --filter @alternun/auth build
 pnpm --filter @alternun/update build
 
