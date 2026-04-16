@@ -13,6 +13,10 @@ export {
   type AuthentikIssuerProviderOptions,
 } from './providers/authentik/AuthentikIssuerProvider';
 export {
+  BetterAuthExecutionProvider,
+  type BetterAuthExecutionProviderOptions,
+} from './providers/better-auth/BetterAuthExecutionProvider';
+export {
   SupabaseExecutionProvider,
   type SupabaseExecutionProviderOptions,
   type LegacyExecutionClientLike,
@@ -30,6 +34,9 @@ export { PostmarkEmailProvider } from './providers/email/PostmarkEmailProvider';
 export { SesEmailProvider } from './providers/email/SesEmailProvider';
 
 export { resolveAuthRuntimeConfig, resolveAuthProviderSelection } from './runtime/config';
+
+export { createAuthFacade, type CreateAuthFacadeOptions } from './facade/createAuthFacade';
+export { AlternunAuthFacade, type AlternunAuthFacadeCompat } from './facade/AlternunAuthFacade';
 
 export { upsertOidcUser as upsertCompatOidcUser } from './compat/upsertOidcUser';
 

@@ -81,10 +81,18 @@ function normalizeComparableUrl(value: string | undefined | null): string | null
   }
 
   try {
-    const url = new URL(trimmed.replace(/\/+$/, '').replace(/\/auth$/, ''));
+    const url = new URL(
+      trimmed
+        .replace(/\/+$/, '')
+        .replace(/\/auth\/exchange$/, '')
+        .replace(/\/auth$/, '')
+    );
     return `${url.origin}${url.pathname === '/' ? '' : url.pathname}`.replace(/\/+$/, '');
   } catch {
-    return trimmed.replace(/\/+$/, '').replace(/\/auth$/, '');
+    return trimmed
+      .replace(/\/+$/, '')
+      .replace(/\/auth\/exchange$/, '')
+      .replace(/\/auth$/, '');
   }
 }
 
@@ -142,7 +150,10 @@ export function resolveBetterAuthBootstrapConfig(
 ): BetterAuthBootstrapConfig {
   const proxyTargetUrl = normalizeComparableUrl(env.BETTER_AUTH_URL);
   const publicBaseUrl = normalizeComparableUrl(
-    env.AUTH_BETTER_AUTH_URL ?? env.EXPO_PUBLIC_BETTER_AUTH_URL
+    env.AUTH_BETTER_AUTH_URL ??
+      env.EXPO_PUBLIC_BETTER_AUTH_URL ??
+      env.AUTH_EXCHANGE_URL ??
+      env.EXPO_PUBLIC_AUTH_EXCHANGE_URL
   );
 
   if (proxyTargetUrl && (!publicBaseUrl || proxyTargetUrl !== publicBaseUrl)) {

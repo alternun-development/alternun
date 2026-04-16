@@ -54,6 +54,22 @@ test('resolveBetterAuthBootstrapConfig embeds Better Auth when the public API or
   );
 });
 
+test('resolveBetterAuthBootstrapConfig embeds Better Auth when only the auth exchange url is configured', () => {
+  const config = resolveBetterAuthBootstrapConfig({
+    AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+    GOOGLE_AUTH_CLIENT_ID: 'example-google-client',
+    GOOGLEA_AUTH_CLIENT_SECRET: 'example-google-secret',
+    AUTHENTIK_JWT_SIGNING_KEY: 'issuer-signing-key',
+  });
+
+  assert.equal(config.mode, 'embedded');
+  assert.equal(config.runtimeConfig.baseURL, 'https://testnet.api.alternun.co');
+  assert.equal(
+    config.runtimeConfig.trustedOrigins.includes('https://testnet.airs.alternun.co'),
+    true
+  );
+});
+
 test('handleBetterAuthRuntimeRequest forwards Better Auth requests through the embedded runtime', async () => {
   const observed = {
     method: null,

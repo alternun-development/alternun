@@ -10,6 +10,15 @@ test('resolveAuthRuntimeConfig infers better-auth from the Better Auth url when 
   assert.equal(config.executionProvider, 'better-auth');
 });
 
+test('resolveAuthRuntimeConfig infers better-auth from the auth exchange url when the Better Auth url is absent', () => {
+  const config = resolveAuthRuntimeConfig({
+    EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+  });
+
+  assert.equal(config.executionProvider, 'better-auth');
+  assert.equal(config.betterAuthBaseUrl, 'https://testnet.api.alternun.co');
+});
+
 test('resolveAuthRuntimeConfig honors the public execution flag directly', () => {
   const config = resolveAuthRuntimeConfig({
     EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',

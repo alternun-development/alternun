@@ -105,6 +105,32 @@ function resolveAuthentikProviderFlowSlugsEnvValue(
   return undefined;
 }
 
+function normalizeBetterAuthBaseUrl(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(
+      trimmed
+        .replace(/\/+$/, '')
+        .replace(/\/auth\/exchange$/, '')
+        .replace(/\/auth$/, '')
+    );
+    const pathname = url.pathname === '/' ? '' : url.pathname;
+    return `${url.origin}${pathname}`.replace(/\/+$/, '');
+  } catch {
+    const normalized = trimmed
+      .replace(/\?.*$/, '')
+      .replace(/#.*$/, '')
+      .replace(/\/+$/, '')
+      .replace(/\/auth\/exchange$/, '')
+      .replace(/\/auth$/, '');
+    return normalized.length > 0 ? normalized : undefined;
+  }
+}
+
 function resolveExpoAppPath(dirname: string, appPath: string): string {
   const candidatePaths = [
     appPath,
@@ -217,6 +243,21 @@ export function resolveExpoConfig({
     parseBoolean(env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS, false) ||
     parseBoolean(env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS, false) ||
     Boolean(localConfig.expo?.publicEnv?.authentikAllowCustomProviderFlowSlugs);
+  const authExchangeUrl =
+    env.AUTH_EXCHANGE_URL ??
+    env.EXPO_PUBLIC_AUTH_EXCHANGE_URL ??
+    localConfig.expo?.publicEnv?.authExchangeUrl;
+  const betterAuthUrl = normalizeBetterAuthBaseUrl(
+    env.AUTH_BETTER_AUTH_URL ??
+      env.EXPO_PUBLIC_BETTER_AUTH_URL ??
+      localConfig.expo?.publicEnv?.betterAuthUrl ??
+      authExchangeUrl
+  );
+  const authExecutionProvider =
+    env.AUTH_EXECUTION_PROVIDER ??
+    env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER ??
+    localConfig.expo?.publicEnv?.authExecutionProvider ??
+    (betterAuthUrl ? 'better-auth' : undefined);
 
   const publicEnv = {
     supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL ?? localConfig.expo?.publicEnv?.supabaseUrl,
@@ -240,18 +281,9 @@ export function resolveExpoConfig({
         ? String(localConfig.expo.publicEnv.enableWalletOnlyAuth)
         : undefined),
     apiUrl: env.EXPO_PUBLIC_API_URL ?? localConfig.expo?.publicEnv?.apiUrl,
-    authExecutionProvider:
-      env.AUTH_EXECUTION_PROVIDER ??
-      env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER ??
-      localConfig.expo?.publicEnv?.authExecutionProvider,
-    authExchangeUrl:
-      env.AUTH_EXCHANGE_URL ??
-      env.EXPO_PUBLIC_AUTH_EXCHANGE_URL ??
-      localConfig.expo?.publicEnv?.authExchangeUrl,
-    betterAuthUrl:
-      env.AUTH_BETTER_AUTH_URL ??
-      env.EXPO_PUBLIC_BETTER_AUTH_URL ??
-      localConfig.expo?.publicEnv?.betterAuthUrl,
+    authExecutionProvider,
+    authExchangeUrl,
+    betterAuthUrl,
     authentikIssuer:
       env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? localConfig.expo?.publicEnv?.authentikIssuer,
     authentikClientId:

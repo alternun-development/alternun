@@ -41,6 +41,17 @@ describe('mobile-env', () => {
     ).toBe('better-auth');
   });
 
+  it('infers better-auth from the public auth exchange url when the Better Auth url is missing', () => {
+    expect(
+      resolveMobileAuthExecutionProvider(
+        {
+          EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+        },
+        { fileEnv: {} }
+      )
+    ).toBe('better-auth');
+  });
+
   it('resolves the public auth env with shell precedence', () => {
     expect(
       resolveMobilePublicAuthEnv({
@@ -51,6 +62,21 @@ describe('mobile-env', () => {
     ).toEqual({
       executionProvider: 'better-auth',
       publicExecutionProvider: 'better-auth',
+      publicBetterAuthUrl: 'https://testnet.api.alternun.co',
+      publicAuthExchangeUrl: 'https://testnet.api.alternun.co/auth/exchange',
+    });
+  });
+
+  it('derives the public Better Auth url from the auth exchange url when the explicit Better Auth url is missing', () => {
+    expect(
+      resolveMobilePublicAuthEnv(
+        {
+          EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+        },
+        { fileEnv: {} }
+      )
+    ).toMatchObject({
+      executionProvider: 'better-auth',
       publicBetterAuthUrl: 'https://testnet.api.alternun.co',
       publicAuthExchangeUrl: 'https://testnet.api.alternun.co/auth/exchange',
     });
