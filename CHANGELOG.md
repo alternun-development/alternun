@@ -1,3 +1,20 @@
+## [1.0.105](https://github.com/alternun-development/alternun/compare/v1.0.104...v1.0.105) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): ENV_SETUP.QUICK_REFERENCE, ENV_SETUP, docs
+- **repo:** docs(mobile): add comprehensive environment setup documentation
+
+### Bug Fixes
+
+- **mobile:** ENV_SETUP.QUICK_REFERENCE, ENV_SETUP, docs ([3a6f77e](https://github.com/alternun-development/alternun/commit/3a6f77ea63e7894082d18b385a867c9f196a4755))
+
+## [1.0.105](https://github.com/alternun-development/alternun/compare/v1.0.104...v1.0.105) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile:** ENV_SETUP.QUICK_REFERENCE, ENV_SETUP, docs ([3a6f77e](https://github.com/alternun-development/alternun/commit/3a6f77ea63e7894082d18b385a867c9f196a4755))
+
 ## [1.0.104](https://github.com/alternun-development/alternun/compare/v1.0.103...v1.0.104) (2026-04-16)
 
 ### Bug Fixes
