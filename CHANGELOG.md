@@ -1,5 +1,10 @@
 ## [1.0.87](https://github.com/alternun-development/alternun/compare/v1.0.86...v1.0.87) (2026-04-16)
 
+### Miscellaneous
+
+- chore(docs): CHANGELOG
+- infra: sync better-auth variables from ssm parameter store for mobile builds
+
 ## [1.0.87](https://github.com/alternun-development/alternun/compare/v1.0.86...v1.0.87) (2026-04-16)
 
 ## [1.0.86](https://github.com/alternun-development/alternun/compare/v1.0.85...v1.0.86) (2026-04-16)
