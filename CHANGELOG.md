@@ -1,3 +1,28 @@
+## [1.0.91](https://github.com/alternun-development/alternun/compare/v1.0.90...v1.0.91) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): use Alternun logo for social media meta images
+- **repo:** fix(mobile): correct Pexels video poster URL path
+- **repo:** fix(root): correct Node version engine constraint
+- **repo:** fix(update): only notify for newer versions, not downgrades
+
+### Bug Fixes
+
+- **mobile:** correct Pexels video poster URL path ([28c1b7a](https://github.com/alternun-development/alternun/commit/28c1b7a3575e5c0734b30cd28d8b0f12ddf23c15))
+- **mobile:** use Alternun logo for social media meta images ([61b4df6](https://github.com/alternun-development/alternun/commit/61b4df65d4519c2c7bcb85c1274e267309536acc))
+- **root:** correct Node version engine constraint ([f948ab0](https://github.com/alternun-development/alternun/commit/f948ab0216c6bc6d97300810a3646802fdb2f276))
+- **update:** only notify for newer versions, not downgrades ([25f13b2](https://github.com/alternun-development/alternun/commit/25f13b286dd71769d89986a8d178761b25b1beec))
+
+## [1.0.91](https://github.com/alternun-development/alternun/compare/v1.0.90...v1.0.91) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile:** correct Pexels video poster URL path ([28c1b7a](https://github.com/alternun-development/alternun/commit/28c1b7a3575e5c0734b30cd28d8b0f12ddf23c15))
+- **mobile:** use Alternun logo for social media meta images ([61b4df6](https://github.com/alternun-development/alternun/commit/61b4df65d4519c2c7bcb85c1274e267309536acc))
+- **root:** correct Node version engine constraint ([f948ab0](https://github.com/alternun-development/alternun/commit/f948ab0216c6bc6d97300810a3646802fdb2f276))
+- **update:** only notify for newer versions, not downgrades ([25f13b2](https://github.com/alternun-development/alternun/commit/25f13b286dd71769d89986a8d178761b25b1beec))
+
 ## [1.0.90](https://github.com/alternun-development/alternun/compare/v1.0.89...v1.0.90) (2026-04-16)
 
 ### Bug Fixes
