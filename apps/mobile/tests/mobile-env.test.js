@@ -60,11 +60,12 @@ describe('mobile-env', () => {
         EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
         EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
       })
-    ).toEqual({
+    ).toMatchObject({
       executionProvider: 'better-auth',
       publicExecutionProvider: 'better-auth',
       publicBetterAuthUrl: 'https://testnet.api.alternun.co',
       publicAuthExchangeUrl: 'https://testnet.api.alternun.co/auth/exchange',
+      authentikSocialLoginMode: 'supabase',
     });
   });
 
@@ -95,64 +96,79 @@ describe('mobile-env', () => {
     expect(shouldDisableExpoDotenv({})).toBe(false);
   });
 
-  it('prefers infra auth env over mobile .env during deploy-style builds', () => {
+  it('keeps stage-specific mobile auth env ahead of infra defaults during deploy-style builds', () => {
     const env = { SST_STAGE: 'dev' };
     const fileEnv = {
-      EXPO_PUBLIC_BETTER_AUTH_URL: 'http://localhost:8082/auth',
-      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'http://localhost:8082/auth/exchange',
+      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+      EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'supabase',
     };
     const infraEnv = {
+      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
       EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
       EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+      EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
     };
 
     expect(resolveFileEnv(env, { fileEnv, infraEnv })).toEqual({
-      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
       EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+      EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'supabase',
     });
-    expect(resolveMobilePublicAuthEnv(env, { fileEnv, infraEnv }).publicBetterAuthUrl).toBe(
-      'https://testnet.api.alternun.co'
-    );
+    const publicEnv = resolveMobilePublicAuthEnv(env, { fileEnv, infraEnv });
+    expect(publicEnv.publicExecutionProvider).toBe('better-auth');
+    expect(publicEnv.publicBetterAuthUrl).toBe('https://testnet.api.alternun.co/auth');
+    expect(publicEnv.authentikSocialLoginMode).toBe('supabase');
     expect(shouldDisableExpoDotenv(env, { infraEnv })).toBe(true);
   });
 
-  it('treats Expo stage markers as deploy-style builds for infra auth fallback', () => {
+  it('treats Expo stage markers as deploy-style builds without overriding explicit mobile auth values', () => {
     const env = { EXPO_PUBLIC_STAGE: 'dev' };
     const fileEnv = {
-      EXPO_PUBLIC_BETTER_AUTH_URL: 'http://localhost:8082/auth',
-      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'http://localhost:8082/auth/exchange',
+      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
     };
     const infraEnv = {
-      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
       EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
     };
 
     expect(resolveFileEnv(env, { fileEnv, infraEnv })).toEqual({
-      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
       EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
     });
   });
 
-  it('build auth env seeds both public and non-public Better Auth keys from infra fallback', () => {
-    const env = { EXPO_PUBLIC_STAGE: 'dev' };
+  it('build auth env keeps stage-specific Better Auth and social mode values', () => {
+    const env = { STACK: 'dev' };
     const fileEnv = {
-      EXPO_PUBLIC_BETTER_AUTH_URL: 'http://localhost:8082/auth',
-      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'http://localhost:8082/auth/exchange',
       EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+      EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'supabase',
+      EXPO_PUBLIC_AUTHENTIK_ISSUER: 'https://testnet.sso.alternun.co/application/o/alternun-mobile/',
+      EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: 'alternun-mobile',
     };
     const infraEnv = {
+      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
       EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
       EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
-      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+      EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
     };
 
     expect(resolveMobileBuildAuthEnv(env, { fileEnv, infraEnv })).toEqual({
       AUTH_EXECUTION_PROVIDER: 'better-auth',
       EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
-      AUTH_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
-      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      AUTH_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
       AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
       EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+      EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'supabase',
+      EXPO_PUBLIC_AUTHENTIK_ISSUER:
+        'https://testnet.sso.alternun.co/application/o/alternun-mobile/',
+      EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: 'alternun-mobile',
     });
   });
 

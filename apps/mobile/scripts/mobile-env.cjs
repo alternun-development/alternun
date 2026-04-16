@@ -102,8 +102,8 @@ function resolveFileEnv(env = process.env, options = {}) {
 
   const infraEnv = options.infraEnv ?? loadInfraEnv(options.repoRoot);
   return {
-    ...fileEnv,
     ...infraEnv,
+    ...fileEnv,
   };
 }
 
