@@ -241,6 +241,61 @@ Status: ✅ **Complete** (2026-04-16 14:00 UTC)
    - Verify build.sh sources `resolve-ssm-env.sh`
    - Confirm EXPO*PUBLIC*\* values come from SSM, not .env
 
+## Fix 5: Auth URL Single-Source-of-Truth Pattern (2026-04-17)
+
+**File**: `apps/mobile/components/auth/AppAuthProvider.tsx`
+
+**Problem**: Auth endpoint paths were being constructed from base URLs, but local dev needed both the API base AND the `/auth` suffix appended.
+
+**Solution**: Refactored `getBetterAuthUrl()` to ensure auth URLs always include `/auth`:
+
+```typescript
+// One source of truth: EXPO_PUBLIC_BETTER_AUTH_URL
+function getBetterAuthUrl(): string | undefined {
+  const envUrl = process.env.EXPO_PUBLIC_BETTER_AUTH_URL;
+  if (envUrl?.trim()) {
+    // Already has /auth suffix (e.g., http://localhost:8082/auth)
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+
+  // Fallback: derive from origin and append /auth
+  const apiBase = resolveMobileApiBaseUrl(undefined, origin);
+  if (apiBase) {
+    const normalized = apiBase.trim().replace(/\/+$/, '');
+    return normalized.endsWith('/auth') ? normalized : `${normalized}/auth`;
+  }
+  return undefined;
+}
+```
+
+**Result**: All endpoints automatically derived:
+
+- `${baseAuthUrl}/sign-in/social`
+- `${baseAuthUrl}/sign-in/email`
+- `${baseAuthUrl}/exchange`
+- Etc.
+
+**Local Dev Setup** (`.env.local`):
+
+```bash
+EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
+```
+
+**Testnet** (`.env.development`):
+
+```bash
+EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
+```
+
+**Why?**
+
+- ✅ Single variable controls all auth endpoints
+- ✅ No hardcoded paths scattered in code
+- ✅ Works for both local (localhost:8082) and remote (testnet) seamlessly
+- ✅ Easier to maintain: change one variable, all endpoints update
+
+**See Also**: [.env.local.example](../apps/mobile/.env.local.example) — Local dev setup template
+
 ---
 
 ## Security Best Practices
@@ -263,9 +318,11 @@ Status: ✅ **Complete** (2026-04-16 14:00 UTC)
 
 ## References
 
-- [build.sh](apps/mobile/build.sh) — Build script with stage derivation
-- [mobile-env.cjs](apps/mobile/scripts/mobile-env.cjs) — Env resolution logic
-- [.env.development](apps/mobile/.env.development) — Dev/testnet config
-- [resolve-ssm-env.sh](packages/infra/scripts/resolve-ssm-env.sh) — SSM resolver
-- [bootstrap-ssm-parameters.sh](packages/infra/scripts/bootstrap-ssm-parameters.sh) — SSM seeder
-- [SSM_PARAMETERS.md](packages/infra/SSM_PARAMETERS.md) — SSM setup guide
+- [build.sh](../apps/mobile/build.sh) — Build script with stage derivation
+- [mobile-env.cjs](../apps/mobile/scripts/mobile-env.cjs) — Env resolution logic
+- [AppAuthProvider.tsx](../apps/mobile/components/auth/AppAuthProvider.tsx) — Auth URL derivation (single-source-of-truth)
+- [.env.development](../apps/mobile/.env.development) — Dev/testnet config
+- [.env.local.example](../apps/mobile/.env.local.example) — Local dev setup template
+- [resolve-ssm-env.sh](../packages/infra/scripts/resolve-ssm-env.sh) — SSM resolver
+- [bootstrap-ssm-parameters.sh](../packages/infra/scripts/bootstrap-ssm-parameters.sh) — SSM seeder
+- [SSM_PARAMETERS.md](../packages/infra/SSM_PARAMETERS.md) — SSM setup guide
