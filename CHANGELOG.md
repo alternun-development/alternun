@@ -1,3 +1,19 @@
+## [1.0.108](https://github.com/alternun-development/alternun/compare/v1.0.107...v1.0.108) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(repo,scripts): pre-commit, CLAUDE, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY
+
+### Bug Fixes
+
+- **repo,scripts:** pre-commit, CLAUDE, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY ([3b699aa](https://github.com/alternun-development/alternun/commit/3b699aa81fc8af8579137cf089ae8e8436bb9d5f))
+
+## [1.0.108](https://github.com/alternun-development/alternun/compare/v1.0.107...v1.0.108) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,scripts:** pre-commit, CLAUDE, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY ([3b699aa](https://github.com/alternun-development/alternun/commit/3b699aa81fc8af8579137cf089ae8e8436bb9d5f))
+
 ## [1.0.107](https://github.com/alternun-development/alternun/compare/v1.0.106...v1.0.107) (2026-04-16)
 
 ### Bug Fixes
