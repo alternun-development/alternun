@@ -1,3 +1,22 @@
+## [1.0.112](https://github.com/alternun-development/alternun/compare/v1.0.110...v1.0.112) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(repo,admin,api): 6cd210d32ef36442-turbo.log, dff0bbe77b072a66-turbo.log, CHANGELOG, app
+- **repo:** fix(mobile,repo): AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP
+
+### Bug Fixes
+
+- **mobile,repo:** AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP ([73fb0df](https://github.com/alternun-development/alternun/commit/73fb0dfc20b8711f5b5a671a366d12c7c11859a8))
+- **repo,admin,api:** 6cd210d32ef36442-turbo.log, dff0bbe77b072a66-turbo.log, CHANGELOG, app ([6b08cbe](https://github.com/alternun-development/alternun/commit/6b08cbed236ead8489725e16ad1a3d946a1f2f2f))
+
+## [1.0.112](https://github.com/alternun-development/alternun/compare/v1.0.110...v1.0.112) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile,repo:** AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP ([73fb0df](https://github.com/alternun-development/alternun/commit/73fb0dfc20b8711f5b5a671a366d12c7c11859a8))
+- **repo,admin,api:** 6cd210d32ef36442-turbo.log, dff0bbe77b072a66-turbo.log, CHANGELOG, app ([6b08cbe](https://github.com/alternun-development/alternun/commit/6b08cbed236ead8489725e16ad1a3d946a1f2f2f))
+
 ## [1.0.111](https://github.com/alternun-development/alternun/compare/v1.0.110...v1.0.111) (2026-04-16)
 
 ### Bug Fixes
