@@ -293,6 +293,12 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
         : args.env.GOOGLEA_AUTH_CLIENT_SECRET
         ? { GOOGLE_AUTH_CLIENT_SECRET: args.env.GOOGLEA_AUTH_CLIENT_SECRET }
         : {}),
+      // Testnet-specific: Enable Better Auth embedded mode with native Google provider
+      ...(args.env.ALTERNUN_TESTNET_MODE === 'on'
+        ? {
+            ALTERNUN_TESTNET_MODE: 'on',
+          }
+        : {}),
       ...(args.env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID
         ? { DISCORD_AUTH_CLIENT_ID: args.env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID }
         : args.env.DISCORD_AUTH_CLIENT_ID
