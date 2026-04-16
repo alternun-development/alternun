@@ -1,3 +1,19 @@
+## [1.0.93](https://github.com/alternun-development/alternun/compare/v1.0.92...v1.0.93) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(auth): allow testnet origin in better-auth trusted origins
+
+### Bug Fixes
+
+- **auth:** allow testnet origin in better-auth trusted origins ([bd74651](https://github.com/alternun-development/alternun/commit/bd74651a4452c54ca69728075449e4164e15f673))
+
+## [1.0.93](https://github.com/alternun-development/alternun/compare/v1.0.92...v1.0.93) (2026-04-16)
+
+### Bug Fixes
+
+- **auth:** allow testnet origin in better-auth trusted origins ([bd74651](https://github.com/alternun-development/alternun/commit/bd74651a4452c54ca69728075449e4164e15f673))
+
 ## [1.0.92](https://github.com/alternun-development/alternun/compare/v1.0.91...v1.0.92) (2026-04-16)
 
 ### Bug Fixes
