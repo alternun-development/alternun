@@ -1,3 +1,11 @@
+## [1.0.101](https://github.com/alternun-development/alternun/compare/v1.0.100...v1.0.101) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.100
+
+## [1.0.101](https://github.com/alternun-development/alternun/compare/v1.0.100...v1.0.101) (2026-04-16)
+
 ## [1.0.100](https://github.com/alternun-development/alternun/compare/v1.0.99...v1.0.100) (2026-04-16)
 
 ### Bug Fixes
