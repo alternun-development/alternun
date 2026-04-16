@@ -6,6 +6,7 @@ const {
   loadMobileEnv,
   loadDotEnvFile,
   resolveMobileAuthExecutionProvider,
+  resolveMobilePublicAuthEnv,
 } = require('../scripts/mobile-env.cjs');
 
 describe('mobile-env', () => {
@@ -28,6 +29,29 @@ describe('mobile-env', () => {
         EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'supabase',
       })
     ).toBe('supabase');
+  });
+
+  it('infers better-auth from the public Better Auth url when the flag is missing', () => {
+    expect(
+      resolveMobileAuthExecutionProvider({
+        EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      })
+    ).toBe('better-auth');
+  });
+
+  it('resolves the public auth env with shell precedence', () => {
+    expect(
+      resolveMobilePublicAuthEnv({
+        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+        EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+        EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+      })
+    ).toEqual({
+      executionProvider: 'better-auth',
+      publicExecutionProvider: 'better-auth',
+      publicBetterAuthUrl: 'https://testnet.api.alternun.co',
+      publicAuthExchangeUrl: 'https://testnet.api.alternun.co/auth/exchange',
+    });
   });
 
   it('lets .env.local override .env values', () => {

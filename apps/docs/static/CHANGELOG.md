@@ -1,3 +1,15 @@
+## [1.0.78](https://github.com/alternun-development/alternun/compare/v1.0.77...v1.0.78) (2026-04-15)
+
+### Bug Fixes
+
+- **docs,mobile,auth:** CHANGELOG, PublicLandingPage, AirsIntroExperience, changelogData ([83934d7](https://github.com/alternun-development/alternun/commit/83934d7d35564e3ee578c10ea265b0b6f1667a74))
+
+## [1.0.78](https://github.com/alternun-development/alternun/compare/v1.0.77...v1.0.78) (2026-04-15)
+
+### Bug Fixes
+
+- **docs,mobile,auth:** CHANGELOG, PublicLandingPage, AirsIntroExperience, changelogData ([83934d7](https://github.com/alternun-development/alternun/commit/83934d7d35564e3ee578c10ea265b0b6f1667a74))
+
 ## [1.0.77](https://github.com/alternun-development/alternun/compare/v1.0.76...v1.0.77) (2026-04-15)
 
 ### Bug Fixes
