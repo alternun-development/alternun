@@ -1,3 +1,11 @@
+## [1.0.116](https://github.com/alternun-development/alternun/compare/v1.0.115...v1.0.116) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** test(repo,mobile,infra): README, mobile-env, mobile-env.test, DEPLOYMENT_FIX_SUMMARY
+
+## [1.0.116](https://github.com/alternun-development/alternun/compare/v1.0.115...v1.0.116) (2026-04-16)
+
 ## [1.0.115](https://github.com/alternun-development/alternun/compare/v1.0.114...v1.0.115) (2026-04-16)
 
 ### Bug Fixes
