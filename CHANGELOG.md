@@ -1,6 +1,10 @@
 ## [1.0.85](https://github.com/alternun-development/alternun/compare/v1.0.84...v1.0.85) (2026-04-16)
 
-## [1.0.85](https://github.com/alternun-development/alternun/compare/v1.0.84...v1.0.85) (2026-04-16)
+### Bug Fixes
+
+- **infra:** ESLint prefer-nullish-coalescing fix ([commit](https://github.com/alternun-development/alternun/commit/placeholder))
+
+## [1.0.84](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.84) (2026-04-16)
 
 ## [1.0.84](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.84) (2026-04-16)
 
