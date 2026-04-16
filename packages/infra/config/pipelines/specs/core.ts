@@ -155,7 +155,7 @@ export function buildCorePipelineSpecs({
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? 'alternun-mobile',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('dev', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
-        EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
+        EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'supabase',
         EXPO_PUBLIC_API_URL: devApiUrl,
         EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
           authentikAllowCustomProviderFlowSlugs,
