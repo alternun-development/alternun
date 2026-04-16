@@ -1,3 +1,20 @@
+## [1.0.89](https://github.com/alternun-development/alternun/compare/v1.0.88...v1.0.89) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** feat(mobile, update): PWA compliance, icon assets, SEO, and robust update detection
+- **repo:** chore: update CHANGELOG and changelogData
+
+### Features
+
+- **mobile, update:** PWA compliance, icon assets, SEO, and robust update detection ([b9e0021](https://github.com/alternun-development/alternun/commit/b9e0021192580db42c7685c021d04771f63499be))
+
+## [1.0.89](https://github.com/alternun-development/alternun/compare/v1.0.88...v1.0.89) (2026-04-16)
+
+### Features
+
+- **mobile, update:** PWA compliance, icon assets, SEO, and robust update detection ([b9e0021](https://github.com/alternun-development/alternun/commit/b9e0021192580db42c7685c021d04771f63499be))
+
 ## [1.0.88](https://github.com/alternun-development/alternun/compare/v1.0.87...v1.0.88) (2026-04-16)
 
 ### Bug Fixes
