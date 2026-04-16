@@ -11,6 +11,7 @@ import {
   normalizeReleaseVersion,
   parseReleaseManifest,
   serializeReleaseManifest,
+  compareReleaseVersions,
   type ReleaseManifest,
 } from './manifest';
 
@@ -325,9 +326,9 @@ export function useReleaseUpdate({
       const nextVersion = manifest?.version ?? null;
       const dismissedVersion = readStoredDismissedVersion(storageKey);
       const isUpdateAvailable =
-        Boolean(nextVersion) &&
-        nextVersion !== normalizedCurrentVersion &&
-        nextVersion !== dismissedVersion;
+        nextVersion !== null &&
+        nextVersion !== dismissedVersion &&
+        compareReleaseVersions(nextVersion, normalizedCurrentVersion) > 0;
 
       setRemoteVersion(nextVersion);
       setAvailable(isUpdateAvailable);

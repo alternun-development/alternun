@@ -214,9 +214,9 @@ function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST
             const manifest = (0, manifest_1.parseReleaseManifest)(await response.json());
             const nextVersion = (_a = manifest === null || manifest === void 0 ? void 0 : manifest.version) !== null && _a !== void 0 ? _a : null;
             const dismissedVersion = readStoredDismissedVersion(storageKey);
-            const isUpdateAvailable = Boolean(nextVersion) &&
-                nextVersion !== normalizedCurrentVersion &&
-                nextVersion !== dismissedVersion;
+            const isUpdateAvailable = nextVersion !== null &&
+                nextVersion !== dismissedVersion &&
+                (0, manifest_1.compareReleaseVersions)(nextVersion, normalizedCurrentVersion) > 0;
             setRemoteVersion(nextVersion);
             setAvailable(isUpdateAvailable);
             setLastCheckedAt(Date.now());
