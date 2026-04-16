@@ -1,3 +1,19 @@
+## [1.0.95](https://github.com/alternun-development/alternun/compare/v1.0.94...v1.0.95) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth): derive better-auth URL at runtime if not in environment
+
+### Bug Fixes
+
+- **mobile,auth:** derive better-auth URL at runtime if not in environment ([88de811](https://github.com/alternun-development/alternun/commit/88de8111a28628c4dd70dbfd05e05125c474fc76))
+
+## [1.0.95](https://github.com/alternun-development/alternun/compare/v1.0.94...v1.0.95) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile,auth:** derive better-auth URL at runtime if not in environment ([88de811](https://github.com/alternun-development/alternun/commit/88de8111a28628c4dd70dbfd05e05125c474fc76))
+
 ## [1.0.94](https://github.com/alternun-development/alternun/compare/v1.0.93...v1.0.94) (2026-04-16)
 
 ### Bug Fixes
