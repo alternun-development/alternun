@@ -1,3 +1,22 @@
+## [1.0.103](https://github.com/alternun-development/alternun/compare/v1.0.102...v1.0.103) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): load stage-specific env files in mobile-env.cjs
+- **repo:** fix(mobile): implement stage-aware environment configuration loading
+
+### Bug Fixes
+
+- **mobile:** implement stage-aware environment configuration loading ([bd0be3c](https://github.com/alternun-development/alternun/commit/bd0be3cf8faa7d2071f06eaf3559f143080d96f9))
+- **mobile:** load stage-specific env files in mobile-env.cjs ([6caf830](https://github.com/alternun-development/alternun/commit/6caf830b6275eb9fa7bf0c062574c12fff057047))
+
+## [1.0.103](https://github.com/alternun-development/alternun/compare/v1.0.102...v1.0.103) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile:** implement stage-aware environment configuration loading ([bd0be3c](https://github.com/alternun-development/alternun/commit/bd0be3cf8faa7d2071f06eaf3559f143080d96f9))
+- **mobile:** load stage-specific env files in mobile-env.cjs ([6caf830](https://github.com/alternun-development/alternun/commit/6caf830b6275eb9fa7bf0c062574c12fff057047))
+
 ## [1.0.102](https://github.com/alternun-development/alternun/compare/v1.0.101...v1.0.102) (2026-04-16)
 
 ### Bug Fixes
