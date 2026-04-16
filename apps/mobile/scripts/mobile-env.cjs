@@ -41,14 +41,49 @@ function loadDotEnvFile(filePath, target = {}) {
   return target;
 }
 
-function loadMobileEnv() {
-  const mobileRoot = path.resolve(__dirname, '..');
+function loadMobileEnv(mobileRoot = path.resolve(__dirname, '..')) {
   const env = {};
 
   loadDotEnvFile(path.join(mobileRoot, '.env'), env);
   loadDotEnvFile(path.join(mobileRoot, '.env.local'), env);
 
   return env;
+}
+
+function loadInfraEnv(repoRoot = path.resolve(__dirname, '..', '..', '..')) {
+  const env = {};
+  loadDotEnvFile(path.join(repoRoot, 'packages', 'infra', '.env'), env);
+  return env;
+}
+
+function shouldUseInfraEnvFallback(env = process.env) {
+  return [
+    'SST_STAGE',
+    'STACK',
+    'INFRA_ROOT_DOMAIN',
+    'DOMAIN_ROOT',
+    'INFRA_PIPELINE_PROFILE',
+    'APPROVE',
+  ].some((key) => {
+    const value = env[key];
+    return typeof value === 'string' && value.trim().length > 0;
+  });
+}
+
+function resolveFileEnv(env = process.env, options = {}) {
+  const fileEnv = options.fileEnv ?? loadMobileEnv(options.mobileRoot);
+  const useInfraEnvFallback =
+    options.useInfraEnvFallback ?? shouldUseInfraEnvFallback(env);
+
+  if (!useInfraEnvFallback) {
+    return fileEnv;
+  }
+
+  const infraEnv = options.infraEnv ?? loadInfraEnv(options.repoRoot);
+  return {
+    ...fileEnv,
+    ...infraEnv,
+  };
 }
 
 function readEnvValue(env, fileEnv, keys, fallback) {
@@ -67,8 +102,8 @@ function readEnvValue(env, fileEnv, keys, fallback) {
   return fallback;
 }
 
-function resolveMobileAuthExecutionProvider(env = process.env) {
-  const fileEnv = loadMobileEnv();
+function resolveMobileAuthExecutionProvider(env = process.env, options = {}) {
+  const fileEnv = resolveFileEnv(env, options);
   const value = readEnvValue(
     env,
     fileEnv,
@@ -91,11 +126,11 @@ function resolveMobileAuthExecutionProvider(env = process.env) {
   return betterAuthUrl ? 'better-auth' : 'supabase';
 }
 
-function resolveMobilePublicAuthEnv(env = process.env) {
-  const fileEnv = loadMobileEnv();
+function resolveMobilePublicAuthEnv(env = process.env, options = {}) {
+  const fileEnv = resolveFileEnv(env, options);
 
   return {
-    executionProvider: resolveMobileAuthExecutionProvider(env),
+    executionProvider: resolveMobileAuthExecutionProvider(env, options),
     publicExecutionProvider: readEnvValue(
       env,
       fileEnv,
@@ -117,6 +152,49 @@ function resolveMobilePublicAuthEnv(env = process.env) {
   };
 }
 
+function shouldDisableExpoDotenv(env = process.env, options = {}) {
+  const shellHasAuthEnv = [
+    'EXPO_PUBLIC_API_URL',
+    'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER',
+    'AUTH_EXECUTION_PROVIDER',
+    'EXPO_PUBLIC_BETTER_AUTH_URL',
+    'AUTH_BETTER_AUTH_URL',
+    'EXPO_PUBLIC_AUTH_EXCHANGE_URL',
+    'AUTH_EXCHANGE_URL',
+    'EXPO_PUBLIC_AUTHENTIK_ISSUER',
+    'EXPO_PUBLIC_AUTHENTIK_CLIENT_ID',
+  ].some((key) => {
+    const value = env[key];
+    return typeof value === 'string' && value.trim().length > 0;
+  });
+
+  if (shellHasAuthEnv) {
+    return true;
+  }
+
+  const useInfraEnvFallback =
+    options.useInfraEnvFallback ?? shouldUseInfraEnvFallback(env);
+  if (!useInfraEnvFallback) {
+    return false;
+  }
+
+  const infraEnv = options.infraEnv ?? loadInfraEnv(options.repoRoot);
+  return [
+    'EXPO_PUBLIC_API_URL',
+    'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER',
+    'AUTH_EXECUTION_PROVIDER',
+    'EXPO_PUBLIC_BETTER_AUTH_URL',
+    'AUTH_BETTER_AUTH_URL',
+    'EXPO_PUBLIC_AUTH_EXCHANGE_URL',
+    'AUTH_EXCHANGE_URL',
+    'EXPO_PUBLIC_AUTHENTIK_ISSUER',
+    'EXPO_PUBLIC_AUTHENTIK_CLIENT_ID',
+  ].some((key) => {
+    const value = infraEnv[key];
+    return typeof value === 'string' && value.trim().length > 0;
+  });
+}
+
 function main() {
   const command = process.argv[2];
 
@@ -125,10 +203,16 @@ function main() {
     return;
   }
 
+  if (command === 'should-disable-dotenv') {
+    process.stdout.write(shouldDisableExpoDotenv() ? 'true' : 'false');
+    return;
+  }
+
   process.stdout.write(
     [
       'Usage:',
       '  node ./scripts/mobile-env.cjs auth-execution-provider',
+      '  node ./scripts/mobile-env.cjs should-disable-dotenv',
     ].join('\n')
   );
 }
@@ -140,7 +224,11 @@ if (require.main === module) {
 module.exports = {
   loadDotEnvFile,
   loadMobileEnv,
+  loadInfraEnv,
   readEnvValue,
+  resolveFileEnv,
   resolveMobileAuthExecutionProvider,
   resolveMobilePublicAuthEnv,
+  shouldUseInfraEnvFallback,
+  shouldDisableExpoDotenv,
 };

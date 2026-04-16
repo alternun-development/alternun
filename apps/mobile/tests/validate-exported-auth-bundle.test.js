@@ -75,6 +75,28 @@ describe('validate-exported-auth-bundle', () => {
     ).toThrow(/supabase/);
   });
 
+  it('fails a better-auth bundle that still embeds localhost Better Auth urls', () => {
+    const bundleDir = createBundleDir({
+      'entry.js':
+        'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER:"better-auth";' +
+        'EXPO_PUBLIC_BETTER_AUTH_URL:"https://testnet.api.alternun.co";' +
+        'EXPO_PUBLIC_AUTH_EXCHANGE_URL:"https://testnet.api.alternun.co/auth/exchange";' +
+        'EXPO_PUBLIC_BETTER_AUTH_URL:"http://localhost:8082/auth";' +
+        'EXPO_PUBLIC_AUTH_EXCHANGE_URL:"http://localhost:8082/auth/exchange";',
+    });
+
+    expect(() =>
+      validateExportedAuthBundle({
+        distDir: bundleDir,
+        env: {
+          EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+          EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+          EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+        },
+      })
+    ).toThrow(/localhost Better Auth web auth env/);
+  });
+
   it('fails a legacy bundle that still ships Better Auth web endpoints', () => {
     const bundleDir = createBundleDir({
       'entry.js': 'fetch("/auth/sign-in/social"); authExecutionProvider:"better-auth";',

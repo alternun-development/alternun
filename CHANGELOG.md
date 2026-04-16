@@ -1,12 +1,11 @@
 ## [1.0.79](https://github.com/alternun-development/alternun/compare/v1.0.78...v1.0.79) (2026-04-16)
 
-## [1.0.79](https://github.com/alternun-development/alternun/compare/v1.0.78...v1.0.79) (2026-04-16)
-
-## [1.0.78](https://github.com/alternun-development/alternun/compare/v1.0.77...v1.0.78) (2026-04-15)
-
 ### Bug Fixes
 
-- **docs,mobile,auth:** CHANGELOG, PublicLandingPage, AirsIntroExperience, changelogData ([83934d7](https://github.com/alternun-development/alternun/commit/83934d7d35564e3ee578c10ea265b0b6f1667a74))
+- **auth:** export AppAuthProvider from main index to fix undefined component error
+- **mobile:** add hero section navigation buttons for "Como funciona" and "Beneficios"
+- **mobile:** fix benefit cards centering on mid-size screens
+- **mobile:** align hero navigation buttons with "Go to dashboard" link styling
 
 ## [1.0.78](https://github.com/alternun-development/alternun/compare/v1.0.77...v1.0.78) (2026-04-15)
 
