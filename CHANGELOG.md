@@ -1,3 +1,22 @@
+## [1.0.113](https://github.com/alternun-development/alternun/compare/v1.0.112...v1.0.113) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): stage-aware social login mode fallback in build.sh
+- **repo:** fix(infra): stage-aware authentik social login mode in SSM resolver
+
+### Bug Fixes
+
+- **infra:** stage-aware authentik social login mode in SSM resolver ([efe6d0b](https://github.com/alternun-development/alternun/commit/efe6d0be4a3ae78b28e18e0b8bc8acee4a3cabba))
+- **mobile:** stage-aware social login mode fallback in build.sh ([79c66de](https://github.com/alternun-development/alternun/commit/79c66de37957c4126e49d28cfc89d18d1e2456cc))
+
+## [1.0.113](https://github.com/alternun-development/alternun/compare/v1.0.112...v1.0.113) (2026-04-16)
+
+### Bug Fixes
+
+- **infra:** stage-aware authentik social login mode in SSM resolver ([efe6d0b](https://github.com/alternun-development/alternun/commit/efe6d0be4a3ae78b28e18e0b8bc8acee4a3cabba))
+- **mobile:** stage-aware social login mode fallback in build.sh ([79c66de](https://github.com/alternun-development/alternun/commit/79c66de37957c4126e49d28cfc89d18d1e2456cc))
+
 ## [1.0.112](https://github.com/alternun-development/alternun/compare/v1.0.110...v1.0.112) (2026-04-16)
 
 ### Bug Fixes
