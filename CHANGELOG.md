@@ -1,3 +1,19 @@
+## [1.0.114](https://github.com/alternun-development/alternun/compare/v1.0.113...v1.0.114) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(api,infra): enable embedded Better Auth with native Google OAuth on testnet
+
+### Bug Fixes
+
+- **api,infra:** enable embedded Better Auth with native Google OAuth on testnet ([01b441b](https://github.com/alternun-development/alternun/commit/01b441bfee78e75208a608eaae5a7466c9dcbf6a))
+
+## [1.0.114](https://github.com/alternun-development/alternun/compare/v1.0.113...v1.0.114) (2026-04-16)
+
+### Bug Fixes
+
+- **api,infra:** enable embedded Better Auth with native Google OAuth on testnet ([01b441b](https://github.com/alternun-development/alternun/commit/01b441bfee78e75208a608eaae5a7466c9dcbf6a))
+
 ## [1.0.113](https://github.com/alternun-development/alternun/compare/v1.0.112...v1.0.113) (2026-04-16)
 
 ### Bug Fixes
