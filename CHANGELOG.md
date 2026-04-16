@@ -1,3 +1,19 @@
+## [1.0.107](https://github.com/alternun-development/alternun/compare/v1.0.106...v1.0.107) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth,update): build, mobile-env, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY
+
+### Bug Fixes
+
+- **mobile,auth,update:** build, mobile-env, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY ([973fe6c](https://github.com/alternun-development/alternun/commit/973fe6cf0de22ef05700d17903dac94cc3d051fe))
+
+## [1.0.107](https://github.com/alternun-development/alternun/compare/v1.0.106...v1.0.107) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile,auth,update:** build, mobile-env, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY ([973fe6c](https://github.com/alternun-development/alternun/commit/973fe6cf0de22ef05700d17903dac94cc3d051fe))
+
 ## [1.0.106](https://github.com/alternun-development/alternun/compare/v1.0.105...v1.0.106) (2026-04-16)
 
 ### Bug Fixes
