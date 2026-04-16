@@ -9,6 +9,7 @@ export function AppAuthProvider({ children, options }) {
             supabaseKey: options === null || options === void 0 ? void 0 : options.supabaseKey,
             allowMockWalletFallback: options === null || options === void 0 ? void 0 : options.allowMockWalletFallback,
             allowWalletOnlySession: options === null || options === void 0 ? void 0 : options.allowWalletOnlySession,
+            betterAuthBaseUrl: options === null || options === void 0 ? void 0 : options.betterAuthBaseUrl,
         },
         walletBridge: options === null || options === void 0 ? void 0 : options.walletBridge,
         allowMockWalletFallback: options === null || options === void 0 ? void 0 : options.allowMockWalletFallback,
@@ -16,6 +17,7 @@ export function AppAuthProvider({ children, options }) {
     }), [
         options === null || options === void 0 ? void 0 : options.allowMockWalletFallback,
         options === null || options === void 0 ? void 0 : options.allowWalletOnlySession,
+        options === null || options === void 0 ? void 0 : options.betterAuthBaseUrl,
         options === null || options === void 0 ? void 0 : options.supabaseKey,
         options === null || options === void 0 ? void 0 : options.supabaseUrl,
         options === null || options === void 0 ? void 0 : options.walletBridge,
