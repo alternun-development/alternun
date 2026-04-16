@@ -170,7 +170,7 @@ function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST
         }
     }, [hasServiceWorkerSupport, runtime.workerUrl]);
     const refresh = (0, react_1.useCallback)(async () => {
-        var _a, _b;
+        var _a;
         if (!enabled) {
             return;
         }
@@ -180,10 +180,26 @@ function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST
             if (hasServiceWorkerSupport) {
                 const registration = await ensureServiceWorkerRegistration();
                 if (registration) {
-                    (_a = registration.active) === null || _a === void 0 ? void 0 : _a.postMessage({
-                        type: service_worker_1.RELEASE_CHECK_MESSAGE_TYPE,
-                        manifestUrl: runtime.manifestUrl,
-                    });
+                    if (registration.active) {
+                        registration.active.postMessage({
+                            type: service_worker_1.RELEASE_CHECK_MESSAGE_TYPE,
+                            manifestUrl: runtime.manifestUrl,
+                        });
+                    }
+                    else if (registration.installing) {
+                        // SW is still installing; wait for it to activate before sending the message
+                        const onStateChange = () => {
+                            var _a;
+                            if (registration.active) {
+                                registration.active.postMessage({
+                                    type: service_worker_1.RELEASE_CHECK_MESSAGE_TYPE,
+                                    manifestUrl: runtime.manifestUrl,
+                                });
+                                (_a = registration.installing) === null || _a === void 0 ? void 0 : _a.removeEventListener('statechange', onStateChange);
+                            }
+                        };
+                        registration.installing.addEventListener('statechange', onStateChange);
+                    }
                 }
             }
             const response = await fetch(runtime.manifestUrl, {
@@ -196,7 +212,7 @@ function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST
                 return;
             }
             const manifest = (0, manifest_1.parseReleaseManifest)(await response.json());
-            const nextVersion = (_b = manifest === null || manifest === void 0 ? void 0 : manifest.version) !== null && _b !== void 0 ? _b : null;
+            const nextVersion = (_a = manifest === null || manifest === void 0 ? void 0 : manifest.version) !== null && _a !== void 0 ? _a : null;
             const dismissedVersion = readStoredDismissedVersion(storageKey);
             const isUpdateAvailable = Boolean(nextVersion) &&
                 nextVersion !== normalizedCurrentVersion &&
@@ -248,10 +264,17 @@ function useReleaseUpdate({ currentVersion, mode, manifestUrl = DEFAULT_MANIFEST
             }
             registrationRef.current = registration;
         });
+        const handleControllerChange = () => {
+            if (!cancelled) {
+                void refresh();
+            }
+        };
         navigator.serviceWorker.addEventListener('message', handleWorkerMessage);
+        navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
         return () => {
             cancelled = true;
             navigator.serviceWorker.removeEventListener('message', handleWorkerMessage);
+            navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
         };
     }, [
         enabled,
