@@ -48,13 +48,13 @@ function loadMobileEnv(mobileRoot = path.resolve(__dirname, '..'), envVars = pro
 
   // Load stage-specific environment file if deploying
   // Priority: .env.testnet/.env.development/.env.production → .env.local → shell env
-  const stage = envVars.SST_STAGE || envVars.STACK;
+  const stage = envVars.SST_STAGE || envVars.STACK || envVars.EXPO_PUBLIC_STAGE || envVars.EXPO_PUBLIC_ENV;
   if (stage) {
     const stageNormalized = stage.toLowerCase();
     let stageFile = '';
 
-    if (stageNormalized === 'dev' || stageNormalized === 'api-dev' || stageNormalized.includes('testnet')) {
-      stageFile = '.env.testnet';
+    if (stageNormalized === 'dev' || stageNormalized === 'api-dev' || stageNormalized.includes('testnet') || stageNormalized.includes('development')) {
+      stageFile = '.env.development';
     } else if (stageNormalized === 'prod' || stageNormalized === 'api-prod' || stageNormalized === 'production' || stageNormalized.includes('production')) {
       stageFile = '.env.production';
     }
