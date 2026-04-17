@@ -826,7 +826,7 @@ export function createInfrastructure() {
 
     if (shouldCreateRootDomainRedirect) {
       createExternalDomainRedirect({
-        id: `root-domain-redirect-${stage}`,
+        id: `root-redir-${stage}`,
         sourceDomain: rootDomain,
         targetDomain: rootDomainRedirectTarget,
         certificateArn: rootDomainRedirectCertArn,
@@ -841,7 +841,7 @@ export function createInfrastructure() {
 
     if (shouldCreateAirsToDevRedirect) {
       createExternalDomainRedirect({
-        id: `airs-domain-redirect-${stage}`,
+        id: `airs-redir-${stage}`,
         sourceDomain: airsToDevSourceDomain,
         targetDomain: expoStageMap.dev,
         certificateArn: airsToDevCertArn,
@@ -866,7 +866,7 @@ export function createInfrastructure() {
               }
 
               return createDnsValidatedCertificate({
-                id: `dev-domain-redirect-${stage}-wildcard-cert`,
+                id: `dev-redir-${stage}-wildcard-cert`,
                 domainName: `*.${expoSubdomain}.${rootDomain}`,
                 hostedZoneId,
               });
@@ -874,7 +874,7 @@ export function createInfrastructure() {
           : devToTestnetCertArn;
 
       createExternalDomainRedirect({
-        id: `dev-domain-redirect-${stage}`,
+        id: `dev-redir-${stage}`,
         sourceDomain: devToTestnetSourceDomain,
         targetDomain: expoStageMap.dev,
         certificateArn: redirectCertificateArn,

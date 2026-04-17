@@ -342,15 +342,15 @@ prune_legacy_managed_certificate_state() {
 
   if [ "$STACK" = "dev" ]; then
     if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" && [ -n "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}" ]; then
-      prefixes+=("airs-domain-redirect-${STACK}CdnSsl")
+      prefixes+=("airs-redir-${STACK}CdnSsl")
     fi
 
     if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" && [ -n "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}" ]; then
-      prefixes+=("dev-domain-redirect-${STACK}CdnSsl")
+      prefixes+=("dev-redir-${STACK}CdnSsl")
     fi
 
     if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}" && [ -n "${INFRA_REDIRECT_ROOT_CERT_ARN:-}" ]; then
-      prefixes+=("root-domain-redirect-${STACK}CdnSsl")
+      prefixes+=("root-redir-${STACK}CdnSsl")
     fi
   fi
 
