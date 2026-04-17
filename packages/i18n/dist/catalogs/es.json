@@ -170,8 +170,9 @@
       },
       "nav": {
         "benefits": "Beneficios",
-        "howItWorks": "Cómo funciona",
+        "howItWorks": "¿Cómo funciona?",
         "project": "El proyecto",
+        "joinNow": "Únete ahora",
         "signInCta": "Ingresar / Crear cuenta",
         "start": "Inicio"
       },
