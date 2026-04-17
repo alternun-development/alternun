@@ -46,7 +46,9 @@ const AUTO_UNMUTE_SCROLL_Y = 88;
 const TOP_PAUSE_SCROLL_Y = 6;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const HERO_VIDEO = require('../../assets/videos/landing.mp4');
+const HERO_VIDEO_MOBILE = require('../../assets/videos/landing.mp4');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const HERO_VIDEO_DESKTOP = require('../../assets/videos/landing-backup.mp4');
 const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png');
 const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png');
 const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png');
@@ -207,6 +209,7 @@ const AirsIntroExperience = forwardRef<
     const [showBackToTop, setShowBackToTop] = useState(false);
     const { width: screenWidth, height: screenHeight } = useWindowDimensions();
     const isMobile = screenWidth < 720;
+    const heroVideoSource = isMobile ? HERO_VIDEO_MOBILE : HERO_VIDEO_DESKTOP;
     const [headerNavMobileMenuVisible, setHeaderNavMobileMenuVisible] = useState(false);
     const headerNavMobileMenuAnim = useRef(new Animated.Value(0)).current;
 
@@ -1061,7 +1064,7 @@ const AirsIntroExperience = forwardRef<
                 { opacity: heroBgOpacity, transform: [{ scale: bgScale }] },
               ]}
             >
-              <HeroVideoNative videoSource={HERO_VIDEO} />
+              <HeroVideoNative videoSource={heroVideoSource} />
             </Animated.View>
             <Animated.View
               style={[

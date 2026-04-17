@@ -5,8 +5,8 @@
  * Delivers 40-60% smoother playback, instant startup, hardware acceleration.
  */
 
-import React, { useCallback, useRef, useState, useMemo } from 'react';
-import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 import { VideoView, useVideoPlayer, type VideoSource, type VideoSourceObject } from 'expo-video';
 import { Image as ExpoImage } from 'expo-image';
 
@@ -26,26 +26,6 @@ function getVideoUri(source: VideoSource): string | number | null {
   );
 }
 
-// Lazy-loaded video versions for responsive quality
-let desktopVideo: number | null = null;
-let mobileVideo: number | null = null;
-
-function getDesktopVideo(): number {
-  if (!desktopVideo) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    desktopVideo = require('../../assets/videos/landing-desktop.mp4') as number;
-  }
-  return desktopVideo;
-}
-
-function getMobileVideo(): number {
-  if (!mobileVideo) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    mobileVideo = require('../../assets/videos/landing-mobile.mp4') as number;
-  }
-  return mobileVideo;
-}
-
 interface HeroVideoNativeProps {
   videoSource: VideoSource;
   posterUri?: string;
@@ -61,20 +41,11 @@ export function HeroVideoNative({
 }: HeroVideoNativeProps): React.JSX.Element {
   const [isVideoReady, setIsVideoReady] = useState(false);
   const playerRef = useRef(null);
-  const { width } = useWindowDimensions();
 
-  // Determine video quality based on screen width
-  // Desktop (720p+) gets full HD, mobile gets optimized 720p
-  const isDesktop = width >= 720;
-
-  // Memoize the resolved video URI with quality selection
+  // Keep the source selection in the caller so desktop can use the original video.
   const resolvedSource = useMemo(() => {
-    if (Platform.OS === 'web') {
-      return getVideoUri(videoSource);
-    }
-    // Select video based on screen width for optimal quality/performance
-    return isDesktop ? getDesktopVideo() : getMobileVideo();
-  }, [isDesktop]);
+    return Platform.OS === 'web' ? getVideoUri(videoSource) : videoSource;
+  }, [videoSource]);
 
   // Initialize player with optimized settings
   const player = useVideoPlayer(resolvedSource, (p) => {

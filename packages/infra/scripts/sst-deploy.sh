@@ -383,68 +383,113 @@ prune_legacy_managed_certificate_state() {
   done
 }
 
-remove_cloudfront_alias() {
-  local alias_domain=$1
+remove_cloudfront_aliases_from_distribution() {
+  local dist_id=$1
+  shift
 
-  if [ -z "$alias_domain" ]; then
+  local -a aliases=("$@")
+
+  if [ -z "$dist_id" ] || [ "${#aliases[@]}" -eq 0 ]; then
+    return 0
+  fi
+
+  local cfg_json cfg_mod etag aliases_json
+  cfg_json=$(mktemp)
+  cfg_mod=$(mktemp)
+
+  if ! aws cloudfront get-distribution-config --id "$dist_id" --output json > "$cfg_json" 2>/dev/null; then
+    echo "WARN: Failed to fetch CloudFront config for distribution ${dist_id}." >&2
+    rm -f "$cfg_json" "$cfg_mod"
+    return 0
+  fi
+
+  etag=$(jq -r '.ETag // empty' "$cfg_json")
+  if [ -z "$etag" ]; then
+    echo "WARN: Missing ETag for distribution ${dist_id}; skipping alias cleanup." >&2
+    rm -f "$cfg_json" "$cfg_mod"
+    return 0
+  fi
+
+  aliases_json=$(printf '%s\n' "${aliases[@]}" | jq -R . | jq -s .)
+
+  jq --argjson aliases "$aliases_json" '
+    .DistributionConfig
+    | .Aliases.Items = ((.Aliases.Items // []) | map(select(. as $alias | ($aliases | index($alias)) | not)))
+    | .Aliases.Quantity = (.Aliases.Items | length)
+    | if .Aliases.Quantity == 0 then
+        .ViewerCertificate = { "CloudFrontDefaultCertificate": true }
+      else
+        .
+      end
+  ' "$cfg_json" > "$cfg_mod"
+
+  echo "Removing aliases ${aliases[*]} from CloudFront distribution ${dist_id}..."
+  if aws cloudfront update-distribution --id "$dist_id" --if-match "$etag" --distribution-config "file://${cfg_mod}" >/dev/null 2>&1; then
+    echo "Removed aliases ${aliases[*]} from distribution ${dist_id}."
+    if ! aws cloudfront wait distribution-deployed --id "$dist_id" >/dev/null 2>&1; then
+      echo "WARN: CloudFront distribution ${dist_id} did not reach Deployed after alias cleanup." >&2
+    fi
+  else
+    echo "WARN: Failed to remove aliases ${aliases[*]} from distribution ${dist_id}." >&2
+  fi
+
+  rm -f "$cfg_json" "$cfg_mod"
+}
+
+remove_cloudfront_aliases() {
+  local -a alias_domains=("$@")
+
+  if [ "${#alias_domains[@]}" -eq 0 ]; then
     return 0
   fi
 
   if ! command -v aws >/dev/null 2>&1; then
-    echo "WARN: aws CLI not found; cannot clean CloudFront alias ${alias_domain}." >&2
+    echo "WARN: aws CLI not found; cannot clean CloudFront aliases." >&2
     return 0
   fi
 
   if ! command -v jq >/dev/null 2>&1; then
-    echo "WARN: jq not found; cannot clean CloudFront alias ${alias_domain}." >&2
+    echo "WARN: jq not found; cannot clean CloudFront aliases." >&2
     return 0
   fi
 
-  local dist_ids
-  dist_ids=$(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items!=null && contains(Aliases.Items, '${alias_domain}')].Id" --output text 2>/dev/null || true)
+  declare -A dist_aliases=()
+  declare -A dist_alias_seen=()
 
-  if [ -z "$dist_ids" ] || [ "$dist_ids" = "None" ]; then
-    echo "No existing CloudFront distribution found for alias ${alias_domain}."
-    return 0
-  fi
-
-  for dist_id in $dist_ids; do
-    echo "Removing alias ${alias_domain} from CloudFront distribution ${dist_id}..."
-    local cfg_json cfg_mod etag
-    cfg_json=$(mktemp)
-    cfg_mod=$(mktemp)
-
-    if ! aws cloudfront get-distribution-config --id "$dist_id" --output json > "$cfg_json" 2>/dev/null; then
-      echo "WARN: Failed to fetch CloudFront config for distribution ${dist_id}." >&2
-      rm -f "$cfg_json" "$cfg_mod"
+  local alias_domain dist_ids dist_id dist_alias_key
+  for alias_domain in "${alias_domains[@]}"; do
+    if [ -z "$alias_domain" ]; then
       continue
     fi
 
-    etag=$(jq -r '.ETag // empty' "$cfg_json")
-    if [ -z "$etag" ]; then
-      echo "WARN: Missing ETag for distribution ${dist_id}; skipping alias cleanup." >&2
-      rm -f "$cfg_json" "$cfg_mod"
+    dist_ids=$(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items!=null && contains(Aliases.Items, '${alias_domain}')].Id" --output text 2>/dev/null || true)
+
+    if [ -z "$dist_ids" ] || [ "$dist_ids" = "None" ]; then
+      echo "No existing CloudFront distribution found for alias ${alias_domain}."
       continue
     fi
 
-    jq --arg alias "$alias_domain" '
-      .DistributionConfig
-      | .Aliases.Items = ((.Aliases.Items // []) | map(select(. != $alias)))
-      | .Aliases.Quantity = (.Aliases.Items | length)
-      | if .Aliases.Quantity == 0 then
-          .ViewerCertificate = { "CloudFrontDefaultCertificate": true }
-        else
-          .
-        end
-    ' "$cfg_json" > "$cfg_mod"
+    for dist_id in $dist_ids; do
+      dist_alias_key="${dist_id}|${alias_domain}"
+      if [ -n "${dist_alias_seen[$dist_alias_key]:-}" ]; then
+        continue
+      fi
+      dist_alias_seen["$dist_alias_key"]=1
 
-    if aws cloudfront update-distribution --id "$dist_id" --if-match "$etag" --distribution-config "file://${cfg_mod}" >/dev/null 2>&1; then
-      echo "Removed alias ${alias_domain} from distribution ${dist_id}."
-    else
-      echo "WARN: Failed to remove alias ${alias_domain} from distribution ${dist_id}." >&2
-    fi
+      if [ -n "${dist_aliases[$dist_id]:-}" ]; then
+        dist_aliases["$dist_id"]="${dist_aliases[$dist_id]} ${alias_domain}"
+      else
+        dist_aliases["$dist_id"]="${alias_domain}"
+      fi
+    done
+  done
 
-    rm -f "$cfg_json" "$cfg_mod"
+  local dist_aliases_raw dist_alias_list
+  for dist_id in "${!dist_aliases[@]}"; do
+    dist_aliases_raw=${dist_aliases[$dist_id]}
+    # shellcheck disable=SC2206
+    dist_alias_list=($dist_aliases_raw)
+    remove_cloudfront_aliases_from_distribution "$dist_id" "${dist_alias_list[@]}"
   done
 }
 
@@ -491,13 +536,16 @@ cleanup_deploy_aliases() {
 
   declare -A seen=()
   local alias_domain
+  local -a cleanup_aliases=()
   for alias_domain in "${aliases[@]}"; do
     if [ -z "$alias_domain" ] || [ -n "${seen[$alias_domain]:-}" ]; then
       continue
     fi
     seen[$alias_domain]=1
-    remove_cloudfront_alias "$alias_domain"
+    cleanup_aliases+=("$alias_domain")
   done
+
+  remove_cloudfront_aliases "${cleanup_aliases[@]}"
 }
 
 should_cleanup_deploy_aliases() {
