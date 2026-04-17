@@ -1,3 +1,11 @@
+## [1.0.135](https://github.com/alternun-development/alternun/compare/v1.0.134...v1.0.135) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(repo,infra): expo-web-aws-deploy, .env, README, infra.config
+
+## [1.0.135](https://github.com/alternun-development/alternun/compare/v1.0.134...v1.0.135) (2026-04-17)
+
 ## [1.0.134](https://github.com/alternun-development/alternun/compare/v1.0.133...v1.0.134) (2026-04-17)
 
 ### Bug Fixes
