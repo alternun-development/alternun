@@ -46,7 +46,11 @@ import {
 } from './modules/backend-api.js';
 import { buildIdentitySettings, resolveIdentityStageDomain } from './modules/identity.js';
 import { deployIdentityInfrastructure } from './modules/identity-resources.js';
-import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
+import {
+  buildStageDomainConfig,
+  createDnsValidatedCertificate,
+  createExternalDomainRedirect,
+} from './modules/redirects.js';
 
 interface PublicAssetFile {
   cacheControl: string;
@@ -216,6 +220,9 @@ const airsToDevCertArn = expoConfig.redirects.airsToDevCertArn;
 const enableDevToTestnetRedirect = expoConfig.redirects.enableDevToTestnet;
 const devToTestnetSourceDomain = expoConfig.redirects.devToTestnetSourceDomain;
 const devToTestnetSourceDomains = expoConfig.redirects.devToTestnetSourceDomains;
+const devToTestnetRedirectAliases = devToTestnetSourceDomains.filter(
+  (sourceDomain) => sourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase()
+);
 const devToTestnetCertArn = expoConfig.redirects.devToTestnetCertArn;
 const enableRootDomainRedirect = expoConfig.redirects.enableRootDomainRedirect;
 const rootDomainRedirectTarget = expoConfig.redirects.rootDomainRedirectTarget;
@@ -845,22 +852,33 @@ export function createInfrastructure() {
       stage === 'dev' &&
       enableCustomDomain &&
       enableDevToTestnetRedirect &&
-      devToTestnetSourceDomains.some(
-        (sourceDomain) => sourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase()
-      );
+      devToTestnetRedirectAliases.length > 0;
 
     if (shouldCreateDevToTestnetRedirect) {
-      devToTestnetSourceDomains.forEach((sourceDomain, index) => {
-        if (sourceDomain.toLowerCase() === expoStageMap.dev.toLowerCase()) {
-          return;
-        }
+      const redirectCertificateArn =
+        devToTestnetRedirectAliases.length > 1
+          ? (() => {
+              const hostedZoneId = process.env.INFRA_ROUTE53_HOSTED_ZONE_ID;
+              if (!hostedZoneId) {
+                throw new Error(
+                  'INFRA_ROUTE53_HOSTED_ZONE_ID is required to provision the wildcard certificate for dev-stage redirect aliases.'
+                );
+              }
 
-        createExternalDomainRedirect({
-          id: `dev-domain-redirect-${stage}-${index}`,
-          sourceDomain,
-          targetDomain: expoStageMap.dev,
-          certificateArn: devToTestnetCertArn,
-        });
+              return createDnsValidatedCertificate({
+                id: `dev-domain-redirect-${stage}-wildcard-cert`,
+                domainName: `*.${expoSubdomain}.${rootDomain}`,
+                hostedZoneId,
+              });
+            })()
+          : devToTestnetCertArn;
+
+      createExternalDomainRedirect({
+        id: `dev-domain-redirect-${stage}`,
+        sourceDomain: devToTestnetSourceDomain,
+        targetDomain: expoStageMap.dev,
+        certificateArn: redirectCertificateArn,
+        redirects: devToTestnetRedirectAliases,
       });
     }
 
