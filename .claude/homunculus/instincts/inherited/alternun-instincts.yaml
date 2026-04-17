@@ -1,0 +1,338 @@
+# Instincts generated from https://github.com/alternun-development/alternun
+# Generated: 2026-04-17T14:03:21.208Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: alternun-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/alternun-development/alternun
+---
+
+# Alternun Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: feat
+
+## Evidence
+
+- 1 commits analyzed
+- Detected conventional commit pattern
+- Examples: feat(wallet): scaffold phase-1 non-custodial HD wallet core
+
+---
+id: alternun-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/alternun-development/alternun
+---
+
+# Alternun Commit Length
+
+## Action
+
+Write moderate-length commit messages (~59 characters)
+
+## Evidence
+
+- Average commit message length: 59 chars
+- Based on 1 commits
+
+---
+id: alternun-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/alternun-development/alternun
+---
+
+# Alternun Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: alternun-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/alternun-development/alternun
+---
+
+# Alternun Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: alternun-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/alternun-development/alternun
+---
+
+# Alternun Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: alternun-instinct-file-naming
+trigger: "When creating a new file in the codebase"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct File Naming
+
+## Action
+
+Name the file using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.files: camelCase
+
+---
+id: alternun-instinct-function-naming
+trigger: "When defining a new function"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct Function Naming
+
+## Action
+
+Name the function using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.functions: camelCase
+
+---
+id: alternun-instinct-class-naming
+trigger: "When defining a new class"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct Class Naming
+
+## Action
+
+Name the class using PascalCase
+
+## Evidence
+
+- Pattern in namingConventions.classes: PascalCase
+
+---
+id: alternun-instinct-constant-naming
+trigger: "When defining a constant"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct Constant Naming
+
+## Action
+
+Name the constant using SCREAMING_SNAKE_CASE
+
+## Evidence
+
+- Pattern in namingConventions.constants: SCREAMING_SNAKE_CASE
+
+---
+id: alternun-instinct-import-style
+trigger: "When importing modules"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct Import Style
+
+## Action
+
+Use relative import paths
+
+## Evidence
+
+- Pattern in importStyle: relative
+
+---
+id: alternun-instinct-export-style
+trigger: "When exporting functions or classes"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct Export Style
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in exportStyle: named
+
+---
+id: alternun-instinct-typescript
+trigger: "When writing new code"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct Typescript
+
+## Action
+
+Write code in TypeScript
+
+## Evidence
+
+- Pattern in language: TypeScript
+- Seen in config files: tsconfig.json
+
+---
+id: alternun-instinct-error-handling
+trigger: "When handling errors in code"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct Error Handling
+
+## Action
+
+Use try-catch blocks for error handling
+
+## Evidence
+
+- Pattern in errorHandling.style: try-catch
+
+---
+id: alternun-instinct-git-commit-format
+trigger: "When making a git commit"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct Git Commit Format
+
+## Action
+
+Format the commit message using the conventional commit style with a 'feat' prefix for features
+
+## Evidence
+
+- Pattern in commits.type: conventional
+- Seen in commit: feat(wallet): scaffold phase-1 non-custodial HD wallet core
+
+---
+id: alternun-instinct-git-commit-length
+trigger: "When writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct Git Commit Length
+
+## Action
+
+Keep the commit message around 59 characters on average
+
+## Evidence
+
+- Pattern in commits.averageLength: 59
+
+---
+id: alternun-instinct-test-location
+trigger: "When adding new tests"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct Test Location
+
+## Action
+
+Place tests in both source and dedicated test folders as appropriate (mixed location)
+
+## Evidence
+
+- Pattern in architecture.folderStructure.testLocation: mixed
+
+---
+id: alternun-instinct-monorepo-structure
+trigger: "When adding a new package or module"
+confidence: 0.8
+domain: architecture
+source: repo-analysis
+source_repo: alternun-development/alternun
+---
+
+# Alternun Instinct Monorepo Structure
+
+## Action
+
+Place it under the 'packages' folder to maintain monorepo structure
+
+## Evidence
+
+- Pattern in architecture.folderStructure.commonFolders: packages
+- Pattern in architecture.folderStructure.type: monorepo
+
