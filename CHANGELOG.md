@@ -1,3 +1,19 @@
+## [1.0.117](https://github.com/alternun-development/alternun/compare/v1.0.116...v1.0.117) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth,i18n): AuthSignInScreen, en, es, th
+
+### Bug Fixes
+
+- **mobile,auth,i18n:** AuthSignInScreen, en, es, th ([73eabc5](https://github.com/alternun-development/alternun/commit/73eabc5b3e04c1bc0e3cb1b04fd2ee0d49cb046c))
+
+## [1.0.117](https://github.com/alternun-development/alternun/compare/v1.0.116...v1.0.117) (2026-04-17)
+
+### Bug Fixes
+
+- **mobile,auth,i18n:** AuthSignInScreen, en, es, th ([73eabc5](https://github.com/alternun-development/alternun/commit/73eabc5b3e04c1bc0e3cb1b04fd2ee0d49cb046c))
+
 ## [1.0.116](https://github.com/alternun-development/alternun/compare/v1.0.115...v1.0.116) (2026-04-16)
 
 ### Bug Fixes
