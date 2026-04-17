@@ -17,6 +17,17 @@ export function buildDashboardPipelineSpecs({
     env.GOOGLEA_AUTH_CLIENT_SECRET ??
     '';
   const googleAuthClientSecretKey = 'INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_SECRET';
+  const discordAuthClientId =
+    env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID ??
+    env.DISCORD_AUTH_CLIENT_ID ??
+    env.DISCORD_CLIENT_ID ??
+    '';
+  const discordAuthClientSecret =
+    env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_SECRET ??
+    env.DISCORD_AUTH_CLIENT_SECRET ??
+    env.DISCORD_CLIENT_SECRET ??
+    '';
+  const discordAuthClientSecretKey = 'INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_SECRET';
   const betterAuthUrl =
     env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL ??
     env.AUTH_BETTER_AUTH_URL ??
@@ -49,9 +60,15 @@ export function buildDashboardPipelineSpecs({
         INFRA_BACKEND_API_ENABLED_STAGES: 'dev',
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrl,
         INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
+        ...(discordAuthClientId
+          ? { INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID: discordAuthClientId }
+          : {}),
         INFRA_BACKEND_API_BETTER_AUTH_TRUSTED_ORIGINS: betterAuthTrustedOrigins,
         ...(betterAuthSecret ? { INFRA_BACKEND_API_BETTER_AUTH_SECRET: betterAuthSecret } : {}),
         ...(googleAuthClientSecret ? { [googleAuthClientSecretKey]: googleAuthClientSecret } : {}),
+        ...(discordAuthClientSecret
+          ? { [discordAuthClientSecretKey]: discordAuthClientSecret }
+          : {}),
       }),
     },
     'dashboard-prod': {
@@ -74,9 +91,15 @@ export function buildDashboardPipelineSpecs({
         INFRA_BACKEND_API_ENABLED_STAGES: 'production',
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrl,
         INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
+        ...(discordAuthClientId
+          ? { INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID: discordAuthClientId }
+          : {}),
         INFRA_BACKEND_API_BETTER_AUTH_TRUSTED_ORIGINS: betterAuthTrustedOrigins,
         ...(betterAuthSecret ? { INFRA_BACKEND_API_BETTER_AUTH_SECRET: betterAuthSecret } : {}),
         ...(googleAuthClientSecret ? { [googleAuthClientSecretKey]: googleAuthClientSecret } : {}),
+        ...(discordAuthClientSecret
+          ? { [discordAuthClientSecretKey]: discordAuthClientSecret }
+          : {}),
       }),
     },
   };

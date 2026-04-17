@@ -86,13 +86,13 @@ export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE" "expo-public-authen
 # Auth provider config (stage-specific)
 case "$STAGE" in
   dev|*testnet*|*development*)
-    # Testnet: Use better-auth with email/password (hide Discord button)
+    # Testnet: Use Better Auth execution with Authentik social buttons visible.
     export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url-dev" "https://testnet.api.alternun.co/auth"
     export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url-dev" "https://testnet.api.alternun.co/auth/exchange"
-    export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-dev" "supabase"
+    export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-dev" "authentik"
     ;;
   prod|production|*production*)
-    # Production: Use authentik with social login (show Discord button)
+    # Production: Use Authentik social buttons with the current execution path.
     export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url-prod" "https://api.alternun.co/auth"
     export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url-prod" "https://api.alternun.co/auth/exchange"
     export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-prod" "authentik"

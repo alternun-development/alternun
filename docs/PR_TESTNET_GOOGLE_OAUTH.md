@@ -6,7 +6,7 @@ Fixes **404 error on `testnet.api.alternun.co/auth/callback/google`** by switchi
 
 **Impact**:
 
-- ✅ Testnet now uses Better Auth with native Google OAuth (no Discord, no Authentik OIDC overhead)
+- ✅ Testnet now uses Better Auth execution on the API side, with the deployed bundle keeping Discord visible via `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`
 - ✅ Production remains on Authentik (completely unaffected)
 - ✅ Local dev continues to work as-is
 - ✅ Cross-subdomain session cookies work (`airs.*` + `api.*` share same session)
@@ -116,15 +116,22 @@ In your deploy workflow (e.g., `.github/workflows/deploy-infrastructure.yml`), a
     GOOGLE_AUTH_CLIENT_SECRET: ${{ secrets.TESTNET_GOOGLE_AUTH_CLIENT_SECRET }}
     ALTERNUN_TESTNET_MODE: 'on'
   run: |
-    APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+    set -a
+    source apps/mobile/.env.development
+    set +a
+    pnpm infra:deploy:dev
+    pnpm infra:deploy:dashboard-dev
 ```
 
 ### Step 4: Deploy This PR
 
 ```bash
 # Ensure credentials are in env (from GitHub, CI, or local .env)
-APPROVE=true STACK=dev pnpm release patch
-git push
+set -a
+source apps/mobile/.env.development
+set +a
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
 ```
 
 Or locally:
@@ -134,8 +141,11 @@ export GOOGLE_AUTH_CLIENT_ID="..."
 export GOOGLE_AUTH_CLIENT_SECRET="..."
 export ALTERNUN_TESTNET_MODE=on
 
-APPROVE=true STACK=dev pnpm release patch
-git push
+set -a
+source apps/mobile/.env.development
+set +a
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
 ```
 
 ### Step 5: Verify
@@ -160,7 +170,7 @@ Full verification checklist in `docs/TESTNET_GOOGLE_OAUTH_SETUP.md` → **Step 5
 
 ### Manual Testing Checklist
 
-- [ ] `testnet.airs.alternun.co/auth` shows email/Google buttons (NO Discord)
+- [ ] `testnet.airs.alternun.co/auth` shows email/Google/Discord buttons
 - [ ] Click "Sign in with Google" → redirects to Google login (not Authentik)
 - [ ] After Google login → session cookie set with `Domain=.alternun.co`
 - [ ] After login → user created in Supabase with `provider: "google"`
@@ -185,13 +195,20 @@ If testnet breaks:
 ```bash
 # Option 1: Disable testnet mode (immediate, no recompile)
 unset ALTERNUN_TESTNET_MODE
-APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+set -a
+source apps/mobile/.env.development
+set +a
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
 
 # Option 2: Revert commit
 git revert <this-commit-sha>
 git push
-APPROVE=true STACK=dev pnpm release patch
-git push
+set -a
+source apps/mobile/.env.development
+set +a
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
 ```
 
 **Why Option 1 works**: Without `ALTERNUN_TESTNET_MODE=on`, the API reverts to proxy mode. If proxy mode fails, manually set up a working Better Auth service or fall back to Authentik.
@@ -236,7 +253,7 @@ testnet.airs.alternun.co/auth
 | ----------------- | --------------------------- | -------------------------- |
 | **Mode**          | Embedded (native Google)    | Proxy (Authentik OIDC)     |
 | **Google OAuth**  | Native Better Auth provider | Federated via Authentik    |
-| **Discord**       | Hidden (supabase mode)      | Visible (authentik mode)   |
+| **Discord**       | Visible (authentik mode)    | Visible (authentik mode)   |
 | **Flags**         | `ALTERNUN_TESTNET_MODE=on`  | Not set                    |
 | **Credentials**   | Google Client ID/Secret     | Authentik Client ID/Secret |
 | **Session**       | Better Auth session cookie  | Authentik JWT + session    |

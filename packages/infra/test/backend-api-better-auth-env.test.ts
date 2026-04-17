@@ -13,4 +13,6 @@ void test('backend API module forwards Better Auth runtime env into the Lambda c
   assert.match(source, /BETTER_AUTH_TRUSTED_ORIGINS/);
   assert.match(source, /GOOGLE_AUTH_CLIENT_ID/);
   assert.match(source, /GOOGLE_AUTH_CLIENT_SECRET/);
+  assert.match(source, /DISCORD_AUTH_CLIENT_ID/);
+  assert.match(source, /DISCORD_AUTH_CLIENT_SECRET/);
 });

@@ -97,7 +97,7 @@ Contains testnet URLs. Used when:
 ```bash
 EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 EXPO_PUBLIC_SUPABASE_URL=https://rjebeugdvwbjpaktrrbx.supabase.co
-EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase  # Hides Discord
+EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik  # Shows Discord
 ```
 
 ### `.env.local` (gitignored, for local dev)
@@ -211,20 +211,32 @@ npm run web:local
 # (After latest deployment is live)
 ```
 
-### **Deploying a Change**
+### **Deploying a Testnet Change**
+
+Use the same stage-aware rollout path that matched the working live deployment:
 
 ```bash
-# 1. Make your change
-# 2. Commit (will validate AWS account automatically)
-git add .
-git commit -m "fix: something"
+set -a
+source apps/mobile/.env.development
+set +a
 
-# 3. Create release
-pnpm release patch
-
-# 4. Push (AWS account auto-validated)
-git push
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
 ```
+
+Smoke test the live auth route after both deploys complete:
+
+```bash
+curl -k -i -X POST -H 'content-type: application/json' \
+  -d '{"provider":"google"}' \
+  https://testnet.api.alternun.co/auth/sign-in/social
+
+curl -k -i -X POST -H 'content-type: application/json' \
+  -d '{"provider":"discord"}' \
+  https://testnet.api.alternun.co/auth/sign-in/social
+```
+
+Use `pnpm release patch` only when you need a versioned release; it is not the preferred path for live testnet auth changes.
 
 ---
 
@@ -234,7 +246,7 @@ git push
 | ----------------------------------------- | ------------------------------------------ | ------------------------------------------ | ------------------------- |
 | `EXPO_PUBLIC_BETTER_AUTH_URL`             | `http://localhost:8082/auth`               | `https://testnet.api.alternun.co/auth`     | Auth service base URL     |
 | `EXPO_PUBLIC_SUPABASE_URL`                | `https://rjebeugdvwbjpaktrrbx.supabase.co` | `https://rjebeugdvwbjpaktrrbx.supabase.co` | User data (same for all)  |
-| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` | `supabase`                                 | `supabase` (dev) / `authentik` (prod)      | Discord button visibility |
+| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` | `supabase`                                 | `authentik`                                | Discord button visibility |
 | `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER`     | `better-auth`                              | `better-auth`                              | Auth provider to use      |
 
 ---

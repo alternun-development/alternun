@@ -3,7 +3,7 @@
 ## TL;DR
 
 - **Local dev:** No setup needed, uses localhost by default
-- **Testnet:** Deploy with `STACK=dev` → loads `.env.testnet` automatically
+- **Testnet:** Deploy with `STACK=dev` → loads `.env.development` automatically
 - **Production:** Deploy with `STACK=production` → loads `.env.production` automatically
 - **Personal override:** Create `.env.local` with custom values
 
@@ -12,8 +12,7 @@
 ```
 apps/mobile/
 ├── .env                    # Shared defaults (in repo)
-├── .env.development        # Local dev config (create if needed, gitignored)
-├── .env.testnet            # Testnet overrides (create, gitignored)
+├── .env.development        # Testnet overrides (create, gitignored)
 ├── .env.production         # Production overrides (create, gitignored)
 ├── .env.local              # Personal overrides (create, gitignored)
 └── build.sh                # Build script that loads .env files
@@ -23,9 +22,8 @@ apps/mobile/
 
 | File               | When Used                     | Key URLs                  | Auth Provider |
 | ------------------ | ----------------------------- | ------------------------- | ------------- |
-| `.env`             | Always (base)                 | `localhost:8082`          | `better-auth` |
-| `.env.development` | Local dev (optional)          | `localhost:8082`          | `better-auth` |
-| `.env.testnet`     | `STACK=dev` deployment        | `testnet.api.alternun.co` | `better-auth` |
+| `.env`             | Local dev base                | `localhost:8082`          | `better-auth` |
+| `.env.development` | `STACK=dev` deployment        | `testnet.api.alternun.co` | `better-auth` |
 | `.env.production`  | `STACK=production` deployment | `api.alternun.co`         | `supabase`    |
 | `.env.local`       | Any (personal)                | Custom values             | Custom        |
 
@@ -34,7 +32,7 @@ apps/mobile/
 ```
 1. .env (base)
    ↓
-2. .env.testnet / .env.production (if STACK set)
+2. .env.development / .env.production (if STACK set)
    ↓
 3. .env.local (if exists)
 ```
@@ -49,23 +47,27 @@ pnpm run build:web
 # No configuration needed - uses localhost URLs from .env
 ```
 
-### Create Local Dev Config (Optional)
+### Create Testnet Overrides (Optional)
 
 ```bash
 cat > apps/mobile/.env.development << EOF
-EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
-AUTH_BETTER_AUTH_URL=http://localhost:8082/auth
-EXPO_PUBLIC_AUTH_EXCHANGE_URL=http://localhost:8082/auth/exchange
-AUTH_EXCHANGE_URL=http://localhost:8082/auth/exchange
+EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
+AUTH_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
+EXPO_PUBLIC_AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange
+AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange
 EOF
 ```
+
+This file is the testnet override file in this repo. Add
+`EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` if you want the Discord
+button visible while testing Better Auth.
 
 ### Deploy to Testnet
 
 ```bash
 cd packages/infra
 STACK=dev pnpm run deploy:dev
-# Automatically uses .env.testnet with testnet API URLs
+# Automatically uses .env.development with testnet API URLs
 ```
 
 ### Deploy to Production
@@ -87,7 +89,7 @@ EOF
 
 ## Critical URLs by Stage
 
-### Testnet (.env.testnet)
+### Testnet (.env.development)
 
 ```
 API: https://testnet.api.alternun.co
@@ -95,6 +97,8 @@ Auth: https://testnet.api.alternun.co/auth
 SSO: https://testnet.sso.alternun.co
 Update check interval: 60 seconds
 ```
+
+Testnet social mode is `authentik` so the Discord button stays visible.
 
 ### Production (.env.production)
 
@@ -109,7 +113,7 @@ Update check interval: 300 seconds
 
 ### "App calling localhost:8082 instead of testnet API"
 
-1. Verify `.env.testnet` exists and has correct URLs
+1. Verify `.env.development` exists and has correct URLs
 2. Hard refresh browser: `Ctrl+Shift+R` (Windows) or `Cmd+Shift+R` (Mac)
 3. Check DevTools Network tab to confirm API endpoint
 
@@ -142,7 +146,7 @@ EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID
 EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER
 ```
 
-### Stage-Specific (in .env.testnet / .env.production)
+### Stage-Specific (in .env.development / .env.production)
 
 ```
 EXPO_PUBLIC_BETTER_AUTH_URL
@@ -162,7 +166,7 @@ Deploy: STACK=dev pnpm run deploy:dev
 build.sh runs:
 - Loads .env (base config with localhost URLs)
 - Detects STACK=dev
-- Loads .env.testnet (overrides URLs to testnet)
+        - Loads .env.development (overrides URLs to testnet)
 - Loads .env.local if it exists (personal overrides)
         ↓
 Expo build with resolved environment variables
@@ -180,7 +184,7 @@ App deployed with correct testnet API URLs
 
 ✅ Do edit these for your stage:
 
-- `.env.testnet` - For testnet configuration
+- `.env.development` - For testnet configuration
 - `.env.production` - For production configuration
 - `.env.local` - For personal testing
 

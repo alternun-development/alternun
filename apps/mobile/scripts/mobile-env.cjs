@@ -47,15 +47,35 @@ function loadMobileEnv(mobileRoot = path.resolve(__dirname, '..'), envVars = pro
   loadDotEnvFile(path.join(mobileRoot, '.env'), env);
 
   // Load stage-specific environment file if deploying
-  // Priority: .env.testnet/.env.development/.env.production → .env.local → shell env
+  // Priority: .env.development/.env.production → .env.local → shell env
   const stage = envVars.SST_STAGE || envVars.STACK || envVars.EXPO_PUBLIC_STAGE || envVars.EXPO_PUBLIC_ENV;
   if (stage) {
     const stageNormalized = stage.toLowerCase();
     let stageFile = '';
 
-    if (stageNormalized === 'dev' || stageNormalized === 'api-dev' || stageNormalized.includes('testnet') || stageNormalized.includes('development')) {
+    if (
+      stageNormalized === 'dev' ||
+      stageNormalized === 'api-dev' ||
+      stageNormalized === 'dashboard-dev' ||
+      stageNormalized === 'admin-dev' ||
+      stageNormalized === 'backend-dev' ||
+      stageNormalized === 'identity-dev' ||
+      stageNormalized === 'mobile' ||
+      stageNormalized.includes('testnet') ||
+      stageNormalized.includes('development') ||
+      stageNormalized.includes('preview')
+    ) {
       stageFile = '.env.development';
-    } else if (stageNormalized === 'prod' || stageNormalized === 'api-prod' || stageNormalized === 'production' || stageNormalized.includes('production')) {
+    } else if (
+      stageNormalized === 'prod' ||
+      stageNormalized === 'api-prod' ||
+      stageNormalized === 'dashboard-prod' ||
+      stageNormalized === 'admin-prod' ||
+      stageNormalized === 'backend-prod' ||
+      stageNormalized === 'identity-prod' ||
+      stageNormalized === 'production' ||
+      stageNormalized.includes('production')
+    ) {
       stageFile = '.env.production';
     }
 
