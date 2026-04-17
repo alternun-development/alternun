@@ -114,6 +114,13 @@
         "passwordMismatch": "Las contrasenas no coinciden.",
         "passwordRequired": "La contrasena es obligatoria.",
         "validEmail": "Ingresa un correo valido."
+      },
+      "redirecting": {
+        "google": "Redirigiendo a Google...",
+        "discord": "Redirigiendo a Discord...",
+        "email": "Iniciando sesión...",
+        "signup": "Creando cuenta...",
+        "pleaseWait": "Por favor espera..."
       }
     },
     "dashboard": {

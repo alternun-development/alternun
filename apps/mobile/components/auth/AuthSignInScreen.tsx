@@ -53,6 +53,7 @@ import {
 } from './authWebSession';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
+import LoadingButton from '../common/LoadingButton';
 import { AuthFooter } from './AuthFooter';
 const RESEND_COOLDOWN_SECONDS = 45;
 
@@ -479,7 +480,6 @@ export default function AuthSignInScreen({
         transitionToStep('emailConfirmation');
       }
       setLocalError(message);
-    } finally {
       setSubmitMode(null);
     }
   };
@@ -550,7 +550,6 @@ export default function AuthSignInScreen({
       setNotice(t('authModal.notices.accountCreatedSigningIn'));
     } catch (authError) {
       setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
-    } finally {
       setSubmitMode(null);
     }
   };
@@ -584,9 +583,9 @@ export default function AuthSignInScreen({
       setConfirmationEmail(normalizedEmail);
       setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail }));
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
+      setSubmitMode(null);
     } catch (authError) {
       setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
-    } finally {
       setSubmitMode(null);
     }
   };
@@ -625,9 +624,9 @@ export default function AuthSignInScreen({
       setConfirmationEmail(normalizedEmail);
       setResendCooldown(0);
       transitionToSignInForm(normalizedEmail, t('authModal.notices.emailConfirmedSignIn'));
+      setSubmitMode(null);
     } catch (authError) {
       setLocalError(getMessage(authError, t('authModal.errors.confirmationCodeInvalid')));
-    } finally {
       setSubmitMode(null);
     }
   };
@@ -649,7 +648,6 @@ export default function AuthSignInScreen({
       });
     } catch (oidcError) {
       setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
-    } finally {
       setSubmitMode(null);
     }
   };
@@ -673,7 +671,6 @@ export default function AuthSignInScreen({
       });
     } catch (authError) {
       setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
-    } finally {
       setSubmitMode(null);
     }
   };
@@ -994,8 +991,19 @@ export default function AuthSignInScreen({
                   </>
                 ) : null}
 
-                <TouchableOpacity
-                  activeOpacity={0.85}
+                <LoadingButton
+                  variant='primary'
+                  label={
+                    mode === 'signin'
+                      ? t('authModal.actions.continueWithEmail')
+                      : t('authModal.actions.createAccount')
+                  }
+                  loadingLabel={
+                    mode === 'signin'
+                      ? t('authModal.redirecting.email')
+                      : t('authModal.redirecting.signup')
+                  }
+                  isLoading={submitMode === 'signin' || submitMode === 'signup'}
                   disabled={isBusy}
                   onPress={() => {
                     if (mode === 'signin') {
@@ -1004,22 +1012,7 @@ export default function AuthSignInScreen({
                       void handleEmailSignUp();
                     }
                   }}
-                  style={[
-                    styles.primaryButton,
-                    { backgroundColor: p.primaryBtnBg },
-                    isBusy && styles.buttonDisabled,
-                  ]}
-                >
-                  {submitMode === 'signin' || submitMode === 'signup' ? (
-                    <ActivityIndicator color={p.primaryBtnText} size='small' />
-                  ) : (
-                    <Text style={[styles.primaryButtonText, { color: p.primaryBtnText }]}>
-                      {mode === 'signin'
-                        ? t('authModal.actions.continueWithEmail')
-                        : t('authModal.actions.createAccount')}
-                    </Text>
-                  )}
-                </TouchableOpacity>
+                />
 
                 {mode === 'signin' ? (
                   <>
@@ -1031,56 +1024,30 @@ export default function AuthSignInScreen({
                       <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
                     </View>
 
-                    <TouchableOpacity
-                      activeOpacity={0.85}
+                    <LoadingButton
+                      variant='secondary'
+                      label={t('authModal.actions.continueWithGoogle')}
+                      loadingLabel={t('authModal.redirecting.google')}
+                      isLoading={submitMode === 'google'}
                       disabled={isBusy}
                       onPress={() => {
                         void handleGoogleSignIn();
                       }}
-                      style={[
-                        styles.secondaryButton,
-                        { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
-                        isBusy && styles.buttonDisabled,
-                      ]}
-                    >
-                      {submitMode === 'google' ? (
-                        <ActivityIndicator color={p.secondaryBtnText} size='small' />
-                      ) : (
-                        <>
-                          <Chrome size={16} color={p.secondaryBtnText} />
-                          <Text style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}>
-                            {t('authModal.actions.continueWithGoogle')}
-                          </Text>
-                        </>
-                      )}
-                    </TouchableOpacity>
+                      icon={Chrome}
+                    />
 
                     {shouldShowAuthentikSocialButtons ? (
-                      <TouchableOpacity
-                        activeOpacity={0.85}
+                      <LoadingButton
+                        variant='secondary'
+                        label={t('authModal.actions.continueWithDiscord')}
+                        loadingLabel={t('authModal.redirecting.discord')}
+                        isLoading={submitMode === 'discord'}
                         disabled={isBusy}
                         onPress={() => {
                           void handleDiscordSignIn();
                         }}
-                        style={[
-                          styles.secondaryButton,
-                          { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
-                          isBusy && styles.buttonDisabled,
-                        ]}
-                      >
-                        {submitMode === 'discord' ? (
-                          <ActivityIndicator color={p.secondaryBtnText} size='small' />
-                        ) : (
-                          <>
-                            <MessageSquare size={16} color={p.secondaryBtnText} />
-                            <Text
-                              style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}
-                            >
-                              {t('authModal.actions.continueWithDiscord')}
-                            </Text>
-                          </>
-                        )}
-                      </TouchableOpacity>
+                        icon={MessageSquare}
+                      />
                     ) : null}
 
                     {ENABLE_WEB3_LOGIN && (

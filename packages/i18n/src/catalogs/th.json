@@ -114,6 +114,13 @@
         "passwordMismatch": "รหัสผ่านไม่ตรงกัน",
         "passwordRequired": "จำเป็นต้องกรอกรหัสผ่าน",
         "validEmail": "กรุณากรอกอีเมลที่ถูกต้อง"
+      },
+      "redirecting": {
+        "google": "กำลังเปลี่ยนเส้นทางไปยัง Google...",
+        "discord": "กำลังเปลี่ยนเส้นทางไปยัง Discord...",
+        "email": "กำลังเข้าสู่ระบบ...",
+        "signup": "กำลังสร้างบัญชี...",
+        "pleaseWait": "โปรดรอ..."
       }
     },
     "dashboard": {
