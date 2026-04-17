@@ -36,6 +36,13 @@
       "expo-font",
       "expo-web-browser",
       [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": false,
+          "supportsPictureInPicture": false
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "android": {
