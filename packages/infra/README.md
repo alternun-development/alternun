@@ -255,6 +255,7 @@ When `INFRA_IDENTITY_ENABLED=true`, the stack now provisions:
   - SMTP credentials placeholder
   - JWT signing key
   - integration config (Google OAuth + Supabase OIDC bridge)
+- Dashboard/backend CodeBuild jobs hydrate the Google and Discord OAuth client IDs and secrets from the stage-scoped integration config secret before infra synthesis, then pass them through as the `INFRA_IDENTITY_*` and `INFRA_BACKEND_API_*` env contracts.
 
 Current default identity domains:
 

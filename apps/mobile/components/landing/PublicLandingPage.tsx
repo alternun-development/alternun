@@ -55,6 +55,8 @@ import {
   getMembershipMarqueeRepeatCount,
   scaleMembershipMarqueeDuration,
 } from './membershipMarquee';
+import { getBenefitCardDefaultDetailsExpanded } from './benefitCard';
+import { getTokenCardDefaultExpanded } from './tokenCard';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
@@ -372,6 +374,7 @@ interface TokenCardProps {
   accentColor: string;
   isDark: boolean;
   isMobile: boolean;
+  moreInfoLabel: string;
 }
 
 function TokenCard({
@@ -385,8 +388,13 @@ function TokenCard({
   accentColor: _accentColor,
   isDark: _isDark,
   isMobile,
+  moreInfoLabel,
 }: TokenCardProps): React.JSX.Element {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(() => getTokenCardDefaultExpanded(isMobile));
+
+  useEffect(() => {
+    setExpanded(getTokenCardDefaultExpanded(isMobile));
+  }, [isMobile]);
 
   useEffect(() => {
     if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -406,7 +414,14 @@ function TokenCard({
 
   return (
     <View style={[styles.projectCard, isMobile && styles.projectCardMobile]}>
-      <TouchableOpacity activeOpacity={0.92} onPress={toggle} style={styles.projectCardPressable}>
+      <TouchableOpacity
+        accessibilityRole='button'
+        accessibilityLabel={title}
+        accessibilityHint={moreInfoLabel}
+        activeOpacity={0.92}
+        onPress={toggle}
+        style={styles.projectCardPressable}
+      >
         <View style={[styles.projectCardImageWrap, isMobile && styles.projectCardImageWrapMobile]}>
           <ExpoImage
             source={imageSource}
@@ -415,6 +430,10 @@ function TokenCard({
             style={[StyleSheet.absoluteFillObject, { transform: [{ scale: imageZoom }] }]}
           />
           <View style={styles.projectCardImageScrim} />
+          <View pointerEvents='none' style={styles.projectCardInfoBadge}>
+            <InfoIcon size={12} color='#0f766e' strokeWidth={2.5} />
+            <Text style={styles.projectCardInfoBadgeText}>{moreInfoLabel}</Text>
+          </View>
           <View style={styles.projectCardImageOverlay}>
             <Text style={[styles.projectCardImageTitle, { color: titleColor }]}>{title}</Text>
             <Text style={[styles.projectCardImageSubtitle, { color: subtitleColor }]}>
@@ -490,6 +509,7 @@ function ElProyectoSection({
       overview: t('landing.elProyecto.atn.overview'),
     },
   ];
+  const moreInfoLabel = t('landing.elProyecto.moreInfo', undefined, 'More info');
 
   return (
     <Animated.View
@@ -548,6 +568,7 @@ function ElProyectoSection({
             accentColor={accentColor}
             isDark={isDark}
             isMobile={isMobile}
+            moreInfoLabel={moreInfoLabel}
           />
         ))}
       </View>
@@ -1384,6 +1405,8 @@ interface PlaceCardData {
   topRatedLabel: string;
   accentColor: string;
   isDark: boolean;
+  isMobile: boolean;
+  moreInfoLabel: string;
   infoBody: string;
   availableFromLabel: string;
   redeemCtaLabel: string;
@@ -1408,11 +1431,16 @@ function PlaceCard({
   topRatedLabel,
   accentColor,
   isDark,
+  isMobile,
+  moreInfoLabel,
   onPress,
   onInfoPress,
 }: PlaceCardData): React.JSX.Element {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [overlayVisible, setOverlayVisible] = useState(false);
+  const [detailsExpanded, setDetailsExpanded] = useState(() =>
+    getBenefitCardDefaultDetailsExpanded(isMobile)
+  );
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const fadeInAnim = useRef(new Animated.Value(0)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
@@ -1455,6 +1483,10 @@ function PlaceCard({
     []
   );
 
+  useEffect(() => {
+    setDetailsExpanded(getBenefitCardDefaultDetailsExpanded(isMobile));
+  }, [isMobile]);
+
   const currentImage = images[currentIndex] ?? images[0] ?? TOKEN_IMAGES.rbi;
 
   const cardBgColor = isDark ? '#141420' : '#ffffff';
@@ -1462,6 +1494,14 @@ function PlaceCard({
   const titleColor = isDark ? '#e8e8ff' : '#0f172a';
   const descColor = isDark ? 'rgba(232,232,255,0.65)' : '#64748b';
   const metaColor = isDark ? 'rgba(232,232,255,0.45)' : '#94a3b8';
+  const showDescription = detailsExpanded;
+
+  const toggleDetails = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    }
+    setDetailsExpanded((current) => !current);
+  }, []);
 
   const manualChangeImage = useCallback(
     (dir: number) => {
@@ -1512,9 +1552,13 @@ function PlaceCard({
         },
       ]}
     >
-      {/* Image area — tap shows overlay controls only, no auth */}
+      {/* Image area — tap toggles the inline details and shows overlay controls */}
       <TouchableOpacity
+        accessibilityRole='button'
+        accessibilityLabel={title}
+        accessibilityHint='Tap the image to expand or collapse the details'
         activeOpacity={1}
+        onPress={toggleDetails}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         style={styles.placeCardTouchable}
@@ -1585,8 +1629,8 @@ function PlaceCard({
         </View>
       </TouchableOpacity>
 
-      {/* Body — separate from image tap so only CTA triggers auth */}
-      <View style={styles.placeCardBody}>
+      {/* Body — description stays collapsed until the image toggles it open */}
+      <View style={[styles.placeCardBody, isMobile && styles.placeCardBodyMobile]}>
         <View style={styles.placeCardTitleRow}>
           <Text style={[styles.placeCardTitle, { color: titleColor }]} numberOfLines={1}>
             {title}
@@ -1598,9 +1642,11 @@ function PlaceCard({
           )}
         </View>
         <Text style={[styles.placeCardMeta, { color: metaColor }]}>{meta}</Text>
-        <Text style={[styles.placeCardDescription, { color: descColor }]} numberOfLines={3}>
-          {description}
-        </Text>
+        {showDescription && (
+          <Text style={[styles.placeCardDescription, { color: descColor }]} numberOfLines={3}>
+            {description}
+          </Text>
+        )}
         <View style={styles.placeCardFooter}>
           {/* ATN price with coin logo */}
           <View style={styles.placeCardPriceRow}>
@@ -1615,8 +1661,9 @@ function PlaceCard({
             </Text>
           </View>
           <View style={styles.placeCardFooterActions}>
-            {/* Info icon — same level as CTA */}
             <TouchableOpacity
+              accessibilityRole='button'
+              accessibilityLabel={moreInfoLabel}
               onPress={onInfoPress}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               style={[
@@ -1973,6 +2020,8 @@ function BeneficiosSection({
               topRatedLabel={topRatedLabel}
               accentColor={accentColor}
               isDark={isDark}
+              isMobile={isMobile}
+              moreInfoLabel={t('landing.beneficios.moreInfo', undefined, 'Tap to expand')}
               onPress={onSignIn}
               onInfoPress={() => setOpenInfoKey(benefit.key)}
             />
@@ -2123,6 +2172,32 @@ const styles = createTypographyStyles({
   projectCardImageScrim: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(4, 10, 28, 0.08)',
+  },
+  projectCardInfoBadge: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
+    zIndex: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(15, 118, 110, 0.16)',
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.14,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  projectCardInfoBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.1,
+    color: '#0f766e',
   },
   projectCardImageWrapMobile: {
     height: 330,
@@ -2506,6 +2581,10 @@ const styles = createTypographyStyles({
     padding: 16,
     gap: 8,
   },
+  placeCardBodyMobile: {
+    padding: 14,
+    gap: 6,
+  },
   placeCardTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2524,14 +2603,6 @@ const styles = createTypographyStyles({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  infoCircleButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   placeCardTitle: {
     flex: 1,

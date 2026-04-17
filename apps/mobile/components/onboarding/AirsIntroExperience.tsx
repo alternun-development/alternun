@@ -1252,8 +1252,8 @@ const AirsIntroExperience = forwardRef<
                     isDark={isDark}
                   />
                   <HeroGlassButton
-                    onPress={() => onHeroNavigate?.('beneficios')}
-                    label={t('landing.nav.benefits')}
+                    onPress={onSignIn}
+                    label={t('landing.nav.joinNow')}
                     width={heroButtonWidth}
                     fontSize={heroButtonFontSize}
                     isDark={isDark}

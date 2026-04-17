@@ -209,6 +209,7 @@ export default function AuthSignInScreen({
   const isModal = presentation === 'modal';
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const isDesktop = windowWidth >= 720;
+  const isCompactModal = isModal && windowWidth < 560;
   const wordmarkSource = isDesktop
     ? p.isDark
       ? AIRS_LOGO_LIGHT_2X
@@ -710,6 +711,7 @@ export default function AuthSignInScreen({
           contentContainerStyle={[
             styles.scrollContent,
             isModal && styles.scrollContentModal,
+            isCompactModal && styles.scrollContentModalCompact,
             { minHeight: windowHeight },
           ]}
           keyboardShouldPersistTaps='handled'
@@ -719,41 +721,57 @@ export default function AuthSignInScreen({
             style={[
               styles.card,
               isModal && styles.cardModal,
+              isCompactModal && styles.cardModalCompact,
               { backgroundColor: p.cardBg, borderColor: p.cardBorder },
             ]}
           >
-            <View style={[styles.header, isModal && styles.headerModal]}>
-              <View style={[styles.titleLockup, isModal && styles.titleLockupModal]}>
-                <ExpoImage
-                  source={wordmarkSource}
-                  style={[styles.titleWordmark, isModal && styles.titleWordmarkModal]}
-                  contentFit='contain'
-                />
-                {!isModal ? (
-                  <Text style={[styles.subtitle, { color: p.textMuted }]}>
-                    {t('authModal.notices.secureSignIn')}
-                  </Text>
-                ) : null}
-              </View>
-              <View style={[styles.headerActions, isModal && styles.headerActionsModal]}>
-                <View style={styles.settingsMenuContainer}>
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => setSettingsMenuOpen((prev) => !prev)}
-                    style={[
-                      styles.settingsButton,
-                      {
-                        borderColor: settingsMenuOpen ? p.accent : p.cardBorder,
-                        backgroundColor: settingsMenuOpen ? p.accentMuted : undefined,
-                      },
-                    ]}
-                  >
-                    <Settings size={15} color={settingsMenuOpen ? p.accent : p.iconDefault} />
-                  </TouchableOpacity>
+            <View
+              style={[
+                styles.header,
+                isModal && styles.headerModal,
+                isCompactModal && styles.headerModalCompact,
+              ]}
+            >
+              {isCompactModal ? (
+                <>
+                  <View style={styles.headerModalTopRow}>
+                    <View style={[styles.headerActions, styles.headerActionsModalCompact]}>
+                      <View style={styles.settingsMenuContainer}>
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => setSettingsMenuOpen((prev) => !prev)}
+                          style={[
+                            styles.settingsButton,
+                            styles.settingsButtonCompact,
+                            {
+                              borderColor: settingsMenuOpen ? p.accent : p.cardBorder,
+                              backgroundColor: settingsMenuOpen ? p.accentMuted : undefined,
+                            },
+                          ]}
+                        >
+                          <Settings size={15} color={settingsMenuOpen ? p.accent : p.iconDefault} />
+                        </TouchableOpacity>
+                      </View>
+                      {onCancel ? (
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={onCancel}
+                          style={[
+                            styles.closeButton,
+                            styles.closeButtonCompact,
+                            { borderColor: p.cardBorder },
+                          ]}
+                        >
+                          <X size={16} color={p.iconDefault} />
+                        </TouchableOpacity>
+                      ) : null}
+                    </View>
+                  </View>
                   <AnimatedCollapsibleContent
                     expanded={settingsMenuOpen}
                     style={[
                       styles.settingsDropdown,
+                      styles.settingsDropdownCompact,
                       { backgroundColor: p.dropdownBg, borderColor: p.dropdownBorder },
                     ]}
                   >
@@ -790,17 +808,106 @@ export default function AuthSignInScreen({
                       </Text>
                     </TouchableOpacity>
                   </AnimatedCollapsibleContent>
-                </View>
-                {onCancel ? (
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={onCancel}
-                    style={[styles.closeButton, { borderColor: p.cardBorder }]}
+                  <View
+                    style={[
+                      styles.titleLockup,
+                      styles.titleLockupModal,
+                      styles.titleLockupModalCompact,
+                    ]}
                   >
-                    <X size={16} color={p.iconDefault} />
-                  </TouchableOpacity>
-                ) : null}
-              </View>
+                    <ExpoImage
+                      source={wordmarkSource}
+                      style={[
+                        styles.titleWordmark,
+                        styles.titleWordmarkModal,
+                        styles.titleWordmarkModalCompact,
+                      ]}
+                      contentFit='contain'
+                    />
+                  </View>
+                </>
+              ) : (
+                <>
+                  <View style={[styles.titleLockup, isModal && styles.titleLockupModal]}>
+                    <ExpoImage
+                      source={wordmarkSource}
+                      style={[styles.titleWordmark, isModal && styles.titleWordmarkModal]}
+                      contentFit='contain'
+                    />
+                    {!isModal ? (
+                      <Text style={[styles.subtitle, { color: p.textMuted }]}>
+                        {t('authModal.notices.secureSignIn')}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <View style={[styles.headerActions, isModal && styles.headerActionsModal]}>
+                    <View style={styles.settingsMenuContainer}>
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => setSettingsMenuOpen((prev) => !prev)}
+                        style={[
+                          styles.settingsButton,
+                          {
+                            borderColor: settingsMenuOpen ? p.accent : p.cardBorder,
+                            backgroundColor: settingsMenuOpen ? p.accentMuted : undefined,
+                          },
+                        ]}
+                      >
+                        <Settings size={15} color={settingsMenuOpen ? p.accent : p.iconDefault} />
+                      </TouchableOpacity>
+                      <AnimatedCollapsibleContent
+                        expanded={settingsMenuOpen}
+                        style={[
+                          styles.settingsDropdown,
+                          { backgroundColor: p.dropdownBg, borderColor: p.dropdownBorder },
+                        ]}
+                      >
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => cycleLanguage()}
+                          style={styles.settingsDropdownItem}
+                        >
+                          <Languages size={13} color={p.iconDefault} />
+                          <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
+                            {t('labels.language')}
+                          </Text>
+                          <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
+                            {getLocaleLabel(language, language)}
+                          </Text>
+                        </TouchableOpacity>
+                        <View
+                          style={[
+                            styles.settingsDropdownDivider,
+                            { backgroundColor: p.dropdownDivider },
+                          ]}
+                        />
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => toggleThemeMode()}
+                          style={styles.settingsDropdownItem}
+                        >
+                          <ThemeIcon size={13} color={p.iconDefault} />
+                          <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
+                            {t('labels.theme')}
+                          </Text>
+                          <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
+                            {themeLabel}
+                          </Text>
+                        </TouchableOpacity>
+                      </AnimatedCollapsibleContent>
+                    </View>
+                    {onCancel ? (
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={onCancel}
+                        style={[styles.closeButton, { borderColor: p.cardBorder }]}
+                      >
+                        <X size={16} color={p.iconDefault} />
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
+                </>
+              )}
             </View>
 
             {authStep === 'form' ? (
@@ -1458,6 +1565,11 @@ const styles = createTypographyStyles({
   scrollContentModal: {
     alignItems: 'center',
   },
+  scrollContentModalCompact: {
+    justifyContent: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
   card: {
     borderRadius: 18,
     borderWidth: 1,
@@ -1476,6 +1588,13 @@ const styles = createTypographyStyles({
     shadowRadius: 24,
     elevation: 8,
   },
+  cardModalCompact: {
+    maxWidth: 440,
+    padding: 16,
+    paddingTop: 16,
+    gap: 10,
+    borderRadius: 20,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1491,6 +1610,20 @@ const styles = createTypographyStyles({
     marginBottom: 14,
     minHeight: 88,
   },
+  headerModalCompact: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
+    marginBottom: 12,
+    minHeight: 0,
+    gap: 12,
+  },
+  headerModalTopRow: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1502,6 +1635,9 @@ const styles = createTypographyStyles({
     position: 'absolute',
     top: 0,
     right: 0,
+  },
+  headerActionsModalCompact: {
+    gap: 10,
   },
   settingsMenuContainer: {
     position: 'relative',
@@ -1515,6 +1651,11 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  settingsButtonCompact: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   settingsButtonActive: {
     borderColor: 'rgba(28,203,161,0.4)',
@@ -1535,6 +1676,17 @@ const styles = createTypographyStyles({
     shadowOpacity: 0.7,
     shadowRadius: 16,
     elevation: 24,
+  },
+  settingsDropdownCompact: {
+    position: 'relative',
+    top: 0,
+    right: 0,
+    zIndex: 80,
+    width: '100%',
+    minWidth: 0,
+    alignSelf: 'stretch',
+    marginTop: 10,
+    marginBottom: 2,
   },
   settingsDropdownItem: {
     flexDirection: 'row',
@@ -1567,6 +1719,9 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     gap: 0,
   },
+  titleLockupModalCompact: {
+    gap: 0,
+  },
   titleWordmark: {
     width: 96,
     height: 34,
@@ -1574,6 +1729,10 @@ const styles = createTypographyStyles({
   titleWordmarkModal: {
     width: 208,
     height: 73,
+  },
+  titleWordmarkModalCompact: {
+    width: 180,
+    height: 63,
   },
   subtitle: {
     color: 'rgba(232,232,255,0.55)',
@@ -1587,6 +1746,11 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(255,255,255,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  closeButtonCompact: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   modeSwitch: {
     flexDirection: 'row',

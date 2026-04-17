@@ -204,6 +204,15 @@ phases:
           exit 1
         fi
       - |
+        if [ -f "${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh" ]; then
+          echo "Resolving auth secrets from the canonical Secrets Manager helper..."
+          # shellcheck source=/dev/null
+          source "${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh"
+        else
+          echo "ERROR: Missing ${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh" >&2
+          exit 1
+        fi
+      - |
         stage_normalized=$(echo "${SST_STAGE}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
         if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ]; then
           case "${stage_normalized}" in
