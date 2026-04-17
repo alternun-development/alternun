@@ -224,6 +224,13 @@
           }
         }
       },
+      "membresia": {
+        "sectionTitle": "Lifetime membership from Day 1",
+        "descriptionPart1": "No monthly fees or renewals needed.",
+        "descriptionPart2Bold": "When you offset your first carbon footprint, you become a lifetime member.",
+        "descriptionPart3": "From that moment, you start accumulating Airs and receiving your RBI monthly.",
+        "descriptionPart4": "Your membership never expires and your benefits only grow over time."
+      },
       "beneficios": {
         "atnUnit": "ATN",
         "cards": {

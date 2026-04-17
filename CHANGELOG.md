@@ -1,3 +1,39 @@
+## [1.0.122](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.122) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(repo,admin,api): CHANGELOG, app, callback, explorar
+- **repo:** refactor(mobile): remove "By Alternun" byline from landing page, keep only AIRS logo
+- **repo:** refactor(mobile): remove "By Alternun" byline from TopNav, keep only AIRS logo
+- **repo:** feat(mobile): use PNG AIRS-logo assets with responsive 2x desktop sizing
+- **repo:** feat(mobile): replace AIRS-logotipo with new AIRS-logo in landing page, add 2x desktop sizing
+
+### Bug Fixes
+
+- **mobile:** AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light ([a9c3f48](https://github.com/alternun-development/alternun/commit/a9c3f48592907cfd55dcc6f7d258550a2e4e2037))
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+- **repo,admin,api:** CHANGELOG, app, callback, explorar ([dcddf89](https://github.com/alternun-development/alternun/commit/dcddf89718fdfec30a9bb7fcfe7a91c1942ba714))
+
+### Features
+
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in landing page, add 2x desktop sizing ([afcf507](https://github.com/alternun-development/alternun/commit/afcf5075fa5eb777adf6da797be220e138040b18))
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in TopNav, add 2x desktop sizing ([d56064d](https://github.com/alternun-development/alternun/commit/d56064d5789d019d3186c568b52bbac98a638374))
+- **mobile:** use PNG AIRS-logo assets with responsive 2x desktop sizing ([b2c2459](https://github.com/alternun-development/alternun/commit/b2c2459e46b153647e804636da9e1a292eadf6fb))
+
+## [1.0.122](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.122) (2026-04-17)
+
+### Bug Fixes
+
+- **mobile:** AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light ([a9c3f48](https://github.com/alternun-development/alternun/commit/a9c3f48592907cfd55dcc6f7d258550a2e4e2037))
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+- **repo,admin,api:** CHANGELOG, app, callback, explorar ([dcddf89](https://github.com/alternun-development/alternun/commit/dcddf89718fdfec30a9bb7fcfe7a91c1942ba714))
+
+### Features
+
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in landing page, add 2x desktop sizing ([afcf507](https://github.com/alternun-development/alternun/commit/afcf5075fa5eb777adf6da797be220e138040b18))
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in TopNav, add 2x desktop sizing ([d56064d](https://github.com/alternun-development/alternun/commit/d56064d5789d019d3186c568b52bbac98a638374))
+- **mobile:** use PNG AIRS-logo assets with responsive 2x desktop sizing ([b2c2459](https://github.com/alternun-development/alternun/commit/b2c2459e46b153647e804636da9e1a292eadf6fb))
+
 ## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
 
 ### Bug Fixes
