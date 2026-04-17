@@ -24,4 +24,7 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
     helperSource,
     /unset\s+\\[\s\S]*?AUTH_EXCHANGE_URL[\s\S]*?EXPO_PUBLIC_AUTH_EXCHANGE_URL/
   );
+  assert.match(helperSource, /resolve_auth_execution_provider\(\)/);
+  assert.match(helperSource, /export AUTH_EXECUTION_PROVIDER/);
+  assert.match(helperSource, /export EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER/);
 });
