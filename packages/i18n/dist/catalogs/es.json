@@ -224,6 +224,13 @@
           }
         }
       },
+      "membresia": {
+        "sectionTitle": "Membresía vitalicia desde el Día 1",
+        "descriptionPart1": "No necesitas pagar cuotas mensuales ni renovaciones.",
+        "descriptionPart2Bold": "Al compensar tu primera huella, eres miembro vitalicio.",
+        "descriptionPart3": "Desde ese momento, empiezas a acumular Airs y a recibir tu RBI mensual.",
+        "descriptionPart4": "Tu membresía nunca expira y tus beneficios solo crecen con el tiempo."
+      },
       "beneficios": {
         "atnUnit": "ATN",
         "cards": {
