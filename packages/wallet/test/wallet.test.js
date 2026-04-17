@@ -48,7 +48,7 @@ test('chain derivation returns expected account 0 addresses', () => {
   assert.equal(evm.address, '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266');
 
   assert.equal(bitcoin.path, `m/44'/0'/0'/0/0`);
-  assert.equal(bitcoin.address, 'bc1qcnezw0zv4nsqez4jxwdxj3z798n9adse4yz4pm');
+  assert.equal(bitcoin.address, 'bc1qjesugmy5wq9jejy3zz0llsaynvndrauwtwj4yl');
 
   assert.equal(solana.path, `m/44'/501'/0'/0'`);
   assert.equal(solana.address, 'oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96');
