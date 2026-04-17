@@ -53,6 +53,7 @@ export interface ResolvedExpoConfig {
     airsToDevCertArn?: string;
     enableDevToTestnet: boolean;
     devToTestnetSourceDomain: string;
+    devToTestnetSourceDomains: string[];
     devToTestnetCertArn?: string;
     enableRootDomainRedirect: boolean;
     rootDomainRedirectTarget: string;
@@ -103,6 +104,39 @@ function resolveAuthentikProviderFlowSlugsEnvValue(
   }
 
   return undefined;
+}
+
+function splitDomainList(value: string | undefined): string[] {
+  return (value ?? '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function normalizeDomainList(values: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const value of values) {
+    const normalized = value
+      .replace(/^https?:\/\//i, '')
+      .replace(/\/+$/, '')
+      .trim();
+
+    if (!normalized) {
+      continue;
+    }
+
+    const key = normalized.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    result.push(normalized);
+  }
+
+  return result;
 }
 
 function normalizeBetterAuthBaseUrl(value: string | undefined): string | undefined {
@@ -368,10 +402,17 @@ export function resolveExpoConfig({
           : undefined),
       REDIRECT_INFRA_DEFAULTS.enableDevToTestnet
     ),
-    devToTestnetSourceDomain:
-      env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE ??
-      localConfig.redirects?.devToTestnetSourceDomain ??
+    devToTestnetSourceDomains: normalizeDomainList([
+      ...splitDomainList(env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES),
+      ...splitDomainList(env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE),
+      ...(localConfig.redirects?.devToTestnetSourceDomains ?? []),
+      ...(localConfig.redirects?.devToTestnetSourceDomain
+        ? [localConfig.redirects.devToTestnetSourceDomain]
+        : []),
       legacyDevDomain,
+      `demo.${subdomain}.${rootDomain}`,
+      `beta.${subdomain}.${rootDomain}`,
+    ]),
     devToTestnetCertArn:
       env.INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN ?? localConfig.redirects?.certArns?.devToTestnet,
     enableRootDomainRedirect: parseBoolean(
@@ -388,6 +429,9 @@ export function resolveExpoConfig({
     rootDomainRedirectCertArn:
       env.INFRA_REDIRECT_ROOT_CERT_ARN ?? localConfig.redirects?.certArns?.rootDomain,
   };
+  const devToTestnetSourceDomain = redirects.devToTestnetSourceDomains[0] ?? legacyDevDomain;
+
+  redirects.devToTestnetSourceDomain = devToTestnetSourceDomain;
 
   const assetBucketNames: Record<PipelineStage, string> = {
     production: createAssetBucketName('production', pipelinePrefix, rootDomain),

@@ -60,6 +60,8 @@ APPROVE=true pnpm --filter @alternun/infra run ensure:pipelines
 - Dev-stage redirects are supported through infra config:
   - `airs.alternun.co` -> `testnet.airs.alternun.co`
   - `dev.airs.alternun.co` -> `testnet.airs.alternun.co`
+  - `demo.airs.alternun.co` -> `testnet.airs.alternun.co`
+  - `beta.airs.alternun.co` -> `testnet.airs.alternun.co`
   - `alternun.co` -> `alternun.io`
 - Root `.env` local flag:
   - `ALTERNUN_TESTNET_MODE=on`
