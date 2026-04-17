@@ -52,7 +52,6 @@ const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png');
 const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png');
 const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png');
 const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png');
-const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png');
 const ALTERNUN_PILL_LOGO_LIGHT = require('../../assets/alternun-black.svg');
 const ALTERNUN_PILL_LOGO_DARK = require('../../assets/alternun-white.svg');
 // const AIRS_BG_DARK = require('../../assets/images/water_falls-alternun-digital-forge.png'); //TODO CRAFT a same resolutions BG imagen
@@ -258,16 +257,11 @@ const AirsIntroExperience = forwardRef<
     const mediaTagPillHeight = Math.min(Math.max(screenWidth * 0.058, 34), 48);
     const mediaTagPillLogoWidth = mediaTagPillWidth * 0.74;
     const mediaTagPillLogoHeight = mediaTagPillHeight * 0.58;
-    const heroBrandSecondaryColor = isDark ? 'rgba(210,255,245,0.9)' : '#0f766e';
     const isDesktopView = screenWidth >= 720;
     const heroWordmarkHeight = isDesktopView
       ? Math.min(Math.max(screenWidth * 0.066, 76), 132)
       : Math.min(Math.max(screenWidth * 0.066, 38), 66);
     const heroWordmarkWidth = Math.round(heroWordmarkHeight * 2.68);
-    const heroBylineSize = Math.min(Math.max(screenWidth * 0.016, 10), 15);
-    const heroBylineLineHeight = heroBylineSize * 1.03;
-    const heroBylineWidth = heroWordmarkWidth * 0.34;
-    const heroBylineLogoSize = Math.min(Math.max(screenWidth * 0.022, 12), 18);
     const heroLogoSize = Math.min(Math.max(screenWidth * 0.084, 50), 84);
     const heroBrandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
     const heroBrandMarkCutout = isDark ? '#0b5a5f' : '#ffffff';
@@ -455,38 +449,6 @@ const AirsIntroExperience = forwardRef<
                 style={{ width: heroWordmarkWidth, height: heroWordmarkHeight }}
                 contentFit='contain'
               />
-              <View
-                style={[
-                  styles.heroBrandBylineRow,
-                  {
-                    width: heroBylineWidth,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.heroBrandByline,
-                    {
-                      color: heroBrandSecondaryColor,
-                      fontSize: heroBylineSize,
-                      lineHeight: heroBylineLineHeight,
-                    },
-                  ]}
-                >
-                  {t('labels.by')}
-                </Text>
-                <ExpoImage
-                  source={ALTERNUN_POWERED_BY_LOGO}
-                  style={[
-                    styles.heroBrandBylineLogo,
-                    {
-                      width: heroBylineLogoSize,
-                      height: heroBylineLogoSize,
-                    },
-                  ]}
-                  contentFit='contain'
-                />
-              </View>
             </View>
             <AirsBrandMark
               size={heroLogoSize}
