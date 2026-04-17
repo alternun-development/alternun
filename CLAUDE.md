@@ -114,6 +114,23 @@ bash scripts/setup-aws-account.sh && APPROVE=true STACK=dev packages/infra/scrip
 | **Manual**           | `bash scripts/validate-aws-account.sh`         | Shows current account                 |
 | **Manual (enforce)** | `bash scripts/validate-aws-account.sh enforce` | Exits with error if wrong             |
 
+### AWS CLI Command Protocol
+
+**Before running ANY `aws` or deploy command**, verify account first:
+
+```bash
+bash scripts/validate-aws-account.sh enforce  # Exits with error if wrong account
+```
+
+**ALWAYS follow this pattern:**
+
+```bash
+bash scripts/validate-aws-account.sh enforce && \
+  APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+```
+
+Never run AWS CLI commands without this guard.
+
 ### Troubleshooting
 
 **Q: How do I know which account I'm using?**
