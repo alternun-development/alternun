@@ -2,15 +2,15 @@ import { useAuth as useUniversalAuth } from '@edcalderon/auth';
 import { type PropsWithChildren, type ReactElement } from 'react';
 import type { CreateAuthFacadeOptions } from '../facade/createAuthFacade';
 type MobileAuthOverrideOptions = {
-  walletBridge?: CreateAuthFacadeOptions['walletBridge'];
-  allowMockWalletFallback?: boolean;
-  allowWalletOnlySession?: boolean;
-  supabaseUrl?: string;
-  supabaseKey?: string;
-  betterAuthBaseUrl?: string;
+    walletBridge?: CreateAuthFacadeOptions['walletBridge'];
+    allowMockWalletFallback?: boolean;
+    allowWalletOnlySession?: boolean;
+    supabaseUrl?: string;
+    supabaseKey?: string;
+    betterAuthBaseUrl?: string;
 };
 export interface AppAuthProviderProps extends PropsWithChildren {
-  options?: MobileAuthOverrideOptions;
+    options?: MobileAuthOverrideOptions;
 }
 export declare function AppAuthProvider({ children, options }: AppAuthProviderProps): ReactElement;
 export declare const useAuth: typeof useUniversalAuth;
