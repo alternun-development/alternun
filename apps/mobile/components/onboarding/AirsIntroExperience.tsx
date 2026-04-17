@@ -48,8 +48,8 @@ const HERO_SOLID_SWAP_SCROLL = 180;
 const AUTO_UNMUTE_SCROLL_Y = 88;
 const TOP_PAUSE_SCROLL_Y = 6;
 
-const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg');
-const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg');
+const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.svg');
+const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.svg');
 const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png');
 const ALTERNUN_PILL_LOGO_LIGHT = require('../../assets/alternun-black.svg');
 const ALTERNUN_PILL_LOGO_DARK = require('../../assets/alternun-white.svg');
@@ -257,7 +257,7 @@ const AirsIntroExperience = forwardRef<
     const mediaTagPillLogoWidth = mediaTagPillWidth * 0.74;
     const mediaTagPillLogoHeight = mediaTagPillHeight * 0.58;
     const heroBrandSecondaryColor = isDark ? 'rgba(210,255,245,0.9)' : '#0f766e';
-    const heroWordmarkHeight = Math.min(Math.max(screenWidth * 0.066, 38), 66);
+    const heroWordmarkHeight = Math.min(Math.max(screenWidth * 0.066, 38), 132);
     const heroWordmarkWidth = Math.round(heroWordmarkHeight * 2.68);
     const heroBylineSize = Math.min(Math.max(screenWidth * 0.016, 10), 15);
     const heroBylineLineHeight = heroBylineSize * 1.03;
@@ -377,7 +377,7 @@ const AirsIntroExperience = forwardRef<
           mutedButtonBorder: 'rgba(15,23,42,0.16)',
         };
 
-    const heroWordmarkSource = isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK;
+    const heroWordmarkSource = isDark ? AIRS_LOGO_LIGHT : AIRS_LOGO_DARK;
     const mediaTagPillLogoSource = isDark ? ALTERNUN_PILL_LOGO_DARK : ALTERNUN_PILL_LOGO_LIGHT;
     const mediaTagPillBackgroundColor = isDark
       ? 'rgba(0, 70, 70, 0.96)'
