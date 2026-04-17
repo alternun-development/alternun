@@ -1,3 +1,20 @@
+## [1.0.132](https://github.com/alternun-development/alternun/compare/v1.0.131...v1.0.132) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** chore: add packages/wallet/dist to gitignore
+- **repo:** fix(api): suppress Buffer.isBuffer eslint error with safe cast
+
+### Bug Fixes
+
+- **api:** suppress Buffer.isBuffer eslint error with safe cast ([7caf9e6](https://github.com/alternun-development/alternun/commit/7caf9e6a4c32e09dbca5359b108bf2591c259cb3))
+
+## [1.0.132](https://github.com/alternun-development/alternun/compare/v1.0.131...v1.0.132) (2026-04-17)
+
+### Bug Fixes
+
+- **api:** suppress Buffer.isBuffer eslint error with safe cast ([7caf9e6](https://github.com/alternun-development/alternun/commit/7caf9e6a4c32e09dbca5359b108bf2591c259cb3))
+
 ## [1.0.131](https://github.com/alternun-development/alternun/compare/v1.0.130...v1.0.131) (2026-04-17)
 
 ### Bug Fixes
