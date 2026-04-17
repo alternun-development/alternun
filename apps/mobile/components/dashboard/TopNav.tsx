@@ -41,9 +41,13 @@ import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { getFirstName } from './userDisplayName';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.svg') as number;
+const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.svg') as number;
+const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png') as number;
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as number;
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const ALTERNUN_LOGO = require('../../assets/logo.png') as number;
 
@@ -159,10 +163,16 @@ export default function TopNav({
 
   const brandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
   const brandMarkCutout = isDark ? '#03292f' : '#d9fff4';
-  const wordmarkSource = isDark ? AIRS_LOGO_LIGHT : AIRS_LOGO_DARK;
+  const isDesktop = width >= 720;
+  const wordmarkSource = isDesktop
+    ? isDark
+      ? AIRS_LOGO_LIGHT_2X
+      : AIRS_LOGO_DARK_2X
+    : isDark
+    ? AIRS_LOGO_LIGHT
+    : AIRS_LOGO_DARK;
   const ThemeIconComp = isDark ? SunIcon : MoonIcon;
   const themeLabel = isDark ? t('labels.dark') : t('labels.light');
-  const isDesktop = width >= 720;
 
   // ── Palette ────────────────────────────────────────────────────────────────
   const p = isDark
