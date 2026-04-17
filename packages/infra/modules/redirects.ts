@@ -11,6 +11,7 @@ export interface DnsValidatedCertificateArgs {
   id: string;
   domainName: string;
   hostedZoneId: string;
+  aliases?: string[];
 }
 
 export interface StageDomainRedirectArgs {
@@ -27,12 +28,23 @@ export interface ExternalDomainRedirectArgs {
   targetDomain: string;
   certificateArn?: pulumi.Input<string>;
   redirects?: string[];
+  aliases?: string[];
 }
 
 const PROTOCOL_PREFIX = /^https?:\/\//i;
 
 function sanitizeDomain(value: string): string {
   return value.replace(PROTOCOL_PREFIX, '').replace(/\/+$/, '');
+}
+
+function buildAliases(aliases?: string[], suffix = ''): pulumi.Alias[] | undefined {
+  if (!aliases || aliases.length === 0) {
+    return undefined;
+  }
+
+  return aliases.map((name) => ({
+    name: `${name}${suffix}`,
+  }));
 }
 
 function buildDomainConfig(
@@ -67,26 +79,38 @@ function buildDomainConfig(
 export function createDnsValidatedCertificate(
   args: DnsValidatedCertificateArgs
 ): pulumi.Output<string> {
-  const certificate = new aws.acm.Certificate(`${args.id}`, {
-    domainName: args.domainName,
-    validationMethod: 'DNS',
-  });
+  const certificateAliases = buildAliases(args.aliases);
+  const certificate = new aws.acm.Certificate(
+    `${args.id}`,
+    {
+      domainName: args.domainName,
+      validationMethod: 'DNS',
+    },
+    certificateAliases ? { aliases: certificateAliases } : undefined
+  );
 
-  const certificateValidationRecord = new aws.route53.Record(`${args.id}-validation`, {
-    allowOverwrite: true,
-    name: certificate.domainValidationOptions[0].resourceRecordName,
-    records: [certificate.domainValidationOptions[0].resourceRecordValue],
-    ttl: 60,
-    type: certificate.domainValidationOptions[0].resourceRecordType,
-    zoneId: args.hostedZoneId,
-  });
+  const certificateValidationRecordAliases = buildAliases(args.aliases, '-validation');
+  const certificateValidationRecord = new aws.route53.Record(
+    `${args.id}-validation`,
+    {
+      allowOverwrite: true,
+      name: certificate.domainValidationOptions[0].resourceRecordName,
+      records: [certificate.domainValidationOptions[0].resourceRecordValue],
+      ttl: 60,
+      type: certificate.domainValidationOptions[0].resourceRecordType,
+      zoneId: args.hostedZoneId,
+    },
+    certificateValidationRecordAliases ? { aliases: certificateValidationRecordAliases } : undefined
+  );
 
+  const certificateValidationAliases = buildAliases(args.aliases, '-validation-complete');
   const certificateValidation = new aws.acm.CertificateValidation(
     `${args.id}-validation-complete`,
     {
       certificateArn: certificate.arn,
       validationRecordFqdns: [certificateValidationRecord.fqdn],
-    }
+    },
+    certificateValidationAliases ? { aliases: certificateValidationAliases } : undefined
   );
 
   return certificateValidation.certificateArn;
@@ -147,18 +171,23 @@ export function createExternalDomainRedirect(args: ExternalDomainRedirectArgs): 
   const sourceDomain = sanitizeDomain(args.sourceDomain);
   const targetDomain = sanitizeDomain(args.targetDomain);
   const targetUrl = `https://${targetDomain}`;
+  const routerAliases = buildAliases(args.aliases);
 
-  new sst.aws.Router(args.id, {
-    domain: buildDomainConfig(sourceDomain, args.certificateArn, args.redirects),
-    routes: {
-      '/*': {
-        url: targetUrl,
-        edge: {
-          viewerRequest: {
-            injection: buildRedirectInjection(targetUrl),
+  new sst.aws.Router(
+    args.id,
+    {
+      domain: buildDomainConfig(sourceDomain, args.certificateArn, args.redirects),
+      routes: {
+        '/*': {
+          url: targetUrl,
+          edge: {
+            viewerRequest: {
+              injection: buildRedirectInjection(targetUrl),
+            },
           },
         },
       },
     },
-  });
+    routerAliases ? { aliases: routerAliases } : undefined
+  );
 }

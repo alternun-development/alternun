@@ -830,6 +830,7 @@ export function createInfrastructure() {
         sourceDomain: rootDomain,
         targetDomain: rootDomainRedirectTarget,
         certificateArn: rootDomainRedirectCertArn,
+        aliases: [`root-domain-redirect-${stage}`],
       });
     }
 
@@ -845,6 +846,7 @@ export function createInfrastructure() {
         sourceDomain: airsToDevSourceDomain,
         targetDomain: expoStageMap.dev,
         certificateArn: airsToDevCertArn,
+        aliases: [`airs-domain-redirect-${stage}`],
       });
     }
 
@@ -869,6 +871,7 @@ export function createInfrastructure() {
                 id: `dev-redir-${stage}-wildcard-cert`,
                 domainName: `*.${expoSubdomain}.${rootDomain}`,
                 hostedZoneId,
+                aliases: [`dev-domain-redirect-${stage}-wildcard-cert`],
               });
             })()
           : devToTestnetCertArn;
@@ -879,6 +882,7 @@ export function createInfrastructure() {
         targetDomain: expoStageMap.dev,
         certificateArn: redirectCertificateArn,
         redirects: devToTestnetRedirectAliases,
+        aliases: [`dev-domain-redirect-${stage}`],
       });
     }
 
