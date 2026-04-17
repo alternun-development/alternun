@@ -174,18 +174,21 @@
       },
       "elProyecto": {
         "sectionTitle": "Una economía regenerativa que te beneficia",
+        "sectionDescriptionPart1": "Durante décadas hemos intentado resolver los problemas ambientales con las mismas herramientas que los crearon. En ",
+        "sectionDescriptionHighlight": "Alternun",
+        "sectionDescriptionPart2": " creemos que cuidar y regenerar el planeta no debe ser un sacrificio económico, sino una oportunidad de generar valor compartido.",
         "airs": {
-          "overview": "Airs es tu huella positiva en Alternun. Se compra, se gana y se pierde según tus acciones regenerativas y determina tu Ingreso Básico Regenerativo (RBI).",
+          "overview": "By Alternun es tu huella positiva en Alternun. Se gana con acciones reales, nunca disminuye y determina tu Ingreso Básico Regenerativo (RBI).",
           "subtitle": "Tu Reputación Regenerativa",
           "title": "Airs"
         },
         "atn": {
-          "overview": "ATN es el token de utilidad y gobernanza del ecosistema Alternun. Permite participar en decisiones, acceder a funcionalidades premium y recompensar acciones de impacto.",
+          "overview": "es la moneda de Alternun para acceder a beneficios y proyectos. Se recibe mensualmente vía RBI según tu puntaje Airs o también se puede comprar para acelerar tu participación.",
           "subtitle": "Token de Gobernanza",
           "title": "ATN"
         },
         "rbi": {
-          "overview": "RBI es un ingreso básico regenerativo que se distribuye automáticamente según tu puntuación Airs. Cuanto mayor sea tu impacto positivo, mayor será tu RBI.",
+          "overview": "es un ingreso mensual en ATN financiado por la rentabilidad real del ecosistema. Crece según tu puntuación Airs, convirtiendo tu compromiso con la regeneración en prosperidad tangible.",
           "subtitle": "Ingreso Básico Regenerativo",
           "title": "RBI"
         }
