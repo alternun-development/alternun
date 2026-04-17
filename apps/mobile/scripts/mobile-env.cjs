@@ -41,7 +41,11 @@ function loadDotEnvFile(filePath, target = {}) {
   return target;
 }
 
-function loadMobileEnv(mobileRoot = path.resolve(__dirname, '..'), envVars = process.env) {
+function loadMobileEnv(
+  mobileRoot = path.resolve(__dirname, '..'),
+  envVars = process.env,
+  options = {}
+) {
   const env = {};
 
   loadDotEnvFile(path.join(mobileRoot, '.env'), env);
@@ -84,7 +88,9 @@ function loadMobileEnv(mobileRoot = path.resolve(__dirname, '..'), envVars = pro
     }
   }
 
-  loadDotEnvFile(path.join(mobileRoot, '.env.local'), env);
+  if (!options.skipLocalEnv) {
+    loadDotEnvFile(path.join(mobileRoot, '.env.local'), env);
+  }
 
   return env;
 }
@@ -112,7 +118,7 @@ function shouldUseInfraEnvFallback(env = process.env) {
 }
 
 function resolveFileEnv(env = process.env, options = {}) {
-  const fileEnv = options.fileEnv ?? loadMobileEnv(options.mobileRoot, env);
+  const fileEnv = options.fileEnv ?? loadMobileEnv(options.mobileRoot, env, options);
   const useInfraEnvFallback =
     options.useInfraEnvFallback ?? shouldUseInfraEnvFallback(env);
 
@@ -251,13 +257,19 @@ function resolveMobilePublicAuthEnv(env = process.env, options = {}) {
 }
 
 function resolveMobileBuildAuthEnv(env = process.env, options = {}) {
-  const publicEnv = resolveMobilePublicAuthEnv(env, options);
+  const publicEnv = resolveMobilePublicAuthEnv(env, {
+    ...options,
+    skipLocalEnv: shouldUseInfraEnvFallback(env),
+  });
   const executionProvider = publicEnv.executionProvider || publicEnv.publicExecutionProvider || '';
   const publicExecutionProvider =
     publicEnv.publicExecutionProvider || publicEnv.executionProvider || '';
   const betterAuthUrl = publicEnv.publicBetterAuthUrl || '';
   const authExchangeUrl = publicEnv.publicAuthExchangeUrl || '';
-  const authentikSocialLoginMode = publicEnv.authentikSocialLoginMode || '';
+  const deployStage = shouldUseInfraEnvFallback(env) && !options.fileEnv;
+  const authentikSocialLoginMode = deployStage
+    ? 'authentik'
+    : publicEnv.authentikSocialLoginMode || '';
   const authentikIssuer = publicEnv.authentikIssuer || '';
   const authentikClientId = publicEnv.authentikClientId || '';
 

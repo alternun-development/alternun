@@ -73,9 +73,11 @@
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
+      "@fastify/middie": "9.3.2",
       "axios": "1.15.0",
       "fast-xml-parser": "4.5.4",
       "handlebars": "4.7.9",
+      "protobufjs": "7.5.5",
       "simple-git": "3.32.3"
     }
   },
