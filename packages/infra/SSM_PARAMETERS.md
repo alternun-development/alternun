@@ -101,6 +101,8 @@ STACK=dev npm run build
 # All EXPO_PUBLIC_* vars pulled from SSM instead of .env
 ```
 
+In CodeBuild, `resolve-ssm-env.sh` clears inherited auth execution and Better Auth URL vars before resolving stage values so stale project-level env cannot override the SSM-backed deploy contract.
+
 The detection in `build.sh`:
 
 ```bash
@@ -117,6 +119,8 @@ For each variable, resolution order is:
 2. **SSM Parameter Store** (CI/CD path)
 3. **Local `.env` files** (dev path)
 4. **Hardcoded defaults** — lowest priority
+
+The CI helper intentionally resets the auth contract vars before applying that chain so stage-scoped SSM values win for auth execution and Better Auth routing.
 
 ## Key Security Considerations
 
