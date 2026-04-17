@@ -1,3 +1,23 @@
+## [1.0.125](https://github.com/alternun-development/alternun/compare/v1.0.124...v1.0.125) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,i18n,infra): AuthSignInScreen, PublicLandingPage, AirsIntroExperience, en
+- **repo:** chore: release v1.0.122
+- **repo:** test(mobile,i18n): AuthSignInScreen, en, es, th
+- **repo:** chore: release v1.0.121
+- **repo:** test(infra): SSM_PARAMETERS, resolve-ssm-env, buildspec-auth-env.test
+
+## [1.0.122](https://github.com/alternun-development/alternun/compare/v1.0.121...v1.0.122) (2026-04-17)
+
+## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
+
+## [1.0.125](https://github.com/alternun-development/alternun/compare/v1.0.124...v1.0.125) (2026-04-17)
+
+## [1.0.122](https://github.com/alternun-development/alternun/compare/v1.0.121...v1.0.122) (2026-04-17)
+
+## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
+
 ## [1.0.124](https://github.com/alternun-development/alternun/compare/v1.0.123...v1.0.124) (2026-04-17)
 
 ### Bug Fixes
