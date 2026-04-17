@@ -4,6 +4,7 @@ import {
   resolveBetterAuthDevConfig,
 } from '../../modules/better-auth-dev/better-auth-dev.config';
 import { createBetterAuthDevAuth } from '../../modules/better-auth-dev/better-auth-dev.server';
+import { applyBetterAuthCorsHeaders } from './better-auth-cors';
 import { shouldProxyBetterAuthPath } from './better-auth-proxy';
 
 const HOP_BY_HOP_HEADERS = new Set([
@@ -67,11 +68,12 @@ function serializeRequestBody(body: unknown): string | undefined {
     return body;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   if (Buffer.isBuffer(body)) {
-    return body.toString('utf8');
+    return (body as Buffer).toString('utf8');
   }
 
-  return JSON.stringify(body);
+  return JSON.stringify(body as Record<string, unknown>);
 }
 
 function normalizeComparableUrl(value: string | undefined | null): string | null {
@@ -116,7 +118,11 @@ function buildRuntimeRequestUrl(
   return new URL(requestUrl, `${inferRequestOrigin(requestHeaders, fallbackBaseUrl)}/`).toString();
 }
 
-async function copyRuntimeResponse(reply: FastifyReply, response: Response): Promise<void> {
+async function copyRuntimeResponse(
+  reply: FastifyReply,
+  response: Response,
+  requestHeaders: BetterAuthRequestHeaders
+): Promise<void> {
   void reply.code(response.status);
 
   const responseHeaders = response.headers as ResponseHeadersWithCookies;
@@ -133,6 +139,8 @@ async function copyRuntimeResponse(reply: FastifyReply, response: Response): Pro
 
     void reply.header(name as string, value as string);
   }
+
+  applyBetterAuthCorsHeaders(reply, requestHeaders);
 
   const payload = await response.arrayBuffer();
   void reply.send(Buffer.from(payload));
@@ -197,6 +205,9 @@ export async function handleBetterAuthRuntimeRequest(
   }
 
   if (request.method.toUpperCase() === 'OPTIONS') {
+    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders, {
+      preflight: true,
+    });
     void reply.code(204).send();
     return true;
   }
@@ -233,6 +244,7 @@ export async function handleBetterAuthRuntimeRequest(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : typeof error === 'string' ? error : String(error);
+    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders);
     void reply.code(500).send({
       statusCode: 500,
       error: 'Internal Server Error',
@@ -241,7 +253,7 @@ export async function handleBetterAuthRuntimeRequest(
     return true;
   }
 
-  await copyRuntimeResponse(reply, response);
+  await copyRuntimeResponse(reply, response, request.headers as BetterAuthRequestHeaders);
   return true;
 }
 
