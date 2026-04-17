@@ -57,3 +57,7 @@ Recommended enum values for `activity_type`:
    - Trending, following graph feed, and search ranking.
 4. **Real-time updates**
    - WebSocket and notification fan-out.
+
+## Status
+
+Phase 1 is now present on `develop`. Phase 2 follow-up work is tracked in #107.
