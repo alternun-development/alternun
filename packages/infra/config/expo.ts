@@ -381,6 +381,19 @@ export function resolveExpoConfig({
       env.EXPO_PUBLIC_RELEASE_UPDATE_MODE ?? localConfig.expo?.publicEnv?.releaseUpdateMode,
   };
 
+  const devToTestnetSourceDomains = normalizeDomainList([
+    ...splitDomainList(env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES),
+    ...splitDomainList(env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE),
+    ...(localConfig.redirects?.devToTestnetSourceDomains ?? []),
+    ...(localConfig.redirects?.devToTestnetSourceDomain
+      ? [localConfig.redirects.devToTestnetSourceDomain]
+      : []),
+    legacyDevDomain,
+    `demo.${subdomain}.${rootDomain}`,
+    `beta.${subdomain}.${rootDomain}`,
+  ]);
+  const devToTestnetSourceDomain = devToTestnetSourceDomains[0] ?? legacyDevDomain;
+
   const redirects = {
     enableAirsToDev: parseBoolean(
       env.INFRA_REDIRECT_AIRS_TO_DEV ??
@@ -402,17 +415,8 @@ export function resolveExpoConfig({
           : undefined),
       REDIRECT_INFRA_DEFAULTS.enableDevToTestnet
     ),
-    devToTestnetSourceDomains: normalizeDomainList([
-      ...splitDomainList(env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES),
-      ...splitDomainList(env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE),
-      ...(localConfig.redirects?.devToTestnetSourceDomains ?? []),
-      ...(localConfig.redirects?.devToTestnetSourceDomain
-        ? [localConfig.redirects.devToTestnetSourceDomain]
-        : []),
-      legacyDevDomain,
-      `demo.${subdomain}.${rootDomain}`,
-      `beta.${subdomain}.${rootDomain}`,
-    ]),
+    devToTestnetSourceDomain,
+    devToTestnetSourceDomains,
     devToTestnetCertArn:
       env.INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN ?? localConfig.redirects?.certArns?.devToTestnet,
     enableRootDomainRedirect: parseBoolean(
@@ -429,9 +433,6 @@ export function resolveExpoConfig({
     rootDomainRedirectCertArn:
       env.INFRA_REDIRECT_ROOT_CERT_ARN ?? localConfig.redirects?.certArns?.rootDomain,
   };
-  const devToTestnetSourceDomain = redirects.devToTestnetSourceDomains[0] ?? legacyDevDomain;
-
-  redirects.devToTestnetSourceDomain = devToTestnetSourceDomain;
 
   const assetBucketNames: Record<PipelineStage, string> = {
     production: createAssetBucketName('production', pipelinePrefix, rootDomain),

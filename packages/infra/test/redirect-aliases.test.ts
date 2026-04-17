@@ -5,6 +5,7 @@ import test from 'node:test';
 
 const expoConfigPath = path.resolve('config/expo.ts');
 const infraConfigPath = path.resolve('infra.config.ts');
+const redirectsPath = path.resolve('modules/redirects.ts');
 const predeployChecksPath = path.resolve('scripts/predeploy-checks.sh');
 const sstDeployPath = path.resolve('scripts/sst-deploy.sh');
 const postdeployReachabilityPath = path.resolve('scripts/postdeploy-reachability-check.sh');
@@ -13,6 +14,7 @@ const deploymentExamplePath = path.resolve('config/deployment.config.example.jso
 void test('infra redirect config supports demo and beta aliases for testnet', () => {
   const expoConfigSource = fs.readFileSync(expoConfigPath, 'utf8');
   const infraConfigSource = fs.readFileSync(infraConfigPath, 'utf8');
+  const redirectsSource = fs.readFileSync(redirectsPath, 'utf8');
   const predeploySource = fs.readFileSync(predeployChecksPath, 'utf8');
   const sstDeploySource = fs.readFileSync(sstDeployPath, 'utf8');
   const postdeploySource = fs.readFileSync(postdeployReachabilityPath, 'utf8');
@@ -20,7 +22,7 @@ void test('infra redirect config supports demo and beta aliases for testnet', ()
     redirects?: { devToTestnetSourceDomains?: string[] };
   };
 
-  assert.match(expoConfigSource, /devToTestnetSourceDomains: normalizeDomainList\(/);
+  assert.match(expoConfigSource, /const devToTestnetSourceDomains = normalizeDomainList\(/);
   assert.match(expoConfigSource, /`demo\.\$\{subdomain\}\.\$\{rootDomain\}`/);
   assert.match(expoConfigSource, /`beta\.\$\{subdomain\}\.\$\{rootDomain\}`/);
 
@@ -39,6 +41,7 @@ void test('infra redirect config supports demo and beta aliases for testnet', ()
     infraConfigSource,
     /createExternalDomainRedirect\(\{\s*id: `dev-redir-\$\{stage\}`/s
   );
+  assert.match(redirectsSource, /sst\.aws\.dns\(\{\s*override:\s*true\s*\}\)/s);
 
   assert.match(predeploySource, /INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES/);
   assert.match(sstDeploySource, /INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES/);
