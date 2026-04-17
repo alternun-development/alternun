@@ -41,9 +41,9 @@ import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { getFirstName } from './userDisplayName';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as number;
+const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.svg') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
+const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.svg') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const ALTERNUN_LOGO = require('../../assets/logo.png') as number;
 
@@ -159,9 +159,10 @@ export default function TopNav({
 
   const brandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
   const brandMarkCutout = isDark ? '#03292f' : '#d9fff4';
-  const wordmarkSource = isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK;
+  const wordmarkSource = isDark ? AIRS_LOGO_LIGHT : AIRS_LOGO_DARK;
   const ThemeIconComp = isDark ? SunIcon : MoonIcon;
   const themeLabel = isDark ? t('labels.dark') : t('labels.light');
+  const isDesktop = width >= 720;
 
   // ── Palette ────────────────────────────────────────────────────────────────
   const p = isDark
@@ -325,7 +326,13 @@ export default function TopNav({
               <View style={[styles.logoMarkRow, isMobile && styles.logoMarkRowMobile]}>
                 <ExpoImage
                   source={wordmarkSource}
-                  style={isMobile ? styles.wordmarkMobile : styles.wordmark}
+                  style={
+                    isMobile
+                      ? styles.wordmarkMobile
+                      : isDesktop
+                      ? styles.wordmarkDesktop
+                      : styles.wordmark
+                  }
                   contentFit='contain'
                 />
                 <AirsBrandMark
@@ -831,6 +838,10 @@ const styles = StyleSheet.create({
   wordmark: {
     width: 72,
     height: 26,
+  },
+  wordmarkDesktop: {
+    width: 144,
+    height: 52,
   },
   wordmarkMobile: {
     width: 52,
