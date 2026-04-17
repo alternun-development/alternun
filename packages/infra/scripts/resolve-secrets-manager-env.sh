@@ -1,9 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-# Resolve auth credentials from AWS Secrets Manager for pipeline builds.
-# Called by CI/CD before infra synthesis so dashboard/backend specs can read
-# the Google/Discord client IDs and secrets from the identity integration-config secret.
+# Resolve auth credentials from AWS Secrets Manager for pipeline builds that
+# actually need server-side Google/Discord creds. Expo/mobile bundles do not
+# need these values and should skip this helper.
 
 APP_NAME="${INFRA_APP_NAME:-alternun-infra}"
 STACK="${STACK:-${SST_STAGE:-dev}}"
@@ -81,6 +81,8 @@ export_if_empty() {
 identity_stage=$(resolve_identity_secret_stage "$STACK")
 if [ -z "$identity_stage" ]; then
   echo "Skipped Secrets Manager auth env resolution for stage '${STACK}'." >&2
+elif [ "${INFRA_IDENTITY_ENABLED:-false}" != "true" ] && [ "${INFRA_ENABLE_BACKEND_API:-false}" != "true" ]; then
+  echo "Skipped Secrets Manager auth env resolution for stage '${STACK}' because no backend or identity auth build is enabled." >&2
 else
   integration_config_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:-${APP_NAME}/identity/integration-config}" "$identity_stage")
   if [ -z "$integration_config_secret_name" ]; then

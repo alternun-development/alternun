@@ -181,6 +181,7 @@
         "sectionDescriptionPart1": "Durante décadas hemos intentado resolver los problemas ambientales con las mismas herramientas que los crearon. En ",
         "sectionDescriptionHighlight": "Alternun",
         "sectionDescriptionPart2": " creemos que cuidar y regenerar el planeta no debe ser un sacrificio económico, sino una oportunidad de generar valor compartido.",
+        "moreInfo": "Más información",
         "airs": {
           "overview": "By Alternun es tu huella positiva en Alternun. Se gana con acciones reales, nunca disminuye y determina tu Ingreso Básico Regenerativo (RBI).",
           "subtitle": "Tu Reputación Regenerativa",
@@ -239,27 +240,27 @@
         "descriptionPart4": "Tu membresía nunca expira y tus beneficios solo crecen con el tiempo."
       },
       "beneficios": {
-        "atnUnit": "ATN",
+        "atnUnit": "AIRS / USD",
         "cards": {
           "eco": {
-            "tag1": "Orgánico",
-            "tag2": "Sostenible",
-            "description": "Productos orgánicos y sostenibles verificados por el ecosistema Alternun.",
-            "atn": "120",
-            "meta": "Agricultura regenerativa",
-            "title": "Productos Eco",
-            "cta": "Comprar Ahora",
-            "infoBody": "Accede a descuentos exclusivos en productos sostenibles de nuestras marcas aliadas. Desde ropa orgánica hasta productos de limpieza ecológicos."
+            "tag1": "Verificado",
+            "tag2": "Aliado",
+            "description": "Acumula AIRS cada vez que compras en comercio aliado o completas acciones regenerativas verificadas.",
+            "atn": "+5",
+            "meta": "Gasta y acumula",
+            "title": "Comercio aliado",
+            "cta": "Acumular AIRS",
+            "infoBody": "Las compras elegibles y las acciones verificadas suelen generar 5 AIRS por USD. Las recompensas se acreditan después de que la transacción o acción sea validada."
           },
           "experiencias": {
-            "tag1": "Viajes",
-            "tag2": "Aventura",
-            "description": "Descubre viajes, retiros y experiencias diseñados para recompensar tu impacto positivo.",
-            "atn": "240",
-            "meta": "Escapadas curadas",
-            "title": "Experiencias",
-            "cta": "Explorar Experiencias",
-            "infoBody": "Descubre viajes, retiros y experiencias en la naturaleza diseñadas para recompensar tu impacto positivo. Cada experiencia te conecta con ecosistemas regenerativos alrededor del mundo."
+            "tag1": "Proyectos",
+            "tag2": "Servicios",
+            "description": "Invierte en proyectos regenerativos o adquiere servicios verificados para acumular AIRS en cada aporte.",
+            "atn": "Variable",
+            "meta": "Proyectos regenerativos",
+            "title": "Proyectos regenerativos",
+            "cta": "Invertir para acumular",
+            "infoBody": "Los aportes a proyectos validados generan AIRS con tasas variables según el impacto, la trazabilidad y el monto comprometido."
           },
           "marketplace": {
             "description": "Accede a un marketplace de productos y servicios regenerativos.",
@@ -267,24 +268,24 @@
             "title": "Marketplace"
           },
           "premium": {
-            "tag1": "Exclusivo",
-            "tag2": "Miembros",
-            "description": "Desbloquea beneficios exclusivos, acceso prioritario y soporte mejorado en todo el ecosistema.",
-            "atn": "400",
-            "meta": "Acceso premium",
-            "title": "Premium",
-            "cta": "Vivir la Experiencia",
-            "infoBody": "Disfruta de acceso prioritario, soporte mejorado y beneficios exclusivos en todo el ecosistema. La membresía Premium desbloquea lo mejor que Alternun tiene para ofrecer, incluidos eventos privados y orientación personalizada."
+            "tag1": "CO2",
+            "tag2": "Validado",
+            "description": "Valida reducciones y compensaciones de huella para convertir la acción climática en AIRS.",
+            "atn": "Bono",
+            "meta": "Huella de CO2",
+            "title": "Huella de CO2",
+            "cta": "Compensar ahora",
+            "infoBody": "Cuando la reducción o compensación de tu huella se mide y valida, se pueden acreditar AIRS como bono por el impacto verificado."
           },
           "cursos": {
-            "tag1": "Aprendizaje",
-            "tag2": "Verificado",
-            "description": "Aprende habilidades regenerativas practicas con cursos, talleres y guia verificada.",
-            "atn": "80",
-            "meta": "Educacion",
-            "title": "Cursos",
-            "cta": "Empezar a Aprender",
-            "infoBody": "Aprende habilidades regenerativas prácticas con cursos, talleres y certificaciones verificadas dirigidos por expertos. Construye conocimiento que se traduce directamente en impacto positivo."
+            "tag1": "Tarjeta",
+            "tag2": "Impulso",
+            "description": "Usa la tarjeta AIRS para registrar actividad verificada y acelerar la acumulación en todo el ecosistema.",
+            "atn": "Impulso",
+            "meta": "Tarjeta AIRS",
+            "title": "Tarjeta AIRS",
+            "cta": "Obtener la tarjeta",
+            "infoBody": "La tarjeta AIRS conecta tu gasto y tu impacto con tu puntuación para que la actividad elegible acumule AIRS más rápido."
           },
           "services": {
             "description": "Servicios verificados que contribuyen al impacto positivo.",
@@ -292,12 +293,13 @@
             "title": "Servicios"
           }
         },
-        "cta": "Explorar marketplace",
-        "sectionTitle": "Beneficios",
-        "subtitle": "Descubre todo lo que puedes obtener con Alternun",
-        "topRated": "Mejor valorado",
-        "redeemCta": "Redimir este beneficio",
-        "availableFrom": "Disponible desde {{atn}} ATN"
+        "cta": "Ver rutas de acumulación",
+        "sectionTitle": "Cómo acumular AIRS",
+        "subtitle": "Acumula AIRS con comercio aliado, proyectos regenerativos, servicios verificados y acciones de huella de carbono.",
+        "topRated": "Verificado",
+        "moreInfo": "Más información",
+        "redeemCta": "Empezar a acumular AIRS",
+        "availableFrom": "Tasa típica: {{atn}}"
       },
       "video": {
         "loadingIntro": "Cargando video introductorio de Airs",
