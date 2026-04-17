@@ -465,12 +465,13 @@ cleanup_deploy_aliases() {
       local dev_sources_raw dev_sources dev_source
       dev_sources_raw=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES:-${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}}
       if [ -z "$dev_sources_raw" ]; then
-        local dev_source_primary dev_source_demo dev_source_beta airs_source
-        airs_source=${INFRA_REDIRECT_AIRS_TO_DEV_SOURCE:-${INFRA_EXPO_DOMAIN_PRODUCTION:-${DOMAIN_PRODUCTION:-}}}
+        local dev_source_primary dev_source_demo dev_source_beta
         dev_source_primary=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-${INFRA_EXPO_DOMAIN_DEV:-${DOMAIN_DEV:-}}}
-        dev_source_demo=${airs_source/#airs./demo.}
-        dev_source_beta=${airs_source/#airs./beta.}
-        dev_sources_raw="${dev_source_primary},${dev_source_demo},${dev_source_beta}"
+        if [ -n "$dev_source_primary" ]; then
+          dev_source_demo=${dev_source_primary/#dev./demo.}
+          dev_source_beta=${dev_source_primary/#dev./beta.}
+          dev_sources_raw="${dev_source_primary},${dev_source_demo},${dev_source_beta}"
+        fi
       fi
       if [ -n "$dev_sources_raw" ]; then
         IFS=',' read -r -a dev_sources <<< "$dev_sources_raw"

@@ -11,7 +11,6 @@ import React, {
 import {
   Animated,
   Pressable,
-  Platform,
   StyleSheet,
   StyleProp,
   Text,
@@ -20,9 +19,9 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { createTypographyStyles, } from '../theme/typography';
-import { Image as ExpoImage, } from 'expo-image';
-import { BlurView, } from 'expo-blur';
+import { createTypographyStyles } from '../theme/typography';
+import { Image as ExpoImage } from 'expo-image';
+import { BlurView } from 'expo-blur';
 import {
   ChevronDown,
   ChevronRight,
@@ -31,14 +30,15 @@ import {
   Settings as SettingsIcon,
   User,
 } from 'lucide-react-native';
-import Svg, { Defs, LinearGradient, Rect, Stop, } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import LandingFooter from '../common/LandingFooter';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
-import { BackToTopButton, } from '../common/BackToTopButton';
-import { useAppTranslation, } from '../i18n/useAppTranslation';
+import { BackToTopButton } from '../common/BackToTopButton';
+import { useAppTranslation } from '../i18n/useAppTranslation';
 import AirsIntroSettingsMenu from './AirsIntroSettingsMenu';
-import { useAppPreferences, } from '../settings/AppPreferencesProvider';
-import { SCULPIN_FONT_FAMILY, } from '../theme/fonts';
+import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { SCULPIN_FONT_FAMILY } from '../theme/fonts';
+import { HeroVideoNative } from './HeroVideoNative';
 
 const HERO_EXPANSION_RANGE = 420;
 const HERO_SOLID_SWAP_SCROLL = 180;
@@ -46,183 +46,11 @@ const AUTO_UNMUTE_SCROLL_Y = 88;
 const TOP_PAUSE_SCROLL_Y = 6;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const HERO_VIDEO = require('../../assets/videos/landing.mp4',);
-const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png',);
-const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png',);
-const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png',);
-const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png',);
-
-function resolveAssetUri(assetModule: unknown,): string {
-  if (typeof assetModule === 'string') {
-    return assetModule;
-  }
-
-  if (assetModule && typeof assetModule === 'object') {
-    const source = assetModule as {
-      uri?: unknown;
-      src?: unknown;
-      default?: unknown;
-    };
-
-    if (typeof source.uri === 'string') {
-      return source.uri;
-    }
-
-    if (typeof source.src === 'string') {
-      return source.src;
-    }
-
-    if (typeof source.default === 'string') {
-      return source.default;
-    }
-
-    if (source.default && typeof source.default === 'object') {
-      const defaultSource = source.default as { uri?: unknown; src?: unknown };
-      if (typeof defaultSource.uri === 'string') {
-        return defaultSource.uri;
-      }
-      if (typeof defaultSource.src === 'string') {
-        return defaultSource.src;
-      }
-    }
-  }
-
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const resolver = require('react-native/Libraries/Image/resolveAssetSource',).default as (
-      source: unknown
-    ) => { uri?: string } | null;
-    return resolver(assetModule,)?.uri ?? '';
-  } catch {
-    return '';
-  }
-}
-
-function buildHeroVideoHtml(videoUri: string,): string {
-  return `<!DOCTYPE html>
-<html>
-  <head>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: #050510;
-      }
-
-      body {
-        position: fixed;
-        inset: 0;
-      }
-
-      #heroVideo {
-        position: fixed;
-        inset: 0;
-        width: 100vw;
-        height: 100vh;
-        object-fit: cover;
-        background: #050510;
-      }
-    </style>
-  </head>
-  <body>
-    <video id="heroVideo" autoplay muted loop playsinline webkit-playsinline preload="auto">
-      <source src=${JSON.stringify(videoUri,)} type="video/mp4" />
-    </video>
-    <script>
-      const video = document.getElementById('heroVideo');
-      if (video) {
-        const tryPlay = () => {
-          const result = video.play();
-          if (result && typeof result.catch === 'function') {
-            result.catch(() => {});
-          }
-        };
-
-        video.autoplay = true;
-        video.loop = true;
-        video.muted = true;
-        video.defaultMuted = true;
-        tryPlay();
-        window.addEventListener('load', tryPlay);
-        document.addEventListener('visibilitychange', () => {
-          if (!document.hidden) {
-            tryPlay();
-          }
-        });
-      }
-    </script>
-  </body>
-</html>`;
-}
-
-type HeroWebViewProps = {
-  allowsInlineMediaPlayback?: boolean;
-  mediaPlaybackRequiresUserAction?: boolean;
-  originWhitelist?: string[];
-  source: { html: string };
-  style?: React.ComponentProps<typeof View>['style'];
-};
-
-function HeroBackground({ videoSource, }: { videoSource: unknown },): React.JSX.Element | null {
-  const videoUri = resolveAssetUri(videoSource,);
-  const WebView = useMemo<React.ComponentType<HeroWebViewProps> | null>(() => {
-    if (Platform.OS === 'web') {
-      return null;
-    }
-
-    try {
-      const webViewModule = require('react-native-webview',) as {
-        WebView?: React.ComponentType<HeroWebViewProps>;
-      };
-      return webViewModule.WebView ?? null;
-    } catch {
-      return null;
-    }
-  }, [],);
-
-  if (!videoUri) {
-    return <View style={StyleSheet.absoluteFillObject} />;
-  }
-
-  if (Platform.OS === 'web') {
-    return (
-      <video
-        key={videoUri}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload='auto'
-        style={styles.heroVideoElement}
-      >
-        <source src={videoUri} type='video/mp4' />
-      </video>
-    );
-  }
-
-  if (!WebView) {
-    return <View style={StyleSheet.absoluteFillObject} />;
-  }
-
-  return (
-    <WebView
-      key={videoUri}
-      originWhitelist={['*',]}
-      source={{ html: buildHeroVideoHtml(videoUri,), }}
-      allowsInlineMediaPlayback
-      mediaPlaybackRequiresUserAction={false}
-      style={styles.heroVideoWebView}
-    />
-  );
-}
+const HERO_VIDEO = require('../../assets/videos/landing.mp4');
+const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png');
+const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png');
+const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png');
+const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png');
 
 type HeroGlassButtonProps = {
   label: string;
@@ -238,7 +66,7 @@ function HeroGlassButton({
   width,
   fontSize,
   isDark,
-}: HeroGlassButtonProps,): React.ReactElement {
+}: HeroGlassButtonProps): React.ReactElement {
   const pillBgColor = isDark ? 'rgba(11,90,95,0.25)' : 'rgba(255,255,255,0.25)';
   const pillBgColorHover = isDark ? 'rgba(11,90,95,0.45)' : 'rgba(255,255,255,0.45)';
 
@@ -252,22 +80,22 @@ function HeroGlassButton({
     <Pressable
       accessibilityRole='button'
       onPress={onPress}
-      style={({ hovered, pressed, },) =>
+      style={({ hovered, pressed }) =>
         ({
           ...styles.heroGlassButton,
           width,
           backgroundColor: hovered ? pillBgColorHover : pillBgColor,
           borderColor: hovered ? pillBorderColorHover : pillBorderColor,
-          transform: [{ scale: pressed ? 0.98 : hovered ? 1.02 : 1, },],
+          transform: [{ scale: pressed ? 0.98 : hovered ? 1.02 : 1 }],
           shadowColor: '#000',
           shadowOpacity: hovered ? 0.25 : 0.15,
-          shadowOffset: { width: 0, height: hovered ? 12 : 8, },
+          shadowOffset: { width: 0, height: hovered ? 12 : 8 },
           shadowRadius: hovered ? 24 : 16,
           elevation: hovered ? 8 : 6,
         } as StyleProp<ViewStyle>)
       }
     >
-      {({ hovered, },) => (
+      {({ hovered }) => (
         <>
           <BlurView
             intensity={isDark ? 60 : 50}
@@ -291,8 +119,8 @@ function HeroGlassButton({
                     ? 'rgba(255,255,255,0.08)'
                     : 'rgba(255,255,255,0.18)'
                   : isDark
-                    ? 'rgba(255,255,255,0.03)'
-                    : 'rgba(255,255,255,0.08)',
+                  ? 'rgba(255,255,255,0.03)'
+                  : 'rgba(255,255,255,0.08)',
               },
             ]}
           />
@@ -329,259 +157,259 @@ interface AirsIntroExperienceProps {
 }
 
 const AirsIntroExperience = forwardRef<
-  { scrollToSection:(offset: number) => void },
+  { scrollToSection: (offset: number) => void },
   AirsIntroExperienceProps
-    >(
-    (
-      {
-        onContinueToDashboard,
-        onSignIn,
-        onOpenSettings: _onOpenSettings,
-        extraSections,
-        headerNavLinks,
-        accentColor: accentColorProp,
-        isDark: isDarkProp,
-        showCta = false,
-        onActiveSectionChange,
-        sectionOffsets,
-        heroHeight: heroHeightProp,
-        onHeroNavigate,
-      },
-      ref,
-    ) => {
-      const scrollRef = useRef<Animated.ScrollView>(null,);
+>(
+  (
+    {
+      onContinueToDashboard,
+      onSignIn,
+      onOpenSettings: _onOpenSettings,
+      extraSections,
+      headerNavLinks,
+      accentColor: accentColorProp,
+      isDark: isDarkProp,
+      showCta = false,
+      onActiveSectionChange,
+      sectionOffsets,
+      heroHeight: heroHeightProp,
+      onHeroNavigate,
+    },
+    ref
+  ) => {
+    const scrollRef = useRef<Animated.ScrollView>(null);
 
-      // Expose scroll method via ref
-      useImperativeHandle(
-        ref,
-        (): { scrollToSection: (offset: number) => void } => ({
-          scrollToSection: (offset: number,): void => {
-            if (scrollRef.current?.scrollTo) {
-              scrollRef.current.scrollTo({ y: Math.max(0, offset - 60,), animated: true, },);
-            } else if (scrollRef.current?.getNode?.()?.scrollTo) {
-              scrollRef.current.getNode().scrollTo({ y: Math.max(0, offset - 60,), animated: true, },);
+    // Expose scroll method via ref
+    useImperativeHandle(
+      ref,
+      (): { scrollToSection: (offset: number) => void } => ({
+        scrollToSection: (offset: number): void => {
+          if (scrollRef.current?.scrollTo) {
+            scrollRef.current.scrollTo({ y: Math.max(0, offset - 60), animated: true });
+          } else if (scrollRef.current?.getNode?.()?.scrollTo) {
+            scrollRef.current.getNode().scrollTo({ y: Math.max(0, offset - 60), animated: true });
+          }
+        },
+      }),
+      []
+    );
+
+    const { themeMode } = useAppPreferences();
+    const { t } = useAppTranslation('mobile');
+    const isDark = isDarkProp ?? themeMode === 'dark';
+    const [profileMenuVisible, setProfileMenuVisible] = useState(false);
+    const [settingsExpanded, setSettingsExpanded] = useState(false);
+    const [headerNavSettingsMenuVisible, setHeaderNavSettingsMenuVisible] = useState(false);
+    const [isMuted, setIsMuted] = useState(true);
+    const [hasManualAudioChoice, setHasManualAudioChoice] = useState(false);
+    const [hasAutoUnmuted, setHasAutoUnmuted] = useState(false);
+    const [hasScrollActivatedPlayback, setHasScrollActivatedPlayback] = useState(false);
+    const [showBackToTop, setShowBackToTop] = useState(false);
+    const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+    const isMobile = screenWidth < 720;
+    const [headerNavMobileMenuVisible, setHeaderNavMobileMenuVisible] = useState(false);
+    const headerNavMobileMenuAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+      Animated.spring(headerNavMobileMenuAnim, {
+        toValue: headerNavMobileMenuVisible ? 1 : 0,
+        useNativeDriver: true,
+        friction: 8,
+        tension: 40,
+      }).start();
+    }, [headerNavMobileMenuVisible, headerNavMobileMenuAnim]);
+
+    const scrollY = useRef(new Animated.Value(0)).current;
+    const isMutedRef = useRef(isMuted);
+    const hasManualAudioChoiceRef = useRef(hasManualAudioChoice);
+    const hasAutoUnmutedRef = useRef(hasAutoUnmuted);
+    const hasScrollActivatedPlaybackRef = useRef(hasScrollActivatedPlayback);
+    const isInTopZoneRef = useRef(true);
+
+    useEffect(() => {
+      setIsMuted(true);
+      setHasManualAudioChoice(false);
+      setHasAutoUnmuted(false);
+      setHasScrollActivatedPlayback(false);
+      isInTopZoneRef.current = true;
+      hasScrollActivatedPlaybackRef.current = false;
+    }, []);
+
+    useEffect(() => {
+      isMutedRef.current = isMuted;
+      hasManualAudioChoiceRef.current = hasManualAudioChoice;
+      hasAutoUnmutedRef.current = hasAutoUnmuted;
+      hasScrollActivatedPlaybackRef.current = hasScrollActivatedPlayback;
+    }, [hasAutoUnmuted, hasManualAudioChoice, hasScrollActivatedPlayback, isMuted]);
+
+    const syncTopZoneState = useCallback((scrollOffset: number): void => {
+      const atTop = scrollOffset <= TOP_PAUSE_SCROLL_Y;
+      if (isInTopZoneRef.current === atTop) {
+        if (!hasScrollActivatedPlaybackRef.current && scrollOffset > TOP_PAUSE_SCROLL_Y) {
+          hasScrollActivatedPlaybackRef.current = true;
+          setHasScrollActivatedPlayback(true);
+        }
+        return;
+      }
+      isInTopZoneRef.current = atTop;
+      if (!hasScrollActivatedPlaybackRef.current && scrollOffset > TOP_PAUSE_SCROLL_Y) {
+        hasScrollActivatedPlaybackRef.current = true;
+        setHasScrollActivatedPlayback(true);
+      }
+    }, []);
+
+    const maybeAutoUnmuteFromScroll = useCallback((scrollOffset: number): void => {
+      if (scrollOffset <= AUTO_UNMUTE_SCROLL_Y) {
+        return;
+      }
+
+      if (hasManualAudioChoiceRef.current || hasAutoUnmutedRef.current || !isMutedRef.current) {
+        return;
+      }
+
+      hasAutoUnmutedRef.current = true;
+      setHasAutoUnmuted(true);
+      setIsMuted(false);
+    }, []);
+
+    useEffect(() => {
+      const listenerId = scrollY.addListener(({ value }) => {
+        maybeAutoUnmuteFromScroll(value);
+        syncTopZoneState(value);
+        setShowBackToTop(value > 400);
+
+        // Track active section based on scroll position
+        if (onActiveSectionChange && sectionOffsets && heroHeightProp) {
+          let activeSectionId = 'inicio';
+          const entries = Object.entries(sectionOffsets);
+          const foundEntry = [...entries]
+            .reverse()
+            .find(([, sectionOffset]) => value >= sectionOffset - 60);
+
+          if (foundEntry) {
+            [activeSectionId] = foundEntry;
+          }
+          onActiveSectionChange(activeSectionId);
+        }
+      });
+
+      return (): void => {
+        scrollY.removeListener(listenerId);
+      };
+    }, [
+      maybeAutoUnmuteFromScroll,
+      scrollY,
+      syncTopZoneState,
+      onActiveSectionChange,
+      sectionOffsets,
+      heroHeightProp,
+    ]);
+
+    const handleScroll = useMemo(
+      () =>
+        Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+          useNativeDriver: false,
+          listener: (event: { nativeEvent: { contentOffset: { y: number } } }): void => {
+            const scrollOffset = event?.nativeEvent?.contentOffset?.y;
+            if (typeof scrollOffset === 'number') {
+              maybeAutoUnmuteFromScroll(scrollOffset);
+              syncTopZoneState(scrollOffset);
             }
           },
         }),
-        [],
-      );
+      [maybeAutoUnmuteFromScroll, scrollY, syncTopZoneState]
+    );
 
-      const { themeMode, } = useAppPreferences();
-      const { t, } = useAppTranslation('mobile',);
-      const isDark = isDarkProp ?? themeMode === 'dark';
-      const [profileMenuVisible, setProfileMenuVisible,] = useState(false,);
-      const [settingsExpanded, setSettingsExpanded,] = useState(false,);
-      const [headerNavSettingsMenuVisible, setHeaderNavSettingsMenuVisible,] = useState(false,);
-      const [isMuted, setIsMuted,] = useState(true,);
-      const [hasManualAudioChoice, setHasManualAudioChoice,] = useState(false,);
-      const [hasAutoUnmuted, setHasAutoUnmuted,] = useState(false,);
-      const [hasScrollActivatedPlayback, setHasScrollActivatedPlayback,] = useState(false,);
-      const [showBackToTop, setShowBackToTop,] = useState(false,);
-      const { width: screenWidth, height: screenHeight, } = useWindowDimensions();
-      const isMobile = screenWidth < 720;
-      const [headerNavMobileMenuVisible, setHeaderNavMobileMenuVisible,] = useState(false,);
-      const headerNavMobileMenuAnim = useRef(new Animated.Value(0,),).current;
-
-      useEffect(() => {
-        Animated.spring(headerNavMobileMenuAnim, {
-          toValue: headerNavMobileMenuVisible ? 1 : 0,
-          useNativeDriver: true,
-          friction: 8,
-          tension: 40,
-        },).start();
-      }, [headerNavMobileMenuVisible, headerNavMobileMenuAnim,],);
-
-      const scrollY = useRef(new Animated.Value(0,),).current;
-      const isMutedRef = useRef(isMuted,);
-      const hasManualAudioChoiceRef = useRef(hasManualAudioChoice,);
-      const hasAutoUnmutedRef = useRef(hasAutoUnmuted,);
-      const hasScrollActivatedPlaybackRef = useRef(hasScrollActivatedPlayback,);
-      const isInTopZoneRef = useRef(true,);
-
-      useEffect(() => {
-        setIsMuted(true,);
-        setHasManualAudioChoice(false,);
-        setHasAutoUnmuted(false,);
-        setHasScrollActivatedPlayback(false,);
-        isInTopZoneRef.current = true;
-        hasScrollActivatedPlaybackRef.current = false;
-      }, [],);
-
-      useEffect(() => {
-        isMutedRef.current = isMuted;
-        hasManualAudioChoiceRef.current = hasManualAudioChoice;
-        hasAutoUnmutedRef.current = hasAutoUnmuted;
-        hasScrollActivatedPlaybackRef.current = hasScrollActivatedPlayback;
-      }, [hasAutoUnmuted, hasManualAudioChoice, hasScrollActivatedPlayback, isMuted,],);
-
-      const syncTopZoneState = useCallback((scrollOffset: number,): void => {
-        const atTop = scrollOffset <= TOP_PAUSE_SCROLL_Y;
-        if (isInTopZoneRef.current === atTop) {
-          if (!hasScrollActivatedPlaybackRef.current && scrollOffset > TOP_PAUSE_SCROLL_Y) {
-            hasScrollActivatedPlaybackRef.current = true;
-            setHasScrollActivatedPlayback(true,);
-          }
-          return;
-        }
-        isInTopZoneRef.current = atTop;
-        if (!hasScrollActivatedPlaybackRef.current && scrollOffset > TOP_PAUSE_SCROLL_Y) {
-          hasScrollActivatedPlaybackRef.current = true;
-          setHasScrollActivatedPlayback(true,);
-        }
-      }, [],);
-
-      const maybeAutoUnmuteFromScroll = useCallback((scrollOffset: number,): void => {
-        if (scrollOffset <= AUTO_UNMUTE_SCROLL_Y) {
-          return;
-        }
-
-        if (hasManualAudioChoiceRef.current || hasAutoUnmutedRef.current || !isMutedRef.current) {
-          return;
-        }
-
-        hasAutoUnmutedRef.current = true;
-        setHasAutoUnmuted(true,);
-        setIsMuted(false,);
-      }, [],);
-
-      useEffect(() => {
-        const listenerId = scrollY.addListener(({ value, },) => {
-          maybeAutoUnmuteFromScroll(value,);
-          syncTopZoneState(value,);
-          setShowBackToTop(value > 400,);
-
-          // Track active section based on scroll position
-          if (onActiveSectionChange && sectionOffsets && heroHeightProp) {
-            let activeSectionId = 'inicio';
-            const entries = Object.entries(sectionOffsets,);
-            const foundEntry = [...entries,]
-              .reverse()
-              .find(([, sectionOffset,],) => value >= sectionOffset - 60,);
-
-            if (foundEntry) {
-              [activeSectionId,] = foundEntry;
-            }
-            onActiveSectionChange(activeSectionId,);
-          }
-        },);
-
-        return (): void => {
-          scrollY.removeListener(listenerId,);
-        };
-      }, [
-        maybeAutoUnmuteFromScroll,
-        scrollY,
-        syncTopZoneState,
-        onActiveSectionChange,
-        sectionOffsets,
-        heroHeightProp,
-      ],);
-
-      const handleScroll = useMemo(
-        () =>
-          Animated.event([{ nativeEvent: { contentOffset: { y: scrollY, }, }, },], {
-            useNativeDriver: false,
-            listener: (event: { nativeEvent: { contentOffset: { y: number } } },): void => {
-              const scrollOffset = event?.nativeEvent?.contentOffset?.y;
-              if (typeof scrollOffset === 'number') {
-                maybeAutoUnmuteFromScroll(scrollOffset,);
-                syncTopZoneState(scrollOffset,);
-              }
-            },
-          },),
-        [maybeAutoUnmuteFromScroll, scrollY, syncTopZoneState,],
-      );
-
-      const heroHeight = Math.max(screenHeight * 1.05, 740,);
-      const cardStartWidth = Math.min(screenWidth * 0.56, 700,);
-      const isDesktopView = screenWidth >= 720;
-      const isCompactDesktop = isDesktopView && screenWidth < 1280;
-      const heroWordmarkHeight = isDesktopView
-        ? Math.min(
-          Math.max(screenWidth * 0.023, isCompactDesktop ? 35 : 43,),
-          isCompactDesktop ? 54 : 64,
+    const heroHeight = Math.max(screenHeight * 1.05, 740);
+    const cardStartWidth = Math.min(screenWidth * 0.56, 700);
+    const isDesktopView = screenWidth >= 720;
+    const isCompactDesktop = isDesktopView && screenWidth < 1280;
+    const heroWordmarkHeight = isDesktopView
+      ? Math.min(
+          Math.max(screenWidth * 0.023, isCompactDesktop ? 35 : 43),
+          isCompactDesktop ? 54 : 64
         )
-        : Math.min(Math.max(screenWidth * 0.04, 30,), 47,);
-      const heroWordmarkWidth = Math.round(heroWordmarkHeight * 2.68,);
-      const pillBgColor = isDark ? 'rgba(11,90,95,0.08)' : 'rgba(201,239,234,0.08)';
-      const pillBorderColor = isDark ? 'rgba(28,203,161,0.04)' : 'rgba(10,92,97,0.02)';
-      const pillGlassTint = isDark ? 'dark' : 'light';
-      const headerNavLinkColor = isDark ? 'rgba(255,255,255,0.82)' : '#215b60';
-      const headerNavLinkActiveColor = isDark ? '#ffffff' : '#073f45';
-      const headerNavLinkActiveBg = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.76)';
-      const headerNavLinkHoverBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,92,97,0.08)';
-      const headerNavDividerColor = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,92,97,0.18)';
-      const headerNavSettingsBg = isDark ? 'rgba(5, 16, 18, 0.72)' : 'rgba(11,90,95,0.92)';
-      const headerNavSettingsBgHover = isDark ? 'rgba(5, 16, 18, 0.82)' : 'rgba(7,76,81,0.96)';
-      const headerNavPillPaddingHorizontal = isCompactDesktop ? 8 : 10;
-      const headerNavPillPaddingVertical = isCompactDesktop ? 8 : 10;
-      const headerNavPillGap = isCompactDesktop ? 4 : 6;
-      const headerNavPillItemPaddingHorizontal = isCompactDesktop ? 13 : 16;
-      const headerNavPillItemPaddingVertical = isCompactDesktop ? 8 : 10;
-      const headerNavCtaPaddingHorizontal = isCompactDesktop ? 18 : 20;
-      const headerNavCtaPaddingVertical = isCompactDesktop ? 8 : 9;
-      const headerNavCtaFontSize = isCompactDesktop ? 13 : 14;
+      : Math.min(Math.max(screenWidth * 0.04, 30), 47);
+    const heroWordmarkWidth = Math.round(heroWordmarkHeight * 2.68);
+    const pillBgColor = isDark ? 'rgba(11,90,95,0.08)' : 'rgba(201,239,234,0.08)';
+    const pillBorderColor = isDark ? 'rgba(28,203,161,0.04)' : 'rgba(10,92,97,0.02)';
+    const pillGlassTint = isDark ? 'dark' : 'light';
+    const headerNavLinkColor = isDark ? 'rgba(255,255,255,0.82)' : '#215b60';
+    const headerNavLinkActiveColor = isDark ? '#ffffff' : '#073f45';
+    const headerNavLinkActiveBg = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.76)';
+    const headerNavLinkHoverBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,92,97,0.08)';
+    const headerNavDividerColor = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,92,97,0.18)';
+    const headerNavSettingsBg = isDark ? 'rgba(5, 16, 18, 0.72)' : 'rgba(11,90,95,0.92)';
+    const headerNavSettingsBgHover = isDark ? 'rgba(5, 16, 18, 0.82)' : 'rgba(7,76,81,0.96)';
+    const headerNavPillPaddingHorizontal = isCompactDesktop ? 8 : 10;
+    const headerNavPillPaddingVertical = isCompactDesktop ? 8 : 10;
+    const headerNavPillGap = isCompactDesktop ? 4 : 6;
+    const headerNavPillItemPaddingHorizontal = isCompactDesktop ? 13 : 16;
+    const headerNavPillItemPaddingVertical = isCompactDesktop ? 8 : 10;
+    const headerNavCtaPaddingHorizontal = isCompactDesktop ? 18 : 20;
+    const headerNavCtaPaddingVertical = isCompactDesktop ? 8 : 9;
+    const headerNavCtaFontSize = isCompactDesktop ? 13 : 14;
 
-      useEffect(() => {
-        if (!showCta || isMobile || isCompactDesktop) {
-          setHeaderNavSettingsMenuVisible(false,);
-        }
-      }, [isCompactDesktop, isMobile, showCta,],);
+    useEffect(() => {
+      if (!showCta || isMobile || isCompactDesktop) {
+        setHeaderNavSettingsMenuVisible(false);
+      }
+    }, [isCompactDesktop, isMobile, showCta]);
 
-      const heroBgOpacity = scrollY.interpolate({
-        inputRange: [0, HERO_SOLID_SWAP_SCROLL,],
-        outputRange: [1, 0,],
-        extrapolate: 'clamp',
-      },);
-      const heroSolidFadeOpacity = scrollY.interpolate({
-        inputRange: [0, HERO_SOLID_SWAP_SCROLL,],
-        outputRange: [0, 1,],
-        extrapolate: 'clamp',
-      },);
-      const bgScale = scrollY.interpolate({
-        inputRange: [0, HERO_EXPANSION_RANGE,],
-        outputRange: [1, 1.08,],
-        extrapolate: 'clamp',
-      },);
-      const shadeStartOpacity = isDark ? 0.42 : 0.24;
-      const shadeEndOpacity = isDark ? 0.02 : 0;
-      const shadeOpacity = scrollY.interpolate({
-        inputRange: [0, HERO_SOLID_SWAP_SCROLL,],
-        outputRange: [shadeStartOpacity, shadeEndOpacity,],
-        extrapolate: 'clamp',
-      },);
-      const footerOpacity = scrollY.interpolate({
-        inputRange: [0, HERO_EXPANSION_RANGE * 0.65,],
-        outputRange: [1, 0,],
-        extrapolate: 'clamp',
-      },);
-      const footerTranslateY = scrollY.interpolate({
-        inputRange: [0, HERO_EXPANSION_RANGE * 0.7,],
-        outputRange: [0, 24,],
-        extrapolate: 'clamp',
-      },);
-      const contentOpacity = scrollY.interpolate({
-        inputRange: [0, 120,],
-        outputRange: [0.94, 1,],
-        extrapolate: 'clamp',
-      },);
-      const contentTranslateY = scrollY.interpolate({
-        inputRange: [0, 120,],
-        outputRange: [10, 0,],
-        extrapolate: 'clamp',
-      },);
-      const mediaTagOpacity = scrollY.interpolate({
-        inputRange: [0, 28, 72,],
-        outputRange: [1, 0.72, 0,],
-        extrapolate: 'clamp',
-      },);
-      const mediaTagTranslateY = scrollY.interpolate({
-        inputRange: [0, 72,],
-        outputRange: [0, 18,],
-        extrapolate: 'clamp',
-      },);
-      const palette = isDark
-        ? {
+    const heroBgOpacity = scrollY.interpolate({
+      inputRange: [0, HERO_SOLID_SWAP_SCROLL],
+      outputRange: [1, 0],
+      extrapolate: 'clamp',
+    });
+    const heroSolidFadeOpacity = scrollY.interpolate({
+      inputRange: [0, HERO_SOLID_SWAP_SCROLL],
+      outputRange: [0, 1],
+      extrapolate: 'clamp',
+    });
+    const bgScale = scrollY.interpolate({
+      inputRange: [0, HERO_EXPANSION_RANGE],
+      outputRange: [1, 1.08],
+      extrapolate: 'clamp',
+    });
+    const shadeStartOpacity = isDark ? 0.42 : 0.24;
+    const shadeEndOpacity = isDark ? 0.02 : 0;
+    const shadeOpacity = scrollY.interpolate({
+      inputRange: [0, HERO_SOLID_SWAP_SCROLL],
+      outputRange: [shadeStartOpacity, shadeEndOpacity],
+      extrapolate: 'clamp',
+    });
+    const footerOpacity = scrollY.interpolate({
+      inputRange: [0, HERO_EXPANSION_RANGE * 0.65],
+      outputRange: [1, 0],
+      extrapolate: 'clamp',
+    });
+    const footerTranslateY = scrollY.interpolate({
+      inputRange: [0, HERO_EXPANSION_RANGE * 0.7],
+      outputRange: [0, 24],
+      extrapolate: 'clamp',
+    });
+    const contentOpacity = scrollY.interpolate({
+      inputRange: [0, 120],
+      outputRange: [0.94, 1],
+      extrapolate: 'clamp',
+    });
+    const contentTranslateY = scrollY.interpolate({
+      inputRange: [0, 120],
+      outputRange: [10, 0],
+      extrapolate: 'clamp',
+    });
+    const mediaTagOpacity = scrollY.interpolate({
+      inputRange: [0, 28, 72],
+      outputRange: [1, 0.72, 0],
+      extrapolate: 'clamp',
+    });
+    const mediaTagTranslateY = scrollY.interpolate({
+      inputRange: [0, 72],
+      outputRange: [0, 18],
+      extrapolate: 'clamp',
+    });
+    const palette = isDark
+      ? {
           pageBg: '#050510',
           contentCard: '#0d0d1f',
           contentBorder: 'rgba(255,255,255,0.1)',
@@ -592,7 +420,7 @@ const AirsIntroExperience = forwardRef<
           mutedButtonBg: 'rgba(255,255,255,0.03)',
           mutedButtonBorder: 'rgba(255,255,255,0.16)',
         }
-        : {
+      : {
           pageBg: '#f6f8fc',
           contentCard: '#ffffff',
           contentBorder: 'rgba(15,23,42,0.12)',
@@ -604,105 +432,105 @@ const AirsIntroExperience = forwardRef<
           mutedButtonBorder: 'rgba(15,23,42,0.16)',
         };
 
-      const heroWordmarkSource = isDesktopView
-        ? isDark
-          ? AIRS_LOGO_LIGHT_2X
-          : AIRS_LOGO_DARK_2X
-        : isDark
-          ? AIRS_LOGO_LIGHT
-          : AIRS_LOGO_DARK;
-      const heroCopyTop = isMobile
-        ? Math.min(heroHeight * 0.29, 240,)
-        : Math.min(heroHeight * 0.34, 330,);
-      const heroCopyMaxWidth = isMobile
-        ? Math.min(screenWidth - 48, 620,)
-        : Math.min(screenWidth * 0.82, 1080,);
-      const heroHeadlineSize = Math.min(Math.max(screenWidth * 0.05, 34,), 68,);
-      const heroHeadlineLineHeight = heroHeadlineSize * 1.04;
-      const heroKickerSize = isMobile
-        ? Math.min(Math.max(screenWidth * 0.036, 20,), 32,)
-        : Math.min(Math.max(screenWidth * 0.03, 26,), 42,);
-      const heroKickerLineHeight = heroKickerSize * 1.02;
-      const heroButtonWidth = isMobile ? '100%' : Math.min(screenWidth * 0.28, 360,);
-      const heroButtonFontSize = Math.min(Math.max(screenWidth * 0.023, 18,), 24,);
-      const heroFooterTextColor = isDark ? 'rgba(248,251,255,0.96)' : '#020617';
-      const heroFooterShadowColor = isDark ? 'rgba(0,0,0,0.28)' : 'transparent';
-      const closeProfileMenu = (): void => {
-        setProfileMenuVisible(false,);
-        setSettingsExpanded(false,);
-      };
+    const heroWordmarkSource = isDesktopView
+      ? isDark
+        ? AIRS_LOGO_LIGHT_2X
+        : AIRS_LOGO_DARK_2X
+      : isDark
+      ? AIRS_LOGO_LIGHT
+      : AIRS_LOGO_DARK;
+    const heroCopyTop = isMobile
+      ? Math.min(heroHeight * 0.29, 240)
+      : Math.min(heroHeight * 0.34, 330);
+    const heroCopyMaxWidth = isMobile
+      ? Math.min(screenWidth - 48, 620)
+      : Math.min(screenWidth * 0.82, 1080);
+    const heroHeadlineSize = Math.min(Math.max(screenWidth * 0.05, 34), 68);
+    const heroHeadlineLineHeight = heroHeadlineSize * 1.04;
+    const heroKickerSize = isMobile
+      ? Math.min(Math.max(screenWidth * 0.036, 20), 32)
+      : Math.min(Math.max(screenWidth * 0.03, 26), 42);
+    const heroKickerLineHeight = heroKickerSize * 1.02;
+    const heroButtonWidth = isMobile ? '100%' : Math.min(screenWidth * 0.28, 360);
+    const heroButtonFontSize = Math.min(Math.max(screenWidth * 0.023, 18), 24);
+    const heroFooterTextColor = isDark ? 'rgba(248,251,255,0.96)' : '#020617';
+    const heroFooterShadowColor = isDark ? 'rgba(0,0,0,0.28)' : 'transparent';
+    const closeProfileMenu = (): void => {
+      setProfileMenuVisible(false);
+      setSettingsExpanded(false);
+    };
 
-      const closeHeaderNavSettingsMenu = (): void => {
-        setHeaderNavSettingsMenuVisible(false,);
-      };
+    const closeHeaderNavSettingsMenu = (): void => {
+      setHeaderNavSettingsMenuVisible(false);
+    };
 
-      const headerBarOpacity = scrollY.interpolate({
-        inputRange: [0, 80,],
-        outputRange: [0, 1,],
-        extrapolate: 'clamp',
-      },);
-      const blurTint = isDark ? 'dark' : 'light';
-      const blurHeaderGradientId = React.useId().replace(/[:]/g, '',);
-      const headerBarGlassColor = isDark ? '#050510' : '#f6f8fc';
+    const headerBarOpacity = scrollY.interpolate({
+      inputRange: [0, 80],
+      outputRange: [0, 1],
+      extrapolate: 'clamp',
+    });
+    const blurTint = isDark ? 'dark' : 'light';
+    const blurHeaderGradientId = React.useId().replace(/[:]/g, '');
+    const headerBarGlassColor = isDark ? '#050510' : '#f6f8fc';
 
-      return (
-        <View style={[styles.page, { backgroundColor: palette.pageBg, },]}>
-          {/* Progressive blur header — smooth glass effect that fades in on scroll */}
-          <Animated.View
+    return (
+      <View style={[styles.page, { backgroundColor: palette.pageBg }]}>
+        {/* Progressive blur header — smooth glass effect that fades in on scroll */}
+        <Animated.View
+          pointerEvents='none'
+          style={[styles.progressiveBlurHeader, { opacity: headerBarOpacity }]}
+        >
+          {/* Blur layer with a feathered glass fade at the bottom edge */}
+          <BlurView intensity={85} tint={blurTint} style={StyleSheet.absoluteFillObject} />
+          <Svg
             pointerEvents='none'
-            style={[styles.progressiveBlurHeader, { opacity: headerBarOpacity, },]}
+            style={StyleSheet.absoluteFillObject}
+            width='100%'
+            height='100%'
+            viewBox='0 0 100 100'
+            preserveAspectRatio='none'
           >
-            {/* Blur layer with a feathered glass fade at the bottom edge */}
-            <BlurView intensity={85} tint={blurTint} style={StyleSheet.absoluteFillObject} />
-            <Svg
-              pointerEvents='none'
-              style={StyleSheet.absoluteFillObject}
-              width='100%'
-              height='100%'
-              viewBox='0 0 100 100'
-              preserveAspectRatio='none'
-            >
-              <Defs>
-                <LinearGradient id={blurHeaderGradientId} x1='0' y1='0' x2='0' y2='1'>
-                  <Stop offset='0%' stopColor={headerBarGlassColor} stopOpacity='0.94' />
-                  <Stop offset='56%' stopColor={headerBarGlassColor} stopOpacity='0.68' />
-                  <Stop offset='84%' stopColor={headerBarGlassColor} stopOpacity='0.24' />
-                  <Stop offset='100%' stopColor={headerBarGlassColor} stopOpacity='0' />
-                </LinearGradient>
-              </Defs>
-              <Rect x='0' y='0' width='100' height='100' fill={`url(#${blurHeaderGradientId})`} />
-            </Svg>
-          </Animated.View>
+            <Defs>
+              <LinearGradient id={blurHeaderGradientId} x1='0' y1='0' x2='0' y2='1'>
+                <Stop offset='0%' stopColor={headerBarGlassColor} stopOpacity='0.94' />
+                <Stop offset='56%' stopColor={headerBarGlassColor} stopOpacity='0.68' />
+                <Stop offset='84%' stopColor={headerBarGlassColor} stopOpacity='0.24' />
+                <Stop offset='100%' stopColor={headerBarGlassColor} stopOpacity='0' />
+              </LinearGradient>
+            </Defs>
+            <Rect x='0' y='0' width='100' height='100' fill={`url(#${blurHeaderGradientId})`} />
+          </Svg>
+        </Animated.View>
 
-          {headerNavSettingsMenuVisible || headerNavMobileMenuVisible ? (
-            <Pressable
-              style={styles.floatingBackdrop}
-              onPress={() => {
-                if (headerNavSettingsMenuVisible) {
-                  closeHeaderNavSettingsMenu();
-                }
-                if (headerNavMobileMenuVisible) {
-                  setHeaderNavMobileMenuVisible(false,);
-                  setSettingsExpanded(false,);
-                }
-              }}
-            />
-          ) : null}
+        {headerNavSettingsMenuVisible || headerNavMobileMenuVisible ? (
+          <Pressable
+            style={styles.floatingBackdrop}
+            onPress={() => {
+              if (headerNavSettingsMenuVisible) {
+                closeHeaderNavSettingsMenu();
+              }
+              if (headerNavMobileMenuVisible) {
+                setHeaderNavMobileMenuVisible(false);
+                setSettingsExpanded(false);
+              }
+            }}
+          />
+        ) : null}
 
-          <View pointerEvents='none' style={styles.floatingLeftTop}>
-            <View style={styles.heroBrandRow}>
-              <View style={styles.heroBrandTextBlock}>
-                <ExpoImage
-                  source={heroWordmarkSource}
-                  style={{ width: heroWordmarkWidth, height: heroWordmarkHeight, }}
-                  contentFit='contain'
-                />
-              </View>
+        <View pointerEvents='none' style={styles.floatingLeftTop}>
+          <View style={styles.heroBrandRow}>
+            <View style={styles.heroBrandTextBlock}>
+              <ExpoImage
+                source={heroWordmarkSource}
+                style={{ width: heroWordmarkWidth, height: heroWordmarkHeight }}
+                contentFit='contain'
+              />
             </View>
           </View>
+        </View>
 
-          {/* Header nav — logged-out pill or logged-in clean nav */}
-          {headerNavLinks &&
+        {/* Header nav — logged-out pill or logged-in clean nav */}
+        {headerNavLinks &&
           headerNavLinks.length > 0 &&
           (showCta ? (
             /* Logged-out: pill with nav links on wide desktop, avatar dropdown elsewhere */
@@ -715,7 +543,7 @@ const AirsIntroExperience = forwardRef<
                   pointerEvents='box-none'
                 >
                   <TouchableOpacity
-                    onPress={() => setHeaderNavMobileMenuVisible((v,) => !v,)}
+                    onPress={() => setHeaderNavMobileMenuVisible((v) => !v)}
                     activeOpacity={0.7}
                     style={[
                       isMobile
@@ -726,10 +554,10 @@ const AirsIntroExperience = forwardRef<
                         ...(isMobile
                           ? {}
                           : {
-                            paddingHorizontal: 10,
-                            paddingVertical: 7,
-                            minHeight: 38,
-                          }),
+                              paddingHorizontal: 10,
+                              paddingVertical: 7,
+                              minHeight: 38,
+                            }),
                       },
                     ]}
                   >
@@ -761,21 +589,21 @@ const AirsIntroExperience = forwardRef<
                           backgroundColor: palette.contentCard,
                           borderColor: palette.contentBorder,
                         },
-                        !isMobile && { paddingHorizontal: 8, paddingVertical: 8, },
+                        !isMobile && { paddingHorizontal: 8, paddingVertical: 8 },
                         {
                           opacity: headerNavMobileMenuAnim,
                           transform: [
                             {
                               scale: headerNavMobileMenuAnim.interpolate({
-                                inputRange: [0, 1,],
-                                outputRange: [0.95, 1,],
-                              },),
+                                inputRange: [0, 1],
+                                outputRange: [0.95, 1],
+                              }),
                             },
                             {
                               translateY: headerNavMobileMenuAnim.interpolate({
-                                inputRange: [0, 1,],
-                                outputRange: [-10, 0,],
-                              },),
+                                inputRange: [0, 1],
+                                outputRange: [-10, 0],
+                              }),
                             },
                           ],
                         },
@@ -783,11 +611,11 @@ const AirsIntroExperience = forwardRef<
                       pointerEvents='auto'
                     >
                       {/* Nav links to scroll to sections */}
-                      {headerNavLinks.map((link,) => (
+                      {headerNavLinks.map((link) => (
                         <TouchableOpacity
                           key={link.id}
                           onPress={() => {
-                            setHeaderNavMobileMenuVisible(false,);
+                            setHeaderNavMobileMenuVisible(false);
                             link.onPress();
                           }}
                           activeOpacity={0.7}
@@ -807,43 +635,43 @@ const AirsIntroExperience = forwardRef<
                             {link.label}
                           </Text>
                         </TouchableOpacity>
-                      ),)}
+                      ))}
 
                       <View
                         style={[
                           styles.headerNavMobileDivider,
-                          { backgroundColor: palette.contentBorder, },
+                          { backgroundColor: palette.contentBorder },
                         ]}
                       />
 
                       <TouchableOpacity
                         style={[
                           styles.floatingMenuItem,
-                          { backgroundColor: palette.mutedButtonBg, },
+                          { backgroundColor: palette.mutedButtonBg },
                         ]}
                         onPress={() => {
-                          setHeaderNavMobileMenuVisible(false,);
+                          setHeaderNavMobileMenuVisible(false);
                           onSignIn();
                         }}
                         activeOpacity={0.82}
                       >
                         <LogIn size={14} color={palette.textPrimary} />
-                        <Text style={[styles.floatingMenuText, { color: palette.textPrimary, },]}>
-                          {t('labels.signIn',)}
+                        <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                          {t('labels.signIn')}
                         </Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
                         style={[
                           styles.floatingMenuItem,
-                          { backgroundColor: palette.mutedButtonBg, },
+                          { backgroundColor: palette.mutedButtonBg },
                         ]}
-                        onPress={() => setSettingsExpanded((prev,) => !prev,)}
+                        onPress={() => setSettingsExpanded((prev) => !prev)}
                         activeOpacity={0.82}
                       >
                         <SettingsIcon size={14} color={palette.textPrimary} />
-                        <Text style={[styles.floatingMenuText, { color: palette.textPrimary, },]}>
-                          {t('labels.settings',)}
+                        <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                          {t('labels.settings')}
                         </Text>
                         <View style={styles.floatingMenuItemRight}>
                           {settingsExpanded ? (
@@ -902,14 +730,14 @@ const AirsIntroExperience = forwardRef<
                     />
                     <View style={styles.headerNavPillContent}>
                       <View style={styles.headerNavLinkGroup}>
-                        {headerNavLinks.map((link,) => (
+                        {headerNavLinks.map((link) => (
                           <Pressable
                             key={link.id}
                             onPress={() => {
                               closeHeaderNavSettingsMenu();
                               link.onPress();
                             }}
-                            style={({ hovered, pressed, },) => [
+                            style={({ hovered, pressed }) => [
                               styles.headerNavPillItem,
                               {
                                 paddingHorizontal: headerNavPillItemPaddingHorizontal,
@@ -917,8 +745,8 @@ const AirsIntroExperience = forwardRef<
                                 backgroundColor: link.isActive
                                   ? headerNavLinkActiveBg
                                   : hovered
-                                    ? headerNavLinkHoverBg
-                                    : 'transparent',
+                                  ? headerNavLinkHoverBg
+                                  : 'transparent',
                                 opacity: pressed ? 0.9 : 1,
                               },
                             ]}
@@ -939,13 +767,13 @@ const AirsIntroExperience = forwardRef<
                               {link.label}
                             </Text>
                           </Pressable>
-                        ),)}
+                        ))}
                       </View>
 
                       <View
                         style={[
                           styles.headerNavActionDivider,
-                          { backgroundColor: headerNavDividerColor, },
+                          { backgroundColor: headerNavDividerColor },
                         ]}
                       />
 
@@ -955,7 +783,7 @@ const AirsIntroExperience = forwardRef<
                             closeHeaderNavSettingsMenu();
                             onSignIn();
                           }}
-                          style={({ hovered, pressed, },) => [
+                          style={({ hovered, pressed }) => [
                             styles.headerNavCtaButton,
                             {
                               backgroundColor: hovered ? '#38e9bf' : '#1ee6b5',
@@ -969,17 +797,17 @@ const AirsIntroExperience = forwardRef<
                           <Text
                             style={[
                               styles.headerNavCtaText,
-                              { color: '#07333b', fontSize: headerNavCtaFontSize, },
+                              { color: '#07333b', fontSize: headerNavCtaFontSize },
                             ]}
                           >
-                            {t('landing.nav.signInCta',)}
+                            {t('landing.nav.signInCta')}
                           </Text>
                         </Pressable>
 
                         <View style={styles.headerNavSettingsWrap} pointerEvents='box-none'>
                           <Pressable
-                            onPress={() => setHeaderNavSettingsMenuVisible((visible,) => !visible,)}
-                            style={({ hovered, pressed, },) => [
+                            onPress={() => setHeaderNavSettingsMenuVisible((visible) => !visible)}
+                            style={({ hovered, pressed }) => [
                               styles.headerNavSettingsButton,
                               {
                                 backgroundColor: hovered
@@ -1017,9 +845,9 @@ const AirsIntroExperience = forwardRef<
                               onOpenSettings={
                                 _onOpenSettings
                                   ? (): void => {
-                                    closeHeaderNavSettingsMenu();
-                                    _onOpenSettings();
-                                  }
+                                      closeHeaderNavSettingsMenu();
+                                      _onOpenSettings();
+                                    }
                                   : undefined
                               }
                             />
@@ -1035,7 +863,7 @@ const AirsIntroExperience = forwardRef<
             /* Logged-in: clean nav links with underline + avatar */
             <View style={styles.headerNavLoggedInContainer}>
               <View style={styles.headerNavLinksRow}>
-                {headerNavLinks.map((link,) => (
+                {headerNavLinks.map((link) => (
                   <TouchableOpacity
                     key={link.id}
                     onPress={link.onPress}
@@ -1061,25 +889,25 @@ const AirsIntroExperience = forwardRef<
                       <View
                         style={[
                           styles.headerNavLinkUnderline,
-                          { backgroundColor: accentColorProp ?? palette.accent, },
+                          { backgroundColor: accentColorProp ?? palette.accent },
                         ]}
                       />
                     )}
                   </TouchableOpacity>
-                ),)}
+                ))}
               </View>
 
               {/* Avatar dropdown trigger */}
               <TouchableOpacity
                 style={[
                   styles.headerAvatarTrigger,
-                  { backgroundColor: palette.contentCard, borderColor: palette.contentBorder, },
+                  { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
                 ]}
                 activeOpacity={0.86}
-                onPress={() => setProfileMenuVisible((prev,) => !prev,)}
+                onPress={() => setProfileMenuVisible((prev) => !prev)}
               >
-                <View style={[styles.headerAvatar, { backgroundColor: `${palette.accent}22`, },]}>
-                  <Text style={[styles.headerAvatarText, { color: palette.accent, },]}>U</Text>
+                <View style={[styles.headerAvatar, { backgroundColor: `${palette.accent}22` }]}>
+                  <Text style={[styles.headerAvatarText, { color: palette.accent }]}>U</Text>
                 </View>
                 {profileMenuVisible ? (
                   <ChevronUp size={14} color={palette.textPrimary} />
@@ -1090,38 +918,110 @@ const AirsIntroExperience = forwardRef<
             </View>
           ))}
 
-          {/* Profile dropdown menu (logged-in state) */}
-          {!showCta && profileMenuVisible && (
-            <View style={styles.headerDropdownContainer}>
+        {/* Profile dropdown menu (logged-in state) */}
+        {!showCta && profileMenuVisible && (
+          <View style={styles.headerDropdownContainer}>
+            <View
+              style={[
+                styles.floatingMenu,
+                { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
+              ]}
+            >
+              <TouchableOpacity
+                style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg }]}
+                onPress={() => {
+                  setProfileMenuVisible(false);
+                  setSettingsExpanded(false);
+                  onSignIn();
+                }}
+                activeOpacity={0.82}
+              >
+                <LogIn size={14} color={palette.textPrimary} />
+                <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                  {t('labels.signIn')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg }]}
+                onPress={() => setSettingsExpanded((prev) => !prev)}
+                activeOpacity={0.82}
+              >
+                <SettingsIcon size={14} color={palette.textPrimary} />
+                <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                  {t('labels.settings')}
+                </Text>
+                <View style={styles.floatingMenuItemRight}>
+                  {settingsExpanded ? (
+                    <ChevronDown size={13} color={palette.textMuted} />
+                  ) : (
+                    <ChevronRight size={13} color={palette.textMuted} />
+                  )}
+                </View>
+              </TouchableOpacity>
+
+              <AnimatedCollapsibleContent expanded={settingsExpanded}>
+                <AirsIntroSettingsMenu palette={palette} />
+              </AnimatedCollapsibleContent>
+            </View>
+          </View>
+        )}
+
+        {!showCta && profileMenuVisible && (
+          <Pressable
+            style={styles.floatingBackdrop}
+            onPress={() => {
+              setProfileMenuVisible(false);
+              setSettingsExpanded(false);
+            }}
+          />
+        )}
+
+        {!showCta && (
+          <View style={styles.floatingRightTop}>
+            <TouchableOpacity
+              style={[
+                styles.floatingProfileTrigger,
+                { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
+              ]}
+              activeOpacity={0.86}
+              onPress={() => setProfileMenuVisible((prev) => !prev)}
+            >
+              <View style={[styles.floatingAvatar, { backgroundColor: `${palette.accent}22` }]}>
+                <Text style={[styles.floatingAvatarText, { color: palette.accent }]}>U</Text>
+              </View>
+              <ChevronDown size={14} color={palette.textPrimary} />
+            </TouchableOpacity>
+
+            {profileMenuVisible ? (
               <View
                 style={[
                   styles.floatingMenu,
-                  { backgroundColor: palette.contentCard, borderColor: palette.contentBorder, },
+                  { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
                 ]}
               >
                 <TouchableOpacity
-                  style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg, },]}
+                  style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg }]}
                   onPress={() => {
-                    setProfileMenuVisible(false,);
-                    setSettingsExpanded(false,);
+                    closeProfileMenu();
                     onSignIn();
                   }}
                   activeOpacity={0.82}
                 >
                   <LogIn size={14} color={palette.textPrimary} />
-                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary, },]}>
-                    {t('labels.signIn',)}
+                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                    {t('labels.signIn')}
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg, },]}
-                  onPress={() => setSettingsExpanded((prev,) => !prev,)}
+                  style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg }]}
+                  onPress={() => setSettingsExpanded((prev) => !prev)}
                   activeOpacity={0.82}
                 >
                   <SettingsIcon size={14} color={palette.textPrimary} />
-                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary, },]}>
-                    {t('labels.settings',)}
+                  <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
+                    {t('labels.settings')}
                   </Text>
                   <View style={styles.floatingMenuItemRight}>
                     {settingsExpanded ? (
@@ -1136,270 +1036,198 @@ const AirsIntroExperience = forwardRef<
                   <AirsIntroSettingsMenu palette={palette} />
                 </AnimatedCollapsibleContent>
               </View>
-            </View>
-          )}
+            ) : null}
+          </View>
+        )}
 
-          {!showCta && profileMenuVisible && (
-            <Pressable
-              style={styles.floatingBackdrop}
-              onPress={() => {
-                setProfileMenuVisible(false,);
-                setSettingsExpanded(false,);
-              }}
-            />
-          )}
+        {profileMenuVisible ? (
+          <Pressable style={styles.floatingBackdrop} onPress={closeProfileMenu} />
+        ) : null}
 
-          {!showCta && (
-            <View style={styles.floatingRightTop}>
-              <TouchableOpacity
-                style={[
-                  styles.floatingProfileTrigger,
-                  { backgroundColor: palette.contentCard, borderColor: palette.contentBorder, },
-                ]}
-                activeOpacity={0.86}
-                onPress={() => setProfileMenuVisible((prev,) => !prev,)}
-              >
-                <View style={[styles.floatingAvatar, { backgroundColor: `${palette.accent}22`, },]}>
-                  <Text style={[styles.floatingAvatarText, { color: palette.accent, },]}>U</Text>
-                </View>
-                <ChevronDown size={14} color={palette.textPrimary} />
-              </TouchableOpacity>
-
-              {profileMenuVisible ? (
-                <View
-                  style={[
-                    styles.floatingMenu,
-                    { backgroundColor: palette.contentCard, borderColor: palette.contentBorder, },
-                  ]}
-                >
-                  <TouchableOpacity
-                    style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg, },]}
-                    onPress={() => {
-                      closeProfileMenu();
-                      onSignIn();
-                    }}
-                    activeOpacity={0.82}
-                  >
-                    <LogIn size={14} color={palette.textPrimary} />
-                    <Text style={[styles.floatingMenuText, { color: palette.textPrimary, },]}>
-                      {t('labels.signIn',)}
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.floatingMenuItem, { backgroundColor: palette.mutedButtonBg, },]}
-                    onPress={() => setSettingsExpanded((prev,) => !prev,)}
-                    activeOpacity={0.82}
-                  >
-                    <SettingsIcon size={14} color={palette.textPrimary} />
-                    <Text style={[styles.floatingMenuText, { color: palette.textPrimary, },]}>
-                      {t('labels.settings',)}
-                    </Text>
-                    <View style={styles.floatingMenuItemRight}>
-                      {settingsExpanded ? (
-                        <ChevronDown size={13} color={palette.textMuted} />
-                      ) : (
-                        <ChevronRight size={13} color={palette.textMuted} />
-                      )}
-                    </View>
-                  </TouchableOpacity>
-
-                  <AnimatedCollapsibleContent expanded={settingsExpanded}>
-                    <AirsIntroSettingsMenu palette={palette} />
-                  </AnimatedCollapsibleContent>
-                </View>
-              ) : null}
-            </View>
-          )}
-
-          {profileMenuVisible ? (
-            <Pressable style={styles.floatingBackdrop} onPress={closeProfileMenu} />
-          ) : null}
-
-          <Animated.ScrollView
-            ref={scrollRef}
-            showsVerticalScrollIndicator={false}
-            scrollEventThrottle={16}
-            onScroll={handleScroll}
-            contentContainerStyle={styles.scrollContent}
+        <Animated.ScrollView
+          ref={scrollRef}
+          showsVerticalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onScroll={handleScroll}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <View
+            style={[styles.heroSection, { height: heroHeight, backgroundColor: palette.pageBg }]}
           >
-            <View
-              style={[styles.heroSection, { height: heroHeight, backgroundColor: palette.pageBg, },]}
+            <Animated.View
+              pointerEvents='none'
+              style={[
+                styles.heroBackground,
+                { opacity: heroBgOpacity, transform: [{ scale: bgScale }] },
+              ]}
             >
+              <HeroVideoNative videoSource={HERO_VIDEO} />
+            </Animated.View>
+            <Animated.View
+              style={[
+                styles.heroSolidFadeLayer,
+                { backgroundColor: palette.pageBg, opacity: heroSolidFadeOpacity },
+              ]}
+            />
+            <Animated.View style={[styles.heroShade, { opacity: shadeOpacity }]} />
+
+            {showCta ? (
               <Animated.View
-                pointerEvents='none'
+                pointerEvents='box-none'
                 style={[
-                  styles.heroBackground,
-                  { opacity: heroBgOpacity, transform: [{ scale: bgScale, },], },
+                  styles.heroCopyOverlay,
+                  {
+                    top: heroCopyTop,
+                    opacity: mediaTagOpacity,
+                    transform: [{ translateY: mediaTagTranslateY }],
+                  },
                 ]}
               >
-                <HeroBackground videoSource={HERO_VIDEO} />
-              </Animated.View>
-              <Animated.View
-                style={[
-                  styles.heroSolidFadeLayer,
-                  { backgroundColor: palette.pageBg, opacity: heroSolidFadeOpacity, },
-                ]}
-              />
-              <Animated.View style={[styles.heroShade, { opacity: shadeOpacity, },]} />
-
-              {showCta ? (
-                <Animated.View
-                  pointerEvents='box-none'
+                <Text
                   style={[
-                    styles.heroCopyOverlay,
+                    styles.heroCopyKicker,
                     {
-                      top: heroCopyTop,
-                      opacity: mediaTagOpacity,
-                      transform: [{ translateY: mediaTagTranslateY, },],
+                      color: 'rgba(245, 227, 162, 0.96)',
+                      fontSize: heroKickerSize,
+                      lineHeight: heroKickerLineHeight,
                     },
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.heroCopyKicker,
-                      {
-                        color: 'rgba(245, 227, 162, 0.96)',
-                        fontSize: heroKickerSize,
-                        lineHeight: heroKickerLineHeight,
-                      },
-                    ]}
-                  >
-                    {t('landing.media.title',)}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.heroCopyHeadline,
-                      {
-                        color: '#ffffff',
-                        maxWidth: heroCopyMaxWidth,
-                        fontSize: heroHeadlineSize,
-                        lineHeight: heroHeadlineLineHeight,
-                      },
-                    ]}
-                  >
-                    {t('landing.media.subtitle',)}
-                  </Text>
-                  <View style={[styles.heroCopyActions, isMobile && styles.heroCopyActionsStacked,]}>
-                    <HeroGlassButton
-                      onPress={() => onHeroNavigate?.('como-funciona',)}
-                      label={t('landing.nav.howItWorks',)}
-                      width={heroButtonWidth}
-                      fontSize={heroButtonFontSize}
-                      isDark={isDark}
-                    />
-                    <HeroGlassButton
-                      onPress={onSignIn}
-                      label={t('landing.nav.joinNow',)}
-                      width={heroButtonWidth}
-                      fontSize={heroButtonFontSize}
-                      isDark={isDark}
-                    />
-                  </View>
-                </Animated.View>
-              ) : null}
-
-              <Animated.View
-                style={[
-                  styles.heroFooter,
-                  { opacity: footerOpacity, transform: [{ translateY: footerTranslateY, },], },
-                ]}
-              >
-                <View style={styles.heroMetaLeftBlock}>
-                  <Text
-                    numberOfLines={1}
-                    ellipsizeMode='tail'
-                    style={[
-                      styles.heroMetaLeft,
-                      { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor, },
-                    ]}
-                  >
-                    {t('landing.hero.presentedBy',)}
-                  </Text>
-                </View>
+                  {t('landing.media.title')}
+                </Text>
                 <Text
                   style={[
-                    styles.heroMetaRight,
-                    { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor, },
+                    styles.heroCopyHeadline,
+                    {
+                      color: '#ffffff',
+                      maxWidth: heroCopyMaxWidth,
+                      fontSize: heroHeadlineSize,
+                      lineHeight: heroHeadlineLineHeight,
+                    },
                   ]}
                 >
-                  {t('landing.hero.scrollToInteract',)}
+                  {t('landing.media.subtitle')}
                 </Text>
+                <View style={[styles.heroCopyActions, isMobile && styles.heroCopyActionsStacked]}>
+                  <HeroGlassButton
+                    onPress={() => onHeroNavigate?.('como-funciona')}
+                    label={t('landing.nav.howItWorks')}
+                    width={heroButtonWidth}
+                    fontSize={heroButtonFontSize}
+                    isDark={isDark}
+                  />
+                  <HeroGlassButton
+                    onPress={onSignIn}
+                    label={t('landing.nav.joinNow')}
+                    width={heroButtonWidth}
+                    fontSize={heroButtonFontSize}
+                    isDark={isDark}
+                  />
+                </View>
               </Animated.View>
-            </View>
+            ) : null}
 
             <Animated.View
               style={[
-                styles.contentCard,
-                {
-                  opacity: contentOpacity,
-                  transform: [{ translateY: contentTranslateY, },],
-                },
-                !isMobile && {
-                  maxWidth: Math.min(cardStartWidth + 40, 760,),
-                  alignSelf: 'center',
-                  width: '100%',
-                },
+                styles.heroFooter,
+                { opacity: footerOpacity, transform: [{ translateY: footerTranslateY }] },
               ]}
             >
-              <View style={styles.contentTitleWrap}>
-                <ExpoImage
-                  source={heroWordmarkSource}
-                  style={styles.contentTitleLogo}
-                  contentFit='contain'
-                />
+              <View style={styles.heroMetaLeftBlock}>
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode='tail'
+                  style={[
+                    styles.heroMetaLeft,
+                    { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor },
+                  ]}
+                >
+                  {t('landing.hero.presentedBy')}
+                </Text>
               </View>
-              <Text style={[styles.contentText, { color: palette.textMuted, },]}>
-                {t('landing.info.scoreLine',)}
+              <Text
+                style={[
+                  styles.heroMetaRight,
+                  { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor },
+                ]}
+              >
+                {t('landing.hero.scrollToInteract')}
               </Text>
-              <Text style={[styles.contentText, { color: palette.textMuted, },]}>
-                {t('landing.info.summaryLine',)}
-              </Text>
-              <View style={styles.minimalActions}>
-                <TouchableOpacity activeOpacity={0.75} onPress={() => onContinueToDashboard(false,)}>
-                  <Text style={[styles.linkAction, { color: palette.accent, },]}>
-                    {t('landing.actions.goToDashboard',)}
-                  </Text>
-                </TouchableOpacity>
-                {onHeroNavigate && (
-                  <>
-                    <TouchableOpacity
-                      activeOpacity={0.75}
-                      onPress={() => onHeroNavigate('como-funciona',)}
-                    >
-                      <Text style={[styles.linkAction, { color: palette.accent, },]}>
-                        {t('landing.nav.howItWorks',)}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      activeOpacity={0.75}
-                      onPress={() => onHeroNavigate('beneficios',)}
-                    >
-                      <Text style={[styles.linkAction, { color: palette.accent, },]}>
-                        {t('landing.nav.benefits',)}
-                      </Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
             </Animated.View>
+          </View>
 
-            {extraSections}
+          <Animated.View
+            style={[
+              styles.contentCard,
+              {
+                opacity: contentOpacity,
+                transform: [{ translateY: contentTranslateY }],
+              },
+              !isMobile && {
+                maxWidth: Math.min(cardStartWidth + 40, 760),
+                alignSelf: 'center',
+                width: '100%',
+              },
+            ]}
+          >
+            <View style={styles.contentTitleWrap}>
+              <ExpoImage
+                source={heroWordmarkSource}
+                style={styles.contentTitleLogo}
+                contentFit='contain'
+              />
+            </View>
+            <Text style={[styles.contentText, { color: palette.textMuted }]}>
+              {t('landing.info.scoreLine')}
+            </Text>
+            <Text style={[styles.contentText, { color: palette.textMuted }]}>
+              {t('landing.info.summaryLine')}
+            </Text>
+            <View style={styles.minimalActions}>
+              <TouchableOpacity activeOpacity={0.75} onPress={() => onContinueToDashboard(false)}>
+                <Text style={[styles.linkAction, { color: palette.accent }]}>
+                  {t('landing.actions.goToDashboard')}
+                </Text>
+              </TouchableOpacity>
+              {onHeroNavigate && (
+                <>
+                  <TouchableOpacity
+                    activeOpacity={0.75}
+                    onPress={() => onHeroNavigate('como-funciona')}
+                  >
+                    <Text style={[styles.linkAction, { color: palette.accent }]}>
+                      {t('landing.nav.howItWorks')}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.75}
+                    onPress={() => onHeroNavigate('beneficios')}
+                  >
+                    <Text style={[styles.linkAction, { color: palette.accent }]}>
+                      {t('landing.nav.benefits')}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </Animated.View>
 
-            <LandingFooter />
-          </Animated.ScrollView>
+          {extraSections}
 
-          {/* Back to top button */}
-          <BackToTopButton
-            visible={showBackToTop}
-            onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true, },)}
-            isDark={isDark}
-            isMobile={isMobile}
-          />
-        </View>
-      );
-    },
+          <LandingFooter />
+        </Animated.ScrollView>
+
+        {/* Back to top button */}
+        <BackToTopButton
+          visible={showBackToTop}
+          onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+          isDark={isDark}
+          isMobile={isMobile}
+        />
+      </View>
     );
+  }
+);
 
 AirsIntroExperience.displayName = 'AirsIntroExperience';
 
@@ -1576,7 +1404,7 @@ const styles = createTypographyStyles({
     fontSize: 17,
     letterSpacing: 0.2,
     textShadowColor: 'rgba(0,0,0,0.28)',
-    textShadowOffset: { width: 0, height: 1, },
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },
   heroMetaRight: {
@@ -1584,7 +1412,7 @@ const styles = createTypographyStyles({
     color: 'rgba(248,251,255,0.98)',
     fontSize: 15,
     textShadowColor: 'rgba(0,0,0,0.28)',
-    textShadowOffset: { width: 0, height: 1, },
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },
   mediaTagTitleOverlay: {
@@ -1629,7 +1457,7 @@ const styles = createTypographyStyles({
     letterSpacing: 0.35,
     textAlign: 'center',
     textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowOffset: { width: 0, height: 1, },
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
     width: '100%',
   },
@@ -1638,7 +1466,7 @@ const styles = createTypographyStyles({
     fontWeight: '900',
     textAlign: 'center',
     textShadowColor: 'rgba(0,0,0,0.35)',
-    textShadowOffset: { width: 0, height: 2, },
+    textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 10,
     letterSpacing: 0.1,
     marginTop: 0,
@@ -1701,7 +1529,7 @@ const styles = createTypographyStyles({
     paddingHorizontal: 12,
     paddingVertical: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4, },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.18,
     shadowRadius: 12,
     elevation: 6,
@@ -1723,7 +1551,7 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2, },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 4,
@@ -1737,7 +1565,7 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     paddingVertical: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12, },
+    shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 12,
@@ -1805,7 +1633,7 @@ const styles = createTypographyStyles({
     paddingVertical: 6,
     zIndex: 100,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8, },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 16,
     elevation: 10,
@@ -1820,7 +1648,7 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     overflow: 'visible',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10, },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
     shadowRadius: 18,
     elevation: 6,
@@ -1901,7 +1729,7 @@ const styles = createTypographyStyles({
     borderRadius: 21,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6, },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.14,
     shadowRadius: 12,
     elevation: 5,
@@ -1919,7 +1747,7 @@ const styles = createTypographyStyles({
     padding: 8,
     gap: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 14, },
+    shadowOffset: { width: 0, height: 14 },
     shadowOpacity: 0.22,
     shadowRadius: 18,
     elevation: 14,
@@ -1997,7 +1825,7 @@ const styles = createTypographyStyles({
     letterSpacing: 0.08,
     textAlign: 'center',
     textShadowColor: 'rgba(0,0,0,0.22)',
-    textShadowOffset: { width: 0, height: 1, },
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
   heroCopyHeadline: {
@@ -2005,7 +1833,7 @@ const styles = createTypographyStyles({
     textAlign: 'center',
     letterSpacing: -0.6,
     textShadowColor: 'rgba(0,0,0,0.28)',
-    textShadowOffset: { width: 0, height: 2, },
+    textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 6,
     marginTop: 12,
   },
@@ -2054,4 +1882,4 @@ const styles = createTypographyStyles({
     letterSpacing: 0.15,
     textAlign: 'center',
   },
-},);
+});
