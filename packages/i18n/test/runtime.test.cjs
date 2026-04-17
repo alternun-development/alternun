@@ -30,10 +30,13 @@ assert.equal(spanishMobile.t('settingsScreen.title'), 'Configuracion');
 assert.equal(spanishMobile.t('labels.theme'), 'Tema');
 assert.equal(spanishMobile.t('labels.dark'), 'Oscuro');
 assert.equal(spanishMobile.t('missing.key'), 'missing.key');
+assert.equal(spanishMobile.t('landing.nav.howItWorks'), '¿Cómo funciona?');
 assert.equal(spanishMobile.t('landing.beneficios.cards.cursos.meta'), 'Educacion');
 assert.equal(englishMobile.t('landing.beneficios.cards.experiencias.title'), 'Experiences');
+assert.equal(englishMobile.t('landing.nav.joinNow'), 'Join now');
 assert.equal(englishMobile.t('landing.beneficios.cards.premium.atn'), '400');
 assert.equal(thaiMobile.t('landing.comoFunciona.sectionTitle'), 'วิธีการทำงาน');
+assert.equal(thaiMobile.t('landing.nav.joinNow'), 'เข้าร่วมเลย');
 assert.equal(thaiMobile.t('landing.beneficios.cards.eco.tag2'), 'ยั่งยืน');
 
 assert.equal(i18n.getLocaleLabel('th', 'es'), 'Tailandes');

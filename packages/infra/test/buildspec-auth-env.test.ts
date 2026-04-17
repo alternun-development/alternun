@@ -11,6 +11,7 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
   const helperSource = fs.readFileSync(resolveSsmEnvPath, 'utf8');
 
   assert.match(source, /source "\$\{INFRA_PATH\}\/scripts\/resolve-ssm-env\.sh"/);
+  assert.match(source, /source "\$\{INFRA_PATH\}\/scripts\/resolve-secrets-manager-env\.sh"/);
   assert.match(source, /canonical SSM helper/);
   assert.match(
     helperSource,
