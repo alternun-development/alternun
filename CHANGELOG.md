@@ -1,3 +1,11 @@
+## [1.0.122](https://github.com/alternun-development/alternun/compare/v1.0.121...v1.0.122) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,i18n): AuthSignInScreen, en, es, th
+
+## [1.0.122](https://github.com/alternun-development/alternun/compare/v1.0.121...v1.0.122) (2026-04-17)
+
 ## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
 
 ### Bug Fixes

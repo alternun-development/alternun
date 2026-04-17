@@ -72,6 +72,9 @@
         "authenticationFailed": "Authentication failed. Please try again.",
         "confirmationCodeInvalid": "The confirmation code is invalid or expired. Request a new email and try again.",
         "enterEmailFirst": "Enter your email first.",
+        "socialSignInServerError": "The social sign-in service hit an internal error. Please try again later.",
+        "socialSignInTitle": "Sign-in unavailable",
+        "socialSignInUnavailable": "Social sign-in is temporarily unavailable. Please try again later.",
         "resendUnavailable": "Resend confirmation is not available in this auth client.",
         "signupUnavailable": "Sign-up is not available in this auth client.",
         "verificationCodeUnavailable": "Code verification is not available in this auth client."
