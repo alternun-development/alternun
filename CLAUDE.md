@@ -45,6 +45,14 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
+When editing code:
+
+- Think first.
+- Edit only what changes; do not rewrite whole files.
+- Do not reread files you already read unless they changed.
+- Keep responses terse: no preambles, no summaries, no obvious explanations.
+- Test before claiming done.
+
 ## 4. Goal-Driven Execution
 
 **Define success criteria. Loop until verified.**
