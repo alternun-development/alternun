@@ -1,3 +1,11 @@
+## [1.0.126](https://github.com/alternun-development/alternun/compare/v1.0.125...v1.0.126) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,i18n,infra): PublicLandingPage, en, es, th
+
+## [1.0.126](https://github.com/alternun-development/alternun/compare/v1.0.125...v1.0.126) (2026-04-17)
+
 ## [1.0.125](https://github.com/alternun-development/alternun/compare/v1.0.124...v1.0.125) (2026-04-17)
 
 ### Bug Fixes
