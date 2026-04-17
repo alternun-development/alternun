@@ -543,7 +543,6 @@ cleanup_deploy_aliases() {
   fi
 
   local aliases=()
-  aliases+=("${DOMAIN}")
 
   if [ "$STACK" = "dev" ]; then
     if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}"; then
