@@ -495,7 +495,7 @@ export class DecapService {
 
     return value
       .split(/[\s,]+/)
-      .map(scope => scope.trim())
+      .map((scope) => scope.trim())
       .filter(Boolean);
   }
 
@@ -506,7 +506,7 @@ export class DecapService {
 
     return value
       .split(',')
-      .map(entry => entry.trim())
+      .map((entry) => entry.trim())
       .filter(Boolean);
   }
 

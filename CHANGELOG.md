@@ -1197,7 +1197,15 @@
 
 ## [1.0.45](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.45) (2026-04-10)
 
-## [1.0.45](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.45) (2026-04-10)
+### Features
+
+- **admin:** add OIDC client wrapper for Authentik-based authentication flow
+- **admin:** add app-shell with sidebar navigation structure
+- **admin:** add forbidden-page for access denied scenarios
+
+### Bug Fixes
+
+- **api:** fix callback-page flow for OIDC token exchange
 
 ## [1.0.44](https://github.com/alternun-development/alternun/compare/v1.0.43...v1.0.44) (2026-04-10)
 

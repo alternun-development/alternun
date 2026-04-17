@@ -4,7 +4,7 @@
 // state and breaking the callback finalize step.
 export function shouldForceFreshAuthentikSocialSession(
   platformOs: string,
-  socialLoginMode?: string | null
+  socialLoginMode?: string | null,
 ): boolean {
   return platformOs === 'web' && socialLoginMode?.trim().toLowerCase() === 'hybrid';
 }

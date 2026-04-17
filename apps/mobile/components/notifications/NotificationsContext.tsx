@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import type { NotificationItem } from '../dashboard/NotificationDropdown';
+import React, { createContext, useContext, useReducer, ReactNode, } from 'react';
+import type { NotificationItem, } from '../dashboard/NotificationDropdown';
 
 // TODO: Integrate with AsyncStorage or API for persistence
 // const loadFromStorage = async () => { ... }
@@ -25,7 +25,7 @@ interface NotificationsContextType {
   dismiss: (id: string) => void; // alias for deleteNotif
 }
 
-const NotificationsContext = createContext<NotificationsContextType | null>(null);
+const NotificationsContext = createContext<NotificationsContextType | null>(null,);
 
 // Seed data
 const SEED_NOTIFICATIONS: NotificationItem[] = [
@@ -34,7 +34,7 @@ const SEED_NOTIFICATIONS: NotificationItem[] = [
     type: 'success',
     title: 'Transaction confirmed',
     body: 'Your transaction of 100 AIRS has been successfully processed.',
-    timestamp: new Date(Date.now() - 5 * 60000),
+    timestamp: new Date(Date.now() - 5 * 60000,),
     read: false,
     archived: false,
   },
@@ -43,7 +43,7 @@ const SEED_NOTIFICATIONS: NotificationItem[] = [
     type: 'info',
     title: 'New feature available',
     body: 'Check out our new dashboard analytics for better insights.',
-    timestamp: new Date(Date.now() - 2 * 3600000),
+    timestamp: new Date(Date.now() - 2 * 3600000,),
     read: false,
     archived: false,
   },
@@ -52,7 +52,7 @@ const SEED_NOTIFICATIONS: NotificationItem[] = [
     type: 'warning',
     title: 'Low balance',
     body: 'Your AIRS balance is below 50. Consider adding more.',
-    timestamp: new Date(Date.now() - 1 * 86400000),
+    timestamp: new Date(Date.now() - 1 * 86400000,),
     read: true,
     archived: false,
   },
@@ -61,7 +61,7 @@ const SEED_NOTIFICATIONS: NotificationItem[] = [
     type: 'success',
     title: 'Reward earned',
     body: 'You earned 50 AIRS from community contribution.',
-    timestamp: new Date(Date.now() - 3 * 86400000),
+    timestamp: new Date(Date.now() - 3 * 86400000,),
     read: true,
     archived: true,
   },
@@ -69,59 +69,59 @@ const SEED_NOTIFICATIONS: NotificationItem[] = [
 
 function notificationsReducer(
   state: NotificationItem[],
-  action: NotificationsAction
+  action: NotificationsAction,
 ): NotificationItem[] {
   switch (action.type) {
     case 'MARK_READ':
-      return state.map((n) => (n.id === action.id ? { ...n, read: true } : n));
+      return state.map((n,) => (n.id === action.id ? { ...n, read: true, } : n),);
 
     case 'MARK_UNREAD':
-      return state.map((n) => (n.id === action.id ? { ...n, read: false } : n));
+      return state.map((n,) => (n.id === action.id ? { ...n, read: false, } : n),);
 
     case 'MARK_ALL_READ':
-      return state.map((n) => (!n.archived ? { ...n, read: true } : n));
+      return state.map((n,) => (!n.archived ? { ...n, read: true, } : n),);
 
     case 'ARCHIVE':
-      return state.map((n) => (n.id === action.id ? { ...n, archived: true } : n));
+      return state.map((n,) => (n.id === action.id ? { ...n, archived: true, } : n),);
 
     case 'UNARCHIVE':
-      return state.map((n) => (n.id === action.id ? { ...n, archived: false } : n));
+      return state.map((n,) => (n.id === action.id ? { ...n, archived: false, } : n),);
 
     case 'DELETE':
-      return state.filter((n) => n.id !== action.id);
+      return state.filter((n,) => n.id !== action.id,);
 
     default:
       return state;
   }
 }
 
-export function NotificationsProvider({ children }: { children: ReactNode }) {
-  const [items, dispatch] = useReducer(notificationsReducer, SEED_NOTIFICATIONS);
+export function NotificationsProvider({ children, }: { children: ReactNode },) {
+  const [items, dispatch,] = useReducer(notificationsReducer, SEED_NOTIFICATIONS,);
 
-  const unreadCount = items.filter((n) => !n.read && !n.archived).length;
+  const unreadCount = items.filter((n,) => !n.read && !n.archived,).length;
 
-  const markRead = (id: string) => {
-    dispatch({ type: 'MARK_READ', id });
+  const markRead = (id: string,) => {
+    dispatch({ type: 'MARK_READ', id, },);
   };
 
-  const markUnread = (id: string) => {
-    dispatch({ type: 'MARK_UNREAD', id });
+  const markUnread = (id: string,) => {
+    dispatch({ type: 'MARK_UNREAD', id, },);
   };
 
   const markAllRead = () => {
-    dispatch({ type: 'MARK_ALL_READ' });
+    dispatch({ type: 'MARK_ALL_READ', },);
   };
 
-  const archive = (id: string) => {
-    dispatch({ type: 'ARCHIVE', id });
+  const archive = (id: string,) => {
+    dispatch({ type: 'ARCHIVE', id, },);
   };
 
-  const unarchive = (id: string) => {
-    dispatch({ type: 'UNARCHIVE', id });
+  const unarchive = (id: string,) => {
+    dispatch({ type: 'UNARCHIVE', id, },);
   };
 
-  const deleteNotif = (id: string) => {
-    dispatch({ type: 'DELETE', id });
+  const deleteNotif = (id: string,) => {
+    dispatch({ type: 'DELETE', id, },);
   };
 
   const value: NotificationsContextType = {
@@ -140,9 +140,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 }
 
 export function useNotifications(): NotificationsContextType {
-  const context = useContext(NotificationsContext);
+  const context = useContext(NotificationsContext,);
   if (!context) {
-    throw new Error('useNotifications must be used within NotificationsProvider');
+    throw new Error('useNotifications must be used within NotificationsProvider',);
   }
   return context;
 }

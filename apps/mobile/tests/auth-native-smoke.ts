@@ -27,11 +27,11 @@ const client = new AlternunMobileAuthClient({
   allowMockWalletFallback: false,
 });
 
-async function smokeSignInWithGoogle(authClient: AuthClient, flow: NativeFlow) {
+async function smokeSignInWithGoogle(authClient: AuthClient, flow: NativeFlow): Promise<void> {
   await authClient.signIn({ provider: 'google', flow });
 }
 
-async function smokeSignInWithWallet(authClient: AuthClient) {
+async function smokeSignInWithWallet(authClient: AuthClient): Promise<void> {
   await authClient.signIn({ provider: 'walletconnect', flow: 'native' });
 }
 

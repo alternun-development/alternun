@@ -25,6 +25,7 @@
     "dev": "tsc -w",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
+    "test": "./build.sh && node --test test/*.test.cjs",
     "generate:supabase": "node scripts/generate-supabase-auth-templates.cjs"
   },
   "devDependencies": {

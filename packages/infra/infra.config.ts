@@ -527,6 +527,7 @@ export function createInfrastructure() {
   }
 
   if (adminSiteSettings.enabled && !adminSiteAllowedOnStack) {
+    // eslint-disable-next-line no-console
     console.log(
       [
         `Admin site is enabled but skipped for stack "${stage}" because INFRA_ADMIN_DEDICATED_STACKS_ONLY=true.`,
@@ -536,6 +537,7 @@ export function createInfrastructure() {
   }
 
   if (backendApiSettings.enabled && !backendApiAllowedOnStack) {
+    // eslint-disable-next-line no-console
     console.log(
       [
         `Backend API is enabled but skipped for stack "${stage}" because INFRA_BACKEND_API_DEDICATED_STACKS_ONLY=true.`,
@@ -545,6 +547,7 @@ export function createInfrastructure() {
   }
 
   if (identitySettings.enabled && !identityAllowedOnStack) {
+    // eslint-disable-next-line no-console
     console.log(
       [
         `Identity is enabled but skipped for stack "${stage}" because INFRA_IDENTITY_DEDICATED_STACKS_ONLY=true.`,
@@ -570,6 +573,7 @@ export function createInfrastructure() {
     ? deployBackendApiInfrastructure({
         appName,
         authentikJwtSigningKey: identityInfrastructure?.secrets.jwtSigningKey.value,
+        authentikSmtpSecretArn: identityInfrastructure?.secrets.smtpCredentials.arn,
         env: process.env,
         hostedZoneId: process.env.INFRA_ROUTE53_HOSTED_ZONE_ID,
         rootDomain,

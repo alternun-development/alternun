@@ -11,7 +11,7 @@ export function AuthCallbackPage(): JSX.Element {
 
     void oidcClient
       .signinRedirectCallback()
-      .then(async user => {
+      .then(async (user) => {
         if (cancelled) {
           return;
         }

@@ -68,14 +68,17 @@ Common sender fields:
 Postmark credentials (any one mode):
 
 1. SMTP token mode:
+
 - `POSTMARK_SMTP_ACCESS_KEY`
 - `POSTMARK_SMTP_SECRET_KEY`
 
 2. Explicit username/password mode:
+
 - `POSTMARK_SMTP_USERNAME`
 - `POSTMARK_SMTP_PASSWORD`
 
 3. Server token mode:
+
 - `POSTMARK_SERVER_TOKEN` or `POSTMARK_SERVER_API_TOKEN` or `POSTMARK_API_TOKEN`
 
 Optional Postmark host/port:

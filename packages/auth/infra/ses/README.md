@@ -5,6 +5,7 @@ For provider-switching (Postmark default, SES fallback), use:
 `packages/auth/infra/email`.
 
 It is designed for public repositories:
+
 - no secrets committed
 - local config file ignored
 - deterministic script outputs
@@ -75,21 +76,25 @@ SUPABASE_PROJECT_REF=...  # optional override, can stay in config.local.json
 ```
 
 Compatibility:
+
 - `AWS_KEY_ID` is also supported (legacy key name).
 
 ## IAM Permissions Needed
 
 For SES scripts:
+
 - `ses:GetAccount`
 - `ses:CreateEmailIdentity`
 - `ses:GetEmailIdentity`
 - `ses:PutEmailIdentityMailFromAttributes`
 
 For Route53 automation (`ses:route53`):
+
 - `route53:ChangeResourceRecordSets`
 - `route53:ListHostedZonesByName` (optional, only if you extend script)
 
 For Supabase sync:
+
 - Supabase PAT capable of editing auth config for the target project.
 
 ## Command Flow
@@ -126,6 +131,7 @@ All outputs are written to `packages/auth/infra/ses/out/` (ignored):
 ### SES auth works but sends fail
 
 Likely causes:
+
 - SES account still in sandbox
 - recipient not verified (sandbox limitation)
 - identity verification incomplete
@@ -137,6 +143,7 @@ pnpm --filter @alternun/auth ses:status
 ```
 
 Check:
+
 - `productionAccessEnabled`
 - domain verification and DKIM status
 
@@ -149,6 +156,7 @@ Check:
 ## Rollback
 
 To rollback SMTP config in Supabase:
+
 - update `Auth > SMTP settings` manually in dashboard
 - or rerun `ses:supabase` with alternate config values
 

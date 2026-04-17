@@ -10,7 +10,7 @@
  * Version pill: opens changelog/version drawer
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, } from 'react';
 import {
   Linking,
   Modal,
@@ -18,16 +18,17 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextStyle,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { HelpCircle } from 'lucide-react-native';
-import { ChangelogDrawer, fontSize, radius, spacing } from '@alternun/ui';
-import { resolveVersionMetadata } from '../common/Footer.shared';
-import { useAppPalette } from '../theme/useAppPalette';
-import { useAppTranslation } from '../i18n/useAppTranslation';
-import { CHANGELOG_TEXT } from '../../utils/changelogData';
-import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
+import { HelpCircle, } from 'lucide-react-native';
+import { ChangelogDrawer, fontSize, radius, spacing, } from '@alternun/ui';
+import { resolveVersionMetadata, } from '../common/Footer.shared';
+import { useAppPalette, } from '../theme/useAppPalette';
+import { useAppTranslation, } from '../i18n/useAppTranslation';
+import { CHANGELOG_TEXT, } from '../../utils/changelogData';
+import { resolveMobileApiBaseUrl, } from '../../utils/runtimeConfig';
 
 // ── Helper: Policy content fetcher and formatter ──────────────────────────────
 
@@ -37,45 +38,45 @@ interface TextSpan {
   heading?: number; // h1=1, h2=2, etc.
 }
 
-function parseMarkdownLine(text: string): Array<TextSpan | string> {
+function parseMarkdownLine(text: string,): Array<TextSpan | string> {
   const spans: (TextSpan | string)[] = [];
   let current = '';
   let inBold = false;
   let i = 0;
 
   while (i < text.length) {
-    if (text[i] === '*' && text[i + 1] === '*') {
+    if (text.charAt(i,) === '*' && text.charAt(i + 1,) === '*') {
       if (current) {
         if (inBold) {
-          spans.push({ text: current, bold: true });
+          spans.push({ text: current, bold: true, },);
         } else {
-          spans.push(current);
+          spans.push(current,);
         }
         current = '';
       }
       inBold = !inBold;
       i += 2;
     } else {
-      current += text[i];
+      current += text.charAt(i,);
       i += 1;
     }
   }
 
   if (current) {
     if (inBold) {
-      spans.push({ text: current, bold: true });
+      spans.push({ text: current, bold: true, },);
     } else {
-      spans.push(current);
+      spans.push(current,);
     }
   }
 
   return spans;
 }
 
-function detectHeadingLevel(text: string): number {
+function detectHeadingLevel(text: string,): number {
   let level = 0;
   for (let i = 0; i < text.length; i++) {
-    if (text[i] === '#') {
+    if (text.charAt(i,) === '#') {
       level++;
     } else {
       break;
@@ -100,48 +101,48 @@ export function PolicyDrawerContent({
   textPrimary,
   textMuted,
   accent,
-}: PolicyDrawerContentProps): React.JSX.Element {
-  const [content, setContent] = React.useState<string | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+}: PolicyDrawerContentProps,): React.JSX.Element {
+  const [content, setContent,] = React.useState<string | null>(null,);
+  const [loading, setLoading,] = React.useState(true,);
+  const [error, setError,] = React.useState<string | null>(null,);
 
   React.useEffect(() => {
     const fetchContent = async () => {
       try {
-        setLoading(true);
-        const url = `${apiUrl.replace(/\/$/, '')}/v1/legal/${type}?locale=${locale}`;
-        const response = await fetch(url);
+        setLoading(true,);
+        const url = `${apiUrl.replace(/\/$/, '',)}/v1/legal/${type}?locale=${locale}`;
+        const response = await fetch(url,);
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch ${type} content`);
+          throw new Error(`Failed to fetch ${type} content`,);
         }
 
         const data = (await response.json()) as { content: string };
-        setContent(data.content);
+        setContent(data.content,);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load content');
+        setError(err instanceof Error ? err.message : 'Failed to load content',);
       } finally {
-        setLoading(false);
+        setLoading(false,);
       }
     };
 
     void fetchContent();
-  }, [type, apiUrl, locale]);
+  }, [type, apiUrl, locale,],);
 
   // Remove YAML frontmatter and title metadata
   let cleanContent = content ?? '';
 
   // Remove YAML frontmatter (---)
-  cleanContent = cleanContent.replace(/^---\n[\s\S]*?\n---\n*/m, '').trim();
+  cleanContent = cleanContent.replace(/^---\n[\s\S]*?\n---\n*/m, '',).trim();
 
   // Remove title: line
-  cleanContent = cleanContent.replace(/^title:\s*.*\n*/m, '').trim();
+  cleanContent = cleanContent.replace(/^title:\s*.*\n*/m, '',).trim();
 
-  const lines = cleanContent.split('\n').filter((l) => {
+  const lines = cleanContent.split('\n',).filter((l,) => {
     const trimmed = l.trim();
     // Filter out empty lines and standalone dashes
     return trimmed.length > 0 && trimmed !== '---';
-  });
+  },);
 
   return (
     <ScrollView
@@ -151,55 +152,57 @@ export function PolicyDrawerContent({
       scrollEnabled
     >
       {loading ? (
-        <Text style={[innerStyles.loadingText, { color: textMuted }]}>Loading...</Text>
+        <Text style={[innerStyles.loadingText, { color: textMuted, },]}>Loading...</Text>
       ) : error ? (
-        <Text style={[innerStyles.errorText, { color: '#ef4444' }]}>Error: {error}</Text>
+        <Text style={[innerStyles.errorText, { color: '#ef4444', },]}>Error: {error}</Text>
       ) : lines.length === 0 ? (
-        <Text style={[innerStyles.emptyText, { color: textMuted }]}>No content</Text>
+        <Text style={[innerStyles.emptyText, { color: textMuted, },]}>No content</Text>
       ) : (
         <View selectable={false}>
-          {lines.map((line, idx) => {
-            const headingLevel = detectHeadingLevel(line);
+          {lines.map((line, idx,) => {
+            const headingLevel = detectHeadingLevel(line,);
 
             if (headingLevel > 0) {
               // Heading
-              const headingText = line.replace(/^#+\s*/, '').trim();
-              const spans = parseMarkdownLine(headingText);
+              const headingText = line.replace(/^#+\s*/, '',).trim();
+              const spans = parseMarkdownLine(headingText,);
+              const stylesCatalog = innerStyles as Record<string, unknown>;
+              const headingStyle = stylesCatalog[`heading${headingLevel}`] as TextStyle | undefined;
 
               return (
                 <Text
                   key={idx}
-                  style={[innerStyles[`heading${headingLevel}`], { color: accent }]}
+                  style={[headingStyle ?? innerStyles.paragraph, { color: accent, },]}
                   selectable={false}
                 >
-                  {spans.map((span, sidx) =>
+                  {spans.map((span, sidx,) =>
                     typeof span === 'string' ? (
                       <Text key={sidx} selectable={false}>
                         {span}
                       </Text>
                     ) : (
-                      <Text key={sidx} style={{ fontWeight: 'bold' }} selectable={false}>
+                      <Text key={sidx} style={{ fontWeight: 'bold', }} selectable={false}>
                         {span.text}
                       </Text>
-                    )
+                    ),
                   )}
                 </Text>
               );
-            } else if (line.startsWith('- ')) {
+            } else if (line.startsWith('- ',)) {
               // List item
-              const itemText = line.replace(/^-\s*/, '').trim();
-              const spans = parseMarkdownLine(itemText);
+              const itemText = line.replace(/^-\s*/, '',).trim();
+              const spans = parseMarkdownLine(itemText,);
 
               return (
                 <View key={idx} style={innerStyles.listItem}>
-                  <Text style={[innerStyles.listBullet, { color: textMuted }]} selectable={false}>
+                  <Text style={[innerStyles.listBullet, { color: textMuted, },]} selectable={false}>
                     •
                   </Text>
                   <Text
-                    style={[innerStyles.listItemText, { color: textPrimary }]}
+                    style={[innerStyles.listItemText, { color: textPrimary, },]}
                     selectable={false}
                   >
-                    {spans.map((span, sidx) =>
+                    {spans.map((span, sidx,) =>
                       typeof span === 'string' ? (
                         <Text key={sidx} selectable={false}>
                           {span}
@@ -207,27 +210,27 @@ export function PolicyDrawerContent({
                       ) : (
                         <Text
                           key={sidx}
-                          style={{ fontWeight: 'bold', color: accent }}
+                          style={{ fontWeight: 'bold', color: accent, }}
                           selectable={false}
                         >
                           {span.text}
                         </Text>
-                      )
+                      ),
                     )}
                   </Text>
                 </View>
               );
             } else {
               // Regular paragraph
-              const spans = parseMarkdownLine(line);
+              const spans = parseMarkdownLine(line,);
 
               return (
                 <Text
                   key={idx}
-                  style={[innerStyles.paragraph, { color: textPrimary }]}
+                  style={[innerStyles.paragraph, { color: textPrimary, },]}
                   selectable={false}
                 >
-                  {spans.map((span, sidx) =>
+                  {spans.map((span, sidx,) =>
                     typeof span === 'string' ? (
                       <Text key={sidx} selectable={false}>
                         {span}
@@ -235,17 +238,17 @@ export function PolicyDrawerContent({
                     ) : (
                       <Text
                         key={sidx}
-                        style={{ fontWeight: 'bold', color: accent }}
+                        style={{ fontWeight: 'bold', color: accent, }}
                         selectable={false}
                       >
                         {span.text}
                       </Text>
-                    )
+                    ),
                   )}
                 </Text>
               );
             }
-          })}
+          },)}
         </View>
       )}
     </ScrollView>
@@ -258,15 +261,15 @@ export interface AuthFooterProps {
   appVersion?: string;
 }
 
-export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProps): JSX.Element {
+export function AuthFooter({ apiUrl, locale = 'en', appVersion, }: AuthFooterProps,): JSX.Element {
   const p = useAppPalette();
-  const { t } = useAppTranslation('mobile');
-  const [privacyOpen, setPrivacyOpen] = useState(false);
-  const [termsOpen, setTermsOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
-  const [privacyHovered, setPrivacyHovered] = useState(false);
-  const [termsHovered, setTermsHovered] = useState(false);
-  const resolvedApiUrl = resolveMobileApiBaseUrl(apiUrl);
+  const { t, } = useAppTranslation('mobile',);
+  const [privacyOpen, setPrivacyOpen,] = useState(false,);
+  const [termsOpen, setTermsOpen,] = useState(false,);
+  const [helpOpen, setHelpOpen,] = useState(false,);
+  const [privacyHovered, setPrivacyHovered,] = useState(false,);
+  const [termsHovered, setTermsHovered,] = useState(false,);
+  const resolvedApiUrl = resolveMobileApiBaseUrl(apiUrl,);
   const resolvedAppVersion = appVersion?.trim() ?? resolveVersionMetadata().version;
 
   // Detect environment and set documentation base URL
@@ -274,51 +277,51 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
     const normalizedApiUrl = resolvedApiUrl.toLowerCase();
 
     // Local development
-    if (normalizedApiUrl.includes('localhost') || normalizedApiUrl.includes('127.0.0.1')) {
+    if (normalizedApiUrl.includes('localhost',) || normalizedApiUrl.includes('127.0.0.1',)) {
       return 'http://127.0.0.1:8083';
     }
 
     // Testnet
-    if (normalizedApiUrl.includes('testnet')) {
+    if (normalizedApiUrl.includes('testnet',)) {
       return 'https://testnet-docs.alternun.co';
     }
 
     // Production (default)
     return 'https://docs.alternun.io';
-  }, [resolvedApiUrl]);
+  }, [resolvedApiUrl,],);
 
   const docsBaseUrl = getDocsBaseUrl();
 
   const handlePrivacyOpen = useCallback(() => {
-    setPrivacyOpen(true);
-  }, []);
+    setPrivacyOpen(true,);
+  }, [],);
 
   const handlePrivacyClose = useCallback(() => {
-    setPrivacyOpen(false);
-  }, []);
+    setPrivacyOpen(false,);
+  }, [],);
 
   const handleTermsOpen = useCallback(() => {
-    setTermsOpen(true);
-  }, []);
+    setTermsOpen(true,);
+  }, [],);
 
   const handleTermsClose = useCallback(() => {
-    setTermsOpen(false);
-  }, []);
+    setTermsOpen(false,);
+  }, [],);
 
   const handleHelpOpen = useCallback(() => {
-    setHelpOpen(true);
-  }, []);
+    setHelpOpen(true,);
+  }, [],);
 
   const handleHelpClose = useCallback(() => {
-    setHelpOpen(false);
-  }, []);
+    setHelpOpen(false,);
+  }, [],);
 
   return (
     <>
       {/* Centered footer — matching landing footer layout (no divider line) */}
       <View style={innerStyles.footer}>
         {/* Copyright text — centered */}
-        <Text style={[innerStyles.copyrightText, { color: p.textMuted }]}>
+        <Text style={[innerStyles.copyrightText, { color: p.textMuted, },]}>
           (c) 2026 Alternun. All rights reserved.
         </Text>
 
@@ -328,25 +331,25 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
             onPress={handlePrivacyOpen}
             activeOpacity={0.7}
             style={innerStyles.linkContainer}
-            onMouseEnter={() => setPrivacyHovered(true)}
-            onMouseLeave={() => setPrivacyHovered(false)}
+            onMouseEnter={() => setPrivacyHovered(true,)}
+            onMouseLeave={() => setPrivacyHovered(false,)}
           >
-            <Text style={[innerStyles.linkText, { color: p.accent }]}>{t('footer.privacy')}</Text>
+            <Text style={[innerStyles.linkText, { color: p.accent, },]}>{t('footer.privacy',)}</Text>
             {privacyHovered && (
-              <View style={[innerStyles.linkUnderline, { backgroundColor: p.accent }]} />
+              <View style={[innerStyles.linkUnderline, { backgroundColor: p.accent, },]} />
             )}
           </TouchableOpacity>
-          <Text style={[innerStyles.separator, { color: p.textMuted }]}>·</Text>
+          <Text style={[innerStyles.separator, { color: p.textMuted, },]}>·</Text>
           <TouchableOpacity
             onPress={handleTermsOpen}
             activeOpacity={0.7}
             style={innerStyles.linkContainer}
-            onMouseEnter={() => setTermsHovered(true)}
-            onMouseLeave={() => setTermsHovered(false)}
+            onMouseEnter={() => setTermsHovered(true,)}
+            onMouseLeave={() => setTermsHovered(false,)}
           >
-            <Text style={[innerStyles.linkText, { color: p.accent }]}>{t('footer.terms')}</Text>
+            <Text style={[innerStyles.linkText, { color: p.accent, },]}>{t('footer.terms',)}</Text>
             {termsHovered && (
-              <View style={[innerStyles.linkUnderline, { backgroundColor: p.accent }]} />
+              <View style={[innerStyles.linkUnderline, { backgroundColor: p.accent, },]} />
             )}
           </TouchableOpacity>
         </View>
@@ -373,7 +376,7 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
             ]}
             activeOpacity={0.75}
             accessibilityRole='button'
-            accessibilityLabel={t('footer.help')}
+            accessibilityLabel={t('footer.help',)}
           >
             <HelpCircle size={16} color={p.textMuted} strokeWidth={1.5} />
           </TouchableOpacity>
@@ -424,15 +427,15 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
                 },
               ]}
             >
-              <Text style={[innerStyles.sheetTitle, { color: p.textPrimary }]}>
-                {t('footer.privacy')}
+              <Text style={[innerStyles.sheetTitle, { color: p.textPrimary, },]}>
+                {t('footer.privacy',)}
               </Text>
               <TouchableOpacity
                 onPress={handlePrivacyClose}
                 activeOpacity={0.75}
                 style={innerStyles.closeBtn}
               >
-                <Text style={[innerStyles.closeBtnText, { color: p.textMuted }]}>✕</Text>
+                <Text style={[innerStyles.closeBtnText, { color: p.textMuted, },]}>✕</Text>
               </TouchableOpacity>
             </View>
             <PolicyDrawerContent
@@ -454,11 +457,11 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
             >
               <TouchableOpacity
                 onPress={() => {
-                  void Linking.openURL(`${docsBaseUrl}/privacy`);
+                  void Linking.openURL(`${docsBaseUrl}/privacy`,);
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={[innerStyles.docLink, { color: p.accent }]}>
+                <Text style={[innerStyles.docLink, { color: p.accent, },]}>
                   View full documentation ↗
                 </Text>
               </TouchableOpacity>
@@ -511,15 +514,15 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
                 },
               ]}
             >
-              <Text style={[innerStyles.sheetTitle, { color: p.textPrimary }]}>
-                {t('footer.terms')}
+              <Text style={[innerStyles.sheetTitle, { color: p.textPrimary, },]}>
+                {t('footer.terms',)}
               </Text>
               <TouchableOpacity
                 onPress={handleTermsClose}
                 activeOpacity={0.75}
                 style={innerStyles.closeBtn}
               >
-                <Text style={[innerStyles.closeBtnText, { color: p.textMuted }]}>✕</Text>
+                <Text style={[innerStyles.closeBtnText, { color: p.textMuted, },]}>✕</Text>
               </TouchableOpacity>
             </View>
             <PolicyDrawerContent
@@ -541,11 +544,11 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
             >
               <TouchableOpacity
                 onPress={() => {
-                  void Linking.openURL(`${docsBaseUrl}/terms`);
+                  void Linking.openURL(`${docsBaseUrl}/terms`,);
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={[innerStyles.docLink, { color: p.accent }]}>
+                <Text style={[innerStyles.docLink, { color: p.accent, },]}>
                   View full documentation ↗
                 </Text>
               </TouchableOpacity>
@@ -598,15 +601,15 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
                 },
               ]}
             >
-              <Text style={[innerStyles.sheetTitle, { color: p.textPrimary }]}>
-                {t('footer.help')}
+              <Text style={[innerStyles.sheetTitle, { color: p.textPrimary, },]}>
+                {t('footer.help',)}
               </Text>
               <TouchableOpacity
                 onPress={handleHelpClose}
                 activeOpacity={0.75}
                 style={innerStyles.closeBtn}
               >
-                <Text style={[innerStyles.closeBtnText, { color: p.textMuted }]}>✕</Text>
+                <Text style={[innerStyles.closeBtnText, { color: p.textMuted, },]}>✕</Text>
               </TouchableOpacity>
             </View>
             <ScrollView
@@ -615,8 +618,8 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
               showsVerticalScrollIndicator={false}
               scrollEnabled
             >
-              <Text style={[innerStyles.helpSection, { color: p.textPrimary }]}>Getting Help</Text>
-              <Text style={[innerStyles.helpText, { color: p.textMuted }]}>
+              <Text style={[innerStyles.helpSection, { color: p.textPrimary, },]}>Getting Help</Text>
+              <Text style={[innerStyles.helpText, { color: p.textMuted, },]}>
                 For support and assistance, visit our documentation or contact the support team.
               </Text>
             </ScrollView>
@@ -631,11 +634,11 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
             >
               <TouchableOpacity
                 onPress={() => {
-                  void Linking.openURL(docsBaseUrl);
+                  void Linking.openURL(docsBaseUrl,);
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={[innerStyles.docLink, { color: p.accent }]}>View documentation ↗</Text>
+                <Text style={[innerStyles.docLink, { color: p.accent, },]}>View documentation ↗</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -890,4 +893,4 @@ const innerStyles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: '600',
   },
-});
+},);

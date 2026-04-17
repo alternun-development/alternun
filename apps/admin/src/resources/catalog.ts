@@ -80,7 +80,7 @@ export const adminResources: AdminResourceDefinition[] = [
 ];
 
 export function getAdminResource(resourceName: string): AdminResourceDefinition {
-  const resource = adminResources.find(entry => entry.name === resourceName);
+  const resource = adminResources.find((entry) => entry.name === resourceName);
   if (!resource) {
     throw new Error(`Unknown admin resource: ${resourceName}`);
   }

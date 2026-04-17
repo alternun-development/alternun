@@ -41,13 +41,13 @@ packages/email-templates/src/
 ## Runtime usage
 
 ```ts
-import { renderEmailTemplateTranslation } from "@alternun/email-templates";
+import { renderEmailTemplateTranslation } from '@alternun/email-templates';
 
 const invite = renderEmailTemplateTranslation({
-  locale: "es-MX",
-  template: "invite-email",
+  locale: 'es-MX',
+  template: 'invite-email',
   params: {
-    email: "user@example.com",
+    email: 'user@example.com',
   },
 });
 

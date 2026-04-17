@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.renderEmailTemplateTranslation = exports.normalizeEmailLocale = exports.listSupportedEmailLocales = exports.listEmailTemplateKeys = exports.isSupportedEmailLocale = exports.interpolateEmailTemplateText = exports.getEmailTemplateTranslation = exports.createEmailTemplateTranslator = exports.SUPPORTED_EMAIL_LOCALES = exports.EMAIL_TEMPLATE_KEYS = exports.DEFAULT_EMAIL_LOCALE = void 0;
+exports.renderAirsWelcomeEmail = exports.renderEmailTemplateTranslation = exports.normalizeEmailLocale = exports.listSupportedEmailLocales = exports.listEmailTemplateKeys = exports.isSupportedEmailLocale = exports.interpolateEmailTemplateText = exports.getEmailTemplateTranslation = exports.createEmailTemplateTranslator = exports.SUPPORTED_EMAIL_LOCALES = exports.EMAIL_TEMPLATE_KEYS = exports.DEFAULT_EMAIL_LOCALE = void 0;
 var i18n_1 = require("./lib/i18n");
 Object.defineProperty(exports, "DEFAULT_EMAIL_LOCALE", { enumerable: true, get: function () { return i18n_1.DEFAULT_EMAIL_LOCALE; } });
 Object.defineProperty(exports, "EMAIL_TEMPLATE_KEYS", { enumerable: true, get: function () { return i18n_1.EMAIL_TEMPLATE_KEYS; } });
@@ -13,3 +13,5 @@ Object.defineProperty(exports, "listEmailTemplateKeys", { enumerable: true, get:
 Object.defineProperty(exports, "listSupportedEmailLocales", { enumerable: true, get: function () { return i18n_1.listSupportedEmailLocales; } });
 Object.defineProperty(exports, "normalizeEmailLocale", { enumerable: true, get: function () { return i18n_1.normalizeEmailLocale; } });
 Object.defineProperty(exports, "renderEmailTemplateTranslation", { enumerable: true, get: function () { return i18n_1.renderEmailTemplateTranslation; } });
+var airs_welcome_1 = require("./lib/airs-welcome");
+Object.defineProperty(exports, "renderAirsWelcomeEmail", { enumerable: true, get: function () { return airs_welcome_1.renderAirsWelcomeEmail; } });
