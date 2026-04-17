@@ -1,6 +1,6 @@
 {
   "name": "@alternun/web",
-  "version": "1.0.141",
+  "version": "1.0.142",
   "private": true,
   "scripts": {
     "dev": "next dev",
