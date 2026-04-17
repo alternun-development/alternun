@@ -15,6 +15,9 @@ function createReply() {
       this.statusCode = value;
       return this;
     },
+    getHeader(name) {
+      return this.headers[name.toLowerCase()];
+    },
     header(name, value) {
       this.headers[name.toLowerCase()] = value;
       return this;
@@ -130,17 +133,23 @@ test('handleBetterAuthRuntimeRequest forwards Better Auth requests through the e
 
   assert.equal(handled, true);
   assert.equal(observed.method, 'POST');
-  assert.equal(observed.url, 'https://testnet.api.alternun.co/auth/sign-in/social?next=%2Fdashboard');
+  assert.equal(
+    observed.url,
+    'https://testnet.api.alternun.co/auth/sign-in/social?next=%2Fdashboard'
+  );
   assert.equal(observed.origin, 'https://testnet.airs.alternun.co');
   assert.equal(observed.body, JSON.stringify({ provider: 'google' }));
   assert.equal(reply.statusCode, 200);
   assert.equal(reply.headers['content-type'], 'application/json');
   assert.deepEqual(reply.headers['set-cookie'], ['better-auth-session=abc; Path=/; HttpOnly']);
+  assert.equal(reply.headers['access-control-allow-origin'], 'https://testnet.airs.alternun.co');
+  assert.equal(reply.headers['access-control-allow-credentials'], 'true');
   assert.deepEqual(JSON.parse(reply.payload.toString('utf8')), { ok: true });
 });
 
 test('handleBetterAuthRuntimeRequest answers OPTIONS preflight locally', async () => {
   let called = false;
+  const reply = createReply();
 
   const handled = await handleBetterAuthRuntimeRequest(
     {
@@ -150,10 +159,12 @@ test('handleBetterAuthRuntimeRequest answers OPTIONS preflight locally', async (
       },
       headers: {
         origin: 'https://testnet.airs.alternun.co',
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'content-type',
       },
       body: undefined,
     },
-    createReply(),
+    reply,
     {
       baseUrl: 'https://testnet.api.alternun.co',
       authHandler: async () => {
@@ -165,4 +176,11 @@ test('handleBetterAuthRuntimeRequest answers OPTIONS preflight locally', async (
 
   assert.equal(handled, true);
   assert.equal(called, false);
+  assert.equal(reply.headers['access-control-allow-origin'], 'https://testnet.airs.alternun.co');
+  assert.equal(reply.headers['access-control-allow-credentials'], 'true');
+  assert.equal(
+    reply.headers['access-control-allow-methods'],
+    'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS'
+  );
+  assert.equal(reply.headers['access-control-allow-headers'], 'content-type');
 });
