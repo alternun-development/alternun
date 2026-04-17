@@ -48,8 +48,6 @@ const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png') as numbe
 const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as number;
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const ALTERNUN_LOGO = require('../../assets/logo.png') as number;
 
 // ── JSX-safe casts ────────────────────────────────────────────────────────────
 const ExpoImage = ExpoImageRaw as unknown as React.FC<any>;
@@ -350,21 +348,6 @@ export default function TopNav({
                   fillColor={brandMarkFill}
                   cutoutColor={brandMarkCutout}
                 />
-              </View>
-              {/* Byline: "By [Alternun logo]" + subtitle */}
-              <View style={styles.bylineRow}>
-                <Text style={[styles.bylineBy, { color: p.pillSub }]}>{t('labels.by')}</Text>
-                <ExpoImage source={ALTERNUN_LOGO} style={styles.bylineLogo} contentFit='contain' />
-                <Text
-                  style={[
-                    styles.bylineSubtitle,
-                    { color: p.pillSub },
-                    isMobile && styles.bylineSubtitleMobile,
-                  ]}
-                  numberOfLines={1}
-                >
-                  Alternun Impact & Reputation Score
-                </Text>
               </View>
             </View>
           </Pressable>
