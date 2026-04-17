@@ -1,3 +1,21 @@
+## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(infra): SSM_PARAMETERS, resolve-ssm-env, buildspec-auth-env.test
+- **repo:** docs(CLAUDE.md): strengthen AWS account guard protocol
+- **repo:** fix(mobile): center landing cards and fix wallet link routing on mobile
+
+### Bug Fixes
+
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+
+## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
+
+### Bug Fixes
+
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+
 ## [1.0.120](https://github.com/alternun-development/alternun/compare/v1.0.119...v1.0.120) (2026-04-17)
 
 ### Bug Fixes
