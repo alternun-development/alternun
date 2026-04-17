@@ -15,6 +15,7 @@ apps/admin/dist/
 apps/api/dist/
 apps/api/dist-lambda/
 packages/ui/dist/
+packages/email-templates/dist/
 supabase/.temp/
 
 # Lockfiles for non-pnpm managers
