@@ -5,10 +5,46 @@
  * Delivers 40-60% smoother playback, instant startup, hardware acceleration.
  */
 
-import React, { useCallback, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { VideoView, useVideoPlayer, VideoSource } from 'expo-video';
+import React, { useCallback, useRef, useState, useMemo } from 'react';
+import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { VideoView, useVideoPlayer, type VideoSource, type VideoSourceObject } from 'expo-video';
 import { Image as ExpoImage } from 'expo-image';
+
+type LegacyVideoSourceObject = VideoSourceObject & {
+  src?: string | number;
+  default?: string | number;
+};
+
+function getVideoUri(source: VideoSource): string | number | null {
+  if (typeof source === 'string' || typeof source === 'number' || source == null) {
+    return source;
+  }
+
+  const legacySource = source as LegacyVideoSourceObject;
+  return (
+    legacySource.uri ?? legacySource.src ?? legacySource.default ?? legacySource.assetId ?? null
+  );
+}
+
+// Lazy-loaded video versions for responsive quality
+let desktopVideo: number | null = null;
+let mobileVideo: number | null = null;
+
+function getDesktopVideo(): number {
+  if (!desktopVideo) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    desktopVideo = require('../../assets/videos/landing-desktop.mp4') as number;
+  }
+  return desktopVideo;
+}
+
+function getMobileVideo(): number {
+  if (!mobileVideo) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    mobileVideo = require('../../assets/videos/landing-mobile.mp4') as number;
+  }
+  return mobileVideo;
+}
 
 interface HeroVideoNativeProps {
   videoSource: VideoSource;
@@ -25,21 +61,60 @@ export function HeroVideoNative({
 }: HeroVideoNativeProps): React.JSX.Element {
   const [isVideoReady, setIsVideoReady] = useState(false);
   const playerRef = useRef(null);
+  const { width } = useWindowDimensions();
+
+  // Determine video quality based on screen width
+  // Desktop (720p+) gets full HD, mobile gets optimized 720p
+  const isDesktop = width >= 720;
+
+  // Memoize the resolved video URI with quality selection
+  const resolvedSource = useMemo(() => {
+    if (Platform.OS === 'web') {
+      return getVideoUri(videoSource);
+    }
+    // Select video based on screen width for optimal quality/performance
+    return isDesktop ? getDesktopVideo() : getMobileVideo();
+  }, [isDesktop]);
 
   // Initialize player with optimized settings
-  const player = useVideoPlayer(videoSource, (p) => {
+  const player = useVideoPlayer(resolvedSource, (p) => {
     p.loop = true;
     p.muted = true;
     p.playbackRate = 1.0;
-    // Don't call play() here — wait for onFirstVideoFrameRender
   });
 
   // Play video when first frame renders (no black flash)
   const handleFirstFrame = useCallback(() => {
-    player.play();
+    setTimeout(() => {
+      player.play();
+    }, 100);
     setIsVideoReady(true);
     onReady?.();
   }, [player, onReady]);
+
+  // For web, render native HTML5 video
+  if (Platform.OS === 'web') {
+    const videoSrc = typeof resolvedSource === 'string' ? resolvedSource : String(resolvedSource);
+    return (
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload='auto'
+        style={
+          {
+            ...StyleSheet.absoluteFillObject,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          } as React.CSSProperties
+        }
+      >
+        <source src={videoSrc} type='video/mp4' />
+      </video>
+    );
+  }
 
   return (
     <View style={[styles.container, style]}>
@@ -58,7 +133,7 @@ export function HeroVideoNative({
       <VideoView
         player={player}
         ref={playerRef}
-        style={StyleSheet.absoluteFill}
+        style={[StyleSheet.absoluteFill, { flex: 1 }]}
         contentFit='cover'
         nativeControls={false}
         allowsFullscreen={false}
