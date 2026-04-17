@@ -72,6 +72,9 @@
         "authenticationFailed": "La autenticacion fallo. Intentalo de nuevo.",
         "confirmationCodeInvalid": "El codigo de confirmacion es invalido o vencio. Solicita un nuevo correo e intentalo otra vez.",
         "enterEmailFirst": "Ingresa tu correo primero.",
+        "socialSignInServerError": "El servicio de inicio de sesión social encontró un error interno del servidor. Inténtalo de nuevo más tarde.",
+        "socialSignInTitle": "Inicio de sesión no disponible",
+        "socialSignInUnavailable": "El inicio de sesión social no está disponible por ahora. Inténtalo de nuevo más tarde.",
         "resendUnavailable": "Reenviar la confirmacion no esta disponible en este cliente de autenticacion.",
         "signupUnavailable": "El registro no esta disponible en este cliente de autenticacion.",
         "verificationCodeUnavailable": "La verificacion por codigo no esta disponible en este cliente de autenticacion."
