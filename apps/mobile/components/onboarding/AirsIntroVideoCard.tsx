@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/explicit-function-return-type, @typescript-eslint/no-misused-promises */
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, } from 'react';
 import {
   Animated,
   Linking,
@@ -9,9 +9,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { PlayCircle, RotateCcw, Volume2, VolumeX } from 'lucide-react-native';
+import { PlayCircle, RotateCcw, Volume2, VolumeX, } from 'lucide-react-native';
 
-import { useAppTranslation } from '../i18n/useAppTranslation';
+import { useAppTranslation, } from '../i18n/useAppTranslation';
 
 type NativeWebViewMessage = {
   nativeEvent?: {
@@ -61,7 +61,7 @@ function buildVideoHtml(
   posterUrl: string,
   muted: boolean,
   previewMode: boolean,
-  previewSeconds: number
+  previewSeconds: number,
 ): string {
   return `
     <!DOCTYPE html>
@@ -76,8 +76,8 @@ function buildVideoHtml(
       <body>
         <video id="airsVideo" playsinline webkit-playsinline loop></video>
         <script>
-          const videoSource = ${JSON.stringify(videoUrl)};
-          const videoPoster = ${JSON.stringify(posterUrl)};
+          const videoSource = ${JSON.stringify(videoUrl,)};
+          const videoPoster = ${JSON.stringify(posterUrl,)};
           const initialMuted = ${muted ? 'true' : 'false'};
           const initialPreviewMode = ${previewMode ? 'true' : 'false'};
           const previewLoopSeconds = ${previewSeconds};
@@ -182,10 +182,10 @@ export default function AirsIntroVideoCard({
   posterUrl = AIRS_VIDEO_POSTER,
   style,
   children,
-}: AirsIntroVideoCardProps) {
-  const { t } = useAppTranslation('mobile');
-  const webVideoRef = useRef<HTMLVideoElement | null>(null);
-  const webViewRef = useRef<NativeWebViewHandle | null>(null);
+}: AirsIntroVideoCardProps,) {
+  const { t, } = useAppTranslation('mobile',);
+  const webVideoRef = useRef<HTMLVideoElement | null>(null,);
+  const webViewRef = useRef<NativeWebViewHandle | null>(null,);
 
   const WebView = useMemo<NativeWebViewComponent | null>(() => {
     if (Platform.OS === 'web') {
@@ -193,23 +193,23 @@ export default function AirsIntroVideoCard({
     }
 
     try {
-      const webViewModule = require('react-native-webview') as {
+      const webViewModule = require('react-native-webview',) as {
         WebView?: NativeWebViewComponent;
       };
       return webViewModule.WebView ?? null;
     } catch {
       return null;
     }
-  }, []);
+  }, [],);
 
   const webVideoHtml = useMemo(
-    () => buildVideoHtml(videoUri, posterUrl, true, true, previewSeconds),
-    [posterUrl, previewSeconds, videoUri]
+    () => buildVideoHtml(videoUri, posterUrl, true, true, previewSeconds,),
+    [posterUrl, previewSeconds, videoUri,],
   );
 
   useEffect(() => {
-    onPlaybackChange?.(false);
-  }, [onPlaybackChange, videoUri]);
+    onPlaybackChange?.(false,);
+  }, [onPlaybackChange, videoUri,],);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -227,8 +227,8 @@ export default function AirsIntroVideoCard({
     video.volume = effectiveMuted ? 0 : 1;
 
     const reportPlaybackState = () => {
-      const isActuallyPlaying = Boolean(!video.paused && !video.ended && video.readyState > 2);
-      onPlaybackChange?.(isScreenFocused && shouldPlayMainTrack && isActuallyPlaying);
+      const isActuallyPlaying = Boolean(!video.paused && !video.ended && video.readyState > 2,);
+      onPlaybackChange?.(isScreenFocused && shouldPlayMainTrack && isActuallyPlaying,);
     };
 
     const handlePreviewLoop = () => {
@@ -240,46 +240,46 @@ export default function AirsIntroVideoCard({
         video.currentTime = 0;
         const playResult = video.play?.();
         if (playResult && typeof playResult.catch === 'function') {
-          playResult.catch(() => {});
+          playResult.catch(() => {},);
         }
       }
     };
 
     if (!isScreenFocused) {
       video.pause?.();
-      onPlaybackChange?.(false);
+      onPlaybackChange?.(false,);
       return;
     }
 
     const playResult = video.play?.();
     if (playResult && typeof playResult.catch === 'function') {
-      playResult.catch(() => {});
+      playResult.catch(() => {},);
     }
 
     if (!shouldPlayMainTrack) {
-      onPlaybackChange?.(false);
+      onPlaybackChange?.(false,);
     }
 
     reportPlaybackState();
 
-    const intervalId = setInterval(reportPlaybackState, 300);
-    video.addEventListener('play', reportPlaybackState);
-    video.addEventListener('pause', reportPlaybackState);
-    video.addEventListener('ended', reportPlaybackState);
-    video.addEventListener('waiting', reportPlaybackState);
-    video.addEventListener('playing', reportPlaybackState);
-    video.addEventListener('timeupdate', handlePreviewLoop);
+    const intervalId = setInterval(reportPlaybackState, 300,);
+    video.addEventListener('play', reportPlaybackState,);
+    video.addEventListener('pause', reportPlaybackState,);
+    video.addEventListener('ended', reportPlaybackState,);
+    video.addEventListener('waiting', reportPlaybackState,);
+    video.addEventListener('playing', reportPlaybackState,);
+    video.addEventListener('timeupdate', handlePreviewLoop,);
 
     return () => {
-      clearInterval(intervalId);
-      video.removeEventListener('play', reportPlaybackState);
-      video.removeEventListener('pause', reportPlaybackState);
-      video.removeEventListener('ended', reportPlaybackState);
-      video.removeEventListener('waiting', reportPlaybackState);
-      video.removeEventListener('playing', reportPlaybackState);
-      video.removeEventListener('timeupdate', handlePreviewLoop);
+      clearInterval(intervalId,);
+      video.removeEventListener('play', reportPlaybackState,);
+      video.removeEventListener('pause', reportPlaybackState,);
+      video.removeEventListener('ended', reportPlaybackState,);
+      video.removeEventListener('waiting', reportPlaybackState,);
+      video.removeEventListener('playing', reportPlaybackState,);
+      video.removeEventListener('timeupdate', handlePreviewLoop,);
     };
-  }, [isMuted, isScreenFocused, onPlaybackChange, previewSeconds, shouldPlayMainTrack, videoUri]);
+  }, [isMuted, isScreenFocused, onPlaybackChange, previewSeconds, shouldPlayMainTrack, videoUri,],);
 
   useEffect(() => {
     if (Platform.OS === 'web') {
@@ -306,12 +306,12 @@ export default function AirsIntroVideoCard({
         window.__setPlayback(${shouldPlayAny ? 'true' : 'false'});
       }
       true;
-    `);
+    `,);
 
     if (!shouldPlayMainTrack) {
-      onPlaybackChange?.(false);
+      onPlaybackChange?.(false,);
     }
-  }, [isMuted, isScreenFocused, onPlaybackChange, shouldPlayMainTrack, videoUri]);
+  }, [isMuted, isScreenFocused, onPlaybackChange, shouldPlayMainTrack, videoUri,],);
 
   const restartVideo = useCallback(() => {
     if (Platform.OS === 'web') {
@@ -323,9 +323,9 @@ export default function AirsIntroVideoCard({
       video.currentTime = 0;
       const playResult = video.play?.();
       if (playResult && typeof playResult.catch === 'function') {
-        playResult.catch(() => {});
+        playResult.catch(() => {},);
       }
-      onPlaybackChange?.(isScreenFocused && shouldPlayMainTrack);
+      onPlaybackChange?.(isScreenFocused && shouldPlayMainTrack,);
       return;
     }
 
@@ -342,31 +342,31 @@ export default function AirsIntroVideoCard({
         window.__setPlayback(true);
       }
       true;
-    `);
-    onPlaybackChange?.(isScreenFocused && shouldPlayMainTrack);
-  }, [isScreenFocused, onPlaybackChange, shouldPlayMainTrack]);
+    `,);
+    onPlaybackChange?.(isScreenFocused && shouldPlayMainTrack,);
+  }, [isScreenFocused, onPlaybackChange, shouldPlayMainTrack,],);
 
   const handleWebViewMessage = useCallback(
-    (event: NativeWebViewMessage) => {
+    (event: NativeWebViewMessage,) => {
       const payload = event?.nativeEvent?.data;
       if (typeof payload !== 'string' || payload.length === 0) {
         return;
       }
 
       try {
-        const data = JSON.parse(payload) as { type?: string; isPlaying?: boolean };
+        const data = JSON.parse(payload,) as { type?: string; isPlaying?: boolean };
         if (data.type === 'playback' && typeof data.isPlaying === 'boolean') {
-          onPlaybackChange?.(isScreenFocused && shouldPlayMainTrack && data.isPlaying);
+          onPlaybackChange?.(isScreenFocused && shouldPlayMainTrack && data.isPlaying,);
         }
       } catch {
         // Ignore messages not related to playback state.
       }
     },
-    [isScreenFocused, onPlaybackChange, shouldPlayMainTrack]
+    [isScreenFocused, onPlaybackChange, shouldPlayMainTrack,],
   );
 
   return (
-    <Animated.View style={[styles.card, style]}>
+    <Animated.View style={[styles.card, style,]}>
       {Platform.OS === 'web' && videoUri ? (
         <video
           key={videoUri}
@@ -374,9 +374,9 @@ export default function AirsIntroVideoCard({
           autoPlay
           muted={isMuted || !shouldPlayMainTrack}
           loop
-          onPlay={() => onPlaybackChange?.(isScreenFocused && shouldPlayMainTrack)}
-          onPause={() => onPlaybackChange?.(false)}
-          onEnded={() => onPlaybackChange?.(false)}
+          onPlay={() => onPlaybackChange?.(isScreenFocused && shouldPlayMainTrack,)}
+          onPause={() => onPlaybackChange?.(false,)}
+          onEnded={() => onPlaybackChange?.(false,)}
           playsInline
           preload='auto'
           poster={posterUrl}
@@ -388,8 +388,8 @@ export default function AirsIntroVideoCard({
         <WebView
           key={videoUri}
           ref={webViewRef}
-          originWhitelist={['*']}
-          source={{ html: webVideoHtml }}
+          originWhitelist={['*',]}
+          source={{ html: webVideoHtml, }}
           allowsInlineMediaPlayback
           mediaPlaybackRequiresUserAction={false}
           onMessage={handleWebViewMessage}
@@ -400,34 +400,34 @@ export default function AirsIntroVideoCard({
           style={styles.videoFallback}
           onPress={() => {
             if (videoUri) {
-              void Linking.openURL(videoUri);
+              void Linking.openURL(videoUri,);
             }
           }}
           activeOpacity={0.85}
         >
           <PlayCircle size={20} color='#ffffff' />
           <Text style={styles.videoFallbackText}>
-            {videoUri ? t('landing.video.openIntro') : t('landing.video.loadingIntro')}
+            {videoUri ? t('landing.video.openIntro',) : t('landing.video.loadingIntro',)}
           </Text>
         </TouchableOpacity>
       )}
 
       {showControls ? (
         <TouchableOpacity
-          style={[styles.restartControl, controlsIconOnly && styles.videoControlIconOnly]}
+          style={[styles.restartControl, controlsIconOnly && styles.videoControlIconOnly,]}
           onPress={restartVideo}
           activeOpacity={0.85}
         >
           <RotateCcw size={14} color='#f8fbff' />
           {!controlsIconOnly && (
-            <Text style={styles.videoControlText}>{t('landing.video.restart')}</Text>
+            <Text style={styles.videoControlText}>{t('landing.video.restart',)}</Text>
           )}
         </TouchableOpacity>
       ) : null}
 
       {showControls ? (
         <TouchableOpacity
-          style={[styles.muteControl, controlsIconOnly && styles.videoControlIconOnly]}
+          style={[styles.muteControl, controlsIconOnly && styles.videoControlIconOnly,]}
           onPress={onToggleMute}
           activeOpacity={0.85}
         >
@@ -439,8 +439,8 @@ export default function AirsIntroVideoCard({
           {!controlsIconOnly && (
             <Text style={styles.videoControlText}>
               {isMuted || !shouldPlayMainTrack
-                ? t('landing.video.muted')
-                : t('landing.video.soundOn')}
+                ? t('landing.video.muted',)
+                : t('landing.video.soundOn',)}
             </Text>
           )}
         </TouchableOpacity>
@@ -529,4 +529,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-});
+},);

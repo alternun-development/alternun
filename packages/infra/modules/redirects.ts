@@ -31,9 +31,9 @@ function buildDomainConfig(
   redirects?: string[]
 ): DomainConfig {
   const cleanRedirects = (redirects ?? [])
-    .map(value => sanitizeDomain(value))
+    .map((value) => sanitizeDomain(value))
     .filter(Boolean)
-    .filter(value => value !== sanitizeDomain(domainName));
+    .filter((value) => value !== sanitizeDomain(domainName));
 
   if (!certificateArn && cleanRedirects.length === 0) {
     return sanitizeDomain(domainName);

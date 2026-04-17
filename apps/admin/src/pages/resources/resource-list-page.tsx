@@ -85,7 +85,7 @@ export function ResourceListPage({ resourceName }: ResourceListPageProps) {
             <table className='data-table'>
               <thead>
                 <tr>
-                  {columns.map(column => (
+                  {columns.map((column) => (
                     <th key={column}>{column}</th>
                   ))}
                   {resource.show ? <th>details</th> : null}
@@ -97,7 +97,7 @@ export function ResourceListPage({ resourceName }: ResourceListPageProps) {
 
                   return (
                     <tr key={recordId}>
-                      {columns.map(column => (
+                      {columns.map((column) => (
                         <td key={column}>{formatValue(record[column])}</td>
                       ))}
                       {resource.show ? (

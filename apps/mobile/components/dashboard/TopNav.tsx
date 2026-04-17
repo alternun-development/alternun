@@ -12,7 +12,7 @@ import {
 import { BlurView as BlurViewRaw } from 'expo-blur';
 import { Image as ExpoImageRaw } from 'expo-image';
 
-const BlurView = BlurViewRaw as unknown as React.FC<any>;
+const BlurView = BlurViewRaw as unknown as React.FC<React.ComponentProps<typeof BlurViewRaw>>;
 import {
   Bell,
   ChevronDown,
@@ -50,7 +50,7 @@ const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as number;
 const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as number;
 
 // ── JSX-safe casts ────────────────────────────────────────────────────────────
-const ExpoImage = ExpoImageRaw as unknown as React.FC<any>;
+const ExpoImage = ExpoImageRaw as unknown as React.FC<React.ComponentProps<typeof ExpoImageRaw>>;
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
 const SettingsIcon = Settings as React.FC<LucideProps>;
@@ -145,7 +145,7 @@ export default function TopNav({
   onMarkAllNotificationsRead,
   onDismissNotification,
   onNavigateToNotifications,
-}: TopNavProps) {
+}: TopNavProps): React.JSX.Element {
   const [menuVisible, setMenuVisible] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(true);
@@ -270,21 +270,21 @@ export default function TopNav({
     }
   }, [unreadCount, badgePulseAnimated]);
 
-  const toggleMenu = () => {
+  const toggleMenu = (): void => {
     setNotifVisible(false);
     setMenuVisible((v) => !v);
   };
-  const toggleNotif = () => {
+  const toggleNotif = (): void => {
     setMenuVisible(false);
     setNotifVisible((v) => !v);
   };
-  const handleBrandPress = () => {
+  const handleBrandPress = (): void => {
     dismissAll();
     onNavigate?.('dashboard');
   };
 
   const anyOpen = menuVisible || notifVisible;
-  const dismissAll = () => {
+  const dismissAll = (): void => {
     setMenuVisible(false);
     setNotifVisible(false);
   };

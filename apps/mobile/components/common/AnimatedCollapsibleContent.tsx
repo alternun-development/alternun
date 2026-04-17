@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import React, { useEffect, useRef, useState, } from 'react';
+import { Animated, Easing, StyleSheet, View, type StyleProp, type ViewStyle, } from 'react-native';
 
 interface AnimatedCollapsibleContentProps {
   expanded: boolean;
@@ -19,43 +19,43 @@ export default function AnimatedCollapsibleContent({
   duration = 200,
   collapseOffset = 8,
   style,
-}: AnimatedCollapsibleContentProps): React.JSX.Element {
-  const progress = useRef(new Animated.Value(expanded ? 1 : 0)).current;
-  const [contentHeight, setContentHeight] = useState(0);
+}: AnimatedCollapsibleContentProps,): React.JSX.Element {
+  const progress = useRef(new Animated.Value(expanded ? 1 : 0,),).current;
+  const [contentHeight, setContentHeight,] = useState(0,);
 
   useEffect(() => {
     Animated.timing(progress, {
       toValue: expanded ? 1 : 0,
       duration,
-      easing: Easing.out(Easing.cubic),
+      easing: Easing.out(Easing.cubic,),
       useNativeDriver: false,
-    }).start();
-  }, [duration, expanded, progress]);
+    },).start();
+  }, [duration, expanded, progress,],);
 
   const animatedHeight = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, contentHeight],
-  });
+    inputRange: [0, 1,],
+    outputRange: [0, contentHeight,],
+  },);
   const animatedOpacity = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
+    inputRange: [0, 1,],
+    outputRange: [0, 1,],
+  },);
   const animatedTranslateY = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-collapseOffset, 0],
-  });
+    inputRange: [0, 1,],
+    outputRange: [-collapseOffset, 0,],
+  },);
 
   return (
     <View style={styles.root}>
       <View
         accessibilityElementsHidden
         importantForAccessibility='no-hide-descendants'
-        onLayout={(event) => {
+        onLayout={(event,) => {
           const nextHeight = event.nativeEvent.layout.height;
-          setContentHeight(nextHeight);
+          setContentHeight(nextHeight,);
         }}
         pointerEvents='none'
-        style={[styles.measurement, style]}
+        style={[styles.measurement, style,]}
       >
         {children}
       </View>
@@ -68,7 +68,7 @@ export default function AnimatedCollapsibleContent({
           {
             height: animatedHeight,
             opacity: animatedOpacity,
-            transform: [{ translateY: animatedTranslateY }],
+            transform: [{ translateY: animatedTranslateY, },],
           },
         ]}
       >
@@ -92,4 +92,4 @@ const styles = StyleSheet.create({
   animatedContent: {
     overflow: 'hidden',
   },
-});
+},);

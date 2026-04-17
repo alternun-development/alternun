@@ -287,7 +287,7 @@ export const dataProvider: DataProvider = {
     meta,
   }: CreateManyParams<TVariables>) => {
     const created = await Promise.all(
-      variables.map(variable =>
+      variables.map((variable) =>
         dataProvider.create<TData, TVariables>({
           resource,
           variables: variable,
@@ -297,7 +297,7 @@ export const dataProvider: DataProvider = {
     );
 
     return {
-      data: created.map(entry => entry.data),
+      data: created.map((entry) => entry.data),
     };
   },
 
@@ -326,7 +326,7 @@ export const dataProvider: DataProvider = {
     meta,
   }: UpdateManyParams<TVariables>) => {
     const updated = await Promise.all(
-      ids.map(id =>
+      ids.map((id) =>
         dataProvider.update<TData, TVariables>({
           resource,
           id,
@@ -337,7 +337,7 @@ export const dataProvider: DataProvider = {
     );
 
     return {
-      data: updated.map(entry => entry.data),
+      data: updated.map((entry) => entry.data),
     };
   },
 
@@ -366,7 +366,7 @@ export const dataProvider: DataProvider = {
     meta,
   }: DeleteManyParams<TVariables>) => {
     const deleted = await Promise.all(
-      ids.map(id =>
+      ids.map((id) =>
         dataProvider.deleteOne<TData, TVariables>({
           resource,
           id,
@@ -377,7 +377,7 @@ export const dataProvider: DataProvider = {
     );
 
     return {
-      data: deleted.map(entry => entry.data),
+      data: deleted.map((entry) => entry.data),
     };
   },
 

@@ -2,10 +2,20 @@ import { ImpactToken, PoolPosition, AIRSEntry, SBTCertificate, Project, } from '
 
 export const MOCK_TOKENS: ImpactToken[] = [
   { tokenId: 'TKN-001', state: 'Free', acquisitionPrice: 250, projectName: 'Amazon Reforestation', },
-  { tokenId: 'TKN-002', state: 'Deposited', acquisitionPrice: 300, projectName: 'Solar Farm Delta', },
+  {
+    tokenId: 'TKN-002',
+    state: 'Deposited',
+    acquisitionPrice: 300,
+    projectName: 'Solar Farm Delta',
+  },
   { tokenId: 'TKN-003', state: 'Free', acquisitionPrice: 180, projectName: 'Ocean Cleanup Beta', },
   { tokenId: 'TKN-004', state: 'Consumed', acquisitionPrice: 220, projectName: 'Wind Energy Park', },
-  { tokenId: 'TKN-005', state: 'Deposited', acquisitionPrice: 400, projectName: 'Mangrove Restore', },
+  {
+    tokenId: 'TKN-005',
+    state: 'Deposited',
+    acquisitionPrice: 400,
+    projectName: 'Mangrove Restore',
+  },
   { tokenId: 'TKN-006', state: 'Free', acquisitionPrice: 275, projectName: 'Carbon Capture X', },
 ];
 
@@ -42,43 +52,49 @@ export const MOCK_POSITIONS: PoolPosition[] = [
 export const MOCK_AIRS: AIRSEntry[] = [
   {
     id: '1',
-    reason: 'Token Purchase Reward',
-    referenceType: 'token_purchase',
+    reason: 'Allied commerce purchase',
+    referenceType: 'allied_commerce',
     amountAIRS: 50,
     timestamp: new Date(Date.now() - 1000 * 60 * 30,),
-    onChainReference: '0x4a3b2c1d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b',
+    reference: '0x4a3b2c1d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b',
+    sourceAmount: 10,
+    sourceCurrency: 'USD',
   },
   {
     id: '2',
-    reason: 'Pool Deposit Bonus',
-    referenceType: 'pool_deposit',
+    reason: 'Validated regenerative action',
+    referenceType: 'validated_regenerative_action',
     amountAIRS: 120,
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2,),
-    onChainReference: '0x1f2e3d4c5b6a7988c7d6e5f4a3b2c1d0e9f8a7b6',
+    reference: '0x1f2e3d4c5b6a7988c7d6e5f4a3b2c1d0e9f8a7b6',
+    sourceAmount: 24,
+    sourceCurrency: 'USD',
   },
   {
     id: '3',
-    reason: 'Carbon Compensation',
+    reason: 'Carbon compensation',
     referenceType: 'compensation',
     amountAIRS: 75,
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5,),
-    onChainReference: '0x9c8b7a6f5e4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b',
+    reference: '0x9c8b7a6f5e4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b',
+    sourceAmount: 15,
+    sourceCurrency: 'USD',
   },
   {
     id: '4',
-    reason: 'Token Retirement',
-    referenceType: 'retire',
+    reason: 'Profile completion bonus',
+    referenceType: 'profile_completion_bonus',
     amountAIRS: 200,
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24,),
-    onChainReference: '0x3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f',
+    reference: '0x3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f',
   },
   {
     id: '5',
-    reason: 'Proceeds Claimed',
-    referenceType: 'claim',
+    reason: 'Ledger correction',
+    referenceType: 'correction',
     amountAIRS: 340,
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48,),
-    onChainReference: '0x7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c',
+    reference: '0x7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c',
   },
 ];
 
@@ -108,14 +124,43 @@ export const MOCK_CERTIFICATES: SBTCertificate[] = [
     impactUnit: 'tPlastic',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20,),
     onChainRef: '0x9c8b7a6f5e4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b',
-    metadata: { project: 'Ocean Cleanup Beta', registry: 'Plastic Credit Exchange', vintage: '2024', },
+    metadata: {
+      project: 'Ocean Cleanup Beta',
+      registry: 'Plastic Credit Exchange',
+      vintage: '2024',
+    },
   },
 ];
 
 export const MOCK_PROJECTS: Project[] = [
-  { id: 'proj-1', name: 'Amazon Reforestation', description: 'Plant trees in the Amazon basin', category: 'Reforestation', },
-  { id: 'proj-2', name: 'Solar Farm Delta', description: 'Renewable solar energy in Delta region', category: 'Renewable Energy', },
-  { id: 'proj-3', name: 'Ocean Cleanup Beta', description: 'Remove plastic from ocean ecosystems', category: 'Ocean Health', },
-  { id: 'proj-4', name: 'Wind Energy Park', description: 'Clean wind power generation', category: 'Renewable Energy', },
-  { id: 'proj-5', name: 'Mangrove Restore', description: 'Restore coastal mangrove ecosystems', category: 'Blue Carbon', },
+  {
+    id: 'proj-1',
+    name: 'Amazon Reforestation',
+    description: 'Plant trees in the Amazon basin',
+    category: 'Reforestation',
+  },
+  {
+    id: 'proj-2',
+    name: 'Solar Farm Delta',
+    description: 'Renewable solar energy in Delta region',
+    category: 'Renewable Energy',
+  },
+  {
+    id: 'proj-3',
+    name: 'Ocean Cleanup Beta',
+    description: 'Remove plastic from ocean ecosystems',
+    category: 'Ocean Health',
+  },
+  {
+    id: 'proj-4',
+    name: 'Wind Energy Park',
+    description: 'Clean wind power generation',
+    category: 'Renewable Energy',
+  },
+  {
+    id: 'proj-5',
+    name: 'Mangrove Restore',
+    description: 'Restore coastal mangrove ecosystems',
+    category: 'Blue Carbon',
+  },
 ];

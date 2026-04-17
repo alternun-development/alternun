@@ -250,7 +250,7 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
   const [page, setPage] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
-  const rowAnims = useRef<Record<string, Animated.Value>>({});
+  const rowAnims = useRef<Map<string, Animated.Value>>(new Map());
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const accent = isDark ? '#1EE6B5' : '#0d9488';
@@ -274,16 +274,19 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
   const pageItems = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   // Animate new rows
-  const animateRow = useCallback((id: string) => {
-    if (!rowAnims.current[id]) {
-      rowAnims.current[id] = new Animated.Value(0);
+  const animateRow = useCallback((id: string): void => {
+    if (!rowAnims.current.has(id)) {
+      rowAnims.current.set(id, new Animated.Value(0));
     }
-    Animated.timing(rowAnims.current[id], {
-      toValue: 1,
-      duration: 320,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: false,
-    }).start();
+    const anim = rowAnims.current.get(id);
+    if (anim) {
+      Animated.timing(anim, {
+        toValue: 1,
+        duration: 320,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }).start();
+    }
   }, []);
 
   useEffect(() => {
@@ -376,8 +379,8 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
           </View>
         ) : (
           pageItems.map((item, idx) => {
-            if (!rowAnims.current[item.id]) {
-              rowAnims.current[item.id] = new Animated.Value(0);
+            if (!rowAnims.current.get(item.id)) {
+              rowAnims.current.set(item.id, new Animated.Value(0));
             }
             return (
               <ActivityRow
@@ -385,7 +388,7 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
                 item={item}
                 isDark={isDark}
                 isLast={idx === pageItems.length - 1}
-                animValue={rowAnims.current[item.id]}
+                animValue={rowAnims.current.get(item.id) as Animated.Value}
               />
             );
           })

@@ -18,7 +18,7 @@ export function AppShell() {
     void extractIdentity().then(setIdentity);
   }, []);
 
-  const primaryResources = adminResources.filter(resource => resource.name !== 'dashboard');
+  const primaryResources = adminResources.filter((resource) => resource.name !== 'dashboard');
 
   return (
     <div className='admin-shell'>
@@ -35,7 +35,7 @@ export function AppShell() {
             <span className='admin-nav-meta'>Health and operator shortcuts</span>
           </NavLink>
 
-          {primaryResources.map(resource => (
+          {primaryResources.map((resource) => (
             <NavLink key={resource.name} to={resource.list} className='admin-nav-link'>
               <span className='admin-nav-title'>{resource.meta.title}</span>
               <span className='admin-nav-meta'>{resource.meta.description}</span>

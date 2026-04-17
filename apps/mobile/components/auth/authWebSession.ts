@@ -58,7 +58,7 @@ interface LegacyProvisioningAdapter {
   sync(payload: LegacyProvisioningPayload): Promise<LegacyProvisioningResult>;
 }
 
-function toOidcClaims(payload: LegacyProvisioningPayload): OidcClaims {
+function toOidcClaims(payload: LegacyProvisioningPayload,): OidcClaims {
   const rawClaims = payload.rawClaims ?? {};
 
   return {
@@ -77,19 +77,19 @@ export const authentikPreset = createAlternunAuthentikPreset({
     resolveAuthentikIssuer(
       process.env.EXPO_PUBLIC_AUTHENTIK_ISSUER,
       typeof window !== 'undefined' ? window.location.origin : undefined,
-      resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID)
+      resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID,),
     ) ?? '',
-  clientId: resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID),
+  clientId: resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID,),
   redirectUri:
     resolveAuthentikRedirectUri(
       process.env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI,
-      typeof window !== 'undefined' ? window.location.origin : undefined
+      typeof window !== 'undefined' ? window.location.origin : undefined,
     ) ?? '',
   provisioningAdapter: {
-    async sync(payload: LegacyProvisioningPayload): Promise<LegacyProvisioningResult> {
+    async sync(payload: LegacyProvisioningPayload,): Promise<LegacyProvisioningResult> {
       try {
-        const appUserId = await upsertOidcUser(toOidcClaims(payload), payload.provider);
-        return { synced: true, appUserId };
+        const appUserId = await upsertOidcUser(toOidcClaims(payload,), payload.provider,);
+        return { synced: true, appUserId, };
       } catch (err) {
         return {
           synced: false,
@@ -98,4 +98,4 @@ export const authentikPreset = createAlternunAuthentikPreset({
       }
     },
   } as LegacyProvisioningAdapter,
-});
+},);
