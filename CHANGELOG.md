@@ -1,3 +1,12 @@
+## [1.0.127](https://github.com/alternun-development/alternun/compare/v1.0.126...v1.0.127) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.126
+- **repo:** test(mobile,i18n,infra): PublicLandingPage, en, es, th
+
+## [1.0.127](https://github.com/alternun-development/alternun/compare/v1.0.126...v1.0.127) (2026-04-17)
+
 ## [1.0.126](https://github.com/alternun-development/alternun/compare/v1.0.125...v1.0.126) (2026-04-17)
 
 ### Bug Fixes
