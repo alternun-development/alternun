@@ -23,7 +23,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -39,6 +39,7 @@ import {
   View,
 } from 'react-native';
 import { getLocaleLabel } from '@alternun/i18n';
+import { ToastSystem, type ToastItem } from '@alternun/ui';
 import { useRouter } from 'expo-router';
 import { createTypographyStyles } from '../theme/typography';
 import { useAppPalette } from '../theme/useAppPalette';
@@ -57,6 +58,7 @@ import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import LoadingButton from '../common/LoadingButton';
 import { AuthFooter } from './AuthFooter';
+import { getAuthErrorMessage, getSocialSignInErrorMessage } from './authErrorMessages';
 const RESEND_COOLDOWN_SECONDS = 45;
 
 // Feature flags
@@ -107,84 +109,6 @@ export interface AuthSignInScreenProps {
   onCancel?: () => void;
   presentation?: 'screen' | 'modal';
   authReturnTo?: string;
-}
-
-function stripKnownErrorPrefix(message: string): string {
-  const prefixes = ['UNSUPPORTED_FLOW:', 'PROVIDER_ERROR:', 'VALIDATION_ERROR:'];
-  for (const prefix of prefixes) {
-    if (message.startsWith(prefix)) {
-      return message.replace(prefix, '').trim();
-    }
-  }
-
-  return message.trim();
-}
-
-function normalizeMessage(value: unknown): string | null {
-  if (typeof value === 'string') {
-    const normalized = stripKnownErrorPrefix(value);
-    if (!normalized || normalized === '{}' || normalized === '[object Object]') {
-      return null;
-    }
-
-    return normalized;
-  }
-
-  if (value instanceof Error) {
-    return normalizeMessage(value.message);
-  }
-
-  if (Array.isArray(value)) {
-    for (const entry of value) {
-      const normalizedEntry = normalizeMessage(entry);
-      if (normalizedEntry) {
-        return normalizedEntry;
-      }
-    }
-
-    return null;
-  }
-
-  if (value && typeof value === 'object') {
-    const typedValue = value as Record<string, unknown>;
-    const candidates = [
-      typedValue.message,
-      typedValue.error_description,
-      typedValue.error,
-      typedValue.details,
-      typedValue.detail,
-      typedValue.hint,
-      typedValue.msg,
-    ];
-
-    for (const candidate of candidates) {
-      const normalizedCandidate = normalizeMessage(candidate);
-      if (normalizedCandidate) {
-        return normalizedCandidate;
-      }
-    }
-
-    try {
-      const serialized = JSON.stringify(value);
-      if (serialized && serialized !== '{}' && serialized !== '[]') {
-        return stripKnownErrorPrefix(serialized);
-      }
-    } catch {
-      return null;
-    }
-
-    return null;
-  }
-
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-    return String(value);
-  }
-
-  return null;
-}
-
-function getMessage(error: unknown, fallbackMessage: string): string {
-  return normalizeMessage(error) ?? fallbackMessage;
 }
 
 function isEmailAuthCapable(client: unknown): client is EmailAuthCapableClient {
@@ -257,6 +181,7 @@ export default function AuthSignInScreen({
   const [confirmationCode, setConfirmationCode] = useState('');
   const [confirmationCodeRequired, setConfirmationCodeRequired] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [authStep, setAuthStep] = useState<AuthStep>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -271,12 +196,14 @@ export default function AuthSignInScreen({
   const passwordInputRef = useRef<TextInput>(null);
   const confirmPasswordInputRef = useRef<TextInput>(null);
   const confirmationCodeInputRef = useRef<TextInput>(null);
+  const toastIdRef = useRef(0);
+  const toastTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const googleProvider = resolvePrimaryOAuthProvider();
 
   const rawEffectiveError = localError ?? error;
   const effectiveError = rawEffectiveError
-    ? getMessage(rawEffectiveError, t('authModal.errors.authenticationFailed'))
+    ? getAuthErrorMessage(rawEffectiveError, t('authModal.errors.authenticationFailed'))
     : null;
   const isBusy = loading || submitMode !== null;
   const isModal = presentation === 'modal';
@@ -290,6 +217,45 @@ export default function AuthSignInScreen({
     ? AIRS_LOGO_LIGHT
     : AIRS_LOGO_DARK;
   const hasEmailInputError = requiredFields.email || invalidEmail;
+  const dismissToast = useCallback((id: string): void => {
+    setToasts((current) => current.filter((toast) => toast.id !== id));
+  }, []);
+
+  const pushToast = useCallback(
+    (title: string, message: string): void => {
+      const toastId = `auth-toast-${++toastIdRef.current}`;
+      setToasts((current) => [
+        ...current,
+        {
+          id: toastId,
+          type: 'error',
+          title,
+          message,
+        },
+      ]);
+
+      const timeout = setTimeout(() => {
+        dismissToast(toastId);
+        toastTimeoutsRef.current = toastTimeoutsRef.current.filter((entry) => entry !== timeout);
+      }, 4500);
+      toastTimeoutsRef.current = [...toastTimeoutsRef.current, timeout];
+    },
+    [dismissToast]
+  );
+
+  const showSocialSignInFailure = useCallback(
+    (authError: unknown): string => {
+      const message = getSocialSignInErrorMessage(authError, {
+        unavailable: t('authModal.errors.socialSignInUnavailable'),
+        serverError: t('authModal.errors.socialSignInServerError'),
+        fallback: t('authModal.errors.authenticationFailed'),
+      });
+      setLocalError(message);
+      pushToast(t('authModal.errors.socialSignInTitle'), message);
+      return message;
+    },
+    [pushToast, t]
+  );
 
   useEffect(() => {
     if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -332,12 +298,21 @@ export default function AuthSignInScreen({
       },
     })
       .catch((authError: unknown) => {
-        setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
+        showSocialSignInFailure(authError);
       })
       .finally(() => {
         setSubmitMode(null);
       });
-  }, [authReturnTo, client, googleProvider, loginStrategy, router, t]);
+  }, [authReturnTo, client, googleProvider, loginStrategy, router, showSocialSignInFailure]);
+
+  useEffect(() => {
+    return () => {
+      for (const timeout of toastTimeoutsRef.current) {
+        clearTimeout(timeout);
+      }
+      toastTimeoutsRef.current = [];
+    };
+  }, []);
 
   const transitionToStep = (step: AuthStep): void => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -347,6 +322,7 @@ export default function AuthSignInScreen({
   const resetMessages = (): void => {
     setLocalError(null);
     setNotice(null);
+    setToasts([]);
   };
 
   const clearRequiredFields = (): void => {
@@ -487,7 +463,7 @@ export default function AuthSignInScreen({
     try {
       await signInWithEmail(normalizedEmail, password);
     } catch (authError) {
-      const message = getMessage(authError, t('authModal.errors.authenticationFailed'));
+      const message = getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed'));
       if (normalizedEmail && isEmailNotConfirmedMessage(message)) {
         setConfirmationEmail(normalizedEmail);
         setConfirmationCode('');
@@ -565,7 +541,7 @@ export default function AuthSignInScreen({
       setResendCooldown(0);
       setNotice(t('authModal.notices.accountCreatedSigningIn'));
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
+      setLocalError(getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed')));
       setSubmitMode(null);
     }
   };
@@ -601,7 +577,7 @@ export default function AuthSignInScreen({
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
       setSubmitMode(null);
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
+      setLocalError(getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed')));
       setSubmitMode(null);
     }
   };
@@ -642,7 +618,7 @@ export default function AuthSignInScreen({
       transitionToSignInForm(normalizedEmail, t('authModal.notices.emailConfirmedSignIn'));
       setSubmitMode(null);
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.confirmationCodeInvalid')));
+      setLocalError(getAuthErrorMessage(authError, t('authModal.errors.confirmationCodeInvalid')));
       setSubmitMode(null);
     }
   };
@@ -663,7 +639,7 @@ export default function AuthSignInScreen({
         },
       });
     } catch (oidcError) {
-      setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
+      showSocialSignInFailure(oidcError);
       setSubmitMode(null);
     }
   };
@@ -686,7 +662,7 @@ export default function AuthSignInScreen({
         flow: 'native',
       });
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
+      setLocalError(getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed')));
       setSubmitMode(null);
     }
   };
@@ -1454,6 +1430,8 @@ export default function AuthSignInScreen({
           void handleWalletConnect(walletType);
         }}
       />
+
+      <ToastSystem toasts={toasts} onDismiss={dismissToast} />
     </View>
   );
 }
