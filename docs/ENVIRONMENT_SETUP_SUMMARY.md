@@ -8,7 +8,7 @@ This document consolidates all changes made to fix testnet auth provider regress
 
 ## Issue: Testnet Auth Provider Regression
 
-**Symptom**: testnet.airs.alternun.co showed Google + Discord social login buttons (Authentik mode) when it should show only email/password + Google (better-auth mode).
+**Symptom**: testnet.airs.alternun.co drifted into the wrong auth/UI state during deploy because the stage-aware env file was not loaded, which let the bundle fall back to localhost or legacy defaults.
 
 **Root Cause**: SST's `StaticSite` passes `EXPO_PUBLIC_STAGE=dev` to the build but **not** `STACK`/`SST_STAGE`. The build script's env resolution only checked `SST_STAGE || STACK`, missing the `EXPO_PUBLIC_STAGE` variable. Result: app was bundled with localhost URLs and no auth provider mode override.
 
@@ -45,7 +45,7 @@ This ensures `STACK` is always available when `seed_build_auth_env` calls `mobil
 EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 EXPO_PUBLIC_AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange
-EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase  # ← KEY: disables Discord button
+EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik  # ← KEY: shows Discord button
 EXPO_PUBLIC_AUTHENTIK_ISSUER=https://testnet.sso.alternun.co/application/o/alternun-mobile/
 EXPO_PUBLIC_AUTHENTIK_CLIENT_ID=alternun-mobile
 ```
@@ -115,7 +115,7 @@ Seeds SSM with all required Expo public env vars (run once per AWS account/stage
 **Parameter naming**: `/{APP_NAME}/{STAGE}/{PARAMETER_KEY}`
 
 - `/alternun-infra/dev/expo-public-supabase-url`
-- `/alternun-infra/dev/expo-public-authentik-social-login-mode` (value: `supabase`)
+- `/alternun-infra/dev/expo-public-authentik-social-login-mode` (value: `authentik`)
 - `/alternun-infra/production/expo-public-authentik-social-login-mode` (value: `authentik`)
 
 ### Integration: `apps/mobile/build.sh`
@@ -140,9 +140,9 @@ fi
 
 ### Critical (Controls Auth UI)
 
-| Parameter                                 | Dev Value  | Prod Value  | Effect                                       |
-| ----------------------------------------- | ---------- | ----------- | -------------------------------------------- |
-| `expo-public-authentik-social-login-mode` | `supabase` | `authentik` | Hides Discord (dev) vs. Shows Discord (prod) |
+| Parameter                                 | Dev Value   | Prod Value  | Effect                                             |
+| ----------------------------------------- | ----------- | ----------- | -------------------------------------------------- |
+| `expo-public-authentik-social-login-mode` | `authentik` | `authentik` | Keeps Google + Discord visible in deployed bundles |
 
 ### Common (All Stages)
 
@@ -181,7 +181,7 @@ const shouldShowAuthentikSocialButtons =
 
 **Result**:
 
-- **Testnet** (`EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase`): Shows Google + email only
+- **Testnet** (`EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`): Shows Google + Discord + email
 - **Production** (`EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`): Shows Google + Discord + email
 
 ---
@@ -202,18 +202,23 @@ const shouldShowAuthentikSocialButtons =
 
 ## Deployment & Verification
 
-### Testnet Redeployment
+### Preferred Testnet Redeployment
 
 ```bash
-APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+set -a
+source apps/mobile/.env.development
+set +a
+
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
 ```
 
-Status: ✅ **Complete** (2026-04-16 14:00 UTC)
+Status: ✅ **Complete** (2026-04-16, verified manually)
 
 ### Verify Fix
 
 1. Visit: https://testnet.airs.alternun.co
-2. Expected: Email form + Google button (no Discord)
+2. Expected: Email form + Google button + Discord button
 3. Check DevTools → Network → confirm `testnet.api.alternun.co` (not localhost)
 4. If old UI persists: Hard refresh (`Ctrl+Shift+R`)
 

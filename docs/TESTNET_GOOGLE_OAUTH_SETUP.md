@@ -125,11 +125,13 @@ These are used during GitHub Actions deployment to inject credentials into the C
 
 ---
 
-## Step 4: Update Deployment Scripts
+## Step 4: Preferred Live Testnet Deploy Flow
 
-### Update `.github/workflows/deploy-infrastructure.yml` (or your deploy workflow)
+The validated live rollout path uses the repo deploy wrappers, not raw `sst-deploy.sh`.
 
-Find the step that runs SST deploy for dev/testnet stage and add:
+### CI / GitHub Actions
+
+Update the deploy job to export the Google credentials, source the testnet mobile env, and run the two owning stacks:
 
 ```yaml
 - name: Deploy testnet infrastructure
@@ -139,11 +141,14 @@ Find the step that runs SST deploy for dev/testnet stage and add:
     GOOGLE_AUTH_CLIENT_SECRET: ${{ secrets.TESTNET_GOOGLE_AUTH_CLIENT_SECRET }}
     ALTERNUN_TESTNET_MODE: 'on'
   run: |
-    pnpm build
-    APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+    set -a
+    source apps/mobile/.env.development
+    set +a
+    pnpm infra:deploy:dev
+    pnpm infra:deploy:dashboard-dev
 ```
 
-### Verify Local Deployment
+### Local Deployment
 
 When deploying locally to testnet:
 
@@ -152,17 +157,15 @@ export GOOGLE_AUTH_CLIENT_ID="your-testnet-client-id"
 export GOOGLE_AUTH_CLIENT_SECRET="your-testnet-client-secret"
 export ALTERNUN_TESTNET_MODE=on
 
-APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+set -a
+source apps/mobile/.env.development
+set +a
+
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
 ```
 
-Or use `.env` in the `packages/infra/` directory:
-
-```bash
-# packages/infra/.env
-GOOGLE_AUTH_CLIENT_ID=your-testnet-client-id
-GOOGLE_AUTH_CLIENT_SECRET=your-testnet-client-secret
-ALTERNUN_TESTNET_MODE=on
-```
+`dev` owns the Expo bundle, `dashboard-dev` owns the API/auth runtime, and `identity-dev` owns Authentik.
 
 ---
 
@@ -176,8 +179,12 @@ export GOOGLE_AUTH_CLIENT_ID="..."
 export GOOGLE_AUTH_CLIENT_SECRET="..."
 export ALTERNUN_TESTNET_MODE=on
 
-# Deploy
-APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+set -a
+source apps/mobile/.env.development
+set +a
+
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
 ```
 
 Wait for CloudFront invalidation to complete (1–3 minutes).
@@ -232,9 +239,10 @@ If any are missing → the environment variables didn't make it through the depl
 #### 4. Test Google OAuth flow
 
 1. Open **https://testnet.airs.alternun.co/auth?next=%2F** in **incognito** browser
-2. Click **"Sign in with Google"** button (should NOT show Discord)
-3. You should be redirected to Google login
-4. After login, you should be redirected back to **testnet.airs.alternun.co** with a session cookie
+2. You should see the Better Auth login form with Google and Discord visible
+3. Click **"Sign in with Google"** or **"Continue with Discord"**
+4. You should be redirected to the corresponding provider login
+5. After login, you should be redirected back to **testnet.airs.alternun.co** with a session cookie
 
 **Check the session cookie**:
 
@@ -260,7 +268,7 @@ LIMIT 1;
 
 Should show:
 
-- `raw_app_meta_data` contains `{ "provider": "google", ... }` (not Authentik)
+- `raw_app_meta_data` contains `{ "provider": "google", ... }` or `{ "provider": "discord", ... }`
 - Email matches your Google account email
 
 #### 6. Test production is still on Authentik
@@ -286,8 +294,12 @@ If testnet breaks, you can immediately disable embedded Better Auth:
 # Remove testnet mode flag
 unset ALTERNUN_TESTNET_MODE
 
-# Redeploy (takes 2–5 minutes)
-APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+set -a
+source apps/mobile/.env.development
+set +a
+
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
 ```
 
 This reverts the API to proxy mode (requires a working external Better Auth service to be available, or will fail with its own errors). **Recommendation**: Use this only as a temporary rollback while investigating.
@@ -300,7 +312,11 @@ git push origin develop
 
 # Trigger deployment in CI
 # Or manually:
-APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+set -a
+source apps/mobile/.env.development
+set +a
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
 ```
 
 ---
@@ -328,7 +344,11 @@ APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
    export GOOGLE_AUTH_CLIENT_ID="..."
    export GOOGLE_AUTH_CLIENT_SECRET="..."
    export ALTERNUN_TESTNET_MODE=on
-   APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+   set -a
+   source apps/mobile/.env.development
+   set +a
+   pnpm infra:deploy:dev
+   pnpm infra:deploy:dashboard-dev
    ```
 
 ### Google login redirects back to `/auth` with error
@@ -364,9 +384,9 @@ APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
 - This allows both subdomains to read the same session cookie
 - **Verify**: Reload page, check DevTools Cookies, confirm domain is `.alternun.co`
 
-### Discord button still shows on testnet
+### Discord button missing on testnet
 
-**Cause**: Authentik social login mode is still set to `authentik` instead of `supabase`.
+**Cause**: Authentik social login mode is still set to `supabase` instead of `authentik`.
 
 **Fix**:
 
@@ -376,11 +396,15 @@ APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
     --function-name alternun-dev-nestjs-api \
     --query 'Environment.Variables.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE'
   ```
-- Should return `supabase` (hides Discord)
+- Should return `authentik` (shows Discord)
 - If missing, add to deployment environment:
   ```bash
-  export EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase
-  APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+  export EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
+  set -a
+  source apps/mobile/.env.development
+  set +a
+  pnpm infra:deploy:dev
+  pnpm infra:deploy:dashboard-dev
   ```
 
 ---
@@ -403,7 +427,8 @@ APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
 │  Better Auth (embedded mode)    │
 │  ├─ basePath: /auth             │
 │  ├─ baseURL: api.testnet.abc.co │
-│  ├─ Google native provider      │ ← GOOGLE_AUTH_CLIENT_ID/SECRET
+│  ├─ Google + Discord providers   │ ← GOOGLE_AUTH_CLIENT_ID/SECRET
+│  ├─ Social UI mode: authentik    │
 │  └─ Email/password              │
 └────────────────┬────────────────┘
                  │
@@ -432,7 +457,7 @@ APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
 | Stage             | Auth Provider   | Google OAuth  | Discord | Social Login Mode |
 | ----------------- | --------------- | ------------- | ------- | ----------------- |
 | **Production**    | Authentik       | Via Authentik | Yes     | `authentik`       |
-| **Testnet (dev)** | **Better Auth** | **Native**    | **No**  | `supabase`        |
+| **Testnet (dev)** | **Better Auth** | **Native**    | **Yes** | `authentik`       |
 | **Local dev**     | Better Auth     | Native        | No      | `supabase`        |
 
 ---

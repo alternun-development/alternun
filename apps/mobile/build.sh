@@ -52,10 +52,10 @@ load_env_vars() {
   if [ -n "$detected_stage" ]; then
     local stage_file=""
     case "${detected_stage}" in
-      dev|api-dev|*testnet*|*development*)
+      dev|api-dev|dashboard-dev|admin-dev|backend-dev|identity-dev|mobile|*testnet*|*development*|*preview*)
         stage_file=".env.development"
         ;;
-      prod|api-prod|production|*production*)
+      prod|api-prod|dashboard-prod|admin-prod|backend-prod|identity-prod|production|*production*)
         stage_file=".env.production"
         ;;
     esac
@@ -116,7 +116,7 @@ if [ -z "${EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE:-}" ]; then
       export EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
       ;;
     *)
-      export EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase
+      export EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
       ;;
   esac
 fi
