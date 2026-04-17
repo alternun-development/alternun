@@ -1394,7 +1394,6 @@ function MembresiaSection({
 interface PlaceCardData {
   images: ImageSourcePropType[];
   tags: string[];
-  rating: number;
   title: string;
   meta: string;
   isTopRated?: boolean;
@@ -1420,7 +1419,6 @@ const OVERLAY_HIDE_DELAY_MS = 2500;
 function PlaceCard({
   images,
   tags,
-  rating,
   title,
   meta,
   isTopRated,
@@ -1580,12 +1578,6 @@ function PlaceCard({
                     <Text style={styles.placeCardTagText}>{tag}</Text>
                   </View>
                 ))}
-              </View>
-
-              {/* Rating top-right */}
-              <View style={styles.placeCardRatingBadge} pointerEvents='none'>
-                <StarIcon size={12} color='#facc15' strokeWidth={0} fill='#facc15' />
-                <Text style={styles.placeCardRatingText}>{rating}</Text>
               </View>
 
               {/* Prev/Next arrows */}
@@ -1904,11 +1896,11 @@ function BeneficiosSection({
 
   const topRatedLabel = t('landing.beneficios.topRated');
   const atnUnit = t('landing.beneficios.atnUnit');
-  const redeemCtaLabel = t('landing.beneficios.redeemCta', undefined, 'Redeem this benefit');
+  const redeemCtaLabel = t('landing.beneficios.redeemCta', undefined, 'Start earning AIRS');
   const availableFromLabel = t(
     'landing.beneficios.availableFrom',
     undefined,
-    'Available from {{atn}} ATN'
+    'Typical rate: {{atn}}'
   );
 
   const benefits = [
@@ -1916,7 +1908,6 @@ function BeneficiosSection({
       key: 'eco',
       images: BENEFIT_IMAGES.eco,
       tags: [t('landing.beneficios.cards.eco.tag1'), t('landing.beneficios.cards.eco.tag2')],
-      rating: 4.8,
       title: t('landing.beneficios.cards.eco.title'),
       meta: t('landing.beneficios.cards.eco.meta'),
       isTopRated: true,
@@ -1932,7 +1923,6 @@ function BeneficiosSection({
         t('landing.beneficios.cards.experiencias.tag1'),
         t('landing.beneficios.cards.experiencias.tag2'),
       ],
-      rating: 4.9,
       title: t('landing.beneficios.cards.experiencias.title'),
       meta: t('landing.beneficios.cards.experiencias.meta'),
       isTopRated: false,
@@ -1948,7 +1938,6 @@ function BeneficiosSection({
         t('landing.beneficios.cards.premium.tag1'),
         t('landing.beneficios.cards.premium.tag2'),
       ],
-      rating: 4.7,
       title: t('landing.beneficios.cards.premium.title'),
       meta: t('landing.beneficios.cards.premium.meta'),
       isTopRated: false,
@@ -1961,7 +1950,6 @@ function BeneficiosSection({
       key: 'cursos',
       images: BENEFIT_IMAGES.cursos,
       tags: [t('landing.beneficios.cards.cursos.tag1'), t('landing.beneficios.cards.cursos.tag2')],
-      rating: 4.6,
       title: t('landing.beneficios.cards.cursos.title'),
       meta: t('landing.beneficios.cards.cursos.meta'),
       isTopRated: false,
@@ -2006,7 +1994,6 @@ function BeneficiosSection({
               key={benefit.key}
               images={benefit.images}
               tags={benefit.tags}
-              rating={benefit.rating}
               title={benefit.title}
               meta={benefit.meta}
               isTopRated={benefit.isTopRated}
@@ -2021,7 +2008,7 @@ function BeneficiosSection({
               accentColor={accentColor}
               isDark={isDark}
               isMobile={isMobile}
-              moreInfoLabel={t('landing.beneficios.moreInfo', undefined, 'Tap to expand')}
+              moreInfoLabel={t('landing.beneficios.moreInfo', undefined, 'More info')}
               onPress={onSignIn}
               onInfoPress={() => setOpenInfoKey(benefit.key)}
             />
@@ -2541,24 +2528,6 @@ const styles = createTypographyStyles({
   placeCardTagText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#fff',
-  },
-  placeCardRatingBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 20,
-    backgroundColor: 'rgba(15,15,30,0.6)',
-    zIndex: 3,
-  },
-  placeCardRatingText: {
-    fontSize: 11,
-    fontWeight: '700',
     color: '#fff',
   },
   paginationDotsRow: {

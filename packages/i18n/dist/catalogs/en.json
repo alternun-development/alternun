@@ -181,6 +181,7 @@
         "sectionDescriptionPart1": "For decades, we have tried to solve environmental problems with the same tools that created them. At ",
         "sectionDescriptionHighlight": "Alternun",
         "sectionDescriptionPart2": " we believe caring for and regenerating the planet should not be an economic sacrifice, but an opportunity to create shared value.",
+        "moreInfo": "More info",
         "airs": {
           "overview": "By Alternun is your positive footprint on Alternun. It is not bought; it is earned through real actions, never decreases, and determines your monthly income from the Regenerative Basic Income (RBI).",
           "subtitle": "Your Regenerative Reputation",
@@ -239,27 +240,27 @@
         "descriptionPart4": "Your membership never expires and your benefits only grow over time."
       },
       "beneficios": {
-        "atnUnit": "ATN",
+        "atnUnit": "AIRS / USD",
         "cards": {
           "eco": {
-            "tag1": "Organic",
-            "tag2": "Sustainable",
-            "description": "Organic and sustainable products verified by the Alternun ecosystem.",
-            "atn": "120",
-            "meta": "Regenerative agriculture",
-            "title": "Eco Products",
-            "cta": "Shop Now",
-            "infoBody": "Access exclusive discounts on sustainable products from our allied brands. From organic clothing to ecological cleaning products."
+            "tag1": "Verified",
+            "tag2": "Allied",
+            "description": "Earn AIRS every time you spend with allied commerce or complete validated regenerative actions.",
+            "atn": "+5",
+            "meta": "Spend and earn",
+            "title": "Allied commerce",
+            "cta": "Earn AIRS",
+            "infoBody": "Eligible purchases and validated actions typically earn 5 AIRS per USD. Rewards are credited after the transaction or action is verified."
           },
           "experiencias": {
-            "tag1": "Travel",
-            "tag2": "Adventure",
-            "description": "Discover curated trips, retreats, and experiences designed to reward positive impact.",
-            "atn": "240",
-            "meta": "Curated escapes",
-            "title": "Experiences",
-            "cta": "Explore Experiences",
-            "infoBody": "Discover curated trips, retreats, and nature experiences designed to reward positive impact. Each experience connects you with regenerative ecosystems around the world."
+            "tag1": "Projects",
+            "tag2": "Services",
+            "description": "Invest in regenerative projects or acquire verified services to accumulate AIRS on each contribution.",
+            "atn": "Variable",
+            "meta": "Regenerative projects",
+            "title": "Regenerative projects",
+            "cta": "Invest to earn",
+            "infoBody": "Contributions to validated projects earn AIRS at variable rates based on impact, traceability, and the amount committed."
           },
           "marketplace": {
             "description": "Access a marketplace of regenerative products and services.",
@@ -267,24 +268,24 @@
             "title": "Marketplace"
           },
           "premium": {
-            "tag1": "Exclusive",
-            "tag2": "Members",
-            "description": "Unlock exclusive perks, priority access, and elevated support across the ecosystem.",
-            "atn": "400",
-            "meta": "Premium access",
-            "title": "Premium",
-            "cta": "Live the Experience",
-            "infoBody": "Enjoy priority access, elevated support, and exclusive perks throughout the ecosystem. Premium membership unlocks the best Alternun has to offer, including private events and personalized guidance."
+            "tag1": "CO2",
+            "tag2": "Validated",
+            "description": "Validate footprint reductions and offsets to convert climate action into AIRS.",
+            "atn": "Bonus",
+            "meta": "CO2 footprint",
+            "title": "CO2 footprint",
+            "cta": "Offset now",
+            "infoBody": "When your footprint reduction or offset is measured and validated, AIRS can be credited as a bonus for the verified impact."
           },
           "cursos": {
-            "tag1": "Learning",
-            "tag2": "Verified",
-            "description": "Learn practical regenerative skills with courses, workshops, and verified guidance.",
-            "atn": "80",
-            "meta": "Education",
-            "title": "Courses",
-            "cta": "Start Learning",
-            "infoBody": "Learn practical regenerative skills with expert-led courses, workshops, and verified certifications. Build knowledge that translates directly into positive impact."
+            "tag1": "Card",
+            "tag2": "Boost",
+            "description": "Use the AIRS card to track verified activity and accelerate accumulation across the ecosystem.",
+            "atn": "Boost",
+            "meta": "AIRS card",
+            "title": "AIRS card",
+            "cta": "Get the card",
+            "infoBody": "The AIRS card connects your spend and impact to your score so qualified activity can earn AIRS faster."
           },
           "services": {
             "description": "Verified services that contribute to positive impact.",
@@ -292,12 +293,13 @@
             "title": "Services"
           }
         },
-        "cta": "Explore marketplace",
-        "sectionTitle": "Benefits",
-        "subtitle": "Discover everything you can get with Alternun",
-        "topRated": "Top rated",
-        "redeemCta": "Redeem this benefit",
-        "availableFrom": "Available from {{atn}} ATN"
+        "cta": "See earning paths",
+        "sectionTitle": "How to accumulate AIRS",
+        "subtitle": "Earn AIRS through allied commerce, regenerative projects, verified services, and carbon-footprint actions.",
+        "topRated": "Verified",
+        "moreInfo": "More info",
+        "redeemCta": "Start earning AIRS",
+        "availableFrom": "Typical rate: {{atn}}"
       },
       "video": {
         "loadingIntro": "Loading Airs Intro Video",
