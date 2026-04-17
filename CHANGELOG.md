@@ -1,3 +1,11 @@
+## [1.0.144](https://github.com/alternun-development/alternun/compare/v1.0.143...v1.0.144) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): landing-backup, landing-optimized, landing, AirsIntroExperience
+
+## [1.0.144](https://github.com/alternun-development/alternun/compare/v1.0.143...v1.0.144) (2026-04-17)
+
 ## [1.0.143](https://github.com/alternun-development/alternun/compare/v1.0.142...v1.0.143) (2026-04-17)
 
 ### Bug Fixes
