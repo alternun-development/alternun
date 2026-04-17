@@ -1,3 +1,11 @@
+## [1.0.136](https://github.com/alternun-development/alternun/compare/v1.0.135...v1.0.136) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): AuthSignInScreen, infra.config, sst-deploy, redirect-aliases.test
+
+## [1.0.136](https://github.com/alternun-development/alternun/compare/v1.0.135...v1.0.136) (2026-04-17)
+
 ## [1.0.135](https://github.com/alternun-development/alternun/compare/v1.0.134...v1.0.135) (2026-04-17)
 
 ### Bug Fixes
