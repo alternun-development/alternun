@@ -28,6 +28,10 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
     /unset\s+\\[\s\S]*?AUTH_EXCHANGE_URL[\s\S]*?EXPO_PUBLIC_AUTH_EXCHANGE_URL/
   );
   assert.match(helperSource, /resolve_auth_execution_provider\(\)/);
+  assert.match(helperSource, /prime_ssm_param_cache\(\)/);
+  assert.match(helperSource, /aws ssm get-parameters/);
+  assert.match(helperSource, /CACHE_FILE=/);
+  assert.match(helperSource, /write_cached_env\(\)/);
   assert.match(helperSource, /export AUTH_EXECUTION_PROVIDER/);
   assert.match(helperSource, /export EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER/);
   assert.match(sstDeploySource, /source "\$SCRIPT_DIR\/resolve-ssm-env\.sh"/);

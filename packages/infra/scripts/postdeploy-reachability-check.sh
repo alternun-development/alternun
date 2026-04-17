@@ -16,6 +16,9 @@ is_truthy() {
   esac
 }
 
+declare -a REACHABILITY_CHECK_PIDS=()
+declare -A REACHABILITY_CHECK_LOGS=()
+
 normalize_url() {
   local value=$1
   if [[ "$value" =~ ^https?:// ]]; then
@@ -118,20 +121,40 @@ poll_redirect_target() {
   return 1
 }
 
-main() {
-  local stage_domain stage_url
-  stage_domain=$(resolve_stage_domain)
-  stage_url=$(normalize_url "$stage_domain")
+launch_reachability_check() {
+  local label=$1
+  shift
+  local log_file pid
 
-  echo "Post-deploy reachability check: stage=${STAGE} primary=${stage_url}"
-  poll_reachable "primary:${stage_domain}" "$stage_url"
+  log_file=$(mktemp)
+  echo "Queued reachability check: ${label}" >&2
+
+  (
+    "$@"
+  ) >"$log_file" 2>&1 &
+  pid=$!
+
+  REACHABILITY_CHECK_PIDS+=("$pid")
+  REACHABILITY_CHECK_LOGS["$pid"]="$log_file"
+}
+
+run_reachability_checks_in_parallel() {
+  local stage_domain=$1
+  local stage_url=$2
+  local failed=0
+  local pid log_file
+
+  REACHABILITY_CHECK_PIDS=()
+  REACHABILITY_CHECK_LOGS=()
+
+  launch_reachability_check "primary:${stage_domain}" poll_reachable "primary:${stage_domain}" "$stage_url"
 
   if [ "$STAGE" = "dev" ]; then
     if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}"; then
       local airs_source
       airs_source=${INFRA_REDIRECT_AIRS_TO_DEV_SOURCE:-${DOMAIN_PRODUCTION:-}}
       if [ -n "$airs_source" ] && [ "$airs_source" != "$stage_domain" ]; then
-        poll_redirect_target "airs->testnet" "$(normalize_url "$airs_source")" "$stage_domain"
+        launch_reachability_check "airs->testnet" poll_redirect_target "airs->testnet" "$(normalize_url "$airs_source")" "$stage_domain"
       fi
     fi
 
@@ -152,7 +175,7 @@ main() {
         for dev_source in "${dev_sources[@]}"; do
           dev_source=$(printf '%s' "$dev_source" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's#^https\?://##' -e 's#/*$##')
           if [ -n "$dev_source" ] && [ "$dev_source" != "$stage_domain" ]; then
-            poll_redirect_target "dev->testnet" "$(normalize_url "$dev_source")" "$stage_domain"
+            launch_reachability_check "dev->testnet:${dev_source}" poll_redirect_target "dev->testnet" "$(normalize_url "$dev_source")" "$stage_domain"
           fi
         done
       fi
@@ -164,9 +187,35 @@ main() {
       root_target=${INFRA_REDIRECT_ROOT_TARGET:-}
       if [ -n "$root_source" ] && [ -n "$root_target" ]; then
         root_target_host=$(extract_host "$(normalize_url "$root_target")")
-        poll_redirect_target "root->target" "$(normalize_url "$root_source")" "$root_target_host"
+        launch_reachability_check "root->target" poll_redirect_target "root->target" "$(normalize_url "$root_source")" "$root_target_host"
       fi
     fi
+  fi
+
+  if [ "${#REACHABILITY_CHECK_PIDS[@]}" -eq 0 ]; then
+    return 0
+  fi
+
+  for pid in "${REACHABILITY_CHECK_PIDS[@]}"; do
+    log_file=${REACHABILITY_CHECK_LOGS[$pid]-}
+    if ! wait "$pid"; then
+      failed=1
+    fi
+    cat "$log_file"
+    rm -f "$log_file"
+  done
+
+  return "$failed"
+}
+
+main() {
+  local stage_domain stage_url
+  stage_domain=$(resolve_stage_domain)
+  stage_url=$(normalize_url "$stage_domain")
+
+  echo "Post-deploy reachability check: stage=${STAGE} primary=${stage_url}"
+  if ! run_reachability_checks_in_parallel "$stage_domain" "$stage_url"; then
+    return 1
   fi
 
   echo "Post-deploy reachability checks passed for stage ${STAGE}."
