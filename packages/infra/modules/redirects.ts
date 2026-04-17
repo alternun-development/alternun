@@ -95,7 +95,8 @@ function appendAlias(opts: pulumi.CustomResourceOptions, aliasName: string): voi
 function buildDomainConfig(
   domainName: string,
   certificateArn?: pulumi.Input<string>,
-  redirects?: string[]
+  redirects?: string[],
+  dns?: unknown
 ): RouterDomainConfig {
   const cleanRedirects = (redirects ?? [])
     .map((value) => sanitizeDomain(value))
@@ -106,7 +107,12 @@ function buildDomainConfig(
     return sanitizeDomain(domainName);
   }
 
-  const domainConfig: { name: string; cert?: pulumi.Input<string>; redirects?: string[] } = {
+  const domainConfig: {
+    name: string;
+    cert?: pulumi.Input<string>;
+    redirects?: string[];
+    dns?: unknown;
+  } = {
     name: sanitizeDomain(domainName),
   };
 
@@ -116,6 +122,10 @@ function buildDomainConfig(
 
   if (cleanRedirects.length > 0) {
     domainConfig.redirects = cleanRedirects;
+  }
+
+  if (dns) {
+    domainConfig.dns = dns;
   }
 
   return domainConfig;
@@ -250,6 +260,7 @@ export function createExternalDomainRedirect(args: ExternalDomainRedirectArgs): 
   const targetDomain = sanitizeDomain(args.targetDomain);
   const targetUrl = `https://${targetDomain}`;
   const routerAliases = buildAliases(args.aliases);
+  const redirectDns = sst.aws.dns({ override: true });
   const legacyId = args.id.replace('-redir-', '-domain-redirect-');
   const legacyCdnName = `${legacyId}Cdn`;
   const legacyDistributionName = `${legacyCdnName}Distribution`;
@@ -257,7 +268,7 @@ export function createExternalDomainRedirect(args: ExternalDomainRedirectArgs): 
   new sst.aws.Router(
     args.id,
     {
-      domain: buildDomainConfig(sourceDomain, args.certificateArn, args.redirects),
+      domain: buildDomainConfig(sourceDomain, args.certificateArn, args.redirects, redirectDns),
       routes: {
         '/*': {
           url: targetUrl,
