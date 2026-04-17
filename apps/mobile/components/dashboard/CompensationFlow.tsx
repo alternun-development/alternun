@@ -311,6 +311,7 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 15,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   cardSubtitle: {
     color: 'rgba(232,232,255,0.45)',

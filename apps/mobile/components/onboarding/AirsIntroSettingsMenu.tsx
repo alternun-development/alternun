@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Languages, Moon, Sun } from 'lucide-react-native';
+import { Languages, Moon, Settings as SettingsIcon, Sun } from 'lucide-react-native';
 
 import { getLocaleLabel } from '@alternun/i18n';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -14,10 +14,12 @@ type MenuPalette = {
 
 interface AirsIntroSettingsMenuProps {
   palette: MenuPalette;
+  onOpenSettings?: () => void;
 }
 
 export default function AirsIntroSettingsMenu({
   palette,
+  onOpenSettings,
 }: AirsIntroSettingsMenuProps): React.ReactElement {
   const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
@@ -54,6 +56,19 @@ export default function AirsIntroSettingsMenu({
           <Text style={[styles.menuValue, { color: palette.accent }]}>{languageLabel}</Text>
         </View>
       </TouchableOpacity>
+
+      {onOpenSettings ? (
+        <TouchableOpacity
+          style={[styles.menuItem, { backgroundColor: palette.mutedButtonBg }]}
+          onPress={onOpenSettings}
+          activeOpacity={0.82}
+        >
+          <SettingsIcon size={14} color={palette.textPrimary} />
+          <Text style={[styles.menuText, { color: palette.textPrimary, flex: 1 }]}>
+            {t('navigation.moreSettings')}
+          </Text>
+        </TouchableOpacity>
+      ) : null}
     </>
   );
 }

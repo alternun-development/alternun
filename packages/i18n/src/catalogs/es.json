@@ -158,12 +158,12 @@
         "scrollToInteract": "Desplazate para interactuar"
       },
       "info": {
-        "scoreLine": "Puntaje de impacto y reputacion de Alternun.",
+        "scoreLine": "Alternun Impact & Reputation Score",
         "summaryLine": "Una sola superficie para impacto verificado, ciclo de compensacion y modulos vinculados a la wallet."
       },
       "media": {
-        "subtitle": "El programa de lealtad definitivo para quienes protegen el planeta.",
-        "title": "Puntaje de impacto y reputacion de Alternun"
+        "subtitle": "El programa de lealtad definitivo para quienes como tu protegen el planeta.",
+        "title": "Alternun Impact & Reputation Score"
       },
       "nav": {
         "benefits": "Beneficios",
@@ -223,6 +223,13 @@
             "title": "Canjea y crece"
           }
         }
+      },
+      "membresia": {
+        "sectionTitle": "Membresía vitalicia desde el Día 1",
+        "descriptionPart1": "No necesitas pagar cuotas mensuales ni renovaciones.",
+        "descriptionPart2Bold": "Al compensar tu primera huella, eres miembro vitalicio.",
+        "descriptionPart3": "Desde ese momento, empiezas a acumular Airs y a recibir tu RBI mensual.",
+        "descriptionPart4": "Tu membresía nunca expira y tus beneficios solo crecen con el tiempo."
       },
       "beneficios": {
         "atnUnit": "ATN",

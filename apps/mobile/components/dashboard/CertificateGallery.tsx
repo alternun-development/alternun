@@ -160,6 +160,7 @@ const styles = createTypographyStyles({
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: 0.02,
+    fontFamily: 'Sculpin-Bold',
   },
   sectionSubtitle: {
     color: 'rgba(232,232,255,0.4)',
@@ -244,6 +245,7 @@ const styles = createTypographyStyles({
     fontWeight: '600',
     marginBottom: 8,
     lineHeight: 18,
+    fontFamily: 'Sculpin-Bold',
   },
   certImpact: {
     flexDirection: 'row',
@@ -307,6 +309,7 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 17,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   certDetailCard: {
     backgroundColor: 'rgba(28,203,161,0.05)',
@@ -357,6 +360,7 @@ const styles = createTypographyStyles({
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 6,
+    fontFamily: 'Sculpin-Bold',
   },
   certDetailImpact: {
     flexDirection: 'row',

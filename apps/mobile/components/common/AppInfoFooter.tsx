@@ -28,7 +28,6 @@ import Animated, {
 import { ChangelogDrawer } from '@alternun/ui';
 import SupportButton from './SupportButton';
 import { createTypographyStyles } from '../theme/typography';
-import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import {
   resolvePrimaryLinkPressHandler,
@@ -36,9 +35,10 @@ import {
 } from './AppInfoFooter.links';
 import ParticleBubbles from '../dashboard/ParticleBubbles';
 import {
-  AIRS_LOGOTIPO_DARK,
-  AIRS_LOGOTIPO_LIGHT,
-  ALTERNUN_POWERED_BY_LOGO,
+  AIRS_LOGO_DARK,
+  AIRS_LOGO_DARK_2X,
+  AIRS_LOGO_LIGHT,
+  AIRS_LOGO_LIGHT_2X,
   FooterCopyright,
   FooterTextLink,
   FooterTopFade,
@@ -84,7 +84,13 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
 
   const isMobile = width < 720;
   const isWide = width >= 1120;
-  const wordmarkSource = isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK;
+  const wordmarkSource = isWide
+    ? isDark
+      ? AIRS_LOGO_LIGHT_2X
+      : AIRS_LOGO_DARK_2X
+    : isDark
+    ? AIRS_LOGO_LIGHT
+    : AIRS_LOGO_DARK;
   const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
 
   // Floating orb animations
@@ -157,7 +163,6 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
 
   const shellPadding = isWide ? 8 : isMobile ? 6 : 9;
   const shellRevealHeight = isWide ? 18 : isMobile ? 12 : 14;
-  const brandMarkSize = isWide ? 34 : isMobile ? 26 : 30;
   const wordmarkWidth = isWide ? 84 : isMobile ? 64 : 76;
   const wordmarkHeight = isWide ? 28 : isMobile ? 20 : 24;
 
@@ -219,21 +224,6 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
                   <ExpoImage
                     source={wordmarkSource}
                     style={{ width: wordmarkWidth, height: wordmarkHeight }}
-                    contentFit='contain'
-                  />
-                  <AirsBrandMark
-                    size={brandMarkSize}
-                    fillColor={palette.accent}
-                    cutoutColor={palette.markCutout}
-                  />
-                </View>
-                <View style={styles.bylineRow}>
-                  <Text style={[styles.bylineText, { color: palette.accent }]}>
-                    {t('labels.by')}
-                  </Text>
-                  <ExpoImage
-                    source={ALTERNUN_POWERED_BY_LOGO}
-                    style={styles.bylineLogo}
                     contentFit='contain'
                   />
                 </View>
