@@ -1,3 +1,11 @@
+## [1.0.142](https://github.com/alternun-development/alternun/compare/v1.0.141...v1.0.142) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra,repo): app, landing-optimized, HeroVideoNative, sst-deploy
+
+## [1.0.142](https://github.com/alternun-development/alternun/compare/v1.0.141...v1.0.142) (2026-04-17)
+
 ## [1.0.141](https://github.com/alternun-development/alternun/compare/v1.0.140...v1.0.141) (2026-04-17)
 
 ### Bug Fixes
