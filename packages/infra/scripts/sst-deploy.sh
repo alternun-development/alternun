@@ -6,12 +6,31 @@ INFRA_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_load-infra-env.sh"
 load_infra_env
-# shellcheck source=/dev/null
-source "$SCRIPT_DIR/_pipeline-safety.sh"
 
 STACK=${STACK:-${1:-${SST_STAGE:-production}}}
 export STACK
 export SST_STAGE="${SST_STAGE:-$STACK}"
+
+# CodeBuild phases do not preserve exports from pre_build, so reload the auth env here
+# before any deploy-time validation or stack synthesis runs.
+if [ -f "$SCRIPT_DIR/resolve-ssm-env.sh" ]; then
+  # shellcheck source=/dev/null
+  source "$SCRIPT_DIR/resolve-ssm-env.sh"
+else
+  echo "ERROR: Missing $SCRIPT_DIR/resolve-ssm-env.sh" >&2
+  exit 1
+fi
+
+if [ -f "$SCRIPT_DIR/resolve-secrets-manager-env.sh" ]; then
+  # shellcheck source=/dev/null
+  source "$SCRIPT_DIR/resolve-secrets-manager-env.sh"
+else
+  echo "ERROR: Missing $SCRIPT_DIR/resolve-secrets-manager-env.sh" >&2
+  exit 1
+fi
+
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/_pipeline-safety.sh"
 
 stage_normalized=$(echo "$STACK" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 is_identity_stage=false

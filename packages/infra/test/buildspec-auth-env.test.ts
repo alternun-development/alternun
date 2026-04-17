@@ -5,10 +5,12 @@ import test from 'node:test';
 
 const buildspecPath = path.resolve('buildspec.yml');
 const resolveSsmEnvPath = path.resolve('scripts/resolve-ssm-env.sh');
+const sstDeployPath = path.resolve('scripts/sst-deploy.sh');
 
 void test('buildspec sources the canonical SSM auth env helper and clears stale auth vars in CI', () => {
   const source = fs.readFileSync(buildspecPath, 'utf8');
   const helperSource = fs.readFileSync(resolveSsmEnvPath, 'utf8');
+  const sstDeploySource = fs.readFileSync(sstDeployPath, 'utf8');
 
   assert.match(source, /source "\$\{INFRA_PATH\}\/scripts\/resolve-ssm-env\.sh"/);
   assert.match(source, /source "\$\{INFRA_PATH\}\/scripts\/resolve-secrets-manager-env\.sh"/);
@@ -28,4 +30,6 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
   assert.match(helperSource, /resolve_auth_execution_provider\(\)/);
   assert.match(helperSource, /export AUTH_EXECUTION_PROVIDER/);
   assert.match(helperSource, /export EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER/);
+  assert.match(sstDeploySource, /source "\$SCRIPT_DIR\/resolve-ssm-env\.sh"/);
+  assert.match(sstDeploySource, /source "\$SCRIPT_DIR\/resolve-secrets-manager-env\.sh"/);
 });
