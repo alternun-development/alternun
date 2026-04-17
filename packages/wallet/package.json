@@ -1,0 +1,43 @@
+{
+  "name": "@alternun/wallet",
+  "version": "1.0.127",
+  "description": "Non-custodial HD wallet utilities for Alternun mobile",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "react-native": "src/index.ts",
+  "source": "src/index.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "react-native": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "test": "pnpm run build && node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.98.0",
+    "bip32": "^4.0.0",
+    "bip39": "^3.1.0",
+    "bitcoinjs-lib": "^6.1.5",
+    "bs58": "^5.0.0",
+    "ed25519-hd-key": "^1.4.0",
+    "tiny-secp256k1": "^2.2.3",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.1.3",
+    "typescript": "~5.9.2"
+  }
+}
