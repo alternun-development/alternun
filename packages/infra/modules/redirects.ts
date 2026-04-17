@@ -5,7 +5,39 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
 
-type DomainConfig = string | { name: string; cert?: pulumi.Input<string>; redirects?: string[] };
+type RouterDomainConfig =
+  | string
+  | {
+      name: string;
+      cert?: pulumi.Input<string>;
+      redirects?: string[];
+      aliases?: string[];
+      dns?: unknown;
+    };
+
+type StageDomainConfig =
+  | string
+  | {
+      name: string;
+      cert?: string;
+      redirects?: string[];
+      aliases?: string[];
+      dns?: unknown;
+    };
+
+interface RedirectDistributionArgs {
+  transform?: unknown;
+}
+
+interface RedirectCdnArgs {
+  transform?: {
+    distribution?: (
+      args: RedirectDistributionArgs,
+      opts: pulumi.CustomResourceOptions,
+      name: string
+    ) => undefined;
+  };
+}
 
 export interface DnsValidatedCertificateArgs {
   id: string;
@@ -47,11 +79,24 @@ function buildAliases(aliases?: string[], suffix = ''): pulumi.Alias[] | undefin
   }));
 }
 
+function appendAlias(opts: pulumi.CustomResourceOptions, aliasName: string): void {
+  const aliases = Array.isArray(opts.aliases) ? (opts.aliases as Array<string | pulumi.Alias>) : [];
+  if (
+    aliases.some(
+      (alias) => alias === aliasName || (typeof alias !== 'string' && alias.name === aliasName)
+    )
+  ) {
+    return;
+  }
+
+  opts.aliases = [...aliases, { name: aliasName }];
+}
+
 function buildDomainConfig(
   domainName: string,
   certificateArn?: pulumi.Input<string>,
   redirects?: string[]
-): DomainConfig {
+): RouterDomainConfig {
   const cleanRedirects = (redirects ?? [])
     .map((value) => sanitizeDomain(value))
     .filter(Boolean)
@@ -61,7 +106,7 @@ function buildDomainConfig(
     return sanitizeDomain(domainName);
   }
 
-  const domainConfig: { name: string; cert?: string; redirects?: string[] } = {
+  const domainConfig: { name: string; cert?: pulumi.Input<string>; redirects?: string[] } = {
     name: sanitizeDomain(domainName),
   };
 
@@ -157,14 +202,47 @@ return {
 };`;
 }
 
-export function buildStageDomainConfig(args: StageDomainRedirectArgs): DomainConfig {
+export function buildStageDomainConfig(args: StageDomainRedirectArgs): StageDomainConfig {
   const stageDomain = sanitizeDomain(args.stageDomain);
   const productionDomain = sanitizeDomain(args.productionDomain);
 
   const redirects =
     args.stage === 'dev' && args.enableProductionToStageRedirect ? [productionDomain] : undefined;
 
-  return buildDomainConfig(stageDomain, args.stageCertificateArn, redirects);
+  if (!args.stageCertificateArn && !redirects?.length) {
+    return stageDomain;
+  }
+
+  const domainConfig: { name: string; cert?: string; redirects?: string[] } = {
+    name: stageDomain,
+  };
+
+  if (args.stageCertificateArn) {
+    domainConfig.cert = args.stageCertificateArn;
+  }
+
+  if (redirects?.length) {
+    domainConfig.redirects = redirects;
+  }
+
+  return domainConfig;
+}
+
+function buildRedirectCdnTransform(
+  legacyCdnName: string,
+  legacyDistributionName: string
+): (args: RedirectCdnArgs, opts: pulumi.CustomResourceOptions, name: string) => undefined {
+  return (cdnArgs: RedirectCdnArgs, cdnOpts: pulumi.CustomResourceOptions): undefined => {
+    appendAlias(cdnOpts, legacyCdnName);
+    cdnArgs.transform = {
+      ...(cdnArgs.transform ?? {}),
+      distribution: (_distributionArgs: RedirectDistributionArgs, distributionOpts): undefined => {
+        appendAlias(distributionOpts, legacyDistributionName);
+        return undefined;
+      },
+    };
+    return undefined;
+  };
 }
 
 export function createExternalDomainRedirect(args: ExternalDomainRedirectArgs): void {
@@ -172,6 +250,9 @@ export function createExternalDomainRedirect(args: ExternalDomainRedirectArgs): 
   const targetDomain = sanitizeDomain(args.targetDomain);
   const targetUrl = `https://${targetDomain}`;
   const routerAliases = buildAliases(args.aliases);
+  const legacyId = args.id.replace('-redir-', '-domain-redirect-');
+  const legacyCdnName = `${legacyId}Cdn`;
+  const legacyDistributionName = `${legacyCdnName}Distribution`;
 
   new sst.aws.Router(
     args.id,
@@ -186,6 +267,9 @@ export function createExternalDomainRedirect(args: ExternalDomainRedirectArgs): 
             },
           },
         },
+      },
+      transform: {
+        cdn: buildRedirectCdnTransform(legacyCdnName, legacyDistributionName),
       },
     },
     routerAliases ? { aliases: routerAliases } : undefined
