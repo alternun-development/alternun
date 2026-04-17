@@ -12,8 +12,7 @@ The mobile app uses a **stage-aware environment system** that automatically load
 
 ```
 .env                    # Shared defaults + localhost fallback for local dev
-.env.development        # Local development overrides (optional)
-.env.testnet            # Testnet deployment stage overrides
+.env.development        # Testnet deployment stage overrides
 .env.production          # Production deployment stage overrides
 .env.local              # Personal developer overrides (highest priority)
 ```
@@ -44,28 +43,24 @@ EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
 ...
 ```
 
-### `.env.development` (Local Development)
+### `.env` (Local Development Base)
 
-Located: `apps/mobile/.env.development` (locally created, gitignored)
+Located: `apps/mobile/.env` (tracked in repo)
 
-Optional file for local development with explicit localhost configuration:
+Shared defaults for local development:
 
 - Better-auth URLs pointing to `http://localhost:8082`
 - Auth exchange URLs for local better-auth service
-- Testnet Authentik OIDC configuration
+- Supabase fallback URLs and shared web3 settings
+- Auth execution provider preference for local web dev
 
 Used when developing locally without setting `STACK` variable.
 
-**When to use:**
+### `.env.development` (Testnet Deployment)
 
-- Create this file if you want explicit control over local dev environment
-- Automatically loaded by `build.sh` when running locally
+Located: `apps/mobile/.env.development` (locally created, gitignored)
 
-### `.env.testnet` (Testnet Deployment)
-
-Located: `apps/mobile/.env.testnet` (locally created, gitignored)
-
-**Stage trigger:** `STACK=dev` or `STACK=*testnet*`
+**Stage trigger:** `STACK=dev`, `STACK=dashboard-dev`, or any `*testnet*`/`*development*` stage marker
 
 Contains testnet-specific overrides:
 
@@ -74,6 +69,7 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange
 EXPO_PUBLIC_AUTHENTIK_ISSUER=https://testnet.sso.alternun.co/...
+EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
 EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=60000  # 60 seconds for testnet
 ```
 
@@ -82,6 +78,7 @@ EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=60000  # 60 seconds for testnet
 - **Auth provider:** better-auth (local embedded auth service)
 - **API endpoint:** `https://testnet.api.alternun.co`
 - **Authentik:** testnet SSO at `testnet.sso.alternun.co`
+- **Discord:** visible through Authentik social login
 - **Update check:** 60-second interval (frequent for testing)
 
 ### `.env.production` (Production Deployment)
@@ -97,6 +94,7 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
 EXPO_PUBLIC_BETTER_AUTH_URL=https://api.alternun.co/auth
 AUTH_EXCHANGE_URL=https://api.alternun.co/auth/exchange
 EXPO_PUBLIC_AUTHENTIK_ISSUER=https://sso.alternun.co/...
+EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
 EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=300000  # 300 seconds (5 min)
 ```
 
@@ -105,6 +103,7 @@ EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=300000  # 300 seconds (5 min)
 - **Auth provider:** supabase (external auth service)
 - **API endpoint:** `https://api.alternun.co` (production)
 - **Authentik:** production SSO at `sso.alternun.co`
+- **Discord:** visible through Authentik social login
 - **Update check:** 300-second interval (less frequent for stability)
 
 ### `.env.local` (Personal Developer Overrides)
@@ -134,18 +133,18 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
 The build system loads environment files in this order, with **later files overriding earlier ones**:
 
 1. **`.env`** (shared defaults) — loaded first
-2. **`.env.testnet` or `.env.production`** (stage-specific) — overrides `.env` when `STACK` is set
+2. **`.env.development` or `.env.production`** (stage-specific) — overrides `.env` when `STACK` is set
 3. **`.env.local`** (personal) — highest priority, overrides everything
 
 ### Example
 
-For testnet deployment with `STACK=dev`:
+For testnet deployment with `STACK=dev` or `STACK=dashboard-dev`:
 
 ```bash
 # From .env
 EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
 
-# From .env.testnet (overrides)
+# From .env.development (overrides)
 EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 
 # Final value in app: https://testnet.api.alternun.co/auth
@@ -167,14 +166,14 @@ The process happens in `apps/mobile/build.sh`:
    b) seed_build_auth_env()
       └─> Calls: node ./scripts/mobile-env.cjs build-auth-env
           ├─> Loads .env
-          ├─> Loads .env.testnet/.env.production (if STACK set)
+          ├─> Loads .env.development/.env.production (if STACK set)
           ├─> Loads .env.local
           └─> Exports resolved auth environment variables
 
    c) load_env_vars()
       └─> Loads .env files into shell environment
           ├─> load_env_file .env
-          ├─> load_env_file .env.testnet/.env.production (with override=true)
+          ├─> load_env_file .env.development/.env.production (with override=true)
           └─> load_env_file .env.local (with override=true)
 
    d) pnpm --filter @alternun/auth build
@@ -236,7 +235,7 @@ load_env_file(file_path, allow_override)
 - Won't override variables already set by SST or shell
 - Ensures deployment-provided values take precedence
 
-**Allow override = true** (for `.env.testnet`, `.env.local`):
+**Allow override = true** (for `.env.development`, `.env.local`):
 
 - Can override `.env` values
 - Allows stage-specific and personal customizations
@@ -269,7 +268,7 @@ STACK=dev pnpm run infra:deploy:dev
 
 1. `build.sh` sets `STACK=dev`
 2. `.env` loads → localhost URLs
-3. `.env.testnet` loads → **overrides** with `https://testnet.api.alternun.co`
+3. `.env.development` loads → **overrides** with `https://testnet.api.alternun.co`
 4. App uses testnet API
 5. Deployed to `https://testnet.airs.alternun.co`
 
@@ -314,7 +313,7 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
 | `EXPO_PUBLIC_AUTH_EXCHANGE_URL`           | `https://testnet.api.alternun.co/auth/exchange` | `https://api.alternun.co/auth/exchange` | Token exchange endpoint      |
 | `EXPO_PUBLIC_AUTHENTIK_ISSUER`            | `https://testnet.sso.alternun.co/...`           | `https://sso.alternun.co/...`           | Authentik OIDC issuer        |
 | `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID`         | `alternun-mobile`                               | `alternun-mobile`                       | OAuth client ID              |
-| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` | `supabase`                                      | `supabase`                              | Social login provider        |
+| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` | `authentik`                                     | `authentik`                             | Social login provider        |
 
 ### Backend
 
@@ -337,7 +336,7 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
 
 1. Clone repo
 2. Run `pnpm install`
-3. (Optional) Create `.env.development` if you want explicit local config
+3. (Optional) Create `.env.local` if you want explicit local config
 
 ### Local Development
 
@@ -364,7 +363,7 @@ STACK=dev pnpm run build:web
 
 **For all stages:** Edit `.env`
 
-**For testnet only:** Edit `.env.testnet`
+**For testnet only:** Edit `.env.development`
 
 **For production only:** Edit `.env.production`
 
@@ -380,8 +379,8 @@ STACK=dev pnpm run build:web
 
 **Fix:**
 
-1. Verify `.env.testnet` exists and contains correct URLs
-2. Verify `STACK=dev` is set during deployment
+1. Verify `.env.development` exists and contains correct URLs
+2. Verify `STACK=dev` or `STACK=dashboard-dev` is set during deployment
 3. Hard refresh browser (Ctrl+Shift+R) to clear cache
 4. Check DevTools Network tab to confirm new request URL
 
@@ -393,9 +392,10 @@ STACK=dev pnpm run build:web
 
 **Fix:**
 
-1. Check `.env.testnet` has `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth`
+1. Check `.env.development` has `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth`
 2. Check `.env.production` has `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase`
-3. Redeploy after fixing
+3. Check `.env.development` has `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` if you expect Discord on testnet
+4. Redeploy after fixing
 
 ### Release Updates Not Working
 

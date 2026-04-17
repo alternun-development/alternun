@@ -7,7 +7,7 @@
 
 ## Summary
 
-Fixed testnet auth provider showing wrong UI (Authentik Google/Discord instead of better-auth email/password) caused by **stage-aware environment file not loading during build**.
+Fixed the testnet auth provider regression caused by **stage-aware environment files not loading during build**. The validated live rollout path is `pnpm infra:deploy:dev` plus `pnpm infra:deploy:dashboard-dev` after loading `apps/mobile/.env.development`, which keeps Better Auth on the API side and preserves the expected Google + Discord social-login visibility on the testnet bundle.
 
 ## Root Cause
 
@@ -29,7 +29,7 @@ Derive `STACK` from any available indicator before `seed_build_auth_env`:
 ### Fix 2: Consolidated Config (.env.development)
 
 - Renamed `.env.testnet` → `.env.development` (single dev stage file)
-- Contains: testnet URLs, `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase`
+- Contains: testnet URLs, `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`
 - Deleted redundant `.env.testnet`
 
 ### Fix 3: Mobile Env Detection (mobile-env.cjs)
@@ -118,9 +118,11 @@ if [ -n "$detected_stage" ]; then
    - Bootstrapped SSM parameters for dev & production
    - Bundle updated but auth URLs missing `/auth` suffix
 
-3. **Third Deploy** (2026-04-16): ✅ Completed
-   - Applied AppAuthProvider fix (single-source-of-truth URL pattern)
-   - All auth URLs now include `/auth` suffix
+3. **Working Redeploy** (2026-04-16): ✅ Completed
+   - Sourced `apps/mobile/.env.development` into the shell
+   - Ran `pnpm infra:deploy:dev`
+   - Ran `pnpm infra:deploy:dashboard-dev`
+   - Verified `POST /auth/sign-in/social` returns `200` for both Google and Discord
    - Testnet now serves Better Auth on `/auth/*`
    - Follow-up validation work is tracked in issue `#100`
 
@@ -132,10 +134,10 @@ Visit: **https://testnet.airs.alternun.co**
 
 ### Should see:
 
-✅ Email/password login form (better-auth)  
-✅ "Continue with Google" button  
-❌ NO "Continue with Discord" button  
-❌ NO Authentik social login buttons
+✅ Email/password login form (better-auth)
+✅ "Continue with Google" button
+✅ "Continue with Discord" button
+✅ Authentik social login buttons visible in the testnet bundle
 
 ### Browser DevTools → Network:
 
@@ -155,7 +157,7 @@ Hard refresh: `Ctrl+Shift+R` (clear CloudFront cache)
 ```
 EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
-EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase  # ← CRITICAL: disables Discord
+EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik  # ← CRITICAL: keeps Discord visible
 ```
 
 ### Auth Selection Logic (AuthSignInScreen.tsx)
@@ -166,7 +168,36 @@ shouldShowAuthentikSocialButtons =
   (authentikSocialLoginMode === 'authentik' || isAuthentikConfigured());
 ```
 
-Result: With `mode=supabase`, Discord button is **hidden**. ✓
+Result: With `mode=authentik`, Google + Discord + email are visible on testnet. ✓
+
+---
+
+## Preferred Testnet Deploy Flow
+
+When you need to reproduce the current working rollout locally:
+
+```bash
+set -a
+source apps/mobile/.env.development
+set +a
+
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
+```
+
+Smoke test:
+
+```bash
+curl -k -i -X POST -H 'content-type: application/json' \
+  -d '{"provider":"google"}' \
+  https://testnet.api.alternun.co/auth/sign-in/social
+
+curl -k -i -X POST -H 'content-type: application/json' \
+  -d '{"provider":"discord"}' \
+  https://testnet.api.alternun.co/auth/sign-in/social
+```
+
+`release:patch` is still the versioned release path, but this manual testnet sequence is the preferred path for auth/UI rollout work.
 
 ---
 
@@ -188,10 +219,12 @@ This seeds AWS Systems Manager with Expo public env vars (safe, encrypted, no se
 After deployment completes:
 
 - [ ] Visit https://testnet.airs.alternun.co
-- [ ] See email/password form (NOT Discord buttons)
+- [ ] See email/password form
+- [ ] See Google button
+- [ ] See Discord button
 - [ ] Browser DevTools → Network shows `testnet.api.alternun.co` calls
 - [ ] No errors in Console
-- [ ] Can sign in with email/password (or test with Google OAuth if configured)
+- [ ] Can sign in with email/password, Google OAuth, or Discord OAuth
 
 ---
 
