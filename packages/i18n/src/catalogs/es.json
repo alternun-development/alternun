@@ -240,27 +240,27 @@
         "descriptionPart4": "Tu membresía nunca expira y tus beneficios solo crecen con el tiempo."
       },
       "beneficios": {
-        "atnUnit": "AIRS / USD",
+        "atnUnit": "Airs / USD",
         "cards": {
           "eco": {
             "tag1": "Verificado",
             "tag2": "Aliado",
-            "description": "Acumula AIRS cada vez que compras en comercio aliado o completas acciones regenerativas verificadas.",
+            "description": "Acumula Airs cada vez que compras en comercio aliado o completas acciones regenerativas verificadas.",
             "atn": "+5",
             "meta": "Gasta y acumula",
             "title": "Comercio aliado",
-            "cta": "Acumular AIRS",
-            "infoBody": "Las compras elegibles y las acciones verificadas suelen generar 5 AIRS por USD. Las recompensas se acreditan después de que la transacción o acción sea validada."
+            "cta": "Acumular Airs",
+            "infoBody": "Las compras elegibles y las acciones verificadas suelen generar 5 Airs por USD. Las recompensas se acreditan después de que la transacción o acción sea validada."
           },
           "experiencias": {
             "tag1": "Proyectos",
             "tag2": "Servicios",
-            "description": "Invierte en proyectos regenerativos o adquiere servicios verificados para acumular AIRS en cada aporte.",
+            "description": "Invierte en proyectos regenerativos o adquiere servicios verificados para acumular Airs en cada aporte.",
             "atn": "Variable",
             "meta": "Proyectos regenerativos",
             "title": "Proyectos regenerativos",
             "cta": "Invertir para acumular",
-            "infoBody": "Los aportes a proyectos validados generan AIRS con tasas variables según el impacto, la trazabilidad y el monto comprometido."
+            "infoBody": "Los aportes a proyectos validados generan Airs con tasas variables según el impacto, la trazabilidad y el monto comprometido."
           },
           "marketplace": {
             "description": "Accede a un marketplace de productos y servicios regenerativos.",
@@ -270,22 +270,22 @@
           "premium": {
             "tag1": "CO2",
             "tag2": "Validado",
-            "description": "Valida reducciones y compensaciones de huella para convertir la acción climática en AIRS.",
+            "description": "Valida reducciones y compensaciones de huella para convertir la acción climática en Airs.",
             "atn": "Bono",
             "meta": "Huella de CO2",
             "title": "Huella de CO2",
             "cta": "Compensar ahora",
-            "infoBody": "Cuando la reducción o compensación de tu huella se mide y valida, se pueden acreditar AIRS como bono por el impacto verificado."
+            "infoBody": "Cuando la reducción o compensación de tu huella se mide y valida, se pueden acreditar Airs como bono por el impacto verificado."
           },
           "cursos": {
             "tag1": "Tarjeta",
             "tag2": "Impulso",
-            "description": "Usa la tarjeta AIRS para registrar actividad verificada y acelerar la acumulación en todo el ecosistema.",
+            "description": "Usa la tarjeta Airs para registrar actividad verificada y acelerar la acumulación en todo el ecosistema.",
             "atn": "Impulso",
-            "meta": "Tarjeta AIRS",
-            "title": "Tarjeta AIRS",
+            "meta": "Tarjeta Airs",
+            "title": "Tarjeta Airs",
             "cta": "Obtener la tarjeta",
-            "infoBody": "La tarjeta AIRS conecta tu gasto y tu impacto con tu puntuación para que la actividad elegible acumule AIRS más rápido."
+            "infoBody": "La tarjeta Airs conecta tu gasto y tu impacto con tu puntuación para que la actividad elegible acumule Airs más rápido."
           },
           "services": {
             "description": "Servicios verificados que contribuyen al impacto positivo.",
@@ -294,11 +294,11 @@
           }
         },
         "cta": "Ver rutas de acumulación",
-        "sectionTitle": "Cómo acumular AIRS",
-        "subtitle": "Acumula AIRS con comercio aliado, proyectos regenerativos, servicios verificados y acciones de huella de carbono.",
+        "sectionTitle": "Cómo acumular Airs",
+        "subtitle": "Acumula Airs con comercio aliado, proyectos regenerativos, servicios verificados y acciones de huella de carbono.",
         "topRated": "Verificado",
         "moreInfo": "Más información",
-        "redeemCta": "Empezar a acumular AIRS",
+        "redeemCta": "Empezar a acumular Airs",
         "availableFrom": "Tasa típica: {{atn}}"
       },
       "video": {

@@ -75,6 +75,7 @@ export interface BackendApiInfrastructureArgs {
   stage: string;
   hostedZoneId?: string;
   authentikJwtSigningKey?: pulumi.Input<string>;
+  authentikSmtpSecretArn?: pulumi.Input<string>;
   env: NodeJS.ProcessEnv;
   settings: BackendApiSettings;
 }
@@ -442,6 +443,32 @@ export function deployBackendApiInfrastructure(
           AUTHENTIK_JWKS_URL: authJwksUrl,
           NODE_ENV: 'production',
           ...args.settings.environment,
+          ...(args.env.INFRA_BACKEND_API_SUPABASE_URL
+            ? { SUPABASE_URL: args.env.INFRA_BACKEND_API_SUPABASE_URL }
+            : args.env.SUPABASE_URL
+            ? { SUPABASE_URL: args.env.SUPABASE_URL }
+            : args.env.EXPO_PUBLIC_SUPABASE_URL
+            ? { SUPABASE_URL: args.env.EXPO_PUBLIC_SUPABASE_URL }
+            : {}),
+          ...(args.env.INFRA_BACKEND_API_SUPABASE_ANON_KEY
+            ? { SUPABASE_ANON_KEY: args.env.INFRA_BACKEND_API_SUPABASE_ANON_KEY }
+            : args.env.SUPABASE_ANON_KEY
+            ? { SUPABASE_ANON_KEY: args.env.SUPABASE_ANON_KEY }
+            : args.env.EXPO_PUBLIC_SUPABASE_KEY
+            ? { SUPABASE_ANON_KEY: args.env.EXPO_PUBLIC_SUPABASE_KEY }
+            : args.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+            ? { SUPABASE_ANON_KEY: args.env.EXPO_PUBLIC_SUPABASE_ANON_KEY }
+            : {}),
+          ...(args.env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY
+            ? {
+                SUPABASE_SERVICE_ROLE_KEY: args.env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY,
+              }
+            : args.env.SUPABASE_SERVICE_ROLE_KEY
+            ? { SUPABASE_SERVICE_ROLE_KEY: args.env.SUPABASE_SERVICE_ROLE_KEY }
+            : {}),
+          ...(args.authentikSmtpSecretArn
+            ? { AUTHENTIK_SMTP_SECRET_ARN: args.authentikSmtpSecretArn }
+            : {}),
           ...(args.settings.environment.AUTH_BETTER_AUTH_URL
             ? {
                 AUTH_BETTER_AUTH_URL: args.settings.environment.AUTH_BETTER_AUTH_URL,
@@ -521,9 +548,11 @@ export function deployBackendApiInfrastructure(
   const shouldCreateCustomDomain = args.settings.enableCustomDomain && Boolean(args.hostedZoneId);
 
   let customDomain: aws.apigatewayv2.DomainName | undefined;
-  // eslint-disable-next-line security/detect-object-injection
-  let certificateArn: pulumi.Input<string> | undefined =
-    args.settings.certArns[stageKey] || undefined;
+  const certArnsForStage = (args.settings.certArns ?? {}) as Record<
+    string,
+    pulumi.Input<string> | undefined
+  >;
+  const certificateArn: pulumi.Input<string> | undefined = certArnsForStage[stageKey];
   if (shouldCreateCustomDomain && args.hostedZoneId) {
     if (!certificateArn) {
       const certificate = new aws.acm.Certificate(`${resourceBaseName}-cert`, {

@@ -25,18 +25,18 @@ type HttpStatusLike = {
   } | null;
 };
 
-function stripKnownAuthErrorPrefixes(message: string): string {
+function stripKnownAuthErrorPrefixes(message: string,): string {
   for (const prefix of KNOWN_AUTH_ERROR_PREFIXES) {
-    if (message.startsWith(prefix)) {
-      return message.slice(prefix.length).trim();
+    if (message.startsWith(prefix,)) {
+      return message.slice(prefix.length,).trim();
     }
   }
 
   return message.trim();
 }
 
-function normalizeStringMessage(value: string): string | null {
-  const normalized = stripKnownAuthErrorPrefixes(value);
+function normalizeStringMessage(value: string,): string | null {
+  const normalized = stripKnownAuthErrorPrefixes(value,);
   if (!normalized || normalized === '{}' || normalized === '[object Object]') {
     return null;
   }
@@ -44,18 +44,18 @@ function normalizeStringMessage(value: string): string | null {
   return normalized;
 }
 
-export function normalizeAuthErrorMessage(value: unknown): string | null {
+export function normalizeAuthErrorMessage(value: unknown,): string | null {
   if (typeof value === 'string') {
-    return normalizeStringMessage(value);
+    return normalizeStringMessage(value,);
   }
 
   if (value instanceof Error) {
-    return normalizeAuthErrorMessage(value.message);
+    return normalizeAuthErrorMessage(value.message,);
   }
 
-  if (Array.isArray(value)) {
+  if (Array.isArray(value,)) {
     for (const entry of value) {
-      const normalizedEntry = normalizeAuthErrorMessage(entry);
+      const normalizedEntry = normalizeAuthErrorMessage(entry,);
       if (normalizedEntry) {
         return normalizedEntry;
       }
@@ -79,16 +79,16 @@ export function normalizeAuthErrorMessage(value: unknown): string | null {
     ];
 
     for (const candidate of candidates) {
-      const normalizedCandidate = normalizeAuthErrorMessage(candidate);
+      const normalizedCandidate = normalizeAuthErrorMessage(candidate,);
       if (normalizedCandidate) {
         return normalizedCandidate;
       }
     }
 
     try {
-      const serialized = JSON.stringify(value);
+      const serialized = JSON.stringify(value,);
       if (serialized && serialized !== '{}' && serialized !== '[]') {
-        return stripKnownAuthErrorPrefixes(serialized);
+        return stripKnownAuthErrorPrefixes(serialized,);
       }
     } catch {
       return null;
@@ -96,25 +96,25 @@ export function normalizeAuthErrorMessage(value: unknown): string | null {
   }
 
   if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-    return String(value);
+    return String(value,);
   }
 
   return null;
 }
 
-export function getAuthErrorMessage(error: unknown, fallbackMessage: string): string {
-  return normalizeAuthErrorMessage(error) ?? fallbackMessage;
+export function getAuthErrorMessage(error: unknown, fallbackMessage: string,): string {
+  return normalizeAuthErrorMessage(error,) ?? fallbackMessage;
 }
 
-function readHttpStatusCode(value: unknown): number | null {
+function readHttpStatusCode(value: unknown,): number | null {
   if (typeof value === 'string') {
-    const normalizedMessage = normalizeAuthErrorMessage(value);
+    const normalizedMessage = normalizeAuthErrorMessage(value,);
     if (!normalizedMessage) {
       return null;
     }
 
-    const match = normalizedMessage.match(/\b(4\d\d|5\d\d)\b/);
-    return match ? Number(match[1]) : null;
+    const match = normalizedMessage.match(/\b(4\d\d|5\d\d)\b/,);
+    return match ? Number(match[1],) : null;
   }
 
   if (!value || typeof value !== 'object') {
@@ -129,25 +129,25 @@ function readHttpStatusCode(value: unknown): number | null {
     typedValue.response?.statusCode,
   ];
   for (const candidate of directCandidates) {
-    if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+    if (typeof candidate === 'number' && Number.isFinite(candidate,)) {
       return candidate;
     }
   }
 
-  const normalizedMessage = normalizeAuthErrorMessage(value);
+  const normalizedMessage = normalizeAuthErrorMessage(value,);
   if (!normalizedMessage) {
     return null;
   }
 
-  const match = normalizedMessage.match(/\b(4\d\d|5\d\d)\b/);
-  return match ? Number(match[1]) : null;
+  const match = normalizedMessage.match(/\b(4\d\d|5\d\d)\b/,);
+  return match ? Number(match[1],) : null;
 }
 
 export function getSocialSignInErrorMessage(
   error: unknown,
-  { unavailable, serverError, fallback }: SocialSignInErrorMessages
+  { unavailable, serverError, fallback, }: SocialSignInErrorMessages,
 ): string {
-  const statusCode = readHttpStatusCode(error);
+  const statusCode = readHttpStatusCode(error,);
 
   if (statusCode === 404) {
     return unavailable;
@@ -157,5 +157,5 @@ export function getSocialSignInErrorMessage(
     return serverError;
   }
 
-  return getAuthErrorMessage(error, fallback);
+  return getAuthErrorMessage(error, fallback,);
 }

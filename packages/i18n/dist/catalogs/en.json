@@ -240,27 +240,27 @@
         "descriptionPart4": "Your membership never expires and your benefits only grow over time."
       },
       "beneficios": {
-        "atnUnit": "AIRS / USD",
+        "atnUnit": "Airs / USD",
         "cards": {
           "eco": {
             "tag1": "Verified",
             "tag2": "Allied",
-            "description": "Earn AIRS every time you spend with allied commerce or complete validated regenerative actions.",
+            "description": "Earn Airs every time you spend with allied commerce or complete validated regenerative actions.",
             "atn": "+5",
             "meta": "Spend and earn",
             "title": "Allied commerce",
-            "cta": "Earn AIRS",
-            "infoBody": "Eligible purchases and validated actions typically earn 5 AIRS per USD. Rewards are credited after the transaction or action is verified."
+            "cta": "Earn Airs",
+            "infoBody": "Eligible purchases and validated actions typically earn 5 Airs per USD. Rewards are credited after the transaction or action is verified."
           },
           "experiencias": {
             "tag1": "Projects",
             "tag2": "Services",
-            "description": "Invest in regenerative projects or acquire verified services to accumulate AIRS on each contribution.",
+            "description": "Invest in regenerative projects or acquire verified services to accumulate Airs on each contribution.",
             "atn": "Variable",
             "meta": "Regenerative projects",
             "title": "Regenerative projects",
             "cta": "Invest to earn",
-            "infoBody": "Contributions to validated projects earn AIRS at variable rates based on impact, traceability, and the amount committed."
+            "infoBody": "Contributions to validated projects earn Airs at variable rates based on impact, traceability, and the amount committed."
           },
           "marketplace": {
             "description": "Access a marketplace of regenerative products and services.",
@@ -270,22 +270,22 @@
           "premium": {
             "tag1": "CO2",
             "tag2": "Validated",
-            "description": "Validate footprint reductions and offsets to convert climate action into AIRS.",
+            "description": "Validate footprint reductions and offsets to convert climate action into Airs.",
             "atn": "Bonus",
             "meta": "CO2 footprint",
             "title": "CO2 footprint",
             "cta": "Offset now",
-            "infoBody": "When your footprint reduction or offset is measured and validated, AIRS can be credited as a bonus for the verified impact."
+            "infoBody": "When your footprint reduction or offset is measured and validated, Airs can be credited as a bonus for the verified impact."
           },
           "cursos": {
             "tag1": "Card",
             "tag2": "Boost",
-            "description": "Use the AIRS card to track verified activity and accelerate accumulation across the ecosystem.",
+            "description": "Use the Airs card to track verified activity and accelerate accumulation across the ecosystem.",
             "atn": "Boost",
-            "meta": "AIRS card",
-            "title": "AIRS card",
+            "meta": "Airs card",
+            "title": "Airs card",
             "cta": "Get the card",
-            "infoBody": "The AIRS card connects your spend and impact to your score so qualified activity can earn AIRS faster."
+            "infoBody": "The Airs card connects your spend and impact to your score so qualified activity can earn Airs faster."
           },
           "services": {
             "description": "Verified services that contribute to positive impact.",
@@ -294,11 +294,11 @@
           }
         },
         "cta": "See earning paths",
-        "sectionTitle": "How to accumulate AIRS",
-        "subtitle": "Earn AIRS through allied commerce, regenerative projects, verified services, and carbon-footprint actions.",
+        "sectionTitle": "How to accumulate Airs",
+        "subtitle": "Earn Airs through allied commerce, regenerative projects, verified services, and carbon-footprint actions.",
         "topRated": "Verified",
         "moreInfo": "More info",
-        "redeemCta": "Start earning AIRS",
+        "redeemCta": "Start earning Airs",
         "availableFrom": "Typical rate: {{atn}}"
       },
       "video": {

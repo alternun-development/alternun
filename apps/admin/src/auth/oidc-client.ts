@@ -84,7 +84,7 @@ function readClaimArray(claims: ClaimBag, key: string): string[] {
   if (typeof value === 'string' && value.length > 0) {
     return value
       .split(',')
-      .map(entry => entry.trim())
+      .map((entry) => entry.trim())
       .filter(Boolean);
   }
 
@@ -118,7 +118,7 @@ export function getAdminRolesFromSession(user: User | null): string[] {
 }
 
 export function hasAdminRole(roles: string[]): boolean {
-  return roles.some(role => ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number]));
+  return roles.some((role) => ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number]));
 }
 
 export function canAccessAdminDashboard(user: User | null): boolean {
