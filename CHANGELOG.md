@@ -1,3 +1,13 @@
+## [1.0.137](https://github.com/alternun-development/alternun/compare/v1.0.136...v1.0.137) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** chore: prepare close issue #105
+- **repo:** docs: note global activity feed status
+- **repo:** chore: close issue #105
+
+## [1.0.137](https://github.com/alternun-development/alternun/compare/v1.0.136...v1.0.137) (2026-04-17)
+
 ## [1.0.136](https://github.com/alternun-development/alternun/compare/v1.0.135...v1.0.136) (2026-04-17)
 
 ### Bug Fixes
