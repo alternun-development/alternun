@@ -1,3 +1,11 @@
+## [1.0.138](https://github.com/alternun-development/alternun/compare/v1.0.137...v1.0.138) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(infra): infra.config, redirects, redirect-aliases.test, sst-globals.d
+
+## [1.0.138](https://github.com/alternun-development/alternun/compare/v1.0.137...v1.0.138) (2026-04-17)
+
 ## [1.0.137](https://github.com/alternun-development/alternun/compare/v1.0.136...v1.0.137) (2026-04-17)
 
 ### Bug Fixes
