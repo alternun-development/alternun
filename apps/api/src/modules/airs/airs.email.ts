@@ -1,6 +1,6 @@
-import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
-import nodemailer, { type Transporter } from 'nodemailer';
-import type { AirsWelcomeEmail } from '@alternun/email-templates';
+import { SecretsManagerClient, GetSecretValueCommand, } from '@aws-sdk/client-secrets-manager';
+import nodemailer, { type Transporter, } from 'nodemailer';
+import type { AirsWelcomeEmail, } from '@alternun/email-templates';
 
 export interface AirsSmtpConfig {
   host: string;
@@ -39,7 +39,7 @@ type SmtpSecretPayload = {
 
 let cachedSmtpConfig: Promise<AirsSmtpConfig | null> | null = null;
 
-function firstNonEmptyTrimmed(values: Array<string | undefined | null>): string | null {
+function firstNonEmptyTrimmed(values: Array<string | undefined | null>,): string | null {
   for (const value of values) {
     const trimmed = value?.trim();
     if (trimmed) {
@@ -50,75 +50,75 @@ function firstNonEmptyTrimmed(values: Array<string | undefined | null>): string 
   return null;
 }
 
-function parseBoolean(value: unknown): boolean {
+function parseBoolean(value: unknown,): boolean {
   if (typeof value === 'boolean') {
     return value;
   }
 
   if (typeof value === 'string') {
-    return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
+    return ['1', 'true', 'yes', 'on',].includes(value.trim().toLowerCase(),);
   }
 
   return false;
 }
 
-function parsePort(value: unknown, fallback: number): number {
-  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
-    return Math.floor(value);
+function parsePort(value: unknown, fallback: number,): number {
+  if (typeof value === 'number' && Number.isFinite(value,) && value > 0) {
+    return Math.floor(value,);
   }
 
   if (typeof value === 'string' && value.trim().length > 0) {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed) && parsed > 0) {
-      return Math.floor(parsed);
+    const parsed = Number(value,);
+    if (Number.isFinite(parsed,) && parsed > 0) {
+      return Math.floor(parsed,);
     }
   }
 
   return fallback;
 }
 
-function resolveSenderName(env: Record<string, string | undefined>): string {
+function resolveSenderName(env: Record<string, string | undefined>,): string {
   return (
     firstNonEmptyTrimmed([
       env.AIRS_EMAIL_SENDER_NAME,
       env.AUTH_EMAIL_SENDER_NAME,
       env.SUPABASE_SMTP_SENDER_NAME,
       'Alternun AIRS',
-    ]) ?? 'Alternun AIRS'
+    ],) ?? 'Alternun AIRS'
   );
 }
 
 async function loadSmtpSecret(
-  env: Record<string, string | undefined>
+  env: Record<string, string | undefined>,
 ): Promise<AirsSmtpConfig | null> {
-  const secretArn = firstNonEmptyTrimmed([env.AUTHENTIK_SMTP_SECRET_ARN, env.AIRS_SMTP_SECRET_ARN]);
+  const secretArn = firstNonEmptyTrimmed([env.AUTHENTIK_SMTP_SECRET_ARN, env.AIRS_SMTP_SECRET_ARN,],);
 
   if (!secretArn) {
     return null;
   }
 
-  const region = firstNonEmptyTrimmed([env.AWS_REGION, env.AWS_DEFAULT_REGION]) ?? 'us-east-1';
-  const client = new SecretsManagerClient({ region });
-  const response = await client.send(new GetSecretValueCommand({ SecretId: secretArn }));
+  const region = firstNonEmptyTrimmed([env.AWS_REGION, env.AWS_DEFAULT_REGION,],) ?? 'us-east-1';
+  const client = new SecretsManagerClient({ region, },);
+  const response = await client.send(new GetSecretValueCommand({ SecretId: secretArn, },),);
   const secretString = response.SecretString ?? '';
 
   if (!secretString.trim()) {
     return null;
   }
 
-  const payload = JSON.parse(secretString) as SmtpSecretPayload;
-  const host = firstNonEmptyTrimmed([payload.host]);
-  const username = firstNonEmptyTrimmed([payload.username]);
-  const password = firstNonEmptyTrimmed([payload.password]);
-  const from = firstNonEmptyTrimmed([payload.from, env.AIRS_EMAIL_FROM, env.AUTH_EMAIL_FROM]);
+  const payload = JSON.parse(secretString,) as SmtpSecretPayload;
+  const host = firstNonEmptyTrimmed([payload.host,],);
+  const username = firstNonEmptyTrimmed([payload.username,],);
+  const password = firstNonEmptyTrimmed([payload.password,],);
+  const from = firstNonEmptyTrimmed([payload.from, env.AIRS_EMAIL_FROM, env.AUTH_EMAIL_FROM,],);
 
   if (!host || !username || !password || !from) {
     return null;
   }
 
-  const port = parsePort(payload.port, 587);
-  const secure = parseBoolean(payload.secure) || parseBoolean(payload.useSsl) || port === 465;
-  const requireTls = parseBoolean(payload.requireTls) || parseBoolean(payload.useTls) || !secure;
+  const port = parsePort(payload.port, 587,);
+  const secure = parseBoolean(payload.secure,) || parseBoolean(payload.useSsl,) || port === 465;
+  const requireTls = parseBoolean(payload.requireTls,) || parseBoolean(payload.useTls,) || !secure;
 
   return {
     host,
@@ -127,17 +127,17 @@ async function loadSmtpSecret(
     password,
     from,
     senderName:
-      firstNonEmptyTrimmed([payload.senderName, resolveSenderName(env)]) ?? 'Alternun AIRS',
+      firstNonEmptyTrimmed([payload.senderName, resolveSenderName(env,),],) ?? 'Alternun AIRS',
     secure,
     requireTls,
   };
 }
 
 async function resolveSmtpConfig(
-  env: Record<string, string | undefined> = process.env
+  env: Record<string, string | undefined> = process.env,
 ): Promise<AirsSmtpConfig | null> {
   if (!cachedSmtpConfig) {
-    cachedSmtpConfig = loadSmtpSecret(env).catch(() => null);
+    cachedSmtpConfig = loadSmtpSecret(env,).catch(() => null,);
   }
 
   return cachedSmtpConfig;
@@ -145,9 +145,9 @@ async function resolveSmtpConfig(
 
 export async function sendAirsWelcomeEmail(
   input: AirsWelcomeEmailSendInput,
-  env: Record<string, string | undefined> = process.env
+  env: Record<string, string | undefined> = process.env,
 ): Promise<AirsWelcomeEmailSendResult> {
-  const config = await resolveSmtpConfig(env);
+  const config = await resolveSmtpConfig(env,);
   if (!config) {
     return {
       sent: false,
@@ -165,7 +165,7 @@ export async function sendAirsWelcomeEmail(
       user: config.username,
       pass: config.password,
     },
-  });
+  },);
 
   await transporter.sendMail({
     from: `"${config.senderName}" <${config.from}>`,
@@ -173,7 +173,7 @@ export async function sendAirsWelcomeEmail(
     subject: input.email.subject,
     text: input.email.text,
     html: input.email.html,
-  });
+  },);
 
   return {
     sent: true,

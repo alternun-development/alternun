@@ -1,11 +1,11 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, timingSafeEqual, } from 'node:crypto';
 import {
   BadRequestException,
   Injectable,
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import type { FastifyRequest } from 'fastify';
+import type { FastifyRequest, } from 'fastify';
 
 const GITHUB_PROVIDER = 'github';
 const GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
@@ -61,19 +61,19 @@ interface SignedStatePayload {
 
 @Injectable()
 export class DecapService {
-  private readonly logger = new Logger(DecapService.name);
+  private readonly logger = new Logger(DecapService.name,);
 
-  startAuthorization(request: FastifyRequest, params: DecapAuthorizationParams): DecapHtmlResponse {
-    const authorizeUrl = this.createAuthorizationUrl(request, params);
-    return this.renderAuthorizationRedirect(authorizeUrl);
+  startAuthorization(request: FastifyRequest, params: DecapAuthorizationParams,): DecapHtmlResponse {
+    const authorizeUrl = this.createAuthorizationUrl(request, params,);
+    return this.renderAuthorizationRedirect(authorizeUrl,);
   }
 
-  createAuthorizationUrl(request: FastifyRequest, params: DecapAuthorizationParams): string {
-    const resolvedProvider = this.resolveProvider(params.provider);
+  createAuthorizationUrl(request: FastifyRequest, params: DecapAuthorizationParams,): string {
+    const resolvedProvider = this.resolveProvider(params.provider,);
     const config = this.getConfig();
-    const callbackUrl = this.getCallbackUrl(request, config.publicBaseUrl);
-    const origin = this.resolveAllowedOrigin(request, config.allowedOrigins, params.siteId);
-    const scope = this.resolveScope(params.requestedScope, config.scope);
+    const callbackUrl = this.getCallbackUrl(request, config.publicBaseUrl,);
+    const origin = this.resolveAllowedOrigin(request, config.allowedOrigins, params.siteId,);
+    const scope = this.resolveScope(params.requestedScope, config.scope,);
     const state = this.signState(
       {
         iat: Date.now(),
@@ -81,7 +81,7 @@ export class DecapService {
         provider: resolvedProvider,
         v: 1,
       },
-      config.stateSecret
+      config.stateSecret,
     );
 
     const searchParams = new URLSearchParams({
@@ -89,20 +89,20 @@ export class DecapService {
       redirect_uri: callbackUrl,
       scope,
       state,
-    });
+    },);
 
     return `${GITHUB_AUTHORIZE_URL}?${searchParams.toString()}`;
   }
 
   async handleCallback(
     request: FastifyRequest,
-    params: DecapCallbackParams
+    params: DecapCallbackParams,
   ): Promise<DecapHtmlResponse> {
-    const resolvedProvider = this.resolveProvider(params.provider);
+    const resolvedProvider = this.resolveProvider(params.provider,);
     const config = this.getConfig();
-    const statePayload = this.verifyState(params.state, config.stateSecret);
+    const statePayload = this.verifyState(params.state, config.stateSecret,);
     const targetOrigin =
-      statePayload?.origin && config.allowedOrigins.has(statePayload.origin)
+      statePayload?.origin && config.allowedOrigins.has(statePayload.origin,)
         ? statePayload.origin
         : '*';
 
@@ -110,10 +110,10 @@ export class DecapService {
       return this.renderOauthResponse(
         'error',
         {
-          error: this.formatErrorMessage(params.oauthError, params.oauthErrorDescription),
+          error: this.formatErrorMessage(params.oauthError, params.oauthErrorDescription,),
         },
         targetOrigin,
-        400
+        400,
       );
     }
 
@@ -124,7 +124,7 @@ export class DecapService {
           error: 'GitHub did not provide an authorization code.',
         },
         targetOrigin,
-        400
+        400,
       );
     }
 
@@ -135,11 +135,11 @@ export class DecapService {
           error: 'The Decap OAuth state is invalid or expired.',
         },
         targetOrigin,
-        400
+        400,
       );
     }
 
-    const callbackUrl = this.getCallbackUrl(request, config.publicBaseUrl);
+    const callbackUrl = this.getCallbackUrl(request, config.publicBaseUrl,);
 
     try {
       const tokenResponse = await this.exchangeCodeForToken({
@@ -148,7 +148,7 @@ export class DecapService {
         clientSecret: config.clientSecret,
         code: params.code,
         state: params.state ?? '',
-      });
+      },);
 
       if (!tokenResponse.access_token) {
         return this.renderOauthResponse(
@@ -156,23 +156,23 @@ export class DecapService {
           {
             error: this.formatErrorMessage(
               tokenResponse.error ?? 'github_token_exchange_failed',
-              tokenResponse.error_description
+              tokenResponse.error_description,
             ),
           },
           targetOrigin,
-          502
+          502,
         );
       }
 
       return this.renderOauthResponse(
         'success',
-        { token: tokenResponse.access_token },
+        { token: tokenResponse.access_token, },
         targetOrigin,
-        200
+        200,
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'GitHub OAuth exchange failed.';
-      this.logger.error(message);
+      this.logger.error(message,);
 
       return this.renderOauthResponse(
         'error',
@@ -180,7 +180,7 @@ export class DecapService {
           error: message,
         },
         targetOrigin,
-        502
+        502,
       );
     }
   }
@@ -191,57 +191,57 @@ export class DecapService {
 
     if (!clientId || !clientSecret) {
       throw new ServiceUnavailableException(
-        'Decap GitHub OAuth is not configured. Set DECAP_GITHUB_OAUTH_CLIENT_ID and DECAP_GITHUB_OAUTH_CLIENT_SECRET.'
+        'Decap GitHub OAuth is not configured. Set DECAP_GITHUB_OAUTH_CLIENT_ID and DECAP_GITHUB_OAUTH_CLIENT_SECRET.',
       );
     }
 
-    const publicBaseUrl = this.normalizeOptionalValue(process.env.DECAP_PUBLIC_BASE_URL?.trim());
-    const repoPrivate = this.parseBoolean(process.env.DECAP_GITHUB_OAUTH_REPO_PRIVATE, false);
-    const scopeFromEnv = this.normalizeOptionalValue(process.env.DECAP_GITHUB_OAUTH_SCOPE?.trim());
+    const publicBaseUrl = this.normalizeOptionalValue(process.env.DECAP_PUBLIC_BASE_URL?.trim(),);
+    const repoPrivate = this.parseBoolean(process.env.DECAP_GITHUB_OAUTH_REPO_PRIVATE, false,);
+    const scopeFromEnv = this.normalizeOptionalValue(process.env.DECAP_GITHUB_OAUTH_SCOPE?.trim(),);
     const scope = scopeFromEnv ?? (repoPrivate ? 'repo,user' : 'public_repo,user');
     const stateSecret =
-      this.normalizeOptionalValue(process.env.DECAP_OAUTH_STATE_SECRET?.trim()) ??
-      this.normalizeOptionalValue(process.env.DECAP_GITHUB_OAUTH_STATE_SECRET?.trim()) ??
+      this.normalizeOptionalValue(process.env.DECAP_OAUTH_STATE_SECRET?.trim(),) ??
+      this.normalizeOptionalValue(process.env.DECAP_GITHUB_OAUTH_STATE_SECRET?.trim(),) ??
       clientSecret;
 
     return {
       allowedOrigins: new Set(
-        this.parseList(process.env.DECAP_ALLOWED_ORIGINS, DEFAULT_ALLOWED_ORIGINS)
+        this.parseList(process.env.DECAP_ALLOWED_ORIGINS, DEFAULT_ALLOWED_ORIGINS,),
       ),
       clientId,
       clientSecret,
-      publicBaseUrl: publicBaseUrl ? publicBaseUrl.replace(/\/+$/, '') : undefined,
+      publicBaseUrl: publicBaseUrl ? publicBaseUrl.replace(/\/+$/, '',) : undefined,
       scope,
       stateSecret,
     };
   }
 
-  private resolveProvider(provider?: string): typeof GITHUB_PROVIDER {
+  private resolveProvider(provider?: string,): typeof GITHUB_PROVIDER {
     if (!provider || provider === GITHUB_PROVIDER) {
       return GITHUB_PROVIDER;
     }
 
-    throw new BadRequestException(`Unsupported Decap OAuth provider "${provider}".`);
+    throw new BadRequestException(`Unsupported Decap OAuth provider "${provider}".`,);
   }
 
-  private getCallbackUrl(request: FastifyRequest, publicBaseUrl?: string): string {
-    const baseUrl = publicBaseUrl ?? this.resolveRequestBaseUrl(request);
+  private getCallbackUrl(request: FastifyRequest, publicBaseUrl?: string,): string {
+    const baseUrl = publicBaseUrl ?? this.resolveRequestBaseUrl(request,);
     return `${baseUrl}/decap/callback?provider=${GITHUB_PROVIDER}`;
   }
 
-  private resolveRequestBaseUrl(request: FastifyRequest): string {
-    const forwardedProto = this.readHeader(request.headers['x-forwarded-proto']);
-    const forwardedHost = this.readHeader(request.headers['x-forwarded-host']);
-    const host = forwardedHost ?? this.readHeader(request.headers.host) ?? request.hostname;
+  private resolveRequestBaseUrl(request: FastifyRequest,): string {
+    const forwardedProto = this.readHeader(request.headers['x-forwarded-proto'],);
+    const forwardedHost = this.readHeader(request.headers['x-forwarded-host'],);
+    const host = forwardedHost ?? this.readHeader(request.headers.host,) ?? request.hostname;
 
     if (!host) {
-      throw new ServiceUnavailableException('Unable to determine the Decap OAuth public host.');
+      throw new ServiceUnavailableException('Unable to determine the Decap OAuth public host.',);
     }
 
     const protocol =
       forwardedProto ??
       request.protocol ??
-      (host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https');
+      (host.startsWith('localhost',) || host.startsWith('127.0.0.1',) ? 'http' : 'https');
 
     return `${protocol}://${host}`;
   }
@@ -249,17 +249,17 @@ export class DecapService {
   private resolveAllowedOrigin(
     request: FastifyRequest,
     allowedOrigins: Set<string>,
-    siteId?: string
+    siteId?: string,
   ): string | undefined {
     const candidates = [
-      this.readHeader(request.headers.origin),
-      this.readHeader(request.headers.referer),
-      this.readHeader(request.headers.referrer),
+      this.readHeader(request.headers.origin,),
+      this.readHeader(request.headers.referer,),
+      this.readHeader(request.headers.referrer,),
     ];
 
-    const siteOrigin = this.resolveOriginFromSiteId(siteId, allowedOrigins);
+    const siteOrigin = this.resolveOriginFromSiteId(siteId, allowedOrigins,);
     if (siteOrigin) {
-      candidates.push(siteOrigin);
+      candidates.push(siteOrigin,);
     }
 
     for (const candidate of candidates) {
@@ -268,8 +268,8 @@ export class DecapService {
       }
 
       try {
-        const origin = new URL(candidate).origin;
-        if (allowedOrigins.has(origin)) {
+        const origin = new URL(candidate,).origin;
+        if (allowedOrigins.has(origin,)) {
           return origin;
         }
       } catch {
@@ -282,7 +282,7 @@ export class DecapService {
 
   private resolveOriginFromSiteId(
     siteId: string | undefined,
-    allowedOrigins: Set<string>
+    allowedOrigins: Set<string>,
   ): string | undefined {
     if (!siteId) {
       return undefined;
@@ -293,14 +293,14 @@ export class DecapService {
       return undefined;
     }
 
-    const candidates = trimmedSiteId.includes('://')
-      ? [trimmedSiteId]
-      : [`https://${trimmedSiteId}`, `http://${trimmedSiteId}`];
+    const candidates = trimmedSiteId.includes('://',)
+      ? [trimmedSiteId,]
+      : [`https://${trimmedSiteId}`, `http://${trimmedSiteId}`,];
 
     for (const candidate of candidates) {
       try {
-        const origin = new URL(candidate).origin;
-        if (allowedOrigins.has(origin)) {
+        const origin = new URL(candidate,).origin;
+        if (allowedOrigins.has(origin,)) {
           return origin;
         }
       } catch {
@@ -311,51 +311,51 @@ export class DecapService {
     return undefined;
   }
 
-  private resolveScope(requestedScope: string | undefined, fallbackScope: string): string {
-    const defaultScopes = this.parseScopes(fallbackScope);
-    const requestedScopes = this.parseScopes(requestedScope);
-    const scopes = new Set([...defaultScopes, ...requestedScopes]);
+  private resolveScope(requestedScope: string | undefined, fallbackScope: string,): string {
+    const defaultScopes = this.parseScopes(fallbackScope,);
+    const requestedScopes = this.parseScopes(requestedScope,);
+    const scopes = new Set([...defaultScopes, ...requestedScopes,],);
 
-    if (scopes.has('repo')) {
-      scopes.delete('public_repo');
+    if (scopes.has('repo',)) {
+      scopes.delete('public_repo',);
     }
 
-    return Array.from(scopes).join(',');
+    return Array.from(scopes,).join(',',);
   }
 
-  private signState(payload: SignedStatePayload, secret: string): string {
-    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    const signature = createHmac('sha256', secret).update(encodedPayload).digest('base64url');
+  private signState(payload: SignedStatePayload, secret: string,): string {
+    const encodedPayload = Buffer.from(JSON.stringify(payload,),).toString('base64url',);
+    const signature = createHmac('sha256', secret,).update(encodedPayload,).digest('base64url',);
     return `${encodedPayload}.${signature}`;
   }
 
-  private verifyState(state: string | undefined, secret: string): SignedStatePayload | null {
+  private verifyState(state: string | undefined, secret: string,): SignedStatePayload | null {
     if (!state) {
       return null;
     }
 
-    const parts = state.split('.');
+    const parts = state.split('.',);
     if (parts.length !== 2) {
       return null;
     }
 
-    const [encodedPayload, signature] = parts;
-    const expectedSignature = createHmac('sha256', secret)
-      .update(encodedPayload)
-      .digest('base64url');
+    const [encodedPayload, signature,] = parts;
+    const expectedSignature = createHmac('sha256', secret,)
+      .update(encodedPayload,)
+      .digest('base64url',);
 
-    const signatureBuffer = Buffer.from(signature);
-    const expectedBuffer = Buffer.from(expectedSignature);
+    const signatureBuffer = Buffer.from(signature,);
+    const expectedBuffer = Buffer.from(expectedSignature,);
     if (
       signatureBuffer.length !== expectedBuffer.length ||
-      !timingSafeEqual(signatureBuffer, expectedBuffer)
+      !timingSafeEqual(signatureBuffer, expectedBuffer,)
     ) {
       return null;
     }
 
     try {
       const payload = JSON.parse(
-        Buffer.from(encodedPayload, 'base64url').toString('utf8')
+        Buffer.from(encodedPayload, 'base64url',).toString('utf8',),
       ) as SignedStatePayload;
 
       if (payload.v !== 1 || payload.provider !== GITHUB_PROVIDER) {
@@ -382,7 +382,7 @@ export class DecapService {
     clientSecret: string;
     code: string;
     state: string;
-  }): Promise<GithubTokenResponse> {
+  },): Promise<GithubTokenResponse> {
     const response = await fetch(GITHUB_TOKEN_URL, {
       method: 'POST',
       headers: {
@@ -396,11 +396,11 @@ export class DecapService {
         code: args.code,
         redirect_uri: args.callbackUrl,
         state: args.state,
-      }),
-    });
+      },),
+    },);
 
     if (!response.ok) {
-      throw new Error(`GitHub token exchange failed with status ${response.status}.`);
+      throw new Error(`GitHub token exchange failed with status ${response.status}.`,);
     }
 
     return (await response.json()) as GithubTokenResponse;
@@ -410,10 +410,10 @@ export class DecapService {
     status: 'success' | 'error',
     payload: Record<string, string>,
     targetOrigin: string,
-    statusCode: number
+    statusCode: number,
   ): DecapHtmlResponse {
-    const safeTargetOrigin = JSON.stringify(targetOrigin);
-    const safePayload = JSON.stringify(JSON.stringify(payload).replace(/</g, '\\u003c'));
+    const safeTargetOrigin = JSON.stringify(targetOrigin,);
+    const safePayload = JSON.stringify(JSON.stringify(payload,).replace(/</g, '\\u003c',),);
 
     return {
       html: `<!doctype html>
@@ -460,8 +460,8 @@ export class DecapService {
     };
   }
 
-  private renderAuthorizationRedirect(authorizeUrl: string): DecapHtmlResponse {
-    const safeAuthorizeUrl = JSON.stringify(authorizeUrl);
+  private renderAuthorizationRedirect(authorizeUrl: string,): DecapHtmlResponse {
+    const safeAuthorizeUrl = JSON.stringify(authorizeUrl,);
 
     return {
       html: `<!doctype html>
@@ -469,12 +469,12 @@ export class DecapService {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="refresh" content="0;url=${this.escapeHtmlAttribute(authorizeUrl)}" />
+    <meta http-equiv="refresh" content="0;url=${this.escapeHtmlAttribute(authorizeUrl,)}" />
     <title>Alternun Decap OAuth</title>
   </head>
   <body>
     <p>Redirecting to GitHub…</p>
-    <p><a href="${this.escapeHtmlAttribute(authorizeUrl)}">Continue to GitHub</a></p>
+    <p><a href="${this.escapeHtmlAttribute(authorizeUrl,)}">Continue to GitHub</a></p>
     <script>
       window.location.replace(${safeAuthorizeUrl});
     </script>
@@ -484,49 +484,49 @@ export class DecapService {
     };
   }
 
-  private formatErrorMessage(error: string, description?: string): string {
+  private formatErrorMessage(error: string, description?: string,): string {
     return description?.trim() ? `${error}: ${description.trim()}` : error;
   }
 
-  private parseScopes(value: string | undefined): string[] {
+  private parseScopes(value: string | undefined,): string[] {
     if (!value) {
       return [];
     }
 
     return value
-      .split(/[\s,]+/)
-      .map((scope) => scope.trim())
-      .filter(Boolean);
+      .split(/[\s,]+/,)
+      .map((scope,) => scope.trim(),)
+      .filter(Boolean,);
   }
 
-  private parseList(value: string | undefined, fallback: string[]): string[] {
+  private parseList(value: string | undefined, fallback: string[],): string[] {
     if (!value) {
       return fallback;
     }
 
     return value
-      .split(',')
-      .map((entry) => entry.trim())
-      .filter(Boolean);
+      .split(',',)
+      .map((entry,) => entry.trim(),)
+      .filter(Boolean,);
   }
 
-  private parseBoolean(value: string | undefined, fallback: boolean): boolean {
+  private parseBoolean(value: string | undefined, fallback: boolean,): boolean {
     if (!value) {
       return fallback;
     }
 
-    return !['0', 'false', 'no', 'off'].includes(value.trim().toLowerCase());
+    return !['0', 'false', 'no', 'off',].includes(value.trim().toLowerCase(),);
   }
 
-  private readHeader(value: string | string[] | undefined): string | undefined {
-    if (Array.isArray(value)) {
+  private readHeader(value: string | string[] | undefined,): string | undefined {
+    if (Array.isArray(value,)) {
       return value[0];
     }
 
-    return value?.split(',')[0]?.trim();
+    return value?.split(',',)[0]?.trim();
   }
 
-  private normalizeOptionalValue(value: string | undefined): string | undefined {
+  private normalizeOptionalValue(value: string | undefined,): string | undefined {
     if (!value || value.length === 0) {
       return undefined;
     }
@@ -534,11 +534,11 @@ export class DecapService {
     return value;
   }
 
-  private escapeHtmlAttribute(value: string): string {
+  private escapeHtmlAttribute(value: string,): string {
     return value
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+      .replace(/&/g, '&amp;',)
+      .replace(/"/g, '&quot;',)
+      .replace(/</g, '&lt;',)
+      .replace(/>/g, '&gt;',);
   }
 }

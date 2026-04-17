@@ -1,6 +1,6 @@
-import type { DocsCmsCustomFields, } from './types';
+import type { DocsCmsCustomFields } from './types';
 
-function buildBackend(config: DocsCmsCustomFields,): Record<string, unknown> {
+function buildBackend(config: DocsCmsCustomFields): Record<string, unknown> {
   if (config.backend.mode === 'github' && config.backend.baseUrl) {
     return {
       name: 'github',
@@ -16,9 +16,9 @@ function buildBackend(config: DocsCmsCustomFields,): Record<string, unknown> {
   };
 }
 
-export function buildDecapConfig(config: DocsCmsCustomFields,): Record<string, unknown> {
+export function buildDecapConfig(config: DocsCmsCustomFields): Record<string, unknown> {
   return {
-    backend: buildBackend(config,),
+    backend: buildBackend(config),
     media_folder: config.media.folder,
     public_folder: config.media.publicFolder,
     publish_mode: 'editorial_workflow',
