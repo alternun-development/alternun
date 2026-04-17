@@ -485,7 +485,8 @@ should_cleanup_deploy_aliases() {
     return 0
   fi
 
-  if [ "$stage" = "dev" ] && (
+  local normalized_stack="${stage_normalized:-${STACK:-}}"
+  if [ "$normalized_stack" = "dev" ] && (
     is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" ||
     is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" ||
     is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}"
