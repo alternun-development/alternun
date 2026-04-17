@@ -1,3 +1,11 @@
+## [1.0.145](https://github.com/alternun-development/alternun/compare/v1.0.144...v1.0.145) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): AirsIntroExperience, HeroVideoNative, sst-deploy, redirect-aliases.test
+
+## [1.0.145](https://github.com/alternun-development/alternun/compare/v1.0.144...v1.0.145) (2026-04-17)
+
 ## [1.0.144](https://github.com/alternun-development/alternun/compare/v1.0.143...v1.0.144) (2026-04-17)
 
 ### Bug Fixes
