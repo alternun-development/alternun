@@ -1,3 +1,11 @@
+## [1.0.124](https://github.com/alternun-development/alternun/compare/v1.0.123...v1.0.124) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** chore(repo): AGENTS, CLAUDE
+
+## [1.0.124](https://github.com/alternun-development/alternun/compare/v1.0.123...v1.0.124) (2026-04-17)
+
 ## [1.0.123](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.123) (2026-04-17)
 
 ### Bug Fixes
