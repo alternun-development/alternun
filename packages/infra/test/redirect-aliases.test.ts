@@ -71,6 +71,10 @@ void test('infra redirect config supports demo and beta aliases for testnet', ()
   assert.match(postdeploySource, /dev_source_demo=\$\{dev_source_primary\/#dev\.\//);
   assert.match(postdeploySource, /dev_source_beta=\$\{dev_source_primary\/#dev\.\//);
   assert.match(postdeploySource, /INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES/);
+  assert.match(sstDeploySource, /remove_cloudfront_aliases_from_distribution\(/);
+  assert.match(sstDeploySource, /declare -A dist_aliases=/);
+  assert.ok(sstDeploySource.includes('remove_cloudfront_aliases "${cleanup_aliases[@]}"'));
+  assert.ok(sstDeploySource.includes('aws cloudfront wait distribution-deployed --id "$dist_id"'));
 
   assert.deepEqual(exampleConfig.redirects?.devToTestnetSourceDomains, [
     'dev.airs.alternun.co',
