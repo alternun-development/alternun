@@ -5,17 +5,29 @@ declare global {
   namespace sst {
     namespace aws {
       class Bucket {
-        constructor(name: string, args?: Record<string, unknown>);
+        constructor(
+          name: string,
+          args?: Record<string, unknown>,
+          opts?: _pulumi.ComponentResourceOptions
+        );
         name: _pulumi.Output<string>;
         domain: _pulumi.Output<string>;
       }
 
       class Router {
-        constructor(name: string, args?: Record<string, unknown>);
+        constructor(
+          name: string,
+          args?: Record<string, unknown>,
+          opts?: _pulumi.ComponentResourceOptions
+        );
       }
 
       class Vpc {
-        constructor(name: string, args?: Record<string, unknown>);
+        constructor(
+          name: string,
+          args?: Record<string, unknown>,
+          opts?: _pulumi.ComponentResourceOptions
+        );
         id: _pulumi.Output<string>;
         publicSubnets: _pulumi.Output<string[]>;
         privateSubnets: _pulumi.Output<string[]>;

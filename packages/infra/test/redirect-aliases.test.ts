@@ -28,6 +28,13 @@ void test('infra redirect config supports demo and beta aliases for testnet', ()
   assert.match(infraConfigSource, /devToTestnetRedirectAliases/);
   assert.match(infraConfigSource, /createDnsValidatedCertificate\(/);
   assert.match(infraConfigSource, /dev-redir-\$\{stage\}-wildcard-cert/);
+  assert.match(infraConfigSource, /aliases:\s*\[\s*`root-domain-redirect-\$\{stage\}`/s);
+  assert.match(infraConfigSource, /aliases:\s*\[\s*`airs-domain-redirect-\$\{stage\}`/s);
+  assert.match(infraConfigSource, /aliases:\s*\[\s*`dev-domain-redirect-\$\{stage\}`/s);
+  assert.match(
+    infraConfigSource,
+    /aliases:\s*\[\s*`dev-domain-redirect-\$\{stage\}-wildcard-cert`/s
+  );
   assert.match(
     infraConfigSource,
     /createExternalDomainRedirect\(\{\s*id: `dev-redir-\$\{stage\}`/s
