@@ -34,6 +34,17 @@ if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
     EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE
 fi
 
+resolve_auth_execution_provider() {
+  if [ -n "${AUTH_BETTER_AUTH_URL:-}" ] || [ -n "${EXPO_PUBLIC_BETTER_AUTH_URL:-}" ] || \
+    [ -n "${AUTH_EXCHANGE_URL:-}" ] || [ -n "${EXPO_PUBLIC_AUTH_EXCHANGE_URL:-}" ] || \
+    [ -n "${BETTER_AUTH_URL:-}" ]; then
+    echo "better-auth"
+    return 0
+  fi
+
+  echo "supabase"
+}
+
 # SSM parameter name builder: /{app}/{stage}/{param_key}
 # e.g. /alternun-infra/dev/expo-public-authentik-social-login-mode
 build_param_name() {
@@ -117,7 +128,8 @@ case "$STAGE" in
     export_env_from_ssm "ALTERNUN_TESTNET_MODE" "alternun-testnet-mode-dev" "on"
     ;;
   prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
-    # Production: stays on Authentik until the prod Better Auth migration lands.
+    # Production still resolves the stage-specific Better Auth URLs; the execution provider
+    # is derived from those resolved URLs below so the deploy contract stays consistent.
     export_env_from_ssm "INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL" "infra-backend-api-auth-better-auth-url-prod" "https://api.alternun.co"
     export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url-prod" "https://api.alternun.co/auth"
     export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url-prod" "https://api.alternun.co/auth/exchange"
@@ -129,6 +141,18 @@ case "$STAGE" in
     export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode" ""
     ;;
 esac
+
+if [ -n "${EXPO_PUBLIC_BETTER_AUTH_URL:-}" ]; then
+  export AUTH_BETTER_AUTH_URL="${EXPO_PUBLIC_BETTER_AUTH_URL}"
+fi
+
+if [ -n "${EXPO_PUBLIC_AUTH_EXCHANGE_URL:-}" ]; then
+  export AUTH_EXCHANGE_URL="${EXPO_PUBLIC_AUTH_EXCHANGE_URL}"
+fi
+
+AUTH_EXECUTION_PROVIDER=$(resolve_auth_execution_provider)
+export AUTH_EXECUTION_PROVIDER
+export EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER="${AUTH_EXECUTION_PROVIDER}"
 
 # List resolved values (for debugging)
 echo "Resolved SSM parameters for stage '${STAGE}':" >&2

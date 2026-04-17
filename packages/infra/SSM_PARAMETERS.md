@@ -101,7 +101,7 @@ STACK=dev npm run build
 # All EXPO_PUBLIC_* vars pulled from SSM instead of .env
 ```
 
-In CodeBuild, `resolve-ssm-env.sh` clears inherited auth execution and Better Auth URL vars before resolving stage values so stale project-level env cannot override the SSM-backed deploy contract.
+In CodeBuild, `resolve-ssm-env.sh` clears inherited auth execution and Better Auth URL vars before resolving stage values so stale project-level env cannot override the SSM-backed deploy contract. After the URLs are resolved, it derives `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` from the Better Auth route so the predeploy guard and the mobile build see the same stage contract.
 
 The detection in `build.sh`:
 
@@ -120,7 +120,7 @@ For each variable, resolution order is:
 3. **Local `.env` files** (dev path)
 4. **Hardcoded defaults** — lowest priority
 
-The CI helper intentionally resets the auth contract vars before applying that chain so stage-scoped SSM values win for auth execution and Better Auth routing.
+The CI helper intentionally resets the auth contract vars before applying that chain so stage-scoped SSM values win for auth execution and Better Auth routing, then derives the execution provider from the resolved Better Auth URLs.
 
 ## Key Security Considerations
 
