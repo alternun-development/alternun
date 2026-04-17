@@ -1,3 +1,19 @@
+## [1.0.133](https://github.com/alternun-development/alternun/compare/v1.0.132...v1.0.133) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** feat(api): add global activity feed module
+
+### Features
+
+- **api:** add global activity feed module ([4902456](https://github.com/alternun-development/alternun/commit/490245656d7f04f7f5672a42950c73e439f7d18f))
+
+## [1.0.133](https://github.com/alternun-development/alternun/compare/v1.0.132...v1.0.133) (2026-04-17)
+
+### Features
+
+- **api:** add global activity feed module ([4902456](https://github.com/alternun-development/alternun/commit/490245656d7f04f7f5672a42950c73e439f7d18f))
+
 ## [1.0.132](https://github.com/alternun-development/alternun/compare/v1.0.131...v1.0.132) (2026-04-17)
 
 ### Bug Fixes
