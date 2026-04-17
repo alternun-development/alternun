@@ -536,7 +536,7 @@ function ATNCard({
         >
           0xA8f9...Wq77E4c2
         </Text>
-        <TouchableOpacity onPress={() => onNavigate?.('mi-perfil')} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet')} activeOpacity={0.7}>
           <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense]}>
             <WalletIcon size={15} color={p.title} />
             <Text
@@ -953,6 +953,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     gap: 10,
+    overflow: 'hidden',
+    width: '100%',
   },
   walletPanelDense: {
     gap: 8,
@@ -969,6 +971,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
     minWidth: 0,
+    flexWrap: 'wrap',
   },
   walletPanelTopDense: {
     flexDirection: 'column',
@@ -978,6 +981,7 @@ const styles = StyleSheet.create({
   walletPanelLabel: {
     fontSize: 14,
     fontWeight: '800',
+    flexShrink: 1,
   },
   walletPanelLabelCompact: {
     fontSize: 13,
@@ -985,6 +989,7 @@ const styles = StyleSheet.create({
   walletPanelMeta: {
     fontSize: 13,
     fontWeight: '600',
+    flexShrink: 0,
   },
   walletPanelMetaDense: {
     alignSelf: 'flex-start',
@@ -997,20 +1002,24 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     letterSpacing: -0.1,
     minWidth: 0,
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   walletAddressDense: {
     fontSize: 14,
     lineHeight: 18,
   },
   walletAddressCompact: {
-    fontSize: 14,
+    fontSize: 13,
+    lineHeight: 17,
   },
   walletLinkRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     minWidth: 0,
-    flexShrink: 0,
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   walletLinkRowDense: {
     flexWrap: 'wrap',
