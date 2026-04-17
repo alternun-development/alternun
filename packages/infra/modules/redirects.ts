@@ -2,7 +2,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable comma-dangle */
 
-type DomainConfig = string | { name: string; cert?: string; redirects?: string[] };
+import * as aws from '@pulumi/aws';
+import * as pulumi from '@pulumi/pulumi';
+
+type DomainConfig = string | { name: string; cert?: pulumi.Input<string>; redirects?: string[] };
+
+export interface DnsValidatedCertificateArgs {
+  id: string;
+  domainName: string;
+  hostedZoneId: string;
+}
 
 export interface StageDomainRedirectArgs {
   stage: string;
@@ -16,7 +25,8 @@ export interface ExternalDomainRedirectArgs {
   id: string;
   sourceDomain: string;
   targetDomain: string;
-  certificateArn?: string;
+  certificateArn?: pulumi.Input<string>;
+  redirects?: string[];
 }
 
 const PROTOCOL_PREFIX = /^https?:\/\//i;
@@ -27,7 +37,7 @@ function sanitizeDomain(value: string): string {
 
 function buildDomainConfig(
   domainName: string,
-  certificateArn?: string,
+  certificateArn?: pulumi.Input<string>,
   redirects?: string[]
 ): DomainConfig {
   const cleanRedirects = (redirects ?? [])
@@ -52,6 +62,34 @@ function buildDomainConfig(
   }
 
   return domainConfig;
+}
+
+export function createDnsValidatedCertificate(
+  args: DnsValidatedCertificateArgs
+): pulumi.Output<string> {
+  const certificate = new aws.acm.Certificate(`${args.id}`, {
+    domainName: args.domainName,
+    validationMethod: 'DNS',
+  });
+
+  const certificateValidationRecord = new aws.route53.Record(`${args.id}-validation`, {
+    allowOverwrite: true,
+    name: certificate.domainValidationOptions[0].resourceRecordName,
+    records: [certificate.domainValidationOptions[0].resourceRecordValue],
+    ttl: 60,
+    type: certificate.domainValidationOptions[0].resourceRecordType,
+    zoneId: args.hostedZoneId,
+  });
+
+  const certificateValidation = new aws.acm.CertificateValidation(
+    `${args.id}-validation-complete`,
+    {
+      certificateArn: certificate.arn,
+      validationRecordFqdns: [certificateValidationRecord.fqdn],
+    }
+  );
+
+  return certificateValidation.certificateArn;
 }
 
 function buildRedirectInjection(targetUrl: string): string {
@@ -111,7 +149,7 @@ export function createExternalDomainRedirect(args: ExternalDomainRedirectArgs): 
   const targetUrl = `https://${targetDomain}`;
 
   new sst.aws.Router(args.id, {
-    domain: buildDomainConfig(sourceDomain, args.certificateArn),
+    domain: buildDomainConfig(sourceDomain, args.certificateArn, args.redirects),
     routes: {
       '/*': {
         url: targetUrl,
