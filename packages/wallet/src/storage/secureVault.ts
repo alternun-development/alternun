@@ -56,7 +56,12 @@ function concatBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
   return result;
 }
 
-async function deriveAesKey(pin: string, salt: Uint8Array, usage: KeyUsage[]): Promise<CryptoKey> {
+async function deriveAesKey(
+  pin: string,
+  salt: Uint8Array,
+  usage: KeyUsage[],
+  extractable = false
+): Promise<CryptoKey> {
   const cryptoApi = getCrypto();
   const pinBytes = new TextEncoder().encode(pin);
 
@@ -74,7 +79,7 @@ async function deriveAesKey(pin: string, salt: Uint8Array, usage: KeyUsage[]): P
       name: 'AES-GCM',
       length: KEY_LENGTH_BYTES * 8,
     },
-    false,
+    extractable,
     usage
   );
 }
@@ -171,7 +176,7 @@ export async function clearMnemonic(adapter?: SecureStoreAdapter): Promise<void>
 export async function createPinDigest(pin: string): Promise<{ salt: string; hash: string }> {
   const cryptoApi = getCrypto();
   const salt = cryptoApi.getRandomValues(new Uint8Array(16));
-  const derivedKey = await deriveAesKey(pin, salt, ['encrypt']);
+  const derivedKey = await deriveAesKey(pin, salt, ['encrypt'], true);
   const raw = await cryptoApi.subtle.exportKey('raw', derivedKey);
   return {
     salt: encodeBase64(salt),
@@ -185,7 +190,7 @@ export async function verifyPin(
   expectedHashBase64: string
 ): Promise<boolean> {
   const cryptoApi = getCrypto();
-  const derivedKey = await deriveAesKey(pin, decodeBase64(saltBase64), ['encrypt']);
+  const derivedKey = await deriveAesKey(pin, decodeBase64(saltBase64), ['encrypt'], true);
   const raw = await cryptoApi.subtle.exportKey('raw', derivedKey);
 
   const expected = decodeBase64(expectedHashBase64);
