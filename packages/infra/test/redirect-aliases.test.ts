@@ -67,10 +67,13 @@ void test('infra redirect config supports demo and beta aliases for testnet', ()
   assert.match(sstDeploySource, /dev_source_demo=\$\{dev_source_primary\/#dev\.\//);
   assert.match(sstDeploySource, /dev_source_beta=\$\{dev_source_primary\/#dev\.\//);
   assert.match(sstDeploySource, /INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES/);
+  assert.doesNotMatch(sstDeploySource, /aliases\+=\("\$\{DOMAIN\}"\)/);
   assert.match(postdeploySource, /dev_source_primary=\$\{INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:/);
   assert.match(postdeploySource, /dev_source_demo=\$\{dev_source_primary\/#dev\.\//);
   assert.match(postdeploySource, /dev_source_beta=\$\{dev_source_primary\/#dev\.\//);
   assert.match(postdeploySource, /INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES/);
+  assert.match(postdeploySource, /run_reachability_checks_in_parallel\(\)/);
+  assert.match(postdeploySource, /launch_reachability_check\(/);
   assert.match(sstDeploySource, /remove_cloudfront_aliases_from_distribution\(/);
   assert.match(sstDeploySource, /declare -A dist_aliases=/);
   assert.match(sstDeploySource, /\.Aliases \|= del\(\.Items\)/);
