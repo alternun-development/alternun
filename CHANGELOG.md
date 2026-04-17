@@ -1,3 +1,22 @@
+## [1.0.140](https://github.com/alternun-development/alternun/compare/v1.0.138...v1.0.140) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(repo,admin,api): CHANGELOG, app, build
+- **repo:** fix(infra): .env, buildspec, redirects, sst-deploy
+
+### Bug Fixes
+
+- **infra:** .env, buildspec, redirects, sst-deploy ([e474d57](https://github.com/alternun-development/alternun/commit/e474d57b6eea504a93b13d94b6f919af83f70054))
+- **repo,admin,api:** CHANGELOG, app, build ([9f2996b](https://github.com/alternun-development/alternun/commit/9f2996beb7b475d1ae25474263e0b47f84a2acbe))
+
+## [1.0.140](https://github.com/alternun-development/alternun/compare/v1.0.138...v1.0.140) (2026-04-17)
+
+### Bug Fixes
+
+- **infra:** .env, buildspec, redirects, sst-deploy ([e474d57](https://github.com/alternun-development/alternun/commit/e474d57b6eea504a93b13d94b6f919af83f70054))
+- **repo,admin,api:** CHANGELOG, app, build ([9f2996b](https://github.com/alternun-development/alternun/commit/9f2996beb7b475d1ae25474263e0b47f84a2acbe))
+
 ## [1.0.139](https://github.com/alternun-development/alternun/compare/v1.0.138...v1.0.139) (2026-04-17)
 
 ### Bug Fixes
