@@ -28,11 +28,20 @@ export function buildDashboardPipelineSpecs({
     env.DISCORD_CLIENT_SECRET ??
     '';
   const discordAuthClientSecretKey = 'INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_SECRET';
-  const betterAuthUrl =
+  // Testnet (dashboard-dev) MUST point at Better Auth. Authentik is not ready for testnet
+  // and the release path previously left this empty, silently wiring testnet to Authentik.
+  const TESTNET_BETTER_AUTH_URL = 'https://testnet.api.alternun.co';
+  const PROD_BETTER_AUTH_URL = 'https://api.alternun.co';
+  const betterAuthUrlDev =
     env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL ??
     env.AUTH_BETTER_AUTH_URL ??
     env.EXPO_PUBLIC_BETTER_AUTH_URL ??
-    '';
+    TESTNET_BETTER_AUTH_URL;
+  const betterAuthUrlProd =
+    env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL ??
+    env.AUTH_BETTER_AUTH_URL ??
+    env.EXPO_PUBLIC_BETTER_AUTH_URL ??
+    PROD_BETTER_AUTH_URL;
   const betterAuthSecret =
     env.INFRA_BACKEND_API_BETTER_AUTH_SECRET ?? env.BETTER_AUTH_SECRET ?? env.AUTH_SECRET ?? '';
   const betterAuthTrustedOrigins =
@@ -58,7 +67,10 @@ export function buildDashboardPipelineSpecs({
         INFRA_ENABLE_BACKEND_API: 'true',
         INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
         INFRA_BACKEND_API_ENABLED_STAGES: 'dev',
-        INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrl,
+        INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlDev,
+        AUTH_BETTER_AUTH_URL: betterAuthUrlDev,
+        BETTER_AUTH_URL: betterAuthUrlDev,
+        ALTERNUN_TESTNET_MODE: 'on',
         INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
         ...(discordAuthClientId
           ? { INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID: discordAuthClientId }
@@ -89,7 +101,7 @@ export function buildDashboardPipelineSpecs({
         INFRA_ENABLE_BACKEND_API: 'true',
         INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
         INFRA_BACKEND_API_ENABLED_STAGES: 'production',
-        INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrl,
+        INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlProd,
         INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
         ...(discordAuthClientId
           ? { INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID: discordAuthClientId }
