@@ -1,62 +1,76 @@
+## [1.0.130](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.130) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** chore: remove email-templates dist from release tracked paths
+- **repo:** fix(repo,admin,api): CHANGELOG, app
+- **repo:** fix(api): fix airs verifySessionToken return type
+- **repo:** fix(email): 28 files updated
+- **repo:** chore: ignore email-templates dist directory
+
+### Bug Fixes
+
+- **api:** fix airs verifySessionToken return type ([cbb7663](https://github.com/alternun-development/alternun/commit/cbb7663986741556fdd57a9c871f5834601256b6))
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+- **repo,admin,api:** CHANGELOG, app ([b56e228](https://github.com/alternun-development/alternun/commit/b56e228a2712c03e48d1fcca8439d6428f27ecee))
+
+## [1.0.130](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.130) (2026-04-17)
+
+### Bug Fixes
+
+- **api:** fix airs verifySessionToken return type ([cbb7663](https://github.com/alternun-development/alternun/commit/cbb7663986741556fdd57a9c871f5834601256b6))
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+- **repo,admin,api:** CHANGELOG, app ([b56e228](https://github.com/alternun-development/alternun/commit/b56e228a2712c03e48d1fcca8439d6428f27ecee))
+
 ## [1.0.129](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.129) (2026-04-17)
 
 ### Bug Fixes
 
-- **repo:** chore(repo,admin,api): CHANGELOG, app
-- **repo:** fix(infra): allow certificateArn reassignment
-- **repo:** build: add email-templates dist files for deployment
-- **repo:** feat(wallet): scaffold phase-1 non-custodial HD wallet core
-- **repo:** fix(docs,mobile,auth): mi-perfil, ProfileStyles
+- **repo:** fix(repo,admin,api): CHANGELOG, app
+- **repo:** fix(api): fix airs verifySessionToken return type
+- **repo:** fix(email): 28 files updated
+- **repo:** chore: ignore email-templates dist directory
+- **repo:** docs: add AIRS Wallet System comprehensive integration plan
 
 ### Bug Fixes
 
+- **api:** fix airs verifySessionToken return type ([cbb7663](https://github.com/alternun-development/alternun/commit/cbb7663986741556fdd57a9c871f5834601256b6))
 - **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
-- **infra:** allow certificateArn reassignment ([34475e5](https://github.com/alternun-development/alternun/commit/34475e5621c3c0655419128327f44c6779cbc407))
-
-### Features
-
-- **wallet:** scaffold phase-1 non-custodial HD wallet core ([189b8f0](https://github.com/alternun-development/alternun/commit/189b8f0a2c13745a2d19f0af7a3b2005d28265e1))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+- **repo,admin,api:** CHANGELOG, app ([b56e228](https://github.com/alternun-development/alternun/commit/b56e228a2712c03e48d1fcca8439d6428f27ecee))
 
 ## [1.0.129](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.129) (2026-04-17)
 
 ### Bug Fixes
 
+- **api:** fix airs verifySessionToken return type ([cbb7663](https://github.com/alternun-development/alternun/commit/cbb7663986741556fdd57a9c871f5834601256b6))
 - **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
-- **infra:** allow certificateArn reassignment ([34475e5](https://github.com/alternun-development/alternun/commit/34475e5621c3c0655419128327f44c6779cbc407))
-
-### Features
-
-- **wallet:** scaffold phase-1 non-custodial HD wallet core ([189b8f0](https://github.com/alternun-development/alternun/commit/189b8f0a2c13745a2d19f0af7a3b2005d28265e1))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+- **repo,admin,api:** CHANGELOG, app ([b56e228](https://github.com/alternun-development/alternun/commit/b56e228a2712c03e48d1fcca8439d6428f27ecee))
 
 ## [1.0.128](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.128) (2026-04-17)
 
 ### Bug Fixes
 
-- **repo:** fix(infra): allow certificateArn reassignment
-- **repo:** build: add email-templates dist files for deployment
-- **repo:** feat(wallet): scaffold phase-1 non-custodial HD wallet core
+- **repo:** fix(email): 28 files updated
+- **repo:** chore: ignore email-templates dist directory
+- **repo:** docs: add AIRS Wallet System comprehensive integration plan
 - **repo:** fix(docs,mobile,auth): mi-perfil, ProfileStyles
 - **repo:** test(admin,api,docs): oidc-client, app-shell, callback-page, resource-list-page
 
 ### Bug Fixes
 
 - **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
-- **infra:** allow certificateArn reassignment ([34475e5](https://github.com/alternun-development/alternun/commit/34475e5621c3c0655419128327f44c6779cbc407))
-
-### Features
-
-- **wallet:** scaffold phase-1 non-custodial HD wallet core ([189b8f0](https://github.com/alternun-development/alternun/commit/189b8f0a2c13745a2d19f0af7a3b2005d28265e1))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
 
 ## [1.0.128](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.128) (2026-04-17)
 
 ### Bug Fixes
 
 - **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
-- **infra:** allow certificateArn reassignment ([34475e5](https://github.com/alternun-development/alternun/commit/34475e5621c3c0655419128327f44c6779cbc407))
-
-### Features
-
-- **wallet:** scaffold phase-1 non-custodial HD wallet core ([189b8f0](https://github.com/alternun-development/alternun/commit/189b8f0a2c13745a2d19f0af7a3b2005d28265e1))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
 
 ## [1.0.127](https://github.com/alternun-development/alternun/compare/v1.0.126...v1.0.127) (2026-04-17)
 
