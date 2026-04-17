@@ -552,7 +552,7 @@ export function deployBackendApiInfrastructure(
     string,
     pulumi.Input<string> | undefined
   >;
-  const certificateArn: pulumi.Input<string> | undefined = certArnsForStage[stageKey];
+  let certificateArn: pulumi.Input<string> | undefined = certArnsForStage[stageKey];
   if (shouldCreateCustomDomain && args.hostedZoneId) {
     if (!certificateArn) {
       const certificate = new aws.acm.Certificate(`${resourceBaseName}-cert`, {
