@@ -77,7 +77,16 @@ disable_expo_dotenv_if_needed() {
   export EXPO_NO_DOTENV=1
 
   if [ "${should_disable}" = "true" ]; then
-    export EXPO_EXPORT_CLEAR_CACHE=1
+    # Give every export a build-scoped temp dir so Metro never shares its cache
+    # root across concurrent or back-to-back builds.
+    export TMPDIR="${TMPDIR:-/tmp}/metro-cache-${STACK:-${SST_STAGE:-local}}-${CODEBUILD_BUILD_ID:-$$}"
+    mkdir -p "${TMPDIR}"
+
+    if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ "${CI:-}" = "true" ]; then
+      export EXPO_EXPORT_CLEAR_CACHE=0
+    else
+      export EXPO_EXPORT_CLEAR_CACHE=1
+    fi
   fi
 }
 
