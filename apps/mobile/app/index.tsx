@@ -69,7 +69,7 @@ export default function HomeScreen(): React.JSX.Element {
       isLoading={loading}
       onReload={handleReload}
       onRequireSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
-      onOpenProfilePage={() => router.push('/profile')}
+      onOpenProfilePage={() => router.push('/mi-perfil')}
       onOpenSettingsPage={() => router.push('/settings')}
       onWalletConnect={async (walletType: string) => {
         await signIn({

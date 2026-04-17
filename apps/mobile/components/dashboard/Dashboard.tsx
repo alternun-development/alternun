@@ -399,6 +399,9 @@ export default function Dashboard({
         case 'mi-perfil':
           onOpenProfilePage();
           break;
+        case 'mi-perfil:wallet':
+          router.push({ pathname: '/mi-perfil', params: { tab: 'wallet' } });
+          break;
         case 'portafolio':
           router.push('/portafolio');
           break;
