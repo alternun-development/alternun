@@ -1,3 +1,19 @@
+## [1.0.141](https://github.com/alternun-development/alternun/compare/v1.0.140...v1.0.141) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(infra): sst-deploy
+
+### Bug Fixes
+
+- **infra:** sst-deploy ([4cd9755](https://github.com/alternun-development/alternun/commit/4cd9755a7780f7c26e9d8f2322d3eee50dce508f))
+
+## [1.0.141](https://github.com/alternun-development/alternun/compare/v1.0.140...v1.0.141) (2026-04-17)
+
+### Bug Fixes
+
+- **infra:** sst-deploy ([4cd9755](https://github.com/alternun-development/alternun/commit/4cd9755a7780f7c26e9d8f2322d3eee50dce508f))
+
 ## [1.0.140](https://github.com/alternun-development/alternun/compare/v1.0.138...v1.0.140) (2026-04-17)
 
 ### Bug Fixes
