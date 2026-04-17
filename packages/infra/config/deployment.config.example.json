@@ -45,7 +45,11 @@
     "enableAirsToDev": true,
     "airsToDevSourceDomain": "airs.alternun.co",
     "enableDevToTestnet": true,
-    "devToTestnetSourceDomain": "dev.airs.alternun.co",
+    "devToTestnetSourceDomains": [
+      "dev.airs.alternun.co",
+      "demo.airs.alternun.co",
+      "beta.airs.alternun.co"
+    ],
     "enableRootDomainRedirect": true,
     "rootDomainTarget": "alternun.io",
     "certArns": {

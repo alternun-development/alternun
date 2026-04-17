@@ -215,6 +215,7 @@ const airsToDevSourceDomain = expoConfig.redirects.airsToDevSourceDomain;
 const airsToDevCertArn = expoConfig.redirects.airsToDevCertArn;
 const enableDevToTestnetRedirect = expoConfig.redirects.enableDevToTestnet;
 const devToTestnetSourceDomain = expoConfig.redirects.devToTestnetSourceDomain;
+const devToTestnetSourceDomains = expoConfig.redirects.devToTestnetSourceDomains;
 const devToTestnetCertArn = expoConfig.redirects.devToTestnetCertArn;
 const enableRootDomainRedirect = expoConfig.redirects.enableRootDomainRedirect;
 const rootDomainRedirectTarget = expoConfig.redirects.rootDomainRedirectTarget;
@@ -430,6 +431,7 @@ const commonBuildEnv = {
   INFRA_REDIRECT_AIRS_TO_DEV_SOURCE: airsToDevSourceDomain,
   INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN: airsToDevCertArn ?? '',
   INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE: devToTestnetSourceDomain,
+  INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES: devToTestnetSourceDomains.join(','),
   INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN: devToTestnetCertArn ?? '',
   INFRA_REDIRECT_ROOT_TARGET: rootDomainRedirectTarget,
   INFRA_REDIRECT_ROOT_CERT_ARN: rootDomainRedirectCertArn ?? '',
@@ -843,14 +845,22 @@ export function createInfrastructure() {
       stage === 'dev' &&
       enableCustomDomain &&
       enableDevToTestnetRedirect &&
-      devToTestnetSourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase();
+      devToTestnetSourceDomains.some(
+        (sourceDomain) => sourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase()
+      );
 
     if (shouldCreateDevToTestnetRedirect) {
-      createExternalDomainRedirect({
-        id: `dev-domain-redirect-${stage}`,
-        sourceDomain: devToTestnetSourceDomain,
-        targetDomain: expoStageMap.dev,
-        certificateArn: devToTestnetCertArn,
+      devToTestnetSourceDomains.forEach((sourceDomain, index) => {
+        if (sourceDomain.toLowerCase() === expoStageMap.dev.toLowerCase()) {
+          return;
+        }
+
+        createExternalDomainRedirect({
+          id: `dev-domain-redirect-${stage}-${index}`,
+          sourceDomain,
+          targetDomain: expoStageMap.dev,
+          certificateArn: devToTestnetCertArn,
+        });
       });
     }
 
@@ -872,6 +882,7 @@ export function createInfrastructure() {
       airsToDevTarget: shouldCreateAirsToDevRedirect ? expoStageMap.dev : null,
       devToTestnetEnabled: shouldCreateDevToTestnetRedirect,
       devToTestnetSource: shouldCreateDevToTestnetRedirect ? devToTestnetSourceDomain : null,
+      devToTestnetSources: shouldCreateDevToTestnetRedirect ? devToTestnetSourceDomains : null,
       devToTestnetTarget: shouldCreateDevToTestnetRedirect ? expoStageMap.dev : null,
       rootDomainRedirectEnabled: shouldCreateRootDomainRedirect,
       rootDomainRedirectTarget: shouldCreateRootDomainRedirect ? rootDomainRedirectTarget : null,
