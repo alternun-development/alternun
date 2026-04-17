@@ -1,34 +1,34 @@
-import { useList } from '@refinedev/core';
-import { Link } from 'react-router-dom';
-import { getAdminResource } from '../../resources/catalog';
+import { useList, } from '@refinedev/core';
+import { Link, } from 'react-router-dom';
+import { getAdminResource, } from '../../resources/catalog';
 
 interface ResourceListPageProps {
   resourceName: string;
 }
 
-function formatValue(value: unknown): string {
+function formatValue(value: unknown,): string {
   if (value === null || value === undefined) {
     return '—';
   }
 
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-    return String(value);
+    return String(value,);
   }
 
-  if (Array.isArray(value)) {
+  if (Array.isArray(value,)) {
     return value.length === 0 ? '[]' : `${value.length} items`;
   }
 
-  return JSON.stringify(value);
+  return JSON.stringify(value,);
 }
 
-function getRecordId(record: Record<string, unknown>, index: number): string {
+function getRecordId(record: Record<string, unknown>, index: number,): string {
   const rawId = record.id ?? record.uuid ?? record.slug ?? record.key;
-  return rawId !== undefined ? String(rawId) : String(index + 1);
+  return rawId !== undefined ? String(rawId,) : String(index + 1,);
 }
 
-export function ResourceListPage({ resourceName }: ResourceListPageProps) {
-  const resource = getAdminResource(resourceName);
+export function ResourceListPage({ resourceName, }: ResourceListPageProps,) {
+  const resource = getAdminResource(resourceName,);
   const list = useList({
     resource: resourceName,
     pagination: {
@@ -47,11 +47,11 @@ export function ResourceListPage({ resourceName }: ResourceListPageProps) {
     queryOptions: {
       retry: false,
     },
-  });
+  },);
 
   const records = (list.result?.data ?? []) as Record<string, unknown>[];
   const columns =
-    records.length > 0 ? Object.keys(records[0]).slice(0, 5) : ['id', 'status', 'updatedAt'];
+    records.length > 0 ? Object.keys(records[0],).slice(0, 5,) : ['id', 'status', 'updatedAt',];
   const total = list.result?.total ?? records.length;
 
   return (
@@ -85,21 +85,21 @@ export function ResourceListPage({ resourceName }: ResourceListPageProps) {
             <table className='data-table'>
               <thead>
                 <tr>
-                  {columns.map((column) => (
+                  {columns.map((column,) => (
                     <th key={column}>{column}</th>
-                  ))}
+                  ),)}
                   {resource.show ? <th>details</th> : null}
                 </tr>
               </thead>
               <tbody>
-                {records.map((record, index) => {
-                  const recordId = getRecordId(record, index);
+                {records.map((record, index,) => {
+                  const recordId = getRecordId(record, index,);
 
                   return (
                     <tr key={recordId}>
-                      {columns.map((column) => (
-                        <td key={column}>{formatValue(record[column])}</td>
-                      ))}
+                      {columns.map((column,) => (
+                        <td key={column}>{formatValue(record[column],)}</td>
+                      ),)}
                       {resource.show ? (
                         <td>
                           <Link className='inline-link' to={`${resource.list}/${recordId}`}>
@@ -109,7 +109,7 @@ export function ResourceListPage({ resourceName }: ResourceListPageProps) {
                       ) : null}
                     </tr>
                   );
-                })}
+                },)}
               </tbody>
             </table>
           </div>

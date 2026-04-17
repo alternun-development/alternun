@@ -2,6 +2,7 @@ import { getLocaleLabel } from '@alternun/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Animated,
+  Alert,
   Pressable,
   View,
   Text,
@@ -24,10 +25,6 @@ import {
   Moon,
   Sun,
   LogIn,
-  LayoutDashboard,
-  Leaf,
-  ShieldCheck,
-  CircleUserRound,
   Zap,
   Menu,
   X,
@@ -39,6 +36,7 @@ import type { AppLanguage, MotionLevel, ThemeMode } from '../settings/AppPrefere
 import NotificationDropdown, { type NotificationItem } from './NotificationDropdown';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { getFirstName } from './userDisplayName';
+import { NAV_SECTIONS, type NavSection } from './navSections';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png') as number;
@@ -57,32 +55,14 @@ const SettingsIcon = Settings as React.FC<LucideProps>;
 const LogOutIcon = LogOut as React.FC<LucideProps>;
 const LanguagesIcon = Languages as React.FC<LucideProps>;
 const LogInIcon = LogIn as React.FC<LucideProps>;
-const LayoutDashboardIcon = LayoutDashboard as React.FC<LucideProps>;
-const LeafIcon = Leaf as React.FC<LucideProps>;
-const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
 const BellIcon = Bell as React.FC<LucideProps>;
 const ChevronUpIcon = ChevronUp as React.FC<LucideProps>;
-const CircleUserRoundIcon = CircleUserRound as React.FC<LucideProps>;
 const MoonIcon = Moon as React.FC<LucideProps>;
 const SunIcon = Sun as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
 const MenuIcon = Menu as React.FC<LucideProps>;
 const CloseIcon = X as React.FC<LucideProps>;
 const EMPTY_NOTIFICATIONS: NotificationItem[] = [];
-
-// ── Nav sections ──────────────────────────────────────────────────────────────
-export interface NavSection {
-  key: string;
-  label: string;
-  icon: React.FC<LucideProps>;
-}
-
-export const NAV_SECTIONS: NavSection[] = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
-  { key: 'explorar', label: 'Explore', icon: LeafIcon },
-  { key: 'portafolio', label: 'Portfolio', icon: ShieldCheckIcon },
-  { key: 'mi-perfil', label: 'My Profile', icon: CircleUserRoundIcon },
-];
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface TopNavProps {
@@ -287,6 +267,17 @@ export default function TopNav({
   const dismissAll = (): void => {
     setMenuVisible(false);
     setNotifVisible(false);
+  };
+
+  const handleNavSectionPress = (section: NavSection): void => {
+    setMenuVisible(false);
+
+    if (section.comingSoon) {
+      Alert.alert('Coming soon', `${section.label} will be available soon.`);
+      return;
+    }
+
+    onNavigate?.(section.key);
   };
 
   return (
@@ -580,6 +571,7 @@ export default function TopNav({
                   <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
                     {NAV_SECTIONS.map((section) => {
                       const isActive = activeSection === section.key;
+                      const isComingSoon = Boolean(section.comingSoon);
                       const IconComp = section.icon;
                       return (
                         <TouchableOpacity
@@ -588,30 +580,55 @@ export default function TopNav({
                             styles.navItem,
                             isExtraSmall && styles.navItemExtraSmall,
                             {
-                              backgroundColor: isActive ? p.navActive : 'transparent',
-                              borderWidth: isActive ? 1 : 0,
-                              borderColor: isActive ? p.navActiveBorder : 'transparent',
+                              backgroundColor: isActive
+                                ? p.navActive
+                                : isComingSoon
+                                ? isDark
+                                  ? 'rgba(255,255,255,0.03)'
+                                  : 'rgba(15,23,42,0.03)'
+                                : 'transparent',
+                              borderWidth: isActive || isComingSoon ? 1 : 0,
+                              borderColor: isActive
+                                ? p.navActiveBorder
+                                : isComingSoon
+                                ? p.dropDivider
+                                : 'transparent',
+                              opacity: isComingSoon ? 0.74 : 1,
                             },
                           ]}
-                          onPress={() => {
-                            setMenuVisible(false);
-                            onNavigate?.(section.key);
-                          }}
+                          onPress={() => handleNavSectionPress(section)}
                           activeOpacity={0.8}
                         >
-                          <IconComp size={15} color={isActive ? p.navActiveText : p.iconIdle} />
+                          <IconComp
+                            size={15}
+                            color={
+                              isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.iconIdle
+                            }
+                          />
                           <Text
                             style={[
                               styles.navItemText,
-                              { color: isActive ? p.navActiveText : p.dropText },
+                              {
+                                color: isActive
+                                  ? p.navActiveText
+                                  : isComingSoon
+                                  ? p.dropSub
+                                  : p.dropText,
+                              },
                               isActive && styles.navItemTextActive,
                             ]}
                           >
                             {section.label}
                           </Text>
-                          {isActive && (
+                          {isComingSoon ? (
+                            <View style={[styles.comingSoonPill, { borderColor: p.dropDivider }]}>
+                              <Text style={[styles.comingSoonText, { color: p.dropSub }]}>
+                                Coming soon
+                              </Text>
+                            </View>
+                          ) : isActive ? (
                             <View style={[styles.activeIndicator, { backgroundColor: p.accent }]} />
-                          )}
+                          ) : null}
                         </TouchableOpacity>
                       );
                     })}
@@ -1098,6 +1115,19 @@ const styles = StyleSheet.create({
   navItemTextActive: {
     fontWeight: '700',
     fontFamily: 'Sculpin-Bold',
+  },
+  comingSoonPill: {
+    marginLeft: 'auto',
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  comingSoonText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
   },
   activeIndicator: {
     position: 'absolute',
