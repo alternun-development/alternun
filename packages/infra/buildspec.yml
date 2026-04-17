@@ -122,6 +122,8 @@ env:
     INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS: '5'
     INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS: '20'
     INFRA_ENFORCE_REDIRECT_CHECKS: 'false'
+    # Recovery-only cleanup. The deploy script auto-runs this for dev redirect cutovers,
+    # but keep the flag explicit for manual recovery or alias migration runs.
     INFRA_ENABLE_ALIAS_CLEANUP: 'false'
     INFRA_ENABLE_SST_DIFF: 'false'
     INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'true'

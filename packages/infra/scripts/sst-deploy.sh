@@ -480,6 +480,22 @@ cleanup_deploy_aliases() {
   done
 }
 
+should_cleanup_deploy_aliases() {
+  if is_truthy "${INFRA_ENABLE_ALIAS_CLEANUP:-false}"; then
+    return 0
+  fi
+
+  if [ "$stage" = "dev" ] && (
+    is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" ||
+    is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" ||
+    is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}"
+  ); then
+    return 0
+  fi
+
+  return 1
+}
+
 ensure_route53_hosted_zone_env() {
   if ! is_truthy "${INFRA_REQUIRE_ROUTE53:-true}"; then
     return 0
@@ -532,7 +548,7 @@ hydrate_backend_api_jwt_signing_key
 selected_pipeline_csv=$(resolve_selected_pipeline_csv)
 assert_pipeline_reconciliation_safe "$selected_pipeline_csv" "$STACK"
 
-if is_truthy "${INFRA_ENABLE_ALIAS_CLEANUP:-false}"; then
+if should_cleanup_deploy_aliases; then
   cleanup_deploy_aliases
 else
   echo "Skipping CloudFront alias cleanup (INFRA_ENABLE_ALIAS_CLEANUP=${INFRA_ENABLE_ALIAS_CLEANUP:-false})"
