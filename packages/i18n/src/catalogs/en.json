@@ -114,6 +114,13 @@
         "passwordMismatch": "Passwords do not match.",
         "passwordRequired": "Password is required.",
         "validEmail": "Enter a valid email address."
+      },
+      "redirecting": {
+        "google": "Redirecting to Google...",
+        "discord": "Redirecting to Discord...",
+        "email": "Signing in...",
+        "signup": "Creating account...",
+        "pleaseWait": "Please wait..."
       }
     },
     "dashboard": {
