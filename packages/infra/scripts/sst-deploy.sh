@@ -417,20 +417,64 @@ remove_cloudfront_aliases_from_distribution() {
     | .Aliases.Items = ((.Aliases.Items // []) | map(select(. as $alias | ($aliases | index($alias)) | not)))
     | .Aliases.Quantity = (.Aliases.Items | length)
     | if .Aliases.Quantity == 0 then
-        .ViewerCertificate = { "CloudFrontDefaultCertificate": true }
+        .Aliases |= del(.Items)
+        | .ViewerCertificate = { "CloudFrontDefaultCertificate": true }
       else
         .
       end
   ' "$cfg_json" > "$cfg_mod"
 
   echo "Removing aliases ${aliases[*]} from CloudFront distribution ${dist_id}..."
-  if aws cloudfront update-distribution --id "$dist_id" --if-match "$etag" --distribution-config "file://${cfg_mod}" >/dev/null 2>&1; then
+  local aliases_quantity
+  aliases_quantity=$(jq -r '.Aliases.Quantity // 0' "$cfg_mod")
+  local update_output
+  if update_output=$(
+    aws cloudfront update-distribution \
+      --id "$dist_id" \
+      --if-match "$etag" \
+      --distribution-config "file://${cfg_mod}" \
+      --output json 2>&1
+  ); then
     echo "Removed aliases ${aliases[*]} from distribution ${dist_id}."
     if ! aws cloudfront wait distribution-deployed --id "$dist_id" >/dev/null 2>&1; then
       echo "WARN: CloudFront distribution ${dist_id} did not reach Deployed after alias cleanup." >&2
     fi
   else
     echo "WARN: Failed to remove aliases ${aliases[*]} from distribution ${dist_id}." >&2
+    echo "WARN: CloudFront update output: ${update_output}" >&2
+    if [ "$aliases_quantity" -eq 0 ]; then
+      local cfg_retry update_retry_output
+      cfg_retry=$(mktemp)
+      jq --argjson aliases "$aliases_json" '
+        .DistributionConfig
+        | .Aliases.Items = ((.Aliases.Items // []) | map(select(. as $alias | ($aliases | index($alias)) | not)))
+        | .Aliases.Quantity = (.Aliases.Items | length)
+        | if .Aliases.Quantity == 0 then
+            .Aliases |= del(.Items)
+          else
+            .
+          end
+      ' "$cfg_json" > "$cfg_retry"
+
+      echo "WARN: Retrying alias removal for ${dist_id} while preserving the existing viewer certificate." >&2
+      if update_retry_output=$(
+        aws cloudfront update-distribution \
+          --id "$dist_id" \
+          --if-match "$etag" \
+          --distribution-config "file://${cfg_retry}" \
+          --output json 2>&1
+      ); then
+        echo "Removed aliases ${aliases[*]} from distribution ${dist_id} on retry."
+        if ! aws cloudfront wait distribution-deployed --id "$dist_id" >/dev/null 2>&1; then
+          echo "WARN: CloudFront distribution ${dist_id} did not reach Deployed after alias cleanup." >&2
+        fi
+      else
+        echo "WARN: Retry failed for aliases ${aliases[*]} on distribution ${dist_id}." >&2
+        echo "WARN: CloudFront retry output: ${update_retry_output}" >&2
+      fi
+
+      rm -f "$cfg_retry"
+    fi
   fi
 
   rm -f "$cfg_json" "$cfg_mod"
