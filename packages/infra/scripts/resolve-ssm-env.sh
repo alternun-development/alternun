@@ -100,15 +100,23 @@ export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_CLIENT_ID" "expo-public-authentik-cli
 export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE" "expo-public-authentik-login-entry-mode" "source"
 
 # Auth provider config (stage-specific)
+# Dedicated pipeline stages (dashboard-dev, backend-dev, api-dev, identity-dev) must map to
+# the dev/testnet branch so Better Auth defaults fire. Prior wildcard fall-through wired
+# testnet releases to Authentik with empty defaults.
 case "$STAGE" in
-  dev|*testnet*|*development*)
-    # Testnet: Use Better Auth execution with Authentik social buttons visible.
+  dev|*testnet*|*development*|dashboard-dev|backend-dev|backend-api-dev|api-dev|identity-dev|auth-dev|authentik-dev|admin-dev|backoffice-dev|backoffice-admin-dev)
+    # Testnet: Better Auth is the authoritative provider. Authentik is not ready.
     export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url-dev" "https://testnet.api.alternun.co/auth"
     export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url-dev" "https://testnet.api.alternun.co/auth/exchange"
-    export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-dev" "authentik"
+    export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-dev" "better-auth"
+    # Lambda-side vars: mode detection in better-auth-runtime.ts needs AUTH_BETTER_AUTH_URL
+    # to enter embedded mode. Without these the Lambda silently falls back to Authentik.
+    export_env_from_ssm "AUTH_BETTER_AUTH_URL" "auth-better-auth-url-dev" "https://testnet.api.alternun.co"
+    export_env_from_ssm "BETTER_AUTH_URL" "better-auth-url-dev" "https://testnet.api.alternun.co"
+    export_env_from_ssm "ALTERNUN_TESTNET_MODE" "alternun-testnet-mode-dev" "on"
     ;;
-  prod|production|*production*)
-    # Production: Use Authentik social buttons with the current execution path.
+  prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
+    # Production: stays on Authentik until the prod Better Auth migration lands.
     export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url-prod" "https://api.alternun.co/auth"
     export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url-prod" "https://api.alternun.co/auth/exchange"
     export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-prod" "authentik"

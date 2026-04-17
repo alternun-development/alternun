@@ -353,10 +353,38 @@ validate_mobile_oidc_launch_url() {
   esac
 }
 
+# Testnet-aligned stages (dashboard-dev, backend-dev, api-dev, identity-dev, ...) must
+# boot with AUTH_BETTER_AUTH_URL set so Better Auth enters embedded mode. Without it the
+# Lambda silently falls back to Authentik, which is not ready for testnet right now.
+validate_testnet_better_auth_env() {
+  local current_stage
+  current_stage=$(echo "${stage:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+
+  case "$current_stage" in
+    dev|testnet|*testnet*|dashboard-dev|backend-dev|backend-api-dev|api-dev|identity-dev|auth-dev|authentik-dev|admin-dev|backoffice-dev|backoffice-admin-dev)
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+
+  local better_auth_url=${INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL:-${AUTH_BETTER_AUTH_URL:-${EXPO_PUBLIC_BETTER_AUTH_URL:-}}}
+
+  if [ -z "$better_auth_url" ]; then
+    echo "ERROR: Testnet-aligned stage '${current_stage}' is missing AUTH_BETTER_AUTH_URL." >&2
+    echo "ERROR: Release deploys without this value silently wire testnet to Authentik (not ready)." >&2
+    echo "ERROR: Set INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL in pipeline env or SSM." >&2
+    return 1
+  fi
+
+  return 0
+}
+
 validate_expo_public_auth_env
 validate_custom_authentik_provider_flow_slugs
 validate_better_auth_web_env
 validate_mobile_oidc_launch_url
+validate_testnet_better_auth_env
 check_stage_domain_validation_cname_records
 run_extra_redirect_dns_cleanup
 

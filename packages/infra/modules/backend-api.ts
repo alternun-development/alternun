@@ -131,6 +131,31 @@ function resolveStageKey(stage: string): keyof BackendApiSettings['stageDomains'
   return 'dev';
 }
 
+// Testnet-aligned stages must boot Better Auth in embedded mode. If the release path
+// leaves AUTH_BETTER_AUTH_URL empty the Lambda silently falls back to Authentik — which
+// is not ready. These stages force the testnet Better Auth URL as a last-resort fallback.
+function isTestnetStage(stage: string | undefined): boolean {
+  if (!stage) return false;
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+  return (
+    normalized === 'dev' ||
+    normalized === 'testnet' ||
+    normalized.includes('testnet') ||
+    normalized === 'dashboard-dev' ||
+    normalized === 'backend-dev' ||
+    normalized === 'backend-api-dev' ||
+    normalized === 'api-dev' ||
+    normalized === 'identity-dev' ||
+    normalized === 'auth-dev' ||
+    normalized === 'authentik-dev' ||
+    normalized === 'admin-dev' ||
+    normalized === 'backoffice-dev' ||
+    normalized === 'backoffice-admin-dev'
+  );
+}
+
+const TESTNET_BETTER_AUTH_URL = 'https://testnet.api.alternun.co';
+
 function resolveAuthDomain(rootDomain: string, stage: string): string {
   return buildStageDomains('sso', rootDomain)[resolveStageKey(stage)];
 }
@@ -264,6 +289,8 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
         ? { AUTH_BETTER_AUTH_URL: args.env.AUTH_BETTER_AUTH_URL }
         : args.env.EXPO_PUBLIC_BETTER_AUTH_URL
         ? { AUTH_BETTER_AUTH_URL: args.env.EXPO_PUBLIC_BETTER_AUTH_URL }
+        : isTestnetStage(args.env.SST_STAGE ?? args.env.STACK)
+        ? { AUTH_BETTER_AUTH_URL: TESTNET_BETTER_AUTH_URL }
         : {}),
       ...(args.env.INFRA_BACKEND_API_BETTER_AUTH_SECRET
         ? { BETTER_AUTH_SECRET: args.env.INFRA_BACKEND_API_BETTER_AUTH_SECRET }
@@ -293,8 +320,11 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
         : args.env.GOOGLEA_AUTH_CLIENT_SECRET
         ? { GOOGLE_AUTH_CLIENT_SECRET: args.env.GOOGLEA_AUTH_CLIENT_SECRET }
         : {}),
-      // Testnet-specific: Enable Better Auth embedded mode with native Google provider
-      ...(args.env.ALTERNUN_TESTNET_MODE === 'on'
+      // Testnet-specific: Enable Better Auth embedded mode with native Google provider.
+      // Forced on for any testnet-aligned stage so release deploys can't silently
+      // fall back to Authentik when env wiring is incomplete.
+      ...(args.env.ALTERNUN_TESTNET_MODE === 'on' ||
+      isTestnetStage(args.env.SST_STAGE ?? args.env.STACK)
         ? {
             ALTERNUN_TESTNET_MODE: 'on',
           }
