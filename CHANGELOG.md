@@ -1,3 +1,29 @@
+## [1.0.130](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.130) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** chore: remove email-templates dist from release tracked paths
+- **repo:** fix(repo,admin,api): CHANGELOG, app
+- **repo:** fix(api): fix airs verifySessionToken return type
+- **repo:** fix(email): 28 files updated
+- **repo:** chore: ignore email-templates dist directory
+
+### Bug Fixes
+
+- **api:** fix airs verifySessionToken return type ([cbb7663](https://github.com/alternun-development/alternun/commit/cbb7663986741556fdd57a9c871f5834601256b6))
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+- **repo,admin,api:** CHANGELOG, app ([b56e228](https://github.com/alternun-development/alternun/commit/b56e228a2712c03e48d1fcca8439d6428f27ecee))
+
+## [1.0.130](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.130) (2026-04-17)
+
+### Bug Fixes
+
+- **api:** fix airs verifySessionToken return type ([cbb7663](https://github.com/alternun-development/alternun/commit/cbb7663986741556fdd57a9c871f5834601256b6))
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+- **repo,admin,api:** CHANGELOG, app ([b56e228](https://github.com/alternun-development/alternun/commit/b56e228a2712c03e48d1fcca8439d6428f27ecee))
+
 ## [1.0.129](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.129) (2026-04-17)
 
 ### Bug Fixes
