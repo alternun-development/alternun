@@ -1,3 +1,25 @@
+## [1.0.128](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.128) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(email): 28 files updated
+- **repo:** chore: ignore email-templates dist directory
+- **repo:** docs: add AIRS Wallet System comprehensive integration plan
+- **repo:** fix(docs,mobile,auth): mi-perfil, ProfileStyles
+- **repo:** test(admin,api,docs): oidc-client, app-shell, callback-page, resource-list-page
+
+### Bug Fixes
+
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+
+## [1.0.128](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.128) (2026-04-17)
+
+### Bug Fixes
+
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+
 ## [1.0.127](https://github.com/alternun-development/alternun/compare/v1.0.126...v1.0.127) (2026-04-17)
 
 ### Bug Fixes
