@@ -235,10 +235,19 @@ run_extra_redirect_dns_cleanup() {
     return 0
   fi
 
-  local airs_source dev_source root_source
+  local airs_source root_source
+  local dev_sources_raw
   airs_source=${INFRA_REDIRECT_AIRS_TO_DEV_SOURCE:-${INFRA_EXPO_DOMAIN_PRODUCTION:-${DOMAIN_PRODUCTION:-}}}
-  dev_source=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}
+  dev_sources_raw=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES:-${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}}
   root_source=${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-}}
+
+  if [ -z "$dev_sources_raw" ]; then
+    local dev_source_primary dev_source_demo dev_source_beta
+    dev_source_primary=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-${INFRA_EXPO_DOMAIN_DEV:-${DOMAIN_DEV:-}}}
+    dev_source_demo=${airs_source/#airs./demo.}
+    dev_source_beta=${airs_source/#airs./beta.}
+    dev_sources_raw="${dev_source_primary},${dev_source_demo},${dev_source_beta}"
+  fi
 
   if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" && [ -n "$airs_source" ]; then
     delete_conflicting_dns_records "$hosted_zone_id" "$airs_source"
@@ -246,10 +255,19 @@ run_extra_redirect_dns_cleanup() {
       INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}"
   fi
 
-  if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" && [ -n "$dev_source" ]; then
-    delete_conflicting_dns_records "$hosted_zone_id" "$dev_source"
-    delete_acm_validation_cname_records "$hosted_zone_id" "$dev_source" \
-      INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}"
+  if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" && [ -n "$dev_sources_raw" ]; then
+    local dev_source dev_sources
+    IFS=',' read -r -a dev_sources <<< "$dev_sources_raw"
+    for dev_source in "${dev_sources[@]}"; do
+      dev_source=$(printf '%s' "$dev_source" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's#^https\?://##' -e 's#/*$##')
+      if [ -z "$dev_source" ]; then
+        continue
+      fi
+
+      delete_conflicting_dns_records "$hosted_zone_id" "$dev_source"
+      delete_acm_validation_cname_records "$hosted_zone_id" "$dev_source" \
+        INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}"
+    done
   fi
 
   if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}" && [ -n "$root_source" ]; then

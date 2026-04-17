@@ -449,6 +449,8 @@ During `dev` deployments, infra can provision:
 
 - `airs.alternun.co` -> `testnet.airs.alternun.co`
 - `dev.airs.alternun.co` -> `testnet.airs.alternun.co`
+- `demo.airs.alternun.co` -> `testnet.airs.alternun.co`
+- `beta.airs.alternun.co` -> `testnet.airs.alternun.co`
 - `alternun.co` -> `alternun.io`
 
 Config knobs:
@@ -458,6 +460,7 @@ Config knobs:
 - `INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN` (optional)
 - `INFRA_REDIRECT_DEV_TO_TESTNET`
 - `INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE`
+- `INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES` (CSV list of dev-stage aliases; defaults include `dev`, `demo`, and `beta`)
 - `INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN` (optional)
 - `INFRA_REMOVE_ACM_VALIDATION_CNAME` (auto-cleans `_*.domain` ACM CNAME records when DNS auto-remove is enabled)
 - `INFRA_REDIRECT_ROOT_DOMAIN`

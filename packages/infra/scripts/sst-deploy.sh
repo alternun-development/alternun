@@ -443,7 +443,25 @@ cleanup_deploy_aliases() {
     fi
 
     if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}"; then
-      aliases+=("${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}")
+      local dev_sources_raw dev_sources dev_source
+      dev_sources_raw=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES:-${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}}
+      if [ -z "$dev_sources_raw" ]; then
+        local dev_source_primary dev_source_demo dev_source_beta airs_source
+        airs_source=${INFRA_REDIRECT_AIRS_TO_DEV_SOURCE:-${INFRA_EXPO_DOMAIN_PRODUCTION:-${DOMAIN_PRODUCTION:-}}}
+        dev_source_primary=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-${INFRA_EXPO_DOMAIN_DEV:-${DOMAIN_DEV:-}}}
+        dev_source_demo=${airs_source/#airs./demo.}
+        dev_source_beta=${airs_source/#airs./beta.}
+        dev_sources_raw="${dev_source_primary},${dev_source_demo},${dev_source_beta}"
+      fi
+      if [ -n "$dev_sources_raw" ]; then
+        IFS=',' read -r -a dev_sources <<< "$dev_sources_raw"
+        for dev_source in "${dev_sources[@]}"; do
+          dev_source=$(printf '%s' "$dev_source" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's#^https\?://##' -e 's#/*$##')
+          if [ -n "$dev_source" ]; then
+            aliases+=("$dev_source")
+          fi
+        done
+      fi
     fi
 
     if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}"; then
