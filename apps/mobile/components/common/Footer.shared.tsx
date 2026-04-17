@@ -31,12 +31,13 @@ type ExpoImageSource = React.ComponentProps<typeof ExpoImage>['source'];
 
 // Metro asset loading still relies on require() for local image modules here.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as ExpoImageSource;
-// prettier-ignore
+export const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png') as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg',) as ExpoImageSource;
+export const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png') as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const ALTERNUN_POWERED_BY_LOGO = require('../../assets/logo.png') as ExpoImageSource;
+export const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as ExpoImageSource;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+export const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as ExpoImageSource;
 // Keep footer version aligned with the app package version used in this workspace.
 const MOBILE_PACKAGE = mobilePackageJson as { version?: string | null };
 

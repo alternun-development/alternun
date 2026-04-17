@@ -13,6 +13,14 @@ import {
   type ImageSourcePropType,
 } from 'react-native';
 import { Image as ExpoImage, type ImageContentPosition } from 'expo-image';
+import Animated_Reanimated, {
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import {
   Leaf,
   Zap,
@@ -58,6 +66,14 @@ const TOKEN_IMAGES: Record<'airs' | 'rbi' | 'atn', ImageSourcePropType> = {
   rbi: require('../../assets/images/benefits/rbi.png'),
   atn: require('../../assets/images/benefits/atn.png'),
 };
+
+const MEMBERSHIP_LOGO = require('../../assets/logo.png') as ImageSourcePropType;
+const MEMBERSHIP_LOGO_LIGHT = require('../../assets/AIRS-logo-light.svg') as ImageSourcePropType;
+const MEMBERSHIP_LOGO_DARK = require('../../assets/AIRS-logo-dark.svg') as ImageSourcePropType;
+const MEMBERSHIP_LOGO_LIGHT_REALISTIC =
+  require('../../assets/AIRS-logo-light-realistic.svg') as ImageSourcePropType;
+const MEMBERSHIP_LOGO_DARK_REALISTIC =
+  require('../../assets/AIRS-logo-dark-realistic.svg') as ImageSourcePropType;
 
 const BENEFIT_IMAGES: Record<'eco' | 'experiencias' | 'premium' | 'cursos', ImageSourcePropType[]> =
   {
@@ -173,6 +189,20 @@ export default function PublicLandingPage({
         }}
       >
         <ComoFuncionaSection
+          isDark={isDark}
+          accentColor={accentColor}
+          textColor={textColor}
+          isMobile={isMobile}
+        />
+      </View>
+
+      {/* Membresía vitalicia */}
+      <View
+        onLayout={(e) => {
+          sectionOffsetsRef.current['membresia'] = e.nativeEvent.layout.y;
+        }}
+      >
+        <MembresiaSection
           isDark={isDark}
           accentColor={accentColor}
           textColor={textColor}
@@ -1196,6 +1226,123 @@ function ComoFuncionaSection({
   );
 }
 
+// ── MembresiaSection with infinite scrolling logos ────────────────────────────
+function MembresiaSection({
+  isDark,
+  textColor,
+  isMobile: _isMobile,
+}: SectionProps): React.JSX.Element {
+  const { t } = useAppTranslation('mobile');
+
+  // Fade-in animation
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(24)).current;
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
+      Animated.spring(slideAnim, { toValue: 0, friction: 7, tension: 70, useNativeDriver: true }),
+    ]).start();
+  }, []);
+
+  // Infinite scroll animations for two rows
+  const scrollLeft = useSharedValue(0);
+  const scrollRight = useSharedValue(0);
+
+  useEffect(() => {
+    const makeScroll = (duration: number): ReturnType<typeof withRepeat> =>
+      withRepeat(withTiming(-300, { duration, easing: Easing.linear }), -1);
+    scrollLeft.value = makeScroll(4000) as unknown as number;
+    scrollRight.value = makeScroll(5000) as unknown as number;
+
+    return () => {
+      cancelAnimation(scrollLeft);
+      cancelAnimation(scrollRight);
+    };
+  }, []);
+
+  const scrollLeftStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: scrollLeft.value }],
+  }));
+
+  const scrollRightStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: scrollRight.value }],
+  }));
+
+  const bgColor = isDark ? '#0a0a14' : '#f0f4f9';
+  const descriptionColor = isDark ? 'rgba(232,232,255,0.75)' : '#475569';
+
+  const membershipLogos = isDark
+    ? [
+        MEMBERSHIP_LOGO_LIGHT,
+        MEMBERSHIP_LOGO_LIGHT_REALISTIC,
+        MEMBERSHIP_LOGO,
+        MEMBERSHIP_LOGO_DARK,
+        MEMBERSHIP_LOGO_DARK_REALISTIC,
+      ]
+    : [
+        MEMBERSHIP_LOGO_DARK,
+        MEMBERSHIP_LOGO_DARK_REALISTIC,
+        MEMBERSHIP_LOGO,
+        MEMBERSHIP_LOGO_LIGHT,
+        MEMBERSHIP_LOGO_LIGHT_REALISTIC,
+      ];
+
+  return (
+    <Animated.View
+      style={[
+        styles.membresiaSection,
+        { backgroundColor: bgColor, opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+      ]}
+    >
+      {/* Header */}
+      <View style={styles.membresiaSectionHeader}>
+        <Text style={[styles.sectionTitle, { color: textColor }]}>
+          {t('landing.membresia.sectionTitle')}
+        </Text>
+        <Text style={[styles.membresiaDescription, { color: descriptionColor }]}>
+          <Text>{t('landing.membresia.descriptionPart1')} </Text>
+          <Text style={{ fontWeight: '700', color: textColor }}>
+            {t('landing.membresia.descriptionPart2Bold')}
+          </Text>
+          <Text>{` ${t('landing.membresia.descriptionPart3')} `}</Text>
+        </Text>
+        <Text style={[styles.membresiaDescription, { color: descriptionColor }]}>
+          {t('landing.membresia.descriptionPart4')}
+        </Text>
+      </View>
+
+      {/* Infinite scroll rows */}
+      <View style={styles.membresiaScrollContainer}>
+        {/* First row - scrolling left */}
+        <View style={styles.membresiaRow}>
+          <Animated_Reanimated.View style={[styles.membresiaScrollRow, scrollLeftStyle]}>
+            {Array.from({ length: 6 }).map((_, i) =>
+              membershipLogos.map((logo, idx) => (
+                <View key={`row1-${i}-${idx}`} style={styles.membresiaCoinItem}>
+                  <ExpoImage source={logo} style={styles.membresiaCoinImage} contentFit='contain' />
+                </View>
+              ))
+            )}
+          </Animated_Reanimated.View>
+        </View>
+
+        {/* Second row - scrolling right */}
+        <View style={styles.membresiaRow}>
+          <Animated_Reanimated.View style={[styles.membresiaScrollRow, scrollRightStyle]}>
+            {Array.from({ length: 6 }).map((_, i) =>
+              membershipLogos.map((logo, idx) => (
+                <View key={`row2-${i}-${idx}`} style={styles.membresiaCoinItem}>
+                  <ExpoImage source={logo} style={styles.membresiaCoinImage} contentFit='contain' />
+                </View>
+              ))
+            )}
+          </Animated_Reanimated.View>
+        </View>
+      </View>
+    </Animated.View>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // PlaceCard — image carousel + press-scale + top-rated badge
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1886,6 +2033,7 @@ const styles = createTypographyStyles({
     fontWeight: '700',
     textAlign: 'center',
     lineHeight: 34,
+    fontFamily: 'Sculpin-Bold',
   },
 
   // ── TravelCard (TokenCard) ───────────────────────────────────────────────────
@@ -1945,6 +2093,7 @@ const styles = createTypographyStyles({
     textShadowColor: 'rgba(0,0,0,0.6)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
+    fontFamily: 'Sculpin-Bold',
   },
   travelCardSubtitle: {
     fontSize: 12,
@@ -1983,6 +2132,49 @@ const styles = createTypographyStyles({
     lineHeight: 24,
     maxWidth: 560,
   },
+
+  // ── Membresia ─────────────────────────────────────────────────────────────────
+  membresiaSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 48,
+    gap: 32,
+  },
+  membresiaSectionHeader: {
+    alignItems: 'center',
+    gap: 16,
+  },
+  membresiaDescription: {
+    fontSize: 14,
+    fontWeight: '400',
+    textAlign: 'center',
+    lineHeight: 22,
+    maxWidth: 560,
+  },
+  membresiaScrollContainer: {
+    gap: 20,
+    marginVertical: 12,
+  },
+  membresiaRow: {
+    height: 80,
+    overflow: 'hidden',
+  },
+  membresiaScrollRow: {
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  membresiaCoinItem: {
+    width: 60,
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  membresiaCoinImage: {
+    width: '100%',
+    height: '100%',
+  },
+
   stepIndicatorsRow: {
     position: 'relative',
     flexDirection: 'row',
@@ -2092,6 +2284,7 @@ const styles = createTypographyStyles({
     fontSize: 15,
     fontWeight: '700',
     lineHeight: 22,
+    fontFamily: 'Sculpin-Bold',
   },
   stepDescription: {
     fontSize: 13,
@@ -2293,6 +2486,7 @@ const styles = createTypographyStyles({
     flex: 1,
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   topRatedBadge: {
     paddingHorizontal: 8,
