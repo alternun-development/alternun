@@ -1,14 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires */
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   Animated,
+  LayoutAnimation,
   StyleSheet,
   Modal,
   Pressable,
+  Platform,
+  UIManager,
   useWindowDimensions,
   type ImageSourcePropType,
 } from 'react-native';
@@ -32,7 +35,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowRight,
-  ChevronDown,
   Info,
   CheckCircle2,
   X,
@@ -45,6 +47,14 @@ import { createTypographyStyles } from '../theme/typography';
 import AirsIntroExperience from '../onboarding/AirsIntroExperience';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { getStepTimelineProgressRange, getStepTimelineTrackMetrics } from './stepTimeline';
+import {
+  MEMBERSHIP_MARQUEE_BASE_DISTANCE,
+  MEMBERSHIP_MARQUEE_LEFT_BASE_DURATION_MS,
+  MEMBERSHIP_MARQUEE_RIGHT_BASE_DURATION_MS,
+  getMembershipLogoBandWidth,
+  getMembershipMarqueeRepeatCount,
+  scaleMembershipMarqueeDuration,
+} from './membershipMarquee';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
@@ -56,7 +66,6 @@ const CoinsIcon = Coins as React.FC<LucideProps>;
 const ChevronLeftIcon = ChevronLeft as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
 const ArrowRightIcon = ArrowRight as React.FC<LucideProps>;
-const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const InfoIcon = Info as React.FC<LucideProps>;
 const CheckCircle2Icon = CheckCircle2 as React.FC<LucideProps>;
 const CloseIcon = X as React.FC<LucideProps>;
@@ -362,116 +371,67 @@ interface TokenCardProps {
   overview: string;
   accentColor: string;
   isDark: boolean;
+  isMobile: boolean;
 }
 
 function TokenCard({
   imageSource,
   contentPosition,
-  imageZoom: _imageZoom,
+  imageZoom,
   logo: _LogoIcon,
   title,
   subtitle,
   overview,
   accentColor: _accentColor,
   isDark: _isDark,
+  isMobile,
 }: TokenCardProps): React.JSX.Element {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
-  // Cross-fade animations for title/subtitle vs. overview
-  const titleOpacity = useRef(new Animated.Value(1)).current;
-  const overviewOpacity = useRef(new Animated.Value(0)).current;
-  // Smooth scale transition for fluid entrance
-  const contentScale = useRef(new Animated.Value(1)).current;
-  // Chevron rotation
-  const chevronRotate = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
 
   const toggle = useCallback(() => {
-    const toExpanded = !expanded;
-    setExpanded(toExpanded);
-    // Smooth fluid animation: cross-fade + subtle scale
-    Animated.parallel([
-      // Title fades out, overview fades in (staggered for smoothness)
-      Animated.timing(titleOpacity, {
-        toValue: toExpanded ? 0 : 1,
-        duration: 280,
-        useNativeDriver: true,
-      }),
-      Animated.timing(overviewOpacity, {
-        toValue: toExpanded ? 1 : 0,
-        duration: toExpanded ? 300 : 240,
-        useNativeDriver: true,
-      }),
-      // Content scales slightly during transition for fluid feel
-      Animated.timing(contentScale, {
-        toValue: toExpanded ? 1.02 : 1,
-        duration: 280,
-        useNativeDriver: true,
-      }),
-      // Chevron rotates smoothly
-      Animated.timing(chevronRotate, {
-        toValue: toExpanded ? 1 : 0,
-        duration: 320,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [expanded, titleOpacity, overviewOpacity, contentScale, chevronRotate]);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded((current) => !current);
+  }, []);
 
-  const chevronAngle = chevronRotate.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
+  const titleColor = '#ffffff';
+  const subtitleColor = 'rgba(255,255,255,0.88)';
+  const bodyColor = _isDark ? 'rgba(232,232,255,0.82)' : '#334155';
+  const bodyLeadColor = _isDark ? '#ffffff' : '#1f3a8a';
 
   return (
-    <View style={styles.travelCard}>
-      <TouchableOpacity activeOpacity={0.9} onPress={toggle}>
-        {/* Fixed-height image — card height never changes */}
-        <View style={styles.travelCardImage}>
+    <View style={[styles.projectCard, isMobile && styles.projectCardMobile]}>
+      <TouchableOpacity activeOpacity={0.92} onPress={toggle} style={styles.projectCardPressable}>
+        <View style={[styles.projectCardImageWrap, isMobile && styles.projectCardImageWrapMobile]}>
           <ExpoImage
             source={imageSource}
             contentFit='cover'
             contentPosition={contentPosition}
-            style={StyleSheet.absoluteFillObject}
+            style={[StyleSheet.absoluteFillObject, { transform: [{ scale: imageZoom }] }]}
           />
-          {/* Strong gradient from bottom for contrast */}
-          <Animated.View
-            style={[
-              styles.travelCardGradientBottom,
-              {
-                opacity: titleOpacity,
-                transform: [{ scale: contentScale }],
-              },
-            ]}
-          >
-            <View style={styles.travelCardTitleRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.travelCardTitle}>{title}</Text>
-                <Text style={styles.travelCardSubtitle}>{subtitle}</Text>
-              </View>
-              <Animated.View style={{ transform: [{ rotate: chevronAngle }] }}>
-                <ChevronDownIcon size={20} color='#fff' strokeWidth={2.5} />
-              </Animated.View>
-            </View>
-          </Animated.View>
-
-          {/* Overview text — positioned same as title/subtitle, cross-fades in */}
-          <Animated.View
-            style={[
-              styles.travelCardGradientBottom,
-              {
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                opacity: overviewOpacity,
-                transform: [{ scale: contentScale }],
-              },
-            ]}
-            pointerEvents='none'
-          >
-            <Text style={styles.travelCardOverview}>{overview}</Text>
-          </Animated.View>
+          <View style={styles.projectCardImageScrim} />
+          <View style={styles.projectCardImageOverlay}>
+            <Text style={[styles.projectCardImageTitle, { color: titleColor }]}>{title}</Text>
+            <Text style={[styles.projectCardImageSubtitle, { color: subtitleColor }]}>
+              {subtitle}
+            </Text>
+          </View>
         </View>
       </TouchableOpacity>
+
+      {expanded ? (
+        <View style={styles.projectCardBody}>
+          <Text style={[styles.projectCardBodyText, { color: bodyColor }]}>
+            <Text style={[styles.projectCardBodyLead, { color: bodyLeadColor }]}>{title}</Text>
+            <Text>{` ${overview}`}</Text>
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -481,6 +441,8 @@ function ElProyectoSection({
   isDark,
   accentColor,
   textColor,
+  cardBg: _cardBg,
+  cardBorder: _cardBorder,
   isMobile,
 }: SectionProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
@@ -540,11 +502,39 @@ function ElProyectoSection({
         },
       ]}
     >
-      <Text style={[styles.sectionTitle, { color: textColor }]}>
-        {t('landing.elProyecto.sectionTitle')}
-      </Text>
+      <View style={styles.elProyectoHeader}>
+        <Text
+          style={[
+            styles.sectionTitle,
+            styles.elProyectoTitle,
+            {
+              color: isDark ? '#2f6f94' : '#2f76a8',
+              fontSize: isMobile ? 30 : 52,
+              lineHeight: isMobile ? 34 : 58,
+            },
+          ]}
+        >
+          {t('landing.elProyecto.sectionTitle')}
+        </Text>
+        <Text
+          style={[
+            styles.elProyectoDescription,
+            {
+              color: textColor,
+              fontSize: isMobile ? 16 : 20,
+              lineHeight: isMobile ? 25 : 32,
+            },
+          ]}
+        >
+          <Text>{t('landing.elProyecto.sectionDescriptionPart1')}</Text>
+          <Text style={styles.elProyectoDescriptionAccent}>
+            {t('landing.elProyecto.sectionDescriptionHighlight')}
+          </Text>
+          <Text>{t('landing.elProyecto.sectionDescriptionPart2')}</Text>
+        </Text>
+      </View>
 
-      <View style={[styles.tokenCardsContainer, isMobile && styles.tokenCardsContainerMobile]}>
+      <View style={[styles.projectCardsContainer, isMobile && styles.projectCardsContainerMobile]}>
         {tokens.map((token) => (
           <TokenCard
             key={token.key}
@@ -557,6 +547,7 @@ function ElProyectoSection({
             overview={token.overview}
             accentColor={accentColor}
             isDark={isDark}
+            isMobile={isMobile}
           />
         ))}
       </View>
@@ -1233,6 +1224,8 @@ function MembresiaSection({
   isMobile: _isMobile,
 }: SectionProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
+  const { width: windowWidth } = useWindowDimensions();
+  const [trackWidth, setTrackWidth] = useState(0);
 
   // Fade-in animation
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -1247,18 +1240,60 @@ function MembresiaSection({
   // Infinite scroll animations for two rows
   const scrollLeft = useSharedValue(0);
   const scrollRight = useSharedValue(0);
+  const membershipLogos = useMemo(
+    () =>
+      isDark
+        ? [
+            MEMBERSHIP_LOGO_LIGHT,
+            MEMBERSHIP_LOGO_LIGHT_REALISTIC,
+            MEMBERSHIP_LOGO,
+            MEMBERSHIP_LOGO_DARK,
+            MEMBERSHIP_LOGO_DARK_REALISTIC,
+          ]
+        : [
+            MEMBERSHIP_LOGO_DARK,
+            MEMBERSHIP_LOGO_DARK_REALISTIC,
+            MEMBERSHIP_LOGO,
+            MEMBERSHIP_LOGO_LIGHT,
+            MEMBERSHIP_LOGO_LIGHT_REALISTIC,
+          ],
+    [isDark]
+  );
+  const logoBandWidth = getMembershipLogoBandWidth(membershipLogos.length);
+  const marqueeViewportWidth = trackWidth || Math.max(windowWidth - 40, 0);
+  const marqueeCopyCount = getMembershipMarqueeRepeatCount(marqueeViewportWidth, logoBandWidth);
+  const leftDuration = scaleMembershipMarqueeDuration(
+    logoBandWidth,
+    MEMBERSHIP_MARQUEE_BASE_DISTANCE,
+    MEMBERSHIP_MARQUEE_LEFT_BASE_DURATION_MS
+  );
+  const rightDuration = scaleMembershipMarqueeDuration(
+    logoBandWidth,
+    MEMBERSHIP_MARQUEE_BASE_DISTANCE,
+    MEMBERSHIP_MARQUEE_RIGHT_BASE_DURATION_MS
+  );
 
   useEffect(() => {
-    const makeScroll = (duration: number): ReturnType<typeof withRepeat> =>
-      withRepeat(withTiming(-300, { duration, easing: Easing.linear }), -1);
-    scrollLeft.value = makeScroll(4000) as unknown as number;
-    scrollRight.value = makeScroll(5000) as unknown as number;
+    if (logoBandWidth <= 0) {
+      return undefined;
+    }
+
+    scrollLeft.value = 0;
+    scrollRight.value = -logoBandWidth;
+    scrollLeft.value = withRepeat(
+      withTiming(-logoBandWidth, { duration: leftDuration, easing: Easing.linear }),
+      -1
+    ) as unknown as number;
+    scrollRight.value = withRepeat(
+      withTiming(0, { duration: rightDuration, easing: Easing.linear }),
+      -1
+    ) as unknown as number;
 
     return () => {
       cancelAnimation(scrollLeft);
       cancelAnimation(scrollRight);
     };
-  }, []);
+  }, [leftDuration, logoBandWidth, rightDuration, scrollLeft, scrollRight]);
 
   const scrollLeftStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: scrollLeft.value }],
@@ -1270,22 +1305,6 @@ function MembresiaSection({
 
   const bgColor = isDark ? '#0a0a14' : '#f0f4f9';
   const descriptionColor = isDark ? 'rgba(232,232,255,0.75)' : '#475569';
-
-  const membershipLogos = isDark
-    ? [
-        MEMBERSHIP_LOGO_LIGHT,
-        MEMBERSHIP_LOGO_LIGHT_REALISTIC,
-        MEMBERSHIP_LOGO,
-        MEMBERSHIP_LOGO_DARK,
-        MEMBERSHIP_LOGO_DARK_REALISTIC,
-      ]
-    : [
-        MEMBERSHIP_LOGO_DARK,
-        MEMBERSHIP_LOGO_DARK_REALISTIC,
-        MEMBERSHIP_LOGO,
-        MEMBERSHIP_LOGO_LIGHT,
-        MEMBERSHIP_LOGO_LIGHT_REALISTIC,
-      ];
 
   return (
     <Animated.View
@@ -1312,11 +1331,16 @@ function MembresiaSection({
       </View>
 
       {/* Infinite scroll rows */}
-      <View style={styles.membresiaScrollContainer}>
+      <View
+        style={styles.membresiaScrollContainer}
+        onLayout={(event) => {
+          setTrackWidth(event.nativeEvent.layout.width);
+        }}
+      >
         {/* First row - scrolling left */}
         <View style={styles.membresiaRow}>
           <Animated_Reanimated.View style={[styles.membresiaScrollRow, scrollLeftStyle]}>
-            {Array.from({ length: 6 }).map((_, i) =>
+            {Array.from({ length: marqueeCopyCount }).map((_, i) =>
               membershipLogos.map((logo, idx) => (
                 <View key={`row1-${i}-${idx}`} style={styles.membresiaCoinItem}>
                   <ExpoImage source={logo} style={styles.membresiaCoinImage} contentFit='contain' />
@@ -1329,7 +1353,7 @@ function MembresiaSection({
         {/* Second row - scrolling right */}
         <View style={styles.membresiaRow}>
           <Animated_Reanimated.View style={[styles.membresiaScrollRow, scrollRightStyle]}>
-            {Array.from({ length: 6 }).map((_, i) =>
+            {Array.from({ length: marqueeCopyCount }).map((_, i) =>
               membershipLogos.map((logo, idx) => (
                 <View key={`row2-${i}-${idx}`} style={styles.membresiaCoinItem}>
                   <ExpoImage source={logo} style={styles.membresiaCoinImage} contentFit='contain' />
@@ -2036,83 +2060,108 @@ const styles = createTypographyStyles({
     fontFamily: 'Sculpin-Bold',
   },
 
-  // ── TravelCard (TokenCard) ───────────────────────────────────────────────────
-  tokenCardsContainer: {
+  // ── El Proyecto ─────────────────────────────────────────────────────────────
+  elProyectoHeader: {
+    alignItems: 'center',
+    gap: 18,
+    maxWidth: 1120,
+    alignSelf: 'center',
+  },
+  elProyectoTitle: {
+    maxWidth: 1120,
+  },
+  elProyectoDescription: {
+    maxWidth: 1140,
+    textAlign: 'center',
+    fontWeight: '400',
+    fontFamily: 'Sculpin-Regular',
+  },
+  elProyectoDescriptionAccent: {
+    fontWeight: '800',
+  },
+  projectCardsContainer: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 40,
     justifyContent: 'center',
     flexWrap: 'wrap',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     alignSelf: 'center',
     width: '100%',
+    marginTop: 18,
   },
-  tokenCardsContainerMobile: {
+  projectCardsContainerMobile: {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 16,
+    gap: 26,
     width: '100%',
   },
-  travelCard: {
+  projectCard: {
     width: '100%',
-    minWidth: 240,
-    maxWidth: 320,
+    minWidth: 260,
+    maxWidth: 380,
     alignSelf: 'center',
-    borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: '#111',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.32,
-    shadowRadius: 18,
-    elevation: 12,
   },
-  travelCardImage: {
-    height: 340,
+  projectCardMobile: {
+    maxWidth: 420,
+  },
+  projectCardPressable: {
+    width: '100%',
+  },
+  projectCardImageWrap: {
+    height: 404,
     overflow: 'hidden',
     justifyContent: 'flex-end',
+    borderRadius: 22,
+    backgroundColor: '#0f172a',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    elevation: 10,
   },
-  travelCardGradientBottom: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    paddingTop: 36,
-    // Strong gradient for dark-mode contrast — white text always legible
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0) 100%)',
+  projectCardImageScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(4, 10, 28, 0.08)',
   },
-  travelCardTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 8,
+  projectCardImageWrapMobile: {
+    height: 330,
   },
-  travelCardTitle: {
-    fontSize: 22,
+  projectCardImageOverlay: {
+    paddingHorizontal: 18,
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.42)',
+    backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.04) 100%)',
+  },
+  projectCardImageTitle: {
+    fontSize: 28,
     fontWeight: '800',
-    color: '#ffffff',
     letterSpacing: 0.1,
-    textShadowColor: 'rgba(0,0,0,0.6)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    textAlign: 'center',
     fontFamily: 'Sculpin-Bold',
   },
-  travelCardSubtitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: 'rgba(255,255,255,0.85)',
-    letterSpacing: 0.2,
+  projectCardImageSubtitle: {
     marginTop: 3,
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    fontSize: 16,
+    fontWeight: '500',
+    letterSpacing: 0.15,
+    lineHeight: 20,
+    textAlign: 'center',
   },
-  travelCardOverview: {
-    fontSize: 13,
+  projectCardBody: {
+    paddingTop: 20,
+    paddingHorizontal: 12,
+  },
+  projectCardBodyText: {
+    fontSize: 16,
     fontWeight: '400',
-    lineHeight: 19,
-    color: 'rgba(255,255,255,0.92)',
-    textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    lineHeight: 26,
+    textAlign: 'center',
+  },
+  projectCardBodyLead: {
+    fontWeight: '800',
   },
 
   // ── ComoFunciona ─────────────────────────────────────────────────────────────
@@ -2153,16 +2202,18 @@ const styles = createTypographyStyles({
   membresiaScrollContainer: {
     gap: 20,
     marginVertical: 12,
+    width: '100%',
+    alignSelf: 'stretch',
   },
   membresiaRow: {
     height: 80,
     overflow: 'hidden',
+    width: '100%',
   },
   membresiaScrollRow: {
     flexDirection: 'row',
     gap: 16,
     alignItems: 'center',
-    paddingHorizontal: 20,
   },
   membresiaCoinItem: {
     width: 60,
