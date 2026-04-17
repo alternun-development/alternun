@@ -1,3 +1,37 @@
+## [1.0.131](https://github.com/alternun-development/alternun/compare/v1.0.130...v1.0.131) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): align deploy auth env and audit pins
+- **repo:** docs: add global activity feed feature plan
+- **repo:** fix(wallet): make pin digest key extractable
+- **repo:** fix(ci): refresh pnpm lockfile for wallet package
+- **repo:** chore(repo,admin,api): CHANGELOG, app
+
+### Bug Fixes
+
+- **ci:** refresh pnpm lockfile for wallet package ([d4d1c53](https://github.com/alternun-development/alternun/commit/d4d1c536c8542162042ee7730fbce0340b58f3ca))
+- **infra:** allow certificateArn reassignment ([34475e5](https://github.com/alternun-development/alternun/commit/34475e5621c3c0655419128327f44c6779cbc407))
+- **mobile:** align deploy auth env and audit pins ([88850f4](https://github.com/alternun-development/alternun/commit/88850f498db06c3435204f906e4421cb61dce684))
+- **wallet:** make pin digest key extractable ([8a4dbbe](https://github.com/alternun-development/alternun/commit/8a4dbbe61fd82070c2ea9a81f5f151a691773314))
+
+### Features
+
+- **wallet:** scaffold phase-1 non-custodial HD wallet core ([189b8f0](https://github.com/alternun-development/alternun/commit/189b8f0a2c13745a2d19f0af7a3b2005d28265e1))
+
+## [1.0.131](https://github.com/alternun-development/alternun/compare/v1.0.130...v1.0.131) (2026-04-17)
+
+### Bug Fixes
+
+- **ci:** refresh pnpm lockfile for wallet package ([d4d1c53](https://github.com/alternun-development/alternun/commit/d4d1c536c8542162042ee7730fbce0340b58f3ca))
+- **infra:** allow certificateArn reassignment ([34475e5](https://github.com/alternun-development/alternun/commit/34475e5621c3c0655419128327f44c6779cbc407))
+- **mobile:** align deploy auth env and audit pins ([88850f4](https://github.com/alternun-development/alternun/commit/88850f498db06c3435204f906e4421cb61dce684))
+- **wallet:** make pin digest key extractable ([8a4dbbe](https://github.com/alternun-development/alternun/commit/8a4dbbe61fd82070c2ea9a81f5f151a691773314))
+
+### Features
+
+- **wallet:** scaffold phase-1 non-custodial HD wallet core ([189b8f0](https://github.com/alternun-development/alternun/commit/189b8f0a2c13745a2d19f0af7a3b2005d28265e1))
+
 ## [1.0.130](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.130) (2026-04-17)
 
 ### Bug Fixes
