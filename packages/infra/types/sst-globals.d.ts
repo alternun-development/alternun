@@ -4,6 +4,19 @@ import type * as _pulumi from '@pulumi/pulumi';
 declare global {
   namespace sst {
     namespace aws {
+      function dns(args?: {
+        zone?: string;
+        override?: boolean;
+        transform?: {
+          record?: Record<string, unknown>;
+        };
+      }): {
+        provider: string;
+        createAlias: (...args: unknown[]) => unknown;
+        createCaa: (...args: unknown[]) => unknown;
+        createRecord: (...args: unknown[]) => unknown;
+      };
+
       class Bucket {
         constructor(
           name: string,
