@@ -1,3 +1,19 @@
+## [1.0.120](https://github.com/alternun-development/alternun/compare/v1.0.119...v1.0.120) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(infra): wire testnet to Better Auth in release deploy path
+
+### Bug Fixes
+
+- **infra:** wire testnet to Better Auth in release deploy path ([21c6951](https://github.com/alternun-development/alternun/commit/21c69513816b3b1a33d6dd754ee552e59acc98b7)), closes [#100](https://github.com/alternun-development/alternun/issues/100)
+
+## [1.0.120](https://github.com/alternun-development/alternun/compare/v1.0.119...v1.0.120) (2026-04-17)
+
+### Bug Fixes
+
+- **infra:** wire testnet to Better Auth in release deploy path ([21c6951](https://github.com/alternun-development/alternun/commit/21c69513816b3b1a33d6dd754ee552e59acc98b7)), closes [#100](https://github.com/alternun-development/alternun/issues/100)
+
 ## [1.0.119](https://github.com/alternun-development/alternun/compare/v1.0.118...v1.0.119) (2026-04-17)
 
 ### Bug Fixes
