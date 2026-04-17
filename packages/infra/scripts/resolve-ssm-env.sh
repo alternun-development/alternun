@@ -18,6 +18,22 @@ APP_NAME="${INFRA_APP_NAME:-alternun-infra}"
 STAGE="${STACK:-${SST_STAGE:-dev}}"
 REGION="${AWS_REGION:-us-east-1}"
 
+# CI shells can inherit stale auth values from the CodeBuild project.
+# Clear the auth contract vars so SSM/default stage resolution wins.
+if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
+  unset \
+    AUTH_EXECUTION_PROVIDER \
+    EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER \
+    AUTH_BETTER_AUTH_URL \
+    EXPO_PUBLIC_BETTER_AUTH_URL \
+    AUTH_EXCHANGE_URL \
+    EXPO_PUBLIC_AUTH_EXCHANGE_URL \
+    EXPO_PUBLIC_AUTHENTIK_ISSUER \
+    EXPO_PUBLIC_AUTHENTIK_CLIENT_ID \
+    EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE \
+    EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE
+fi
+
 # SSM parameter name builder: /{app}/{stage}/{param_key}
 # e.g. /alternun-infra/dev/expo-public-authentik-social-login-mode
 build_param_name() {
