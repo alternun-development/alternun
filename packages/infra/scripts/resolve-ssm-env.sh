@@ -111,12 +111,14 @@ case "$STAGE" in
     export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-dev" "better-auth"
     # Lambda-side vars: mode detection in better-auth-runtime.ts needs AUTH_BETTER_AUTH_URL
     # to enter embedded mode. Without these the Lambda silently falls back to Authentik.
+    export_env_from_ssm "INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL" "infra-backend-api-auth-better-auth-url-dev" "https://testnet.api.alternun.co"
     export_env_from_ssm "AUTH_BETTER_AUTH_URL" "auth-better-auth-url-dev" "https://testnet.api.alternun.co"
     export_env_from_ssm "BETTER_AUTH_URL" "better-auth-url-dev" "https://testnet.api.alternun.co"
     export_env_from_ssm "ALTERNUN_TESTNET_MODE" "alternun-testnet-mode-dev" "on"
     ;;
   prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
     # Production: stays on Authentik until the prod Better Auth migration lands.
+    export_env_from_ssm "INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL" "infra-backend-api-auth-better-auth-url-prod" "https://api.alternun.co"
     export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url-prod" "https://api.alternun.co/auth"
     export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url-prod" "https://api.alternun.co/auth/exchange"
     export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-prod" "authentik"
