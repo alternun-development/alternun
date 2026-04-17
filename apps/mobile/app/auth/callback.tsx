@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     color: '#f8fafc',
     fontSize: 22,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   message: {
     color: 'rgba(248,250,252,0.82)',

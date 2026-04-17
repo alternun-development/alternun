@@ -1,3 +1,23 @@
+## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light
+- **repo:** docs(CLAUDE.md): strengthen AWS account guard protocol
+- **repo:** fix(mobile): center landing cards and fix wallet link routing on mobile
+
+### Bug Fixes
+
+- **mobile:** AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light ([a9c3f48](https://github.com/alternun-development/alternun/commit/a9c3f48592907cfd55dcc6f7d258550a2e4e2037))
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+
+## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
+
+### Bug Fixes
+
+- **mobile:** AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light ([a9c3f48](https://github.com/alternun-development/alternun/commit/a9c3f48592907cfd55dcc6f7d258550a2e4e2037))
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+
 ## [1.0.120](https://github.com/alternun-development/alternun/compare/v1.0.119...v1.0.120) (2026-04-17)
 
 ### Bug Fixes

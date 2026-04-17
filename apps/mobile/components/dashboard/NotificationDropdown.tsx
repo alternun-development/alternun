@@ -247,6 +247,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   unreadBadge: {
     backgroundColor: '#1ccba1',
@@ -317,9 +318,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: 'Sculpin-Bold',
   },
   itemTitleBold: {
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   itemTime: {
     fontSize: 10,

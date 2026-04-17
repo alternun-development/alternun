@@ -26,16 +26,16 @@ import Animated, {
 import { ChangelogDrawer } from '@alternun/ui';
 import SupportButton from './SupportButton';
 import { createTypographyStyles } from '../theme/typography';
-import AirsBrandMark from '../branding/AirsBrandMark';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import {
   resolvePrimaryLinkPressHandler,
   resolvePrimaryLinksForViewport,
 } from './AppInfoFooter.links';
 import {
-  AIRS_LOGOTIPO_DARK,
-  AIRS_LOGOTIPO_LIGHT,
-  ALTERNUN_POWERED_BY_LOGO,
+  AIRS_LOGO_DARK,
+  AIRS_LOGO_DARK_2X,
+  AIRS_LOGO_LIGHT,
+  AIRS_LOGO_LIGHT_2X,
   FooterCopyright,
   FooterTextLink,
   FooterTopFade,
@@ -78,7 +78,13 @@ export default function LandingFooter(): React.JSX.Element {
   const isMobile = width < 720;
   const isWide = width >= 1120;
   const useCompactFooter = !isWide;
-  const wordmarkSource = isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK;
+  const wordmarkSource = isWide
+    ? isDark
+      ? AIRS_LOGO_LIGHT_2X
+      : AIRS_LOGO_DARK_2X
+    : isDark
+    ? AIRS_LOGO_LIGHT
+    : AIRS_LOGO_DARK;
   const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
 
   // Floating orb animations
@@ -151,7 +157,6 @@ export default function LandingFooter(): React.JSX.Element {
   const shellPadding = isWide ? 20 : isMobile ? 12 : 14;
   const shellRadius = isWide ? 26 : isMobile ? 16 : 20;
   const shellRevealHeight = isWide ? 20 : isMobile ? 12 : 14;
-  const brandMarkSize = isWide ? 52 : isMobile ? 36 : 42;
   const wordmarkWidth = isWide ? 126 : isMobile ? 88 : 104;
   const wordmarkHeight = isWide ? 44 : isMobile ? 30 : 36;
 
@@ -222,21 +227,6 @@ export default function LandingFooter(): React.JSX.Element {
                       style={{ width: wordmarkWidth, height: wordmarkHeight }}
                       contentFit='contain'
                     />
-                    <AirsBrandMark
-                      size={brandMarkSize}
-                      fillColor={palette.accent}
-                      cutoutColor={palette.markCutout}
-                    />
-                  </View>
-                  <View style={styles.bylineRow}>
-                    <Text style={[styles.bylineText, { color: palette.accent }]}>
-                      {t('labels.by')}
-                    </Text>
-                    <ExpoImage
-                      source={ALTERNUN_POWERED_BY_LOGO}
-                      style={styles.bylineLogo}
-                      contentFit='contain'
-                    />
                   </View>
                 </View>
 
@@ -291,23 +281,6 @@ export default function LandingFooter(): React.JSX.Element {
                   <ExpoImage
                     source={wordmarkSource}
                     style={{ width: wordmarkWidth, height: wordmarkHeight }}
-                    contentFit='contain'
-                  />
-                  <AirsBrandMark
-                    size={brandMarkSize}
-                    fillColor={palette.accent}
-                    cutoutColor={palette.markCutout}
-                  />
-                </View>
-                <View style={styles.bylineRow}>
-                  <Text
-                    style={[styles.bylineText, styles.bylineTextCompact, { color: palette.accent }]}
-                  >
-                    {t('labels.by')}
-                  </Text>
-                  <ExpoImage
-                    source={ALTERNUN_POWERED_BY_LOGO}
-                    style={styles.bylineLogo}
                     contentFit='contain'
                   />
                 </View>

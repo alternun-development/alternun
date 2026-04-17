@@ -331,24 +331,17 @@ export default function TopNav({
           >
             <View style={styles.logoBrand}>
               {/* Wordmark row: "Airs" SVG + mark */}
-              <View style={[styles.logoMarkRow, isMobile && styles.logoMarkRowMobile]}>
-                <ExpoImage
-                  source={wordmarkSource}
-                  style={
-                    isMobile
-                      ? styles.wordmarkMobile
-                      : isDesktop
-                      ? styles.wordmarkDesktop
-                      : styles.wordmark
-                  }
-                  contentFit='contain'
-                />
-                <AirsBrandMark
-                  size={isMobile ? 28 : 34}
-                  fillColor={brandMarkFill}
-                  cutoutColor={brandMarkCutout}
-                />
-              </View>
+              <ExpoImage
+                source={wordmarkSource}
+                style={
+                  isMobile
+                    ? styles.wordmarkMobile
+                    : isDesktop
+                    ? styles.wordmarkDesktop
+                    : styles.wordmark
+                }
+                contentFit='contain'
+              />
             </View>
           </Pressable>
         </View>
@@ -942,10 +935,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     lineHeight: 15,
+    fontFamily: 'Sculpin-Bold',
   },
   pillNameMobile: {
     fontSize: 11,
     lineHeight: 13,
+    fontFamily: 'Sculpin-Bold',
   },
   pillScore: {
     fontSize: 10,
@@ -1059,6 +1054,7 @@ const styles = StyleSheet.create({
   dropHeaderName: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   dropHeaderEmail: {
     fontSize: 10,
@@ -1097,9 +1093,11 @@ const styles = StyleSheet.create({
   navItemText: {
     fontSize: 13,
     fontWeight: '500',
+    fontFamily: 'Sculpin-Bold',
   },
   navItemTextActive: {
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   activeIndicator: {
     position: 'absolute',

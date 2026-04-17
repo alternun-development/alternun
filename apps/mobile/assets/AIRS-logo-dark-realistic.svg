@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg29"
+   sodipodi:docname="AIRS-logo-dark-realistic.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview29"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.2773438"
+     inkscape:cx="255.99999"
+     inkscape:cy="255.99999"
+     inkscape:window-width="2560"
+     inkscape:window-height="1368"
+     inkscape:window-x="1080"
+     inkscape:window-y="728"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg29" />
+  <defs
+     id="defs20">
+    <!-- Radial gradient for deep teal sphere background -->
+    <radialGradient
+       id="bgGrad"
+       cx="42%"
+       cy="35%"
+       r="65%"
+       fx="42%"
+       fy="35%">
+      <stop
+         offset="0%"
+         stop-color="#0a7a6a"
+         id="stop1" />
+      <stop
+         offset="35%"
+         stop-color="#006050"
+         id="stop2" />
+      <stop
+         offset="70%"
+         stop-color="#003d38"
+         id="stop3" />
+      <stop
+         offset="100%"
+         stop-color="#001a18"
+         id="stop4" />
+    </radialGradient>
+    <!-- Rim light gradient (subtle blue-teal rim on dark side) -->
+    <radialGradient
+       id="rimGrad"
+       cx="78%"
+       cy="72%"
+       r="60%">
+      <stop
+         offset="0%"
+         stop-color="#00c9a0"
+         stop-opacity="0.18"
+         id="stop5" />
+      <stop
+         offset="100%"
+         stop-color="#001a18"
+         stop-opacity="0"
+         id="stop6" />
+    </radialGradient>
+    <!-- Gloss highlight on top of sphere -->
+    <radialGradient
+       id="glossGrad"
+       cx="38%"
+       cy="22%"
+       r="40%">
+      <stop
+         offset="0%"
+         stop-color="#ffffff"
+         stop-opacity="0.22"
+         id="stop7" />
+      <stop
+         offset="60%"
+         stop-color="#7fffd4"
+         stop-opacity="0.06"
+         id="stop8" />
+      <stop
+         offset="100%"
+         stop-color="#ffffff"
+         stop-opacity="0"
+         id="stop9" />
+    </radialGradient>
+    <!-- Main shape gradient (emerald/mint glow) -->
+    <linearGradient
+       id="shapeGrad"
+       x1="175.85322"
+       y1="152.29132"
+       x2="333.83404"
+       y2="346.72924"
+       gradientTransform="scale(0.99525659,1.004766)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0%"
+         stop-color="#4dffd8"
+         id="stop10" />
+      <stop
+         offset="40%"
+         stop-color="#1ee6b5"
+         id="stop11" />
+      <stop
+         offset="80%"
+         stop-color="#0dc49a"
+         id="stop12" />
+      <stop
+         offset="100%"
+         stop-color="#08a07e"
+         id="stop13" />
+    </linearGradient>
+    <!-- Shape highlight (top-left lit edge) -->
+    <linearGradient
+       id="shapeHighlight"
+       x1="127.24374"
+       y1="127.98658"
+       x2="273.07219"
+       y2="273.81503"
+       gradientTransform="scale(0.99525659,1.004766)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0%"
+         stop-color="#a0fff0"
+         stop-opacity="0.7"
+         id="stop14" />
+      <stop
+         offset="100%"
+         stop-color="#1ee6b5"
+         stop-opacity="0"
+         id="stop15" />
+    </linearGradient>
+    <!-- Inner shadow on shape (bottom-right) -->
+    <linearGradient
+       id="shapeShadow"
+       x1="370.29115"
+       y1="371.03399"
+       x2="200.15797"
+       y2="200.90081"
+       gradientTransform="scale(0.99525659,1.004766)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0%"
+         stop-color="#005540"
+         stop-opacity="0.6"
+         id="stop16" />
+      <stop
+         offset="100%"
+         stop-color="#005540"
+         stop-opacity="0"
+         id="stop17" />
+    </linearGradient>
+    <!-- Drop shadow filter -->
+    <filter
+       id="dropShadow"
+       x="-0.055045872"
+       y="-0.055045872"
+       width="1.1100917"
+       height="1.1238532">
+      <feGaussianBlur
+         in="SourceAlpha"
+         stdDeviation="10"
+         id="feGaussianBlur17" />
+      <feOffset
+         dx="0"
+         dy="6"
+         id="feOffset17" />
+      <feComposite
+         in2="SourceGraphic"
+         operator="over"
+         id="feComposite17" />
+      <feColorMatrix
+         type="matrix"
+         values="0 0 0 0 0  0 0 0 0 0.15  0 0 0 0 0.12  0 0 0 0.55 0"
+         id="feColorMatrix17" />
+    </filter>
+    <!-- Soft glow filter on shape -->
+    <filter
+       id="glowFilter"
+       x="-0.069451755"
+       y="-0.068794441"
+       width="1.1389035"
+       height="1.1375889">
+      <feGaussianBlur
+         in="SourceGraphic"
+         stdDeviation="7"
+         result="blur"
+         id="feGaussianBlur18" />
+      <feMerge
+         id="feMerge19">
+        <feMergeNode
+           in="blur"
+           id="feMergeNode18" />
+        <feMergeNode
+           in="SourceGraphic"
+           id="feMergeNode19" />
+      </feMerge>
+    </filter>
+    <!-- Sphere edge shadow (vignette) -->
+    <radialGradient
+       id="vignetteGrad"
+       cx="256"
+       cy="256"
+       r="218"
+       fx="256"
+       fy="256"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.0010071,0,0,0.99496436,-0.47737512,1.0695704)">
+      <stop
+         offset="60%"
+         stop-color="#000000"
+         stop-opacity="0"
+         id="stop19" />
+      <stop
+         offset="100%"
+         stop-color="#000000"
+         stop-opacity="0.55"
+         id="stop20" />
+    </radialGradient>
+    <!-- Clip to circle -->
+    <clipPath
+       id="circleClip">
+      <circle
+         cx="256"
+         cy="256"
+         r="218"
+         id="circle20" />
+    </clipPath>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#glossGrad"
+       id="radialGradient31"
+       cx="203.68"
+       cy="133.92"
+       r="174.4"
+       fx="203.68"
+       fy="133.92"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.92043684,0,0,0.96172911,110.16577,-140.81672)" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#glossGrad"
+       id="radialGradient1"
+       cx="236.75446"
+       cy="167.92264"
+       r="96.253414"
+       gradientTransform="scale(0.9671092,1.0340094)"
+       fx="236.75446"
+       fy="167.92264"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <!-- Outer shadow ring -->
+  <circle
+     cx="256"
+     cy="262"
+     r="218"
+     fill="#000000"
+     opacity="0.35"
+     filter="url(#dropShadow)"
+     id="circle21" />
+  <!-- Main sphere background -->
+  <circle
+     cx="256"
+     cy="256"
+     r="218"
+     fill="url(#bgGrad)"
+     id="circle22" />
+  <!-- Rim light (opposite side glow) -->
+  <circle
+     cx="256"
+     cy="256"
+     r="218"
+     fill="url(#rimGrad)"
+     id="circle23"
+     style="fill:#15d7aa;fill-opacity:1" />
+  <!-- All inner content clipped to circle -->
+  <g
+     clip-path="url(#circleClip)"
+     id="g27"
+     transform="matrix(0.92414337,0,0,0.94404329,15.926945,25.884235)">
+    <!-- Main logo shape with glow -->
+    <g
+       filter="url(#glowFilter)"
+       id="g25">
+      <!-- Base shape -->
+      <path
+         d="m 169.5,365.5 c 0,0 -54.2,-9.5 -40.7,-45 L 296,142.5 c 19.8,-20.3 64.5,-18.9 67.3,7.7 l 2.7,140.6 c 1.1,53.8 11.8,82.3 -21,82 z"
+         fill="url(#shapeGrad)"
+         id="path23"
+         style="fill:url(#shapeGrad)" />
+      <!-- Highlight overlay (top-left lit edge) -->
+      <path
+         d="m 169.5,365.5 c 0,0 -54.2,-9.5 -40.7,-45 L 296,142.5 c 19.8,-20.3 64.5,-18.9 67.3,7.7 l 2.7,140.6 c 1.1,53.8 11.8,82.3 -21,82 z"
+         fill="url(#shapeHighlight)"
+         opacity="0.6"
+         id="path24"
+         style="fill:url(#shapeHighlight)" />
+      <!-- Shadow overlay (bottom-right darkening) -->
+      <path
+         d="m 169.5,365.5 c 0,0 -54.2,-9.5 -40.7,-45 L 296,142.5 c 19.8,-20.3 64.5,-18.9 67.3,7.7 l 2.7,140.6 c 1.1,53.8 11.8,82.3 -21,82 z"
+         fill="url(#shapeShadow)"
+         opacity="0.45"
+         id="path25"
+         style="fill:url(#shapeShadow)" />
+    </g>
+    <!-- Inner cutout (dark teal interior) -->
+    <path
+       d="m 237,366.2 c -66.4,-0.7 -69.1,-1.5 -73.1,-2.9 -19.9,-6.7 -27.4,-21 -21.3,-40.6 1.5,-4.8 5.6,-13.3 8.7,-17.9 4.9,-7.4 8.7,-11.9 100.8,-113.6 45.5,-50.7 54.4,-60.4 57.3,-62.7 4.8,-3.9 12.6,-7.2 20.5,-8.8 5.4,-1.2 15,-1 19.6,0.2 8.9,2.4 15.3,7.6 17.7,15 0.9,2.5 1.3,14.8 2.5,76.3 1.6,80.7 1.7,85.4 3,106.6 0.7,9.8 0.7,30.7 0.2,34.2 -1.8,8.5 -6.4,13.9 -13.6,15.4 -3,0.6 -51.4,0.4 -122.3,-1.2 z"
+       fill="#004646"
+       opacity="0.92"
+       id="path26" />
+    <!-- Inner cutout subtle gradient highlight -->
+    <path
+       d="m 237,366.2 c -66.4,-0.7 -69.1,-1.5 -73.1,-2.9 -19.9,-6.7 -27.4,-21 -21.3,-40.6 1.5,-4.8 5.6,-13.3 8.7,-17.9 4.9,-7.4 8.7,-11.9 100.8,-113.6 45.5,-50.7 54.4,-60.4 57.3,-62.7 4.8,-3.9 12.6,-7.2 20.5,-8.8 5.4,-1.2 15,-1 19.6,0.2 8.9,2.4 15.3,7.6 17.7,15 0.9,2.5 1.3,14.8 2.5,76.3 1.6,80.7 1.7,85.4 3,106.6 0.7,9.8 0.7,30.7 0.2,34.2 -1.8,8.5 -6.4,13.9 -13.6,15.4 -3,0.6 -51.4,0.4 -122.3,-1.2 z"
+       fill="url(#glossGrad)"
+       opacity="0.3"
+       id="path27"
+       style="fill:url(#radialGradient1)" />
+  </g>
+  <!-- Vignette overlay for sphere depth -->
+  <ellipse
+     cx="255.78046"
+     cy="255.78046"
+     fill="url(#vignetteGrad)"
+     id="circle27"
+     style="fill:url(#vignetteGrad);stroke-width:0.997981"
+     rx="218.21956"
+     ry="216.90224" />
+  <!-- Top gloss highlight -->
+  <ellipse
+     cx="345.79761"
+     cy="105.38594"
+     fill="url(#glossGrad)"
+     id="circle28"
+     style="fill:url(#radialGradient31);stroke-width:0.940856"
+     rx="200.65523"
+     ry="209.65695" />
+  <!-- Specular highlight (bright spot top-left) -->
+  <ellipse
+     cx="195"
+     cy="165"
+     rx="68"
+     ry="45"
+     fill="white"
+     opacity="0.09"
+     transform="rotate(-25,195,165)"
+     id="ellipse28" />
+  <ellipse
+     cx="200"
+     cy="160"
+     rx="30"
+     ry="18"
+     fill="white"
+     opacity="0.10"
+     transform="rotate(-25,200,160)"
+     id="ellipse29" />
+</svg>

@@ -9,6 +9,14 @@
   --navy: #040f1e;
 }
 
+@font-face {
+  font-family: 'Sculpin-Bold';
+  src: url('../../mobile/assets/fonts/Sculpin-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

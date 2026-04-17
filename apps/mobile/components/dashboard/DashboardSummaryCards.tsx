@@ -642,10 +642,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '900',
     letterSpacing: -0.8,
+    fontFamily: 'Sculpin-Bold',
   },
   titleCompact: {
     fontSize: 18,
     letterSpacing: -0.55,
+    fontFamily: 'Sculpin-Bold',
   },
   subtitle: {
     fontSize: 13,

@@ -9,10 +9,12 @@ import { Image as ExpoImage } from 'expo-image';
 import {
   AlertCircle,
   Chrome,
+  AtSign,
   Eye,
   EyeOff,
   Languages,
-  Lock,
+  KeyRound,
+  LockKeyhole,
   Mail,
   MessageSquare,
   Moon,
@@ -61,9 +63,13 @@ const RESEND_COOLDOWN_SECONDS = 45;
 const ENABLE_WEB3_LOGIN = false; // Temporarily disabled: full web3 login flow not implemented
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
+const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as number;
+const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as number;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png') as number;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png') as number;
 
 type SubmitMode =
   | 'signin'
@@ -77,6 +83,7 @@ type SubmitMode =
 type AuthMode = 'signin' | 'signup';
 type AuthStep = 'form' | 'emailConfirmation';
 type RequiredField = 'email' | 'password' | 'confirmPassword';
+type InputFocusField = RequiredField | 'confirmationCode';
 
 interface RequiredFieldState {
   email: boolean;
@@ -255,6 +262,7 @@ export default function AuthSignInScreen({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [invalidEmail, setInvalidEmail] = useState(false);
+  const [focusedField, setFocusedField] = useState<InputFocusField | null>(null);
   const [requiredFields, setRequiredFields] = useState<RequiredFieldState>(() =>
     createDefaultRequiredFieldState()
   );
@@ -272,7 +280,15 @@ export default function AuthSignInScreen({
     : null;
   const isBusy = loading || submitMode !== null;
   const isModal = presentation === 'modal';
-  const { height: windowHeight } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const isDesktop = windowWidth >= 720;
+  const wordmarkSource = isDesktop
+    ? p.isDark
+      ? AIRS_LOGO_LIGHT_2X
+      : AIRS_LOGO_DARK_2X
+    : p.isDark
+    ? AIRS_LOGO_LIGHT
+    : AIRS_LOGO_DARK;
   const hasEmailInputError = requiredFields.email || invalidEmail;
 
   useEffect(() => {
@@ -730,18 +746,20 @@ export default function AuthSignInScreen({
               { backgroundColor: p.cardBg, borderColor: p.cardBorder },
             ]}
           >
-            <View style={styles.header}>
-              <View style={styles.titleLockup}>
+            <View style={[styles.header, isModal && styles.headerModal]}>
+              <View style={[styles.titleLockup, isModal && styles.titleLockupModal]}>
                 <ExpoImage
-                  source={p.isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK}
-                  style={styles.titleWordmark}
+                  source={wordmarkSource}
+                  style={[styles.titleWordmark, isModal && styles.titleWordmarkModal]}
                   contentFit='contain'
                 />
-                <Text style={[styles.subtitle, { color: p.textMuted }]}>
-                  {t('authModal.notices.secureSignIn')}
-                </Text>
+                {!isModal ? (
+                  <Text style={[styles.subtitle, { color: p.textMuted }]}>
+                    {t('authModal.notices.secureSignIn')}
+                  </Text>
+                ) : null}
               </View>
-              <View style={styles.headerActions}>
+              <View style={[styles.headerActions, isModal && styles.headerActionsModal]}>
                 <View style={styles.settingsMenuContainer}>
                   <TouchableOpacity
                     activeOpacity={0.8}
@@ -820,19 +838,13 @@ export default function AuthSignInScreen({
                   <TouchableOpacity
                     activeOpacity={0.85}
                     onPress={() => switchMode('signin')}
-                    style={[
-                      styles.modeButton,
-                      mode === 'signin' && [
-                        styles.modeButtonActive,
-                        { backgroundColor: p.accentMuted },
-                      ],
-                    ]}
+                    style={[styles.modeButton, mode === 'signin' && { backgroundColor: p.accent }]}
                   >
                     <Text
                       style={[
                         styles.modeButtonText,
                         { color: p.textMuted },
-                        mode === 'signin' && { color: p.accent },
+                        mode === 'signin' && { color: p.accentText },
                       ]}
                     >
                       {t('authModal.modes.signIn')}
@@ -841,19 +853,13 @@ export default function AuthSignInScreen({
                   <TouchableOpacity
                     activeOpacity={0.85}
                     onPress={() => switchMode('signup')}
-                    style={[
-                      styles.modeButton,
-                      mode === 'signup' && [
-                        styles.modeButtonActive,
-                        { backgroundColor: p.accentMuted },
-                      ],
-                    ]}
+                    style={[styles.modeButton, mode === 'signup' && { backgroundColor: p.accent }]}
                   >
                     <Text
                       style={[
                         styles.modeButtonText,
                         { color: p.textMuted },
-                        mode === 'signup' && { color: p.accent },
+                        mode === 'signup' && { color: p.accentText },
                       ]}
                     >
                       {t('authModal.modes.signUp')}
@@ -861,88 +867,152 @@ export default function AuthSignInScreen({
                   </TouchableOpacity>
                 </View>
 
-                <View
-                  style={[
-                    styles.inputWrapper,
-                    { backgroundColor: p.inputBg, borderColor: p.inputBorder },
-                    hasEmailInputError && {
-                      backgroundColor: p.errorBg,
-                      borderColor: p.errorBorder,
-                    },
-                  ]}
-                >
-                  <Mail size={16} color={hasEmailInputError ? p.errorIcon : p.textMuted} />
-                  <TextInput
-                    ref={emailInputRef}
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    keyboardType='email-address'
-                    onChangeText={(value) => {
-                      setEmail(value);
-                      clearRequiredField('email');
-                      setInvalidEmail(false);
-                    }}
-                    placeholder={t('authModal.placeholders.email')}
-                    placeholderTextColor={p.textPlaceholder}
-                    style={[styles.input, { color: p.textPrimary }]}
-                    value={email}
-                  />
-                </View>
-                {requiredFields.email ? (
-                  <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                    {t('authModal.validation.emailRequired')}
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: p.textPrimary }]}>
+                    {t('authModal.placeholders.email')}
                   </Text>
-                ) : invalidEmail ? (
-                  <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                    {t('authModal.validation.validEmail')}
-                  </Text>
-                ) : null}
-
-                <View
-                  style={[
-                    styles.inputWrapper,
-                    { backgroundColor: p.inputBg, borderColor: p.inputBorder },
-                    requiredFields.password && {
-                      backgroundColor: p.errorBg,
-                      borderColor: p.errorBorder,
-                    },
-                  ]}
-                >
-                  <Lock size={16} color={requiredFields.password ? p.errorIcon : p.textMuted} />
-                  <TextInput
-                    ref={passwordInputRef}
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    onChangeText={(value) => {
-                      setPassword(value);
-                      clearRequiredField('password');
-                    }}
-                    placeholder={t('authModal.placeholders.password')}
-                    placeholderTextColor={p.textPlaceholder}
-                    secureTextEntry={!showPassword}
-                    style={[styles.input, { color: p.textPrimary }]}
-                    value={password}
-                  />
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => setShowPassword((current) => !current)}
-                    style={styles.visibilityToggle}
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                      hasEmailInputError && {
+                        backgroundColor: p.errorBg,
+                        borderColor: p.errorBorder,
+                      },
+                      focusedField === 'email' &&
+                        !hasEmailInputError && {
+                          borderColor: p.inputBorderFocus,
+                        },
+                    ]}
                   >
-                    {showPassword ? (
-                      <EyeOff size={16} color={p.textSecondary} />
-                    ) : (
-                      <Eye size={16} color={p.textSecondary} />
-                    )}
-                  </TouchableOpacity>
+                    <View
+                      style={[
+                        styles.inputIconWrap,
+                        {
+                          backgroundColor: hasEmailInputError ? p.errorBg : p.accentMuted,
+                          borderColor: hasEmailInputError ? p.errorBorder : 'rgba(13,148,136,0.16)',
+                        },
+                      ]}
+                    >
+                      <AtSign
+                        size={15}
+                        color={hasEmailInputError ? p.errorIcon : p.accent}
+                        strokeWidth={2.2}
+                      />
+                    </View>
+                    <TextInput
+                      ref={emailInputRef}
+                      autoCapitalize='none'
+                      autoCorrect={false}
+                      keyboardType='email-address'
+                      onChangeText={(value) => {
+                        setEmail(value);
+                        clearRequiredField('email');
+                        setInvalidEmail(false);
+                      }}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() =>
+                        setFocusedField((current) => (current === 'email' ? null : current))
+                      }
+                      placeholderTextColor={p.textPlaceholder}
+                      style={[styles.input, { color: p.textPrimary }]}
+                      value={email}
+                    />
+                  </View>
+                  {requiredFields.email ? (
+                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                      {t('authModal.validation.emailRequired')}
+                    </Text>
+                  ) : invalidEmail ? (
+                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                      {t('authModal.validation.validEmail')}
+                    </Text>
+                  ) : null}
                 </View>
-                {requiredFields.password ? (
-                  <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                    {t('authModal.validation.passwordRequired')}
+
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: p.textPrimary }]}>
+                    {t('authModal.placeholders.password')}
                   </Text>
-                ) : null}
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                      requiredFields.password && {
+                        backgroundColor: p.errorBg,
+                        borderColor: p.errorBorder,
+                      },
+                      focusedField === 'password' &&
+                        !requiredFields.password && {
+                          borderColor: p.inputBorderFocus,
+                        },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.inputIconWrap,
+                        {
+                          backgroundColor: requiredFields.password ? p.errorBg : p.accentMuted,
+                          borderColor: requiredFields.password
+                            ? p.errorBorder
+                            : 'rgba(13,148,136,0.16)',
+                        },
+                      ]}
+                    >
+                      <LockKeyhole
+                        size={15}
+                        color={requiredFields.password ? p.errorIcon : p.accent}
+                        strokeWidth={2.15}
+                      />
+                    </View>
+                    <TextInput
+                      ref={passwordInputRef}
+                      autoCapitalize='none'
+                      autoCorrect={false}
+                      onChangeText={(value) => {
+                        setPassword(value);
+                        clearRequiredField('password');
+                      }}
+                      onFocus={() => setFocusedField('password')}
+                      onBlur={() =>
+                        setFocusedField((current) => (current === 'password' ? null : current))
+                      }
+                      placeholderTextColor={p.textPlaceholder}
+                      secureTextEntry={!showPassword}
+                      style={[styles.input, { color: p.textPrimary }]}
+                      value={password}
+                    />
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => setShowPassword((current) => !current)}
+                      style={[
+                        styles.visibilityToggle,
+                        {
+                          backgroundColor: focusedField === 'password' ? p.accentMuted : p.inputBg,
+                          borderColor:
+                            focusedField === 'password' ? p.inputBorderFocus : p.inputBorder,
+                        },
+                      ]}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={16} color={p.accent} />
+                      ) : (
+                        <Eye size={16} color={p.accent} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                  {requiredFields.password ? (
+                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                      {t('authModal.validation.passwordRequired')}
+                    </Text>
+                  ) : null}
+                </View>
 
                 {mode === 'signup' ? (
-                  <>
+                  <View style={styles.inputGroup}>
+                    <Text style={[styles.inputLabel, { color: p.textPrimary }]}>
+                      {t('authModal.placeholders.confirmPassword')}
+                    </Text>
                     <View
                       style={[
                         styles.inputWrapper,
@@ -951,12 +1021,31 @@ export default function AuthSignInScreen({
                           backgroundColor: p.errorBg,
                           borderColor: p.errorBorder,
                         },
+                        focusedField === 'confirmPassword' &&
+                          !requiredFields.confirmPassword && {
+                            borderColor: p.inputBorderFocus,
+                          },
                       ]}
                     >
-                      <Lock
-                        size={16}
-                        color={requiredFields.confirmPassword ? p.errorIcon : p.textMuted}
-                      />
+                      <View
+                        style={[
+                          styles.inputIconWrap,
+                          {
+                            backgroundColor: requiredFields.confirmPassword
+                              ? p.errorBg
+                              : p.accentMuted,
+                            borderColor: requiredFields.confirmPassword
+                              ? p.errorBorder
+                              : 'rgba(13,148,136,0.16)',
+                          },
+                        ]}
+                      >
+                        <LockKeyhole
+                          size={15}
+                          color={requiredFields.confirmPassword ? p.errorIcon : p.accent}
+                          strokeWidth={2.15}
+                        />
+                      </View>
                       <TextInput
                         ref={confirmPasswordInputRef}
                         autoCapitalize='none'
@@ -965,7 +1054,12 @@ export default function AuthSignInScreen({
                           setConfirmPassword(value);
                           clearRequiredField('confirmPassword');
                         }}
-                        placeholder={t('authModal.placeholders.confirmPassword')}
+                        onFocus={() => setFocusedField('confirmPassword')}
+                        onBlur={() =>
+                          setFocusedField((current) =>
+                            current === 'confirmPassword' ? null : current
+                          )
+                        }
                         placeholderTextColor={p.textPlaceholder}
                         secureTextEntry={!showConfirmPassword}
                         style={[styles.input, { color: p.textPrimary }]}
@@ -974,12 +1068,22 @@ export default function AuthSignInScreen({
                       <TouchableOpacity
                         activeOpacity={0.8}
                         onPress={() => setShowConfirmPassword((current) => !current)}
-                        style={styles.visibilityToggle}
+                        style={[
+                          styles.visibilityToggle,
+                          {
+                            backgroundColor:
+                              focusedField === 'confirmPassword' ? p.accentMuted : p.inputBg,
+                            borderColor:
+                              focusedField === 'confirmPassword'
+                                ? p.inputBorderFocus
+                                : p.inputBorder,
+                          },
+                        ]}
                       >
                         {showConfirmPassword ? (
-                          <EyeOff size={16} color={p.textSecondary} />
+                          <EyeOff size={16} color={p.accent} />
                         ) : (
-                          <Eye size={16} color={p.textSecondary} />
+                          <Eye size={16} color={p.accent} />
                         )}
                       </TouchableOpacity>
                     </View>
@@ -988,7 +1092,7 @@ export default function AuthSignInScreen({
                         {t('authModal.validation.confirmPasswordRequired')}
                       </Text>
                     ) : null}
-                  </>
+                  </View>
                 ) : null}
 
                 <LoadingButton
@@ -1164,9 +1268,29 @@ export default function AuthSignInScreen({
                         backgroundColor: p.errorBg,
                         borderColor: p.errorBorder,
                       },
+                      focusedField === 'confirmationCode' &&
+                        !confirmationCodeRequired && {
+                          borderColor: p.inputBorderFocus,
+                        },
                     ]}
                   >
-                    <Lock size={16} color={confirmationCodeRequired ? p.errorIcon : p.textMuted} />
+                    <View
+                      style={[
+                        styles.inputIconWrap,
+                        {
+                          backgroundColor: confirmationCodeRequired ? p.errorBg : p.accentMuted,
+                          borderColor: confirmationCodeRequired
+                            ? p.errorBorder
+                            : 'rgba(13,148,136,0.16)',
+                        },
+                      ]}
+                    >
+                      <KeyRound
+                        size={15}
+                        color={confirmationCodeRequired ? p.errorIcon : p.accent}
+                        strokeWidth={2.15}
+                      />
+                    </View>
                     <TextInput
                       ref={confirmationCodeInputRef}
                       autoCapitalize='none'
@@ -1176,6 +1300,12 @@ export default function AuthSignInScreen({
                         setConfirmationCode(value.replace(/\s+/g, ''));
                         setConfirmationCodeRequired(false);
                       }}
+                      onFocus={() => setFocusedField('confirmationCode')}
+                      onBlur={() =>
+                        setFocusedField((current) =>
+                          current === 'confirmationCode' ? null : current
+                        )
+                      }
                       placeholder={t('authModal.placeholders.confirmationCode')}
                       placeholderTextColor={p.textPlaceholder}
                       style={[styles.input, { color: p.textPrimary }]}
@@ -1361,6 +1491,7 @@ const styles = createTypographyStyles({
   cardModal: {
     width: '100%',
     maxWidth: 520,
+    paddingTop: 24,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.4,
@@ -1375,12 +1506,24 @@ const styles = createTypographyStyles({
     marginBottom: 4,
     zIndex: 50,
   },
+  headerModal: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
+    minHeight: 88,
+  },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     flexShrink: 0,
     zIndex: 50,
+  },
+  headerActionsModal: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
   },
   settingsMenuContainer: {
     position: 'relative',
@@ -1441,9 +1584,18 @@ const styles = createTypographyStyles({
   titleLockup: {
     gap: 6,
   },
+  titleLockupModal: {
+    width: '100%',
+    alignItems: 'center',
+    gap: 0,
+  },
   titleWordmark: {
     width: 96,
     height: 34,
+  },
+  titleWordmarkModal: {
+    width: 208,
+    height: 73,
   },
   subtitle: {
     color: 'rgba(232,232,255,0.55)',
@@ -1484,26 +1636,44 @@ const styles = createTypographyStyles({
   modeButtonTextActive: {
     color: '#1ccba1',
   },
+  inputGroup: {
+    gap: 8,
+  },
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    borderRadius: 12,
+    gap: 10,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.12)',
     backgroundColor: 'rgba(255,255,255,0.04)',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    minHeight: 52,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   inputWrapperRequired: {
     borderColor: 'rgba(248,113,113,0.75)',
     backgroundColor: 'rgba(248,113,113,0.12)',
   },
+  inputIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 11,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
   input: {
     flex: 1,
     minWidth: 0,
     color: '#e8e8ff',
-    fontSize: 14,
+    fontSize: 15,
     paddingVertical: 0,
   },
   requiredFieldText: {
@@ -1514,9 +1684,10 @@ const styles = createTypographyStyles({
     fontWeight: '600',
   },
   visibilityToggle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 34,
+    height: 34,
+    borderRadius: 11,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1577,6 +1748,7 @@ const styles = createTypographyStyles({
     color: '#66e6c5',
     fontSize: 17,
     fontWeight: '800',
+    fontFamily: 'Sculpin-Bold',
   },
   confirmationSubtitle: {
     color: 'rgba(232,232,255,0.7)',
@@ -1656,6 +1828,7 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   resendButton: {
     alignItems: 'center',

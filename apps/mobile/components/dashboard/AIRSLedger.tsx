@@ -135,6 +135,7 @@ const styles = createTypographyStyles({
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: 0.02,
+    fontFamily: 'Sculpin-Bold',
   },
   sectionSubtitle: {
     color: 'rgba(232,232,255,0.4)',
@@ -188,6 +189,7 @@ const styles = createTypographyStyles({
     fontSize: 13,
     fontWeight: '600',
     flex: 1,
+    fontFamily: 'Sculpin-Bold',
   },
   entryAmount: {
     color: '#1ccba1',

@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   titleWithIcon: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  pageTitle: { fontSize: 20, fontWeight: '700' },
+  pageTitle: { fontSize: 20, fontWeight: '700', fontFamily: 'Sculpin-Bold' },
   tabContent: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 },
   signInPrompt: { fontSize: 16, fontWeight: '600', marginVertical: 12, textAlign: 'center' },

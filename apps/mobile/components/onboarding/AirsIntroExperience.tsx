@@ -11,6 +11,7 @@ import React, {
 import {
   Animated,
   Pressable,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -19,7 +20,6 @@ import {
 } from 'react-native';
 import { createTypographyStyles } from '../theme/typography';
 import { Image as ExpoImage } from 'expo-image';
-import { useIsFocused } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
 import {
   ChevronDown,
@@ -30,32 +30,261 @@ import {
   User,
 } from 'lucide-react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import AirsBrandMark from '../branding/AirsBrandMark';
 import LandingFooter from '../common/LandingFooter';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { BackToTopButton } from '../common/BackToTopButton';
 import { useAppTranslation } from '../i18n/useAppTranslation';
-import { getAirsIntroVideoUrl } from './airsIntroVideoSource';
 import AirsIntroSettingsMenu from './AirsIntroSettingsMenu';
-import AirsIntroVideoCard from './AirsIntroVideoCard';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { SCULPIN_FONT_FAMILY } from '../theme/fonts';
 
-const AIRS_BG_LIGHT_SRC =
-  'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS';
 const HERO_EXPANSION_RANGE = 420;
 const HERO_SOLID_SWAP_SCROLL = 180;
 const AUTO_UNMUTE_SCROLL_Y = 88;
 const TOP_PAUSE_SCROLL_Y = 6;
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const HERO_VIDEO = require('../../assets/videos/landing.mp4');
 const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png');
 const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png');
 const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png');
 const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png');
-const ALTERNUN_PILL_LOGO_LIGHT = require('../../assets/alternun-black.svg');
-const ALTERNUN_PILL_LOGO_DARK = require('../../assets/alternun-white.svg');
-// const AIRS_BG_DARK = require('../../assets/images/water_falls-alternun-digital-forge.png'); //TODO CRAFT a same resolutions BG imagen
-const AIRS_BG_DARK = 'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS';
+
+function resolveAssetUri(assetModule: unknown): string {
+  if (typeof assetModule === 'string') {
+    return assetModule;
+  }
+
+  if (assetModule && typeof assetModule === 'object') {
+    const source = assetModule as {
+      uri?: unknown;
+      src?: unknown;
+      default?: unknown;
+    };
+
+    if (typeof source.uri === 'string') {
+      return source.uri;
+    }
+
+    if (typeof source.src === 'string') {
+      return source.src;
+    }
+
+    if (typeof source.default === 'string') {
+      return source.default;
+    }
+
+    if (source.default && typeof source.default === 'object') {
+      const defaultSource = source.default as { uri?: unknown; src?: unknown };
+      if (typeof defaultSource.uri === 'string') {
+        return defaultSource.uri;
+      }
+      if (typeof defaultSource.src === 'string') {
+        return defaultSource.src;
+      }
+    }
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const resolver = require('react-native/Libraries/Image/resolveAssetSource').default as (
+      source: unknown
+    ) => { uri?: string } | null;
+    return resolver(assetModule)?.uri ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function buildHeroVideoHtml(videoUri: string): string {
+  return `<!DOCTYPE html>
+<html>
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #050510;
+      }
+
+      body {
+        position: fixed;
+        inset: 0;
+      }
+
+      #heroVideo {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        background: #050510;
+      }
+    </style>
+  </head>
+  <body>
+    <video id="heroVideo" autoplay muted loop playsinline webkit-playsinline preload="auto">
+      <source src=${JSON.stringify(videoUri)} type="video/mp4" />
+    </video>
+    <script>
+      const video = document.getElementById('heroVideo');
+      if (video) {
+        const tryPlay = () => {
+          const result = video.play();
+          if (result && typeof result.catch === 'function') {
+            result.catch(() => {});
+          }
+        };
+
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.defaultMuted = true;
+        tryPlay();
+        window.addEventListener('load', tryPlay);
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) {
+            tryPlay();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>`;
+}
+
+type HeroWebViewProps = {
+  allowsInlineMediaPlayback?: boolean;
+  mediaPlaybackRequiresUserAction?: boolean;
+  originWhitelist?: string[];
+  source: { html: string };
+  style?: React.ComponentProps<typeof View>['style'];
+};
+
+function HeroBackground({ videoSource }: { videoSource: unknown }) {
+  const videoUri = resolveAssetUri(videoSource);
+  const WebView = useMemo<React.ComponentType<HeroWebViewProps> | null>(() => {
+    if (Platform.OS === 'web') {
+      return null;
+    }
+
+    try {
+      const webViewModule = require('react-native-webview') as {
+        WebView?: React.ComponentType<HeroWebViewProps>;
+      };
+      return webViewModule.WebView ?? null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  if (!videoUri) {
+    return <View style={StyleSheet.absoluteFillObject} />;
+  }
+
+  if (Platform.OS === 'web') {
+    return (
+      <video
+        key={videoUri}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload='auto'
+        style={styles.heroVideoElement}
+      >
+        <source src={videoUri} type='video/mp4' />
+      </video>
+    );
+  }
+
+  if (!WebView) {
+    return <View style={StyleSheet.absoluteFillObject} />;
+  }
+
+  return (
+    <WebView
+      key={videoUri}
+      originWhitelist={['*']}
+      source={{ html: buildHeroVideoHtml(videoUri) }}
+      allowsInlineMediaPlayback
+      mediaPlaybackRequiresUserAction={false}
+      style={styles.heroVideoWebView}
+    />
+  );
+}
+
+type HeroGlassButtonProps = {
+  label: string;
+  onPress?: () => void;
+  width: number | string;
+  fontSize: number;
+  isDark: boolean;
+};
+
+function HeroGlassButton({
+  label,
+  onPress,
+  width,
+  fontSize,
+  isDark,
+}: HeroGlassButtonProps): React.ReactElement {
+  return (
+    <Pressable
+      accessibilityRole='button'
+      onPress={onPress}
+      style={({ hovered, pressed }) => [
+        styles.heroGlassButton,
+        {
+          width,
+          borderColor: hovered ? 'rgba(30,230,181,0.95)' : 'rgba(30,230,181,0.72)',
+          backgroundColor: isDark
+            ? hovered
+              ? 'rgba(5, 16, 18, 0.20)'
+              : 'rgba(5, 16, 18, 0.12)'
+            : hovered
+            ? 'rgba(255,255,255,0.20)'
+            : 'rgba(255,255,255,0.14)',
+          opacity: pressed ? 0.96 : 1,
+          shadowColor: '#000',
+          shadowOpacity: hovered ? 0.22 : 0.16,
+          shadowOffset: { width: 0, height: hovered ? 10 : 8 },
+          shadowRadius: hovered ? 14 : 12,
+          elevation: hovered ? 8 : 6,
+        },
+      ]}
+    >
+      {({ hovered }) => (
+        <>
+          <BlurView
+            intensity={hovered ? 52 : 40}
+            tint={isDark ? 'dark' : 'light'}
+            style={styles.heroGlassBlur}
+          />
+          <Text
+            style={[
+              styles.heroCopyButtonText,
+              {
+                color: '#1ee6b5',
+                fontSize,
+              },
+            ]}
+          >
+            {label}
+          </Text>
+        </>
+      )}
+    </Pressable>
+  );
+}
 
 interface AirsIntroExperienceProps {
   onContinueToDashboard: (dontShowAgain: boolean) => void;
@@ -110,19 +339,17 @@ const AirsIntroExperience = forwardRef<
       []
     );
 
-    const { themeMode, language } = useAppPreferences();
+    const { themeMode } = useAppPreferences();
     const { t } = useAppTranslation('mobile');
     const isDark = isDarkProp ?? themeMode === 'dark';
     const [profileMenuVisible, setProfileMenuVisible] = useState(false);
     const [settingsExpanded, setSettingsExpanded] = useState(false);
+    const [headerNavSettingsMenuVisible, setHeaderNavSettingsMenuVisible] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
-    const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const [hasManualAudioChoice, setHasManualAudioChoice] = useState(false);
     const [hasAutoUnmuted, setHasAutoUnmuted] = useState(false);
     const [hasScrollActivatedPlayback, setHasScrollActivatedPlayback] = useState(false);
-    const [isInTopZone, setIsInTopZone] = useState(true);
     const [showBackToTop, setShowBackToTop] = useState(false);
-    const isScreenFocused = useIsFocused();
     const { width: screenWidth, height: screenHeight } = useWindowDimensions();
     const isMobile = screenWidth < 720;
     const [headerNavMobileMenuVisible, setHeaderNavMobileMenuVisible] = useState(false);
@@ -143,18 +370,15 @@ const AirsIntroExperience = forwardRef<
     const hasAutoUnmutedRef = useRef(hasAutoUnmuted);
     const hasScrollActivatedPlaybackRef = useRef(hasScrollActivatedPlayback);
     const isInTopZoneRef = useRef(true);
-    const videoUri = useMemo(() => getAirsIntroVideoUrl(language), [language]);
 
     useEffect(() => {
       setIsMuted(true);
-      setIsVideoPlaying(false);
       setHasManualAudioChoice(false);
       setHasAutoUnmuted(false);
       setHasScrollActivatedPlayback(false);
-      setIsInTopZone(true);
       isInTopZoneRef.current = true;
       hasScrollActivatedPlaybackRef.current = false;
-    }, [language]);
+    }, []);
 
     useEffect(() => {
       isMutedRef.current = isMuted;
@@ -173,7 +397,6 @@ const AirsIntroExperience = forwardRef<
         return;
       }
       isInTopZoneRef.current = atTop;
-      setIsInTopZone(atTop);
       if (!hasScrollActivatedPlaybackRef.current && scrollOffset > TOP_PAUSE_SCROLL_Y) {
         hasScrollActivatedPlaybackRef.current = true;
         setHasScrollActivatedPlayback(true);
@@ -245,44 +468,41 @@ const AirsIntroExperience = forwardRef<
 
     const heroHeight = Math.max(screenHeight * 1.05, 740);
     const cardStartWidth = Math.min(screenWidth * 0.56, 700);
-    const cardEndWidth = Math.min(screenWidth - 24, 1220);
-    const videoControlsIconOnly = cardStartWidth < 220;
-    const cardStartHeight = Math.max(cardStartWidth * 0.58, 220);
-    const cardEndHeight = Math.min(Math.max(screenHeight * 0.72, 360), 760);
-    const mediaTagTitleSize = Math.min(Math.max(screenWidth * 0.031, 14), 26);
-    const mediaTagTitleLineHeight = mediaTagTitleSize * 1.02;
-    const mediaTagSubtitleSize = Math.min(Math.max(screenWidth * 0.056, 20), 52);
-    const mediaTagSubtitleLineHeight = mediaTagSubtitleSize * 1.12;
-    const mediaTagPillWidth = Math.min(Math.max(screenWidth * 0.34, 150), 300);
-    const mediaTagPillHeight = Math.min(Math.max(screenWidth * 0.058, 34), 48);
-    const mediaTagPillLogoWidth = mediaTagPillWidth * 0.74;
-    const mediaTagPillLogoHeight = mediaTagPillHeight * 0.58;
     const isDesktopView = screenWidth >= 720;
+    const isCompactDesktop = isDesktopView && screenWidth < 1280;
     const heroWordmarkHeight = isDesktopView
-      ? Math.min(Math.max(screenWidth * 0.066, 76), 132)
+      ? Math.min(
+          Math.max(screenWidth * 0.028, isCompactDesktop ? 42 : 58),
+          isCompactDesktop ? 60 : 72
+        )
       : Math.min(Math.max(screenWidth * 0.066, 38), 66);
     const heroWordmarkWidth = Math.round(heroWordmarkHeight * 2.68);
-    const heroLogoSize = Math.min(Math.max(screenWidth * 0.084, 50), 84);
-    const heroBrandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
-    const heroBrandMarkCutout = isDark ? '#0b5a5f' : '#ffffff';
-    const pillBgColor = isDark ? 'rgba(30,230,181,0.85)' : 'rgba(11,90,95,0.85)';
+    const pillBgColor = isDark ? 'rgba(11,90,95,0.88)' : 'rgba(201,239,234,0.9)';
+    const pillBorderColor = isDark ? 'rgba(28,203,161,0.26)' : 'rgba(10,92,97,0.16)';
+    const pillGlassTint = isDark ? 'dark' : 'light';
+    const headerNavLinkColor = isDark ? 'rgba(255,255,255,0.82)' : '#215b60';
+    const headerNavLinkActiveColor = isDark ? '#ffffff' : '#073f45';
+    const headerNavLinkActiveBg = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.76)';
+    const headerNavLinkHoverBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,92,97,0.08)';
+    const headerNavDividerColor = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,92,97,0.18)';
+    const headerNavSettingsBg = isDark ? 'rgba(5, 16, 18, 0.72)' : 'rgba(11,90,95,0.92)';
+    const headerNavSettingsBgHover = isDark ? 'rgba(5, 16, 18, 0.82)' : 'rgba(7,76,81,0.96)';
+    const headerNavPillPaddingHorizontal = isCompactDesktop ? 8 : 10;
+    const headerNavPillPaddingVertical = isCompactDesktop ? 8 : 10;
+    const headerNavPillGap = isCompactDesktop ? 4 : 6;
+    const headerNavPillItemPaddingHorizontal = isCompactDesktop ? 13 : 16;
+    const headerNavPillItemPaddingVertical = isCompactDesktop ? 8 : 10;
+    const headerNavCtaPaddingHorizontal = isCompactDesktop ? 18 : 20;
+    const headerNavCtaPaddingVertical = isCompactDesktop ? 8 : 9;
+    const headerNavCtaFontSize = isCompactDesktop ? 13 : 14;
 
-    const cardWidth = scrollY.interpolate({
-      inputRange: [0, HERO_EXPANSION_RANGE],
-      outputRange: [cardStartWidth, cardEndWidth],
-      extrapolate: 'clamp',
-    });
-    const cardHeight = scrollY.interpolate({
-      inputRange: [0, HERO_EXPANSION_RANGE],
-      outputRange: [cardStartHeight, cardEndHeight],
-      extrapolate: 'clamp',
-    });
-    const cardTranslateY = scrollY.interpolate({
-      inputRange: [0, HERO_EXPANSION_RANGE],
-      outputRange: [88, -22],
-      extrapolate: 'clamp',
-    });
-    const heroBgImageOpacity = scrollY.interpolate({
+    useEffect(() => {
+      if (!showCta || isMobile || isCompactDesktop) {
+        setHeaderNavSettingsMenuVisible(false);
+      }
+    }, [isCompactDesktop, isMobile, showCta]);
+
+    const heroBgOpacity = scrollY.interpolate({
       inputRange: [0, HERO_SOLID_SWAP_SCROLL],
       outputRange: [1, 0],
       extrapolate: 'clamp',
@@ -334,24 +554,6 @@ const AirsIntroExperience = forwardRef<
       outputRange: [0, 18],
       extrapolate: 'clamp',
     });
-    const mediaTagTitleAnchorY = Animated.add(
-      Animated.multiply(Animated.divide(cardHeight, 2), -1),
-      new Animated.Value(-96)
-    );
-    const mediaTagSubtitleAnchorY = Animated.add(
-      Animated.divide(cardHeight, 2),
-      new Animated.Value(26)
-    );
-    const mediaTagTitleFinalTranslateY = Animated.add(mediaTagTitleAnchorY, mediaTagTranslateY);
-    const mediaTagPillFinalTranslateY = Animated.add(
-      mediaTagTitleFinalTranslateY,
-      new Animated.Value(-76)
-    );
-    const mediaTagSubtitleFinalTranslateY = Animated.add(
-      mediaTagSubtitleAnchorY,
-      mediaTagTranslateY
-    );
-
     const palette = isDark
       ? {
           pageBg: '#050510',
@@ -383,13 +585,20 @@ const AirsIntroExperience = forwardRef<
       : isDark
       ? AIRS_LOGO_LIGHT
       : AIRS_LOGO_DARK;
-    const mediaTagPillLogoSource = isDark ? ALTERNUN_PILL_LOGO_DARK : ALTERNUN_PILL_LOGO_LIGHT;
-    const mediaTagPillBackgroundColor = isDark
-      ? 'rgba(0, 70, 70, 0.96)'
-      : 'rgba(229, 245, 242, 0.96)';
-    const mediaTagPillBorderColor = isDark ? 'rgba(34, 248, 199, 0.34)' : 'rgba(0, 70, 70, 0.42)';
-    const mediaTagPillShadowColor = isDark ? 'rgba(0,0,0,0.48)' : 'rgba(0, 43, 61, 0.28)';
-    const heroBackgroundSource = (isDark ? AIRS_BG_DARK : { uri: AIRS_BG_LIGHT_SRC }) as any;
+    const heroCopyTop = isMobile
+      ? Math.min(heroHeight * 0.29, 240)
+      : Math.min(heroHeight * 0.34, 330);
+    const heroCopyMaxWidth = isMobile
+      ? Math.min(screenWidth - 48, 620)
+      : Math.min(screenWidth * 0.82, 1080);
+    const heroHeadlineSize = Math.min(Math.max(screenWidth * 0.05, 34), 68);
+    const heroHeadlineLineHeight = heroHeadlineSize * 1.04;
+    const heroKickerSize = isMobile
+      ? Math.min(Math.max(screenWidth * 0.036, 20), 32)
+      : Math.min(Math.max(screenWidth * 0.03, 26), 42);
+    const heroKickerLineHeight = heroKickerSize * 1.02;
+    const heroButtonWidth = isMobile ? '100%' : Math.min(screenWidth * 0.28, 360);
+    const heroButtonFontSize = Math.min(Math.max(screenWidth * 0.023, 18), 24);
     const heroFooterTextColor = isDark ? 'rgba(248,251,255,0.96)' : '#020617';
     const heroFooterShadowColor = isDark ? 'rgba(0,0,0,0.28)' : 'transparent';
     const closeProfileMenu = () => {
@@ -397,10 +606,8 @@ const AirsIntroExperience = forwardRef<
       setSettingsExpanded(false);
     };
 
-    const toggleMute = () => {
-      setHasManualAudioChoice(true);
-      setHasAutoUnmuted(true);
-      setIsMuted((prev) => !prev);
+    const closeHeaderNavSettingsMenu = () => {
+      setHeaderNavSettingsMenuVisible(false);
     };
 
     const headerBarOpacity = scrollY.interpolate({
@@ -441,6 +648,10 @@ const AirsIntroExperience = forwardRef<
           </Svg>
         </Animated.View>
 
+        {headerNavSettingsMenuVisible ? (
+          <Pressable style={styles.floatingBackdrop} onPress={closeHeaderNavSettingsMenu} />
+        ) : null}
+
         <View pointerEvents='none' style={styles.floatingLeftTop}>
           <View style={styles.heroBrandRow}>
             <View style={styles.heroBrandTextBlock}>
@@ -450,11 +661,6 @@ const AirsIntroExperience = forwardRef<
                 contentFit='contain'
               />
             </View>
-            <AirsBrandMark
-              size={heroLogoSize}
-              fillColor={heroBrandMarkFill}
-              cutoutColor={heroBrandMarkCutout}
-            />
           </View>
         </View>
 
@@ -462,30 +668,63 @@ const AirsIntroExperience = forwardRef<
         {headerNavLinks &&
           headerNavLinks.length > 0 &&
           (showCta ? (
-            /* Logged-out: pill with nav links + compact avatar dropdown */
+            /* Logged-out: pill with nav links on wide desktop, avatar dropdown elsewhere */
             <>
-              {isMobile ? (
-                /* Mobile: avatar-style trigger → dropdown with nav links + sign in */
-                <View style={styles.headerNavMobileContainer} pointerEvents='box-none'>
+              {isMobile || isCompactDesktop ? (
+                <View
+                  style={
+                    isMobile ? styles.headerNavMobileContainer : styles.headerNavDesktopWrapper
+                  }
+                  pointerEvents='box-none'
+                >
                   <TouchableOpacity
                     onPress={() => setHeaderNavMobileMenuVisible((v) => !v)}
                     activeOpacity={0.7}
-                    style={[styles.headerNavMobileAvatarTrigger, { backgroundColor: pillBgColor }]}
+                    style={[
+                      isMobile
+                        ? styles.headerNavMobileAvatarTrigger
+                        : styles.headerNavDesktopAvatarTrigger,
+                      {
+                        backgroundColor: pillBgColor,
+                        ...(isMobile
+                          ? {}
+                          : {
+                              paddingHorizontal: 10,
+                              paddingVertical: 7,
+                              minHeight: 38,
+                            }),
+                      },
+                    ]}
                   >
-                    <View style={styles.headerNavMobileAvatarCircle}>
-                      <User size={20} color='#ffffff' strokeWidth={2.5} />
+                    <View
+                      style={[
+                        isMobile
+                          ? styles.headerNavMobileAvatarCircle
+                          : styles.headerNavDesktopAvatarCircle,
+                        {
+                          backgroundColor: 'rgba(28,203,161,0.18)',
+                          borderWidth: 1.5,
+                          borderColor: 'rgba(28,203,161,0.4)',
+                        },
+                      ]}
+                    >
+                      <User size={isMobile ? 20 : 16} color='#ffffff' strokeWidth={2.5} />
                     </View>
+                    {!isMobile ? <ChevronDown size={14} color='#ffffff' /> : null}
                   </TouchableOpacity>
 
                   {headerNavMobileMenuVisible && (
                     <Animated.View
                       style={[
                         styles.floatingMenu,
-                        styles.headerNavMobileDropdown,
+                        isMobile
+                          ? styles.headerNavMobileDropdown
+                          : styles.headerNavDesktopAvatarDropdown,
                         {
                           backgroundColor: palette.contentCard,
                           borderColor: palette.contentBorder,
                         },
+                        !isMobile && { paddingHorizontal: 8, paddingVertical: 8 },
                         {
                           opacity: headerNavMobileMenuAnim,
                           transform: [
@@ -522,7 +761,9 @@ const AirsIntroExperience = forwardRef<
                               styles.headerNavMobileText,
                               {
                                 color: link.isActive ? palette.accent : palette.textPrimary,
-                                fontWeight: link.isActive ? '700' : '500',
+                                fontFamily: link.isActive
+                                  ? `${SCULPIN_FONT_FAMILY}-Bold`
+                                  : `${SCULPIN_FONT_FAMILY}-Medium`,
                               },
                             ]}
                           >
@@ -583,116 +824,173 @@ const AirsIntroExperience = forwardRef<
                   )}
                 </View>
               ) : (
-                /* Desktop: pill with nav links + compact avatar button → dropdown outside pill */
+                /* Desktop: one integrated pill with nav links + sign-in + settings */
                 <View style={styles.headerNavDesktopWrapper} pointerEvents='box-none'>
-                  <Animated.View style={[styles.headerNavPill, { backgroundColor: pillBgColor }]}>
-                    {headerNavLinks.map((link) => (
-                      <TouchableOpacity
-                        key={link.id}
-                        onPress={link.onPress}
-                        activeOpacity={0.7}
-                        style={styles.headerNavPillItem}
-                      >
-                        <Text
-                          style={[
-                            styles.headerNavPillText,
+                  <Animated.View
+                    style={[
+                      styles.headerNavPill,
+                      {
+                        backgroundColor: pillBgColor,
+                        borderColor: pillBorderColor,
+                        paddingHorizontal: headerNavPillPaddingHorizontal,
+                        paddingVertical: headerNavPillPaddingVertical,
+                        gap: headerNavPillGap,
+                      },
+                    ]}
+                  >
+                    <BlurView
+                      intensity={isDark ? 32 : 26}
+                      tint={pillGlassTint}
+                      style={styles.headerNavPillBlur}
+                    />
+                    <View
+                      style={[
+                        styles.headerNavPillTint,
+                        {
+                          backgroundColor: isDark
+                            ? 'rgba(255,255,255,0.03)'
+                            : 'rgba(255,255,255,0.12)',
+                        },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.headerNavPillHighlight,
+                        {
+                          backgroundColor: isDark
+                            ? 'rgba(255,255,255,0.1)'
+                            : 'rgba(255,255,255,0.42)',
+                        },
+                      ]}
+                    />
+                    <View style={styles.headerNavPillContent}>
+                      <View style={styles.headerNavLinkGroup}>
+                        {headerNavLinks.map((link) => (
+                          <Pressable
+                            key={link.id}
+                            onPress={() => {
+                              closeHeaderNavSettingsMenu();
+                              link.onPress();
+                            }}
+                            style={({ hovered, pressed }) => [
+                              styles.headerNavPillItem,
+                              {
+                                paddingHorizontal: headerNavPillItemPaddingHorizontal,
+                                paddingVertical: headerNavPillItemPaddingVertical,
+                                backgroundColor: link.isActive
+                                  ? headerNavLinkActiveBg
+                                  : hovered
+                                  ? headerNavLinkHoverBg
+                                  : 'transparent',
+                                opacity: pressed ? 0.9 : 1,
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.headerNavPillText,
+                                {
+                                  color: link.isActive
+                                    ? headerNavLinkActiveColor
+                                    : headerNavLinkColor,
+                                  fontFamily: link.isActive
+                                    ? `${SCULPIN_FONT_FAMILY}-Bold`
+                                    : `${SCULPIN_FONT_FAMILY}-Medium`,
+                                },
+                              ]}
+                            >
+                              {link.label}
+                            </Text>
+                          </Pressable>
+                        ))}
+                      </View>
+
+                      <View
+                        style={[
+                          styles.headerNavActionDivider,
+                          { backgroundColor: headerNavDividerColor },
+                        ]}
+                      />
+
+                      <View style={styles.headerNavActionCluster}>
+                        <Pressable
+                          onPress={() => {
+                            closeHeaderNavSettingsMenu();
+                            onSignIn();
+                          }}
+                          style={({ hovered, pressed }) => [
+                            styles.headerNavCtaButton,
                             {
-                              color: link.isActive ? '#ffffff' : 'rgba(255,255,255,0.8)',
-                              fontWeight: link.isActive ? '700' : '500',
+                              backgroundColor: hovered ? '#38e9bf' : '#1ee6b5',
+                              minHeight: isCompactDesktop ? 38 : 42,
+                              paddingHorizontal: headerNavCtaPaddingHorizontal,
+                              paddingVertical: headerNavCtaPaddingVertical,
+                              opacity: pressed ? 0.92 : 1,
                             },
                           ]}
                         >
-                          {link.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                          <Text
+                            style={[
+                              styles.headerNavCtaText,
+                              { color: '#07333b', fontSize: headerNavCtaFontSize },
+                            ]}
+                          >
+                            {t('landing.nav.signInCta')}
+                          </Text>
+                        </Pressable>
 
-                    {/* Avatar trigger — last item inside pill */}
-                    <TouchableOpacity
-                      onPress={() => setProfileMenuVisible((prev) => !prev)}
-                      activeOpacity={0.75}
-                      style={[
-                        styles.headerNavDesktopAvatarTrigger,
-                        {
-                          backgroundColor: palette.contentCard,
-                          borderColor: palette.contentBorder,
-                        },
-                      ]}
-                    >
-                      <View
-                        style={[
-                          styles.headerNavDesktopAvatarCircle,
-                          { backgroundColor: `${palette.accent}22` },
-                        ]}
-                      >
-                        <User size={15} color={palette.accent} />
-                      </View>
-                      {profileMenuVisible ? (
-                        <ChevronUp size={14} color={palette.textPrimary} />
-                      ) : (
-                        <ChevronDown size={14} color={palette.textPrimary} />
-                      )}
-                    </TouchableOpacity>
-                  </Animated.View>
+                        <View style={styles.headerNavSettingsWrap} pointerEvents='box-none'>
+                          <Pressable
+                            onPress={() => setHeaderNavSettingsMenuVisible((visible) => !visible)}
+                            style={({ hovered, pressed }) => [
+                              styles.headerNavSettingsButton,
+                              {
+                                backgroundColor: hovered
+                                  ? headerNavSettingsBgHover
+                                  : headerNavSettingsBg,
+                                opacity: pressed ? 0.9 : 1,
+                              },
+                            ]}
+                          >
+                            <View
+                              style={[
+                                styles.headerNavSettingsButtonTint,
+                                {
+                                  backgroundColor: isDark
+                                    ? 'rgba(11,90,95,0.16)'
+                                    : 'rgba(255,255,255,0.1)',
+                                },
+                              ]}
+                            />
+                            <SettingsIcon size={17} color='#f7fffd' strokeWidth={2.1} />
+                          </Pressable>
 
-                  {/* Dropdown rendered OUTSIDE the pill so it is never clipped */}
-                  {profileMenuVisible && (
-                    <View
-                      style={[
-                        styles.floatingMenu,
-                        styles.headerNavDesktopAvatarDropdown,
-                        {
-                          backgroundColor: palette.contentCard,
-                          borderColor: palette.contentBorder,
-                        },
-                      ]}
-                      pointerEvents='auto'
-                    >
-                      <TouchableOpacity
-                        style={[
-                          styles.floatingMenuItem,
-                          { backgroundColor: palette.mutedButtonBg },
-                        ]}
-                        onPress={() => {
-                          closeProfileMenu();
-                          onSignIn();
-                        }}
-                        activeOpacity={0.82}
-                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      >
-                        <LogIn size={14} color={palette.textPrimary} />
-                        <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                          {t('labels.signIn')}
-                        </Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={[
-                          styles.floatingMenuItem,
-                          { backgroundColor: palette.mutedButtonBg },
-                        ]}
-                        onPress={() => setSettingsExpanded((prev) => !prev)}
-                        activeOpacity={0.82}
-                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      >
-                        <SettingsIcon size={14} color={palette.textPrimary} />
-                        <Text style={[styles.floatingMenuText, { color: palette.textPrimary }]}>
-                          {t('labels.settings')}
-                        </Text>
-                        <View style={styles.floatingMenuItemRight}>
-                          {settingsExpanded ? (
-                            <ChevronDown size={14} color={palette.textPrimary} />
-                          ) : (
-                            <ChevronRight size={14} color={palette.textPrimary} />
-                          )}
+                          <AnimatedCollapsibleContent
+                            expanded={headerNavSettingsMenuVisible}
+                            style={[
+                              styles.headerNavSettingsDropdown,
+                              {
+                                backgroundColor: palette.contentCard,
+                                borderColor: palette.contentBorder,
+                              },
+                            ]}
+                          >
+                            <AirsIntroSettingsMenu
+                              palette={palette}
+                              onOpenSettings={
+                                _onOpenSettings
+                                  ? () => {
+                                      closeHeaderNavSettingsMenu();
+                                      _onOpenSettings();
+                                    }
+                                  : undefined
+                              }
+                            />
+                          </AnimatedCollapsibleContent>
                         </View>
-                      </TouchableOpacity>
-
-                      <AnimatedCollapsibleContent expanded={settingsExpanded}>
-                        <AirsIntroSettingsMenu palette={palette} />
-                      </AnimatedCollapsibleContent>
+                      </View>
                     </View>
-                  )}
+                  </Animated.View>
                 </View>
               )}
             </>
@@ -714,7 +1012,9 @@ const AirsIntroExperience = forwardRef<
                           color: link.isActive
                             ? accentColorProp ?? palette.accent
                             : palette.textSecondary,
-                          fontWeight: link.isActive ? '700' : '500',
+                          fontFamily: link.isActive
+                            ? `${SCULPIN_FONT_FAMILY}-Bold`
+                            : `${SCULPIN_FONT_FAMILY}-Medium`,
                         },
                       ]}
                     >
@@ -889,14 +1189,15 @@ const AirsIntroExperience = forwardRef<
           <View
             style={[styles.heroSection, { height: heroHeight, backgroundColor: palette.pageBg }]}
           >
-            <Animated.Image
-              source={heroBackgroundSource}
+            <Animated.View
+              pointerEvents='none'
               style={[
                 styles.heroBackground,
-                { opacity: heroBgImageOpacity, transform: [{ scale: bgScale }] },
+                { opacity: heroBgOpacity, transform: [{ scale: bgScale }] },
               ]}
-              resizeMode='cover'
-            />
+            >
+              <HeroBackground videoSource={HERO_VIDEO} />
+            </Animated.View>
             <Animated.View
               style={[
                 styles.heroSolidFadeLayer,
@@ -905,107 +1206,61 @@ const AirsIntroExperience = forwardRef<
             />
             <Animated.View style={[styles.heroShade, { opacity: shadeOpacity }]} />
 
-            <Animated.View
-              style={[styles.heroMediaStage, { transform: [{ translateY: cardTranslateY }] }]}
-            >
-              <AirsIntroVideoCard
-                style={{ width: cardWidth, height: cardHeight }}
-                videoUri={videoUri}
-                isMuted={isMuted}
-                isScreenFocused={isScreenFocused}
-                shouldPlayMainTrack={hasScrollActivatedPlayback && isScreenFocused}
-                showControls={Boolean(videoUri && hasScrollActivatedPlayback && isScreenFocused)}
-                controlsIconOnly={videoControlsIconOnly}
-                onToggleMute={toggleMute}
-                onPlaybackChange={setIsVideoPlaying}
-              />
-
-              {videoUri && (!hasScrollActivatedPlayback || isInTopZone || !isVideoPlaying) ? (
-                <>
-                  <Animated.View
-                    pointerEvents='none'
-                    style={[
-                      styles.mediaTagPillOverlay,
-                      {
-                        width: cardWidth,
-                        opacity: mediaTagOpacity,
-                        transform: [{ translateY: mediaTagPillFinalTranslateY }],
-                      },
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.mediaTagPill,
-                        {
-                          width: mediaTagPillWidth,
-                          minHeight: mediaTagPillHeight,
-                          backgroundColor: mediaTagPillBackgroundColor,
-                          borderColor: mediaTagPillBorderColor,
-                          boxShadow: `0px 8px 18px 0px ${mediaTagPillShadowColor}`,
-                        },
-                      ]}
-                    >
-                      <ExpoImage
-                        source={mediaTagPillLogoSource}
-                        style={{
-                          width: mediaTagPillLogoWidth,
-                          height: mediaTagPillLogoHeight,
-                        }}
-                        contentFit='contain'
-                      />
-                    </View>
-                  </Animated.View>
-
-                  <Animated.View
-                    pointerEvents='none'
-                    style={[
-                      styles.mediaTagTitleOverlay,
-                      {
-                        width: cardWidth,
-                        opacity: mediaTagOpacity,
-                        transform: [{ translateY: mediaTagTitleFinalTranslateY }],
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.mediaTagTitle,
-                        {
-                          fontSize: mediaTagTitleSize,
-                          lineHeight: mediaTagTitleLineHeight,
-                        },
-                      ]}
-                    >
-                      {t('landing.media.title')}
-                    </Text>
-                  </Animated.View>
-
-                  <Animated.View
-                    pointerEvents='none'
-                    style={[
-                      styles.mediaTagSubtitleOverlay,
-                      {
-                        width: cardWidth,
-                        opacity: mediaTagOpacity,
-                        transform: [{ translateY: mediaTagSubtitleFinalTranslateY }],
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.mediaTagSubtitle,
-                        {
-                          fontSize: mediaTagSubtitleSize,
-                          lineHeight: mediaTagSubtitleLineHeight,
-                        },
-                      ]}
-                    >
-                      {t('landing.media.subtitle')}
-                    </Text>
-                  </Animated.View>
-                </>
-              ) : null}
-            </Animated.View>
+            {showCta ? (
+              <Animated.View
+                pointerEvents='box-none'
+                style={[
+                  styles.heroCopyOverlay,
+                  {
+                    top: heroCopyTop,
+                    opacity: mediaTagOpacity,
+                    transform: [{ translateY: mediaTagTranslateY }],
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.heroCopyKicker,
+                    {
+                      color: 'rgba(245, 227, 162, 0.96)',
+                      fontSize: heroKickerSize,
+                      lineHeight: heroKickerLineHeight,
+                    },
+                  ]}
+                >
+                  {t('landing.media.title')}
+                </Text>
+                <Text
+                  style={[
+                    styles.heroCopyHeadline,
+                    {
+                      color: '#ffffff',
+                      maxWidth: heroCopyMaxWidth,
+                      fontSize: heroHeadlineSize,
+                      lineHeight: heroHeadlineLineHeight,
+                    },
+                  ]}
+                >
+                  {t('landing.media.subtitle')}
+                </Text>
+                <View style={[styles.heroCopyActions, isMobile && styles.heroCopyActionsStacked]}>
+                  <HeroGlassButton
+                    onPress={() => onHeroNavigate?.('como-funciona')}
+                    label={t('landing.nav.howItWorks')}
+                    width={heroButtonWidth}
+                    fontSize={heroButtonFontSize}
+                    isDark={isDark}
+                  />
+                  <HeroGlassButton
+                    onPress={() => onHeroNavigate?.('beneficios')}
+                    label={t('landing.nav.benefits')}
+                    width={heroButtonWidth}
+                    fontSize={heroButtonFontSize}
+                    isDark={isDark}
+                  />
+                </View>
+              </Animated.View>
+            ) : null}
 
             <Animated.View
               style={[
@@ -1119,15 +1374,15 @@ const styles = createTypographyStyles({
   },
   floatingLeftTop: {
     position: 'absolute',
-    top: 14,
-    left: 14,
+    top: 18,
+    left: 24,
     zIndex: 81,
     maxWidth: '70%',
   },
   floatingRightTop: {
     position: 'absolute',
-    top: 14,
-    right: 14,
+    top: 18,
+    right: 24,
     zIndex: 80,
     alignItems: 'flex-end',
   },
@@ -1201,6 +1456,17 @@ const styles = createTypographyStyles({
   heroBackground: {
     ...StyleSheet.absoluteFillObject,
   },
+  heroVideoElement: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    backgroundColor: '#050510',
+  },
+  heroVideoWebView: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'transparent',
+  },
   heroSolidFadeLayer: {
     ...StyleSheet.absoluteFillObject,
   },
@@ -1211,7 +1477,7 @@ const styles = createTypographyStyles({
   heroTopCopy: {
     position: 'absolute',
     left: 24,
-    top: 20,
+    top: 24,
     right: 24,
     gap: 4,
   },
@@ -1268,18 +1534,18 @@ const styles = createTypographyStyles({
     paddingRight: 10,
   },
   heroMetaLeft: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Medium`,
     color: 'rgba(248,251,255,0.96)',
     fontSize: 17,
-    fontWeight: '700',
     letterSpacing: 0.2,
     textShadowColor: 'rgba(0,0,0,0.28)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },
   heroMetaRight: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Medium`,
     color: 'rgba(248,251,255,0.98)',
     fontSize: 15,
-    fontWeight: '700',
     textShadowColor: 'rgba(0,0,0,0.28)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
@@ -1378,7 +1644,7 @@ const styles = createTypographyStyles({
     top: 0,
     left: 0,
     right: 0,
-    height: 104,
+    height: 120,
     zIndex: 40,
     overflow: 'hidden',
   },
@@ -1386,8 +1652,8 @@ const styles = createTypographyStyles({
   // ── Logged-out: mobile dropdown nav ───────────────────────────────────────
   headerNavMobileContainer: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: 18,
+    right: 18,
     zIndex: 50,
   },
   headerNavMobileAvatarTrigger: {
@@ -1395,8 +1661,8 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     gap: 8,
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.18,
@@ -1444,8 +1710,8 @@ const styles = createTypographyStyles({
     paddingVertical: 12,
   },
   headerNavMobileText: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Medium`,
     fontSize: 15,
-    fontWeight: '500',
   },
   headerNavMobileDivider: {
     height: 1,
@@ -1461,15 +1727,15 @@ const styles = createTypographyStyles({
     alignItems: 'center',
   },
   headerNavMobileCtaText: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Bold`,
     fontSize: 13,
-    fontWeight: '700',
   },
 
-  // ── Logged-out: desktop pill with avatar inside ───────────────────────────
+  // ── Logged-out: desktop pill with nav links + CTA ─────────────────────────
   headerNavDesktopWrapper: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: 18,
+    right: 18,
     zIndex: 50,
   },
   headerNavDesktopAvatarWrap: {
@@ -1482,8 +1748,8 @@ const styles = createTypographyStyles({
     gap: 6,
     borderWidth: 1,
     borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
   },
   headerNavDesktopAvatarCircle: {
     width: 26,
@@ -1512,52 +1778,131 @@ const styles = createTypographyStyles({
   headerNavPill: {
     flexDirection: 'row',
     alignItems: 'center',
+    position: 'relative',
     borderRadius: 999,
-    paddingHorizontal: 6,
-    paddingVertical: 6,
-    gap: 4,
+    borderWidth: 1,
+    overflow: 'visible',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+  headerNavPillBlur: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 999,
+  },
+  headerNavPillTint: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 999,
+  },
+  headerNavPillHighlight: {
+    position: 'absolute',
+    left: 22,
+    right: 22,
+    top: 1,
+    height: 1,
+    borderRadius: 999,
+    opacity: 0.85,
+  },
+  headerNavPillContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    position: 'relative',
+    zIndex: 1,
+  },
+  headerNavLinkGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   headerNavPillItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
     borderRadius: 999,
   },
   headerNavPillText: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Medium`,
     fontSize: 14,
-    fontWeight: '500',
     letterSpacing: 0.2,
+  },
+  headerNavActionDivider: {
+    width: 1,
+    alignSelf: 'stretch',
+    borderRadius: 999,
+    marginVertical: 6,
+  },
+  headerNavActionCluster: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   headerNavCtaButton: {
-    paddingHorizontal: 18,
-    paddingVertical: 9,
+    minHeight: 42,
+    paddingHorizontal: 22,
+    paddingVertical: 10,
     borderRadius: 999,
-    marginLeft: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerNavCtaText: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Bold`,
     fontSize: 14,
-    fontWeight: '700',
     letterSpacing: 0.2,
+  },
+  headerNavSettingsWrap: {
+    position: 'relative',
+    zIndex: 4,
+  },
+  headerNavSettingsButton: {
+    position: 'relative',
+    width: 42,
+    height: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 21,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.14,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  headerNavSettingsButtonTint: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  headerNavSettingsDropdown: {
+    position: 'absolute',
+    top: 58,
+    right: 0,
+    width: 220,
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 8,
+    gap: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 14,
+    zIndex: 60,
   },
 
   // ── Logged-in: clean nav + avatar ─────────────────────────────────────────
   headerNavLoggedInContainer: {
     position: 'absolute',
-    top: 16,
-    right: 20,
+    top: 24,
+    right: 24,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 18,
     zIndex: 50,
   },
   headerNavLinksRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 20,
+    gap: 22,
   },
   headerNavLinkWrap: {
     alignItems: 'center',
@@ -1566,7 +1911,6 @@ const styles = createTypographyStyles({
   headerNavLinkText: {
     fontFamily: `${SCULPIN_FONT_FAMILY}-Medium`,
     fontSize: 15,
-    fontWeight: '500',
     letterSpacing: 0.1,
   },
   headerNavLinkUnderline: {
@@ -1581,9 +1925,9 @@ const styles = createTypographyStyles({
     gap: 8,
     borderWidth: 1,
     borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    minHeight: 42,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    minHeight: 44,
   },
   headerAvatar: {
     width: 28,
@@ -1598,9 +1942,66 @@ const styles = createTypographyStyles({
   },
   headerDropdownContainer: {
     position: 'absolute',
-    top: 64,
-    right: 20,
+    top: 68,
+    right: 24,
     zIndex: 55,
     minWidth: 200,
+  },
+  heroCopyOverlay: {
+    position: 'absolute',
+    left: 24,
+    right: 24,
+    zIndex: 5,
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  heroCopyKicker: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Regular`,
+    letterSpacing: 0.08,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.22)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  heroCopyHeadline: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Black`,
+    textAlign: 'center',
+    letterSpacing: -0.6,
+    textShadowColor: 'rgba(0,0,0,0.28)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
+    marginTop: 12,
+  },
+  heroCopyActions: {
+    marginTop: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 20,
+    flexWrap: 'wrap',
+  },
+  heroCopyActionsStacked: {
+    flexDirection: 'column',
+    gap: 14,
+    width: '100%',
+  },
+  heroGlassButton: {
+    minHeight: 78,
+    borderRadius: 20,
+    borderWidth: 2,
+    paddingHorizontal: 28,
+    paddingVertical: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  heroGlassBlur: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 20,
+  },
+  heroCopyButtonText: {
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Bold`,
+    letterSpacing: 0.15,
+    textAlign: 'center',
   },
 });

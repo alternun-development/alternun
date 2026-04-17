@@ -1,22 +1,22 @@
-import React, { useState, } from 'react';
-import { View, Text, TouchableOpacity, Modal, } from 'react-native';
-import { createTypographyStyles, } from '../theme/typography';
-import { DollarSign, X, } from 'lucide-react-native';
-import { ProgressBar, InfoRow, } from '@alternun/ui';
-import { PoolPosition, } from './types';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import { createTypographyStyles } from '../theme/typography';
+import { DollarSign, X } from 'lucide-react-native';
+import { ProgressBar, InfoRow } from '@alternun/ui';
+import { PoolPosition } from './types';
 
 interface PoolVaultProps {
   positions: PoolPosition[];
   onClaimProceeds: (position: PoolPosition) => void;
 }
 
-export default function PoolVault({ positions, onClaimProceeds, }: PoolVaultProps,) {
-  const [claimModal, setClaimModal,] = useState<PoolPosition | null>(null,);
+export default function PoolVault({ positions, onClaimProceeds }: PoolVaultProps) {
+  const [claimModal, setClaimModal] = useState<PoolPosition | null>(null);
 
   const handleClaim = () => {
     if (claimModal) {
-      onClaimProceeds(claimModal,);
-      setClaimModal(null,);
+      onClaimProceeds(claimModal);
+      setClaimModal(null);
     }
   };
 
@@ -30,7 +30,7 @@ export default function PoolVault({ positions, onClaimProceeds, }: PoolVaultProp
       </View>
 
       <View style={styles.positionList}>
-        {positions.map((position,) => {
+        {positions.map((position) => {
           const soldPct = (position.soldUSD / position.totalValueUSD) * 100;
           return (
             <View key={position.positionId} style={styles.positionCard}>
@@ -63,13 +63,13 @@ export default function PoolVault({ positions, onClaimProceeds, }: PoolVaultProp
                 </View>
                 <View style={styles.statItem}>
                   <Text style={styles.statLabel}>Remaining</Text>
-                  <Text style={[styles.statValue, position.isClosed && styles.statValueMuted,]}>
+                  <Text style={[styles.statValue, position.isClosed && styles.statValueMuted]}>
                     ${position.remainingUSD.toLocaleString()}
                   </Text>
                 </View>
                 <View style={styles.statItem}>
                   <Text style={styles.statLabel}>Profit Share</Text>
-                  <Text style={[styles.statValue, styles.statValueAccent,]}>
+                  <Text style={[styles.statValue, styles.statValueAccent]}>
                     {position.profitShare}%
                   </Text>
                 </View>
@@ -77,7 +77,7 @@ export default function PoolVault({ positions, onClaimProceeds, }: PoolVaultProp
 
               {/* Progress Bar */}
               <ProgressBar
-                progress={Math.min(soldPct / 100, 1,)}
+                progress={Math.min(soldPct / 100, 1)}
                 height={6}
                 showLabel
                 label='Sold'
@@ -90,7 +90,7 @@ export default function PoolVault({ positions, onClaimProceeds, }: PoolVaultProp
                   styles.claimButton,
                   position.isClosed ? styles.claimButtonActive : styles.claimButtonDisabled,
                 ]}
-                onPress={() => position.isClosed && setClaimModal(position,)}
+                onPress={() => position.isClosed && setClaimModal(position)}
                 activeOpacity={position.isClosed ? 0.8 : 1}
               >
                 <DollarSign
@@ -110,7 +110,7 @@ export default function PoolVault({ positions, onClaimProceeds, }: PoolVaultProp
               </TouchableOpacity>
             </View>
           );
-        },)}
+        })}
       </View>
 
       {/* Claim Modal */}
@@ -119,7 +119,7 @@ export default function PoolVault({ positions, onClaimProceeds, }: PoolVaultProp
           <View style={styles.modalDialog}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Claim Proceeds</Text>
-              <TouchableOpacity onPress={() => setClaimModal(null,)}>
+              <TouchableOpacity onPress={() => setClaimModal(null)}>
                 <X size={20} color='rgba(232,232,255,0.6)' />
               </TouchableOpacity>
             </View>
@@ -138,7 +138,7 @@ export default function PoolVault({ positions, onClaimProceeds, }: PoolVaultProp
                     valueAccent
                     spacing={10}
                   />
-                  <View style={[styles.claimInfoRow, styles.claimInfoTotal,]}>
+                  <View style={[styles.claimInfoRow, styles.claimInfoTotal]}>
                     <Text style={styles.claimTotalLabel}>Estimated Payout</Text>
                     <Text style={styles.claimTotalValue}>
                       $
@@ -152,7 +152,7 @@ export default function PoolVault({ positions, onClaimProceeds, }: PoolVaultProp
                 <View style={styles.modalActions}>
                   <TouchableOpacity
                     style={styles.ghostButton}
-                    onPress={() => setClaimModal(null,)}
+                    onPress={() => setClaimModal(null)}
                     activeOpacity={0.8}
                   >
                     <Text style={styles.ghostButtonText}>Cancel</Text>
@@ -187,6 +187,7 @@ const styles = createTypographyStyles({
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: 0.02,
+    fontFamily: 'Sculpin-Bold',
   },
   sectionSubtitle: {
     color: 'rgba(232,232,255,0.4)',
@@ -203,7 +204,7 @@ const styles = createTypographyStyles({
     borderRadius: 16,
     padding: 16,
     shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8, },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 4,
@@ -218,6 +219,7 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 14,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   positionToken: {
     color: 'rgba(232,232,255,0.4)',
@@ -316,7 +318,7 @@ const styles = createTypographyStyles({
   claimButtonActive: {
     backgroundColor: '#1ccba1',
     shadowColor: '#1ccba1',
-    shadowOffset: { width: 0, height: 0, },
+    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 4,
@@ -360,6 +362,7 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 17,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   claimInfo: {
     backgroundColor: 'rgba(255,255,255,0.03)',
@@ -431,4 +434,4 @@ const styles = createTypographyStyles({
     fontSize: 14,
     fontWeight: '700',
   },
-},);
+});

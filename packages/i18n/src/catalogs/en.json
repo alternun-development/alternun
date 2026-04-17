@@ -158,11 +158,11 @@
         "scrollToInteract": "Scroll to interact"
       },
       "info": {
-        "scoreLine": "Alternun Impact & Reputation Score.",
+        "scoreLine": "Alternun Impact & Reputation Score",
         "summaryLine": "One surface for verified impact, compensation lifecycle, and wallet-linked modules."
       },
       "media": {
-        "subtitle": "The definitive loyalty program for people protecting the planet.",
+        "subtitle": "The definitive loyalty program for people like you who protect the planet.",
         "title": "Alternun Impact & Reputation Score"
       },
       "nav": {
@@ -223,6 +223,13 @@
             "title": "Redeem and grow"
           }
         }
+      },
+      "membresia": {
+        "sectionTitle": "Lifetime membership from Day 1",
+        "descriptionPart1": "No monthly fees or renewals needed.",
+        "descriptionPart2Bold": "When you offset your first carbon footprint, you become a lifetime member.",
+        "descriptionPart3": "From that moment, you start accumulating Airs and receiving your RBI monthly.",
+        "descriptionPart4": "Your membership never expires and your benefits only grow over time."
       },
       "beneficios": {
         "atnUnit": "ATN",

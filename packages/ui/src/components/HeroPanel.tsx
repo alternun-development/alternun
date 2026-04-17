@@ -563,6 +563,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.5,
     marginBottom: spacing[1],
+    fontFamily: 'Sculpin-Bold',
   },
   subtitle: {
     fontSize: fontSize.sm,

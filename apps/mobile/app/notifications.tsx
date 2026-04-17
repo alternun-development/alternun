@@ -343,6 +343,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   unreadBadge: {
     backgroundColor: '#1ccba1',

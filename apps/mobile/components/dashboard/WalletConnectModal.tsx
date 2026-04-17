@@ -106,6 +106,7 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 18,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   subtitle: {
     color: 'rgba(232,232,255,0.5)',
@@ -142,6 +143,7 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: 'Sculpin-Bold',
   },
   walletDesc: {
     color: 'rgba(232,232,255,0.4)',

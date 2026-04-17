@@ -179,6 +179,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.lg,
     fontWeight: '700',
     flex: 1,
+    fontFamily: 'Sculpin-Bold',
   },
   closeBtn: {
     padding: 4,
