@@ -33,6 +33,7 @@
     "@types/aws-lambda": "^8.10.147",
     "@types/node": "^22.13.9",
     "@types/nodemailer": "^8.0.0",
+    "@types/sanitize-html": "^2.16.1",
     "esbuild": "^0.25.0",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
