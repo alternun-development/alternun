@@ -73,7 +73,7 @@
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
-      "@fastify/middie": "8.3.3",
+      "@fastify/middie": "9.3.2",
       "axios": "1.15.0",
       "fast-xml-parser": "4.5.4",
       "handlebars": "4.7.9",
