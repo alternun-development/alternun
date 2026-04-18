@@ -1,17 +1,17 @@
-import { getLocaleLabel } from '@alternun/i18n';
-import { useAppTranslation } from '../components/i18n/useAppTranslation';
-import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
-import { useAuth } from '../components/auth/AppAuthProvider';
-import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { createTypographyStyles } from '../components/theme/typography';
+import { getLocaleLabel, } from '@alternun/i18n';
+import { useAppTranslation, } from '../components/i18n/useAppTranslation';
+import { useAppPreferences, } from '../components/settings/AppPreferencesProvider';
+import { useAuth, } from '../components/auth/AppAuthProvider';
+import { useRouter, } from 'expo-router';
+import React, { useMemo, } from 'react';
+import { ScrollView, Text, TouchableOpacity, View, } from 'react-native';
+import { SafeAreaView, } from 'react-native-safe-area-context';
+import { createTypographyStyles, } from '../components/theme/typography';
 import TopNav from '../components/dashboard/TopNav';
 
-export default function SettingsScreen() {
+export default function SettingsScreen(): React.JSX.Element {
   const router = useRouter();
-  const { user, signOutUser } = useAuth();
+  const { user, signOutUser, } = useAuth();
   const {
     themeMode,
     language,
@@ -22,21 +22,21 @@ export default function SettingsScreen() {
     cycleMotionLevel,
     setShowAirsIntro,
   } = useAppPreferences();
-  const { t } = useAppTranslation('mobile');
+  const { t, } = useAppTranslation('mobile',);
   const isDark = themeMode === 'dark';
 
-  const getMetadata = (u: typeof user): Record<string, unknown> => {
+  const getMetadata = (u: typeof user,): Record<string, unknown> => {
     if (!u?.metadata || typeof u.metadata !== 'object') {
       return {};
     }
     return u.metadata as Record<string, unknown>;
   };
 
-  const getProfileInfo = (u: typeof user) => {
+  const getProfileInfo = (u: typeof user,): { displayName: string; email: string | undefined } => {
     if (!u) {
-      return { displayName: 'Guest', email: undefined };
+      return { displayName: 'Guest', email: undefined, };
     }
-    const metadata = getMetadata(u);
+    const metadata = getMetadata(u,);
     const firstName = typeof metadata.firstName === 'string' ? metadata.firstName : '';
     const lastName = typeof metadata.lastName === 'string' ? metadata.lastName : '';
     const fullNameFromParts = `${firstName} ${lastName}`.trim();
@@ -49,19 +49,19 @@ export default function SettingsScreen() {
       fullNameFromParts,
     ];
     const validName = nameCandidates.find(
-      (entry): entry is string => typeof entry === 'string' && entry.trim().length > 0
+      (entry,): entry is string => typeof entry === 'string' && entry.trim().length > 0,
     );
     const emailLocalPart =
-      typeof u.email === 'string' && u.email.includes('@') ? u.email.split('@')[0] : undefined;
+      typeof u.email === 'string' && u.email.includes('@',) ? u.email.split('@',)[0] : undefined;
     return {
       displayName: validName?.trim() ?? emailLocalPart ?? 'Account',
       email: u.email,
     };
   };
 
-  const getWalletAddress = (u: typeof user): string => {
+  const getWalletAddress = (u: typeof user,): string => {
     if (!u) return '';
-    const metadata = getMetadata(u);
+    const metadata = getMetadata(u,);
     const walletObject =
       typeof metadata.wallet === 'object' && metadata.wallet !== null
         ? (metadata.wallet as Record<string, unknown>)
@@ -74,40 +74,40 @@ export default function SettingsScreen() {
       walletObject?.walletAddress,
     ];
     for (const candidate of candidates) {
-      if (typeof candidate === 'string' && candidate.startsWith('0x') && candidate.length >= 10) {
+      if (typeof candidate === 'string' && candidate.startsWith('0x',) && candidate.length >= 10) {
         return candidate;
       }
     }
-    if (typeof u.providerUserId === 'string' && u.providerUserId.startsWith('0x')) {
+    if (typeof u.providerUserId === 'string' && u.providerUserId.startsWith('0x',)) {
       return u.providerUserId;
     }
     return '';
   };
 
-  const getWalletProvider = (u: typeof user): string | null => {
+  const getWalletProvider = (u: typeof user,): string | null => {
     if (!u) return null;
-    const metadata = getMetadata(u);
+    const metadata = getMetadata(u,);
     const provider =
       typeof metadata.walletProvider === 'string'
         ? metadata.walletProvider
         : typeof metadata.wallet_provider === 'string'
-        ? metadata.wallet_provider
-        : null;
+          ? metadata.wallet_provider
+          : null;
     if (provider && provider.trim().length > 0) {
       return provider.toLowerCase();
     }
-    if (typeof u.provider === 'string' && u.provider.startsWith('wallet:')) {
-      return u.provider.replace('wallet:', '').toLowerCase();
+    if (typeof u.provider === 'string' && u.provider.startsWith('wallet:',)) {
+      return u.provider.replace('wallet:', '',).toLowerCase();
     }
     return null;
   };
 
-  const getAuthMethodLabel = (u: typeof user): string => {
+  const getAuthMethodLabel = (u: typeof user,): string => {
     if (!u) return 'guest';
-    if (u.provider && !u.provider.startsWith('wallet:')) {
+    if (u.provider && !u.provider.startsWith('wallet:',)) {
       return `auth: ${u.provider}`;
     }
-    if (u.provider && u.provider.startsWith('wallet:')) {
+    if (u.provider && u.provider.startsWith('wallet:',)) {
       return 'auth: wallet';
     }
     if (u.email) {
@@ -116,47 +116,47 @@ export default function SettingsScreen() {
     return 'auth: session';
   };
 
-  const profile = useMemo(() => getProfileInfo(user), [user]);
-  const walletAddress = useMemo(() => getWalletAddress(user), [user]);
-  const walletProvider = useMemo(() => getWalletProvider(user), [user]);
-  const walletConnected = Boolean(walletAddress || walletProvider);
-  const authMethod = useMemo(() => getAuthMethodLabel(user), [user]);
+  const profile = useMemo(() => getProfileInfo(user,), [user,],);
+  const walletAddress = useMemo(() => getWalletAddress(user,), [user,],);
+  const walletProvider = useMemo(() => getWalletProvider(user,), [user,],);
+  const walletConnected = Boolean(walletAddress || walletProvider,);
+  const authMethod = useMemo(() => getAuthMethodLabel(user,), [user,],);
 
   const userStats = useMemo(() => {
     if (!user) return null;
-    const metadata = getMetadata(user);
+    const metadata = getMetadata(user,);
     const stats =
       typeof metadata.stats === 'object' && metadata.stats !== null
         ? (metadata.stats as Record<string, unknown>)
         : {};
     return {
-      totalAIRS: Number.isFinite(Number(stats.totalAIRS)) ? Number(stats.totalAIRS) : 0,
+      totalAIRS: Number.isFinite(Number(stats.totalAIRS,),) ? Number(stats.totalAIRS,) : 0,
     };
-  }, [user]);
+  }, [user,],);
 
-  const handleNavigate = (key: string) => {
+  const handleNavigate = (key: string,): void => {
     if (key === 'dashboard') {
-      router.push('/');
+      router.push('/',);
     } else if (key === 'compensation') {
-      router.push('/compensaciones');
+      router.push('/compensaciones',);
     } else if (key === 'portfolio') {
-      router.push('/mis-atn');
+      router.push('/mis-atn',);
     } else if (key === 'proyectos') {
-      router.push('/proyectos');
+      router.push('/proyectos',);
     } else if (key === 'beneficios') {
-      router.push('/beneficios');
+      router.push('/beneficios',);
     } else if (key === 'ranking') {
-      router.push('/ranking');
+      router.push('/ranking',);
     } else if (key === 'wallet') {
-      router.push('/wallet');
+      router.push('/wallet',);
     } else if (key === 'profile') {
-      router.push('/profile');
+      router.push('/profile',);
     }
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#050510' : '#f6f8fc' }]}>
-      <View style={[styles.screen, { backgroundColor: isDark ? '#050510' : '#f6f8fc' }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#050510' : '#f6f8fc', },]}>
+      <View style={[styles.screen, { backgroundColor: isDark ? '#050510' : '#f6f8fc', },]}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View
             style={[
@@ -167,8 +167,8 @@ export default function SettingsScreen() {
               },
             ]}
           >
-            <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>
-              {t('settingsScreen.sections.appearance')}
+            <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a', },]}>
+              {t('settingsScreen.sections.appearance',)}
             </Text>
             <TouchableOpacity
               style={[
@@ -181,11 +181,11 @@ export default function SettingsScreen() {
               onPress={toggleThemeMode}
               activeOpacity={0.85}
             >
-              <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>
-                {t('labels.theme')}
+              <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a', },]}>
+                {t('labels.theme',)}
               </Text>
-              <Text style={[styles.rowValue, { color: isDark ? '#66e6c5' : '#0f766e' }]}>
-                {themeMode === 'dark' ? t('labels.dark') : t('labels.light')}
+              <Text style={[styles.rowValue, { color: isDark ? '#66e6c5' : '#0f766e', },]}>
+                {themeMode === 'dark' ? t('labels.dark',) : t('labels.light',)}
               </Text>
             </TouchableOpacity>
           </View>
@@ -199,8 +199,8 @@ export default function SettingsScreen() {
               },
             ]}
           >
-            <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>
-              {t('settingsScreen.sections.language')}
+            <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a', },]}>
+              {t('settingsScreen.sections.language',)}
             </Text>
             <TouchableOpacity
               style={[
@@ -213,11 +213,11 @@ export default function SettingsScreen() {
               onPress={cycleLanguage}
               activeOpacity={0.85}
             >
-              <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>
-                {t('settingsScreen.currentLanguage')}
+              <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a', },]}>
+                {t('settingsScreen.currentLanguage',)}
               </Text>
-              <Text style={[styles.rowValue, { color: isDark ? '#66e6c5' : '#0f766e' }]}>
-                {getLocaleLabel(language, language)}
+              <Text style={[styles.rowValue, { color: isDark ? '#66e6c5' : '#0f766e', },]}>
+                {getLocaleLabel(language, language,)}
               </Text>
             </TouchableOpacity>
           </View>
@@ -231,8 +231,8 @@ export default function SettingsScreen() {
               },
             ]}
           >
-            <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>
-              {t('settingsScreen.sections.onboarding')}
+            <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a', },]}>
+              {t('settingsScreen.sections.onboarding',)}
             </Text>
             <TouchableOpacity
               style={[
@@ -242,20 +242,20 @@ export default function SettingsScreen() {
                   backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(15,23,42,0.03)',
                 },
               ]}
-              onPress={() => setShowAirsIntro(!showAirsIntro)}
+              onPress={() => setShowAirsIntro(!showAirsIntro,)}
               activeOpacity={0.85}
             >
-              <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>
-                {t('settingsScreen.showIntroAgain')}
+              <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a', },]}>
+                {t('settingsScreen.showIntroAgain',)}
               </Text>
-              <Text style={[styles.rowValue, { color: isDark ? '#66e6c5' : '#0f766e' }]}>
-                {showAirsIntro ? t('labels.no') : t('labels.yes')}
+              <Text style={[styles.rowValue, { color: isDark ? '#66e6c5' : '#0f766e', },]}>
+                {showAirsIntro ? t('labels.no',) : t('labels.yes',)}
               </Text>
             </TouchableOpacity>
             <Text
-              style={[styles.rowHelpText, { color: isDark ? 'rgba(232,232,255,0.58)' : '#64748b' }]}
+              style={[styles.rowHelpText, { color: isDark ? 'rgba(232,232,255,0.58)' : '#64748b', },]}
             >
-              {t('settingsScreen.localPreferenceHelp')}
+              {t('settingsScreen.localPreferenceHelp',)}
             </Text>
           </View>
         </ScrollView>
@@ -264,7 +264,7 @@ export default function SettingsScreen() {
         <View style={styles.floatingNav} pointerEvents='box-none'>
           <TopNav
             key={user ? 'topnav-signed-in' : 'topnav-signed-out'}
-            signedIn={Boolean(user)}
+            signedIn={Boolean(user,)}
             walletConnected={walletConnected}
             walletAddress={walletAddress}
             themeMode={themeMode}
@@ -273,25 +273,25 @@ export default function SettingsScreen() {
             userDisplayName={profile.displayName}
             userEmail={profile.email}
             airsScore={userStats?.totalAIRS ?? null}
-            onSignIn={() => router.replace({ pathname: '/auth', params: { next: '/settings' } })}
+            onSignIn={() => router.replace({ pathname: '/auth', params: { next: '/settings', }, },)}
             onConnectWallet={() => {
               if (!user) {
-                router.replace({ pathname: '/auth', params: { next: '/settings' } });
+                router.replace({ pathname: '/auth', params: { next: '/settings', }, },);
               }
             }}
             motionLevel={motionLevel}
             onToggleTheme={toggleThemeMode}
             onCycleLanguage={cycleLanguage}
             onCycleMotionLevel={cycleMotionLevel}
-            onOpenProfile={() => router.push('/profile')}
+            onOpenProfile={() => router.push('/profile',)}
             onOpenSettings={() => {}}
             onSignOut={() => {
               void signOutUser();
-              router.replace('/');
+              router.replace('/',);
             }}
             onNavigate={handleNavigate}
             onNavigateToNotifications={() => {
-              router.push('/notifications');
+              router.push('/notifications',);
             }}
           />
         </View>
@@ -352,4 +352,4 @@ const styles = createTypographyStyles({
     fontSize: 11,
     lineHeight: 16,
   },
-});
+},);

@@ -24,7 +24,6 @@ Accepted aliases include:
 - `AUTH_BETTER_AUTH_URL`
 - `BETTER_AUTH_URL`
 - `BETTER_AUTH_CLIENT_ID`
-- `BETTER_AUTH_API_KEY`
 - `EXPO_PUBLIC_AUTH_EXCHANGE_URL`
 
 ## Runtime Behavior
@@ -39,6 +38,7 @@ Accepted aliases include:
 - `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` is the strict rollout mode for the backend handoff; it disables compatibility fallback when canonical issuer minting is missing.
 - The canonical browser-facing Better Auth URL should stay on the API origin root; the client/proxy layers append `/auth` internally. The internal dev service stays on `http://localhost:9083` during local development and can remain behind the API proxy in deployed environments.
 - Local dev uses `BETTER_AUTH_URL` for the private proxy target. Deployed stacks can pass that proxy target as `AUTH_BETTER_AUTH_URL` in the backend runtime, while the Expo bundle still consumes the browser-facing `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` value.
+- When a Better Auth URL is configured but the execution flag is omitted, the runtime now promotes to `better-auth` automatically so the configured URL stays authoritative. An explicit `supabase` flag still wins for rollback.
 - The API proxy answers browser `OPTIONS` preflight locally for `/auth/*` and only forwards the actual Better Auth request to the private service.
 - The mobile web callback now refreshes the Better Auth execution session before returning to the dashboard, and it clears stale legacy OIDC state on Better Auth runs so the app does not rehydrate the wrong session source after redirect.
 
@@ -77,7 +77,7 @@ Use these only for the compatibility path:
 
 ## Operational Notes
 
-- Use `AUTH_EXECUTION_PROVIDER=better-auth` for the testnet rollout; keep `supabase` only as the rollback path.
+- Use `AUTH_EXECUTION_PROVIDER=better-auth` for the testnet rollout; keep `supabase` only as the rollback path. If the Better Auth URL is set and the flag is omitted, the runtime now auto-promotes to Better Auth instead of drifting back to Authentik.
 - Use `AUTH_ISSUER_PROVIDER=authentik` for the canonical session layer.
 - Do not rely on Supabase user metadata as the long-term authz source of truth.
 - Prefer the facade and provider contracts in `src/core/` and `src/facade/` over direct client wiring in app code.

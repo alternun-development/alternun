@@ -19,13 +19,14 @@ What is already true:
 - `packages/auth` has a provider-agnostic facade and compatibility adapters.
 - Better Auth has an execution adapter in code.
 - Authentik remains the configured issuer default.
-- Legacy Supabase execution still remains the rollback/legacy path, while the current testnet env already opts into Better Auth.
+- Legacy Supabase execution still remains the rollback/legacy path, while the live testnet API/auth runtime now serves Better Auth on `/auth/*`.
 - The issuer provider already prefers `AUTH_EXCHANGE_URL` when it is configured.
 - Current testnet ownership is split across `dev` for the Expo bundle, `dashboard-dev` for the live API/admin runtime, and `identity-dev` for Authentik. `api-dev` is a backend-only escape hatch.
+- Issue `#99` is closed; follow-up issue `#100` tracks the remaining validation and migration work.
 
 What is not true yet:
 
-- Better Auth is not yet the real execution service on testnet.
+- Better Auth is live on testnet for the social-login route, but the broader migration to canonical issuer sessions, persistence, and email cutover is still incomplete.
 - The backend exchange contract can already mint issuer-owned tokens when the backend signing key is available, but it still falls back to compatibility payloads when that key or path is missing.
 - Identity persistence still depends on compatibility behavior.
 - Email still depends on the current Supabase-oriented operational path.
@@ -59,7 +60,7 @@ Provision these before enabling Better Auth on testnet:
 
 | Resource                    | Why it is needed                                             | Minimum decision                                |
 | --------------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
-| Better Auth service runtime | Handles `/api/auth/*` execution flows                        | Run inside `apps/api` or as a dedicated service |
+| Better Auth service runtime | Handles `/auth/*` execution flows                            | Run inside `apps/api` or as a dedicated service |
 | Stable HTTPS domain         | Required for OAuth callbacks and Apple                       | Use a dedicated testnet auth execution domain   |
 | Better Auth secret          | Required by Better Auth                                      | Store in Secrets Manager                        |
 | Postgres database           | Better Auth account and session persistence                  | Use dedicated schema or dedicated database      |
@@ -96,7 +97,7 @@ Tasks:
 2. Set `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL`.
 3. Configure Better Auth database and generate required schema.
 4. Configure dynamic base URL or a fixed base URL for testnet.
-5. Configure Google and GitHub redirect URIs to `/api/auth/callback/{provider}` on the Better Auth domain.
+5. Configure Google and GitHub redirect URIs to `/auth/callback/{provider}` on the Better Auth domain.
 6. Configure Apple only after HTTPS domain and native requirements are ready.
 7. Enable rate limiting with durable storage if more than one instance will run.
 
@@ -225,6 +226,11 @@ Acceptance checks:
 5. Run the validation matrix.
 6. Fix identity mapping and callback regressions.
 7. Freeze the interface and produce a go or no-go decision.
+
+Current status:
+
+- The testnet API/auth runtime step is complete.
+- The remaining work is tracked in issue `#100`.
 
 ## Rollback Plan
 

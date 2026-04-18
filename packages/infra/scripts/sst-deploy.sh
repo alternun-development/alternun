@@ -6,12 +6,31 @@ INFRA_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_load-infra-env.sh"
 load_infra_env
-# shellcheck source=/dev/null
-source "$SCRIPT_DIR/_pipeline-safety.sh"
 
 STACK=${STACK:-${1:-${SST_STAGE:-production}}}
 export STACK
 export SST_STAGE="${SST_STAGE:-$STACK}"
+
+# CodeBuild phases do not preserve exports from pre_build, so reload the auth env here
+# before any deploy-time validation or stack synthesis runs.
+if [ -f "$SCRIPT_DIR/resolve-ssm-env.sh" ]; then
+  # shellcheck source=/dev/null
+  source "$SCRIPT_DIR/resolve-ssm-env.sh"
+else
+  echo "ERROR: Missing $SCRIPT_DIR/resolve-ssm-env.sh" >&2
+  exit 1
+fi
+
+if [ -f "$SCRIPT_DIR/resolve-secrets-manager-env.sh" ]; then
+  # shellcheck source=/dev/null
+  source "$SCRIPT_DIR/resolve-secrets-manager-env.sh"
+else
+  echo "ERROR: Missing $SCRIPT_DIR/resolve-secrets-manager-env.sh" >&2
+  exit 1
+fi
+
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/_pipeline-safety.sh"
 
 stage_normalized=$(echo "$STACK" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 is_identity_stage=false
@@ -303,6 +322,10 @@ remove_state_resource() {
     return 0
   fi
 
+  if ! require_destructive_cleanup_allowed "SST state removal for ${target}"; then
+    return 0
+  fi
+
   echo "Pruning legacy managed certificate state for ${target}..."
 
   local remove_output
@@ -342,15 +365,15 @@ prune_legacy_managed_certificate_state() {
 
   if [ "$STACK" = "dev" ]; then
     if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" && [ -n "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}" ]; then
-      prefixes+=("airs-domain-redirect-${STACK}CdnSsl")
+      prefixes+=("airs-redir-${STACK}CdnSsl")
     fi
 
     if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" && [ -n "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}" ]; then
-      prefixes+=("dev-domain-redirect-${STACK}CdnSsl")
+      prefixes+=("dev-redir-${STACK}CdnSsl")
     fi
 
     if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}" && [ -n "${INFRA_REDIRECT_ROOT_CERT_ARN:-}" ]; then
-      prefixes+=("root-domain-redirect-${STACK}CdnSsl")
+      prefixes+=("root-redir-${STACK}CdnSsl")
     fi
   fi
 
@@ -364,68 +387,157 @@ prune_legacy_managed_certificate_state() {
   done
 }
 
-remove_cloudfront_alias() {
-  local alias_domain=$1
+remove_cloudfront_aliases_from_distribution() {
+  local dist_id=$1
+  shift
 
-  if [ -z "$alias_domain" ]; then
+  local -a aliases=("$@")
+
+  if [ -z "$dist_id" ] || [ "${#aliases[@]}" -eq 0 ]; then
+    return 0
+  fi
+
+  local cfg_json cfg_mod etag aliases_json
+  cfg_json=$(mktemp)
+  cfg_mod=$(mktemp)
+
+  if ! aws cloudfront get-distribution-config --id "$dist_id" --output json > "$cfg_json" 2>/dev/null; then
+    echo "WARN: Failed to fetch CloudFront config for distribution ${dist_id}." >&2
+    rm -f "$cfg_json" "$cfg_mod"
+    return 0
+  fi
+
+  etag=$(jq -r '.ETag // empty' "$cfg_json")
+  if [ -z "$etag" ]; then
+    echo "WARN: Missing ETag for distribution ${dist_id}; skipping alias cleanup." >&2
+    rm -f "$cfg_json" "$cfg_mod"
+    return 0
+  fi
+
+  aliases_json=$(printf '%s\n' "${aliases[@]}" | jq -R . | jq -s .)
+
+  jq --argjson aliases "$aliases_json" '
+    .DistributionConfig
+    | .Aliases.Items = ((.Aliases.Items // []) | map(select(. as $alias | ($aliases | index($alias)) | not)))
+    | .Aliases.Quantity = (.Aliases.Items | length)
+    | if .Aliases.Quantity == 0 then
+        .Aliases |= del(.Items)
+        | .ViewerCertificate = { "CloudFrontDefaultCertificate": true }
+      else
+        .
+      end
+  ' "$cfg_json" > "$cfg_mod"
+
+  echo "Removing aliases ${aliases[*]} from CloudFront distribution ${dist_id}..."
+  local aliases_quantity
+  aliases_quantity=$(jq -r '.Aliases.Quantity // 0' "$cfg_mod")
+  local update_output
+  if update_output=$(
+    aws cloudfront update-distribution \
+      --id "$dist_id" \
+      --if-match "$etag" \
+      --distribution-config "file://${cfg_mod}" \
+      --output json 2>&1
+  ); then
+    echo "Removed aliases ${aliases[*]} from distribution ${dist_id}."
+    if ! aws cloudfront wait distribution-deployed --id "$dist_id" >/dev/null 2>&1; then
+      echo "WARN: CloudFront distribution ${dist_id} did not reach Deployed after alias cleanup." >&2
+    fi
+  else
+    echo "WARN: Failed to remove aliases ${aliases[*]} from distribution ${dist_id}." >&2
+    echo "WARN: CloudFront update output: ${update_output}" >&2
+    if [ "$aliases_quantity" -eq 0 ]; then
+      local cfg_retry update_retry_output
+      cfg_retry=$(mktemp)
+      jq --argjson aliases "$aliases_json" '
+        .DistributionConfig
+        | .Aliases.Items = ((.Aliases.Items // []) | map(select(. as $alias | ($aliases | index($alias)) | not)))
+        | .Aliases.Quantity = (.Aliases.Items | length)
+        | if .Aliases.Quantity == 0 then
+            .Aliases |= del(.Items)
+          else
+            .
+          end
+      ' "$cfg_json" > "$cfg_retry"
+
+      echo "WARN: Retrying alias removal for ${dist_id} while preserving the existing viewer certificate." >&2
+      if update_retry_output=$(
+        aws cloudfront update-distribution \
+          --id "$dist_id" \
+          --if-match "$etag" \
+          --distribution-config "file://${cfg_retry}" \
+          --output json 2>&1
+      ); then
+        echo "Removed aliases ${aliases[*]} from distribution ${dist_id} on retry."
+        if ! aws cloudfront wait distribution-deployed --id "$dist_id" >/dev/null 2>&1; then
+          echo "WARN: CloudFront distribution ${dist_id} did not reach Deployed after alias cleanup." >&2
+        fi
+      else
+        echo "WARN: Retry failed for aliases ${aliases[*]} on distribution ${dist_id}." >&2
+        echo "WARN: CloudFront retry output: ${update_retry_output}" >&2
+      fi
+
+      rm -f "$cfg_retry"
+    fi
+  fi
+
+  rm -f "$cfg_json" "$cfg_mod"
+}
+
+remove_cloudfront_aliases() {
+  local -a alias_domains=("$@")
+
+  if [ "${#alias_domains[@]}" -eq 0 ]; then
     return 0
   fi
 
   if ! command -v aws >/dev/null 2>&1; then
-    echo "WARN: aws CLI not found; cannot clean CloudFront alias ${alias_domain}." >&2
+    echo "WARN: aws CLI not found; cannot clean CloudFront aliases." >&2
     return 0
   fi
 
   if ! command -v jq >/dev/null 2>&1; then
-    echo "WARN: jq not found; cannot clean CloudFront alias ${alias_domain}." >&2
+    echo "WARN: jq not found; cannot clean CloudFront aliases." >&2
     return 0
   fi
 
-  local dist_ids
-  dist_ids=$(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items!=null && contains(Aliases.Items, '${alias_domain}')].Id" --output text 2>/dev/null || true)
+  declare -A dist_aliases=()
+  declare -A dist_alias_seen=()
 
-  if [ -z "$dist_ids" ] || [ "$dist_ids" = "None" ]; then
-    echo "No existing CloudFront distribution found for alias ${alias_domain}."
-    return 0
-  fi
-
-  for dist_id in $dist_ids; do
-    echo "Removing alias ${alias_domain} from CloudFront distribution ${dist_id}..."
-    local cfg_json cfg_mod etag
-    cfg_json=$(mktemp)
-    cfg_mod=$(mktemp)
-
-    if ! aws cloudfront get-distribution-config --id "$dist_id" --output json > "$cfg_json" 2>/dev/null; then
-      echo "WARN: Failed to fetch CloudFront config for distribution ${dist_id}." >&2
-      rm -f "$cfg_json" "$cfg_mod"
+  local alias_domain dist_ids dist_id dist_alias_key
+  for alias_domain in "${alias_domains[@]}"; do
+    if [ -z "$alias_domain" ]; then
       continue
     fi
 
-    etag=$(jq -r '.ETag // empty' "$cfg_json")
-    if [ -z "$etag" ]; then
-      echo "WARN: Missing ETag for distribution ${dist_id}; skipping alias cleanup." >&2
-      rm -f "$cfg_json" "$cfg_mod"
+    dist_ids=$(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items!=null && contains(Aliases.Items, '${alias_domain}')].Id" --output text 2>/dev/null || true)
+
+    if [ -z "$dist_ids" ] || [ "$dist_ids" = "None" ]; then
+      echo "No existing CloudFront distribution found for alias ${alias_domain}."
       continue
     fi
 
-    jq --arg alias "$alias_domain" '
-      .DistributionConfig
-      | .Aliases.Items = ((.Aliases.Items // []) | map(select(. != $alias)))
-      | .Aliases.Quantity = (.Aliases.Items | length)
-      | if .Aliases.Quantity == 0 then
-          .ViewerCertificate = { "CloudFrontDefaultCertificate": true }
-        else
-          .
-        end
-    ' "$cfg_json" > "$cfg_mod"
+    for dist_id in $dist_ids; do
+      dist_alias_key="${dist_id}|${alias_domain}"
+      if [ -n "${dist_alias_seen[$dist_alias_key]:-}" ]; then
+        continue
+      fi
+      dist_alias_seen["$dist_alias_key"]=1
 
-    if aws cloudfront update-distribution --id "$dist_id" --if-match "$etag" --distribution-config "file://${cfg_mod}" >/dev/null 2>&1; then
-      echo "Removed alias ${alias_domain} from distribution ${dist_id}."
-    else
-      echo "WARN: Failed to remove alias ${alias_domain} from distribution ${dist_id}." >&2
-    fi
+      if [ -n "${dist_aliases[$dist_id]:-}" ]; then
+        dist_aliases["$dist_id"]="${dist_aliases[$dist_id]} ${alias_domain}"
+      else
+        dist_aliases["$dist_id"]="${alias_domain}"
+      fi
+    done
+  done
 
-    rm -f "$cfg_json" "$cfg_mod"
+  local dist_aliases_raw dist_alias_list
+  for dist_id in "${!dist_aliases[@]}"; do
+    dist_aliases_raw=${dist_aliases[$dist_id]}
+    # shellcheck disable=SC2206
+    dist_alias_list=($dist_aliases_raw)
+    remove_cloudfront_aliases_from_distribution "$dist_id" "${dist_alias_list[@]}"
   done
 }
 
@@ -434,8 +546,8 @@ cleanup_deploy_aliases() {
     return 0
   fi
 
+  CLOUDFRONT_ALIAS_CLEANUP_ATTEMPTED=false
   local aliases=()
-  aliases+=("${DOMAIN}")
 
   if [ "$STACK" = "dev" ]; then
     if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}"; then
@@ -443,7 +555,26 @@ cleanup_deploy_aliases() {
     fi
 
     if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}"; then
-      aliases+=("${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}")
+      local dev_sources_raw dev_sources dev_source
+      dev_sources_raw=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES:-${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}}
+      if [ -z "$dev_sources_raw" ]; then
+        local dev_source_primary dev_source_demo dev_source_beta
+        dev_source_primary=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-${INFRA_EXPO_DOMAIN_DEV:-${DOMAIN_DEV:-}}}
+        if [ -n "$dev_source_primary" ]; then
+          dev_source_demo=${dev_source_primary/#dev./demo.}
+          dev_source_beta=${dev_source_primary/#dev./beta.}
+          dev_sources_raw="${dev_source_primary},${dev_source_demo},${dev_source_beta}"
+        fi
+      fi
+      if [ -n "$dev_sources_raw" ]; then
+        IFS=',' read -r -a dev_sources <<< "$dev_sources_raw"
+        for dev_source in "${dev_sources[@]}"; do
+          dev_source=$(printf '%s' "$dev_source" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's#^https\?://##' -e 's#/*$##')
+          if [ -n "$dev_source" ]; then
+            aliases+=("$dev_source")
+          fi
+        done
+      fi
     fi
 
     if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}"; then
@@ -453,13 +584,50 @@ cleanup_deploy_aliases() {
 
   declare -A seen=()
   local alias_domain
+  local -a cleanup_aliases=()
   for alias_domain in "${aliases[@]}"; do
     if [ -z "$alias_domain" ] || [ -n "${seen[$alias_domain]:-}" ]; then
       continue
     fi
     seen[$alias_domain]=1
-    remove_cloudfront_alias "$alias_domain"
+    cleanup_aliases+=("$alias_domain")
   done
+
+  if [ "${#cleanup_aliases[@]}" -eq 0 ]; then
+    return 0
+  fi
+
+  if ! require_destructive_cleanup_allowed "CloudFront alias cleanup"; then
+    return 0
+  fi
+
+  CLOUDFRONT_ALIAS_CLEANUP_ATTEMPTED=true
+  remove_cloudfront_aliases "${cleanup_aliases[@]}"
+}
+
+should_cleanup_deploy_aliases() {
+  if is_truthy "${INFRA_ENABLE_ALIAS_CLEANUP:-false}"; then
+    return 0
+  fi
+
+  local normalized_stack="${stage_normalized:-${STACK:-}}"
+  if [ "$normalized_stack" = "dev" ] && (
+    is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" ||
+    is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" ||
+    is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}"
+  ); then
+    return 0
+  fi
+
+  return 1
+}
+
+refresh_sst_state_after_alias_cleanup() {
+  echo "Refreshing SST state after CloudFront alias cleanup..."
+  (
+    cd "$INFRA_DIR"
+    env SST_TELEMETRY_DISABLED=1 npx sst refresh --stage "$STACK"
+  )
 }
 
 ensure_route53_hosted_zone_env() {
@@ -514,8 +682,14 @@ hydrate_backend_api_jwt_signing_key
 selected_pipeline_csv=$(resolve_selected_pipeline_csv)
 assert_pipeline_reconciliation_safe "$selected_pipeline_csv" "$STACK"
 
-if is_truthy "${INFRA_ENABLE_ALIAS_CLEANUP:-false}"; then
+if should_cleanup_deploy_aliases; then
   cleanup_deploy_aliases
+  if [ "${CLOUDFRONT_ALIAS_CLEANUP_ATTEMPTED:-false}" = "true" ]; then
+    # CloudFront was mutated outside SST, so refresh state before synthesis/deploy.
+    refresh_sst_state_after_alias_cleanup
+  else
+    echo "Skipping SST state refresh because CloudFront alias cleanup was not performed."
+  fi
 else
   echo "Skipping CloudFront alias cleanup (INFRA_ENABLE_ALIAS_CLEANUP=${INFRA_ENABLE_ALIAS_CLEANUP:-false})"
 fi

@@ -1,3 +1,1095 @@
+## [1.0.151](https://github.com/alternun-development/alternun/compare/v1.0.150...v1.0.151) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): AIRS-logo-dark-realistic, AIRS-logo-light-realistic, README, buildspec
+
+## [1.0.151](https://github.com/alternun-development/alternun/compare/v1.0.150...v1.0.151) (2026-04-18)
+
+## [1.0.150](https://github.com/alternun-development/alternun/compare/v1.0.149...v1.0.150) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** test(repo,api): pnpm-lock, fastify-compat.test
+
+## [1.0.150](https://github.com/alternun-development/alternun/compare/v1.0.149...v1.0.150) (2026-04-18)
+
+## [1.0.149](https://github.com/alternun-development/alternun/compare/v1.0.148...v1.0.149) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** test(infra): \_pipeline-safety, predeploy-checks, sst-deploy, destructive-cleanup-guards.test
+
+## [1.0.149](https://github.com/alternun-development/alternun/compare/v1.0.148...v1.0.149) (2026-04-18)
+
+## [1.0.148](https://github.com/alternun-development/alternun/compare/v1.0.147...v1.0.148) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** test(infra): .env, README, buildspec, \_pipeline-safety
+
+## [1.0.148](https://github.com/alternun-development/alternun/compare/v1.0.147...v1.0.148) (2026-04-18)
+
+## [1.0.147](https://github.com/alternun-development/alternun/compare/v1.0.146...v1.0.147) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(infra): postdeploy-reachability-check, resolve-ssm-env, sst-deploy, buildspec-auth-env.test
+
+## [1.0.147](https://github.com/alternun-development/alternun/compare/v1.0.146...v1.0.147) (2026-04-17)
+
+## [1.0.146](https://github.com/alternun-development/alternun/compare/v1.0.145...v1.0.146) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(infra): sst-deploy, redirect-aliases.test
+
+## [1.0.146](https://github.com/alternun-development/alternun/compare/v1.0.145...v1.0.146) (2026-04-17)
+
+## [1.0.145](https://github.com/alternun-development/alternun/compare/v1.0.144...v1.0.145) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): AirsIntroExperience, HeroVideoNative, sst-deploy, redirect-aliases.test
+
+## [1.0.145](https://github.com/alternun-development/alternun/compare/v1.0.144...v1.0.145) (2026-04-17)
+
+## [1.0.144](https://github.com/alternun-development/alternun/compare/v1.0.143...v1.0.144) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): landing-backup, landing-optimized, landing, AirsIntroExperience
+
+## [1.0.144](https://github.com/alternun-development/alternun/compare/v1.0.143...v1.0.144) (2026-04-17)
+
+## [1.0.143](https://github.com/alternun-development/alternun/compare/v1.0.142...v1.0.143) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(infra): expo, redirects, redirect-aliases.test, sst-globals.d
+
+## [1.0.143](https://github.com/alternun-development/alternun/compare/v1.0.142...v1.0.143) (2026-04-17)
+
+## [1.0.142](https://github.com/alternun-development/alternun/compare/v1.0.141...v1.0.142) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra,repo): app, landing-optimized, HeroVideoNative, sst-deploy
+
+## [1.0.142](https://github.com/alternun-development/alternun/compare/v1.0.141...v1.0.142) (2026-04-17)
+
+## [1.0.141](https://github.com/alternun-development/alternun/compare/v1.0.140...v1.0.141) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(infra): sst-deploy
+
+### Bug Fixes
+
+- **infra:** sst-deploy ([4cd9755](https://github.com/alternun-development/alternun/commit/4cd9755a7780f7c26e9d8f2322d3eee50dce508f))
+
+## [1.0.141](https://github.com/alternun-development/alternun/compare/v1.0.140...v1.0.141) (2026-04-17)
+
+### Bug Fixes
+
+- **infra:** sst-deploy ([4cd9755](https://github.com/alternun-development/alternun/commit/4cd9755a7780f7c26e9d8f2322d3eee50dce508f))
+
+## [1.0.140](https://github.com/alternun-development/alternun/compare/v1.0.138...v1.0.140) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(repo,admin,api): CHANGELOG, app, build
+- **repo:** fix(infra): .env, buildspec, redirects, sst-deploy
+
+### Bug Fixes
+
+- **infra:** .env, buildspec, redirects, sst-deploy ([e474d57](https://github.com/alternun-development/alternun/commit/e474d57b6eea504a93b13d94b6f919af83f70054))
+- **repo,admin,api:** CHANGELOG, app, build ([9f2996b](https://github.com/alternun-development/alternun/commit/9f2996beb7b475d1ae25474263e0b47f84a2acbe))
+
+## [1.0.140](https://github.com/alternun-development/alternun/compare/v1.0.138...v1.0.140) (2026-04-17)
+
+### Bug Fixes
+
+- **infra:** .env, buildspec, redirects, sst-deploy ([e474d57](https://github.com/alternun-development/alternun/commit/e474d57b6eea504a93b13d94b6f919af83f70054))
+- **repo,admin,api:** CHANGELOG, app, build ([9f2996b](https://github.com/alternun-development/alternun/commit/9f2996beb7b475d1ae25474263e0b47f84a2acbe))
+
+## [1.0.139](https://github.com/alternun-development/alternun/compare/v1.0.138...v1.0.139) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(infra): .env, buildspec, redirects, sst-deploy
+
+### Bug Fixes
+
+- **infra:** .env, buildspec, redirects, sst-deploy ([e474d57](https://github.com/alternun-development/alternun/commit/e474d57b6eea504a93b13d94b6f919af83f70054))
+
+## [1.0.139](https://github.com/alternun-development/alternun/compare/v1.0.138...v1.0.139) (2026-04-17)
+
+### Bug Fixes
+
+- **infra:** .env, buildspec, redirects, sst-deploy ([e474d57](https://github.com/alternun-development/alternun/commit/e474d57b6eea504a93b13d94b6f919af83f70054))
+
+## [1.0.138](https://github.com/alternun-development/alternun/compare/v1.0.137...v1.0.138) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(infra): infra.config, redirects, redirect-aliases.test, sst-globals.d
+
+## [1.0.138](https://github.com/alternun-development/alternun/compare/v1.0.137...v1.0.138) (2026-04-17)
+
+## [1.0.137](https://github.com/alternun-development/alternun/compare/v1.0.136...v1.0.137) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** chore: prepare close issue #105
+- **repo:** docs: note global activity feed status
+- **repo:** chore: close issue #105
+
+## [1.0.137](https://github.com/alternun-development/alternun/compare/v1.0.136...v1.0.137) (2026-04-17)
+
+## [1.0.136](https://github.com/alternun-development/alternun/compare/v1.0.135...v1.0.136) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): AuthSignInScreen, infra.config, sst-deploy, redirect-aliases.test
+
+## [1.0.136](https://github.com/alternun-development/alternun/compare/v1.0.135...v1.0.136) (2026-04-17)
+
+## [1.0.135](https://github.com/alternun-development/alternun/compare/v1.0.134...v1.0.135) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(repo,infra): expo-web-aws-deploy, .env, README, infra.config
+
+## [1.0.135](https://github.com/alternun-development/alternun/compare/v1.0.134...v1.0.135) (2026-04-17)
+
+## [1.0.134](https://github.com/alternun-development/alternun/compare/v1.0.133...v1.0.134) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(api,repo,infra): build, expo-web-aws-deploy, .env, README
+
+## [1.0.134](https://github.com/alternun-development/alternun/compare/v1.0.133...v1.0.134) (2026-04-17)
+
+## [1.0.133](https://github.com/alternun-development/alternun/compare/v1.0.132...v1.0.133) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** feat(api): add global activity feed module
+
+### Features
+
+- **api:** add global activity feed module ([4902456](https://github.com/alternun-development/alternun/commit/490245656d7f04f7f5672a42950c73e439f7d18f))
+
+## [1.0.133](https://github.com/alternun-development/alternun/compare/v1.0.132...v1.0.133) (2026-04-17)
+
+### Features
+
+- **api:** add global activity feed module ([4902456](https://github.com/alternun-development/alternun/commit/490245656d7f04f7f5672a42950c73e439f7d18f))
+
+## [1.0.132](https://github.com/alternun-development/alternun/compare/v1.0.131...v1.0.132) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** chore: add packages/wallet/dist to gitignore
+- **repo:** fix(api): suppress Buffer.isBuffer eslint error with safe cast
+
+### Bug Fixes
+
+- **api:** suppress Buffer.isBuffer eslint error with safe cast ([7caf9e6](https://github.com/alternun-development/alternun/commit/7caf9e6a4c32e09dbca5359b108bf2591c259cb3))
+
+## [1.0.132](https://github.com/alternun-development/alternun/compare/v1.0.131...v1.0.132) (2026-04-17)
+
+### Bug Fixes
+
+- **api:** suppress Buffer.isBuffer eslint error with safe cast ([7caf9e6](https://github.com/alternun-development/alternun/commit/7caf9e6a4c32e09dbca5359b108bf2591c259cb3))
+
+## [1.0.131](https://github.com/alternun-development/alternun/compare/v1.0.130...v1.0.131) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): align deploy auth env and audit pins
+- **repo:** docs: add global activity feed feature plan
+- **repo:** fix(wallet): make pin digest key extractable
+- **repo:** fix(ci): refresh pnpm lockfile for wallet package
+- **repo:** chore(repo,admin,api): CHANGELOG, app
+
+### Bug Fixes
+
+- **ci:** refresh pnpm lockfile for wallet package ([d4d1c53](https://github.com/alternun-development/alternun/commit/d4d1c536c8542162042ee7730fbce0340b58f3ca))
+- **infra:** allow certificateArn reassignment ([34475e5](https://github.com/alternun-development/alternun/commit/34475e5621c3c0655419128327f44c6779cbc407))
+- **mobile:** align deploy auth env and audit pins ([88850f4](https://github.com/alternun-development/alternun/commit/88850f498db06c3435204f906e4421cb61dce684))
+- **wallet:** make pin digest key extractable ([8a4dbbe](https://github.com/alternun-development/alternun/commit/8a4dbbe61fd82070c2ea9a81f5f151a691773314))
+
+### Features
+
+- **wallet:** scaffold phase-1 non-custodial HD wallet core ([189b8f0](https://github.com/alternun-development/alternun/commit/189b8f0a2c13745a2d19f0af7a3b2005d28265e1))
+
+## [1.0.131](https://github.com/alternun-development/alternun/compare/v1.0.130...v1.0.131) (2026-04-17)
+
+### Bug Fixes
+
+- **ci:** refresh pnpm lockfile for wallet package ([d4d1c53](https://github.com/alternun-development/alternun/commit/d4d1c536c8542162042ee7730fbce0340b58f3ca))
+- **infra:** allow certificateArn reassignment ([34475e5](https://github.com/alternun-development/alternun/commit/34475e5621c3c0655419128327f44c6779cbc407))
+- **mobile:** align deploy auth env and audit pins ([88850f4](https://github.com/alternun-development/alternun/commit/88850f498db06c3435204f906e4421cb61dce684))
+- **wallet:** make pin digest key extractable ([8a4dbbe](https://github.com/alternun-development/alternun/commit/8a4dbbe61fd82070c2ea9a81f5f151a691773314))
+
+### Features
+
+- **wallet:** scaffold phase-1 non-custodial HD wallet core ([189b8f0](https://github.com/alternun-development/alternun/commit/189b8f0a2c13745a2d19f0af7a3b2005d28265e1))
+
+## [1.0.130](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.130) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** chore: remove email-templates dist from release tracked paths
+- **repo:** fix(repo,admin,api): CHANGELOG, app
+- **repo:** fix(api): fix airs verifySessionToken return type
+- **repo:** fix(email): 28 files updated
+- **repo:** chore: ignore email-templates dist directory
+
+### Bug Fixes
+
+- **api:** fix airs verifySessionToken return type ([cbb7663](https://github.com/alternun-development/alternun/commit/cbb7663986741556fdd57a9c871f5834601256b6))
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+- **repo,admin,api:** CHANGELOG, app ([b56e228](https://github.com/alternun-development/alternun/commit/b56e228a2712c03e48d1fcca8439d6428f27ecee))
+
+## [1.0.130](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.130) (2026-04-17)
+
+### Bug Fixes
+
+- **api:** fix airs verifySessionToken return type ([cbb7663](https://github.com/alternun-development/alternun/commit/cbb7663986741556fdd57a9c871f5834601256b6))
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+- **repo,admin,api:** CHANGELOG, app ([b56e228](https://github.com/alternun-development/alternun/commit/b56e228a2712c03e48d1fcca8439d6428f27ecee))
+
+## [1.0.129](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.129) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(repo,admin,api): CHANGELOG, app
+- **repo:** fix(api): fix airs verifySessionToken return type
+- **repo:** fix(email): 28 files updated
+- **repo:** chore: ignore email-templates dist directory
+- **repo:** docs: add AIRS Wallet System comprehensive integration plan
+
+### Bug Fixes
+
+- **api:** fix airs verifySessionToken return type ([cbb7663](https://github.com/alternun-development/alternun/commit/cbb7663986741556fdd57a9c871f5834601256b6))
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+- **repo,admin,api:** CHANGELOG, app ([b56e228](https://github.com/alternun-development/alternun/commit/b56e228a2712c03e48d1fcca8439d6428f27ecee))
+
+## [1.0.129](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.129) (2026-04-17)
+
+### Bug Fixes
+
+- **api:** fix airs verifySessionToken return type ([cbb7663](https://github.com/alternun-development/alternun/commit/cbb7663986741556fdd57a9c871f5834601256b6))
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+- **repo,admin,api:** CHANGELOG, app ([b56e228](https://github.com/alternun-development/alternun/commit/b56e228a2712c03e48d1fcca8439d6428f27ecee))
+
+## [1.0.128](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.128) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(email): 28 files updated
+- **repo:** chore: ignore email-templates dist directory
+- **repo:** docs: add AIRS Wallet System comprehensive integration plan
+- **repo:** fix(docs,mobile,auth): mi-perfil, ProfileStyles
+- **repo:** test(admin,api,docs): oidc-client, app-shell, callback-page, resource-list-page
+
+### Bug Fixes
+
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+
+## [1.0.128](https://github.com/alternun-development/alternun/compare/v1.0.127...v1.0.128) (2026-04-17)
+
+### Bug Fixes
+
+- **docs,mobile,auth:** mi-perfil, ProfileStyles ([68a3a8e](https://github.com/alternun-development/alternun/commit/68a3a8ee6982e9300751e16e207551be9490c725))
+- **email:** 28 files updated ([d97e499](https://github.com/alternun-development/alternun/commit/d97e499cda5164bb1d4397fb9b36dfb859da619a))
+
+## [1.0.127](https://github.com/alternun-development/alternun/compare/v1.0.126...v1.0.127) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.126
+- **repo:** test(mobile,i18n,infra): PublicLandingPage, en, es, th
+
+## [1.0.127](https://github.com/alternun-development/alternun/compare/v1.0.126...v1.0.127) (2026-04-17)
+
+## [1.0.126](https://github.com/alternun-development/alternun/compare/v1.0.125...v1.0.126) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,i18n,infra): PublicLandingPage, en, es, th
+
+## [1.0.126](https://github.com/alternun-development/alternun/compare/v1.0.125...v1.0.126) (2026-04-17)
+
+## [1.0.125](https://github.com/alternun-development/alternun/compare/v1.0.124...v1.0.125) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,i18n,infra): AuthSignInScreen, PublicLandingPage, AirsIntroExperience, en
+- **repo:** chore: release v1.0.122
+- **repo:** test(mobile,i18n): AuthSignInScreen, en, es, th
+- **repo:** chore: release v1.0.121
+- **repo:** test(infra): SSM_PARAMETERS, resolve-ssm-env, buildspec-auth-env.test
+
+## [1.0.122](https://github.com/alternun-development/alternun/compare/v1.0.121...v1.0.122) (2026-04-17)
+
+## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
+
+## [1.0.125](https://github.com/alternun-development/alternun/compare/v1.0.124...v1.0.125) (2026-04-17)
+
+## [1.0.122](https://github.com/alternun-development/alternun/compare/v1.0.121...v1.0.122) (2026-04-17)
+
+## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
+
+## [1.0.124](https://github.com/alternun-development/alternun/compare/v1.0.123...v1.0.124) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** chore(repo): AGENTS, CLAUDE
+
+## [1.0.124](https://github.com/alternun-development/alternun/compare/v1.0.123...v1.0.124) (2026-04-17)
+
+## [1.0.123](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.123) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,i18n): PublicLandingPage, membershipMarquee.test, membershipMarquee, en
+- **repo:** chore: release v1.0.122
+- **repo:** fix(repo,admin,api): CHANGELOG, app, callback, explorar
+- **repo:** refactor(mobile): remove "By Alternun" byline from landing page, keep only AIRS logo
+- **repo:** refactor(mobile): remove "By Alternun" byline from TopNav, keep only AIRS logo
+
+### Bug Fixes
+
+- **mobile:** AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light ([a9c3f48](https://github.com/alternun-development/alternun/commit/a9c3f48592907cfd55dcc6f7d258550a2e4e2037))
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+- **repo,admin,api:** CHANGELOG, app, callback, explorar ([dcddf89](https://github.com/alternun-development/alternun/commit/dcddf89718fdfec30a9bb7fcfe7a91c1942ba714))
+
+### Features
+
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in landing page, add 2x desktop sizing ([afcf507](https://github.com/alternun-development/alternun/commit/afcf5075fa5eb777adf6da797be220e138040b18))
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in TopNav, add 2x desktop sizing ([d56064d](https://github.com/alternun-development/alternun/commit/d56064d5789d019d3186c568b52bbac98a638374))
+- **mobile:** use PNG AIRS-logo assets with responsive 2x desktop sizing ([b2c2459](https://github.com/alternun-development/alternun/commit/b2c2459e46b153647e804636da9e1a292eadf6fb))
+
+## [1.0.123](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.123) (2026-04-17)
+
+### Bug Fixes
+
+- **mobile:** AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light ([a9c3f48](https://github.com/alternun-development/alternun/commit/a9c3f48592907cfd55dcc6f7d258550a2e4e2037))
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+- **repo,admin,api:** CHANGELOG, app, callback, explorar ([dcddf89](https://github.com/alternun-development/alternun/commit/dcddf89718fdfec30a9bb7fcfe7a91c1942ba714))
+
+### Features
+
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in landing page, add 2x desktop sizing ([afcf507](https://github.com/alternun-development/alternun/commit/afcf5075fa5eb777adf6da797be220e138040b18))
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in TopNav, add 2x desktop sizing ([d56064d](https://github.com/alternun-development/alternun/commit/d56064d5789d019d3186c568b52bbac98a638374))
+- **mobile:** use PNG AIRS-logo assets with responsive 2x desktop sizing ([b2c2459](https://github.com/alternun-development/alternun/commit/b2c2459e46b153647e804636da9e1a292eadf6fb))
+
+## [1.0.122](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.122) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(repo,admin,api): CHANGELOG, app, callback, explorar
+- **repo:** refactor(mobile): remove "By Alternun" byline from landing page, keep only AIRS logo
+- **repo:** refactor(mobile): remove "By Alternun" byline from TopNav, keep only AIRS logo
+- **repo:** feat(mobile): use PNG AIRS-logo assets with responsive 2x desktop sizing
+- **repo:** feat(mobile): replace AIRS-logotipo with new AIRS-logo in landing page, add 2x desktop sizing
+
+### Bug Fixes
+
+- **mobile:** AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light ([a9c3f48](https://github.com/alternun-development/alternun/commit/a9c3f48592907cfd55dcc6f7d258550a2e4e2037))
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+- **repo,admin,api:** CHANGELOG, app, callback, explorar ([dcddf89](https://github.com/alternun-development/alternun/commit/dcddf89718fdfec30a9bb7fcfe7a91c1942ba714))
+
+### Features
+
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in landing page, add 2x desktop sizing ([afcf507](https://github.com/alternun-development/alternun/commit/afcf5075fa5eb777adf6da797be220e138040b18))
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in TopNav, add 2x desktop sizing ([d56064d](https://github.com/alternun-development/alternun/commit/d56064d5789d019d3186c568b52bbac98a638374))
+- **mobile:** use PNG AIRS-logo assets with responsive 2x desktop sizing ([b2c2459](https://github.com/alternun-development/alternun/commit/b2c2459e46b153647e804636da9e1a292eadf6fb))
+
+## [1.0.122](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.122) (2026-04-17)
+
+### Bug Fixes
+
+- **mobile:** AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light ([a9c3f48](https://github.com/alternun-development/alternun/commit/a9c3f48592907cfd55dcc6f7d258550a2e4e2037))
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+- **repo,admin,api:** CHANGELOG, app, callback, explorar ([dcddf89](https://github.com/alternun-development/alternun/commit/dcddf89718fdfec30a9bb7fcfe7a91c1942ba714))
+
+### Features
+
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in landing page, add 2x desktop sizing ([afcf507](https://github.com/alternun-development/alternun/commit/afcf5075fa5eb777adf6da797be220e138040b18))
+- **mobile:** replace AIRS-logotipo with new AIRS-logo in TopNav, add 2x desktop sizing ([d56064d](https://github.com/alternun-development/alternun/commit/d56064d5789d019d3186c568b52bbac98a638374))
+- **mobile:** use PNG AIRS-logo assets with responsive 2x desktop sizing ([b2c2459](https://github.com/alternun-development/alternun/commit/b2c2459e46b153647e804636da9e1a292eadf6fb))
+
+## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light
+- **repo:** docs(CLAUDE.md): strengthen AWS account guard protocol
+- **repo:** fix(mobile): center landing cards and fix wallet link routing on mobile
+
+### Bug Fixes
+
+- **mobile:** AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light ([a9c3f48](https://github.com/alternun-development/alternun/commit/a9c3f48592907cfd55dcc6f7d258550a2e4e2037))
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+
+## [1.0.121](https://github.com/alternun-development/alternun/compare/v1.0.120...v1.0.121) (2026-04-17)
+
+### Bug Fixes
+
+- **mobile:** AIRS-logo-dark-2x, AIRS-logo-dark, AIRS-logo-light-2x, AIRS-logo-light ([a9c3f48](https://github.com/alternun-development/alternun/commit/a9c3f48592907cfd55dcc6f7d258550a2e4e2037))
+- **mobile:** center landing cards and fix wallet link routing on mobile ([2d1fee9](https://github.com/alternun-development/alternun/commit/2d1fee98a480e4a2e473ab87a9d927de46690c57))
+
+## [1.0.120](https://github.com/alternun-development/alternun/compare/v1.0.119...v1.0.120) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(infra): wire testnet to Better Auth in release deploy path
+
+### Bug Fixes
+
+- **infra:** wire testnet to Better Auth in release deploy path ([21c6951](https://github.com/alternun-development/alternun/commit/21c69513816b3b1a33d6dd754ee552e59acc98b7)), closes [#100](https://github.com/alternun-development/alternun/issues/100)
+
+## [1.0.120](https://github.com/alternun-development/alternun/compare/v1.0.119...v1.0.120) (2026-04-17)
+
+### Bug Fixes
+
+- **infra:** wire testnet to Better Auth in release deploy path ([21c6951](https://github.com/alternun-development/alternun/commit/21c69513816b3b1a33d6dd754ee552e59acc98b7)), closes [#100](https://github.com/alternun-development/alternun/issues/100)
+
+## [1.0.119](https://github.com/alternun-development/alternun/compare/v1.0.118...v1.0.119) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(infra): SSM_PARAMETERS, resolve-ssm-env, buildspec-auth-env.test
+
+## [1.0.119](https://github.com/alternun-development/alternun/compare/v1.0.118...v1.0.119) (2026-04-17)
+
+## [1.0.118](https://github.com/alternun-development/alternun/compare/v1.0.117...v1.0.118) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(mobile,repo,infra): build, ENV_SETUP.QUICK_REFERENCE, ENV_SETUP, mobile-env
+
+## [1.0.118](https://github.com/alternun-development/alternun/compare/v1.0.117...v1.0.118) (2026-04-17)
+
+## [1.0.117](https://github.com/alternun-development/alternun/compare/v1.0.116...v1.0.117) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth,i18n): AuthSignInScreen, en, es, th
+
+### Bug Fixes
+
+- **mobile,auth,i18n:** AuthSignInScreen, en, es, th ([73eabc5](https://github.com/alternun-development/alternun/commit/73eabc5b3e04c1bc0e3cb1b04fd2ee0d49cb046c))
+
+## [1.0.117](https://github.com/alternun-development/alternun/compare/v1.0.116...v1.0.117) (2026-04-17)
+
+### Bug Fixes
+
+- **mobile,auth,i18n:** AuthSignInScreen, en, es, th ([73eabc5](https://github.com/alternun-development/alternun/commit/73eabc5b3e04c1bc0e3cb1b04fd2ee0d49cb046c))
+
+## [1.0.116](https://github.com/alternun-development/alternun/compare/v1.0.115...v1.0.116) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** test(repo,mobile,infra): README, mobile-env, mobile-env.test, DEPLOYMENT_FIX_SUMMARY
+
+## [1.0.116](https://github.com/alternun-development/alternun/compare/v1.0.115...v1.0.116) (2026-04-16)
+
+## [1.0.115](https://github.com/alternun-development/alternun/compare/v1.0.114...v1.0.115) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** test(api,repo): better-auth-runtime, better-auth-runtime.test, DEPLOYMENT_FIX_SUMMARY, alternun-better-auth-testnet-execution-plan
+
+## [1.0.115](https://github.com/alternun-development/alternun/compare/v1.0.114...v1.0.115) (2026-04-16)
+
+## [1.0.114](https://github.com/alternun-development/alternun/compare/v1.0.113...v1.0.114) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(api,infra): enable embedded Better Auth with native Google OAuth on testnet
+
+### Bug Fixes
+
+- **api,infra:** enable embedded Better Auth with native Google OAuth on testnet ([01b441b](https://github.com/alternun-development/alternun/commit/01b441bfee78e75208a608eaae5a7466c9dcbf6a))
+
+## [1.0.114](https://github.com/alternun-development/alternun/compare/v1.0.113...v1.0.114) (2026-04-16)
+
+### Bug Fixes
+
+- **api,infra:** enable embedded Better Auth with native Google OAuth on testnet ([01b441b](https://github.com/alternun-development/alternun/commit/01b441bfee78e75208a608eaae5a7466c9dcbf6a))
+
+## [1.0.113](https://github.com/alternun-development/alternun/compare/v1.0.112...v1.0.113) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): stage-aware social login mode fallback in build.sh
+- **repo:** fix(infra): stage-aware authentik social login mode in SSM resolver
+
+### Bug Fixes
+
+- **infra:** stage-aware authentik social login mode in SSM resolver ([efe6d0b](https://github.com/alternun-development/alternun/commit/efe6d0be4a3ae78b28e18e0b8bc8acee4a3cabba))
+- **mobile:** stage-aware social login mode fallback in build.sh ([79c66de](https://github.com/alternun-development/alternun/commit/79c66de37957c4126e49d28cfc89d18d1e2456cc))
+
+## [1.0.113](https://github.com/alternun-development/alternun/compare/v1.0.112...v1.0.113) (2026-04-16)
+
+### Bug Fixes
+
+- **infra:** stage-aware authentik social login mode in SSM resolver ([efe6d0b](https://github.com/alternun-development/alternun/commit/efe6d0be4a3ae78b28e18e0b8bc8acee4a3cabba))
+- **mobile:** stage-aware social login mode fallback in build.sh ([79c66de](https://github.com/alternun-development/alternun/commit/79c66de37957c4126e49d28cfc89d18d1e2456cc))
+
+## [1.0.112](https://github.com/alternun-development/alternun/compare/v1.0.110...v1.0.112) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(repo,admin,api): 6cd210d32ef36442-turbo.log, dff0bbe77b072a66-turbo.log, CHANGELOG, app
+- **repo:** fix(mobile,repo): AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP
+
+### Bug Fixes
+
+- **mobile,repo:** AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP ([73fb0df](https://github.com/alternun-development/alternun/commit/73fb0dfc20b8711f5b5a671a366d12c7c11859a8))
+- **repo,admin,api:** 6cd210d32ef36442-turbo.log, dff0bbe77b072a66-turbo.log, CHANGELOG, app ([6b08cbe](https://github.com/alternun-development/alternun/commit/6b08cbed236ead8489725e16ad1a3d946a1f2f2f))
+
+## [1.0.112](https://github.com/alternun-development/alternun/compare/v1.0.110...v1.0.112) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile,repo:** AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP ([73fb0df](https://github.com/alternun-development/alternun/commit/73fb0dfc20b8711f5b5a671a366d12c7c11859a8))
+- **repo,admin,api:** 6cd210d32ef36442-turbo.log, dff0bbe77b072a66-turbo.log, CHANGELOG, app ([6b08cbe](https://github.com/alternun-development/alternun/commit/6b08cbed236ead8489725e16ad1a3d946a1f2f2f))
+
+## [1.0.111](https://github.com/alternun-development/alternun/compare/v1.0.110...v1.0.111) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,repo): AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP
+
+### Bug Fixes
+
+- **mobile,repo:** AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP ([73fb0df](https://github.com/alternun-development/alternun/commit/73fb0dfc20b8711f5b5a671a366d12c7c11859a8))
+
+## [1.0.111](https://github.com/alternun-development/alternun/compare/v1.0.110...v1.0.111) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile,repo:** AppAuthProvider, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP ([73fb0df](https://github.com/alternun-development/alternun/commit/73fb0dfc20b8711f5b5a671a366d12c7c11859a8))
+
+## [1.0.110](https://github.com/alternun-development/alternun/compare/v1.0.108...v1.0.110) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(repo,admin,api): CHANGELOG, app
+- **repo:** chore(scripts): validate-aws-account
+- **repo:** chore(scripts): setup-aws-account
+- **repo:** fix(repo,infra,scripts): pre-commit, CLAUDE, bootstrap-ssm-parameters, release
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app ([d8be55b](https://github.com/alternun-development/alternun/commit/d8be55b1343c412f8b27ce5cac2ba08674eb3095))
+- **repo,infra,scripts:** pre-commit, CLAUDE, bootstrap-ssm-parameters, release ([989a409](https://github.com/alternun-development/alternun/commit/989a4097cf6a0ba1d74fc55cf738270d7c88d204))
+
+## [1.0.110](https://github.com/alternun-development/alternun/compare/v1.0.108...v1.0.110) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app ([d8be55b](https://github.com/alternun-development/alternun/commit/d8be55b1343c412f8b27ce5cac2ba08674eb3095))
+- **repo,infra,scripts:** pre-commit, CLAUDE, bootstrap-ssm-parameters, release ([989a409](https://github.com/alternun-development/alternun/commit/989a4097cf6a0ba1d74fc55cf738270d7c88d204))
+
+## [1.0.109](https://github.com/alternun-development/alternun/compare/v1.0.108...v1.0.109) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): validate-aws-account
+- **repo:** chore(scripts): setup-aws-account
+- **repo:** fix(repo,infra,scripts): pre-commit, CLAUDE, bootstrap-ssm-parameters, release
+
+### Bug Fixes
+
+- **repo,infra,scripts:** pre-commit, CLAUDE, bootstrap-ssm-parameters, release ([989a409](https://github.com/alternun-development/alternun/commit/989a4097cf6a0ba1d74fc55cf738270d7c88d204))
+
+## [1.0.109](https://github.com/alternun-development/alternun/compare/v1.0.108...v1.0.109) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,infra,scripts:** pre-commit, CLAUDE, bootstrap-ssm-parameters, release ([989a409](https://github.com/alternun-development/alternun/commit/989a4097cf6a0ba1d74fc55cf738270d7c88d204))
+
+## [1.0.108](https://github.com/alternun-development/alternun/compare/v1.0.107...v1.0.108) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(repo,scripts): pre-commit, CLAUDE, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY
+
+### Bug Fixes
+
+- **repo,scripts:** pre-commit, CLAUDE, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY ([3b699aa](https://github.com/alternun-development/alternun/commit/3b699aa81fc8af8579137cf089ae8e8436bb9d5f))
+
+## [1.0.108](https://github.com/alternun-development/alternun/compare/v1.0.107...v1.0.108) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,scripts:** pre-commit, CLAUDE, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY ([3b699aa](https://github.com/alternun-development/alternun/commit/3b699aa81fc8af8579137cf089ae8e8436bb9d5f))
+
+## [1.0.107](https://github.com/alternun-development/alternun/compare/v1.0.106...v1.0.107) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth,update): build, mobile-env, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY
+
+### Bug Fixes
+
+- **mobile,auth,update:** build, mobile-env, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY ([973fe6c](https://github.com/alternun-development/alternun/commit/973fe6cf0de22ef05700d17903dac94cc3d051fe))
+
+## [1.0.107](https://github.com/alternun-development/alternun/compare/v1.0.106...v1.0.107) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile,auth,update:** build, mobile-env, DEPLOYMENT_FIX_SUMMARY, ENVIRONMENT_SETUP_SUMMARY ([973fe6c](https://github.com/alternun-development/alternun/commit/973fe6cf0de22ef05700d17903dac94cc3d051fe))
+
+## [1.0.106](https://github.com/alternun-development/alternun/compare/v1.0.105...v1.0.106) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.105
+- **repo:** fix(mobile): ENV_SETUP.QUICK_REFERENCE, ENV_SETUP, docs
+- **repo:** docs(mobile): add comprehensive environment setup documentation
+
+## [1.0.106](https://github.com/alternun-development/alternun/compare/v1.0.105...v1.0.106) (2026-04-16)
+
+## [1.0.105](https://github.com/alternun-development/alternun/compare/v1.0.104...v1.0.105) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): ENV_SETUP.QUICK_REFERENCE, ENV_SETUP, docs
+- **repo:** docs(mobile): add comprehensive environment setup documentation
+
+### Bug Fixes
+
+- **mobile:** ENV_SETUP.QUICK_REFERENCE, ENV_SETUP, docs ([3a6f77e](https://github.com/alternun-development/alternun/commit/3a6f77ea63e7894082d18b385a867c9f196a4755))
+
+## [1.0.105](https://github.com/alternun-development/alternun/compare/v1.0.104...v1.0.105) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile:** ENV_SETUP.QUICK_REFERENCE, ENV_SETUP, docs ([3a6f77e](https://github.com/alternun-development/alternun/commit/3a6f77ea63e7894082d18b385a867c9f196a4755))
+
+## [1.0.104](https://github.com/alternun-development/alternun/compare/v1.0.103...v1.0.104) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): allow stage-specific env files to override .env values
+
+### Bug Fixes
+
+- **mobile:** allow stage-specific env files to override .env values ([0baf364](https://github.com/alternun-development/alternun/commit/0baf364452a1f812fc665fd5932f5ca2c8839309))
+
+## [1.0.104](https://github.com/alternun-development/alternun/compare/v1.0.103...v1.0.104) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile:** allow stage-specific env files to override .env values ([0baf364](https://github.com/alternun-development/alternun/commit/0baf364452a1f812fc665fd5932f5ca2c8839309))
+
+## [1.0.103](https://github.com/alternun-development/alternun/compare/v1.0.102...v1.0.103) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): load stage-specific env files in mobile-env.cjs
+- **repo:** fix(mobile): implement stage-aware environment configuration loading
+
+### Bug Fixes
+
+- **mobile:** implement stage-aware environment configuration loading ([bd0be3c](https://github.com/alternun-development/alternun/commit/bd0be3cf8faa7d2071f06eaf3559f143080d96f9))
+- **mobile:** load stage-specific env files in mobile-env.cjs ([6caf830](https://github.com/alternun-development/alternun/commit/6caf830b6275eb9fa7bf0c062574c12fff057047))
+
+## [1.0.103](https://github.com/alternun-development/alternun/compare/v1.0.102...v1.0.103) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile:** implement stage-aware environment configuration loading ([bd0be3c](https://github.com/alternun-development/alternun/commit/bd0be3cf8faa7d2071f06eaf3559f143080d96f9))
+- **mobile:** load stage-specific env files in mobile-env.cjs ([6caf830](https://github.com/alternun-development/alternun/commit/6caf830b6275eb9fa7bf0c062574c12fff057047))
+
+## [1.0.102](https://github.com/alternun-development/alternun/compare/v1.0.101...v1.0.102) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth,update): mobile-env
+
+### Bug Fixes
+
+- **mobile,auth,update:** mobile-env ([632c1f4](https://github.com/alternun-development/alternun/commit/632c1f40c2bff58950acb7c3a1cf8966d49c64e8))
+
+## [1.0.102](https://github.com/alternun-development/alternun/compare/v1.0.101...v1.0.102) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile,auth,update:** mobile-env ([632c1f4](https://github.com/alternun-development/alternun/commit/632c1f40c2bff58950acb7c3a1cf8966d49c64e8))
+
+## [1.0.101](https://github.com/alternun-development/alternun/compare/v1.0.100...v1.0.101) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.100
+
+## [1.0.101](https://github.com/alternun-development/alternun/compare/v1.0.100...v1.0.101) (2026-04-16)
+
+## [1.0.100](https://github.com/alternun-development/alternun/compare/v1.0.99...v1.0.100) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.99
+
+## [1.0.100](https://github.com/alternun-development/alternun/compare/v1.0.99...v1.0.100) (2026-04-16)
+
+## [1.0.99](https://github.com/alternun-development/alternun/compare/v1.0.98...v1.0.99) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.98
+
+## [1.0.99](https://github.com/alternun-development/alternun/compare/v1.0.98...v1.0.99) (2026-04-16)
+
+## [1.0.98](https://github.com/alternun-development/alternun/compare/v1.0.97...v1.0.98) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.97
+- **repo:** fix(auth): use better-auth for Google social login on testnet dev stage
+
+## [1.0.98](https://github.com/alternun-development/alternun/compare/v1.0.97...v1.0.98) (2026-04-16)
+
+## [1.0.97](https://github.com/alternun-development/alternun/compare/v1.0.96...v1.0.97) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(auth): use better-auth for Google social login on testnet dev stage
+
+### Bug Fixes
+
+- **auth:** use better-auth for Google social login on testnet dev stage ([b9fb0cd](https://github.com/alternun-development/alternun/commit/b9fb0cdbf1468ffc8144fee0c56444201cd3a9c7))
+
+## [1.0.97](https://github.com/alternun-development/alternun/compare/v1.0.96...v1.0.97) (2026-04-16)
+
+### Bug Fixes
+
+- **auth:** use better-auth for Google social login on testnet dev stage ([b9fb0cd](https://github.com/alternun-development/alternun/commit/b9fb0cdbf1468ffc8144fee0c56444201cd3a9c7))
+
+## [1.0.96](https://github.com/alternun-development/alternun/compare/v1.0.95...v1.0.96) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** feat(update): make release check interval configurable via EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS
+
+### Features
+
+- **update:** make release check interval configurable via EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS ([0b69e57](https://github.com/alternun-development/alternun/commit/0b69e57f8556837b2569e8de755c41594cb26b6c))
+
+## [1.0.96](https://github.com/alternun-development/alternun/compare/v1.0.95...v1.0.96) (2026-04-16)
+
+### Features
+
+- **update:** make release check interval configurable via EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS ([0b69e57](https://github.com/alternun-development/alternun/commit/0b69e57f8556837b2569e8de755c41594cb26b6c))
+
+## [1.0.95](https://github.com/alternun-development/alternun/compare/v1.0.94...v1.0.95) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth): derive better-auth URL at runtime if not in environment
+
+### Bug Fixes
+
+- **mobile,auth:** derive better-auth URL at runtime if not in environment ([88de811](https://github.com/alternun-development/alternun/commit/88de8111a28628c4dd70dbfd05e05125c474fc76))
+
+## [1.0.95](https://github.com/alternun-development/alternun/compare/v1.0.94...v1.0.95) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile,auth:** derive better-auth URL at runtime if not in environment ([88de811](https://github.com/alternun-development/alternun/commit/88de8111a28628c4dd70dbfd05e05125c474fc76))
+
+## [1.0.94](https://github.com/alternun-development/alternun/compare/v1.0.93...v1.0.94) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): rename Sculpin font files to remove spaces
+- **repo:** feat(mobile): apply Sculpin font to navbar links
+- **repo:** feat(mobile): load Sculpin font and apply to landing overlay text
+- **repo:** fix(mobile): restore overlay text and badge on landing video card
+
+### Bug Fixes
+
+- **mobile:** rename Sculpin font files to remove spaces ([4f7dff8](https://github.com/alternun-development/alternun/commit/4f7dff8a214e944aacd0f5457e347f5651e0032f))
+- **mobile:** restore overlay text and badge on landing video card ([7ae4224](https://github.com/alternun-development/alternun/commit/7ae42243860237ca4d2a968b02c752287eaba5a6))
+
+### Features
+
+- **mobile:** apply Sculpin font to navbar links ([29062fe](https://github.com/alternun-development/alternun/commit/29062fecbe7389fe875625b49bad93ed8b083e44))
+- **mobile:** load Sculpin font and apply to landing overlay text ([e30c322](https://github.com/alternun-development/alternun/commit/e30c322c860e09ce396b31198befe803b7ec0e3d))
+
+## [1.0.94](https://github.com/alternun-development/alternun/compare/v1.0.93...v1.0.94) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile:** rename Sculpin font files to remove spaces ([4f7dff8](https://github.com/alternun-development/alternun/commit/4f7dff8a214e944aacd0f5457e347f5651e0032f))
+- **mobile:** restore overlay text and badge on landing video card ([7ae4224](https://github.com/alternun-development/alternun/commit/7ae42243860237ca4d2a968b02c752287eaba5a6))
+
+### Features
+
+- **mobile:** apply Sculpin font to navbar links ([29062fe](https://github.com/alternun-development/alternun/commit/29062fecbe7389fe875625b49bad93ed8b083e44))
+- **mobile:** load Sculpin font and apply to landing overlay text ([e30c322](https://github.com/alternun-development/alternun/commit/e30c322c860e09ce396b31198befe803b7ec0e3d))
+
+## [1.0.93](https://github.com/alternun-development/alternun/compare/v1.0.92...v1.0.93) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(auth): allow testnet origin in better-auth trusted origins
+
+### Bug Fixes
+
+- **auth:** allow testnet origin in better-auth trusted origins ([bd74651](https://github.com/alternun-development/alternun/commit/bd74651a4452c54ca69728075449e4164e15f673))
+
+## [1.0.93](https://github.com/alternun-development/alternun/compare/v1.0.92...v1.0.93) (2026-04-16)
+
+### Bug Fixes
+
+- **auth:** allow testnet origin in better-auth trusted origins ([bd74651](https://github.com/alternun-development/alternun/commit/bd74651a4452c54ca69728075449e4164e15f673))
+
+## [1.0.92](https://github.com/alternun-development/alternun/compare/v1.0.91...v1.0.92) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** chore: stop tracking auto-generated changelog files
+
+## [1.0.92](https://github.com/alternun-development/alternun/compare/v1.0.91...v1.0.92) (2026-04-16)
+
+## [1.0.91](https://github.com/alternun-development/alternun/compare/v1.0.90...v1.0.91) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): use Alternun logo for social media meta images
+- **repo:** fix(mobile): correct Pexels video poster URL path
+- **repo:** fix(root): correct Node version engine constraint
+- **repo:** fix(update): only notify for newer versions, not downgrades
+
+### Bug Fixes
+
+- **mobile:** correct Pexels video poster URL path ([28c1b7a](https://github.com/alternun-development/alternun/commit/28c1b7a3575e5c0734b30cd28d8b0f12ddf23c15))
+- **mobile:** use Alternun logo for social media meta images ([61b4df6](https://github.com/alternun-development/alternun/commit/61b4df65d4519c2c7bcb85c1274e267309536acc))
+- **root:** correct Node version engine constraint ([f948ab0](https://github.com/alternun-development/alternun/commit/f948ab0216c6bc6d97300810a3646802fdb2f276))
+- **update:** only notify for newer versions, not downgrades ([25f13b2](https://github.com/alternun-development/alternun/commit/25f13b286dd71769d89986a8d178761b25b1beec))
+
+## [1.0.91](https://github.com/alternun-development/alternun/compare/v1.0.90...v1.0.91) (2026-04-16)
+
+### Bug Fixes
+
+- **mobile:** correct Pexels video poster URL path ([28c1b7a](https://github.com/alternun-development/alternun/commit/28c1b7a3575e5c0734b30cd28d8b0f12ddf23c15))
+- **mobile:** use Alternun logo for social media meta images ([61b4df6](https://github.com/alternun-development/alternun/commit/61b4df65d4519c2c7bcb85c1274e267309536acc))
+- **root:** correct Node version engine constraint ([f948ab0](https://github.com/alternun-development/alternun/commit/f948ab0216c6bc6d97300810a3646802fdb2f276))
+- **update:** only notify for newer versions, not downgrades ([25f13b2](https://github.com/alternun-development/alternun/commit/25f13b286dd71769d89986a8d178761b25b1beec))
+
+## [1.0.90](https://github.com/alternun-development/alternun/compare/v1.0.89...v1.0.90) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** docs: add EXPO_PUBLIC_BETTER_AUTH_URL and EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER to SSM parameter requirements
+
+## [1.0.90](https://github.com/alternun-development/alternun/compare/v1.0.89...v1.0.90) (2026-04-16)
+
+## [1.0.89](https://github.com/alternun-development/alternun/compare/v1.0.88...v1.0.89) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** feat(mobile, update): PWA compliance, icon assets, SEO, and robust update detection
+- **repo:** chore: update CHANGELOG and changelogData
+
+### Features
+
+- **mobile, update:** PWA compliance, icon assets, SEO, and robust update detection ([b9e0021](https://github.com/alternun-development/alternun/commit/b9e0021192580db42c7685c021d04771f63499be))
+
+## [1.0.89](https://github.com/alternun-development/alternun/compare/v1.0.88...v1.0.89) (2026-04-16)
+
+### Features
+
+- **mobile, update:** PWA compliance, icon assets, SEO, and robust update detection ([b9e0021](https://github.com/alternun-development/alternun/commit/b9e0021192580db42c7685c021d04771f63499be))
+
+## [1.0.88](https://github.com/alternun-development/alternun/compare/v1.0.87...v1.0.88) (2026-04-16)
+
+### Bug Fixes
+
+- **repo:** fix(repo,docs,mobile): CHANGELOG, changelogData, check-changelog
+
+### Bug Fixes
+
+- **repo,docs,mobile:** CHANGELOG, changelogData, check-changelog ([cf368a1](https://github.com/alternun-development/alternun/commit/cf368a1b83ed109f7eaa862095a257cc4f71144a))
+
+## [1.0.88](https://github.com/alternun-development/alternun/compare/v1.0.87...v1.0.88) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,docs,mobile:** CHANGELOG, changelogData, check-changelog ([cf368a1](https://github.com/alternun-development/alternun/commit/cf368a1b83ed109f7eaa862095a257cc4f71144a))
+
+## [1.0.87](https://github.com/alternun-development/alternun/compare/v1.0.86...v1.0.87) (2026-04-16)
+
+### Miscellaneous
+
+- chore(docs): CHANGELOG
+- infra: sync better-auth variables from ssm parameter store for mobile builds
+
+## [1.0.87](https://github.com/alternun-development/alternun/compare/v1.0.86...v1.0.87) (2026-04-16)
+
+## [1.0.86](https://github.com/alternun-development/alternun/compare/v1.0.85...v1.0.86) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,docs,mobile:** CHANGELOG, changelogData ([2a8a94b](https://github.com/alternun-development/alternun/commit/2a8a94b871fe683241a0388ab449ee7a90566e90))
+
+## [1.0.86](https://github.com/alternun-development/alternun/compare/v1.0.85...v1.0.86) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,docs,mobile:** CHANGELOG, changelogData ([2a8a94b](https://github.com/alternun-development/alternun/commit/2a8a94b871fe683241a0388ab449ee7a90566e90))
+
+## [1.0.85](https://github.com/alternun-development/alternun/compare/v1.0.84...v1.0.85) (2026-04-16)
+
+### Bug Fixes
+
+- **infra:** ESLint prefer-nullish-coalescing fix ([commit](https://github.com/alternun-development/alternun/commit/placeholder))
+
+## [1.0.84](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.84) (2026-04-16)
+
+## [1.0.84](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.84) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, mobile-env ([1fa63e7](https://github.com/alternun-development/alternun/commit/1fa63e7e3f88c41fc27e08696dbe6ad6c02e212f))
+
+## [1.0.84](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.84) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, mobile-env ([1fa63e7](https://github.com/alternun-development/alternun/commit/1fa63e7e3f88c41fc27e08696dbe6ad6c02e212f))
+
+## [1.0.83](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.83) (2026-04-16)
+
+## [1.0.83](https://github.com/alternun-development/alternun/compare/v1.0.82...v1.0.83) (2026-04-16)
+
+## [1.0.82](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.82) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, build ([6039e90](https://github.com/alternun-development/alternun/commit/6039e9064b183b2969e95183331ff427f3b632d6))
+- **repo,admin,api:** CHANGELOG, app, build, changelogData ([55ac4ed](https://github.com/alternun-development/alternun/commit/55ac4ed50fafb957613a5300f508a77a23b14d99))
+
+## [1.0.82](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.82) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, build ([6039e90](https://github.com/alternun-development/alternun/commit/6039e9064b183b2969e95183331ff427f3b632d6))
+- **repo,admin,api:** CHANGELOG, app, build, changelogData ([55ac4ed](https://github.com/alternun-development/alternun/commit/55ac4ed50fafb957613a5300f508a77a23b14d99))
+
+## [1.0.81](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.81) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, build ([6039e90](https://github.com/alternun-development/alternun/commit/6039e9064b183b2969e95183331ff427f3b632d6))
+
+## [1.0.81](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.81) (2026-04-16)
+
+### Bug Fixes
+
+- **repo,admin,api:** CHANGELOG, app, build ([6039e90](https://github.com/alternun-development/alternun/commit/6039e9064b183b2969e95183331ff427f3b632d6))
+
+## [1.0.80](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.80) (2026-04-16)
+
+## [1.0.80](https://github.com/alternun-development/alternun/compare/v1.0.79...v1.0.80) (2026-04-16)
+
+## [1.0.79](https://github.com/alternun-development/alternun/compare/v1.0.78...v1.0.79) (2026-04-16)
+
+### Bug Fixes
+
+- **auth:** export AppAuthProvider from main index to fix undefined component error
+- **mobile:** add hero section navigation buttons for "Como funciona" and "Beneficios"
+- **mobile:** fix benefit cards centering on mid-size screens
+- **mobile:** align hero navigation buttons with "Go to dashboard" link styling
+
+## [1.0.78](https://github.com/alternun-development/alternun/compare/v1.0.77...v1.0.78) (2026-04-15)
+
+### Bug Fixes
+
+- **docs,mobile,auth:** CHANGELOG, PublicLandingPage, AirsIntroExperience, changelogData ([83934d7](https://github.com/alternun-development/alternun/commit/83934d7d35564e3ee578c10ea265b0b6f1667a74))
+
+## [1.0.77](https://github.com/alternun-development/alternun/compare/v1.0.76...v1.0.77) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only and better-auth exports from main index ([4e391d1](https://github.com/alternun-development/alternun/commit/4e391d1c161e3f7196662e78d04a73ad27057192))
+
+## [1.0.77](https://github.com/alternun-development/alternun/compare/v1.0.76...v1.0.77) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only and better-auth exports from main index ([4e391d1](https://github.com/alternun-development/alternun/commit/4e391d1c161e3f7196662e78d04a73ad27057192))
+
+## [1.0.76](https://github.com/alternun-development/alternun/compare/v1.0.75...v1.0.76) (2026-04-15)
+
+### Bug Fixes
+
+- **repo:** sync auth exports and footer drawers ([74f4d70](https://github.com/alternun-development/alternun/commit/74f4d702be16695f1738a9422282cc4d7dcc9b56))
+
+## [1.0.76](https://github.com/alternun-development/alternun/compare/v1.0.75...v1.0.76) (2026-04-15)
+
+### Bug Fixes
+
+- **repo:** sync auth exports and footer drawers ([74f4d70](https://github.com/alternun-development/alternun/commit/74f4d702be16695f1738a9422282cc4d7dcc9b56))
+
+## [1.0.75](https://github.com/alternun-development/alternun/compare/v1.0.74...v1.0.75) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only and better-auth exports from main index ([c7d9a48](https://github.com/alternun-development/alternun/commit/c7d9a480a22b1000ee391df88a90426e67e18661))
+- **mobile:** changelogData ([44d7260](https://github.com/alternun-development/alternun/commit/44d7260ca641e9b907a27f96d7dbfbb4f09c4628))
+
+## [1.0.75](https://github.com/alternun-development/alternun/compare/v1.0.74...v1.0.75) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove server-only and better-auth exports from main index ([c7d9a48](https://github.com/alternun-development/alternun/commit/c7d9a480a22b1000ee391df88a90426e67e18661))
+- **mobile:** changelogData ([44d7260](https://github.com/alternun-development/alternun/commit/44d7260ca641e9b907a27f96d7dbfbb4f09c4628))
+
+## [1.0.74](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.74) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove better-auth and server-only exports to prevent web bundling ([80ec073](https://github.com/alternun-development/alternun/commit/80ec07368b8cb90da7d9ace935ce02391ea08b60))
+- **docs,mobile,auth:** CHANGELOG, changelogData ([8db9657](https://github.com/alternun-development/alternun/commit/8db9657a8b6c4d5b71adc32ec219afd1ceb449a2))
+
+## [1.0.74](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.74) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove better-auth and server-only exports to prevent web bundling ([80ec073](https://github.com/alternun-development/alternun/commit/80ec07368b8cb90da7d9ace935ce02391ea08b60))
+- **docs,mobile,auth:** CHANGELOG, changelogData ([8db9657](https://github.com/alternun-development/alternun/commit/8db9657a8b6c4d5b71adc32ec219afd1ceb449a2))
+
+## [1.0.73](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.73) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove better-auth and server-only exports to prevent web bundling ([4b1f25a](https://github.com/alternun-development/alternun/commit/4b1f25a7b94f897d9f43b5bcfc4dcdd8c7430db5))
+- **docs,mobile,auth:** CHANGELOG, changelogData ([09d4a11](https://github.com/alternun-development/alternun/commit/09d4a11bc7dc5bb87199f4f9ab717dad58bcb40d))
+
+## [1.0.73](https://github.com/alternun-development/alternun/compare/v1.0.72...v1.0.73) (2026-04-15)
+
+### Bug Fixes
+
+- **auth:** remove better-auth and server-only exports to prevent web bundling ([4b1f25a](https://github.com/alternun-development/alternun/commit/4b1f25a7b94f897d9f43b5bcfc4dcdd8c7430db5))
+- **docs,mobile,auth:** CHANGELOG, changelogData ([09d4a11](https://github.com/alternun-development/alternun/commit/09d4a11bc7dc5bb87199f4f9ab717dad58bcb40d))
+
 ## [1.0.72](https://github.com/alternun-development/alternun/compare/v1.0.70...v1.0.72) (2026-04-15)
 
 ### Bug Fixes
@@ -419,7 +1511,15 @@
 
 ## [1.0.45](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.45) (2026-04-10)
 
-## [1.0.45](https://github.com/alternun-development/alternun/compare/v1.0.44...v1.0.45) (2026-04-10)
+### Features
+
+- **admin:** add OIDC client wrapper for Authentik-based authentication flow
+- **admin:** add app-shell with sidebar navigation structure
+- **admin:** add forbidden-page for access denied scenarios
+
+### Bug Fixes
+
+- **api:** fix callback-page flow for OIDC token exchange
 
 ## [1.0.44](https://github.com/alternun-development/alternun/compare/v1.0.43...v1.0.44) (2026-04-10)
 

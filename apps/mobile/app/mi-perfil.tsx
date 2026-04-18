@@ -1,5 +1,5 @@
 import type { User, } from '../components/auth/AppAuthProvider';
-import { useRouter, type Router, } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Router, } from 'expo-router';
 import {
   Award,
   LogOut,
@@ -27,6 +27,7 @@ import { useAppPreferences, } from '../components/settings/AppPreferencesProvide
 import ScreenShell from '../components/common/ScreenShell';
 import { PageTabBar, type TabItem, } from '../components/common/PageTabBar';
 import SearchFilterBar, { type SearchFilterOption, } from '../components/common/SearchFilterBar';
+import profileStylesEnhanced from '../components/profile/ProfileStyles';
 
 const AwardIcon = Award as React.FC<LucideProps>;
 const TrophyIcon = Trophy as React.FC<LucideProps>;
@@ -194,9 +195,10 @@ function getInitials(name: string,): string {
 
 // ─── Tab components ──────────────────────────────────────────────────────────
 
-function RankingTab({ _isDark, c, }: { _isDark: boolean; c: ColorPalette },): React.JSX.Element {
+function RankingTab({ isDark, c, }: { isDark: boolean; c: ColorPalette },): React.JSX.Element {
   const [search, setSearch,] = useState('',);
   const [activeFilter, setActiveFilter,] = useState('all',);
+  const enhancedStyles = profileStylesEnhanced(isDark);
 
   const filteredUsers = useMemo(() => {
     const normalizedQuery = search.trim().toLowerCase();
@@ -212,7 +214,7 @@ function RankingTab({ _isDark, c, }: { _isDark: boolean; c: ColorPalette },): Re
 
   return (
     <ScrollView
-      contentContainerStyle={[rankingStyles.content, { paddingBottom: 100, },]}
+      contentContainerStyle={[enhancedStyles.content, { paddingBottom: 100, },]}
       showsVerticalScrollIndicator={false}
     >
       <GlassCard variant='teal' style={rankingStyles.myPositionCard}>
@@ -284,10 +286,11 @@ function RankingTab({ _isDark, c, }: { _isDark: boolean; c: ColorPalette },): Re
   );
 }
 
-function WalletTab({ _isDark, c, }: { _isDark: boolean; c: ColorPalette },): React.JSX.Element {
+function WalletTab({ isDark, c, }: { isDark: boolean; c: ColorPalette },): React.JSX.Element {
+  const enhancedStyles = profileStylesEnhanced(isDark);
   return (
     <ScrollView
-      contentContainerStyle={[walletStyles.content, { paddingBottom: 100, },]}
+      contentContainerStyle={[enhancedStyles.content, { paddingBottom: 100, },]}
       showsVerticalScrollIndicator={false}
     >
       <GlassCard style={walletStyles.connectCard}>
@@ -323,14 +326,14 @@ function WalletTab({ _isDark, c, }: { _isDark: boolean; c: ColorPalette },): Rea
 }
 
 function PerfilTab({
-  _isDark,
+  isDark,
   c,
   user,
   signingOut,
   onSignOut,
   router,
 }: {
-  _isDark: boolean;
+  isDark: boolean;
   c: ColorPalette;
   user: User | null;
   signingOut: boolean;
@@ -343,87 +346,82 @@ function PerfilTab({
   const walletConnected = Boolean(walletAddress || walletProvider,);
   const authMethod = useMemo(() => getAuthMethodLabel(user,), [user,],);
   const roles = useMemo(() => getRoles(user,), [user,],);
+  const enhancedStyles = profileStylesEnhanced(isDark);
 
   return (
     <ScrollView
-      contentContainerStyle={[profileStyles.content, { paddingBottom: 100, },]}
+      contentContainerStyle={[enhancedStyles.content,]}
       showsVerticalScrollIndicator={false}
     >
       {/* Hero */}
-      <View
-        style={[profileStyles.heroCard, { backgroundColor: c.cardBg, borderColor: c.cardBorder, },]}
-      >
-        <View style={[profileStyles.avatarWrap, { backgroundColor: `${c.accent}14`, },]}>
-          <Text style={[profileStyles.avatarText, { color: c.accent, },]}>
+      <View style={[enhancedStyles.heroCard, { backgroundColor: c.cardBg, borderColor: c.cardBorder, },]}>
+        <View style={[enhancedStyles.avatarWrap, { backgroundColor: `${c.accent}20`, borderColor: `${c.accent}40`, },]}>
+          <Text style={[enhancedStyles.avatarText, { color: c.accent, },]}>
             {toInitials(profile.displayName,)}
           </Text>
         </View>
-        <Text style={[profileStyles.heroName, { color: c.text, },]}>{profile.displayName}</Text>
+        <Text style={[enhancedStyles.heroName, { color: c.text, },]}>{profile.displayName}</Text>
         {profile.email && (
-          <Text style={[profileStyles.heroEmail, { color: c.muted, },]}>{profile.email}</Text>
+          <Text style={[enhancedStyles.heroEmail, { color: c.textSecondary, },]}>{profile.email}</Text>
         )}
         <View
           style={[
-            profileStyles.authPill,
-            { backgroundColor: `${c.accent}14`, borderColor: `${c.accent}44`, },
+            enhancedStyles.authPill,
+            { backgroundColor: `${c.accent}15`, borderColor: `${c.accent}40`, },
           ]}
         >
           <ShieldIcon size={12} color={c.accent} />
-          <Text style={[profileStyles.authLabel, { color: c.accent, },]}>{authMethod}</Text>
+          <Text style={[enhancedStyles.authLabel, { color: c.accent, },]}>{authMethod}</Text>
         </View>
       </View>
 
       {/* Account */}
-      <View
-        style={[profileStyles.infoCard, { backgroundColor: c.cardBg, borderColor: c.cardBorder, },]}
-      >
-        <Text style={[profileStyles.infoTitle, { color: c.text, },]}>Account</Text>
-        <ProfileInfoRow label='User ID' value={user?.id ?? '—'} c={c} />
-        <ProfileInfoRow label='Provider' value={user?.provider ?? '—'} c={c} />
-        {profile.email && <ProfileInfoRow label='Email' value={profile.email} c={c} />}
+      <View style={[enhancedStyles.infoCard, { backgroundColor: c.cardBg, borderColor: c.cardBorder, },]}>
+        <Text style={[enhancedStyles.infoTitle, { color: c.text, },]}>Account</Text>
+        <ProfileInfoRow label='User ID' value={user?.id ?? '—'} c={c} enhancedStyles={enhancedStyles} isLast={!user?.provider && !profile.email} />
+        <ProfileInfoRow label='Provider' value={user?.provider ?? '—'} c={c} enhancedStyles={enhancedStyles} isLast={!profile.email} />
+        {profile.email && <ProfileInfoRow label='Email' value={profile.email} c={c} enhancedStyles={enhancedStyles} isLast={true} />}
       </View>
 
       {/* Wallet */}
-      <View
-        style={[profileStyles.infoCard, { backgroundColor: c.cardBg, borderColor: c.cardBorder, },]}
-      >
-        <Text style={[profileStyles.infoTitle, { color: c.text, },]}>Wallet</Text>
+      <View style={[enhancedStyles.infoCard, { backgroundColor: c.cardBg, borderColor: c.cardBorder, },]}>
+        <Text style={[enhancedStyles.infoTitle, { color: c.text, },]}>Wallet</Text>
         <ProfileInfoRow
           label='Status'
           value={walletConnected ? 'Connected' : 'Not Connected'}
           c={c}
+          enhancedStyles={enhancedStyles}
+          isLast={!walletAddress && !walletProvider}
         />
         {walletAddress && (
-          <ProfileInfoRow label='Address' value={truncateMiddle(walletAddress,)} c={c} />
+          <ProfileInfoRow label='Address' value={truncateMiddle(walletAddress,)} c={c} enhancedStyles={enhancedStyles} isLast={!walletProvider} />
         )}
-        {walletProvider && <ProfileInfoRow label='Provider' value={walletProvider} c={c} />}
+        {walletProvider && <ProfileInfoRow label='Provider' value={walletProvider} c={c} enhancedStyles={enhancedStyles} isLast={true} />}
       </View>
 
       {/* Access */}
       {roles.length > 0 && (
-        <View
-          style={[profileStyles.infoCard, { backgroundColor: c.cardBg, borderColor: c.cardBorder, },]}
-        >
-          <Text style={[profileStyles.infoTitle, { color: c.text, },]}>Access</Text>
-          <ProfileInfoRow label='Roles' value={roles.join(', ',)} c={c} />
+        <View style={[enhancedStyles.infoCard, { backgroundColor: c.cardBg, borderColor: c.cardBorder, },]}>
+          <Text style={[enhancedStyles.infoTitle, { color: c.text, },]}>Access</Text>
+          <ProfileInfoRow label='Roles' value={roles.join(', ',)} c={c} enhancedStyles={enhancedStyles} isLast={true} />
         </View>
       )}
 
       {/* Actions */}
-      <View style={profileStyles.actionRow}>
+      <View style={enhancedStyles.actionRow}>
         <TouchableOpacity
           style={[
-            profileStyles.secondaryBtn,
+            enhancedStyles.secondaryBtn,
             { borderColor: c.cardBorder, backgroundColor: c.cardBg, },
           ]}
           onPress={() => router.push('/settings',)}
           activeOpacity={0.7}
         >
           <SettingsIcon size={16} color={c.text} />
-          <Text style={[profileStyles.btnText, { color: c.text, },]}>Settings</Text>
+          <Text style={[enhancedStyles.btnText, { color: c.text, },]}>Settings</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={profileStyles.dangerBtn}
+          style={enhancedStyles.dangerBtn}
           onPress={onSignOut}
           disabled={signingOut}
           activeOpacity={0.7}
@@ -433,7 +431,7 @@ function PerfilTab({
           ) : (
             <>
               <LogOutIcon size={16} color='#ff3b30' />
-              <Text style={profileStyles.dangerBtnText}>Sign Out</Text>
+              <Text style={enhancedStyles.dangerBtnText}>Sign Out</Text>
             </>
           )}
         </TouchableOpacity>
@@ -446,15 +444,19 @@ function ProfileInfoRow({
   label,
   value,
   c,
+  enhancedStyles,
+  isLast,
 }: {
   label: string;
   value: string;
   c: ColorPalette;
+  enhancedStyles: ReturnType<typeof profileStylesEnhanced>;
+  isLast: boolean;
 },): React.JSX.Element {
   return (
-    <View style={[profileStyles.infoRow, { borderBottomColor: c.cardBorder, },]}>
-      <Text style={[profileStyles.infoLabel, { color: c.muted, },]}>{label}</Text>
-      <Text style={[profileStyles.infoValue, { color: c.text, },]}>{value}</Text>
+    <View style={[enhancedStyles.infoRow, !isLast && { borderBottomColor: c.cardBorder }, isLast && enhancedStyles.infoRowLast, { borderBottomColor: c.cardBorder, },]}>
+      <Text style={[enhancedStyles.infoLabel, { color: c.muted, },]}>{label}</Text>
+      <Text style={[enhancedStyles.infoValue, { color: c.text, },]}>{value}</Text>
     </View>
   );
 }
@@ -469,11 +471,22 @@ const TABS: TabItem[] = [
 
 export default function MiPerfilScreen(): React.JSX.Element {
   const router = useRouter();
+  const params = useLocalSearchParams<{ tab?: string }>();
   const { user, loading, signOutUser, } = useAuth();
   const { themeMode, } = useAppPreferences();
   const isDark = themeMode === 'dark';
-  const [activeTab, setActiveTab,] = useState<string>('perfil',);
+  const initialTab =
+    typeof params.tab === 'string' && TABS.some((t,) => t.key === params.tab,)
+      ? params.tab
+      : 'perfil';
+  const [activeTab, setActiveTab,] = useState<string>(initialTab,);
   const [signingOut, setSigningOut,] = useState(false,);
+
+  useEffect(() => {
+    if (typeof params.tab === 'string' && TABS.some((t,) => t.key === params.tab,)) {
+      setActiveTab(params.tab,);
+    }
+  }, [params.tab,],);
 
   const fadeAnim = useRef(new Animated.Value(0,),).current;
   const slideAnim = useRef(new Animated.Value(24,),).current;
@@ -591,7 +604,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   titleWithIcon: { flexDirection: 'row', alignItems: 'center', gap: 10, },
-  pageTitle: { fontSize: 20, fontWeight: '700', },
+  pageTitle: { fontSize: 20, fontWeight: '700', fontFamily: 'Sculpin-Bold', },
   tabContent: { flex: 1, },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, },
   signInPrompt: { fontSize: 16, fontWeight: '600', marginVertical: 12, textAlign: 'center', },
@@ -666,62 +679,3 @@ const walletStyles = StyleSheet.create({
   networkName: { fontSize: 13, fontWeight: '500', },
 },);
 
-const profileStyles = StyleSheet.create({
-  content: { flexGrow: 1, paddingHorizontal: 16, gap: 14, },
-  heroCard: { padding: 20, borderRadius: 12, borderWidth: 1, alignItems: 'center', },
-  avatarWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  avatarText: { fontSize: 20, fontWeight: '700', },
-  heroName: { fontSize: 18, fontWeight: '700', marginBottom: 4, },
-  heroEmail: { fontSize: 13, marginBottom: 12, },
-  authPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  authLabel: { fontSize: 11, fontWeight: '600', },
-  infoCard: { padding: 16, borderRadius: 12, borderWidth: 1, },
-  infoTitle: { fontSize: 14, fontWeight: '700', marginBottom: 12, },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-  },
-  infoLabel: { fontSize: 12, fontWeight: '500', },
-  infoValue: { fontSize: 12, fontWeight: '600', textAlign: 'right', flex: 1, marginLeft: 8, },
-  actionRow: { flexDirection: 'row', gap: 12, },
-  secondaryBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  dangerBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,59,48,0.1)',
-  },
-  btnText: { fontSize: 14, fontWeight: '600', },
-  dangerBtnText: { fontSize: 14, fontWeight: '600', color: '#ff3b30', },
-},);

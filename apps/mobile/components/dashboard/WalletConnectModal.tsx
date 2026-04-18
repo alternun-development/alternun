@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
-import { createTypographyStyles } from '../theme/typography';
-import { X, Smartphone, Globe } from 'lucide-react-native';
-import { useAppTranslation } from '../i18n/useAppTranslation';
+import { View, Text, TouchableOpacity, Modal, } from 'react-native';
+import { createTypographyStyles, } from '../theme/typography';
+import { X, Smartphone, Globe, } from 'lucide-react-native';
+import { useAppTranslation, } from '../i18n/useAppTranslation';
 
 interface WalletConnectModalProps {
   visible: boolean;
@@ -29,8 +29,8 @@ export default function WalletConnectModal({
   visible,
   onClose,
   onConnect,
-}: WalletConnectModalProps) {
-  const { t } = useAppTranslation('mobile');
+}: WalletConnectModalProps,) {
+  const { t, } = useAppTranslation('mobile',);
 
   return (
     <Modal visible={visible} transparent animationType='slide'>
@@ -38,20 +38,20 @@ export default function WalletConnectModal({
         <View style={styles.sheet}>
           <View style={styles.handle} />
           <View style={styles.header}>
-            <Text style={styles.title}>{t('walletModal.title')}</Text>
+            <Text style={styles.title}>{t('walletModal.title',)}</Text>
             <TouchableOpacity onPress={onClose}>
               <X size={20} color='rgba(232,232,255,0.6)' />
             </TouchableOpacity>
           </View>
-          <Text style={styles.subtitle}>{t('walletModal.subtitle')}</Text>
+          <Text style={styles.subtitle}>{t('walletModal.subtitle',)}</Text>
           <View style={styles.walletList}>
-            {WALLETS.map((wallet) => {
+            {WALLETS.map((wallet,) => {
               const Icon = wallet.icon;
               return (
                 <TouchableOpacity
                   key={wallet.id}
                   style={styles.walletOption}
-                  onPress={() => onConnect(wallet.id)}
+                  onPress={() => onConnect(wallet.id,)}
                   activeOpacity={0.8}
                 >
                   <View style={styles.walletIcon}>
@@ -59,14 +59,14 @@ export default function WalletConnectModal({
                   </View>
                   <View style={styles.walletInfo}>
                     <Text style={styles.walletName}>{wallet.name}</Text>
-                    <Text style={styles.walletDesc}>{t(wallet.descriptionKey)}</Text>
+                    <Text style={styles.walletDesc}>{t(wallet.descriptionKey,)}</Text>
                   </View>
                   <Text style={styles.arrow}>›</Text>
                 </TouchableOpacity>
               );
-            })}
+            },)}
           </View>
-          <Text style={styles.disclaimer}>{t('walletModal.disclaimer')}</Text>
+          <Text style={styles.disclaimer}>{t('walletModal.disclaimer',)}</Text>
         </View>
       </View>
     </Modal>
@@ -106,6 +106,7 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 18,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   subtitle: {
     color: 'rgba(232,232,255,0.5)',
@@ -142,6 +143,7 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: 'Sculpin-Bold',
   },
   walletDesc: {
     color: 'rgba(232,232,255,0.4)',
@@ -158,4 +160,4 @@ const styles = createTypographyStyles({
     textAlign: 'center',
     lineHeight: 16,
   },
-});
+},);

@@ -408,6 +408,13 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         metadata: options.metadata,
       } as SignInOptions & Record<string, unknown>);
 
+      if ((result as Record<string, unknown>)?.error) {
+        const errorPayload = (result as Record<string, unknown>).error as Record<string, unknown>;
+        throw new AlternunProviderError(
+          typeof errorPayload.message === 'string' ? errorPayload.message : 'Sign in failed'
+        );
+      }
+
       const normalizedSession = normalizeSession(result, provider);
       return {
         session: normalizedSession,
@@ -425,6 +432,14 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
           errorCallbackURL: options.redirectUri,
           newUserCallbackURL: options.redirectUri,
         });
+
+        if ((result as Record<string, unknown>)?.error) {
+          const errorPayload = (result as Record<string, unknown>).error as Record<string, unknown>;
+          throw new AlternunProviderError(
+            typeof errorPayload.message === 'string' ? errorPayload.message : 'Email sign in failed'
+          );
+        }
+
         const normalizedSession = normalizeSession(result, 'email');
         return {
           session: normalizedSession,
@@ -441,6 +456,16 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
           newUserCallbackURL: options.redirectUri,
           disableRedirect: false,
         });
+
+        if ((result as Record<string, unknown>)?.error) {
+          const errorPayload = (result as Record<string, unknown>).error as Record<string, unknown>;
+          throw new AlternunProviderError(
+            typeof errorPayload.message === 'string'
+              ? errorPayload.message
+              : 'Social sign in failed'
+          );
+        }
+
         const normalizedSession = normalizeSession(result, provider);
         return {
           session: normalizedSession,
@@ -503,6 +528,14 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       const result = await client.signUp(
         input as AuthExecutionSignUpInput & Record<string, unknown>
       );
+
+      if ((result as Record<string, unknown>)?.error) {
+        const errorPayload = (result as Record<string, unknown>).error as Record<string, unknown>;
+        throw new AlternunProviderError(
+          typeof errorPayload.message === 'string' ? errorPayload.message : 'Sign up failed'
+        );
+      }
+
       const normalizedSession = normalizeSession(result, 'email');
       return {
         session: normalizedSession,
@@ -536,6 +569,14 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         metadata: input.metadata,
       } as Parameters<NonNullable<NonNullable<BetterAuthBrowserClientLike['signUp']>['email']>>[0];
       const result = await browserClient.signUp.email(signUpOptions);
+
+      if ((result as Record<string, unknown>)?.error) {
+        const errorPayload = (result as Record<string, unknown>).error as Record<string, unknown>;
+        throw new AlternunProviderError(
+          typeof errorPayload.message === 'string' ? errorPayload.message : 'Email sign up failed'
+        );
+      }
+
       const normalizedSession = normalizeSession(result, 'email');
       return {
         session: normalizedSession,

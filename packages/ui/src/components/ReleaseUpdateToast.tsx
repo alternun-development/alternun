@@ -153,11 +153,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
+    fontFamily: 'Sculpin-Bold',
   },
   title: {
     fontSize: fontSize.lg,
     lineHeight: 22,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   message: {
     fontSize: fontSize.base,

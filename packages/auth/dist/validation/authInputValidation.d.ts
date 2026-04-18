@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 export declare const emailAddressSchema: z.ZodEffects<z.ZodString, string, string>;
 export declare const signInPasswordSchema: z.ZodString;
 export declare const signUpPasswordSchema: z.ZodString;

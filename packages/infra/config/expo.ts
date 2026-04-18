@@ -53,6 +53,7 @@ export interface ResolvedExpoConfig {
     airsToDevCertArn?: string;
     enableDevToTestnet: boolean;
     devToTestnetSourceDomain: string;
+    devToTestnetSourceDomains: string[];
     devToTestnetCertArn?: string;
     enableRootDomainRedirect: boolean;
     rootDomainRedirectTarget: string;
@@ -103,6 +104,91 @@ function resolveAuthentikProviderFlowSlugsEnvValue(
   }
 
   return undefined;
+}
+
+function splitDomainList(value: string | undefined): string[] {
+  return (value ?? '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function normalizeDomainList(values: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const value of values) {
+    const normalized = value
+      .replace(/^https?:\/\//i, '')
+      .replace(/\/+$/, '')
+      .trim();
+
+    if (!normalized) {
+      continue;
+    }
+
+    const key = normalized.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    result.push(normalized);
+  }
+
+  return result;
+}
+
+function normalizeBetterAuthBaseUrl(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(
+      trimmed
+        .replace(/\/+$/, '')
+        .replace(/\/auth\/exchange$/, '')
+        .replace(/\/auth$/, '')
+    );
+    const pathname = url.pathname === '/' ? '' : url.pathname;
+    return `${url.origin}${pathname}`.replace(/\/+$/, '');
+  } catch {
+    const normalized = trimmed
+      .replace(/\?.*$/, '')
+      .replace(/#.*$/, '')
+      .replace(/\/+$/, '')
+      .replace(/\/auth\/exchange$/, '')
+      .replace(/\/auth$/, '');
+    return normalized.length > 0 ? normalized : undefined;
+  }
+}
+
+function normalizePublicUrl(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  return trimmed.replace(/\/+$/, '');
+}
+
+function normalizeAuthExecutionProvider(value: string | undefined): string | undefined {
+  const normalized = value?.trim().toLowerCase();
+  if (normalized === 'better-auth' || normalized === 'supabase') {
+    return normalized;
+  }
+
+  return undefined;
+}
+
+function buildAuthExchangeUrl(apiUrl: string | undefined): string | undefined {
+  if (!apiUrl) {
+    return undefined;
+  }
+
+  return `${apiUrl}/auth/exchange`;
 }
 
 function resolveExpoAppPath(dirname: string, appPath: string): string {
@@ -217,6 +303,36 @@ export function resolveExpoConfig({
     parseBoolean(env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS, false) ||
     parseBoolean(env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS, false) ||
     Boolean(localConfig.expo?.publicEnv?.authentikAllowCustomProviderFlowSlugs);
+  const apiUrl = normalizePublicUrl(env.EXPO_PUBLIC_API_URL ?? localConfig.expo?.publicEnv?.apiUrl);
+  const explicitAuthExecutionProvider = normalizeAuthExecutionProvider(
+    env.AUTH_EXECUTION_PROVIDER ??
+      env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER ??
+      localConfig.expo?.publicEnv?.authExecutionProvider
+  );
+  const authExchangeUrl =
+    normalizePublicUrl(
+      env.AUTH_EXCHANGE_URL ??
+        env.EXPO_PUBLIC_AUTH_EXCHANGE_URL ??
+        localConfig.expo?.publicEnv?.authExchangeUrl
+    ) ??
+    ((explicitAuthExecutionProvider === 'better-auth' ||
+      normalizeBetterAuthBaseUrl(
+        env.AUTH_BETTER_AUTH_URL ??
+          env.EXPO_PUBLIC_BETTER_AUTH_URL ??
+          localConfig.expo?.publicEnv?.betterAuthUrl
+      )) &&
+    apiUrl
+      ? buildAuthExchangeUrl(apiUrl)
+      : undefined);
+  const betterAuthUrl = normalizeBetterAuthBaseUrl(
+    env.AUTH_BETTER_AUTH_URL ??
+      env.EXPO_PUBLIC_BETTER_AUTH_URL ??
+      localConfig.expo?.publicEnv?.betterAuthUrl ??
+      authExchangeUrl ??
+      (explicitAuthExecutionProvider === 'better-auth' ? apiUrl : undefined)
+  );
+  const authExecutionProvider =
+    explicitAuthExecutionProvider ?? (betterAuthUrl ? 'better-auth' : undefined);
 
   const publicEnv = {
     supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL ?? localConfig.expo?.publicEnv?.supabaseUrl,
@@ -239,19 +355,10 @@ export function resolveExpoConfig({
       (localConfig.expo?.publicEnv?.enableWalletOnlyAuth !== undefined
         ? String(localConfig.expo.publicEnv.enableWalletOnlyAuth)
         : undefined),
-    apiUrl: env.EXPO_PUBLIC_API_URL ?? localConfig.expo?.publicEnv?.apiUrl,
-    authExecutionProvider:
-      env.AUTH_EXECUTION_PROVIDER ??
-      env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER ??
-      localConfig.expo?.publicEnv?.authExecutionProvider,
-    authExchangeUrl:
-      env.AUTH_EXCHANGE_URL ??
-      env.EXPO_PUBLIC_AUTH_EXCHANGE_URL ??
-      localConfig.expo?.publicEnv?.authExchangeUrl,
-    betterAuthUrl:
-      env.AUTH_BETTER_AUTH_URL ??
-      env.EXPO_PUBLIC_BETTER_AUTH_URL ??
-      localConfig.expo?.publicEnv?.betterAuthUrl,
+    apiUrl,
+    authExecutionProvider,
+    authExchangeUrl,
+    betterAuthUrl,
     authentikIssuer:
       env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? localConfig.expo?.publicEnv?.authentikIssuer,
     authentikClientId:
@@ -274,6 +381,19 @@ export function resolveExpoConfig({
       env.EXPO_PUBLIC_RELEASE_UPDATE_MODE ?? localConfig.expo?.publicEnv?.releaseUpdateMode,
   };
 
+  const devToTestnetSourceDomains = normalizeDomainList([
+    ...splitDomainList(env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES),
+    ...splitDomainList(env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE),
+    ...(localConfig.redirects?.devToTestnetSourceDomains ?? []),
+    ...(localConfig.redirects?.devToTestnetSourceDomain
+      ? [localConfig.redirects.devToTestnetSourceDomain]
+      : []),
+    legacyDevDomain,
+    `demo.${subdomain}.${rootDomain}`,
+    `beta.${subdomain}.${rootDomain}`,
+  ]);
+  const devToTestnetSourceDomain = devToTestnetSourceDomains[0] ?? legacyDevDomain;
+
   const redirects = {
     enableAirsToDev: parseBoolean(
       env.INFRA_REDIRECT_AIRS_TO_DEV ??
@@ -295,10 +415,8 @@ export function resolveExpoConfig({
           : undefined),
       REDIRECT_INFRA_DEFAULTS.enableDevToTestnet
     ),
-    devToTestnetSourceDomain:
-      env.INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE ??
-      localConfig.redirects?.devToTestnetSourceDomain ??
-      legacyDevDomain,
+    devToTestnetSourceDomain,
+    devToTestnetSourceDomains,
     devToTestnetCertArn:
       env.INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN ?? localConfig.redirects?.certArns?.devToTestnet,
     enableRootDomainRedirect: parseBoolean(

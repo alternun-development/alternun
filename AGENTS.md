@@ -89,6 +89,11 @@ For targeted changes use the relevant package/app command first, then broaden if
 
 ## Agent Efficiency Rules
 
+- Think first before editing.
+- Make the smallest change that solves the request.
+- Do not reread files you already read unless they changed.
+- Keep updates terse; do not repeat unchanged code or add filler.
+- Test before saying the work is done.
 - Read only the files you need — load context progressively.
 - For broad exploration, delegate to an `Explore` subagent.
 - For multi-step implementation, use `Plan` before coding.

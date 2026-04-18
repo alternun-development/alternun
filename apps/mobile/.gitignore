@@ -31,6 +31,9 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env.development
+.env.testnet
+.env.production
 
 # typescript
 *.tsbuildinfo
@@ -45,3 +48,4 @@ node_modules
 # Release update assets
 public/alternun-release-manifest.json
 public/alternun-release-worker.js
+utils/changelogData.ts
