@@ -20,6 +20,9 @@ const HOP_BY_HOP_HEADERS = new Set([
 
 type BetterAuthRequestHeaderValue = string | string[] | number | undefined;
 type BetterAuthRequestHeaders = Record<string, BetterAuthRequestHeaderValue>;
+type BetterAuthRuntimeAuth = {
+  handler: (request: Request) => Promise<Response>;
+};
 
 type ResponseHeadersWithCookies = Omit<Headers, 'getSetCookie'> & {
   getSetCookie?: () => string[];
@@ -196,11 +199,15 @@ export async function handleBetterAuthRuntimeRequest(
 ): Promise<boolean> {
   const requestUrl = request.raw.url;
   if (!requestUrl) {
+    console.log('[Better Auth Handler] No requestUrl');
     return false;
   }
 
   const requestPath = new URL(requestUrl, 'http://alternun.local').pathname;
+  console.log('[Better Auth Handler]', { path: requestPath, method: request.method });
+
   if (!shouldProxyBetterAuthPath(requestPath)) {
+    console.log('[Better Auth Handler] Path not matched:', requestPath);
     return false;
   }
 
@@ -258,7 +265,7 @@ export async function handleBetterAuthRuntimeRequest(
 }
 
 export function registerBetterAuthRuntime(app: FastifyInstance, config: BetterAuthDevConfig): void {
-  const auth = createBetterAuthDevAuth(config);
+  const auth = createBetterAuthDevAuth(config) as BetterAuthRuntimeAuth;
 
   app.route({
     method: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

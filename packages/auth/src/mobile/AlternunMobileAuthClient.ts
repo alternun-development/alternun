@@ -731,12 +731,16 @@ export class AlternunMobileAuthClient implements AuthClient {
   }
 
   async signInWithGoogle(redirectTo?: string): Promise<void> {
-    const baseUrl =
-      typeof window !== 'undefined'
-        ? `${window.location.protocol}//${window.location.host}`
-        : process.env.REACT_APP_API_URL ||
-          process.env.EXPO_PUBLIC_API_URL ||
-          'http://localhost:3000';
+    let baseUrl = process.env.REACT_APP_API_URL || process.env.EXPO_PUBLIC_API_URL;
+
+    if (!baseUrl && typeof window !== 'undefined') {
+      const origin = window.location.origin;
+      const url = new URL(origin);
+      const isLoopback = ['localhost', '127.0.0.1', '::1', '0.0.0.0'].includes(url.hostname);
+      baseUrl = isLoopback ? 'http://localhost:8082' : origin;
+    }
+
+    baseUrl = baseUrl || 'http://localhost:8082';
 
     try {
       const response = await fetch(`${baseUrl}/auth/sign-in/social`, {
@@ -809,14 +813,18 @@ export class AlternunMobileAuthClient implements AuthClient {
     this.walletSessionToken = null;
 
     const emailTemplateLocale = normalizeEmailTemplateLocale(locale);
-    const baseUrl =
-      typeof window !== 'undefined'
-        ? `${window.location.protocol}//${window.location.host}`
-        : process.env.REACT_APP_API_URL ||
-          process.env.EXPO_PUBLIC_API_URL ||
-          'http://localhost:3000';
+    let baseUrl = process.env.REACT_APP_API_URL || process.env.EXPO_PUBLIC_API_URL;
 
-    const response = await fetch(`${baseUrl}/auth/signup`, {
+    if (!baseUrl && typeof window !== 'undefined') {
+      const origin = window.location.origin;
+      const url = new URL(origin);
+      const isLoopback = ['localhost', '127.0.0.1', '::1', '0.0.0.0'].includes(url.hostname);
+      baseUrl = isLoopback ? 'http://localhost:8082' : origin;
+    }
+
+    baseUrl = baseUrl || 'http://localhost:8082';
+
+    const response = await fetch(`${baseUrl}/auth/sign-up/email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -824,6 +832,7 @@ export class AlternunMobileAuthClient implements AuthClient {
       body: JSON.stringify({
         email: normalizedEmail,
         password: validatedPassword,
+        name: normalizedEmail.split('@')[0],
         ...(emailTemplateLocale ? { locale: emailTemplateLocale } : {}),
       }),
     });

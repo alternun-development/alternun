@@ -10,7 +10,7 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-const MIGRATIONS_DIR = resolve('./supabase/migrations');
+const MIGRATIONS_DIR = resolve('../../supabase/migrations');
 
 interface Migration {
   name: string;

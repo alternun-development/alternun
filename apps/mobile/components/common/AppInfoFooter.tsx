@@ -1,7 +1,7 @@
-import { useAppTranslation, } from '../i18n/useAppTranslation';
-import { BlurView, } from 'expo-blur';
-import { Image as ExpoImage, } from 'expo-image';
-import React, { useCallback, useEffect, useMemo, useState, } from 'react';
+import { useAppTranslation } from '../i18n/useAppTranslation';
+import { BlurView } from 'expo-blur';
+import { Image as ExpoImage } from 'expo-image';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Modal,
   Pressable,
@@ -13,8 +13,8 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { PolicyDrawerContent, } from '../auth/AuthFooter';
-import { resolveMobileApiBaseUrl, } from '../../utils/runtimeConfig';
+import { PolicyDrawerContent } from '../auth/AuthFooter';
+import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -25,10 +25,10 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { ChangelogDrawer, } from '@alternun/ui';
+import { ChangelogDrawer } from '@alternun/ui';
 import SupportButton from './SupportButton';
-import { createTypographyStyles, } from '../theme/typography';
-import { useAppPreferences, } from '../settings/AppPreferencesProvider';
+import { createTypographyStyles } from '../theme/typography';
+import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import {
   resolvePrimaryLinkPressHandler,
   resolvePrimaryLinksForViewport,
@@ -46,27 +46,27 @@ import {
   SOCIAL_LINKS,
   resolveVersionMetadata,
 } from './Footer.shared';
-import { getChangelogContent, GITHUB_REPO_URL, } from '../../utils/getChangelog';
+import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 
 interface AppInfoFooterProps {
   containerStyle?: StyleProp<ViewStyle>;
 }
 
-export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,): React.JSX.Element {
-  const { themeMode, language, motionLevel, } = useAppPreferences();
-  const { width, } = useWindowDimensions();
-  const { t, } = useAppTranslation('mobile',);
+export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): React.JSX.Element {
+  const { themeMode, language, motionLevel } = useAppPreferences();
+  const { width } = useWindowDimensions();
+  const { t } = useAppTranslation('mobile');
   const isDark = themeMode === 'dark';
-  const versionMetadata = useMemo(resolveVersionMetadata, [],);
-  const changelogContent = useMemo(getChangelogContent, [],);
+  const versionMetadata = useMemo(resolveVersionMetadata, []);
+  const changelogContent = useMemo(getChangelogContent, []);
   const resolvedApiUrl = resolveMobileApiBaseUrl();
 
-  const [privacyOpen, setPrivacyOpen,] = useState(false,);
-  const [termsOpen, setTermsOpen,] = useState(false,);
-  const handlePrivacyOpen = useCallback(() => setPrivacyOpen(true,), [],);
-  const handlePrivacyClose = useCallback(() => setPrivacyOpen(false,), [],);
-  const handleTermsOpen = useCallback(() => setTermsOpen(true,), [],);
-  const handleTermsClose = useCallback(() => setTermsOpen(false,), [],);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const handlePrivacyOpen = useCallback(() => setPrivacyOpen(true), []);
+  const handlePrivacyClose = useCallback(() => setPrivacyOpen(false), []);
+  const handleTermsOpen = useCallback(() => setTermsOpen(true), []);
+  const handleTermsClose = useCallback(() => setTermsOpen(false), []);
   const primaryLinkPressHandlers = {
     privacy: handlePrivacyOpen,
     terms: handleTermsOpen,
@@ -89,77 +89,77 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
       ? AIRS_LOGO_LIGHT_2X
       : AIRS_LOGO_DARK_2X
     : isDark
-      ? AIRS_LOGO_LIGHT
-      : AIRS_LOGO_DARK;
-  const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide, }, language,);
+    ? AIRS_LOGO_LIGHT
+    : AIRS_LOGO_DARK;
+  const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
 
   // Floating orb animations
-  const orbLeft = useSharedValue(0,);
-  const orbRight = useSharedValue(0,);
+  const orbLeft = useSharedValue(0);
+  const orbRight = useSharedValue(0);
 
   useEffect(() => {
     if (motionLevel === 'off') return;
-    const makeFloat = (duration: number,): ReturnType<typeof withRepeat> =>
+    const makeFloat = (duration: number): ReturnType<typeof withRepeat> =>
       withRepeat(
         withSequence(
-          withTiming(1, { duration, easing: Easing.inOut(Easing.sin,), },),
-          withTiming(0, { duration, easing: Easing.inOut(Easing.sin,), },),
+          withTiming(1, { duration, easing: Easing.inOut(Easing.sin) }),
+          withTiming(0, { duration, easing: Easing.inOut(Easing.sin) })
         ),
-        -1,
+        -1
       );
-    orbLeft.value = makeFloat(5800,) as unknown as number;
-    orbRight.value = makeFloat(7200,) as unknown as number;
+    orbLeft.value = makeFloat(5800) as unknown as number;
+    orbRight.value = makeFloat(7200) as unknown as number;
     return () => {
-      cancelAnimation(orbLeft,);
-      cancelAnimation(orbRight,);
+      cancelAnimation(orbLeft);
+      cancelAnimation(orbRight);
     };
-  }, [orbLeft, orbRight, motionLevel,],);
+  }, [orbLeft, orbRight, motionLevel]);
 
   const orbLeftStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: interpolate(orbLeft.value, [0, 1,], [0, 22,],), },
-      { translateY: interpolate(orbLeft.value, [0, 1,], [0, 18,],), },
+      { translateX: interpolate(orbLeft.value, [0, 1], [0, 22]) },
+      { translateY: interpolate(orbLeft.value, [0, 1], [0, 18]) },
     ],
-  }),);
+  }));
 
   const orbRightStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: interpolate(orbRight.value, [0, 1,], [0, -18,],), },
-      { translateY: interpolate(orbRight.value, [0, 1,], [0, -22,],), },
+      { translateX: interpolate(orbRight.value, [0, 1], [0, -18]) },
+      { translateY: interpolate(orbRight.value, [0, 1], [0, -22]) },
     ],
-  }),);
+  }));
 
   const palette = isDark
     ? {
-      shellBodyBg: motionLevel === 'off' ? 'rgba(6,18,17,0.58)' : 'rgba(6, 18, 17, 0.46)',
-      shellTopBg: motionLevel === 'off' ? 'rgba(6,18,17,0.16)' : 'rgba(6, 18, 17, 0.08)',
-      shellBorder: 'rgba(142, 255, 223, 0.16)',
-      glowA: 'rgba(30, 230, 181, 0.16)',
-      glowB: 'rgba(98, 208, 255, 0.12)',
-      title: '#effff9',
-      text: 'rgba(239,255,249,0.82)',
-      muted: 'rgba(220,255,246,0.62)',
-      socialBg: 'rgba(30,230,181,0.18)',
-      socialBorder: 'rgba(173,255,233,0.24)',
-      accent: '#1ee6b5',
-      markCutout: '#063339',
-      bottomBar: 'rgba(0,0,0,0.12)',
-    }
+        shellBodyBg: motionLevel === 'off' ? 'rgba(6,18,17,0.58)' : 'rgba(6, 18, 17, 0.46)',
+        shellTopBg: motionLevel === 'off' ? 'rgba(6,18,17,0.16)' : 'rgba(6, 18, 17, 0.08)',
+        shellBorder: 'rgba(142, 255, 223, 0.16)',
+        glowA: 'rgba(30, 230, 181, 0.16)',
+        glowB: 'rgba(98, 208, 255, 0.12)',
+        title: '#effff9',
+        text: 'rgba(239,255,249,0.82)',
+        muted: 'rgba(220,255,246,0.62)',
+        socialBg: 'rgba(30,230,181,0.18)',
+        socialBorder: 'rgba(173,255,233,0.24)',
+        accent: '#1ee6b5',
+        markCutout: '#063339',
+        bottomBar: 'rgba(0,0,0,0.12)',
+      }
     : {
-      shellBodyBg: motionLevel === 'off' ? 'rgba(245,255,252,0.84)' : 'rgba(245, 255, 252, 0.72)',
-      shellTopBg: motionLevel === 'off' ? 'rgba(245,255,252,0.22)' : 'rgba(245, 255, 252, 0.12)',
-      shellBorder: 'rgba(11, 90, 95, 0.10)',
-      glowA: 'rgba(30, 230, 181, 0.12)',
-      glowB: 'rgba(11, 90, 95, 0.08)',
-      title: '#0b2d31',
-      text: 'rgba(11,45,49,0.82)',
-      muted: 'rgba(11,45,49,0.58)',
-      socialBg: 'rgba(11,90,95,0.08)',
-      socialBorder: 'rgba(11,90,95,0.14)',
-      accent: '#0b5a5f',
-      markCutout: '#dffcf3',
-      bottomBar: 'rgba(255,255,255,0.2)',
-    };
+        shellBodyBg: motionLevel === 'off' ? 'rgba(245,255,252,0.84)' : 'rgba(245, 255, 252, 0.72)',
+        shellTopBg: motionLevel === 'off' ? 'rgba(245,255,252,0.22)' : 'rgba(245, 255, 252, 0.12)',
+        shellBorder: 'rgba(11, 90, 95, 0.10)',
+        glowA: 'rgba(30, 230, 181, 0.12)',
+        glowB: 'rgba(11, 90, 95, 0.08)',
+        title: '#0b2d31',
+        text: 'rgba(11,45,49,0.82)',
+        muted: 'rgba(11,45,49,0.58)',
+        socialBg: 'rgba(11,90,95,0.08)',
+        socialBorder: 'rgba(11,90,95,0.14)',
+        accent: '#0b5a5f',
+        markCutout: '#dffcf3',
+        bottomBar: 'rgba(255,255,255,0.2)',
+      };
 
   const shellPadding = isWide ? 8 : isMobile ? 6 : 9;
   const shellRevealHeight = isWide ? 18 : isMobile ? 12 : 14;
@@ -168,7 +168,7 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
 
   return (
     <>
-      <View style={[styles.outer, containerStyle,]}>
+      <View style={[styles.outer, containerStyle]}>
         <View
           style={[
             styles.shell,
@@ -183,14 +183,14 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
             <BlurView
               intensity={isWide ? 48 : 34}
               tint={isDark ? 'dark' : 'light'}
-              style={StyleSheet.absoluteFillObject}
+              style={StyleSheet.absoluteFill}
             />
           )}
           <View
             pointerEvents='none'
             style={[
               styles.shellSurfaceBody,
-              { top: shellRevealHeight, backgroundColor: palette.shellBodyBg, },
+              { top: shellRevealHeight, backgroundColor: palette.shellBodyBg },
             ]}
           />
           <FooterTopFade height={shellRevealHeight} color={palette.shellTopBg} />
@@ -202,7 +202,7 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
             style={[
               styles.glowOrb,
               styles.glowOrbLeft,
-              { backgroundColor: palette.glowA, },
+              { backgroundColor: palette.glowA },
               orbLeftStyle,
             ]}
           />
@@ -211,7 +211,7 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
             style={[
               styles.glowOrb,
               styles.glowOrbRight,
-              { backgroundColor: palette.glowB, },
+              { backgroundColor: palette.glowB },
               orbRightStyle,
             ]}
           />
@@ -223,7 +223,7 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
                 <View style={styles.brandHeader}>
                   <ExpoImage
                     source={wordmarkSource}
-                    style={{ width: wordmarkWidth, height: wordmarkHeight, }}
+                    style={{ width: wordmarkWidth, height: wordmarkHeight }}
                     contentFit='contain'
                   />
                 </View>
@@ -231,22 +231,22 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
 
               <View style={styles.linksBlock}>
                 <View style={styles.linkRow}>
-                  {primaryLinks.map((link,) => (
+                  {primaryLinks.map((link) => (
                     <FooterTextLink
                       key={link.labelKey}
-                      label={t(link.labelKey, undefined, link.fallbackLabel,)}
+                      label={t(link.labelKey, undefined, link.fallbackLabel)}
                       url={link.url}
-                      onPress={resolvePrimaryLinkPressHandler(link, primaryLinkPressHandlers,)}
+                      onPress={resolvePrimaryLinkPressHandler(link, primaryLinkPressHandlers)}
                       textColor={palette.title}
                       hoverColor={palette.accent}
                     />
-                  ),)}
+                  ))}
                 </View>
               </View>
 
               <View style={styles.socialBlock}>
                 <View style={styles.socialRow}>
-                  {SOCIAL_LINKS.map((link,) => (
+                  {SOCIAL_LINKS.map((link) => (
                     <SocialPill
                       key={link.label}
                       {...link}
@@ -255,7 +255,7 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
                       borderColor={palette.socialBorder}
                       hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
                     />
-                  ),)}
+                  ))}
                 </View>
               </View>
             </View>
@@ -265,12 +265,12 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
           {isMobile && (
             <View style={styles.mobileLayoutSingleLine}>
               <View style={styles.mobileLinkRow}>
-                {primaryLinks.map((link, index,) => (
+                {primaryLinks.map((link, index) => (
                   <React.Fragment key={link.labelKey}>
                     <FooterTextLink
-                      label={t(link.labelKey, undefined, link.fallbackLabel,)}
+                      label={t(link.labelKey, undefined, link.fallbackLabel)}
                       url={link.url}
-                      onPress={resolvePrimaryLinkPressHandler(link, primaryLinkPressHandlers,)}
+                      onPress={resolvePrimaryLinkPressHandler(link, primaryLinkPressHandlers)}
                       textColor={palette.title}
                       hoverColor={palette.accent}
                       compact
@@ -278,14 +278,14 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
                       singleLine
                     />
                     {index < primaryLinks.length - 1 && (
-                      <Text style={[styles.mobileLinkSeparator, { color: palette.muted, },]}>•</Text>
+                      <Text style={[styles.mobileLinkSeparator, { color: palette.muted }]}>•</Text>
                     )}
                   </React.Fragment>
-                ),)}
+                ))}
               </View>
 
               <View style={styles.mobileSocialRowCompact}>
-                {SOCIAL_LINKS.map((link,) => (
+                {SOCIAL_LINKS.map((link) => (
                   <SocialPill
                     key={link.label}
                     {...link}
@@ -296,7 +296,7 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
                     borderColor={palette.socialBorder}
                     hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
                   />
-                ),)}
+                ))}
               </View>
             </View>
           )}
@@ -338,26 +338,26 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
       >
         <View style={drawerStyles.modalContainer}>
           <Pressable
-            style={[drawerStyles.backdrop, { backgroundColor: drawerColors.backdrop, },]}
+            style={[drawerStyles.backdrop, { backgroundColor: drawerColors.backdrop }]}
             onPress={handlePrivacyClose}
           />
           <View
             style={[
               drawerStyles.sheet,
-              { backgroundColor: drawerColors.bg, borderColor: drawerColors.border, },
+              { backgroundColor: drawerColors.bg, borderColor: drawerColors.border },
             ]}
           >
-            <View style={[drawerStyles.handle, { backgroundColor: drawerColors.handle, },]} />
-            <View style={[drawerStyles.sheetHeader, { borderBottomColor: drawerColors.border, },]}>
-              <Text style={[drawerStyles.sheetTitle, { color: drawerColors.title, },]}>
-                {t('footer.privacy',)}
+            <View style={[drawerStyles.handle, { backgroundColor: drawerColors.handle }]} />
+            <View style={[drawerStyles.sheetHeader, { borderBottomColor: drawerColors.border }]}>
+              <Text style={[drawerStyles.sheetTitle, { color: drawerColors.title }]}>
+                {t('footer.privacy')}
               </Text>
               <TouchableOpacity
                 onPress={handlePrivacyClose}
                 activeOpacity={0.75}
                 style={drawerStyles.closeBtn}
               >
-                <Text style={[drawerStyles.closeBtnText, { color: drawerColors.muted, },]}>✕</Text>
+                <Text style={[drawerStyles.closeBtnText, { color: drawerColors.muted }]}>✕</Text>
               </TouchableOpacity>
             </View>
             <PolicyDrawerContent
@@ -383,26 +383,26 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
       >
         <View style={drawerStyles.modalContainer}>
           <Pressable
-            style={[drawerStyles.backdrop, { backgroundColor: drawerColors.backdrop, },]}
+            style={[drawerStyles.backdrop, { backgroundColor: drawerColors.backdrop }]}
             onPress={handleTermsClose}
           />
           <View
             style={[
               drawerStyles.sheet,
-              { backgroundColor: drawerColors.bg, borderColor: drawerColors.border, },
+              { backgroundColor: drawerColors.bg, borderColor: drawerColors.border },
             ]}
           >
-            <View style={[drawerStyles.handle, { backgroundColor: drawerColors.handle, },]} />
-            <View style={[drawerStyles.sheetHeader, { borderBottomColor: drawerColors.border, },]}>
-              <Text style={[drawerStyles.sheetTitle, { color: drawerColors.title, },]}>
-                {t('footer.terms',)}
+            <View style={[drawerStyles.handle, { backgroundColor: drawerColors.handle }]} />
+            <View style={[drawerStyles.sheetHeader, { borderBottomColor: drawerColors.border }]}>
+              <Text style={[drawerStyles.sheetTitle, { color: drawerColors.title }]}>
+                {t('footer.terms')}
               </Text>
               <TouchableOpacity
                 onPress={handleTermsClose}
                 activeOpacity={0.75}
                 style={drawerStyles.closeBtn}
               >
-                <Text style={[drawerStyles.closeBtnText, { color: drawerColors.muted, },]}>✕</Text>
+                <Text style={[drawerStyles.closeBtnText, { color: drawerColors.muted }]}>✕</Text>
               </TouchableOpacity>
             </View>
             <PolicyDrawerContent
@@ -421,8 +421,8 @@ export default function AppInfoFooter({ containerStyle, }: AppInfoFooterProps,):
 }
 
 const drawerStyles = StyleSheet.create({
-  modalContainer: { flex: 1, justifyContent: 'flex-end', },
-  backdrop: { ...StyleSheet.absoluteFillObject, },
+  modalContainer: { flex: 1, justifyContent: 'flex-end' },
+  backdrop: { ...StyleSheet.absoluteFill },
   sheet: {
     position: 'absolute',
     bottom: 0,
@@ -452,10 +452,10 @@ const drawerStyles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
-  sheetTitle: { fontSize: 16, fontWeight: '700', letterSpacing: 0.1, },
-  closeBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center', },
-  closeBtnText: { fontSize: 14, fontWeight: '600', },
-},);
+  sheetTitle: { fontSize: 16, fontWeight: '700', letterSpacing: 0.1 },
+  closeBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
+  closeBtnText: { fontSize: 14, fontWeight: '600' },
+});
 
 const styles = createTypographyStyles({
   outer: {
@@ -633,4 +633,4 @@ const styles = createTypographyStyles({
     justifyContent: 'center',
     gap: 8,
   },
-},);
+});

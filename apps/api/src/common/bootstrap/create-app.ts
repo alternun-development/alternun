@@ -24,12 +24,12 @@ export async function createApp(): Promise<NestFastifyApplication> {
 
   // Ensure CORS headers are sent for all responses, including errors
   const fastify = app.getHttpAdapter().getInstance();
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  fastify.addHook('onSend', (request, reply) => {
+  fastify.addHook('onSend', async (request, reply, payload) => {
     if (!reply.hasHeader('Access-Control-Allow-Origin')) {
       void reply.header('Access-Control-Allow-Origin', request.headers.origin ?? '*');
       void reply.header('Access-Control-Allow-Credentials', 'true');
     }
+    return payload;
   });
 
   app.useGlobalPipes(
@@ -55,7 +55,18 @@ export async function createApp(): Promise<NestFastifyApplication> {
       { baseURL: betterAuth.runtimeConfig.baseURL },
       'Registering embedded Better Auth runtime'
     );
-    registerBetterAuthRuntime(fastify, betterAuth.runtimeConfig);
+    try {
+      registerBetterAuthRuntime(fastify, betterAuth.runtimeConfig);
+      fastify.log.info('Successfully registered Better Auth runtime routes');
+    } catch (error) {
+      fastify.log.error(error, 'Failed to register Better Auth runtime');
+      throw error;
+    }
+  } else {
+    fastify.log.warn(
+      { mode: betterAuth.mode, hasConfig: !!betterAuth.runtimeConfig },
+      'Better Auth runtime not registered'
+    );
   }
   return app;
 }

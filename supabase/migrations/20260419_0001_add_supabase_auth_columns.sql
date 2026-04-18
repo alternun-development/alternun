@@ -1,0 +1,8 @@
+-- Add Supabase auth JWT claim columns to users table
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS aud text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS picture text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_verified boolean DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS confirmation_sent_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_sign_in_at TIMESTAMP WITH TIME ZONE;

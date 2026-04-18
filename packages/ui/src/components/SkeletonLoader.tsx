@@ -52,7 +52,7 @@ export function SkeletonLoader({ width, height, borderRadius = 8, style }: Skele
     >
       <Animated.View
         style={[
-          StyleSheet.absoluteFillObject,
+          StyleSheet.absoluteFill,
           { borderRadius, backgroundColor: highlight as unknown as string },
         ]}
       />

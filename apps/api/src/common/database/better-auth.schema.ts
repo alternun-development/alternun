@@ -1,12 +1,20 @@
-import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, uuid } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
+  sub: uuid('sub').unique(),
+  iss: text('iss'),
+  aud: text('aud'),
   name: text('name'),
   email: text('email').unique(),
   emailVerified: boolean('email_verified').default(false),
   image: text('image'),
+  picture: text('picture'),
+  phone: text('phone'),
+  phoneVerified: boolean('phone_verified').default(false),
+  confirmationSentAt: timestamp('confirmation_sent_at', { withTimezone: true }),
+  lastSignInAt: timestamp('last_sign_in_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });
@@ -35,6 +43,8 @@ export const sessions = pgTable('sessions', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   token: text('token').notNull().unique(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
@@ -48,3 +58,8 @@ export const verifications = pgTable('verifications', {
   createdAt: timestamp('created_at', { withTimezone: true }),
   updatedAt: timestamp('updated_at', { withTimezone: true }),
 });
+
+export const user = users;
+export const account = accounts;
+export const session = sessions;
+export const verification = verifications;
