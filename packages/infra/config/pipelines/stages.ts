@@ -46,29 +46,34 @@ const STACK_STAGE_ALIASES: Record<PipelineStage, readonly string[]> = {
   mobile: [...CORE_STAGE_ALIASES.mobile],
 };
 
+// ⚠️  IMPORTANT: Each ManagedPipeline entry can have multiple aliases that all deploy to the same
+// stack. Deploy using the PRIMARY name only to avoid creating duplicate resources (domains,
+// Route53 records, etc.). See docs/AWS_RESOURCE_NAMING.md for naming conventions.
 const MANAGED_PIPELINE_ALIASES: Record<ManagedPipeline, readonly string[]> = {
   production: ['production', 'prod'],
   dev: ['dev'],
   mobile: ['mobile'],
+  // PRIMARY: dashboard-dev | Aliases: All other names below
+  // Creates: alternun-api-dev Lambda, testnet.api.alternun.co domain, admin site, etc.
   'dashboard-dev': [
     'dashboard',
-    'dashboard-dev',
+    'dashboard-dev', // Alias for dashboard site
     'dashboardapi',
-    'dashboardapi-dev',
+    'dashboardapi-dev', // Alias for dashboard+api combined
     'dashboard-admin',
-    'dashboard-admin-dev',
-    'admin',
-    'admin-dev',
+    'dashboard-admin-dev', // Alias for admin site
+    'admin', // Alias for admin site
+    'admin-dev', // Alias for admin site
     'backoffice',
-    'backoffice-dev',
+    'backoffice-dev', // Alias for backoffice
     'backoffice-admin',
-    'backoffice-admin-dev',
-    'api',
-    'api-dev',
-    'backend',
-    'backend-dev',
-    'backend-api',
-    'backend-api-dev',
+    'backoffice-admin-dev', // Alias for backoffice admin
+    'api', // Alias for API component
+    'api-dev', // Alias for API component (PRIMARY for API)
+    'backend', // Alias for API component
+    'backend-dev', // Alias for API component
+    'backend-api', // Alias for API component
+    'backend-api-dev', // Alias for API component (do NOT deploy separately!)
   ],
   'dashboard-prod': [
     'dashboard-prod',
