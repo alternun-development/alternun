@@ -1,6 +1,6 @@
 {
   "name": "@alternun/infra",
-  "version": "1.0.154",
+  "version": "1.0.155",
   "private": true,
   "type": "module",
   "description": "Alternun AWS/SST infrastructure wrapper for Expo web deployments.",
