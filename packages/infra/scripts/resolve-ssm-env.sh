@@ -30,12 +30,14 @@ declare -a CACHE_EXPORT_VARS=(
   EXPO_PUBLIC_AUTH_EXCHANGE_URL
   EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE
   INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL
+  INFRA_BACKEND_API_DATABASE_URL
   AUTH_BETTER_AUTH_URL
   BETTER_AUTH_URL
   AUTH_EXCHANGE_URL
   ALTERNUN_TESTNET_MODE
   AUTH_EXECUTION_PROVIDER
   EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER
+  DATABASE_URL
 )
 
 # CI shells can inherit stale auth values from the CodeBuild project.
@@ -230,6 +232,7 @@ main() {
     expo-public-authentik-issuer
     expo-public-authentik-client-id
     expo-public-authentik-login-entry-mode
+    database-url
   )
 
   # Auth provider config (stage-specific)
@@ -243,9 +246,11 @@ main() {
         expo-public-auth-exchange-url-dev
         expo-public-authentik-social-login-mode-dev
         infra-backend-api-auth-better-auth-url-dev
+        infra-backend-api-database-url-dev
         auth-better-auth-url-dev
         better-auth-url-dev
         alternun-testnet-mode-dev
+        database-url-dev
       )
       ;;
     prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
@@ -253,9 +258,11 @@ main() {
       # is derived from those resolved URLs below so the deploy contract stays consistent.
       ssm_param_names+=(
         infra-backend-api-auth-better-auth-url-prod
+        infra-backend-api-database-url-prod
         expo-public-better-auth-url-prod
         expo-public-auth-exchange-url-prod
         expo-public-authentik-social-login-mode-prod
+        database-url-prod
       )
       ;;
     *)
@@ -263,6 +270,7 @@ main() {
         expo-public-better-auth-url
         expo-public-auth-exchange-url
         expo-public-authentik-social-login-mode
+        database-url
       )
       ;;
   esac
@@ -275,6 +283,7 @@ main() {
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_ISSUER" "expo-public-authentik-issuer"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_CLIENT_ID" "expo-public-authentik-client-id"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE" "expo-public-authentik-login-entry-mode" "source"
+  export_env_from_ssm "DATABASE_URL" "database-url"
 
   case "$STAGE" in
     dev|*testnet*|*development*|dashboard-dev|backend-dev|backend-api-dev|api-dev|identity-dev|auth-dev|authentik-dev|admin-dev|backoffice-dev|backoffice-admin-dev)
@@ -284,22 +293,27 @@ main() {
       # Lambda-side vars: mode detection in better-auth-runtime.ts needs AUTH_BETTER_AUTH_URL
       # to enter embedded mode. Without these the Lambda silently falls back to Authentik.
       export_env_from_ssm "INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL" "infra-backend-api-auth-better-auth-url-dev" "https://testnet.api.alternun.co"
+      export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url-dev"
       export_env_from_ssm "AUTH_BETTER_AUTH_URL" "auth-better-auth-url-dev" "https://testnet.api.alternun.co"
       export_env_from_ssm "BETTER_AUTH_URL" "better-auth-url-dev" "https://testnet.api.alternun.co"
       export_env_from_ssm "ALTERNUN_TESTNET_MODE" "alternun-testnet-mode-dev" "on"
+      export_env_from_ssm "DATABASE_URL" "database-url-dev"
       ;;
     prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
       # Production still resolves the stage-specific Better Auth URLs; the execution provider
       # is derived from those resolved URLs below so the deploy contract stays consistent.
       export_env_from_ssm "INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL" "infra-backend-api-auth-better-auth-url-prod" "https://api.alternun.co"
+      export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url-prod"
       export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url-prod" "https://api.alternun.co/auth"
       export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url-prod" "https://api.alternun.co/auth/exchange"
       export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-prod" "authentik"
+      export_env_from_ssm "DATABASE_URL" "database-url-prod"
       ;;
     *)
       export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url" ""
       export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url" ""
       export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode" ""
+      export_env_from_ssm "DATABASE_URL" "database-url" ""
       ;;
   esac
 
@@ -310,6 +324,8 @@ main() {
   if [ -n "${EXPO_PUBLIC_AUTH_EXCHANGE_URL:-}" ]; then
     export AUTH_EXCHANGE_URL="${EXPO_PUBLIC_AUTH_EXCHANGE_URL}"
   fi
+
+  export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url"
 
   AUTH_EXECUTION_PROVIDER=$(resolve_auth_execution_provider)
   export AUTH_EXECUTION_PROVIDER
