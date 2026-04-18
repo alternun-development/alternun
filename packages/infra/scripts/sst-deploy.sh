@@ -2,6 +2,13 @@
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 INFRA_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
+REPO_ROOT=$(cd "$SCRIPT_DIR/../../.." && pwd)
+
+# Ensure correct AWS account credentials are loaded before any AWS operations
+if [ -f "$REPO_ROOT/scripts/setup-aws-account.sh" ]; then
+  # shellcheck source=/dev/null
+  source "$REPO_ROOT/scripts/setup-aws-account.sh"
+fi
 
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_load-infra-env.sh"
