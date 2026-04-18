@@ -20,28 +20,30 @@ fi
 
 ENV_FILE="$REPO_ROOT/.env"
 
-# Check if running in CodeBuild (has AWS credentials from IAM role)
-if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ -n "${AWS_EXECUTION_ENV:-}" ]; then
-  # Running in CodeBuild - use IAM role credentials
-  if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
-    echo "✅ Using CodeBuild IAM role credentials"
-    export AWS_REGION="${AWS_REGION:-us-east-1}"
-    bash "$REPO_ROOT/scripts/validate-aws-account.sh"
-    exit 0
-  fi
+# Check if running in CodeBuild (these env vars persist even after unsetting AWS_*)
+if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ -n "${CODEBUILD_BUILD_SUCCEEDING:-}" ] || [ -n "${CODEBUILD_SOURCE_VERSION:-}" ]; then
+  # Running in CodeBuild - use IAM role attached to the CodeBuild instance
+  # AWS CLI will automatically use the IAM role credentials from the instance metadata
+  echo "✅ Detected CodeBuild environment - using IAM role credentials"
+  export AWS_REGION="${AWS_REGION:-us-east-1}"
+  bash "$REPO_ROOT/scripts/validate-aws-account.sh"
+  exit 0
+fi
+
+# Check if credentials are already set in environment (from other CI systems or local shell)
+if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+  echo "✅ AWS credentials already set in environment"
+  export AWS_REGION="${AWS_REGION:-us-east-1}"
+  bash "$REPO_ROOT/scripts/validate-aws-account.sh"
+  exit 0
 fi
 
 # Local development - load from .env
 if [ ! -f "$ENV_FILE" ]; then
-  # Check if credentials are already set in environment (from CodeBuild or other source)
-  if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
-    echo "✅ AWS credentials already set in environment"
-    export AWS_REGION="${AWS_REGION:-us-east-1}"
-    bash "$REPO_ROOT/scripts/validate-aws-account.sh"
-    exit 0
-  fi
   echo "❌ ERROR: .env file not found at $ENV_FILE"
   echo "The .env file must exist with AWS credentials for local development."
+  echo ""
+  echo "For CodeBuild/CI environments: ensure CodeBuild IAM role is properly configured."
   exit 1
 fi
 
