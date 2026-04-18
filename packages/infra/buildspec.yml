@@ -108,6 +108,7 @@ env:
     # Safety-first: never delete existing DNS automatically during deploy.
     AUTO_REMOVE_CONFLICTING_DNS: 'false'
     INFRA_REMOVE_ACM_VALIDATION_CNAME: 'false'
+    INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS: 'false'
     INFRA_FAIL_ON_MANAGED_CERT_CNAME_CONFLICT: 'true'
     # Optional post-deploy DNS sync poll tuning (used only when enabled).
     POLL_TIMEOUT: '120'
@@ -122,8 +123,9 @@ env:
     INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS: '5'
     INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS: '20'
     INFRA_ENFORCE_REDIRECT_CHECKS: 'false'
-    # Recovery-only cleanup. The deploy script auto-runs this for dev redirect cutovers,
-    # but keep the flag explicit for manual recovery or alias migration runs.
+    # Recovery-only cleanup. The deploy script auto-runs this for dev redirect cutovers
+    # only when INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true, so keep the flag explicit for
+    # manual recovery or alias migration runs.
     INFRA_ENABLE_ALIAS_CLEANUP: 'false'
     INFRA_ENABLE_SST_DIFF: 'false'
     INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'true'

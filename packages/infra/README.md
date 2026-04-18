@@ -404,6 +404,7 @@ Important behavior:
 - the Google source bootstrap binds a username-mapping policy to `default-source-enrollment-prompt`, so first-time Google enrollments reuse the upstream email as the username and skip the manual Authentik username screen
 - the custom Google starter flow can optionally run `User Logout` before `SourceStage` when `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE=logout-then-source` is set, but that mode is still experimental and should not be treated as the default fix for stale browser sessions
 - the `Alternun Mobile` Authentik application tile defaults to the stage-specific AIRS auth entrypoint (`/auth?next=/`) so the tile opens the app instead of the Authentik library
+- live cleanup of CloudFront aliases, Route53 records, ACM validation CNAMEs, and legacy SST state is blocked unless `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true`
 - `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` (`better-auth` is the current testnet rollout path; keep `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` for the Authentik social-login path and Discord-visible testnet bundle)
 - in direct source mode, Authentik must keep `default-source-authentication` and `default-source-enrollment` open (`authentication=none`) and prune `UserLoginStage` from both flows; keeping `default-source-authentication-login` or `default-source-enrollment-login` causes Google callback loops or `SourceStage` token crashes instead of dashboard redirects
 - the identity deploy template reapplies the live Authentik source-stage runtime hotfix on every identity rollout so the `FlowToken` delete crash stays patched after redeploys
@@ -462,7 +463,9 @@ Config knobs:
 - `INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE`
 - `INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES` (CSV list of dev-stage aliases; defaults include `dev`, `demo`, and `beta`)
 - `INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN` (optional; infra auto-provisions a wildcard `*.airs.alternun.co` cert when multiple dev aliases are enabled)
-- `INFRA_REMOVE_ACM_VALIDATION_CNAME` (auto-cleans `_*.domain` ACM CNAME records when DNS auto-remove is enabled)
+- `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS` (default `false`; required for any live DNS/CDN/ACM/SST cleanup)
+- `INFRA_REMOVE_ACM_VALIDATION_CNAME` (auto-cleans `_*.domain` ACM CNAME records when DNS auto-remove is enabled and `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true`)
+- `INFRA_ENABLE_ALIAS_CLEANUP` (recovery-only; also requires `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true`)
 - `INFRA_REDIRECT_ROOT_DOMAIN`
 - `INFRA_REDIRECT_ROOT_TARGET`
 - `INFRA_REDIRECT_ROOT_CERT_ARN` (optional)

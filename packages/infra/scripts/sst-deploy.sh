@@ -322,6 +322,8 @@ remove_state_resource() {
     return 0
   fi
 
+  require_destructive_cleanup_allowed "SST state removal for ${target}"
+
   echo "Pruning legacy managed certificate state for ${target}..."
 
   local remove_output
@@ -588,6 +590,12 @@ cleanup_deploy_aliases() {
     cleanup_aliases+=("$alias_domain")
   done
 
+  if [ "${#cleanup_aliases[@]}" -eq 0 ]; then
+    return 0
+  fi
+
+  require_destructive_cleanup_allowed "CloudFront alias cleanup"
+
   remove_cloudfront_aliases "${cleanup_aliases[@]}"
 }
 
@@ -606,6 +614,14 @@ should_cleanup_deploy_aliases() {
   fi
 
   return 1
+}
+
+refresh_sst_state_after_alias_cleanup() {
+  echo "Refreshing SST state after CloudFront alias cleanup..."
+  (
+    cd "$INFRA_DIR"
+    env SST_TELEMETRY_DISABLED=1 npx sst refresh --stage "$STACK"
+  )
 }
 
 ensure_route53_hosted_zone_env() {
@@ -662,6 +678,8 @@ assert_pipeline_reconciliation_safe "$selected_pipeline_csv" "$STACK"
 
 if should_cleanup_deploy_aliases; then
   cleanup_deploy_aliases
+  # CloudFront was mutated outside SST, so refresh state before synthesis/deploy.
+  refresh_sst_state_after_alias_cleanup
 else
   echo "Skipping CloudFront alias cleanup (INFRA_ENABLE_ALIAS_CLEANUP=${INFRA_ENABLE_ALIAS_CLEANUP:-false})"
 fi
