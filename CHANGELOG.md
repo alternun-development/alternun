@@ -1,3 +1,11 @@
+## [1.0.148](https://github.com/alternun-development/alternun/compare/v1.0.147...v1.0.148) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** test(infra): .env, README, buildspec, \_pipeline-safety
+
+## [1.0.148](https://github.com/alternun-development/alternun/compare/v1.0.147...v1.0.148) (2026-04-18)
+
 ## [1.0.147](https://github.com/alternun-development/alternun/compare/v1.0.146...v1.0.147) (2026-04-17)
 
 ### Bug Fixes
