@@ -7,6 +7,8 @@
     "dev:better-auth": "node ./scripts/dev-better-auth.mjs",
     "build": "./build.sh",
     "start": "node dist/src/main.js",
+    "db:migrate": "node -r ts-node/register/transpile-only ./scripts/apply-migrations.ts",
+    "db:migrate:compiled": "node ./dist/scripts/apply-migrations.js",
     "type-check": "tsc --noEmit",
     "test": "node -r ts-node/register/transpile-only --test test/*.test.js"
   },
