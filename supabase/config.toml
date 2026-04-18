@@ -1,0 +1,9 @@
+# Supabase project configuration
+# To link this project: pnpm exec supabase link --project-ref rjebeugdvwbjpaktrrbx
+
+[api]
+enabled = true
+max_rows = 1000
+
+[db]
+major_version = 15
