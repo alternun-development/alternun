@@ -248,7 +248,7 @@
        fx="203.68"
        fy="133.92"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(0.92043684,0,0,0.96172911,110.16577,-140.81672)" />
+       gradientTransform="matrix(0.92043684,0,0,0.96172911,14.001107,-0.74125138)" />
     <radialGradient
        inkscape:collect="always"
        xlink:href="#glossGrad"
@@ -340,8 +340,8 @@
      ry="216.90224" />
   <!-- Top gloss highlight -->
   <ellipse
-     cx="345.79761"
-     cy="105.38594"
+     cx="249.63295"
+     cy="245.46141"
      fill="url(#glossGrad)"
      id="circle28"
      style="fill:url(#radialGradient31);stroke-width:0.940856"

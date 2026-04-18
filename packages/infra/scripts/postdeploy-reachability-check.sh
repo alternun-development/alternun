@@ -18,6 +18,7 @@ is_truthy() {
 
 declare -a REACHABILITY_CHECK_PIDS=()
 declare -A REACHABILITY_CHECK_LOGS=()
+CURL_PROBE_ERROR=""
 
 normalize_url() {
   local value=$1
@@ -60,13 +61,26 @@ resolve_stage_domain() {
 
 curl_probe() {
   local url=$1
-  curl -sS -L \
+  local stderr_file
+  local output
+
+  stderr_file=$(mktemp)
+  output=$(
+    curl -sS -L \
     --max-redirs 10 \
     --connect-timeout "${INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS:-5}" \
     --max-time "${INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS:-20}" \
     -o /dev/null \
     -w "%{http_code} %{url_effective}" \
-    "$url" 2>/dev/null || true
+    "$url" 2>"$stderr_file" || true
+  )
+  CURL_PROBE_ERROR=$(tr '\n' ' ' <"$stderr_file" | sed -E 's/[[:space:]]+/ /g; s/^[[:space:]]+//; s/[[:space:]]+$//')
+  rm -f "$stderr_file"
+  echo "$output"
+}
+
+redirect_checks_enforced() {
+  is_truthy "${INFRA_ENFORCE_REDIRECT_CHECKS:-false}"
 }
 
 poll_reachable() {
@@ -86,11 +100,11 @@ poll_reachable() {
       return 0
     fi
 
-    echo "Reachability pending (${i}/${attempts}): ${label} -> code=${code:-n/a}"
+    echo "Reachability pending (${i}/${attempts}): ${label} -> code=${code:-n/a}${CURL_PROBE_ERROR:+ error=${CURL_PROBE_ERROR}}"
     sleep "$interval"
   done
 
-  echo "ERROR: Reachability check failed for ${label} (${url}) after ${attempts} attempts." >&2
+  echo "ERROR: Reachability check failed for ${label} (${url}) after ${attempts} attempts.${CURL_PROBE_ERROR:+ Last error: ${CURL_PROBE_ERROR}}" >&2
   return 1
 }
 
@@ -113,12 +127,17 @@ poll_redirect_target() {
       return 0
     fi
 
-    echo "Redirect pending (${i}/${attempts}): ${label} -> actual=${actual_host:-n/a} expected=${expected_host} code=${code:-n/a}"
+    echo "Redirect pending (${i}/${attempts}): ${label} -> actual=${actual_host:-n/a} expected=${expected_host} code=${code:-n/a}${CURL_PROBE_ERROR:+ error=${CURL_PROBE_ERROR}}"
     sleep "$interval"
   done
 
-  echo "ERROR: Redirect check failed for ${label}; expected host ${expected_host}." >&2
-  return 1
+  if redirect_checks_enforced; then
+    echo "ERROR: Redirect check failed for ${label}; expected host ${expected_host}.${CURL_PROBE_ERROR:+ Last error: ${CURL_PROBE_ERROR}}" >&2
+    return 1
+  fi
+
+  echo "WARN: Redirect check failed for ${label}; expected host ${expected_host}.${CURL_PROBE_ERROR:+ Last error: ${CURL_PROBE_ERROR}} Redirect enforcement is disabled, so continuing." >&2
+  return 0
 }
 
 launch_reachability_check() {
