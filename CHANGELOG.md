@@ -1,3 +1,11 @@
+## [1.0.150](https://github.com/alternun-development/alternun/compare/v1.0.149...v1.0.150) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** test(repo,api): pnpm-lock, fastify-compat.test
+
+## [1.0.150](https://github.com/alternun-development/alternun/compare/v1.0.149...v1.0.150) (2026-04-18)
+
 ## [1.0.149](https://github.com/alternun-development/alternun/compare/v1.0.148...v1.0.149) (2026-04-18)
 
 ### Bug Fixes
