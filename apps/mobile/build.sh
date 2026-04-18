@@ -140,6 +140,8 @@ EXPO_PUBLIC_SUPABASE_KEY=sb_publishable_REDACTED_SUPABASE_KEY_SUFFIX_p1Mv2Nze
 EXPO_PUBLIC_RELEASE_UPDATE_MODE=on
 EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=60000
 ENVFILE
+      echo "✓ Generated .env.development with testnet URLs" >&2
+      grep "EXPO_PUBLIC_BETTER_AUTH_URL" .env.development >&2
       ;;
     prod|*production*)
       cat > .env.production << 'ENVFILE'
@@ -158,6 +160,8 @@ EXPO_PUBLIC_SUPABASE_KEY=sb_publishable_REDACTED_SUPABASE_KEY_SUFFIX_p1Mv2Nze
 EXPO_PUBLIC_RELEASE_UPDATE_MODE=on
 EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=300000
 ENVFILE
+      echo "✓ Generated .env.production with prod URLs" >&2
+      grep "EXPO_PUBLIC_BETTER_AUTH_URL" .env.production >&2
       ;;
   esac
 fi
