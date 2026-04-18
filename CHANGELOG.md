@@ -1,3 +1,45 @@
+## [1.0.158](https://github.com/alternun-development/alternun/compare/v1.0.157...v1.0.158) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** fix(api,mobile,repo): .env, build, apply-migrations, empty-module
+- **repo:** fix(auth): establish consistent signup routing standard
+- **repo:** fix(auth): handle Better Auth endpoint discovery
+- **repo:** fix(auth): improve signup error handling with proper typing
+- **repo:** fix(api): add proper typing and eslint-disable comments to Lambda handler
+
+### Bug Fixes
+
+- **api,mobile,repo:** .env, build, apply-migrations, empty-module ([855ed21](https://github.com/alternun-development/alternun/commit/855ed2134eadb34c58f73a972546968c850549e4))
+- **api:** add proper typing and eslint-disable comments to Lambda handler ([10d1a99](https://github.com/alternun-development/alternun/commit/10d1a9954631fcb3c47ce713b781f0b06c6bb57c))
+- **auth:** deploy API with DATABASE_URL environment variable ([9f43782](https://github.com/alternun-development/alternun/commit/9f4378261384d13f7f7e2b732ef2ada0ec7991bf))
+- **auth:** establish consistent signup routing standard ([8b6c01b](https://github.com/alternun-development/alternun/commit/8b6c01bda9cdc8266d21137b805e9a34e0adce39))
+- **auth:** handle Better Auth endpoint discovery ([3b6d609](https://github.com/alternun-development/alternun/commit/3b6d6094c71ade9b588938531e3fed820ad23ff3))
+- **auth:** improve signup error handling with proper typing ([6fc11ca](https://github.com/alternun-development/alternun/commit/6fc11ca24629f52ce7932113284fe98488953bbf))
+- **auth:** resolve DATABASE_URL from AWS Secrets Manager for Better Auth ([7ee5876](https://github.com/alternun-development/alternun/commit/7ee58767fd12d5f895050cfc6c85a1dc95861c69))
+- **infra:** ensure sst-deploy.sh loads correct AWS account credentials ([79fc5d3](https://github.com/alternun-development/alternun/commit/79fc5d30b81abe25bc3d22a9b403ace3740845b9))
+- **mobile:** force set correct auth URLs before Expo export to prevent localhost ([5ee6dbe](https://github.com/alternun-development/alternun/commit/5ee6dbeb51938c630131f62b0acab02512c2bb3d))
+- **mobile:** update .env files BEFORE @alternun/auth build to prevent localhost ([0eb680f](https://github.com/alternun-development/alternun/commit/0eb680f35b5285c59f431a25aeb54011450bcb7b))
+- **mobile:** update .env files BEFORE load_env_vars to ensure correct stage URLs ([af59b29](https://github.com/alternun-development/alternun/commit/af59b297e931f1e4b270b31301a1ec67c9826b26))
+- **mobile:** write stage-specific .env files before Expo export to ensure correct URLs ([cfb6e26](https://github.com/alternun-development/alternun/commit/cfb6e261308bd7ea2532bd0a2d19c96ea08328f0))
+
+## [1.0.158](https://github.com/alternun-development/alternun/compare/v1.0.157...v1.0.158) (2026-04-18)
+
+### Bug Fixes
+
+- **api,mobile,repo:** .env, build, apply-migrations, empty-module ([855ed21](https://github.com/alternun-development/alternun/commit/855ed2134eadb34c58f73a972546968c850549e4))
+- **api:** add proper typing and eslint-disable comments to Lambda handler ([10d1a99](https://github.com/alternun-development/alternun/commit/10d1a9954631fcb3c47ce713b781f0b06c6bb57c))
+- **auth:** deploy API with DATABASE_URL environment variable ([9f43782](https://github.com/alternun-development/alternun/commit/9f4378261384d13f7f7e2b732ef2ada0ec7991bf))
+- **auth:** establish consistent signup routing standard ([8b6c01b](https://github.com/alternun-development/alternun/commit/8b6c01bda9cdc8266d21137b805e9a34e0adce39))
+- **auth:** handle Better Auth endpoint discovery ([3b6d609](https://github.com/alternun-development/alternun/commit/3b6d6094c71ade9b588938531e3fed820ad23ff3))
+- **auth:** improve signup error handling with proper typing ([6fc11ca](https://github.com/alternun-development/alternun/commit/6fc11ca24629f52ce7932113284fe98488953bbf))
+- **auth:** resolve DATABASE_URL from AWS Secrets Manager for Better Auth ([7ee5876](https://github.com/alternun-development/alternun/commit/7ee58767fd12d5f895050cfc6c85a1dc95861c69))
+- **infra:** ensure sst-deploy.sh loads correct AWS account credentials ([79fc5d3](https://github.com/alternun-development/alternun/commit/79fc5d30b81abe25bc3d22a9b403ace3740845b9))
+- **mobile:** force set correct auth URLs before Expo export to prevent localhost ([5ee6dbe](https://github.com/alternun-development/alternun/commit/5ee6dbeb51938c630131f62b0acab02512c2bb3d))
+- **mobile:** update .env files BEFORE @alternun/auth build to prevent localhost ([0eb680f](https://github.com/alternun-development/alternun/commit/0eb680f35b5285c59f431a25aeb54011450bcb7b))
+- **mobile:** update .env files BEFORE load_env_vars to ensure correct stage URLs ([af59b29](https://github.com/alternun-development/alternun/commit/af59b297e931f1e4b270b31301a1ec67c9826b26))
+- **mobile:** write stage-specific .env files before Expo export to ensure correct URLs ([cfb6e26](https://github.com/alternun-development/alternun/commit/cfb6e261308bd7ea2532bd0a2d19c96ea08328f0))
+
 ## [1.0.157](https://github.com/alternun-development/alternun/compare/v1.0.156...v1.0.157) (2026-04-18)
 
 ### Bug Fixes

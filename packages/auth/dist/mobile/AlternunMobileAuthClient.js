@@ -502,8 +502,7 @@ export class AlternunMobileAuthClient {
         }
     }
     async signInWithGoogle(redirectTo) {
-        let baseUrl = process.env.REACT_APP_API_URL ||
-            process.env.EXPO_PUBLIC_API_URL;
+        let baseUrl = process.env.REACT_APP_API_URL || process.env.EXPO_PUBLIC_API_URL;
         if (!baseUrl && typeof window !== 'undefined') {
             const origin = window.location.origin;
             const url = new URL(origin);
@@ -569,8 +568,7 @@ export class AlternunMobileAuthClient {
         this.linkedWallet = null;
         this.walletSessionToken = null;
         const emailTemplateLocale = normalizeEmailTemplateLocale(locale);
-        let baseUrl = process.env.REACT_APP_API_URL ||
-            process.env.EXPO_PUBLIC_API_URL;
+        let baseUrl = process.env.REACT_APP_API_URL || process.env.EXPO_PUBLIC_API_URL;
         if (!baseUrl && typeof window !== 'undefined') {
             const origin = window.location.origin;
             const url = new URL(origin);
