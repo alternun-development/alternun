@@ -1,3 +1,19 @@
+## [1.0.157](https://github.com/alternun-development/alternun/compare/v1.0.156...v1.0.157) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n): build
+
+### Bug Fixes
+
+- **mobile,i18n:** build ([65ecd09](https://github.com/alternun-development/alternun/commit/65ecd09bfbb2afff9a978717a41af602b3180a1f))
+
+## [1.0.157](https://github.com/alternun-development/alternun/compare/v1.0.156...v1.0.157) (2026-04-18)
+
+### Bug Fixes
+
+- **mobile,i18n:** build ([65ecd09](https://github.com/alternun-development/alternun/commit/65ecd09bfbb2afff9a978717a41af602b3180a1f))
+
 ## [1.0.156](https://github.com/alternun-development/alternun/compare/v1.0.155...v1.0.156) (2026-04-18)
 
 ### Bug Fixes
