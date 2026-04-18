@@ -49,6 +49,28 @@ function readEnvValue(env, keys, fallback) {
     }
     return fallback;
 }
+function stripTrailingSlashes(value) {
+    let result = value;
+    while (result.endsWith('/')) {
+        result = result.slice(0, -1);
+    }
+    return result;
+}
+function stripSuffix(value, suffix) {
+    return value.endsWith(suffix) ? value.slice(0, -suffix.length) : value;
+}
+function stripQueryAndFragment(value) {
+    const queryIndex = value.indexOf('?');
+    const hashIndex = value.indexOf('#');
+    let endIndex = value.length;
+    if (queryIndex >= 0) {
+        endIndex = Math.min(endIndex, queryIndex);
+    }
+    if (hashIndex >= 0) {
+        endIndex = Math.min(endIndex, hashIndex);
+    }
+    return value.slice(0, endIndex);
+}
 function normalizeBetterAuthBaseUrl(value) {
     const trimmed = value.trim();
     if (!trimmed) {
@@ -56,22 +78,14 @@ function normalizeBetterAuthBaseUrl(value) {
     }
     try {
         const url = new URL(trimmed);
-        const normalizedPath = url.pathname
-            .replace(/\/+$/, '')
-            .replace(/\/auth\/exchange$/, '')
-            .replace(/\/auth$/, '');
+        const normalizedPath = stripSuffix(stripSuffix(stripTrailingSlashes(url.pathname), '/auth/exchange'), '/auth');
         url.pathname = normalizedPath || '/';
         url.search = '';
         url.hash = '';
-        return `${url.origin}${url.pathname === '/' ? '' : url.pathname}`.replace(/\/+$/, '');
+        return stripTrailingSlashes(`${url.origin}${url.pathname === '/' ? '' : url.pathname}`);
     }
     catch {
-        return trimmed
-            .replace(/\?.*$/, '')
-            .replace(/#.*$/, '')
-            .replace(/\/+$/, '')
-            .replace(/\/auth\/exchange$/, '')
-            .replace(/\/auth$/, '');
+        return stripSuffix(stripSuffix(stripTrailingSlashes(stripQueryAndFragment(trimmed)), '/auth/exchange'), '/auth');
     }
 }
 export function resolveBetterAuthBaseUrl(env) {
