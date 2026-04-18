@@ -504,7 +504,9 @@ export class AlternunMobileAuthClient {
     async signInWithGoogle(redirectTo) {
         const baseUrl = typeof window !== 'undefined'
             ? `${window.location.protocol}//${window.location.host}`
-            : process.env.REACT_APP_API_URL || process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+            : process.env.REACT_APP_API_URL ||
+                process.env.EXPO_PUBLIC_API_URL ||
+                'http://localhost:3000';
         try {
             const response = await fetch(`${baseUrl}/auth/sign-in/social`, {
                 method: 'POST',
@@ -565,7 +567,9 @@ export class AlternunMobileAuthClient {
         const emailTemplateLocale = normalizeEmailTemplateLocale(locale);
         const baseUrl = typeof window !== 'undefined'
             ? `${window.location.protocol}//${window.location.host}`
-            : process.env.REACT_APP_API_URL || process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+            : process.env.REACT_APP_API_URL ||
+                process.env.EXPO_PUBLIC_API_URL ||
+                'http://localhost:3000';
         const response = await fetch(`${baseUrl}/auth/signup`, {
             method: 'POST',
             headers: {
@@ -607,11 +611,17 @@ export class AlternunMobileAuthClient {
         }
         return {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            needsEmailVerification: typeof (data === null || data === void 0 ? void 0 : data.needsEmailVerification) === 'boolean' ? data.needsEmailVerification : true,
+            needsEmailVerification: typeof (data === null || data === void 0 ? void 0 : data.needsEmailVerification) === 'boolean'
+                ? data.needsEmailVerification
+                : true,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            emailAlreadyRegistered: typeof (data === null || data === void 0 ? void 0 : data.emailAlreadyRegistered) === 'boolean' ? data.emailAlreadyRegistered : false,
+            emailAlreadyRegistered: typeof (data === null || data === void 0 ? void 0 : data.emailAlreadyRegistered) === 'boolean'
+                ? data.emailAlreadyRegistered
+                : false,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            confirmationEmailSent: typeof (data === null || data === void 0 ? void 0 : data.confirmationEmailSent) === 'boolean' ? data.confirmationEmailSent : false,
+            confirmationEmailSent: typeof (data === null || data === void 0 ? void 0 : data.confirmationEmailSent) === 'boolean'
+                ? data.confirmationEmailSent
+                : false,
         };
     }
     async resendEmailConfirmation(email) {
