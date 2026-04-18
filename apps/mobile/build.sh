@@ -134,7 +134,7 @@ pnpm --filter @alternun/auth build
 pnpm --filter @alternun/update build
 
 # Generate PWA icons (before export-assets so they're available in public/)
-python3 scripts/generate-pwa-icons.py
+node scripts/generate-pwa-icons.mjs
 
 node ../../packages/update/scripts/export-assets.mjs --target-dir public
 disable_expo_dotenv_if_needed
