@@ -15,6 +15,7 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
   assert.match(source, /source "\$\{INFRA_PATH\}\/scripts\/resolve-ssm-env\.sh"/);
   assert.match(source, /source "\$\{INFRA_PATH\}\/scripts\/resolve-secrets-manager-env\.sh"/);
   assert.match(source, /canonical SSM helper/);
+  assert.match(source, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS: 'false'/);
   assert.match(
     helperSource,
     /unset\s+\\[\s\S]*?AUTH_EXECUTION_PROVIDER[\s\S]*?EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER/

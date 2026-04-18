@@ -74,6 +74,7 @@ void test('infra redirect config supports demo and beta aliases for testnet', ()
   assert.match(postdeploySource, /INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES/);
   assert.match(postdeploySource, /run_reachability_checks_in_parallel\(\)/);
   assert.match(postdeploySource, /launch_reachability_check\(/);
+  assert.match(sstDeploySource, /Refreshing SST state after CloudFront alias cleanup/);
   assert.match(sstDeploySource, /remove_cloudfront_aliases_from_distribution\(/);
   assert.match(sstDeploySource, /declare -A dist_aliases=/);
   assert.match(sstDeploySource, /\.Aliases \|= del\(\.Items\)/);

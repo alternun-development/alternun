@@ -20,6 +20,9 @@ is_truthy() {
   esac
 }
 
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/_pipeline-safety.sh"
+
 resolve_hz_id() {
   local root_domain=${DOMAIN_ROOT:-}
   if [ -z "$root_domain" ]; then
@@ -49,7 +52,7 @@ report_managed_cert_conflict() {
     return 0
   fi
 
-  guidance="Set ${cert_env_name} to reuse an existing ACM certificate, or enable AUTO_REMOVE_CONFLICTING_DNS=true and INFRA_REMOVE_ACM_VALIDATION_CNAME=true if you intend to replace the validation records."
+  guidance="Set ${cert_env_name} to reuse an existing ACM certificate, or enable AUTO_REMOVE_CONFLICTING_DNS=true, INFRA_REMOVE_ACM_VALIDATION_CNAME=true, and INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true if you intend to replace the validation records."
 
   if is_truthy "$fail_on_conflict"; then
     echo "ERROR: Existing ACM validation CNAME records for ${domain_name} will conflict with managed certificate creation." >&2
@@ -89,6 +92,8 @@ delete_conflicting_dns_records() {
     echo "ERROR: jq is required to auto-remove conflicting DNS records." >&2
     return 1
   fi
+
+  require_destructive_cleanup_allowed "Route53 DNS record deletion for ${record_name}"
 
   echo "AUTO_REMOVE_CONFLICTING_DNS=true — deleting conflicting records for ${record_name}"
   echo "$existing" | jq -c '.[]' | while read -r rec; do
@@ -148,6 +153,8 @@ delete_acm_validation_cname_records() {
     echo "ERROR: jq is required to auto-remove ACM validation CNAME records." >&2
     return 1
   fi
+
+  require_destructive_cleanup_allowed "ACM validation CNAME deletion for ${domain_name}"
 
   echo "AUTO_REMOVE_CONFLICTING_DNS=true — deleting ACM validation CNAME records for ${domain_name}"
   echo "$existing" | jq -c '.[]' | while read -r rec; do
