@@ -65,8 +65,10 @@ load_env_vars() {
     fi
   fi
 
-  # Local overrides (highest priority, can override everything)
-  load_env_file .env.local true
+  # Local overrides (only in local dev, skip in CI/CD)
+  if [ -z "${CODEBUILD_BUILD_ID:-}" ] && [ "${CI:-}" != "true" ]; then
+    load_env_file .env.local true
+  fi
 }
 
 disable_expo_dotenv_if_needed() {
