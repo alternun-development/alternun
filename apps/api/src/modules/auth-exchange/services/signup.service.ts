@@ -30,86 +30,101 @@ export class SignupService {
         throw new Error('CONFIG_ERROR: Better Auth URL not configured');
       }
 
-      const signUpUrl = `${betterAuthUrl.replace(/\/+$/, '')}/sign-up/email`;
+      // Better Auth endpoints: try common paths
+      const signUpUrls = [
+        `${betterAuthUrl.replace(/\/+$/, '')}/api/auth/sign-up/email`,
+        `${betterAuthUrl.replace(/\/+$/, '')}/auth/api/sign-up/email`,
+        `${betterAuthUrl.replace(/\/+$/, '')}/sign-up/email`,
+      ];
 
-      this.logger.debug('Attempting signup via Better Auth', { email, url: signUpUrl });
+      let lastError: Error | null = null;
 
-      const response = await fetch(signUpUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          name: email.split('@')[0],
-          ...(locale ? { data: { locale } } : {}),
-        }),
-      });
+      for (const signUpUrl of signUpUrls) {
+        try {
+          this.logger.debug('Attempting signup via Better Auth', { email, url: signUpUrl });
 
-      const contentType = response.headers.get('content-type');
-      let data: BetterAuthResponse | null = null;
+          const response = await fetch(signUpUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email,
+              password,
+              name: email.split('@')[0],
+              ...(locale ? { data: { locale } } : {}),
+            }),
+          });
 
-      try {
-        if (contentType?.includes('application/json')) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          data = await response.json();
+          const contentType = response.headers.get('content-type');
+          let data: BetterAuthResponse | null = null;
+
+          try {
+            if (contentType?.includes('application/json')) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              data = await response.json();
+            }
+          } catch (parseError) {
+            const text = await response.text();
+            this.logger.debug('Response not JSON', {
+              email,
+              status: response.status,
+              contentType,
+              preview: text.substring(0, 100),
+            });
+          }
+
+          if (response.ok && data) {
+            this.logger.debug('Signup successful', { email });
+            if (data.user) {
+              return {
+                needsEmailVerification: true,
+                emailAlreadyRegistered: false,
+                confirmationEmailSent: true,
+              };
+            }
+            return {
+              needsEmailVerification: true,
+              emailAlreadyRegistered: false,
+              confirmationEmailSent: false,
+            };
+          }
+
+          if (response.ok) {
+            return {
+              needsEmailVerification: true,
+              emailAlreadyRegistered: false,
+              confirmationEmailSent: false,
+            };
+          }
+
+          if (response.status !== 404) {
+            const errorMessage = this.extractErrorMessage(data, response.status);
+
+            if (
+              errorMessage.toLowerCase().includes('already') ||
+              errorMessage.toLowerCase().includes('exists')
+            ) {
+              return {
+                needsEmailVerification: true,
+                emailAlreadyRegistered: true,
+                confirmationEmailSent: false,
+              };
+            }
+
+            lastError = new Error(`PROVIDER_ERROR: ${errorMessage}`);
+            break;
+          }
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
         }
-      } catch (parseError) {
-        const text = await response.text();
-        this.logger.error('Failed to parse response as JSON', {
-          email,
-          status: response.status,
-          contentType,
-          responseText: text.substring(0, 500),
-        });
       }
 
-      this.logger.debug('Better Auth signup response', {
-        email,
-        status: response.status,
-        hasData: !!data,
-      });
-
-      if (!response.ok) {
-        const errorMessage = this.extractErrorMessage(data, response.status);
-
-        this.logger.error('Better Auth signup error', {
-          email,
-          error: errorMessage,
-          status: response.status,
-        });
-
-        if (
-          errorMessage.toLowerCase().includes('already') ||
-          errorMessage.toLowerCase().includes('exists')
-        ) {
-          return {
-            needsEmailVerification: true,
-            emailAlreadyRegistered: true,
-            confirmationEmailSent: false,
-          };
-        }
-
-        throw new Error(`PROVIDER_ERROR: ${errorMessage}`);
+      if (lastError) {
+        throw lastError;
       }
 
-      // If signup was successful, user should be created
-      if (data?.user) {
-        this.logger.debug('User created successfully', { email });
-        return {
-          needsEmailVerification: true,
-          emailAlreadyRegistered: false,
-          confirmationEmailSent: true,
-        };
-      }
-
-      this.logger.warn('Unexpected signup response', { data, email });
-      return {
-        needsEmailVerification: true,
-        emailAlreadyRegistered: false,
-        confirmationEmailSent: false,
-      };
+      throw new Error('PROVIDER_ERROR: No valid Better Auth endpoint found. Check configuration.');
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error('Signup service error', { email, error: message });
