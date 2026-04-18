@@ -95,10 +95,18 @@ async function runMigration(client: PoolClient, migration: Migration): Promise<v
 }
 
 export async function initMigrations(): Promise<void> {
+  const migrationsEnabled =
+    process.env.RUN_MIGRATIONS !== 'false' && process.env.RUN_MIGRATIONS !== '0';
+
+  if (!migrationsEnabled) {
+    console.warn('[migrations] Disabled via RUN_MIGRATIONS=false, skipping');
+    return;
+  }
+
   const databaseUrl = process.env.DATABASE_URL ?? process.env.SUPABASE_DATABASE_URL;
 
   if (!databaseUrl) {
-    console.warn('⚠️  DATABASE_URL not set, skipping migrations');
+    console.warn('[migrations] DATABASE_URL not set, skipping');
     return;
   }
 
