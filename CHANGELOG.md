@@ -1,3 +1,28 @@
+## [1.0.156](https://github.com/alternun-development/alternun/compare/v1.0.155...v1.0.156) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** fix(api,infra): better-auth-cors, infra.config
+- **repo:** feat: make migrations optional (opt-in) by default
+
+### Bug Fixes
+
+- **api,infra:** better-auth-cors, infra.config ([ae734b5](https://github.com/alternun-development/alternun/commit/ae734b5c60aca5da52600e99f3ae5977dfc06fe6))
+
+### Features
+
+- make migrations optional (opt-in) by default ([a82735d](https://github.com/alternun-development/alternun/commit/a82735d52a735205871f9f0f9cdd8d9b7b79f62a))
+
+## [1.0.156](https://github.com/alternun-development/alternun/compare/v1.0.155...v1.0.156) (2026-04-18)
+
+### Bug Fixes
+
+- **api,infra:** better-auth-cors, infra.config ([ae734b5](https://github.com/alternun-development/alternun/commit/ae734b5c60aca5da52600e99f3ae5977dfc06fe6))
+
+### Features
+
+- make migrations optional (opt-in) by default ([a82735d](https://github.com/alternun-development/alternun/commit/a82735d52a735205871f9f0f9cdd8d9b7b79f62a))
+
 ## [1.0.155](https://github.com/alternun-development/alternun/compare/v1.0.153...v1.0.155) (2026-04-18)
 
 ### Bug Fixes
