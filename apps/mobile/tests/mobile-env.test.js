@@ -129,12 +129,15 @@ describe('mobile-env', () => {
   });
 
   it('treats dashboard-dev as the testnet deploy stage instead of falling back to localhost', () => {
+    const mobileRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'alternun-mobile-root-'));
+
     expect(
       resolveMobileBuildAuthEnv(
         {
           STACK: 'dashboard-dev',
         },
         {
+          mobileRoot,
           infraEnv: {
             EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
             EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
@@ -146,8 +149,8 @@ describe('mobile-env', () => {
     ).toMatchObject({
       AUTH_EXECUTION_PROVIDER: 'better-auth',
       EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
-      AUTH_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
-      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
+      AUTH_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
       AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
       EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
       EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
