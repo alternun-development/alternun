@@ -94,8 +94,8 @@ require_destructive_cleanup_allowed() {
     return 0
   fi
 
-  echo "ERROR: Refusing ${action} because INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=false." >&2
-  echo "ERROR: Set INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true only for intentional recovery runs that must delete live DNS, CloudFront aliases, ACM validation CNAMEs, or SST state." >&2
+  echo "WARN: Skipping ${action} because INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=false." >&2
+  echo "WARN: Set INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true only for intentional recovery runs that must delete live DNS, CloudFront aliases, ACM validation CNAMEs, or SST state." >&2
   return 1
 }
 
