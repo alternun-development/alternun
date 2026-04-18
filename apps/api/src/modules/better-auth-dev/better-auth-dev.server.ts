@@ -2,8 +2,10 @@ import { createServer, type Server } from 'node:http';
 import { betterAuth } from 'better-auth';
 import { toNodeHandler } from 'better-auth/node';
 import { oAuthProxy } from 'better-auth/plugins/oauth-proxy';
-import { memory } from 'better-auth/adapters';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import type { BetterAuthDevConfig, BetterAuthDevOAuthProxyConfig } from './better-auth-dev.config';
+import { getDatabase } from '../../common/database/connection';
+import * as betterAuthSchema from '../../common/database/better-auth.schema';
 
 function stripTrailingSlash(url: string): string {
   return url.replace(/\/+$/, '');
@@ -38,7 +40,8 @@ function buildOAuthProxyPlugin(
 
 export function createBetterAuthDevAuth(
   config: BetterAuthDevConfig
-): ReturnType<typeof betterAuth> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
   const oauthProxyPlugin = buildOAuthProxyPlugin(config.oauthProxy);
   const effectiveRedirectBaseURL =
     config.oauthProxy.enabled && config.oauthProxy.productionURL
@@ -91,15 +94,20 @@ export function createBetterAuthDevAuth(
   ]);
 
   const isProduction = process.env.NODE_ENV === 'production';
+  const db = getDatabase();
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   return betterAuth({
     appName: 'Alternun Dev Better Auth',
     baseURL: config.baseURL,
     basePath: '/auth',
     secret: config.secret,
     trustedOrigins,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-    database: memory(),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    database: drizzleAdapter(db, {
+      provider: 'pg',
+      schema: betterAuthSchema,
+    }),
     plugins: oauthProxyPlugin ? [oauthProxyPlugin] : [],
     socialProviders,
     emailAndPassword: {
@@ -130,7 +138,9 @@ export function createBetterAuthDevAuth(
 }
 
 export function createBetterAuthDevServer(config: BetterAuthDevConfig): Server {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const auth = createBetterAuthDevAuth(config);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
   const authHandler = toNodeHandler(auth.handler);
 
   return createServer((req, res) => {
