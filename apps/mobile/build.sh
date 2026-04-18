@@ -65,8 +65,13 @@ load_env_vars() {
     fi
   fi
 
-  # Local overrides (only in local dev, skip in CI/CD)
-  if [ -z "${CODEBUILD_BUILD_ID:-}" ] && [ "${CI:-}" != "true" ]; then
+  # Local overrides (only in local dev, skip in CI/CD and SST deployments)
+  local is_deployment=false
+  if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ "${CI:-}" = "true" ] || [ -n "${SST_STAGE:-}" ] || [ -n "${STACK:-}" ]; then
+    is_deployment=true
+  fi
+
+  if [ "$is_deployment" = "false" ]; then
     load_env_file .env.local true
   fi
 }
@@ -141,6 +146,25 @@ node scripts/generate-pwa-icons.mjs
 node ../../packages/update/scripts/export-assets.mjs --target-dir public
 disable_expo_dotenv_if_needed
 clear_metro_cache_if_needed
+
+# CRITICAL: Force set auth URL based on stage to prevent stale localhost values
+detected_stage="${SST_STAGE:-${STACK:-${EXPO_PUBLIC_STAGE:-${EXPO_PUBLIC_ENV:-}}}}"
+if [ -n "$detected_stage" ]; then
+  detected_stage_lower=$(echo "$detected_stage" | tr '[:upper:]' '[:lower:]')
+  case "$detected_stage_lower" in
+    dev|*testnet*|*development*|*preview*)
+      export EXPO_PUBLIC_BETTER_AUTH_URL="https://testnet.api.alternun.co/auth"
+      export EXPO_PUBLIC_API_URL="https://testnet.api.alternun.co"
+      export EXPO_PUBLIC_AUTH_EXCHANGE_URL="https://testnet.api.alternun.co/auth/exchange"
+      ;;
+    prod|*production*)
+      export EXPO_PUBLIC_BETTER_AUTH_URL="https://api.alternun.co/auth"
+      export EXPO_PUBLIC_API_URL="https://api.alternun.co"
+      export EXPO_PUBLIC_AUTH_EXCHANGE_URL="https://api.alternun.co/auth/exchange"
+      ;;
+  esac
+fi
+
 if [ "${EXPO_EXPORT_CLEAR_CACHE:-0}" = "1" ]; then
   npx expo export -p web --clear
 else
