@@ -1,6 +1,6 @@
 import './bootstrap-env';
 import 'reflect-metadata';
-import { initMigrations } from './scripts/run-migrations-lambda';
+import { initMigrations } from '../scripts/run-migrations-lambda';
 import { createApp } from './common/bootstrap/create-app';
 
 async function bootstrap(): Promise<void> {

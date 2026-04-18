@@ -1,6 +1,6 @@
 {
   "name": "@alternun/update",
-  "version": "1.0.153",
+  "version": "1.0.154",
   "description": "Shared release update detection and service worker helpers for Alternun web apps",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
