@@ -21,6 +21,17 @@ export async function createApp(): Promise<NestFastifyApplication> {
     origin: true,
     credentials: true,
   });
+
+  // Ensure CORS headers are sent for all responses, including errors
+  const fastify = app.getHttpAdapter().getInstance();
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  fastify.addHook('onSend', (request, reply) => {
+    if (!reply.hasHeader('Access-Control-Allow-Origin')) {
+      void reply.header('Access-Control-Allow-Origin', request.headers.origin ?? '*');
+      void reply.header('Access-Control-Allow-Credentials', 'true');
+    }
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -30,7 +41,6 @@ export async function createApp(): Promise<NestFastifyApplication> {
   );
 
   setupOpenApi(app);
-  const fastify = app.getHttpAdapter().getInstance();
   const betterAuth = resolveBetterAuthBootstrapConfig(process.env);
 
   if (betterAuth.mode === 'proxy' && betterAuth.targetBaseUrl) {
