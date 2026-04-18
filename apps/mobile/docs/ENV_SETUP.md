@@ -178,7 +178,7 @@ The process happens in `apps/mobile/build.sh`:
 
    d) pnpm --filter @alternun/auth build
    e) pnpm --filter @alternun/update build
-   f) python3 scripts/generate-pwa-icons.py
+   f) node scripts/generate-pwa-icons.mjs
    g) node ../../packages/update/scripts/export-assets.mjs
    h) disable_expo_dotenv_if_needed()
       └─> Sets EXPO_NO_DOTENV=1 (Expo won't load .env again)
