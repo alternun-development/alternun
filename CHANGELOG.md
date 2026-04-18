@@ -1,3 +1,51 @@
+## [1.0.153](https://github.com/alternun-development/alternun/compare/v1.0.151...v1.0.153) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): apply-migrations-local
+- **repo:** chore: add secure deployment automation with AWS Secrets
+- **repo:** feat: wire DATABASE_URL to Lambda and make migrations optional
+- **repo:** refactor: make database migrations scalable and maintainable
+- **repo:** docs: add Supabase migration and deployment guides
+
+### Bug Fixes
+
+- **api:** add in-memory database adapter to Better Auth ([e42c9bf](https://github.com/alternun-development/alternun/commit/e42c9bf4072f134d59bcba8c9b6e803d6fb101bc))
+- **api:** ensure CORS headers sent for all responses including errors ([0e52831](https://github.com/alternun-development/alternun/commit/0e52831feae46eda1c8ee3ea3cf492f90c9a6a83))
+- **ci:** add sanitize-html types ([d3ba202](https://github.com/alternun-development/alternun/commit/d3ba20225071a598232733791611fa7141b619dc))
+- **ci:** address codeql alerts in auth helpers ([6547da8](https://github.com/alternun-development/alternun/commit/6547da8be6670bff4e001d831f8e2462cf2b8735))
+- **ci:** generate mobile icons with sharp ([e882f69](https://github.com/alternun-development/alternun/commit/e882f698a9a07d30a63b9e8646b1bbde74d0d639))
+- **ci:** invoke turbo directly for build matrix ([1dcaf0d](https://github.com/alternun-development/alternun/commit/1dcaf0da1a10e5119e62c54888892b0aa17450f1))
+- **ci:** make mobile env test deterministic ([f4153f0](https://github.com/alternun-development/alternun/commit/f4153f04eb5bf290b47f3280ba730e2bd89f6cdc))
+- **ci:** refresh audit pin and mobile env tests ([63811f7](https://github.com/alternun-development/alternun/commit/63811f73bab19e13e2cea6a25a81b2f4f85f6bc3))
+- **ci:** target workspace packages in build matrix ([92610aa](https://github.com/alternun-development/alternun/commit/92610aaea8bf4fec5cfcdd26b83e576c81eca2cc))
+- **ci:** update lockfile for api sanitize-html ([80ab38a](https://github.com/alternun-development/alternun/commit/80ab38aaf59a3c7e21bd223ad9117fa2301cf5fa))
+
+### Features
+
+- **auth:** integrate Better Auth with Supabase PostgreSQL database ([5f899b9](https://github.com/alternun-development/alternun/commit/5f899b9b241124613c42027661a28c4c93027b95))
+- wire DATABASE_URL to Lambda and make migrations optional ([11776be](https://github.com/alternun-development/alternun/commit/11776beafa92d20e8730a2fd1377ce3bdaf9078c))
+
+## [1.0.153](https://github.com/alternun-development/alternun/compare/v1.0.151...v1.0.153) (2026-04-18)
+
+### Bug Fixes
+
+- **api:** add in-memory database adapter to Better Auth ([e42c9bf](https://github.com/alternun-development/alternun/commit/e42c9bf4072f134d59bcba8c9b6e803d6fb101bc))
+- **api:** ensure CORS headers sent for all responses including errors ([0e52831](https://github.com/alternun-development/alternun/commit/0e52831feae46eda1c8ee3ea3cf492f90c9a6a83))
+- **ci:** add sanitize-html types ([d3ba202](https://github.com/alternun-development/alternun/commit/d3ba20225071a598232733791611fa7141b619dc))
+- **ci:** address codeql alerts in auth helpers ([6547da8](https://github.com/alternun-development/alternun/commit/6547da8be6670bff4e001d831f8e2462cf2b8735))
+- **ci:** generate mobile icons with sharp ([e882f69](https://github.com/alternun-development/alternun/commit/e882f698a9a07d30a63b9e8646b1bbde74d0d639))
+- **ci:** invoke turbo directly for build matrix ([1dcaf0d](https://github.com/alternun-development/alternun/commit/1dcaf0da1a10e5119e62c54888892b0aa17450f1))
+- **ci:** make mobile env test deterministic ([f4153f0](https://github.com/alternun-development/alternun/commit/f4153f04eb5bf290b47f3280ba730e2bd89f6cdc))
+- **ci:** refresh audit pin and mobile env tests ([63811f7](https://github.com/alternun-development/alternun/commit/63811f73bab19e13e2cea6a25a81b2f4f85f6bc3))
+- **ci:** target workspace packages in build matrix ([92610aa](https://github.com/alternun-development/alternun/commit/92610aaea8bf4fec5cfcdd26b83e576c81eca2cc))
+- **ci:** update lockfile for api sanitize-html ([80ab38a](https://github.com/alternun-development/alternun/commit/80ab38aaf59a3c7e21bd223ad9117fa2301cf5fa))
+
+### Features
+
+- **auth:** integrate Better Auth with Supabase PostgreSQL database ([5f899b9](https://github.com/alternun-development/alternun/commit/5f899b9b241124613c42027661a28c4c93027b95))
+- wire DATABASE_URL to Lambda and make migrations optional ([11776be](https://github.com/alternun-development/alternun/commit/11776beafa92d20e8730a2fd1377ce3bdaf9078c))
+
 ## [1.0.152](https://github.com/alternun-development/alternun/compare/v1.0.151...v1.0.152) (2026-04-18)
 
 ### Bug Fixes
