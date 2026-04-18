@@ -112,7 +112,6 @@ else
   export_if_empty INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_SECRET "$google_client_secret"
   export_if_empty GOOGLE_AUTH_CLIENT_ID "$google_client_id"
   export_if_empty GOOGLE_AUTH_CLIENT_SECRET "$google_client_secret"
-  export_if_empty GOOGLEA_AUTH_CLIENT_SECRET "$google_client_secret"
 
   export_if_empty INFRA_IDENTITY_DISCORD_AUTH_CLIENT_ID "$discord_client_id"
   export_if_empty INFRA_IDENTITY_DISCORD_AUTH_CLIENT_SECRET "$discord_client_secret"
