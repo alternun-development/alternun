@@ -1,3 +1,19 @@
+## [1.0.159](https://github.com/alternun-development/alternun/compare/v1.0.158...v1.0.159) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** fix(infra,scripts): buildspec, resolve-secrets-manager-env, setup-aws-account
+
+### Bug Fixes
+
+- **infra,scripts:** buildspec, resolve-secrets-manager-env, setup-aws-account ([6dc9313](https://github.com/alternun-development/alternun/commit/6dc931344b821ed9fce291d6ea8260f2ae0f64e4))
+
+## [1.0.159](https://github.com/alternun-development/alternun/compare/v1.0.158...v1.0.159) (2026-04-18)
+
+### Bug Fixes
+
+- **infra,scripts:** buildspec, resolve-secrets-manager-env, setup-aws-account ([6dc9313](https://github.com/alternun-development/alternun/commit/6dc931344b821ed9fce291d6ea8260f2ae0f64e4))
+
 ## [1.0.158](https://github.com/alternun-development/alternun/compare/v1.0.157...v1.0.158) (2026-04-18)
 
 ### Bug Fixes
