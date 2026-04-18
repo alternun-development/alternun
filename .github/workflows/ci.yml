@@ -135,7 +135,11 @@ jobs:
     needs: [lint, type-check, test]
     strategy:
       matrix:
-        app: [web, mobile]
+        include:
+          - app: web
+            package: '@alternun/web'
+          - app: mobile
+            package: '@alternun/mobile'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -155,7 +159,7 @@ jobs:
         run: pnpm install
 
       - name: Build ${{ matrix.app }}
-        run: pnpm exec turbo run build --filter=${{ matrix.app }}
+        run: pnpm exec turbo run build --filter="${{ matrix.package }}"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
