@@ -1,3 +1,11 @@
+## [1.0.160](https://github.com/alternun-development/alternun/compare/v1.0.159...v1.0.160) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): setup-aws-account
+
+## [1.0.160](https://github.com/alternun-development/alternun/compare/v1.0.159...v1.0.160) (2026-04-18)
+
 ## [1.0.159](https://github.com/alternun-development/alternun/compare/v1.0.158...v1.0.159) (2026-04-18)
 
 ### Bug Fixes
