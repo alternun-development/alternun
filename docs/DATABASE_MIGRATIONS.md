@@ -30,6 +30,54 @@ YYYYMMDD_NNNN_description.sql
 - `NNNN` - Sequence number (0001, 0002, etc.)
 - `description` - Human-readable name (snake_case)
 
+## AWS Configuration
+
+### Setup DATABASE_URL in Secrets Manager
+
+Store Supabase database URL securely:
+
+```bash
+aws secretsmanager create-secret \
+  --name alternun/api/database-url \
+  --secret-string "postgresql://postgres:PASSWORD@db.PROJECT_REF.supabase.co:5432/postgres"
+```
+
+### Enable Migrations on Deploy
+
+Update `packages/infra/config/deployment.config.json`:
+
+```json
+{
+  "backend": {
+    "api": {
+      "environment": {
+        "DATABASE_URL": "postgresql://postgres:...@db.rjebeugdvwbjpaktrrbx.supabase.co:5432/postgres",
+        "RUN_MIGRATIONS": "true"
+      }
+    }
+  }
+}
+```
+
+Or via environment variables:
+
+```bash
+export INFRA_BACKEND_API_DATABASE_URL="postgresql://postgres:...@..."
+export INFRA_BACKEND_API_MIGRATIONS_ENABLED="true"
+
+# Deploy will pass these to Lambda
+bash scripts/setup-aws-account.sh && APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+```
+
+### Disable Migrations (Emergency)
+
+For hotfixes or emergency deploys without schema changes:
+
+```bash
+export INFRA_BACKEND_API_MIGRATIONS_ENABLED="false"
+bash scripts/setup-aws-account.sh && APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+```
+
 ## Running Migrations
 
 ### During Development

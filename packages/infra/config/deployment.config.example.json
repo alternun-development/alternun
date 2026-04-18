@@ -87,7 +87,8 @@
         "jwksUrl": ""
       },
       "environment": {
-        "DATABASE_URL": "",
+        "DATABASE_URL": "postgresql://postgres:password@db.rjebeugdvwbjpaktrrbx.supabase.co:5432/postgres",
+        "RUN_MIGRATIONS": "true",
         "DECAP_PUBLIC_BASE_URL": "https://api.alternun.co",
         "DECAP_ALLOWED_ORIGINS": "https://docs.alternun.io,https://alternun-development.github.io,http://127.0.0.1:8083,http://localhost:8083",
         "DECAP_GITHUB_OAUTH_CLIENT_ID": "",
