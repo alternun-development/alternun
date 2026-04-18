@@ -20,9 +20,28 @@ fi
 
 ENV_FILE="$REPO_ROOT/.env"
 
+# Check if running in CodeBuild (has AWS credentials from IAM role)
+if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ -n "${AWS_EXECUTION_ENV:-}" ]; then
+  # Running in CodeBuild - use IAM role credentials
+  if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+    echo "✅ Using CodeBuild IAM role credentials"
+    export AWS_REGION="${AWS_REGION:-us-east-1}"
+    bash "$REPO_ROOT/scripts/validate-aws-account.sh"
+    exit 0
+  fi
+fi
+
+# Local development - load from .env
 if [ ! -f "$ENV_FILE" ]; then
+  # Check if credentials are already set in environment (from CodeBuild or other source)
+  if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+    echo "✅ AWS credentials already set in environment"
+    export AWS_REGION="${AWS_REGION:-us-east-1}"
+    bash "$REPO_ROOT/scripts/validate-aws-account.sh"
+    exit 0
+  fi
   echo "❌ ERROR: .env file not found at $ENV_FILE"
-  echo "The .env file must exist with AWS credentials."
+  echo "The .env file must exist with AWS credentials for local development."
   exit 1
 fi
 
@@ -43,7 +62,7 @@ export AWS_ACCESS_KEY_ID="$AWS_KEY_ID"
 export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
 export AWS_REGION="us-east-1"
 
-echo "✅ Loaded Alternun AWS credentials"
+echo "✅ Loaded Alternun AWS credentials from .env"
 echo "   AWS_ACCESS_KEY_ID: ${AWS_KEY_ID:0:10}..."
 echo "   AWS_REGION: $AWS_REGION"
 echo ""
