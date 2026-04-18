@@ -1,3 +1,11 @@
+## [1.0.147](https://github.com/alternun-development/alternun/compare/v1.0.146...v1.0.147) (2026-04-17)
+
+### Bug Fixes
+
+- **repo:** test(infra): postdeploy-reachability-check, resolve-ssm-env, sst-deploy, buildspec-auth-env.test
+
+## [1.0.147](https://github.com/alternun-development/alternun/compare/v1.0.146...v1.0.147) (2026-04-17)
+
 ## [1.0.146](https://github.com/alternun-development/alternun/compare/v1.0.145...v1.0.146) (2026-04-17)
 
 ### Bug Fixes
