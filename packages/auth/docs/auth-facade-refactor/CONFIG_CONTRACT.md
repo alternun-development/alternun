@@ -32,7 +32,6 @@ These variables are read by `packages/auth/src/runtime/config.ts`.
 | `AUTH_BETTER_AUTH_URL`                | Yes for a real Better Auth rollout | Canonical browser-facing Better Auth base URL on the API origin root            |
 | `EXPO_PUBLIC_BETTER_AUTH_URL`         | No                                 | Client-side mirror of the canonical Better Auth base URL                        |
 | `AUTH_BETTER_AUTH_CLIENT_ID`          | No                                 | Reserved for Better Auth client/runtime integration                             |
-| `AUTH_BETTER_AUTH_API_KEY`            | No                                 | Reserved for service-to-service Better Auth calls if needed                     |
 | `AUTH_EXCHANGE_URL`                   | Yes for canonical exchange rollout | Backend endpoint used to exchange execution identity into the issuer session    |
 | `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED`  | No                                 | Forces `/auth/exchange` to fail closed when issuer-owned minting is unavailable |
 | `EXPO_PUBLIC_SUPABASE_URL`            | Yes for legacy fallback            | Legacy Supabase URL                                                             |
@@ -61,7 +60,6 @@ These aliases are still accepted:
 - `AUTH_BETTER_AUTH_URL`
 - `BETTER_AUTH_URL`
 - `BETTER_AUTH_CLIENT_ID`
-- `BETTER_AUTH_API_KEY`
 - `EXPO_PUBLIC_AUTH_EXCHANGE_URL`
 
 ## Better Auth Service Environment
@@ -102,6 +100,7 @@ Validated against Better Auth official docs on `2026-04-09`:
 
 - Better Auth needs an explicit `BETTER_AUTH_URL` or `baseURL` for the private service to avoid OAuth callback mismatches.
 - Local development uses `BETTER_AUTH_URL`; deployed stacks can supply the proxy target as `AUTH_BETTER_AUTH_URL` in the API runtime, while the Expo bundle still consumes the browser-facing `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` public URL.
+- When a Better Auth URL is present but the execution flag is omitted, the runtime now promotes to `better-auth` automatically so the configured URL stays authoritative. An explicit `supabase` flag still wins for rollback.
 - Better Auth needs a database for standard session and account persistence unless you deliberately choose a stateless mode.
 - Better Auth defaults to cookie-based session handling. Alternun should treat those cookies as execution-layer state, not as the final application session.
 - Better Auth rate limiting defaults are not enough to define an Alternun production posture by themselves. For multi-instance testnet or production, use database or secondary storage instead of in-memory defaults.
@@ -130,6 +129,7 @@ The first real rollout should use:
 - `AUTH_EMAIL_PROVIDER=postmark` or `ses`
 - `AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange`
 - The current testnet rollout uses Better Auth when `AUTH_EXECUTION_PROVIDER=better-auth` and `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` point at the API-origin `/auth` route; keep Supabase as the rollback path.
+- If the Better Auth URL is present and the execution flag is missing, the runtime still promotes to Better Auth so a stale legacy alias cannot force Authentik.
 
 Do not switch production/shared rollback environments to this shape until the testnet execution plan gates pass.
 
@@ -138,7 +138,7 @@ Do not switch production/shared rollback environments to this shape until the te
 - Core auth logic should not read `process.env` directly outside the config adapter.
 - `AppAuthProvider` should keep app ergonomics stable while switching the underlying provider graph.
 - `createAuthFacade` can accept explicit provider instances for tests and server-side orchestration.
-- `AUTH_BETTER_AUTH_CLIENT_ID` and `AUTH_BETTER_AUTH_API_KEY` are reserved for the rollout even though the current package implementation does not yet require them end to end.
+- `AUTH_BETTER_AUTH_CLIENT_ID` is reserved for the rollout even though the current package implementation does not yet require it end to end.
 - The backend API can proxy `/auth/*` to a private Better Auth service when it is backed by a real Better Auth service; the repo no longer assumes a dedicated public Better Auth host. Public Better Auth URLs should stay on the API origin root, with the client/proxy layers appending `/auth` internally.
 - In local development, that private Better Auth service is expected to listen on `http://localhost:9083`.
 - The API proxy should answer browser `OPTIONS` preflight locally for `/auth/*`; only the actual Better Auth request should be forwarded to the private service.

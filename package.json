@@ -1,6 +1,6 @@
 {
   "name": "alternun",
-  "version": "1.0.72",
+  "version": "1.0.151",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -28,13 +28,14 @@
     "infra:ensure:pipelines": "pnpm --filter @alternun/infra run ensure:pipelines",
     "infra:sync:develop-master": "pnpm --filter @alternun/infra run sync:develop-master",
     "infra:sync:master-develop": "pnpm --filter @alternun/infra run sync:master-develop",
-    "prepare": "husky install",
+    "prepare": "husky install && pnpm changelog:sync",
+    "changelog:sync": "node scripts/sync-docs-changelog.mjs && node scripts/generate-changelog-data.mjs apps/mobile",
     "version:validate": "node scripts/version-validate.mjs",
     "version:validate:raw": "versioning validate",
     "version:sync": "node scripts/version-sync.mjs",
     "version:sync:raw": "versioning sync",
     "version:bump": "versioning bump",
-    "version:changelog": "versioning changelog",
+    "version:changelog": "versioning changelog && node scripts/changelog-auto-fill.mjs",
     "version:cleanup": "versioning cleanup",
     "version:check-secrets": "versioning check-secrets",
     "changelog:check": "node scripts/check-changelog.mjs",
@@ -66,15 +67,17 @@
     "turbo": "^2.8.12"
   },
   "engines": {
-    "node": ">=22.20.0",
+    "node": ">=22.0.0",
     "pnpm": ">=9.0.0"
   },
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
+      "@fastify/middie": "9.3.2",
       "axios": "1.15.0",
       "fast-xml-parser": "4.5.4",
       "handlebars": "4.7.9",
+      "protobufjs": "7.5.5",
       "simple-git": "3.32.3"
     }
   },

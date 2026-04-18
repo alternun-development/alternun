@@ -200,12 +200,7 @@ export default function ShaderBackground({ opacity = 0.52, }: ShaderBackgroundPr
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer,);
     gl.bufferData(
       gl.ARRAY_BUFFER,
-      new Float32Array([
-        -1.0, -1.0,
-        1.0, -1.0,
-        -1.0, 1.0,
-        1.0, 1.0,
-      ],),
+      new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0,],),
       gl.STATIC_DRAW,
     );
 

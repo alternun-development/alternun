@@ -50,6 +50,7 @@ export interface RedirectLocalConfig {
   airsToDevSourceDomain?: string;
   enableDevToTestnet?: boolean;
   devToTestnetSourceDomain?: string;
+  devToTestnetSourceDomains?: string[];
   enableRootDomainRedirect?: boolean;
   rootDomainTarget?: string;
   certArns?: {

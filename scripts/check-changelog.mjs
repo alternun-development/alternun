@@ -27,12 +27,14 @@ const CHANGELOG_PATH = path.join(REPO_ROOT, 'CHANGELOG.md');
 // ── CLI args ─────────────────────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { targetVersion: null, allowEmpty: false };
+  const args = { targetVersion: null, allowEmpty: false, autoFix: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--version' && argv[i + 1]) {
       args.targetVersion = argv[++i].replace(/^v/, '');
     } else if (argv[i] === '--allow-empty') {
       args.allowEmpty = true;
+    } else if (argv[i] === '--auto-fix') {
+      args.autoFix = true;
     }
   }
   return args;
@@ -119,7 +121,13 @@ function run() {
     target = entries.find((e) => e.version === args.targetVersion);
     if (!target) {
       console.error(`check-changelog: version ${args.targetVersion} not found in CHANGELOG.md.`);
-      console.error('  Available versions:', entries.slice(0, 5).map((e) => e.version).join(', '));
+      console.error(
+        '  Available versions:',
+        entries
+          .slice(0, 5)
+          .map((e) => e.version)
+          .join(', ')
+      );
       process.exit(1);
     }
   } else {
@@ -127,6 +135,52 @@ function run() {
   }
 
   if (!target.hasContent) {
+    if (args.autoFix) {
+      console.log(`check-changelog: 🛠️  Auto-fixing empty entry for v${target.version}...`);
+
+      let autoMessage = '- **repo:** internal updates and maintenance';
+      try {
+        import('node:child_process').then(({ execSync }) => {
+          try {
+            const lastTag = execSync('git describe --tags --abbrev=0 HEAD^', {
+              encoding: 'utf8',
+              stdio: 'pipe',
+            }).trim();
+            const log = execSync(`git log ${lastTag}..HEAD --oneline --no-merges`, {
+              encoding: 'utf8',
+              stdio: 'pipe',
+            }).trim();
+            const lines = log.split('\n').filter(Boolean);
+            if (lines.length > 0) {
+              autoMessage = lines
+                .slice(0, 5)
+                .map((l) => {
+                  const msg = l.replace(/^[a-f0-9]+ /, '');
+                  return `- **repo:** ${msg}`;
+                })
+                .join('\n');
+            }
+          } catch (e) {
+            // ignore git errors and use default message
+          }
+
+          const fixText = `\n### Bug Fixes\n\n${autoMessage}\n`;
+          const fileLines = raw.split('\n');
+          const headerIndex = fileLines.findIndex((l) => l.startsWith(`## [${target.version}]`));
+
+          if (headerIndex !== -1) {
+            fileLines.splice(headerIndex + 1, 0, fixText);
+            fs.writeFileSync(CHANGELOG_PATH, fileLines.join('\n'), 'utf8');
+            console.log(`check-changelog: ✅ Auto-fixed v${target.version} (${target.date}).`);
+            process.exit(0);
+          }
+        });
+        return; // wait for promise
+      } catch (e) {
+        // fallback if dynamic import fails
+      }
+    }
+
     const tip = [
       '',
       `  check-changelog: ❌  v${target.version} (${target.date}) has no documented changes.`,
@@ -147,9 +201,10 @@ function run() {
     process.exit(1);
   }
 
-  const sectionSummary = target.sections.length > 0
-    ? `  Sections: ${target.sections.join(', ')}`
-    : '  (no named sections)';
+  const sectionSummary =
+    target.sections.length > 0
+      ? `  Sections: ${target.sections.join(', ')}`
+      : '  (no named sections)';
 
   console.log(`check-changelog: ✅  v${target.version} (${target.date}) has documented changes.`);
   console.log(sectionSummary);

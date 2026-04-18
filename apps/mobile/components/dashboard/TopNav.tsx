@@ -2,6 +2,7 @@ import { getLocaleLabel } from '@alternun/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Animated,
+  Alert,
   Pressable,
   View,
   Text,
@@ -12,7 +13,7 @@ import {
 import { BlurView as BlurViewRaw } from 'expo-blur';
 import { Image as ExpoImageRaw } from 'expo-image';
 
-const BlurView = BlurViewRaw as unknown as React.FC<any>;
+const BlurView = BlurViewRaw as unknown as React.FC<React.ComponentProps<typeof BlurViewRaw>>;
 import {
   Bell,
   ChevronDown,
@@ -24,10 +25,6 @@ import {
   Moon,
   Sun,
   LogIn,
-  LayoutDashboard,
-  Leaf,
-  ShieldCheck,
-  CircleUserRound,
   Zap,
   Menu,
   X,
@@ -39,48 +36,33 @@ import type { AppLanguage, MotionLevel, ThemeMode } from '../settings/AppPrefere
 import NotificationDropdown, { type NotificationItem } from './NotificationDropdown';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { getFirstName } from './userDisplayName';
+import { NAV_SECTIONS, type NavSection } from './navSections';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as number;
+const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
+const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const ALTERNUN_LOGO = require('../../assets/logo.png') as number;
+const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as number;
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as number;
 
 // ── JSX-safe casts ────────────────────────────────────────────────────────────
-const ExpoImage = ExpoImageRaw as unknown as React.FC<any>;
+const ExpoImage = ExpoImageRaw as unknown as React.FC<React.ComponentProps<typeof ExpoImageRaw>>;
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
 const SettingsIcon = Settings as React.FC<LucideProps>;
 const LogOutIcon = LogOut as React.FC<LucideProps>;
 const LanguagesIcon = Languages as React.FC<LucideProps>;
 const LogInIcon = LogIn as React.FC<LucideProps>;
-const LayoutDashboardIcon = LayoutDashboard as React.FC<LucideProps>;
-const LeafIcon = Leaf as React.FC<LucideProps>;
-const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
 const BellIcon = Bell as React.FC<LucideProps>;
 const ChevronUpIcon = ChevronUp as React.FC<LucideProps>;
-const CircleUserRoundIcon = CircleUserRound as React.FC<LucideProps>;
 const MoonIcon = Moon as React.FC<LucideProps>;
 const SunIcon = Sun as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
 const MenuIcon = Menu as React.FC<LucideProps>;
 const CloseIcon = X as React.FC<LucideProps>;
 const EMPTY_NOTIFICATIONS: NotificationItem[] = [];
-
-// ── Nav sections ──────────────────────────────────────────────────────────────
-export interface NavSection {
-  key: string;
-  label: string;
-  icon: React.FC<LucideProps>;
-}
-
-export const NAV_SECTIONS: NavSection[] = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
-  { key: 'explorar', label: 'Explore', icon: LeafIcon },
-  { key: 'portafolio', label: 'Portfolio', icon: ShieldCheckIcon },
-  { key: 'mi-perfil', label: 'My Profile', icon: CircleUserRoundIcon },
-];
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface TopNavProps {
@@ -143,7 +125,7 @@ export default function TopNav({
   onMarkAllNotificationsRead,
   onDismissNotification,
   onNavigateToNotifications,
-}: TopNavProps) {
+}: TopNavProps): React.JSX.Element {
   const [menuVisible, setMenuVisible] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(true);
@@ -159,7 +141,14 @@ export default function TopNav({
 
   const brandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
   const brandMarkCutout = isDark ? '#03292f' : '#d9fff4';
-  const wordmarkSource = isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK;
+  const isDesktop = width >= 720;
+  const wordmarkSource = isDesktop
+    ? isDark
+      ? AIRS_LOGO_LIGHT_2X
+      : AIRS_LOGO_DARK_2X
+    : isDark
+    ? AIRS_LOGO_LIGHT
+    : AIRS_LOGO_DARK;
   const ThemeIconComp = isDark ? SunIcon : MoonIcon;
   const themeLabel = isDark ? t('labels.dark') : t('labels.light');
 
@@ -261,23 +250,34 @@ export default function TopNav({
     }
   }, [unreadCount, badgePulseAnimated]);
 
-  const toggleMenu = () => {
+  const toggleMenu = (): void => {
     setNotifVisible(false);
     setMenuVisible((v) => !v);
   };
-  const toggleNotif = () => {
+  const toggleNotif = (): void => {
     setMenuVisible(false);
     setNotifVisible((v) => !v);
   };
-  const handleBrandPress = () => {
+  const handleBrandPress = (): void => {
     dismissAll();
     onNavigate?.('dashboard');
   };
 
   const anyOpen = menuVisible || notifVisible;
-  const dismissAll = () => {
+  const dismissAll = (): void => {
     setMenuVisible(false);
     setNotifVisible(false);
+  };
+
+  const handleNavSectionPress = (section: NavSection): void => {
+    setMenuVisible(false);
+
+    if (section.comingSoon) {
+      Alert.alert('Coming soon', `${section.label} will be available soon.`);
+      return;
+    }
+
+    onNavigate?.(section.key);
   };
 
   return (
@@ -322,33 +322,17 @@ export default function TopNav({
           >
             <View style={styles.logoBrand}>
               {/* Wordmark row: "Airs" SVG + mark */}
-              <View style={[styles.logoMarkRow, isMobile && styles.logoMarkRowMobile]}>
-                <ExpoImage
-                  source={wordmarkSource}
-                  style={isMobile ? styles.wordmarkMobile : styles.wordmark}
-                  contentFit='contain'
-                />
-                <AirsBrandMark
-                  size={isMobile ? 28 : 34}
-                  fillColor={brandMarkFill}
-                  cutoutColor={brandMarkCutout}
-                />
-              </View>
-              {/* Byline: "By [Alternun logo]" + subtitle */}
-              <View style={styles.bylineRow}>
-                <Text style={[styles.bylineBy, { color: p.pillSub }]}>{t('labels.by')}</Text>
-                <ExpoImage source={ALTERNUN_LOGO} style={styles.bylineLogo} contentFit='contain' />
-                <Text
-                  style={[
-                    styles.bylineSubtitle,
-                    { color: p.pillSub },
-                    isMobile && styles.bylineSubtitleMobile,
-                  ]}
-                  numberOfLines={1}
-                >
-                  Alternun Impact & Reputation Score
-                </Text>
-              </View>
+              <ExpoImage
+                source={wordmarkSource}
+                style={
+                  isMobile
+                    ? styles.wordmarkMobile
+                    : isDesktop
+                    ? styles.wordmarkDesktop
+                    : styles.wordmark
+                }
+                contentFit='contain'
+              />
             </View>
           </Pressable>
         </View>
@@ -587,6 +571,7 @@ export default function TopNav({
                   <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
                     {NAV_SECTIONS.map((section) => {
                       const isActive = activeSection === section.key;
+                      const isComingSoon = Boolean(section.comingSoon);
                       const IconComp = section.icon;
                       return (
                         <TouchableOpacity
@@ -595,30 +580,55 @@ export default function TopNav({
                             styles.navItem,
                             isExtraSmall && styles.navItemExtraSmall,
                             {
-                              backgroundColor: isActive ? p.navActive : 'transparent',
-                              borderWidth: isActive ? 1 : 0,
-                              borderColor: isActive ? p.navActiveBorder : 'transparent',
+                              backgroundColor: isActive
+                                ? p.navActive
+                                : isComingSoon
+                                ? isDark
+                                  ? 'rgba(255,255,255,0.03)'
+                                  : 'rgba(15,23,42,0.03)'
+                                : 'transparent',
+                              borderWidth: isActive || isComingSoon ? 1 : 0,
+                              borderColor: isActive
+                                ? p.navActiveBorder
+                                : isComingSoon
+                                ? p.dropDivider
+                                : 'transparent',
+                              opacity: isComingSoon ? 0.74 : 1,
                             },
                           ]}
-                          onPress={() => {
-                            setMenuVisible(false);
-                            onNavigate?.(section.key);
-                          }}
+                          onPress={() => handleNavSectionPress(section)}
                           activeOpacity={0.8}
                         >
-                          <IconComp size={15} color={isActive ? p.navActiveText : p.iconIdle} />
+                          <IconComp
+                            size={15}
+                            color={
+                              isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.iconIdle
+                            }
+                          />
                           <Text
                             style={[
                               styles.navItemText,
-                              { color: isActive ? p.navActiveText : p.dropText },
+                              {
+                                color: isActive
+                                  ? p.navActiveText
+                                  : isComingSoon
+                                  ? p.dropSub
+                                  : p.dropText,
+                              },
                               isActive && styles.navItemTextActive,
                             ]}
                           >
                             {section.label}
                           </Text>
-                          {isActive && (
+                          {isComingSoon ? (
+                            <View style={[styles.comingSoonPill, { borderColor: p.dropDivider }]}>
+                              <Text style={[styles.comingSoonText, { color: p.dropSub }]}>
+                                Coming soon
+                              </Text>
+                            </View>
+                          ) : isActive ? (
                             <View style={[styles.activeIndicator, { backgroundColor: p.accent }]} />
-                          )}
+                          ) : null}
                         </TouchableOpacity>
                       );
                     })}
@@ -832,6 +842,10 @@ const styles = StyleSheet.create({
     width: 72,
     height: 26,
   },
+  wordmarkDesktop: {
+    width: 144,
+    height: 52,
+  },
   wordmarkMobile: {
     width: 52,
     height: 20,
@@ -938,10 +952,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     lineHeight: 15,
+    fontFamily: 'Sculpin-Bold',
   },
   pillNameMobile: {
     fontSize: 11,
     lineHeight: 13,
+    fontFamily: 'Sculpin-Bold',
   },
   pillScore: {
     fontSize: 10,
@@ -1055,6 +1071,7 @@ const styles = StyleSheet.create({
   dropHeaderName: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   dropHeaderEmail: {
     fontSize: 10,
@@ -1093,9 +1110,24 @@ const styles = StyleSheet.create({
   navItemText: {
     fontSize: 13,
     fontWeight: '500',
+    fontFamily: 'Sculpin-Bold',
   },
   navItemTextActive: {
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
+  },
+  comingSoonPill: {
+    marginLeft: 'auto',
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  comingSoonText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
   },
   activeIndicator: {
     position: 'absolute',

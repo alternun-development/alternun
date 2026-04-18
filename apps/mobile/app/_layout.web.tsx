@@ -1,26 +1,26 @@
 import React from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, usePathname } from 'expo-router';
-import { useFonts } from 'expo-font';
-import { StatusBar } from 'expo-status-bar';
-import { AppAuthProvider } from '../components/auth/AppAuthProvider';
+import { DarkTheme, DefaultTheme, ThemeProvider, } from '@react-navigation/native';
+import { Stack, usePathname, } from 'expo-router';
+import { useFonts, } from 'expo-font';
+import { StatusBar, } from 'expo-status-bar';
+import { AppAuthProvider, } from '../components/auth/AppAuthProvider';
 import AppInfoFooter from '../components/common/AppInfoFooter';
 import {
   AppPreferencesProvider,
   useAppPreferences,
 } from '../components/settings/AppPreferencesProvider';
-import { NotificationsProvider } from '../components/notifications/NotificationsContext';
-import { useColorScheme } from 'nativewind';
-import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { NotificationsProvider, } from '../components/notifications/NotificationsContext';
+import { useColorScheme, } from 'nativewind';
+import { useEffect, } from 'react';
+import { StyleSheet, View, } from 'react-native';
 import ReleaseUpdateBanner from '../components/release/ReleaseUpdateBanner.web';
-import { appFonts, installAppFontDefaults } from '../components/theme/fonts';
+import { appFonts, installAppFontDefaults, } from '../components/theme/fonts';
 import '../global.css';
 
 installAppFontDefaults();
 
 export default function RootLayout(): React.JSX.Element {
-  const [loaded] = useFonts(appFonts);
+  const [loaded,] = useFonts(appFonts,);
 
   return (
     <AppPreferencesProvider>
@@ -29,14 +29,14 @@ export default function RootLayout(): React.JSX.Element {
   );
 }
 
-function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
-  const { themeMode } = useAppPreferences();
+function RootApp({ fontsLoaded, }: { fontsLoaded: boolean },): React.JSX.Element {
+  const { themeMode, } = useAppPreferences();
   const colorScheme = useColorScheme();
   const navigationTheme = themeMode === 'dark' ? DarkTheme : DefaultTheme;
 
   useEffect(() => {
-    colorScheme.setColorScheme(themeMode);
-  }, [colorScheme, themeMode]);
+    colorScheme.setColorScheme(themeMode,);
+  }, [colorScheme, themeMode,],);
   const pathname = usePathname();
   const showLayoutFooter =
     pathname !== '/auth' &&
@@ -49,7 +49,7 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
   if (!fontsLoaded) {
     return (
       <View
-        style={[styles.appShell, { backgroundColor: themeMode === 'dark' ? '#050510' : '#f6f8fc' }]}
+        style={[styles.appShell, { backgroundColor: themeMode === 'dark' ? '#050510' : '#f6f8fc', },]}
       />
     );
   }
@@ -60,15 +60,15 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
         <ThemeProvider value={navigationTheme}>
           <View style={styles.appShell}>
             <View style={styles.stackContainer}>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name='index' options={{ headerShown: false }} />
+              <Stack screenOptions={{ headerShown: false, }}>
+                <Stack.Screen name='index' options={{ headerShown: false, }} />
                 <Stack.Screen
                   name='auth'
                   options={{
                     headerShown: false,
                     presentation: 'transparentModal',
                     animation: 'fade',
-                    contentStyle: { backgroundColor: 'transparent' },
+                    contentStyle: { backgroundColor: 'transparent', },
                   }}
                 />
                 <Stack.Screen
@@ -77,7 +77,7 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
                     headerShown: false,
                     presentation: 'transparentModal',
                     animation: 'fade',
-                    contentStyle: { backgroundColor: 'transparent' },
+                    contentStyle: { backgroundColor: 'transparent', },
                   }}
                 />
                 <Stack.Screen
@@ -86,27 +86,27 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
                     headerShown: false,
                   }}
                 />
-                <Stack.Screen name='settings' options={{ headerShown: false }} />
+                <Stack.Screen name='settings' options={{ headerShown: false, }} />
                 <Stack.Screen
                   name='explorar'
-                  options={{ headerShown: false, animation: 'slide_from_right' }}
+                  options={{ headerShown: false, animation: 'slide_from_right', }}
                 />
                 <Stack.Screen
                   name='portafolio'
-                  options={{ headerShown: false, animation: 'slide_from_right' }}
+                  options={{ headerShown: false, animation: 'slide_from_right', }}
                 />
-                <Stack.Screen name='mi-perfil' options={{ headerShown: false }} />
+                <Stack.Screen name='mi-perfil' options={{ headerShown: false, }} />
                 <Stack.Screen
                   name='privacy'
-                  options={{ headerShown: false, animation: 'slide_from_right' }}
+                  options={{ headerShown: false, animation: 'slide_from_right', }}
                 />
                 <Stack.Screen
                   name='terms'
-                  options={{ headerShown: false, animation: 'slide_from_right' }}
+                  options={{ headerShown: false, animation: 'slide_from_right', }}
                 />
                 <Stack.Screen
                   name='notifications'
-                  options={{ headerShown: false, animation: 'slide_from_right' }}
+                  options={{ headerShown: false, animation: 'slide_from_right', }}
                 />
               </Stack>
             </View>
@@ -138,4 +138,4 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 10,
   },
-});
+},);

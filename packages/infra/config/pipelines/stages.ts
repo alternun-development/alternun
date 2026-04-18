@@ -201,7 +201,7 @@ export function parseEnabledPipelineStages(raw: string): Set<PipelineStage> {
   return new Set(
     raw
       .split(',')
-      .map(value => parseCoreDeploymentStage(value))
+      .map((value) => parseCoreDeploymentStage(value))
       .filter((value): value is PipelineStage => value !== undefined)
   );
 }
@@ -210,7 +210,7 @@ export function parseSelectedPipelines(raw: string): Set<ManagedPipeline> {
   return new Set(
     raw
       .split(',')
-      .map(value => parsePipelineStage(value))
+      .map((value) => parsePipelineStage(value))
       .filter((value): value is ManagedPipeline => value !== undefined)
   );
 }

@@ -20,6 +20,9 @@ is_truthy() {
   esac
 }
 
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/_pipeline-safety.sh"
+
 resolve_hz_id() {
   local root_domain=${DOMAIN_ROOT:-}
   if [ -z "$root_domain" ]; then
@@ -49,7 +52,7 @@ report_managed_cert_conflict() {
     return 0
   fi
 
-  guidance="Set ${cert_env_name} to reuse an existing ACM certificate, or enable AUTO_REMOVE_CONFLICTING_DNS=true and INFRA_REMOVE_ACM_VALIDATION_CNAME=true if you intend to replace the validation records."
+  guidance="Set ${cert_env_name} to reuse an existing ACM certificate, or enable AUTO_REMOVE_CONFLICTING_DNS=true, INFRA_REMOVE_ACM_VALIDATION_CNAME=true, and INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true if you intend to replace the validation records."
 
   if is_truthy "$fail_on_conflict"; then
     echo "ERROR: Existing ACM validation CNAME records for ${domain_name} will conflict with managed certificate creation." >&2
@@ -88,6 +91,10 @@ delete_conflicting_dns_records() {
   if ! command -v jq >/dev/null 2>&1; then
     echo "ERROR: jq is required to auto-remove conflicting DNS records." >&2
     return 1
+  fi
+
+  if ! require_destructive_cleanup_allowed "Route53 DNS record deletion for ${record_name}"; then
+    return 0
   fi
 
   echo "AUTO_REMOVE_CONFLICTING_DNS=true — deleting conflicting records for ${record_name}"
@@ -147,6 +154,10 @@ delete_acm_validation_cname_records() {
   if ! command -v jq >/dev/null 2>&1; then
     echo "ERROR: jq is required to auto-remove ACM validation CNAME records." >&2
     return 1
+  fi
+
+  if ! require_destructive_cleanup_allowed "ACM validation CNAME deletion for ${domain_name}"; then
+    return 0
   fi
 
   echo "AUTO_REMOVE_CONFLICTING_DNS=true — deleting ACM validation CNAME records for ${domain_name}"
@@ -235,10 +246,21 @@ run_extra_redirect_dns_cleanup() {
     return 0
   fi
 
-  local airs_source dev_source root_source
+  local airs_source root_source
+  local dev_sources_raw
   airs_source=${INFRA_REDIRECT_AIRS_TO_DEV_SOURCE:-${INFRA_EXPO_DOMAIN_PRODUCTION:-${DOMAIN_PRODUCTION:-}}}
-  dev_source=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}
+  dev_sources_raw=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES:-${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-}}
   root_source=${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-}}
+
+  if [ -z "$dev_sources_raw" ]; then
+    local dev_source_primary dev_source_demo dev_source_beta
+    dev_source_primary=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-${INFRA_EXPO_DOMAIN_DEV:-${DOMAIN_DEV:-}}}
+    if [ -n "$dev_source_primary" ]; then
+      dev_source_demo=${dev_source_primary/#dev./demo.}
+      dev_source_beta=${dev_source_primary/#dev./beta.}
+      dev_sources_raw="${dev_source_primary},${dev_source_demo},${dev_source_beta}"
+    fi
+  fi
 
   if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" && [ -n "$airs_source" ]; then
     delete_conflicting_dns_records "$hosted_zone_id" "$airs_source"
@@ -246,10 +268,19 @@ run_extra_redirect_dns_cleanup() {
       INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}"
   fi
 
-  if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" && [ -n "$dev_source" ]; then
-    delete_conflicting_dns_records "$hosted_zone_id" "$dev_source"
-    delete_acm_validation_cname_records "$hosted_zone_id" "$dev_source" \
-      INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}"
+  if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" && [ -n "$dev_sources_raw" ]; then
+    local dev_source dev_sources
+    IFS=',' read -r -a dev_sources <<< "$dev_sources_raw"
+    for dev_source in "${dev_sources[@]}"; do
+      dev_source=$(printf '%s' "$dev_source" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's#^https\?://##' -e 's#/*$##')
+      if [ -z "$dev_source" ]; then
+        continue
+      fi
+
+      delete_conflicting_dns_records "$hosted_zone_id" "$dev_source"
+      delete_acm_validation_cname_records "$hosted_zone_id" "$dev_source" \
+        INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}"
+    done
   fi
 
   if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}" && [ -n "$root_source" ]; then
@@ -305,22 +336,36 @@ validate_custom_authentik_provider_flow_slugs() {
 }
 
 validate_better_auth_web_env() {
-  local auth_execution_provider=${AUTH_EXECUTION_PROVIDER:-${EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER:-}}
+  local auth_execution_provider=${AUTH_EXECUTION_PROVIDER:-}
+  local expo_public_auth_execution_provider=${EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER:-}
   local auth_better_auth_url=${AUTH_BETTER_AUTH_URL:-}
   local expo_public_better_auth_url=${EXPO_PUBLIC_BETTER_AUTH_URL:-}
+  local has_better_auth_url=false
 
-  if [ "${auth_execution_provider}" = "better-auth" ]; then
+  if [ -n "$auth_better_auth_url" ] || [ -n "$expo_public_better_auth_url" ]; then
+    has_better_auth_url=true
+  fi
+
+  if [ "${auth_execution_provider}" = "better-auth" ] || [ "${expo_public_auth_execution_provider}" = "better-auth" ]; then
     return 0
   fi
 
-  if [ -z "$auth_better_auth_url" ] && [ -z "$expo_public_better_auth_url" ]; then
+  if [ "${auth_execution_provider}" = "supabase" ] || [ "${expo_public_auth_execution_provider}" = "supabase" ]; then
+    if [ "$has_better_auth_url" = "true" ]; then
+      echo "ERROR: Better Auth web URLs are set while the execution provider is pinned to Supabase." >&2
+      echo "Set AUTH_EXECUTION_PROVIDER=better-auth (and EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth when needed) only when you intentionally want Better Auth to own web social login." >&2
+      echo "Otherwise leave AUTH_BETTER_AUTH_URL and EXPO_PUBLIC_BETTER_AUTH_URL empty so AIRS web stays on the direct Authentik source-login path." >&2
+      return 1
+    fi
+
     return 0
   fi
 
-  echo "ERROR: Better Auth web URLs are set without opting the AIRS web bundle into Better Auth." >&2
-  echo "Set AUTH_EXECUTION_PROVIDER=better-auth (and EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth when needed) only when you intentionally want Better Auth to own web social login." >&2
-  echo "Otherwise leave AUTH_BETTER_AUTH_URL and EXPO_PUBLIC_BETTER_AUTH_URL empty so AIRS web stays on the direct Authentik source-login path." >&2
-  return 1
+  if [ "$has_better_auth_url" = "true" ]; then
+    return 0
+  fi
+
+  return 0
 }
 
 validate_mobile_oidc_launch_url() {
@@ -339,10 +384,38 @@ validate_mobile_oidc_launch_url() {
   esac
 }
 
+# Testnet-aligned stages (dashboard-dev, backend-dev, api-dev, identity-dev, ...) must
+# boot with AUTH_BETTER_AUTH_URL set so Better Auth enters embedded mode. Without it the
+# Lambda silently falls back to Authentik, which is not ready for testnet right now.
+validate_testnet_better_auth_env() {
+  local current_stage
+  current_stage=$(echo "${stage:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+
+  case "$current_stage" in
+    dev|testnet|*testnet*|dashboard-dev|backend-dev|backend-api-dev|api-dev|identity-dev|auth-dev|authentik-dev|admin-dev|backoffice-dev|backoffice-admin-dev)
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+
+  local better_auth_url=${INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL:-${AUTH_BETTER_AUTH_URL:-${EXPO_PUBLIC_BETTER_AUTH_URL:-}}}
+
+  if [ -z "$better_auth_url" ]; then
+    echo "ERROR: Testnet-aligned stage '${current_stage}' is missing AUTH_BETTER_AUTH_URL." >&2
+    echo "ERROR: Release deploys without this value silently wire testnet to Authentik (not ready)." >&2
+    echo "ERROR: Set INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL in pipeline env or SSM." >&2
+    return 1
+  fi
+
+  return 0
+}
+
 validate_expo_public_auth_env
 validate_custom_authentik_provider_flow_slugs
 validate_better_auth_web_env
 validate_mobile_oidc_launch_url
+validate_testnet_better_auth_env
 check_stage_domain_validation_cname_records
 run_extra_redirect_dns_cleanup
 

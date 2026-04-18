@@ -21,7 +21,6 @@ const IGNORED_WORKTREE_PATHS = new Set([
 ]);
 const TRACKED_BUILD_OUTPUT_PATHS = [
   'packages/auth/dist',
-  'packages/email-templates/dist',
   'packages/i18n/dist',
   'packages/update/dist',
 ];
@@ -380,6 +379,37 @@ function ensureCleanWorkingTree(options) {
   }
 }
 
+function validateRootDocumentation() {
+  // Guard: Ensure non-critical .md files are archived in docs/
+  const result = spawnSync('bash', ['scripts/validate-root-docs.sh', 'false'], {
+    cwd: REPO_ROOT,
+    stdio: 'inherit',
+  });
+
+  if ((result.status ?? 1) !== 0) {
+    throw new Error(
+      'Root documentation structure validation failed. ' +
+      'Move non-critical .md files to docs/ before releasing.'
+    );
+  }
+}
+
+function validateAwsAccount() {
+  // Guard: Ensure we're using Alternun's AWS account, not the default
+  const result = spawnSync('bash', ['scripts/validate-aws-account.sh', 'enforce'], {
+    cwd: REPO_ROOT,
+    stdio: 'inherit',
+  });
+
+  if ((result.status ?? 1) !== 0) {
+    throw new Error(
+      'AWS account validation failed. ' +
+      'You must use the Alternun AWS account (124120088516), not the default. ' +
+      'Run: bash scripts/setup-aws-account.sh'
+    );
+  }
+}
+
 function resolveProductionBranch() {
   const refs = run('git', ['for-each-ref', '--format=%(refname:short)', 'refs/heads'], {
     capture: true,
@@ -447,8 +477,31 @@ function stageReleaseFiles(dryRun) {
   run('git', ['add', '--', ...existingPaths], { dryRun });
 }
 
-function buildReleaseArtifacts(dryRun) {
-  run('pnpm', ['exec', 'turbo', 'run', 'build', '--force'], { dryRun });
+function resolveReleaseBuildStage(branchName) {
+  const normalized = branchName.toLowerCase();
+
+  if (normalized === 'master' || normalized === 'main') {
+    return 'production';
+  }
+
+  return 'dev';
+}
+
+function buildReleaseArtifacts(dryRun, env, buildStage) {
+  // Pin the release build stage so the mobile auth bundle resolves the correct
+  // stage-specific env instead of drifting back to infra defaults.
+  const buildEnv = {
+    ...env,
+    STACK: env.STACK ?? buildStage,
+    SST_STAGE: env.SST_STAGE ?? buildStage,
+    EXPO_PUBLIC_STAGE: env.EXPO_PUBLIC_STAGE ?? buildStage,
+    EXPO_PUBLIC_ENV: env.EXPO_PUBLIC_ENV ?? buildStage,
+  };
+
+  run('pnpm', ['exec', 'turbo', 'run', 'build', '--force'], {
+    dryRun,
+    env: buildEnv,
+  });
 }
 
 function createReleaseCommit(version, dryRun) {
@@ -627,6 +680,13 @@ function performVersionChange(target, options, branchName) {
     const version = readRootVersion();
     run('node', ['scripts/version-sync.mjs', '--version', version], { dryRun: options.dryRun });
     run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+    if (!options.dryRun) {
+      try {
+        run('node', ['scripts/check-changelog.mjs', '--auto-fix']);
+      } catch (err) {
+        // Ignored, check-changelog will print what failed
+      }
+    }
     return version;
   }
 
@@ -637,6 +697,11 @@ function performVersionChange(target, options, branchName) {
     run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
     const version = readRootVersion();
     if (!options.dryRun) {
+      try {
+        run('node', ['scripts/check-changelog.mjs', '--auto-fix']);
+      } catch (err) {
+        // Ignored
+      }
       syncSupplementalVersionFiles(version);
     }
     return version;
@@ -647,6 +712,11 @@ function performVersionChange(target, options, branchName) {
   run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
 
   if (!options.dryRun) {
+    try {
+      run('node', ['scripts/check-changelog.mjs', '--auto-fix']);
+    } catch (err) {
+      // Ignored
+    }
     syncSupplementalVersionFiles(target);
   }
 
@@ -666,13 +736,16 @@ function main() {
   }
 
   ensureCleanWorkingTree(options);
+  validateAwsAccount();
+  validateRootDocumentation();
 
   const currentBranch = getCurrentBranch();
   const productionBranch = resolveProductionBranch();
+  const releaseBuildStage = resolveReleaseBuildStage(currentBranch);
   const version = performVersionChange(target, options, currentBranch);
 
   if (target) {
-    buildReleaseArtifacts(options.dryRun);
+    buildReleaseArtifacts(options.dryRun, process.env, releaseBuildStage);
   }
 
   if (target && options.createCommit) {

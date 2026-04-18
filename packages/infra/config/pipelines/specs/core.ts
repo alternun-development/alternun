@@ -43,6 +43,35 @@ function buildApiUrlForStage(stage: PipelineStage, env: NodeJS.ProcessEnv): stri
   }
 }
 
+function buildAuthExchangeUrlForStage(stage: PipelineStage, env: NodeJS.ProcessEnv): string {
+  return `${buildApiUrlForStage(stage, env)}/auth/exchange`;
+}
+
+function buildBetterAuthEnvForStage(
+  stage: PipelineStage,
+  env: NodeJS.ProcessEnv
+): Record<string, string> {
+  const executionProvider = resolveAuthExecutionProviderForStage(stage, env);
+  if (executionProvider !== 'better-auth') {
+    return {
+      AUTH_BETTER_AUTH_URL: '',
+      EXPO_PUBLIC_BETTER_AUTH_URL: '',
+      AUTH_EXCHANGE_URL: '',
+      EXPO_PUBLIC_AUTH_EXCHANGE_URL: '',
+    };
+  }
+
+  const betterAuthUrl = buildApiUrlForStage(stage, env);
+  const authExchangeUrl = buildAuthExchangeUrlForStage(stage, env);
+
+  return {
+    AUTH_BETTER_AUTH_URL: betterAuthUrl,
+    EXPO_PUBLIC_BETTER_AUTH_URL: betterAuthUrl,
+    AUTH_EXCHANGE_URL: authExchangeUrl,
+    EXPO_PUBLIC_AUTH_EXCHANGE_URL: authExchangeUrl,
+  };
+}
+
 function resolveAuthentikProviderFlowSlugsForStage(
   env: NodeJS.ProcessEnv,
   allowCustomProviderFlowSlugs: boolean
@@ -63,7 +92,7 @@ function resolveAuthExecutionProviderForStage(
     return explicit.trim();
   }
 
-  return 'supabase';
+  return stage === 'production' ? 'supabase' : 'better-auth';
 }
 
 export function buildCorePipelineSpecs({
@@ -78,6 +107,12 @@ export function buildCorePipelineSpecs({
     allowCustomProviderFlowSlugs
   );
   const authentikAllowCustomProviderFlowSlugs = allowCustomProviderFlowSlugs ? 'true' : '';
+  const productionAuthExecutionProvider = resolveAuthExecutionProviderForStage('production', env);
+  const devAuthExecutionProvider = resolveAuthExecutionProviderForStage('dev', env);
+  const mobileAuthExecutionProvider = resolveAuthExecutionProviderForStage('mobile', env);
+  const productionApiUrl = buildApiUrlForStage('production', env);
+  const devApiUrl = buildApiUrlForStage('dev', env);
+  const mobileApiUrl = buildApiUrlForStage('mobile', env);
 
   return {
     production: {
@@ -89,17 +124,15 @@ export function buildCorePipelineSpecs({
         INFRA_ENABLE_EXPO_SITE: 'true',
         INFRA_IDENTITY_ENABLED: 'false',
         INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
-        AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage('production', env),
-        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage(
-          'production',
-          env
-        ),
+        AUTH_EXECUTION_PROVIDER: productionAuthExecutionProvider,
+        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: productionAuthExecutionProvider,
+        ...buildBetterAuthEnvForStage('production', env),
         EXPO_PUBLIC_AUTHENTIK_ISSUER: env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? 'alternun-mobile',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('production', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
         EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
-        EXPO_PUBLIC_API_URL: buildApiUrlForStage('production', env),
+        EXPO_PUBLIC_API_URL: productionApiUrl,
         EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
           authentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,
@@ -115,14 +148,15 @@ export function buildCorePipelineSpecs({
         INFRA_ENABLE_EXPO_SITE: 'true',
         INFRA_IDENTITY_ENABLED: 'false',
         INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
-        AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage('dev', env),
-        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage('dev', env),
+        AUTH_EXECUTION_PROVIDER: devAuthExecutionProvider,
+        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: devAuthExecutionProvider,
+        ...buildBetterAuthEnvForStage('dev', env),
         EXPO_PUBLIC_AUTHENTIK_ISSUER: env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? 'alternun-mobile',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('dev', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
         EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
-        EXPO_PUBLIC_API_URL: buildApiUrlForStage('dev', env),
+        EXPO_PUBLIC_API_URL: devApiUrl,
         EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
           authentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,
@@ -138,14 +172,15 @@ export function buildCorePipelineSpecs({
         INFRA_ENABLE_EXPO_SITE: 'true',
         INFRA_IDENTITY_ENABLED: 'false',
         INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
-        AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage('mobile', env),
-        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: resolveAuthExecutionProviderForStage('mobile', env),
+        AUTH_EXECUTION_PROVIDER: mobileAuthExecutionProvider,
+        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: mobileAuthExecutionProvider,
+        ...buildBetterAuthEnvForStage('mobile', env),
         EXPO_PUBLIC_AUTHENTIK_ISSUER: env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? 'alternun-mobile',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('mobile', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
         EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
-        EXPO_PUBLIC_API_URL: buildApiUrlForStage('mobile', env),
+        EXPO_PUBLIC_API_URL: mobileApiUrl,
         EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
           authentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,

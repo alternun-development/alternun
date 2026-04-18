@@ -19,6 +19,19 @@ const CHECK_MESSAGE_TYPE = ${JSON.stringify(exports.RELEASE_CHECK_MESSAGE_TYPE)}
 const SKIP_WAITING_MESSAGE_TYPE = ${JSON.stringify(exports.RELEASE_SKIP_WAITING_MESSAGE_TYPE)};
 const UPDATE_AVAILABLE_MESSAGE_TYPE = ${JSON.stringify(exports.RELEASE_UPDATE_AVAILABLE_MESSAGE_TYPE)};
 
+function compareVersions(versionA, versionB) {
+  const parseVersion = (v) => {
+    const parts = v.split('.').map((p) => parseInt(p, 10) || 0);
+    return { major: parts[0] ?? 0, minor: parts[1] ?? 0, patch: parts[2] ?? 0 };
+  };
+  const a = parseVersion(versionA);
+  const b = parseVersion(versionB);
+  if (a.major !== b.major) return a.major > b.major ? 1 : -1;
+  if (a.minor !== b.minor) return a.minor > b.minor ? 1 : -1;
+  if (a.patch !== b.patch) return a.patch > b.patch ? 1 : -1;
+  return 0;
+}
+
 async function notifyClients(nextVersion) {
   const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
   for (const client of clients) {
@@ -45,7 +58,7 @@ async function checkForUpdate() {
   const nextVersion =
     manifest && typeof manifest.version === 'string' ? manifest.version.trim() : '';
 
-  if (!nextVersion || nextVersion === CURRENT_VERSION) {
+  if (!nextVersion || compareVersions(nextVersion, CURRENT_VERSION) <= 0) {
     return false;
   }
 

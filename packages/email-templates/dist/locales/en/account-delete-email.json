@@ -1,9 +1,0 @@
-{
-  "subject": "Your Alternun account deletion request",
-  "preview": "Review and confirm your account deletion request.",
-  "greeting": "Hi {{email}},",
-  "intro": "We received a request to delete your Alternun account.",
-  "ctaLabel": "Review deletion request",
-  "ignoreNotice": "If you did not request this action, secure your account immediately.",
-  "footer": "Alternun Security Team"
-}

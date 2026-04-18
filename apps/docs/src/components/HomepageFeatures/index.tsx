@@ -96,13 +96,9 @@ export default function HomepageFeatures(): React.ReactElement {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          {FeatureList.map(props => (
+          {FeatureList.map((props) => (
             <React.Fragment key={props.title}>
-              <Feature
-                title={props.title}
-                icon={props.icon}
-                description={props.description}
-              />
+              <Feature title={props.title} icon={props.icon} description={props.description} />
             </React.Fragment>
           ))}
         </motion.div>

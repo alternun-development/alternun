@@ -11,6 +11,7 @@ import {
   normalizeReleaseVersion,
   parseReleaseManifest,
   serializeReleaseManifest,
+  compareReleaseVersions,
   type ReleaseManifest,
 } from './manifest';
 
@@ -18,7 +19,17 @@ const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0'])
 const DEFAULT_STORAGE_KEY = 'alternun.release.dismissed-version';
 const DEFAULT_MANIFEST_URL = `/${RELEASE_MANIFEST_FILENAME}`;
 const DEFAULT_WORKER_URL = '/alternun-release-worker.js';
-const DEFAULT_POLL_INTERVAL_MS = 5 * 60 * 1000;
+const DEFAULT_POLL_INTERVAL_MS = (() => {
+  const envInterval =
+    typeof process !== 'undefined' ? process.env.EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS : undefined;
+  if (envInterval) {
+    const parsed = parseInt(envInterval, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+  return 5 * 60 * 1000; // 5 minutes default for production
+})();
 const dismissedVersionsInMemory = new Map<string, string>();
 
 export type ReleaseUpdateMode = 'auto' | 'on' | 'off';
@@ -289,10 +300,24 @@ export function useReleaseUpdate({
       if (hasServiceWorkerSupport) {
         const registration = await ensureServiceWorkerRegistration();
         if (registration) {
-          registration.active?.postMessage({
-            type: RELEASE_CHECK_MESSAGE_TYPE,
-            manifestUrl: runtime.manifestUrl,
-          });
+          if (registration.active) {
+            registration.active.postMessage({
+              type: RELEASE_CHECK_MESSAGE_TYPE,
+              manifestUrl: runtime.manifestUrl,
+            });
+          } else if (registration.installing) {
+            // SW is still installing; wait for it to activate before sending the message
+            const onStateChange = () => {
+              if (registration.active) {
+                registration.active.postMessage({
+                  type: RELEASE_CHECK_MESSAGE_TYPE,
+                  manifestUrl: runtime.manifestUrl,
+                });
+                registration.installing?.removeEventListener('statechange', onStateChange);
+              }
+            };
+            registration.installing.addEventListener('statechange', onStateChange);
+          }
         }
       }
 
@@ -311,9 +336,9 @@ export function useReleaseUpdate({
       const nextVersion = manifest?.version ?? null;
       const dismissedVersion = readStoredDismissedVersion(storageKey);
       const isUpdateAvailable =
-        Boolean(nextVersion) &&
-        nextVersion !== normalizedCurrentVersion &&
-        nextVersion !== dismissedVersion;
+        nextVersion !== null &&
+        nextVersion !== dismissedVersion &&
+        compareReleaseVersions(nextVersion, normalizedCurrentVersion) > 0;
 
       setRemoteVersion(nextVersion);
       setAvailable(isUpdateAvailable);
@@ -368,11 +393,19 @@ export function useReleaseUpdate({
       registrationRef.current = registration;
     });
 
+    const handleControllerChange = () => {
+      if (!cancelled) {
+        void refresh();
+      }
+    };
+
     navigator.serviceWorker.addEventListener('message', handleWorkerMessage);
+    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
 
     return () => {
       cancelled = true;
       navigator.serviceWorker.removeEventListener('message', handleWorkerMessage);
+      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
   }, [
     enabled,

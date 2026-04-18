@@ -128,6 +128,16 @@ load_infra_env() {
     export INFRA_REDIRECT_ROOT_CERT_ARN="$canonical_redirect_cert_root"
   fi
 
+  if [ -z "${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES:-}" ]; then
+    local dev_to_testnet_source_primary dev_to_testnet_source_demo dev_to_testnet_source_beta
+    dev_to_testnet_source_primary=${INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE:-${INFRA_EXPO_DOMAIN_DEV:-${DOMAIN_DEV:-}}}
+    if [ -n "$dev_to_testnet_source_primary" ]; then
+      dev_to_testnet_source_demo=${dev_to_testnet_source_primary/#dev./demo.}
+      dev_to_testnet_source_beta=${dev_to_testnet_source_primary/#dev./beta.}
+      export INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES="${dev_to_testnet_source_primary},${dev_to_testnet_source_demo},${dev_to_testnet_source_beta}"
+    fi
+  fi
+
   # Backward-compatible aliases for legacy .env naming.
   if [ -z "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_KEY_ID:-}" ]; then
     export AWS_ACCESS_KEY_ID="${AWS_KEY_ID}"
@@ -138,7 +148,8 @@ load_infra_env() {
   fi
 
   if [ -z "${AWS_SESSION_TOKEN:-}" ] && [ -n "${AWS_SESSION:-}" ]; then
-    export AWS_SESSION_TOKEN="${AWS_SESSION}"
+    printf -v AWS_SESSION_TOKEN '%s' "${AWS_SESSION}"
+    export AWS_SESSION_TOKEN
   fi
 
   force_env_credentials=${INFRA_FORCE_ENV_AWS_CREDENTIALS:-true}

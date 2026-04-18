@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { applyBetterAuthCorsHeaders } from './better-auth-cors';
 
 const BETTER_AUTH_PUBLIC_PREFIX = '/auth';
 const BETTER_AUTH_EXCHANGE_PATH = '/auth/exchange';
@@ -65,11 +66,12 @@ function serializeRequestBody(body: unknown): string | undefined {
     return body;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   if (Buffer.isBuffer(body)) {
-    return body.toString('utf8');
+    return (body as Buffer).toString('utf8');
   }
 
-  return JSON.stringify(body);
+  return JSON.stringify(body as Record<string, unknown>);
 }
 
 export function shouldProxyBetterAuthPath(pathname: string): boolean {
@@ -96,7 +98,11 @@ export function buildBetterAuthProxyTargetUrl(requestUrl: string, targetBaseUrl:
   ).toString();
 }
 
-async function copyProxyResponse(reply: FastifyReply, response: Response): Promise<void> {
+async function copyProxyResponse(
+  reply: FastifyReply,
+  response: Response,
+  requestHeaders: BetterAuthRequestHeaders
+): Promise<void> {
   void reply.code(response.status);
 
   const responseHeaders = response.headers as ResponseHeadersWithCookies;
@@ -114,6 +120,8 @@ async function copyProxyResponse(reply: FastifyReply, response: Response): Promi
 
     void reply.header(name, value);
   }
+
+  applyBetterAuthCorsHeaders(reply, requestHeaders);
 
   const payload = await response.arrayBuffer();
   void reply.send(Buffer.from(payload));
@@ -136,6 +144,9 @@ export async function proxyBetterAuthRequest(
   }
 
   if (request.method.toUpperCase() === 'OPTIONS') {
+    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders, {
+      preflight: true,
+    });
     void reply.code(204).send();
     return true;
   }
@@ -171,6 +182,7 @@ export async function proxyBetterAuthRequest(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : typeof error === 'string' ? error : String(error);
+    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders);
     void reply.code(502).send({
       statusCode: 502,
       error: 'Bad Gateway',
@@ -179,7 +191,7 @@ export async function proxyBetterAuthRequest(
     return true;
   }
 
-  await copyProxyResponse(reply, upstream);
+  await copyProxyResponse(reply, upstream, request.headers as BetterAuthRequestHeaders);
   return true;
 }
 

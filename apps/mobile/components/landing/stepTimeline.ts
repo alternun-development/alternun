@@ -9,16 +9,16 @@ export interface StepTimelineProgressRange {
   endPercent: number;
 }
 
-function normalizeStepCount(stepCount: number): number {
-  if (!Number.isFinite(stepCount)) {
+function normalizeStepCount(stepCount: number,): number {
+  if (!Number.isFinite(stepCount,)) {
     return 2;
   }
 
-  return Math.max(2, Math.floor(stepCount));
+  return Math.max(2, Math.floor(stepCount,),);
 }
 
-export function getStepTimelineTrackMetrics(stepCount: number): StepTimelineTrackMetrics {
-  const normalizedStepCount = normalizeStepCount(stepCount);
+export function getStepTimelineTrackMetrics(stepCount: number,): StepTimelineTrackMetrics {
+  const normalizedStepCount = normalizeStepCount(stepCount,);
   const trackInsetPercent = 100 / (normalizedStepCount * 2);
   const trackSpanPercent = 100 - trackInsetPercent * 2;
   const segmentSpanPercent = trackSpanPercent / (normalizedStepCount - 1);
@@ -33,13 +33,13 @@ export function getStepTimelineTrackMetrics(stepCount: number): StepTimelineTrac
 export function getStepTimelineProgressRange(
   activeStep: number,
   stepCount: number,
-  trackSpanPercent: number
+  trackSpanPercent: number,
 ): StepTimelineProgressRange {
-  const normalizedStepCount = normalizeStepCount(stepCount);
-  const clampedStep = Math.min(Math.max(Math.floor(activeStep), 0), normalizedStepCount - 1);
+  const normalizedStepCount = normalizeStepCount(stepCount,);
+  const clampedStep = Math.min(Math.max(Math.floor(activeStep,), 0,), normalizedStepCount - 1,);
   const segmentSpanPercent = trackSpanPercent / (normalizedStepCount - 1);
-  const startPercent = Math.min(clampedStep * segmentSpanPercent, trackSpanPercent);
-  const endPercent = Math.min((clampedStep + 1) * segmentSpanPercent, trackSpanPercent);
+  const startPercent = Math.min(clampedStep * segmentSpanPercent, trackSpanPercent,);
+  const endPercent = Math.min((clampedStep + 1) * segmentSpanPercent, trackSpanPercent,);
 
   return {
     startPercent,

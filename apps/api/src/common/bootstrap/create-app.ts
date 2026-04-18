@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule } from '../../app.module';
 import { registerBetterAuthProxy } from './better-auth-proxy';
+import { registerBetterAuthRuntime, resolveBetterAuthBootstrapConfig } from './better-auth-runtime';
 import { setupOpenApi } from '../openapi/setup-openapi';
 
 export async function createApp(): Promise<NestFastifyApplication> {
@@ -29,12 +30,22 @@ export async function createApp(): Promise<NestFastifyApplication> {
   );
 
   setupOpenApi(app);
-  const betterAuthUrl =
-    process.env.BETTER_AUTH_URL?.trim() ?? process.env.AUTH_BETTER_AUTH_URL?.trim();
-  if (betterAuthUrl) {
-    registerBetterAuthProxy(app.getHttpAdapter().getInstance(), {
-      targetBaseUrl: betterAuthUrl,
+  const fastify = app.getHttpAdapter().getInstance();
+  const betterAuth = resolveBetterAuthBootstrapConfig(process.env);
+
+  if (betterAuth.mode === 'proxy' && betterAuth.targetBaseUrl) {
+    fastify.log.info({ targetBaseUrl: betterAuth.targetBaseUrl }, 'Registering Better Auth proxy');
+    registerBetterAuthProxy(fastify, {
+      targetBaseUrl: betterAuth.targetBaseUrl,
     });
+  }
+
+  if (betterAuth.mode === 'embedded' && betterAuth.runtimeConfig) {
+    fastify.log.info(
+      { baseURL: betterAuth.runtimeConfig.baseURL },
+      'Registering embedded Better Auth runtime'
+    );
+    registerBetterAuthRuntime(fastify, betterAuth.runtimeConfig);
   }
   return app;
 }

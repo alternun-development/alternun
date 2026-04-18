@@ -43,6 +43,20 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
       : config.baseURL;
   const hasGoogleProvider = Boolean(config.googleClientId && config.googleClientSecret);
   const hasDiscordProvider = Boolean(config.discordClientId && config.discordClientSecret);
+
+  // Derive parent domain for cross-subdomain cookies (e.g., ".alternun.co" from "api.alternun.co")
+  let cookieDomain: string | undefined;
+  try {
+    const url = new URL(config.baseURL);
+    const parts = url.hostname.split('.');
+    if (parts.length > 2) {
+      // For "api.alternun.co" → ".alternun.co"; for "api.example.co.uk" → ".example.co.uk"
+      cookieDomain = `.${parts.slice(-2).join('.')}`;
+    }
+  } catch {
+    // Fall back to undefined (browser will handle it)
+  }
+
   const socialProviders = {
     ...(hasGoogleProvider
       ? {
@@ -51,6 +65,7 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
             clientSecret: config.googleClientSecret,
             redirectURI: `${stripTrailingSlash(effectiveRedirectBaseURL)}/auth/callback/google`,
             prompt: 'select_account' as const,
+            accessType: 'offline' as const,
           },
         }
       : {}),
@@ -72,6 +87,8 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
     config.oauthProxy.productionURL,
   ]);
 
+  const isProduction = process.env.NODE_ENV === 'production';
+
   return betterAuth({
     appName: 'Alternun Dev Better Auth',
     baseURL: config.baseURL,
@@ -86,17 +103,20 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
     },
     account: {
       storeAccountCookie: true,
+      encryptOAuthTokens: true,
       accountLinking: {
         enabled: true,
         trustedProviders: ['google', ...(hasDiscordProvider ? ['discord'] : []), 'email-password'],
+        allowDifferentEmails: false,
       },
       skipStateCookieCheck: config.oauthProxy.enabled,
     },
     advanced: {
-      useSecureCookies: false,
+      useSecureCookies: isProduction,
       disableCSRFCheck: false,
       disableOriginCheck: false,
       skipTrailingSlashes: true,
+      defaultCookieDomain: cookieDomain,
     },
     telemetry: {
       enabled: false,

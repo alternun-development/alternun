@@ -60,7 +60,10 @@ APPROVE=true pnpm --filter @alternun/infra run ensure:pipelines
 - Dev-stage redirects are supported through infra config:
   - `airs.alternun.co` -> `testnet.airs.alternun.co`
   - `dev.airs.alternun.co` -> `testnet.airs.alternun.co`
+  - `demo.airs.alternun.co` -> `testnet.airs.alternun.co`
+  - `beta.airs.alternun.co` -> `testnet.airs.alternun.co`
   - `alternun.co` -> `alternun.io`
+  - When multiple `airs` aliases are enabled, infra provisions a wildcard `*.airs.alternun.co` ACM cert for that redirect group.
 - Root `.env` local flag:
   - `ALTERNUN_TESTNET_MODE=on`
 - CI uses the same mode through GitHub Actions (default `on` unless repository variable `ALTERNUN_TESTNET_MODE` disables it).

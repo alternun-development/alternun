@@ -45,6 +45,14 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
+When editing code:
+
+- Think first.
+- Edit only what changes; do not rewrite whole files.
+- Do not reread files you already read unless they changed.
+- Keep responses terse: no preambles, no summaries, no obvious explanations.
+- Test before claiming done.
+
 ## 4. Goal-Driven Execution
 
 **Define success criteria. Loop until verified.**
@@ -64,6 +72,134 @@ For multi-step tasks, state a brief plan:
 ```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+## 5. AWS Account Guard
+
+**CRITICAL: Use Alternun's AWS account, NOT the default.**
+
+### The Problem
+
+Your machine likely has **two** AWS CLI profiles:
+
+- **Default** (`~/.aws/credentials` → account `058264267235`) — DO NOT USE
+- **Alternun** (from `.env` → account `124120088516`) — MUST USE
+
+Accidental use of the default account will deploy to the wrong infrastructure and create resources in the wrong account.
+
+### The Solution
+
+#### Quick Setup (do this first)
+
+```bash
+# One-time: Load Alternun credentials
+bash scripts/setup-aws-account.sh
+
+# Verify
+bash scripts/validate-aws-account.sh
+# Output: ✅ Using CORRECT Alternun AWS account: 124120088516
+```
+
+#### In Your Shell (permanent for session)
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+source ~/Documents/Alternun/alternun/scripts/setup-aws-account.sh
+```
+
+#### Per-Command (one-off)
+
+```bash
+# Before any deployment
+bash scripts/setup-aws-account.sh && APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+```
+
+### Guards In Place
+
+| When                 | Guard                                          | Effect                                |
+| -------------------- | ---------------------------------------------- | ------------------------------------- |
+| **Release**          | `pnpm release`                                 | ❌ Fails if wrong account             |
+| **Pre-commit**       | `git commit`                                   | ⚠️ Warns if wrong account (info only) |
+| **Manual**           | `bash scripts/validate-aws-account.sh`         | Shows current account                 |
+| **Manual (enforce)** | `bash scripts/validate-aws-account.sh enforce` | Exits with error if wrong             |
+
+### AWS CLI Command Protocol
+
+**Before running ANY `aws` or deploy command**, verify account first:
+
+```bash
+bash scripts/validate-aws-account.sh enforce  # Exits with error if wrong account
+```
+
+**ALWAYS follow this pattern:**
+
+```bash
+bash scripts/validate-aws-account.sh enforce && \
+  APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+```
+
+Never run AWS CLI commands without this guard.
+
+### Troubleshooting
+
+**Q: How do I know which account I'm using?**
+
+```bash
+bash scripts/validate-aws-account.sh
+```
+
+**Q: I got "WRONG AWS ACCOUNT DETECTED" on release. What do I do?**
+
+```bash
+bash scripts/setup-aws-account.sh  # Load correct credentials
+pnpm release                        # Try again
+```
+
+**Q: Can I change my default AWS profile?**
+No — don't modify `~/.aws/credentials`. Instead, always load Alternun credentials from `.env` using `setup-aws-account.sh`.
+
+---
+
+## 6. Repository Organization & Cleanup
+
+**Keep root clean. Archive non-critical docs in `docs/`.**
+
+### Critical Root Files (only these .md files at root)
+
+- `AGENTS.md` — agent compatibility
+- `CHANGELOG.md` — release notes
+- `CLAUDE.md` — Claude Code compatibility
+- `CODE_OF_CONDUCT.md` — community guidelines
+- `CONTRIBUTING.md` — contribution guide
+- `README.md` — project overview
+- `SECURITY.md` — security policy
+- `LICENSE` — license file
+
+### Non-Critical Files (move to `docs/`)
+
+All other `.md` files (deployment guides, incident reports, architecture decisions, etc.) belong in the `docs/` directory.
+
+### Guards
+
+- **Pre-commit hook** (`scripts/validate-root-docs.sh`): Blocks commits with non-critical .md files at root
+- **Release script** (`scripts/release.mjs`): Validates root structure before publishing
+- **Manual check**: `bash scripts/validate-root-docs.sh false`
+
+### Usage
+
+```bash
+# Check current state
+bash scripts/validate-root-docs.sh false
+
+# Move files
+mv DEPLOYMENT_FIX_SUMMARY.md docs/
+mv ENVIRONMENT_SETUP_SUMMARY.md docs/
+
+# Pre-commit (automatic)
+git add SOME_FILE.md  # automatically validated by husky
+
+# Release (automatic)
+pnpm release          # fails if non-critical .md at root
+```
 
 ---
 

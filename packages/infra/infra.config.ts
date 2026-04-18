@@ -46,7 +46,11 @@ import {
 } from './modules/backend-api.js';
 import { buildIdentitySettings, resolveIdentityStageDomain } from './modules/identity.js';
 import { deployIdentityInfrastructure } from './modules/identity-resources.js';
-import { buildStageDomainConfig, createExternalDomainRedirect } from './modules/redirects.js';
+import {
+  buildStageDomainConfig,
+  createDnsValidatedCertificate,
+  createExternalDomainRedirect,
+} from './modules/redirects.js';
 
 interface PublicAssetFile {
   cacheControl: string;
@@ -215,6 +219,10 @@ const airsToDevSourceDomain = expoConfig.redirects.airsToDevSourceDomain;
 const airsToDevCertArn = expoConfig.redirects.airsToDevCertArn;
 const enableDevToTestnetRedirect = expoConfig.redirects.enableDevToTestnet;
 const devToTestnetSourceDomain = expoConfig.redirects.devToTestnetSourceDomain;
+const devToTestnetSourceDomains = expoConfig.redirects.devToTestnetSourceDomains;
+const devToTestnetRedirectAliases = devToTestnetSourceDomains.filter(
+  (sourceDomain) => sourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase()
+);
 const devToTestnetCertArn = expoConfig.redirects.devToTestnetCertArn;
 const enableRootDomainRedirect = expoConfig.redirects.enableRootDomainRedirect;
 const rootDomainRedirectTarget = expoConfig.redirects.rootDomainRedirectTarget;
@@ -430,6 +438,7 @@ const commonBuildEnv = {
   INFRA_REDIRECT_AIRS_TO_DEV_SOURCE: airsToDevSourceDomain,
   INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN: airsToDevCertArn ?? '',
   INFRA_REDIRECT_DEV_TO_TESTNET_SOURCE: devToTestnetSourceDomain,
+  INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES: devToTestnetSourceDomains.join(','),
   INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN: devToTestnetCertArn ?? '',
   INFRA_REDIRECT_ROOT_TARGET: rootDomainRedirectTarget,
   INFRA_REDIRECT_ROOT_CERT_ARN: rootDomainRedirectCertArn ?? '',
@@ -527,6 +536,7 @@ export function createInfrastructure() {
   }
 
   if (adminSiteSettings.enabled && !adminSiteAllowedOnStack) {
+    // eslint-disable-next-line no-console
     console.log(
       [
         `Admin site is enabled but skipped for stack "${stage}" because INFRA_ADMIN_DEDICATED_STACKS_ONLY=true.`,
@@ -536,6 +546,7 @@ export function createInfrastructure() {
   }
 
   if (backendApiSettings.enabled && !backendApiAllowedOnStack) {
+    // eslint-disable-next-line no-console
     console.log(
       [
         `Backend API is enabled but skipped for stack "${stage}" because INFRA_BACKEND_API_DEDICATED_STACKS_ONLY=true.`,
@@ -545,6 +556,7 @@ export function createInfrastructure() {
   }
 
   if (identitySettings.enabled && !identityAllowedOnStack) {
+    // eslint-disable-next-line no-console
     console.log(
       [
         `Identity is enabled but skipped for stack "${stage}" because INFRA_IDENTITY_DEDICATED_STACKS_ONLY=true.`,
@@ -570,6 +582,7 @@ export function createInfrastructure() {
     ? deployBackendApiInfrastructure({
         appName,
         authentikJwtSigningKey: identityInfrastructure?.secrets.jwtSigningKey.value,
+        authentikSmtpSecretArn: identityInfrastructure?.secrets.smtpCredentials.arn,
         env: process.env,
         hostedZoneId: process.env.INFRA_ROUTE53_HOSTED_ZONE_ID,
         rootDomain,
@@ -692,7 +705,9 @@ export function createInfrastructure() {
   if (enableExpoSiteForStage) {
     const assetBucketName = assetBucketNames[expoDeploymentStage];
     const assetBaseUrl = createAssetBaseUrl(assetBucketName);
-    const expoAuthExecutionProvider = expoPublicAuthExecutionProvider ?? 'supabase';
+    const expoAuthExecutionProvider =
+      expoPublicAuthExecutionProvider ??
+      (expoPublicBetterAuthUrl ?? expoPublicAuthExchangeUrl ? 'better-auth' : 'supabase');
     const introVideoAssets = {
       en: buildPublicAssetFile(
         resolvedExpoAppPath,
@@ -811,10 +826,11 @@ export function createInfrastructure() {
 
     if (shouldCreateRootDomainRedirect) {
       createExternalDomainRedirect({
-        id: `root-domain-redirect-${stage}`,
+        id: `root-redir-${stage}`,
         sourceDomain: rootDomain,
         targetDomain: rootDomainRedirectTarget,
         certificateArn: rootDomainRedirectCertArn,
+        aliases: [`root-domain-redirect-${stage}`],
       });
     }
 
@@ -826,10 +842,11 @@ export function createInfrastructure() {
 
     if (shouldCreateAirsToDevRedirect) {
       createExternalDomainRedirect({
-        id: `airs-domain-redirect-${stage}`,
+        id: `airs-redir-${stage}`,
         sourceDomain: airsToDevSourceDomain,
         targetDomain: expoStageMap.dev,
         certificateArn: airsToDevCertArn,
+        aliases: [`airs-domain-redirect-${stage}`],
       });
     }
 
@@ -837,14 +854,35 @@ export function createInfrastructure() {
       stage === 'dev' &&
       enableCustomDomain &&
       enableDevToTestnetRedirect &&
-      devToTestnetSourceDomain.toLowerCase() !== expoStageMap.dev.toLowerCase();
+      devToTestnetRedirectAliases.length > 0;
 
     if (shouldCreateDevToTestnetRedirect) {
+      const redirectCertificateArn =
+        devToTestnetRedirectAliases.length > 1
+          ? (() => {
+              const hostedZoneId = process.env.INFRA_ROUTE53_HOSTED_ZONE_ID;
+              if (!hostedZoneId) {
+                throw new Error(
+                  'INFRA_ROUTE53_HOSTED_ZONE_ID is required to provision the wildcard certificate for dev-stage redirect aliases.'
+                );
+              }
+
+              return createDnsValidatedCertificate({
+                id: `dev-redir-${stage}-wildcard-cert`,
+                domainName: `*.${expoSubdomain}.${rootDomain}`,
+                hostedZoneId,
+                aliases: [`dev-domain-redirect-${stage}-wildcard-cert`],
+              });
+            })()
+          : devToTestnetCertArn;
+
       createExternalDomainRedirect({
-        id: `dev-domain-redirect-${stage}`,
+        id: `dev-redir-${stage}`,
         sourceDomain: devToTestnetSourceDomain,
         targetDomain: expoStageMap.dev,
-        certificateArn: devToTestnetCertArn,
+        certificateArn: redirectCertificateArn,
+        redirects: devToTestnetRedirectAliases,
+        aliases: [`dev-domain-redirect-${stage}`],
       });
     }
 
@@ -866,6 +904,7 @@ export function createInfrastructure() {
       airsToDevTarget: shouldCreateAirsToDevRedirect ? expoStageMap.dev : null,
       devToTestnetEnabled: shouldCreateDevToTestnetRedirect,
       devToTestnetSource: shouldCreateDevToTestnetRedirect ? devToTestnetSourceDomain : null,
+      devToTestnetSources: shouldCreateDevToTestnetRedirect ? devToTestnetSourceDomains : null,
       devToTestnetTarget: shouldCreateDevToTestnetRedirect ? expoStageMap.dev : null,
       rootDomainRedirectEnabled: shouldCreateRootDomainRedirect,
       rootDomainRedirectTarget: shouldCreateRootDomainRedirect ? rootDomainRedirectTarget : null,

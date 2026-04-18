@@ -20,10 +20,32 @@ export interface PoolPosition {
 export interface AIRSEntry {
   id: string;
   reason: string;
-  referenceType: 'token_purchase' | 'pool_deposit' | 'compensation' | 'retire' | 'claim';
+  referenceType:
+    | 'allied_commerce'
+    | 'validated_regenerative_action'
+    | 'compensation'
+    | 'profile_completion_bonus'
+    | 'correction';
   amountAIRS: number;
   timestamp: Date;
-  onChainReference: string;
+  reference: string;
+  sourceAmount?: number | null;
+  sourceCurrency?: string | null;
+}
+
+export interface AirsDashboardSnapshot {
+  userId: string;
+  email: string | null;
+  displayName: string | null;
+  locale: string | null;
+  profileComplete: boolean;
+  firstDashboardRecorded: boolean;
+  welcomeEmailSentAt: string | null;
+  profileBonusAwardedAt: string | null;
+  profileCompletedAt: string | null;
+  balanceAIRS: number;
+  lifetimeEarnedAIRS: number;
+  recentEntries: AIRSEntry[];
 }
 
 export interface SBTCertificate {

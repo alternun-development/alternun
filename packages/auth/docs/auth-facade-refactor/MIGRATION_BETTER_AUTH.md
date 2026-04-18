@@ -97,9 +97,9 @@ The migration is complete only when all of the following are true:
 
 ### Workstream 1: Better Auth Runtime Integration
 
-- Add a real Better Auth runtime integration instead of only the generic adapter shell.
-- Decide whether Better Auth runs inside `apps/api` or as a dedicated auth service.
-- Keep the browser-facing URL on the API origin and proxy `/auth/*` to the private Better Auth service when the runtime stays separate.
+- The API bootstrap now supports a real embedded Better Auth runtime inside `apps/api` for deployed stacks.
+- Local development still proxies `/auth/*` to the private Better Auth dev service on `http://localhost:9083`.
+- A dedicated private Better Auth service remains optional; when you add one later, keep the browser-facing URL on the API origin and point `BETTER_AUTH_URL` at the private upstream.
 - Wire Google, GitHub, and social login first.
 - Keep Apple as a testnet-ready placeholder unless credentials and native flow details are ready.
 

@@ -108,6 +108,7 @@ env:
     # Safety-first: never delete existing DNS automatically during deploy.
     AUTO_REMOVE_CONFLICTING_DNS: 'false'
     INFRA_REMOVE_ACM_VALIDATION_CNAME: 'false'
+    INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS: 'false'
     INFRA_FAIL_ON_MANAGED_CERT_CNAME_CONFLICT: 'true'
     # Optional post-deploy DNS sync poll tuning (used only when enabled).
     POLL_TIMEOUT: '120'
@@ -122,6 +123,9 @@ env:
     INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS: '5'
     INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS: '20'
     INFRA_ENFORCE_REDIRECT_CHECKS: 'false'
+    # Recovery-only cleanup. The deploy script auto-runs this for dev redirect cutovers
+    # only when INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true, so keep the flag explicit for
+    # manual recovery or alias migration runs.
     INFRA_ENABLE_ALIAS_CLEANUP: 'false'
     INFRA_ENABLE_SST_DIFF: 'false'
     INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'true'
@@ -129,9 +133,9 @@ env:
     INFRA_ENABLE_SST_REFRESH: 'false'
     HUSKY: '0'
     EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: '1'
-    # Authentik OIDC config — resolved per-stage from SSM in pre_build.
-    # Do NOT hardcode these here; values differ between dev and production.
-    # SSM paths: /alternun/ci/{dev|production}/expo-public/EXPO_PUBLIC_AUTHENTIK_*
+    # Authentik and Better Auth config are resolved per-stage from the canonical
+    # SSM helper in pre_build. Keep these empty here so the helper remains the
+    # single source of truth for CI.
     EXPO_PUBLIC_AUTHENTIK_ISSUER: ''
     EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: ''
     EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: ''
@@ -195,31 +199,23 @@ phases:
       - echo "pnpm     = $(pnpm --version)"
       - echo "Infra    = ${INFRA_PATH}"
       - |
-        # Resolve stage-specific Authentik OIDC config from SSM Parameter Store.
-        # Maps pipeline stage names to SSM key: production|prod → production, everything else → dev.
-        case "$(echo "${SST_STAGE}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')" in
-          production|prod) _ssm_stage="production" ;;
-          *) _ssm_stage="dev" ;;
-        esac
-        echo "Resolving Authentik OIDC config from SSM (stage key: ${_ssm_stage})"
-        for _var in EXPO_PUBLIC_AUTHENTIK_ISSUER EXPO_PUBLIC_AUTHENTIK_CLIENT_ID EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI; do
-          _ssm_path="/alternun/ci/${_ssm_stage}/expo-public/${_var}"
-          _ssm_stderr=$(mktemp)
-          _ssm_value=$(aws ssm get-parameter \
-            --name "${_ssm_path}" \
-            --query 'Parameter.Value' \
-            --output text 2>"${_ssm_stderr}") || _ssm_exit=$?
-          _ssm_err_text=$(cat "${_ssm_stderr}"); rm -f "${_ssm_stderr}"
-          if [ -n "${_ssm_value}" ] && [ "${_ssm_value}" != "None" ]; then
-            export "${_var}=${_ssm_value}"
-            echo "  ${_var} loaded from SSM"
-          elif echo "${_ssm_err_text}" | grep -q 'ParameterNotFound'; then
-            echo "  WARN: SSM param ${_ssm_path} not found; ${_var} will be empty (Authentik auth buttons will be hidden)"
-          else
-            echo "  ERROR: Failed to read SSM param ${_ssm_path}: ${_ssm_err_text}" >&2
-            exit "${_ssm_exit:-1}"
-          fi
-        done
+        if [ -f "${INFRA_PATH}/scripts/resolve-ssm-env.sh" ]; then
+          echo "Resolving Expo auth env from the canonical SSM helper..."
+          # shellcheck source=/dev/null
+          source "${INFRA_PATH}/scripts/resolve-ssm-env.sh"
+        else
+          echo "ERROR: Missing ${INFRA_PATH}/scripts/resolve-ssm-env.sh" >&2
+          exit 1
+        fi
+      - |
+        if [ -f "${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh" ]; then
+          echo "Resolving auth secrets from the canonical Secrets Manager helper..."
+          # shellcheck source=/dev/null
+          source "${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh"
+        else
+          echo "ERROR: Missing ${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh" >&2
+          exit 1
+        fi
       - |
         stage_normalized=$(echo "${SST_STAGE}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
         if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ]; then
@@ -422,6 +418,10 @@ phases:
     commands:
       - echo "SST deploy completed for stage ${SST_STAGE}"
       - |
+        if [ "${SST_STAGE}" = "dev" ]; then
+          # Dev testnet cutovers need DNS reconciliation so redirect aliases can follow the new CDN state.
+          export INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=true
+        fi
         if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
           echo "Skipping post-deploy DNS sync because BUILD phase failed."
         elif [ "${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC}" != "true" ]; then

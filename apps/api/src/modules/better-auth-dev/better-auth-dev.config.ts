@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -53,10 +54,12 @@ export interface BetterAuthDevConfig {
 }
 
 export function loadEnvFile(filePath = resolve(process.cwd(), '.env.better-auth')): void {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   if (!existsSync(filePath)) {
     return;
   }
 
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const contents = readFileSync(filePath, 'utf8');
 
   for (const line of contents.split('\n')) {
@@ -82,6 +85,7 @@ export function loadEnvFile(filePath = resolve(process.cwd(), '.env.better-auth'
       continue;
     }
 
+    // eslint-disable-next-line security/detect-object-injection
     process.env[key] = parseEnvValue(rawValue);
   }
 }
@@ -98,6 +102,82 @@ function splitOrigins(value: string | undefined, fallback: string[]): string[] {
     .filter((entry) => entry.length > 0);
 
   return parsed.length > 0 ? parsed : fallback;
+}
+
+function uniqueStrings(values: Array<string | undefined | null>): string[] {
+  const trimmedValues: string[] = [];
+  for (const value of values) {
+    const trimmed = value?.trim();
+    if (trimmed) {
+      trimmedValues.push(trimmed);
+    }
+  }
+
+  return trimmedValues.filter((value, index, array) => array.indexOf(value) === index);
+}
+
+function normalizeBetterAuthBaseUrl(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  try {
+    const url = new URL(
+      trimmed
+        .replace(/\/+$/, '')
+        .replace(/\/auth\/exchange$/, '')
+        .replace(/\/auth$/, '')
+    );
+    const pathname = url.pathname === '/' ? '' : url.pathname;
+    return `${url.origin}${pathname}`.replace(/\/+$/, '');
+  } catch {
+    return trimmed
+      .replace(/\?.*$/, '')
+      .replace(/#.*$/, '')
+      .replace(/\/+$/, '')
+      .replace(/\/auth\/exchange$/, '')
+      .replace(/\/auth$/, '');
+  }
+}
+
+function deriveBetterAuthSecret(env: NodeJS.ProcessEnv): string {
+  const explicitSecret = env.BETTER_AUTH_SECRET?.trim() ?? env.AUTH_SECRET?.trim();
+  if (explicitSecret) {
+    return explicitSecret;
+  }
+
+  const issuerSigningKey =
+    env.AUTHENTIK_JWT_SIGNING_KEY?.trim() ??
+    env.INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY?.trim();
+  if (issuerSigningKey) {
+    return createHash('sha256').update(`${issuerSigningKey}:better-auth`).digest('hex');
+  }
+
+  return 'example-better-auth-secret-default';
+}
+
+function deriveTrustedAppOrigin(value: string | undefined): string | null {
+  const trimmedValue = value?.trim();
+  if (!trimmedValue) {
+    return null;
+  }
+
+  try {
+    const url = new URL(normalizeBetterAuthBaseUrl(trimmedValue));
+    const hostnameParts = url.hostname.split('.');
+    const apiIndex = hostnameParts.indexOf('api');
+
+    if (apiIndex < 0) {
+      return null;
+    }
+
+    hostnameParts[apiIndex] = 'airs';
+    url.hostname = hostnameParts.join('.');
+    return url.origin;
+  } catch {
+    return null;
+  }
 }
 
 function resolveOAuthProxyConfig(env: NodeJS.ProcessEnv): BetterAuthDevOAuthProxyConfig {
@@ -123,15 +203,30 @@ export function resolveBetterAuthDevConfig(
 ): BetterAuthDevConfig {
   const port = Number(env.PORT ?? 9083);
   const host = env.HOST?.trim() ?? '127.0.0.1';
-  const baseURL = env.BETTER_AUTH_URL?.trim() ?? `http://${host}:${port}`;
-  const secret =
-    env.BETTER_AUTH_SECRET?.trim() ??
-    env.AUTH_SECRET?.trim() ??
-    'example-better-auth-secret-default';
-  const trustedOrigins = splitOrigins(env.BETTER_AUTH_TRUSTED_ORIGINS, [
-    'http://localhost:8081',
-    'http://127.0.0.1:8081',
-  ]);
+  const baseURL = normalizeBetterAuthBaseUrl(
+    env.BETTER_AUTH_URL?.trim() ??
+      env.AUTH_BETTER_AUTH_URL?.trim() ??
+      env.EXPO_PUBLIC_BETTER_AUTH_URL?.trim() ??
+      env.AUTH_EXCHANGE_URL?.trim() ??
+      env.EXPO_PUBLIC_AUTH_EXCHANGE_URL?.trim() ??
+      `http://${host}:${port}`
+  );
+  const secret = deriveBetterAuthSecret(env);
+  const trustedOrigins = splitOrigins(
+    env.BETTER_AUTH_TRUSTED_ORIGINS,
+    uniqueStrings([
+      'http://localhost:8081',
+      'http://127.0.0.1:8081',
+      'http://localhost:3000',
+      'https://testnet.airs.alternun.co',
+      'https://airs.alternun.co',
+      'https://admin.alternun.co',
+      deriveTrustedAppOrigin(env.AUTH_BETTER_AUTH_URL?.trim()),
+      deriveTrustedAppOrigin(env.EXPO_PUBLIC_BETTER_AUTH_URL?.trim()),
+      deriveTrustedAppOrigin(env.AUTH_EXCHANGE_URL?.trim()),
+      deriveTrustedAppOrigin(env.EXPO_PUBLIC_AUTH_EXCHANGE_URL?.trim()),
+    ])
+  );
   const googleClientId = env.GOOGLE_AUTH_CLIENT_ID?.trim() ?? '';
   const googleClientSecret =
     env.GOOGLE_AUTH_CLIENT_SECRET?.trim() ?? env.GOOGLEA_AUTH_CLIENT_SECRET?.trim() ?? '';

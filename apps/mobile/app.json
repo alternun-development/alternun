@@ -2,7 +2,7 @@
   "expo": {
     "name": "test-tempo",
     "slug": "test-tempo",
-    "version": "1.0.72",
+    "version": "1.0.151",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -35,6 +35,13 @@
       ],
       "expo-font",
       "expo-web-browser",
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": false,
+          "supportsPictureInPicture": false
+        }
+      ],
       [
         "expo-build-properties",
         {

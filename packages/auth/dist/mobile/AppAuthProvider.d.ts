@@ -7,6 +7,7 @@ type MobileAuthOverrideOptions = {
     allowWalletOnlySession?: boolean;
     supabaseUrl?: string;
     supabaseKey?: string;
+    betterAuthBaseUrl?: string;
 };
 export interface AppAuthProviderProps extends PropsWithChildren {
     options?: MobileAuthOverrideOptions;

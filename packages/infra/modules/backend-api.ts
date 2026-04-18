@@ -75,6 +75,7 @@ export interface BackendApiInfrastructureArgs {
   stage: string;
   hostedZoneId?: string;
   authentikJwtSigningKey?: pulumi.Input<string>;
+  authentikSmtpSecretArn?: pulumi.Input<string>;
   env: NodeJS.ProcessEnv;
   settings: BackendApiSettings;
 }
@@ -131,6 +132,31 @@ function resolveStageKey(stage: string): keyof BackendApiSettings['stageDomains'
   return 'dev';
 }
 
+// Testnet-aligned stages must boot Better Auth in embedded mode. If the release path
+// leaves AUTH_BETTER_AUTH_URL empty the Lambda silently falls back to Authentik — which
+// is not ready. These stages force the testnet Better Auth URL as a last-resort fallback.
+function isTestnetStage(stage: string | undefined): boolean {
+  if (!stage) return false;
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+  return (
+    normalized === 'dev' ||
+    normalized === 'testnet' ||
+    normalized.includes('testnet') ||
+    normalized === 'dashboard-dev' ||
+    normalized === 'backend-dev' ||
+    normalized === 'backend-api-dev' ||
+    normalized === 'api-dev' ||
+    normalized === 'identity-dev' ||
+    normalized === 'auth-dev' ||
+    normalized === 'authentik-dev' ||
+    normalized === 'admin-dev' ||
+    normalized === 'backoffice-dev' ||
+    normalized === 'backoffice-admin-dev'
+  );
+}
+
+const TESTNET_BETTER_AUTH_URL = 'https://testnet.api.alternun.co';
+
 function resolveAuthDomain(rootDomain: string, stage: string): string {
   return buildStageDomains('sso', rootDomain)[resolveStageKey(stage)];
 }
@@ -154,6 +180,7 @@ function resolveBackendApiAppPath(appPath: string): string {
       ? candidatePath
       : path.resolve(candidatePath);
 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (fs.existsSync(resolvedPath)) {
       return resolvedPath;
     }
@@ -257,6 +284,68 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
       ...(args.env.INFRA_BACKEND_API_DATABASE_URL
         ? { DATABASE_URL: args.env.INFRA_BACKEND_API_DATABASE_URL }
         : {}),
+      ...(args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL
+        ? { AUTH_BETTER_AUTH_URL: args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL }
+        : args.env.AUTH_BETTER_AUTH_URL
+        ? { AUTH_BETTER_AUTH_URL: args.env.AUTH_BETTER_AUTH_URL }
+        : args.env.EXPO_PUBLIC_BETTER_AUTH_URL
+        ? { AUTH_BETTER_AUTH_URL: args.env.EXPO_PUBLIC_BETTER_AUTH_URL }
+        : isTestnetStage(args.env.SST_STAGE ?? args.env.STACK)
+        ? { AUTH_BETTER_AUTH_URL: TESTNET_BETTER_AUTH_URL }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_BETTER_AUTH_SECRET
+        ? { BETTER_AUTH_SECRET: args.env.INFRA_BACKEND_API_BETTER_AUTH_SECRET }
+        : args.env.BETTER_AUTH_SECRET
+        ? { BETTER_AUTH_SECRET: args.env.BETTER_AUTH_SECRET }
+        : args.env.AUTH_SECRET
+        ? { BETTER_AUTH_SECRET: args.env.AUTH_SECRET }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_BETTER_AUTH_TRUSTED_ORIGINS
+        ? {
+            BETTER_AUTH_TRUSTED_ORIGINS: args.env.INFRA_BACKEND_API_BETTER_AUTH_TRUSTED_ORIGINS,
+          }
+        : args.env.BETTER_AUTH_TRUSTED_ORIGINS
+        ? { BETTER_AUTH_TRUSTED_ORIGINS: args.env.BETTER_AUTH_TRUSTED_ORIGINS }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID
+        ? { GOOGLE_AUTH_CLIENT_ID: args.env.INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID }
+        : args.env.GOOGLE_AUTH_CLIENT_ID
+        ? { GOOGLE_AUTH_CLIENT_ID: args.env.GOOGLE_AUTH_CLIENT_ID }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_SECRET
+        ? {
+            GOOGLE_AUTH_CLIENT_SECRET: args.env.INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_SECRET,
+          }
+        : args.env.GOOGLE_AUTH_CLIENT_SECRET
+        ? { GOOGLE_AUTH_CLIENT_SECRET: args.env.GOOGLE_AUTH_CLIENT_SECRET }
+        : args.env.GOOGLEA_AUTH_CLIENT_SECRET
+        ? { GOOGLE_AUTH_CLIENT_SECRET: args.env.GOOGLEA_AUTH_CLIENT_SECRET }
+        : {}),
+      // Testnet-specific: Enable Better Auth embedded mode with native Google provider.
+      // Forced on for any testnet-aligned stage so release deploys can't silently
+      // fall back to Authentik when env wiring is incomplete.
+      ...(args.env.ALTERNUN_TESTNET_MODE === 'on' ||
+      isTestnetStage(args.env.SST_STAGE ?? args.env.STACK)
+        ? {
+            ALTERNUN_TESTNET_MODE: 'on',
+          }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID
+        ? { DISCORD_AUTH_CLIENT_ID: args.env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID }
+        : args.env.DISCORD_AUTH_CLIENT_ID
+        ? { DISCORD_AUTH_CLIENT_ID: args.env.DISCORD_AUTH_CLIENT_ID }
+        : args.env.DISCORD_CLIENT_ID
+        ? { DISCORD_AUTH_CLIENT_ID: args.env.DISCORD_CLIENT_ID }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_SECRET
+        ? {
+            DISCORD_AUTH_CLIENT_SECRET: args.env.INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_SECRET,
+          }
+        : args.env.DISCORD_AUTH_CLIENT_SECRET
+        ? { DISCORD_AUTH_CLIENT_SECRET: args.env.DISCORD_AUTH_CLIENT_SECRET }
+        : args.env.DISCORD_CLIENT_SECRET
+        ? { DISCORD_AUTH_CLIENT_SECRET: args.env.DISCORD_CLIENT_SECRET }
+        : {}),
       ...(args.env.INFRA_BACKEND_API_DECAP_PUBLIC_BASE_URL
         ? { DECAP_PUBLIC_BASE_URL: args.env.INFRA_BACKEND_API_DECAP_PUBLIC_BASE_URL }
         : {}),
@@ -303,6 +392,7 @@ export function deployBackendApiInfrastructure(
   const resolvedAppPath = resolveBackendApiAppPath(args.settings.appPath);
   const bundlePath = path.resolve(resolvedAppPath, args.settings.buildOutput);
 
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   if (!fs.existsSync(bundlePath)) {
     throw new Error(
       [
@@ -353,6 +443,37 @@ export function deployBackendApiInfrastructure(
           AUTHENTIK_JWKS_URL: authJwksUrl,
           NODE_ENV: 'production',
           ...args.settings.environment,
+          ...(args.env.INFRA_BACKEND_API_SUPABASE_URL
+            ? { SUPABASE_URL: args.env.INFRA_BACKEND_API_SUPABASE_URL }
+            : args.env.SUPABASE_URL
+            ? { SUPABASE_URL: args.env.SUPABASE_URL }
+            : args.env.EXPO_PUBLIC_SUPABASE_URL
+            ? { SUPABASE_URL: args.env.EXPO_PUBLIC_SUPABASE_URL }
+            : {}),
+          ...(args.env.INFRA_BACKEND_API_SUPABASE_ANON_KEY
+            ? { SUPABASE_ANON_KEY: args.env.INFRA_BACKEND_API_SUPABASE_ANON_KEY }
+            : args.env.SUPABASE_ANON_KEY
+            ? { SUPABASE_ANON_KEY: args.env.SUPABASE_ANON_KEY }
+            : args.env.EXPO_PUBLIC_SUPABASE_KEY
+            ? { SUPABASE_ANON_KEY: args.env.EXPO_PUBLIC_SUPABASE_KEY }
+            : args.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+            ? { SUPABASE_ANON_KEY: args.env.EXPO_PUBLIC_SUPABASE_ANON_KEY }
+            : {}),
+          ...(args.env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY
+            ? {
+                SUPABASE_SERVICE_ROLE_KEY: args.env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY,
+              }
+            : args.env.SUPABASE_SERVICE_ROLE_KEY
+            ? { SUPABASE_SERVICE_ROLE_KEY: args.env.SUPABASE_SERVICE_ROLE_KEY }
+            : {}),
+          ...(args.authentikSmtpSecretArn
+            ? { AUTHENTIK_SMTP_SECRET_ARN: args.authentikSmtpSecretArn }
+            : {}),
+          ...(args.settings.environment.AUTH_BETTER_AUTH_URL
+            ? {
+                AUTH_BETTER_AUTH_URL: args.settings.environment.AUTH_BETTER_AUTH_URL,
+              }
+            : {}),
           ...(args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL
             ? {
                 AUTH_BETTER_AUTH_URL: args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL,
@@ -427,8 +548,11 @@ export function deployBackendApiInfrastructure(
   const shouldCreateCustomDomain = args.settings.enableCustomDomain && Boolean(args.hostedZoneId);
 
   let customDomain: aws.apigatewayv2.DomainName | undefined;
-  let certificateArn: pulumi.Input<string> | undefined =
-    args.settings.certArns[stageKey] || undefined;
+  const certArnsForStage = (args.settings.certArns ?? {}) as Record<
+    string,
+    pulumi.Input<string> | undefined
+  >;
+  let certificateArn: pulumi.Input<string> | undefined = certArnsForStage[stageKey];
   if (shouldCreateCustomDomain && args.hostedZoneId) {
     if (!certificateArn) {
       const certificate = new aws.acm.Certificate(`${resourceBaseName}-cert`, {

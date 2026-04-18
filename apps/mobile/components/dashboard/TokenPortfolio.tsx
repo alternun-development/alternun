@@ -291,6 +291,7 @@ const styles = createTypographyStyles({
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: 0.02,
+    fontFamily: 'Sculpin-Bold',
   },
   sectionSubtitle: {
     color: 'rgba(232,232,255,0.4)',
@@ -378,6 +379,7 @@ const styles = createTypographyStyles({
     color: 'rgba(232,232,255,0.5)',
     fontSize: 11,
     marginBottom: 10,
+    fontFamily: 'Sculpin-Bold',
   },
   tokenPrice: {
     color: '#e8e8ff',
@@ -497,6 +499,7 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 17,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   modalInfo: {
     flexDirection: 'row',
