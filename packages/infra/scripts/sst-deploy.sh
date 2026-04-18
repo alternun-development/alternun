@@ -322,7 +322,9 @@ remove_state_resource() {
     return 0
   fi
 
-  require_destructive_cleanup_allowed "SST state removal for ${target}"
+  if ! require_destructive_cleanup_allowed "SST state removal for ${target}"; then
+    return 0
+  fi
 
   echo "Pruning legacy managed certificate state for ${target}..."
 
@@ -544,6 +546,7 @@ cleanup_deploy_aliases() {
     return 0
   fi
 
+  CLOUDFRONT_ALIAS_CLEANUP_ATTEMPTED=false
   local aliases=()
 
   if [ "$STACK" = "dev" ]; then
@@ -594,8 +597,11 @@ cleanup_deploy_aliases() {
     return 0
   fi
 
-  require_destructive_cleanup_allowed "CloudFront alias cleanup"
+  if ! require_destructive_cleanup_allowed "CloudFront alias cleanup"; then
+    return 0
+  fi
 
+  CLOUDFRONT_ALIAS_CLEANUP_ATTEMPTED=true
   remove_cloudfront_aliases "${cleanup_aliases[@]}"
 }
 
@@ -678,8 +684,12 @@ assert_pipeline_reconciliation_safe "$selected_pipeline_csv" "$STACK"
 
 if should_cleanup_deploy_aliases; then
   cleanup_deploy_aliases
-  # CloudFront was mutated outside SST, so refresh state before synthesis/deploy.
-  refresh_sst_state_after_alias_cleanup
+  if [ "${CLOUDFRONT_ALIAS_CLEANUP_ATTEMPTED:-false}" = "true" ]; then
+    # CloudFront was mutated outside SST, so refresh state before synthesis/deploy.
+    refresh_sst_state_after_alias_cleanup
+  else
+    echo "Skipping SST state refresh because CloudFront alias cleanup was not performed."
+  fi
 else
   echo "Skipping CloudFront alias cleanup (INFRA_ENABLE_ALIAS_CLEANUP=${INFRA_ENABLE_ALIAS_CLEANUP:-false})"
 fi

@@ -93,7 +93,9 @@ delete_conflicting_dns_records() {
     return 1
   fi
 
-  require_destructive_cleanup_allowed "Route53 DNS record deletion for ${record_name}"
+  if ! require_destructive_cleanup_allowed "Route53 DNS record deletion for ${record_name}"; then
+    return 0
+  fi
 
   echo "AUTO_REMOVE_CONFLICTING_DNS=true — deleting conflicting records for ${record_name}"
   echo "$existing" | jq -c '.[]' | while read -r rec; do
@@ -154,7 +156,9 @@ delete_acm_validation_cname_records() {
     return 1
   fi
 
-  require_destructive_cleanup_allowed "ACM validation CNAME deletion for ${domain_name}"
+  if ! require_destructive_cleanup_allowed "ACM validation CNAME deletion for ${domain_name}"; then
+    return 0
+  fi
 
   echo "AUTO_REMOVE_CONFLICTING_DNS=true — deleting ACM validation CNAME records for ${domain_name}"
   echo "$existing" | jq -c '.[]' | while read -r rec; do
