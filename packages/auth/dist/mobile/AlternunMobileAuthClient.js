@@ -18,15 +18,6 @@ function isEmailAlreadyRegisteredError(errorMessage) {
         normalized.includes('already been registered') ||
         normalized.includes('user already exists'));
 }
-function isObfuscatedExistingUserSignUpResult(data) {
-    if (!data || data.session || !data.user) {
-        return false;
-    }
-    const identities = Array.isArray(data.user.identities)
-        ? data.user.identities.filter(Boolean)
-        : null;
-    return Array.isArray(identities) && identities.length === 0;
-}
 function isMissingSessionError(error) {
     const message = getErrorMessage(error).toLowerCase();
     return message.includes('auth session missing');
@@ -511,11 +502,52 @@ export class AlternunMobileAuthClient {
         }
     }
     async signInWithGoogle(redirectTo) {
-        await this.signIn({
-            provider: 'google',
-            flow: this.runtime === 'web' ? 'redirect' : 'native',
-            redirectUri: redirectTo,
-        });
+        const baseUrl = typeof window !== 'undefined'
+            ? `${window.location.protocol}//${window.location.host}`
+            : process.env.REACT_APP_API_URL || process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+        try {
+            const response = await fetch(`${baseUrl}/auth/sign-in/social`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    provider: 'google',
+                    redirectUri: redirectTo,
+                }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to initiate Google sign-in');
+            }
+            const data = await response.json();
+            const signInUrl = typeof (data === null || data === void 0 ? void 0 : data.url) === 'string' ? data.url : null;
+            if (!signInUrl) {
+                throw new Error('No sign-in URL returned from server');
+            }
+            if (this.runtime === 'web') {
+                // Redirect to OAuth URL
+                if (typeof window !== 'undefined') {
+                    window.location.href = signInUrl;
+                }
+            }
+            else {
+                // Native runtime - would need to open URL in browser or use native OAuth handler
+                // For now, fall back to the original flow
+                await this.signIn({
+                    provider: 'google',
+                    flow: 'native',
+                    redirectUri: redirectTo,
+                });
+            }
+        }
+        catch (error) {
+            // Fall back to direct sign-in if API endpoint fails
+            await this.signIn({
+                provider: 'google',
+                flow: this.runtime === 'web' ? 'redirect' : 'native',
+                redirectUri: redirectTo,
+            });
+        }
     }
     async signUpWithEmail(email, password, locale) {
         let normalizedEmail;
@@ -530,47 +562,56 @@ export class AlternunMobileAuthClient {
         this.walletUser = null;
         this.linkedWallet = null;
         this.walletSessionToken = null;
-        const supabase = this.ensureSupabase();
         const emailTemplateLocale = normalizeEmailTemplateLocale(locale);
-        const { data, error } = await supabase.auth.signUp(emailTemplateLocale
-            ? {
+        const baseUrl = typeof window !== 'undefined'
+            ? `${window.location.protocol}//${window.location.host}`
+            : process.env.REACT_APP_API_URL || process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+        const response = await fetch(`${baseUrl}/auth/signup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
                 email: normalizedEmail,
                 password: validatedPassword,
-                options: {
-                    data: {
-                        locale: emailTemplateLocale,
-                    },
-                },
+                ...(emailTemplateLocale ? { locale: emailTemplateLocale } : {}),
+            }),
+        });
+        let data;
+        try {
+            const contentType = response.headers.get('content-type');
+            if (contentType === null || contentType === void 0 ? void 0 : contentType.includes('application/json')) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                data = await response.json();
             }
-            : {
-                email: normalizedEmail,
-                password: validatedPassword,
-            });
-        if (error) {
-            if (isEmailAlreadyRegisteredError(error.message)) {
+            else {
+                const text = await response.text();
+                throw new Error(`Invalid response type: ${contentType}. Response: ${text.substring(0, 200)}`);
+            }
+        }
+        catch (parseError) {
+            const message = parseError instanceof Error ? parseError.message : 'Failed to parse response';
+            throw new Error(`PARSE_ERROR: ${message}`);
+        }
+        if (!response.ok) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const message = typeof (data === null || data === void 0 ? void 0 : data.message) === 'string' ? data.message : 'Unknown error';
+            if (isEmailAlreadyRegisteredError(message)) {
                 return {
                     needsEmailVerification: true,
                     emailAlreadyRegistered: true,
                     confirmationEmailSent: false,
                 };
             }
-            throw new Error(`PROVIDER_ERROR: ${error.message}`);
-        }
-        if (isObfuscatedExistingUserSignUpResult(data)) {
-            return {
-                needsEmailVerification: true,
-                emailAlreadyRegistered: true,
-                confirmationEmailSent: false,
-            };
-        }
-        const hasSession = Boolean(data.session);
-        if (hasSession) {
-            this.emit(this.mapSupabaseUser(data.user));
+            throw new Error(`PROVIDER_ERROR: ${message}`);
         }
         return {
-            needsEmailVerification: !hasSession,
-            emailAlreadyRegistered: false,
-            confirmationEmailSent: !hasSession,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            needsEmailVerification: typeof (data === null || data === void 0 ? void 0 : data.needsEmailVerification) === 'boolean' ? data.needsEmailVerification : true,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            emailAlreadyRegistered: typeof (data === null || data === void 0 ? void 0 : data.emailAlreadyRegistered) === 'boolean' ? data.emailAlreadyRegistered : false,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            confirmationEmailSent: typeof (data === null || data === void 0 ? void 0 : data.confirmationEmailSent) === 'boolean' ? data.confirmationEmailSent : false,
         };
     }
     async resendEmailConfirmation(email) {
