@@ -155,7 +155,7 @@ jobs:
         run: pnpm install
 
       - name: Build ${{ matrix.app }}
-        run: pnpm build -- --filter=${{ matrix.app }}
+        run: pnpm exec turbo run build --filter=${{ matrix.app }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
