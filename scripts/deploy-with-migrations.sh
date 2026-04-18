@@ -19,10 +19,17 @@ fi
 
 echo "✅ DATABASE_URL retrieved securely"
 
-# Enable migrations (default: true)
-export INFRA_BACKEND_API_MIGRATIONS_ENABLED="${INFRA_BACKEND_API_MIGRATIONS_ENABLED:-true}"
+# Enable migrations (default: false - opt-in)
+# To run migrations: INFRA_BACKEND_API_MIGRATIONS_ENABLED=true bash scripts/deploy-with-migrations.sh
+export INFRA_BACKEND_API_MIGRATIONS_ENABLED="${INFRA_BACKEND_API_MIGRATIONS_ENABLED:-false}"
 
-echo "🚀 Deploying API to $STACK with migrations enabled..."
+if [ "$INFRA_BACKEND_API_MIGRATIONS_ENABLED" = "true" ]; then
+  echo "🚀 Deploying API to $STACK with migrations ENABLED..."
+else
+  echo "🚀 Deploying API to $STACK (migrations disabled)..."
+  echo "   To enable migrations: INFRA_BACKEND_API_MIGRATIONS_ENABLED=true bash scripts/deploy-with-migrations.sh"
+fi
+
 APPROVE=true STACK="${STACK:-dev}" packages/infra/scripts/sst-deploy.sh
 
 echo "✨ Deployment complete!"
