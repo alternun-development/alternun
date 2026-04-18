@@ -1,3 +1,19 @@
+## [1.0.154](https://github.com/alternun-development/alternun/compare/v1.0.153...v1.0.154) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** fix(auth): initialize database migrations on API startup
+
+### Bug Fixes
+
+- **auth:** initialize database migrations on API startup ([265ff70](https://github.com/alternun-development/alternun/commit/265ff7031d56667633cfb911e35db4c3b9bce3e8))
+
+## [1.0.154](https://github.com/alternun-development/alternun/compare/v1.0.153...v1.0.154) (2026-04-18)
+
+### Bug Fixes
+
+- **auth:** initialize database migrations on API startup ([265ff70](https://github.com/alternun-development/alternun/commit/265ff7031d56667633cfb911e35db4c3b9bce3e8))
+
 ## [1.0.153](https://github.com/alternun-development/alternun/compare/v1.0.151...v1.0.153) (2026-04-18)
 
 ### Bug Fixes
