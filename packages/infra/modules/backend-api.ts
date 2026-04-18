@@ -284,6 +284,9 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
       ...(args.env.INFRA_BACKEND_API_DATABASE_URL
         ? { DATABASE_URL: args.env.INFRA_BACKEND_API_DATABASE_URL }
         : {}),
+      ...(args.env.INFRA_BACKEND_API_MIGRATIONS_ENABLED !== undefined
+        ? { RUN_MIGRATIONS: args.env.INFRA_BACKEND_API_MIGRATIONS_ENABLED }
+        : { RUN_MIGRATIONS: 'true' }),
       ...(args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL
         ? { AUTH_BETTER_AUTH_URL: args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL }
         : args.env.AUTH_BETTER_AUTH_URL
