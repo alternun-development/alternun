@@ -52,7 +52,7 @@ test('resolveBetterAuthBootstrapConfig embeds Better Auth when the public API or
   assert.equal(config.mode, 'embedded');
   assert.equal(config.runtimeConfig.baseURL, 'https://testnet.api.alternun.co');
   assert.equal(
-    config.runtimeConfig.trustedOrigins.includes('https://testnet.airs.alternun.co'),
+    new Set(config.runtimeConfig.trustedOrigins).has('https://testnet.airs.alternun.co'),
     true
   );
 });
@@ -66,7 +66,7 @@ test('resolveBetterAuthBootstrapConfig embeds Better Auth when only the public A
   assert.equal(config.mode, 'embedded');
   assert.equal(config.runtimeConfig.baseURL, 'https://testnet.api.alternun.co');
   assert.equal(
-    config.runtimeConfig.trustedOrigins.includes('https://testnet.airs.alternun.co'),
+    new Set(config.runtimeConfig.trustedOrigins).has('https://testnet.airs.alternun.co'),
     true
   );
 });
@@ -82,7 +82,7 @@ test('resolveBetterAuthBootstrapConfig embeds Better Auth when only the auth exc
   assert.equal(config.mode, 'embedded');
   assert.equal(config.runtimeConfig.baseURL, 'https://testnet.api.alternun.co');
   assert.equal(
-    config.runtimeConfig.trustedOrigins.includes('https://testnet.airs.alternun.co'),
+    new Set(config.runtimeConfig.trustedOrigins).has('https://testnet.airs.alternun.co'),
     true
   );
 });

@@ -36,7 +36,10 @@ test('resolveBetterAuthDevConfig falls back to the public Better Auth url and de
 
   assert.equal(config.baseURL, 'https://testnet.api.alternun.co');
   assert.equal(config.secret.length >= 32, true);
-  assert.equal(config.trustedOrigins.includes('https://testnet.airs.alternun.co'), true);
+  assert.equal(
+    new Set(config.trustedOrigins).has('https://testnet.airs.alternun.co'),
+    true
+  );
 });
 
 test('resolveBetterAuthDevConfig falls back to the auth exchange url when the Better Auth url is missing', () => {
@@ -47,7 +50,10 @@ test('resolveBetterAuthDevConfig falls back to the auth exchange url when the Be
 
   assert.equal(config.baseURL, 'https://testnet.api.alternun.co');
   assert.equal(config.secret.length >= 32, true);
-  assert.equal(config.trustedOrigins.includes('https://testnet.airs.alternun.co'), true);
+  assert.equal(
+    new Set(config.trustedOrigins).has('https://testnet.airs.alternun.co'),
+    true
+  );
 });
 
 test('resolveBetterAuthDevConfig parses Discord credentials when present', () => {
