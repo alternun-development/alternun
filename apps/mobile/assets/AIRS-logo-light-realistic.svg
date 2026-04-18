@@ -80,7 +80,7 @@
        fx="203.68"
        fy="125.2"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(19.320752,-32.054887)">
+       gradientTransform="translate(-2.6346506,0.43910886)">
       <stop
          offset="0%"
          stop-color="#ffffff"
@@ -297,8 +297,8 @@
      style="fill:url(#vignetteGradL)" />
   <!-- Gloss -->
   <circle
-     cx="275.32074"
-     cy="223.94511"
+     cx="253.36534"
+     cy="256.43912"
      r="218"
      fill="url(#glossGradL)"
      id="circle27"
