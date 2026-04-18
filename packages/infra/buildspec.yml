@@ -99,9 +99,10 @@ env:
     # managed|explicit : managed prefers SST-managed certificates for empty site cert ARN vars,
     # but preserves any explicit cert ARN overrides so existing ACM certificates can be reused.
     INFRA_CERT_MODE: 'managed'
-    # CI should use CodeBuild IAM role (temporary creds), not static keys.
+    # CI should use CodeBuild IAM role (temporary creds), not static keys from .env
     INFRA_FORCE_ENV_AWS_CREDENTIALS: 'false'
     INFRA_REQUIRE_ENV_AWS_CREDENTIALS: 'false'
+    INFRA_PRESERVE_EXISTING_ENV: 'true'
 
     # Check controls
     SKIP_DNS_CHECK: 'false'
