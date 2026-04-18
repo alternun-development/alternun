@@ -21,19 +21,26 @@ void test('destructive infra cleanup stays opt-in across deploy scripts, env def
   assert.match(pipelineSafetySource, /require_destructive_cleanup_allowed\(\)/);
   assert.match(pipelineSafetySource, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS/);
 
-  assert.match(sstDeploySource, /require_destructive_cleanup_allowed "CloudFront alias cleanup"/);
   assert.match(
     sstDeploySource,
-    /require_destructive_cleanup_allowed "SST state removal for \$\{target\}"/
+    /if ! require_destructive_cleanup_allowed "CloudFront alias cleanup"; then\n\s+return 0\n\s+fi/
+  );
+  assert.match(
+    sstDeploySource,
+    /if ! require_destructive_cleanup_allowed "SST state removal for \$\{target\}"; then\n\s+return 0\n\s+fi/
+  );
+  assert.match(
+    sstDeploySource,
+    /if \[ "\$\{CLOUDFRONT_ALIAS_CLEANUP_ATTEMPTED:-false\}" = "true" \]; then\n\s+# CloudFront was mutated outside SST, so refresh state before synthesis\/deploy\.\n\s+refresh_sst_state_after_alias_cleanup\n\s+else\n\s+echo "Skipping SST state refresh because CloudFront alias cleanup was not performed\."\n\s+fi/
   );
 
   assert.match(
     predeploySource,
-    /require_destructive_cleanup_allowed "Route53 DNS record deletion for \$\{record_name\}"/
+    /if ! require_destructive_cleanup_allowed "Route53 DNS record deletion for \$\{record_name\}"; then\n\s+return 0\n\s+fi/
   );
   assert.match(
     predeploySource,
-    /require_destructive_cleanup_allowed "ACM validation CNAME deletion for \$\{domain_name\}"/
+    /if ! require_destructive_cleanup_allowed "ACM validation CNAME deletion for \$\{domain_name\}"; then\n\s+return 0\n\s+fi/
   );
   assert.match(predeploySource, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true/);
 
