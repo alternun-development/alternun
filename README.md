@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
   <a href="https://github.com/alternun-development/alternun/actions"><img src="https://github.com/alternun-development/alternun/workflows/CI/badge.svg" alt="Build Status" /></a>
-  <a href="https://codecov.io/gh/alternun-development/alternun"><img src="https://codecov.io/gh/alternun-development/alternun/branch/main/graph/badge.svg" alt="codecov" /></a>
+  <a href="https://codecov.io/gh/alternun-development/alternun"><img src="https://codecov.io/gh/alternun-development/alternun/branch/master/graph/badge.svg" alt="codecov" /></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0+-blue.svg" alt="TypeScript" /></a>
   <a href="https://turbo.build/"><img src="https://img.shields.io/badge/Turbo-2.x-ff6d00.svg" alt="Turbo" /></a>
   <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-22.20.0+-green.svg" alt="Node.js" /></a>
@@ -90,7 +90,7 @@ pnpm --filter @alternun/mobile run web:local
 
 **Branch flow:** `feature/*` → `develop` → `master`
 
-- PRs always target `develop` (except hotfixes)
+- PRs normally target `develop` (except hotfixes and release promotion PRs)
 - `master` is the production branch
 - While `ALTERNUN_TESTNET_MODE=on`, every push to `master` is mirrored into `develop` automatically via GitHub Actions
 
@@ -107,13 +107,13 @@ pnpm release -- --promote # promote current release (no version bump)
 pnpm version:check-secrets # scan staged files for secrets
 ```
 
-Current version: **1.0.69**
+Current version: **1.0.151**
 
 ## Security
 
 - `.env.*` files are never committed — use AWS Secrets Manager in prod
 - Pre-commit hooks run staged secret checks (`pnpm version:check-secrets`)
-- CI runs Gitleaks on push/PR to `develop`, `main`, and `master`
+- CI runs Gitleaks on push/PR to `develop` and `master`
 - Auth: Authentik OIDC — never bypass or mock in integration paths
 - Input validation at API boundary only
 
