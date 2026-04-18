@@ -1,7 +1,7 @@
 import { normalizeEmailLocale, type EmailLocale } from './i18n';
 
 export interface AirsWelcomeEmailInput {
-  locale?: EmailLocale | (string & {}) | null;
+  locale?: string | null;
   displayName?: string | null;
   dashboardUrl?: string | null;
   bonusAirs?: number;
@@ -68,11 +68,26 @@ const AIRS_WELCOME_TEMPLATES: Record<EmailLocale, AirsWelcomeTemplate> = {
   },
 };
 
-function interpolate(value: string, params: Record<string, string | number>): string {
-  return value.replace(/\{\{\s*([^}]+)\s*\}\}/g, (match, key) => {
+function interpolate(
+  value: string,
+  params: {
+    displayName: string;
+    bonusAirs: number;
+    airsPerDollar: number;
+  }
+): string {
+  return value.replace(/\{\{\s*([^}]+)\s*\}\}/g, (match: string, key: string) => {
     const trimmedKey = key.trim();
-    const resolved = params[trimmedKey];
-    return resolved == null ? match : String(resolved);
+    if (trimmedKey === 'displayName') {
+      return params.displayName;
+    }
+    if (trimmedKey === 'bonusAirs') {
+      return String(params.bonusAirs);
+    }
+    if (trimmedKey === 'airsPerDollar') {
+      return String(params.airsPerDollar);
+    }
+    return match;
   });
 }
 
@@ -89,18 +104,31 @@ function escapeHtmlWithBreaks(value: string): string {
   return escapeHtml(value).replace(/\n/g, '<br />');
 }
 
+function stripTrailingSlashes(value: string): string {
+  let result = value;
+  while (result.endsWith('/')) {
+    result = result.slice(0, -1);
+  }
+  return result;
+}
+
 export function renderAirsWelcomeEmail(input: AirsWelcomeEmailInput): AirsWelcomeEmail {
   const locale = normalizeEmailLocale(input.locale, 'en');
-  const template = AIRS_WELCOME_TEMPLATES[locale] ?? AIRS_WELCOME_TEMPLATES.en;
+  const template =
+    locale === 'es'
+      ? AIRS_WELCOME_TEMPLATES.es
+      : locale === 'th'
+      ? AIRS_WELCOME_TEMPLATES.th
+      : AIRS_WELCOME_TEMPLATES.en;
   const displayName = (input.displayName?.trim() ?? 'AIRS member').trim();
-  const dashboardUrl = (input.dashboardUrl?.trim() ?? DEFAULT_DASHBOARD_URL).replace(/\/+$/, '');
+  const dashboardUrl = stripTrailingSlashes(input.dashboardUrl?.trim() ?? DEFAULT_DASHBOARD_URL);
   const bonusAirs = Number.isFinite(input.bonusAirs ?? DEFAULT_BONUS_AIRS)
     ? Number(input.bonusAirs ?? DEFAULT_BONUS_AIRS)
     : DEFAULT_BONUS_AIRS;
   const airsPerDollar = Number.isFinite(input.airsPerDollar ?? DEFAULT_AIRS_PER_DOLLAR)
     ? Number(input.airsPerDollar ?? DEFAULT_AIRS_PER_DOLLAR)
     : DEFAULT_AIRS_PER_DOLLAR;
-  const params: Record<string, string | number> = {
+  const params = {
     displayName,
     bonusAirs,
     airsPerDollar,
