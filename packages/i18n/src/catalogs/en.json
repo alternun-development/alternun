@@ -103,6 +103,7 @@
       },
       "resend": {
         "body": "Check spam/junk first, then request another confirmation email.",
+        "securityCooldown": "For security, you can request again in {{seconds}}s",
         "sendAgain": "Send confirmation again",
         "sendAgainIn": "Send again in {{seconds}}s",
         "title": "Not receiving the email?"

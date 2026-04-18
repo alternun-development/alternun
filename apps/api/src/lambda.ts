@@ -1,5 +1,9 @@
 import type { APIGatewayProxyEventV2, Context } from 'aws-lambda';
-import type { FastifyInstance } from 'fastify';
+import type {
+  FastifyInstance,
+  InjectOptions as FastifyInjectOptions,
+  LightMyRequestResponse,
+} from 'fastify';
 import 'reflect-metadata';
 import { createApp } from './common/bootstrap/create-app';
 
@@ -58,7 +62,9 @@ export async function handler(
     // eslint-disable-next-line no-console
     console.log('[handler] Got Fastify app');
 
-    const method = event.requestContext?.http?.method ?? 'GET';
+    const method = (event.requestContext?.http?.method ?? 'GET').toUpperCase() as NonNullable<
+      FastifyInjectOptions['method']
+    >;
     let path = event.rawPath ?? event.requestContext?.http?.path ?? '/';
     const headers = event.headers ?? {};
 
@@ -85,12 +91,12 @@ export async function handler(
     delete requestHeaders['content-length'];
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const response = await fastify.inject({
+    const response = (await fastify.inject({
       method,
       path: path + (event.rawQueryString ? `?${event.rawQueryString}` : ''),
       headers: requestHeaders,
       payload: body,
-    });
+    })) as unknown as LightMyRequestResponse;
 
     // eslint-disable-next-line no-console, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
     console.log('[handler] Got response', { statusCode: response.statusCode });

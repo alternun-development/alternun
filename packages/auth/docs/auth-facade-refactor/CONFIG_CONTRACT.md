@@ -108,7 +108,7 @@ Validated against Better Auth official docs on `2026-04-09`:
 - Apple requires HTTPS and cannot use localhost return URLs.
 - Apple requires `https://appleid.apple.com` in trusted origins for the Better Auth config.
 - GitHub flows require the `user:email` scope.
-- Discord redirects follow the same API-origin callback shape as the other social providers: `http://localhost:9083/auth/callback/discord` locally and `https://testnet.api.alternun.co/auth/callback/discord` on the API-origin deployment path.
+- Discord redirects follow the same API-origin callback shape as the other social providers: `http://localhost:8082/auth/callback/discord` locally and `https://testnet.api.alternun.co/auth/callback/discord` on deployed stacks.
 
 ## Backend Exchange Inputs
 
@@ -138,11 +138,9 @@ Do not switch production/shared rollback environments to this shape until the te
 - Core auth logic should not read `process.env` directly outside the config adapter.
 - `AppAuthProvider` should keep app ergonomics stable while switching the underlying provider graph.
 - `createAuthFacade` can accept explicit provider instances for tests and server-side orchestration.
-- `AUTH_BETTER_AUTH_CLIENT_ID` is reserved for the rollout even though the current package implementation does not yet require it end to end.
-- The backend API can proxy `/auth/*` to a private Better Auth service when it is backed by a real Better Auth service; the repo no longer assumes a dedicated public Better Auth host. Public Better Auth URLs should stay on the API origin root, with the client/proxy layers appending `/auth` internally.
-- In local development, that private Better Auth service is expected to listen on `http://localhost:9083`.
-- The API proxy should answer browser `OPTIONS` preflight locally for `/auth/*`; only the actual Better Auth request should be forwarded to the private service.
-- When `AUTH_EXECUTION_PROVIDER=better-auth`, the package routes web social login through the Better Auth browser client when possible and falls back to the explicit Better Auth social/email routes only when the browser client cannot be created. Email/password flows still prefer the Better Auth client when that client is available.
+- `AUTH_BETTER_AUTH_CLIENT_ID` is reserved for future use.
+- Better Auth is embedded in the API runtime at the same origin root.
+- When `AUTH_EXECUTION_PROVIDER=better-auth`, the package routes web social login through the Better Auth browser client when possible and falls back to the explicit Better Auth social/email routes only when the browser client cannot be created. Email/password flows still prefer the Better Auth client when available.
 - Legacy Supabase session state is not allowed to override a Better Auth session unless compatibility fallback is enabled explicitly in code.
 - `AUTHENTIK_JWT_SIGNING_KEY` is required only when the backend should mint issuer-owned JWTs instead of returning compatibility fallback tokens.
 - `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` is the backend-side fail-closed rollout flag for `/auth/exchange`.
