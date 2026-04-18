@@ -30,7 +30,7 @@ export class SignupService {
         process.env.AUTH_API_URL ??
         process.env.EXPO_PUBLIC_API_URL ??
         process.env.AUTH_BETTER_AUTH_URL?.replace(/\/auth$/, '') ??
-        'http://localhost:8081';
+        'http://localhost:8082';
 
       const signUpUrl = `${baseUrl.replace(/\/+$/, '')}/auth/signup`;
 

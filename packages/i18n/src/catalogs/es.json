@@ -103,6 +103,7 @@
       },
       "resend": {
         "body": "Revisa spam o correo no deseado primero y despues solicita otro correo de confirmacion.",
+        "securityCooldown": "Por seguridad, puedes solicitar en {{seconds}}s",
         "sendAgain": "Enviar confirmacion otra vez",
         "sendAgainIn": "Enviar otra vez en {{seconds}}s",
         "title": "No recibes el correo?"
