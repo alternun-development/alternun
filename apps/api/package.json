@@ -1,6 +1,6 @@
 {
   "name": "@alternun/api",
-  "version": "1.0.72",
+  "version": "1.0.151",
   "private": true,
   "scripts": {
     "dev": "nodemon --watch src --ext ts --signal SIGTERM --exec \"node -r ts-node/register/transpile-only src/main.ts\"",
@@ -11,6 +11,8 @@
     "test": "node -r ts-node/register/transpile-only --test test/*.test.js"
   },
   "dependencies": {
+    "@alternun/email-templates": "workspace:*",
+    "@aws-sdk/client-secrets-manager": "^3.940.0",
     "@fastify/aws-lambda": "^5.1.0",
     "@fastify/swagger": "^8.15.0",
     "@fastify/swagger-ui": "^3.1.0",
@@ -22,12 +24,16 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "fastify": "4.28.1",
+    "nodemailer": "^6.10.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "sanitize-html": "^2.17.3"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.147",
     "@types/node": "^22.13.9",
+    "@types/nodemailer": "^8.0.0",
+    "@types/sanitize-html": "^2.16.1",
     "esbuild": "^0.25.0",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",

@@ -1,0 +1,15 @@
+title = "Gitleaks Configuration"
+
+# Allowlist patterns - these are false positives
+[[allowlist]]
+description = "Infrastructure config environment variable references"
+paths = [
+    "packages/infra/config/pipelines/specs/dashboard.ts",
+    "packages/infra/modules/backend-api.ts",
+]
+regexes = [
+    "INFRA_BACKEND_API_BETTER_AUTH_SECRET",
+    "BETTER_AUTH_SECRET",
+    "GOOGLE_AUTH_CLIENT_SECRET",
+    "DISCORD_AUTH_CLIENT_SECRET",
+]

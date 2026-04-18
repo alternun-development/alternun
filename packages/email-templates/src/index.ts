@@ -15,4 +15,9 @@ export {
   type EmailTemplateParams,
   type EmailTemplateTranslation,
   type EmailTemplateTranslator,
-} from "./lib/i18n";
+} from './lib/i18n';
+export {
+  renderAirsWelcomeEmail,
+  type AirsWelcomeEmail,
+  type AirsWelcomeEmailInput,
+} from './lib/airs-welcome';

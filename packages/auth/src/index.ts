@@ -8,11 +8,6 @@ export type {
   User,
 } from '@edcalderon/auth';
 
-export { AppAuthProvider, useAuth, type AppAuthProviderProps } from './mobile/AppAuthProvider';
-
-export { AlternunAuthFacade } from './facade/AlternunAuthFacade';
-export { createAuthFacade } from './facade/createAuthFacade';
-
 export {
   AuthentikIssuerProvider,
   type AuthentikIssuerProviderOptions,
@@ -20,7 +15,6 @@ export {
 export {
   BetterAuthExecutionProvider,
   type BetterAuthExecutionProviderOptions,
-  type BetterAuthClientLike,
 } from './providers/better-auth/BetterAuthExecutionProvider';
 export {
   SupabaseExecutionProvider,
@@ -40,6 +34,9 @@ export { PostmarkEmailProvider } from './providers/email/PostmarkEmailProvider';
 export { SesEmailProvider } from './providers/email/SesEmailProvider';
 
 export { resolveAuthRuntimeConfig, resolveAuthProviderSelection } from './runtime/config';
+
+export { createAuthFacade, type CreateAuthFacadeOptions } from './facade/createAuthFacade';
+export { AlternunAuthFacade, type AlternunAuthFacadeCompat } from './facade/AlternunAuthFacade';
 
 export { upsertOidcUser as upsertCompatOidcUser } from './compat/upsertOidcUser';
 
@@ -138,6 +135,8 @@ export {
   type WebAuthCallbackPayload,
   type WebCallbackWindowLike,
 } from './runtime/web/callbackPayload';
+
+export { AppAuthProvider, useAuth, type AppAuthProviderProps } from './mobile/AppAuthProvider';
 
 export {
   AlternunMobileAuthClient,

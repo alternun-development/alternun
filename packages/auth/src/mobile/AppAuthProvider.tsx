@@ -20,6 +20,7 @@ type MobileAuthOverrideOptions = {
   allowWalletOnlySession?: boolean;
   supabaseUrl?: string;
   supabaseKey?: string;
+  betterAuthBaseUrl?: string;
 };
 
 export interface AppAuthProviderProps extends PropsWithChildren {
@@ -43,6 +44,7 @@ export function AppAuthProvider({ children, options }: AppAuthProviderProps): Re
           supabaseKey: options?.supabaseKey,
           allowMockWalletFallback: options?.allowMockWalletFallback,
           allowWalletOnlySession: options?.allowWalletOnlySession,
+          betterAuthBaseUrl: options?.betterAuthBaseUrl,
         },
         walletBridge: options?.walletBridge,
         allowMockWalletFallback: options?.allowMockWalletFallback,
@@ -51,6 +53,7 @@ export function AppAuthProvider({ children, options }: AppAuthProviderProps): Re
     [
       options?.allowMockWalletFallback,
       options?.allowWalletOnlySession,
+      options?.betterAuthBaseUrl,
       options?.supabaseKey,
       options?.supabaseUrl,
       options?.walletBridge,

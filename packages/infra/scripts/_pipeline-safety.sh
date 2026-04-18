@@ -87,6 +87,18 @@ pipeline_name_for_key() {
   printf '%s\n' "${prefix}-${suffix}-pipeline"
 }
 
+require_destructive_cleanup_allowed() {
+  local action=${1:-destructive cleanup}
+
+  if is_truthy "${INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS:-false}"; then
+    return 0
+  fi
+
+  echo "WARN: Skipping ${action} because INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=false." >&2
+  echo "WARN: Set INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true only for intentional recovery runs that must delete live DNS, CloudFront aliases, ACM validation CNAMEs, or SST state." >&2
+  return 1
+}
+
 emit_pipeline_keys_from_csv() {
   local raw token key
   raw=${1:-}

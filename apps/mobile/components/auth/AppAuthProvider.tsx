@@ -2,17 +2,18 @@ import {
   AppAuthProvider as AlternunAuthProvider,
   useAuth as useAlternunAuth,
 } from '@alternun/auth';
-import { useEffect, useMemo, useRef, type PropsWithChildren } from 'react';
-import { Platform } from 'react-native';
-import { createWeb3WalletBridge } from './walletBridge';
-import { clearOidcSession, readOidcSession } from '@alternun/auth';
+import { useEffect, useMemo, useRef, type PropsWithChildren, } from 'react';
+import { Platform, } from 'react-native';
+import { createWeb3WalletBridge, } from './walletBridge';
+import { clearOidcSession, readOidcSession, } from '@alternun/auth';
 import {
   authentikPreset,
   oidcSessionToUser,
   type CallbackCapableAuthClient,
 } from './authWebSession';
-import { shouldClearOidcSessionOnAuthStateChange } from './authSessionBridge';
-import { isBetterAuthExecutionEnabled } from './authExecutionMode';
+import { shouldClearOidcSessionOnAuthStateChange, } from './authSessionBridge';
+import { isBetterAuthExecutionEnabled, } from './authExecutionMode';
+import { resolveMobileApiBaseUrl, } from '../../utils/runtimeConfig';
 
 function getAllowMockWalletFallback(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH === 'true';
@@ -30,10 +31,29 @@ function getSupabaseKey(): string | undefined {
   return process.env.EXPO_PUBLIC_SUPABASE_KEY ?? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 }
 
+function getBetterAuthUrl(): string | undefined {
+  const envUrl = process.env.EXPO_PUBLIC_BETTER_AUTH_URL;
+  if (envUrl?.trim()) {
+    // Env var is already the full auth URL (e.g., http://localhost:8082/auth or https://testnet.api.alternun.co/auth)
+    return envUrl.trim().replace(/\/+$/, '',);
+  }
+  // Fallback: derive API base from window.location.origin, then append /auth
+  const origin = typeof window !== 'undefined' ? window.location?.origin : undefined;
+  if (origin) {
+    const apiBase = resolveMobileApiBaseUrl(undefined, origin,);
+    // Append /auth if not already present (single source of truth pattern)
+    if (apiBase) {
+      const normalized = apiBase.trim().replace(/\/+$/, '',);
+      return normalized.endsWith('/auth',) ? normalized : `${normalized}/auth`;
+    }
+  }
+  return undefined;
+}
+
 function AuthSessionBridge(): null {
-  const { client } = useAlternunAuth();
-  const hasReceivedAuthStateRef = useRef(false);
-  const previousUserRef = useRef<import('@alternun/auth').User | null | undefined>(undefined);
+  const { client, } = useAlternunAuth();
+  const hasReceivedAuthStateRef = useRef(false,);
+  const previousUserRef = useRef<import('@alternun/auth').User | null | undefined>(undefined,);
   const isBetterAuthExecution = isBetterAuthExecutionEnabled();
 
   // Restore stored OIDC session on mount (survives page reload)
@@ -50,14 +70,14 @@ function AuthSessionBridge(): null {
     const callbackClient = client as CallbackCapableAuthClient;
     // Re-provision on restore to ensure Supabase UUID is current; fall back to sub.
     void authentikPreset
-      .onSessionReady(session.claims, session.provider)
-      .then((appUserId) => {
-        callbackClient.setOidcUser?.(oidcSessionToUser(session, appUserId));
-      })
+      .onSessionReady(session.claims, session.provider,)
+      .then((appUserId,) => {
+        callbackClient.setOidcUser?.(oidcSessionToUser(session, appUserId,),);
+      },)
       .catch(() => {
-        callbackClient.setOidcUser?.(oidcSessionToUser(session));
-      });
-  }, [client, isBetterAuthExecution]);
+        callbackClient.setOidcUser?.(oidcSessionToUser(session,),);
+      },);
+  }, [client, isBetterAuthExecution,],);
 
   // Clear OIDC session and revoke token when user signs out
   useEffect(() => {
@@ -68,12 +88,12 @@ function AuthSessionBridge(): null {
       return;
     }
 
-    return client.onAuthStateChange((user) => {
+    return client.onAuthStateChange((user,) => {
       const shouldClearOidcSession = shouldClearOidcSessionOnAuthStateChange({
         hasReceivedAuthState: hasReceivedAuthStateRef.current,
         previousUser: previousUserRef.current,
         nextUser: user,
-      });
+      },);
 
       hasReceivedAuthStateRef.current = true;
       previousUserRef.current = user;
@@ -87,24 +107,25 @@ function AuthSessionBridge(): null {
           .logoutHandler({
             accessToken: session.tokens.accessToken,
             idToken: session.tokens.idToken,
-          })
-          .then((result: { endSessionUrl?: string }) => {
+          },)
+          .then((result: { endSessionUrl?: string },) => {
             if (typeof window !== 'undefined' && result.endSessionUrl) {
-              window.location.assign(result.endSessionUrl);
+              window.location.assign(result.endSessionUrl,);
             }
-          })
+          },)
           .catch(() => {
             // Best-effort token revocation — local session already cleared
-          });
+          },);
       }
-    });
-  }, [client, isBetterAuthExecution]);
+    },);
+  }, [client, isBetterAuthExecution,],);
 
   return null;
 }
 
-export function AppAuthProvider({ children }: PropsWithChildren): React.JSX.Element {
-  const walletBridge = useMemo(() => createWeb3WalletBridge(), []);
+export function AppAuthProvider({ children, }: PropsWithChildren,): React.JSX.Element {
+  const walletBridge = useMemo(() => createWeb3WalletBridge(), [],);
+  const betterAuthBaseUrl = useMemo(() => getBetterAuthUrl(), [],);
 
   return (
     <AlternunAuthProvider
@@ -114,6 +135,7 @@ export function AppAuthProvider({ children }: PropsWithChildren): React.JSX.Elem
         walletBridge,
         allowMockWalletFallback: getAllowMockWalletFallback(),
         allowWalletOnlySession: getAllowWalletOnlySession(),
+        betterAuthBaseUrl,
       }}
     >
       {children}
@@ -123,4 +145,4 @@ export function AppAuthProvider({ children }: PropsWithChildren): React.JSX.Elem
 }
 
 export const useAuth = useAlternunAuth;
-export type { OAuthFlow, User } from '@alternun/auth';
+export type { OAuthFlow, User, } from '@alternun/auth';

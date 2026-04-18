@@ -1,29 +1,29 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { canAccessAdminDashboard, oidcClient } from '../../auth/oidc-client';
+import { useEffect, useState, } from 'react';
+import { useNavigate, } from 'react-router-dom';
+import { canAccessAdminDashboard, oidcClient, } from '../../auth/oidc-client';
 
 export function AuthCallbackPage(): JSX.Element {
   const navigate = useNavigate();
-  const [message, setMessage] = useState('Finalizing admin session...');
+  const [message, setMessage,] = useState('Finalizing admin session...',);
 
   useEffect(() => {
     let cancelled = false;
 
     void oidcClient
       .signinRedirectCallback()
-      .then(async user => {
+      .then(async (user,) => {
         if (cancelled) {
           return;
         }
 
-        if (!canAccessAdminDashboard(user)) {
+        if (!canAccessAdminDashboard(user,)) {
           await oidcClient.removeUser();
           const origin =
             typeof window === 'undefined' ? 'http://localhost:4173' : window.location.origin;
 
           await oidcClient.signoutRedirect({
             post_logout_redirect_uri: `${origin}/login?error=unauthorized-email-domain`,
-          });
+          },);
           return;
         }
 
@@ -35,20 +35,20 @@ export function AuthCallbackPage(): JSX.Element {
             ? user.state.returnTo
             : '/dashboard';
 
-        void navigate(returnTo, { replace: true });
-      })
-      .catch((error: unknown) => {
+        void navigate(returnTo, { replace: true, },);
+      },)
+      .catch((error: unknown,) => {
         if (cancelled) {
           return;
         }
 
-        setMessage(error instanceof Error ? error.message : 'Authentication callback failed.');
-      });
+        setMessage(error instanceof Error ? error.message : 'Authentication callback failed.',);
+      },);
 
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate,],);
 
   return (
     <div className='auth-stage'>

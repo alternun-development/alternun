@@ -16,6 +16,9 @@ function createReply() {
       this.statusCode = value;
       return this;
     },
+    getHeader(name) {
+      return this.headers[name.toLowerCase()];
+    },
     header(name, value) {
       this.headers[name.toLowerCase()] = value;
       return this;
@@ -95,12 +98,7 @@ test('proxyBetterAuthRequest forwards the request and preserves cookies', async 
   };
 
   const reply = createReply();
-  const handled = await proxyBetterAuthRequest(
-    request,
-    reply,
-    'http://127.0.0.1:9083',
-    fetchFn
-  );
+  const handled = await proxyBetterAuthRequest(request, reply, 'http://127.0.0.1:9083', fetchFn);
 
   assert.equal(handled, true);
   assert.equal(observed.url, 'http://127.0.0.1:9083/auth/sign-in/social?next=%2Fdashboard');
@@ -110,6 +108,8 @@ test('proxyBetterAuthRequest forwards the request and preserves cookies', async 
   assert.deepEqual(reply.headers['set-cookie'], ['better-auth-session=abc; Path=/; HttpOnly']);
   assert.equal(reply.statusCode, 200);
   assert.equal(reply.headers['content-type'], 'application/json');
+  assert.equal(reply.headers['access-control-allow-origin'], 'http://localhost:8081');
+  assert.equal(reply.headers['access-control-allow-credentials'], 'true');
   assert.deepEqual(JSON.parse(reply.payload.toString('utf8')), { ok: true });
 });
 
@@ -144,5 +144,12 @@ test('proxyBetterAuthRequest answers OPTIONS preflight locally', async () => {
   assert.equal(handled, true);
   assert.equal(fetchCalled, false);
   assert.equal(reply.statusCode, 204);
+  assert.equal(reply.headers['access-control-allow-origin'], 'http://localhost:8081');
+  assert.equal(reply.headers['access-control-allow-credentials'], 'true');
+  assert.equal(
+    reply.headers['access-control-allow-methods'],
+    'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS'
+  );
+  assert.equal(reply.headers['access-control-allow-headers'], 'content-type');
   assert.equal(reply.payload, undefined);
 });

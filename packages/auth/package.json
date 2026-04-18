@@ -1,6 +1,6 @@
 {
   "name": "@alternun/auth",
-  "version": "1.0.72",
+  "version": "1.0.151",
   "description": "Alternun auth wrapper package built on top of @edcalderon/auth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,6 +12,10 @@
     "./facade": {
       "types": "./dist/facade/createAuthFacade.d.ts",
       "default": "./dist/facade/createAuthFacade.js"
+    },
+    "./mobile/AppAuthProvider": {
+      "types": "./dist/mobile/AppAuthProvider.d.ts",
+      "default": "./dist/mobile/AppAuthProvider.js"
     },
     "./mobile/authentikClient": {
       "types": "./dist/mobile/authentikClient.d.ts",

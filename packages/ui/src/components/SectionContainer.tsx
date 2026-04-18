@@ -79,6 +79,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.lg,
     fontWeight: '700',
     letterSpacing: -0.3,
+    fontFamily: 'Sculpin-Bold',
   },
   subtitle: {
     fontSize: fontSize.sm,

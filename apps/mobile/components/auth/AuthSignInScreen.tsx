@@ -9,10 +9,12 @@ import { Image as ExpoImage } from 'expo-image';
 import {
   AlertCircle,
   Chrome,
+  AtSign,
   Eye,
   EyeOff,
   Languages,
-  Lock,
+  KeyRound,
+  LockKeyhole,
   Mail,
   MessageSquare,
   Moon,
@@ -21,7 +23,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -37,6 +39,7 @@ import {
   View,
 } from 'react-native';
 import { getLocaleLabel } from '@alternun/i18n';
+import { ToastSystem, type ToastItem } from '@alternun/ui';
 import { useRouter } from 'expo-router';
 import { createTypographyStyles } from '../theme/typography';
 import { useAppPalette } from '../theme/useAppPalette';
@@ -44,6 +47,7 @@ import ShaderBackground from './ShaderBackground';
 import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
+import { resolvePrimaryOAuthProvider } from './authExecutionMode';
 import { shouldForceFreshAuthentikSocialSession } from './authentikWebSessionPolicy';
 import {
   readPendingAuthentikOAuthProvider,
@@ -52,16 +56,22 @@ import {
 } from './authWebSession';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
+import LoadingButton from '../common/LoadingButton';
 import { AuthFooter } from './AuthFooter';
+import { getAuthErrorMessage, getSocialSignInErrorMessage } from './authErrorMessages';
 const RESEND_COOLDOWN_SECONDS = 45;
 
 // Feature flags
 const ENABLE_WEB3_LOGIN = false; // Temporarily disabled: full web3 login flow not implemented
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const AIRS_LOGOTIPO_LIGHT = require('../../assets/AIRS-logotipo-light.svg') as number;
+const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const AIRS_LOGOTIPO_DARK = require('../../assets/AIRS-logotipo-dark.svg') as number;
+const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as number;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png') as number;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png') as number;
 
 type SubmitMode =
   | 'signin'
@@ -75,6 +85,7 @@ type SubmitMode =
 type AuthMode = 'signin' | 'signup';
 type AuthStep = 'form' | 'emailConfirmation';
 type RequiredField = 'email' | 'password' | 'confirmPassword';
+type InputFocusField = RequiredField | 'confirmationCode';
 
 interface RequiredFieldState {
   email: boolean;
@@ -98,93 +109,6 @@ export interface AuthSignInScreenProps {
   onCancel?: () => void;
   presentation?: 'screen' | 'modal';
   authReturnTo?: string;
-}
-
-function resolveGoogleProvider(): string {
-  const configuredProvider = process.env.EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER?.trim().toLowerCase();
-  if (configuredProvider === 'keycloak') {
-    return 'keycloak';
-  }
-
-  return 'google';
-}
-
-function stripKnownErrorPrefix(message: string): string {
-  const prefixes = ['UNSUPPORTED_FLOW:', 'PROVIDER_ERROR:', 'VALIDATION_ERROR:'];
-  for (const prefix of prefixes) {
-    if (message.startsWith(prefix)) {
-      return message.replace(prefix, '').trim();
-    }
-  }
-
-  return message.trim();
-}
-
-function normalizeMessage(value: unknown): string | null {
-  if (typeof value === 'string') {
-    const normalized = stripKnownErrorPrefix(value);
-    if (!normalized || normalized === '{}' || normalized === '[object Object]') {
-      return null;
-    }
-
-    return normalized;
-  }
-
-  if (value instanceof Error) {
-    return normalizeMessage(value.message);
-  }
-
-  if (Array.isArray(value)) {
-    for (const entry of value) {
-      const normalizedEntry = normalizeMessage(entry);
-      if (normalizedEntry) {
-        return normalizedEntry;
-      }
-    }
-
-    return null;
-  }
-
-  if (value && typeof value === 'object') {
-    const typedValue = value as Record<string, unknown>;
-    const candidates = [
-      typedValue.message,
-      typedValue.error_description,
-      typedValue.error,
-      typedValue.details,
-      typedValue.detail,
-      typedValue.hint,
-      typedValue.msg,
-    ];
-
-    for (const candidate of candidates) {
-      const normalizedCandidate = normalizeMessage(candidate);
-      if (normalizedCandidate) {
-        return normalizedCandidate;
-      }
-    }
-
-    try {
-      const serialized = JSON.stringify(value);
-      if (serialized && serialized !== '{}' && serialized !== '[]') {
-        return stripKnownErrorPrefix(serialized);
-      }
-    } catch {
-      return null;
-    }
-
-    return null;
-  }
-
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-    return String(value);
-  }
-
-  return null;
-}
-
-function getMessage(error: unknown, fallbackMessage: string): string {
-  return normalizeMessage(error) ?? fallbackMessage;
 }
 
 function isEmailAuthCapable(client: unknown): client is EmailAuthCapableClient {
@@ -257,11 +181,13 @@ export default function AuthSignInScreen({
   const [confirmationCode, setConfirmationCode] = useState('');
   const [confirmationCodeRequired, setConfirmationCodeRequired] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [authStep, setAuthStep] = useState<AuthStep>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [invalidEmail, setInvalidEmail] = useState(false);
+  const [focusedField, setFocusedField] = useState<InputFocusField | null>(null);
   const [requiredFields, setRequiredFields] = useState<RequiredFieldState>(() =>
     createDefaultRequiredFieldState()
   );
@@ -270,17 +196,67 @@ export default function AuthSignInScreen({
   const passwordInputRef = useRef<TextInput>(null);
   const confirmPasswordInputRef = useRef<TextInput>(null);
   const confirmationCodeInputRef = useRef<TextInput>(null);
+  const toastIdRef = useRef(0);
+  const toastTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const googleProvider = resolveGoogleProvider();
+  const googleProvider = resolvePrimaryOAuthProvider();
 
   const rawEffectiveError = localError ?? error;
   const effectiveError = rawEffectiveError
-    ? getMessage(rawEffectiveError, t('authModal.errors.authenticationFailed'))
+    ? getAuthErrorMessage(rawEffectiveError, t('authModal.errors.authenticationFailed'))
     : null;
   const isBusy = loading || submitMode !== null;
   const isModal = presentation === 'modal';
-  const { height: windowHeight } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const isDesktop = windowWidth >= 720;
+  const isCompactModal = isModal && windowWidth < 560;
+  const wordmarkSource = isDesktop
+    ? p.isDark
+      ? AIRS_LOGO_LIGHT_2X
+      : AIRS_LOGO_DARK_2X
+    : p.isDark
+    ? AIRS_LOGO_LIGHT
+    : AIRS_LOGO_DARK;
   const hasEmailInputError = requiredFields.email || invalidEmail;
+  const dismissToast = useCallback((id: string): void => {
+    setToasts((current) => current.filter((toast) => toast.id !== id));
+  }, []);
+
+  const pushToast = useCallback(
+    (title: string, message: string): void => {
+      const toastId = `auth-toast-${++toastIdRef.current}`;
+      setToasts((current) => [
+        ...current,
+        {
+          id: toastId,
+          type: 'error',
+          title,
+          message,
+        },
+      ]);
+
+      const timeout = setTimeout(() => {
+        dismissToast(toastId);
+        toastTimeoutsRef.current = toastTimeoutsRef.current.filter((entry) => entry !== timeout);
+      }, 4500);
+      toastTimeoutsRef.current = [...toastTimeoutsRef.current, timeout];
+    },
+    [dismissToast]
+  );
+
+  const showSocialSignInFailure = useCallback(
+    (authError: unknown): string => {
+      const message = getSocialSignInErrorMessage(authError, {
+        unavailable: t('authModal.errors.socialSignInUnavailable'),
+        serverError: t('authModal.errors.socialSignInServerError'),
+        fallback: t('authModal.errors.authenticationFailed'),
+      });
+      setLocalError(message);
+      pushToast(t('authModal.errors.socialSignInTitle'), message);
+      return message;
+    },
+    [pushToast, t]
+  );
 
   useEffect(() => {
     if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -323,12 +299,21 @@ export default function AuthSignInScreen({
       },
     })
       .catch((authError: unknown) => {
-        setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
+        showSocialSignInFailure(authError);
       })
       .finally(() => {
         setSubmitMode(null);
       });
-  }, [authReturnTo, client, googleProvider, loginStrategy, router, t]);
+  }, [authReturnTo, client, googleProvider, loginStrategy, router, showSocialSignInFailure]);
+
+  useEffect(() => {
+    return () => {
+      for (const timeout of toastTimeoutsRef.current) {
+        clearTimeout(timeout);
+      }
+      toastTimeoutsRef.current = [];
+    };
+  }, []);
 
   const transitionToStep = (step: AuthStep): void => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -338,6 +323,7 @@ export default function AuthSignInScreen({
   const resetMessages = (): void => {
     setLocalError(null);
     setNotice(null);
+    setToasts([]);
   };
 
   const clearRequiredFields = (): void => {
@@ -478,7 +464,7 @@ export default function AuthSignInScreen({
     try {
       await signInWithEmail(normalizedEmail, password);
     } catch (authError) {
-      const message = getMessage(authError, t('authModal.errors.authenticationFailed'));
+      const message = getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed'));
       if (normalizedEmail && isEmailNotConfirmedMessage(message)) {
         setConfirmationEmail(normalizedEmail);
         setConfirmationCode('');
@@ -487,7 +473,6 @@ export default function AuthSignInScreen({
         transitionToStep('emailConfirmation');
       }
       setLocalError(message);
-    } finally {
       setSubmitMode(null);
     }
   };
@@ -557,8 +542,7 @@ export default function AuthSignInScreen({
       setResendCooldown(0);
       setNotice(t('authModal.notices.accountCreatedSigningIn'));
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
-    } finally {
+      setLocalError(getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed')));
       setSubmitMode(null);
     }
   };
@@ -592,9 +576,9 @@ export default function AuthSignInScreen({
       setConfirmationEmail(normalizedEmail);
       setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail }));
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
+      setSubmitMode(null);
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
-    } finally {
+      setLocalError(getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed')));
       setSubmitMode(null);
     }
   };
@@ -633,9 +617,9 @@ export default function AuthSignInScreen({
       setConfirmationEmail(normalizedEmail);
       setResendCooldown(0);
       transitionToSignInForm(normalizedEmail, t('authModal.notices.emailConfirmedSignIn'));
+      setSubmitMode(null);
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.confirmationCodeInvalid')));
-    } finally {
+      setLocalError(getAuthErrorMessage(authError, t('authModal.errors.confirmationCodeInvalid')));
       setSubmitMode(null);
     }
   };
@@ -656,8 +640,7 @@ export default function AuthSignInScreen({
         },
       });
     } catch (oidcError) {
-      setLocalError(getMessage(oidcError, t('authModal.errors.authenticationFailed')));
-    } finally {
+      showSocialSignInFailure(oidcError);
       setSubmitMode(null);
     }
   };
@@ -680,8 +663,7 @@ export default function AuthSignInScreen({
         flow: 'native',
       });
     } catch (authError) {
-      setLocalError(getMessage(authError, t('authModal.errors.authenticationFailed')));
-    } finally {
+      setLocalError(getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed')));
       setSubmitMode(null);
     }
   };
@@ -729,7 +711,8 @@ export default function AuthSignInScreen({
           contentContainerStyle={[
             styles.scrollContent,
             isModal && styles.scrollContentModal,
-            { minHeight: windowHeight },
+            isCompactModal && styles.scrollContentModalCompact,
+            isCompactModal ? { minHeight: undefined } : { minHeight: windowHeight },
           ]}
           keyboardShouldPersistTaps='handled'
           showsVerticalScrollIndicator={false}
@@ -738,39 +721,74 @@ export default function AuthSignInScreen({
             style={[
               styles.card,
               isModal && styles.cardModal,
+              isCompactModal && styles.cardModalCompact,
               { backgroundColor: p.cardBg, borderColor: p.cardBorder },
             ]}
           >
-            <View style={styles.header}>
-              <View style={styles.titleLockup}>
-                <ExpoImage
-                  source={p.isDark ? AIRS_LOGOTIPO_LIGHT : AIRS_LOGOTIPO_DARK}
-                  style={styles.titleWordmark}
-                  contentFit='contain'
-                />
-                <Text style={[styles.subtitle, { color: p.textMuted }]}>
-                  {t('authModal.notices.secureSignIn')}
-                </Text>
-              </View>
-              <View style={styles.headerActions}>
-                <View style={styles.settingsMenuContainer}>
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => setSettingsMenuOpen((prev) => !prev)}
-                    style={[
-                      styles.settingsButton,
-                      {
-                        borderColor: settingsMenuOpen ? p.accent : p.cardBorder,
-                        backgroundColor: settingsMenuOpen ? p.accentMuted : undefined,
-                      },
-                    ]}
-                  >
-                    <Settings size={15} color={settingsMenuOpen ? p.accent : p.iconDefault} />
-                  </TouchableOpacity>
+            <View
+              style={[
+                styles.header,
+                isModal && styles.headerModal,
+                isCompactModal && styles.headerModalCompact,
+              ]}
+            >
+              {isCompactModal ? (
+                <>
+                  <View style={styles.headerModalCompactRow}>
+                    <View
+                      style={[
+                        styles.titleLockup,
+                        styles.titleLockupModal,
+                        styles.titleLockupModalCompact,
+                      ]}
+                    >
+                      <ExpoImage
+                        source={wordmarkSource}
+                        style={[
+                          styles.titleWordmark,
+                          styles.titleWordmarkModal,
+                          styles.titleWordmarkModalCompact,
+                        ]}
+                        contentFit='contain'
+                      />
+                    </View>
+                    <View style={styles.headerActionsCompact}>
+                      <View style={styles.settingsMenuContainer}>
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => setSettingsMenuOpen((prev) => !prev)}
+                          style={[
+                            styles.settingsButton,
+                            styles.settingsButtonCompact,
+                            {
+                              borderColor: settingsMenuOpen ? p.accent : p.cardBorder,
+                              backgroundColor: settingsMenuOpen ? p.accentMuted : undefined,
+                            },
+                          ]}
+                        >
+                          <Settings size={15} color={settingsMenuOpen ? p.accent : p.iconDefault} />
+                        </TouchableOpacity>
+                      </View>
+                      {onCancel ? (
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={onCancel}
+                          style={[
+                            styles.closeButton,
+                            styles.closeButtonCompact,
+                            { borderColor: p.cardBorder },
+                          ]}
+                        >
+                          <X size={16} color={p.iconDefault} />
+                        </TouchableOpacity>
+                      ) : null}
+                    </View>
+                  </View>
                   <AnimatedCollapsibleContent
                     expanded={settingsMenuOpen}
                     style={[
                       styles.settingsDropdown,
+                      styles.settingsDropdownCompact,
                       { backgroundColor: p.dropdownBg, borderColor: p.dropdownBorder },
                     ]}
                   >
@@ -807,17 +825,95 @@ export default function AuthSignInScreen({
                       </Text>
                     </TouchableOpacity>
                   </AnimatedCollapsibleContent>
-                </View>
-                {onCancel ? (
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={onCancel}
-                    style={[styles.closeButton, { borderColor: p.cardBorder }]}
-                  >
-                    <X size={16} color={p.iconDefault} />
-                  </TouchableOpacity>
-                ) : null}
-              </View>
+                </>
+              ) : (
+                <>
+                  {!isCompactModal ? (
+                    <View style={[styles.titleLockup, isModal && styles.titleLockupModal]}>
+                      <ExpoImage
+                        source={wordmarkSource}
+                        style={[
+                          styles.titleWordmark,
+                          isModal && styles.titleWordmarkModal,
+                          isCompactModal && styles.titleWordmarkModalCompact,
+                        ]}
+                        contentFit='contain'
+                      />
+                      {!isModal && !isCompactModal ? (
+                        <Text style={[styles.subtitle, { color: p.textMuted }]}>
+                          {t('authModal.notices.secureSignIn')}
+                        </Text>
+                      ) : null}
+                    </View>
+                  ) : null}
+                  <View style={[styles.headerActions, isModal && styles.headerActionsModal]}>
+                    <View style={styles.settingsMenuContainer}>
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => setSettingsMenuOpen((prev) => !prev)}
+                        style={[
+                          styles.settingsButton,
+                          {
+                            borderColor: settingsMenuOpen ? p.accent : p.cardBorder,
+                            backgroundColor: settingsMenuOpen ? p.accentMuted : undefined,
+                          },
+                        ]}
+                      >
+                        <Settings size={15} color={settingsMenuOpen ? p.accent : p.iconDefault} />
+                      </TouchableOpacity>
+                      <AnimatedCollapsibleContent
+                        expanded={settingsMenuOpen}
+                        style={[
+                          styles.settingsDropdown,
+                          { backgroundColor: p.dropdownBg, borderColor: p.dropdownBorder },
+                        ]}
+                      >
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => cycleLanguage()}
+                          style={styles.settingsDropdownItem}
+                        >
+                          <Languages size={13} color={p.iconDefault} />
+                          <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
+                            {t('labels.language')}
+                          </Text>
+                          <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
+                            {getLocaleLabel(language, language)}
+                          </Text>
+                        </TouchableOpacity>
+                        <View
+                          style={[
+                            styles.settingsDropdownDivider,
+                            { backgroundColor: p.dropdownDivider },
+                          ]}
+                        />
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => toggleThemeMode()}
+                          style={styles.settingsDropdownItem}
+                        >
+                          <ThemeIcon size={13} color={p.iconDefault} />
+                          <Text style={[styles.settingsDropdownLabel, { color: p.dropdownMuted }]}>
+                            {t('labels.theme')}
+                          </Text>
+                          <Text style={[styles.settingsDropdownValue, { color: p.dropdownValue }]}>
+                            {themeLabel}
+                          </Text>
+                        </TouchableOpacity>
+                      </AnimatedCollapsibleContent>
+                    </View>
+                    {onCancel ? (
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={onCancel}
+                        style={[styles.closeButton, { borderColor: p.cardBorder }]}
+                      >
+                        <X size={16} color={p.iconDefault} />
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
+                </>
+              )}
             </View>
 
             {authStep === 'form' ? (
@@ -831,19 +927,13 @@ export default function AuthSignInScreen({
                   <TouchableOpacity
                     activeOpacity={0.85}
                     onPress={() => switchMode('signin')}
-                    style={[
-                      styles.modeButton,
-                      mode === 'signin' && [
-                        styles.modeButtonActive,
-                        { backgroundColor: p.accentMuted },
-                      ],
-                    ]}
+                    style={[styles.modeButton, mode === 'signin' && { backgroundColor: p.accent }]}
                   >
                     <Text
                       style={[
                         styles.modeButtonText,
                         { color: p.textMuted },
-                        mode === 'signin' && { color: p.accent },
+                        mode === 'signin' && { color: p.accentText },
                       ]}
                     >
                       {t('authModal.modes.signIn')}
@@ -852,19 +942,13 @@ export default function AuthSignInScreen({
                   <TouchableOpacity
                     activeOpacity={0.85}
                     onPress={() => switchMode('signup')}
-                    style={[
-                      styles.modeButton,
-                      mode === 'signup' && [
-                        styles.modeButtonActive,
-                        { backgroundColor: p.accentMuted },
-                      ],
-                    ]}
+                    style={[styles.modeButton, mode === 'signup' && { backgroundColor: p.accent }]}
                   >
                     <Text
                       style={[
                         styles.modeButtonText,
                         { color: p.textMuted },
-                        mode === 'signup' && { color: p.accent },
+                        mode === 'signup' && { color: p.accentText },
                       ]}
                     >
                       {t('authModal.modes.signUp')}
@@ -872,88 +956,152 @@ export default function AuthSignInScreen({
                   </TouchableOpacity>
                 </View>
 
-                <View
-                  style={[
-                    styles.inputWrapper,
-                    { backgroundColor: p.inputBg, borderColor: p.inputBorder },
-                    hasEmailInputError && {
-                      backgroundColor: p.errorBg,
-                      borderColor: p.errorBorder,
-                    },
-                  ]}
-                >
-                  <Mail size={16} color={hasEmailInputError ? p.errorIcon : p.textMuted} />
-                  <TextInput
-                    ref={emailInputRef}
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    keyboardType='email-address'
-                    onChangeText={(value) => {
-                      setEmail(value);
-                      clearRequiredField('email');
-                      setInvalidEmail(false);
-                    }}
-                    placeholder={t('authModal.placeholders.email')}
-                    placeholderTextColor={p.textPlaceholder}
-                    style={[styles.input, { color: p.textPrimary }]}
-                    value={email}
-                  />
-                </View>
-                {requiredFields.email ? (
-                  <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                    {t('authModal.validation.emailRequired')}
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: p.textPrimary }]}>
+                    {t('authModal.placeholders.email')}
                   </Text>
-                ) : invalidEmail ? (
-                  <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                    {t('authModal.validation.validEmail')}
-                  </Text>
-                ) : null}
-
-                <View
-                  style={[
-                    styles.inputWrapper,
-                    { backgroundColor: p.inputBg, borderColor: p.inputBorder },
-                    requiredFields.password && {
-                      backgroundColor: p.errorBg,
-                      borderColor: p.errorBorder,
-                    },
-                  ]}
-                >
-                  <Lock size={16} color={requiredFields.password ? p.errorIcon : p.textMuted} />
-                  <TextInput
-                    ref={passwordInputRef}
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    onChangeText={(value) => {
-                      setPassword(value);
-                      clearRequiredField('password');
-                    }}
-                    placeholder={t('authModal.placeholders.password')}
-                    placeholderTextColor={p.textPlaceholder}
-                    secureTextEntry={!showPassword}
-                    style={[styles.input, { color: p.textPrimary }]}
-                    value={password}
-                  />
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => setShowPassword((current) => !current)}
-                    style={styles.visibilityToggle}
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                      hasEmailInputError && {
+                        backgroundColor: p.errorBg,
+                        borderColor: p.errorBorder,
+                      },
+                      focusedField === 'email' &&
+                        !hasEmailInputError && {
+                          borderColor: p.inputBorderFocus,
+                        },
+                    ]}
                   >
-                    {showPassword ? (
-                      <EyeOff size={16} color={p.textSecondary} />
-                    ) : (
-                      <Eye size={16} color={p.textSecondary} />
-                    )}
-                  </TouchableOpacity>
+                    <View
+                      style={[
+                        styles.inputIconWrap,
+                        {
+                          backgroundColor: hasEmailInputError ? p.errorBg : p.accentMuted,
+                          borderColor: hasEmailInputError ? p.errorBorder : 'rgba(13,148,136,0.16)',
+                        },
+                      ]}
+                    >
+                      <AtSign
+                        size={15}
+                        color={hasEmailInputError ? p.errorIcon : p.accent}
+                        strokeWidth={2.2}
+                      />
+                    </View>
+                    <TextInput
+                      ref={emailInputRef}
+                      autoCapitalize='none'
+                      autoCorrect={false}
+                      keyboardType='email-address'
+                      onChangeText={(value) => {
+                        setEmail(value);
+                        clearRequiredField('email');
+                        setInvalidEmail(false);
+                      }}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() =>
+                        setFocusedField((current) => (current === 'email' ? null : current))
+                      }
+                      placeholderTextColor={p.textPlaceholder}
+                      style={[styles.input, { color: p.textPrimary }]}
+                      value={email}
+                    />
+                  </View>
+                  {requiredFields.email ? (
+                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                      {t('authModal.validation.emailRequired')}
+                    </Text>
+                  ) : invalidEmail ? (
+                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                      {t('authModal.validation.validEmail')}
+                    </Text>
+                  ) : null}
                 </View>
-                {requiredFields.password ? (
-                  <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                    {t('authModal.validation.passwordRequired')}
+
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: p.textPrimary }]}>
+                    {t('authModal.placeholders.password')}
                   </Text>
-                ) : null}
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                      requiredFields.password && {
+                        backgroundColor: p.errorBg,
+                        borderColor: p.errorBorder,
+                      },
+                      focusedField === 'password' &&
+                        !requiredFields.password && {
+                          borderColor: p.inputBorderFocus,
+                        },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.inputIconWrap,
+                        {
+                          backgroundColor: requiredFields.password ? p.errorBg : p.accentMuted,
+                          borderColor: requiredFields.password
+                            ? p.errorBorder
+                            : 'rgba(13,148,136,0.16)',
+                        },
+                      ]}
+                    >
+                      <LockKeyhole
+                        size={15}
+                        color={requiredFields.password ? p.errorIcon : p.accent}
+                        strokeWidth={2.15}
+                      />
+                    </View>
+                    <TextInput
+                      ref={passwordInputRef}
+                      autoCapitalize='none'
+                      autoCorrect={false}
+                      onChangeText={(value) => {
+                        setPassword(value);
+                        clearRequiredField('password');
+                      }}
+                      onFocus={() => setFocusedField('password')}
+                      onBlur={() =>
+                        setFocusedField((current) => (current === 'password' ? null : current))
+                      }
+                      placeholderTextColor={p.textPlaceholder}
+                      secureTextEntry={!showPassword}
+                      style={[styles.input, { color: p.textPrimary }]}
+                      value={password}
+                    />
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => setShowPassword((current) => !current)}
+                      style={[
+                        styles.visibilityToggle,
+                        {
+                          backgroundColor: focusedField === 'password' ? p.accentMuted : p.inputBg,
+                          borderColor:
+                            focusedField === 'password' ? p.inputBorderFocus : p.inputBorder,
+                        },
+                      ]}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={16} color={p.accent} />
+                      ) : (
+                        <Eye size={16} color={p.accent} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                  {requiredFields.password ? (
+                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                      {t('authModal.validation.passwordRequired')}
+                    </Text>
+                  ) : null}
+                </View>
 
                 {mode === 'signup' ? (
-                  <>
+                  <View style={styles.inputGroup}>
+                    <Text style={[styles.inputLabel, { color: p.textPrimary }]}>
+                      {t('authModal.placeholders.confirmPassword')}
+                    </Text>
                     <View
                       style={[
                         styles.inputWrapper,
@@ -962,12 +1110,31 @@ export default function AuthSignInScreen({
                           backgroundColor: p.errorBg,
                           borderColor: p.errorBorder,
                         },
+                        focusedField === 'confirmPassword' &&
+                          !requiredFields.confirmPassword && {
+                            borderColor: p.inputBorderFocus,
+                          },
                       ]}
                     >
-                      <Lock
-                        size={16}
-                        color={requiredFields.confirmPassword ? p.errorIcon : p.textMuted}
-                      />
+                      <View
+                        style={[
+                          styles.inputIconWrap,
+                          {
+                            backgroundColor: requiredFields.confirmPassword
+                              ? p.errorBg
+                              : p.accentMuted,
+                            borderColor: requiredFields.confirmPassword
+                              ? p.errorBorder
+                              : 'rgba(13,148,136,0.16)',
+                          },
+                        ]}
+                      >
+                        <LockKeyhole
+                          size={15}
+                          color={requiredFields.confirmPassword ? p.errorIcon : p.accent}
+                          strokeWidth={2.15}
+                        />
+                      </View>
                       <TextInput
                         ref={confirmPasswordInputRef}
                         autoCapitalize='none'
@@ -976,7 +1143,12 @@ export default function AuthSignInScreen({
                           setConfirmPassword(value);
                           clearRequiredField('confirmPassword');
                         }}
-                        placeholder={t('authModal.placeholders.confirmPassword')}
+                        onFocus={() => setFocusedField('confirmPassword')}
+                        onBlur={() =>
+                          setFocusedField((current) =>
+                            current === 'confirmPassword' ? null : current
+                          )
+                        }
                         placeholderTextColor={p.textPlaceholder}
                         secureTextEntry={!showConfirmPassword}
                         style={[styles.input, { color: p.textPrimary }]}
@@ -985,12 +1157,22 @@ export default function AuthSignInScreen({
                       <TouchableOpacity
                         activeOpacity={0.8}
                         onPress={() => setShowConfirmPassword((current) => !current)}
-                        style={styles.visibilityToggle}
+                        style={[
+                          styles.visibilityToggle,
+                          {
+                            backgroundColor:
+                              focusedField === 'confirmPassword' ? p.accentMuted : p.inputBg,
+                            borderColor:
+                              focusedField === 'confirmPassword'
+                                ? p.inputBorderFocus
+                                : p.inputBorder,
+                          },
+                        ]}
                       >
                         {showConfirmPassword ? (
-                          <EyeOff size={16} color={p.textSecondary} />
+                          <EyeOff size={16} color={p.accent} />
                         ) : (
-                          <Eye size={16} color={p.textSecondary} />
+                          <Eye size={16} color={p.accent} />
                         )}
                       </TouchableOpacity>
                     </View>
@@ -999,11 +1181,22 @@ export default function AuthSignInScreen({
                         {t('authModal.validation.confirmPasswordRequired')}
                       </Text>
                     ) : null}
-                  </>
+                  </View>
                 ) : null}
 
-                <TouchableOpacity
-                  activeOpacity={0.85}
+                <LoadingButton
+                  variant='primary'
+                  label={
+                    mode === 'signin'
+                      ? t('authModal.actions.continueWithEmail')
+                      : t('authModal.actions.createAccount')
+                  }
+                  loadingLabel={
+                    mode === 'signin'
+                      ? t('authModal.redirecting.email')
+                      : t('authModal.redirecting.signup')
+                  }
+                  isLoading={submitMode === 'signin' || submitMode === 'signup'}
                   disabled={isBusy}
                   onPress={() => {
                     if (mode === 'signin') {
@@ -1012,22 +1205,7 @@ export default function AuthSignInScreen({
                       void handleEmailSignUp();
                     }
                   }}
-                  style={[
-                    styles.primaryButton,
-                    { backgroundColor: p.primaryBtnBg },
-                    isBusy && styles.buttonDisabled,
-                  ]}
-                >
-                  {submitMode === 'signin' || submitMode === 'signup' ? (
-                    <ActivityIndicator color={p.primaryBtnText} size='small' />
-                  ) : (
-                    <Text style={[styles.primaryButtonText, { color: p.primaryBtnText }]}>
-                      {mode === 'signin'
-                        ? t('authModal.actions.continueWithEmail')
-                        : t('authModal.actions.createAccount')}
-                    </Text>
-                  )}
-                </TouchableOpacity>
+                />
 
                 {mode === 'signin' ? (
                   <>
@@ -1039,56 +1217,30 @@ export default function AuthSignInScreen({
                       <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
                     </View>
 
-                    <TouchableOpacity
-                      activeOpacity={0.85}
+                    <LoadingButton
+                      variant='secondary'
+                      label={t('authModal.actions.continueWithGoogle')}
+                      loadingLabel={t('authModal.redirecting.google')}
+                      isLoading={submitMode === 'google'}
                       disabled={isBusy}
                       onPress={() => {
                         void handleGoogleSignIn();
                       }}
-                      style={[
-                        styles.secondaryButton,
-                        { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
-                        isBusy && styles.buttonDisabled,
-                      ]}
-                    >
-                      {submitMode === 'google' ? (
-                        <ActivityIndicator color={p.secondaryBtnText} size='small' />
-                      ) : (
-                        <>
-                          <Chrome size={16} color={p.secondaryBtnText} />
-                          <Text style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}>
-                            {t('authModal.actions.continueWithGoogle')}
-                          </Text>
-                        </>
-                      )}
-                    </TouchableOpacity>
+                      icon={Chrome}
+                    />
 
                     {shouldShowAuthentikSocialButtons ? (
-                      <TouchableOpacity
-                        activeOpacity={0.85}
+                      <LoadingButton
+                        variant='secondary'
+                        label={t('authModal.actions.continueWithDiscord')}
+                        loadingLabel={t('authModal.redirecting.discord')}
+                        isLoading={submitMode === 'discord'}
                         disabled={isBusy}
                         onPress={() => {
                           void handleDiscordSignIn();
                         }}
-                        style={[
-                          styles.secondaryButton,
-                          { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
-                          isBusy && styles.buttonDisabled,
-                        ]}
-                      >
-                        {submitMode === 'discord' ? (
-                          <ActivityIndicator color={p.secondaryBtnText} size='small' />
-                        ) : (
-                          <>
-                            <MessageSquare size={16} color={p.secondaryBtnText} />
-                            <Text
-                              style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}
-                            >
-                              {t('authModal.actions.continueWithDiscord')}
-                            </Text>
-                          </>
-                        )}
-                      </TouchableOpacity>
+                        icon={MessageSquare}
+                      />
                     ) : null}
 
                     {ENABLE_WEB3_LOGIN && (
@@ -1205,9 +1357,29 @@ export default function AuthSignInScreen({
                         backgroundColor: p.errorBg,
                         borderColor: p.errorBorder,
                       },
+                      focusedField === 'confirmationCode' &&
+                        !confirmationCodeRequired && {
+                          borderColor: p.inputBorderFocus,
+                        },
                     ]}
                   >
-                    <Lock size={16} color={confirmationCodeRequired ? p.errorIcon : p.textMuted} />
+                    <View
+                      style={[
+                        styles.inputIconWrap,
+                        {
+                          backgroundColor: confirmationCodeRequired ? p.errorBg : p.accentMuted,
+                          borderColor: confirmationCodeRequired
+                            ? p.errorBorder
+                            : 'rgba(13,148,136,0.16)',
+                        },
+                      ]}
+                    >
+                      <KeyRound
+                        size={15}
+                        color={confirmationCodeRequired ? p.errorIcon : p.accent}
+                        strokeWidth={2.15}
+                      />
+                    </View>
                     <TextInput
                       ref={confirmationCodeInputRef}
                       autoCapitalize='none'
@@ -1217,6 +1389,12 @@ export default function AuthSignInScreen({
                         setConfirmationCode(value.replace(/\s+/g, ''));
                         setConfirmationCodeRequired(false);
                       }}
+                      onFocus={() => setFocusedField('confirmationCode')}
+                      onBlur={() =>
+                        setFocusedField((current) =>
+                          current === 'confirmationCode' ? null : current
+                        )
+                      }
                       placeholder={t('authModal.placeholders.confirmationCode')}
                       placeholderTextColor={p.textPlaceholder}
                       style={[styles.input, { color: p.textPrimary }]}
@@ -1365,6 +1543,8 @@ export default function AuthSignInScreen({
           void handleWalletConnect(walletType);
         }}
       />
+
+      <ToastSystem toasts={toasts} onDismiss={dismissToast} />
     </View>
   );
 }
@@ -1390,6 +1570,13 @@ const styles = createTypographyStyles({
   },
   scrollContentModal: {
     alignItems: 'center',
+    paddingVertical: 16,
+  },
+  scrollContentModalCompact: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
   card: {
     borderRadius: 18,
@@ -1397,16 +1584,26 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(255,255,255,0.08)',
     backgroundColor: 'rgba(13,13,31,0.92)',
     padding: 18,
-    gap: 12,
+    gap: 10,
   },
   cardModal: {
     width: '100%',
     maxWidth: 520,
+    paddingTop: 24,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.4,
     shadowRadius: 24,
     elevation: 8,
+  },
+  cardModalCompact: {
+    maxWidth: '100%',
+    width: '100%',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingTop: 16,
+    gap: 8,
+    borderRadius: 24,
   },
   header: {
     flexDirection: 'row',
@@ -1416,16 +1613,60 @@ const styles = createTypographyStyles({
     marginBottom: 4,
     zIndex: 50,
   },
+  headerModal: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
+    minHeight: 88,
+  },
+  headerModalCompact: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    minHeight: 0,
+    gap: 12,
+    width: '100%',
+  },
+  headerModalCompactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 16,
+    gap: 12,
+  },
+  headerModalTopRow: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     flexShrink: 0,
-    zIndex: 50,
+    zIndex: 9998,
+  },
+  headerActionsModal: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+  },
+  headerActionsModalCompact: {
+    gap: 10,
+  },
+  headerActionsCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    justifyContent: 'flex-end',
   },
   settingsMenuContainer: {
     position: 'relative',
-    zIndex: 100,
+    zIndex: 9999,
   },
   settingsButton: {
     width: 34,
@@ -1435,6 +1676,11 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  settingsButtonCompact: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   settingsButtonActive: {
     borderColor: 'rgba(28,203,161,0.4)',
@@ -1455,6 +1701,16 @@ const styles = createTypographyStyles({
     shadowOpacity: 0.7,
     shadowRadius: 16,
     elevation: 24,
+  },
+  settingsDropdownCompact: {
+    position: 'absolute',
+    top: 44,
+    right: -8,
+    zIndex: 99999,
+    minWidth: 180,
+    alignSelf: 'flex-end',
+    marginTop: 0,
+    marginBottom: 0,
   },
   settingsDropdownItem: {
     flexDirection: 'row',
@@ -1482,9 +1738,27 @@ const styles = createTypographyStyles({
   titleLockup: {
     gap: 6,
   },
+  titleLockupModal: {
+    width: '100%',
+    alignItems: 'center',
+    gap: 0,
+  },
+  titleLockupModalCompact: {
+    gap: 0,
+    alignItems: 'flex-start',
+    flex: 1,
+  },
   titleWordmark: {
-    width: 96,
-    height: 34,
+    width: 88,
+    height: 30,
+  },
+  titleWordmarkModal: {
+    width: 208,
+    height: 73,
+  },
+  titleWordmarkModalCompact: {
+    width: 140,
+    height: 48,
   },
   subtitle: {
     color: 'rgba(232,232,255,0.55)',
@@ -1499,53 +1773,79 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  closeButtonCompact: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
   modeSwitch: {
     flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 12,
-    padding: 4,
-    gap: 6,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    borderRadius: 24,
+    padding: 0,
+    gap: 8,
   },
   modeButton: {
     flex: 1,
-    borderRadius: 8,
+    borderRadius: 24,
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   modeButtonActive: {
-    backgroundColor: 'rgba(28,203,161,0.16)',
+    backgroundColor: '#1EE6B5',
   },
   modeButtonText: {
     color: 'rgba(232,232,255,0.6)',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
+    letterSpacing: 0.3,
   },
   modeButtonTextActive: {
     color: '#1ccba1',
   },
+  inputGroup: {
+    gap: 6,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    marginBottom: 0,
+  },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    borderRadius: 12,
+    gap: 12,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.12)',
     backgroundColor: 'rgba(255,255,255,0.04)',
-    paddingHorizontal: 12,
+    minHeight: 54,
+    paddingHorizontal: 14,
     paddingVertical: 10,
   },
   inputWrapperRequired: {
     borderColor: 'rgba(248,113,113,0.75)',
     backgroundColor: 'rgba(248,113,113,0.12)',
   },
+  inputIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
   input: {
     flex: 1,
     minWidth: 0,
     color: '#e8e8ff',
-    fontSize: 14,
+    fontSize: 16,
     paddingVertical: 0,
+    letterSpacing: 0.2,
   },
   requiredFieldText: {
     marginTop: -4,
@@ -1555,41 +1855,45 @@ const styles = createTypographyStyles({
     fontWeight: '600',
   },
   visibilityToggle: {
-    width: 24,
-    height: 24,
+    width: 38,
+    height: 38,
     borderRadius: 12,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   primaryButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
-    backgroundColor: '#1ccba1',
-    minHeight: 44,
-    paddingHorizontal: 14,
+    borderRadius: 24,
+    backgroundColor: '#1EE6B5',
+    minHeight: 48,
+    paddingHorizontal: 32,
   },
   primaryButtonText: {
     color: '#050510',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '800',
+    letterSpacing: 0.3,
   },
   secondaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    borderRadius: 12,
+    gap: 10,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    minHeight: 44,
-    paddingHorizontal: 14,
+    borderColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    minHeight: 48,
+    paddingHorizontal: 24,
   },
   secondaryButtonText: {
     color: '#e8e8ff',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
+    letterSpacing: 0.2,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -1618,6 +1922,7 @@ const styles = createTypographyStyles({
     color: '#66e6c5',
     fontSize: 17,
     fontWeight: '800',
+    fontFamily: 'Sculpin-Bold',
   },
   confirmationSubtitle: {
     color: 'rgba(232,232,255,0.7)',
@@ -1637,7 +1942,7 @@ const styles = createTypographyStyles({
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 2,
+    marginVertical: 0,
     gap: 10,
   },
   dividerLine: {
@@ -1697,6 +2002,7 @@ const styles = createTypographyStyles({
     color: '#e8e8ff',
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   resendButton: {
     alignItems: 'center',

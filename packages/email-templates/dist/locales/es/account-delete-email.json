@@ -1,9 +1,0 @@
-{
-  "subject": "Solicitud de eliminacion de tu cuenta de Alternun",
-  "preview": "Revisa y confirma la solicitud de eliminacion de cuenta.",
-  "greeting": "Hola {{email}},",
-  "intro": "Recibimos una solicitud para eliminar tu cuenta de Alternun.",
-  "ctaLabel": "Revisar solicitud de eliminacion",
-  "ignoreNotice": "Si no solicitaste esta accion, protege tu cuenta de inmediato.",
-  "footer": "Equipo de seguridad de Alternun"
-}

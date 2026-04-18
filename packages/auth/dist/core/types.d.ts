@@ -175,7 +175,6 @@ export interface AuthRuntimeConfig {
     authentikRedirectUri?: string;
     betterAuthBaseUrl?: string;
     betterAuthClientId?: string;
-    betterAuthApiKey?: string;
     authExchangeUrl?: string;
     emailFrom?: string;
     emailSenderName?: string;

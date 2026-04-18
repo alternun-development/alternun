@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+pnpm --filter @alternun/email-templates run build
+
 rm -rf dist dist-lambda
 tsc -p tsconfig.build.json
 cp package.json dist/package.json

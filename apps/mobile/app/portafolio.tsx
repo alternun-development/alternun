@@ -353,6 +353,7 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 20,
     fontWeight: '700',
+    fontFamily: 'Sculpin-Bold',
   },
   tabContent: {
     flex: 1,

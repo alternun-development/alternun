@@ -1,10 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, } from 'react';
 import {
-  Animated,
-  Easing,
+  Linking,
   StyleSheet,
   Text,
-  TextStyle,
   TouchableOpacity,
   useWindowDimensions,
   View,
@@ -12,21 +10,18 @@ import {
 import {
   ChevronRight,
   Coins,
-  Flag,
   Globe,
   MapPinned,
-  Sparkles,
   TrendingUp,
   Wallet,
   type LucideProps,
 } from 'lucide-react-native';
+import { useAppPreferences, } from '../settings/AppPreferencesProvider';
 
 const GlobeIcon = Globe as React.FC<LucideProps>;
 const CoinsIcon = Coins as React.FC<LucideProps>;
 const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
-const SparklesIcon = Sparkles as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
-const FlagIcon = Flag as React.FC<LucideProps>;
 const MapPinnedIcon = MapPinned as React.FC<LucideProps>;
 
 interface DashboardSummaryCardsProps {
@@ -34,109 +29,67 @@ interface DashboardSummaryCardsProps {
   onNavigate?: (key: string) => void;
 }
 
-interface AnimatedCounterProps {
-  value: number;
-  prefix?: string;
-  suffix?: string;
-  decimals?: number;
-  duration?: number;
-  style?: TextStyle | TextStyle[];
-}
-
-function getPalette(isDark: boolean) {
+function getPalette(isDark: boolean,): {
+  cardBg: string;
+  cardBorder: string;
+  cardShadow: string;
+  title: string;
+  subtitle: string;
+  copy: string;
+  muted: string;
+  accent: string;
+  accentSoft: string;
+  accentStrong: string;
+  warning: string;
+  warningSoft: string;
+  line: string;
+  panelBg: string;
+  panelBorder: string;
+  iconBg: string;
+  iconColor: string;
+  heroBadgeBg: string;
+} {
   return isDark
     ? {
-        cardBg: 'rgba(11,18,27,0.96)',
-        cardBorder: 'rgba(124,146,182,0.18)',
-        cardShadow: 'rgba(0,0,0,0.34)',
-        title: '#DCE5FF',
-        subtitle: '#93A4C8',
-        copy: '#B5C0D6',
-        muted: '#7F8AA4',
-        accent: '#27C8A3',
-        accentSoft: 'rgba(39,200,163,0.12)',
-        accentStrong: '#4DE2BC',
-        warning: '#E6B44E',
-        warningSoft: 'rgba(230,180,78,0.14)',
-        line: 'rgba(154,170,202,0.14)',
-        panelBg: 'rgba(18,27,39,0.86)',
-        panelBorder: 'rgba(128,146,184,0.18)',
-        iconBg: 'rgba(58,78,124,0.28)',
-        iconColor: '#9FB2FF',
-        heroBadgeBg: '#3140A8',
-      }
+      cardBg: 'rgba(11,18,27,0.96)',
+      cardBorder: 'rgba(124,146,182,0.18)',
+      cardShadow: 'rgba(0,0,0,0.34)',
+      title: '#DCE5FF',
+      subtitle: '#93A4C8',
+      copy: '#B5C0D6',
+      muted: '#7F8AA4',
+      accent: '#27C8A3',
+      accentSoft: 'rgba(39,200,163,0.12)',
+      accentStrong: '#4DE2BC',
+      warning: '#E6B44E',
+      warningSoft: 'rgba(230,180,78,0.14)',
+      line: 'rgba(154,170,202,0.14)',
+      panelBg: 'rgba(18,27,39,0.86)',
+      panelBorder: 'rgba(128,146,184,0.18)',
+      iconBg: 'rgba(58,78,124,0.28)',
+      iconColor: '#9FB2FF',
+      heroBadgeBg: '#3140A8',
+    }
     : {
-        cardBg: '#FBFCFE',
-        cardBorder: 'rgba(112,124,151,0.22)',
-        cardShadow: 'rgba(12,18,38,0.14)',
-        title: '#313A91',
-        subtitle: '#566287',
-        copy: '#636A82',
-        muted: '#7A8098',
-        accent: '#11826B',
-        accentSoft: 'rgba(17,130,107,0.10)',
-        accentStrong: '#0E8D71',
-        warning: '#D2A12F',
-        warningSoft: 'rgba(210,161,47,0.16)',
-        line: 'rgba(69,80,118,0.12)',
-        panelBg: '#F1F4F8',
-        panelBorder: 'rgba(119,126,155,0.22)',
-        iconBg: 'rgba(49,58,145,0.08)',
-        iconColor: '#313A91',
-        heroBadgeBg: '#313A91',
-      };
-}
-
-function AnimatedCounter({
-  value,
-  prefix = '',
-  suffix = '',
-  decimals = 0,
-  duration = 900,
-  style,
-}: AnimatedCounterProps): React.JSX.Element {
-  const animValue = useRef(new Animated.Value(0)).current;
-  const [displayText, setDisplayText] = useState(`${prefix}0${suffix}`);
-
-  useEffect(() => {
-    const listener = animValue.addListener(({ value: v }) => {
-      const current = v * value;
-      const formatted = current.toLocaleString('es-ES', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals,
-      });
-      setDisplayText(`${prefix}${formatted}${suffix}`);
-    });
-
-    Animated.timing(animValue, {
-      toValue: 1,
-      duration,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: false,
-    }).start();
-
-    return () => animValue.removeListener(listener);
-  }, [animValue, duration, value, prefix, suffix, decimals]);
-
-  return (
-    <Animated.Text
-      style={[
-        style,
-        {
-          transform: [
-            {
-              translateY: animValue.interpolate({
-                inputRange: [0, 1],
-                outputRange: [8, 0],
-              }),
-            },
-          ],
-        },
-      ]}
-    >
-      {displayText}
-    </Animated.Text>
-  );
+      cardBg: '#FBFCFE',
+      cardBorder: 'rgba(112,124,151,0.22)',
+      cardShadow: 'rgba(12,18,38,0.14)',
+      title: '#313A91',
+      subtitle: '#566287',
+      copy: '#636A82',
+      muted: '#7A8098',
+      accent: '#11826B',
+      accentSoft: 'rgba(17,130,107,0.10)',
+      accentStrong: '#0E8D71',
+      warning: '#D2A12F',
+      warningSoft: 'rgba(210,161,47,0.16)',
+      line: 'rgba(69,80,118,0.12)',
+      panelBg: '#F1F4F8',
+      panelBorder: 'rgba(119,126,155,0.22)',
+      iconBg: 'rgba(49,58,145,0.08)',
+      iconColor: '#313A91',
+      heroBadgeBg: '#313A91',
+    };
 }
 
 function SummaryCard({
@@ -147,7 +100,7 @@ function SummaryCard({
   children: React.ReactNode;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-}) {
+},): React.JSX.Element {
   return (
     <View
       style={[
@@ -175,22 +128,28 @@ function CardTitle({
   sub: string;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-}) {
+},): React.JSX.Element {
   return (
-    <View style={[styles.titleBlock, compact && styles.titleBlockCompact]}>
-      <Text style={[styles.title, compact && styles.titleCompact, { color: p.title }]}>
+    <View style={[styles.titleBlock, compact && styles.titleBlockCompact,]}>
+      <Text style={[styles.title, compact && styles.titleCompact, { color: p.title, },]}>
         {label}
       </Text>
-      <Text style={[styles.subtitle, compact && styles.subtitleCompact, { color: p.subtitle }]}>
+      <Text style={[styles.subtitle, compact && styles.subtitleCompact, { color: p.subtitle, },]}>
         {sub}
       </Text>
     </View>
   );
 }
 
-function Divider({ p, compact = false }: { p: ReturnType<typeof getPalette>; compact?: boolean }) {
+function Divider({
+  p,
+  compact = false,
+}: {
+  p: ReturnType<typeof getPalette>;
+  compact?: boolean;
+},): React.JSX.Element {
   return (
-    <View style={[styles.divider, compact && styles.dividerCompact, { backgroundColor: p.line }]} />
+    <View style={[styles.divider, compact && styles.dividerCompact, { backgroundColor: p.line, },]} />
   );
 }
 
@@ -206,25 +165,25 @@ function PositionRow({
   value: string;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-}) {
+},): React.JSX.Element {
   return (
-    <View style={[styles.positionRow, compact && styles.positionRowCompact]}>
+    <View style={[styles.positionRow, compact && styles.positionRowCompact,]}>
       <View
         style={[
           styles.positionIcon,
           compact && styles.positionIconCompact,
-          { backgroundColor: p.iconBg },
+          { backgroundColor: p.iconBg, },
         ]}
       >
         {icon}
       </View>
       <Text
-        style={[styles.positionLabel, compact && styles.positionLabelCompact, { color: p.title }]}
+        style={[styles.positionLabel, compact && styles.positionLabelCompact, { color: p.title, },]}
       >
         {label}
       </Text>
       <Text
-        style={[styles.positionValue, compact && styles.positionValueCompact, { color: p.title }]}
+        style={[styles.positionValue, compact && styles.positionValueCompact, { color: p.title, },]}
       >
         {value}
       </Text>
@@ -238,7 +197,7 @@ function PositionCard({
 }: {
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-}) {
+},): React.JSX.Element {
   return (
     <SummaryCard p={p} compact={compact}>
       <CardTitle
@@ -248,7 +207,7 @@ function PositionCard({
         compact={compact}
       />
 
-      <View style={[styles.positionList, compact && styles.positionListCompact]}>
+      <View style={[styles.positionList, compact && styles.positionListCompact,]}>
         <PositionRow
           icon={<GlobeIcon size={18} color={p.accent} />}
           label='Global'
@@ -276,14 +235,14 @@ function PositionCard({
         style={[
           styles.positionFooter,
           compact && styles.positionFooterCompact,
-          { borderTopColor: p.line },
+          { borderTopColor: p.line, },
         ]}
       >
         <Text
           style={[
             styles.positionFootnote,
             compact && styles.positionFootnoteCompact,
-            { color: p.muted },
+            { color: p.muted, },
           ]}
         >
           Ranking basado en Airs acumulados
@@ -293,7 +252,24 @@ function PositionCard({
   );
 }
 
-function RBICard({ p, compact = false }: { p: ReturnType<typeof getPalette>; compact?: boolean }) {
+function RBICard({
+  p,
+  compact = false,
+}: {
+  p: ReturnType<typeof getPalette>;
+  compact?: boolean;
+},): React.JSX.Element {
+  const [isExpanded, setIsExpanded,] = useState(false,);
+  const { language, } = useAppPreferences();
+
+  const getDocumentationUrl = (): string => {
+    const baseUrl = 'https://alternun-development.github.io';
+    const pathEn = '/docs/tutorial-basics/rbi-regenerative-basic-income';
+    const pathOther = `/${language}/docs/tutorial-basics/rbi-regenerative-basic-income`;
+
+    return language === 'en' ? `${baseUrl}${pathEn}` : `${baseUrl}${pathOther}`;
+  };
+
   return (
     <SummaryCard p={p} compact={compact}>
       <CardTitle
@@ -303,20 +279,15 @@ function RBICard({ p, compact = false }: { p: ReturnType<typeof getPalette>; com
         compact={compact}
       />
 
-      <View style={[styles.rbiHero, compact && styles.rbiHeroCompact]}>
-        <AnimatedCounter
-          value={14.2}
-          prefix='≈ '
-          suffix=' ATN'
-          decimals={1}
-          duration={900}
-          style={[styles.rbiValue, compact && styles.rbiValueCompact, { color: p.accent }]}
-        />
+      <View style={[styles.rbiHero, compact && styles.rbiHeroCompact,]}>
+        <Text style={[styles.rbiValue, compact && styles.rbiValueCompact, { color: p.accent, },]}>
+          Coming soon
+        </Text>
         <View
           style={[
             styles.heroBadge,
             compact && styles.heroBadgeCompact,
-            { backgroundColor: p.heroBadgeBg },
+            { backgroundColor: p.heroBadgeBg, },
           ]}
         >
           <CoinsIcon size={14} color='#F8FAFC' />
@@ -325,87 +296,111 @@ function RBICard({ p, compact = false }: { p: ReturnType<typeof getPalette>; com
 
       <Divider p={p} compact={compact} />
 
-      <View style={[styles.statList, compact && styles.statListCompact]}>
+      <View style={[styles.statList, compact && styles.statListCompact,]}>
         <View style={styles.statRow}>
-          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
+          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy, },]}>
             Pool RBI estimado:
           </Text>
-          <AnimatedCounter
-            value={120000}
-            prefix='$'
-            decimals={0}
-            duration={900}
-            style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}
-          />
+          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title, },]}>
+            Coming soon
+          </Text>
         </View>
         <View style={styles.statRow}>
-          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
+          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy, },]}>
             Usuarios elegibles:
           </Text>
-          <AnimatedCounter
-            value={8420}
-            decimals={0}
-            duration={900}
-            style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}
-          />
+          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title, },]}>
+            Coming soon
+          </Text>
         </View>
         <View style={styles.statRow}>
-          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
+          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy, },]}>
             Tu puntaje Airs:
           </Text>
-          <AnimatedCounter
-            value={12480}
-            decimals={0}
-            duration={900}
-            style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}
-          />
+          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title, },]}>
+            Coming soon
+          </Text>
         </View>
       </View>
 
       <Divider p={p} compact={compact} />
 
-      <View
-        style={[
-          styles.calloutCard,
-          compact && styles.calloutCardCompact,
-          { backgroundColor: p.warningSoft },
-        ]}
-      >
+      <TouchableOpacity onPress={() => setIsExpanded(!isExpanded,)} activeOpacity={0.7}>
         <View
           style={[
-            styles.calloutIcon,
-            compact && styles.calloutIconCompact,
-            { backgroundColor: 'rgba(255,255,255,0.48)' },
+            styles.rbiInfoBox,
+            compact && styles.rbiInfoBoxCompact,
+            { backgroundColor: p.accentSoft, borderColor: p.accent, },
           ]}
         >
-          <SparklesIcon size={18} color={p.warning} />
+          <View style={styles.rbiInfoHeader}>
+            <Text
+              style={[
+                styles.rbiInfoTitle,
+                compact && styles.rbiInfoTitleCompact,
+                { color: p.accent, },
+              ]}
+            >
+              ¿Qué es el RBI?
+            </Text>
+            <ChevronRight
+              size={16}
+              color={p.accent}
+              style={{
+                transform: [{ rotate: isExpanded ? '90deg' : '0deg', },],
+              }}
+            />
+          </View>
         </View>
-        <View style={styles.calloutBody}>
-          <Text
-            style={[
-              styles.calloutTitle,
-              compact && styles.calloutTitleCompact,
-              { color: p.warning },
-            ]}
-          >
-            Boost activo
-          </Text>
-          <Text
-            style={[styles.calloutText, compact && styles.calloutTextCompact, { color: p.copy }]}
-          >
-            El RBI está +32% por incentivos especiales.
-          </Text>
-        </View>
-      </View>
+      </TouchableOpacity>
 
-      <Divider p={p} compact={compact} />
+      {isExpanded && (
+        <>
+          <View style={[styles.rbiExplanation, compact && styles.rbiExplanationCompact,]}>
+            <Text
+              style={[
+                styles.rbiExplanationText,
+                compact && styles.rbiExplanationTextCompact,
+                { color: p.copy, },
+              ]}
+            >
+              El Regenerative Basic Income es un ingreso periódico que se distribuye entre los
+              usuarios de Alternun que contribuyen al ecosistema.{'\n\n'}
+              No depende de cuánto dinero tengas, sino de tu participación, tu compromiso y tu
+              impacto, medidos a través de tu puntaje AIRS.{'\n\n'}
+              Cada vez que Alternun facilita una compensación, una venta desde el compensation pool
+              o una actividad económica dentro de la plataforma, una parte de ese valor se destina
+              directamente al fondo del RBI.
+            </Text>
+          </View>
 
-      <View style={[styles.tipRow, compact && styles.tipRowCompact]}>
-        <FlagIcon size={16} color={p.title} />
-        <Text style={[styles.tipText, compact && styles.tipTextCompact, { color: p.copy }]}>
-          Tip: Si alcanzas Platinum este mes, tu proyección subiría a ≈ 21 ATN.
-        </Text>
-      </View>
+          <TouchableOpacity
+            onPress={() => {
+              void Linking.openURL(getDocumentationUrl(),);
+            }}
+            activeOpacity={0.7}
+          >
+            <View
+              style={[
+                styles.rbiDocLink,
+                compact && styles.rbiDocLinkCompact,
+                { backgroundColor: p.accentSoft, borderColor: p.accent, },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.rbiDocLinkText,
+                  compact && styles.rbiDocLinkTextCompact,
+                  { color: p.accent, },
+                ]}
+              >
+                Documentación completa
+              </Text>
+              <ChevronRight size={14} color={p.accent} />
+            </View>
+          </TouchableOpacity>
+        </>
+      )}
     </SummaryCard>
   );
 }
@@ -420,17 +415,17 @@ function ATNCard({
   compact?: boolean;
   dense?: boolean;
   onNavigate?: (key: string) => void;
-}) {
+},): React.JSX.Element {
   const useDenseLayout = compact || dense;
 
   return (
     <SummaryCard p={p} compact={compact}>
       <CardTitle label='Mis ATN' sub='Tus tokens regenerativos' p={p} compact={compact} />
 
-      <View style={[styles.tokenRow, compact && styles.tokenRowCompact]}>
+      <View style={[styles.tokenRow, compact && styles.tokenRowCompact,]}>
         <View style={styles.tokenLabelBlock}>
           <Text
-            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
+            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title, },]}
           >
             ATN disponibles
           </Text>
@@ -438,24 +433,21 @@ function ATNCard({
             style={[
               styles.tokenSubLabel,
               compact && styles.tokenSubLabelCompact,
-              { color: p.muted },
+              { color: p.muted, },
             ]}
           >
             Listos para usar
           </Text>
         </View>
-        <AnimatedCounter
-          value={1240}
-          decimals={0}
-          duration={900}
-          style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}
-        />
+        <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title, },]}>
+          Coming soon
+        </Text>
       </View>
       <Divider p={p} compact={compact} />
-      <View style={[styles.tokenRow, compact && styles.tokenRowCompact]}>
+      <View style={[styles.tokenRow, compact && styles.tokenRowCompact,]}>
         <View style={styles.tokenLabelBlock}>
           <Text
-            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
+            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title, },]}
           >
             ATN en stacking
           </Text>
@@ -463,36 +455,32 @@ function ATNCard({
             style={[
               styles.tokenSubLabel,
               compact && styles.tokenSubLabelCompact,
-              { color: p.muted },
+              { color: p.muted, },
             ]}
           >
             Participando en proyectos
           </Text>
         </View>
-        <AnimatedCounter
-          value={3000}
-          decimals={0}
-          duration={900}
-          style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}
-        />
+        <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title, },]}>
+          Coming soon
+        </Text>
       </View>
 
-      <View style={[styles.totalRow, compact && styles.totalRowCompact]}>
-        <Text style={[styles.totalLabel, compact && styles.totalLabelCompact, { color: p.title }]}>
+      <View style={[styles.totalRow, compact && styles.totalRowCompact,]}>
+        <Text style={[styles.totalLabel, compact && styles.totalLabelCompact, { color: p.title, },]}>
           Total ATN
         </Text>
         <View style={styles.totalValueWrap}>
           <TrendingUpIcon size={16} color={p.accent} />
-          <AnimatedCounter
-            value={4240}
-            decimals={0}
-            duration={900}
+          <Text
             style={[
               styles.totalValue,
               compact && styles.totalValueCompact,
-              { color: p.accentStrong },
+              { color: p.accentStrong, },
             ]}
-          />
+          >
+            Coming soon
+          </Text>
         </View>
       </View>
 
@@ -501,15 +489,15 @@ function ATNCard({
           styles.walletPanel,
           useDenseLayout && styles.walletPanelDense,
           compact && styles.walletPanelCompact,
-          { backgroundColor: p.panelBg, borderColor: p.panelBorder },
+          { backgroundColor: p.panelBg, borderColor: p.panelBorder, },
         ]}
       >
-        <View style={[styles.walletPanelTop, useDenseLayout && styles.walletPanelTopDense]}>
+        <View style={[styles.walletPanelTop, useDenseLayout && styles.walletPanelTopDense,]}>
           <Text
             style={[
               styles.walletPanelLabel,
               compact && styles.walletPanelLabelCompact,
-              { color: p.title },
+              { color: p.title, },
             ]}
           >
             Wallet principal
@@ -519,7 +507,7 @@ function ATNCard({
               styles.walletPanelMeta,
               useDenseLayout && styles.walletPanelMetaDense,
               compact && styles.walletPanelMetaCompact,
-              { color: p.muted },
+              { color: p.muted, },
             ]}
           >
             Interna
@@ -531,20 +519,20 @@ function ATNCard({
             styles.walletAddress,
             useDenseLayout && styles.walletAddressDense,
             compact && styles.walletAddressCompact,
-            { color: p.copy },
+            { color: p.copy, },
           ]}
         >
           0xA8f9...Wq77E4c2
         </Text>
-        <TouchableOpacity onPress={() => onNavigate?.('mi-perfil')} activeOpacity={0.7}>
-          <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense]}>
+        <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet',)} activeOpacity={0.7}>
+          <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense,]}>
             <WalletIcon size={15} color={p.title} />
             <Text
               style={[
                 styles.walletLinkText,
                 useDenseLayout && styles.walletLinkTextDense,
                 compact && styles.walletLinkTextCompact,
-                { color: p.title },
+                { color: p.title, },
               ]}
             >
               Gestionar wallet
@@ -557,15 +545,18 @@ function ATNCard({
   );
 }
 
-export default function DashboardSummaryCards({ isDark, onNavigate }: DashboardSummaryCardsProps) {
-  const p = getPalette(isDark);
-  const { width } = useWindowDimensions();
+export default function DashboardSummaryCards({
+  isDark,
+  onNavigate,
+}: DashboardSummaryCardsProps,): React.JSX.Element {
+  const p = getPalette(isDark,);
+  const { width, } = useWindowDimensions();
   const isMobile = width < 920;
   const isCompactMobile = width < 520;
   const isDenseAtnCard = width < 720;
 
   return (
-    <View style={[styles.root, isCompactMobile && styles.rootCompact]}>
+    <View style={[styles.root, isCompactMobile && styles.rootCompact,]}>
       <View
         style={[
           styles.grid,
@@ -642,10 +633,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '900',
     letterSpacing: -0.8,
+    fontFamily: 'Sculpin-Bold',
   },
   titleCompact: {
     fontSize: 18,
     letterSpacing: -0.55,
+    fontFamily: 'Sculpin-Bold',
   },
   subtitle: {
     fontSize: 13,
@@ -874,6 +867,76 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 
+  rbiInfoBox: {
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  rbiInfoBoxCompact: {
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  rbiInfoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  rbiInfoTitle: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  rbiInfoTitleCompact: {
+    fontSize: 13,
+  },
+  rbiExplanation: {
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  rbiExplanationCompact: {
+    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  rbiExplanationText: {
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  rbiExplanationTextCompact: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  rbiDocLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 12,
+    gap: 8,
+  },
+  rbiDocLinkCompact: {
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginTop: 10,
+  },
+  rbiDocLinkText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  rbiDocLinkTextCompact: {
+    fontSize: 12,
+  },
+
   tokenRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -953,6 +1016,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     gap: 10,
+    overflow: 'hidden',
+    width: '100%',
   },
   walletPanelDense: {
     gap: 8,
@@ -969,6 +1034,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
     minWidth: 0,
+    flexWrap: 'wrap',
   },
   walletPanelTopDense: {
     flexDirection: 'column',
@@ -978,6 +1044,7 @@ const styles = StyleSheet.create({
   walletPanelLabel: {
     fontSize: 14,
     fontWeight: '800',
+    flexShrink: 1,
   },
   walletPanelLabelCompact: {
     fontSize: 13,
@@ -985,6 +1052,7 @@ const styles = StyleSheet.create({
   walletPanelMeta: {
     fontSize: 13,
     fontWeight: '600',
+    flexShrink: 0,
   },
   walletPanelMetaDense: {
     alignSelf: 'flex-start',
@@ -997,20 +1065,24 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     letterSpacing: -0.1,
     minWidth: 0,
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   walletAddressDense: {
     fontSize: 14,
     lineHeight: 18,
   },
   walletAddressCompact: {
-    fontSize: 14,
+    fontSize: 13,
+    lineHeight: 17,
   },
   walletLinkRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     minWidth: 0,
-    flexShrink: 0,
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   walletLinkRowDense: {
     flexWrap: 'wrap',
@@ -1026,4 +1098,4 @@ const styles = StyleSheet.create({
   walletLinkTextCompact: {
     fontSize: 13,
   },
-});
+},);
