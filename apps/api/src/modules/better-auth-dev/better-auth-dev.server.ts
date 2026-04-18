@@ -2,6 +2,7 @@ import { createServer, type Server } from 'node:http';
 import { betterAuth } from 'better-auth';
 import { toNodeHandler } from 'better-auth/node';
 import { oAuthProxy } from 'better-auth/plugins/oauth-proxy';
+import { memory } from 'better-auth/adapters';
 import type { BetterAuthDevConfig, BetterAuthDevOAuthProxyConfig } from './better-auth-dev.config';
 
 function stripTrailingSlash(url: string): string {
@@ -35,7 +36,9 @@ function buildOAuthProxyPlugin(
   });
 }
 
-export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
+export function createBetterAuthDevAuth(
+  config: BetterAuthDevConfig
+): ReturnType<typeof betterAuth> {
   const oauthProxyPlugin = buildOAuthProxyPlugin(config.oauthProxy);
   const effectiveRedirectBaseURL =
     config.oauthProxy.enabled && config.oauthProxy.productionURL
@@ -95,6 +98,8 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
     basePath: '/auth',
     secret: config.secret,
     trustedOrigins,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+    database: memory(),
     plugins: oauthProxyPlugin ? [oauthProxyPlugin] : [],
     socialProviders,
     emailAndPassword: {
