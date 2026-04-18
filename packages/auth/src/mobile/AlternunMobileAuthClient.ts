@@ -88,18 +88,6 @@ function isEmailAlreadyRegisteredError(errorMessage: string): boolean {
   );
 }
 
-function isObfuscatedExistingUserSignUpResult(data: any): boolean {
-  if (!data || data.session || !data.user) {
-    return false;
-  }
-
-  const identities = Array.isArray(data.user.identities)
-    ? data.user.identities.filter(Boolean)
-    : null;
-
-  return Array.isArray(identities) && identities.length === 0;
-}
-
 function isMissingSessionError(error: unknown): boolean {
   const message = getErrorMessage(error).toLowerCase();
   return message.includes('auth session missing');
@@ -743,11 +731,58 @@ export class AlternunMobileAuthClient implements AuthClient {
   }
 
   async signInWithGoogle(redirectTo?: string): Promise<void> {
-    await this.signIn({
-      provider: 'google',
-      flow: this.runtime === 'web' ? 'redirect' : 'native',
-      redirectUri: redirectTo,
-    });
+    const baseUrl =
+      typeof window !== 'undefined'
+        ? `${window.location.protocol}//${window.location.host}`
+        : process.env.REACT_APP_API_URL ||
+          process.env.EXPO_PUBLIC_API_URL ||
+          'http://localhost:3000';
+
+    try {
+      const response = await fetch(`${baseUrl}/auth/sign-in/social`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          provider: 'google',
+          redirectUri: redirectTo,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to initiate Google sign-in');
+      }
+
+      const data = await response.json();
+      const signInUrl = typeof data?.url === 'string' ? data.url : null;
+
+      if (!signInUrl) {
+        throw new Error('No sign-in URL returned from server');
+      }
+
+      if (this.runtime === 'web') {
+        // Redirect to OAuth URL
+        if (typeof window !== 'undefined') {
+          window.location.href = signInUrl;
+        }
+      } else {
+        // Native runtime - would need to open URL in browser or use native OAuth handler
+        // For now, fall back to the original flow
+        await this.signIn({
+          provider: 'google',
+          flow: 'native',
+          redirectUri: redirectTo,
+        });
+      }
+    } catch (error) {
+      // Fall back to direct sign-in if API endpoint fails
+      await this.signIn({
+        provider: 'google',
+        flow: this.runtime === 'web' ? 'redirect' : 'native',
+        redirectUri: redirectTo,
+      });
+    }
   }
 
   async signUpWithEmail(
@@ -772,28 +807,50 @@ export class AlternunMobileAuthClient implements AuthClient {
     this.walletUser = null;
     this.linkedWallet = null;
     this.walletSessionToken = null;
-    const supabase = this.ensureSupabase();
 
     const emailTemplateLocale = normalizeEmailTemplateLocale(locale);
-    const { data, error } = await supabase.auth.signUp(
-      emailTemplateLocale
-        ? {
-            email: normalizedEmail,
-            password: validatedPassword,
-            options: {
-              data: {
-                locale: emailTemplateLocale,
-              },
-            },
-          }
-        : {
-            email: normalizedEmail,
-            password: validatedPassword,
-          }
-    );
+    const baseUrl =
+      typeof window !== 'undefined'
+        ? `${window.location.protocol}//${window.location.host}`
+        : process.env.REACT_APP_API_URL ||
+          process.env.EXPO_PUBLIC_API_URL ||
+          'http://localhost:3000';
 
-    if (error) {
-      if (isEmailAlreadyRegisteredError(error.message)) {
+    const response = await fetch(`${baseUrl}/auth/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: normalizedEmail,
+        password: validatedPassword,
+        ...(emailTemplateLocale ? { locale: emailTemplateLocale } : {}),
+      }),
+    });
+
+    let data: unknown;
+    try {
+      const contentType = response.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(
+          `Invalid response type: ${contentType}. Response: ${text.substring(0, 200)}`
+        );
+      }
+    } catch (parseError) {
+      const message = parseError instanceof Error ? parseError.message : 'Failed to parse response';
+      throw new Error(`PARSE_ERROR: ${message}`);
+    }
+
+    if (!response.ok) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const message =
+        typeof (data as any)?.message === 'string' ? (data as any).message : 'Unknown error';
+
+      if (isEmailAlreadyRegisteredError(message)) {
         return {
           needsEmailVerification: true,
           emailAlreadyRegistered: true,
@@ -801,27 +858,25 @@ export class AlternunMobileAuthClient implements AuthClient {
         };
       }
 
-      throw new Error(`PROVIDER_ERROR: ${error.message}`);
-    }
-
-    if (isObfuscatedExistingUserSignUpResult(data)) {
-      return {
-        needsEmailVerification: true,
-        emailAlreadyRegistered: true,
-        confirmationEmailSent: false,
-      };
-    }
-
-    const hasSession = Boolean(data.session);
-
-    if (hasSession) {
-      this.emit(this.mapSupabaseUser(data.user));
+      throw new Error(`PROVIDER_ERROR: ${message}`);
     }
 
     return {
-      needsEmailVerification: !hasSession,
-      emailAlreadyRegistered: false,
-      confirmationEmailSent: !hasSession,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      needsEmailVerification:
+        typeof (data as any)?.needsEmailVerification === 'boolean'
+          ? (data as any).needsEmailVerification
+          : true,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      emailAlreadyRegistered:
+        typeof (data as any)?.emailAlreadyRegistered === 'boolean'
+          ? (data as any).emailAlreadyRegistered
+          : false,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      confirmationEmailSent:
+        typeof (data as any)?.confirmationEmailSent === 'boolean'
+          ? (data as any).confirmationEmailSent
+          : false,
     };
   }
 
