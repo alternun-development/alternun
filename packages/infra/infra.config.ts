@@ -770,6 +770,8 @@ export function createInfrastructure() {
           : undefined,
       certificateArn: enableCustomDomain ? expoCerts[expoDeploymentStage] : undefined,
       environment: {
+        STACK: stage,
+        SST_STAGE: stage,
         EXPO_PUBLIC_ENV: stage,
         EXPO_PUBLIC_STAGE: stage,
         EXPO_PUBLIC_ORIGIN: expoDomain ? `https://${expoDomain.domainName}` : undefined,
