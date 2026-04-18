@@ -1,3 +1,11 @@
+## [1.0.149](https://github.com/alternun-development/alternun/compare/v1.0.148...v1.0.149) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** test(infra): \_pipeline-safety, predeploy-checks, sst-deploy, destructive-cleanup-guards.test
+
+## [1.0.149](https://github.com/alternun-development/alternun/compare/v1.0.148...v1.0.149) (2026-04-18)
+
 ## [1.0.148](https://github.com/alternun-development/alternun/compare/v1.0.147...v1.0.148) (2026-04-18)
 
 ### Bug Fixes
