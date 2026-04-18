@@ -1,3 +1,11 @@
+## [1.0.151](https://github.com/alternun-development/alternun/compare/v1.0.150...v1.0.151) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): AIRS-logo-dark-realistic, AIRS-logo-light-realistic, README, buildspec
+
+## [1.0.151](https://github.com/alternun-development/alternun/compare/v1.0.150...v1.0.151) (2026-04-18)
+
 ## [1.0.150](https://github.com/alternun-development/alternun/compare/v1.0.149...v1.0.150) (2026-04-18)
 
 ### Bug Fixes
