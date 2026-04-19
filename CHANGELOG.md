@@ -1,3 +1,15 @@
+## [1.0.165](https://github.com/alternun-development/alternun/compare/v1.0.164...v1.0.165) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.164
+- **repo:** fix(api): build, app-metadata, dist-lambda
+- **repo:** docs(scripts): add testnet deployment helper and release guide
+- **repo:** fix(api): remove hardcoded version, improve package.json detection
+- **repo:** fix(api): hardcode version with file system fallback
+
+## [1.0.165](https://github.com/alternun-development/alternun/compare/v1.0.164...v1.0.165) (2026-04-19)
+
 ## [1.0.164](https://github.com/alternun-development/alternun/compare/v1.0.163...v1.0.164) (2026-04-19)
 
 ### Bug Fixes
