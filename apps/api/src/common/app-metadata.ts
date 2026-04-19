@@ -2,15 +2,12 @@ import { readFileSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
 
 let APP_NAME = '@alternun/api';
-let APP_VERSION = '1.0.0';
+let APP_VERSION = '1.0.163'; // Updated by release script
 
-// Try multiple paths to find package.json
+// Try to read from package.json if available
 const pathsToTry = [
-  // Lambda environment - package.json in same dir as lambda.js
   join(__dirname, 'package.json'),
-  // Fallback - one level up
   join(__dirname, '..', 'package.json'),
-  // Fallback - relative to CWD
   resolve(process.cwd(), 'package.json'),
 ];
 
@@ -28,15 +25,17 @@ for (const pkgPath of pathsToTry) {
   }
 }
 
-// Final fallback: try require
-if (APP_VERSION === '1.0.0') {
+// Fallback to require() for dev
+if (APP_VERSION === '1.0.163') {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const pkg = require('../../package.json') as { name: string; version: string };
-    APP_NAME = pkg.name;
-    APP_VERSION = pkg.version;
+    if (pkg.version && pkg.version !== '1.0.163') {
+      APP_NAME = pkg.name;
+      APP_VERSION = pkg.version;
+    }
   } catch {
-    // Use defaults
+    // Use hardcoded version
   }
 }
 
