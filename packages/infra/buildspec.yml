@@ -395,15 +395,17 @@ phases:
           echo "Skipping sst refresh (INFRA_ENABLE_SST_REFRESH=${INFRA_ENABLE_SST_REFRESH})"
         fi
       - |
+        export APPROVE=true
+        export RUN_PREDEPLOY_CHECKS=false
         if [ -f "${INFRA_PATH}/scripts/sst-deploy.sh" ]; then
           chmod +x "${INFRA_PATH}/scripts/sst-deploy.sh" || true
-          APPROVE=true RUN_PREDEPLOY_CHECKS=false STACK=${SST_STAGE} "${INFRA_PATH}/scripts/sst-deploy.sh"
+          STACK=${SST_STAGE} "${INFRA_PATH}/scripts/sst-deploy.sh"
         elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" ]; then
           chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" || true
-          (cd "${INFRA_PATH}" && APPROVE=true STACK=${SST_STAGE} ./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh)
+          (cd "${INFRA_PATH}" && STACK=${SST_STAGE} ./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh)
         elif [ -f "./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" ]; then
           chmod +x "./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" || true
-          APPROVE=true STACK=${SST_STAGE} ./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh
+          STACK=${SST_STAGE} ./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh
         else
           echo "ERROR: No sst-deploy script found." >&2
           exit 1
