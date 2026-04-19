@@ -1,3 +1,25 @@
+## [1.0.162](https://github.com/alternun-development/alternun/compare/v1.0.161...v1.0.162) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** fix(gitignore): ignore i18n dist folder
+- **repo:** fix(api): improve social sign-in endpoint error handling
+- **repo:** fix(mobile): remove duplicate resend cooldown message
+
+### Bug Fixes
+
+- **api:** improve social sign-in endpoint error handling ([00fe88a](https://github.com/alternun-development/alternun/commit/00fe88a6c7cea28edb3445c422d628fe10625edc))
+- **gitignore:** ignore i18n dist folder ([d1bca2e](https://github.com/alternun-development/alternun/commit/d1bca2e268a5cf1dcc196ef5c619f51231389429))
+- **mobile:** remove duplicate resend cooldown message ([6c1e241](https://github.com/alternun-development/alternun/commit/6c1e241029b4266e4f73561c72d67c316742d0c8))
+
+## [1.0.162](https://github.com/alternun-development/alternun/compare/v1.0.161...v1.0.162) (2026-04-19)
+
+### Bug Fixes
+
+- **api:** improve social sign-in endpoint error handling ([00fe88a](https://github.com/alternun-development/alternun/commit/00fe88a6c7cea28edb3445c422d628fe10625edc))
+- **gitignore:** ignore i18n dist folder ([d1bca2e](https://github.com/alternun-development/alternun/commit/d1bca2e268a5cf1dcc196ef5c619f51231389429))
+- **mobile:** remove duplicate resend cooldown message ([6c1e241](https://github.com/alternun-development/alternun/commit/6c1e241029b4266e4f73561c72d67c316742d0c8))
+
 ## [1.0.161](https://github.com/alternun-development/alternun/compare/v1.0.160...v1.0.161) (2026-04-19)
 
 ### Bug Fixes
