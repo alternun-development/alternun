@@ -181,6 +181,7 @@ export default function AuthSignInScreen({
   const [requiredFields, setRequiredFields] = useState<RequiredFieldState>(() =>
     createDefaultRequiredFieldState()
   );
+  const [passwordValidationError, setPasswordValidationError] = useState<string | null>(null);
 
   const emailInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
@@ -519,6 +520,7 @@ export default function AuthSignInScreen({
     }
 
     setSubmitMode('signup');
+    setLocalError(null);
     try {
       const result = await client.signUpWithEmail(normalizedEmail, password, locale);
 
@@ -1152,6 +1154,17 @@ export default function AuthSignInScreen({
                         setPassword(value);
                         clearRequiredField('password');
                         animateLabel(passwordLabelAnim, value.length > 0);
+                        // Real-time password validation
+                        if (value.length > 0) {
+                          try {
+                            parseSignUpPassword(value);
+                            setPasswordValidationError(null);
+                          } catch {
+                            setPasswordValidationError(t('authModal.validation.passwordMin'));
+                          }
+                        } else {
+                          setPasswordValidationError(null);
+                        }
                       }}
                       onFocus={() => setFocusedField('password')}
                       onBlur={() =>
@@ -1189,10 +1202,14 @@ export default function AuthSignInScreen({
                     <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
                       {t('authModal.validation.passwordRequired')}
                     </Text>
+                  ) : passwordValidationError && mode === 'signup' ? (
+                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                      {passwordValidationError}
+                    </Text>
                   ) : null}
                 </View>
 
-                {mode === 'signup' ? (
+                {mode === 'signup' && password.length > 0 ? (
                   <View style={styles.inputGroup}>
                     <Animated.Text
                       style={[

@@ -22,13 +22,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { HelpCircle } from 'lucide-react-native';
 import { ChangelogDrawer, fontSize, radius, spacing } from '@alternun/ui';
 import { resolveVersionMetadata } from '../common/Footer.shared';
 import { useAppPalette } from '../theme/useAppPalette';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { CHANGELOG_TEXT } from '../../utils/changelogData';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
+import SupportButton from '../common/SupportButton';
 
 // ── Helper: Policy content fetcher and formatter ──────────────────────────────
 
@@ -107,7 +107,7 @@ export function PolicyDrawerContent({
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    const fetchContent = async () => {
+    const fetchContent = async (): Promise<void> => {
       try {
         setLoading(true);
         const url = `${apiUrl.replace(/\/$/, '')}/v1/legal/${type}?locale=${locale}`;
@@ -266,7 +266,6 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
   const { t } = useAppTranslation('mobile');
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
   const [privacyHovered, setPrivacyHovered] = useState(false);
   const [termsHovered, setTermsHovered] = useState(false);
   const resolvedApiUrl = resolveMobileApiBaseUrl(apiUrl);
@@ -306,14 +305,6 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
 
   const handleTermsClose = useCallback(() => {
     setTermsOpen(false);
-  }, []);
-
-  const handleHelpOpen = useCallback(() => {
-    setHelpOpen(true);
-  }, []);
-
-  const handleHelpClose = useCallback(() => {
-    setHelpOpen(false);
   }, []);
 
   return (
@@ -364,22 +355,19 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
             highlightLatest
           />
 
-          {/* Help icon button — opens help modal */}
-          <TouchableOpacity
-            onPress={handleHelpOpen}
-            style={[
-              innerStyles.helpButton,
-              {
-                borderColor: p.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)',
-                backgroundColor: p.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-              },
-            ]}
-            activeOpacity={0.75}
-            accessibilityRole='button'
-            accessibilityLabel={t('footer.help')}
-          >
-            <HelpCircle size={16} color={p.textMuted} strokeWidth={1.5} />
-          </TouchableOpacity>
+          {/* Help button — opens support modal with chat/email options */}
+          <SupportButton
+            supportEmail='support@alternun.co'
+            palette={{
+              title: p.textPrimary,
+              muted: p.textMuted,
+              accent: p.accent,
+              text: p.textPrimary,
+              shellBg: p.isDark ? '#0d0d1f' : '#f8fafb',
+              overlayBg: p.isDark ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0.38)',
+              borderColor: p.isDark ? 'rgba(255,255,255,0.09)' : 'rgba(15,23,42,0.1)',
+            }}
+          />
         </View>
       </View>
 
@@ -556,94 +544,6 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
           </View>
         </View>
       </Modal>
-
-      {/* Help Modal */}
-      <Modal
-        visible={helpOpen}
-        transparent
-        animationType='fade'
-        statusBarTranslucent
-        onRequestClose={handleHelpClose}
-        accessibilityViewIsModal
-      >
-        <View style={innerStyles.modalContainer}>
-          <Pressable
-            style={[
-              innerStyles.backdrop,
-              {
-                backgroundColor: p.isDark ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0.38)',
-              },
-            ]}
-            onPress={handleHelpClose}
-          />
-          <View
-            style={[
-              innerStyles.sheet,
-              {
-                backgroundColor: p.isDark ? '#0d0d1f' : '#f8fafb',
-                borderColor: p.isDark ? 'rgba(255,255,255,0.09)' : 'rgba(15,23,42,0.1)',
-              },
-            ]}
-          >
-            <View
-              style={[
-                innerStyles.handle,
-                {
-                  backgroundColor: p.isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)',
-                },
-              ]}
-            />
-            <View
-              style={[
-                innerStyles.sheetHeader,
-                {
-                  borderBottomColor: p.isDark ? 'rgba(255,255,255,0.09)' : 'rgba(15,23,42,0.1)',
-                },
-              ]}
-            >
-              <Text style={[innerStyles.sheetTitle, { color: p.textPrimary }]}>
-                {t('footer.help')}
-              </Text>
-              <TouchableOpacity
-                onPress={handleHelpClose}
-                activeOpacity={0.75}
-                style={innerStyles.closeBtn}
-              >
-                <Text style={[innerStyles.closeBtnText, { color: p.textMuted }]}>✕</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView
-              style={innerStyles.contentScroll}
-              contentContainerStyle={innerStyles.contentContainer}
-              showsVerticalScrollIndicator={false}
-              scrollEnabled
-            >
-              <Text style={[innerStyles.helpSection, { color: p.textPrimary }]}>Getting Help</Text>
-              <Text style={[innerStyles.helpText, { color: p.textMuted }]}>
-                For support and assistance, visit our documentation or contact the support team.
-              </Text>
-            </ScrollView>
-            {/* Documentation link footer */}
-            <View
-              style={[
-                innerStyles.drawerFooter,
-                {
-                  borderTopColor: p.isDark ? 'rgba(255,255,255,0.09)' : 'rgba(15,23,42,0.1)',
-                },
-              ]}
-            >
-              <TouchableOpacity
-                onPress={() => {
-                  void Linking.openURL(docsBaseUrl);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={[innerStyles.docLink, { color: p.accent }]}>View documentation ↗</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </>
   );
 }
@@ -708,16 +608,6 @@ const innerStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing[2],
-  },
-
-  // Help button (minimal, circular border — non-functional like landing footer)
-  helpButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 
   // Policy drawer content
@@ -814,18 +704,6 @@ const innerStyles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: spacing[8],
     fontStyle: 'italic',
-  },
-
-  // Help modal content
-  helpSection: {
-    fontSize: fontSize.base,
-    fontWeight: '700',
-    marginBottom: spacing[2],
-  },
-  helpText: {
-    fontSize: fontSize.sm,
-    lineHeight: 22,
-    marginBottom: spacing[4],
   },
 
   // Drawer footer with documentation link
