@@ -1,3 +1,49 @@
+## [1.0.167](https://github.com/alternun-development/alternun/compare/v1.0.166...v1.0.167) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** chore(repo,scripts): AWS_ACCOUNT_ENFORCEMENT, aws-account-guard
+- **repo:** debug: add debug output to sst-deploy.sh to identify exit point
+- **repo:** fix(infra): export APPROVE to sst-deploy script using explicit export
+- **repo:** revert: disable AUTO_REMOVE_CONFLICTING_DNS for dev
+- **repo:** fix(mobile): restore v1.0.166 PublicLandingPage with simplified cards
+
+### Bug Fixes
+
+- **infra:** auto-invalidate CloudFront cache after deployments ([a51047c](https://github.com/alternun-development/alternun/commit/a51047c314597787732e6b6dfcace3c1c2e3dd4d))
+- **infra:** enable AUTO_REMOVE_CONFLICTING_DNS for dev DNS cleanup ([4de344c](https://github.com/alternun-development/alternun/commit/4de344c11b4deb65855df447697b9447f36f3ac5))
+- **infra:** export APPROVE to sst-deploy script using explicit export ([8a51f17](https://github.com/alternun-development/alternun/commit/8a51f17f4c32f4682f8a6cabc0cd4d5328cd23fb))
+- **mobile:** restore v1.0.166 PublicLandingPage with simplified cards ([5e63e49](https://github.com/alternun-development/alternun/commit/5e63e49d2e4ee12d755faf520d9af8f377483cb1))
+- update .gitleaksignore to properly ignore public API keys ([5ffd54c](https://github.com/alternun-development/alternun/commit/5ffd54c0b0a3ceb56a206e2510b169b5689cdb4f))
+
+### Performance Improvements
+
+- **infra:** optimize CodePipeline buildspec for faster dev iterations ([834378a](https://github.com/alternun-development/alternun/commit/834378a8fc2cf1732b75426a6b29eea25a887bb7))
+
+### Reverts
+
+- disable AUTO_REMOVE_CONFLICTING_DNS for dev ([067630c](https://github.com/alternun-development/alternun/commit/067630c443ec659153a4ec25bea6537e8689c203))
+- **mobile:** PublicLandingPage to v1.0.57 layout ([ab06239](https://github.com/alternun-development/alternun/commit/ab06239ad09c52d089c7049a40c9c07bfeb81d05))
+
+## [1.0.167](https://github.com/alternun-development/alternun/compare/v1.0.166...v1.0.167) (2026-04-19)
+
+### Bug Fixes
+
+- **infra:** auto-invalidate CloudFront cache after deployments ([a51047c](https://github.com/alternun-development/alternun/commit/a51047c314597787732e6b6dfcace3c1c2e3dd4d))
+- **infra:** enable AUTO_REMOVE_CONFLICTING_DNS for dev DNS cleanup ([4de344c](https://github.com/alternun-development/alternun/commit/4de344c11b4deb65855df447697b9447f36f3ac5))
+- **infra:** export APPROVE to sst-deploy script using explicit export ([8a51f17](https://github.com/alternun-development/alternun/commit/8a51f17f4c32f4682f8a6cabc0cd4d5328cd23fb))
+- **mobile:** restore v1.0.166 PublicLandingPage with simplified cards ([5e63e49](https://github.com/alternun-development/alternun/commit/5e63e49d2e4ee12d755faf520d9af8f377483cb1))
+- update .gitleaksignore to properly ignore public API keys ([5ffd54c](https://github.com/alternun-development/alternun/commit/5ffd54c0b0a3ceb56a206e2510b169b5689cdb4f))
+
+### Performance Improvements
+
+- **infra:** optimize CodePipeline buildspec for faster dev iterations ([834378a](https://github.com/alternun-development/alternun/commit/834378a8fc2cf1732b75426a6b29eea25a887bb7))
+
+### Reverts
+
+- disable AUTO_REMOVE_CONFLICTING_DNS for dev ([067630c](https://github.com/alternun-development/alternun/commit/067630c443ec659153a4ec25bea6537e8689c203))
+- **mobile:** PublicLandingPage to v1.0.57 layout ([ab06239](https://github.com/alternun-development/alternun/commit/ab06239ad09c52d089c7049a40c9c07bfeb81d05))
+
 ## [1.0.166](https://github.com/alternun-development/alternun/compare/v1.0.165...v1.0.166) (2026-04-19)
 
 ### Bug Fixes
