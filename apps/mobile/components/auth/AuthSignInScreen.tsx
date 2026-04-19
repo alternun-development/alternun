@@ -96,8 +96,9 @@ interface RequiredFieldState {
 
 interface SignUpResult {
   needsEmailVerification: boolean;
-  emailAlreadyRegistered: boolean;
-  confirmationEmailSent: boolean;
+  emailAlreadyRegistered?: boolean;
+  confirmationEmailSent?: boolean;
+  error?: string;
 }
 
 interface EmailAuthCapableClient {
@@ -523,6 +524,12 @@ export default function AuthSignInScreen({
     setLocalError(null);
     try {
       const result = await client.signUpWithEmail(normalizedEmail, password, locale);
+
+      if (result.error && typeof result.error === 'string') {
+        setLocalError(result.error);
+        setSubmitMode(null);
+        return;
+      }
 
       if (result.needsEmailVerification) {
         setConfirmationEmail(normalizedEmail);
