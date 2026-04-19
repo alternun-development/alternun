@@ -686,8 +686,11 @@ validate_identity_database_mode_transition
 
 hydrate_backend_api_jwt_signing_key
 
+echo "DEBUG: Starting pre-deploy pipeline checks..."
 selected_pipeline_csv=$(resolve_selected_pipeline_csv)
+echo "DEBUG: Selected pipeline CSV: $selected_pipeline_csv"
 assert_pipeline_reconciliation_safe "$selected_pipeline_csv" "$STACK"
+echo "DEBUG: Pipeline reconciliation check passed"
 
 if should_cleanup_deploy_aliases; then
   cleanup_deploy_aliases
@@ -701,7 +704,9 @@ else
   echo "Skipping CloudFront alias cleanup (INFRA_ENABLE_ALIAS_CLEANUP=${INFRA_ENABLE_ALIAS_CLEANUP:-false})"
 fi
 
+echo "DEBUG: Pruning legacy managed certificate state..."
 prune_legacy_managed_certificate_state
+echo "DEBUG: Certificate state pruned successfully"
 
 echo "Using SST stack/stage: ${STACK} (cwd: ${INFRA_DIR})"
 
@@ -712,8 +717,10 @@ else
   echo "Skipping sst diff (INFRA_ENABLE_SST_DIFF=${INFRA_ENABLE_SST_DIFF:-false})"
 fi
 
+echo "DEBUG: Checking APPROVE variable: '${APPROVE:-NOT_SET}'"
 if ! is_truthy "${APPROVE:-false}"; then
   echo "Preview completed. Re-run with APPROVE=true to apply changes."
+  echo "DEBUG: APPROVE is not truthy, exiting"
   exit 0
 fi
 
