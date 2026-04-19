@@ -32,12 +32,23 @@ export class SupabaseSignupService {
 
       if (!response.ok) {
         const errorBody = (await response.json()) as unknown;
+        const errorStr = typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody);
+
         this.logger.error('Supabase signup failed', {
           email,
           status: response.status,
           error: errorBody,
         });
-        throw new Error(typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody));
+
+        // Check for duplicate key error (user already exists)
+        if (errorStr.includes('duplicate key') || errorStr.includes('23505')) {
+          // Hint that account may exist without explicitly revealing it
+          throw new Error(
+            'Unable to create account with this email. This email may already be registered. Try signing in instead.'
+          );
+        }
+
+        throw new Error(errorStr);
       }
 
       await response.json();
