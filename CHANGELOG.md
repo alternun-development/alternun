@@ -1,3 +1,35 @@
+## [1.0.164](https://github.com/alternun-development/alternun/compare/v1.0.163...v1.0.164) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** fix(api): build, app-metadata, dist-lambda
+- **repo:** docs(scripts): add testnet deployment helper and release guide
+- **repo:** fix(api): remove hardcoded version, improve package.json detection
+- **repo:** fix(api): hardcode version with file system fallback
+- **repo:** fix(api): improve package.json path resolution with multiple fallbacks
+
+### Bug Fixes
+
+- **api:** build, app-metadata, dist-lambda ([c52e00e](https://github.com/alternun-development/alternun/commit/c52e00e626e4540832ba6b9a05efb0c6036e863a))
+- **api:** hardcode version with file system fallback ([05baafa](https://github.com/alternun-development/alternun/commit/05baafaaa5a68831f31a99e4671883b84c107e09))
+- **api:** improve package.json path resolution with multiple fallbacks ([53e6f2b](https://github.com/alternun-development/alternun/commit/53e6f2b4099f6e3044bbe07eb74fcb0b05af19d1))
+- **api:** include package.json in Lambda bundle for runtime version loading ([2aa44bf](https://github.com/alternun-development/alternun/commit/2aa44bf0f473462b0b3ffbdd9d37c14d79da2fe7))
+- **api:** remove hardcoded version, improve package.json detection ([65b7322](https://github.com/alternun-development/alternun/commit/65b7322619b698bb01eae10b89bf29c8b1cc494f))
+- **api:** use fs.readFileSync for runtime version loading in Lambda ([2ce54d4](https://github.com/alternun-development/alternun/commit/2ce54d4a60aba52540fe4bbaa21380d95155d8b7))
+- **mobile:** add timeout to OAuth redirect to prevent stalling UI ([b7cb1c7](https://github.com/alternun-development/alternun/commit/b7cb1c76b27fe9ad7c1a5bd0af64fae21cd9c88b))
+
+## [1.0.164](https://github.com/alternun-development/alternun/compare/v1.0.163...v1.0.164) (2026-04-19)
+
+### Bug Fixes
+
+- **api:** build, app-metadata, dist-lambda ([c52e00e](https://github.com/alternun-development/alternun/commit/c52e00e626e4540832ba6b9a05efb0c6036e863a))
+- **api:** hardcode version with file system fallback ([05baafa](https://github.com/alternun-development/alternun/commit/05baafaaa5a68831f31a99e4671883b84c107e09))
+- **api:** improve package.json path resolution with multiple fallbacks ([53e6f2b](https://github.com/alternun-development/alternun/commit/53e6f2b4099f6e3044bbe07eb74fcb0b05af19d1))
+- **api:** include package.json in Lambda bundle for runtime version loading ([2aa44bf](https://github.com/alternun-development/alternun/commit/2aa44bf0f473462b0b3ffbdd9d37c14d79da2fe7))
+- **api:** remove hardcoded version, improve package.json detection ([65b7322](https://github.com/alternun-development/alternun/commit/65b7322619b698bb01eae10b89bf29c8b1cc494f))
+- **api:** use fs.readFileSync for runtime version loading in Lambda ([2ce54d4](https://github.com/alternun-development/alternun/commit/2ce54d4a60aba52540fe4bbaa21380d95155d8b7))
+- **mobile:** add timeout to OAuth redirect to prevent stalling UI ([b7cb1c7](https://github.com/alternun-development/alternun/commit/b7cb1c76b27fe9ad7c1a5bd0af64fae21cd9c88b))
+
 ## [1.0.163](https://github.com/alternun-development/alternun/compare/v1.0.161...v1.0.163) (2026-04-19)
 
 ### Bug Fixes
