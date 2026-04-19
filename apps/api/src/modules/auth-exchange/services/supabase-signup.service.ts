@@ -8,14 +8,19 @@ export class SupabaseSignupService {
     email: string,
     password: string,
     locale?: string
-  ): Promise<{ success: boolean; message?: string }> {
+  ): Promise<{
+    needsEmailVerification: boolean;
+    emailAlreadyRegistered?: boolean;
+    confirmationEmailSent?: boolean;
+    error?: string;
+  }> {
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
       return {
-        success: false,
-        message: 'Signup service temporarily unavailable',
+        needsEmailVerification: false,
+        error: 'Signup service temporarily unavailable',
       };
     }
 
@@ -46,15 +51,15 @@ export class SupabaseSignupService {
         // Check for duplicate key error (user already exists)
         if (errorStr.includes('duplicate key') || errorStr.includes('23505')) {
           return {
-            success: false,
-            message:
-              'Unable to create account with this email. This email may already be registered. Try signing in instead.',
+            needsEmailVerification: true,
+            emailAlreadyRegistered: true,
+            confirmationEmailSent: false,
           };
         }
 
         return {
-          success: false,
-          message: 'Unable to create account. Please try again.',
+          needsEmailVerification: false,
+          error: 'Unable to create account. Please try again.',
         };
       }
 
@@ -62,15 +67,16 @@ export class SupabaseSignupService {
       this.logger.debug('User signed up successfully', { email });
 
       return {
-        success: true,
-        message: 'Confirmation email sent. Please check your email.',
+        needsEmailVerification: true,
+        emailAlreadyRegistered: false,
+        confirmationEmailSent: true,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error('Signup service error', { email, error: message });
       return {
-        success: false,
-        message: 'Unable to create account. Please try again.',
+        needsEmailVerification: false,
+        error: 'Unable to create account. Please try again.',
       };
     }
   }

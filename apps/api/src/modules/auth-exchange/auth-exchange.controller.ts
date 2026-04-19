@@ -45,11 +45,14 @@ export class AuthExchangeController {
     summary: 'Register a new user with email and password',
   })
   @ApiOkResponse({
-    description: 'Signup result. Confirmation email sent.',
+    description: 'Signup result with verification status.',
   })
-  async signUpEmail(
-    @Body() body: SignUpEmailRequestDto
-  ): Promise<{ success: boolean; message?: string }> {
+  async signUpEmail(@Body() body: SignUpEmailRequestDto): Promise<{
+    needsEmailVerification: boolean;
+    emailAlreadyRegistered?: boolean;
+    confirmationEmailSent?: boolean;
+    error?: string;
+  }> {
     return this.supabaseSignupService.signUp(body.email, body.password, body.locale);
   }
 
