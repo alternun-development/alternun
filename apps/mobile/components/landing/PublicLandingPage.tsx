@@ -1,14 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires */
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   Animated,
+  LayoutAnimation,
   StyleSheet,
   Modal,
   Pressable,
+  Platform,
+  UIManager,
   useWindowDimensions,
   type ImageSourcePropType,
 } from 'react-native';
@@ -32,7 +35,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowRight,
-  ChevronDown,
   Info,
   CheckCircle2,
   X,
@@ -45,6 +47,16 @@ import { createTypographyStyles } from '../theme/typography';
 import AirsIntroExperience from '../onboarding/AirsIntroExperience';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { getStepTimelineProgressRange, getStepTimelineTrackMetrics } from './stepTimeline';
+import {
+  MEMBERSHIP_MARQUEE_BASE_DISTANCE,
+  MEMBERSHIP_MARQUEE_LEFT_BASE_DURATION_MS,
+  MEMBERSHIP_MARQUEE_RIGHT_BASE_DURATION_MS,
+  getMembershipLogoBandWidth,
+  getMembershipMarqueeRepeatCount,
+  scaleMembershipMarqueeDuration,
+} from './membershipMarquee';
+import { getBenefitCardDefaultDetailsExpanded } from './benefitCard';
+import { getTokenCardDefaultExpanded } from './tokenCard';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
@@ -56,7 +68,6 @@ const CoinsIcon = Coins as React.FC<LucideProps>;
 const ChevronLeftIcon = ChevronLeft as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
 const ArrowRightIcon = ArrowRight as React.FC<LucideProps>;
-const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const InfoIcon = Info as React.FC<LucideProps>;
 const CheckCircle2Icon = CheckCircle2 as React.FC<LucideProps>;
 const CloseIcon = X as React.FC<LucideProps>;
@@ -155,7 +166,7 @@ export default function PublicLandingPage({
   const cardBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.1)';
 
   // Section offset tracking for anchor nav
-  const sectionOffsetsRef = useRef<{ [key: string]: number }>({});
+  const sectionOffsetsRef = useRef<Map<string, number>>(new Map());
   const [activeSection, setActiveSection] = useState('inicio');
 
   // Build nav items with translated labels
@@ -169,7 +180,7 @@ export default function PublicLandingPage({
       {/* El Proyecto */}
       <View
         onLayout={(e) => {
-          sectionOffsetsRef.current['el-proyecto'] = e.nativeEvent.layout.y;
+          sectionOffsetsRef.current.set('el-proyecto', e.nativeEvent.layout.y);
         }}
       >
         <ElProyectoSection
@@ -185,7 +196,7 @@ export default function PublicLandingPage({
       {/* Cómo funciona */}
       <View
         onLayout={(e) => {
-          sectionOffsetsRef.current['como-funciona'] = e.nativeEvent.layout.y;
+          sectionOffsetsRef.current.set('como-funciona', e.nativeEvent.layout.y);
         }}
       >
         <ComoFuncionaSection
@@ -199,7 +210,7 @@ export default function PublicLandingPage({
       {/* Membresía vitalicia */}
       <View
         onLayout={(e) => {
-          sectionOffsetsRef.current['membresia'] = e.nativeEvent.layout.y;
+          sectionOffsetsRef.current.set('membresia', e.nativeEvent.layout.y);
         }}
       >
         <MembresiaSection
@@ -213,7 +224,7 @@ export default function PublicLandingPage({
       {/* Beneficios */}
       <View
         onLayout={(e) => {
-          sectionOffsetsRef.current['beneficios'] = e.nativeEvent.layout.y;
+          sectionOffsetsRef.current.set('beneficios', e.nativeEvent.layout.y);
         }}
       >
         <BeneficiosSection
@@ -252,7 +263,7 @@ interface PublicLandingPageWrapperProps {
   onOpenSettings?: () => void;
   extraSections: React.ReactNode;
   navItems: Array<{ id: string; label: string }>;
-  sectionOffsetsRef: React.MutableRefObject<{ [key: string]: number }>;
+  sectionOffsetsRef: React.MutableRefObject<Map<string, number>>;
   activeSection: string;
   setActiveSection: (section: string) => void;
   isDark: boolean;
@@ -288,14 +299,14 @@ function PublicLandingPageWrapper({
   const heroHeight = Math.max(screenHeight * 1.05, 740);
 
   const handleNavPress = useCallback(
-    (sectionId: string) => {
+    (sectionId: string): void => {
       setActiveSection(sectionId);
       // Scroll to section with smooth animation
       // For 'inicio' (home/hero), scroll to top (0)
-      const sectionOffset = sectionId === 'inicio' ? 0 : sectionOffsetsRef.current[sectionId];
-      if (sectionOffset !== undefined && airsIntroRef.current) {
+      const sectionOffset = sectionId === 'inicio' ? 0 : sectionOffsetsRef.current.get(sectionId);
+      if (typeof sectionOffset === 'number' && airsIntroRef.current) {
         // Call the exposed scrollToSection method
-        airsIntroRef.current?.scrollToSection?.(sectionOffset);
+        airsIntroRef.current.scrollToSection(sectionOffset);
       }
     },
     [setActiveSection, sectionOffsetsRef]
@@ -362,116 +373,84 @@ interface TokenCardProps {
   overview: string;
   accentColor: string;
   isDark: boolean;
+  isMobile: boolean;
+  moreInfoLabel: string;
 }
 
 function TokenCard({
   imageSource,
   contentPosition,
-  imageZoom: _imageZoom,
+  imageZoom,
   logo: _LogoIcon,
   title,
   subtitle,
   overview,
   accentColor: _accentColor,
   isDark: _isDark,
+  isMobile,
+  moreInfoLabel,
 }: TokenCardProps): React.JSX.Element {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(() => getTokenCardDefaultExpanded(isMobile));
 
-  // Cross-fade animations for title/subtitle vs. overview
-  const titleOpacity = useRef(new Animated.Value(1)).current;
-  const overviewOpacity = useRef(new Animated.Value(0)).current;
-  // Smooth scale transition for fluid entrance
-  const contentScale = useRef(new Animated.Value(1)).current;
-  // Chevron rotation
-  const chevronRotate = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    setExpanded(getTokenCardDefaultExpanded(isMobile));
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
 
   const toggle = useCallback(() => {
-    const toExpanded = !expanded;
-    setExpanded(toExpanded);
-    // Smooth fluid animation: cross-fade + subtle scale
-    Animated.parallel([
-      // Title fades out, overview fades in (staggered for smoothness)
-      Animated.timing(titleOpacity, {
-        toValue: toExpanded ? 0 : 1,
-        duration: 280,
-        useNativeDriver: true,
-      }),
-      Animated.timing(overviewOpacity, {
-        toValue: toExpanded ? 1 : 0,
-        duration: toExpanded ? 300 : 240,
-        useNativeDriver: true,
-      }),
-      // Content scales slightly during transition for fluid feel
-      Animated.timing(contentScale, {
-        toValue: toExpanded ? 1.02 : 1,
-        duration: 280,
-        useNativeDriver: true,
-      }),
-      // Chevron rotates smoothly
-      Animated.timing(chevronRotate, {
-        toValue: toExpanded ? 1 : 0,
-        duration: 320,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [expanded, titleOpacity, overviewOpacity, contentScale, chevronRotate]);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded((current) => !current);
+  }, []);
 
-  const chevronAngle = chevronRotate.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
+  const titleColor = '#ffffff';
+  const subtitleColor = 'rgba(255,255,255,0.88)';
+  const bodyColor = _isDark ? 'rgba(232,232,255,0.82)' : '#334155';
+  const bodyLeadColor = _isDark ? '#ffffff' : '#1f3a8a';
 
   return (
-    <View style={styles.travelCard}>
-      <TouchableOpacity activeOpacity={0.9} onPress={toggle}>
-        {/* Fixed-height image — card height never changes */}
-        <View style={styles.travelCardImage}>
+    <View style={[styles.projectCard, isMobile && styles.projectCardMobile]}>
+      <TouchableOpacity
+        accessibilityRole='button'
+        accessibilityLabel={title}
+        accessibilityHint={moreInfoLabel}
+        activeOpacity={0.92}
+        onPress={toggle}
+        style={styles.projectCardPressable}
+      >
+        <View style={[styles.projectCardImageWrap, isMobile && styles.projectCardImageWrapMobile]}>
           <ExpoImage
             source={imageSource}
             contentFit='cover'
             contentPosition={contentPosition}
-            style={StyleSheet.absoluteFillObject}
+            style={[StyleSheet.absoluteFill, { transform: [{ scale: imageZoom }] }]}
           />
-          {/* Strong gradient from bottom for contrast */}
-          <Animated.View
-            style={[
-              styles.travelCardGradientBottom,
-              {
-                opacity: titleOpacity,
-                transform: [{ scale: contentScale }],
-              },
-            ]}
-          >
-            <View style={styles.travelCardTitleRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.travelCardTitle}>{title}</Text>
-                <Text style={styles.travelCardSubtitle}>{subtitle}</Text>
-              </View>
-              <Animated.View style={{ transform: [{ rotate: chevronAngle }] }}>
-                <ChevronDownIcon size={20} color='#fff' strokeWidth={2.5} />
-              </Animated.View>
-            </View>
-          </Animated.View>
-
-          {/* Overview text — positioned same as title/subtitle, cross-fades in */}
-          <Animated.View
-            style={[
-              styles.travelCardGradientBottom,
-              {
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                opacity: overviewOpacity,
-                transform: [{ scale: contentScale }],
-              },
-            ]}
-            pointerEvents='none'
-          >
-            <Text style={styles.travelCardOverview}>{overview}</Text>
-          </Animated.View>
+          <View style={styles.projectCardImageScrim} />
+          <View pointerEvents='none' style={styles.projectCardInfoBadge}>
+            <InfoIcon size={12} color='#0f766e' strokeWidth={2.5} />
+            <Text style={styles.projectCardInfoBadgeText}>{moreInfoLabel}</Text>
+          </View>
+          <View style={styles.projectCardImageOverlay}>
+            <Text style={[styles.projectCardImageTitle, { color: titleColor }]}>{title}</Text>
+            <Text style={[styles.projectCardImageSubtitle, { color: subtitleColor }]}>
+              {subtitle}
+            </Text>
+          </View>
         </View>
       </TouchableOpacity>
+
+      {expanded ? (
+        <View style={styles.projectCardBody}>
+          <Text style={[styles.projectCardBodyText, { color: bodyColor }]}>
+            <Text style={[styles.projectCardBodyLead, { color: bodyLeadColor }]}>{title}</Text>
+            <Text>{` ${overview}`}</Text>
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -481,6 +460,8 @@ function ElProyectoSection({
   isDark,
   accentColor,
   textColor,
+  cardBg: _cardBg,
+  cardBorder: _cardBorder,
   isMobile,
 }: SectionProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
@@ -528,6 +509,7 @@ function ElProyectoSection({
       overview: t('landing.elProyecto.atn.overview'),
     },
   ];
+  const moreInfoLabel = t('landing.elProyecto.moreInfo', undefined, 'More info');
 
   return (
     <Animated.View
@@ -540,11 +522,39 @@ function ElProyectoSection({
         },
       ]}
     >
-      <Text style={[styles.sectionTitle, { color: textColor }]}>
-        {t('landing.elProyecto.sectionTitle')}
-      </Text>
+      <View style={styles.elProyectoHeader}>
+        <Text
+          style={[
+            styles.sectionTitle,
+            styles.elProyectoTitle,
+            {
+              color: isDark ? '#2f6f94' : '#2f76a8',
+              fontSize: isMobile ? 30 : 52,
+              lineHeight: isMobile ? 34 : 58,
+            },
+          ]}
+        >
+          {t('landing.elProyecto.sectionTitle')}
+        </Text>
+        <Text
+          style={[
+            styles.elProyectoDescription,
+            {
+              color: textColor,
+              fontSize: isMobile ? 16 : 20,
+              lineHeight: isMobile ? 25 : 32,
+            },
+          ]}
+        >
+          <Text>{t('landing.elProyecto.sectionDescriptionPart1')}</Text>
+          <Text style={styles.elProyectoDescriptionAccent}>
+            {t('landing.elProyecto.sectionDescriptionHighlight')}
+          </Text>
+          <Text>{t('landing.elProyecto.sectionDescriptionPart2')}</Text>
+        </Text>
+      </View>
 
-      <View style={[styles.tokenCardsContainer, isMobile && styles.tokenCardsContainerMobile]}>
+      <View style={[styles.projectCardsContainer, isMobile && styles.projectCardsContainerMobile]}>
         {tokens.map((token) => (
           <TokenCard
             key={token.key}
@@ -557,6 +567,8 @@ function ElProyectoSection({
             overview={token.overview}
             accentColor={accentColor}
             isDark={isDark}
+            isMobile={isMobile}
+            moreInfoLabel={moreInfoLabel}
           />
         ))}
       </View>
@@ -964,6 +976,7 @@ function ComoFuncionaSection({
 }: SectionProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
   const [activeStep, setActiveStep] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const loopTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Section fade-in
@@ -1026,10 +1039,12 @@ function ComoFuncionaSection({
   // Start/restart the auto-loop
   const startLoop = useCallback(() => {
     if (loopTimerRef.current) clearInterval(loopTimerRef.current);
-    loopTimerRef.current = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % steps.length);
-    }, STEP_LOOP_INTERVAL);
-  }, [steps.length]);
+    if (!isPaused) {
+      loopTimerRef.current = setInterval(() => {
+        setActiveStep((prev) => (prev + 1) % steps.length);
+      }, STEP_LOOP_INTERVAL);
+    }
+  }, [steps.length, isPaused]);
 
   useEffect(() => {
     startLoop();
@@ -1040,14 +1055,14 @@ function ComoFuncionaSection({
 
   const handleStepPress = useCallback(
     (idx: number) => {
-      setActiveStep(idx);
-      // Restart auto-loop after 8 s idle
-      if (loopTimerRef.current) clearInterval(loopTimerRef.current);
-      loopTimerRef.current = setInterval(() => {
-        setActiveStep((prev) => (prev + 1) % steps.length);
-      }, STEP_LOOP_INTERVAL);
+      if (activeStep === idx && isPaused) {
+        setIsPaused(false);
+      } else {
+        setActiveStep(idx);
+        setIsPaused(true);
+      }
     },
-    [steps.length]
+    [activeStep, isPaused]
   );
 
   const bgColor = isDark ? '#050510' : '#f6f8fc';
@@ -1067,14 +1082,18 @@ function ComoFuncionaSection({
   const progressAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     progressAnim.setValue(0);
-    const anim = Animated.timing(progressAnim, {
-      toValue: 1,
-      duration: STEP_LOOP_INTERVAL,
-      useNativeDriver: false,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [activeStep, progressAnim]);
+    if (!isPaused) {
+      const anim = Animated.timing(progressAnim, {
+        toValue: 1,
+        duration: STEP_LOOP_INTERVAL,
+        useNativeDriver: false,
+      });
+      anim.start();
+      return () => anim.stop();
+    } else {
+      progressAnim.setValue(1);
+    }
+  }, [activeStep, isPaused, progressAnim]);
 
   return (
     <Animated.View
@@ -1083,8 +1102,9 @@ function ComoFuncionaSection({
         { backgroundColor: bgColor, opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
       ]}
     >
+      <Pressable style={StyleSheet.absoluteFill} onPress={() => setIsPaused(false)} />
       {/* Header */}
-      <View style={styles.comoFuncionaHeader}>
+      <View style={styles.comoFuncionaHeader} pointerEvents='none'>
         <Text style={[styles.sectionTitle, { color: textColor }]}>
           {t('landing.comoFunciona.sectionTitle')}
         </Text>
@@ -1233,6 +1253,8 @@ function MembresiaSection({
   isMobile: _isMobile,
 }: SectionProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
+  const { width: windowWidth } = useWindowDimensions();
+  const [trackWidth, setTrackWidth] = useState(0);
 
   // Fade-in animation
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -1247,18 +1269,60 @@ function MembresiaSection({
   // Infinite scroll animations for two rows
   const scrollLeft = useSharedValue(0);
   const scrollRight = useSharedValue(0);
+  const membershipLogos = useMemo(
+    () =>
+      isDark
+        ? [
+            MEMBERSHIP_LOGO_LIGHT,
+            MEMBERSHIP_LOGO_LIGHT_REALISTIC,
+            MEMBERSHIP_LOGO,
+            MEMBERSHIP_LOGO_DARK,
+            MEMBERSHIP_LOGO_DARK_REALISTIC,
+          ]
+        : [
+            MEMBERSHIP_LOGO_DARK,
+            MEMBERSHIP_LOGO_DARK_REALISTIC,
+            MEMBERSHIP_LOGO,
+            MEMBERSHIP_LOGO_LIGHT,
+            MEMBERSHIP_LOGO_LIGHT_REALISTIC,
+          ],
+    [isDark]
+  );
+  const logoBandWidth = getMembershipLogoBandWidth(membershipLogos.length);
+  const marqueeViewportWidth = trackWidth || Math.max(windowWidth - 40, 0);
+  const marqueeCopyCount = getMembershipMarqueeRepeatCount(marqueeViewportWidth, logoBandWidth);
+  const leftDuration = scaleMembershipMarqueeDuration(
+    logoBandWidth,
+    MEMBERSHIP_MARQUEE_BASE_DISTANCE,
+    MEMBERSHIP_MARQUEE_LEFT_BASE_DURATION_MS
+  );
+  const rightDuration = scaleMembershipMarqueeDuration(
+    logoBandWidth,
+    MEMBERSHIP_MARQUEE_BASE_DISTANCE,
+    MEMBERSHIP_MARQUEE_RIGHT_BASE_DURATION_MS
+  );
 
   useEffect(() => {
-    const makeScroll = (duration: number): ReturnType<typeof withRepeat> =>
-      withRepeat(withTiming(-300, { duration, easing: Easing.linear }), -1);
-    scrollLeft.value = makeScroll(4000) as unknown as number;
-    scrollRight.value = makeScroll(5000) as unknown as number;
+    if (logoBandWidth <= 0) {
+      return undefined;
+    }
+
+    scrollLeft.value = 0;
+    scrollRight.value = -logoBandWidth;
+    scrollLeft.value = withRepeat(
+      withTiming(-logoBandWidth, { duration: leftDuration, easing: Easing.linear }),
+      -1
+    ) as unknown as number;
+    scrollRight.value = withRepeat(
+      withTiming(0, { duration: rightDuration, easing: Easing.linear }),
+      -1
+    ) as unknown as number;
 
     return () => {
       cancelAnimation(scrollLeft);
       cancelAnimation(scrollRight);
     };
-  }, []);
+  }, [leftDuration, logoBandWidth, rightDuration, scrollLeft, scrollRight]);
 
   const scrollLeftStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: scrollLeft.value }],
@@ -1270,22 +1334,6 @@ function MembresiaSection({
 
   const bgColor = isDark ? '#0a0a14' : '#f0f4f9';
   const descriptionColor = isDark ? 'rgba(232,232,255,0.75)' : '#475569';
-
-  const membershipLogos = isDark
-    ? [
-        MEMBERSHIP_LOGO_LIGHT,
-        MEMBERSHIP_LOGO_LIGHT_REALISTIC,
-        MEMBERSHIP_LOGO,
-        MEMBERSHIP_LOGO_DARK,
-        MEMBERSHIP_LOGO_DARK_REALISTIC,
-      ]
-    : [
-        MEMBERSHIP_LOGO_DARK,
-        MEMBERSHIP_LOGO_DARK_REALISTIC,
-        MEMBERSHIP_LOGO,
-        MEMBERSHIP_LOGO_LIGHT,
-        MEMBERSHIP_LOGO_LIGHT_REALISTIC,
-      ];
 
   return (
     <Animated.View
@@ -1312,11 +1360,16 @@ function MembresiaSection({
       </View>
 
       {/* Infinite scroll rows */}
-      <View style={styles.membresiaScrollContainer}>
+      <View
+        style={styles.membresiaScrollContainer}
+        onLayout={(event) => {
+          setTrackWidth(event.nativeEvent.layout.width);
+        }}
+      >
         {/* First row - scrolling left */}
         <View style={styles.membresiaRow}>
           <Animated_Reanimated.View style={[styles.membresiaScrollRow, scrollLeftStyle]}>
-            {Array.from({ length: 6 }).map((_, i) =>
+            {Array.from({ length: marqueeCopyCount }).map((_, i) =>
               membershipLogos.map((logo, idx) => (
                 <View key={`row1-${i}-${idx}`} style={styles.membresiaCoinItem}>
                   <ExpoImage source={logo} style={styles.membresiaCoinImage} contentFit='contain' />
@@ -1329,7 +1382,7 @@ function MembresiaSection({
         {/* Second row - scrolling right */}
         <View style={styles.membresiaRow}>
           <Animated_Reanimated.View style={[styles.membresiaScrollRow, scrollRightStyle]}>
-            {Array.from({ length: 6 }).map((_, i) =>
+            {Array.from({ length: marqueeCopyCount }).map((_, i) =>
               membershipLogos.map((logo, idx) => (
                 <View key={`row2-${i}-${idx}`} style={styles.membresiaCoinItem}>
                   <ExpoImage source={logo} style={styles.membresiaCoinImage} contentFit='contain' />
@@ -1349,7 +1402,6 @@ function MembresiaSection({
 interface PlaceCardData {
   images: ImageSourcePropType[];
   tags: string[];
-  rating: number;
   title: string;
   meta: string;
   isTopRated?: boolean;
@@ -1360,6 +1412,8 @@ interface PlaceCardData {
   topRatedLabel: string;
   accentColor: string;
   isDark: boolean;
+  isMobile: boolean;
+  moreInfoLabel: string;
   infoBody: string;
   availableFromLabel: string;
   redeemCtaLabel: string;
@@ -1373,7 +1427,6 @@ const OVERLAY_HIDE_DELAY_MS = 2500;
 function PlaceCard({
   images,
   tags,
-  rating,
   title,
   meta,
   isTopRated,
@@ -1384,11 +1437,16 @@ function PlaceCard({
   topRatedLabel,
   accentColor,
   isDark,
+  isMobile,
+  moreInfoLabel,
   onPress,
   onInfoPress,
 }: PlaceCardData): React.JSX.Element {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [overlayVisible, setOverlayVisible] = useState(false);
+  const [detailsExpanded, setDetailsExpanded] = useState(() =>
+    getBenefitCardDefaultDetailsExpanded(isMobile)
+  );
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const fadeInAnim = useRef(new Animated.Value(0)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
@@ -1431,13 +1489,25 @@ function PlaceCard({
     []
   );
 
-  const currentImage = images[currentIndex] ?? images[0] ?? TOKEN_IMAGES.rbi;
+  useEffect(() => {
+    setDetailsExpanded(getBenefitCardDefaultDetailsExpanded(isMobile));
+  }, [isMobile]);
+
+  const currentImage = images[currentIndex] || images[0] || TOKEN_IMAGES.rbi;
 
   const cardBgColor = isDark ? '#141420' : '#ffffff';
   const cardBorderColor = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.10)';
   const titleColor = isDark ? '#e8e8ff' : '#0f172a';
   const descColor = isDark ? 'rgba(232,232,255,0.65)' : '#64748b';
   const metaColor = isDark ? 'rgba(232,232,255,0.45)' : '#94a3b8';
+  const showDescription = detailsExpanded;
+
+  const toggleDetails = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    }
+    setDetailsExpanded((current) => !current);
+  }, []);
 
   const manualChangeImage = useCallback(
     (dir: number) => {
@@ -1488,9 +1558,13 @@ function PlaceCard({
         },
       ]}
     >
-      {/* Image area — tap shows overlay controls only, no auth */}
+      {/* Image area — tap toggles the inline details and shows overlay controls */}
       <TouchableOpacity
+        accessibilityRole='button'
+        accessibilityLabel={title}
+        accessibilityHint='Tap the image to expand or collapse the details'
         activeOpacity={1}
+        onPress={toggleDetails}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         style={styles.placeCardTouchable}
@@ -1512,12 +1586,6 @@ function PlaceCard({
                     <Text style={styles.placeCardTagText}>{tag}</Text>
                   </View>
                 ))}
-              </View>
-
-              {/* Rating top-right */}
-              <View style={styles.placeCardRatingBadge} pointerEvents='none'>
-                <StarIcon size={12} color='#facc15' strokeWidth={0} fill='#facc15' />
-                <Text style={styles.placeCardRatingText}>{rating}</Text>
               </View>
 
               {/* Prev/Next arrows */}
@@ -1561,8 +1629,8 @@ function PlaceCard({
         </View>
       </TouchableOpacity>
 
-      {/* Body — separate from image tap so only CTA triggers auth */}
-      <View style={styles.placeCardBody}>
+      {/* Body — description stays collapsed until the image toggles it open */}
+      <View style={[styles.placeCardBody, isMobile && styles.placeCardBodyMobile]}>
         <View style={styles.placeCardTitleRow}>
           <Text style={[styles.placeCardTitle, { color: titleColor }]} numberOfLines={1}>
             {title}
@@ -1574,9 +1642,11 @@ function PlaceCard({
           )}
         </View>
         <Text style={[styles.placeCardMeta, { color: metaColor }]}>{meta}</Text>
-        <Text style={[styles.placeCardDescription, { color: descColor }]} numberOfLines={3}>
-          {description}
-        </Text>
+        {showDescription && (
+          <Text style={[styles.placeCardDescription, { color: descColor }]} numberOfLines={3}>
+            {description}
+          </Text>
+        )}
         <View style={styles.placeCardFooter}>
           {/* ATN price with coin logo */}
           <View style={styles.placeCardPriceRow}>
@@ -1591,8 +1661,9 @@ function PlaceCard({
             </Text>
           </View>
           <View style={styles.placeCardFooterActions}>
-            {/* Info icon — same level as CTA */}
             <TouchableOpacity
+              accessibilityRole='button'
+              accessibilityLabel={moreInfoLabel}
               onPress={onInfoPress}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               style={[
@@ -1718,7 +1789,7 @@ function BenefitInfoModal({
 
 const infoModalStyles = StyleSheet.create({
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   centeredWrapper: {
     flex: 1,
@@ -1833,11 +1904,11 @@ function BeneficiosSection({
 
   const topRatedLabel = t('landing.beneficios.topRated');
   const atnUnit = t('landing.beneficios.atnUnit');
-  const redeemCtaLabel = t('landing.beneficios.redeemCta', undefined, 'Redeem this benefit');
+  const redeemCtaLabel = t('landing.beneficios.redeemCta', undefined, 'Start earning Airs');
   const availableFromLabel = t(
     'landing.beneficios.availableFrom',
     undefined,
-    'Available from {{atn}} ATN'
+    'Typical rate: {{atn}}'
   );
 
   const benefits = [
@@ -1845,7 +1916,6 @@ function BeneficiosSection({
       key: 'eco',
       images: BENEFIT_IMAGES.eco,
       tags: [t('landing.beneficios.cards.eco.tag1'), t('landing.beneficios.cards.eco.tag2')],
-      rating: 4.8,
       title: t('landing.beneficios.cards.eco.title'),
       meta: t('landing.beneficios.cards.eco.meta'),
       isTopRated: true,
@@ -1861,7 +1931,6 @@ function BeneficiosSection({
         t('landing.beneficios.cards.experiencias.tag1'),
         t('landing.beneficios.cards.experiencias.tag2'),
       ],
-      rating: 4.9,
       title: t('landing.beneficios.cards.experiencias.title'),
       meta: t('landing.beneficios.cards.experiencias.meta'),
       isTopRated: false,
@@ -1877,7 +1946,6 @@ function BeneficiosSection({
         t('landing.beneficios.cards.premium.tag1'),
         t('landing.beneficios.cards.premium.tag2'),
       ],
-      rating: 4.7,
       title: t('landing.beneficios.cards.premium.title'),
       meta: t('landing.beneficios.cards.premium.meta'),
       isTopRated: false,
@@ -1890,7 +1958,6 @@ function BeneficiosSection({
       key: 'cursos',
       images: BENEFIT_IMAGES.cursos,
       tags: [t('landing.beneficios.cards.cursos.tag1'), t('landing.beneficios.cards.cursos.tag2')],
-      rating: 4.6,
       title: t('landing.beneficios.cards.cursos.title'),
       meta: t('landing.beneficios.cards.cursos.meta'),
       isTopRated: false,
@@ -1935,7 +2002,6 @@ function BeneficiosSection({
               key={benefit.key}
               images={benefit.images}
               tags={benefit.tags}
-              rating={benefit.rating}
               title={benefit.title}
               meta={benefit.meta}
               isTopRated={benefit.isTopRated}
@@ -1949,6 +2015,8 @@ function BeneficiosSection({
               topRatedLabel={topRatedLabel}
               accentColor={accentColor}
               isDark={isDark}
+              isMobile={isMobile}
+              moreInfoLabel={t('landing.beneficios.moreInfo', undefined, 'More info')}
               onPress={onSignIn}
               onInfoPress={() => setOpenInfoKey(benefit.key)}
             />
@@ -2036,83 +2104,134 @@ const styles = createTypographyStyles({
     fontFamily: 'Sculpin-Bold',
   },
 
-  // ── TravelCard (TokenCard) ───────────────────────────────────────────────────
-  tokenCardsContainer: {
+  // ── El Proyecto ─────────────────────────────────────────────────────────────
+  elProyectoHeader: {
+    alignItems: 'center',
+    gap: 18,
+    maxWidth: 1120,
+    alignSelf: 'center',
+  },
+  elProyectoTitle: {
+    maxWidth: 1120,
+  },
+  elProyectoDescription: {
+    maxWidth: 1140,
+    textAlign: 'center',
+    fontWeight: '400',
+    fontFamily: 'Sculpin-Regular',
+  },
+  elProyectoDescriptionAccent: {
+    fontWeight: '800',
+  },
+  projectCardsContainer: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 40,
     justifyContent: 'center',
     flexWrap: 'wrap',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     alignSelf: 'center',
     width: '100%',
+    marginTop: 18,
   },
-  tokenCardsContainerMobile: {
+  projectCardsContainerMobile: {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 16,
+    gap: 26,
     width: '100%',
   },
-  travelCard: {
+  projectCard: {
     width: '100%',
-    minWidth: 240,
-    maxWidth: 320,
+    minWidth: 260,
+    maxWidth: 380,
     alignSelf: 'center',
-    borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: '#111',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.32,
-    shadowRadius: 18,
-    elevation: 12,
   },
-  travelCardImage: {
-    height: 340,
+  projectCardMobile: {
+    maxWidth: 420,
+  },
+  projectCardPressable: {
+    width: '100%',
+  },
+  projectCardImageWrap: {
+    height: 404,
     overflow: 'hidden',
     justifyContent: 'flex-end',
+    borderRadius: 22,
+    backgroundColor: '#0f172a',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    elevation: 10,
   },
-  travelCardGradientBottom: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    paddingTop: 36,
-    // Strong gradient for dark-mode contrast — white text always legible
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0) 100%)',
+  projectCardImageScrim: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(4, 10, 28, 0.08)',
   },
-  travelCardTitleRow: {
+  projectCardInfoBadge: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
+    zIndex: 4,
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 8,
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(15, 118, 110, 0.16)',
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.14,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  travelCardTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#ffffff',
+  projectCardInfoBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
     letterSpacing: 0.1,
-    textShadowColor: 'rgba(0,0,0,0.6)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    color: '#0f766e',
+  },
+  projectCardImageWrapMobile: {
+    height: 330,
+  },
+  projectCardImageOverlay: {
+    paddingHorizontal: 18,
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.42)',
+    backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.04) 100%)',
+  },
+  projectCardImageTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: 0.1,
+    textAlign: 'center',
     fontFamily: 'Sculpin-Bold',
   },
-  travelCardSubtitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: 'rgba(255,255,255,0.85)',
-    letterSpacing: 0.2,
+  projectCardImageSubtitle: {
     marginTop: 3,
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    fontSize: 16,
+    fontWeight: '500',
+    letterSpacing: 0.15,
+    lineHeight: 20,
+    textAlign: 'center',
   },
-  travelCardOverview: {
-    fontSize: 13,
+  projectCardBody: {
+    paddingTop: 20,
+    paddingHorizontal: 12,
+  },
+  projectCardBodyText: {
+    fontSize: 16,
     fontWeight: '400',
-    lineHeight: 19,
-    color: 'rgba(255,255,255,0.92)',
-    textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    lineHeight: 26,
+    textAlign: 'center',
+  },
+  projectCardBodyLead: {
+    fontWeight: '800',
   },
 
   // ── ComoFunciona ─────────────────────────────────────────────────────────────
@@ -2153,16 +2272,18 @@ const styles = createTypographyStyles({
   membresiaScrollContainer: {
     gap: 20,
     marginVertical: 12,
+    width: '100%',
+    alignSelf: 'stretch',
   },
   membresiaRow: {
     height: 80,
     overflow: 'hidden',
+    width: '100%',
   },
   membresiaScrollRow: {
     flexDirection: 'row',
     gap: 16,
     alignItems: 'center',
-    paddingHorizontal: 20,
   },
   membresiaCoinItem: {
     width: 60,
@@ -2381,7 +2502,7 @@ const styles = createTypographyStyles({
     height: '100%',
   },
   imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 2,
   },
   carouselArrow: {
@@ -2417,24 +2538,6 @@ const styles = createTypographyStyles({
     fontWeight: '600',
     color: '#fff',
   },
-  placeCardRatingBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 20,
-    backgroundColor: 'rgba(15,15,30,0.6)',
-    zIndex: 3,
-  },
-  placeCardRatingText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#fff',
-  },
   paginationDotsRow: {
     position: 'absolute',
     bottom: 10,
@@ -2455,6 +2558,10 @@ const styles = createTypographyStyles({
     padding: 16,
     gap: 8,
   },
+  placeCardBodyMobile: {
+    padding: 14,
+    gap: 6,
+  },
   placeCardTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2473,14 +2580,6 @@ const styles = createTypographyStyles({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  infoCircleButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   placeCardTitle: {
     flex: 1,
