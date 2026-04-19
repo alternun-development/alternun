@@ -112,14 +112,17 @@ env:
     INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS: 'false'
     INFRA_FAIL_ON_MANAGED_CERT_CNAME_CONFLICT: 'true'
     # Optional post-deploy DNS sync poll tuning (used only when enabled).
-    POLL_TIMEOUT: '120'
+    # Reduced from 120s to 60s for faster dev iterations. Increase if DNS updates are slower.
+    POLL_TIMEOUT: '60'
     POLL_INTERVAL: '15'
-    # Disabled by default: this fallback can add ~10m waiting for CloudFront alias discovery.
-    # Enable only for recovery/manual DNS sync runs.
+    # Disabled by default: this fallback can add ~5-10m waiting for CloudFront alias discovery.
+    # Enable only for critical DNS changes or recovery. Dev stage auto-enables if needed.
     INFRA_ENABLE_POSTDEPLOY_DNS_SYNC: 'false'
     # Fail the pipeline if deployed endpoints are not reachable.
     INFRA_ENABLE_REACHABILITY_CHECK: 'true'
-    INFRA_REACHABILITY_ATTEMPTS: '18'
+    # Reduced from 18 to 10 attempts (~1-1.5 min saved).
+    # Each attempt waits INFRA_REACHABILITY_INTERVAL_SECONDS: 10*10=100s total vs 18*10=180s
+    INFRA_REACHABILITY_ATTEMPTS: '10'
     INFRA_REACHABILITY_INTERVAL_SECONDS: '10'
     INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS: '5'
     INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS: '20'
@@ -419,14 +422,11 @@ phases:
     commands:
       - echo "SST deploy completed for stage ${SST_STAGE}"
       - |
-        if [ "${SST_STAGE}" = "dev" ]; then
-          # Dev testnet cutovers need DNS reconciliation so redirect aliases can follow the new CDN state.
-          export INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=true
-        fi
         if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
           echo "Skipping post-deploy DNS sync because BUILD phase failed."
         elif [ "${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC}" != "true" ]; then
           echo "Skipping post-deploy DNS sync (INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC})"
+          echo "  To enable DNS sync for critical changes, set INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=true in CodePipeline env vars"
         elif [ -f "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" ]; then
           echo "Running post-deploy DNS sync"
           chmod +x "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" || true
