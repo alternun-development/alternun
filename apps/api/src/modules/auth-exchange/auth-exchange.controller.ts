@@ -64,7 +64,14 @@ export class AuthExchangeController {
   @ApiOkResponse({
     description: 'Social sign-in URL and provider info.',
   })
-  socialSignIn(@Body() body: SocialSignInRequestDto): Record<string, unknown> {
-    return this.socialSignInService.signIn(body);
+  socialSignIn(@Body() body?: Record<string, unknown>): Record<string, unknown> {
+    if (!body?.provider) {
+      return {
+        error:
+          'Missing required field: provider. Expected: { provider: "google" | "discord" | ... }',
+        url: '',
+      };
+    }
+    return this.socialSignInService.signIn(body as unknown as SocialSignInRequestDto);
   }
 }
