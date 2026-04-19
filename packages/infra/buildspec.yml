@@ -453,6 +453,20 @@ phases:
         else
           echo "No postdeploy reachability check script found; skipping"
         fi
+      - |
+        if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
+          echo "Skipping CloudFront invalidation because BUILD phase failed."
+        elif [ -f "${INFRA_PATH}/scripts/postdeploy-cloudfront-invalidate.sh" ]; then
+          echo "Invalidating CloudFront cache to serve fresh content..."
+          chmod +x "${INFRA_PATH}/scripts/postdeploy-cloudfront-invalidate.sh" || true
+          "${INFRA_PATH}/scripts/postdeploy-cloudfront-invalidate.sh" ${SST_STAGE}
+        elif [ -f "./node_modules/@lsts_tech/infra/scripts/postdeploy-cloudfront-invalidate.sh" ]; then
+          echo "Invalidating CloudFront cache to serve fresh content..."
+          chmod +x "./node_modules/@lsts_tech/infra/scripts/postdeploy-cloudfront-invalidate.sh" || true
+          ./node_modules/@lsts_tech/infra/scripts/postdeploy-cloudfront-invalidate.sh ${SST_STAGE}
+        else
+          echo "No CloudFront invalidation script found; skipping"
+        fi
 
 cache:
   paths:
