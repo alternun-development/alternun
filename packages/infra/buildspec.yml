@@ -107,7 +107,8 @@ env:
     # Check controls
     SKIP_DNS_CHECK: 'false'
     # Safety-first: never delete existing DNS automatically during deploy.
-    AUTO_REMOVE_CONFLICTING_DNS: 'false'
+    # Temporarily enabled for dev to replace stale beta/demo records pointing to old CloudFront
+    AUTO_REMOVE_CONFLICTING_DNS: 'true'
     INFRA_REMOVE_ACM_VALIDATION_CNAME: 'false'
     INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS: 'false'
     INFRA_FAIL_ON_MANAGED_CERT_CNAME_CONFLICT: 'true'
