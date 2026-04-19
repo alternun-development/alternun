@@ -13,7 +13,10 @@ export class SupabaseSignupService {
     const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase credentials not configured');
+      return {
+        success: false,
+        message: 'Signup service temporarily unavailable',
+      };
     }
 
     try {
@@ -42,13 +45,17 @@ export class SupabaseSignupService {
 
         // Check for duplicate key error (user already exists)
         if (errorStr.includes('duplicate key') || errorStr.includes('23505')) {
-          // Hint that account may exist without explicitly revealing it
-          throw new Error(
-            'Unable to create account with this email. This email may already be registered. Try signing in instead.'
-          );
+          return {
+            success: false,
+            message:
+              'Unable to create account with this email. This email may already be registered. Try signing in instead.',
+          };
         }
 
-        throw new Error(errorStr);
+        return {
+          success: false,
+          message: 'Unable to create account. Please try again.',
+        };
       }
 
       await response.json();
@@ -61,7 +68,10 @@ export class SupabaseSignupService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error('Signup service error', { email, error: message });
-      throw new Error(message);
+      return {
+        success: false,
+        message: 'Unable to create account. Please try again.',
+      };
     }
   }
 }
