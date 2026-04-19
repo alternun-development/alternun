@@ -1,9 +1,11 @@
-name: Release and Deploy to Testnet
+name: Release and Deploy to Testnet [DISABLED - Using AWS CodePipeline]
 
 on:
+  # DISABLED: AWS CodePipeline is configured for branch-based deployments
+  # This workflow is kept for reference but not used
   push:
     tags:
-      - 'v*.*.*'
+      - 'DISABLED_v*.*.*'
 
 permissions:
   contents: read
