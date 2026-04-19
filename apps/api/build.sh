@@ -32,6 +32,7 @@ swagger_ui_dir=$(
 
 mkdir -p dist-lambda/swagger-ui
 cp -R "${swagger_ui_dir}/." dist-lambda/swagger-ui/
+cp package.json dist-lambda/package.json
 
 # Bundle legal markdown files so Lambda can read them at runtime
 mkdir -p dist-lambda/legal
