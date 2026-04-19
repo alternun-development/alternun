@@ -723,6 +723,7 @@ export default function AuthSignInScreen({
     setPasswordMismatch(false);
     setShowPassword(false);
     setShowConfirmPassword(false);
+    setPasswordValidationError(null);
     setConfirmationCode('');
     setConfirmationCodeRequired(false);
     clearRequiredFields();
@@ -1429,7 +1430,12 @@ export default function AuthSignInScreen({
                       { backgroundColor: p.errorBg, borderColor: p.errorBorder },
                     ]}
                   >
-                    <AlertCircle color={p.errorIcon} size={14} />
+                    <AlertCircle
+                      color={p.errorIcon}
+                      size={18}
+                      strokeWidth={2}
+                      style={{ marginTop: 1, flexShrink: 0 }}
+                    />
                     <Text style={[styles.errorText, { color: p.errorText }]}>{effectiveError}</Text>
                   </View>
                 ) : null}
@@ -1605,7 +1611,12 @@ export default function AuthSignInScreen({
                       { backgroundColor: p.errorBg, borderColor: p.errorBorder },
                     ]}
                   >
-                    <AlertCircle color={p.errorIcon} size={14} />
+                    <AlertCircle
+                      color={p.errorIcon}
+                      size={18}
+                      strokeWidth={2}
+                      style={{ marginTop: 1, flexShrink: 0 }}
+                    />
                     <Text style={[styles.errorText, { color: p.errorText }]}>{effectiveError}</Text>
                   </View>
                 ) : null}
@@ -2144,19 +2155,21 @@ const styles = createTypographyStyles({
   },
   errorBox: {
     flexDirection: 'row',
-    gap: 6,
-    alignItems: 'center',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(248,113,113,0.35)',
-    backgroundColor: 'rgba(248,113,113,0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    gap: 10,
+    alignItems: 'flex-start',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(248,113,113,0.5)',
+    backgroundColor: 'rgba(248,113,113,0.12)',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   errorText: {
-    color: '#fca5a5',
-    fontSize: 12,
+    color: '#ff6b6b',
+    fontSize: 13,
+    fontWeight: '500',
     flex: 1,
+    lineHeight: 18,
   },
   infoBox: {
     flexDirection: 'row',
