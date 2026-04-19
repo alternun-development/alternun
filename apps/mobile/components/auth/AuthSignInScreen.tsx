@@ -197,7 +197,7 @@ export default function AuthSignInScreen({
 
   const googleProvider = resolvePrimaryOAuthProvider();
 
-  const rawEffectiveError = localError ?? error;
+  const rawEffectiveError = localError ?? (submitMode !== null ? error : null);
   const effectiveError = rawEffectiveError
     ? getAuthErrorMessage(rawEffectiveError, t('authModal.errors.authenticationFailed'))
     : null;
