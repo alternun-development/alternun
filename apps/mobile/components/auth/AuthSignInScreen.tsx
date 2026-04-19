@@ -1632,19 +1632,6 @@ export default function AuthSignInScreen({
                   </View>
                 ) : null}
 
-                {resendCooldown > 0 ? (
-                  <View
-                    style={[
-                      styles.infoBox,
-                      { backgroundColor: p.noticeBg, borderColor: p.noticeBorder },
-                    ]}
-                  >
-                    <Text style={[styles.infoText, { color: p.noticeText }]}>
-                      {t('authModal.resend.securityCooldown', { seconds: resendCooldown })}
-                    </Text>
-                  </View>
-                ) : null}
-
                 <View
                   style={[
                     styles.resendBox,
