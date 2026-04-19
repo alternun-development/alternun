@@ -1,3 +1,33 @@
+## [1.0.161](https://github.com/alternun-development/alternun/compare/v1.0.160...v1.0.161) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): prevent stale auth errors from persisting after mode switch
+- **repo:** fix(mobile): clear error message when user types in any input field
+- **repo:** fix(api,mobile): unified signup response format for proper error handling
+- **repo:** fix(api): return error responses instead of throwing to avoid 500 errors
+- **repo:** fix(mobile): improve error message styling and clear on mode switch
+
+### Bug Fixes
+
+- **api,mobile:** add social sign-in endpoint, fix lint errors ([70a334e](https://github.com/alternun-development/alternun/commit/70a334ec2c88412cd5edf1b8a0213e99a99d150e))
+- **api,mobile:** unified signup response format for proper error handling ([1fc2ff8](https://github.com/alternun-development/alternun/commit/1fc2ff8651d212c16ffe2519157495280208e865))
+- **api:** return error responses instead of throwing to avoid 500 errors ([4db53b3](https://github.com/alternun-development/alternun/commit/4db53b334f4619ff1aef7c5fd8a4380680eabebd))
+- **mobile:** clear error message when user types in any input field ([a9d594f](https://github.com/alternun-development/alternun/commit/a9d594f91497199f3428a1cafaf69f9a24411c14))
+- **mobile:** improve error message styling and clear on mode switch ([0df6409](https://github.com/alternun-development/alternun/commit/0df64098866780c3d8c1576e2f64af17d24468a1))
+- **mobile:** prevent stale auth errors from persisting after mode switch ([13aa3b2](https://github.com/alternun-development/alternun/commit/13aa3b246c0e1115c26699a8110390166b362690))
+
+## [1.0.161](https://github.com/alternun-development/alternun/compare/v1.0.160...v1.0.161) (2026-04-19)
+
+### Bug Fixes
+
+- **api,mobile:** add social sign-in endpoint, fix lint errors ([70a334e](https://github.com/alternun-development/alternun/commit/70a334ec2c88412cd5edf1b8a0213e99a99d150e))
+- **api,mobile:** unified signup response format for proper error handling ([1fc2ff8](https://github.com/alternun-development/alternun/commit/1fc2ff8651d212c16ffe2519157495280208e865))
+- **api:** return error responses instead of throwing to avoid 500 errors ([4db53b3](https://github.com/alternun-development/alternun/commit/4db53b334f4619ff1aef7c5fd8a4380680eabebd))
+- **mobile:** clear error message when user types in any input field ([a9d594f](https://github.com/alternun-development/alternun/commit/a9d594f91497199f3428a1cafaf69f9a24411c14))
+- **mobile:** improve error message styling and clear on mode switch ([0df6409](https://github.com/alternun-development/alternun/commit/0df64098866780c3d8c1576e2f64af17d24468a1))
+- **mobile:** prevent stale auth errors from persisting after mode switch ([13aa3b2](https://github.com/alternun-development/alternun/commit/13aa3b246c0e1115c26699a8110390166b362690))
+
 ## [1.0.160](https://github.com/alternun-development/alternun/compare/v1.0.159...v1.0.160) (2026-04-18)
 
 ### Bug Fixes
