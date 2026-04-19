@@ -1,3 +1,12 @@
+## [1.0.166](https://github.com/alternun-development/alternun/compare/v1.0.165...v1.0.166) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** docs: add release and deployment flow documentation
+- **repo:** ci: add automatic testnet deployment on release
+
+## [1.0.166](https://github.com/alternun-development/alternun/compare/v1.0.165...v1.0.166) (2026-04-19)
+
 ## [1.0.165](https://github.com/alternun-development/alternun/compare/v1.0.164...v1.0.165) (2026-04-19)
 
 ### Bug Fixes
