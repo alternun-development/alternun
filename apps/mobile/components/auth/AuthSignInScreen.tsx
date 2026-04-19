@@ -1083,6 +1083,7 @@ export default function AuthSignInScreen({
                         setEmail(value);
                         clearRequiredField('email');
                         setInvalidEmail(false);
+                        setLocalError(null);
                         animateLabel(emailLabelAnim, value.length > 0);
                       }}
                       onFocus={() => setFocusedField('email')}
@@ -1161,6 +1162,7 @@ export default function AuthSignInScreen({
                       onChangeText={(value) => {
                         setPassword(value);
                         clearRequiredField('password');
+                        setLocalError(null);
                         animateLabel(passwordLabelAnim, value.length > 0);
                         // Real-time password validation
                         if (value.length > 0) {
@@ -1281,6 +1283,7 @@ export default function AuthSignInScreen({
                         onChangeText={(value) => {
                           setConfirmPassword(value);
                           clearRequiredField('confirmPassword');
+                          setLocalError(null);
                           setPasswordMismatch(value.length > 0 && value !== password);
                           animateLabel(confirmLabelAnim, value.length > 0);
                         }}
@@ -1558,6 +1561,7 @@ export default function AuthSignInScreen({
                         const cleanedValue = value.replace(/\s+/g, '');
                         setConfirmationCode(cleanedValue);
                         setConfirmationCodeRequired(false);
+                        setLocalError(null);
                         animateLabel(codeLabelAnim, cleanedValue.length > 0);
                       }}
                       onFocus={() => setFocusedField('confirmationCode')}
