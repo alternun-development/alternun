@@ -11,12 +11,15 @@ if [ ! -f "${lambda_entry}" ] && [ -f "dist/src/lambda.js" ]; then
   lambda_entry="dist/src/lambda.js"
 fi
 
+VERSION=$(node -e "console.log(require('./package.json').version)")
+
 esbuild "${lambda_entry}" \
   --bundle \
   --platform=node \
   --target=node22 \
   --format=cjs \
   --outfile=dist-lambda/lambda.js \
+  --define:__VERSION__=\"${VERSION}\" \
   --alias:class-transformer/storage=./node_modules/class-transformer/cjs/storage.js \
   --alias:@fastify/view=./shims/empty-module.js \
   --alias:@fastify/static=./shims/empty-module.js \
