@@ -395,21 +395,15 @@ phases:
           echo "Skipping sst refresh (INFRA_ENABLE_SST_REFRESH=${INFRA_ENABLE_SST_REFRESH})"
         fi
       - |
-        export APPROVE=true
-        export RUN_PREDEPLOY_CHECKS=false
-        if [ -f "${INFRA_PATH}/scripts/sst-deploy.sh" ]; then
-          chmod +x "${INFRA_PATH}/scripts/sst-deploy.sh" || true
-          STACK=${SST_STAGE} "${INFRA_PATH}/scripts/sst-deploy.sh"
-        elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" ]; then
-          chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" || true
-          (cd "${INFRA_PATH}" && STACK=${SST_STAGE} ./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh)
-        elif [ -f "./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" ]; then
-          chmod +x "./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" || true
-          STACK=${SST_STAGE} ./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh
-        else
-          echo "ERROR: No sst-deploy script found." >&2
-          exit 1
+        echo "Running direct SST deployment for stage ${SST_STAGE}..."
+        cd "${INFRA_PATH}"
+        SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "${SST_STAGE}" --yes
+        DEPLOY_EXIT=$?
+        if [ $DEPLOY_EXIT -ne 0 ]; then
+          echo "ERROR: SST deploy failed with exit code $DEPLOY_EXIT" >&2
+          exit $DEPLOY_EXIT
         fi
+        echo "✅ SST deploy completed successfully"
       - |
         if [ "${INFRA_ENABLE_PUBLIC_ASSET_SYNC}" != "true" ]; then
           echo "Skipping public asset sync (INFRA_ENABLE_PUBLIC_ASSET_SYNC=${INFRA_ENABLE_PUBLIC_ASSET_SYNC})"
