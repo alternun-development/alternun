@@ -1,3 +1,11 @@
+## [1.0.176](https://github.com/alternun-development/alternun/compare/v1.0.175...v1.0.176) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): AuthResetPasswordScreen, buildspec, bootstrap-ssm-parameters, resolve-ssm-env
+
+## [1.0.176](https://github.com/alternun-development/alternun/compare/v1.0.175...v1.0.176) (2026-04-20)
+
 ## [1.0.175](https://github.com/alternun-development/alternun/compare/v1.0.174...v1.0.175) (2026-04-20)
 
 ### Bug Fixes
