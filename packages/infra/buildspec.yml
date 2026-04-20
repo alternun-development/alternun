@@ -395,8 +395,11 @@ phases:
           echo "Skipping sst refresh (INFRA_ENABLE_SST_REFRESH=${INFRA_ENABLE_SST_REFRESH})"
         fi
       - |
-        echo "Deploying SST stack ${SST_STAGE}..."
+        echo "Clearing any stale SST locks..."
         cd "${INFRA_PATH}"
+        npx sst unlock --stage "${SST_STAGE}" || echo "No lock to clear"
+
+        echo "Deploying SST stack ${SST_STAGE}..."
         SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "${SST_STAGE}" --yes || exit 1
         echo "✅ SST deploy completed"
       - |
