@@ -54,15 +54,17 @@ function normalizeSession(input, fallbackProvider) {
                         : undefined)
             : null;
     const identityCandidate = externalIdentityPayload;
-    const accessTokenCandidate = typeof payload.accessToken === 'string'
-        ? payload.accessToken
-        : typeof (sessionPayload === null || sessionPayload === void 0 ? void 0 : sessionPayload.token) === 'string'
-            ? sessionPayload.token
-            : typeof (sessionPayload === null || sessionPayload === void 0 ? void 0 : sessionPayload.id) === 'string'
-                ? sessionPayload.id
-                : typeof (sessionPayload === null || sessionPayload === void 0 ? void 0 : sessionPayload.sessionToken) === 'string'
-                    ? sessionPayload.sessionToken
-                    : null;
+    const accessTokenCandidate = typeof payload.token === 'string'
+        ? payload.token
+        : typeof payload.accessToken === 'string'
+            ? payload.accessToken
+            : typeof (sessionPayload === null || sessionPayload === void 0 ? void 0 : sessionPayload.token) === 'string'
+                ? sessionPayload.token
+                : typeof (sessionPayload === null || sessionPayload === void 0 ? void 0 : sessionPayload.id) === 'string'
+                    ? sessionPayload.id
+                    : typeof (sessionPayload === null || sessionPayload === void 0 ? void 0 : sessionPayload.sessionToken) === 'string'
+                        ? sessionPayload.sessionToken
+                        : null;
     const refreshTokenCandidate = typeof payload.refreshToken === 'string'
         ? payload.refreshToken
         : typeof (sessionPayload === null || sessionPayload === void 0 ? void 0 : sessionPayload.refreshToken) === 'string'
@@ -122,6 +124,18 @@ function normalizeMaybeDate(value) {
         return Number.isNaN(parsed) ? null : parsed;
     }
     return null;
+}
+function deriveSignUpName(email, providedName) {
+    var _a;
+    const trimmedName = providedName === null || providedName === void 0 ? void 0 : providedName.trim();
+    if (trimmedName) {
+        return trimmedName;
+    }
+    const localPart = (_a = email.split('@')[0]) === null || _a === void 0 ? void 0 : _a.trim();
+    if (localPart) {
+        return localPart;
+    }
+    return email.trim();
 }
 async function callJson(fetchFn, baseUrl, path, body, apiKey) {
     const url = buildUrlWithBasePath(baseUrl, path);
@@ -311,9 +325,6 @@ export class BetterAuthExecutionProvider {
                 };
             }
         }
-        if (provider === 'email' && this.emailFallbackProvider) {
-            return this.emailFallbackProvider.signIn(options);
-        }
         const isEmailProvider = provider === 'email';
         const response = await callJson(this.fetchFn, this.requireBaseUrl(), isEmailProvider
             ? (_j = (_h = this.options.signInEmailPath) !== null && _h !== void 0 ? _h : this.options.signInPath) !== null && _j !== void 0 ? _j : '/auth/sign-in/email'
@@ -346,37 +357,43 @@ export class BetterAuthExecutionProvider {
         };
     }
     async signUp(input) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         const client = this.client;
+        const signUpName = deriveSignUpName(input.email, input.name);
         if (client === null || client === void 0 ? void 0 : client.signUp) {
-            const result = await client.signUp(input);
+            const result = await client.signUp({
+                ...input,
+                name: signUpName,
+            });
             if (result === null || result === void 0 ? void 0 : result.error) {
                 const errorPayload = result.error;
                 throw new AlternunProviderError(typeof errorPayload.message === 'string' ? errorPayload.message : 'Sign up failed');
             }
             const normalizedSession = normalizeSession(result, 'email');
+            const accessToken = (_a = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.accessToken) !== null && _a !== void 0 ? _a : null;
+            const needsEmailVerification = typeof (result === null || result === void 0 ? void 0 : result.needsEmailVerification) === 'boolean'
+                ? result.needsEmailVerification
+                : !accessToken;
+            const emailAlreadyRegistered = typeof (result === null || result === void 0 ? void 0 : result.emailAlreadyRegistered) === 'boolean'
+                ? result.emailAlreadyRegistered
+                : false;
+            const confirmationEmailSent = typeof (result === null || result === void 0 ? void 0 : result.confirmationEmailSent) === 'boolean'
+                ? result.confirmationEmailSent
+                : !accessToken;
             return {
                 session: normalizedSession,
-                externalIdentity: (_a = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _a !== void 0 ? _a : null,
-                needsEmailVerification: typeof (result === null || result === void 0 ? void 0 : result.needsEmailVerification) === 'boolean'
-                    ? result.needsEmailVerification
-                    : undefined,
-                emailAlreadyRegistered: typeof (result === null || result === void 0 ? void 0 : result.emailAlreadyRegistered) === 'boolean'
-                    ? result.emailAlreadyRegistered
-                    : undefined,
-                confirmationEmailSent: typeof (result === null || result === void 0 ? void 0 : result.confirmationEmailSent) === 'boolean'
-                    ? result.confirmationEmailSent
-                    : undefined,
+                externalIdentity: (_b = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _b !== void 0 ? _b : null,
+                needsEmailVerification,
+                emailAlreadyRegistered,
+                confirmationEmailSent,
             };
         }
-        if (this.emailFallbackProvider) {
-            return this.emailFallbackProvider.signUp(input);
-        }
         const browserClient = await this.resolveBrowserClient();
-        if ((_b = browserClient === null || browserClient === void 0 ? void 0 : browserClient.signUp) === null || _b === void 0 ? void 0 : _b.email) {
+        if ((_c = browserClient === null || browserClient === void 0 ? void 0 : browserClient.signUp) === null || _c === void 0 ? void 0 : _c.email) {
             const signUpOptions = {
                 email: input.email,
                 password: input.password,
+                name: signUpName,
                 callbackURL: undefined,
                 locale: input.locale,
                 metadata: input.metadata,
@@ -387,40 +404,49 @@ export class BetterAuthExecutionProvider {
                 throw new AlternunProviderError(typeof errorPayload.message === 'string' ? errorPayload.message : 'Email sign up failed');
             }
             const normalizedSession = normalizeSession(result, 'email');
+            const accessToken = (_d = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.accessToken) !== null && _d !== void 0 ? _d : null;
+            const needsEmailVerification = typeof (result === null || result === void 0 ? void 0 : result.needsEmailVerification) === 'boolean'
+                ? result.needsEmailVerification
+                : !accessToken;
+            const emailAlreadyRegistered = typeof (result === null || result === void 0 ? void 0 : result.emailAlreadyRegistered) === 'boolean'
+                ? result.emailAlreadyRegistered
+                : false;
+            const confirmationEmailSent = typeof (result === null || result === void 0 ? void 0 : result.confirmationEmailSent) === 'boolean'
+                ? result.confirmationEmailSent
+                : !accessToken;
             return {
                 session: normalizedSession,
-                externalIdentity: (_c = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _c !== void 0 ? _c : null,
-                needsEmailVerification: typeof (result === null || result === void 0 ? void 0 : result.needsEmailVerification) === 'boolean'
-                    ? result.needsEmailVerification
-                    : undefined,
-                emailAlreadyRegistered: typeof (result === null || result === void 0 ? void 0 : result.emailAlreadyRegistered) === 'boolean'
-                    ? result.emailAlreadyRegistered
-                    : undefined,
-                confirmationEmailSent: typeof (result === null || result === void 0 ? void 0 : result.confirmationEmailSent) === 'boolean'
-                    ? result.confirmationEmailSent
-                    : undefined,
+                externalIdentity: (_e = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _e !== void 0 ? _e : null,
+                needsEmailVerification,
+                emailAlreadyRegistered,
+                confirmationEmailSent,
             };
         }
-        const response = await callJson(this.fetchFn, this.requireBaseUrl(), (_e = (_d = this.options.signUpEmailPath) !== null && _d !== void 0 ? _d : this.options.signUpPath) !== null && _e !== void 0 ? _e : '/auth/sign-up/email', {
+        const response = await callJson(this.fetchFn, this.requireBaseUrl(), (_g = (_f = this.options.signUpEmailPath) !== null && _f !== void 0 ? _f : this.options.signUpPath) !== null && _g !== void 0 ? _g : '/auth/sign-up/email', {
             email: input.email,
             password: input.password,
+            name: signUpName,
             locale: input.locale,
             callbackURL: undefined,
             metadata: input.metadata,
         });
         const session = normalizeSession(response, 'email');
+        const accessToken = (_h = session === null || session === void 0 ? void 0 : session.accessToken) !== null && _h !== void 0 ? _h : null;
+        const needsEmailVerification = typeof (response === null || response === void 0 ? void 0 : response.needsEmailVerification) === 'boolean'
+            ? response.needsEmailVerification
+            : !accessToken;
+        const emailAlreadyRegistered = typeof (response === null || response === void 0 ? void 0 : response.emailAlreadyRegistered) === 'boolean'
+            ? response.emailAlreadyRegistered
+            : false;
+        const confirmationEmailSent = typeof (response === null || response === void 0 ? void 0 : response.confirmationEmailSent) === 'boolean'
+            ? response.confirmationEmailSent
+            : !accessToken;
         return {
             session,
-            externalIdentity: (_f = session === null || session === void 0 ? void 0 : session.externalIdentity) !== null && _f !== void 0 ? _f : null,
-            needsEmailVerification: typeof (response === null || response === void 0 ? void 0 : response.needsEmailVerification) === 'boolean'
-                ? response.needsEmailVerification
-                : undefined,
-            emailAlreadyRegistered: typeof (response === null || response === void 0 ? void 0 : response.emailAlreadyRegistered) === 'boolean'
-                ? response.emailAlreadyRegistered
-                : undefined,
-            confirmationEmailSent: typeof (response === null || response === void 0 ? void 0 : response.confirmationEmailSent) === 'boolean'
-                ? response.confirmationEmailSent
-                : undefined,
+            externalIdentity: (_j = session === null || session === void 0 ? void 0 : session.externalIdentity) !== null && _j !== void 0 ? _j : null,
+            needsEmailVerification,
+            emailAlreadyRegistered,
+            confirmationEmailSent,
         };
     }
     async signOut() {
@@ -602,9 +628,6 @@ export class BetterAuthExecutionProvider {
                 };
             }
             throw new AlternunProviderError('Better Auth email sign-in did not return a user session.');
-        }
-        if (this.emailFallbackProvider) {
-            return this.emailFallbackProvider.signInWithEmail(email, password);
         }
         const result = await this.signIn({
             provider: 'email',

@@ -1,3 +1,11 @@
+## [1.0.178](https://github.com/alternun-development/alternun/compare/v1.0.177...v1.0.178) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(api,web,auth): auth-exchange.controller, auth-exchange.module, signup-request.dto, signup-response.dto
+
+## [1.0.178](https://github.com/alternun-development/alternun/compare/v1.0.177...v1.0.178) (2026-04-20)
+
 ## [1.0.177](https://github.com/alternun-development/alternun/compare/v1.0.176...v1.0.177) (2026-04-20)
 
 ### Bug Fixes
