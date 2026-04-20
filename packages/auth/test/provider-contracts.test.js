@@ -184,7 +184,9 @@ test('BetterAuthExecutionProvider.signInWithGoogle fetches the social sign-in UR
     assert.deepEqual(observedRequestBody, {
       provider: 'google',
       flow: 'redirect',
-      redirectUri: 'https://app.example.com/auth/callback',
+      callbackURL: 'https://app.example.com/auth/callback',
+      errorCallbackURL: 'https://app.example.com/auth/callback',
+      newUserCallbackURL: 'https://app.example.com/auth/callback',
     });
     assert.equal(redirectedTo, redirectUrl);
   } finally {
@@ -289,7 +291,9 @@ test('BetterAuthExecutionProvider prefers the Better Auth client for email flows
     signUpWithEmail: 0,
     resendEmailConfirmation: 0,
     verifyEmailConfirmationCode: 0,
+    requestPasswordResetEmail: 0,
   };
+  let observedPasswordReset = null;
 
   const provider = new BetterAuthExecutionProvider({
     client: {
@@ -368,7 +372,15 @@ test('BetterAuthExecutionProvider prefers the Better Auth client for email flows
       linkProvider: async () => null,
       unlinkProvider: async () => {},
       setOidcUser: () => {},
-      supabase: { auth: {} },
+      supabase: {
+        auth: {
+          resetPasswordForEmail: async (email, options) => {
+            fallbackCalls.requestPasswordResetEmail += 1;
+            observedPasswordReset = { email, options };
+            return { error: null };
+          },
+        },
+      },
     },
   });
 
@@ -397,9 +409,68 @@ test('BetterAuthExecutionProvider prefers the Better Auth client for email flows
 
   await provider.resendEmailConfirmation('ada@example.com');
   await provider.verifyEmailConfirmationCode('ada@example.com', '123456');
+  await provider.requestPasswordResetEmail(
+    'ada@example.com',
+    'https://app.example.com/auth/reset-password'
+  );
 
   assert.equal(fallbackCalls.resendEmailConfirmation, 1);
   assert.equal(fallbackCalls.verifyEmailConfirmationCode, 1);
+  assert.equal(fallbackCalls.requestPasswordResetEmail, 1);
+  assert.deepEqual(observedPasswordReset, {
+    email: 'ada@example.com',
+    options: {
+      redirectTo: 'https://app.example.com/auth/reset-password',
+    },
+  });
+});
+
+test('SupabaseExecutionProvider preserves auth method binding when requesting password reset emails', async () => {
+  let observedFlowType = null;
+  let observedPasswordReset = null;
+
+  const provider = new SupabaseExecutionProvider({
+    runtime: 'web',
+    signInWithEmail: async () => ({
+      id: 'user-1',
+      email: 'ada@example.com',
+      provider: 'email',
+      providerUserId: 'email-123',
+      metadata: {},
+    }),
+    signUpWithEmail: async () => ({ needsEmailVerification: false }),
+    resendEmailConfirmation: async () => {},
+    verifyEmailConfirmationCode: async () => {},
+    signOut: async () => {},
+    onAuthStateChange: () => () => {},
+    getUser: async () => null,
+    getSessionToken: async () => null,
+    capabilities: () => ({ runtime: 'web', supportedFlows: ['native'] }),
+    setOidcUser: () => {},
+    supabase: {
+      auth: {
+        flowType: 'pkce',
+        resetPasswordForEmail(email, options) {
+          observedFlowType = this.flowType;
+          observedPasswordReset = { email, options };
+          return { error: null };
+        },
+      },
+    },
+  });
+
+  await provider.requestPasswordResetEmail(
+    'ada@example.com',
+    'https://app.example.com/auth/reset-password'
+  );
+
+  assert.equal(observedFlowType, 'pkce');
+  assert.deepEqual(observedPasswordReset, {
+    email: 'ada@example.com',
+    options: {
+      redirectTo: 'https://app.example.com/auth/reset-password',
+    },
+  });
 });
 
 test('BetterAuthExecutionProvider does not surface legacy sessions by default', async () => {
