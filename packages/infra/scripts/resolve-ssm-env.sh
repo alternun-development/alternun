@@ -53,7 +53,9 @@ if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
     EXPO_PUBLIC_AUTHENTIK_ISSUER \
     EXPO_PUBLIC_AUTHENTIK_CLIENT_ID \
     EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE \
-    EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE
+    EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE \
+    INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL \
+    INFRA_BACKEND_API_DATABASE_URL
 fi
 
 resolve_auth_execution_provider() {
@@ -320,7 +322,6 @@ main() {
     *)
       export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url" ""
       export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url" ""
-      export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode" ""
       export_env_from_ssm "DATABASE_URL" "database-url" ""
       ;;
   esac
