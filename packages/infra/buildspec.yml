@@ -131,6 +131,8 @@ env:
     # only when INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true, so keep the flag explicit for
     # manual recovery or alias migration runs.
     INFRA_ENABLE_ALIAS_CLEANUP: 'false'
+    # Route53 hosted zone for alternun.co - required for wildcard certificate provisioning
+    INFRA_ROUTE53_HOSTED_ZONE_ID: 'Z02451462K2H87RS3X1EP'
     INFRA_ENABLE_SST_DIFF: 'false'
     INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'true'
     # Disabled by default: refresh can rewrite live state before deploy.
