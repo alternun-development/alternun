@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Alternun - Regenerative Impact Platform</title>
+    <link>https://alternun.co</link>
+    <description>Track, verify, and monetize your environmental and social impact with Alternun. Join the regenerative economy.</description>
+    <language>en-us</language>
+    <atom:link href="https://alternun.co/feed.xml" rel="self" type="application/rss+xml" />
+
+    <item>
+      <title>Introducing AIRS: The Impact Rating System</title>
+      <link>https://alternun.co/blog/airs-impact-rating</link>
+      <guid isPermaLink="true">https://alternun.co/blog/airs-impact-rating</guid>
+      <description>Discover how AIRS (Alternun Impact Rating System) converts environmental and social actions into quantifiable tokens, enabling verified impact tracking and monetization.</description>
+      <pubDate>Mon, 20 Apr 2026 10:00:00 GMT</pubDate>
+      <author>contact@alternun.io</author>
+      <category>Features</category>
+    </item>
+
+    <item>
+      <title>Getting Started with Alternun: Your First Impact Token</title>
+      <link>https://alternun.co/blog/getting-started</link>
+      <guid isPermaLink="true">https://alternun.co/blog/getting-started</guid>
+      <description>A step-by-step guide to creating your Alternun account, connecting data sources, and earning your first AIRS tokens through verified impact.</description>
+      <pubDate>Fri, 15 Apr 2026 14:30:00 GMT</pubDate>
+      <author>contact@alternun.io</author>
+      <category>Tutorial</category>
+    </item>
+
+    <item>
+      <title>Enterprise ESG: How Companies Are Using Alternun</title>
+      <link>https://alternun.co/blog/enterprise-esg</link>
+      <guid isPermaLink="true">https://alternun.co/blog/enterprise-esg</guid>
+      <description>Real-world examples of how enterprises use Alternun to monitor supply chain sustainability and meet ESG commitments with audit-ready reporting.</description>
+      <pubDate>Wed, 10 Apr 2026 09:15:00 GMT</pubDate>
+      <author>contact@alternun.io</author>
+      <category>Case Studies</category>
+    </item>
+
+    <item>
+      <title>The Future of Impact Investing with Blockchain Verification</title>
+      <link>https://alternun.co/blog/blockchain-impact</link>
+      <guid isPermaLink="true">https://alternun.co/blog/blockchain-impact</guid>
+      <description>Explore how blockchain technology ensures immutable, transparent records of verified environmental and social impact, creating trust in impact investing.</description>
+      <pubDate>Mon, 08 Apr 2026 11:45:00 GMT</pubDate>
+      <author>contact@alternun.io</author>
+      <category>Technology</category>
+    </item>
+  </channel>
+</rss>

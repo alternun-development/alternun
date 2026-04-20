@@ -7,7 +7,7 @@ Move Alternun auth execution to Better Auth while keeping Authentik as the canon
 The migration target is:
 
 - Better Auth executes social login flows.
-- Email/password stays on the legacy Supabase-compatible execution path until that flow is migrated independently.
+- Email/password sign-in and sign-up execute through Better Auth as well, while legacy Supabase compatibility remains only for recovery helpers and rollback paths.
 - Authentik remains the issuer trust boundary.
 - NestJS owns identity exchange, provisioning, and audit.
 - Alternun apps continue to call `useAuth()`, `AuthProvider`, `signIn`, `signUpWithEmail`, `signOut`, and `getUser`.
@@ -21,7 +21,7 @@ Status as of `2026-04-15`.
 - Provider contracts exist under `src/core/` and `src/providers/`.
 - `AlternunAuthFacade` is implemented and exported.
 - `AppAuthProvider` now creates the facade instead of instantiating the legacy mobile client directly.
-- `BetterAuthExecutionProvider` exists as an execution adapter for social login and can delegate email/password to the legacy compatibility client when configured.
+- `BetterAuthExecutionProvider` exists as an execution adapter for social login and email/password flows and keeps the legacy compatibility client only for recovery helpers.
 - `BetterAuthExecutionProvider` now keeps Better Auth session state ahead of legacy Supabase session state unless compatibility fallback is explicitly enabled.
 - The local Better Auth dev runner now lives under `apps/api`, and the browser-facing `/auth` route proxies to that private service during local validation.
 - `AuthentikIssuerProvider` exists as an issuer adapter and now prefers `AUTH_EXCHANGE_URL` when present.
@@ -90,7 +90,7 @@ The migration is complete only when all of the following are true:
 4. `POST /auth/exchange` returns issuer-owned session data when the backend signing key is configured, without exposing raw execution-layer tokens as the final app session.
 5. Identity persistence no longer depends on UI/runtime calls to `upsert_oidc_user`.
 6. Wallet linkage and linked account records are persisted through app-owned repository abstractions.
-7. Email verification and password reset flows run through the provider abstraction, with email/password execution still supported through the legacy compatibility path during the migration.
+7. Email verification and password reset flows run through the provider abstraction, with the remaining legacy compatibility path limited to the recovery helpers during the migration.
 8. Testnet validation passes for web and mobile callback behavior.
 
 ## Remaining Workstreams
@@ -136,7 +136,7 @@ The migration is complete only when all of the following are true:
 5. Move linked account and wallet persistence behind repository calls.
 6. Move email delivery off Supabase-only assumptions.
 7. Remove Supabase execution only after the exchange flow is stable in testnet.
-8. Migrate email/password execution off the legacy compatibility path only when the replacement flow is ready.
+8. Retire the remaining email/password compatibility helpers only when the replacement flow is ready.
 
 ## App Migration Notes
 
@@ -152,7 +152,7 @@ Before calling the migration production-ready on testnet, the following must pas
 
 - Google sign-in completes through Better Auth and resolves to the canonical issuer session.
 - GitHub sign-in completes through Better Auth and resolves to the canonical issuer session.
-- Email sign-up sends verification email through the selected email provider path.
+- Email sign-up completes end to end through Better Auth, including verification email delivery when verification is enabled.
 - Password reset flow works end to end without Supabase-only runtime assumptions.
 - Web callback routing returns to the right app surface.
 - Native callback routing resolves to the right issuer session.
