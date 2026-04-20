@@ -93,8 +93,29 @@ describe('validate-exported-auth-bundle', () => {
           EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
           EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
         },
-      })
+    })
     ).toThrow(/localhost Better Auth web auth env/);
+  });
+
+  it('fails a testnet bundle that still embeds the production API origin', () => {
+    const bundleDir = createBundleDir({
+      'entry.js':
+        'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER:"better-auth";' +
+        'EXPO_PUBLIC_BETTER_AUTH_URL:"https://testnet.api.alternun.co";' +
+        'EXPO_PUBLIC_AUTH_EXCHANGE_URL:"https://testnet.api.alternun.co/auth/exchange";' +
+        'process.env.REACT_APP_API_URL||"https://api.alternun.co";',
+    });
+
+    expect(() =>
+      validateExportedAuthBundle({
+        distDir: bundleDir,
+        env: {
+          EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+          EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+          EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+        },
+      })
+    ).toThrow(/production API origin/);
   });
 
   it('fails a legacy bundle that still ships Better Auth web endpoints', () => {
