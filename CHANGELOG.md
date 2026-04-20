@@ -1,3 +1,11 @@
+## [1.0.169](https://github.com/alternun-development/alternun/compare/v1.0.168...v1.0.169) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(mobile): callback, authCallbackFlow.test, authCallbackFlow
+
+## [1.0.169](https://github.com/alternun-development/alternun/compare/v1.0.168...v1.0.169) (2026-04-20)
+
 ## [1.0.168](https://github.com/alternun-development/alternun/compare/v1.0.167...v1.0.168) (2026-04-20)
 
 ### Bug Fixes
