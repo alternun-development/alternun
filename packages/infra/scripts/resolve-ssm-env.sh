@@ -94,6 +94,7 @@ fetch_ssm_params_batch() {
   done < <(
     aws ssm get-parameters \
       --names "${names[@]}" \
+      --with-decryption \
       --region "$REGION" \
       --query 'Parameters[].[Name,Value]' \
       --output text 2>/dev/null || true
@@ -138,6 +139,7 @@ get_ssm_param() {
 
   aws ssm get-parameter \
     --name "$param_name" \
+    --with-decryption \
     --region "$REGION" \
     --query 'Parameter.Value' \
     --output text 2>/dev/null || echo ""
@@ -193,12 +195,30 @@ print_resolved_values() {
 }
 
 load_cached_env() {
+  if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
+    return 1
+  fi
+
   if [ ! -f "$CACHE_FILE" ]; then
     return 1
   fi
 
   # shellcheck disable=SC1090
   source "$CACHE_FILE"
+
+  # SecureString-backed database URLs must be decrypted before they can be used
+  # by the Lambda runtime. If the cache still contains ciphertext, ignore it and
+  # refresh from SSM so we do not keep replaying a broken deploy env.
+  if [ -n "${INFRA_BACKEND_API_DATABASE_URL:-}" ] && \
+    { [[ "${INFRA_BACKEND_API_DATABASE_URL}" == AQICA* ]] || [[ "${INFRA_BACKEND_API_DATABASE_URL}" != *://* ]]; }; then
+    return 1
+  fi
+
+  if [ -n "${DATABASE_URL:-}" ] && \
+    { [[ "${DATABASE_URL}" == AQICA* ]] || [[ "${DATABASE_URL}" != *://* ]]; }; then
+    return 1
+  fi
+
   echo "Loaded cached SSM parameters for stage '${STAGE}' from ${CACHE_FILE}." >&2
   return 0
 }

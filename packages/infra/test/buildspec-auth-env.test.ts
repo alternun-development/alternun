@@ -44,6 +44,14 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
   assert.match(helperSource, /prime_ssm_param_cache\(\)/);
   assert.match(helperSource, /aws ssm get-parameters/);
   assert.match(helperSource, /CACHE_FILE=/);
+  assert.match(
+    helperSource,
+    /if \[ "\$\{CODEBUILD_BUILD_ID:-\}" != "" \] \|\| \[ "\$\{CI:-\}" = "true" \]; then[\s\S]*?return 1[\s\S]*?fi/
+  );
+  assert.match(helperSource, /aws ssm get-parameters[\s\S]*?--with-decryption/);
+  assert.match(helperSource, /aws ssm get-parameter[\s\S]*?--with-decryption/);
+  assert.match(helperSource, /INFRA_BACKEND_API_DATABASE_URL[\s\S]*?AQICA\*/);
+  assert.match(helperSource, /\*:\/\/\*/);
   assert.match(helperSource, /write_cached_env\(\)/);
   assert.match(helperSource, /export AUTH_EXECUTION_PROVIDER/);
   assert.match(helperSource, /export EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER/);
