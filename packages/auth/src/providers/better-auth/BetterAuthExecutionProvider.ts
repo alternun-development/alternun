@@ -327,6 +327,10 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     return this.options.fetchFn ?? fetch;
   }
 
+  get supabase(): unknown {
+    return this.emailFallbackProvider?.supabase ?? null;
+  }
+
   private async resolveBrowserClient(): Promise<BetterAuthBrowserClientLike | null> {
     if (this.options.browserClient) {
       return this.options.browserClient;
@@ -902,6 +906,28 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     }
 
     return Promise.resolve();
+  }
+
+  async requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void> {
+    if (this.emailFallbackProvider?.requestPasswordResetEmail) {
+      await this.emailFallbackProvider.requestPasswordResetEmail(email, redirectTo);
+      return;
+    }
+
+    throw new AlternunProviderError(
+      'Supabase execution provider does not support password reset emails.'
+    );
+  }
+
+  async resetPassword(newPassword: string, token?: string): Promise<void> {
+    if (!token) {
+      throw new AlternunProviderError('Password reset token is required.');
+    }
+
+    await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/reset-password', {
+      newPassword,
+      token,
+    });
   }
 
   async signInWithGoogle(redirectTo?: string): Promise<void> {

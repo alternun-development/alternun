@@ -16,7 +16,10 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { useAppTranslation } from '../../components/i18n/useAppTranslation';
 import { useAuth } from '../../components/auth/AppAuthProvider';
 import { isBetterAuthExecutionEnabled } from '../../components/auth/authExecutionMode';
-import { resolveAuthCallbackSuccessVariant } from '../../components/auth/authCallbackFlow';
+import {
+  buildWebAuthCallbackRedirectPath,
+  resolveAuthCallbackSuccessVariant,
+} from '../../components/auth/authCallbackFlow';
 import {
   authentikPreset,
   oidcSessionToUser,
@@ -56,6 +59,13 @@ export default function AuthCallbackRoute(): React.JSX.Element {
   const isBetterAuthExecution = isBetterAuthExecutionEnabled();
   const callbackPayload = useMemo(() => {
     return readWebAuthCallbackPayload(INITIAL_CALLBACK_SEARCH, INITIAL_CALLBACK_HASH);
+  }, []);
+  const recoveryRedirectPath = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    return buildWebAuthCallbackRedirectPath(INITIAL_CALLBACK_SEARCH, INITIAL_CALLBACK_HASH);
   }, []);
   const successVariant = useMemo(() => {
     return resolveAuthCallbackSuccessVariant(callbackPayload.callbackType);
@@ -118,6 +128,11 @@ export default function AuthCallbackRoute(): React.JSX.Element {
       clearAuthReturnTo();
       router.replace(redirectTarget as AuthCallbackHref);
     };
+
+    if (recoveryRedirectPath?.startsWith('/auth/reset-password')) {
+      window.location.replace(recoveryRedirectPath);
+      return;
+    }
 
     if (isBetterAuthExecution) {
       clearOidcSession();
@@ -192,6 +207,7 @@ export default function AuthCallbackRoute(): React.JSX.Element {
     callbackPayload,
     client,
     isNavigationReady,
+    recoveryRedirectPath,
     redirectTarget,
     router,
     successCopy.message,

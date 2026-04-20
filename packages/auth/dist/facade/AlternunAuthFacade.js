@@ -35,6 +35,11 @@ export class AlternunAuthFacade {
         var _a;
         return (_a = this.executionProvider.supabase) !== null && _a !== void 0 ? _a : null;
     }
+    get supabaseAuth() {
+        var _a;
+        const supabase = this.supabase;
+        return (_a = supabase === null || supabase === void 0 ? void 0 : supabase.auth) !== null && _a !== void 0 ? _a : null;
+    }
     capabilities() {
         var _a, _b, _c, _d;
         const providerCapabilities = (_b = (_a = this.executionProvider).capabilities) === null || _b === void 0 ? void 0 : _b.call(_a);
@@ -423,6 +428,70 @@ export class AlternunAuthFacade {
             return;
         }
         throw new AlternunProviderError('Email confirmation code verification is not supported by the active execution provider.');
+    }
+    async requestPasswordResetEmail(email, redirectTo) {
+        var _a, _b;
+        this.log('execution-provider', 'requestPasswordResetEmail', 'start', {
+            email,
+            redirectTo,
+        });
+        try {
+            if (this.executionProvider.requestPasswordResetEmail) {
+                await this.executionProvider.requestPasswordResetEmail(email, redirectTo);
+            }
+            else if ((_a = this.supabaseAuth) === null || _a === void 0 ? void 0 : _a.resetPasswordForEmail) {
+                const result = await this.supabaseAuth.resetPasswordForEmail(email, redirectTo ? { redirectTo } : undefined);
+                if ((_b = result === null || result === void 0 ? void 0 : result.error) === null || _b === void 0 ? void 0 : _b.message) {
+                    throw new Error(result.error.message);
+                }
+            }
+            else {
+                throw new AlternunProviderError('Password reset email is not supported by the active execution provider.');
+            }
+            this.log('execution-provider', 'requestPasswordResetEmail', 'success', { email });
+        }
+        catch (error) {
+            this.log('execution-provider', 'requestPasswordResetEmail', 'failure', {
+                email,
+                error: error instanceof Error ? error.message : String(error),
+            });
+            throw toAlternunAuthError(error);
+        }
+    }
+    async resetPassword(newPassword, token) {
+        var _a, _b;
+        this.log('execution-provider', 'resetPassword', 'start', {
+            hasToken: Boolean(token),
+        });
+        try {
+            if (token) {
+                if (this.executionProvider.resetPassword) {
+                    await this.executionProvider.resetPassword(newPassword, token);
+                }
+                else {
+                    throw new AlternunProviderError('Password reset is not supported by the active execution provider.');
+                }
+            }
+            else if ((_a = this.supabaseAuth) === null || _a === void 0 ? void 0 : _a.updateUser) {
+                const result = await this.supabaseAuth.updateUser({ password: newPassword });
+                if ((_b = result === null || result === void 0 ? void 0 : result.error) === null || _b === void 0 ? void 0 : _b.message) {
+                    throw new Error(result.error.message);
+                }
+            }
+            else {
+                throw new AlternunProviderError('Password reset requires a valid token or an active recovery session.');
+            }
+            this.log('execution-provider', 'resetPassword', 'success', {
+                hasToken: Boolean(token),
+            });
+        }
+        catch (error) {
+            this.log('execution-provider', 'resetPassword', 'failure', {
+                hasToken: Boolean(token),
+                error: error instanceof Error ? error.message : String(error),
+            });
+            throw toAlternunAuthError(error);
+        }
     }
     async signOut() {
         this.log('execution-provider', 'signOut', 'start');

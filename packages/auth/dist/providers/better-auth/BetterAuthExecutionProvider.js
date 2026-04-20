@@ -188,6 +188,10 @@ export class BetterAuthExecutionProvider {
         var _a;
         return (_a = this.options.fetchFn) !== null && _a !== void 0 ? _a : fetch;
     }
+    get supabase() {
+        var _a, _b;
+        return (_b = (_a = this.emailFallbackProvider) === null || _a === void 0 ? void 0 : _a.supabase) !== null && _b !== void 0 ? _b : null;
+    }
     async resolveBrowserClient() {
         var _a;
         if (this.options.browserClient) {
@@ -640,6 +644,23 @@ export class BetterAuthExecutionProvider {
             return;
         }
         return Promise.resolve();
+    }
+    async requestPasswordResetEmail(email, redirectTo) {
+        var _a;
+        if ((_a = this.emailFallbackProvider) === null || _a === void 0 ? void 0 : _a.requestPasswordResetEmail) {
+            await this.emailFallbackProvider.requestPasswordResetEmail(email, redirectTo);
+            return;
+        }
+        throw new AlternunProviderError('Supabase execution provider does not support password reset emails.');
+    }
+    async resetPassword(newPassword, token) {
+        if (!token) {
+            throw new AlternunProviderError('Password reset token is required.');
+        }
+        await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/reset-password', {
+            newPassword,
+            token,
+        });
     }
     async signInWithGoogle(redirectTo) {
         const result = await this.signIn({

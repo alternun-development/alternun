@@ -758,6 +758,20 @@ export default function AuthSignInScreen({
     await handleSocialSignIn('discord');
   };
 
+  const handleForgotPassword = (): void => {
+    if (isBusy) {
+      return;
+    }
+
+    router.push({
+      pathname: '/auth/reset-password',
+      params: {
+        next: authReturnTo ?? '/',
+        email: email.trim() || undefined,
+      },
+    });
+  };
+
   const handleWalletConnect = async (walletType: string): Promise<void> => {
     setWalletModalVisible(false);
     resetMessages();
@@ -1417,6 +1431,17 @@ export default function AuthSignInScreen({
 
                 {mode === 'signin' ? (
                   <>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      disabled={isBusy}
+                      onPress={handleForgotPassword}
+                      style={[styles.linkButton, styles.forgotPasswordLink]}
+                    >
+                      <Text style={[styles.linkButtonText, { color: p.accent }]}>
+                        {t('authModal.actions.forgotPassword', undefined, 'Forgot password?')}
+                      </Text>
+                    </TouchableOpacity>
+
                     <View style={styles.dividerRow}>
                       <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
                       <Text style={[styles.dividerText, { color: p.textMuted }]}>
@@ -2279,6 +2304,11 @@ const styles = createTypographyStyles({
   linkButton: {
     paddingVertical: 6,
     paddingHorizontal: 0,
+  },
+  forgotPasswordLink: {
+    alignSelf: 'center',
+    marginTop: -2,
+    marginBottom: 2,
   },
   linkButtonText: {
     color: '#66e6c5',

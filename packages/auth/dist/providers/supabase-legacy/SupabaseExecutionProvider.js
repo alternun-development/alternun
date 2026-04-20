@@ -243,6 +243,18 @@ export class SupabaseExecutionProvider {
         }
         await this.client.verifyEmailConfirmationCode(email, code);
     }
+    async requestPasswordResetEmail(email, redirectTo) {
+        var _a;
+        const supabase = this.client.supabase;
+        const auth = supabase === null || supabase === void 0 ? void 0 : supabase.auth;
+        if (!(auth === null || auth === void 0 ? void 0 : auth.resetPasswordForEmail)) {
+            throw new AlternunProviderError('Supabase execution provider does not support password reset emails.');
+        }
+        const result = await auth.resetPasswordForEmail(email, redirectTo ? { redirectTo } : undefined);
+        if ((_a = result === null || result === void 0 ? void 0 : result.error) === null || _a === void 0 ? void 0 : _a.message) {
+            throw new AlternunProviderError(result.error.message);
+        }
+    }
     async signInWithGoogle(redirectTo) {
         await this.client.signIn({
             provider: 'google',

@@ -52,6 +52,8 @@ export interface AuthExecutionProvider {
   refreshExecutionSession(): Promise<ExecutionSession | null>;
   linkProvider(input: AuthLinkProviderInput): Promise<LinkedAuthAccount | null>;
   unlinkProvider(input: AuthUnlinkProviderInput): Promise<void>;
+  requestPasswordResetEmail?(email: string, redirectTo?: string): Promise<void>;
+  resetPassword?(newPassword: string, token?: string): Promise<void>;
 }
 
 export interface IdentityIssuerProvider {
