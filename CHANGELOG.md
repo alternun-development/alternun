@@ -1,3 +1,11 @@
+## [1.0.172](https://github.com/alternun-development/alternun/compare/v1.0.171...v1.0.172) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(api): supabase-signup.service, supabase-signup.service.test
+
+## [1.0.172](https://github.com/alternun-development/alternun/compare/v1.0.171...v1.0.172) (2026-04-20)
+
 ## [1.0.171](https://github.com/alternun-development/alternun/compare/v1.0.170...v1.0.171) (2026-04-20)
 
 ### Bug Fixes
