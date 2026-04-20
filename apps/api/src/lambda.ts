@@ -6,6 +6,7 @@ import type {
 } from 'fastify';
 import 'reflect-metadata';
 import { createApp } from './common/bootstrap/create-app';
+import { normalizeLambdaRequestPath } from './common/bootstrap/request-path';
 
 let cachedFastifyApp: FastifyInstance | undefined;
 
@@ -68,10 +69,7 @@ export async function handler(
     let path = event.rawPath ?? event.requestContext?.http?.path ?? '/';
     const headers = event.headers ?? {};
 
-    // For NestJS URI versioning, prepend /v1 if not already present
-    if (!path.match(/^\/v\d+\//)) {
-      path = `/v1${path}`;
-    }
+    path = normalizeLambdaRequestPath(path);
 
     // eslint-disable-next-line no-console
     console.log('[handler] Calling fastify.inject', { method, path });
