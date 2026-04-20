@@ -30,6 +30,10 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
   );
   assert.match(
     helperSource,
+    /unset\s+\\[\s\S]*?AUTH_EXECUTION_PROVIDER[\s\S]*?EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER[\s\S]*?DATABASE_URL[\s\S]*?SUPABASE_DATABASE_URL/
+  );
+  assert.match(
+    helperSource,
     /unset\s+\\[\s\S]*?AUTH_BETTER_AUTH_URL[\s\S]*?EXPO_PUBLIC_BETTER_AUTH_URL/
   );
   assert.match(
