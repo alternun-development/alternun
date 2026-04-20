@@ -26,7 +26,7 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
   assert.match(source, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS: 'false'/);
   assert.match(
     helperSource,
-    /unset\s+\\[\s\S]*?AUTH_EXECUTION_PROVIDER[\s\S]*?EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER/
+    /unset\s+\\[\s\S]*?EXPO_PUBLIC_API_URL[\s\S]*?AUTH_EXECUTION_PROVIDER[\s\S]*?EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER/
   );
   assert.match(
     helperSource,

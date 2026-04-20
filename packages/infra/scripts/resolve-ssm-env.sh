@@ -41,9 +41,10 @@ declare -a CACHE_EXPORT_VARS=(
 )
 
 # CI shells can inherit stale auth values from the CodeBuild project.
-# Clear the auth contract vars so SSM/default stage resolution wins.
+# Clear the stage contract vars so SSM/default stage resolution wins.
 if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
   unset \
+    EXPO_PUBLIC_API_URL \
     AUTH_EXECUTION_PROVIDER \
     EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER \
     AUTH_BETTER_AUTH_URL \
