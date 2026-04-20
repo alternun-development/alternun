@@ -251,6 +251,10 @@ main() {
         better-auth-url-dev
         alternun-testnet-mode-dev
         database-url-dev
+        google-auth-client-id
+        google-auth-client-secret
+        discord-auth-client-id
+        discord-auth-client-secret
       )
       ;;
     prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
@@ -298,6 +302,10 @@ main() {
       export_env_from_ssm "BETTER_AUTH_URL" "better-auth-url-dev" "https://testnet.api.alternun.co"
       export_env_from_ssm "ALTERNUN_TESTNET_MODE" "alternun-testnet-mode-dev" "on"
       export_env_from_ssm "DATABASE_URL" "database-url-dev"
+      export_env_from_ssm "GOOGLE_AUTH_CLIENT_ID" "google-auth-client-id"
+      export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret"
+      export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id"
+      export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret"
       ;;
     prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
       # Production still resolves the stage-specific Better Auth URLs; the execution provider
