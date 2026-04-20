@@ -395,12 +395,35 @@ phases:
           echo "Skipping sst refresh (INFRA_ENABLE_SST_REFRESH=${INFRA_ENABLE_SST_REFRESH})"
         fi
       - |
-        echo "Running direct SST deployment for stage ${SST_STAGE}..."
+        echo "Running SST deployment for stage ${SST_STAGE}..."
+        echo "Working directory: $(pwd)"
+        echo "INFRA_PATH: ${INFRA_PATH}"
+        echo "SST_STAGE: ${SST_STAGE}"
+
+        # Verify infra directory exists and has sst.config.ts
+        if [ ! -d "${INFRA_PATH}" ]; then
+          echo "ERROR: INFRA_PATH directory does not exist: ${INFRA_PATH}" >&2
+          exit 1
+        fi
+
         cd "${INFRA_PATH}"
-        SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "${SST_STAGE}" --yes
-        DEPLOY_EXIT=$?
+        echo "Changed to: $(pwd)"
+
+        if [ ! -f "sst.config.ts" ]; then
+          echo "ERROR: sst.config.ts not found in ${INFRA_PATH}" >&2
+          ls -la
+          exit 1
+        fi
+
+        # Run SST deploy with verbose output
+        echo "Executing: SST_TELEMETRY_DISABLED=1 npx sst deploy --stage ${SST_STAGE} --yes"
+        SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "${SST_STAGE}" --yes 2>&1 | tee sst-deploy.log
+        DEPLOY_EXIT=${PIPESTATUS[0]}
+
         if [ $DEPLOY_EXIT -ne 0 ]; then
           echo "ERROR: SST deploy failed with exit code $DEPLOY_EXIT" >&2
+          echo "Last 50 lines of deployment output:"
+          tail -50 sst-deploy.log >&2
           exit $DEPLOY_EXIT
         fi
         echo "✅ SST deploy completed successfully"
