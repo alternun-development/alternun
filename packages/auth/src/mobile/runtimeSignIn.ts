@@ -23,8 +23,16 @@ export interface NativeSignInOptions {
   redirectUri?: string | null;
 }
 
+interface GoogleSignInCapableClient {
+  signInWithGoogle?: (redirectTo?: string) => Promise<void>;
+}
+
 function canUseBrowserRuntime(): boolean {
   return typeof window !== 'undefined' && typeof document !== 'undefined';
+}
+
+function hasGoogleSignIn(client: AuthClient): client is AuthClient & GoogleSignInCapableClient {
+  return typeof (client as GoogleSignInCapableClient).signInWithGoogle === 'function';
 }
 
 export function resolveAuthRuntime(): AuthRuntime {
@@ -146,6 +154,11 @@ export async function webRedirectSignIn({
   storeAuthReturnTo(redirectTo);
 
   if (shouldUseBetterAuthWebFlow(strategy, provider, authentikProviderHint)) {
+    if (provider === 'google' && hasGoogleSignIn(client)) {
+      await client.signInWithGoogle(callbackUrl);
+      return 'better-auth';
+    }
+
     await client.signIn({
       provider,
       flow: 'redirect',

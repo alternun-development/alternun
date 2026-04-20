@@ -387,6 +387,12 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
   }
 
   async signInWithGoogle(redirectTo?: string): Promise<void> {
+    const provider = this.executionProvider;
+    if (typeof provider.signInWithGoogle === 'function') {
+      await provider.signInWithGoogle(redirectTo);
+      return;
+    }
+
     await this.signIn({
       provider: 'google',
       flow: this.runtime === 'web' ? 'redirect' : 'native',
@@ -407,6 +413,17 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
         redirectUri: options.redirectUri,
         web3: options.web3,
       });
+
+      if (result.redirectUrl) {
+        if (this.runtime === 'web' && typeof window !== 'undefined') {
+          window.location.assign(result.redirectUrl);
+        }
+
+        this.log('execution-provider', 'signIn', 'skipped', {
+          redirectUrl: result.redirectUrl,
+        });
+        return;
+      }
 
       if (result.session) {
         this.currentExecutionSession = result.session;
@@ -429,17 +446,6 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
         );
         this.currentCompatUser = user;
         this.emit(user);
-        return;
-      }
-
-      if (result.redirectUrl) {
-        if (this.runtime === 'web' && typeof window !== 'undefined') {
-          window.location.assign(result.redirectUrl);
-        }
-
-        this.log('execution-provider', 'signIn', 'skipped', {
-          redirectUrl: result.redirectUrl,
-        });
         return;
       }
 
