@@ -100,6 +100,29 @@ function validateBetterAuthBundle(bundleContents, publicEnv) {
     );
   }
 
+  const isTestnetBetterAuthBundle = [
+    publicEnv.publicBetterAuthUrl,
+    publicEnv.publicAuthExchangeUrl,
+  ].some(
+    (value) =>
+      typeof value === 'string' &&
+      /https?:\/\/testnet\.api\.alternun\.co(?:\/|$)/i.test(value)
+  );
+
+  if (isTestnetBetterAuthBundle) {
+    const productionApiPattern = /https?:\/\/api\.alternun\.co/g;
+    const productionApiMatches = findMatches(bundleContents, [productionApiPattern]);
+
+    if (productionApiMatches.length > 0) {
+      throw new Error(
+        [
+          'Exported AIRS web bundle still contains the production API origin in a testnet Better Auth build.',
+          ...productionApiMatches.map((match) => `- ${match}`),
+        ].join('\n')
+      );
+    }
+  }
+
   const expectsNonLocalBetterAuthUrl =
     typeof publicEnv.publicBetterAuthUrl === 'string' &&
     publicEnv.publicBetterAuthUrl.length > 0 &&
