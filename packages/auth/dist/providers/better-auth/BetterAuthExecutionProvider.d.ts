@@ -47,7 +47,9 @@ export interface BetterAuthBrowserClientLike {
     email?(options: {
       email: string;
       password: string;
+      name?: string;
       callbackURL?: string;
+      image?: string;
       [key: string]: unknown;
     }): Promise<unknown>;
   };
