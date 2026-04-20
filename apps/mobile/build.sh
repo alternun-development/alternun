@@ -125,6 +125,7 @@ if [ -n "$detected_stage" ]; then
   case "$detected_stage_lower" in
     dev|*testnet*|*development*|*preview*)
       cat > .env.development << 'ENVFILE'
+EXPO_PUBLIC_API_URL=https://testnet.api.alternun.co
 EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 AUTH_EXECUTION_PROVIDER=better-auth
 EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
@@ -145,6 +146,7 @@ ENVFILE
       ;;
     prod|*production*)
       cat > .env.production << 'ENVFILE'
+EXPO_PUBLIC_API_URL=https://api.alternun.co
 EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
 AUTH_EXECUTION_PROVIDER=supabase
 EXPO_PUBLIC_BETTER_AUTH_URL=https://api.alternun.co/auth
