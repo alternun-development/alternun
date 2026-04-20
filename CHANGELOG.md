@@ -1,3 +1,11 @@
+## [1.0.174](https://github.com/alternun-development/alternun/compare/v1.0.173...v1.0.174) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(mobile): build, validate-exported-auth-bundle, validate-exported-auth-bundle.test
+
+## [1.0.174](https://github.com/alternun-development/alternun/compare/v1.0.173...v1.0.174) (2026-04-20)
+
 ## [1.0.173](https://github.com/alternun-development/alternun/compare/v1.0.172...v1.0.173) (2026-04-20)
 
 ### Bug Fixes
