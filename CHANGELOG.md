@@ -1,3 +1,22 @@
+## [1.0.177](https://github.com/alternun-development/alternun/compare/v1.0.176...v1.0.177) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): PublicLandingPage
+- **repo:** fix: clear stale api url in ci builds
+
+### Bug Fixes
+
+- clear stale api url in ci builds ([ed1650b](https://github.com/alternun-development/alternun/commit/ed1650b52402e460a5195bdefb303b7481a73809))
+- **mobile:** PublicLandingPage ([2f52006](https://github.com/alternun-development/alternun/commit/2f5200611a224c28b6b879da200ba09239b2ba37))
+
+## [1.0.177](https://github.com/alternun-development/alternun/compare/v1.0.176...v1.0.177) (2026-04-20)
+
+### Bug Fixes
+
+- clear stale api url in ci builds ([ed1650b](https://github.com/alternun-development/alternun/commit/ed1650b52402e460a5195bdefb303b7481a73809))
+- **mobile:** PublicLandingPage ([2f52006](https://github.com/alternun-development/alternun/commit/2f5200611a224c28b6b879da200ba09239b2ba37))
+
 ## [1.0.176](https://github.com/alternun-development/alternun/compare/v1.0.175...v1.0.176) (2026-04-20)
 
 ### Bug Fixes
