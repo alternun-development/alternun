@@ -2,17 +2,12 @@ import { Body, Controller, HttpCode, Post, VERSION_NEUTRAL } from '@nestjs/commo
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthExchangeRequestDto } from './dto/auth-exchange-request.dto';
 import { AuthExchangeResponseDto } from './dto/auth-exchange-response.dto';
+import { SignUpRequestDto } from './dto/signup-request.dto';
+import { SignUpResponseDto } from './dto/signup-response.dto';
 import { AuthExchangeService } from './auth-exchange.service';
-import { SupabaseSignupService } from './services/supabase-signup.service';
+import { SignupService } from './services/signup.service';
 import { SocialSignInService } from './services/social-signin.service';
 import { SocialSignInRequestDto } from './dto/social-signin-request.dto';
-
-interface SignUpEmailRequestDto {
-  email: string;
-  password: string;
-  name?: string;
-  locale?: string;
-}
 
 @ApiTags('auth')
 @Controller({
@@ -22,7 +17,7 @@ interface SignUpEmailRequestDto {
 export class AuthExchangeController {
   constructor(
     private readonly authExchangeService: AuthExchangeService,
-    private readonly supabaseSignupService: SupabaseSignupService,
+    private readonly signupService: SignupService,
     private readonly socialSignInService: SocialSignInService
   ) {}
 
@@ -46,14 +41,10 @@ export class AuthExchangeController {
   })
   @ApiOkResponse({
     description: 'Signup result with verification status.',
+    type: SignUpResponseDto,
   })
-  async signUpEmail(@Body() body: SignUpEmailRequestDto): Promise<{
-    needsEmailVerification: boolean;
-    emailAlreadyRegistered?: boolean;
-    confirmationEmailSent?: boolean;
-    error?: string;
-  }> {
-    return this.supabaseSignupService.signUp(body.email, body.password, body.locale);
+  async signUpEmail(@Body() body: SignUpRequestDto): Promise<SignUpResponseDto> {
+    return this.signupService.signUp(body);
   }
 
   @Post('sign-in/social')

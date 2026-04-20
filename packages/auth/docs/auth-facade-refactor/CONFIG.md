@@ -32,7 +32,7 @@ Accepted aliases include:
 - Legacy Supabase session state is no longer allowed to silently win over a Better Auth session.
 - Supabase-backed execution remains available as the compatibility path when `AUTH_EXECUTION_PROVIDER=supabase`.
 - Web social login now prefers the Better Auth browser client when it is available, and the provider falls back to the explicit Better Auth social/email routes only when the browser client cannot be created.
-- Email/password compatibility can still fall back to the legacy client when the Better Auth client is not available.
+- Email/password sign-in and sign-up now use the Better Auth client or Better Auth HTTP routes when the Better Auth execution mode is active; the legacy client remains only for recovery helpers.
 - Authentik remains the issuer/trust layer.
 - `AUTH_EXCHANGE_URL` is the backend handoff point for canonical issuer exchange.
 - `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` is the strict rollout mode for the backend handoff; it disables compatibility fallback when canonical issuer minting is missing.

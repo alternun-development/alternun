@@ -286,6 +286,7 @@ test('BetterAuthExecutionProvider joins a canonical /auth baseUrl without duplic
 test('BetterAuthExecutionProvider prefers the Better Auth client for email flows', async () => {
   let betterAuthSignInCalls = 0;
   let betterAuthSignUpCalls = 0;
+  let observedBetterAuthSignUpOptions = null;
   const fallbackCalls = {
     signInWithEmail: 0,
     signUpWithEmail: 0,
@@ -312,15 +313,16 @@ test('BetterAuthExecutionProvider prefers the Better Auth client for email flows
           expiresAt: Date.now() + 60_000,
         };
       },
-      signUp: async () => {
+      signUp: async (input) => {
         betterAuthSignUpCalls += 1;
+        observedBetterAuthSignUpOptions = input;
         return {
           user: {
             sub: 'email-123',
             email: 'ada@example.com',
             name: 'Ada Lovelace',
           },
-          accessToken: 'email-signup-token',
+          token: 'email-signup-token',
         };
       },
       signOut: async () => {},
@@ -404,7 +406,9 @@ test('BetterAuthExecutionProvider prefers the Better Auth client for email flows
 
   const signUpResult = await provider.signUpWithEmail('ada@example.com', 'password123', 'en');
   assert.equal(betterAuthSignUpCalls, 1);
+  assert.equal(observedBetterAuthSignUpOptions.name, 'ada');
   assert.equal(signUpResult.externalIdentity?.email, 'ada@example.com');
+  assert.equal(signUpResult.session?.accessToken, 'email-signup-token');
   assert.equal(fallbackCalls.signUpWithEmail, 0);
 
   await provider.resendEmailConfirmation('ada@example.com');
@@ -421,8 +425,133 @@ test('BetterAuthExecutionProvider prefers the Better Auth client for email flows
     email: 'ada@example.com',
     options: {
       redirectTo: 'https://app.example.com/auth/reset-password',
+      },
+    });
+});
+
+test('BetterAuthExecutionProvider normalizes Better Auth email sign-in responses from HTTP', async () => {
+  let observedUrl = null;
+  let observedBody = null;
+
+  const provider = new BetterAuthExecutionProvider({
+    baseUrl: 'https://api.example.com/auth',
+    fetchFn: async (url, init) => {
+      observedUrl = String(url);
+      observedBody = init?.body ? JSON.parse(String(init.body)) : null;
+      return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        async json() {
+          return {
+            redirect: false,
+            token: 'http-sign-in-token',
+            user: {
+              id: 'email-123',
+              email: 'ada@example.com',
+              name: 'Ada Lovelace',
+              image: 'https://example.com/avatar.png',
+              emailVerified: true,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+          };
+        },
+        async text() {
+          return JSON.stringify({
+            redirect: false,
+            token: 'http-sign-in-token',
+            user: {
+              id: 'email-123',
+              email: 'ada@example.com',
+              name: 'Ada Lovelace',
+              image: 'https://example.com/avatar.png',
+              emailVerified: true,
+            },
+          });
+        },
+      };
     },
   });
+
+  const result = await provider.signIn({
+    provider: 'email',
+    flow: 'native',
+    email: 'ada@example.com',
+    password: 'password123',
+  });
+
+  assert.equal(observedUrl, 'https://api.example.com/auth/sign-in/email');
+  assert.deepEqual(observedBody, {
+    provider: 'email',
+    flow: 'native',
+    email: 'ada@example.com',
+    password: 'password123',
+  });
+  assert.equal(result.session?.accessToken, 'http-sign-in-token');
+  assert.equal(result.externalIdentity?.provider, 'email');
+  assert.equal(result.externalIdentity?.providerUserId, 'email-123');
+});
+
+test('BetterAuthExecutionProvider derives a sign-up name for the Better Auth HTTP path', async () => {
+  let observedUrl = null;
+  let observedBody = null;
+
+  const provider = new BetterAuthExecutionProvider({
+    baseUrl: 'https://api.example.com/auth',
+    fetchFn: async (url, init) => {
+      observedUrl = String(url);
+      observedBody = init?.body ? JSON.parse(String(init.body)) : null;
+      return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        async json() {
+          return {
+            token: 'http-sign-up-token',
+            user: {
+              id: 'email-123',
+              email: 'ada@example.com',
+              name: 'Ada Lovelace',
+              image: 'https://example.com/avatar.png',
+              emailVerified: false,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+          };
+        },
+        async text() {
+          return JSON.stringify({
+            token: 'http-sign-up-token',
+            user: {
+              id: 'email-123',
+              email: 'ada@example.com',
+              name: 'Ada Lovelace',
+              image: 'https://example.com/avatar.png',
+              emailVerified: false,
+            },
+          });
+        },
+      };
+    },
+  });
+
+  const result = await provider.signUpWithEmail('ada@example.com', 'password123', 'en');
+
+  assert.equal(observedUrl, 'https://api.example.com/auth/sign-up/email');
+  assert.deepEqual(observedBody, {
+    email: 'ada@example.com',
+    password: 'password123',
+    name: 'ada',
+    locale: 'en',
+  });
+  assert.equal(result.session?.accessToken, 'http-sign-up-token');
+  assert.equal(result.externalIdentity?.provider, 'email');
+  assert.equal(result.externalIdentity?.providerUserId, 'email-123');
+  assert.equal(result.needsEmailVerification, false);
+  assert.equal(result.confirmationEmailSent, false);
 });
 
 test('SupabaseExecutionProvider preserves auth method binding when requesting password reset emails', async () => {
