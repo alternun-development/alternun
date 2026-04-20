@@ -384,6 +384,24 @@ phases:
           load_infra_env
         fi
 
+        # CodeBuild starts a fresh shell for the build phase, so reload the
+        # canonical stage auth/env helpers here before synth/deploy.
+        if [ -f "${INFRA_PATH}/scripts/resolve-ssm-env.sh" ]; then
+          # shellcheck source=/dev/null
+          source "${INFRA_PATH}/scripts/resolve-ssm-env.sh"
+        else
+          echo "ERROR: Missing ${INFRA_PATH}/scripts/resolve-ssm-env.sh" >&2
+          exit 1
+        fi
+
+        if [ -f "${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh" ]; then
+          # shellcheck source=/dev/null
+          source "${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh"
+        else
+          echo "ERROR: Missing ${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh" >&2
+          exit 1
+        fi
+
         if [ "${INFRA_ENABLE_BACKEND_API:-false}" = "true" ]; then
           echo "Building backend API with: ${INFRA_BACKEND_API_BUILD_COMMAND}"
           bash -lc "${INFRA_BACKEND_API_BUILD_COMMAND}"

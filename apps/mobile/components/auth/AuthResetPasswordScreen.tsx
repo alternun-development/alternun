@@ -389,8 +389,8 @@ export default function AuthResetPasswordScreen(): JSX.Element {
       setNotice(
         t(
           'authReset.notices.emailSent',
-          { email: normalizedEmail },
-          `We sent a password reset link to ${normalizedEmail}.`
+          undefined,
+          'If an account exists with this email, we will send a password reset link. Check your email.'
         )
       );
       setMode('request');
