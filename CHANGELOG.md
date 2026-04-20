@@ -1,3 +1,27 @@
+## [1.0.168](https://github.com/alternun-development/alternun/compare/v1.0.167...v1.0.168) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** fix: add INFRA_ROUTE53_HOSTED_ZONE_ID to buildspec env vars
+- **repo:** debug: improve sst deploy output capture
+- **repo:** fix: add sst unlock before deploy to clear stale locks
+- **repo:** simplify: remove diagnostic noise from buildspec SST deploy
+- **repo:** debug: add comprehensive bash tracing to SST deploy
+
+### Bug Fixes
+
+- add INFRA_ROUTE53_HOSTED_ZONE_ID to buildspec env vars ([884b96e](https://github.com/alternun-development/alternun/commit/884b96ee17d514ae5aba59c3a3872cdd58ede46d))
+- add sst unlock before deploy to clear stale locks ([d39c8ff](https://github.com/alternun-development/alternun/commit/d39c8ffc4dc8a36ae15c0bfb7a8df8c2284271f6))
+- **infra:** bypass sst-deploy.sh wrapper with direct npx sst deploy ([d88a1b7](https://github.com/alternun-development/alternun/commit/d88a1b7f10ed0579c473f57ae940bcef42e6948c))
+
+## [1.0.168](https://github.com/alternun-development/alternun/compare/v1.0.167...v1.0.168) (2026-04-20)
+
+### Bug Fixes
+
+- add INFRA_ROUTE53_HOSTED_ZONE_ID to buildspec env vars ([884b96e](https://github.com/alternun-development/alternun/commit/884b96ee17d514ae5aba59c3a3872cdd58ede46d))
+- add sst unlock before deploy to clear stale locks ([d39c8ff](https://github.com/alternun-development/alternun/commit/d39c8ffc4dc8a36ae15c0bfb7a8df8c2284271f6))
+- **infra:** bypass sst-deploy.sh wrapper with direct npx sst deploy ([d88a1b7](https://github.com/alternun-development/alternun/commit/d88a1b7f10ed0579c473f57ae940bcef42e6948c))
+
 ## [1.0.167](https://github.com/alternun-development/alternun/compare/v1.0.166...v1.0.167) (2026-04-19)
 
 ### Bug Fixes
