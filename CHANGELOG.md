@@ -1,3 +1,11 @@
+## [1.0.170](https://github.com/alternun-development/alternun/compare/v1.0.169...v1.0.170) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(api): lambda, request-path, request-path.test
+
+## [1.0.170](https://github.com/alternun-development/alternun/compare/v1.0.169...v1.0.170) (2026-04-20)
+
 ## [1.0.169](https://github.com/alternun-development/alternun/compare/v1.0.168...v1.0.169) (2026-04-20)
 
 ### Bug Fixes
