@@ -31,6 +31,17 @@ describe('authCallbackFlow', () => {
     expect(buildWebAuthCallbackRedirectPath('?next=%2Fdashboard', '#state=abc')).toBe(null);
   });
 
+  it('routes recovery callback payloads to the standalone reset page', () => {
+    expect(
+      buildWebAuthCallbackRedirectPath(
+        '?next=%2Fdashboard',
+        '#access_token=token-1&refresh_token=token-2&type=recovery'
+      )
+    ).toBe(
+      '/auth/reset-password?next=%2Fdashboard#access_token=token-1&refresh_token=token-2&type=recovery'
+    );
+  });
+
   it('maps signup and recovery callback types to the matching success copy variant', () => {
     expect(resolveAuthCallbackSuccessVariant('signup')).toBe('signup');
     expect(resolveAuthCallbackSuccessVariant('recovery')).toBe('recovery');

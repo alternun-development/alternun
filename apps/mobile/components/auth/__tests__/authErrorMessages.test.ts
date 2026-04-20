@@ -60,6 +60,15 @@ describe('authErrorMessages', () => {
     expect(getAuthErrorMessage('PROVIDER_ERROR: Bad Gateway', 'fallback')).toBe('Bad Gateway');
   });
 
+  it('extracts the human-readable message from JSON validation errors', () => {
+    expect(
+      getAuthErrorMessage(
+        '[\n  {\n    "code": "too_small",\n    "minimum": 8,\n    "type": "string",\n    "inclusive": true,\n    "exact": false,\n    "message": "Password must be at least 8 characters.",\n    "path": []\n  }\n]',
+        'fallback'
+      )
+    ).toBe('Password must be at least 8 characters.');
+  });
+
   it('falls back to the provided generic auth message when no status is present', () => {
     const message = getSocialSignInErrorMessage(new Error('Something broke'), {
       unavailable: 'unavailable',

@@ -1,3 +1,4 @@
+import { AUTH_WEB_PASSWORD_RESET_ROUTE } from './authPasswordResetFlow';
 import { readWebAuthCallbackPayload } from '../../../../packages/auth/src/runtime/web/callbackPayload';
 
 export const AUTH_WEB_CALLBACK_ROUTE = '/auth/callback';
@@ -39,7 +40,13 @@ export function buildWebAuthCallbackRedirectPath(
     return null;
   }
 
-  return `${normalizeCallbackPath(callbackPath)}${normalizeSearch(searchValue)}${normalizeHash(
+  const normalizedType = callbackPayload.callbackType?.trim().toLowerCase();
+  const redirectPath =
+    normalizedType === 'recovery' || normalizedType === 'reset_password'
+      ? AUTH_WEB_PASSWORD_RESET_ROUTE
+      : callbackPath;
+
+  return `${normalizeCallbackPath(redirectPath)}${normalizeSearch(searchValue)}${normalizeHash(
     hashValue
   )}`;
 }

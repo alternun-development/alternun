@@ -45,9 +45,22 @@ function normalizeStringMessage(value: string): string | null {
   return normalized;
 }
 
+function tryNormalizeJsonMessage(value: string): string | null {
+  const trimmed = stripKnownAuthErrorPrefixes(value).trim();
+  if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+    return null;
+  }
+
+  try {
+    return normalizeAuthErrorMessage(JSON.parse(trimmed));
+  } catch {
+    return null;
+  }
+}
+
 export function normalizeAuthErrorMessage(value: unknown): string | null {
   if (typeof value === 'string') {
-    return normalizeStringMessage(value);
+    return tryNormalizeJsonMessage(value) ?? normalizeStringMessage(value);
   }
 
   if (value instanceof Error) {
