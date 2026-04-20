@@ -126,9 +126,9 @@ const TOKEN_IMAGE_FOCI: Record<
   'airs' | 'rbi' | 'atn',
   { contentPosition: ImageContentPosition; zoom: number }
 > = {
-  airs: { contentPosition: 'center top', zoom: 1.1 },
+  airs: { contentPosition: 'top', zoom: 1.1 },
   rbi: { contentPosition: 'center', zoom: 1.06 },
-  atn: { contentPosition: 'center bottom', zoom: 1.18 },
+  atn: { contentPosition: 'bottom', zoom: 1.18 },
 };
 
 // ── Auto-loop interval for ComoFunciona steps (ms) ────────────────────────────
