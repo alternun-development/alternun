@@ -16,6 +16,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { useAppTranslation } from '../../components/i18n/useAppTranslation';
 import { useAuth } from '../../components/auth/AppAuthProvider';
 import { isBetterAuthExecutionEnabled } from '../../components/auth/authExecutionMode';
+import { resolveAuthCallbackSuccessVariant } from '../../components/auth/authCallbackFlow';
 import {
   authentikPreset,
   oidcSessionToUser,
@@ -53,6 +54,43 @@ export default function AuthCallbackRoute(): React.JSX.Element {
   const hasHandledRef = useRef(false);
   const isNavigationReady = Boolean(rootNavigationState?.key);
   const isBetterAuthExecution = isBetterAuthExecutionEnabled();
+  const callbackPayload = useMemo(() => {
+    return readWebAuthCallbackPayload(INITIAL_CALLBACK_SEARCH, INITIAL_CALLBACK_HASH);
+  }, []);
+  const successVariant = useMemo(() => {
+    return resolveAuthCallbackSuccessVariant(callbackPayload.callbackType);
+  }, [callbackPayload.callbackType]);
+  const successCopy = useMemo(() => {
+    switch (successVariant) {
+      case 'signup':
+        return {
+          title: t('authCallback.success.signup.title', undefined, 'Email Confirmed'),
+          message: t(
+            'authCallback.success.signup.message',
+            undefined,
+            'Your email was confirmed successfully. You are now signed in.'
+          ),
+        };
+      case 'recovery':
+        return {
+          title: t('authCallback.success.recovery.title', undefined, 'Recovery Session Ready'),
+          message: t(
+            'authCallback.success.recovery.message',
+            undefined,
+            'Authentication callback completed for password recovery.'
+          ),
+        };
+      default:
+        return {
+          title: t('authCallback.success.default.title', undefined, 'Signed In'),
+          message: t(
+            'authCallback.success.default.message',
+            undefined,
+            'Authentication callback completed successfully.'
+          ),
+        };
+    }
+  }, [successVariant, t]);
 
   const dismissToast = (id: string): void => {
     setToasts((current) => current.filter((t) => t.id !== id));
@@ -76,7 +114,7 @@ export default function AuthCallbackRoute(): React.JSX.Element {
     hasHandledRef.current = true;
 
     const callbackClient = client as CallbackCapableAuthClient;
-    const finishRedirect = () => {
+    const finishRedirect = (): void => {
       clearAuthReturnTo();
       router.replace(redirectTarget as AuthCallbackHref);
     };
@@ -113,10 +151,6 @@ export default function AuthCallbackRoute(): React.JSX.Element {
       return;
     }
 
-    const callbackPayload = readWebAuthCallbackPayload(
-      INITIAL_CALLBACK_SEARCH,
-      INITIAL_CALLBACK_HASH
-    );
     if (!callbackPayload.hasPayload) {
       finishRedirect();
       return;
@@ -143,17 +177,8 @@ export default function AuthCallbackRoute(): React.JSX.Element {
       refreshToken: callbackPayload.refreshToken,
     })
       .then(() => {
-        setSuccessMessage(
-          t(
-            'authCallback.success.verified',
-            undefined,
-            'Email verified successfully! Redirecting...'
-          )
-        );
-        pushToast(
-          t('authModal.success', undefined, 'Success'),
-          t('authCallback.success.message', undefined, 'Your email has been verified.')
-        );
+        setSuccessMessage(successCopy.message);
+        pushToast(successCopy.title, successCopy.message);
         setTimeout(() => {
           finishRedirect();
         }, 2000);
@@ -163,16 +188,23 @@ export default function AuthCallbackRoute(): React.JSX.Element {
           error instanceof Error ? error.message : t('authCallback.errors.finalizeFailed')
         );
       });
-  }, [client, isNavigationReady, redirectTarget, router, t]);
+  }, [
+    callbackPayload,
+    client,
+    isNavigationReady,
+    redirectTarget,
+    router,
+    successCopy.message,
+    successCopy.title,
+    t,
+  ]);
 
   if (successMessage) {
     return (
       <View style={styles.screen}>
         <View style={styles.card}>
-          <Text style={styles.title}>
-            {t('authCallback.success.title', undefined, 'Email Verified')}
-          </Text>
-          <Text style={styles.message}>{successMessage}</Text>
+          <Text style={styles.title}>{successCopy.title}</Text>
+          <Text style={styles.message}>{successMessage ?? successCopy.message}</Text>
           <ActivityIndicator size='large' color='#1ccba1' style={styles.spinner} />
         </View>
         <ToastSystem toasts={toasts} onDismiss={dismissToast} />
