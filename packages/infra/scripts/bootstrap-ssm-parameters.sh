@@ -23,7 +23,6 @@ declare -A PARAMS=(
   ["expo-public-walletconnect-project-id"]="d40ba2687be51a76e84b2c1d27235bb7|WalletConnect project ID for Expo web3|Standard"
   ["expo-public-authentik-issuer"]="https://testnet.sso.alternun.co/application/o/alternun-mobile/|Authentik OIDC issuer URL (testnet)|Standard"
   ["expo-public-authentik-client-id"]="alternun-mobile|Authentik OIDC client ID|Standard"
-  ["expo-public-authentik-social-login-mode"]="authentik|Authentik social login mode - 'supabase' to hide Discord, 'authentik' to show|Standard"
   ["expo-public-authentik-login-entry-mode"]="source|Authentik login entry mode|Standard"
   ["expo-public-better-auth-url-dev"]="https://testnet.api.alternun.co/auth|Better-auth base URL for dev stage|Standard"
   ["expo-public-auth-exchange-url-dev"]="https://testnet.api.alternun.co/auth/exchange|Better-auth exchange URL for dev stage|Standard"
@@ -34,12 +33,10 @@ declare -A PARAMS=(
 # Stage-specific parameter overrides
 case "$STAGE" in
   prod|api-prod|production|*production*)
-    # Production: Show Discord button (use 'authentik' mode)
-    PARAMS["expo-public-authentik-social-login-mode"]="authentik|Authentik social login mode - 'supabase' to hide Discord, 'authentik' to show|Standard"
+    # Production overrides handled with stage-suffixed parameters
     ;;
   dev|api-dev|*testnet*|*development*)
-    # Dev/testnet: Show Discord button (use 'authentik' mode)
-    PARAMS["expo-public-authentik-social-login-mode"]="authentik|Authentik social login mode - 'supabase' to hide Discord, 'authentik' to show|Standard"
+    # Dev/testnet overrides handled with stage-suffixed parameters
     ;;
 esac
 
