@@ -61,7 +61,7 @@ import LoadingButton from '../common/LoadingButton';
 import { AuthFooter } from './AuthFooter';
 import { getAuthErrorMessage, getSocialSignInErrorMessage } from './authErrorMessages';
 const RESEND_COOLDOWN_SECONDS = 45;
-const OAUTH_REDIRECT_TIMEOUT_MS = 60000; // 60 seconds
+const SOCIAL_REDIRECT_TIMEOUT_MS = 15000; // 15 seconds
 
 // Feature flags
 const ENABLE_WEB3_LOGIN = false; // Temporarily disabled: full web3 login flow not implemented
@@ -195,6 +195,8 @@ export default function AuthSignInScreen({
   const codeLabelAnim = useRef(new Animated.Value(0)).current;
   const toastIdRef = useRef(0);
   const toastTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const socialRedirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const socialRedirectAttemptRef = useRef(0);
 
   const googleProvider = resolvePrimaryOAuthProvider();
 
@@ -246,6 +248,7 @@ export default function AuthSignInScreen({
       const message = getSocialSignInErrorMessage(authError, {
         unavailable: t('authModal.errors.socialSignInUnavailable'),
         serverError: t('authModal.errors.socialSignInServerError'),
+        timeout: t('authModal.errors.socialSignInRedirectTimedOut'),
         fallback: t('authModal.errors.authenticationFailed'),
       });
       setLocalError(message);
@@ -253,6 +256,51 @@ export default function AuthSignInScreen({
       return message;
     },
     [pushToast, t]
+  );
+
+  const clearSocialRedirectTimeout = useCallback((): void => {
+    if (socialRedirectTimeoutRef.current !== null) {
+      clearTimeout(socialRedirectTimeoutRef.current);
+      socialRedirectTimeoutRef.current = null;
+    }
+  }, []);
+
+  const startSocialRedirectWatchdog = useCallback(
+    (provider: 'google' | 'discord'): number => {
+      clearSocialRedirectTimeout();
+      const attemptId = socialRedirectAttemptRef.current + 1;
+      socialRedirectAttemptRef.current = attemptId;
+
+      socialRedirectTimeoutRef.current = setTimeout(() => {
+        if (socialRedirectAttemptRef.current !== attemptId) {
+          return;
+        }
+
+        socialRedirectTimeoutRef.current = null;
+        socialRedirectAttemptRef.current += 1;
+        showSocialSignInFailure({
+          status: 408,
+          statusText: t('authModal.errors.socialSignInRedirectTimedOut'),
+        });
+        setSubmitMode((current) => (current === provider ? null : current));
+      }, SOCIAL_REDIRECT_TIMEOUT_MS);
+
+      return attemptId;
+    },
+    [clearSocialRedirectTimeout, showSocialSignInFailure, t]
+  );
+
+  const finishSocialRedirectAttempt = useCallback(
+    (attemptId: number): boolean => {
+      if (socialRedirectAttemptRef.current !== attemptId) {
+        return false;
+      }
+
+      clearSocialRedirectTimeout();
+      socialRedirectAttemptRef.current += 1;
+      return true;
+    },
+    [clearSocialRedirectTimeout]
   );
 
   useEffect(() => {
@@ -305,12 +353,14 @@ export default function AuthSignInScreen({
 
   useEffect(() => {
     return () => {
+      clearSocialRedirectTimeout();
+      socialRedirectAttemptRef.current += 1;
       for (const timeout of toastTimeoutsRef.current) {
         clearTimeout(timeout);
       }
       toastTimeoutsRef.current = [];
     };
-  }, []);
+  }, [clearSocialRedirectTimeout]);
 
   const animateLabel = (anim: Animated.Value, visible: boolean): void => {
     Animated.timing(anim, {
@@ -676,27 +726,25 @@ export default function AuthSignInScreen({
   const handleSocialSignIn = async (provider: 'google' | 'discord'): Promise<void> => {
     resetMessages();
     setSubmitMode(provider);
+    const attemptId = startSocialRedirectWatchdog(provider);
+
     try {
-      await Promise.race<void>([
-        startSocialSignIn({
-          client,
-          provider: provider === 'google' ? googleProvider : provider,
-          authentikProviderHint: provider,
-          redirectTo: authReturnTo,
-          forceFreshSession: forceFreshSocialSession,
-          strategy: loginStrategy,
-          onRelayRoute: (route: AuthentikRelayRoute) => {
-            router.replace(route);
-          },
-        }),
-        new Promise<void>((_, reject) =>
-          setTimeout(
-            () => reject(new Error(`${provider} sign-in redirect timed out. Please try again.`)),
-            OAUTH_REDIRECT_TIMEOUT_MS
-          )
-        ),
-      ]);
+      await startSocialSignIn({
+        client,
+        provider: provider === 'google' ? googleProvider : provider,
+        authentikProviderHint: provider,
+        redirectTo: authReturnTo,
+        forceFreshSession: forceFreshSocialSession,
+        strategy: loginStrategy,
+        onRelayRoute: (route: AuthentikRelayRoute) => {
+          router.replace(route);
+        },
+      });
     } catch (oidcError) {
+      if (!finishSocialRedirectAttempt(attemptId)) {
+        return;
+      }
+
       showSocialSignInFailure(oidcError);
       setSubmitMode(null);
     }

@@ -72,6 +72,7 @@
         "authenticationFailed": "La autenticacion fallo. Intentalo de nuevo.",
         "confirmationCodeInvalid": "El codigo de confirmacion es invalido o vencio. Solicita un nuevo correo e intentalo otra vez.",
         "enterEmailFirst": "Ingresa tu correo primero.",
+        "socialSignInRedirectTimedOut": "El inicio de sesión social está tardando demasiado. Inténtalo de nuevo.",
         "socialSignInServerError": "El servicio de inicio de sesión social encontró un error interno del servidor. Inténtalo de nuevo más tarde.",
         "socialSignInTitle": "Inicio de sesión no disponible",
         "socialSignInUnavailable": "El inicio de sesión social no está disponible por ahora. Inténtalo de nuevo más tarde.",

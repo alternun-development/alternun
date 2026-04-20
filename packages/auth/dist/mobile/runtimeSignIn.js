@@ -6,6 +6,9 @@ const AUTH_RETURN_TO_STORAGE_KEY = 'alternun:auth:return-to';
 function canUseBrowserRuntime() {
     return typeof window !== 'undefined' && typeof document !== 'undefined';
 }
+function hasGoogleSignIn(client) {
+    return typeof client.signInWithGoogle === 'function';
+}
 export function resolveAuthRuntime() {
     return canUseBrowserRuntime() ? 'web' : 'native';
 }
@@ -88,6 +91,10 @@ export async function webRedirectSignIn({ client, provider, redirectTo, authenti
     });
     storeAuthReturnTo(redirectTo);
     if (shouldUseBetterAuthWebFlow(strategy, provider, authentikProviderHint)) {
+        if (provider === 'google' && hasGoogleSignIn(client)) {
+            await client.signInWithGoogle(callbackUrl);
+            return 'better-auth';
+        }
         await client.signIn({
             provider,
             flow: 'redirect',
