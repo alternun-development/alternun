@@ -395,38 +395,54 @@ phases:
           echo "Skipping sst refresh (INFRA_ENABLE_SST_REFRESH=${INFRA_ENABLE_SST_REFRESH})"
         fi
       - |
-        echo "Running SST deployment for stage ${SST_STAGE}..."
-        echo "Working directory: $(pwd)"
-        echo "INFRA_PATH: ${INFRA_PATH}"
-        echo "SST_STAGE: ${SST_STAGE}"
+        set -x
+        echo "===== SST DEPLOYMENT DIAGNOSTICS ====="
+        echo "Stage: ${SST_STAGE}"
+        echo "CWD: $(pwd)"
+        echo "Node: $(node --version)"
+        echo "NPM: $(npm --version)"
+        echo "PNPM: $(pnpm --version)"
 
-        # Verify infra directory exists and has sst.config.ts
-        if [ ! -d "${INFRA_PATH}" ]; then
-          echo "ERROR: INFRA_PATH directory does not exist: ${INFRA_PATH}" >&2
-          exit 1
-        fi
-
+        # Change to infra directory
         cd "${INFRA_PATH}"
-        echo "Changed to: $(pwd)"
+        echo "Infra dir: $(pwd)"
 
-        if [ ! -f "sst.config.ts" ]; then
-          echo "ERROR: sst.config.ts not found in ${INFRA_PATH}" >&2
-          ls -la
-          exit 1
+        # List what's in the directory
+        echo "===== Directory Contents ====="
+        ls -la | head -20
+
+        # Check for node_modules
+        echo "===== Node Modules Check ====="
+        if [ -d "node_modules/.bin" ]; then
+          ls node_modules/.bin | grep sst | head -5
+        else
+          echo "ERROR: node_modules/.bin not found"
         fi
 
-        # Run SST deploy with verbose output
-        echo "Executing: SST_TELEMETRY_DISABLED=1 npx sst deploy --stage ${SST_STAGE} --yes"
-        SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "${SST_STAGE}" --yes 2>&1 | tee sst-deploy.log
-        DEPLOY_EXIT=${PIPESTATUS[0]}
+        # Try to find sst
+        echo "===== SST Check ====="
+        which sst || echo "sst not in PATH"
+        npx -y which sst || echo "npx -y which sst failed"
+
+        # Print environment for debugging
+        echo "===== Environment (filtered) ====="
+        env | grep -E "NODE|NPM|SST|AWS|STAGE|INFRA" | sort
+
+        # Run the actual deploy command
+        echo "===== RUNNING SST DEPLOY ====="
+        SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "${SST_STAGE}" --yes
+        DEPLOY_EXIT=$?
+
+        echo "===== DEPLOY RESULT ====="
+        echo "Exit code: $DEPLOY_EXIT"
 
         if [ $DEPLOY_EXIT -ne 0 ]; then
-          echo "ERROR: SST deploy failed with exit code $DEPLOY_EXIT" >&2
-          echo "Last 50 lines of deployment output:"
-          tail -50 sst-deploy.log >&2
+          echo "ERROR: SST deploy failed"
           exit $DEPLOY_EXIT
         fi
+
         echo "✅ SST deploy completed successfully"
+        set +x
       - |
         if [ "${INFRA_ENABLE_PUBLIC_ASSET_SYNC}" != "true" ]; then
           echo "Skipping public asset sync (INFRA_ENABLE_PUBLIC_ASSET_SYNC=${INFRA_ENABLE_PUBLIC_ASSET_SYNC})"
