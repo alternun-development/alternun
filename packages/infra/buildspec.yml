@@ -395,54 +395,10 @@ phases:
           echo "Skipping sst refresh (INFRA_ENABLE_SST_REFRESH=${INFRA_ENABLE_SST_REFRESH})"
         fi
       - |
-        set -x
-        echo "===== SST DEPLOYMENT DIAGNOSTICS ====="
-        echo "Stage: ${SST_STAGE}"
-        echo "CWD: $(pwd)"
-        echo "Node: $(node --version)"
-        echo "NPM: $(npm --version)"
-        echo "PNPM: $(pnpm --version)"
-
-        # Change to infra directory
+        echo "Deploying SST stack ${SST_STAGE}..."
         cd "${INFRA_PATH}"
-        echo "Infra dir: $(pwd)"
-
-        # List what's in the directory
-        echo "===== Directory Contents ====="
-        ls -la | head -20
-
-        # Check for node_modules
-        echo "===== Node Modules Check ====="
-        if [ -d "node_modules/.bin" ]; then
-          ls node_modules/.bin | grep sst | head -5
-        else
-          echo "ERROR: node_modules/.bin not found"
-        fi
-
-        # Try to find sst
-        echo "===== SST Check ====="
-        which sst || echo "sst not in PATH"
-        npx -y which sst || echo "npx -y which sst failed"
-
-        # Print environment for debugging
-        echo "===== Environment (filtered) ====="
-        env | grep -E "NODE|NPM|SST|AWS|STAGE|INFRA" | sort
-
-        # Run the actual deploy command
-        echo "===== RUNNING SST DEPLOY ====="
-        SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "${SST_STAGE}" --yes
-        DEPLOY_EXIT=$?
-
-        echo "===== DEPLOY RESULT ====="
-        echo "Exit code: $DEPLOY_EXIT"
-
-        if [ $DEPLOY_EXIT -ne 0 ]; then
-          echo "ERROR: SST deploy failed"
-          exit $DEPLOY_EXIT
-        fi
-
-        echo "✅ SST deploy completed successfully"
-        set +x
+        SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "${SST_STAGE}" --yes || exit 1
+        echo "✅ SST deploy completed"
       - |
         if [ "${INFRA_ENABLE_PUBLIC_ASSET_SYNC}" != "true" ]; then
           echo "Skipping public asset sync (INFRA_ENABLE_PUBLIC_ASSET_SYNC=${INFRA_ENABLE_PUBLIC_ASSET_SYNC})"
