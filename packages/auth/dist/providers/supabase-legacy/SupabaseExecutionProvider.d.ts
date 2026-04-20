@@ -42,7 +42,7 @@ export declare class SupabaseExecutionProvider implements AuthExecutionProvider 
   capabilities(): AuthCapabilities;
   onAuthStateChange(callback: (user: User | null) => void): () => void;
   get supabase(): LegacyExecutionClientLike['supabase'];
-  get runtime(): import('@edcalderon/auth').AuthRuntime;
+  get runtime(): LegacyExecutionClientLike['runtime'];
   getUser(): Promise<User | null>;
   getSessionToken(): Promise<string | null>;
 }
