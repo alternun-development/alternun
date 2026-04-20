@@ -1,5 +1,24 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+interface SupabaseSignupServiceOptions {
+  fetchFn?: typeof fetch;
+  timeoutMs?: number;
+}
+
+const DEFAULT_SIGNUP_TIMEOUT_MS = 15000;
+
+function normalizeBaseUrl(value: string): string {
+  return value.trim().replace(/\/+$/, '');
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException
+    ? error.name === 'AbortError' || error.name === 'TimeoutError'
+    : error instanceof Error
+    ? error.name === 'AbortError' || error.name === 'TimeoutError'
+    : false;
+}
+
 @Injectable()
 export class SupabaseSignupService {
   private readonly logger = new Logger(SupabaseSignupService.name);
@@ -7,7 +26,8 @@ export class SupabaseSignupService {
   async signUp(
     email: string,
     password: string,
-    locale?: string
+    locale?: string,
+    options: SupabaseSignupServiceOptions = {}
   ): Promise<{
     needsEmailVerification: boolean;
     emailAlreadyRegistered?: boolean;
@@ -16,6 +36,8 @@ export class SupabaseSignupService {
   }> {
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_ANON_KEY;
+    const fetchFn = options.fetchFn ?? fetch;
+    const timeoutMs = options.timeoutMs ?? DEFAULT_SIGNUP_TIMEOUT_MS;
 
     if (!supabaseUrl || !supabaseKey) {
       return {
@@ -24,8 +46,13 @@ export class SupabaseSignupService {
       };
     }
 
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => {
+      abortController.abort();
+    }, timeoutMs);
+
     try {
-      const response = await fetch(`${supabaseUrl}/auth/v1/signup`, {
+      const response = await fetchFn(`${normalizeBaseUrl(supabaseUrl)}/auth/v1/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,6 +63,7 @@ export class SupabaseSignupService {
           password,
           data: locale ? { locale } : {},
         }),
+        signal: abortController.signal,
       });
 
       if (!response.ok) {
@@ -72,12 +100,21 @@ export class SupabaseSignupService {
         confirmationEmailSent: true,
       };
     } catch (error) {
+      if (isAbortError(error)) {
+        this.logger.error('Supabase signup timed out', {
+          email,
+          timeoutMs,
+        });
+      }
+
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error('Signup service error', { email, error: message });
       return {
         needsEmailVerification: false,
         error: 'Unable to create account. Please try again.',
       };
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 }
