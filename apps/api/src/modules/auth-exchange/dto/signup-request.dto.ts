@@ -11,5 +11,9 @@ export class SignUpRequestDto {
 
   @IsString()
   @IsOptional()
+  name?: string;
+
+  @IsString()
+  @IsOptional()
   locale?: string;
 }

@@ -56,7 +56,9 @@ export interface BetterAuthBrowserClientLike {
     email?(options: {
       email: string;
       password: string;
+      name?: string;
       callbackURL?: string;
+      image?: string;
       [key: string]: unknown;
     }): Promise<unknown>;
   };
@@ -156,7 +158,9 @@ function normalizeSession(input: unknown, fallbackProvider: string): ExecutionSe
       : null;
   const identityCandidate = externalIdentityPayload;
   const accessTokenCandidate =
-    typeof payload.accessToken === 'string'
+    typeof payload.token === 'string'
+      ? payload.token
+      : typeof payload.accessToken === 'string'
       ? payload.accessToken
       : typeof sessionPayload?.token === 'string'
       ? sessionPayload.token
@@ -241,6 +245,20 @@ function normalizeMaybeDate(value: unknown): number | null {
   }
 
   return null;
+}
+
+function deriveSignUpName(email: string, providedName?: string): string {
+  const trimmedName = providedName?.trim();
+  if (trimmedName) {
+    return trimmedName;
+  }
+
+  const localPart = email.split('@')[0]?.trim();
+  if (localPart) {
+    return localPart;
+  }
+
+  return email.trim();
 }
 
 async function callJson(
@@ -483,10 +501,6 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       }
     }
 
-    if (provider === 'email' && this.emailFallbackProvider) {
-      return this.emailFallbackProvider.signIn(options);
-    }
-
     const isEmailProvider = provider === 'email';
     const response = await callJson(
       this.fetchFn,
@@ -531,10 +545,13 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
 
   async signUp(input: AuthExecutionSignUpInput): Promise<AuthExecutionResult> {
     const client = this.client;
+    const signUpName = deriveSignUpName(input.email, input.name);
+
     if (client?.signUp) {
-      const result = await client.signUp(
-        input as AuthExecutionSignUpInput & Record<string, unknown>
-      );
+      const result = await client.signUp({
+        ...input,
+        name: signUpName,
+      } as AuthExecutionSignUpInput & Record<string, unknown>);
 
       if ((result as Record<string, unknown>)?.error) {
         const errorPayload = (result as Record<string, unknown>).error as Record<string, unknown>;
@@ -544,26 +561,26 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       }
 
       const normalizedSession = normalizeSession(result, 'email');
+      const accessToken = normalizedSession?.accessToken ?? null;
+      const needsEmailVerification =
+        typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
+          ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
+          : !accessToken;
+      const emailAlreadyRegistered =
+        typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
+          ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
+          : false;
+      const confirmationEmailSent =
+        typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
+          ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
+          : !accessToken;
       return {
         session: normalizedSession,
         externalIdentity: normalizedSession?.externalIdentity ?? null,
-        needsEmailVerification:
-          typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
-            ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
-            : undefined,
-        emailAlreadyRegistered:
-          typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
-            ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
-            : undefined,
-        confirmationEmailSent:
-          typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
-            ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
-            : undefined,
+        needsEmailVerification,
+        emailAlreadyRegistered,
+        confirmationEmailSent,
       };
-    }
-
-    if (this.emailFallbackProvider) {
-      return this.emailFallbackProvider.signUp(input);
     }
 
     const browserClient = await this.resolveBrowserClient();
@@ -571,6 +588,7 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       const signUpOptions = {
         email: input.email,
         password: input.password,
+        name: signUpName,
         callbackURL: undefined,
         locale: input.locale,
         metadata: input.metadata,
@@ -585,21 +603,25 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       }
 
       const normalizedSession = normalizeSession(result, 'email');
+      const accessToken = normalizedSession?.accessToken ?? null;
+      const needsEmailVerification =
+        typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
+          ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
+          : !accessToken;
+      const emailAlreadyRegistered =
+        typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
+          ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
+          : false;
+      const confirmationEmailSent =
+        typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
+          ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
+          : !accessToken;
       return {
         session: normalizedSession,
         externalIdentity: normalizedSession?.externalIdentity ?? null,
-        needsEmailVerification:
-          typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
-            ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
-            : undefined,
-        emailAlreadyRegistered:
-          typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
-            ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
-            : undefined,
-        confirmationEmailSent:
-          typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
-            ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
-            : undefined,
+        needsEmailVerification,
+        emailAlreadyRegistered,
+        confirmationEmailSent,
       };
     }
 
@@ -610,6 +632,7 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       {
         email: input.email,
         password: input.password,
+        name: signUpName,
         locale: input.locale,
         callbackURL: undefined,
         metadata: input.metadata,
@@ -617,21 +640,25 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     );
 
     const session = normalizeSession(response, 'email');
+    const accessToken = session?.accessToken ?? null;
+    const needsEmailVerification =
+      typeof (response as Record<string, unknown>)?.needsEmailVerification === 'boolean'
+        ? ((response as Record<string, unknown>).needsEmailVerification as boolean)
+        : !accessToken;
+    const emailAlreadyRegistered =
+      typeof (response as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
+        ? ((response as Record<string, unknown>).emailAlreadyRegistered as boolean)
+        : false;
+    const confirmationEmailSent =
+      typeof (response as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
+        ? ((response as Record<string, unknown>).confirmationEmailSent as boolean)
+        : !accessToken;
     return {
       session,
       externalIdentity: session?.externalIdentity ?? null,
-      needsEmailVerification:
-        typeof (response as Record<string, unknown>)?.needsEmailVerification === 'boolean'
-          ? ((response as Record<string, unknown>).needsEmailVerification as boolean)
-          : undefined,
-      emailAlreadyRegistered:
-        typeof (response as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
-          ? ((response as Record<string, unknown>).emailAlreadyRegistered as boolean)
-          : undefined,
-      confirmationEmailSent:
-        typeof (response as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
-          ? ((response as Record<string, unknown>).confirmationEmailSent as boolean)
-          : undefined,
+      needsEmailVerification,
+      emailAlreadyRegistered,
+      confirmationEmailSent,
     };
   }
 
@@ -851,10 +878,6 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       }
 
       throw new AlternunProviderError('Better Auth email sign-in did not return a user session.');
-    }
-
-    if (this.emailFallbackProvider) {
-      return this.emailFallbackProvider.signInWithEmail(email, password);
     }
 
     const result = await this.signIn({

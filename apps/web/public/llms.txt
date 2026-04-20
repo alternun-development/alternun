@@ -1,0 +1,64 @@
+# Alternun - Regenerative Impact Platform
+
+> Alternun is a regenerative impact platform that enables individuals and organizations to track, verify, and monetize their positive environmental and social contributions. Our ecosystem connects impact producers with investors and consumers who value sustainability.
+
+## About
+
+Alternun builds infrastructure for the regenerative economy. We've developed a comprehensive scoring system (AIRS - Alternun Impact Rating System) that quantifies environmental and social impact, making it measurable, verifiable, and tradeable. With 40%+ growth in impact-verified users over the past year, we're leading the shift toward proof-of-impact models that reward genuine sustainability efforts.
+
+Our platform integrates with existing systems to capture impact data from various sources—carbon offsets, biodiversity contributions, community work, and more. Users earn AIRS tokens that represent verified impact, creating economic incentives for regenerative behavior.
+
+## Features
+
+- **Impact Scoring (AIRS)**: Proprietary algorithm that converts environmental and social actions into quantifiable tokens
+- **Multi-Source Integration**: Aggregates data from carbon tracking apps, supply chain systems, community platforms, and IoT sensors
+- **Blockchain Verification**: Immutable records of all verified impact using distributed ledger technology
+- **Marketplace**: Trade verified impact tokens with organizations seeking to meet ESG commitments
+- **Dashboard Analytics**: Real-time monitoring of personal or organizational impact metrics
+- **API Integration**: Connect external systems for automated impact capture and reporting
+
+## Use Cases
+
+- **Individual Users**: Track personal carbon footprint, renewable energy usage, and community contributions; earn tokens for verified impact
+- **Enterprises**: Monitor supply chain sustainability, employee volunteer hours, and organizational ESG progress
+- **Carbon Projects**: Register and verify carbon offset projects, then monetize verified credits
+- **Communities**: Coordinate local impact initiatives with transparent, verifiable tracking
+- **Investors**: Discover and fund high-impact projects with proven metrics
+
+## Getting Started
+
+Visit the [Alternun Dashboard](https://alternun.co) to create an account and begin tracking impact. Connect your existing data sources, set impact goals, and join the regenerative economy.
+
+## Documentation
+
+- [API Documentation](https://api.alternun.co/docs) - Complete REST API reference and webhooks
+- [Integration Guide](https://docs.alternun.co/integrations) - Connect your systems to Alternun
+- [AIRS Scoring Methodology](https://docs.alternun.co/methodology) - How impact is calculated and verified
+- [Developer Guide](https://docs.alternun.co/developers) - Build with Alternun
+
+## Technology
+
+- **Backend**: Node.js, NestJS, PostgreSQL with Drizzle ORM
+- **Mobile**: React Native with Expo for iOS and Android
+- **Web**: Next.js with React and Tailwind CSS
+- **Auth**: Better Auth with social login (Google, Discord) and Authentik OIDC
+- **Infrastructure**: AWS (Lambda, SST, RDS, Systems Manager)
+- **Database**: Supabase PostgreSQL with real-time subscriptions
+
+## Community & Support
+
+- **GitHub**: [Alternun Open Source](https://github.com/alternun)
+- **Email**: contact@alternun.io
+- **Status Page**: [System Status](https://status.alternun.io)
+
+## For Developers
+
+- [GitHub Repository](https://github.com/alternun/alternun)
+- [Contributing Guide](https://github.com/alternun/alternun/blob/develop/CONTRIBUTING.md)
+- [API Swagger UI](https://api.alternun.co/docs)
+
+## Legal
+
+- [Privacy Policy](https://alternun.co/privacy)
+- [Terms of Service](https://alternun.co/terms)
+- [Security Policy](https://alternun.co/security)

@@ -1,0 +1,70 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is Alternun?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Alternun is a regenerative impact platform that enables individuals and organizations to track, verify, and monetize their positive environmental and social contributions. We provide the AIRS (Alternun Impact Rating System) to quantify impact and create economic incentives for sustainability."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does the AIRS scoring system work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "AIRS is our proprietary algorithm that converts environmental and social actions into quantifiable tokens. It aggregates data from multiple sources including carbon tracking apps, supply chain systems, community platforms, and IoT sensors to calculate verified impact metrics."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Who can use Alternun?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Alternun is designed for individuals tracking personal sustainability, enterprises monitoring ESG progress, carbon projects seeking verification, communities coordinating local initiatives, and investors discovering impact-driven opportunities."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How is impact verified on Alternun?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We use blockchain technology and distributed ledger verification to create immutable records of all verified impact. Data is aggregated from trusted sources and cross-referenced to ensure accuracy and prevent double-counting."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I trade AIRS tokens?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. AIRS tokens represent verified impact and can be traded on our integrated marketplace with organizations seeking to meet ESG commitments and investors looking for impact-verified assets."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I get started with Alternun?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Visit https://alternun.co to create an account. Connect your existing data sources (carbon apps, supply chain systems, etc.), set impact goals, and start earning AIRS tokens for verified contributions."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What integrations does Alternun support?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Alternun integrates with carbon tracking apps, supply chain platforms, community coordination systems, IoT sensors, and custom data sources via our REST API. See our integration guide for details."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Alternun compliant with ESG standards?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Our AIRS methodology aligns with international ESG frameworks and provides audit-ready reporting for regulatory compliance and investor disclosure requirements."
+      }
+    }
+  ]
+}
