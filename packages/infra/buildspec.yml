@@ -395,13 +395,23 @@ phases:
           echo "Skipping sst refresh (INFRA_ENABLE_SST_REFRESH=${INFRA_ENABLE_SST_REFRESH})"
         fi
       - |
-        echo "Clearing any stale SST locks..."
         cd "${INFRA_PATH}"
-        npx sst unlock --stage "${SST_STAGE}" || echo "No lock to clear"
+        echo "Deploying to ${SST_STAGE}..."
 
-        echo "Deploying SST stack ${SST_STAGE}..."
-        SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "${SST_STAGE}" --yes || exit 1
-        echo "✅ SST deploy completed"
+        # Try simple sst deploy command
+        npx sst unlock --stage "${SST_STAGE}" 2>&1 || true
+
+        # Run deploy and capture output
+        {
+          SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "${SST_STAGE}" --yes
+        } 2>&1
+
+        DEPLOY_STATUS=$?
+        if [ $DEPLOY_STATUS -ne 0 ]; then
+          echo "❌ Deploy exit code: $DEPLOY_STATUS"
+          exit $DEPLOY_STATUS
+        fi
+        echo "✅ Deploy successful"
       - |
         if [ "${INFRA_ENABLE_PUBLIC_ASSET_SYNC}" != "true" ]; then
           echo "Skipping public asset sync (INFRA_ENABLE_PUBLIC_ASSET_SYNC=${INFRA_ENABLE_PUBLIC_ASSET_SYNC})"
