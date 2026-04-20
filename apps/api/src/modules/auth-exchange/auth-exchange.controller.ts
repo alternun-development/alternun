@@ -64,7 +64,7 @@ export class AuthExchangeController {
   @ApiOkResponse({
     description: 'Social sign-in URL and provider info.',
   })
-  socialSignIn(@Body() body?: Record<string, unknown>): Record<string, unknown> {
+  async socialSignIn(@Body() body?: Record<string, unknown>): Promise<Record<string, unknown>> {
     if (!body?.provider) {
       return {
         error:

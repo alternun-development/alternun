@@ -200,21 +200,22 @@ function normalizeSession(input: unknown, fallbackProvider: string): ExecutionSe
   };
 }
 
-function extractRedirectUrl(input: unknown): string | null {
+function extractRedirectTarget(input: unknown): string | null {
   if (!input || typeof input !== 'object') {
     return null;
   }
 
   const raw = input as Record<string, unknown>;
+  const payload = isRecord(raw.data) ? raw.data : raw;
   const redirectUrlCandidate =
-    typeof raw.redirectUrl === 'string'
-      ? raw.redirectUrl
-      : typeof raw.redirectURL === 'string'
-      ? raw.redirectURL
-      : typeof raw.url === 'string'
-      ? raw.url
-      : typeof raw.location === 'string'
-      ? raw.location
+    typeof payload.redirectUrl === 'string'
+      ? payload.redirectUrl
+      : typeof payload.redirectURL === 'string'
+      ? payload.redirectURL
+      : typeof payload.url === 'string'
+      ? payload.url
+      : typeof payload.location === 'string'
+      ? payload.location
       : null;
 
   const trimmed = redirectUrlCandidate?.trim();
@@ -415,11 +416,13 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         );
       }
 
-      const normalizedSession = normalizeSession(result, provider);
+      const redirectUrl = extractRedirectTarget(result);
+      const normalizedSession =
+        provider !== 'email' && redirectUrl ? null : normalizeSession(result, provider);
       return {
         session: normalizedSession,
         externalIdentity: normalizedSession?.externalIdentity ?? null,
-        redirectUrl: options.redirectUri ?? null,
+        redirectUrl,
       };
     }
 
@@ -444,7 +447,7 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         return {
           session: normalizedSession,
           externalIdentity: normalizedSession?.externalIdentity ?? null,
-          redirectUrl: extractRedirectUrl(result),
+          redirectUrl: extractRedirectTarget(result),
         };
       }
 
@@ -466,11 +469,12 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
           );
         }
 
-        const normalizedSession = normalizeSession(result, provider);
+        const redirectUrl = extractRedirectTarget(result);
+        const normalizedSession = redirectUrl ? null : normalizeSession(result, provider);
         return {
           session: normalizedSession,
           externalIdentity: normalizedSession?.externalIdentity ?? null,
-          redirectUrl: extractRedirectUrl(result),
+          redirectUrl,
         };
       }
     }
@@ -499,14 +503,13 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       }
     );
 
-    const session = normalizeSession(response, provider);
+    const redirectUrl = extractRedirectTarget(response);
+    const session =
+      redirectUrl && provider !== 'email' ? null : normalizeSession(response, provider);
     return {
       session,
       externalIdentity: session?.externalIdentity ?? null,
-      redirectUrl:
-        typeof (response as Record<string, unknown>)?.redirectUrl === 'string'
-          ? ((response as Record<string, unknown>).redirectUrl as string)
-          : options.redirectUri ?? null,
+      redirectUrl,
       needsEmailVerification:
         typeof (response as Record<string, unknown>)?.needsEmailVerification === 'boolean'
           ? ((response as Record<string, unknown>).needsEmailVerification as boolean)
@@ -902,20 +905,16 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signInWithGoogle(redirectTo?: string): Promise<void> {
-    const browserClient = await this.resolveBrowserClient();
-    if (browserClient?.signIn?.social) {
-      await browserClient.signIn.social({
-        provider: 'google',
-        callbackURL: redirectTo,
-      });
-      return;
-    }
-
-    await this.signIn({
+    const result = await this.signIn({
       provider: 'google',
       flow: 'redirect',
       redirectUri: redirectTo,
     });
+
+    const redirectTarget = result.redirectUrl;
+    if (redirectTarget && typeof window !== 'undefined') {
+      window.location.assign(redirectTarget);
+    }
   }
 
   capabilities(): AuthCapabilities {

@@ -272,6 +272,11 @@ export class AlternunAuthFacade {
         throw new AlternunProviderError('Email sign-in did not produce a user session.');
     }
     async signInWithGoogle(redirectTo) {
+        const provider = this.executionProvider;
+        if (typeof provider.signInWithGoogle === 'function') {
+            await provider.signInWithGoogle(redirectTo);
+            return;
+        }
         await this.signIn({
             provider: 'google',
             flow: this.runtime === 'web' ? 'redirect' : 'native',
@@ -291,6 +296,15 @@ export class AlternunAuthFacade {
                 redirectUri: options.redirectUri,
                 web3: options.web3,
             });
+            if (result.redirectUrl) {
+                if (this.runtime === 'web' && typeof window !== 'undefined') {
+                    window.location.assign(result.redirectUrl);
+                }
+                this.log('execution-provider', 'signIn', 'skipped', {
+                    redirectUrl: result.redirectUrl,
+                });
+                return;
+            }
             if (result.session) {
                 this.currentExecutionSession = result.session;
             }
@@ -307,15 +321,6 @@ export class AlternunAuthFacade {
                 const user = executionSessionToUser(result.session, (_d = (_c = this.currentIssuerSession) === null || _c === void 0 ? void 0 : _c.principal) !== null && _d !== void 0 ? _d : null);
                 this.currentCompatUser = user;
                 this.emit(user);
-                return;
-            }
-            if (result.redirectUrl) {
-                if (this.runtime === 'web' && typeof window !== 'undefined') {
-                    window.location.assign(result.redirectUrl);
-                }
-                this.log('execution-provider', 'signIn', 'skipped', {
-                    redirectUrl: result.redirectUrl,
-                });
                 return;
             }
             await this.refreshState('signIn', { allowExchange: true, preferExecution: true });

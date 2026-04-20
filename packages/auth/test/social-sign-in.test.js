@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { resumePendingSocialSignIn, startSocialSignIn } from '../dist/index.js';
+import { resumePendingSocialSignIn, startSocialSignIn, webRedirectSignIn } from '../dist/index.js';
 
 test('startSocialSignIn routes web social logins through the relay when enabled', async () => {
   const relayRoutes = [];
@@ -121,6 +121,50 @@ test('startSocialSignIn delegates native social logins to the native helper', as
     client: { id: 'client' },
     provider: 'google',
   });
+});
+
+test('webRedirectSignIn uses the dedicated Google helper in the better-auth web flow', async () => {
+  const originalWindow = globalThis.window;
+  const originalDocument = globalThis.document;
+  const observedRedirects = [];
+
+  globalThis.window = {
+    location: {
+      origin: 'https://app.example.com',
+    },
+    sessionStorage: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    },
+  };
+  globalThis.document = {};
+
+  try {
+    const result = await webRedirectSignIn({
+      client: {
+        signInWithGoogle: async (redirectTo) => {
+          observedRedirects.push(redirectTo);
+        },
+      },
+      provider: 'google',
+      authentikProviderHint: 'google',
+      redirectTo: '/dashboard',
+      forceFreshSession: false,
+      strategy: {
+        mode: 'source',
+        socialMode: 'authentik',
+        executionProvider: 'better-auth',
+        providerFlowSlugs: {},
+      },
+    });
+
+    assert.equal(result, 'better-auth');
+    assert.equal(observedRedirects[0], 'https://app.example.com/auth/callback');
+  } finally {
+    globalThis.window = originalWindow;
+    globalThis.document = originalDocument;
+  }
 });
 
 test('resumePendingSocialSignIn reads and clears the pending provider before dispatching', async () => {

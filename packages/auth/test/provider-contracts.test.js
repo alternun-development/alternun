@@ -112,6 +112,138 @@ test('BetterAuthExecutionProvider prefers the Better Auth browser client for soc
   assert.equal(result.externalIdentity?.providerUserId, 'google-123');
 });
 
+test('BetterAuthExecutionProvider extracts redirect targets from the Better Auth browser client response', async () => {
+  const redirectUrl = 'https://auth.example.com/oauth/start';
+
+  const provider = new BetterAuthExecutionProvider({
+    browserClient: {
+      signIn: {
+        social: async () => ({
+          data: {
+            url: redirectUrl,
+          },
+        }),
+      },
+    },
+  });
+
+  const result = await provider.signIn({
+    provider: 'google',
+    flow: 'redirect',
+    redirectUri: 'https://app.example.com/auth/callback',
+  });
+
+  assert.equal(result.session, null);
+  assert.equal(result.externalIdentity, null);
+  assert.equal(result.redirectUrl, redirectUrl);
+});
+
+test('BetterAuthExecutionProvider.signInWithGoogle fetches the social sign-in URL and redirects', async () => {
+  const redirectUrl = 'https://auth.example.com/oauth/start';
+  let observedRequestUrl = null;
+  let observedRequestBody = null;
+  let redirectedTo = null;
+  const originalWindow = globalThis.window;
+
+  globalThis.window = {
+    location: {
+      assign: (url) => {
+        redirectedTo = url;
+      },
+    },
+  };
+
+  try {
+    const provider = new BetterAuthExecutionProvider({
+      baseUrl: 'https://api.example.com/auth',
+      fetchFn: async (url, init) => {
+        observedRequestUrl = String(url);
+        observedRequestBody = init?.body ? JSON.parse(String(init.body)) : null;
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          async json() {
+            return {
+              url: redirectUrl,
+            };
+          },
+          async text() {
+            return JSON.stringify({
+              url: redirectUrl,
+            });
+          },
+        };
+      },
+    });
+
+    await provider.signInWithGoogle('https://app.example.com/auth/callback');
+
+    assert.equal(observedRequestUrl, 'https://api.example.com/auth/sign-in/social');
+    assert.deepEqual(observedRequestBody, {
+      provider: 'google',
+      flow: 'redirect',
+      redirectUri: 'https://app.example.com/auth/callback',
+    });
+    assert.equal(redirectedTo, redirectUrl);
+  } finally {
+    globalThis.window = originalWindow;
+  }
+});
+
+test('BetterAuthExecutionProvider.signInWithGoogle prefers the browser client when available', async () => {
+  const redirectUrl = 'https://auth.example.com/oauth/browser';
+  let observedOptions = null;
+  let fetchCalled = false;
+  let redirectedTo = null;
+  const originalWindow = globalThis.window;
+
+  globalThis.window = {
+    location: {
+      assign: (url) => {
+        redirectedTo = url;
+      },
+    },
+  };
+
+  try {
+    const provider = new BetterAuthExecutionProvider({
+      browserClient: {
+        signIn: {
+          social: async (options) => {
+            observedOptions = options;
+            return {
+              data: {
+                url: redirectUrl,
+              },
+            };
+          },
+        },
+      },
+      baseUrl: 'https://api.example.com/auth',
+      fetchFn: async () => {
+        fetchCalled = true;
+        throw new Error('fetch should not be used when the browser client is available');
+      },
+    });
+
+    await provider.signInWithGoogle('https://app.example.com/auth/callback');
+
+    assert.equal(fetchCalled, false);
+    assert.deepEqual(observedOptions, {
+      provider: 'google',
+      callbackURL: 'https://app.example.com/auth/callback',
+      errorCallbackURL: 'https://app.example.com/auth/callback',
+      newUserCallbackURL: 'https://app.example.com/auth/callback',
+      disableRedirect: false,
+    });
+    assert.equal(redirectedTo, redirectUrl);
+  } finally {
+    globalThis.window = originalWindow;
+  }
+});
+
 test('BetterAuthExecutionProvider joins a canonical /auth baseUrl without duplicating the prefix', async () => {
   let observedUrl;
   let observedBody;
@@ -128,20 +260,25 @@ test('BetterAuthExecutionProvider joins a canonical /auth baseUrl without duplic
         headers: new Headers({ 'content-type': 'application/json' }),
         async json() {
           return {
-            session: null,
+            url: 'https://auth.example.com/oauth/start',
+            provider: 'google',
           };
         },
         async text() {
-          return JSON.stringify({ session: null });
+          return JSON.stringify({
+            url: 'https://auth.example.com/oauth/start',
+            provider: 'google',
+          });
         },
       };
     },
   });
 
-  await provider.signIn({ provider: 'google', flow: 'redirect' });
+  const result = await provider.signIn({ provider: 'google', flow: 'redirect' });
   assert.equal(observedUrl, 'http://localhost:8082/auth/sign-in/social');
   assert.equal(observedBody.provider, 'google');
   assert.equal(observedBody.callbackURL, undefined);
+  assert.equal(result.redirectUrl, 'https://auth.example.com/oauth/start');
 });
 
 test('BetterAuthExecutionProvider prefers the Better Auth client for email flows', async () => {

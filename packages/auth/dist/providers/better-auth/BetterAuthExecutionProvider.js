@@ -89,19 +89,20 @@ function normalizeSession(input, fallbackProvider) {
         raw,
     };
 }
-function extractRedirectUrl(input) {
+function extractRedirectTarget(input) {
     if (!input || typeof input !== 'object') {
         return null;
     }
     const raw = input;
-    const redirectUrlCandidate = typeof raw.redirectUrl === 'string'
-        ? raw.redirectUrl
-        : typeof raw.redirectURL === 'string'
-            ? raw.redirectURL
-            : typeof raw.url === 'string'
-                ? raw.url
-                : typeof raw.location === 'string'
-                    ? raw.location
+    const payload = isRecord(raw.data) ? raw.data : raw;
+    const redirectUrlCandidate = typeof payload.redirectUrl === 'string'
+        ? payload.redirectUrl
+        : typeof payload.redirectURL === 'string'
+            ? payload.redirectURL
+            : typeof payload.url === 'string'
+                ? payload.url
+                : typeof payload.location === 'string'
+                    ? payload.location
                     : null;
     const trimmed = redirectUrlCandidate === null || redirectUrlCandidate === void 0 ? void 0 : redirectUrlCandidate.trim();
     return trimmed ? trimmed : null;
@@ -237,7 +238,7 @@ export class BetterAuthExecutionProvider {
         throw new AlternunConfigError('Better Auth execution provider requires a baseUrl or a client implementation.');
     }
     async signIn(options) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
         const client = this.client;
         const provider = (_b = (_a = this.normalizeProvider(options.provider)) !== null && _a !== void 0 ? _a : this.normalizeProvider(this.options.defaultProvider)) !== null && _b !== void 0 ? _b : 'google';
         const browserClient = await this.resolveBrowserClient();
@@ -255,17 +256,18 @@ export class BetterAuthExecutionProvider {
                 const errorPayload = result.error;
                 throw new AlternunProviderError(typeof errorPayload.message === 'string' ? errorPayload.message : 'Sign in failed');
             }
-            const normalizedSession = normalizeSession(result, provider);
+            const redirectUrl = extractRedirectTarget(result);
+            const normalizedSession = provider !== 'email' && redirectUrl ? null : normalizeSession(result, provider);
             return {
                 session: normalizedSession,
                 externalIdentity: (_d = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _d !== void 0 ? _d : null,
-                redirectUrl: (_e = options.redirectUri) !== null && _e !== void 0 ? _e : null,
+                redirectUrl,
             };
         }
         if (browserClient === null || browserClient === void 0 ? void 0 : browserClient.signIn) {
             if (provider === 'email' && browserClient.signIn.email && options.password) {
                 const result = await browserClient.signIn.email({
-                    email: (_f = options.email) !== null && _f !== void 0 ? _f : '',
+                    email: (_e = options.email) !== null && _e !== void 0 ? _e : '',
                     password: options.password,
                     callbackURL: options.redirectUri,
                     errorCallbackURL: options.redirectUri,
@@ -278,8 +280,8 @@ export class BetterAuthExecutionProvider {
                 const normalizedSession = normalizeSession(result, 'email');
                 return {
                     session: normalizedSession,
-                    externalIdentity: (_g = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _g !== void 0 ? _g : null,
-                    redirectUrl: extractRedirectUrl(result),
+                    externalIdentity: (_f = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _f !== void 0 ? _f : null,
+                    redirectUrl: extractRedirectTarget(result),
                 };
             }
             if (browserClient.signIn.social) {
@@ -296,11 +298,12 @@ export class BetterAuthExecutionProvider {
                         ? errorPayload.message
                         : 'Social sign in failed');
                 }
-                const normalizedSession = normalizeSession(result, provider);
+                const redirectUrl = extractRedirectTarget(result);
+                const normalizedSession = redirectUrl ? null : normalizeSession(result, provider);
                 return {
                     session: normalizedSession,
-                    externalIdentity: (_h = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _h !== void 0 ? _h : null,
-                    redirectUrl: extractRedirectUrl(result),
+                    externalIdentity: (_g = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _g !== void 0 ? _g : null,
+                    redirectUrl,
                 };
             }
         }
@@ -309,10 +312,10 @@ export class BetterAuthExecutionProvider {
         }
         const isEmailProvider = provider === 'email';
         const response = await callJson(this.fetchFn, this.requireBaseUrl(), isEmailProvider
-            ? (_k = (_j = this.options.signInEmailPath) !== null && _j !== void 0 ? _j : this.options.signInPath) !== null && _k !== void 0 ? _k : '/auth/sign-in/email'
-            : (_m = (_l = this.options.signInSocialPath) !== null && _l !== void 0 ? _l : this.options.signInPath) !== null && _m !== void 0 ? _m : '/auth/sign-in/social', {
+            ? (_j = (_h = this.options.signInEmailPath) !== null && _h !== void 0 ? _h : this.options.signInPath) !== null && _j !== void 0 ? _j : '/auth/sign-in/email'
+            : (_l = (_k = this.options.signInSocialPath) !== null && _k !== void 0 ? _k : this.options.signInPath) !== null && _l !== void 0 ? _l : '/auth/sign-in/social', {
             provider,
-            flow: (_o = options.flow) !== null && _o !== void 0 ? _o : (provider === 'email' ? 'native' : 'redirect'),
+            flow: (_m = options.flow) !== null && _m !== void 0 ? _m : (provider === 'email' ? 'native' : 'redirect'),
             callbackURL: options.redirectUri,
             errorCallbackURL: options.redirectUri,
             newUserCallbackURL: options.redirectUri,
@@ -321,13 +324,12 @@ export class BetterAuthExecutionProvider {
             web3: options.web3,
             metadata: options.metadata,
         });
-        const session = normalizeSession(response, provider);
+        const redirectUrl = extractRedirectTarget(response);
+        const session = redirectUrl && provider !== 'email' ? null : normalizeSession(response, provider);
         return {
             session,
-            externalIdentity: (_p = session === null || session === void 0 ? void 0 : session.externalIdentity) !== null && _p !== void 0 ? _p : null,
-            redirectUrl: typeof (response === null || response === void 0 ? void 0 : response.redirectUrl) === 'string'
-                ? response.redirectUrl
-                : (_q = options.redirectUri) !== null && _q !== void 0 ? _q : null,
+            externalIdentity: (_o = session === null || session === void 0 ? void 0 : session.externalIdentity) !== null && _o !== void 0 ? _o : null,
+            redirectUrl,
             needsEmailVerification: typeof (response === null || response === void 0 ? void 0 : response.needsEmailVerification) === 'boolean'
                 ? response.needsEmailVerification
                 : undefined,
@@ -640,20 +642,15 @@ export class BetterAuthExecutionProvider {
         return Promise.resolve();
     }
     async signInWithGoogle(redirectTo) {
-        var _a;
-        const browserClient = await this.resolveBrowserClient();
-        if ((_a = browserClient === null || browserClient === void 0 ? void 0 : browserClient.signIn) === null || _a === void 0 ? void 0 : _a.social) {
-            await browserClient.signIn.social({
-                provider: 'google',
-                callbackURL: redirectTo,
-            });
-            return;
-        }
-        await this.signIn({
+        const result = await this.signIn({
             provider: 'google',
             flow: 'redirect',
             redirectUri: redirectTo,
         });
+        const redirectTarget = result.redirectUrl;
+        if (redirectTarget && typeof window !== 'undefined') {
+            window.location.assign(redirectTarget);
+        }
     }
     capabilities() {
         return {

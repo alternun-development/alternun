@@ -62,7 +62,7 @@ alternun/
 git clone https://github.com/alternun-development/alternun.git
 cd alternun
 pnpm install
-pnpm dev:all        # starts api, better-auth, admin, mobile, docs concurrently
+pnpm dev:all        # starts api, admin, mobile, docs concurrently
 ```
 
 ### Common Commands

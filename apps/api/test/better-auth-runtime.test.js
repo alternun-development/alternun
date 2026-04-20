@@ -31,14 +31,14 @@ function createReply() {
 
 test('resolveBetterAuthBootstrapConfig keeps the local external Better Auth proxy target', () => {
   const config = resolveBetterAuthBootstrapConfig({
-    BETTER_AUTH_URL: 'http://127.0.0.1:9083',
+    BETTER_AUTH_URL: 'http://127.0.0.1:8084',
     AUTH_BETTER_AUTH_URL: 'http://localhost:8082/auth',
     GOOGLE_AUTH_CLIENT_ID: 'example-google-client',
     GOOGLEA_AUTH_CLIENT_SECRET: 'example-google-secret',
   });
 
   assert.equal(config.mode, 'proxy');
-  assert.equal(config.targetBaseUrl, 'http://127.0.0.1:9083');
+  assert.equal(config.targetBaseUrl, 'http://127.0.0.1:8084');
 });
 
 test('resolveBetterAuthBootstrapConfig embeds Better Auth when the public API origin is configured', () => {

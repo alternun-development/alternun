@@ -154,6 +154,71 @@ test('AlternunAuthFacade preserves email sign-up flags', async () => {
   assert.equal(result.confirmationEmailSent, false);
 });
 
+test('AlternunAuthFacade delegates Google sign-in to the execution provider helper when available', async () => {
+  let observedRedirectTo = null;
+  const facade = new AlternunAuthFacade({
+    executionProvider: {
+      name: 'better-auth',
+      signIn: async () => ({ session: null, externalIdentity: null }),
+      signUp: async () => ({ session: null, externalIdentity: null }),
+      signOut: async () => {},
+      getExecutionSession: async () => null,
+      refreshExecutionSession: async () => null,
+      linkProvider: async () => null,
+      unlinkProvider: async () => {},
+      signInWithGoogle: async (redirectTo) => {
+        observedRedirectTo = redirectTo ?? null;
+      },
+      capabilities: () => ({ runtime: 'web', supportedFlows: ['redirect', 'native'] }),
+    },
+    issuerProvider: {
+      name: 'authentik',
+      exchangeIdentity: async () => ({
+        issuerAccessToken: 'issuer-token',
+        issuerRefreshToken: null,
+        executionSession: null,
+        principal: {
+          issuer: 'https://sso.example.com/application/o/alternun-mobile/',
+          subject: 'principal-compat',
+          email: 'ada@example.com',
+          roles: ['authenticated'],
+          metadata: {},
+        },
+        linkedAccounts: [],
+      }),
+      getIssuerSession: async () => null,
+      refreshIssuerSession: async () => null,
+      logoutIssuerSession: async () => {},
+      discoverIssuerConfig: async () => ({ issuer: '', authorizationEndpoint: '', tokenEndpoint: '' }),
+      validateClaims: async () => ({ valid: true, principal: null, errors: [] }),
+    },
+    emailProvider: {
+      name: 'supabase',
+      sendVerificationEmail: async () => {},
+      sendPasswordResetEmail: async () => {},
+      sendMagicLink: async () => {},
+      healthcheck: async () => ({ ok: true, provider: 'supabase' }),
+    },
+    identityRepository: {
+      name: 'compat-repo',
+      upsertPrincipal: async ({ principal }) => ({ ...principal, id: 'principal-compat' }),
+      findPrincipalByExternalIdentity: async () => null,
+      upsertUserProjection: async (input) => input,
+      upsertLinkedAccount: async ({ linkedAccount }) => linkedAccount,
+      recordProvisioningEvent: async () => {},
+    },
+    runtime: {
+      runtime: 'web',
+      executionProvider: 'better-auth',
+      issuerProvider: 'authentik',
+      emailProvider: 'supabase',
+    },
+  });
+
+  await facade.signInWithGoogle('https://app.example.com/auth/callback');
+  assert.equal(observedRedirectTo, 'https://app.example.com/auth/callback');
+});
+
 test('AlternunAuthFacade restores a native issuer session without browser-only helpers', async () => {
   const externalIdentity = createIdentity();
   const issuerSession = {

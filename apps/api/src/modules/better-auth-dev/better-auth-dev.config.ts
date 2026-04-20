@@ -201,7 +201,7 @@ function resolveOAuthProxyConfig(env: NodeJS.ProcessEnv): BetterAuthDevOAuthProx
 export function resolveBetterAuthDevConfig(
   env: NodeJS.ProcessEnv = process.env
 ): BetterAuthDevConfig {
-  const port = Number(env.PORT ?? 9083);
+  const port = Number(env.PORT ?? 8082);
   const host = env.HOST?.trim() ?? '127.0.0.1';
   const baseURL = normalizeBetterAuthBaseUrl(
     env.BETTER_AUTH_URL?.trim() ??

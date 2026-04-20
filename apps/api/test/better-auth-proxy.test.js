@@ -39,10 +39,10 @@ test('shouldProxyBetterAuthPath skips /auth/exchange', () => {
 test('buildBetterAuthProxyTargetUrl preserves the canonical /auth prefix', () => {
   const target = buildBetterAuthProxyTargetUrl(
     '/auth/sign-in/social?next=%2Fdashboard',
-    'http://127.0.0.1:9083'
+    'http://127.0.0.1:8084'
   );
 
-  assert.equal(target, 'http://127.0.0.1:9083/auth/sign-in/social?next=%2Fdashboard');
+  assert.equal(target, 'http://127.0.0.1:8084/auth/sign-in/social?next=%2Fdashboard');
 });
 
 test('proxyBetterAuthRequest forwards the request and preserves cookies', async () => {
@@ -98,10 +98,10 @@ test('proxyBetterAuthRequest forwards the request and preserves cookies', async 
   };
 
   const reply = createReply();
-  const handled = await proxyBetterAuthRequest(request, reply, 'http://127.0.0.1:9083', fetchFn);
+  const handled = await proxyBetterAuthRequest(request, reply, 'http://127.0.0.1:8084', fetchFn);
 
   assert.equal(handled, true);
-  assert.equal(observed.url, 'http://127.0.0.1:9083/auth/sign-in/social?next=%2Fdashboard');
+  assert.equal(observed.url, 'http://127.0.0.1:8084/auth/sign-in/social?next=%2Fdashboard');
   assert.equal(observed.init.method, 'POST');
   assert.equal(observed.init.redirect, 'manual');
   assert.equal(observed.init.body, JSON.stringify({ provider: 'google' }));
@@ -134,7 +134,7 @@ test('proxyBetterAuthRequest answers OPTIONS preflight locally', async () => {
   const handled = await proxyBetterAuthRequest(
     request,
     reply,
-    'http://127.0.0.1:9083',
+    'http://127.0.0.1:8084',
     async () => {
       fetchCalled = true;
       throw new Error('should not be called');

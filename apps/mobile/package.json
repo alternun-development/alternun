@@ -10,7 +10,8 @@
     "android": "pnpm --filter alternun changelog:sync && expo start --android",
     "ios": "pnpm --filter alternun changelog:sync && expo start --ios",
     "web": "pnpm --filter alternun changelog:sync && expo start --web",
-    "web:local": "pnpm --filter alternun changelog:sync && expo start --web --port 8081 --localhost",
+    "web:local:app": "pnpm --filter alternun changelog:sync && expo start --web --port 8081 --localhost",
+    "web:local": "pnpm --filter alternun changelog:sync && concurrently -k --names api,mobile --prefix-colors blue,magenta \"pnpm --filter @alternun/api run dev\" \"pnpm --filter @alternun/mobile run web:local:app\"",
     "test": "jest --watchAll",
     "lint": "expo lint"
   },

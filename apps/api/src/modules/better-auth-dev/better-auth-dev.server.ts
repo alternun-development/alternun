@@ -7,10 +7,6 @@ import type { BetterAuthDevConfig, BetterAuthDevOAuthProxyConfig } from './bette
 import { getDatabase } from '../../common/database/connection';
 import * as betterAuthSchema from '../../common/database/better-auth.schema';
 
-function stripTrailingSlash(url: string): string {
-  return url.replace(/\/+$/, '');
-}
-
 function uniqueStrings(values: Array<string | undefined | null>): string[] {
   const trimmedValues: string[] = [];
   for (const value of values) {
@@ -43,10 +39,6 @@ export function createBetterAuthDevAuth(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
   const oauthProxyPlugin = buildOAuthProxyPlugin(config.oauthProxy);
-  const effectiveRedirectBaseURL =
-    config.oauthProxy.enabled && config.oauthProxy.productionURL
-      ? config.oauthProxy.productionURL
-      : config.baseURL;
   const hasGoogleProvider = Boolean(config.googleClientId && config.googleClientSecret);
   const hasDiscordProvider = Boolean(config.discordClientId && config.discordClientSecret);
 
@@ -69,7 +61,6 @@ export function createBetterAuthDevAuth(
           google: {
             clientId: config.googleClientId,
             clientSecret: config.googleClientSecret,
-            redirectURI: `${stripTrailingSlash(effectiveRedirectBaseURL)}/auth/callback/google`,
             prompt: 'select_account' as const,
             accessType: 'offline' as const,
           },
@@ -80,7 +71,6 @@ export function createBetterAuthDevAuth(
           discord: {
             clientId: config.discordClientId,
             clientSecret: config.discordClientSecret,
-            redirectURI: `${stripTrailingSlash(effectiveRedirectBaseURL)}/auth/callback/discord`,
           },
         }
       : {}),
@@ -88,7 +78,6 @@ export function createBetterAuthDevAuth(
   const trustedOrigins = uniqueStrings([
     ...config.trustedOrigins,
     config.baseURL,
-    'http://localhost:9083',
     config.oauthProxy.currentURL,
     config.oauthProxy.productionURL,
   ]);
