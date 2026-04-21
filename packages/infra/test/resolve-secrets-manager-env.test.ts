@@ -24,5 +24,5 @@ void test('resolve-secrets-manager-env hydrates the stage-mapped identity integr
   assert.match(source, /INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_SECRET/);
   assert.match(source, /INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID/);
   assert.match(source, /INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET/);
-  assert.match(source, /GOOGLEA_AUTH_CLIENT_SECRET/);
+  assert.match(source, /GOOGLE_AUTH_CLIENT_SECRET/);
 });

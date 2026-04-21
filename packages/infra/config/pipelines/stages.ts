@@ -62,12 +62,6 @@ const MANAGED_PIPELINE_ALIASES: Record<ManagedPipeline, readonly string[]> = {
     'dashboardapi-dev', // Alias for dashboard+api combined
     'dashboard-admin',
     'dashboard-admin-dev', // Alias for admin site
-    'admin', // Alias for admin site
-    'admin-dev', // Alias for admin site
-    'backoffice',
-    'backoffice-dev', // Alias for backoffice
-    'backoffice-admin',
-    'backoffice-admin-dev', // Alias for backoffice admin
     'api', // Alias for API component
     'api-dev', // Alias for API component (PRIMARY for API)
     'backend', // Alias for API component

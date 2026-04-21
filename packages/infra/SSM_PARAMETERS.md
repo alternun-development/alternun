@@ -58,17 +58,17 @@ aws ssm put-parameter \
 
 ## Available Parameters
 
-### Common (All Stages)
+### Shared Parameters
 
-| Parameter                 | Key                                       | Value                                      | Notes                                            |
-| ------------------------- | ----------------------------------------- | ------------------------------------------ | ------------------------------------------------ |
-| Supabase URL              | `expo-public-supabase-url`                | `https://rjebeugdvwbjpaktrrbx.supabase.co` | Shared for testnet/prod                          |
-| Supabase Key              | `expo-public-supabase-key`                | `sb_publishable_...`                       | Public/publishable key                           |
-| WalletConnect ID          | `expo-public-walletconnect-project-id`    | `d40ba2687be51a76...`                      | Web3 integration                                 |
-| Authentik Issuer          | `expo-public-authentik-issuer`            | `https://testnet.sso.alternun.co/...`      | OIDC server URL                                  |
-| Authentik Client ID       | `expo-public-authentik-client-id`         | `alternun-mobile`                          | OIDC client ID                                   |
-| **Authentik Social Mode** | `expo-public-authentik-social-login-mode` | `authentik`                                | **Critical**: Controls Discord button visibility |
-| Authentik Entry Mode      | `expo-public-authentik-login-entry-mode`  | `source`                                   | Login flow mode                                  |
+| Parameter                 | Key                                       | Value                                                                                                                         | Notes                                            |
+| ------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Supabase URL              | `expo-public-supabase-url`                | `dev/testnet: https://aznfyazjndfniwsocdka.supabase.co`<br>`production: https://rjebeugdvwbjpaktrrbx.supabase.co`             | Stage-scoped public auth DB URL                  |
+| Supabase Key              | `expo-public-supabase-key`                | `dev/testnet: sb_publishable_Z8egrB_x2ya7eNQCN8qcOw_Sxhmmt2O`<br>`production: sb_publishable_hPlMCyy51TS4c67V7WkkIw_p1Mv2Nze` | Stage-scoped public/publishable key              |
+| WalletConnect ID          | `expo-public-walletconnect-project-id`    | `d40ba2687be51a76...`                                                                                                         | Web3 integration                                 |
+| Authentik Issuer          | `expo-public-authentik-issuer`            | `https://testnet.sso.alternun.co/...`                                                                                         | OIDC server URL                                  |
+| Authentik Client ID       | `expo-public-authentik-client-id`         | `alternun-mobile`                                                                                                             | OIDC client ID                                   |
+| **Authentik Social Mode** | `expo-public-authentik-social-login-mode` | `authentik`                                                                                                                   | **Critical**: Controls Discord button visibility |
+| Authentik Entry Mode      | `expo-public-authentik-login-entry-mode`  | `source`                                                                                                                      | Login flow mode                                  |
 
 ### Dev Stage
 

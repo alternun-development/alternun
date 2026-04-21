@@ -14,14 +14,39 @@ if ! command -v aws >/dev/null 2>&1; then
   exit 1
 fi
 
+stage_normalized=$(printf '%s' "$STAGE" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+
+case "$stage_normalized" in
+  prod|api-prod|production|*production*)
+    SUPABASE_URL="https://rjebeugdvwbjpaktrrbx.supabase.co"
+    SUPABASE_KEY="sb_publishable_hPlMCyy51TS4c67V7WkkIw_p1Mv2Nze"
+    AUTHENTIK_ISSUER="https://sso.alternun.co/application/o/alternun-mobile/"
+    BETTER_AUTH_URL="https://api.alternun.co/auth"
+    AUTH_EXCHANGE_URL="https://api.alternun.co/auth/exchange"
+    ;;
+  dev|api-dev|*testnet*|*development*)
+    SUPABASE_URL="https://aznfyazjndfniwsocdka.supabase.co"
+    SUPABASE_KEY="sb_publishable_Z8egrB_x2ya7eNQCN8qcOw_Sxhmmt2O"
+    AUTHENTIK_ISSUER="https://testnet.sso.alternun.co/application/o/alternun-mobile/"
+    BETTER_AUTH_URL="https://testnet.api.alternun.co/auth"
+    AUTH_EXCHANGE_URL="https://testnet.api.alternun.co/auth/exchange"
+    ;;
+  *)
+    SUPABASE_URL="https://rjebeugdvwbjpaktrrbx.supabase.co"
+    SUPABASE_KEY="sb_publishable_hPlMCyy51TS4c67V7WkkIw_p1Mv2Nze"
+    AUTHENTIK_ISSUER="https://testnet.sso.alternun.co/application/o/alternun-mobile/"
+    BETTER_AUTH_URL="https://testnet.api.alternun.co/auth"
+    AUTH_EXCHANGE_URL="https://testnet.api.alternun.co/auth/exchange"
+    ;;
+esac
+
 # Parameter definitions: key → (value, description, tier)
 # tier: Standard (4KB) or Advanced (8KB)
-# Stage-specific overrides are applied after this declaration
 declare -A PARAMS=(
-  ["expo-public-supabase-url"]="https://rjebeugdvwbjpaktrrbx.supabase.co|Supabase API URL for Expo public auth|Standard"
-  ["expo-public-supabase-key"]="sb_publishable_hPlMCyy51TS4c67V7WkkIw_p1Mv2Nze|Supabase publishable key for Expo public auth|Standard"
+  ["expo-public-supabase-url"]="${SUPABASE_URL}|Supabase API URL for Expo public auth|Standard"
+  ["expo-public-supabase-key"]="${SUPABASE_KEY}|Supabase publishable key for Expo public auth|Standard"
   ["expo-public-walletconnect-project-id"]="d40ba2687be51a76e84b2c1d27235bb7|WalletConnect project ID for Expo web3|Standard"
-  ["expo-public-authentik-issuer"]="https://testnet.sso.alternun.co/application/o/alternun-mobile/|Authentik OIDC issuer URL (testnet)|Standard"
+  ["expo-public-authentik-issuer"]="${AUTHENTIK_ISSUER}|Authentik OIDC issuer URL|Standard"
   ["expo-public-authentik-client-id"]="alternun-mobile|Authentik OIDC client ID|Standard"
   ["expo-public-authentik-login-entry-mode"]="source|Authentik login entry mode|Standard"
   ["expo-public-better-auth-url-dev"]="https://testnet.api.alternun.co/auth|Better-auth base URL for dev stage|Standard"
@@ -29,16 +54,6 @@ declare -A PARAMS=(
   ["expo-public-better-auth-url-prod"]="https://api.alternun.co/auth|Better-auth base URL for prod stage|Standard"
   ["expo-public-auth-exchange-url-prod"]="https://api.alternun.co/auth/exchange|Better-auth exchange URL for prod stage|Standard"
 )
-
-# Stage-specific parameter overrides
-case "$STAGE" in
-  prod|api-prod|production|*production*)
-    # Production overrides handled with stage-suffixed parameters
-    ;;
-  dev|api-dev|*testnet*|*development*)
-    # Dev/testnet overrides handled with stage-suffixed parameters
-    ;;
-esac
 
 put_param() {
   local key=$1
