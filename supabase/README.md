@@ -1,31 +1,76 @@
-# Supabase Wallet Schema
+# Supabase Configuration
 
-Run migration:
+Organized structure for database schema, functions, triggers, and migrations.
 
-- [20260303_0001_create_user_wallets.sql](/home/ed/Documents/Alternun/alternun/supabase/migrations/20260303_0001_create_user_wallets.sql)
-- [20260304_0002_create_user_profiles_and_wallet_events.sql](/home/ed/Documents/Alternun/alternun/supabase/migrations/20260304_0002_create_user_profiles_and_wallet_events.sql)
+## Directory Structure
 
-This creates `public.user_wallets` with:
+```
+supabase/
+├── migrations/          Schema migrations (auto-applied on deploy)
+│   ├── YYYYMMDD_NNNN_*.sql
+│   └── 20260419_0002_auth_sync_triggers.sql  (applies functions & triggers)
+│
+├── functions/           Trigger functions & stored procedures (source of truth)
+│   ├── sync_auth_user_to_app_users.sql
+│   └── user_profiles_handle_auth_user_created.sql
+│
+├── triggers/            Trigger definitions (source of truth)
+│   └── auth_users_sync.sql
+│
+└── README.md           (this file)
+```
 
-- one-to-many wallet registry per `auth.users.id`
-- deduplicated wallet identities
-- primary-wallet enforcement per user
-- RLS policies so users can only read/write their own wallets
+## Workflow
 
-And extends auth schema with:
+### 1. Edit Function/Trigger Logic
 
-- `public.user_profiles` (1:1 with `auth.users`, with auto-backfill + auto-create trigger)
-- `public.user_wallet_events` (audit log for wallet link/usage/update/unlink events)
-- RLS policies so users can only read/update their own profile and read own wallet events
+Edit the source files in `functions/` or `triggers/` folders directly. These are the canonical source.
 
-## How to apply
+### 2. Create Migration
 
-1. Open Supabase SQL Editor for your project.
-2. Run the migration SQL file contents.
-3. Verify:
-   - table exists: `public.user_wallets`
-   - table exists: `public.user_profiles`
-   - table exists: `public.user_wallet_events`
-   - RLS enabled
-   - policies created (`user_wallets_select_own`, `insert_own`, `update_own`, `delete_own`)
-   - policies created (`user_profiles_select_own`, `user_profiles_update_own`, `user_wallet_events_select_own`)
+When ready to deploy:
+
+- Add entries to migration file in `migrations/` folder
+- Migrations are auto-applied in order (by version number)
+- Point to source files in header comments
+
+### 3. Deploy
+
+```bash
+pnpm run db:migrate
+```
+
+## Important Notes
+
+- **migrations/** folder is auto-processed by version (YYYYMMDD prefix)
+- **functions/** and **triggers/** are for organization and clarity
+- Keep migrations as source of truth for what's deployed
+- Always update function source files AND the migration file together
+
+## Common Tasks
+
+### Add new function
+
+1. Create `supabase/functions/my_function_name.sql`
+2. Add function definition to migration file
+3. Run `pnpm run db:migrate`
+
+### Modify existing function
+
+1. Edit in `supabase/functions/my_function_name.sql`
+2. Update migration to use `CREATE OR REPLACE FUNCTION`
+3. Run `pnpm run db:migrate`
+
+### View all triggers
+
+```bash
+# In database
+SELECT trigger_schema, trigger_name, event_object_table
+FROM information_schema.triggers
+WHERE trigger_schema != 'pg_catalog';
+```
+
+## Related Documentation
+
+- [AUTH_SYNC_TRIGGERS.md](../docs/AUTH_SYNC_TRIGGERS.md) - Detailed explanation of auth sync triggers
+- [CLAUDE.md](../CLAUDE.md) - Project guidelines

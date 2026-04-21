@@ -1,6 +1,6 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, View, } from 'react-native';
-import { useAppPalette, } from '../theme/useAppPalette';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useAppPalette } from '../theme/useAppPalette';
 
 export interface LoadingOverlayProps {
   /**
@@ -46,7 +46,7 @@ export default function LoadingOverlay({
   subtitle,
   spinnerSize = 'large',
   overlayBackgroundColor,
-}: LoadingOverlayProps,): JSX.Element | null {
+}: LoadingOverlayProps): JSX.Element | null {
   const p = useAppPalette();
 
   if (!visible) {
@@ -56,13 +56,13 @@ export default function LoadingOverlay({
   return (
     <View
       pointerEvents='none'
-      style={[styles.overlay, { backgroundColor: overlayBackgroundColor ?? p.overlay, },]}
+      style={[styles.overlay, { backgroundColor: overlayBackgroundColor ?? p.overlay }]}
     >
       <View style={styles.container}>
         <ActivityIndicator size={spinnerSize} color='#1ccba1' />
-        <Text style={[styles.message, { color: p.textPrimary, },]}>{message}</Text>
+        <Text style={[styles.message, { color: p.textPrimary }]}>{message}</Text>
         {subtitle ? (
-          <Text style={[styles.subtitle, { color: p.textSecondary, },]}>{subtitle}</Text>
+          <Text style={[styles.subtitle, { color: p.textSecondary }]}>{subtitle}</Text>
         ) : null}
       </View>
     </View>
@@ -71,7 +71,7 @@ export default function LoadingOverlay({
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(5,5,16,0.92)',
@@ -94,4 +94,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 16,
   },
-},);
+});

@@ -49,10 +49,7 @@ export function applyBetterAuthCorsHeaders(
   requestHeaders: BetterAuthRequestHeaders,
   options: { preflight?: boolean } = {}
 ): void {
-  const origin = normalizeHeaderValue(requestHeaders.origin);
-  if (!origin) {
-    return;
-  }
+  const origin = normalizeHeaderValue(requestHeaders.origin) ?? '*';
 
   void reply.header('access-control-allow-origin', origin);
   void reply.header('access-control-allow-credentials', 'true');

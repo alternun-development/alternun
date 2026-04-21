@@ -52,27 +52,16 @@ cp .env.local.example .env.local
 cat .env.local
 ```
 
-### 2. **Start API Server** (terminal 1)
-
-```bash
-# From project root, start the Better-auth backend
-# Your local API server should listen on http://localhost:8082
-# See your API documentation for startup instructions
-```
-
-### 3. **Start AIRS App** (terminal 2)
+### 2. **Start the local web stack**
 
 ```bash
 cd apps/mobile
-
-# For Expo web (port 8081)
 npm run web:local
-
-# Or for native development
-npm run dev:native
 ```
 
-### 4. **Test Login**
+This starts Expo on `http://localhost:8081` and the API/auth backend on `http://localhost:8082`.
+
+### 3. **Test Login**
 
 Open: **http://localhost:8081**
 
@@ -146,20 +135,25 @@ const baseAuthUrl = process.env.EXPO_PUBLIC_BETTER_AUTH_URL;
 
 ### **CORS Error: `localhost:8082/auth/sign-in/social`**
 
-**Problem**: Auth URL is missing `/auth` suffix.
+**Problem**: The local API/auth backend is not running, or the app is still pointed at an outdated auth URL.
 
 **Solution**:
 
-1. Check `.env.local` exists:
+1. Start the local stack with:
+   ```bash
+   cd apps/mobile
+   npm run web:local
+   ```
+2. Check `.env.local` exists:
    ```bash
    ls apps/mobile/.env.local
    ```
-2. Verify `EXPO_PUBLIC_BETTER_AUTH_URL` includes `/auth`:
+3. Verify `EXPO_PUBLIC_BETTER_AUTH_URL` includes `/auth`:
    ```bash
    grep BETTER_AUTH apps/mobile/.env.local
    # Should output: EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
    ```
-3. Restart dev server after changing `.env.local`
+4. Restart the dev server after changing `.env.local`
 
 ### **Still Showing Discord Button**
 
@@ -172,15 +166,15 @@ const baseAuthUrl = process.env.EXPO_PUBLIC_BETTER_AUTH_URL;
 
 ### **API Server Errors**
 
-**Problem**: API server not running on port 8082.
+**Problem**: The API server is not running on port 8082.
 
 **Solution**:
 
-1. Verify API server is running:
+1. Verify the API server is running:
    ```bash
    curl http://localhost:8082/auth/health
    ```
-2. Check API documentation for startup commands
+2. If you started only Expo, run `npm run web:local` from `apps/mobile` so the backend starts too.
 3. Ensure no other process is using port 8082:
    ```bash
    lsof -i :8082
@@ -193,11 +187,6 @@ const baseAuthUrl = process.env.EXPO_PUBLIC_BETTER_AUTH_URL;
 ### **Local Testing**
 
 ```bash
-# Terminal 1: API server
-cd packages/api
-npm run dev  # (or your API startup command)
-
-# Terminal 2: Mobile app
 cd apps/mobile
 npm run web:local
 # Open http://localhost:8081

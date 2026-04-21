@@ -1,0 +1,42 @@
+# Alternun Search Engine and AI Crawler Directives
+# Last updated: 2026-04-20
+
+# Allow all crawlers by default
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /feed.xml
+Allow: /feed.atom
+Allow: /sitemap.xml
+Allow: /ai/
+
+# Block common bot traffic that adds no value
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Crawl-delay: 5
+
+User-agent: SemrushBot
+Crawl-delay: 5
+
+# Allow Claude and other AI crawlers
+User-agent: Claude-Web
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# Point to feeds and structured data
+Sitemap: https://alternun.co/sitemap.xml
+Sitemap: https://alternun.co/feed.xml
+
+# Crawl-delay for rate limiting (in seconds)
+Crawl-delay: 1
+Request-rate: 1/1s

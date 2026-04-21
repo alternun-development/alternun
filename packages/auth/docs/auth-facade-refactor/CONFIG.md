@@ -32,15 +32,13 @@ Accepted aliases include:
 - Legacy Supabase session state is no longer allowed to silently win over a Better Auth session.
 - Supabase-backed execution remains available as the compatibility path when `AUTH_EXECUTION_PROVIDER=supabase`.
 - Web social login now prefers the Better Auth browser client when it is available, and the provider falls back to the explicit Better Auth social/email routes only when the browser client cannot be created.
-- Email/password compatibility can still fall back to the legacy client when the Better Auth client is not available.
+- Email/password sign-in and sign-up now use the Better Auth client or Better Auth HTTP routes when the Better Auth execution mode is active; the legacy client remains only for recovery helpers.
 - Authentik remains the issuer/trust layer.
 - `AUTH_EXCHANGE_URL` is the backend handoff point for canonical issuer exchange.
 - `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` is the strict rollout mode for the backend handoff; it disables compatibility fallback when canonical issuer minting is missing.
-- The canonical browser-facing Better Auth URL should stay on the API origin root; the client/proxy layers append `/auth` internally. The internal dev service stays on `http://localhost:9083` during local development and can remain behind the API proxy in deployed environments.
-- Local dev uses `BETTER_AUTH_URL` for the private proxy target. Deployed stacks can pass that proxy target as `AUTH_BETTER_AUTH_URL` in the backend runtime, while the Expo bundle still consumes the browser-facing `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` value.
-- When a Better Auth URL is configured but the execution flag is omitted, the runtime now promotes to `better-auth` automatically so the configured URL stays authoritative. An explicit `supabase` flag still wins for rollback.
-- The API proxy answers browser `OPTIONS` preflight locally for `/auth/*` and only forwards the actual Better Auth request to the private service.
-- The mobile web callback now refreshes the Better Auth execution session before returning to the dashboard, and it clears stale legacy OIDC state on Better Auth runs so the app does not rehydrate the wrong session source after redirect.
+- Better Auth is embedded in the API runtime at the same origin (e.g., `http://localhost:8082/auth`).
+- When a Better Auth URL is configured but the execution flag is omitted, the runtime promotes to `better-auth` automatically. An explicit `supabase` flag wins for rollback.
+- The mobile web callback refreshes the Better Auth execution session before returning to the dashboard.
 
 ## Required Authentik Inputs
 
@@ -64,7 +62,7 @@ Use these when `AUTH_EXECUTION_PROVIDER=better-auth` and a real Better Auth serv
 
 When you register the OAuth app in Discord, the Better Auth callback on the API origin is:
 
-- local: `http://localhost:9083/auth/callback/discord`
+- local: `http://localhost:8082/auth/callback/discord`
 - testnet/deployed API origin: `https://testnet.api.alternun.co/auth/callback/discord`
 
 ## Required Supabase Legacy Inputs

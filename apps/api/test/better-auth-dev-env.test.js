@@ -12,9 +12,9 @@ const {
 test('resolveBetterAuthDevConfig falls back to the local Better Auth defaults', () => {
   const config = resolveBetterAuthDevConfig({});
 
-  assert.equal(config.port, 9083);
+  assert.equal(config.port, 8082);
   assert.equal(config.host, '127.0.0.1');
-  assert.equal(config.baseURL, 'http://127.0.0.1:9083');
+  assert.equal(config.baseURL, 'http://127.0.0.1:8082');
   assert.equal(config.trustedOrigins.includes('http://localhost:8081'), true);
   assert.equal(config.trustedOrigins.includes('http://127.0.0.1:8081'), true);
   assert.ok(config.secret.length >= 32);
@@ -69,14 +69,14 @@ test('resolveBetterAuthDevConfig parses Discord credentials when present', () =>
 test('resolveBetterAuthDevConfig parses optional OAuth proxy settings', () => {
   const config = resolveBetterAuthDevConfig({
     BETTER_AUTH_OAUTH_PROXY_CURRENT_URL: 'http://localhost:8081',
-    BETTER_AUTH_OAUTH_PROXY_PRODUCTION_URL: 'http://localhost:9083',
+    BETTER_AUTH_OAUTH_PROXY_PRODUCTION_URL: 'http://localhost:8084',
     BETTER_AUTH_OAUTH_PROXY_SECRET: 'example-oauth-proxy-secret',
     BETTER_AUTH_OAUTH_PROXY_MAX_AGE: '45',
   });
 
   assert.equal(config.oauthProxy.enabled, true);
   assert.equal(config.oauthProxy.currentURL, 'http://localhost:8081');
-  assert.equal(config.oauthProxy.productionURL, 'http://localhost:9083');
+  assert.equal(config.oauthProxy.productionURL, 'http://localhost:8084');
   assert.equal(config.oauthProxy.secret, 'example-oauth-proxy-secret');
   assert.equal(config.oauthProxy.maxAge, 45);
 });

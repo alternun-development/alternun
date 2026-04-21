@@ -21,6 +21,17 @@ export async function createApp(): Promise<NestFastifyApplication> {
     origin: true,
     credentials: true,
   });
+
+  // Ensure CORS headers are sent for all responses, including errors
+  const fastify = app.getHttpAdapter().getInstance();
+  fastify.addHook('onSend', async (request, reply, payload) => {
+    if (!reply.hasHeader('Access-Control-Allow-Origin')) {
+      void reply.header('Access-Control-Allow-Origin', request.headers.origin ?? '*');
+      void reply.header('Access-Control-Allow-Credentials', 'true');
+    }
+    return payload;
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -30,7 +41,6 @@ export async function createApp(): Promise<NestFastifyApplication> {
   );
 
   setupOpenApi(app);
-  const fastify = app.getHttpAdapter().getInstance();
   const betterAuth = resolveBetterAuthBootstrapConfig(process.env);
 
   if (betterAuth.mode === 'proxy' && betterAuth.targetBaseUrl) {
@@ -45,7 +55,18 @@ export async function createApp(): Promise<NestFastifyApplication> {
       { baseURL: betterAuth.runtimeConfig.baseURL },
       'Registering embedded Better Auth runtime'
     );
-    registerBetterAuthRuntime(fastify, betterAuth.runtimeConfig);
+    try {
+      registerBetterAuthRuntime(fastify, betterAuth.runtimeConfig);
+      fastify.log.info('Successfully registered Better Auth runtime routes');
+    } catch (error) {
+      fastify.log.error(error, 'Failed to register Better Auth runtime');
+      throw error;
+    }
+  } else {
+    fastify.log.warn(
+      { mode: betterAuth.mode, hasConfig: !!betterAuth.runtimeConfig },
+      'Better Auth runtime not registered'
+    );
   }
   return app;
 }

@@ -109,6 +109,7 @@ export interface AuthExecutionSignInOptions {
 export interface AuthExecutionSignUpInput {
   email: string;
   password: string;
+  name?: string;
   locale?: string;
   metadata?: Record<string, unknown>;
 }

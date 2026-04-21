@@ -1,0 +1,86 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Alternun Impact Platform",
+  "description": "Comprehensive platform for tracking, verifying, and monetizing environmental and social impact through the AIRS rating system.",
+  "provider": {
+    "@type": "Organization",
+    "name": "Alternun",
+    "url": "https://alternun.co"
+  },
+  "areaServed": "Worldwide",
+  "serviceType": [
+    "Impact Measurement",
+    "ESG Tracking",
+    "Impact Verification",
+    "Carbon Credit Trading",
+    "Sustainability Reporting"
+  ],
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Individual Impact Tracking",
+      "description": "Track personal carbon footprint, renewable energy, and community contributions with real-time AIRS scoring",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    {
+      "@type": "Offer",
+      "name": "Enterprise ESG Monitoring",
+      "description": "Monitor organizational supply chain sustainability, employee impact, and ESG metrics with audit-ready reporting",
+      "priceCurrency": "USD"
+    },
+    {
+      "@type": "Offer",
+      "name": "API Access",
+      "description": "Integrate Alternun impact tracking into existing systems via REST API with real-time webhooks",
+      "priceCurrency": "USD"
+    },
+    {
+      "@type": "Offer",
+      "name": "Marketplace Access",
+      "description": "Trade verified AIRS tokens representing environmental and social impact",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Alternun Services",
+    "itemListElement": [
+      {
+        "@type": "Service",
+        "name": "Impact Scoring (AIRS)",
+        "description": "Proprietary algorithm converting environmental and social actions into quantifiable tokens"
+      },
+      {
+        "@type": "Service",
+        "name": "Data Integration",
+        "description": "Multi-source aggregation from carbon apps, supply chains, IoT sensors, and custom sources"
+      },
+      {
+        "@type": "Service",
+        "name": "Blockchain Verification",
+        "description": "Immutable distributed ledger records of verified impact"
+      },
+      {
+        "@type": "Service",
+        "name": "Impact Marketplace",
+        "description": "Trade verified impact tokens with ESG-focused organizations"
+      },
+      {
+        "@type": "Service",
+        "name": "Analytics Dashboard",
+        "description": "Real-time monitoring and reporting of impact metrics"
+      }
+    ]
+  },
+  "url": "https://alternun.co",
+  "sameAs": ["https://www.linkedin.com/company/alternun", "https://github.com/alternun"],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "Customer Support",
+    "email": "contact@alternun.io",
+    "url": "https://alternun.co/support"
+  }
+}

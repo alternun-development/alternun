@@ -22,7 +22,7 @@ test('loadLocalApiEnv loads local API env files for dev runs', () => {
         '# local api env',
         'PORT=9091',
         'AUTH_BETTER_AUTH_URL=http://localhost:8082/auth',
-        'BETTER_AUTH_URL=http://localhost:9083',
+        'BETTER_AUTH_URL=http://localhost:8082',
         'EXPORTED_VALUE="hello world"',
         'EMPTY_VALUE=',
         'export EXPORTED_FLAG=enabled',
@@ -33,7 +33,7 @@ test('loadLocalApiEnv loads local API env files for dev runs', () => {
 
     assert.equal(process.env.PORT, '9091');
     assert.equal(process.env.AUTH_BETTER_AUTH_URL, 'http://localhost:8082/auth');
-    assert.equal(process.env.BETTER_AUTH_URL, 'http://localhost:9083');
+    assert.equal(process.env.BETTER_AUTH_URL, 'http://localhost:8082');
     assert.equal(process.env.EXPORTED_VALUE, 'hello world');
     assert.equal(process.env.EMPTY_VALUE, '');
     assert.equal(process.env.EXPORTED_FLAG, 'enabled');

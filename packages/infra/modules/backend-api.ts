@@ -120,7 +120,9 @@ function resolveStageKey(stage: string): keyof BackendApiSettings['stageDomains'
     normalized === 'production' ||
     normalized === 'prod' ||
     normalized === 'api-prod' ||
-    normalized === 'api-production'
+    normalized === 'api-production' ||
+    normalized === 'dashboard-prod' ||
+    normalized === 'dashboard-production'
   ) {
     return 'production';
   }
@@ -284,6 +286,9 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
       ...(args.env.INFRA_BACKEND_API_DATABASE_URL
         ? { DATABASE_URL: args.env.INFRA_BACKEND_API_DATABASE_URL }
         : {}),
+      ...(args.env.INFRA_BACKEND_API_MIGRATIONS_ENABLED !== undefined
+        ? { RUN_MIGRATIONS: args.env.INFRA_BACKEND_API_MIGRATIONS_ENABLED }
+        : { RUN_MIGRATIONS: 'false' }),
       ...(args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL
         ? { AUTH_BETTER_AUTH_URL: args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL }
         : args.env.AUTH_BETTER_AUTH_URL

@@ -26,11 +26,12 @@ import {
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
+  Easing,
   KeyboardAvoidingView,
   LayoutAnimation,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -60,6 +61,7 @@ import LoadingButton from '../common/LoadingButton';
 import { AuthFooter } from './AuthFooter';
 import { getAuthErrorMessage, getSocialSignInErrorMessage } from './authErrorMessages';
 const RESEND_COOLDOWN_SECONDS = 45;
+const SOCIAL_REDIRECT_TIMEOUT_MS = 15000; // 15 seconds
 
 // Feature flags
 const ENABLE_WEB3_LOGIN = false; // Temporarily disabled: full web3 login flow not implemented
@@ -95,8 +97,9 @@ interface RequiredFieldState {
 
 interface SignUpResult {
   needsEmailVerification: boolean;
-  emailAlreadyRegistered: boolean;
-  confirmationEmailSent: boolean;
+  emailAlreadyRegistered?: boolean;
+  confirmationEmailSent?: boolean;
+  error?: string;
 }
 
 interface EmailAuthCapableClient {
@@ -114,18 +117,6 @@ export interface AuthSignInScreenProps {
 function isEmailAuthCapable(client: unknown): client is EmailAuthCapableClient {
   return Boolean(
     client && typeof (client as EmailAuthCapableClient).signUpWithEmail === 'function'
-  );
-}
-
-function supportsConfirmationResend(client: unknown): client is EmailAuthCapableClient {
-  return Boolean(
-    client && typeof (client as EmailAuthCapableClient).resendEmailConfirmation === 'function'
-  );
-}
-
-function supportsConfirmationCodeVerification(client: unknown): client is EmailAuthCapableClient {
-  return Boolean(
-    client && typeof (client as EmailAuthCapableClient).verifyEmailConfirmationCode === 'function'
   );
 }
 
@@ -187,21 +178,29 @@ export default function AuthSignInScreen({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [invalidEmail, setInvalidEmail] = useState(false);
+  const [passwordMismatch, setPasswordMismatch] = useState(false);
   const [focusedField, setFocusedField] = useState<InputFocusField | null>(null);
   const [requiredFields, setRequiredFields] = useState<RequiredFieldState>(() =>
     createDefaultRequiredFieldState()
   );
+  const [passwordValidationError, setPasswordValidationError] = useState<string | null>(null);
 
   const emailInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
   const confirmPasswordInputRef = useRef<TextInput>(null);
   const confirmationCodeInputRef = useRef<TextInput>(null);
+  const emailLabelAnim = useRef(new Animated.Value(0)).current;
+  const passwordLabelAnim = useRef(new Animated.Value(0)).current;
+  const confirmLabelAnim = useRef(new Animated.Value(0)).current;
+  const codeLabelAnim = useRef(new Animated.Value(0)).current;
   const toastIdRef = useRef(0);
   const toastTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const socialRedirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const socialRedirectAttemptRef = useRef(0);
 
   const googleProvider = resolvePrimaryOAuthProvider();
 
-  const rawEffectiveError = localError ?? error;
+  const rawEffectiveError = localError ?? (submitMode !== null ? error : null);
   const effectiveError = rawEffectiveError
     ? getAuthErrorMessage(rawEffectiveError, t('authModal.errors.authenticationFailed'))
     : null;
@@ -249,6 +248,7 @@ export default function AuthSignInScreen({
       const message = getSocialSignInErrorMessage(authError, {
         unavailable: t('authModal.errors.socialSignInUnavailable'),
         serverError: t('authModal.errors.socialSignInServerError'),
+        timeout: t('authModal.errors.socialSignInRedirectTimedOut'),
         fallback: t('authModal.errors.authenticationFailed'),
       });
       setLocalError(message);
@@ -256,6 +256,51 @@ export default function AuthSignInScreen({
       return message;
     },
     [pushToast, t]
+  );
+
+  const clearSocialRedirectTimeout = useCallback((): void => {
+    if (socialRedirectTimeoutRef.current !== null) {
+      clearTimeout(socialRedirectTimeoutRef.current);
+      socialRedirectTimeoutRef.current = null;
+    }
+  }, []);
+
+  const startSocialRedirectWatchdog = useCallback(
+    (provider: 'google' | 'discord'): number => {
+      clearSocialRedirectTimeout();
+      const attemptId = socialRedirectAttemptRef.current + 1;
+      socialRedirectAttemptRef.current = attemptId;
+
+      socialRedirectTimeoutRef.current = setTimeout(() => {
+        if (socialRedirectAttemptRef.current !== attemptId) {
+          return;
+        }
+
+        socialRedirectTimeoutRef.current = null;
+        socialRedirectAttemptRef.current += 1;
+        showSocialSignInFailure({
+          status: 408,
+          statusText: t('authModal.errors.socialSignInRedirectTimedOut'),
+        });
+        setSubmitMode((current) => (current === provider ? null : current));
+      }, SOCIAL_REDIRECT_TIMEOUT_MS);
+
+      return attemptId;
+    },
+    [clearSocialRedirectTimeout, showSocialSignInFailure, t]
+  );
+
+  const finishSocialRedirectAttempt = useCallback(
+    (attemptId: number): boolean => {
+      if (socialRedirectAttemptRef.current !== attemptId) {
+        return false;
+      }
+
+      clearSocialRedirectTimeout();
+      socialRedirectAttemptRef.current += 1;
+      return true;
+    },
+    [clearSocialRedirectTimeout]
   );
 
   useEffect(() => {
@@ -308,12 +353,23 @@ export default function AuthSignInScreen({
 
   useEffect(() => {
     return () => {
+      clearSocialRedirectTimeout();
+      socialRedirectAttemptRef.current += 1;
       for (const timeout of toastTimeoutsRef.current) {
         clearTimeout(timeout);
       }
       toastTimeoutsRef.current = [];
     };
-  }, []);
+  }, [clearSocialRedirectTimeout]);
+
+  const animateLabel = (anim: Animated.Value, visible: boolean): void => {
+    Animated.timing(anim, {
+      toValue: visible ? 1 : 0,
+      duration: 160,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  };
 
   const transitionToStep = (step: AuthStep): void => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -438,13 +494,19 @@ export default function AuthSignInScreen({
     setEmail(prefilledEmail);
     setPassword('');
     setConfirmPassword('');
+    setPasswordMismatch(false);
     setShowPassword(false);
     setShowConfirmPassword(false);
     setConfirmationCode('');
     setConfirmationCodeRequired(false);
     clearRequiredFields();
+    emailLabelAnim.setValue(prefilledEmail.length > 0 ? 1 : 0);
+    passwordLabelAnim.setValue(0);
+    confirmLabelAnim.setValue(0);
+    codeLabelAnim.setValue(0);
     setLocalError(null);
     setNotice(nextNotice);
+    setSubmitMode(null);
   };
 
   const handleEmailSignIn = async (): Promise<void> => {
@@ -510,8 +572,15 @@ export default function AuthSignInScreen({
     }
 
     setSubmitMode('signup');
+    setLocalError(null);
     try {
       const result = await client.signUpWithEmail(normalizedEmail, password, locale);
+
+      if (result.error && typeof result.error === 'string') {
+        setLocalError(result.error);
+        setSubmitMode(null);
+        return;
+      }
 
       if (result.needsEmailVerification) {
         setConfirmationEmail(normalizedEmail);
@@ -535,12 +604,14 @@ export default function AuthSignInScreen({
         setShowPassword(false);
         setShowConfirmPassword(false);
         clearRequiredFields();
+        setSubmitMode(null);
         return;
       }
 
       setConfirmationEmail(null);
       setResendCooldown(0);
       setNotice(t('authModal.notices.accountCreatedSigningIn'));
+      setSubmitMode(null);
     } catch (authError) {
       setLocalError(getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed')));
       setSubmitMode(null);
@@ -550,6 +621,10 @@ export default function AuthSignInScreen({
   const handleResendConfirmation = async (): Promise<void> => {
     resetMessages();
 
+    if (resendCooldown > 0) {
+      return;
+    }
+
     const emailCandidate = (confirmationEmail ?? email).trim();
     if (!emailCandidate) {
       setLocalError(t('authModal.errors.enterEmailFirst'));
@@ -561,65 +636,89 @@ export default function AuthSignInScreen({
       return;
     }
 
-    if (!supportsConfirmationResend(client) || !client.resendEmailConfirmation) {
-      setLocalError(t('authModal.errors.resendUnavailable'));
-      return;
-    }
-
-    if (resendCooldown > 0) {
+    if (!client || typeof client.resendEmailConfirmation !== 'function') {
+      const msg = 'Resend not available. Check your email inbox or spam folder.';
+      setLocalError(msg);
+      pushToast(t('authModal.errors.authenticationFailed'), msg);
       return;
     }
 
     setSubmitMode('resend');
     try {
-      await client.resendEmailConfirmation(normalizedEmail);
+      const emailAuthClient = client as unknown as EmailAuthCapableClient;
+      await Promise.race<void>([
+        emailAuthClient.resendEmailConfirmation(normalizedEmail),
+        new Promise<void>((_, reject) =>
+          setTimeout(() => reject(new Error('Request timeout')), 15000)
+        ),
+      ]);
+
       setConfirmationEmail(normalizedEmail);
       setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail }));
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
-      setSubmitMode(null);
+      setLocalError(null);
     } catch (authError) {
-      setLocalError(getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed')));
+      const errorMsg =
+        authError instanceof Error
+          ? authError.message
+          : getAuthErrorMessage(authError, 'Failed to resend confirmation email');
+      setLocalError(errorMsg);
+      pushToast('Resend Failed', errorMsg);
+    } finally {
       setSubmitMode(null);
     }
   };
 
   const handleVerifyConfirmationCode = async (): Promise<void> => {
-    resetMessages();
-    setConfirmationCodeRequired(false);
-
-    const emailCandidate = (confirmationEmail ?? email).trim();
-    if (!emailCandidate) {
-      setLocalError(t('authModal.errors.enterEmailFirst'));
-      return;
-    }
-
-    const normalizedEmail = normalizeEmailOrSetError(emailCandidate);
-    if (!normalizedEmail) {
-      return;
-    }
-
-    if (!supportsConfirmationCodeVerification(client) || !client.verifyEmailConfirmationCode) {
-      setLocalError(t('authModal.errors.verificationCodeUnavailable'));
-      return;
-    }
-
-    const normalizedCode = normalizeConfirmationCode(confirmationCode);
-    if (!normalizedCode) {
-      setConfirmationCodeRequired(true);
-      confirmationCodeInputRef.current?.focus();
-      setLocalError(t('authModal.validation.confirmationCodeRequired'));
-      return;
-    }
-
-    setSubmitMode('verifyCode');
     try {
-      await client.verifyEmailConfirmationCode(normalizedEmail, normalizedCode);
+      resetMessages();
+      setConfirmationCodeRequired(false);
+      setSubmitMode('verifyCode');
+
+      const emailCandidate = (confirmationEmail ?? email).trim();
+      if (!emailCandidate) {
+        setLocalError(t('authModal.errors.enterEmailFirst'));
+        setSubmitMode(null);
+        return;
+      }
+
+      const normalizedEmail = normalizeEmailOrSetError(emailCandidate);
+      if (!normalizedEmail) {
+        setSubmitMode(null);
+        return;
+      }
+
+      const normalizedCode = normalizeConfirmationCode(confirmationCode);
+      if (!normalizedCode) {
+        setConfirmationCodeRequired(true);
+        confirmationCodeInputRef.current?.focus();
+        setLocalError(t('authModal.validation.confirmationCodeRequired'));
+        setSubmitMode(null);
+        return;
+      }
+
+      if (!client || typeof client.verifyEmailConfirmationCode !== 'function') {
+        const msg =
+          'Email verification not available. Please check your email for confirmation link.';
+        setLocalError(msg);
+        pushToast(t('authModal.errors.authenticationFailed'), msg);
+        setSubmitMode(null);
+        return;
+      }
+
+      const emailAuthClient = client as unknown as EmailAuthCapableClient;
+      await emailAuthClient.verifyEmailConfirmationCode(normalizedEmail, normalizedCode);
       setConfirmationEmail(normalizedEmail);
       setResendCooldown(0);
       transitionToSignInForm(normalizedEmail, t('authModal.notices.emailConfirmedSignIn'));
-      setSubmitMode(null);
     } catch (authError) {
-      setLocalError(getAuthErrorMessage(authError, t('authModal.errors.confirmationCodeInvalid')));
+      const errorMsg = getAuthErrorMessage(
+        authError,
+        t('authModal.errors.confirmationCodeInvalid')
+      );
+      setLocalError(errorMsg);
+      pushToast(t('authModal.errors.authenticationFailed'), errorMsg);
+    } finally {
       setSubmitMode(null);
     }
   };
@@ -627,6 +726,8 @@ export default function AuthSignInScreen({
   const handleSocialSignIn = async (provider: 'google' | 'discord'): Promise<void> => {
     resetMessages();
     setSubmitMode(provider);
+    const attemptId = startSocialRedirectWatchdog(provider);
+
     try {
       await startSocialSignIn({
         client,
@@ -640,6 +741,10 @@ export default function AuthSignInScreen({
         },
       });
     } catch (oidcError) {
+      if (!finishSocialRedirectAttempt(attemptId)) {
+        return;
+      }
+
       showSocialSignInFailure(oidcError);
       setSubmitMode(null);
     }
@@ -651,6 +756,20 @@ export default function AuthSignInScreen({
 
   const handleDiscordSignIn = async (): Promise<void> => {
     await handleSocialSignIn('discord');
+  };
+
+  const handleForgotPassword = (): void => {
+    if (isBusy) {
+      return;
+    }
+
+    router.push({
+      pathname: '/auth/reset-password',
+      params: {
+        next: authReturnTo ?? '/',
+        email: email.trim() || undefined,
+      },
+    });
   };
 
   const handleWalletConnect = async (walletType: string): Promise<void> => {
@@ -675,18 +794,29 @@ export default function AuthSignInScreen({
 
     transitionToStep('form');
     setMode(nextMode);
+    setEmail('');
     resetMessages();
     setPassword('');
     setConfirmPassword('');
+    setPasswordMismatch(false);
     setShowPassword(false);
     setShowConfirmPassword(false);
+    setPasswordValidationError(null);
     setConfirmationCode('');
     setConfirmationCodeRequired(false);
     clearRequiredFields();
+    emailLabelAnim.setValue(0);
+    passwordLabelAnim.setValue(0);
+    confirmLabelAnim.setValue(0);
+    codeLabelAnim.setValue(0);
     if (nextMode === 'signup') {
       setConfirmationEmail(null);
       setResendCooldown(0);
     }
+  };
+
+  const closeSettingsMenu = (): void => {
+    setSettingsMenuOpen(false);
   };
 
   return (
@@ -716,6 +846,11 @@ export default function AuthSignInScreen({
           ]}
           keyboardShouldPersistTaps='handled'
           showsVerticalScrollIndicator={false}
+          onTouchStart={() => {
+            if (settingsMenuOpen) {
+              closeSettingsMenu();
+            }
+          }}
         >
           <View
             style={[
@@ -870,7 +1005,10 @@ export default function AuthSignInScreen({
                       >
                         <TouchableOpacity
                           activeOpacity={0.8}
-                          onPress={() => cycleLanguage()}
+                          onPress={() => {
+                            cycleLanguage();
+                            closeSettingsMenu();
+                          }}
                           style={styles.settingsDropdownItem}
                         >
                           <Languages size={13} color={p.iconDefault} />
@@ -889,7 +1027,10 @@ export default function AuthSignInScreen({
                         />
                         <TouchableOpacity
                           activeOpacity={0.8}
-                          onPress={() => toggleThemeMode()}
+                          onPress={() => {
+                            toggleThemeMode();
+                            closeSettingsMenu();
+                          }}
                           style={styles.settingsDropdownItem}
                         >
                           <ThemeIcon size={13} color={p.iconDefault} />
@@ -957,9 +1098,25 @@ export default function AuthSignInScreen({
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.inputLabel, { color: p.textPrimary }]}>
+                  <Animated.Text
+                    style={[
+                      styles.inputLabel,
+                      { color: p.accent },
+                      {
+                        opacity: emailLabelAnim,
+                        transform: [
+                          {
+                            translateY: emailLabelAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [-6, 0],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  >
                     {t('authModal.placeholders.email')}
-                  </Text>
+                  </Animated.Text>
                   <View
                     style={[
                       styles.inputWrapper,
@@ -978,8 +1135,7 @@ export default function AuthSignInScreen({
                       style={[
                         styles.inputIconWrap,
                         {
-                          backgroundColor: hasEmailInputError ? p.errorBg : p.accentMuted,
-                          borderColor: hasEmailInputError ? p.errorBorder : 'rgba(13,148,136,0.16)',
+                          backgroundColor: hasEmailInputError ? p.errorBg : 'transparent',
                         },
                       ]}
                     >
@@ -998,11 +1154,14 @@ export default function AuthSignInScreen({
                         setEmail(value);
                         clearRequiredField('email');
                         setInvalidEmail(false);
+                        setLocalError(null);
+                        animateLabel(emailLabelAnim, value.length > 0);
                       }}
                       onFocus={() => setFocusedField('email')}
                       onBlur={() =>
                         setFocusedField((current) => (current === 'email' ? null : current))
                       }
+                      placeholder={t('authModal.placeholders.email')}
                       placeholderTextColor={p.textPlaceholder}
                       style={[styles.input, { color: p.textPrimary }]}
                       value={email}
@@ -1020,9 +1179,25 @@ export default function AuthSignInScreen({
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.inputLabel, { color: p.textPrimary }]}>
+                  <Animated.Text
+                    style={[
+                      styles.inputLabel,
+                      { color: p.accent },
+                      {
+                        opacity: passwordLabelAnim,
+                        transform: [
+                          {
+                            translateY: passwordLabelAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [-6, 0],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  >
                     {t('authModal.placeholders.password')}
-                  </Text>
+                  </Animated.Text>
                   <View
                     style={[
                       styles.inputWrapper,
@@ -1041,10 +1216,7 @@ export default function AuthSignInScreen({
                       style={[
                         styles.inputIconWrap,
                         {
-                          backgroundColor: requiredFields.password ? p.errorBg : p.accentMuted,
-                          borderColor: requiredFields.password
-                            ? p.errorBorder
-                            : 'rgba(13,148,136,0.16)',
+                          backgroundColor: requiredFields.password ? p.errorBg : 'transparent',
                         },
                       ]}
                     >
@@ -1061,57 +1233,95 @@ export default function AuthSignInScreen({
                       onChangeText={(value) => {
                         setPassword(value);
                         clearRequiredField('password');
+                        setLocalError(null);
+                        animateLabel(passwordLabelAnim, value.length > 0);
+                        // Real-time password validation
+                        if (value.length > 0) {
+                          try {
+                            parseSignUpPassword(value);
+                            setPasswordValidationError(null);
+                          } catch {
+                            setPasswordValidationError(t('authModal.validation.passwordMin'));
+                          }
+                        } else {
+                          setPasswordValidationError(null);
+                        }
                       }}
                       onFocus={() => setFocusedField('password')}
                       onBlur={() =>
                         setFocusedField((current) => (current === 'password' ? null : current))
                       }
+                      placeholder={t('authModal.placeholders.password')}
                       placeholderTextColor={p.textPlaceholder}
                       secureTextEntry={!showPassword}
                       style={[styles.input, { color: p.textPrimary }]}
                       value={password}
                     />
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() => setShowPassword((current) => !current)}
-                      style={[
-                        styles.visibilityToggle,
-                        {
-                          backgroundColor: focusedField === 'password' ? p.accentMuted : p.inputBg,
-                          borderColor:
-                            focusedField === 'password' ? p.inputBorderFocus : p.inputBorder,
-                        },
-                      ]}
-                    >
-                      {showPassword ? (
-                        <EyeOff size={16} color={p.accent} />
-                      ) : (
-                        <Eye size={16} color={p.accent} />
-                      )}
-                    </TouchableOpacity>
+                    {password.length > 0 && (
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => setShowPassword((current) => !current)}
+                        style={[
+                          styles.visibilityToggle,
+                          {
+                            backgroundColor:
+                              focusedField === 'password' ? p.accentMuted : p.inputBg,
+                            borderColor:
+                              focusedField === 'password' ? p.inputBorderFocus : p.inputBorder,
+                          },
+                        ]}
+                      >
+                        {showPassword ? (
+                          <EyeOff size={16} color={p.accent} />
+                        ) : (
+                          <Eye size={16} color={p.accent} />
+                        )}
+                      </TouchableOpacity>
+                    )}
                   </View>
                   {requiredFields.password ? (
                     <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
                       {t('authModal.validation.passwordRequired')}
                     </Text>
+                  ) : passwordValidationError && mode === 'signup' ? (
+                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                      {passwordValidationError}
+                    </Text>
                   ) : null}
                 </View>
 
-                {mode === 'signup' ? (
+                {mode === 'signup' && password.length > 0 ? (
                   <View style={styles.inputGroup}>
-                    <Text style={[styles.inputLabel, { color: p.textPrimary }]}>
+                    <Animated.Text
+                      style={[
+                        styles.inputLabel,
+                        { color: p.accent },
+                        {
+                          opacity: confirmLabelAnim,
+                          transform: [
+                            {
+                              translateY: confirmLabelAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [-6, 0],
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                    >
                       {t('authModal.placeholders.confirmPassword')}
-                    </Text>
+                    </Animated.Text>
                     <View
                       style={[
                         styles.inputWrapper,
                         { backgroundColor: p.inputBg, borderColor: p.inputBorder },
-                        requiredFields.confirmPassword && {
+                        (requiredFields.confirmPassword || passwordMismatch) && {
                           backgroundColor: p.errorBg,
                           borderColor: p.errorBorder,
                         },
                         focusedField === 'confirmPassword' &&
-                          !requiredFields.confirmPassword && {
+                          !requiredFields.confirmPassword &&
+                          !passwordMismatch && {
                             borderColor: p.inputBorderFocus,
                           },
                       ]}
@@ -1120,18 +1330,20 @@ export default function AuthSignInScreen({
                         style={[
                           styles.inputIconWrap,
                           {
-                            backgroundColor: requiredFields.confirmPassword
-                              ? p.errorBg
-                              : p.accentMuted,
-                            borderColor: requiredFields.confirmPassword
-                              ? p.errorBorder
-                              : 'rgba(13,148,136,0.16)',
+                            backgroundColor:
+                              requiredFields.confirmPassword || passwordMismatch
+                                ? p.errorBg
+                                : 'transparent',
                           },
                         ]}
                       >
                         <LockKeyhole
                           size={15}
-                          color={requiredFields.confirmPassword ? p.errorIcon : p.accent}
+                          color={
+                            requiredFields.confirmPassword || passwordMismatch
+                              ? p.errorIcon
+                              : p.accent
+                          }
                           strokeWidth={2.15}
                         />
                       </View>
@@ -1142,6 +1354,9 @@ export default function AuthSignInScreen({
                         onChangeText={(value) => {
                           setConfirmPassword(value);
                           clearRequiredField('confirmPassword');
+                          setLocalError(null);
+                          setPasswordMismatch(value.length > 0 && value !== password);
+                          animateLabel(confirmLabelAnim, value.length > 0);
                         }}
                         onFocus={() => setFocusedField('confirmPassword')}
                         onBlur={() =>
@@ -1149,36 +1364,43 @@ export default function AuthSignInScreen({
                             current === 'confirmPassword' ? null : current
                           )
                         }
+                        placeholder={t('authModal.placeholders.confirmPassword')}
                         placeholderTextColor={p.textPlaceholder}
                         secureTextEntry={!showConfirmPassword}
                         style={[styles.input, { color: p.textPrimary }]}
                         value={confirmPassword}
                       />
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => setShowConfirmPassword((current) => !current)}
-                        style={[
-                          styles.visibilityToggle,
-                          {
-                            backgroundColor:
-                              focusedField === 'confirmPassword' ? p.accentMuted : p.inputBg,
-                            borderColor:
-                              focusedField === 'confirmPassword'
-                                ? p.inputBorderFocus
-                                : p.inputBorder,
-                          },
-                        ]}
-                      >
-                        {showConfirmPassword ? (
-                          <EyeOff size={16} color={p.accent} />
-                        ) : (
-                          <Eye size={16} color={p.accent} />
-                        )}
-                      </TouchableOpacity>
+                      {confirmPassword.length > 0 && (
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => setShowConfirmPassword((current) => !current)}
+                          style={[
+                            styles.visibilityToggle,
+                            {
+                              backgroundColor:
+                                focusedField === 'confirmPassword' ? p.accentMuted : p.inputBg,
+                              borderColor:
+                                focusedField === 'confirmPassword'
+                                  ? p.inputBorderFocus
+                                  : p.inputBorder,
+                            },
+                          ]}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff size={16} color={p.accent} />
+                          ) : (
+                            <Eye size={16} color={p.accent} />
+                          )}
+                        </TouchableOpacity>
+                      )}
                     </View>
                     {requiredFields.confirmPassword ? (
                       <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
                         {t('authModal.validation.confirmPasswordRequired')}
+                      </Text>
+                    ) : passwordMismatch ? (
+                      <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                        {t('authModal.validation.passwordMismatch')}
                       </Text>
                     ) : null}
                   </View>
@@ -1209,6 +1431,17 @@ export default function AuthSignInScreen({
 
                 {mode === 'signin' ? (
                   <>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      disabled={isBusy}
+                      onPress={handleForgotPassword}
+                      style={[styles.linkButton, styles.forgotPasswordLink]}
+                    >
+                      <Text style={[styles.linkButtonText, { color: p.accent }]}>
+                        {t('authModal.actions.forgotPassword', undefined, 'Forgot password?')}
+                      </Text>
+                    </TouchableOpacity>
+
                     <View style={styles.dividerRow}>
                       <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
                       <Text style={[styles.dividerText, { color: p.textMuted }]}>
@@ -1289,7 +1522,12 @@ export default function AuthSignInScreen({
                       { backgroundColor: p.errorBg, borderColor: p.errorBorder },
                     ]}
                   >
-                    <AlertCircle color={p.errorIcon} size={14} />
+                    <AlertCircle
+                      color={p.errorIcon}
+                      size={18}
+                      strokeWidth={2}
+                      style={{ marginTop: 1, flexShrink: 0 }}
+                    />
                     <Text style={[styles.errorText, { color: p.errorText }]}>{effectiveError}</Text>
                   </View>
                 ) : null}
@@ -1349,6 +1587,25 @@ export default function AuthSignInScreen({
                   <Text style={[styles.resendText, { color: p.textSecondary }]}>
                     {t('authModal.confirmation.codeBody')}
                   </Text>
+                  <Animated.Text
+                    style={[
+                      styles.inputLabel,
+                      { color: p.accent },
+                      {
+                        opacity: codeLabelAnim,
+                        transform: [
+                          {
+                            translateY: codeLabelAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [-6, 0],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  >
+                    {t('authModal.placeholders.confirmationCode')}
+                  </Animated.Text>
                   <View
                     style={[
                       styles.inputWrapper,
@@ -1367,10 +1624,7 @@ export default function AuthSignInScreen({
                       style={[
                         styles.inputIconWrap,
                         {
-                          backgroundColor: confirmationCodeRequired ? p.errorBg : p.accentMuted,
-                          borderColor: confirmationCodeRequired
-                            ? p.errorBorder
-                            : 'rgba(13,148,136,0.16)',
+                          backgroundColor: confirmationCodeRequired ? p.errorBg : 'transparent',
                         },
                       ]}
                     >
@@ -1386,8 +1640,11 @@ export default function AuthSignInScreen({
                       autoCorrect={false}
                       keyboardType='number-pad'
                       onChangeText={(value) => {
-                        setConfirmationCode(value.replace(/\s+/g, ''));
+                        const cleanedValue = value.replace(/\s+/g, '');
+                        setConfirmationCode(cleanedValue);
                         setConfirmationCodeRequired(false);
+                        setLocalError(null);
+                        animateLabel(codeLabelAnim, cleanedValue.length > 0);
                       }}
                       onFocus={() => setFocusedField('confirmationCode')}
                       onBlur={() =>
@@ -1409,14 +1666,14 @@ export default function AuthSignInScreen({
                   ) : null}
                   <TouchableOpacity
                     activeOpacity={0.8}
-                    disabled={isBusy}
                     onPress={() => {
-                      void handleVerifyConfirmationCode();
+                      if (!isBusy) {
+                        void handleVerifyConfirmationCode();
+                      }
                     }}
                     style={[
                       styles.resendButton,
                       { borderColor: p.noticeBorder, backgroundColor: p.noticeBg },
-                      isBusy && styles.buttonDisabled,
                     ]}
                   >
                     {submitMode === 'verifyCode' ? (
@@ -1447,7 +1704,12 @@ export default function AuthSignInScreen({
                       { backgroundColor: p.errorBg, borderColor: p.errorBorder },
                     ]}
                   >
-                    <AlertCircle color={p.errorIcon} size={14} />
+                    <AlertCircle
+                      color={p.errorIcon}
+                      size={18}
+                      strokeWidth={2}
+                      style={{ marginTop: 1, flexShrink: 0 }}
+                    />
                     <Text style={[styles.errorText, { color: p.errorText }]}>{effectiveError}</Text>
                   </View>
                 ) : null}
@@ -1466,20 +1728,17 @@ export default function AuthSignInScreen({
                   </Text>
                   <TouchableOpacity
                     activeOpacity={0.8}
-                    disabled={isBusy || resendCooldown > 0}
                     onPress={() => {
-                      void handleResendConfirmation();
+                      if (!isBusy && resendCooldown === 0) {
+                        void handleResendConfirmation();
+                      }
                     }}
-                    style={[
-                      styles.resendButton,
-                      { borderColor: p.noticeBorder, backgroundColor: p.noticeBg },
-                      (isBusy || resendCooldown > 0) && styles.buttonDisabled,
-                    ]}
+                    style={[styles.linkButton, resendCooldown > 0 && styles.buttonDisabled]}
                   >
                     {submitMode === 'resend' ? (
                       <ActivityIndicator color={p.accent} size='small' />
                     ) : (
-                      <Text style={[styles.resendButtonText, { color: p.noticeText }]}>
+                      <Text style={[styles.linkButtonText, { color: p.accent }]}>
                         {resendCooldown > 0
                           ? t('authModal.resend.sendAgainIn', { seconds: resendCooldown })
                           : t('authModal.resend.sendAgain')}
@@ -1490,15 +1749,12 @@ export default function AuthSignInScreen({
 
                 <TouchableOpacity
                   activeOpacity={0.85}
-                  disabled={isBusy}
                   onPress={() => {
-                    transitionToSignInForm(confirmationEmail ?? '');
+                    if (!isBusy) {
+                      transitionToSignInForm(confirmationEmail ?? '');
+                    }
                   }}
-                  style={[
-                    styles.primaryButton,
-                    { backgroundColor: p.primaryBtnBg },
-                    isBusy && styles.buttonDisabled,
-                  ]}
+                  style={[styles.primaryButton, { backgroundColor: p.primaryBtnBg }]}
                 >
                   <Text style={[styles.primaryButtonText, { color: p.primaryBtnText }]}>
                     {t('authModal.actions.alreadyConfirmedContinue')}
@@ -1507,19 +1763,21 @@ export default function AuthSignInScreen({
 
                 <TouchableOpacity
                   activeOpacity={0.8}
-                  disabled={isBusy}
                   onPress={() => {
-                    transitionToStep('form');
-                    setMode('signup');
-                    setEmail('');
-                    setPassword('');
-                    setConfirmPassword('');
-                    setConfirmationEmail(null);
-                    setConfirmationCode('');
-                    setConfirmationCodeRequired(false);
-                    setResendCooldown(0);
-                    clearRequiredFields();
-                    resetMessages();
+                    if (!isBusy) {
+                      transitionToStep('form');
+                      setMode('signup');
+                      setEmail('');
+                      setPassword('');
+                      setConfirmPassword('');
+                      setConfirmationEmail(null);
+                      setConfirmationCode('');
+                      setConfirmationCodeRequired(false);
+                      setResendCooldown(0);
+                      clearRequiredFields();
+                      resetMessages();
+                      setSubmitMode(null);
+                    }
                   }}
                   style={styles.footerToggle}
                 >
@@ -1558,7 +1816,11 @@ const styles = createTypographyStyles({
     backgroundColor: 'rgba(5,5,16,0.82)',
   },
   shaderBackdrop: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
   },
   keyboardContainer: {
     flex: 1,
@@ -1581,6 +1843,7 @@ const styles = createTypographyStyles({
   card: {
     borderRadius: 18,
     borderWidth: 1,
+    borderTopWidth: 0,
     borderColor: 'rgba(255,255,255,0.08)',
     backgroundColor: 'rgba(13,13,31,0.92)',
     padding: 18,
@@ -1688,7 +1951,7 @@ const styles = createTypographyStyles({
   },
   settingsDropdown: {
     position: 'absolute',
-    top: 40,
+    top: 38,
     right: 0,
     zIndex: 9999,
     minWidth: 168,
@@ -1704,8 +1967,8 @@ const styles = createTypographyStyles({
   },
   settingsDropdownCompact: {
     position: 'absolute',
-    top: 44,
-    right: -8,
+    top: 36,
+    right: 0,
     zIndex: 99999,
     minWidth: 180,
     alignSelf: 'flex-end',
@@ -1780,15 +2043,16 @@ const styles = createTypographyStyles({
   },
   modeSwitch: {
     flexDirection: 'row',
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    borderRadius: 24,
-    padding: 0,
-    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 20,
+    padding: 4,
+    gap: 0,
   },
   modeButton: {
     flex: 1,
-    borderRadius: 24,
+    borderRadius: 16,
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -1809,32 +2073,31 @@ const styles = createTypographyStyles({
     gap: 6,
   },
   inputLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-    marginBottom: 0,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    minHeight: 54,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    gap: 10,
+    borderRadius: 20,
+    borderWidth: 0,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    minHeight: 58,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   inputWrapperRequired: {
-    borderColor: 'rgba(248,113,113,0.75)',
-    backgroundColor: 'rgba(248,113,113,0.12)',
+    borderColor: 'rgba(248,113,113,0.65)',
+    backgroundColor: 'rgba(248,113,113,0.08)',
   },
   inputIconWrap: {
-    width: 38,
-    height: 38,
+    width: 36,
+    height: 36,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -1844,19 +2107,21 @@ const styles = createTypographyStyles({
     minWidth: 0,
     color: '#e8e8ff',
     fontSize: 16,
-    paddingVertical: 0,
-    letterSpacing: 0.2,
+    paddingVertical: 2,
+    paddingHorizontal: 4,
+    letterSpacing: 0.3,
   },
   requiredFieldText: {
-    marginTop: -4,
+    marginTop: 2,
     marginLeft: 4,
     color: '#fca5a5',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
+    letterSpacing: 0.2,
   },
   visibilityToggle: {
-    width: 38,
-    height: 38,
+    width: 40,
+    height: 40,
     borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
@@ -1866,7 +2131,7 @@ const styles = createTypographyStyles({
   primaryButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 24,
+    borderRadius: 32,
     backgroundColor: '#1EE6B5',
     minHeight: 48,
     paddingHorizontal: 32,
@@ -1882,7 +2147,7 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    borderRadius: 24,
+    borderRadius: 32,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
     backgroundColor: 'rgba(255,255,255,0.05)',
@@ -1970,17 +2235,34 @@ const styles = createTypographyStyles({
   },
   errorBox: {
     flexDirection: 'row',
+    gap: 10,
+    alignItems: 'flex-start',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(248,113,113,0.5)',
+    backgroundColor: 'rgba(248,113,113,0.12)',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  errorText: {
+    color: '#ff6b6b',
+    fontSize: 13,
+    fontWeight: '500',
+    flex: 1,
+    lineHeight: 18,
+  },
+  infoBox: {
+    flexDirection: 'row',
     gap: 6,
     alignItems: 'center',
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(248,113,113,0.35)',
-    backgroundColor: 'rgba(248,113,113,0.1)',
+    borderWidth: 0,
+    backgroundColor: 'rgba(59,130,246,0.12)',
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
-  errorText: {
-    color: '#fca5a5',
+  infoText: {
+    color: '#60a5fa',
     fontSize: 12,
     flex: 1,
   },
@@ -2018,6 +2300,21 @@ const styles = createTypographyStyles({
     color: '#66e6c5',
     fontSize: 12,
     fontWeight: '700',
+  },
+  linkButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 0,
+  },
+  forgotPasswordLink: {
+    alignSelf: 'center',
+    marginTop: -2,
+    marginBottom: 2,
+  },
+  linkButtonText: {
+    color: '#66e6c5',
+    fontSize: 12,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   footerToggle: {
     alignItems: 'center',

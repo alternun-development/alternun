@@ -2,6 +2,13 @@
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 INFRA_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
+REPO_ROOT=$(cd "$SCRIPT_DIR/../../.." && pwd)
+
+# Ensure correct AWS account credentials are loaded before any AWS operations
+if [ -f "$REPO_ROOT/scripts/setup-aws-account.sh" ]; then
+  # shellcheck source=/dev/null
+  source "$REPO_ROOT/scripts/setup-aws-account.sh"
+fi
 
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_load-infra-env.sh"
@@ -22,8 +29,8 @@ else
 fi
 
 if [ -f "$SCRIPT_DIR/resolve-secrets-manager-env.sh" ]; then
-  # shellcheck source=/dev/null
-  source "$SCRIPT_DIR/resolve-secrets-manager-env.sh"
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/resolve-secrets-manager-env.sh"
 else
   echo "ERROR: Missing $SCRIPT_DIR/resolve-secrets-manager-env.sh" >&2
   exit 1
@@ -32,7 +39,32 @@ fi
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_pipeline-safety.sh"
 
+canonicalize_backend_stack_stage() {
+  local normalized
+  normalized=$(echo "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+
+  case "$normalized" in
+    api|backend|backend-dev|backend-api|backend-api-dev)
+      printf '%s\n' 'api-dev'
+      ;;
+    api-prod|api-production|backend-prod|backend-production|backend-api-prod|backend-api-production)
+      printf '%s\n' 'api-prod'
+      ;;
+    *)
+      printf '%s\n' "$normalized"
+      ;;
+  esac
+}
+
 stage_normalized=$(echo "$STACK" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+canonical_stack=$(canonicalize_backend_stack_stage "$stage_normalized")
+if [ "$canonical_stack" != "$stage_normalized" ]; then
+  echo "WARN: Legacy backend stage ${STACK} is deprecated; using canonical stack ${canonical_stack}."
+  STACK="$canonical_stack"
+  export STACK
+  export SST_STAGE="$STACK"
+  stage_normalized="$canonical_stack"
+fi
 is_identity_stage=false
 is_backend_api_stage=false
 is_dedicated_non_expo_stage=false
@@ -364,7 +396,7 @@ prune_legacy_managed_certificate_state() {
   fi
 
   if [ "$STACK" = "dev" ]; then
-    if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" && [ -n "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}" ]; then
+    if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-false}" && [ -n "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}" ]; then
       prefixes+=("airs-redir-${STACK}CdnSsl")
     fi
 
@@ -550,7 +582,7 @@ cleanup_deploy_aliases() {
   local aliases=()
 
   if [ "$STACK" = "dev" ]; then
-    if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}"; then
+    if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-false}"; then
       aliases+=("${INFRA_REDIRECT_AIRS_TO_DEV_SOURCE:-${INFRA_EXPO_DOMAIN_PRODUCTION:-${DOMAIN_PRODUCTION:-}}}")
     fi
 
@@ -612,7 +644,7 @@ should_cleanup_deploy_aliases() {
 
   local normalized_stack="${stage_normalized:-${STACK:-}}"
   if [ "$normalized_stack" = "dev" ] && (
-    is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" ||
+    is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-false}" ||
     is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" ||
     is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}"
   ); then
@@ -679,8 +711,11 @@ validate_identity_database_mode_transition
 
 hydrate_backend_api_jwt_signing_key
 
+echo "DEBUG: Starting pre-deploy pipeline checks..."
 selected_pipeline_csv=$(resolve_selected_pipeline_csv)
+echo "DEBUG: Selected pipeline CSV: $selected_pipeline_csv"
 assert_pipeline_reconciliation_safe "$selected_pipeline_csv" "$STACK"
+echo "DEBUG: Pipeline reconciliation check passed"
 
 if should_cleanup_deploy_aliases; then
   cleanup_deploy_aliases
@@ -694,7 +729,9 @@ else
   echo "Skipping CloudFront alias cleanup (INFRA_ENABLE_ALIAS_CLEANUP=${INFRA_ENABLE_ALIAS_CLEANUP:-false})"
 fi
 
+echo "DEBUG: Pruning legacy managed certificate state..."
 prune_legacy_managed_certificate_state
+echo "DEBUG: Certificate state pruned successfully"
 
 echo "Using SST stack/stage: ${STACK} (cwd: ${INFRA_DIR})"
 
@@ -705,8 +742,10 @@ else
   echo "Skipping sst diff (INFRA_ENABLE_SST_DIFF=${INFRA_ENABLE_SST_DIFF:-false})"
 fi
 
+echo "DEBUG: Checking APPROVE variable: '${APPROVE:-NOT_SET}'"
 if ! is_truthy "${APPROVE:-false}"; then
   echo "Preview completed. Re-run with APPROVE=true to apply changes."
+  echo "DEBUG: APPROVE is not truthy, exiting"
   exit 0
 fi
 

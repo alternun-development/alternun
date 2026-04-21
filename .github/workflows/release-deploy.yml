@@ -1,0 +1,79 @@
+name: Release and Deploy to Testnet [DISABLED - Using AWS CodePipeline]
+
+on:
+  # DISABLED: AWS CodePipeline is configured for branch-based deployments
+  # This workflow is kept for reference but not used
+  push:
+    tags:
+      - 'DISABLED_v*.*.*'
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22.22.0'
+  PNPM_VERSION: '9.15.0'
+  AWS_REGION: us-east-1
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to Testnet
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Deploy to testnet
+        env:
+          INFRA_ENABLE_BACKEND_API: 'true'
+          APPROVE: 'true'
+          STACK: api-dev
+          AWS_REGION: ${{ env.AWS_REGION }}
+        run: |
+          cd packages/infra
+          npx sst deploy --stage api-dev --continue
+
+      - name: Verify deployment
+        run: |
+          sleep 10
+          VERSION=$(curl -s https://testnet.api.alternun.co/health | jq -r '.version // "unknown"')
+          echo "Testnet API version: $VERSION"
+          EXPECTED_VERSION="${{ github.ref_name }}"
+          EXPECTED_VERSION="${EXPECTED_VERSION#v}"
+          if [ "$VERSION" != "$EXPECTED_VERSION" ]; then
+            echo "Warning: Version mismatch. Expected $EXPECTED_VERSION but got $VERSION"
+            echo "Lambda instances may still be recycling. Checking again in 30 seconds..."
+            sleep 30
+            VERSION=$(curl -s https://testnet.api.alternun.co/health | jq -r '.version // "unknown"')
+            echo "Testnet API version (retry): $VERSION"
+          fi
+          if [ "$VERSION" = "$EXPECTED_VERSION" ]; then
+            echo "✓ Deployment verified!"
+          else
+            echo "Warning: Version still doesn't match after retry. This may resolve after Lambda warm-up."
+          fi
+
+      - name: Notify deployment
+        if: success()
+        run: |
+          echo "✓ Successfully released and deployed version ${{ github.ref_name }} to testnet"
+          echo "API health: https://testnet.api.alternun.co/health"

@@ -19,7 +19,7 @@ function createIdentity(overrides = {}) {
   };
 }
 
-function createFacade() {
+function createFacade(overrides = {}) {
   const externalIdentity = createIdentity();
   const executionSession = {
     provider: 'better-auth',
@@ -73,6 +73,7 @@ function createFacade() {
       return () => {};
     },
     capabilities: () => ({ runtime: 'web', supportedFlows: ['redirect', 'native'] }),
+    ...overrides.executionProvider,
   };
 
   const issuerProvider = {
@@ -89,6 +90,7 @@ function createFacade() {
     logoutIssuerSession: async () => {},
     discoverIssuerConfig: async () => ({ issuer: issuerSession.issuer, authorizationEndpoint: '', tokenEndpoint: '' }),
     validateClaims: async () => ({ valid: true, principal: issuerSession.principal, errors: [] }),
+    ...overrides.issuerProvider,
   };
 
   const identityRepository = {
@@ -98,6 +100,7 @@ function createFacade() {
     upsertUserProjection: async (input) => input,
     upsertLinkedAccount: async ({ linkedAccount }) => linkedAccount,
     recordProvisioningEvent: async () => {},
+    ...overrides.identityRepository,
   };
 
   const emailProvider = {
@@ -106,6 +109,7 @@ function createFacade() {
     sendPasswordResetEmail: async () => {},
     sendMagicLink: async () => {},
     healthcheck: async () => ({ ok: true, provider: 'supabase' }),
+    ...overrides.emailProvider,
   };
 
   const facade = new AlternunAuthFacade({
@@ -152,6 +156,157 @@ test('AlternunAuthFacade preserves email sign-up flags', async () => {
   assert.equal(result.needsEmailVerification, false);
   assert.equal(result.emailAlreadyRegistered, false);
   assert.equal(result.confirmationEmailSent, false);
+});
+
+test('AlternunAuthFacade delegates password reset email requests to the execution provider helper when available', async () => {
+  let observedRequest = null;
+  const { facade } = createFacade({
+    executionProvider: {
+      requestPasswordResetEmail: async (email, redirectTo) => {
+        observedRequest = { email, redirectTo };
+      },
+    },
+  });
+
+  await facade.requestPasswordResetEmail(
+    'ada@example.com',
+    'https://app.example.com/auth/reset-password?next=%2Fdashboard'
+  );
+
+  assert.deepEqual(observedRequest, {
+    email: 'ada@example.com',
+    redirectTo: 'https://app.example.com/auth/reset-password?next=%2Fdashboard',
+  });
+});
+
+test('AlternunAuthFacade falls back to Supabase password reset helpers when the execution provider does not implement them', async () => {
+  let observedRequest = null;
+  const { facade } = createFacade({
+    executionProvider: {
+      supabase: {
+        auth: {
+          resetPasswordForEmail: async (email, options) => {
+            observedRequest = { email, options };
+            return { error: null };
+          },
+        },
+      },
+    },
+  });
+
+  await facade.requestPasswordResetEmail('ada@example.com', 'https://app.example.com/auth/reset-password');
+
+  assert.deepEqual(observedRequest, {
+    email: 'ada@example.com',
+    options: {
+      redirectTo: 'https://app.example.com/auth/reset-password',
+    },
+  });
+});
+
+test('AlternunAuthFacade delegates password updates to the execution provider when a reset token is present', async () => {
+  let observedRequest = null;
+  const { facade } = createFacade({
+    executionProvider: {
+      resetPassword: async (newPassword, token) => {
+        observedRequest = { newPassword, token };
+      },
+    },
+  });
+
+  await facade.resetPassword('new-password-123', 'reset-token-123');
+
+  assert.deepEqual(observedRequest, {
+    newPassword: 'new-password-123',
+    token: 'reset-token-123',
+  });
+});
+
+test('AlternunAuthFacade falls back to an active Supabase recovery session when no reset token is provided', async () => {
+  let observedRequest = null;
+  const { facade } = createFacade({
+    executionProvider: {
+      supabase: {
+        auth: {
+          updateUser: async (input) => {
+            observedRequest = input;
+            return { error: null };
+          },
+        },
+      },
+    },
+  });
+
+  await facade.resetPassword('new-password-123');
+
+  assert.deepEqual(observedRequest, {
+    password: 'new-password-123',
+  });
+});
+
+test('AlternunAuthFacade delegates Google sign-in to the execution provider helper when available', async () => {
+  let observedRedirectTo = null;
+  const facade = new AlternunAuthFacade({
+    executionProvider: {
+      name: 'better-auth',
+      signIn: async () => ({ session: null, externalIdentity: null }),
+      signUp: async () => ({ session: null, externalIdentity: null }),
+      signOut: async () => {},
+      getExecutionSession: async () => null,
+      refreshExecutionSession: async () => null,
+      linkProvider: async () => null,
+      unlinkProvider: async () => {},
+      signInWithGoogle: async (redirectTo) => {
+        observedRedirectTo = redirectTo ?? null;
+      },
+      capabilities: () => ({ runtime: 'web', supportedFlows: ['redirect', 'native'] }),
+    },
+    issuerProvider: {
+      name: 'authentik',
+      exchangeIdentity: async () => ({
+        issuerAccessToken: 'issuer-token',
+        issuerRefreshToken: null,
+        executionSession: null,
+        principal: {
+          issuer: 'https://sso.example.com/application/o/alternun-mobile/',
+          subject: 'principal-compat',
+          email: 'ada@example.com',
+          roles: ['authenticated'],
+          metadata: {},
+        },
+        linkedAccounts: [],
+      }),
+      getIssuerSession: async () => null,
+      refreshIssuerSession: async () => null,
+      logoutIssuerSession: async () => {},
+      discoverIssuerConfig: async () => ({ issuer: '', authorizationEndpoint: '', tokenEndpoint: '' }),
+      validateClaims: async () => ({ valid: true, principal: null, errors: [] }),
+    },
+    emailProvider: {
+      name: 'supabase',
+      sendVerificationEmail: async () => {},
+      sendPasswordResetEmail: async () => {},
+      sendMagicLink: async () => {},
+      healthcheck: async () => ({ ok: true, provider: 'supabase' }),
+    },
+    identityRepository: {
+      name: 'compat-repo',
+      upsertPrincipal: async ({ principal }) => ({ ...principal, id: 'principal-compat' }),
+      findPrincipalByExternalIdentity: async () => null,
+      upsertUserProjection: async (input) => input,
+      upsertLinkedAccount: async ({ linkedAccount }) => linkedAccount,
+      recordProvisioningEvent: async () => {},
+    },
+    runtime: {
+      runtime: 'web',
+      executionProvider: 'better-auth',
+      issuerProvider: 'authentik',
+      emailProvider: 'supabase',
+    },
+  });
+
+  await facade.signInWithGoogle('https://app.example.com/auth/callback');
+  assert.equal(observedRedirectTo, 'https://app.example.com/auth/callback');
 });
 
 test('AlternunAuthFacade restores a native issuer session without browser-only helpers', async () => {

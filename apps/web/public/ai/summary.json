@@ -1,0 +1,26 @@
+{
+  "name": "Alternun",
+  "tagline": "Regenerative Impact Platform",
+  "description": "Alternun enables individuals and organizations to track, verify, and monetize their positive environmental and social contributions through the AIRS (Alternun Impact Rating System). Our ecosystem connects impact producers with investors and consumers who value sustainability.",
+  "url": "https://alternun.co",
+  "logo": "https://alternun.co/logo.png",
+  "founded": 2024,
+  "focus_areas": [
+    "Regenerative Impact",
+    "ESG Verification",
+    "Carbon Trading",
+    "Impact Investing",
+    "Sustainability"
+  ],
+  "key_metrics": {
+    "growth": "+40% impact-verified users year-over-year",
+    "users": "Active across 15+ countries",
+    "integrations": "Multi-source data aggregation"
+  },
+  "contact": "contact@alternun.io",
+  "social_links": {
+    "github": "https://github.com/alternun",
+    "twitter": "https://twitter.com/alternun",
+    "linkedin": "https://linkedin.com/company/alternun"
+  }
+}

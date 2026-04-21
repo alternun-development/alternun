@@ -303,9 +303,9 @@ export default function TopNav({
           <BlurView
             intensity={isDark ? 52 : 40}
             tint={isDark ? 'dark' : 'light'}
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
           />
-          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: p.navBg }]} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: p.navBg }]} />
         </View>
 
         {/* Left: Airs wordmark + brand mark + byline */}
@@ -488,7 +488,11 @@ export default function TopNav({
                 >
                   <Animated.View
                     style={{
-                      ...StyleSheet.absoluteFillObject,
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      bottom: 0,
+                      left: 0,
                       borderRadius: 16,
                       opacity: dropdownAnimated.interpolate({
                         inputRange: [0, 1],

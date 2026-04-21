@@ -11,14 +11,18 @@ if [ ! -f "${lambda_entry}" ] && [ -f "dist/src/lambda.js" ]; then
   lambda_entry="dist/src/lambda.js"
 fi
 
+VERSION=$(node -e "console.log(require('./package.json').version)")
+
 esbuild "${lambda_entry}" \
   --bundle \
   --platform=node \
   --target=node22 \
   --format=cjs \
   --outfile=dist-lambda/lambda.js \
+  --define:__VERSION__=\"${VERSION}\" \
   --alias:class-transformer/storage=./node_modules/class-transformer/cjs/storage.js \
   --alias:@fastify/view=./shims/empty-module.js \
+  --alias:@fastify/static=./shims/empty-module.js \
   --alias:@nestjs/microservices=./shims/empty-module.js \
   --alias:@nestjs/microservices/microservices-module=./shims/empty-module.js \
   --alias:@nestjs/platform-express=./shims/empty-module.js \
@@ -31,6 +35,7 @@ swagger_ui_dir=$(
 
 mkdir -p dist-lambda/swagger-ui
 cp -R "${swagger_ui_dir}/." dist-lambda/swagger-ui/
+cp package.json dist-lambda/package.json
 
 # Bundle legal markdown files so Lambda can read them at runtime
 mkdir -p dist-lambda/legal

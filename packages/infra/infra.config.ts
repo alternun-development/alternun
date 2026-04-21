@@ -770,6 +770,8 @@ export function createInfrastructure() {
           : undefined,
       certificateArn: enableCustomDomain ? expoCerts[expoDeploymentStage] : undefined,
       environment: {
+        STACK: stage,
+        SST_STAGE: stage,
         EXPO_PUBLIC_ENV: stage,
         EXPO_PUBLIC_STAGE: stage,
         EXPO_PUBLIC_ORIGIN: expoDomain ? `https://${expoDomain.domainName}` : undefined,
@@ -858,7 +860,7 @@ export function createInfrastructure() {
 
     if (shouldCreateDevToTestnetRedirect) {
       const redirectCertificateArn =
-        devToTestnetRedirectAliases.length > 1
+        devToTestnetRedirectAliases.length > 0
           ? (() => {
               const hostedZoneId = process.env.INFRA_ROUTE53_HOSTED_ZONE_ID;
               if (!hostedZoneId) {

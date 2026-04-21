@@ -7,14 +7,14 @@ const buildspecPath = path.resolve('buildspec.yml');
 const postdeployDnsPath = path.resolve('scripts/postdeploy-update-dns.sh');
 const postdeployReachabilityPath = path.resolve('scripts/postdeploy-reachability-check.sh');
 
-void test('dev stage runs post-deploy DNS sync and keeps redirect probes advisory by default', () => {
+void test('post-deploy DNS sync remains opt-in and redirect probes stay advisory by default', () => {
   const buildspecSource = fs.readFileSync(buildspecPath, 'utf8');
   const postdeployDnsSource = fs.readFileSync(postdeployDnsPath, 'utf8');
   const postdeployReachabilitySource = fs.readFileSync(postdeployReachabilityPath, 'utf8');
 
   assert.match(
     buildspecSource,
-    /if \[ "\$\{SST_STAGE\}" = "dev" \]; then[\s\S]*export INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=true/
+    /elif \[ "\$\{INFRA_ENABLE_POSTDEPLOY_DNS_SYNC\}" != "true" \]; then[\s\S]*set INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=true in CodePipeline env vars/
   );
 
   assert.match(postdeployDnsSource, /sync_redirect_groups\(\)/);

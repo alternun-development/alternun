@@ -296,7 +296,7 @@ const innerStyles = StyleSheet.create({
 
   // Modal backdrop
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
 
   // Sheet

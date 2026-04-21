@@ -179,7 +179,7 @@ sync_redirect_groups() {
     return 0
   fi
 
-  if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}"; then
+  if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-false}"; then
     local airs_source
     airs_source=$(normalize_domain "${INFRA_REDIRECT_AIRS_TO_DEV_SOURCE:-${DOMAIN_PRODUCTION:-}}")
     if [ -n "$airs_source" ] && [ "$airs_source" != "${DOMAIN_DEV:-}" ]; then
