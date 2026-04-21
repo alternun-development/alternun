@@ -1,3 +1,9 @@
+## [1.0.191](https://github.com/alternun-development/alternun/compare/v1.0.190-dev.0...v1.0.191) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): Footer.shared, Footer.shared.test, README, core
+
 ## [1.0.190](https://github.com/alternun-development/alternun/compare/v1.0.188-dev.0...v1.0.190) (2026-04-21)
 
 ### Bug Fixes
