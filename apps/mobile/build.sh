@@ -210,7 +210,8 @@ verify_exported_web_bundle_version() {
   while IFS= read -r bundle_path; do
     [ -n "$bundle_path" ] || continue
 
-    if ! grep -Fq "\"version\":\"${expected_version}\"" "$bundle_path"; then
+    if ! grep -Fq "\"version\":\"${expected_version}\"" "$bundle_path" && \
+       ! grep -Fq "version\\\":\\\"${expected_version}\\\"" "$bundle_path"; then
       echo "ERROR: ${bundle_path} does not contain expected release version ${expected_version}." >&2
       exit 1
     fi
