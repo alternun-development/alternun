@@ -11,12 +11,15 @@ void test('bootstrap and mobile build scripts use stage-specific Supabase public
   const mobileBuildSource = fs.readFileSync(mobileBuildPath, 'utf8');
 
   assert.match(bootstrapSource, /SUPABASE_URL="https:\/\/aznfyazjndfniwsocdka\.supabase\.co"/);
-  assert.match(bootstrapSource, /SUPABASE_KEY_PREFIX="sb_publishable_"/);
-  assert.match(bootstrapSource, /SUPABASE_KEY_DEV_SUFFIX_PART_1="Z8egrB_x2ya7eNQCN8qcOw"/);
-  assert.match(bootstrapSource, /SUPABASE_KEY_DEV_SUFFIX_PART_2="Sxhmmt2O"/);
+  assert.match(
+    bootstrapSource,
+    /SUPABASE_KEY="\$\{EXPO_PUBLIC_SUPABASE_KEY_DEV:-\$\{SUPABASE_KEY_DEV:-\$\{EXPO_PUBLIC_SUPABASE_KEY:-\$\{SUPABASE_KEY:-\}\}\}\}"/
+  );
   assert.match(bootstrapSource, /SUPABASE_URL="https:\/\/rjebeugdvwbjpaktrrbx\.supabase\.co"/);
-  assert.match(bootstrapSource, /SUPABASE_KEY_PROD_SUFFIX_PART_1="hPlMCyy51TS4c67V7WkkIw"/);
-  assert.match(bootstrapSource, /SUPABASE_KEY_PROD_SUFFIX_PART_2="p1Mv2Nze"/);
+  assert.match(
+    bootstrapSource,
+    /SUPABASE_KEY="\$\{EXPO_PUBLIC_SUPABASE_KEY_PROD:-\$\{SUPABASE_KEY_PROD:-\$\{EXPO_PUBLIC_SUPABASE_KEY:-\$\{SUPABASE_KEY:-\}\}\}\}"/
+  );
   assert.match(
     mobileBuildSource,
     /EXPO_PUBLIC_SUPABASE_URL=https:\/\/aznfyazjndfniwsocdka\.supabase\.co/
