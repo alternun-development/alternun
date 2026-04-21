@@ -1,3 +1,9 @@
+## [1.0.194](https://github.com/alternun-development/alternun/compare/v1.0.193-dev.0...v1.0.194) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(infra): README, buildspec, expo, infra.config
+
 ## [1.0.193](https://github.com/alternun-development/alternun/compare/v1.0.192-dev.1...v1.0.193) (2026-04-21)
 
 ### Bug Fixes
