@@ -167,6 +167,9 @@ for (const workerPath of workerPaths) {
 resolve_expected_release_version() {
   node - <<'NODE'
 const fs = require('node:fs');
+const path = require('node:path');
+
+const repoRoot = path.resolve(process.cwd(), '..', '..');
 
 const detectedStage = String(
   process.env.SST_STAGE ||
@@ -179,8 +182,8 @@ const detectedStage = String(
   .toLowerCase();
 
 const manifestPath = detectedStage.includes('prod')
-  ? 'version.production.json'
-  : 'version.development.json';
+  ? path.join(repoRoot, 'version.production.json')
+  : path.join(repoRoot, 'version.development.json');
 
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const version = String(manifest.version ?? '').trim();
