@@ -29,6 +29,7 @@ This:
 - Creates git tag
 
 On `develop`, that creates a `v<version>-dev.<build>` tag and only updates `version.development.json`. `pnpm release -- --promote` switches to the production branch context, updates `package.json` plus `version.production.json`, and tags the stable production version for the merge to `master`.
+The workspace package `version` fields stay on the semantic base version; the branch-aware build marker lives in the release manifests.
 
 ### Step 2: Deploy API to Testnet
 

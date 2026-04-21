@@ -74,6 +74,7 @@ const resolvedVersion =
   branchRule.resolvedConfig?.environment === 'production'
     ? stripVersionSuffix(requestedSyncVersion)
     : requestedSyncVersion;
+const syncVersion = stripVersionSuffix(resolvedVersion);
 
 if (requestedVersion && resolvedVersion !== originalSyncVersion) {
   setRootVersion(resolvedVersion, syncBranch);
@@ -81,7 +82,7 @@ if (requestedVersion && resolvedVersion !== originalSyncVersion) {
 
 const result = spawnSync(
   'pnpm',
-  ['exec', 'versioning', 'sync', '--version', resolvedVersion, ...branchArgs],
+  ['exec', 'versioning', 'sync', '--version', syncVersion, ...branchArgs],
   {
     cwd: REPO_ROOT,
     env: {

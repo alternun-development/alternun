@@ -30,6 +30,7 @@ This command:
 - Pushes commit and tag to remote
 
 On `develop`, the release stays on the development manifest and produces a `-dev` tag. `pnpm release -- --promote` uses the production branch context instead, writes `package.json` plus `version.production.json`, and creates the stable production tag.
+Workspace package versions remain on the semantic base release version; only the branch manifests carry the `-dev` or production build marker.
 
 **Result:** Git tag `v1.0.164` is created and pushed to GitHub
 

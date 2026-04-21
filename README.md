@@ -101,6 +101,7 @@ Versioning is handled by `@edcalderon/versioning`. Never edit `version` fields i
 Development branches write `version.development.json`.
 Promotion writes the production branch version into `package.json` and `version.production.json`.
 Production branches mirror `package.json` into `version.production.json`.
+Workspace package versions stay on the semantic base version; the branch-aware build number lives in the manifest files.
 
 ```bash
 pnpm version:validate     # validate version sync across monorepo

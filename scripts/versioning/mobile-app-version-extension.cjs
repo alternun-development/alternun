@@ -13,10 +13,7 @@ module.exports = {
   hooks: {
     async postSync(options = {}) {
       const branch = resolveVersionContextBranch();
-      const version =
-        typeof options.version === 'string' && options.version.length > 0
-          ? options.version
-          : readRootVersion(branch);
+      const version = readRootVersion(branch);
 
       syncBranchVersionManifests(version, branch);
       syncSupplementalVersionFiles(version);
