@@ -30,20 +30,31 @@ declare -a CACHE_EXPORT_VARS=(
   EXPO_PUBLIC_AUTH_EXCHANGE_URL
   EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE
   INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL
+  INFRA_BACKEND_API_DATABASE_URL
   AUTH_BETTER_AUTH_URL
   BETTER_AUTH_URL
   AUTH_EXCHANGE_URL
   ALTERNUN_TESTNET_MODE
   AUTH_EXECUTION_PROVIDER
   EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER
+  DATABASE_URL
 )
 
 # CI shells can inherit stale auth values from the CodeBuild project.
-# Clear the auth contract vars so SSM/default stage resolution wins.
+# Clear the stage contract vars so SSM/default stage resolution wins.
 if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
   unset \
+    EXPO_PUBLIC_API_URL \
+    EXPO_PUBLIC_SUPABASE_URL \
+    EXPO_PUBLIC_SUPABASE_KEY \
+    EXPO_PUBLIC_SUPABASE_ANON_KEY \
     AUTH_EXECUTION_PROVIDER \
     EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER \
+    DATABASE_URL \
+    SUPABASE_URL \
+    SUPABASE_KEY \
+    SUPABASE_ANON_KEY \
+    SUPABASE_DATABASE_URL \
     AUTH_BETTER_AUTH_URL \
     EXPO_PUBLIC_BETTER_AUTH_URL \
     AUTH_EXCHANGE_URL \
@@ -51,7 +62,9 @@ if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
     EXPO_PUBLIC_AUTHENTIK_ISSUER \
     EXPO_PUBLIC_AUTHENTIK_CLIENT_ID \
     EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE \
-    EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE
+    EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE \
+    INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL \
+    INFRA_BACKEND_API_DATABASE_URL
 fi
 
 resolve_auth_execution_provider() {
@@ -89,6 +102,7 @@ fetch_ssm_params_batch() {
   done < <(
     aws ssm get-parameters \
       --names "${names[@]}" \
+      --with-decryption \
       --region "$REGION" \
       --query 'Parameters[].[Name,Value]' \
       --output text 2>/dev/null || true
@@ -133,6 +147,7 @@ get_ssm_param() {
 
   aws ssm get-parameter \
     --name "$param_name" \
+    --with-decryption \
     --region "$REGION" \
     --query 'Parameter.Value' \
     --output text 2>/dev/null || echo ""
@@ -187,13 +202,51 @@ print_resolved_values() {
   env | awk '/^EXPO_PUBLIC_/ { print }' | sort >&2
 }
 
+normalize_stage_value() {
+  printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-'
+}
+
+stage_requires_backend_database_url() {
+  case "$(normalize_stage_value "$STAGE")" in
+    dashboard*|api*|backend*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 load_cached_env() {
+  if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
+    return 1
+  fi
+
   if [ ! -f "$CACHE_FILE" ]; then
     return 1
   fi
 
   # shellcheck disable=SC1090
   source "$CACHE_FILE"
+
+  # SecureString-backed database URLs must be decrypted before they can be used
+  # by the Lambda runtime. If the cache still contains ciphertext, ignore it and
+  # refresh from SSM so we do not keep replaying a broken deploy env.
+  if [ -n "${INFRA_BACKEND_API_DATABASE_URL:-}" ] && \
+    { [[ "${INFRA_BACKEND_API_DATABASE_URL}" == AQICA* ]] || [[ "${INFRA_BACKEND_API_DATABASE_URL}" != *://* ]]; }; then
+    return 1
+  fi
+
+  if [ -n "${DATABASE_URL:-}" ] && \
+    { [[ "${DATABASE_URL}" == AQICA* ]] || [[ "${DATABASE_URL}" != *://* ]]; }; then
+    return 1
+  fi
+
+  if stage_requires_backend_database_url && [ -z "${INFRA_BACKEND_API_DATABASE_URL:-}" ]; then
+    echo "Cached SSM env for stage '${STAGE}' is missing INFRA_BACKEND_API_DATABASE_URL; refreshing from SSM." >&2
+    return 1
+  fi
+
   echo "Loaded cached SSM parameters for stage '${STAGE}' from ${CACHE_FILE}." >&2
   return 0
 }
@@ -230,6 +283,7 @@ main() {
     expo-public-authentik-issuer
     expo-public-authentik-client-id
     expo-public-authentik-login-entry-mode
+    database-url
   )
 
   # Auth provider config (stage-specific)
@@ -243,9 +297,15 @@ main() {
         expo-public-auth-exchange-url-dev
         expo-public-authentik-social-login-mode-dev
         infra-backend-api-auth-better-auth-url-dev
+        infra-backend-api-database-url-dev
         auth-better-auth-url-dev
         better-auth-url-dev
         alternun-testnet-mode-dev
+        database-url-dev
+        google-auth-client-id
+        google-auth-client-secret
+        discord-auth-client-id
+        discord-auth-client-secret
       )
       ;;
     prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
@@ -253,9 +313,11 @@ main() {
       # is derived from those resolved URLs below so the deploy contract stays consistent.
       ssm_param_names+=(
         infra-backend-api-auth-better-auth-url-prod
+        infra-backend-api-database-url-prod
         expo-public-better-auth-url-prod
         expo-public-auth-exchange-url-prod
         expo-public-authentik-social-login-mode-prod
+        database-url-prod
       )
       ;;
     *)
@@ -263,6 +325,7 @@ main() {
         expo-public-better-auth-url
         expo-public-auth-exchange-url
         expo-public-authentik-social-login-mode
+        database-url
       )
       ;;
   esac
@@ -275,6 +338,7 @@ main() {
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_ISSUER" "expo-public-authentik-issuer"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_CLIENT_ID" "expo-public-authentik-client-id"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE" "expo-public-authentik-login-entry-mode" "source"
+  export_env_from_ssm "DATABASE_URL" "database-url"
 
   case "$STAGE" in
     dev|*testnet*|*development*|dashboard-dev|backend-dev|backend-api-dev|api-dev|identity-dev|auth-dev|authentik-dev|admin-dev|backoffice-dev|backoffice-admin-dev)
@@ -284,22 +348,30 @@ main() {
       # Lambda-side vars: mode detection in better-auth-runtime.ts needs AUTH_BETTER_AUTH_URL
       # to enter embedded mode. Without these the Lambda silently falls back to Authentik.
       export_env_from_ssm "INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL" "infra-backend-api-auth-better-auth-url-dev" "https://testnet.api.alternun.co"
+      export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url-dev"
       export_env_from_ssm "AUTH_BETTER_AUTH_URL" "auth-better-auth-url-dev" "https://testnet.api.alternun.co"
       export_env_from_ssm "BETTER_AUTH_URL" "better-auth-url-dev" "https://testnet.api.alternun.co"
       export_env_from_ssm "ALTERNUN_TESTNET_MODE" "alternun-testnet-mode-dev" "on"
+      export_env_from_ssm "DATABASE_URL" "database-url-dev"
+      export_env_from_ssm "GOOGLE_AUTH_CLIENT_ID" "google-auth-client-id"
+      export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret"
+      export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id"
+      export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret"
       ;;
     prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
       # Production still resolves the stage-specific Better Auth URLs; the execution provider
       # is derived from those resolved URLs below so the deploy contract stays consistent.
       export_env_from_ssm "INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL" "infra-backend-api-auth-better-auth-url-prod" "https://api.alternun.co"
+      export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url-prod"
       export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url-prod" "https://api.alternun.co/auth"
       export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url-prod" "https://api.alternun.co/auth/exchange"
       export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-prod" "authentik"
+      export_env_from_ssm "DATABASE_URL" "database-url-prod"
       ;;
     *)
       export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url" ""
       export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url" ""
-      export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode" ""
+      export_env_from_ssm "DATABASE_URL" "database-url" ""
       ;;
   esac
 
@@ -310,6 +382,10 @@ main() {
   if [ -n "${EXPO_PUBLIC_AUTH_EXCHANGE_URL:-}" ]; then
     export AUTH_EXCHANGE_URL="${EXPO_PUBLIC_AUTH_EXCHANGE_URL}"
   fi
+
+  # Backend API should use the shared stage database URL if the dedicated backend
+  # parameter has not been bootstrapped yet.
+  export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url" "${DATABASE_URL:-}"
 
   AUTH_EXECUTION_PROVIDER=$(resolve_auth_execution_provider)
   export AUTH_EXECUTION_PROVIDER

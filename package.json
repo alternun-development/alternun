@@ -1,11 +1,11 @@
 {
   "name": "alternun",
-  "version": "1.0.151",
+  "version": "1.0.180",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "dev:all": "concurrently -k --names api,better-auth,admin,mobile,docs --prefix-colors blue,yellow,green,magenta,cyan \"pnpm --filter @alternun/api run dev\" \"pnpm --filter @alternun/api run dev:better-auth\" \"pnpm --filter @alternun/admin run dev:local\" \"pnpm --filter @alternun/mobile run web:local\" \"pnpm --filter alternun-docs run dev:local\"",
+    "dev:all": "concurrently -k --names api,admin,mobile,docs --prefix-colors blue,green,magenta,cyan \"pnpm --filter @alternun/api run dev\" \"pnpm --filter @alternun/admin run dev:local\" \"pnpm --filter @alternun/mobile run web:local:app\" \"pnpm --filter alternun-docs run dev:local\"",
     "admin": "pnpm --filter @alternun/admin dev",
     "mobile": "pnpm --filter ./apps/mobile start",
     "lint": "turbo run lint",
@@ -64,6 +64,7 @@
     "husky": "^8.0.3",
     "lint-staged": "^13.2.3",
     "prettier": "^2.8.8",
+    "supabase": "^2.92.1",
     "turbo": "^2.8.12"
   },
   "engines": {
@@ -73,12 +74,14 @@
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
+      "fastify": "4.28.1",
       "@fastify/middie": "9.3.2",
       "axios": "1.15.0",
       "fast-xml-parser": "4.5.4",
       "handlebars": "4.7.9",
       "protobufjs": "7.5.5",
-      "simple-git": "3.32.3"
+      "simple-git": "3.32.3",
+      "webpack": "5.105.2"
     }
   },
   "dependencies": {

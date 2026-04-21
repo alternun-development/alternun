@@ -1,3 +1,554 @@
+## [1.0.180](https://github.com/alternun-development/alternun/compare/v1.0.179...v1.0.180) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(infra): resolve-ssm-env, buildspec-auth-env.test
+
+## [1.0.180](https://github.com/alternun-development/alternun/compare/v1.0.179...v1.0.180) (2026-04-20)
+
+## [1.0.179](https://github.com/alternun-development/alternun/compare/v1.0.178...v1.0.179) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(infra): resolve-ssm-env, buildspec-auth-env.test
+
+## [1.0.179](https://github.com/alternun-development/alternun/compare/v1.0.178...v1.0.179) (2026-04-20)
+
+## [1.0.178](https://github.com/alternun-development/alternun/compare/v1.0.177...v1.0.178) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(api,web,auth): auth-exchange.controller, auth-exchange.module, signup-request.dto, signup-response.dto
+
+## [1.0.178](https://github.com/alternun-development/alternun/compare/v1.0.177...v1.0.178) (2026-04-20)
+
+## [1.0.177](https://github.com/alternun-development/alternun/compare/v1.0.176...v1.0.177) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): PublicLandingPage
+- **repo:** fix: clear stale api url in ci builds
+
+### Bug Fixes
+
+- clear stale api url in ci builds ([ed1650b](https://github.com/alternun-development/alternun/commit/ed1650b52402e460a5195bdefb303b7481a73809))
+- **mobile:** PublicLandingPage ([2f52006](https://github.com/alternun-development/alternun/commit/2f5200611a224c28b6b879da200ba09239b2ba37))
+
+## [1.0.177](https://github.com/alternun-development/alternun/compare/v1.0.176...v1.0.177) (2026-04-20)
+
+### Bug Fixes
+
+- clear stale api url in ci builds ([ed1650b](https://github.com/alternun-development/alternun/commit/ed1650b52402e460a5195bdefb303b7481a73809))
+- **mobile:** PublicLandingPage ([2f52006](https://github.com/alternun-development/alternun/commit/2f5200611a224c28b6b879da200ba09239b2ba37))
+
+## [1.0.176](https://github.com/alternun-development/alternun/compare/v1.0.175...v1.0.176) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): AuthResetPasswordScreen, buildspec, bootstrap-ssm-parameters, resolve-ssm-env
+
+## [1.0.176](https://github.com/alternun-development/alternun/compare/v1.0.175...v1.0.176) (2026-04-20)
+
+## [1.0.175](https://github.com/alternun-development/alternun/compare/v1.0.174...v1.0.175) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** fix(infra): resolve-ssm-env
+
+### Bug Fixes
+
+- **infra:** resolve-ssm-env ([552e040](https://github.com/alternun-development/alternun/commit/552e040d33eace08ecf0e53144a9a695a21fc228))
+
+## [1.0.175](https://github.com/alternun-development/alternun/compare/v1.0.174...v1.0.175) (2026-04-20)
+
+### Bug Fixes
+
+- **infra:** resolve-ssm-env ([552e040](https://github.com/alternun-development/alternun/commit/552e040d33eace08ecf0e53144a9a695a21fc228))
+
+## [1.0.174](https://github.com/alternun-development/alternun/compare/v1.0.173...v1.0.174) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(mobile): build, validate-exported-auth-bundle, validate-exported-auth-bundle.test
+
+## [1.0.174](https://github.com/alternun-development/alternun/compare/v1.0.173...v1.0.174) (2026-04-20)
+
+## [1.0.173](https://github.com/alternun-development/alternun/compare/v1.0.172...v1.0.173) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,auth): .env, \_layout, \_layout.web
+
+## [1.0.173](https://github.com/alternun-development/alternun/compare/v1.0.172...v1.0.173) (2026-04-20)
+
+## [1.0.172](https://github.com/alternun-development/alternun/compare/v1.0.171...v1.0.172) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(api): supabase-signup.service, supabase-signup.service.test
+
+## [1.0.172](https://github.com/alternun-development/alternun/compare/v1.0.171...v1.0.172) (2026-04-20)
+
+## [1.0.171](https://github.com/alternun-development/alternun/compare/v1.0.170...v1.0.171) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(repo,api,mobile): README, dev-better-auth, auth-exchange.controller, social-signin.service
+
+## [1.0.171](https://github.com/alternun-development/alternun/compare/v1.0.170...v1.0.171) (2026-04-20)
+
+## [1.0.170](https://github.com/alternun-development/alternun/compare/v1.0.169...v1.0.170) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(api): lambda, request-path, request-path.test
+
+## [1.0.170](https://github.com/alternun-development/alternun/compare/v1.0.169...v1.0.170) (2026-04-20)
+
+## [1.0.169](https://github.com/alternun-development/alternun/compare/v1.0.168...v1.0.169) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(mobile): callback, authCallbackFlow.test, authCallbackFlow
+
+## [1.0.169](https://github.com/alternun-development/alternun/compare/v1.0.168...v1.0.169) (2026-04-20)
+
+## [1.0.168](https://github.com/alternun-development/alternun/compare/v1.0.167...v1.0.168) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** fix: add INFRA_ROUTE53_HOSTED_ZONE_ID to buildspec env vars
+- **repo:** debug: improve sst deploy output capture
+- **repo:** fix: add sst unlock before deploy to clear stale locks
+- **repo:** simplify: remove diagnostic noise from buildspec SST deploy
+- **repo:** debug: add comprehensive bash tracing to SST deploy
+
+### Bug Fixes
+
+- add INFRA_ROUTE53_HOSTED_ZONE_ID to buildspec env vars ([884b96e](https://github.com/alternun-development/alternun/commit/884b96ee17d514ae5aba59c3a3872cdd58ede46d))
+- add sst unlock before deploy to clear stale locks ([d39c8ff](https://github.com/alternun-development/alternun/commit/d39c8ffc4dc8a36ae15c0bfb7a8df8c2284271f6))
+- **infra:** bypass sst-deploy.sh wrapper with direct npx sst deploy ([d88a1b7](https://github.com/alternun-development/alternun/commit/d88a1b7f10ed0579c473f57ae940bcef42e6948c))
+
+## [1.0.168](https://github.com/alternun-development/alternun/compare/v1.0.167...v1.0.168) (2026-04-20)
+
+### Bug Fixes
+
+- add INFRA_ROUTE53_HOSTED_ZONE_ID to buildspec env vars ([884b96e](https://github.com/alternun-development/alternun/commit/884b96ee17d514ae5aba59c3a3872cdd58ede46d))
+- add sst unlock before deploy to clear stale locks ([d39c8ff](https://github.com/alternun-development/alternun/commit/d39c8ffc4dc8a36ae15c0bfb7a8df8c2284271f6))
+- **infra:** bypass sst-deploy.sh wrapper with direct npx sst deploy ([d88a1b7](https://github.com/alternun-development/alternun/commit/d88a1b7f10ed0579c473f57ae940bcef42e6948c))
+
+## [1.0.167](https://github.com/alternun-development/alternun/compare/v1.0.166...v1.0.167) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** chore(repo,scripts): AWS_ACCOUNT_ENFORCEMENT, aws-account-guard
+- **repo:** debug: add debug output to sst-deploy.sh to identify exit point
+- **repo:** fix(infra): export APPROVE to sst-deploy script using explicit export
+- **repo:** revert: disable AUTO_REMOVE_CONFLICTING_DNS for dev
+- **repo:** fix(mobile): restore v1.0.166 PublicLandingPage with simplified cards
+
+### Bug Fixes
+
+- **infra:** auto-invalidate CloudFront cache after deployments ([a51047c](https://github.com/alternun-development/alternun/commit/a51047c314597787732e6b6dfcace3c1c2e3dd4d))
+- **infra:** enable AUTO_REMOVE_CONFLICTING_DNS for dev DNS cleanup ([4de344c](https://github.com/alternun-development/alternun/commit/4de344c11b4deb65855df447697b9447f36f3ac5))
+- **infra:** export APPROVE to sst-deploy script using explicit export ([8a51f17](https://github.com/alternun-development/alternun/commit/8a51f17f4c32f4682f8a6cabc0cd4d5328cd23fb))
+- **mobile:** restore v1.0.166 PublicLandingPage with simplified cards ([5e63e49](https://github.com/alternun-development/alternun/commit/5e63e49d2e4ee12d755faf520d9af8f377483cb1))
+- update .gitleaksignore to properly ignore public API keys ([5ffd54c](https://github.com/alternun-development/alternun/commit/5ffd54c0b0a3ceb56a206e2510b169b5689cdb4f))
+
+### Performance Improvements
+
+- **infra:** optimize CodePipeline buildspec for faster dev iterations ([834378a](https://github.com/alternun-development/alternun/commit/834378a8fc2cf1732b75426a6b29eea25a887bb7))
+
+### Reverts
+
+- disable AUTO_REMOVE_CONFLICTING_DNS for dev ([067630c](https://github.com/alternun-development/alternun/commit/067630c443ec659153a4ec25bea6537e8689c203))
+- **mobile:** PublicLandingPage to v1.0.57 layout ([ab06239](https://github.com/alternun-development/alternun/commit/ab06239ad09c52d089c7049a40c9c07bfeb81d05))
+
+## [1.0.167](https://github.com/alternun-development/alternun/compare/v1.0.166...v1.0.167) (2026-04-19)
+
+### Bug Fixes
+
+- **infra:** auto-invalidate CloudFront cache after deployments ([a51047c](https://github.com/alternun-development/alternun/commit/a51047c314597787732e6b6dfcace3c1c2e3dd4d))
+- **infra:** enable AUTO_REMOVE_CONFLICTING_DNS for dev DNS cleanup ([4de344c](https://github.com/alternun-development/alternun/commit/4de344c11b4deb65855df447697b9447f36f3ac5))
+- **infra:** export APPROVE to sst-deploy script using explicit export ([8a51f17](https://github.com/alternun-development/alternun/commit/8a51f17f4c32f4682f8a6cabc0cd4d5328cd23fb))
+- **mobile:** restore v1.0.166 PublicLandingPage with simplified cards ([5e63e49](https://github.com/alternun-development/alternun/commit/5e63e49d2e4ee12d755faf520d9af8f377483cb1))
+- update .gitleaksignore to properly ignore public API keys ([5ffd54c](https://github.com/alternun-development/alternun/commit/5ffd54c0b0a3ceb56a206e2510b169b5689cdb4f))
+
+### Performance Improvements
+
+- **infra:** optimize CodePipeline buildspec for faster dev iterations ([834378a](https://github.com/alternun-development/alternun/commit/834378a8fc2cf1732b75426a6b29eea25a887bb7))
+
+### Reverts
+
+- disable AUTO_REMOVE_CONFLICTING_DNS for dev ([067630c](https://github.com/alternun-development/alternun/commit/067630c443ec659153a4ec25bea6537e8689c203))
+- **mobile:** PublicLandingPage to v1.0.57 layout ([ab06239](https://github.com/alternun-development/alternun/commit/ab06239ad09c52d089c7049a40c9c07bfeb81d05))
+
+## [1.0.166](https://github.com/alternun-development/alternun/compare/v1.0.165...v1.0.166) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** docs: add release and deployment flow documentation
+- **repo:** ci: add automatic testnet deployment on release
+
+## [1.0.166](https://github.com/alternun-development/alternun/compare/v1.0.165...v1.0.166) (2026-04-19)
+
+## [1.0.165](https://github.com/alternun-development/alternun/compare/v1.0.164...v1.0.165) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.164
+- **repo:** fix(api): build, app-metadata, dist-lambda
+- **repo:** docs(scripts): add testnet deployment helper and release guide
+- **repo:** fix(api): remove hardcoded version, improve package.json detection
+- **repo:** fix(api): hardcode version with file system fallback
+
+## [1.0.165](https://github.com/alternun-development/alternun/compare/v1.0.164...v1.0.165) (2026-04-19)
+
+## [1.0.164](https://github.com/alternun-development/alternun/compare/v1.0.163...v1.0.164) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** fix(api): build, app-metadata, dist-lambda
+- **repo:** docs(scripts): add testnet deployment helper and release guide
+- **repo:** fix(api): remove hardcoded version, improve package.json detection
+- **repo:** fix(api): hardcode version with file system fallback
+- **repo:** fix(api): improve package.json path resolution with multiple fallbacks
+
+### Bug Fixes
+
+- **api:** build, app-metadata, dist-lambda ([c52e00e](https://github.com/alternun-development/alternun/commit/c52e00e626e4540832ba6b9a05efb0c6036e863a))
+- **api:** hardcode version with file system fallback ([05baafa](https://github.com/alternun-development/alternun/commit/05baafaaa5a68831f31a99e4671883b84c107e09))
+- **api:** improve package.json path resolution with multiple fallbacks ([53e6f2b](https://github.com/alternun-development/alternun/commit/53e6f2b4099f6e3044bbe07eb74fcb0b05af19d1))
+- **api:** include package.json in Lambda bundle for runtime version loading ([2aa44bf](https://github.com/alternun-development/alternun/commit/2aa44bf0f473462b0b3ffbdd9d37c14d79da2fe7))
+- **api:** remove hardcoded version, improve package.json detection ([65b7322](https://github.com/alternun-development/alternun/commit/65b7322619b698bb01eae10b89bf29c8b1cc494f))
+- **api:** use fs.readFileSync for runtime version loading in Lambda ([2ce54d4](https://github.com/alternun-development/alternun/commit/2ce54d4a60aba52540fe4bbaa21380d95155d8b7))
+- **mobile:** add timeout to OAuth redirect to prevent stalling UI ([b7cb1c7](https://github.com/alternun-development/alternun/commit/b7cb1c76b27fe9ad7c1a5bd0af64fae21cd9c88b))
+
+## [1.0.164](https://github.com/alternun-development/alternun/compare/v1.0.163...v1.0.164) (2026-04-19)
+
+### Bug Fixes
+
+- **api:** build, app-metadata, dist-lambda ([c52e00e](https://github.com/alternun-development/alternun/commit/c52e00e626e4540832ba6b9a05efb0c6036e863a))
+- **api:** hardcode version with file system fallback ([05baafa](https://github.com/alternun-development/alternun/commit/05baafaaa5a68831f31a99e4671883b84c107e09))
+- **api:** improve package.json path resolution with multiple fallbacks ([53e6f2b](https://github.com/alternun-development/alternun/commit/53e6f2b4099f6e3044bbe07eb74fcb0b05af19d1))
+- **api:** include package.json in Lambda bundle for runtime version loading ([2aa44bf](https://github.com/alternun-development/alternun/commit/2aa44bf0f473462b0b3ffbdd9d37c14d79da2fe7))
+- **api:** remove hardcoded version, improve package.json detection ([65b7322](https://github.com/alternun-development/alternun/commit/65b7322619b698bb01eae10b89bf29c8b1cc494f))
+- **api:** use fs.readFileSync for runtime version loading in Lambda ([2ce54d4](https://github.com/alternun-development/alternun/commit/2ce54d4a60aba52540fe4bbaa21380d95155d8b7))
+- **mobile:** add timeout to OAuth redirect to prevent stalling UI ([b7cb1c7](https://github.com/alternun-development/alternun/commit/b7cb1c76b27fe9ad7c1a5bd0af64fae21cd9c88b))
+
+## [1.0.163](https://github.com/alternun-development/alternun/compare/v1.0.161...v1.0.163) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** chore(repo,admin,api): CHANGELOG, app, release
+- **repo:** fix(gitignore): ignore i18n dist folder
+- **repo:** fix(api): improve social sign-in endpoint error handling
+- **repo:** fix(mobile): remove duplicate resend cooldown message
+
+### Bug Fixes
+
+- **api:** improve social sign-in endpoint error handling ([00fe88a](https://github.com/alternun-development/alternun/commit/00fe88a6c7cea28edb3445c422d628fe10625edc))
+- **gitignore:** ignore i18n dist folder ([d1bca2e](https://github.com/alternun-development/alternun/commit/d1bca2e268a5cf1dcc196ef5c619f51231389429))
+- **mobile:** remove duplicate resend cooldown message ([6c1e241](https://github.com/alternun-development/alternun/commit/6c1e241029b4266e4f73561c72d67c316742d0c8))
+
+## [1.0.163](https://github.com/alternun-development/alternun/compare/v1.0.161...v1.0.163) (2026-04-19)
+
+### Bug Fixes
+
+- **api:** improve social sign-in endpoint error handling ([00fe88a](https://github.com/alternun-development/alternun/commit/00fe88a6c7cea28edb3445c422d628fe10625edc))
+- **gitignore:** ignore i18n dist folder ([d1bca2e](https://github.com/alternun-development/alternun/commit/d1bca2e268a5cf1dcc196ef5c619f51231389429))
+- **mobile:** remove duplicate resend cooldown message ([6c1e241](https://github.com/alternun-development/alternun/commit/6c1e241029b4266e4f73561c72d67c316742d0c8))
+
+## [1.0.162](https://github.com/alternun-development/alternun/compare/v1.0.161...v1.0.162) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** fix(gitignore): ignore i18n dist folder
+- **repo:** fix(api): improve social sign-in endpoint error handling
+- **repo:** fix(mobile): remove duplicate resend cooldown message
+
+### Bug Fixes
+
+- **api:** improve social sign-in endpoint error handling ([00fe88a](https://github.com/alternun-development/alternun/commit/00fe88a6c7cea28edb3445c422d628fe10625edc))
+- **gitignore:** ignore i18n dist folder ([d1bca2e](https://github.com/alternun-development/alternun/commit/d1bca2e268a5cf1dcc196ef5c619f51231389429))
+- **mobile:** remove duplicate resend cooldown message ([6c1e241](https://github.com/alternun-development/alternun/commit/6c1e241029b4266e4f73561c72d67c316742d0c8))
+
+## [1.0.162](https://github.com/alternun-development/alternun/compare/v1.0.161...v1.0.162) (2026-04-19)
+
+### Bug Fixes
+
+- **api:** improve social sign-in endpoint error handling ([00fe88a](https://github.com/alternun-development/alternun/commit/00fe88a6c7cea28edb3445c422d628fe10625edc))
+- **gitignore:** ignore i18n dist folder ([d1bca2e](https://github.com/alternun-development/alternun/commit/d1bca2e268a5cf1dcc196ef5c619f51231389429))
+- **mobile:** remove duplicate resend cooldown message ([6c1e241](https://github.com/alternun-development/alternun/commit/6c1e241029b4266e4f73561c72d67c316742d0c8))
+
+## [1.0.161](https://github.com/alternun-development/alternun/compare/v1.0.160...v1.0.161) (2026-04-19)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): prevent stale auth errors from persisting after mode switch
+- **repo:** fix(mobile): clear error message when user types in any input field
+- **repo:** fix(api,mobile): unified signup response format for proper error handling
+- **repo:** fix(api): return error responses instead of throwing to avoid 500 errors
+- **repo:** fix(mobile): improve error message styling and clear on mode switch
+
+### Bug Fixes
+
+- **api,mobile:** add social sign-in endpoint, fix lint errors ([70a334e](https://github.com/alternun-development/alternun/commit/70a334ec2c88412cd5edf1b8a0213e99a99d150e))
+- **api,mobile:** unified signup response format for proper error handling ([1fc2ff8](https://github.com/alternun-development/alternun/commit/1fc2ff8651d212c16ffe2519157495280208e865))
+- **api:** return error responses instead of throwing to avoid 500 errors ([4db53b3](https://github.com/alternun-development/alternun/commit/4db53b334f4619ff1aef7c5fd8a4380680eabebd))
+- **mobile:** clear error message when user types in any input field ([a9d594f](https://github.com/alternun-development/alternun/commit/a9d594f91497199f3428a1cafaf69f9a24411c14))
+- **mobile:** improve error message styling and clear on mode switch ([0df6409](https://github.com/alternun-development/alternun/commit/0df64098866780c3d8c1576e2f64af17d24468a1))
+- **mobile:** prevent stale auth errors from persisting after mode switch ([13aa3b2](https://github.com/alternun-development/alternun/commit/13aa3b246c0e1115c26699a8110390166b362690))
+
+## [1.0.161](https://github.com/alternun-development/alternun/compare/v1.0.160...v1.0.161) (2026-04-19)
+
+### Bug Fixes
+
+- **api,mobile:** add social sign-in endpoint, fix lint errors ([70a334e](https://github.com/alternun-development/alternun/commit/70a334ec2c88412cd5edf1b8a0213e99a99d150e))
+- **api,mobile:** unified signup response format for proper error handling ([1fc2ff8](https://github.com/alternun-development/alternun/commit/1fc2ff8651d212c16ffe2519157495280208e865))
+- **api:** return error responses instead of throwing to avoid 500 errors ([4db53b3](https://github.com/alternun-development/alternun/commit/4db53b334f4619ff1aef7c5fd8a4380680eabebd))
+- **mobile:** clear error message when user types in any input field ([a9d594f](https://github.com/alternun-development/alternun/commit/a9d594f91497199f3428a1cafaf69f9a24411c14))
+- **mobile:** improve error message styling and clear on mode switch ([0df6409](https://github.com/alternun-development/alternun/commit/0df64098866780c3d8c1576e2f64af17d24468a1))
+- **mobile:** prevent stale auth errors from persisting after mode switch ([13aa3b2](https://github.com/alternun-development/alternun/commit/13aa3b246c0e1115c26699a8110390166b362690))
+
+## [1.0.160](https://github.com/alternun-development/alternun/compare/v1.0.159...v1.0.160) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): setup-aws-account
+
+## [1.0.160](https://github.com/alternun-development/alternun/compare/v1.0.159...v1.0.160) (2026-04-18)
+
+## [1.0.159](https://github.com/alternun-development/alternun/compare/v1.0.158...v1.0.159) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** fix(infra,scripts): buildspec, resolve-secrets-manager-env, setup-aws-account
+
+### Bug Fixes
+
+- **infra,scripts:** buildspec, resolve-secrets-manager-env, setup-aws-account ([6dc9313](https://github.com/alternun-development/alternun/commit/6dc931344b821ed9fce291d6ea8260f2ae0f64e4))
+
+## [1.0.159](https://github.com/alternun-development/alternun/compare/v1.0.158...v1.0.159) (2026-04-18)
+
+### Bug Fixes
+
+- **infra,scripts:** buildspec, resolve-secrets-manager-env, setup-aws-account ([6dc9313](https://github.com/alternun-development/alternun/commit/6dc931344b821ed9fce291d6ea8260f2ae0f64e4))
+
+## [1.0.158](https://github.com/alternun-development/alternun/compare/v1.0.157...v1.0.158) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** fix(api,mobile,repo): .env, build, apply-migrations, empty-module
+- **repo:** fix(auth): establish consistent signup routing standard
+- **repo:** fix(auth): handle Better Auth endpoint discovery
+- **repo:** fix(auth): improve signup error handling with proper typing
+- **repo:** fix(api): add proper typing and eslint-disable comments to Lambda handler
+
+### Bug Fixes
+
+- **api,mobile,repo:** .env, build, apply-migrations, empty-module ([855ed21](https://github.com/alternun-development/alternun/commit/855ed2134eadb34c58f73a972546968c850549e4))
+- **api:** add proper typing and eslint-disable comments to Lambda handler ([10d1a99](https://github.com/alternun-development/alternun/commit/10d1a9954631fcb3c47ce713b781f0b06c6bb57c))
+- **auth:** deploy API with DATABASE_URL environment variable ([9f43782](https://github.com/alternun-development/alternun/commit/9f4378261384d13f7f7e2b732ef2ada0ec7991bf))
+- **auth:** establish consistent signup routing standard ([8b6c01b](https://github.com/alternun-development/alternun/commit/8b6c01bda9cdc8266d21137b805e9a34e0adce39))
+- **auth:** handle Better Auth endpoint discovery ([3b6d609](https://github.com/alternun-development/alternun/commit/3b6d6094c71ade9b588938531e3fed820ad23ff3))
+- **auth:** improve signup error handling with proper typing ([6fc11ca](https://github.com/alternun-development/alternun/commit/6fc11ca24629f52ce7932113284fe98488953bbf))
+- **auth:** resolve DATABASE_URL from AWS Secrets Manager for Better Auth ([7ee5876](https://github.com/alternun-development/alternun/commit/7ee58767fd12d5f895050cfc6c85a1dc95861c69))
+- **infra:** ensure sst-deploy.sh loads correct AWS account credentials ([79fc5d3](https://github.com/alternun-development/alternun/commit/79fc5d30b81abe25bc3d22a9b403ace3740845b9))
+- **mobile:** force set correct auth URLs before Expo export to prevent localhost ([5ee6dbe](https://github.com/alternun-development/alternun/commit/5ee6dbeb51938c630131f62b0acab02512c2bb3d))
+- **mobile:** update .env files BEFORE @alternun/auth build to prevent localhost ([0eb680f](https://github.com/alternun-development/alternun/commit/0eb680f35b5285c59f431a25aeb54011450bcb7b))
+- **mobile:** update .env files BEFORE load_env_vars to ensure correct stage URLs ([af59b29](https://github.com/alternun-development/alternun/commit/af59b297e931f1e4b270b31301a1ec67c9826b26))
+- **mobile:** write stage-specific .env files before Expo export to ensure correct URLs ([cfb6e26](https://github.com/alternun-development/alternun/commit/cfb6e261308bd7ea2532bd0a2d19c96ea08328f0))
+
+## [1.0.158](https://github.com/alternun-development/alternun/compare/v1.0.157...v1.0.158) (2026-04-18)
+
+### Bug Fixes
+
+- **api,mobile,repo:** .env, build, apply-migrations, empty-module ([855ed21](https://github.com/alternun-development/alternun/commit/855ed2134eadb34c58f73a972546968c850549e4))
+- **api:** add proper typing and eslint-disable comments to Lambda handler ([10d1a99](https://github.com/alternun-development/alternun/commit/10d1a9954631fcb3c47ce713b781f0b06c6bb57c))
+- **auth:** deploy API with DATABASE_URL environment variable ([9f43782](https://github.com/alternun-development/alternun/commit/9f4378261384d13f7f7e2b732ef2ada0ec7991bf))
+- **auth:** establish consistent signup routing standard ([8b6c01b](https://github.com/alternun-development/alternun/commit/8b6c01bda9cdc8266d21137b805e9a34e0adce39))
+- **auth:** handle Better Auth endpoint discovery ([3b6d609](https://github.com/alternun-development/alternun/commit/3b6d6094c71ade9b588938531e3fed820ad23ff3))
+- **auth:** improve signup error handling with proper typing ([6fc11ca](https://github.com/alternun-development/alternun/commit/6fc11ca24629f52ce7932113284fe98488953bbf))
+- **auth:** resolve DATABASE_URL from AWS Secrets Manager for Better Auth ([7ee5876](https://github.com/alternun-development/alternun/commit/7ee58767fd12d5f895050cfc6c85a1dc95861c69))
+- **infra:** ensure sst-deploy.sh loads correct AWS account credentials ([79fc5d3](https://github.com/alternun-development/alternun/commit/79fc5d30b81abe25bc3d22a9b403ace3740845b9))
+- **mobile:** force set correct auth URLs before Expo export to prevent localhost ([5ee6dbe](https://github.com/alternun-development/alternun/commit/5ee6dbeb51938c630131f62b0acab02512c2bb3d))
+- **mobile:** update .env files BEFORE @alternun/auth build to prevent localhost ([0eb680f](https://github.com/alternun-development/alternun/commit/0eb680f35b5285c59f431a25aeb54011450bcb7b))
+- **mobile:** update .env files BEFORE load_env_vars to ensure correct stage URLs ([af59b29](https://github.com/alternun-development/alternun/commit/af59b297e931f1e4b270b31301a1ec67c9826b26))
+- **mobile:** write stage-specific .env files before Expo export to ensure correct URLs ([cfb6e26](https://github.com/alternun-development/alternun/commit/cfb6e261308bd7ea2532bd0a2d19c96ea08328f0))
+
+## [1.0.157](https://github.com/alternun-development/alternun/compare/v1.0.156...v1.0.157) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n): build
+
+### Bug Fixes
+
+- **mobile,i18n:** build ([65ecd09](https://github.com/alternun-development/alternun/commit/65ecd09bfbb2afff9a978717a41af602b3180a1f))
+
+## [1.0.157](https://github.com/alternun-development/alternun/compare/v1.0.156...v1.0.157) (2026-04-18)
+
+### Bug Fixes
+
+- **mobile,i18n:** build ([65ecd09](https://github.com/alternun-development/alternun/commit/65ecd09bfbb2afff9a978717a41af602b3180a1f))
+
+## [1.0.156](https://github.com/alternun-development/alternun/compare/v1.0.155...v1.0.156) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** fix(api,infra): better-auth-cors, infra.config
+- **repo:** feat: make migrations optional (opt-in) by default
+
+### Bug Fixes
+
+- **api,infra:** better-auth-cors, infra.config ([ae734b5](https://github.com/alternun-development/alternun/commit/ae734b5c60aca5da52600e99f3ae5977dfc06fe6))
+
+### Features
+
+- make migrations optional (opt-in) by default ([a82735d](https://github.com/alternun-development/alternun/commit/a82735d52a735205871f9f0f9cdd8d9b7b79f62a))
+
+## [1.0.156](https://github.com/alternun-development/alternun/compare/v1.0.155...v1.0.156) (2026-04-18)
+
+### Bug Fixes
+
+- **api,infra:** better-auth-cors, infra.config ([ae734b5](https://github.com/alternun-development/alternun/commit/ae734b5c60aca5da52600e99f3ae5977dfc06fe6))
+
+### Features
+
+- make migrations optional (opt-in) by default ([a82735d](https://github.com/alternun-development/alternun/commit/a82735d52a735205871f9f0f9cdd8d9b7b79f62a))
+
+## [1.0.155](https://github.com/alternun-development/alternun/compare/v1.0.153...v1.0.155) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** fix: correct import path for migrations module
+- **repo:** fix(auth): initialize database migrations on API startup
+
+### Bug Fixes
+
+- **auth:** initialize database migrations on API startup ([265ff70](https://github.com/alternun-development/alternun/commit/265ff7031d56667633cfb911e35db4c3b9bce3e8))
+- correct import path for migrations module ([74a8aca](https://github.com/alternun-development/alternun/commit/74a8aca2876e4db252774cac08211d95e615bfdc))
+
+## [1.0.155](https://github.com/alternun-development/alternun/compare/v1.0.153...v1.0.155) (2026-04-18)
+
+### Bug Fixes
+
+- **auth:** initialize database migrations on API startup ([265ff70](https://github.com/alternun-development/alternun/commit/265ff7031d56667633cfb911e35db4c3b9bce3e8))
+- correct import path for migrations module ([74a8aca](https://github.com/alternun-development/alternun/commit/74a8aca2876e4db252774cac08211d95e615bfdc))
+
+## [1.0.154](https://github.com/alternun-development/alternun/compare/v1.0.153...v1.0.154) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** fix(auth): initialize database migrations on API startup
+
+### Bug Fixes
+
+- **auth:** initialize database migrations on API startup ([265ff70](https://github.com/alternun-development/alternun/commit/265ff7031d56667633cfb911e35db4c3b9bce3e8))
+
+## [1.0.154](https://github.com/alternun-development/alternun/compare/v1.0.153...v1.0.154) (2026-04-18)
+
+### Bug Fixes
+
+- **auth:** initialize database migrations on API startup ([265ff70](https://github.com/alternun-development/alternun/commit/265ff7031d56667633cfb911e35db4c3b9bce3e8))
+
+## [1.0.153](https://github.com/alternun-development/alternun/compare/v1.0.151...v1.0.153) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): apply-migrations-local
+- **repo:** chore: add secure deployment automation with AWS Secrets
+- **repo:** feat: wire DATABASE_URL to Lambda and make migrations optional
+- **repo:** refactor: make database migrations scalable and maintainable
+- **repo:** docs: add Supabase migration and deployment guides
+
+### Bug Fixes
+
+- **api:** add in-memory database adapter to Better Auth ([e42c9bf](https://github.com/alternun-development/alternun/commit/e42c9bf4072f134d59bcba8c9b6e803d6fb101bc))
+- **api:** ensure CORS headers sent for all responses including errors ([0e52831](https://github.com/alternun-development/alternun/commit/0e52831feae46eda1c8ee3ea3cf492f90c9a6a83))
+- **ci:** add sanitize-html types ([d3ba202](https://github.com/alternun-development/alternun/commit/d3ba20225071a598232733791611fa7141b619dc))
+- **ci:** address codeql alerts in auth helpers ([6547da8](https://github.com/alternun-development/alternun/commit/6547da8be6670bff4e001d831f8e2462cf2b8735))
+- **ci:** generate mobile icons with sharp ([e882f69](https://github.com/alternun-development/alternun/commit/e882f698a9a07d30a63b9e8646b1bbde74d0d639))
+- **ci:** invoke turbo directly for build matrix ([1dcaf0d](https://github.com/alternun-development/alternun/commit/1dcaf0da1a10e5119e62c54888892b0aa17450f1))
+- **ci:** make mobile env test deterministic ([f4153f0](https://github.com/alternun-development/alternun/commit/f4153f04eb5bf290b47f3280ba730e2bd89f6cdc))
+- **ci:** refresh audit pin and mobile env tests ([63811f7](https://github.com/alternun-development/alternun/commit/63811f73bab19e13e2cea6a25a81b2f4f85f6bc3))
+- **ci:** target workspace packages in build matrix ([92610aa](https://github.com/alternun-development/alternun/commit/92610aaea8bf4fec5cfcdd26b83e576c81eca2cc))
+- **ci:** update lockfile for api sanitize-html ([80ab38a](https://github.com/alternun-development/alternun/commit/80ab38aaf59a3c7e21bd223ad9117fa2301cf5fa))
+
+### Features
+
+- **auth:** integrate Better Auth with Supabase PostgreSQL database ([5f899b9](https://github.com/alternun-development/alternun/commit/5f899b9b241124613c42027661a28c4c93027b95))
+- wire DATABASE_URL to Lambda and make migrations optional ([11776be](https://github.com/alternun-development/alternun/commit/11776beafa92d20e8730a2fd1377ce3bdaf9078c))
+
+## [1.0.153](https://github.com/alternun-development/alternun/compare/v1.0.151...v1.0.153) (2026-04-18)
+
+### Bug Fixes
+
+- **api:** add in-memory database adapter to Better Auth ([e42c9bf](https://github.com/alternun-development/alternun/commit/e42c9bf4072f134d59bcba8c9b6e803d6fb101bc))
+- **api:** ensure CORS headers sent for all responses including errors ([0e52831](https://github.com/alternun-development/alternun/commit/0e52831feae46eda1c8ee3ea3cf492f90c9a6a83))
+- **ci:** add sanitize-html types ([d3ba202](https://github.com/alternun-development/alternun/commit/d3ba20225071a598232733791611fa7141b619dc))
+- **ci:** address codeql alerts in auth helpers ([6547da8](https://github.com/alternun-development/alternun/commit/6547da8be6670bff4e001d831f8e2462cf2b8735))
+- **ci:** generate mobile icons with sharp ([e882f69](https://github.com/alternun-development/alternun/commit/e882f698a9a07d30a63b9e8646b1bbde74d0d639))
+- **ci:** invoke turbo directly for build matrix ([1dcaf0d](https://github.com/alternun-development/alternun/commit/1dcaf0da1a10e5119e62c54888892b0aa17450f1))
+- **ci:** make mobile env test deterministic ([f4153f0](https://github.com/alternun-development/alternun/commit/f4153f04eb5bf290b47f3280ba730e2bd89f6cdc))
+- **ci:** refresh audit pin and mobile env tests ([63811f7](https://github.com/alternun-development/alternun/commit/63811f73bab19e13e2cea6a25a81b2f4f85f6bc3))
+- **ci:** target workspace packages in build matrix ([92610aa](https://github.com/alternun-development/alternun/commit/92610aaea8bf4fec5cfcdd26b83e576c81eca2cc))
+- **ci:** update lockfile for api sanitize-html ([80ab38a](https://github.com/alternun-development/alternun/commit/80ab38aaf59a3c7e21bd223ad9117fa2301cf5fa))
+
+### Features
+
+- **auth:** integrate Better Auth with Supabase PostgreSQL database ([5f899b9](https://github.com/alternun-development/alternun/commit/5f899b9b241124613c42027661a28c4c93027b95))
+- wire DATABASE_URL to Lambda and make migrations optional ([11776be](https://github.com/alternun-development/alternun/commit/11776beafa92d20e8730a2fd1377ce3bdaf9078c))
+
+## [1.0.152](https://github.com/alternun-development/alternun/compare/v1.0.151...v1.0.152) (2026-04-18)
+
+### Bug Fixes
+
+- **repo:** feat: wire DATABASE_URL to Lambda and make migrations optional
+- **repo:** refactor: make database migrations scalable and maintainable
+- **repo:** docs: add Supabase migration and deployment guides
+- **repo:** feat(auth): integrate Better Auth with Supabase PostgreSQL database
+- **repo:** fix(api): add in-memory database adapter to Better Auth
+
+### Bug Fixes
+
+- **api:** add in-memory database adapter to Better Auth ([e42c9bf](https://github.com/alternun-development/alternun/commit/e42c9bf4072f134d59bcba8c9b6e803d6fb101bc))
+- **api:** ensure CORS headers sent for all responses including errors ([0e52831](https://github.com/alternun-development/alternun/commit/0e52831feae46eda1c8ee3ea3cf492f90c9a6a83))
+- **ci:** add sanitize-html types ([d3ba202](https://github.com/alternun-development/alternun/commit/d3ba20225071a598232733791611fa7141b619dc))
+- **ci:** address codeql alerts in auth helpers ([6547da8](https://github.com/alternun-development/alternun/commit/6547da8be6670bff4e001d831f8e2462cf2b8735))
+- **ci:** generate mobile icons with sharp ([e882f69](https://github.com/alternun-development/alternun/commit/e882f698a9a07d30a63b9e8646b1bbde74d0d639))
+- **ci:** invoke turbo directly for build matrix ([1dcaf0d](https://github.com/alternun-development/alternun/commit/1dcaf0da1a10e5119e62c54888892b0aa17450f1))
+- **ci:** make mobile env test deterministic ([f4153f0](https://github.com/alternun-development/alternun/commit/f4153f04eb5bf290b47f3280ba730e2bd89f6cdc))
+- **ci:** refresh audit pin and mobile env tests ([63811f7](https://github.com/alternun-development/alternun/commit/63811f73bab19e13e2cea6a25a81b2f4f85f6bc3))
+- **ci:** target workspace packages in build matrix ([92610aa](https://github.com/alternun-development/alternun/commit/92610aaea8bf4fec5cfcdd26b83e576c81eca2cc))
+- **ci:** update lockfile for api sanitize-html ([80ab38a](https://github.com/alternun-development/alternun/commit/80ab38aaf59a3c7e21bd223ad9117fa2301cf5fa))
+
+### Features
+
+- **auth:** integrate Better Auth with Supabase PostgreSQL database ([5f899b9](https://github.com/alternun-development/alternun/commit/5f899b9b241124613c42027661a28c4c93027b95))
+- wire DATABASE_URL to Lambda and make migrations optional ([11776be](https://github.com/alternun-development/alternun/commit/11776beafa92d20e8730a2fd1377ce3bdaf9078c))
+
+## [1.0.152](https://github.com/alternun-development/alternun/compare/v1.0.151...v1.0.152) (2026-04-18)
+
+### Bug Fixes
+
+- **api:** add in-memory database adapter to Better Auth ([e42c9bf](https://github.com/alternun-development/alternun/commit/e42c9bf4072f134d59bcba8c9b6e803d6fb101bc))
+- **api:** ensure CORS headers sent for all responses including errors ([0e52831](https://github.com/alternun-development/alternun/commit/0e52831feae46eda1c8ee3ea3cf492f90c9a6a83))
+- **ci:** add sanitize-html types ([d3ba202](https://github.com/alternun-development/alternun/commit/d3ba20225071a598232733791611fa7141b619dc))
+- **ci:** address codeql alerts in auth helpers ([6547da8](https://github.com/alternun-development/alternun/commit/6547da8be6670bff4e001d831f8e2462cf2b8735))
+- **ci:** generate mobile icons with sharp ([e882f69](https://github.com/alternun-development/alternun/commit/e882f698a9a07d30a63b9e8646b1bbde74d0d639))
+- **ci:** invoke turbo directly for build matrix ([1dcaf0d](https://github.com/alternun-development/alternun/commit/1dcaf0da1a10e5119e62c54888892b0aa17450f1))
+- **ci:** make mobile env test deterministic ([f4153f0](https://github.com/alternun-development/alternun/commit/f4153f04eb5bf290b47f3280ba730e2bd89f6cdc))
+- **ci:** refresh audit pin and mobile env tests ([63811f7](https://github.com/alternun-development/alternun/commit/63811f73bab19e13e2cea6a25a81b2f4f85f6bc3))
+- **ci:** target workspace packages in build matrix ([92610aa](https://github.com/alternun-development/alternun/commit/92610aaea8bf4fec5cfcdd26b83e576c81eca2cc))
+- **ci:** update lockfile for api sanitize-html ([80ab38a](https://github.com/alternun-development/alternun/commit/80ab38aaf59a3c7e21bd223ad9117fa2301cf5fa))
+
+### Features
+
+- **auth:** integrate Better Auth with Supabase PostgreSQL database ([5f899b9](https://github.com/alternun-development/alternun/commit/5f899b9b241124613c42027661a28c4c93027b95))
+- wire DATABASE_URL to Lambda and make migrations optional ([11776be](https://github.com/alternun-development/alternun/commit/11776beafa92d20e8730a2fd1377ce3bdaf9078c))
+
 ## [1.0.151](https://github.com/alternun-development/alternun/compare/v1.0.150...v1.0.151) (2026-04-18)
 
 ### Bug Fixes
