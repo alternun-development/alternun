@@ -90,7 +90,9 @@ disable_expo_dotenv_if_needed() {
     mkdir -p "${TMPDIR}"
 
     if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ "${CI:-}" = "true" ]; then
-      export EXPO_EXPORT_CLEAR_CACHE=0
+      # CI/CD must rebuild release artifacts from the current commit so stale
+      # bundles do not keep serving old footer/package versions.
+      export EXPO_EXPORT_CLEAR_CACHE=1
     else
       export EXPO_EXPORT_CLEAR_CACHE=1
     fi
@@ -100,6 +102,26 @@ disable_expo_dotenv_if_needed() {
 clear_metro_cache_if_needed() {
   if [ "${EXPO_EXPORT_CLEAR_CACHE:-0}" = "1" ]; then
     rm -rf "${TMPDIR:-/tmp}/metro-cache"
+  fi
+}
+
+verify_exported_release_artifacts() {
+  local app_version
+  app_version=$(node -p "require('./package.json').version")
+
+  if [ ! -f "dist/alternun-release-manifest.json" ]; then
+    echo "ERROR: dist/alternun-release-manifest.json is missing after expo export." >&2
+    exit 1
+  fi
+
+  if [ ! -f "dist/alternun-release-worker.js" ]; then
+    echo "ERROR: dist/alternun-release-worker.js is missing after expo export." >&2
+    exit 1
+  fi
+
+  if ! rg -q --fixed-strings "\"version\":\"${app_version}\"" dist; then
+    echo "ERROR: Exported web bundle does not contain version ${app_version}." >&2
+    exit 1
   fi
 }
 
@@ -203,4 +225,5 @@ if [ "${EXPO_EXPORT_CLEAR_CACHE:-0}" = "1" ]; then
 else
   npx expo export -p web
 fi
+verify_exported_release_artifacts
 validate_exported_auth_bundle
