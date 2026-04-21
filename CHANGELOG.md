@@ -1,3 +1,11 @@
+## [1.0.180](https://github.com/alternun-development/alternun/compare/v1.0.179...v1.0.180) (2026-04-20)
+
+### Bug Fixes
+
+- **repo:** test(infra): resolve-ssm-env, buildspec-auth-env.test
+
+## [1.0.180](https://github.com/alternun-development/alternun/compare/v1.0.179...v1.0.180) (2026-04-20)
+
 ## [1.0.179](https://github.com/alternun-development/alternun/compare/v1.0.178...v1.0.179) (2026-04-20)
 
 ### Bug Fixes
