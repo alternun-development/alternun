@@ -722,6 +722,7 @@ function validateProductionVersionMirror() {
 
 function validateWorkspacePackageVersions(expectedVersion = readRootVersion()) {
   const issues = [];
+  const semanticExpectedVersion = stripVersionSuffix(expectedVersion);
 
   for (const relativePath of getWorkspacePackageJsonPaths()) {
     const absolutePath = path.join(REPO_ROOT, relativePath);
@@ -737,8 +738,8 @@ function validateWorkspacePackageVersions(expectedVersion = readRootVersion()) {
       continue;
     }
 
-    if (actualVersion !== expectedVersion) {
-      issues.push(`${relativePath} is ${actualVersion} but expected ${expectedVersion}`);
+    if (actualVersion !== semanticExpectedVersion) {
+      issues.push(`${relativePath} is ${actualVersion} but expected ${semanticExpectedVersion}`);
     }
   }
 
