@@ -4,13 +4,17 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const {
+  captureFileContents,
   REPO_ROOT,
+  SUPPLEMENTAL_VERSION_FILES,
   getCurrentBranch,
+  getManagedPackageJsonPaths,
   readRootVersion,
   resolveBranchRule,
   setRootVersion,
   syncBranchVersionManifests,
   syncSupplementalVersionFiles,
+  restoreFileContents,
   stripVersionSuffix,
 } = require('./versioning/version-files.cjs');
 
@@ -75,31 +79,47 @@ const resolvedVersion =
     ? stripVersionSuffix(requestedSyncVersion)
     : requestedSyncVersion;
 const syncVersion = stripVersionSuffix(resolvedVersion);
+const trackedPaths = [
+  ...new Set([
+    ...getManagedPackageJsonPaths(syncBranch),
+    'version.development.json',
+    'version.production.json',
+    ...SUPPLEMENTAL_VERSION_FILES.map((entry) => entry.relativePath),
+  ]),
+];
+const snapshot = captureFileContents(trackedPaths);
 
 if (requestedVersion && resolvedVersion !== originalSyncVersion) {
   setRootVersion(resolvedVersion, syncBranch);
 }
 
-const result = spawnSync(
-  'pnpm',
-  ['exec', 'versioning', 'sync', '--version', syncVersion, ...branchArgs],
-  {
-    cwd: REPO_ROOT,
-    env: {
-      ...process.env,
-      ALTERNUN_VERSION_BRANCH: syncBranch,
-    },
-    stdio: 'inherit',
-  }
-);
+let result;
 
-if (result.status !== 0) {
+try {
+  result = spawnSync(
+    'pnpm',
+    ['exec', 'versioning', 'sync', '--version', syncVersion, ...branchArgs],
+    {
+      cwd: REPO_ROOT,
+      env: {
+        ...process.env,
+        ALTERNUN_VERSION_BRANCH: syncBranch,
+      },
+      stdio: 'inherit',
+    }
+  );
+
+  if (result.status !== 0) {
+    throw new Error(`versioning sync failed with status ${result.status ?? 1}`);
+  }
+  syncBranchVersionManifests(resolvedVersion, syncBranch);
+  const touchedFiles = syncSupplementalVersionFiles(resolvedVersion);
+  console.log(`Synced supplemental version files to ${resolvedVersion}: ${touchedFiles.join(', ')}`);
+} catch (error) {
+  restoreFileContents(snapshot);
   if (requestedVersion && resolvedVersion !== originalSyncVersion) {
     setRootVersion(originalSyncVersion, syncBranch);
   }
-  process.exit(result.status ?? 1);
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
 }
-
-syncBranchVersionManifests(resolvedVersion, syncBranch);
-const touchedFiles = syncSupplementalVersionFiles(resolvedVersion);
-console.log(`Synced supplemental version files to ${resolvedVersion}: ${touchedFiles.join(', ')}`);
