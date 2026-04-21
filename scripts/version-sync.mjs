@@ -9,11 +9,13 @@ const {
   SUPPLEMENTAL_VERSION_FILES,
   getCurrentBranch,
   getManagedPackageJsonPaths,
+  getRootPackageJsonPath,
   readRootVersion,
   resolveBranchRule,
   setRootVersion,
   syncBranchVersionManifests,
   syncSupplementalVersionFiles,
+  syncWorkspacePackageVersions,
   restoreFileContents,
   stripVersionSuffix,
 } = require('./versioning/version-files.cjs');
@@ -81,6 +83,7 @@ const resolvedVersion =
 const syncVersion = stripVersionSuffix(resolvedVersion);
 const trackedPaths = [
   ...new Set([
+    getRootPackageJsonPath(),
     ...getManagedPackageJsonPaths(syncBranch),
     'version.development.json',
     'version.production.json',
@@ -113,8 +116,23 @@ try {
     throw new Error(`versioning sync failed with status ${result.status ?? 1}`);
   }
   syncBranchVersionManifests(resolvedVersion, syncBranch);
+  const packageFiles = syncWorkspacePackageVersions(resolvedVersion);
   const touchedFiles = syncSupplementalVersionFiles(resolvedVersion);
-  console.log(`Synced supplemental version files to ${resolvedVersion}: ${touchedFiles.join(', ')}`);
+  const notes = [];
+
+  if (packageFiles.length > 0) {
+    notes.push(`workspace packages: ${packageFiles.join(', ')}`);
+  }
+
+  if (touchedFiles.length > 0) {
+    notes.push(`supplemental files: ${touchedFiles.join(', ')}`);
+  }
+
+  if (notes.length > 0) {
+    console.log(`Synced version files to ${resolvedVersion} (${notes.join('; ')})`);
+  } else {
+    console.log(`Synced version files to ${resolvedVersion}`);
+  }
 } catch (error) {
   restoreFileContents(snapshot);
   if (requestedVersion && resolvedVersion !== originalSyncVersion) {

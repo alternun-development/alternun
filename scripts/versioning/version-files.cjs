@@ -479,6 +479,15 @@ function getWorkspacePackageJsonPaths() {
   return managedPaths;
 }
 
+function getRootPackageJsonPath() {
+  const config = readVersioningConfig();
+  return normalizeRelativePath(
+    typeof config.rootPackageJson === 'string' && config.rootPackageJson.length > 0
+      ? config.rootPackageJson
+      : 'package.json'
+  );
+}
+
 function matchesBranchPattern(branch, pattern) {
   if (!pattern.includes('*')) {
     return branch === pattern;
@@ -661,6 +670,54 @@ function syncSupplementalVersionFiles(version) {
     entry.write(json, version);
     writeJson(absolutePath, json);
     touchedFiles.push(entry.relativePath);
+  }
+
+  return touchedFiles;
+}
+
+function syncWorkspacePackageVersions(version = readRootVersion()) {
+  const semanticVersion = stripVersionSuffix(version);
+
+  if (typeof semanticVersion !== 'string' || semanticVersion.length === 0) {
+    throw new Error(`Unable to derive a semantic package version from "${version}".`);
+  }
+
+  const touchedFiles = [];
+  const rootPackageJsonPath = getRootPackageJsonPath();
+  const rootPackageJsonAbsolutePath = path.join(REPO_ROOT, rootPackageJsonPath);
+
+  if (fs.existsSync(rootPackageJsonAbsolutePath)) {
+    const json = readJson(rootPackageJsonAbsolutePath);
+    if (!isPlainObject(json)) {
+      throw new Error(`${rootPackageJsonPath} is not a valid package.json file.`);
+    }
+
+    if (json.version !== semanticVersion) {
+      json.version = semanticVersion;
+      writeJson(rootPackageJsonAbsolutePath, json);
+      touchedFiles.push(rootPackageJsonPath);
+    }
+  }
+
+  for (const relativePath of getWorkspacePackageJsonPaths()) {
+    const absolutePath = path.join(REPO_ROOT, relativePath);
+
+    if (!fs.existsSync(absolutePath)) {
+      continue;
+    }
+
+    const json = readJson(absolutePath);
+    if (!isPlainObject(json)) {
+      throw new Error(`${relativePath} is not a valid package.json file.`);
+    }
+
+    if (json.version === semanticVersion) {
+      continue;
+    }
+
+    json.version = semanticVersion;
+    writeJson(absolutePath, json);
+    touchedFiles.push(relativePath);
   }
 
   return touchedFiles;
@@ -905,6 +962,7 @@ module.exports = {
   getCurrentBranch,
   getManagedPackageJsonPaths,
   getManagedVersionManifestPaths,
+  getRootPackageJsonPath,
   getVersionReadCandidates,
   getWorkspacePackageJsonPaths,
   captureFileContents,
@@ -923,6 +981,7 @@ module.exports = {
   resolveBranchVersionFile,
   syncBranchVersionManifests,
   syncSupplementalVersionFiles,
+  syncWorkspacePackageVersions,
   validateBranchVersionFiles,
   validateProductionVersionMirror,
   validateVersionManifestStructure,

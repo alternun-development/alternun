@@ -1,6 +1,6 @@
 {
   "name": "@alternun/api",
-  "version": "1.0.183",
+  "version": "1.0.184",
   "private": true,
   "scripts": {
     "dev": "nodemon --watch src --ext ts --signal SIGTERM --exec \"node -r ts-node/register/transpile-only src/main.ts\"",
@@ -15,8 +15,8 @@
     "@alternun/email-templates": "workspace:*",
     "@aws-sdk/client-secrets-manager": "^3.940.0",
     "@fastify/aws-lambda": "^5.1.4",
-    "@fastify/swagger": "^8.15.0",
-    "@fastify/swagger-ui": "^3.1.0",
+    "@fastify/swagger": "^9.5.0",
+    "@fastify/swagger-ui": "^5.2.1",
     "@nestjs/common": "^10.4.22",
     "@nestjs/core": "^10.4.22",
     "@nestjs/platform-fastify": "11.0.0",
