@@ -12,19 +12,17 @@ void test('expo bucket naming is stage-scoped and organized', () => {
   const infraConfigSource = fs.readFileSync(infraConfigPath, 'utf8');
   const syncPublicAssetsSource = fs.readFileSync(syncPublicAssetsPath, 'utf8');
 
-  assert.match(expoConfigSource, /export function createExpoSiteBucketName\(/);
+  assert.match(expoConfigSource, /export function createExpoWebSiteBucketName\(/);
   assert.match(expoConfigSource, /export function createExpoPublicAssetBucketName\(/);
-  assert.match(expoConfigSource, /expo-site-assets/);
+  assert.match(expoConfigSource, /expo-web-site/);
   assert.match(expoConfigSource, /expo-public-assets/);
 
-  assert.match(
-    infraConfigSource,
-    /createExpoSiteBucketName\(expoDeploymentStage, pipelinePrefix, rootDomain\)/
-  );
-  assert.match(infraConfigSource, /args\.type !== 'aws:s3\/bucket:Bucket'/);
-  assert.match(infraConfigSource, /resourceName\.includes\('expoweb'\)/);
+  assert.match(infraConfigSource, /createExpoWebSiteBucketName\(/);
+  assert.match(infraConfigSource, /args\.type !== 'aws:s3\/bucketV2:BucketV2'/);
+  assert.match(infraConfigSource, /resourceName\.includes\('expo-web'\)/);
   assert.match(infraConfigSource, /resourceName\.includes\('assetsbucket'\)/);
-  assert.match(infraConfigSource, /props\.access !== 'public'/);
+  assert.doesNotMatch(infraConfigSource, /props\.access !== 'public'/);
+  assert.match(infraConfigSource, /if \(props\.bucket !== undefined\)/);
   assert.match(infraConfigSource, /bucket: expoSiteBucketName/);
 
   assert.match(syncPublicAssetsSource, /NEW_ASSET_BUCKET=/);
