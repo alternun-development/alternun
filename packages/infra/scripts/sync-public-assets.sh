@@ -87,14 +87,21 @@ upload_asset() {
     --only-show-errors
 }
 
-ASSET_BUCKET=$(sanitize_bucket_name "${PIPELINE_PREFIX}-${STACK}-public-assets-${ROOT_DOMAIN//./-}")
+NEW_ASSET_BUCKET=$(sanitize_bucket_name "${PIPELINE_PREFIX}-${STACK}-expo-public-assets-${ROOT_DOMAIN//./-}")
+LEGACY_ASSET_BUCKET=$(sanitize_bucket_name "${PIPELINE_PREFIX}-${STACK}-public-assets-${ROOT_DOMAIN//./-}")
+ASSET_BUCKET="$NEW_ASSET_BUCKET"
 APP_DIR=$(resolve_app_dir)
 
-echo "Syncing public assets for stage ${STACK} to bucket ${ASSET_BUCKET}"
-
-if ! aws s3api head-bucket --bucket "${ASSET_BUCKET}" >/dev/null 2>&1; then
-  echo "ERROR: Asset bucket ${ASSET_BUCKET} does not exist yet." >&2
-  exit 1
+if aws s3api head-bucket --bucket "${NEW_ASSET_BUCKET}" >/dev/null 2>&1; then
+  echo "Syncing public assets for stage ${STACK} to new bucket ${NEW_ASSET_BUCKET}"
+else
+  if aws s3api head-bucket --bucket "${LEGACY_ASSET_BUCKET}" >/dev/null 2>&1; then
+    ASSET_BUCKET="${LEGACY_ASSET_BUCKET}"
+    echo "WARNING: new asset bucket ${NEW_ASSET_BUCKET} does not exist yet; using legacy bucket ${LEGACY_ASSET_BUCKET}" >&2
+  else
+    echo "ERROR: Neither new asset bucket ${NEW_ASSET_BUCKET} nor legacy bucket ${LEGACY_ASSET_BUCKET} exists." >&2
+    exit 1
+  fi
 fi
 
 upload_asset "${APP_DIR}/assets/videos/AIRS-intro-videoplayback-EN.mp4" "landing/videos"
