@@ -741,7 +741,7 @@ function syncBranchVersionManifests(
   options = {}
 ) {
   const config = readVersioningConfig();
-  const { matchPattern, resolvedConfig } = resolveBranchRule(branch, config);
+  const { resolvedConfig } = resolveBranchRule(branch, config);
   const now = options.now || new Date().toISOString();
   const developmentMessage = options.developmentMessage || `Release ${version}`;
   const productionMessage = options.productionMessage || developmentMessage;
@@ -771,19 +771,6 @@ function syncBranchVersionManifests(
     build: options.developmentBuild,
   });
   touchedFiles.push(VERSION_MANIFEST_PATHS.development);
-
-  if (matchPattern === 'develop') {
-    syncVersionManifestFile(VERSION_MANIFEST_PATHS.production, {
-      sourceVersion: version,
-      environment: 'production',
-      normalizeVersion: true,
-      idPrefix: 'production',
-      message: productionMessage,
-      now,
-      build: options.productionBuild,
-    });
-    touchedFiles.push(VERSION_MANIFEST_PATHS.production);
-  }
 
   return touchedFiles;
 }

@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 
 const {
+  captureFileContents,
   buildVersionManifest,
   incrementDevelopmentBuildVersion,
   incrementDevelopmentSemanticVersion,
@@ -11,6 +12,8 @@ const {
   readRootVersion,
   resolveBranchVersionFile,
   resolveVersionContextBranch,
+  restoreFileContents,
+  syncBranchVersionManifests,
   validateBranchVersionFiles,
   validateProductionVersionMirror,
   validateVersionManifestStructure,
@@ -86,6 +89,21 @@ test('current repository version files stay consistent', () => {
     valid: true,
     issues: [],
   });
+});
+
+test('develop branch sync only updates the development manifest track', () => {
+  const snapshot = captureFileContents(['version.development.json', 'version.production.json']);
+
+  try {
+    const touchedFiles = syncBranchVersionManifests('1.0.185-dev.1', 'develop', {
+      now: '2026-04-21T00:00:00.000Z',
+      developmentBuild: 1,
+    });
+
+    assert.deepEqual(touchedFiles, ['version.development.json']);
+  } finally {
+    restoreFileContents(snapshot);
+  }
 });
 
 test('structured manifests keep release history and branch-aware mirrors', () => {
