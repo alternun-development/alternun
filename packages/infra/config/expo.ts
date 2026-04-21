@@ -82,8 +82,29 @@ function sanitizeBucketName(value: string): string {
     .replace(/-+$/, '');
 }
 
-function createAssetBucketName(stage: PipelineStage, prefix: string, domain: string): string {
-  return sanitizeBucketName(`${prefix}-${stage}-public-assets-${domain.replace(/\./g, '-')}`);
+function createStageScopedBucketName(
+  stage: PipelineStage,
+  prefix: string,
+  domain: string,
+  kind: string
+): string {
+  return sanitizeBucketName(`${prefix}-${stage}-${kind}-${domain.replace(/\./g, '-')}`);
+}
+
+export function createExpoSiteBucketName(
+  stage: PipelineStage,
+  prefix: string,
+  domain: string
+): string {
+  return createStageScopedBucketName(stage, prefix, domain, 'expo-site-assets');
+}
+
+export function createExpoPublicAssetBucketName(
+  stage: PipelineStage,
+  prefix: string,
+  domain: string
+): string {
+  return createStageScopedBucketName(stage, prefix, domain, 'expo-public-assets');
 }
 
 function resolveAuthentikProviderFlowSlugsEnvValue(
@@ -582,9 +603,9 @@ export function resolveExpoConfig({
   };
 
   const assetBucketNames: Record<PipelineStage, string> = {
-    production: createAssetBucketName('production', pipelinePrefix, rootDomain),
-    dev: createAssetBucketName('dev', pipelinePrefix, rootDomain),
-    mobile: createAssetBucketName('mobile', pipelinePrefix, rootDomain),
+    production: createExpoPublicAssetBucketName('production', pipelinePrefix, rootDomain),
+    dev: createExpoPublicAssetBucketName('dev', pipelinePrefix, rootDomain),
+    mobile: createExpoPublicAssetBucketName('mobile', pipelinePrefix, rootDomain),
   };
 
   return {
