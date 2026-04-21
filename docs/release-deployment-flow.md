@@ -2,6 +2,8 @@
 
 This document explains the entire release and deployment process from `pnpm release:patch` through testnet update.
 
+For production promotion, see `docs/release-promotion-process.md`.
+
 ## Overview
 
 The release flow is **now fully automated**:
@@ -33,7 +35,7 @@ This command:
 
 If the release fails before the commit step, the version files are restored so the working tree does not keep a half-applied release version.
 
-On `develop`, the release stays on the development manifest and produces a `-dev` tag. `pnpm release -- --promote` uses the production branch context instead, writes `package.json` plus `version.production.json`, and creates the stable production tag.
+On `develop`, the release stays on the development manifest and produces a `-dev` tag. `pnpm release:patch:promote` uses the production branch context instead, writes `package.json` plus `version.production.json`, and creates the stable production tag.
 Workspace package versions remain on the semantic base release version; only the branch manifests carry the `-dev` or production build marker.
 
 **Result:** Git tag `v1.0.164` is created and pushed to GitHub

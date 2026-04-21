@@ -31,7 +31,7 @@ This:
 
 If anything fails before the commit is created, the release wrapper restores the version files so a partial version bump does not linger in the working tree.
 
-On `develop`, that creates a `v<version>-dev.<build>` tag and only updates `version.development.json`. `pnpm release -- --promote` switches to the production branch context, updates `package.json` plus `version.production.json`, and tags the stable production version for the merge to `master`.
+On `develop`, that creates a `v<version>-dev.<build>` tag and only updates `version.development.json`. `pnpm release:patch:promote` switches to the production branch context, updates `package.json` plus `version.production.json`, and tags the stable production version for the merge to `master`.
 The workspace package `version` fields stay on the semantic base version; the branch-aware build marker lives in the release manifests.
 
 ### Step 2: Deploy API to Testnet
