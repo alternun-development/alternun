@@ -105,6 +105,13 @@ clear_metro_cache_if_needed() {
   fi
 }
 
+clear_previous_export_artifacts() {
+  # Start each deploy from a clean export tree so stale bundle files cannot be
+  # re-uploaded from a previous run.
+  rm -rf dist .expo
+  rm -rf node_modules/.cache/expo node_modules/.cache/metro
+}
+
 verify_exported_release_artifacts() {
   local app_version
   app_version=$(node -p "require('./package.json').version")
@@ -251,6 +258,7 @@ node scripts/generate-pwa-icons.mjs
 node ../../packages/update/scripts/export-assets.mjs --target-dir public
 disable_expo_dotenv_if_needed
 clear_metro_cache_if_needed
+clear_previous_export_artifacts
 
 if [ "${EXPO_EXPORT_CLEAR_CACHE:-0}" = "1" ]; then
   npx expo export -p web --clear

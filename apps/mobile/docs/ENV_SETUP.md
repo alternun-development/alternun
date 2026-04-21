@@ -185,12 +185,15 @@ The process happens in `apps/mobile/build.sh`:
    h) disable_expo_dotenv_if_needed()
       └─> Sets EXPO_NO_DOTENV=1 (Expo won't load .env again)
 
-   i) npx expo export -p web
+   i) clear_previous_export_artifacts()
+      └─> Removes prior dist/.expo output so stale bundles cannot survive between deploys
+
+   j) npx expo export -p web
       └─> Builds React app with environment variables baked in
           Environment variables from .env files are available as
           process.env.VARIABLE_NAME in JavaScript code
 
-   j) validate_exported_auth_bundle()
+   k) validate_exported_auth_bundle()
       └─> Verifies auth bundle was exported correctly
 
 3. Expo builds JavaScript bundle with resolved environment values
