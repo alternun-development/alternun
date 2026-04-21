@@ -25,6 +25,9 @@ const IGNORED_WORKTREE_PATHS = new Set([
   'packages/ui/.turbo/turbo-build.log',
 ]);
 const TRACKED_BUILD_OUTPUT_PATHS = ['packages/auth/dist', 'packages/update/dist'];
+const PRE_RELEASE_IGNORED_TRACKED_OUTPUT_PREFIXES = TRACKED_BUILD_OUTPUT_PATHS.map(
+  (trackedPath) => `${trackedPath}/`
+);
 
 function printUsage() {
   console.log(`Usage:
@@ -245,7 +248,17 @@ function getPendingChanges() {
     .stdout.split('\n')
     .map((line) => line.trimEnd())
     .filter(Boolean)
-    .filter((line) => !IGNORED_WORKTREE_PATHS.has(parseStatusPath(line)))
+    .filter((line) => {
+      const pathName = parseStatusPath(line);
+
+      if (IGNORED_WORKTREE_PATHS.has(pathName)) {
+        return false;
+      }
+
+      return !PRE_RELEASE_IGNORED_TRACKED_OUTPUT_PREFIXES.some((prefix) =>
+        pathName.startsWith(prefix)
+      );
+    })
     .map((line) => ({
       xy: line.slice(0, 2).trim(),
       path: parseStatusPath(line),
