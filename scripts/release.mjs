@@ -461,12 +461,6 @@ function stageReleaseFiles(dryRun, branchName = getCurrentBranch()) {
     ...SUPPLEMENTAL_VERSION_FILES.map((entry) => entry.relativePath),
   ]);
 
-  if (branchName.toLowerCase() === 'develop') {
-    // Develop build releases intentionally mirror the production manifest too.
-    // Stage it here so the release commit stays complete and the worktree stays clean.
-    managedPaths.add('version.production.json');
-  }
-
   const changelogPath = path.join(REPO_ROOT, 'CHANGELOG.md');
   if (fs.existsSync(changelogPath)) {
     managedPaths.add('CHANGELOG.md');
