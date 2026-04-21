@@ -1,3 +1,10 @@
+## [1.0.190](https://github.com/alternun-development/alternun/compare/v1.0.188-dev.0...v1.0.190) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(repo,admin,api): CHANGELOG, app, README, postdeploy-cloudfront-invalidate
+- **repo:** test(infra): README, infra.config, pipeline-auth-execution-provider.test
+
 ## [1.0.189](https://github.com/alternun-development/alternun/compare/v1.0.188-dev.0...v1.0.189) (2026-04-21)
 
 ### Bug Fixes
