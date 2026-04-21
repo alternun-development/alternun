@@ -1,3 +1,27 @@
+## [1.0.192](https://github.com/alternun-development/alternun/compare/v1.0.191-dev.3...v1.0.192) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth): build
+- **repo:** fix(mobile,auth): build
+- **repo:** fix(mobile,auth): build
+- **repo:** chore(repo,mobile): CHANGELOG, app, version.development
+- **repo:** chore(scripts): version-files, version-files.test
+
+### Bug Fixes
+
+- **infra:** rename expo site bucket ([cd0d731](https://github.com/alternun-development/alternun/commit/cd0d73148caeb2875c53452c76553df7b6dfb105))
+- **mobile,auth:** build ([26492f6](https://github.com/alternun-development/alternun/commit/26492f687570870e750a425f7f7383da9d80c1f0))
+- **mobile,auth:** build ([1c1bb8c](https://github.com/alternun-development/alternun/commit/1c1bb8c5d636658606df7245bdf18e75d1ebfb72))
+- **mobile,auth:** build ([9f1057c](https://github.com/alternun-development/alternun/commit/9f1057c90740b1079c5b9362b1ce72a8f5ad760d))
+- **mobile:** verify exported web bundle version ([50a5865](https://github.com/alternun-development/alternun/commit/50a586510447a5e785818547875594628256918f))
+- **secret-scan:** remove bootstrap key fragments ([a013a39](https://github.com/alternun-development/alternun/commit/a013a3918fe36bdf5b446a9af7bc6168f5f5c328))
+- **secret-scan:** remove publishable key literals ([3699e22](https://github.com/alternun-development/alternun/commit/3699e224e9ea1e0b455408aa787aaafe987312a7))
+
+### Features
+
+- **release:** add promotion wrapper ([b36ed34](https://github.com/alternun-development/alternun/commit/b36ed3437cd4aabd2d7bb83b41263f9dcb17b2af))
+
 ## [1.0.191](https://github.com/alternun-development/alternun/compare/v1.0.191-dev.3...v1.0.191) (2026-04-21)
 
 ### Bug Fixes
