@@ -2,6 +2,8 @@
 
 This document explains the entire release and deployment process from `pnpm release:patch` through testnet update.
 
+For production promotion, see `docs/release-promotion-process.md`.
+
 ## Overview
 
 The release flow is **now fully automated**:
@@ -21,12 +23,20 @@ pnpm release:patch
 
 This command:
 
-- Bumps version in `package.json` (e.g., 1.0.163 → 1.0.164)
+- `pnpm release` / `pnpm release:build` increments the current development build number
+- `pnpm release:patch` bumps the semantic patch version and resets the build number to `0`
+- `pnpm release:minor` / `pnpm release:major` bump the semantic version and reset the build number to `0`
+- Updates the structured release manifest for the current branch
 - Rebuilds all packages with the new version
 - Updates `CHANGELOG.md`
 - Creates a release commit (e.g., "chore: release v1.0.164")
 - Creates an annotated git tag (e.g., "v1.0.164")
 - Pushes commit and tag to remote
+
+If the release fails before the commit step, the version files are restored so the working tree does not keep a half-applied release version.
+
+On `develop`, the release stays on the development manifest and produces a `-dev` tag. `pnpm release:patch:promote` uses the production branch context instead, writes `package.json` plus `version.production.json`, and creates the stable production tag.
+Workspace package versions remain on the semantic base release version; only the branch manifests carry the `-dev` or production build marker.
 
 **Result:** Git tag `v1.0.164` is created and pushed to GitHub
 
@@ -56,8 +66,8 @@ This builds:
 
 - Frontend apps (web, mobile, docs, admin)
 - Backend API with **version injection** via esbuild:
-  - Extracts version from `package.json` (1.0.164)
-  - Passes to esbuild: `--define:__VERSION__="1.0.164"`
+  - Extracts version from the current branch version source, or the promoted production branch when `--promote` is used
+  - Passes to esbuild: `--define:__VERSION__="<current branch version>"`
   - Injects into `dist-lambda/lambda.js`
 
 #### 3.3 Deploy to testnet
@@ -115,10 +125,10 @@ The SST stack has multiple deployment modes:
 
 The API version is injected at **build time** via esbuild:
 
-1. **build.sh** extracts version from `package.json`:
+1. **build.sh** extracts version from the branch-aware release source:
 
    ```bash
-   VERSION=$(node -e "console.log(require('./package.json').version)")
+   VERSION=$(node -e "const { readRootVersion, resolveVersionContextBranch } = require('../../scripts/versioning/version-files.cjs'); process.stdout.write(readRootVersion(resolveVersionContextBranch()));")
    ```
 
 2. **esbuild** receives the version:
@@ -150,7 +160,7 @@ The API version is injected at **build time** via esbuild:
 If the automated pipeline fails or you need to deploy manually:
 
 ```bash
-# Rebuild the API with current package.json version
+# Rebuild the API with the current branch version
 pnpm build --filter @alternun/api
 
 # Deploy to testnet with backend API enabled

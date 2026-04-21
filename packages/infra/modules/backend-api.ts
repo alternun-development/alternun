@@ -159,6 +159,14 @@ function isTestnetStage(stage: string | undefined): boolean {
 
 const TESTNET_BETTER_AUTH_URL = 'https://testnet.api.alternun.co';
 
+function resolveBackendDatabaseUrl(env: NodeJS.ProcessEnv): string {
+  return (
+    [env.INFRA_BACKEND_API_DATABASE_URL, env.DATABASE_URL, env.SUPABASE_DATABASE_URL]
+      .map((value) => value?.trim())
+      .find((value): value is string => Boolean(value)) ?? ''
+  );
+}
+
 function resolveAuthDomain(rootDomain: string, stage: string): string {
   return buildStageDomains('sso', rootDomain)[resolveStageKey(stage)];
 }
@@ -203,6 +211,7 @@ function createResourceTags(args: BackendApiInfrastructureArgs): Record<string, 
 export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): BackendApiSettings {
   const defaultStageDomains = buildStageDomains('api', args.rootDomain);
   const localConfig = args.localConfig;
+  const backendDatabaseUrl = resolveBackendDatabaseUrl(args.env);
 
   return {
     enabled: parseBoolean(
@@ -283,9 +292,7 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
             AUTHENTIK_JWT_SIGNING_KEY: args.env.INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY,
           }
         : {}),
-      ...(args.env.INFRA_BACKEND_API_DATABASE_URL
-        ? { DATABASE_URL: args.env.INFRA_BACKEND_API_DATABASE_URL }
-        : {}),
+      ...(backendDatabaseUrl ? { DATABASE_URL: backendDatabaseUrl } : {}),
       ...(args.env.INFRA_BACKEND_API_MIGRATIONS_ENABLED !== undefined
         ? { RUN_MIGRATIONS: args.env.INFRA_BACKEND_API_MIGRATIONS_ENABLED }
         : { RUN_MIGRATIONS: 'false' }),
@@ -396,6 +403,7 @@ export function deployBackendApiInfrastructure(
 ): BackendApiInfrastructureResources {
   const resolvedAppPath = resolveBackendApiAppPath(args.settings.appPath);
   const bundlePath = path.resolve(resolvedAppPath, args.settings.buildOutput);
+  const backendDatabaseUrl = resolveBackendDatabaseUrl(args.env);
 
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   if (!fs.existsSync(bundlePath)) {
@@ -448,6 +456,7 @@ export function deployBackendApiInfrastructure(
           AUTHENTIK_JWKS_URL: authJwksUrl,
           NODE_ENV: 'production',
           ...args.settings.environment,
+          ...(backendDatabaseUrl ? { DATABASE_URL: backendDatabaseUrl } : {}),
           ...(args.env.INFRA_BACKEND_API_SUPABASE_URL
             ? { SUPABASE_URL: args.env.INFRA_BACKEND_API_SUPABASE_URL }
             : args.env.SUPABASE_URL

@@ -1,3 +1,209 @@
+## [1.0.191](https://github.com/alternun-development/alternun/compare/v1.0.191-dev.2...v1.0.191) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(infra): INFRASTRUCTURE_SPECS, expo, infra.config, sync-public-assets
+
+## [1.0.191](https://github.com/alternun-development/alternun/compare/v1.0.191-dev.1...v1.0.191) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(mobile): Footer.shared, Footer.shared.test, ReleaseUpdateBanner.native, ReleaseUpdateBanner.web
+
+## [1.0.191](https://github.com/alternun-development/alternun/compare/v1.0.191-dev.0...v1.0.191) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(mobile): build, ENV_SETUP, build-script.test
+
+## [1.0.191](https://github.com/alternun-development/alternun/compare/v1.0.190-dev.0...v1.0.191) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): Footer.shared, Footer.shared.test, README, core
+
+## [1.0.190](https://github.com/alternun-development/alternun/compare/v1.0.188-dev.0...v1.0.190) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(repo,admin,api): CHANGELOG, app, README, postdeploy-cloudfront-invalidate
+- **repo:** test(infra): README, infra.config, pipeline-auth-execution-provider.test
+
+## [1.0.189](https://github.com/alternun-development/alternun/compare/v1.0.188-dev.0...v1.0.189) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(infra): README, infra.config, pipeline-auth-execution-provider.test
+
+## [1.0.188](https://github.com/alternun-development/alternun/compare/v1.0.187-dev.1...v1.0.188) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(infra): buildspec, static-site-invalidation.test
+
+## [1.0.187](https://github.com/alternun-development/alternun/compare/v1.0.187-dev.0...v1.0.187) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth): PublicLandingPage
+- **repo:** fix(release): stage root package version
+
+### Bug Fixes
+
+- **mobile,auth:** PublicLandingPage ([53e4280](https://github.com/alternun-development/alternun/commit/53e42804865be5a52be2045a848baf5febc7763e))
+- **release:** stage root package version ([ace90ab](https://github.com/alternun-development/alternun/commit/ace90ab77752dcd18bd14b7a88a0976558e6a26a))
+
+## [1.0.187](https://github.com/alternun-development/alternun/compare/v1.0.186-dev.0...v1.0.187) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth): build
+- **repo:** fix(mobile,repo): build
+
+### Bug Fixes
+
+- **mobile,auth:** build ([0549e41](https://github.com/alternun-development/alternun/commit/0549e414e55571b895b518968f20ec274d214d5b))
+- **mobile,repo:** build ([ff753b6](https://github.com/alternun-development/alternun/commit/ff753b6110e47db6334dbdcfbca253dc688acd0d))
+
+## [1.0.186](https://github.com/alternun-development/alternun/compare/v1.0.185-dev.1...v1.0.186) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): release, version-files, version-files.test
+- **repo:** fix(release): stage develop production manifest
+
+### Bug Fixes
+
+- **release:** stage develop production manifest ([98ff166](https://github.com/alternun-development/alternun/commit/98ff166af5438b01249ded7664b9952758b102f3))
+
+## [1.0.185](https://github.com/alternun-development/alternun/compare/v1.0.185-dev.0...v1.0.185) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** chore(repo): version.production
+
+## [1.0.185](https://github.com/alternun-development/alternun/compare/v1.0.184-dev.0...v1.0.185) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** fix(admin,api,docs): pnpm-lock, release, version-sync, version-files
+
+### Bug Fixes
+
+- **admin,api,docs:** pnpm-lock, release, version-sync, version-files ([601b89e](https://github.com/alternun-development/alternun/commit/601b89e63119bd96cb6c6ccb69604beb836a8b4c))
+
+## [1.0.183](https://github.com/alternun-development/alternun/compare/v1.0.183-dev.2...v1.0.183) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** chore(repo,mobile,scripts): CHANGELOG, app, release-and-deploy-testnet, release-deployment-flow
+- **repo:** chore(repo): version.production
+
+## [1.0.183](https://github.com/alternun-development/alternun/compare/v1.0.183-dev.2...v1.0.183) (2026-04-21)
+
+## [1.0.183](https://github.com/alternun-development/alternun/compare/v1.0.183-dev.2...v1.0.183) (2026-04-21)
+
+## [1.0.183](https://github.com/alternun-development/alternun/compare/v1.0.183-dev.1...v1.0.183) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** chore(repo,scripts): README, release-and-deploy-testnet, release-deployment-flow, version-sync
+
+## [1.0.183](https://github.com/alternun-development/alternun/compare/v1.0.183-dev.1...v1.0.183) (2026-04-21)
+
+## [1.0.183](https://github.com/alternun-development/alternun/compare/v1.0.180...v1.0.183) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** chore(repo,admin,api): CHANGELOG
+- **repo:** chore: release v1.0.181
+- **repo:** test(api,infra): connection, better-auth-dev-server.test, README, dashboard
+- **repo:** fix(infra): make static-site invalidation non-blocking
+- **repo:** fix(infra): route CodeBuild deploys through wrapper
+
+### Bug Fixes
+
+- **infra:** make static-site invalidation non-blocking ([1e0ab9d](https://github.com/alternun-development/alternun/commit/1e0ab9de83d70e235b7e1d7f077b9f4af87708b9))
+- **infra:** route CodeBuild deploys through wrapper ([1aa417f](https://github.com/alternun-development/alternun/commit/1aa417f9282b5ae797b18c3b0a7277b499a9b4b4))
+
+### Features
+
+- add alternun ECC bundle (.agents/skills/alternun/agents/openai.yaml) ([8b5f594](https://github.com/alternun-development/alternun/commit/8b5f594dc23121cc87ae3837ac3a60d625322770))
+- add alternun ECC bundle (.agents/skills/alternun/SKILL.md) ([4b0f1bc](https://github.com/alternun-development/alternun/commit/4b0f1bcba04387a7df3b59cb34c1be5733c4e5e0))
+- add alternun ECC bundle (.claude/ecc-tools.json) ([d023842](https://github.com/alternun-development/alternun/commit/d0238423f49c55a8d9d73b3bd66d964466e30aa2))
+- add alternun ECC bundle (.claude/homunculus/instincts/inherited/alternun-instincts.yaml) ([a63de25](https://github.com/alternun-development/alternun/commit/a63de2555a9e0b2c7f440f8c7a9b9d2ef5546418))
+- add alternun ECC bundle (.claude/identity.json) ([e9f6a21](https://github.com/alternun-development/alternun/commit/e9f6a217bf6c9e2abfeb0cb2efd0f7c4de3caf4b))
+- add alternun ECC bundle (.claude/skills/alternun/SKILL.md) ([4e14ac0](https://github.com/alternun-development/alternun/commit/4e14ac09494a72c5dc98b9cf05f5c48c8e56e3d2))
+- add alternun ECC bundle (.codex/AGENTS.md) ([f2d9c2a](https://github.com/alternun-development/alternun/commit/f2d9c2a1144198044b357a14811464e16cdc00d5))
+- add alternun ECC bundle (.codex/agents/docs-researcher.toml) ([72b0b5f](https://github.com/alternun-development/alternun/commit/72b0b5f45df4061579cabdf4d73f914befbc6a0a))
+- add alternun ECC bundle (.codex/agents/explorer.toml) ([41ab49b](https://github.com/alternun-development/alternun/commit/41ab49be7145326fbc5b53b7a94568fe248b1a80))
+- add alternun ECC bundle (.codex/agents/reviewer.toml) ([038a3bd](https://github.com/alternun-development/alternun/commit/038a3bd2e117b8eae3aca739f315d655be457a40))
+- add alternun ECC bundle (.codex/config.toml) ([1f00f06](https://github.com/alternun-development/alternun/commit/1f00f06ffcc3cda47a79eb8875f0e1137d967d09))
+
+## [1.0.183](https://github.com/alternun-development/alternun/compare/v1.0.180...v1.0.183) (2026-04-21)
+
+### Bug Fixes
+
+- **infra:** make static-site invalidation non-blocking ([1e0ab9d](https://github.com/alternun-development/alternun/commit/1e0ab9de83d70e235b7e1d7f077b9f4af87708b9))
+- **infra:** route CodeBuild deploys through wrapper ([1aa417f](https://github.com/alternun-development/alternun/commit/1aa417f9282b5ae797b18c3b0a7277b499a9b4b4))
+
+### Features
+
+- add alternun ECC bundle (.agents/skills/alternun/agents/openai.yaml) ([8b5f594](https://github.com/alternun-development/alternun/commit/8b5f594dc23121cc87ae3837ac3a60d625322770))
+- add alternun ECC bundle (.agents/skills/alternun/SKILL.md) ([4b0f1bc](https://github.com/alternun-development/alternun/commit/4b0f1bcba04387a7df3b59cb34c1be5733c4e5e0))
+- add alternun ECC bundle (.claude/ecc-tools.json) ([d023842](https://github.com/alternun-development/alternun/commit/d0238423f49c55a8d9d73b3bd66d964466e30aa2))
+- add alternun ECC bundle (.claude/homunculus/instincts/inherited/alternun-instincts.yaml) ([a63de25](https://github.com/alternun-development/alternun/commit/a63de2555a9e0b2c7f440f8c7a9b9d2ef5546418))
+- add alternun ECC bundle (.claude/identity.json) ([e9f6a21](https://github.com/alternun-development/alternun/commit/e9f6a217bf6c9e2abfeb0cb2efd0f7c4de3caf4b))
+- add alternun ECC bundle (.claude/skills/alternun/SKILL.md) ([4e14ac0](https://github.com/alternun-development/alternun/commit/4e14ac09494a72c5dc98b9cf05f5c48c8e56e3d2))
+- add alternun ECC bundle (.codex/AGENTS.md) ([f2d9c2a](https://github.com/alternun-development/alternun/commit/f2d9c2a1144198044b357a14811464e16cdc00d5))
+- add alternun ECC bundle (.codex/agents/docs-researcher.toml) ([72b0b5f](https://github.com/alternun-development/alternun/commit/72b0b5f45df4061579cabdf4d73f914befbc6a0a))
+- add alternun ECC bundle (.codex/agents/explorer.toml) ([41ab49b](https://github.com/alternun-development/alternun/commit/41ab49be7145326fbc5b53b7a94568fe248b1a80))
+- add alternun ECC bundle (.codex/agents/reviewer.toml) ([038a3bd](https://github.com/alternun-development/alternun/commit/038a3bd2e117b8eae3aca739f315d655be457a40))
+- add alternun ECC bundle (.codex/config.toml) ([1f00f06](https://github.com/alternun-development/alternun/commit/1f00f06ffcc3cda47a79eb8875f0e1137d967d09))
+
+## [1.0.182](https://github.com/alternun-development/alternun/compare/v1.0.180...v1.0.182) (2026-04-21)
+
+### Bug Fixes
+
+- **infra:** make static-site invalidation non-blocking ([1e0ab9d](https://github.com/alternun-development/alternun/commit/1e0ab9de83d70e235b7e1d7f077b9f4af87708b9))
+- **infra:** route CodeBuild deploys through wrapper ([1aa417f](https://github.com/alternun-development/alternun/commit/1aa417f9282b5ae797b18c3b0a7277b499a9b4b4))
+
+### Features
+
+- add alternun ECC bundle (.agents/skills/alternun/agents/openai.yaml) ([8b5f594](https://github.com/alternun-development/alternun/commit/8b5f594dc23121cc87ae3837ac3a60d625322770))
+- add alternun ECC bundle (.agents/skills/alternun/SKILL.md) ([4b0f1bc](https://github.com/alternun-development/alternun/commit/4b0f1bcba04387a7df3b59cb34c1be5733c4e5e0))
+- add alternun ECC bundle (.claude/ecc-tools.json) ([d023842](https://github.com/alternun-development/alternun/commit/d0238423f49c55a8d9d73b3bd66d964466e30aa2))
+- add alternun ECC bundle (.claude/homunculus/instincts/inherited/alternun-instincts.yaml) ([a63de25](https://github.com/alternun-development/alternun/commit/a63de2555a9e0b2c7f440f8c7a9b9d2ef5546418))
+- add alternun ECC bundle (.claude/identity.json) ([e9f6a21](https://github.com/alternun-development/alternun/commit/e9f6a217bf6c9e2abfeb0cb2efd0f7c4de3caf4b))
+- add alternun ECC bundle (.claude/skills/alternun/SKILL.md) ([4e14ac0](https://github.com/alternun-development/alternun/commit/4e14ac09494a72c5dc98b9cf05f5c48c8e56e3d2))
+- add alternun ECC bundle (.codex/AGENTS.md) ([f2d9c2a](https://github.com/alternun-development/alternun/commit/f2d9c2a1144198044b357a14811464e16cdc00d5))
+- add alternun ECC bundle (.codex/agents/docs-researcher.toml) ([72b0b5f](https://github.com/alternun-development/alternun/commit/72b0b5f45df4061579cabdf4d73f914befbc6a0a))
+- add alternun ECC bundle (.codex/agents/explorer.toml) ([41ab49b](https://github.com/alternun-development/alternun/commit/41ab49be7145326fbc5b53b7a94568fe248b1a80))
+- add alternun ECC bundle (.codex/agents/reviewer.toml) ([038a3bd](https://github.com/alternun-development/alternun/commit/038a3bd2e117b8eae3aca739f315d655be457a40))
+- add alternun ECC bundle (.codex/config.toml) ([1f00f06](https://github.com/alternun-development/alternun/commit/1f00f06ffcc3cda47a79eb8875f0e1137d967d09))
+
+## [1.0.181](https://github.com/alternun-development/alternun/compare/v1.0.180...v1.0.181) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(api,infra): connection, better-auth-dev-server.test, README, dashboard
+- **repo:** fix(infra): make static-site invalidation non-blocking
+- **repo:** fix(infra): route CodeBuild deploys through wrapper
+- **repo:** ci: make CI pull-request only
+- **repo:** test(repo): patch fastify middie audit advisory
+
+### Bug Fixes
+
+- **infra:** make static-site invalidation non-blocking ([1e0ab9d](https://github.com/alternun-development/alternun/commit/1e0ab9de83d70e235b7e1d7f077b9f4af87708b9))
+- **infra:** route CodeBuild deploys through wrapper ([1aa417f](https://github.com/alternun-development/alternun/commit/1aa417f9282b5ae797b18c3b0a7277b499a9b4b4))
+
+## [1.0.181](https://github.com/alternun-development/alternun/compare/v1.0.180...v1.0.181) (2026-04-21)
+
+### Bug Fixes
+
+- **infra:** make static-site invalidation non-blocking ([1e0ab9d](https://github.com/alternun-development/alternun/commit/1e0ab9de83d70e235b7e1d7f077b9f4af87708b9))
+- **infra:** route CodeBuild deploys through wrapper ([1aa417f](https://github.com/alternun-development/alternun/commit/1aa417f9282b5ae797b18c3b0a7277b499a9b4b4))
+
 ## [1.0.180](https://github.com/alternun-development/alternun/compare/v1.0.179...v1.0.180) (2026-04-20)
 
 ### Bug Fixes

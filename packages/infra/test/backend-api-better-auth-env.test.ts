@@ -9,6 +9,10 @@ void test('backend API module forwards Better Auth runtime env into the Lambda c
   const source = fs.readFileSync(backendApiModulePath, 'utf8');
 
   assert.match(source, /AUTH_BETTER_AUTH_URL/);
+  assert.match(source, /resolveBackendDatabaseUrl/);
+  assert.match(source, /INFRA_BACKEND_API_DATABASE_URL/);
+  assert.match(source, /DATABASE_URL/);
+  assert.match(source, /SUPABASE_DATABASE_URL/);
   assert.match(source, /BETTER_AUTH_SECRET/);
   assert.match(source, /BETTER_AUTH_TRUSTED_ORIGINS/);
   assert.match(source, /GOOGLE_AUTH_CLIENT_ID/);
