@@ -46,6 +46,8 @@ export function buildDashboardPipelineSpecs({
     env.INFRA_BACKEND_API_BETTER_AUTH_SECRET ?? env.BETTER_AUTH_SECRET ?? env.AUTH_SECRET ?? '';
   const betterAuthTrustedOrigins =
     env.INFRA_BACKEND_API_BETTER_AUTH_TRUSTED_ORIGINS ?? env.BETTER_AUTH_TRUSTED_ORIGINS ?? '';
+  const backendDatabaseUrl =
+    env.INFRA_BACKEND_API_DATABASE_URL ?? env.DATABASE_URL ?? env.SUPABASE_DATABASE_URL ?? '';
 
   return {
     'dashboard-dev': {
@@ -68,6 +70,7 @@ export function buildDashboardPipelineSpecs({
         INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
         INFRA_BACKEND_API_ENABLED_STAGES: 'dev',
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlDev,
+        INFRA_BACKEND_API_DATABASE_URL: backendDatabaseUrl,
         AUTH_BETTER_AUTH_URL: betterAuthUrlDev,
         BETTER_AUTH_URL: betterAuthUrlDev,
         ALTERNUN_TESTNET_MODE: 'on',
@@ -102,6 +105,7 @@ export function buildDashboardPipelineSpecs({
         INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
         INFRA_BACKEND_API_ENABLED_STAGES: 'production',
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlProd,
+        INFRA_BACKEND_API_DATABASE_URL: backendDatabaseUrl,
         INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
         ...(discordAuthClientId
           ? { INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID: discordAuthClientId }
