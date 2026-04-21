@@ -1,3 +1,15 @@
+## [1.0.187](https://github.com/alternun-development/alternun/compare/v1.0.187-dev.0...v1.0.187) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth): PublicLandingPage
+- **repo:** fix(release): stage root package version
+
+### Bug Fixes
+
+- **mobile,auth:** PublicLandingPage ([53e4280](https://github.com/alternun-development/alternun/commit/53e42804865be5a52be2045a848baf5febc7763e))
+- **release:** stage root package version ([ace90ab](https://github.com/alternun-development/alternun/commit/ace90ab77752dcd18bd14b7a88a0976558e6a26a))
+
 ## [1.0.187](https://github.com/alternun-development/alternun/compare/v1.0.186-dev.0...v1.0.187) (2026-04-21)
 
 ### Bug Fixes
