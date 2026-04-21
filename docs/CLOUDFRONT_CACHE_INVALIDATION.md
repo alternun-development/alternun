@@ -3,6 +3,7 @@
 ## Overview
 
 After each successful deployment via CodePipeline, the CloudFront CDN cache is **automatically invalidated** to ensure users get fresh content immediately, not stale cached versions.
+The deploy no longer waits for the invalidation to finish unless `INFRA_STATIC_SITE_INVALIDATION_WAIT=true`, so production pipelines can complete sooner while the invalidation finishes in the background.
 
 ## What It Does
 

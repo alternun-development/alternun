@@ -136,6 +136,9 @@ env:
     INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'true'
     # Disabled by default: refresh can rewrite live state before deploy.
     INFRA_ENABLE_SST_REFRESH: 'false'
+    # Static-site deploys create CloudFront invalidations, but do not wait for
+    # the distribution to fully settle unless explicitly enabled.
+    INFRA_STATIC_SITE_INVALIDATION_WAIT: 'false'
     HUSKY: '0'
     EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID: '1'
     # Authentik and Better Auth config are resolved per-stage from the canonical
