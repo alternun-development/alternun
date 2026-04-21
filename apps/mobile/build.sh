@@ -144,6 +144,26 @@ for (const manifestPath of manifestPaths) {
   }
 }
 
+const workerPaths = [
+  "dist/alternun-release-worker.js",
+  "public/alternun-release-worker.js",
+];
+
+for (const workerPath of workerPaths) {
+  if (!fs.existsSync(workerPath)) {
+    console.error(`ERROR: ${workerPath} is missing after expo export.`);
+    process.exit(1);
+  }
+
+  const workerSource = fs.readFileSync(workerPath, "utf8");
+  if (!workerSource.includes(`const CURRENT_VERSION = ${JSON.stringify(appVersion)};`)) {
+    console.error(`ERROR: ${workerPath} does not contain version ${appVersion}.`);
+    process.exit(1);
+  }
+}
+' "$app_version"
+}
+
 resolve_expected_release_version() {
   node - <<'NODE'
 const fs = require('node:fs');
@@ -194,26 +214,6 @@ verify_exported_web_bundle_version() {
   done <<EOF
 $bundle_candidates
 EOF
-}
-
-const workerPaths = [
-  "dist/alternun-release-worker.js",
-  "public/alternun-release-worker.js",
-];
-
-for (const workerPath of workerPaths) {
-  if (!fs.existsSync(workerPath)) {
-    console.error(`ERROR: ${workerPath} is missing after expo export.`);
-    process.exit(1);
-  }
-
-  const workerSource = fs.readFileSync(workerPath, "utf8");
-  if (!workerSource.includes(`const CURRENT_VERSION = ${JSON.stringify(appVersion)};`)) {
-    console.error(`ERROR: ${workerPath} does not contain version ${appVersion}.`);
-    process.exit(1);
-  }
-}
-' "$app_version"
 }
 
 # Generate changelog data file for the app
