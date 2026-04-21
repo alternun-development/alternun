@@ -61,4 +61,9 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
   assert.match(helperSource, /export EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER/);
   assert.match(sstDeploySource, /source "\$SCRIPT_DIR\/resolve-ssm-env\.sh"/);
   assert.match(sstDeploySource, /source "\$SCRIPT_DIR\/resolve-secrets-manager-env\.sh"/);
+  assert.match(
+    source,
+    /APPROVE=true STACK="\$\{SST_STAGE\}" bash "\$\{INFRA_PATH\}\/scripts\/sst-deploy\.sh"/
+  );
+  assert.doesNotMatch(source, /npx sst deploy --stage "\$\{SST_STAGE\}" --yes/);
 });
