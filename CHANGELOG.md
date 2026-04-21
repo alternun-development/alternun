@@ -1,3 +1,25 @@
+## [1.0.181](https://github.com/alternun-development/alternun/compare/v1.0.180...v1.0.181) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(api,infra): connection, better-auth-dev-server.test, README, dashboard
+- **repo:** fix(infra): make static-site invalidation non-blocking
+- **repo:** fix(infra): route CodeBuild deploys through wrapper
+- **repo:** ci: make CI pull-request only
+- **repo:** test(repo): patch fastify middie audit advisory
+
+### Bug Fixes
+
+- **infra:** make static-site invalidation non-blocking ([1e0ab9d](https://github.com/alternun-development/alternun/commit/1e0ab9de83d70e235b7e1d7f077b9f4af87708b9))
+- **infra:** route CodeBuild deploys through wrapper ([1aa417f](https://github.com/alternun-development/alternun/commit/1aa417f9282b5ae797b18c3b0a7277b499a9b4b4))
+
+## [1.0.181](https://github.com/alternun-development/alternun/compare/v1.0.180...v1.0.181) (2026-04-21)
+
+### Bug Fixes
+
+- **infra:** make static-site invalidation non-blocking ([1e0ab9d](https://github.com/alternun-development/alternun/commit/1e0ab9de83d70e235b7e1d7f077b9f4af87708b9))
+- **infra:** route CodeBuild deploys through wrapper ([1aa417f](https://github.com/alternun-development/alternun/commit/1aa417f9282b5ae797b18c3b0a7277b499a9b4b4))
+
 ## [1.0.180](https://github.com/alternun-development/alternun/compare/v1.0.179...v1.0.180) (2026-04-20)
 
 ### Bug Fixes
