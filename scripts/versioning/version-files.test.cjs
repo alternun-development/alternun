@@ -3,6 +3,8 @@ const test = require('node:test');
 
 const {
   buildVersionManifest,
+  incrementDevelopmentBuildVersion,
+  incrementDevelopmentSemanticVersion,
   getBranchReleaseFiles,
   getManagedPackageJsonPaths,
   getManagedVersionManifestPaths,
@@ -48,6 +50,13 @@ test('version context branch prefers the environment override', () => {
       process.env.ALTERNUN_VERSION_BRANCH = previous;
     }
   }
+});
+
+test('development release versions bump build or reset build after semantic bumps', () => {
+  assert.equal(incrementDevelopmentBuildVersion('1.0.183-dev.3'), '1.0.183-dev.4');
+  assert.equal(incrementDevelopmentBuildVersion('1.0.183'), '1.0.183-dev.1');
+  assert.equal(incrementDevelopmentSemanticVersion('1.0.183-dev.3', 'patch'), '1.0.184-dev.0');
+  assert.equal(incrementDevelopmentSemanticVersion('1.0.183-dev.3', 'minor'), '1.1.0-dev.0');
 });
 
 test('current repository version files stay consistent', () => {
