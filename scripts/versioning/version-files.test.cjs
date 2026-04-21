@@ -4,6 +4,7 @@ const test = require('node:test');
 const {
   captureFileContents,
   buildVersionManifest,
+  compareReleaseVersions,
   incrementDevelopmentBuildVersion,
   incrementDevelopmentSemanticVersion,
   getBranchReleaseFiles,
@@ -62,6 +63,13 @@ test('development release versions bump build or reset build after semantic bump
   assert.equal(incrementDevelopmentSemanticVersion('1.0.183-dev.3', 'minor'), '1.1.0-dev.0');
 });
 
+test('release version comparison treats stable releases as newer than dev builds on the same base', () => {
+  assert.equal(compareReleaseVersions('1.0.191', '1.0.191-dev.3'), 1);
+  assert.equal(compareReleaseVersions('1.0.191-dev.3', '1.0.191-dev.2'), 1);
+  assert.equal(compareReleaseVersions('1.0.191-dev.3', '1.0.191'), -1);
+  assert.equal(compareReleaseVersions('1.0.191', '1.0.191'), 0);
+});
+
 test('current repository version files stay consistent', () => {
   const developmentVersion = readRootVersion('develop');
 
@@ -95,15 +103,117 @@ test('develop branch sync only updates the development manifest track', () => {
   const snapshot = captureFileContents(['version.development.json', 'version.production.json']);
 
   try {
-    const touchedFiles = syncBranchVersionManifests('1.0.185-dev.1', 'develop', {
+    const touchedFiles = syncBranchVersionManifests('1.0.191-dev.4', 'develop', {
       now: '2026-04-21T00:00:00.000Z',
-      developmentBuild: 1,
+      developmentBuild: 4,
     });
 
     assert.deepEqual(touchedFiles, ['version.development.json']);
   } finally {
     restoreFileContents(snapshot);
   }
+});
+
+test('release manifests refuse to roll back to an older version', () => {
+  assert.throws(
+    () =>
+      buildVersionManifest({
+        existingManifest: {
+          version: '1.0.191-dev.3',
+          build: 3,
+          lastUpdated: '2026-04-21T18:26:57.577Z',
+          environment: 'development',
+          lastDeployment: {
+            id: 'development-3',
+            version: '1.0.191-dev.3',
+            build: 3,
+            date: '2026-04-21T18:26:57.577Z',
+            message: 'Release 1.0.191-dev.3',
+          },
+          deploymentHistory: [
+            {
+              id: 'development-3',
+              version: '1.0.191-dev.3',
+              build: 3,
+              date: '2026-04-21T18:26:57.577Z',
+              message: 'Release 1.0.191-dev.3',
+            },
+          ],
+        },
+        sourceVersion: '1.0.180-dev.0',
+        environment: 'development',
+        message: 'rollback attempt',
+        now: '2026-04-21T18:26:57.577Z',
+      }),
+    /Refusing to roll back development manifest/
+  );
+
+  assert.throws(
+    () =>
+      buildVersionManifest({
+        existingManifest: {
+          version: '1.0.191',
+          build: 3,
+          lastUpdated: '2026-04-21T19:11:26.800Z',
+          environment: 'production',
+          lastDeployment: {
+            id: 'production-3',
+            version: '1.0.191',
+            build: 3,
+            date: '2026-04-21T19:11:26.800Z',
+            message: 'Release 1.0.191-dev.3',
+          },
+          deploymentHistory: [
+            {
+              id: 'production-3',
+              version: '1.0.191',
+              build: 3,
+              date: '2026-04-21T19:11:26.800Z',
+              message: 'Release 1.0.191-dev.3',
+            },
+          ],
+        },
+        sourceVersion: '1.0.180-dev.0',
+        environment: 'production',
+        normalizeVersion: true,
+        message: 'rollback attempt',
+        now: '2026-04-21T19:11:26.800Z',
+      }),
+    /Refusing to roll back production manifest/
+  );
+
+  assert.throws(
+    () =>
+      buildVersionManifest({
+        existingManifest: {
+          version: '1.8.235-dev.36',
+          build: 36,
+          lastUpdated: '2026-03-17T21:21:57.065Z',
+          environment: 'development',
+          lastDeployment: {
+            id: 'development-36',
+            version: '1.8.235-dev.36',
+            build: 36,
+            date: '2026-03-17T21:21:57.065Z',
+            message: 'release patch on develop',
+          },
+          deploymentHistory: [
+            {
+              id: 'development-36',
+              version: '1.8.235-dev.36',
+              build: 36,
+              date: '2026-03-17T21:21:57.065Z',
+              message: 'release patch on develop',
+            },
+          ],
+        },
+        sourceVersion: '1.8.235-dev.35',
+        environment: 'development',
+        message: 'rollback attempt',
+        now: '2026-03-17T21:21:57.065Z',
+      }),
+    /Refusing to roll back development manifest/
+  );
 });
 
 test('structured manifests keep release history and branch-aware mirrors', () => {
