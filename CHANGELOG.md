@@ -1,3 +1,14 @@
+## [1.0.186](https://github.com/alternun-development/alternun/compare/v1.0.185-dev.1...v1.0.186) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): release, version-files, version-files.test
+- **repo:** fix(release): stage develop production manifest
+
+### Bug Fixes
+
+- **release:** stage develop production manifest ([98ff166](https://github.com/alternun-development/alternun/commit/98ff166af5438b01249ded7664b9952758b102f3))
+
 ## [1.0.185](https://github.com/alternun-development/alternun/compare/v1.0.185-dev.0...v1.0.185) (2026-04-21)
 
 ### Bug Fixes
