@@ -12,5 +12,5 @@ test('api fastify stack uses the patched middie release', () => {
   const rootPackage = readJson(path.resolve(__dirname, '..', '..', '..', 'package.json'));
 
   assert.match(apiPackage.dependencies.fastify, /^4\./);
-  assert.equal(rootPackage.pnpm.overrides['@fastify/middie'], '8.3.3');
+  assert.equal(rootPackage.pnpm.overrides['@fastify/middie'], '9.3.2');
 });
