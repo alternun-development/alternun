@@ -1,3 +1,9 @@
+## [1.0.188](https://github.com/alternun-development/alternun/compare/v1.0.187-dev.1...v1.0.188) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(infra): buildspec, static-site-invalidation.test
+
 ## [1.0.187](https://github.com/alternun-development/alternun/compare/v1.0.187-dev.0...v1.0.187) (2026-04-21)
 
 ### Bug Fixes
