@@ -457,6 +457,7 @@ function ensureChangelogFile(dryRun) {
 
 function stageReleaseFiles(dryRun, branchName = getCurrentBranch()) {
   const managedPaths = new Set([
+    getRootPackageJsonPath(),
     ...getManagedPackageJsonPaths(branchName),
     ...SUPPLEMENTAL_VERSION_FILES.map((entry) => entry.relativePath),
   ]);
