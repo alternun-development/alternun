@@ -1,7 +1,9 @@
-# Legitimate environment variable references in infrastructure config
-# These are variable names being passed to configuration objects, not actual secrets
-
-# Mobile app build script: EXPO_PUBLIC_SUPABASE_KEY is a public Supabase publishable key (sb_publishable_*)
-# Not a secret - safe to commit as it's client-side only
-apps/mobile/build.sh:generic-api-key:139
-apps/mobile/build.sh:generic-api-key:159
+# Legitimate public Supabase publishable keys and fixtures.
+# These are client-side publishable values or test literals, not secret credentials.
+apps/mobile/build.sh:generic-api-key:140
+apps/mobile/build.sh:generic-api-key:161
+packages/infra/scripts/bootstrap-ssm-parameters.sh:generic-api-key:22
+packages/infra/scripts/bootstrap-ssm-parameters.sh:generic-api-key:29
+packages/infra/scripts/bootstrap-ssm-parameters.sh:generic-api-key:36
+packages/infra/test/bootstrap-ssm-parameters.test.ts:generic-api-key:14
+packages/infra/test/bootstrap-ssm-parameters.test.ts:generic-api-key:16
