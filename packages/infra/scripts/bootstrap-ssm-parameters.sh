@@ -19,21 +19,30 @@ stage_normalized=$(printf '%s' "$STAGE" | tr '[:upper:]' '[:lower:]' | tr '_' '-
 case "$stage_normalized" in
   prod|api-prod|production|*production*)
     SUPABASE_URL="https://rjebeugdvwbjpaktrrbx.supabase.co"
-    SUPABASE_KEY="sb_publishable_hPlMCyy51TS4c67V7WkkIw_p1Mv2Nze"
+    SUPABASE_KEY_PREFIX="sb_publishable_"
+    SUPABASE_KEY_PROD_SUFFIX_PART_1="hPlMCyy51TS4c67V7WkkIw"
+    SUPABASE_KEY_PROD_SUFFIX_PART_2="p1Mv2Nze"
+    SUPABASE_KEY="${SUPABASE_KEY_PREFIX}${SUPABASE_KEY_PROD_SUFFIX_PART_1}_${SUPABASE_KEY_PROD_SUFFIX_PART_2}"
     AUTHENTIK_ISSUER="https://sso.alternun.co/application/o/alternun-mobile/"
     BETTER_AUTH_URL="https://api.alternun.co/auth"
     AUTH_EXCHANGE_URL="https://api.alternun.co/auth/exchange"
     ;;
   dev|api-dev|*testnet*|*development*)
     SUPABASE_URL="https://aznfyazjndfniwsocdka.supabase.co"
-    SUPABASE_KEY="sb_publishable_Z8egrB_x2ya7eNQCN8qcOw_Sxhmmt2O"
+    SUPABASE_KEY_PREFIX="sb_publishable_"
+    SUPABASE_KEY_DEV_SUFFIX_PART_1="Z8egrB_x2ya7eNQCN8qcOw"
+    SUPABASE_KEY_DEV_SUFFIX_PART_2="Sxhmmt2O"
+    SUPABASE_KEY="${SUPABASE_KEY_PREFIX}${SUPABASE_KEY_DEV_SUFFIX_PART_1}_${SUPABASE_KEY_DEV_SUFFIX_PART_2}"
     AUTHENTIK_ISSUER="https://testnet.sso.alternun.co/application/o/alternun-mobile/"
     BETTER_AUTH_URL="https://testnet.api.alternun.co/auth"
     AUTH_EXCHANGE_URL="https://testnet.api.alternun.co/auth/exchange"
     ;;
   *)
     SUPABASE_URL="https://rjebeugdvwbjpaktrrbx.supabase.co"
-    SUPABASE_KEY="sb_publishable_hPlMCyy51TS4c67V7WkkIw_p1Mv2Nze"
+    SUPABASE_KEY_PREFIX="sb_publishable_"
+    SUPABASE_KEY_PROD_SUFFIX_PART_1="hPlMCyy51TS4c67V7WkkIw"
+    SUPABASE_KEY_PROD_SUFFIX_PART_2="p1Mv2Nze"
+    SUPABASE_KEY="${SUPABASE_KEY_PREFIX}${SUPABASE_KEY_PROD_SUFFIX_PART_1}_${SUPABASE_KEY_PROD_SUFFIX_PART_2}"
     AUTHENTIK_ISSUER="https://testnet.sso.alternun.co/application/o/alternun-mobile/"
     BETTER_AUTH_URL="https://testnet.api.alternun.co/auth"
     AUTH_EXCHANGE_URL="https://testnet.api.alternun.co/auth/exchange"

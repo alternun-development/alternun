@@ -183,9 +183,12 @@ fi
 detected_stage="${SST_STAGE:-${STACK:-${EXPO_PUBLIC_STAGE:-${EXPO_PUBLIC_ENV:-}}}}"
 if [ -n "$detected_stage" ]; then
   detected_stage_lower=$(echo "$detected_stage" | tr '[:upper:]' '[:lower:]')
+  # Pull the Supabase publishable key from the runtime environment instead of
+  # embedding a literal key in this script so secret scanning stays clean.
+  stage_supabase_key="${EXPO_PUBLIC_SUPABASE_KEY:-${EXPO_PUBLIC_SUPABASE_ANON_KEY:-}}"
   case "$detected_stage_lower" in
     dev|*testnet*|*development*|*preview*)
-      cat > .env.development << 'ENVFILE'
+      cat > .env.development << ENVFILE
 EXPO_PUBLIC_API_URL=https://testnet.api.alternun.co
 EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 AUTH_EXECUTION_PROVIDER=better-auth
@@ -198,7 +201,7 @@ EXPO_PUBLIC_AUTHENTIK_CLIENT_ID=alternun-mobile
 EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase
 EXPO_PUBLIC_SUPABASE_URL=https://aznfyazjndfniwsocdka.supabase.co
-EXPO_PUBLIC_SUPABASE_KEY=sb_publishable_Z8egrB_x2ya7eNQCN8qcOw_Sxhmmt2O
+EXPO_PUBLIC_SUPABASE_KEY=${stage_supabase_key}
 EXPO_PUBLIC_RELEASE_UPDATE_MODE=on
 EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=60000
 ENVFILE
@@ -206,7 +209,7 @@ ENVFILE
       grep "EXPO_PUBLIC_BETTER_AUTH_URL" .env.development >&2
       ;;
     prod|*production*)
-      cat > .env.production << 'ENVFILE'
+      cat > .env.production << ENVFILE
 EXPO_PUBLIC_API_URL=https://api.alternun.co
 EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
 AUTH_EXECUTION_PROVIDER=supabase
@@ -219,7 +222,7 @@ EXPO_PUBLIC_AUTHENTIK_CLIENT_ID=alternun-mobile
 EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase
 EXPO_PUBLIC_SUPABASE_URL=https://rjebeugdvwbjpaktrrbx.supabase.co
-EXPO_PUBLIC_SUPABASE_KEY=sb_publishable_hPlMCyy51TS4c67V7WkkIw_p1Mv2Nze
+EXPO_PUBLIC_SUPABASE_KEY=${stage_supabase_key}
 EXPO_PUBLIC_RELEASE_UPDATE_MODE=on
 EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=300000
 ENVFILE
