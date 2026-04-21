@@ -1,18 +1,19 @@
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType, type INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
+import type { AbstractHttpAdapter } from '@nestjs/core/adapters/http-adapter';
+import { FastifyAdapter } from '@nestjs/platform-fastify';
+import type { FastifyInstance } from 'fastify';
 import { AppModule } from '../../app.module';
 import { registerBetterAuthProxy } from './better-auth-proxy';
 import { registerBetterAuthRuntime, resolveBetterAuthBootstrapConfig } from './better-auth-runtime';
 import { setupOpenApi } from '../openapi/setup-openapi';
 
-export async function createApp(): Promise<NestFastifyApplication> {
-  const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter({
-      logger: true,
-    })
-  );
+export async function createApp(): Promise<INestApplication> {
+  const fastifyAdapter = new FastifyAdapter({
+    logger: true,
+  }) as unknown as AbstractHttpAdapter;
+
+  const app = await NestFactory.create(AppModule, fastifyAdapter);
 
   app.enableVersioning({
     type: VersioningType.URI,
@@ -23,7 +24,7 @@ export async function createApp(): Promise<NestFastifyApplication> {
   });
 
   // Ensure CORS headers are sent for all responses, including errors
-  const fastify = app.getHttpAdapter().getInstance();
+  const fastify = app.getHttpAdapter().getInstance() as FastifyInstance;
   fastify.addHook('onSend', async (request, reply, payload) => {
     if (!reply.hasHeader('Access-Control-Allow-Origin')) {
       void reply.header('Access-Control-Allow-Origin', request.headers.origin ?? '*');
