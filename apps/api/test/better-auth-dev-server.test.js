@@ -9,8 +9,7 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', () => {
   const originalEnv = { ...process.env };
 
   try {
-    process.env.DATABASE_URL =
-      'postgresql://postgres:postgres@127.0.0.1:5432/postgres';
+    process.env.DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:5432/postgres';
 
     const auth = createBetterAuthDevAuth({
       port: 8082,
@@ -31,12 +30,49 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', () => {
       },
     });
 
-    assert.equal(auth.options.plugins.some((plugin) => plugin.id === 'oauth-proxy'), true);
+    assert.equal(
+      auth.options.plugins.some((plugin) => plugin.id === 'oauth-proxy'),
+      true
+    );
     assert.equal(auth.options.account.skipStateCookieCheck, true);
     assert.equal(auth.options.account.accountLinking.trustedProviders.includes('discord'), true);
     assert.equal(Boolean(auth.options.socialProviders.discord), true);
     assert.equal(auth.options.socialProviders.google.redirectURI, undefined);
     assert.equal(auth.options.socialProviders.discord.redirectURI, undefined);
+  } finally {
+    process.env = originalEnv;
+  }
+});
+
+test('createBetterAuthDevAuth accepts backend database env fallback', () => {
+  const originalEnv = { ...process.env };
+
+  try {
+    delete process.env.DATABASE_URL;
+    delete process.env.SUPABASE_DATABASE_URL;
+    process.env.INFRA_BACKEND_API_DATABASE_URL =
+      'postgresql://postgres:postgres@127.0.0.1:5432/postgres';
+
+    const auth = createBetterAuthDevAuth({
+      port: 8082,
+      host: '127.0.0.1',
+      baseURL: 'http://127.0.0.1:8082',
+      secret: 'example-better-auth-secret',
+      trustedOrigins: ['http://localhost:8081'],
+      googleClientId: 'example-google-client',
+      googleClientSecret: 'example-google-secret',
+      discordClientId: 'example-discord-client',
+      discordClientSecret: 'example-discord-secret',
+      oauthProxy: {
+        enabled: false,
+      },
+    });
+
+    assert.equal(
+      auth.options.plugins.some((plugin) => plugin.id === 'oauth-proxy'),
+      false
+    );
+    assert.equal(Boolean(auth.options.socialProviders.google), true);
   } finally {
     process.env = originalEnv;
   }
