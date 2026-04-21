@@ -62,6 +62,7 @@ curl -k -i -X POST -H 'content-type: application/json' \
 `dev` owns the Expo bundle, `dashboard-dev` owns the API/auth runtime, and `identity-dev` owns Authentik. `release:patch` remains the versioned release flow, but it is not the preferred path for live testnet auth changes.
 
 The `dev` CodeBuild pipeline now runs post-deploy DNS sync for redirect aliases and keeps redirect probes advisory by default. Set `INFRA_ENFORCE_REDIRECT_CHECKS=true` only when you want redirect host mismatches to fail the build.
+Managed CodePipeline releases now run in `QUEUED` execution mode so a newer push waits for the active release to finish instead of superseding it mid-deploy.
 
 ## Dashboard Stack
 
