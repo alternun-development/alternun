@@ -1,6 +1,8 @@
 const {
+  syncBranchVersionManifests,
   readRootVersion,
   syncSupplementalVersionFiles,
+  resolveVersionContextBranch,
 } = require('./version-files.cjs');
 
 module.exports = {
@@ -10,14 +12,23 @@ module.exports = {
   async register() {},
   hooks: {
     async postSync(options = {}) {
-      const version = typeof options.version === 'string' && options.version.length > 0
-        ? options.version
-        : readRootVersion();
+      const branch = resolveVersionContextBranch();
+      const version =
+        typeof options.version === 'string' && options.version.length > 0
+          ? options.version
+          : readRootVersion(branch);
 
+      syncBranchVersionManifests(version, branch);
       syncSupplementalVersionFiles(version);
       console.log(`Synced apps/mobile/app.json to ${version}`);
     },
-    async postVersion(_type, version) {
+    async postVersion(_type, version, options = {}) {
+      const branch =
+        typeof options.targetBranch === 'string' && options.targetBranch.length > 0
+          ? options.targetBranch
+          : resolveVersionContextBranch();
+
+      syncBranchVersionManifests(version, branch);
       syncSupplementalVersionFiles(version);
       console.log(
         `Synced apps/mobile/app.json to ${version}. Use the pnpm release scripts so this file is committed with the release.`

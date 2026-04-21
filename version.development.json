@@ -1,0 +1,22 @@
+{
+  "version": "1.0.183",
+  "build": 0,
+  "lastUpdated": "2026-04-21T07:40:57.953Z",
+  "environment": "development",
+  "lastDeployment": {
+    "id": "development-0",
+    "version": "1.0.183",
+    "build": 0,
+    "date": "2026-04-21T07:40:57.953Z",
+    "message": "Release 1.0.183"
+  },
+  "deploymentHistory": [
+    {
+      "id": "development-0",
+      "version": "1.0.183",
+      "build": 0,
+      "date": "2026-04-21T07:40:57.953Z",
+      "message": "Release 1.0.183"
+    }
+  ]
+}
