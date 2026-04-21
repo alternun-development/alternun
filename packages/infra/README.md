@@ -207,6 +207,7 @@ Enable/configure through env or local config:
 Important behavior:
 
 - backend provisioning is isolated to dedicated stacks by default (`api-dev`, `api-prod`) to avoid mixing API runtime changes into the Expo stacks; for the live testnet API domain, `dashboard-dev` is the owning stack
+- `api-dev` / `api-prod` are the canonical backend-only stack names; legacy `backend-*` aliases are normalized to those canonical stages by the deploy wrapper
 - dedicated backend pipelines force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy or modify the static app site
 - the current backend target is Lambda + API Gateway, which keeps the first provisioning increment aligned with the existing SST pipeline model
 - backend deploys now receive `AUTHENTIK_JWT_SIGNING_KEY` from the matching identity-stage secret output so `/auth/exchange` can mint issuer-owned JWTs without manual secret copying; the deploy script still hydrates it as a compatibility fallback for older flows, and `INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` makes the backend fail closed instead of accepting compatibility fallback
@@ -445,9 +446,13 @@ pnpm --filter @alternun/infra run deploy:identity-prod
 
 These commands remain fully IaC-driven from `packages/infra/infra.config.ts` and `packages/infra/modules/identity-resources.ts`.
 
-## Redirects (Dev Stage)
+## Redirects (Dev Stage, Optional)
 
-During `dev` deployments, infra can provision:
+`INFRA_REDIRECT_AIRS_TO_DEV` now defaults to `false`, so `airs.alternun.co`
+stays on the production stack unless you explicitly re-enable the temporary
+testnet redirect.
+
+During `dev` deployments, infra can optionally provision:
 
 - `airs.alternun.co` -> `testnet.airs.alternun.co`
 - `dev.airs.alternun.co` -> `testnet.airs.alternun.co`
@@ -457,7 +462,7 @@ During `dev` deployments, infra can provision:
 
 Config knobs:
 
-- `INFRA_REDIRECT_AIRS_TO_DEV`
+- `INFRA_REDIRECT_AIRS_TO_DEV` (default `false`; temporary `airs.alternun.co` -> `testnet.airs.alternun.co`)
 - `INFRA_REDIRECT_AIRS_TO_DEV_SOURCE`
 - `INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN` (optional)
 - `INFRA_REDIRECT_DEV_TO_TESTNET`

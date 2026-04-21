@@ -262,7 +262,7 @@ run_extra_redirect_dns_cleanup() {
     fi
   fi
 
-  if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}" && [ -n "$airs_source" ]; then
+  if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-false}" && [ -n "$airs_source" ]; then
     delete_conflicting_dns_records "$hosted_zone_id" "$airs_source"
     delete_acm_validation_cname_records "$hosted_zone_id" "$airs_source" \
       INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}"

@@ -7,7 +7,7 @@ import {
   buildStageDomains,
 } from './infrastructure-specs.js';
 import { parseBoolean } from './parsing.js';
-import type { PipelineStage } from './pipelines/index.js';
+import { resolveStackDeploymentStage, type PipelineStage } from './pipelines/index.js';
 
 export interface ExpoProfileFlags {
   isDashboardPipelineProfile: boolean;
@@ -183,6 +183,121 @@ function normalizeAuthExecutionProvider(value: string | undefined): string | und
   return undefined;
 }
 
+function resolveDeploymentStage(env: NodeJS.ProcessEnv): PipelineStage | undefined {
+  return (
+    resolveStackDeploymentStage(env.EXPO_PUBLIC_STAGE ?? '') ??
+    resolveStackDeploymentStage(env.EXPO_PUBLIC_ENV ?? '') ??
+    resolveStackDeploymentStage(env.SST_STAGE ?? '') ??
+    resolveStackDeploymentStage(env.STACK ?? '')
+  );
+}
+
+function buildIdentityDomainFromAirsDomain(stageDomain: string): string {
+  const hostnameParts = stageDomain.split('.');
+  const airsIndex = hostnameParts.indexOf('airs');
+
+  if (airsIndex >= 0) {
+    hostnameParts[airsIndex] = 'sso';
+  }
+
+  return hostnameParts.join('.');
+}
+
+function buildApiUrlFromStageDomain(stageDomain: string): string {
+  try {
+    const url = new URL(`https://${stageDomain}`);
+    const hostnameParts = url.hostname.split('.');
+    const airsIndex = hostnameParts.indexOf('airs');
+
+    if (airsIndex >= 0) {
+      hostnameParts[airsIndex] = 'api';
+      return `${url.protocol}//${hostnameParts.join('.')}`;
+    }
+
+    return url.origin;
+  } catch {
+    return `https://${stageDomain}`;
+  }
+}
+
+function buildAuthentikIssuerFromStageDomain(stageDomain: string): string {
+  return `https://${buildIdentityDomainFromAirsDomain(stageDomain)}/application/o/alternun-mobile/`;
+}
+
+function resolveStageAlignedUrl(
+  value: string | undefined,
+  expectedUrl: string
+): string | undefined {
+  const normalized = normalizePublicUrl(value);
+  if (!normalized) {
+    return undefined;
+  }
+
+  try {
+    const candidate = new URL(normalized);
+    const expected = new URL(expectedUrl);
+
+    if (candidate.host.toLowerCase() === expected.host.toLowerCase()) {
+      return normalized;
+    }
+  } catch {
+    // Ignore malformed URLs and fall back to the stage default.
+  }
+
+  return undefined;
+}
+
+function resolveStageAlignedBetterAuthUrl(
+  value: string | undefined,
+  expectedUrl: string
+): string | undefined {
+  const normalized = normalizeBetterAuthBaseUrl(value);
+  if (!normalized) {
+    return undefined;
+  }
+
+  try {
+    const candidate = new URL(normalized);
+    const expected = new URL(expectedUrl);
+
+    if (candidate.host.toLowerCase() === expected.host.toLowerCase()) {
+      return normalized;
+    }
+  } catch {
+    // Ignore malformed URLs and fall back to the stage default.
+  }
+
+  return undefined;
+}
+
+function resolveStageAlignedExactUrl(
+  value: string | undefined,
+  expectedUrl: string
+): string | undefined {
+  const normalized = normalizePublicUrl(value);
+  if (!normalized) {
+    return undefined;
+  }
+
+  try {
+    const candidate = new URL(normalized);
+    const expected = new URL(expectedUrl);
+    const candidatePath = candidate.pathname.replace(/\/+$/, '');
+    const expectedPath = expected.pathname.replace(/\/+$/, '');
+
+    if (
+      candidate.host.toLowerCase() === expected.host.toLowerCase() &&
+      candidatePath === expectedPath
+    ) {
+      return normalized;
+    }
+  } catch {
+    // Ignore malformed URLs and fall back to the stage default.
+  }
+
+  return undefined;
+}
+
 function buildAuthExchangeUrl(apiUrl: string | undefined): string | undefined {
   if (!apiUrl) {
     return undefined;
@@ -299,40 +414,62 @@ export function resolveExpoConfig({
       !profileFlags.isAdminSitePipelineProfile &&
       !profileFlags.isDashboardPipelineProfile
   );
+  const deploymentStage = resolveDeploymentStage(env);
   const allowCustomProviderFlowSlugs =
     parseBoolean(env.EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS, false) ||
     parseBoolean(env.INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS, false) ||
     Boolean(localConfig.expo?.publicEnv?.authentikAllowCustomProviderFlowSlugs);
-  const apiUrl = normalizePublicUrl(env.EXPO_PUBLIC_API_URL ?? localConfig.expo?.publicEnv?.apiUrl);
+  const stageDomain = deploymentStage ? stageDomains[deploymentStage] : undefined;
+  const stageApiUrl = stageDomain ? buildApiUrlFromStageDomain(stageDomain) : undefined;
+  const stageBetterAuthUrl = stageApiUrl;
+  const stageAuthExchangeUrl = stageApiUrl ? buildAuthExchangeUrl(stageApiUrl) : undefined;
+  const stageAuthentikIssuer = stageDomain
+    ? buildAuthentikIssuerFromStageDomain(stageDomain)
+    : undefined;
+  const stageAuthentikRedirectUri = stageDomain
+    ? `https://${stageDomain}/auth/callback`
+    : undefined;
+
+  const apiUrl = deploymentStage
+    ? resolveStageAlignedUrl(env.EXPO_PUBLIC_API_URL, stageApiUrl ?? '') ?? stageApiUrl
+    : normalizePublicUrl(env.EXPO_PUBLIC_API_URL ?? localConfig.expo?.publicEnv?.apiUrl);
   const explicitAuthExecutionProvider = normalizeAuthExecutionProvider(
-    env.AUTH_EXECUTION_PROVIDER ??
-      env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER ??
-      localConfig.expo?.publicEnv?.authExecutionProvider
+    env.AUTH_EXECUTION_PROVIDER ?? env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER
   );
-  const authExchangeUrl =
-    normalizePublicUrl(
-      env.AUTH_EXCHANGE_URL ??
-        env.EXPO_PUBLIC_AUTH_EXCHANGE_URL ??
-        localConfig.expo?.publicEnv?.authExchangeUrl
-    ) ??
-    ((explicitAuthExecutionProvider === 'better-auth' ||
-      normalizeBetterAuthBaseUrl(
+  const authExchangeUrl = deploymentStage
+    ? resolveStageAlignedExactUrl(
+        env.AUTH_EXCHANGE_URL ?? env.EXPO_PUBLIC_AUTH_EXCHANGE_URL,
+        stageAuthExchangeUrl ?? ''
+      ) ?? stageAuthExchangeUrl
+    : normalizePublicUrl(
+        env.AUTH_EXCHANGE_URL ??
+          env.EXPO_PUBLIC_AUTH_EXCHANGE_URL ??
+          localConfig.expo?.publicEnv?.authExchangeUrl
+      ) ??
+      ((explicitAuthExecutionProvider === 'better-auth' ||
+        normalizeBetterAuthBaseUrl(
+          env.AUTH_BETTER_AUTH_URL ??
+            env.EXPO_PUBLIC_BETTER_AUTH_URL ??
+            localConfig.expo?.publicEnv?.betterAuthUrl
+        )) &&
+      apiUrl
+        ? buildAuthExchangeUrl(apiUrl)
+        : undefined);
+  const betterAuthUrl = deploymentStage
+    ? resolveStageAlignedBetterAuthUrl(
+        env.AUTH_BETTER_AUTH_URL ?? env.EXPO_PUBLIC_BETTER_AUTH_URL,
+        stageBetterAuthUrl ?? ''
+      ) ?? stageBetterAuthUrl
+    : normalizeBetterAuthBaseUrl(
         env.AUTH_BETTER_AUTH_URL ??
           env.EXPO_PUBLIC_BETTER_AUTH_URL ??
-          localConfig.expo?.publicEnv?.betterAuthUrl
-      )) &&
-    apiUrl
-      ? buildAuthExchangeUrl(apiUrl)
-      : undefined);
-  const betterAuthUrl = normalizeBetterAuthBaseUrl(
-    env.AUTH_BETTER_AUTH_URL ??
-      env.EXPO_PUBLIC_BETTER_AUTH_URL ??
-      localConfig.expo?.publicEnv?.betterAuthUrl ??
-      authExchangeUrl ??
-      (explicitAuthExecutionProvider === 'better-auth' ? apiUrl : undefined)
-  );
-  const authExecutionProvider =
-    explicitAuthExecutionProvider ?? (betterAuthUrl ? 'better-auth' : undefined);
+          localConfig.expo?.publicEnv?.betterAuthUrl ??
+          authExchangeUrl ??
+          (explicitAuthExecutionProvider === 'better-auth' ? apiUrl : undefined)
+      );
+  const authExecutionProvider = deploymentStage
+    ? 'better-auth'
+    : explicitAuthExecutionProvider ?? (betterAuthUrl ? 'better-auth' : undefined);
 
   const publicEnv = {
     supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL ?? localConfig.expo?.publicEnv?.supabaseUrl,
@@ -359,26 +496,36 @@ export function resolveExpoConfig({
     authExecutionProvider,
     authExchangeUrl,
     betterAuthUrl,
-    authentikIssuer:
-      env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? localConfig.expo?.publicEnv?.authentikIssuer,
-    authentikClientId:
-      env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? localConfig.expo?.publicEnv?.authentikClientId,
-    authentikRedirectUri:
-      env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI ?? localConfig.expo?.publicEnv?.authentikRedirectUri,
-    authentikLoginEntryMode:
-      env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE ??
-      localConfig.expo?.publicEnv?.authentikLoginEntryMode,
-    authentikSocialLoginMode:
-      env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE ??
-      localConfig.expo?.publicEnv?.authentikSocialLoginMode,
+    authentikIssuer: deploymentStage
+      ? resolveStageAlignedExactUrl(env.EXPO_PUBLIC_AUTHENTIK_ISSUER, stageAuthentikIssuer ?? '') ??
+        stageAuthentikIssuer
+      : env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? localConfig.expo?.publicEnv?.authentikIssuer,
+    authentikClientId: deploymentStage
+      ? env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? 'alternun-mobile'
+      : env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? localConfig.expo?.publicEnv?.authentikClientId,
+    authentikRedirectUri: deploymentStage
+      ? resolveStageAlignedExactUrl(
+          env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI,
+          stageAuthentikRedirectUri ?? ''
+        ) ?? stageAuthentikRedirectUri
+      : env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI ?? localConfig.expo?.publicEnv?.authentikRedirectUri,
+    authentikLoginEntryMode: deploymentStage
+      ? 'source'
+      : env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE ??
+        localConfig.expo?.publicEnv?.authentikLoginEntryMode,
+    authentikSocialLoginMode: deploymentStage
+      ? 'authentik'
+      : env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE ??
+        localConfig.expo?.publicEnv?.authentikSocialLoginMode,
     authentikProviderFlowSlugs: resolveAuthentikProviderFlowSlugsEnvValue(
       env,
       localConfig,
       allowCustomProviderFlowSlugs
     ),
     authentikAllowCustomProviderFlowSlugs: allowCustomProviderFlowSlugs ? 'true' : undefined,
-    releaseUpdateMode:
-      env.EXPO_PUBLIC_RELEASE_UPDATE_MODE ?? localConfig.expo?.publicEnv?.releaseUpdateMode,
+    releaseUpdateMode: deploymentStage
+      ? 'on'
+      : env.EXPO_PUBLIC_RELEASE_UPDATE_MODE ?? localConfig.expo?.publicEnv?.releaseUpdateMode,
   };
 
   const devToTestnetSourceDomains = normalizeDomainList([
