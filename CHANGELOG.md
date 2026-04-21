@@ -1,3 +1,9 @@
+## [1.0.192](https://github.com/alternun-development/alternun/compare/v1.0.192-dev.0...v1.0.192) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): release
+
 ## [1.0.192](https://github.com/alternun-development/alternun/compare/v1.0.191-dev.3...v1.0.192) (2026-04-21)
 
 ### Bug Fixes
