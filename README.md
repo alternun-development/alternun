@@ -113,7 +113,7 @@ Current version: **1.0.151**
 
 - `.env.*` files are never committed — use AWS Secrets Manager in prod
 - Pre-commit hooks run staged secret checks (`pnpm version:check-secrets`)
-- CI runs Gitleaks on push/PR to `develop` and `master`
+- CI is PR-based; Secret Scan runs Gitleaks on push/PR to `develop` and `master`
 - Auth: Authentik OIDC — never bypass or mock in integration paths
 - Input validation at API boundary only
 
