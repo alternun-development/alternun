@@ -1,10 +1,10 @@
-import Constants from 'expo-constants';
 import { Image as ExpoImage } from 'expo-image';
 import React from 'react';
 import { Instagram, Send, Twitter, Youtube } from 'lucide-react-native';
 import { Linking, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import mobilePackageJson from '../../package.json';
+import developmentVersionManifest from '../../../../version.development.json';
+import productionVersionManifest from '../../../../version.production.json';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import type { FooterPrimaryLink } from './AppInfoFooter.links';
 
@@ -27,6 +27,12 @@ export interface VersionMetadata {
   source: string;
 }
 
+type VersionManifest = {
+  version?: string | null;
+  build?: number | null;
+  environment?: string | null;
+};
+
 type ExpoImageSource = React.ComponentProps<typeof ExpoImage>['source'];
 
 // Metro asset loading still relies on require() for local image modules here.
@@ -38,8 +44,65 @@ export const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png') a
 export const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as ExpoImageSource;
-// Keep footer version aligned with the app package version used in this workspace.
-const MOBILE_PACKAGE = mobilePackageJson as { version?: string | null };
+// Keep footer version aligned with the branch-specific version manifest used by releases.
+const DEVELOPMENT_VERSION_MANIFEST = developmentVersionManifest as VersionManifest;
+const PRODUCTION_VERSION_MANIFEST = productionVersionManifest as VersionManifest;
+
+function trimVersion(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function resolveExpoConstantsFallback(): {
+  nativeApplicationVersion?: string | null;
+  nativeBuildVersion?: string | null;
+} {
+  try {
+    // Lazy-load to avoid pulling native modules into environments that only need
+    // the version manifest fallback.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const expoConstants = require('expo-constants') as {
+      default?: {
+        nativeApplicationVersion?: string | null;
+        nativeBuildVersion?: string | null;
+      };
+    };
+
+    return expoConstants.default ?? {};
+  } catch {
+    return {};
+  }
+}
+
+function resolveRuntimeHostname(): string | null {
+  const explicitOrigin =
+    trimVersion(process.env.EXPO_PUBLIC_ORIGIN) ??
+    trimVersion(typeof window !== 'undefined' ? window.location.origin : null);
+
+  if (!explicitOrigin) {
+    return null;
+  }
+
+  try {
+    return new URL(explicitOrigin).hostname.trim().toLowerCase();
+  } catch {
+    return explicitOrigin.trim().toLowerCase();
+  }
+}
+
+function isDevelopmentRuntime(hostname: string | null): boolean {
+  if (!hostname) {
+    return true;
+  }
+
+  return (
+    hostname.includes('localhost') ||
+    hostname.includes('127.0.0.1') ||
+    hostname.includes('::1') ||
+    hostname.includes('testnet') ||
+    hostname.includes('development')
+  );
+}
 
 export const SOCIAL_LINKS: FooterLink[] = [
   { label: 'Telegram', url: 'https://t.me/+4dPOLQ3otkE4NjIx#', icon: Send },
@@ -49,28 +112,23 @@ export const SOCIAL_LINKS: FooterLink[] = [
 ];
 
 export function resolveVersionMetadata(): VersionMetadata {
-  const nativeVersion = Constants.nativeApplicationVersion as string | null | undefined;
-  const nativeBuild = Constants.nativeBuildVersion as string | null | undefined;
-  const expoConfig = Constants.expoConfig as
-    | { version?: string | null | undefined }
-    | null
-    | undefined;
-  const expoConfigVersion = expoConfig?.version;
-  const packageVersion = MOBILE_PACKAGE.version?.trim();
+  const runtimeHostname = resolveRuntimeHostname();
+  const developmentRuntime = isDevelopmentRuntime(runtimeHostname);
+  const selectedManifest = developmentRuntime
+    ? DEVELOPMENT_VERSION_MANIFEST
+    : PRODUCTION_VERSION_MANIFEST;
+  const selectedVersion = trimVersion(selectedManifest.version);
 
-  if (expoConfigVersion?.trim()) {
+  if (selectedVersion) {
     return {
-      version: expoConfigVersion.trim(),
-      source: 'expoConfig.version',
+      version: selectedVersion,
+      source: developmentRuntime ? 'version.development.json' : 'version.production.json',
     };
   }
 
-  if (packageVersion) {
-    return {
-      version: packageVersion,
-      source: 'apps/mobile/package.json',
-    };
-  }
+  const expoConstants = resolveExpoConstantsFallback();
+  const nativeVersion = trimVersion(expoConstants.nativeApplicationVersion);
+  const nativeBuild = trimVersion(expoConstants.nativeBuildVersion);
 
   if (nativeVersion && nativeBuild) {
     return {
