@@ -6,10 +6,14 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const {
+  captureFileContents,
   REPO_ROOT,
   SUPPLEMENTAL_VERSION_FILES,
+  incrementDevelopmentBuildVersion,
+  incrementDevelopmentSemanticVersion,
   getManagedPackageJsonPaths,
   readRootVersion,
+  restoreFileContents,
   stripVersionSuffix,
   syncSupplementalVersionFiles,
 } = require('./versioning/version-files.cjs');
@@ -502,6 +506,30 @@ function buildReleaseArtifacts(dryRun, env, buildStage, versionBranch) {
   });
 }
 
+function collectReleaseStatePaths(branchName) {
+  return [
+    ...new Set([
+      ...getManagedPackageJsonPaths(branchName),
+      'version.development.json',
+      'version.production.json',
+      ...SUPPLEMENTAL_VERSION_FILES.map((entry) => entry.relativePath),
+      'CHANGELOG.md',
+    ]),
+  ];
+}
+
+function resolveDevelopmentReleaseVersion(target, currentVersion) {
+  if (target === BUILD_TARGET) {
+    return incrementDevelopmentBuildVersion(currentVersion);
+  }
+
+  if (VALID_BUMPS.has(target)) {
+    return incrementDevelopmentSemanticVersion(currentVersion, target);
+  }
+
+  throw new Error(`Unsupported development release target: ${target}`);
+}
+
 function createReleaseCommit(version, dryRun, branchName = getCurrentBranch()) {
   stageReleaseFiles(dryRun, branchName);
   run('git', ['commit', '-m', `chore: release v${version}`], { dryRun });
@@ -648,6 +676,26 @@ function promoteRelease({ version, remote, dryRun, productionBranch }) {
 }
 
 function runBranchAwareVersioningRelease(releaseType, branchName, options) {
+  if (branchName === 'develop') {
+    const currentVersion = readRootVersion(branchName);
+    const version = resolveDevelopmentReleaseVersion(releaseType, currentVersion);
+
+    run('node', ['scripts/version-sync.mjs', '--version', version, '--target-branch', branchName], {
+      dryRun: options.dryRun,
+    });
+    run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+
+    if (!options.dryRun) {
+      try {
+        run('node', ['scripts/check-changelog.mjs', '--auto-fix']);
+      } catch (err) {
+        // Ignored, check-changelog will print what failed
+      }
+    }
+
+    return options.dryRun ? version : readRootVersion(branchName);
+  }
+
   run(
     'pnpm',
     [
@@ -723,6 +771,10 @@ function performVersionChange(target, options, branchName, productionBranch) {
       );
     }
 
+    if (branchName === 'develop') {
+      return runBranchAwareVersioningRelease(BUILD_TARGET, branchName, options);
+    }
+
     return runBranchAwareVersioningRelease('patch', branchName, options);
   }
 
@@ -773,15 +825,25 @@ function main() {
   const productionBranch = resolveProductionBranch();
   const releaseBranch = options.promote ? productionBranch : currentBranch;
   const releaseBuildStage = resolveReleaseBuildStage(releaseBranch);
-  const version = performVersionChange(target, options, currentBranch, productionBranch);
   const shouldPrepareRelease = Boolean(target) || options.promote;
+  const releaseSnapshot = options.dryRun ? [] : captureFileContents(collectReleaseStatePaths(releaseBranch));
+  let version;
 
-  if (shouldPrepareRelease) {
-    buildReleaseArtifacts(options.dryRun, process.env, releaseBuildStage, releaseBranch);
-  }
+  try {
+    version = performVersionChange(target, options, currentBranch, productionBranch);
 
-  if (shouldPrepareRelease && options.createCommit) {
-    createReleaseCommit(version, options.dryRun, releaseBranch);
+    if (shouldPrepareRelease) {
+      buildReleaseArtifacts(options.dryRun, process.env, releaseBuildStage, releaseBranch);
+    }
+
+    if (shouldPrepareRelease && options.createCommit) {
+      createReleaseCommit(version, options.dryRun, releaseBranch);
+    }
+  } catch (error) {
+    if (!options.dryRun) {
+      restoreFileContents(releaseSnapshot);
+    }
+    throw error;
   }
 
   if (shouldPrepareRelease && options.createTag) {

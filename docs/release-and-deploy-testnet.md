@@ -22,11 +22,14 @@ pnpm release:patch
 
 This:
 
-- Bumps the branch-aware version source for the current branch
+- `pnpm release` / `pnpm release:build` increments the current development build number
+- `pnpm release:patch` bumps the semantic patch version and resets the build number to `0`
 - Updates the structured branch manifest for that branch
 - Rebuilds all packages including API with new version
 - Creates release commit
 - Creates git tag
+
+If anything fails before the commit is created, the release wrapper restores the version files so a partial version bump does not linger in the working tree.
 
 On `develop`, that creates a `v<version>-dev.<build>` tag and only updates `version.development.json`. `pnpm release -- --promote` switches to the production branch context, updates `package.json` plus `version.production.json`, and tags the stable production version for the merge to `master`.
 The workspace package `version` fields stay on the semantic base version; the branch-aware build marker lives in the release manifests.

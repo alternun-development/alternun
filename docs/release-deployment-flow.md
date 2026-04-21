@@ -21,13 +21,17 @@ pnpm release:patch
 
 This command:
 
-- Bumps the branch-aware version source for the current branch
+- `pnpm release` / `pnpm release:build` increments the current development build number
+- `pnpm release:patch` bumps the semantic patch version and resets the build number to `0`
+- `pnpm release:minor` / `pnpm release:major` bump the semantic version and reset the build number to `0`
 - Updates the structured release manifest for the current branch
 - Rebuilds all packages with the new version
 - Updates `CHANGELOG.md`
 - Creates a release commit (e.g., "chore: release v1.0.164")
 - Creates an annotated git tag (e.g., "v1.0.164")
 - Pushes commit and tag to remote
+
+If the release fails before the commit step, the version files are restored so the working tree does not keep a half-applied release version.
 
 On `develop`, the release stays on the development manifest and produces a `-dev` tag. `pnpm release -- --promote` uses the production branch context instead, writes `package.json` plus `version.production.json`, and creates the stable production tag.
 Workspace package versions remain on the semantic base release version; only the branch manifests carry the `-dev` or production build marker.

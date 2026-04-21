@@ -35,6 +35,61 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
 }
 
+function captureFileContents(relativePaths) {
+  if (!Array.isArray(relativePaths)) {
+    return [];
+  }
+
+  return relativePaths
+    .map((relativePath) => {
+      if (typeof relativePath !== 'string' || relativePath.length === 0) {
+        return null;
+      }
+
+      const normalized = normalizeRelativePath(relativePath);
+      const absolutePath = path.join(REPO_ROOT, normalized);
+
+      if (!fs.existsSync(absolutePath)) {
+        return {
+          relativePath: normalized,
+          exists: false,
+          contents: null,
+        };
+      }
+
+      return {
+        relativePath: normalized,
+        exists: true,
+        contents: fs.readFileSync(absolutePath, 'utf8'),
+      };
+    })
+    .filter(Boolean);
+}
+
+function restoreFileContents(snapshot) {
+  if (!Array.isArray(snapshot)) {
+    return;
+  }
+
+  for (const entry of snapshot) {
+    if (!entry || typeof entry.relativePath !== 'string' || entry.relativePath.length === 0) {
+      continue;
+    }
+
+    const absolutePath = path.join(REPO_ROOT, normalizeRelativePath(entry.relativePath));
+
+    if (!entry.exists) {
+      if (fs.existsSync(absolutePath)) {
+        fs.unlinkSync(absolutePath);
+      }
+      continue;
+    }
+
+    fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
+    fs.writeFileSync(absolutePath, String(entry.contents ?? ''), 'utf8');
+  }
+}
+
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -67,6 +122,74 @@ function stripVersionSuffix(version) {
 
   const match = version.match(/^(\d+\.\d+\.\d+)/);
   return match ? match[1] : version;
+}
+
+function parseSemanticVersion(version) {
+  if (typeof version !== 'string' || version.length === 0) {
+    return null;
+  }
+
+  const match = version.match(/^(\d+)\.(\d+)\.(\d+)/);
+  if (!match) {
+    return null;
+  }
+
+  return {
+    major: Number.parseInt(match[1], 10),
+    minor: Number.parseInt(match[2], 10),
+    patch: Number.parseInt(match[3], 10),
+  };
+}
+
+function incrementSemanticVersion(version, releaseType) {
+  const parsed = parseSemanticVersion(version);
+
+  if (!parsed) {
+    throw new Error(`Unable to parse semantic version from "${version}".`);
+  }
+
+  switch (releaseType) {
+    case 'patch':
+      parsed.patch += 1;
+      break;
+    case 'minor':
+      parsed.minor += 1;
+      parsed.patch = 0;
+      break;
+    case 'major':
+      parsed.major += 1;
+      parsed.minor = 0;
+      parsed.patch = 0;
+      break;
+    default:
+      throw new Error(`Unsupported semantic release type: ${releaseType}`);
+  }
+
+  return `${parsed.major}.${parsed.minor}.${parsed.patch}`;
+}
+
+function incrementDevelopmentBuildVersion(version) {
+  const baseVersion = stripVersionSuffix(version);
+
+  if (typeof baseVersion !== 'string' || baseVersion.length === 0) {
+    throw new Error(`Unable to derive a development build version from "${version}".`);
+  }
+
+  const buildMatch = typeof version === 'string' ? version.match(/-dev\.(\d+)$/) : null;
+  const buildNumber = buildMatch ? Number.parseInt(buildMatch[1], 10) + 1 : 1;
+
+  return `${baseVersion}-dev.${buildNumber}`;
+}
+
+function incrementDevelopmentSemanticVersion(version, releaseType) {
+  const baseVersion = stripVersionSuffix(version);
+
+  if (typeof baseVersion !== 'string' || baseVersion.length === 0) {
+    throw new Error(`Unable to derive a semantic development version from "${version}".`);
+  }
+
+  const semanticVersion = incrementSemanticVersion(baseVersion, releaseType);
+  return `${semanticVersion}-dev.0`;
 }
 
 function normalizeDeploymentRecord(record) {
@@ -784,9 +907,15 @@ module.exports = {
   getManagedVersionManifestPaths,
   getVersionReadCandidates,
   getWorkspacePackageJsonPaths,
+  captureFileContents,
+  restoreFileContents,
+  incrementDevelopmentBuildVersion,
+  incrementDevelopmentSemanticVersion,
+  incrementSemanticVersion,
   readRootVersion,
   readVersionManifest,
   readVersioningConfig,
+  parseSemanticVersion,
   stripVersionSuffix,
   resolveVersionContextBranch,
   setRootVersion,
