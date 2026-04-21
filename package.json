@@ -50,7 +50,8 @@
     "release:minor:no-push": "node scripts/release.mjs minor --no-push",
     "release:major": "node scripts/release.mjs major",
     "release:major:no-push": "node scripts/release.mjs major --no-push",
-    "release:promote": "node scripts/release.mjs --promote"
+    "release:patch:promote": "node scripts/release-promote.mjs",
+    "release:promote": "node scripts/release-promote.mjs"
   },
   "devDependencies": {
     "@docusaurus/tsconfig": "^3.5.2",
