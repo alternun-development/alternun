@@ -9,7 +9,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Input } from '@pulumi/pulumi';
+import { runtime as pulumiRuntime, type Input } from '@pulumi/pulumi';
 import { createExpoSite, createPipeline, resolveDomain } from '@lsts_tech/infra';
 import { readLocalDeploymentConfig } from './config/deployment-config.js';
 import {
@@ -461,6 +461,31 @@ const selectedPipelines = parseSelectedPipelines(selectedPipelinesRaw);
 const pipelineSpecs = buildPipelineSpecs({
   env: process.env,
   pipeline: localConfig.pipeline,
+});
+
+pulumiRuntime.registerStackTransformation((args) => {
+  if (args.type !== 'aws:codepipeline/pipeline:Pipeline') {
+    return undefined;
+  }
+
+  const props = args.props as Record<string, unknown>;
+  const pipelineName = typeof props.name === 'string' ? props.name : '';
+
+  if (!pipelineName.endsWith('-pipeline')) {
+    return undefined;
+  }
+
+  if (props.executionMode !== undefined) {
+    return undefined;
+  }
+
+  return {
+    props: {
+      ...props,
+      executionMode: 'QUEUED',
+    },
+    opts: args.opts,
+  };
 });
 
 export function createInfrastructure() {
