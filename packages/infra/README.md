@@ -544,6 +544,7 @@ These commands are env-first and enforced:
 - they fail fast before `sst deploy` when context is wrong
 
 Do not run raw `sst deploy` directly for normal deployments.
+CodeBuild uses `scripts/sst-deploy.sh` so protected identity replacements can retry with the explicit allow flag and the identity runtime templates stay in sync after a successful deploy.
 
 Recommended local flags in `packages/infra/.env`:
 
