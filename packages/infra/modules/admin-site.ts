@@ -79,6 +79,7 @@ export interface AdminSiteSettings {
 }
 
 export interface AdminSiteInfrastructureArgs {
+  invalidationWait: boolean;
   rootDomain: string;
   stage: string;
   settings: AdminSiteSettings;
@@ -304,7 +305,7 @@ export function deployAdminSiteInfrastructure(
     errorPage: 'index.html',
     invalidation: {
       paths: ['/*'],
-      wait: deploymentStage === 'production',
+      wait: args.invalidationWait,
     },
   });
 

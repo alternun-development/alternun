@@ -24,6 +24,7 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
   assert.ok((resolveSecretsSources?.length ?? 0) >= 2);
   assert.match(source, /canonical SSM helper/);
   assert.match(source, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS: 'false'/);
+  assert.match(source, /INFRA_STATIC_SITE_INVALIDATION_WAIT: 'false'/);
   assert.match(
     helperSource,
     /unset\s+\\[\s\S]*?EXPO_PUBLIC_API_URL[\s\S]*?EXPO_PUBLIC_SUPABASE_URL[\s\S]*?EXPO_PUBLIC_SUPABASE_KEY[\s\S]*?EXPO_PUBLIC_SUPABASE_ANON_KEY[\s\S]*?AUTH_EXECUTION_PROVIDER[\s\S]*?EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER/
@@ -61,4 +62,9 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
   assert.match(helperSource, /export EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER/);
   assert.match(sstDeploySource, /source "\$SCRIPT_DIR\/resolve-ssm-env\.sh"/);
   assert.match(sstDeploySource, /source "\$SCRIPT_DIR\/resolve-secrets-manager-env\.sh"/);
+  assert.match(
+    source,
+    /APPROVE=true STACK="\$\{SST_STAGE\}" bash "\$\{INFRA_PATH\}\/scripts\/sst-deploy\.sh"/
+  );
+  assert.doesNotMatch(source, /npx sst deploy --stage "\$\{SST_STAGE\}" --yes/);
 });
