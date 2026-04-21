@@ -11,9 +11,12 @@
 
 import fs from 'fs';
 import path from 'path';
+import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
+const { readRootVersion, resolveVersionContextBranch } = require('./versioning/version-files.cjs');
 
 const appPath = process.argv[2];
 if (!appPath) {
@@ -23,7 +26,6 @@ if (!appPath) {
 
 // Read the CHANGELOG.md from root
 const changelogPath = path.resolve(__dirname, '..', 'CHANGELOG.md');
-const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
 let changelogContent = '';
 let appVersion = '';
 
@@ -34,12 +36,9 @@ try {
 }
 
 try {
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-  if (typeof packageJson.version === 'string' && packageJson.version.length > 0) {
-    appVersion = packageJson.version;
-  }
+  appVersion = readRootVersion(resolveVersionContextBranch());
 } catch (error) {
-  console.warn(`[generate-changelog-data] Failed to read package.json: ${error.message}`);
+  console.warn(`[generate-changelog-data] Failed to read branch-aware version: ${error.message}`);
 }
 
 // Escape backticks and other special characters for safe embedding in template literals
@@ -71,7 +70,7 @@ const templateContent = `/**
 export const CHANGELOG_TEXT = \`${escapedContent}\`;
 
 /**
- * Version extracted from package.json for display purposes.
+ * Version extracted from the branch-aware release source for display purposes.
  */
 export const APP_VERSION = '${appVersion}';
 `;

@@ -10,6 +10,7 @@ const {
   SUPPLEMENTAL_VERSION_FILES,
   getManagedPackageJsonPaths,
   readRootVersion,
+  stripVersionSuffix,
   syncSupplementalVersionFiles,
 } = require('./versioning/version-files.cjs');
 
@@ -19,10 +20,7 @@ const IGNORED_WORKTREE_PATHS = new Set([
   'apps/web/.turbo/turbo-build.log',
   'packages/ui/.turbo/turbo-build.log',
 ]);
-const TRACKED_BUILD_OUTPUT_PATHS = [
-  'packages/auth/dist',
-  'packages/update/dist',
-];
+const TRACKED_BUILD_OUTPUT_PATHS = ['packages/auth/dist', 'packages/update/dist'];
 
 function printUsage() {
   console.log(`Usage:
@@ -388,7 +386,7 @@ function validateRootDocumentation() {
   if ((result.status ?? 1) !== 0) {
     throw new Error(
       'Root documentation structure validation failed. ' +
-      'Move non-critical .md files to docs/ before releasing.'
+        'Move non-critical .md files to docs/ before releasing.'
     );
   }
 }
@@ -403,8 +401,8 @@ function validateAwsAccount() {
   if ((result.status ?? 1) !== 0) {
     throw new Error(
       'AWS account validation failed. ' +
-      'You must use the Alternun AWS account (124120088516), not the default. ' +
-      'Run: bash scripts/setup-aws-account.sh'
+        'You must use the Alternun AWS account (124120088516), not the default. ' +
+        'Run: bash scripts/setup-aws-account.sh'
     );
   }
 }
@@ -453,9 +451,9 @@ function ensureChangelogFile(dryRun) {
   );
 }
 
-function stageReleaseFiles(dryRun) {
+function stageReleaseFiles(dryRun, branchName = getCurrentBranch()) {
   const managedPaths = new Set([
-    ...getManagedPackageJsonPaths(),
+    ...getManagedPackageJsonPaths(branchName),
     ...SUPPLEMENTAL_VERSION_FILES.map((entry) => entry.relativePath),
   ]);
 
@@ -486,7 +484,7 @@ function resolveReleaseBuildStage(branchName) {
   return 'dev';
 }
 
-function buildReleaseArtifacts(dryRun, env, buildStage) {
+function buildReleaseArtifacts(dryRun, env, buildStage, versionBranch) {
   // Pin the release build stage so the mobile auth bundle resolves the correct
   // stage-specific env instead of drifting back to infra defaults.
   const buildEnv = {
@@ -495,6 +493,7 @@ function buildReleaseArtifacts(dryRun, env, buildStage) {
     SST_STAGE: env.SST_STAGE ?? buildStage,
     EXPO_PUBLIC_STAGE: env.EXPO_PUBLIC_STAGE ?? buildStage,
     EXPO_PUBLIC_ENV: env.EXPO_PUBLIC_ENV ?? buildStage,
+    ALTERNUN_VERSION_BRANCH: versionBranch,
   };
 
   run('pnpm', ['exec', 'turbo', 'run', 'build', '--force'], {
@@ -503,8 +502,8 @@ function buildReleaseArtifacts(dryRun, env, buildStage) {
   });
 }
 
-function createReleaseCommit(version, dryRun) {
-  stageReleaseFiles(dryRun);
+function createReleaseCommit(version, dryRun, branchName = getCurrentBranch()) {
+  stageReleaseFiles(dryRun, branchName);
   run('git', ['commit', '-m', `chore: release v${version}`], { dryRun });
 }
 
@@ -648,9 +647,71 @@ function promoteRelease({ version, remote, dryRun, productionBranch }) {
   console.log(`Promoted v${version}: pushed develop and prepared a PR into ${productionBranch}.`);
 }
 
-function performVersionChange(target, options, branchName) {
+function runBranchAwareVersioningRelease(releaseType, branchName, options) {
+  run(
+    'pnpm',
+    [
+      'exec',
+      'versioning',
+      releaseType,
+      '--branch-aware',
+      '--target-branch',
+      branchName,
+      '--no-commit',
+      '--no-tag',
+    ],
+    { dryRun: options.dryRun }
+  );
+
+  const version = readRootVersion(branchName);
+  run('node', ['scripts/version-sync.mjs', '--version', version, '--target-branch', branchName], {
+    dryRun: options.dryRun,
+  });
+  run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+
+  if (!options.dryRun) {
+    try {
+      run('node', ['scripts/check-changelog.mjs', '--auto-fix']);
+    } catch (err) {
+      // Ignored, check-changelog will print what failed
+    }
+  }
+
+  return version;
+}
+
+function performVersionChange(target, options, branchName, productionBranch) {
+  if (options.promote) {
+    ensureChangelogFile(options.dryRun);
+
+    const promotedVersion = stripVersionSuffix(readRootVersion(branchName));
+    ensureValidVersion(promotedVersion);
+    run(
+      'node',
+      [
+        'scripts/version-sync.mjs',
+        '--version',
+        promotedVersion,
+        '--target-branch',
+        productionBranch,
+      ],
+      { dryRun: options.dryRun }
+    );
+    run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+
+    if (!options.dryRun) {
+      try {
+        run('node', ['scripts/check-changelog.mjs', '--auto-fix']);
+      } catch (err) {
+        // Ignored
+      }
+    }
+
+    return options.dryRun ? promotedVersion : readRootVersion(productionBranch);
+  }
+
   if (!target) {
-    return readRootVersion();
+    return readRootVersion(branchName);
   }
 
   ensureChangelogFile(options.dryRun);
@@ -662,52 +723,22 @@ function performVersionChange(target, options, branchName) {
       );
     }
 
-    run(
-      'pnpm',
-      [
-        'exec',
-        'versioning',
-        'patch',
-        '--branch-aware',
-        '--target-branch',
-        branchName,
-        '--no-commit',
-        '--no-tag',
-      ],
-      { dryRun: options.dryRun }
-    );
-    const version = readRootVersion();
-    run('node', ['scripts/version-sync.mjs', '--version', version], { dryRun: options.dryRun });
-    run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
-    if (!options.dryRun) {
-      try {
-        run('node', ['scripts/check-changelog.mjs', '--auto-fix']);
-      } catch (err) {
-        // Ignored, check-changelog will print what failed
-      }
-    }
-    return version;
+    return runBranchAwareVersioningRelease('patch', branchName, options);
   }
 
   if (VALID_BUMPS.has(target)) {
-    run('pnpm', ['exec', 'versioning', target, '--no-commit', '--no-tag'], {
-      dryRun: options.dryRun,
-    });
-    run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
-    const version = readRootVersion();
+    const version = runBranchAwareVersioningRelease(target, branchName, options);
+
     if (!options.dryRun) {
-      try {
-        run('node', ['scripts/check-changelog.mjs', '--auto-fix']);
-      } catch (err) {
-        // Ignored
-      }
       syncSupplementalVersionFiles(version);
     }
     return version;
   }
 
   ensureValidVersion(target);
-  run('node', ['scripts/version-sync.mjs', '--version', target], { dryRun: options.dryRun });
+  run('node', ['scripts/version-sync.mjs', '--version', target, '--target-branch', branchName], {
+    dryRun: options.dryRun,
+  });
   run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
 
   if (!options.dryRun) {
@@ -719,7 +750,7 @@ function performVersionChange(target, options, branchName) {
     syncSupplementalVersionFiles(target);
   }
 
-  return options.dryRun ? target : readRootVersion();
+  return options.dryRun ? target : readRootVersion(branchName);
 }
 
 function main() {
@@ -740,18 +771,20 @@ function main() {
 
   const currentBranch = getCurrentBranch();
   const productionBranch = resolveProductionBranch();
-  const releaseBuildStage = resolveReleaseBuildStage(currentBranch);
-  const version = performVersionChange(target, options, currentBranch);
+  const releaseBranch = options.promote ? productionBranch : currentBranch;
+  const releaseBuildStage = resolveReleaseBuildStage(releaseBranch);
+  const version = performVersionChange(target, options, currentBranch, productionBranch);
+  const shouldPrepareRelease = Boolean(target) || options.promote;
 
-  if (target) {
-    buildReleaseArtifacts(options.dryRun, process.env, releaseBuildStage);
+  if (shouldPrepareRelease) {
+    buildReleaseArtifacts(options.dryRun, process.env, releaseBuildStage, releaseBranch);
   }
 
-  if (target && options.createCommit) {
-    createReleaseCommit(version, options.dryRun);
+  if (shouldPrepareRelease && options.createCommit) {
+    createReleaseCommit(version, options.dryRun, releaseBranch);
   }
 
-  if (target && options.createTag) {
+  if (shouldPrepareRelease && options.createTag) {
     createReleaseTag(version, options.dryRun);
   }
 
@@ -772,7 +805,7 @@ function main() {
     });
   }
 
-  if (target) {
+  if (shouldPrepareRelease) {
     console.log(`Release prepared for v${version}.`);
   }
 }
