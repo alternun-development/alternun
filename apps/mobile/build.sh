@@ -114,15 +114,47 @@ verify_exported_release_artifacts() {
     exit 1
   fi
 
-  if [ ! -f "dist/alternun-release-worker.js" ]; then
-    echo "ERROR: dist/alternun-release-worker.js is missing after expo export." >&2
-    exit 1
-  fi
+  node -e '
+const fs = require("node:fs");
+const appVersion = process.argv[1];
+const manifestPaths = [
+  "dist/alternun-release-manifest.json",
+  "public/alternun-release-manifest.json",
+];
 
-  if ! rg -q --fixed-strings "\"version\":\"${app_version}\"" dist; then
-    echo "ERROR: Exported web bundle does not contain version ${app_version}." >&2
-    exit 1
-  fi
+for (const manifestPath of manifestPaths) {
+  if (!fs.existsSync(manifestPath)) {
+    console.error(`ERROR: ${manifestPath} is missing after expo export.`);
+    process.exit(1);
+  }
+
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  if (manifest.version !== appVersion) {
+    console.error(
+      `ERROR: ${manifestPath} is ${manifest.version ?? "unknown"} but expected ${appVersion}.`
+    );
+    process.exit(1);
+  }
+}
+
+const workerPaths = [
+  "dist/alternun-release-worker.js",
+  "public/alternun-release-worker.js",
+];
+
+for (const workerPath of workerPaths) {
+  if (!fs.existsSync(workerPath)) {
+    console.error(`ERROR: ${workerPath} is missing after expo export.`);
+    process.exit(1);
+  }
+
+  const workerSource = fs.readFileSync(workerPath, "utf8");
+  if (!workerSource.includes(`const CURRENT_VERSION = ${JSON.stringify(appVersion)};`)) {
+    console.error(`ERROR: ${workerPath} does not contain version ${appVersion}.`);
+    process.exit(1);
+  }
+}
+' "$app_version"
 }
 
 # Generate changelog data file for the app
