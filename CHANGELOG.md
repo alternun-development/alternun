@@ -1,3 +1,9 @@
+## [1.0.185](https://github.com/alternun-development/alternun/compare/v1.0.185-dev.0...v1.0.185) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** chore(repo): version.production
+
 ## [1.0.185](https://github.com/alternun-development/alternun/compare/v1.0.184-dev.0...v1.0.185) (2026-04-21)
 
 ### Bug Fixes
