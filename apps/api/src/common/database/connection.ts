@@ -6,10 +6,18 @@ let db: ReturnType<typeof drizzle> | null = null;
 
 export function getDatabase(): ReturnType<typeof drizzle> {
   if (!db) {
-    const databaseUrl = process.env.DATABASE_URL ?? process.env.SUPABASE_DATABASE_URL;
+    const databaseUrl = [
+      process.env.DATABASE_URL,
+      process.env.SUPABASE_DATABASE_URL,
+      process.env.INFRA_BACKEND_API_DATABASE_URL,
+    ]
+      .map((value) => value?.trim())
+      .find((value): value is string => Boolean(value));
 
     if (!databaseUrl) {
-      throw new Error('DATABASE_URL or SUPABASE_DATABASE_URL environment variable is not set');
+      throw new Error(
+        'DATABASE_URL, SUPABASE_DATABASE_URL, or INFRA_BACKEND_API_DATABASE_URL environment variable is not set'
+      );
     }
 
     const pool = new Pool({

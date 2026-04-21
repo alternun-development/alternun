@@ -202,7 +202,7 @@ Enable/configure through env or local config:
 - `INFRA_BACKEND_API_AUTHENTIK_JWKS_URL`
 - `INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED` (set `true` to make `/auth/exchange` fail closed when issuer-owned minting is unavailable)
 - `INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY` (preferred: sourced from the identity stack's JWT secret output; the `sst-deploy.sh` hydration remains a compatibility fallback)
-- `INFRA_BACKEND_API_DATABASE_URL`
+- `INFRA_BACKEND_API_DATABASE_URL` (preferred backend Lambda DB URL; the backend deploy also falls back to the shared `DATABASE_URL` / `SUPABASE_DATABASE_URL` stage env when this dedicated alias is absent)
 
 Important behavior:
 
