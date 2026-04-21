@@ -194,6 +194,10 @@ const expoBuildCommand = expoConfig.buildCommand;
 const expoBuildOutput = expoConfig.buildOutput;
 const enableCustomDomain = expoConfig.enableCustomDomain;
 const enableExpoSite = expoConfig.enableExpoSite;
+const staticSiteInvalidationWait = parseBoolean(
+  process.env.INFRA_STATIC_SITE_INVALIDATION_WAIT,
+  false
+);
 const requireExpoPublicAuthEnv = expoConfig.requirePublicAuthEnv;
 const expoPublicSupabaseUrl = expoConfig.publicEnv.supabaseUrl;
 const expoPublicSupabaseKey = expoConfig.publicEnv.supabaseKey;
@@ -593,6 +597,7 @@ export function createInfrastructure() {
   const adminSiteInfrastructure = adminSiteEnabledForStage
     ? deployAdminSiteInfrastructure({
         rootDomain,
+        invalidationWait: staticSiteInvalidationWait,
         settings: adminSiteSettings,
         stage,
       })
@@ -816,7 +821,7 @@ export function createInfrastructure() {
       },
       invalidation: {
         paths: ['/*'],
-        wait: stage === 'production',
+        wait: staticSiteInvalidationWait,
       },
     });
 
