@@ -419,6 +419,7 @@ phases:
       - |
         echo "Deploying to ${SST_STAGE}..."
         APPROVE=true STACK="${SST_STAGE}" bash "${INFRA_PATH}/scripts/sst-deploy.sh"
+        touch .sst-deploy-succeeded
       - |
         if [ "${INFRA_ENABLE_PUBLIC_ASSET_SYNC}" != "true" ]; then
           echo "Skipping public asset sync (INFRA_ENABLE_PUBLIC_ASSET_SYNC=${INFRA_ENABLE_PUBLIC_ASSET_SYNC})"
@@ -433,8 +434,8 @@ phases:
     commands:
       - echo "SST deploy completed for stage ${SST_STAGE}"
       - |
-        if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
-          echo "Skipping post-deploy DNS sync because BUILD phase failed."
+        if [ ! -f .sst-deploy-succeeded ]; then
+          echo "Skipping post-deploy DNS sync because deploy did not complete."
         elif [ "${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC}" != "true" ]; then
           echo "Skipping post-deploy DNS sync (INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC})"
           echo "  To enable DNS sync for critical changes, set INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=true in CodePipeline env vars"
@@ -454,8 +455,8 @@ phases:
           echo "No post-deploy DNS sync script found; skipping"
         fi
       - |
-        if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
-          echo "Skipping reachability check because BUILD phase failed."
+        if [ ! -f .sst-deploy-succeeded ]; then
+          echo "Skipping reachability check because deploy did not complete."
         elif [ "${INFRA_ENABLE_REACHABILITY_CHECK}" != "true" ]; then
           echo "Skipping reachability check (INFRA_ENABLE_REACHABILITY_CHECK=${INFRA_ENABLE_REACHABILITY_CHECK})"
         elif [ -f "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ]; then
@@ -465,8 +466,8 @@ phases:
           echo "No postdeploy reachability check script found; skipping"
         fi
       - |
-        if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
-          echo "Skipping CloudFront invalidation because BUILD phase failed."
+        if [ ! -f .sst-deploy-succeeded ]; then
+          echo "Skipping CloudFront invalidation because deploy did not complete."
         elif [ -f "${INFRA_PATH}/scripts/postdeploy-cloudfront-invalidate.sh" ]; then
           echo "Invalidating CloudFront cache to serve fresh content..."
           chmod +x "${INFRA_PATH}/scripts/postdeploy-cloudfront-invalidate.sh" || true
