@@ -16,31 +16,47 @@ function buildAuthentikRedirectUriForStage(stage: PipelineStage, env: NodeJS.Pro
   return `${stageUrls[stage]}/auth/callback`;
 }
 
-function buildApiUrlForStage(stage: PipelineStage, env: NodeJS.ProcessEnv): string {
-  const explicitApiUrl = env.EXPO_PUBLIC_API_URL?.trim();
-  if (explicitApiUrl) {
-    return explicitApiUrl.replace(/\/+$/, '');
-  }
-
+function buildAuthentikIssuerForStage(stage: PipelineStage, env: NodeJS.ProcessEnv): string {
   const stageUrls = buildStageUrls(
     env.INFRA_EXPO_SUBDOMAIN ?? 'airs',
     env.INFRA_ROOT_DOMAIN ?? 'alternun.co'
   );
+  const stageUrl = new URL(stageUrls[stage]);
+  const hostnameParts = stageUrl.hostname.split('.');
+  const airsIndex = hostnameParts.indexOf('airs');
+
+  if (airsIndex >= 0) {
+    hostnameParts[airsIndex] = 'sso';
+  }
+
+  return `https://${hostnameParts.join('.')}/application/o/alternun-mobile/`;
+}
+
+function buildApiUrlForStage(stage: PipelineStage, env: NodeJS.ProcessEnv): string {
+  const stageUrls = buildStageUrls(
+    env.INFRA_EXPO_SUBDOMAIN ?? 'airs',
+    env.INFRA_ROOT_DOMAIN ?? 'alternun.co'
+  );
+  const stageUrl = stageUrls[stage];
+  const explicitApiUrl = env.EXPO_PUBLIC_API_URL?.trim();
+
+  if (!explicitApiUrl) {
+    return stageUrl;
+  }
 
   try {
-    const stageUrl = new URL(stageUrls[stage]);
-    const hostnameParts = stageUrl.hostname.split('.');
-    const airsIndex = hostnameParts.indexOf('airs');
+    const candidate = new URL(explicitApiUrl.replace(/\/+$/, ''));
+    const expected = new URL(stageUrl);
 
-    if (airsIndex >= 0) {
-      hostnameParts[airsIndex] = 'api';
-      return `${stageUrl.protocol}//${hostnameParts.join('.')}`;
+    if (candidate.host.toLowerCase() === expected.host.toLowerCase()) {
+      return candidate.origin;
     }
-
-    return stageUrl.origin;
   } catch {
-    return stageUrls[stage];
+    // Fall through to the stage-derived URL when the override is malformed
+    // or points at a different stage.
   }
+
+  return stageUrl.replace(/\/+$/, '');
 }
 
 function buildAuthExchangeUrlForStage(stage: PipelineStage, env: NodeJS.ProcessEnv): string {
@@ -113,6 +129,9 @@ export function buildCorePipelineSpecs({
   const productionApiUrl = buildApiUrlForStage('production', env);
   const devApiUrl = buildApiUrlForStage('dev', env);
   const mobileApiUrl = buildApiUrlForStage('mobile', env);
+  const productionAuthentikIssuer = buildAuthentikIssuerForStage('production', env);
+  const devAuthentikIssuer = buildAuthentikIssuerForStage('dev', env);
+  const mobileAuthentikIssuer = buildAuthentikIssuerForStage('mobile', env);
 
   return {
     production: {
@@ -127,7 +146,7 @@ export function buildCorePipelineSpecs({
         AUTH_EXECUTION_PROVIDER: productionAuthExecutionProvider,
         EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: productionAuthExecutionProvider,
         ...buildBetterAuthEnvForStage('production', env),
-        EXPO_PUBLIC_AUTHENTIK_ISSUER: env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
+        EXPO_PUBLIC_AUTHENTIK_ISSUER: productionAuthentikIssuer,
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? 'alternun-mobile',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('production', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
@@ -151,7 +170,7 @@ export function buildCorePipelineSpecs({
         AUTH_EXECUTION_PROVIDER: devAuthExecutionProvider,
         EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: devAuthExecutionProvider,
         ...buildBetterAuthEnvForStage('dev', env),
-        EXPO_PUBLIC_AUTHENTIK_ISSUER: env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
+        EXPO_PUBLIC_AUTHENTIK_ISSUER: devAuthentikIssuer,
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? 'alternun-mobile',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('dev', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
@@ -175,7 +194,7 @@ export function buildCorePipelineSpecs({
         AUTH_EXECUTION_PROVIDER: mobileAuthExecutionProvider,
         EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: mobileAuthExecutionProvider,
         ...buildBetterAuthEnvForStage('mobile', env),
-        EXPO_PUBLIC_AUTHENTIK_ISSUER: env.EXPO_PUBLIC_AUTHENTIK_ISSUER ?? '',
+        EXPO_PUBLIC_AUTHENTIK_ISSUER: mobileAuthentikIssuer,
         EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID ?? 'alternun-mobile',
         EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: buildAuthentikRedirectUriForStage('mobile', env),
         EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE: 'source',
