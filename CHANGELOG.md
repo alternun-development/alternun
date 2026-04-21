@@ -1,3 +1,13 @@
+## [1.0.185](https://github.com/alternun-development/alternun/compare/v1.0.184-dev.0...v1.0.185) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** fix(admin,api,docs): pnpm-lock, release, version-sync, version-files
+
+### Bug Fixes
+
+- **admin,api,docs:** pnpm-lock, release, version-sync, version-files ([601b89e](https://github.com/alternun-development/alternun/commit/601b89e63119bd96cb6c6ccb69604beb836a8b4c))
+
 ## [1.0.183](https://github.com/alternun-development/alternun/compare/v1.0.183-dev.2...v1.0.183) (2026-04-21)
 
 ### Bug Fixes
