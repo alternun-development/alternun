@@ -15,6 +15,7 @@ import { readLocalDeploymentConfig } from './config/deployment-config.js';
 import {
   assertExpoPublicAuthEnvironment,
   createAssetBaseUrl,
+  createExpoSiteBucketName,
   resolveExpoConfig,
 } from './config/expo.js';
 import { INFRA_CORE_DEFAULTS, PIPELINE_INFRA_DEFAULTS } from './config/infrastructure-specs.js';
@@ -499,6 +500,11 @@ export function createInfrastructure() {
   const dedicatedNonExpoStage =
     identityStackStage || backendApiStackStage || adminSiteStackStage || dashboardStackStage;
   const enableExpoSiteForStage = enableExpoSite && !dedicatedNonExpoStage;
+  const expoSiteBucketName = createExpoSiteBucketName(
+    expoDeploymentStage,
+    pipelinePrefix,
+    rootDomain
+  );
 
   if (!dedicatedNonExpoStage && !enableExpoSite) {
     throw new Error(
@@ -509,6 +515,33 @@ export function createInfrastructure() {
       ].join(' ')
     );
   }
+
+  pulumiRuntime.registerStackTransformation((args) => {
+    if (args.type !== 'aws:s3/bucket:Bucket') {
+      return undefined;
+    }
+
+    const resourceName = typeof args.name === 'string' ? args.name.toLowerCase() : '';
+    const isExpoStaticSiteBucket =
+      resourceName.includes('expoweb') && resourceName.includes('assetsbucket');
+
+    if (!isExpoStaticSiteBucket) {
+      return undefined;
+    }
+
+    const props = args.props as Record<string, unknown>;
+    if (props.bucket !== undefined || props.access !== 'public') {
+      return undefined;
+    }
+
+    return {
+      props: {
+        ...props,
+        bucket: expoSiteBucketName,
+      },
+      opts: args.opts,
+    };
+  });
 
   const isAdminSiteStageAllowed =
     adminSiteEnabledStages.size === 0
