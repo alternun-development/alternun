@@ -90,7 +90,9 @@ disable_expo_dotenv_if_needed() {
     mkdir -p "${TMPDIR}"
 
     if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ "${CI:-}" = "true" ]; then
-      export EXPO_EXPORT_CLEAR_CACHE=0
+      # CI/CD must rebuild release artifacts from the current commit so stale
+      # bundles do not keep serving old footer/package versions.
+      export EXPO_EXPORT_CLEAR_CACHE=1
     else
       export EXPO_EXPORT_CLEAR_CACHE=1
     fi
@@ -101,6 +103,65 @@ clear_metro_cache_if_needed() {
   if [ "${EXPO_EXPORT_CLEAR_CACHE:-0}" = "1" ]; then
     rm -rf "${TMPDIR:-/tmp}/metro-cache"
   fi
+}
+
+clear_previous_export_artifacts() {
+  # Start each deploy from a clean export tree so stale bundle files cannot be
+  # re-uploaded from a previous run.
+  rm -rf dist .expo
+  rm -rf node_modules/.cache/expo node_modules/.cache/metro
+}
+
+verify_exported_release_artifacts() {
+  local app_version
+  app_version=$(node -p "require('./package.json').version")
+
+  if [ ! -f "dist/alternun-release-manifest.json" ]; then
+    echo "ERROR: dist/alternun-release-manifest.json is missing after expo export." >&2
+    exit 1
+  fi
+
+  node -e '
+const fs = require("node:fs");
+const appVersion = process.argv[1];
+const manifestPaths = [
+  "dist/alternun-release-manifest.json",
+  "public/alternun-release-manifest.json",
+];
+
+for (const manifestPath of manifestPaths) {
+  if (!fs.existsSync(manifestPath)) {
+    console.error(`ERROR: ${manifestPath} is missing after expo export.`);
+    process.exit(1);
+  }
+
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  if (manifest.version !== appVersion) {
+    console.error(
+      `ERROR: ${manifestPath} is ${manifest.version ?? "unknown"} but expected ${appVersion}.`
+    );
+    process.exit(1);
+  }
+}
+
+const workerPaths = [
+  "dist/alternun-release-worker.js",
+  "public/alternun-release-worker.js",
+];
+
+for (const workerPath of workerPaths) {
+  if (!fs.existsSync(workerPath)) {
+    console.error(`ERROR: ${workerPath} is missing after expo export.`);
+    process.exit(1);
+  }
+
+  const workerSource = fs.readFileSync(workerPath, "utf8");
+  if (!workerSource.includes(`const CURRENT_VERSION = ${JSON.stringify(appVersion)};`)) {
+    console.error(`ERROR: ${workerPath} does not contain version ${appVersion}.`);
+    process.exit(1);
+  }
+}
+' "$app_version"
 }
 
 # Generate changelog data file for the app
@@ -122,9 +183,12 @@ fi
 detected_stage="${SST_STAGE:-${STACK:-${EXPO_PUBLIC_STAGE:-${EXPO_PUBLIC_ENV:-}}}}"
 if [ -n "$detected_stage" ]; then
   detected_stage_lower=$(echo "$detected_stage" | tr '[:upper:]' '[:lower:]')
+  # Pull the Supabase publishable key from the runtime environment instead of
+  # embedding a literal key in this script so secret scanning stays clean.
+  stage_supabase_key="${EXPO_PUBLIC_SUPABASE_KEY:-${EXPO_PUBLIC_SUPABASE_ANON_KEY:-}}"
   case "$detected_stage_lower" in
     dev|*testnet*|*development*|*preview*)
-      cat > .env.development << 'ENVFILE'
+      cat > .env.development << ENVFILE
 EXPO_PUBLIC_API_URL=https://testnet.api.alternun.co
 EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 AUTH_EXECUTION_PROVIDER=better-auth
@@ -137,7 +201,7 @@ EXPO_PUBLIC_AUTHENTIK_CLIENT_ID=alternun-mobile
 EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase
 EXPO_PUBLIC_SUPABASE_URL=https://aznfyazjndfniwsocdka.supabase.co
-EXPO_PUBLIC_SUPABASE_KEY=sb_publishable_Z8egrB_x2ya7eNQCN8qcOw_Sxhmmt2O
+EXPO_PUBLIC_SUPABASE_KEY=${stage_supabase_key}
 EXPO_PUBLIC_RELEASE_UPDATE_MODE=on
 EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=60000
 ENVFILE
@@ -145,7 +209,7 @@ ENVFILE
       grep "EXPO_PUBLIC_BETTER_AUTH_URL" .env.development >&2
       ;;
     prod|*production*)
-      cat > .env.production << 'ENVFILE'
+      cat > .env.production << ENVFILE
 EXPO_PUBLIC_API_URL=https://api.alternun.co
 EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
 AUTH_EXECUTION_PROVIDER=supabase
@@ -158,7 +222,7 @@ EXPO_PUBLIC_AUTHENTIK_CLIENT_ID=alternun-mobile
 EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase
 EXPO_PUBLIC_SUPABASE_URL=https://rjebeugdvwbjpaktrrbx.supabase.co
-EXPO_PUBLIC_SUPABASE_KEY=sb_publishable_hPlMCyy51TS4c67V7WkkIw_p1Mv2Nze
+EXPO_PUBLIC_SUPABASE_KEY=${stage_supabase_key}
 EXPO_PUBLIC_RELEASE_UPDATE_MODE=on
 EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=300000
 ENVFILE
@@ -197,10 +261,12 @@ node scripts/generate-pwa-icons.mjs
 node ../../packages/update/scripts/export-assets.mjs --target-dir public
 disable_expo_dotenv_if_needed
 clear_metro_cache_if_needed
+clear_previous_export_artifacts
 
 if [ "${EXPO_EXPORT_CLEAR_CACHE:-0}" = "1" ]; then
   npx expo export -p web --clear
 else
   npx expo export -p web
 fi
+verify_exported_release_artifacts
 validate_exported_auth_bundle

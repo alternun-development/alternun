@@ -62,6 +62,7 @@ curl -k -i -X POST -H 'content-type: application/json' \
 `dev` owns the Expo bundle, `dashboard-dev` owns the API/auth runtime, and `identity-dev` owns Authentik. `release:patch` remains the versioned release flow, but it is not the preferred path for live testnet auth changes.
 
 The `dev` CodeBuild pipeline now runs post-deploy DNS sync for redirect aliases and keeps redirect probes advisory by default. Set `INFRA_ENFORCE_REDIRECT_CHECKS=true` only when you want redirect host mismatches to fail the build.
+Managed CodePipeline releases now run in `QUEUED` execution mode so a newer push waits for the active release to finish instead of superseding it mid-deploy.
 
 ## Dashboard Stack
 
@@ -202,7 +203,7 @@ Enable/configure through env or local config:
 - `INFRA_BACKEND_API_AUTHENTIK_JWKS_URL`
 - `INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED` (set `true` to make `/auth/exchange` fail closed when issuer-owned minting is unavailable)
 - `INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY` (preferred: sourced from the identity stack's JWT secret output; the `sst-deploy.sh` hydration remains a compatibility fallback)
-- `INFRA_BACKEND_API_DATABASE_URL`
+- `INFRA_BACKEND_API_DATABASE_URL` (preferred backend Lambda DB URL; the backend deploy also falls back to the shared `DATABASE_URL` / `SUPABASE_DATABASE_URL` stage env when this dedicated alias is absent)
 
 Important behavior:
 
@@ -280,7 +281,7 @@ Use `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` to control whether the app uses Au
 `EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER` is only a legacy alias for the Authentik fallback path. Better Auth mode always resolves the Google branch, so a stale `keycloak` value cannot override the testnet Better Auth flow.
 The default is `authentik` for deployed bundles so testnet/prod stay Authentik-first unless you explicitly opt into another mode, while non-production Expo bundles now default the execution provider to `better-auth`.
 Use `hybrid` only when you intentionally want Supabase fallback while iterating locally.
-The Expo build also receives `EXPO_PUBLIC_API_URL` for the matching stage API origin so the auth footer and privacy/terms drawers fetch legal content from the correct backend without guessing.
+The Expo build also receives `EXPO_PUBLIC_API_URL` for the matching stage API origin so the auth footer and privacy/terms drawers fetch legal content from the correct backend without guessing. Stage-aware pipeline specs now derive the production/dev/mobile API and Authentik URLs from the active stack and only honor explicit overrides when they still match that stage, which prevents a stale testnet URL in `packages/infra/.env` from leaking into production bundles.
 Better Auth is embedded in the API runtime at the same origin. The browser-facing URL stays on the API origin root (`https://<api-host>/auth`). The backend runtime derives its Better Auth secret from the issuer signing key when you do not provide `INFRA_BACKEND_API_BETTER_AUTH_SECRET` explicitly.
 The core web pipelines now set `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` from stage env, keep `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`, set `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` for the deployed testnet and production bundles, inject `EXPO_PUBLIC_API_URL` for the matching stage API origin, derive `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` plus `AUTH_EXCHANGE_URL` / `EXPO_PUBLIC_AUTH_EXCHANGE_URL` from that API origin whenever Better Auth owns the stage, and set `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` so the bundles fetch policy content from the correct API and get a reload prompt when a new release is detected. The current testnet env opts into Better Auth execution while production stays on the legacy path unless you explicitly override it. When Better Auth is enabled, the browser still talks to the API `/auth` route rather than a separate public auth port.
 
@@ -289,6 +290,7 @@ On the live testnet rollout, `dev` ships the bundle, `dashboard-dev` owns the AP
 Custom Authentik provider-flow slugs are now explicit only. Set `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=true` and `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` or `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS=true` and `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` / `INFRA_IDENTITY_DISCORD_LOGIN_FLOW_SLUG` only when you intentionally want a custom starter flow. When those values are blank, the app uses the direct source-login path and the identity bootstrap stays on the direct source-login flows. For Google, `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE=logout-then-source` is still experimental; leave it at `source` unless you are deliberately testing the logout-first custom flow.
 The deploy path validates that non-Better-Auth web builds do not carry Better Auth URLs in env, and the Expo web export fails if the emitted bundle contains stale Better Auth execution defaults.
 Static-site deploys no longer block on CloudFront invalidation completion by default. They still create the invalidation, but the pipeline finishes as soon as the deploy succeeds. Set `INFRA_STATIC_SITE_INVALIDATION_WAIT=true` only if you explicitly want the old blocking behavior.
+The invalidation script now resolves the CloudFront distribution from the stage alias instead of relying on hard-coded distribution IDs, so dev and production do not drift if AWS assigns new distribution IDs.
 The mobile provider also uses a dedicated invalidation flow with `User Logout` plus `Redirect` stages, and the bootstrap derives the app-root post-logout redirect from the mobile launch URL when no explicit list is provided, so logout returns to the app instead of stopping on Authentik's success page.
 
 ### Release Update Banner
@@ -378,7 +380,7 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_DEFAULT_APPLICATION_DESCRIPTION`
 - `INFRA_IDENTITY_DEFAULT_APPLICATION_POLICY_ENGINE_MODE` (`any` or `all`)
 - `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` (`better-auth` is the current testnet rollout path; use `supabase` only for rollback/legacy)
-- `EXPO_PUBLIC_API_URL` (stage API origin used by the auth footer and legal drawers; `https://testnet.api.alternun.co` on testnet)
+- `EXPO_PUBLIC_API_URL` (stage API origin used by the auth footer and legal drawers; `https://testnet.api.alternun.co` on testnet. Stage-aware pipeline builds now ignore mismatched overrides and fall back to the active stage origin)
 - `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` (`https://testnet.api.alternun.co` for the canonical browser-facing Better Auth route; `/auth` is appended by the client/proxy layers). If that explicit base URL is missing, the infra/runtime can derive the same browser-facing origin from `AUTH_EXCHANGE_URL` / `EXPO_PUBLIC_AUTH_EXCHANGE_URL`.
 - `AUTH_EXCHANGE_URL` / `EXPO_PUBLIC_AUTH_EXCHANGE_URL` (`https://testnet.api.alternun.co/auth/exchange` for the canonical issuer handoff)
 - `INFRA_IDENTITY_USERDATA_REPLACE_ON_CHANGE` (default `false`, prevents instance replacement on user-data/template edits)

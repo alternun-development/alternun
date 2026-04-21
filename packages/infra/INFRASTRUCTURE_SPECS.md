@@ -57,6 +57,12 @@ Resources created:
 - release-update manifest and worker files generated into the app `public/` directory during builds
 - optional redirect routers via `sst.aws.Router`
 
+Bucket naming:
+
+- the Expo static-site `aws:s3/bucketV2:BucketV2` child is renamed to a stage-scoped `expo-web-site` name during deploy
+- shared public asset buckets use stage-scoped `expo-public-assets` names
+- legacy `public-assets` bucket names are still accepted during rollout, but new deploys should converge on the `expo-*` naming
+
 Default specs:
 
 - app path: `../../apps/mobile`

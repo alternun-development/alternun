@@ -96,18 +96,23 @@ pnpm --filter @alternun/mobile run web:local
 
 ## Version Management
 
-Versioning is handled by `@edcalderon/versioning`. Never edit `version` fields in `package.json`, `apps/mobile/app.json`, or `CHANGELOG.md` manually.
+Versioning is handled by `@edcalderon/versioning`. Never edit `version` fields in `package.json`, `version.development.json`, `version.production.json`, `apps/mobile/app.json`, or `CHANGELOG.md` manually.
+`version.development.json` and `version.production.json` are structured release manifests with `version`, `build`, `lastUpdated`, `environment`, `lastDeployment`, and `deploymentHistory`.
+Development branches write `version.development.json`.
+Promotion writes the production branch version into `package.json` and `version.production.json`.
+Production branches mirror `package.json` into `version.production.json`.
+Workspace package versions stay on the semantic base version; the branch-aware build number lives in the manifest files.
 
 ```bash
 pnpm version:validate     # validate version sync across monorepo
 pnpm version:sync         # sync versions across workspace
 pnpm release              # build release on current branch
-pnpm release patch        # bump patch, regenerate changelog, stage-aware build, tag, push
-pnpm release -- --promote # promote current release (no version bump)
+pnpm release patch        # branch-aware release bump, regenerate changelog, stage-aware build, tag, push
+pnpm release -- --promote # promote current release to production without a new semantic bump
 pnpm version:check-secrets # scan staged files for secrets
 ```
 
-Current version: **1.0.151**
+Current version: **1.0.183**
 
 ## Security
 

@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import type { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { APP_VERSION } from '../app-metadata';
 
@@ -14,7 +14,7 @@ function resolveBundledSwaggerUiPath(): string | undefined {
   return bundledAssetsPath;
 }
 
-export function setupOpenApi(app: NestFastifyApplication) {
+export function setupOpenApi(app: INestApplication) {
   const config = new DocumentBuilder()
     .setTitle('Alternun API')
     .setDescription('Alternun domain backend')

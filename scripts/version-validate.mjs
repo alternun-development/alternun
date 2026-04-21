@@ -1,33 +1,41 @@
 #!/usr/bin/env node
-import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const {
-  REPO_ROOT,
+  getCurrentBranch,
   readRootVersion,
+  resolveBranchRule,
+  validateBranchVersionFiles,
+  validateProductionVersionMirror,
+  validateWorkspacePackageVersions,
   validateSupplementalVersionFiles,
 } = require('./versioning/version-files.cjs');
 
-const forwardedArgs = process.argv.slice(2).filter((value) => value !== '--');
-const result = spawnSync('pnpm', ['exec', 'versioning', 'validate', ...forwardedArgs], {
-  cwd: REPO_ROOT,
-  stdio: 'inherit',
-});
+const branch = getCurrentBranch();
+const expectedVersion = readRootVersion(branch);
+const branchValidation = validateBranchVersionFiles(expectedVersion, branch);
+const workspaceValidation = validateWorkspacePackageVersions(expectedVersion);
+const supplementalValidation = validateSupplementalVersionFiles(expectedVersion);
+const branchRule = resolveBranchRule(branch);
+const productionMirrorValidation =
+  branchRule.resolvedConfig?.environment === 'production'
+    ? validateProductionVersionMirror()
+    : { valid: true, issues: [] };
 
-if (result.status !== 0) {
-  process.exit(result.status ?? 1);
-}
+const issues = [
+  ...branchValidation.issues,
+  ...workspaceValidation.issues,
+  ...supplementalValidation.issues,
+  ...productionMirrorValidation.issues,
+];
 
-const expectedVersion = readRootVersion();
-const validation = validateSupplementalVersionFiles(expectedVersion);
-
-if (!validation.valid) {
-  console.error('❌ Supplemental version sync issues:');
-  for (const issue of validation.issues) {
+if (issues.length > 0) {
+  console.error(`❌ Version sync issues for branch ${branch || 'detached HEAD'}:`);
+  for (const issue of issues) {
     console.error(`  - ${issue}`);
   }
   process.exit(1);
 }
 
-console.log(`✅ Supplemental version files are in sync with ${expectedVersion}`);
+console.log(`✅ Version files are in sync with ${expectedVersion} on ${branch || 'detached HEAD'}`);
