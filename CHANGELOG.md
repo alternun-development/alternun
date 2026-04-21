@@ -1,3 +1,9 @@
+## [1.0.189](https://github.com/alternun-development/alternun/compare/v1.0.188-dev.0...v1.0.189) (2026-04-21)
+
+### Bug Fixes
+
+- **repo:** test(infra): README, infra.config, pipeline-auth-execution-provider.test
+
 ## [1.0.188](https://github.com/alternun-development/alternun/compare/v1.0.187-dev.1...v1.0.188) (2026-04-21)
 
 ### Bug Fixes
