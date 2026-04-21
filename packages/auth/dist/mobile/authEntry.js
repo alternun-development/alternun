@@ -78,10 +78,15 @@ export function shouldUseAuthentikRelayEntry() {
 export function resolveAuthentikLoginStrategy(options) {
     var _a, _b, _c, _d, _e;
     const selection = resolveAuthProviderSelection();
+    const executionProvider = (_a = normalizeExecutionProvider(options === null || options === void 0 ? void 0 : options.executionProvider)) !== null && _a !== void 0 ? _a : selection.executionProvider;
+    const resolvedSocialMode = normalizeAuthentikSocialLoginMode((_b = options === null || options === void 0 ? void 0 : options.socialMode) !== null && _b !== void 0 ? _b : process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE);
+    const socialMode = executionProvider === 'better-auth' && resolvedSocialMode === 'supabase'
+        ? 'authentik'
+        : resolvedSocialMode;
     return {
-        mode: normalizeAuthentikLoginEntryMode((_a = options === null || options === void 0 ? void 0 : options.entryMode) !== null && _a !== void 0 ? _a : process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE),
-        socialMode: normalizeAuthentikSocialLoginMode((_b = options === null || options === void 0 ? void 0 : options.socialMode) !== null && _b !== void 0 ? _b : process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE),
-        executionProvider: (_c = normalizeExecutionProvider(options === null || options === void 0 ? void 0 : options.executionProvider)) !== null && _c !== void 0 ? _c : selection.executionProvider,
+        mode: normalizeAuthentikLoginEntryMode((_c = options === null || options === void 0 ? void 0 : options.entryMode) !== null && _c !== void 0 ? _c : process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE),
+        socialMode,
+        executionProvider,
         providerFlowSlugs: resolveAuthentikProviderFlowSlugs({
             hostname: options === null || options === void 0 ? void 0 : options.hostname,
             value: (_d = options === null || options === void 0 ? void 0 : options.providerFlowSlugsValue) !== null && _d !== void 0 ? _d : process.env.EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS,

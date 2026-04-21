@@ -159,7 +159,52 @@ No — don't modify `~/.aws/credentials`. Instead, always load Alternun credenti
 
 ---
 
-## 6. Repository Organization & Cleanup
+## 6. AWS Resource Naming Conventions
+
+**Use clear, consistent names. Don't expose implementation details.**
+
+### Quick Rules
+
+| Resource   | Format                            | Example                          |
+| ---------- | --------------------------------- | -------------------------------- |
+| Lambda     | `alternun-{component}-{stage}`    | `alternun-api-dev`               |
+| API Domain | `{stage}.{component}.alternun.co` | `testnet.api.alternun.co`        |
+| SST Stack  | `{component}-{stage}`             | `api-dev`                        |
+| Env Var    | `{PREFIX}_{COMPONENT}_{SETTING}`  | `INFRA_BACKEND_API_DATABASE_URL` |
+
+### Guidelines
+
+- ✅ **DO** use descriptive, short names (under 64 chars)
+- ✅ **DO** include stage (dev, staging, prod)
+- ✅ **DO** use consistent prefixes (`alternun-`, `INFRA_`, `EXPO_PUBLIC_`)
+- ❌ **DON'T** expose framework names (NestJS, React, etc.)
+- ❌ **DON'T** expose language (Python, Node, etc.)
+- ❌ **DON'T** use auto-generated IDs
+
+### Example: Bad vs Good
+
+**Lambda function**:
+
+- ❌ `alternun-infra-dashboard-dev-nestjs-api` (41 chars, exposes framework)
+- ✅ `alternun-api-dev` (16 chars, clear purpose)
+
+**SST Stack Aliases**:
+
+- ❌ Deploy `api-dev` and `backend-api-dev` separately (creates duplicates)
+- ✅ Deploy `api-dev` primary; document other aliases in pipeline config
+
+### Full Details
+
+See `docs/AWS_RESOURCE_NAMING.md` for:
+
+- Naming convention deep dive
+- SST alias resolution strategy
+- Migration plan for existing resources
+- Resource naming checklist
+
+---
+
+## 8. Repository Organization & Cleanup
 
 **Keep root clean. Archive non-critical docs in `docs/`.**
 

@@ -92,6 +92,16 @@ describe('authEntry', () => {
     expect(resolveAuthentikLoginStrategy({}).executionProvider).toBe('better-auth');
   });
 
+  it('promotes supabase social mode to authentik when Better Auth execution is enabled', () => {
+    process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER = 'better-auth';
+    process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE = 'supabase';
+
+    expect(resolveAuthentikLoginStrategy({})).toMatchObject({
+      executionProvider: 'better-auth',
+      socialMode: 'authentik',
+    });
+  });
+
   it('disables the Authentik relay entry when Better Auth execution is enabled', () => {
     process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE = 'relay';
     process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER = 'better-auth';

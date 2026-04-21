@@ -22,6 +22,15 @@ export interface LegacyExecutionClientLike extends AuthClient {
   supabase?: unknown;
 }
 
+type SupabaseRecoveryClientLike = {
+  auth?: {
+    resetPasswordForEmail?: (
+      email: string,
+      options?: { redirectTo?: string }
+    ) => Promise<{ error?: { message?: string } | null }>;
+  } | null;
+};
+
 export interface SupabaseExecutionProviderOptions {
   client: LegacyExecutionClientLike;
   walletBridge?: WalletConnectionBridge | null;
@@ -322,6 +331,21 @@ export class SupabaseExecutionProvider implements AuthExecutionProvider {
     await this.client.verifyEmailConfirmationCode(email, code);
   }
 
+  async requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void> {
+    const supabase = this.client.supabase as SupabaseRecoveryClientLike | null;
+    const auth = supabase?.auth;
+    if (!auth?.resetPasswordForEmail) {
+      throw new AlternunProviderError(
+        'Supabase execution provider does not support password reset emails.'
+      );
+    }
+
+    const result = await auth.resetPasswordForEmail(email, redirectTo ? { redirectTo } : undefined);
+    if (result?.error?.message) {
+      throw new AlternunProviderError(result.error.message);
+    }
+  }
+
   async signInWithGoogle(redirectTo?: string): Promise<void> {
     await this.client.signIn({
       provider: 'google',
@@ -342,7 +366,7 @@ export class SupabaseExecutionProvider implements AuthExecutionProvider {
     return this.client.supabase;
   }
 
-  get runtime() {
+  get runtime(): LegacyExecutionClientLike['runtime'] {
     return this.client.runtime;
   }
 

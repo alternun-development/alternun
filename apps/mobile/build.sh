@@ -65,8 +65,15 @@ load_env_vars() {
     fi
   fi
 
-  # Local overrides (highest priority, can override everything)
-  load_env_file .env.local true
+  # Local overrides (only in local dev, skip in CI/CD and SST deployments)
+  local is_deployment=false
+  if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ "${CI:-}" = "true" ] || [ -n "${SST_STAGE:-}" ] || [ -n "${STACK:-}" ]; then
+    is_deployment=true
+  fi
+
+  if [ "$is_deployment" = "false" ]; then
+    load_env_file .env.local true
+  fi
 }
 
 disable_expo_dotenv_if_needed() {
@@ -110,10 +117,61 @@ if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
   fi
 fi
 
+# CRITICAL: Update .env files FIRST (BEFORE load_env_vars) so they get loaded correctly
+# The auth package and Expo will read these files, so we must set them with correct URLs before loading
+detected_stage="${SST_STAGE:-${STACK:-${EXPO_PUBLIC_STAGE:-${EXPO_PUBLIC_ENV:-}}}}"
+if [ -n "$detected_stage" ]; then
+  detected_stage_lower=$(echo "$detected_stage" | tr '[:upper:]' '[:lower:]')
+  case "$detected_stage_lower" in
+    dev|*testnet*|*development*|*preview*)
+      cat > .env.development << 'ENVFILE'
+EXPO_PUBLIC_API_URL=https://testnet.api.alternun.co
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
+AUTH_EXECUTION_PROVIDER=better-auth
+EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
+AUTH_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
+EXPO_PUBLIC_AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange
+AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange
+EXPO_PUBLIC_AUTHENTIK_ISSUER=https://testnet.sso.alternun.co/application/o/alternun-mobile/
+EXPO_PUBLIC_AUTHENTIK_CLIENT_ID=alternun-mobile
+EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source
+EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase
+EXPO_PUBLIC_SUPABASE_URL=https://aznfyazjndfniwsocdka.supabase.co
+EXPO_PUBLIC_SUPABASE_KEY=sb_publishable_Z8egrB_x2ya7eNQCN8qcOw_Sxhmmt2O
+EXPO_PUBLIC_RELEASE_UPDATE_MODE=on
+EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=60000
+ENVFILE
+      echo "✓ Generated .env.development with testnet URLs" >&2
+      grep "EXPO_PUBLIC_BETTER_AUTH_URL" .env.development >&2
+      ;;
+    prod|*production*)
+      cat > .env.production << 'ENVFILE'
+EXPO_PUBLIC_API_URL=https://api.alternun.co
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
+AUTH_EXECUTION_PROVIDER=supabase
+EXPO_PUBLIC_BETTER_AUTH_URL=https://api.alternun.co/auth
+AUTH_BETTER_AUTH_URL=https://api.alternun.co/auth
+EXPO_PUBLIC_AUTH_EXCHANGE_URL=https://api.alternun.co/auth/exchange
+AUTH_EXCHANGE_URL=https://api.alternun.co/auth/exchange
+EXPO_PUBLIC_AUTHENTIK_ISSUER=https://sso.alternun.co/application/o/alternun-mobile/
+EXPO_PUBLIC_AUTHENTIK_CLIENT_ID=alternun-mobile
+EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source
+EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase
+EXPO_PUBLIC_SUPABASE_URL=https://rjebeugdvwbjpaktrrbx.supabase.co
+EXPO_PUBLIC_SUPABASE_KEY=sb_publishable_hPlMCyy51TS4c67V7WkkIw_p1Mv2Nze
+EXPO_PUBLIC_RELEASE_UPDATE_MODE=on
+EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=300000
+ENVFILE
+      echo "✓ Generated .env.production with prod URLs" >&2
+      grep "EXPO_PUBLIC_BETTER_AUTH_URL" .env.production >&2
+      ;;
+  esac
+fi
+
 # Resolve canonical auth env before local .env can backfill stale localhost values.
 seed_build_auth_env
 
-# Load remaining environment variables from .env
+# Load remaining environment variables from .env (now has correct URLs)
 load_env_vars
 
 # Ensure social login mode is set based on stage. Testnet/deploy stages should
@@ -139,6 +197,7 @@ node scripts/generate-pwa-icons.mjs
 node ../../packages/update/scripts/export-assets.mjs --target-dir public
 disable_expo_dotenv_if_needed
 clear_metro_cache_if_needed
+
 if [ "${EXPO_EXPORT_CLEAR_CACHE:-0}" = "1" ]; then
   npx expo export -p web --clear
 else

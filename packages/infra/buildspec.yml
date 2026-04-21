@@ -99,9 +99,10 @@ env:
     # managed|explicit : managed prefers SST-managed certificates for empty site cert ARN vars,
     # but preserves any explicit cert ARN overrides so existing ACM certificates can be reused.
     INFRA_CERT_MODE: 'managed'
-    # CI should use CodeBuild IAM role (temporary creds), not static keys.
+    # CI should use CodeBuild IAM role (temporary creds), not static keys from .env
     INFRA_FORCE_ENV_AWS_CREDENTIALS: 'false'
     INFRA_REQUIRE_ENV_AWS_CREDENTIALS: 'false'
+    INFRA_PRESERVE_EXISTING_ENV: 'true'
 
     # Check controls
     SKIP_DNS_CHECK: 'false'
@@ -111,14 +112,17 @@ env:
     INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS: 'false'
     INFRA_FAIL_ON_MANAGED_CERT_CNAME_CONFLICT: 'true'
     # Optional post-deploy DNS sync poll tuning (used only when enabled).
-    POLL_TIMEOUT: '120'
+    # Reduced from 120s to 60s for faster dev iterations. Increase if DNS updates are slower.
+    POLL_TIMEOUT: '60'
     POLL_INTERVAL: '15'
-    # Disabled by default: this fallback can add ~10m waiting for CloudFront alias discovery.
-    # Enable only for recovery/manual DNS sync runs.
+    # Disabled by default: this fallback can add ~5-10m waiting for CloudFront alias discovery.
+    # Enable only for critical DNS changes or recovery. Dev stage auto-enables if needed.
     INFRA_ENABLE_POSTDEPLOY_DNS_SYNC: 'false'
     # Fail the pipeline if deployed endpoints are not reachable.
     INFRA_ENABLE_REACHABILITY_CHECK: 'true'
-    INFRA_REACHABILITY_ATTEMPTS: '18'
+    # Reduced from 18 to 10 attempts (~1-1.5 min saved).
+    # Each attempt waits INFRA_REACHABILITY_INTERVAL_SECONDS: 10*10=100s total vs 18*10=180s
+    INFRA_REACHABILITY_ATTEMPTS: '10'
     INFRA_REACHABILITY_INTERVAL_SECONDS: '10'
     INFRA_REACHABILITY_CONNECT_TIMEOUT_SECONDS: '5'
     INFRA_REACHABILITY_REQUEST_TIMEOUT_SECONDS: '20'
@@ -127,6 +131,8 @@ env:
     # only when INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true, so keep the flag explicit for
     # manual recovery or alias migration runs.
     INFRA_ENABLE_ALIAS_CLEANUP: 'false'
+    # Route53 hosted zone for alternun.co - required for wildcard certificate provisioning
+    INFRA_ROUTE53_HOSTED_ZONE_ID: 'Z02451462K2H87RS3X1EP'
     INFRA_ENABLE_SST_DIFF: 'false'
     INFRA_ENABLE_PUBLIC_ASSET_SYNC: 'true'
     # Disabled by default: refresh can rewrite live state before deploy.
@@ -378,6 +384,24 @@ phases:
           load_infra_env
         fi
 
+        # CodeBuild starts a fresh shell for the build phase, so reload the
+        # canonical stage auth/env helpers here before synth/deploy.
+        if [ -f "${INFRA_PATH}/scripts/resolve-ssm-env.sh" ]; then
+          # shellcheck source=/dev/null
+          source "${INFRA_PATH}/scripts/resolve-ssm-env.sh"
+        else
+          echo "ERROR: Missing ${INFRA_PATH}/scripts/resolve-ssm-env.sh" >&2
+          exit 1
+        fi
+
+        if [ -f "${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh" ]; then
+          # shellcheck source=/dev/null
+          source "${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh"
+        else
+          echo "ERROR: Missing ${INFRA_PATH}/scripts/resolve-secrets-manager-env.sh" >&2
+          exit 1
+        fi
+
         if [ "${INFRA_ENABLE_BACKEND_API:-false}" = "true" ]; then
           echo "Building backend API with: ${INFRA_BACKEND_API_BUILD_COMMAND}"
           bash -lc "${INFRA_BACKEND_API_BUILD_COMMAND}"
@@ -391,19 +415,23 @@ phases:
           echo "Skipping sst refresh (INFRA_ENABLE_SST_REFRESH=${INFRA_ENABLE_SST_REFRESH})"
         fi
       - |
-        if [ -f "${INFRA_PATH}/scripts/sst-deploy.sh" ]; then
-          chmod +x "${INFRA_PATH}/scripts/sst-deploy.sh" || true
-          APPROVE=true RUN_PREDEPLOY_CHECKS=false STACK=${SST_STAGE} "${INFRA_PATH}/scripts/sst-deploy.sh"
-        elif [ -f "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" ]; then
-          chmod +x "${INFRA_PATH}/node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" || true
-          (cd "${INFRA_PATH}" && APPROVE=true STACK=${SST_STAGE} ./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh)
-        elif [ -f "./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" ]; then
-          chmod +x "./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh" || true
-          APPROVE=true STACK=${SST_STAGE} ./node_modules/@lsts_tech/infra/scripts/sst-deploy.sh
-        else
-          echo "ERROR: No sst-deploy script found." >&2
-          exit 1
+        cd "${INFRA_PATH}"
+        echo "Deploying to ${SST_STAGE}..."
+
+        # Try simple sst deploy command
+        npx sst unlock --stage "${SST_STAGE}" 2>&1 || true
+
+        # Run deploy and capture output
+        {
+          SST_TELEMETRY_DISABLED=1 npx sst deploy --stage "${SST_STAGE}" --yes
+        } 2>&1
+
+        DEPLOY_STATUS=$?
+        if [ $DEPLOY_STATUS -ne 0 ]; then
+          echo "❌ Deploy exit code: $DEPLOY_STATUS"
+          exit $DEPLOY_STATUS
         fi
+        echo "✅ Deploy successful"
       - |
         if [ "${INFRA_ENABLE_PUBLIC_ASSET_SYNC}" != "true" ]; then
           echo "Skipping public asset sync (INFRA_ENABLE_PUBLIC_ASSET_SYNC=${INFRA_ENABLE_PUBLIC_ASSET_SYNC})"
@@ -418,14 +446,11 @@ phases:
     commands:
       - echo "SST deploy completed for stage ${SST_STAGE}"
       - |
-        if [ "${SST_STAGE}" = "dev" ]; then
-          # Dev testnet cutovers need DNS reconciliation so redirect aliases can follow the new CDN state.
-          export INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=true
-        fi
         if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
           echo "Skipping post-deploy DNS sync because BUILD phase failed."
         elif [ "${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC}" != "true" ]; then
           echo "Skipping post-deploy DNS sync (INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=${INFRA_ENABLE_POSTDEPLOY_DNS_SYNC})"
+          echo "  To enable DNS sync for critical changes, set INFRA_ENABLE_POSTDEPLOY_DNS_SYNC=true in CodePipeline env vars"
         elif [ -f "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" ]; then
           echo "Running post-deploy DNS sync"
           chmod +x "${INFRA_PATH}/scripts/postdeploy-update-dns.sh" || true
@@ -451,6 +476,20 @@ phases:
           "${INFRA_PATH}/scripts/postdeploy-reachability-check.sh" ${SST_STAGE}
         else
           echo "No postdeploy reachability check script found; skipping"
+        fi
+      - |
+        if [ "${CODEBUILD_BUILD_SUCCEEDING:-1}" != "1" ]; then
+          echo "Skipping CloudFront invalidation because BUILD phase failed."
+        elif [ -f "${INFRA_PATH}/scripts/postdeploy-cloudfront-invalidate.sh" ]; then
+          echo "Invalidating CloudFront cache to serve fresh content..."
+          chmod +x "${INFRA_PATH}/scripts/postdeploy-cloudfront-invalidate.sh" || true
+          "${INFRA_PATH}/scripts/postdeploy-cloudfront-invalidate.sh" ${SST_STAGE}
+        elif [ -f "./node_modules/@lsts_tech/infra/scripts/postdeploy-cloudfront-invalidate.sh" ]; then
+          echo "Invalidating CloudFront cache to serve fresh content..."
+          chmod +x "./node_modules/@lsts_tech/infra/scripts/postdeploy-cloudfront-invalidate.sh" || true
+          ./node_modules/@lsts_tech/infra/scripts/postdeploy-cloudfront-invalidate.sh ${SST_STAGE}
+        else
+          echo "No CloudFront invalidation script found; skipping"
         fi
 
 cache:

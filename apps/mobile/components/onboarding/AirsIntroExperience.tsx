@@ -484,10 +484,10 @@ const AirsIntroExperience = forwardRef<
           style={[styles.progressiveBlurHeader, { opacity: headerBarOpacity }]}
         >
           {/* Blur layer with a feathered glass fade at the bottom edge */}
-          <BlurView intensity={85} tint={blurTint} style={StyleSheet.absoluteFillObject} />
+          <BlurView intensity={85} tint={blurTint} style={StyleSheet.absoluteFill} />
           <Svg
             pointerEvents='none'
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
             width='100%'
             height='100%'
             viewBox='0 0 100 100'
@@ -1256,7 +1256,7 @@ const styles = createTypographyStyles({
   },
   floatingBackdrop: {
     // Keep the dismiss layer behind the menu so web clicks reach the items.
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 40,
   },
   floatingProfileTrigger: {
@@ -1322,24 +1322,24 @@ const styles = createTypographyStyles({
     justifyContent: 'flex-end',
   },
   heroBackground: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   heroVideoElement: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     width: '100%',
     height: '100%',
     objectFit: 'cover',
     backgroundColor: '#050510',
   },
   heroVideoWebView: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'transparent',
   },
   heroSolidFadeLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   heroShade: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(3, 6, 24, 0.3)',
   },
   heroTopCopy: {
@@ -1657,11 +1657,11 @@ const styles = createTypographyStyles({
     elevation: 6,
   },
   headerNavPillBlur: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: 999,
   },
   headerNavPillTint: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: 999,
   },
   headerNavPillHighlight: {
@@ -1738,7 +1738,7 @@ const styles = createTypographyStyles({
     elevation: 5,
   },
   headerNavSettingsButtonTint: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   headerNavSettingsDropdown: {
     position: 'absolute',
@@ -1864,11 +1864,11 @@ const styles = createTypographyStyles({
     overflow: 'hidden',
   },
   heroGlassBlur: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: 999,
   },
   heroGlassTint: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: 999,
   },
   heroGlassHighlight: {

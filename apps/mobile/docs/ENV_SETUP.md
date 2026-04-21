@@ -27,7 +27,7 @@ Located: `apps/mobile/.env` (in repo, gitignored)
 
 Contains deployment-agnostic values and fallback URLs:
 
-- Supabase configuration (same across all stages)
+- Supabase fallback configuration (stage-specific deployments override this)
 - WalletConnect project ID
 - Google Auth credentials
 - Localhost URLs for local dev convenience
@@ -70,6 +70,7 @@ EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange
 EXPO_PUBLIC_AUTHENTIK_ISSUER=https://testnet.sso.alternun.co/...
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
+EXPO_PUBLIC_SUPABASE_URL=https://aznfyazjndfniwsocdka.supabase.co
 EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=60000  # 60 seconds for testnet
 ```
 
@@ -95,6 +96,7 @@ EXPO_PUBLIC_BETTER_AUTH_URL=https://api.alternun.co/auth
 AUTH_EXCHANGE_URL=https://api.alternun.co/auth/exchange
 EXPO_PUBLIC_AUTHENTIK_ISSUER=https://sso.alternun.co/...
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
+EXPO_PUBLIC_SUPABASE_URL=https://rjebeugdvwbjpaktrrbx.supabase.co
 EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=300000  # 300 seconds (5 min)
 ```
 

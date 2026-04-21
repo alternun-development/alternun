@@ -110,7 +110,9 @@ function resolveStageKey(stage: string): keyof AdminSiteSettings['stageDomains']
     normalized === 'production' ||
     normalized === 'prod' ||
     normalized === 'admin-prod' ||
-    normalized === 'admin-production'
+    normalized === 'admin-production' ||
+    normalized === 'dashboard-prod' ||
+    normalized === 'dashboard-production'
   ) {
     return 'production';
   }

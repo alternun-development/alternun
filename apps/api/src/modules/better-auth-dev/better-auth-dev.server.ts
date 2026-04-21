@@ -2,11 +2,10 @@ import { createServer, type Server } from 'node:http';
 import { betterAuth } from 'better-auth';
 import { toNodeHandler } from 'better-auth/node';
 import { oAuthProxy } from 'better-auth/plugins/oauth-proxy';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import type { BetterAuthDevConfig, BetterAuthDevOAuthProxyConfig } from './better-auth-dev.config';
-
-function stripTrailingSlash(url: string): string {
-  return url.replace(/\/+$/, '');
-}
+import { getDatabase } from '../../common/database/connection';
+import * as betterAuthSchema from '../../common/database/better-auth.schema';
 
 function uniqueStrings(values: Array<string | undefined | null>): string[] {
   const trimmedValues: string[] = [];
@@ -35,12 +34,11 @@ function buildOAuthProxyPlugin(
   });
 }
 
-export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
+export function createBetterAuthDevAuth(
+  config: BetterAuthDevConfig
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
   const oauthProxyPlugin = buildOAuthProxyPlugin(config.oauthProxy);
-  const effectiveRedirectBaseURL =
-    config.oauthProxy.enabled && config.oauthProxy.productionURL
-      ? config.oauthProxy.productionURL
-      : config.baseURL;
   const hasGoogleProvider = Boolean(config.googleClientId && config.googleClientSecret);
   const hasDiscordProvider = Boolean(config.discordClientId && config.discordClientSecret);
 
@@ -63,7 +61,6 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
           google: {
             clientId: config.googleClientId,
             clientSecret: config.googleClientSecret,
-            redirectURI: `${stripTrailingSlash(effectiveRedirectBaseURL)}/auth/callback/google`,
             prompt: 'select_account' as const,
             accessType: 'offline' as const,
           },
@@ -74,7 +71,6 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
           discord: {
             clientId: config.discordClientId,
             clientSecret: config.discordClientSecret,
-            redirectURI: `${stripTrailingSlash(effectiveRedirectBaseURL)}/auth/callback/discord`,
           },
         }
       : {}),
@@ -82,19 +78,25 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
   const trustedOrigins = uniqueStrings([
     ...config.trustedOrigins,
     config.baseURL,
-    'http://localhost:9083',
     config.oauthProxy.currentURL,
     config.oauthProxy.productionURL,
   ]);
 
   const isProduction = process.env.NODE_ENV === 'production';
+  const db = getDatabase();
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   return betterAuth({
     appName: 'Alternun Dev Better Auth',
     baseURL: config.baseURL,
     basePath: '/auth',
     secret: config.secret,
     trustedOrigins,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    database: drizzleAdapter(db, {
+      provider: 'pg',
+      schema: betterAuthSchema,
+    }),
     plugins: oauthProxyPlugin ? [oauthProxyPlugin] : [],
     socialProviders,
     emailAndPassword: {
@@ -125,7 +127,9 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
 }
 
 export function createBetterAuthDevServer(config: BetterAuthDevConfig): Server {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const auth = createBetterAuthDevAuth(config);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
   const authHandler = toNodeHandler(auth.handler);
 
   return createServer((req, res) => {

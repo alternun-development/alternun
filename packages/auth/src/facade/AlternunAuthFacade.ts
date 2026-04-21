@@ -34,6 +34,8 @@ type ExecutionProviderCompat = AuthExecutionProvider & {
   signUpWithEmail?: (email: string, password: string, locale?: string) => Promise<unknown>;
   resendEmailConfirmation?: (email: string) => Promise<void>;
   verifyEmailConfirmationCode?: (email: string, code: string) => Promise<void>;
+  requestPasswordResetEmail?: (email: string, redirectTo?: string) => Promise<void>;
+  resetPassword?: (newPassword: string, token?: string) => Promise<void>;
   signInWithGoogle?: (redirectTo?: string) => Promise<void>;
   getSessionToken?: () => Promise<string | null>;
   setOidcUser?: (user: User | null) => void;
@@ -53,10 +55,24 @@ function isEmailAuthResult(value: unknown): value is AuthExecutionResult {
   return Boolean(value && typeof value === 'object');
 }
 
+type SupabasePasswordAuthLike = {
+  resetPasswordForEmail?: (
+    email: string,
+    options?: { redirectTo?: string }
+  ) => Promise<{ error?: { message?: string } | null }>;
+  updateUser?: (input: { password: string }) => Promise<{ error?: { message?: string } | null }>;
+};
+
+type SupabaseCompatClientLike = {
+  auth?: SupabasePasswordAuthLike | null;
+};
+
 export interface AlternunAuthFacadeCompat extends AuthClient {
   signUpWithEmail(email: string, password: string, locale?: string): Promise<AuthExecutionResult>;
   resendEmailConfirmation(email: string): Promise<void>;
   verifyEmailConfirmationCode(email: string, code: string): Promise<void>;
+  requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void>;
+  resetPassword(newPassword: string, token?: string): Promise<void>;
   setOidcUser(user: User | null): void;
   getExecutionSession(): Promise<ExecutionSession | null>;
   refreshExecutionSession(): Promise<ExecutionSession | null>;
@@ -101,6 +117,11 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
 
   get supabase(): unknown {
     return this.executionProvider.supabase ?? null;
+  }
+
+  private get supabaseAuth(): SupabasePasswordAuthLike | null {
+    const supabase = this.supabase as SupabaseCompatClientLike | null;
+    return supabase?.auth ?? null;
   }
 
   capabilities(): AuthCapabilities {
@@ -387,6 +408,12 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
   }
 
   async signInWithGoogle(redirectTo?: string): Promise<void> {
+    const provider = this.executionProvider;
+    if (typeof provider.signInWithGoogle === 'function') {
+      await provider.signInWithGoogle(redirectTo);
+      return;
+    }
+
     await this.signIn({
       provider: 'google',
       flow: this.runtime === 'web' ? 'redirect' : 'native',
@@ -407,6 +434,17 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
         redirectUri: options.redirectUri,
         web3: options.web3,
       });
+
+      if (result.redirectUrl) {
+        if (this.runtime === 'web' && typeof window !== 'undefined') {
+          window.location.assign(result.redirectUrl);
+        }
+
+        this.log('execution-provider', 'signIn', 'skipped', {
+          redirectUrl: result.redirectUrl,
+        });
+        return;
+      }
 
       if (result.session) {
         this.currentExecutionSession = result.session;
@@ -429,17 +467,6 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
         );
         this.currentCompatUser = user;
         this.emit(user);
-        return;
-      }
-
-      if (result.redirectUrl) {
-        if (this.runtime === 'web' && typeof window !== 'undefined') {
-          window.location.assign(result.redirectUrl);
-        }
-
-        this.log('execution-provider', 'signIn', 'skipped', {
-          redirectUrl: result.redirectUrl,
-        });
         return;
       }
 
@@ -561,6 +588,76 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
     throw new AlternunProviderError(
       'Email confirmation code verification is not supported by the active execution provider.'
     );
+  }
+
+  async requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void> {
+    this.log('execution-provider', 'requestPasswordResetEmail', 'start', {
+      email,
+      redirectTo,
+    });
+
+    try {
+      if (this.executionProvider.requestPasswordResetEmail) {
+        await this.executionProvider.requestPasswordResetEmail(email, redirectTo);
+      } else if (this.supabaseAuth?.resetPasswordForEmail) {
+        const result = await this.supabaseAuth.resetPasswordForEmail(
+          email,
+          redirectTo ? { redirectTo } : undefined
+        );
+        if (result?.error?.message) {
+          throw new Error(result.error.message);
+        }
+      } else {
+        throw new AlternunProviderError(
+          'Password reset email is not supported by the active execution provider.'
+        );
+      }
+
+      this.log('execution-provider', 'requestPasswordResetEmail', 'success', { email });
+    } catch (error) {
+      this.log('execution-provider', 'requestPasswordResetEmail', 'failure', {
+        email,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw toAlternunAuthError(error);
+    }
+  }
+
+  async resetPassword(newPassword: string, token?: string): Promise<void> {
+    this.log('execution-provider', 'resetPassword', 'start', {
+      hasToken: Boolean(token),
+    });
+
+    try {
+      if (token) {
+        if (this.executionProvider.resetPassword) {
+          await this.executionProvider.resetPassword(newPassword, token);
+        } else {
+          throw new AlternunProviderError(
+            'Password reset is not supported by the active execution provider.'
+          );
+        }
+      } else if (this.supabaseAuth?.updateUser) {
+        const result = await this.supabaseAuth.updateUser({ password: newPassword });
+        if (result?.error?.message) {
+          throw new Error(result.error.message);
+        }
+      } else {
+        throw new AlternunProviderError(
+          'Password reset requires a valid token or an active recovery session.'
+        );
+      }
+
+      this.log('execution-provider', 'resetPassword', 'success', {
+        hasToken: Boolean(token),
+      });
+    } catch (error) {
+      this.log('execution-provider', 'resetPassword', 'failure', {
+        hasToken: Boolean(token),
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw toAlternunAuthError(error);
+    }
   }
 
   async signOut(): Promise<void> {

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Alternun - Regenerative Impact Platform</title>
+  <link href="https://alternun.co" />
+  <link href="https://alternun.co/feed.atom" rel="self" />
+  <id>urn:uuid:60a76c80-d399-11d9-b91C-0003939e0af6</id>
+  <updated>2026-04-20T10:00:00Z</updated>
+  <description>Track, verify, and monetize your environmental and social impact with Alternun. Join the regenerative economy.</description>
+
+  <entry>
+    <title>Introducing AIRS: The Impact Rating System</title>
+    <link href="https://alternun.co/blog/airs-impact-rating" />
+    <link rel="alternate" type="text/html" href="https://alternun.co/blog/airs-impact-rating" />
+    <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
+    <updated>2026-04-20T10:00:00Z</updated>
+    <summary>Discover how AIRS (Alternun Impact Rating System) converts environmental and social actions into quantifiable tokens, enabling verified impact tracking and monetization.</summary>
+    <author>
+      <name>Alternun Team</name>
+      <email>contact@alternun.io</email>
+    </author>
+    <category term="Features" />
+  </entry>
+
+  <entry>
+    <title>Getting Started with Alternun: Your First Impact Token</title>
+    <link href="https://alternun.co/blog/getting-started" />
+    <link rel="alternate" type="text/html" href="https://alternun.co/blog/getting-started" />
+    <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6b</id>
+    <updated>2026-04-15T14:30:00Z</updated>
+    <summary>A step-by-step guide to creating your Alternun account, connecting data sources, and earning your first AIRS tokens through verified impact.</summary>
+    <author>
+      <name>Alternun Team</name>
+      <email>contact@alternun.io</email>
+    </author>
+    <category term="Tutorial" />
+  </entry>
+
+  <entry>
+    <title>Enterprise ESG: How Companies Are Using Alternun</title>
+    <link href="https://alternun.co/blog/enterprise-esg" />
+    <link rel="alternate" type="text/html" href="https://alternun.co/blog/enterprise-esg" />
+    <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6c</id>
+    <updated>2026-04-10T09:15:00Z</updated>
+    <summary>Real-world examples of how enterprises use Alternun to monitor supply chain sustainability and meet ESG commitments with audit-ready reporting.</summary>
+    <author>
+      <name>Alternun Team</name>
+      <email>contact@alternun.io</email>
+    </author>
+    <category term="Case Studies" />
+  </entry>
+
+  <entry>
+    <title>The Future of Impact Investing with Blockchain Verification</title>
+    <link href="https://alternun.co/blog/blockchain-impact" />
+    <link rel="alternate" type="text/html" href="https://alternun.co/blog/blockchain-impact" />
+    <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6d</id>
+    <updated>2026-04-08T11:45:00Z</updated>
+    <summary>Explore how blockchain technology ensures immutable, transparent records of verified environmental and social impact, creating trust in impact investing.</summary>
+    <author>
+      <name>Alternun Team</name>
+      <email>contact@alternun.io</email>
+    </author>
+    <category term="Technology" />
+  </entry>
+</feed>

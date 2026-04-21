@@ -140,15 +140,22 @@ export function resolveAuthentikLoginStrategy(
   options?: ResolveAuthentikLoginStrategyOptions
 ): AuthentikLoginStrategy {
   const selection = resolveAuthProviderSelection();
+  const executionProvider =
+    normalizeExecutionProvider(options?.executionProvider) ?? selection.executionProvider;
+  const resolvedSocialMode = normalizeAuthentikSocialLoginMode(
+    options?.socialMode ?? process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE
+  );
+  const socialMode =
+    executionProvider === 'better-auth' && resolvedSocialMode === 'supabase'
+      ? 'authentik'
+      : resolvedSocialMode;
+
   return {
     mode: normalizeAuthentikLoginEntryMode(
       options?.entryMode ?? process.env.EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE
     ),
-    socialMode: normalizeAuthentikSocialLoginMode(
-      options?.socialMode ?? process.env.EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE
-    ),
-    executionProvider:
-      normalizeExecutionProvider(options?.executionProvider) ?? selection.executionProvider,
+    socialMode,
+    executionProvider,
     providerFlowSlugs: resolveAuthentikProviderFlowSlugs({
       hostname: options?.hostname,
       value:
