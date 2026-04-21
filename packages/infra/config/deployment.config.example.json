@@ -42,7 +42,7 @@
     }
   },
   "redirects": {
-    "enableAirsToDev": true,
+    "enableAirsToDev": false,
     "airsToDevSourceDomain": "airs.alternun.co",
     "enableDevToTestnet": true,
     "devToTestnetSourceDomains": [

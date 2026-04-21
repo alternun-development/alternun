@@ -169,7 +169,7 @@ run_reachability_checks_in_parallel() {
   launch_reachability_check "primary:${stage_domain}" poll_reachable "primary:${stage_domain}" "$stage_url"
 
   if [ "$STAGE" = "dev" ]; then
-    if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-true}"; then
+    if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-false}"; then
       local airs_source
       airs_source=${INFRA_REDIRECT_AIRS_TO_DEV_SOURCE:-${DOMAIN_PRODUCTION:-}}
       if [ -n "$airs_source" ] && [ "$airs_source" != "$stage_domain" ]; then

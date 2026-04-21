@@ -45,9 +45,15 @@ declare -a CACHE_EXPORT_VARS=(
 if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
   unset \
     EXPO_PUBLIC_API_URL \
+    EXPO_PUBLIC_SUPABASE_URL \
+    EXPO_PUBLIC_SUPABASE_KEY \
+    EXPO_PUBLIC_SUPABASE_ANON_KEY \
     AUTH_EXECUTION_PROVIDER \
     EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER \
     DATABASE_URL \
+    SUPABASE_URL \
+    SUPABASE_KEY \
+    SUPABASE_ANON_KEY \
     SUPABASE_DATABASE_URL \
     AUTH_BETTER_AUTH_URL \
     EXPO_PUBLIC_BETTER_AUTH_URL \
@@ -196,6 +202,21 @@ print_resolved_values() {
   env | awk '/^EXPO_PUBLIC_/ { print }' | sort >&2
 }
 
+normalize_stage_value() {
+  printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-'
+}
+
+stage_requires_backend_database_url() {
+  case "$(normalize_stage_value "$STAGE")" in
+    dashboard*|api*|backend*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 load_cached_env() {
   if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
     return 1
@@ -218,6 +239,11 @@ load_cached_env() {
 
   if [ -n "${DATABASE_URL:-}" ] && \
     { [[ "${DATABASE_URL}" == AQICA* ]] || [[ "${DATABASE_URL}" != *://* ]]; }; then
+    return 1
+  fi
+
+  if stage_requires_backend_database_url && [ -z "${INFRA_BACKEND_API_DATABASE_URL:-}" ]; then
+    echo "Cached SSM env for stage '${STAGE}' is missing INFRA_BACKEND_API_DATABASE_URL; refreshing from SSM." >&2
     return 1
   fi
 
@@ -357,7 +383,9 @@ main() {
     export AUTH_EXCHANGE_URL="${EXPO_PUBLIC_AUTH_EXCHANGE_URL}"
   fi
 
-  export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url"
+  # Backend API should use the shared stage database URL if the dedicated backend
+  # parameter has not been bootstrapped yet.
+  export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url" "${DATABASE_URL:-}"
 
   AUTH_EXECUTION_PROVIDER=$(resolve_auth_execution_provider)
   export AUTH_EXECUTION_PROVIDER

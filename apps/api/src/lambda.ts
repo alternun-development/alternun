@@ -10,6 +10,23 @@ import { normalizeLambdaRequestPath } from './common/bootstrap/request-path';
 
 let cachedFastifyApp: FastifyInstance | undefined;
 
+type LambdaResponseHeaders = Record<string, string>;
+type LambdaResponseHeaderEntries = Array<readonly [string, unknown]>;
+
+function getLambdaResponseHeaderEntries(
+  responseHeaders: LightMyRequestResponse['headers']
+): LambdaResponseHeaderEntries {
+  if (responseHeaders instanceof Map) {
+    return Array.from(responseHeaders.entries(), ([name, value]) => [String(name), value] as const);
+  }
+
+  if (typeof responseHeaders === 'object' && responseHeaders !== null) {
+    return Object.entries(responseHeaders as Record<string, unknown>);
+  }
+
+  return [];
+}
+
 async function getFastifyApp(): Promise<FastifyInstance> {
   if (cachedFastifyApp) {
     // eslint-disable-next-line no-console
@@ -43,13 +60,68 @@ async function getFastifyApp(): Promise<FastifyInstance> {
   }
 }
 
+export function normalizeLambdaResponseHeaders(
+  responseHeaders: LightMyRequestResponse['headers']
+): {
+  headers: LambdaResponseHeaders;
+  cookies?: string[];
+} {
+  const headers = new Map<string, string>();
+  const cookies: string[] = [];
+
+  for (const [name, value] of getLambdaResponseHeaderEntries(responseHeaders)) {
+    const normalizedName = name.toLowerCase();
+
+    if (normalizedName === 'set-cookie') {
+      const cookieValues = Array.isArray(value) ? value : value == null ? [] : [value];
+      for (const cookieValue of cookieValues) {
+        const normalizedCookie = String(cookieValue).trim();
+        if (normalizedCookie.length > 0) {
+          cookies.push(normalizedCookie);
+        }
+      }
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      const joinedValue = value
+        .map((entry) => String(entry).trim())
+        .filter((entry) => entry.length > 0)
+        .join(', ');
+      if (joinedValue.length > 0) {
+        headers.set(normalizedName, joinedValue);
+      }
+      continue;
+    }
+
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      headers.set(normalizedName, String(value));
+      continue;
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.length > 0) {
+        headers.set(normalizedName, trimmed);
+      }
+    }
+  }
+
+  const normalizedHeaders: LambdaResponseHeaders = Object.fromEntries(headers);
+
+  return cookies.length > 0
+    ? { headers: normalizedHeaders, cookies }
+    : { headers: normalizedHeaders };
+}
+
 export async function handler(
   event: APIGatewayProxyEventV2,
   context: Context
 ): Promise<{
   statusCode: number;
   body: string;
-  headers: Record<string, string | number | boolean>;
+  headers: Record<string, string>;
+  cookies?: string[];
   isBase64Encoded: boolean;
 }> {
   // eslint-disable-next-line no-console
@@ -99,15 +171,7 @@ export async function handler(
     // eslint-disable-next-line no-console, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
     console.log('[handler] Got response', { statusCode: response.statusCode });
 
-    // Convert headers - they might be a Map or an object
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-    const responseHeaders = (
-      response.headers instanceof Map
-        ? Object.fromEntries(response.headers)
-        : typeof response.headers === 'object'
-        ? response.headers
-        : {}
-    ) as Record<string, string | number | boolean>;
+    const responseEnvelope = normalizeLambdaResponseHeaders(response.headers);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -116,7 +180,8 @@ export async function handler(
       statusCode: response.statusCode,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
       body: response.body,
-      headers: responseHeaders,
+      headers: responseEnvelope.headers,
+      ...(responseEnvelope.cookies ? { cookies: responseEnvelope.cookies } : {}),
       isBase64Encoded: false,
     };
 

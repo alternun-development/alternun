@@ -120,7 +120,9 @@ function resolveStageKey(stage: string): keyof BackendApiSettings['stageDomains'
     normalized === 'production' ||
     normalized === 'prod' ||
     normalized === 'api-prod' ||
-    normalized === 'api-production'
+    normalized === 'api-production' ||
+    normalized === 'dashboard-prod' ||
+    normalized === 'dashboard-production'
   ) {
     return 'production';
   }

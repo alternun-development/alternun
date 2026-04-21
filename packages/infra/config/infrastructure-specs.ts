@@ -42,7 +42,7 @@ export const EXPO_INFRA_DEFAULTS = {
 } as const;
 
 export const REDIRECT_INFRA_DEFAULTS = {
-  enableAirsToDev: true,
+  enableAirsToDev: false,
   legacyDevSubdomain: 'dev',
   enableDevToTestnet: true,
   enableRootDomainRedirect: true,
