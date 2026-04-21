@@ -59,7 +59,7 @@ Resources created:
 
 Bucket naming:
 
-- Expo static-site buckets are renamed to stage-scoped `expo-site-assets` names during deploy
+- the Expo static-site `aws:s3/bucketV2:BucketV2` child is renamed to a stage-scoped `expo-web-site` name during deploy
 - shared public asset buckets use stage-scoped `expo-public-assets` names
 - legacy `public-assets` bucket names are still accepted during rollout, but new deploys should converge on the `expo-*` naming
 

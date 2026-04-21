@@ -91,12 +91,12 @@ function createStageScopedBucketName(
   return sanitizeBucketName(`${prefix}-${stage}-${kind}-${domain.replace(/\./g, '-')}`);
 }
 
-export function createExpoSiteBucketName(
+export function createExpoWebSiteBucketName(
   stage: PipelineStage,
   prefix: string,
   domain: string
 ): string {
-  return createStageScopedBucketName(stage, prefix, domain, 'expo-site-assets');
+  return createStageScopedBucketName(stage, prefix, domain, 'expo-web-site');
 }
 
 export function createExpoPublicAssetBucketName(
