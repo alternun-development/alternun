@@ -12,10 +12,10 @@ const {
   incrementDevelopmentBuildVersion,
   incrementDevelopmentSemanticVersion,
   getManagedPackageJsonPaths,
+  getRootPackageJsonPath,
   readRootVersion,
   restoreFileContents,
   stripVersionSuffix,
-  syncSupplementalVersionFiles,
 } = require('./versioning/version-files.cjs');
 
 const VALID_BUMPS = new Set(['patch', 'minor', 'major']);
@@ -509,6 +509,7 @@ function buildReleaseArtifacts(dryRun, env, buildStage, versionBranch) {
 function collectReleaseStatePaths(branchName) {
   return [
     ...new Set([
+      getRootPackageJsonPath(),
       ...getManagedPackageJsonPaths(branchName),
       'version.development.json',
       'version.production.json',
@@ -780,10 +781,6 @@ function performVersionChange(target, options, branchName, productionBranch) {
 
   if (VALID_BUMPS.has(target)) {
     const version = runBranchAwareVersioningRelease(target, branchName, options);
-
-    if (!options.dryRun) {
-      syncSupplementalVersionFiles(version);
-    }
     return version;
   }
 
@@ -799,7 +796,6 @@ function performVersionChange(target, options, branchName, productionBranch) {
     } catch (err) {
       // Ignored
     }
-    syncSupplementalVersionFiles(target);
   }
 
   return options.dryRun ? target : readRootVersion(branchName);
