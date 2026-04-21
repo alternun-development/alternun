@@ -15,7 +15,7 @@ import { readLocalDeploymentConfig } from './config/deployment-config.js';
 import {
   assertExpoPublicAuthEnvironment,
   createAssetBaseUrl,
-  createExpoSiteBucketName,
+  createExpoWebSiteBucketName,
   resolveExpoConfig,
 } from './config/expo.js';
 import { INFRA_CORE_DEFAULTS, PIPELINE_INFRA_DEFAULTS } from './config/infrastructure-specs.js';
@@ -500,7 +500,7 @@ export function createInfrastructure() {
   const dedicatedNonExpoStage =
     identityStackStage || backendApiStackStage || adminSiteStackStage || dashboardStackStage;
   const enableExpoSiteForStage = enableExpoSite && !dedicatedNonExpoStage;
-  const expoSiteBucketName = createExpoSiteBucketName(
+  const expoSiteBucketName = createExpoWebSiteBucketName(
     expoDeploymentStage,
     pipelinePrefix,
     rootDomain
@@ -517,20 +517,20 @@ export function createInfrastructure() {
   }
 
   pulumiRuntime.registerStackTransformation((args) => {
-    if (args.type !== 'aws:s3/bucket:Bucket') {
+    if (args.type !== 'aws:s3/bucketV2:BucketV2') {
       return undefined;
     }
 
     const resourceName = typeof args.name === 'string' ? args.name.toLowerCase() : '';
     const isExpoStaticSiteBucket =
-      resourceName.includes('expoweb') && resourceName.includes('assetsbucket');
+      resourceName.includes('expo-web') && resourceName.includes('assetsbucket');
 
     if (!isExpoStaticSiteBucket) {
       return undefined;
     }
 
     const props = args.props as Record<string, unknown>;
-    if (props.bucket !== undefined || props.access !== 'public') {
+    if (props.bucket !== undefined) {
       return undefined;
     }
 
