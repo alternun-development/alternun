@@ -23,5 +23,14 @@ void test('static site invalidation waits are configurable and default to non-bl
   assert.match(adminSiteSource, /wait: args\.invalidationWait/);
   assert.doesNotMatch(adminSiteSource, /wait:\s*deploymentStage\s*===\s*'production'/);
 
+  assert.match(buildspecSource, /touch \.sst-deploy-succeeded/);
+  assert.match(
+    buildspecSource,
+    /if \[ ! -f \.sst-deploy-succeeded \]; then\n\s+echo "Skipping CloudFront invalidation because deploy did not complete\."/
+  );
+  assert.doesNotMatch(
+    buildspecSource,
+    /Skipping CloudFront invalidation because BUILD phase failed\./
+  );
   assert.match(buildspecSource, /INFRA_STATIC_SITE_INVALIDATION_WAIT: 'false'/);
 });
