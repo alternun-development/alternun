@@ -38,6 +38,12 @@ import {
   Info,
   CheckCircle2,
   X,
+  Wallet,
+  User,
+  Gift,
+  Heart,
+  Target,
+  Sparkles,
   type LucideProps,
 } from 'lucide-react-native';
 
@@ -71,6 +77,12 @@ const ArrowRightIcon = ArrowRight as React.FC<LucideProps>;
 const InfoIcon = Info as React.FC<LucideProps>;
 const CheckCircle2Icon = CheckCircle2 as React.FC<LucideProps>;
 const CloseIcon = X as React.FC<LucideProps>;
+const WalletIcon = Wallet as React.FC<LucideProps>;
+const UserIcon = User as React.FC<LucideProps>;
+const GiftIcon = Gift as React.FC<LucideProps>;
+const HeartIcon = Heart as React.FC<LucideProps>;
+const TargetIcon = Target as React.FC<LucideProps>;
+const SparklesIcon = Sparkles as React.FC<LucideProps>;
 
 const TOKEN_IMAGES: Record<'airs' | 'rbi' | 'atn', ImageSourcePropType> = {
   airs: require('../../assets/images/benefits/airs.png'),
@@ -669,12 +681,14 @@ function AnimatedBullet({
   isActive,
   accentColor,
   isDark,
+  icon: Icon,
 }: {
   text: string;
   index: number;
   isActive: boolean;
   accentColor: string;
   isDark: boolean;
+  icon: React.FC<LucideProps>;
 }): React.JSX.Element {
   const translateX = useRef(new Animated.Value(isActive ? 0 : -14)).current;
   const opacity = useRef(new Animated.Value(isActive ? 1 : 0)).current;
@@ -719,7 +733,7 @@ function AnimatedBullet({
           { transform: [{ scale: dotScale }], backgroundColor: `${accentColor}22` },
         ]}
       >
-        <View style={[styles.stepBulletDotInner, { backgroundColor: accentColor }]} />
+        <Icon size={14} color={accentColor} />
       </Animated.View>
       <Text style={[styles.stepBenefitText, { color: descColor }]}>{text}</Text>
     </Animated.View>
@@ -733,7 +747,7 @@ interface StepCardProps {
   icon: React.FC<LucideProps>;
   title: string;
   description: string;
-  benefits: string[];
+  benefits: Array<{ text: string; icon: React.FC<LucideProps> }>;
   isActive: boolean;
   isCompleted: boolean;
   accentColor: string;
@@ -954,7 +968,8 @@ function StepCard({
           {benefits.map((benefit, idx) => (
             <AnimatedBullet
               key={idx}
-              text={benefit}
+              text={benefit.text}
+              icon={benefit.icon}
               index={idx}
               isActive={isActive}
               accentColor={accentColor}
@@ -996,9 +1011,9 @@ function ComoFuncionaSection({
       title: t('landing.comoFunciona.steps.s1.title'),
       description: t('landing.comoFunciona.steps.s1.description'),
       benefits: [
-        t('landing.comoFunciona.steps.s1.b1'),
-        t('landing.comoFunciona.steps.s1.b2'),
-        t('landing.comoFunciona.steps.s1.b3'),
+        { text: t('landing.comoFunciona.steps.s1.b1'), icon: WalletIcon },
+        { text: t('landing.comoFunciona.steps.s1.b2'), icon: UserIcon },
+        { text: t('landing.comoFunciona.steps.s1.b3'), icon: SparklesIcon },
       ],
     },
     {
@@ -1007,9 +1022,9 @@ function ComoFuncionaSection({
       title: t('landing.comoFunciona.steps.s2.title'),
       description: t('landing.comoFunciona.steps.s2.description'),
       benefits: [
-        t('landing.comoFunciona.steps.s2.b1'),
-        t('landing.comoFunciona.steps.s2.b2'),
-        t('landing.comoFunciona.steps.s2.b3'),
+        { text: t('landing.comoFunciona.steps.s2.b1'), icon: TargetIcon },
+        { text: t('landing.comoFunciona.steps.s2.b2'), icon: CoinsIcon },
+        { text: t('landing.comoFunciona.steps.s2.b3'), icon: HeartIcon },
       ],
     },
     {
@@ -1018,9 +1033,9 @@ function ComoFuncionaSection({
       title: t('landing.comoFunciona.steps.s3.title'),
       description: t('landing.comoFunciona.steps.s3.description'),
       benefits: [
-        t('landing.comoFunciona.steps.s3.b1'),
-        t('landing.comoFunciona.steps.s3.b2'),
-        t('landing.comoFunciona.steps.s3.b3'),
+        { text: t('landing.comoFunciona.steps.s3.b1'), icon: GiftIcon },
+        { text: t('landing.comoFunciona.steps.s3.b2'), icon: StarIcon },
+        { text: t('landing.comoFunciona.steps.s3.b3'), icon: AwardIcon },
       ],
     },
     {
@@ -1029,9 +1044,9 @@ function ComoFuncionaSection({
       title: t('landing.comoFunciona.steps.s4.title'),
       description: t('landing.comoFunciona.steps.s4.description'),
       benefits: [
-        t('landing.comoFunciona.steps.s4.b1'),
-        t('landing.comoFunciona.steps.s4.b2'),
-        t('landing.comoFunciona.steps.s4.b3'),
+        { text: t('landing.comoFunciona.steps.s4.b1'), icon: LeafIcon },
+        { text: t('landing.comoFunciona.steps.s4.b2'), icon: SparklesIcon },
+        { text: t('landing.comoFunciona.steps.s4.b3'), icon: TrendingUpIcon },
       ],
     },
   ];
