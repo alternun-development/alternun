@@ -14,6 +14,9 @@ describe('mobile build script cleanup', () => {
     expect(buildScript).toContain('rm -rf dist .expo');
     expect(buildScript).toContain('rm -rf node_modules/.cache/expo node_modules/.cache/metro');
     expect(buildScript).toMatch(/clear_previous_export_artifacts\(\)[\s\S]*npx expo export -p web/);
+    expect(buildScript).toContain('resolve_expected_release_version()');
+    expect(buildScript).toContain('verify_exported_web_bundle_version()');
+    expect(buildScript).toContain('does not contain expected release version');
     expect(buildScript).not.toContain(devSupabaseKey);
     expect(buildScript).not.toContain(prodSupabaseKey);
   });
