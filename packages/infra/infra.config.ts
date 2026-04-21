@@ -9,12 +9,13 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Input } from '@pulumi/pulumi';
+import { runtime as pulumiRuntime, type Input } from '@pulumi/pulumi';
 import { createExpoSite, createPipeline, resolveDomain } from '@lsts_tech/infra';
 import { readLocalDeploymentConfig } from './config/deployment-config.js';
 import {
   assertExpoPublicAuthEnvironment,
   createAssetBaseUrl,
+  createExpoWebSiteBucketName,
   resolveExpoConfig,
 } from './config/expo.js';
 import { INFRA_CORE_DEFAULTS, PIPELINE_INFRA_DEFAULTS } from './config/infrastructure-specs.js';
@@ -463,6 +464,31 @@ const pipelineSpecs = buildPipelineSpecs({
   pipeline: localConfig.pipeline,
 });
 
+pulumiRuntime.registerStackTransformation((args) => {
+  if (args.type !== 'aws:codepipeline/pipeline:Pipeline') {
+    return undefined;
+  }
+
+  const props = args.props as Record<string, unknown>;
+  const pipelineName = typeof props.name === 'string' ? props.name : '';
+
+  if (!pipelineName.endsWith('-pipeline')) {
+    return undefined;
+  }
+
+  if (props.executionMode !== undefined) {
+    return undefined;
+  }
+
+  return {
+    props: {
+      ...props,
+      executionMode: 'QUEUED',
+    },
+    opts: args.opts,
+  };
+});
+
 export function createInfrastructure() {
   const stage = String($app.stage);
   const dashboardStackStage = isDashboardStackStage(stage);
@@ -474,6 +500,11 @@ export function createInfrastructure() {
   const dedicatedNonExpoStage =
     identityStackStage || backendApiStackStage || adminSiteStackStage || dashboardStackStage;
   const enableExpoSiteForStage = enableExpoSite && !dedicatedNonExpoStage;
+  const expoSiteBucketName = createExpoWebSiteBucketName(
+    expoDeploymentStage,
+    pipelinePrefix,
+    rootDomain
+  );
 
   if (!dedicatedNonExpoStage && !enableExpoSite) {
     throw new Error(
@@ -484,6 +515,33 @@ export function createInfrastructure() {
       ].join(' ')
     );
   }
+
+  pulumiRuntime.registerStackTransformation((args) => {
+    if (args.type !== 'aws:s3/bucketV2:BucketV2') {
+      return undefined;
+    }
+
+    const resourceName = typeof args.name === 'string' ? args.name.toLowerCase() : '';
+    const isExpoStaticSiteBucket =
+      resourceName.includes('expo-web') && resourceName.includes('assetsbucket');
+
+    if (!isExpoStaticSiteBucket) {
+      return undefined;
+    }
+
+    const props = args.props as Record<string, unknown>;
+    if (props.bucket !== undefined) {
+      return undefined;
+    }
+
+    return {
+      props: {
+        ...props,
+        bucket: expoSiteBucketName,
+      },
+      opts: args.opts,
+    };
+  });
 
   const isAdminSiteStageAllowed =
     adminSiteEnabledStages.size === 0
