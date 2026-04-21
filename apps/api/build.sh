@@ -11,7 +11,7 @@ if [ ! -f "${lambda_entry}" ] && [ -f "dist/src/lambda.js" ]; then
   lambda_entry="dist/src/lambda.js"
 fi
 
-VERSION=$(node -e "console.log(require('./package.json').version)")
+VERSION=$(node -e "const { readRootVersion, resolveVersionContextBranch } = require('../../scripts/versioning/version-files.cjs'); process.stdout.write(readRootVersion(resolveVersionContextBranch()));")
 
 esbuild "${lambda_entry}" \
   --bundle \
