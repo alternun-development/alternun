@@ -1,3 +1,9 @@
+## [1.0.200](https://github.com/alternun-development/alternun/compare/v1.0.199-dev.0...v1.0.200) (2026-04-22)
+
+### Bug Fixes
+
+- **repo:** test(api,repo,infra): apply-migrations, run-migration, run-migrations-lambda, connection
+
 ## [1.0.199](https://github.com/alternun-development/alternun/compare/v1.0.198-dev.0...v1.0.199) (2026-04-22)
 
 ### Bug Fixes
