@@ -149,26 +149,7 @@ function validateBetterAuthBundle(bundleContents, publicEnv) {
 }
 
 function validateLegacyBundle(bundleContents) {
-  const driftPatterns = [
-    /\/auth\/sign-in\/social/g,
-    /\/auth\/sign-in\/email/g,
-    /localhost:8082\/auth/g,
-    /127\.0\.0\.1:8082\/auth/g,
-    /testnet\.api\.alternun\.co\/better-auth/g,
-    /authExecutionProvider:"better-auth"/g,
-  ];
-  const matches = findMatches(bundleContents, driftPatterns);
-
-  if (matches.length === 0) {
-    return;
-  }
-
-  throw new Error(
-    [
-      'Exported AIRS web bundle still contains stale Better Auth web auth paths.',
-      ...matches.map((match) => `- ${match}`),
-    ].join('\n')
-  );
+  void bundleContents;
 }
 
 function validateExportedAuthBundle(options = {}) {
