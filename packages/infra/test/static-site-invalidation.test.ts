@@ -28,6 +28,10 @@ void test('static site invalidation waits are configurable and default to non-bl
   assert.doesNotMatch(adminSiteSource, /wait:\s*deploymentStage\s*===\s*'production'/);
 
   assert.match(buildspecSource, /touch \.sst-deploy-succeeded/);
+  assert.match(
+    buildspecSource,
+    /Building Expo web app with: pnpm --filter @alternun\/mobile run build:web/
+  );
   assert.match(buildspecSource, /sync-expo-site-assets\.sh/);
   assert.match(
     buildspecSource,
