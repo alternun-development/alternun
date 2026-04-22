@@ -608,7 +608,8 @@ export function resolveExpoConfig({
     dev: createExpoPublicAssetBucketName('dev', pipelinePrefix, rootDomain),
     mobile: createExpoPublicAssetBucketName('mobile', pipelinePrefix, rootDomain),
   };
-  const siteBucketName = createExpoWebSiteBucketName(deploymentStage, pipelinePrefix, rootDomain);
+  const siteBucketStage: PipelineStage = deploymentStage ?? 'production';
+  const siteBucketName = createExpoWebSiteBucketName(siteBucketStage, pipelinePrefix, rootDomain);
 
   return {
     appPath,
