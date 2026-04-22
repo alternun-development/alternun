@@ -510,7 +510,7 @@ Run only from a clean working tree:
 pnpm --filter @alternun/infra run sync:master-develop
 ```
 
-Current testnet mode uses `master -> develop` as the fast-forward direction.
+Current testnet mode keeps `master` and `develop` independent unless you explicitly run a sync helper.
 
 This script does a fast-forward-only sync:
 
@@ -524,7 +524,8 @@ The legacy promotion helper still exists:
 pnpm --filter @alternun/infra run sync:develop-master
 ```
 
-Use it only when testnet mode is disabled and the traditional `develop -> master` release flow is restored.
+Use it when you explicitly want to fast-forward `master` from `develop`.
+The release promotion flow now stays on `develop`, then opens a PR into `master/main` without requiring a branch switch.
 
 ## Deploy
 

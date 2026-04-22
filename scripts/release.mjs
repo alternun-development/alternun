@@ -38,7 +38,7 @@ function printUsage() {
 Options:
   --no-push       Skip the default direct push for release targets.
   --target-branch Assert the branch being released. Defaults to the current branch.
-  --promote       Push and promote the current release using the active branch policy.
+  --promote       Promote a committed release from develop into master/main.
   --remote <name> Git remote to use. Defaults to origin.
   --no-tag        Do not create an annotated git tag.
   --no-commit     Do not create a release commit.
@@ -206,27 +206,6 @@ function run(command, args, { dryRun = false, env = process.env, capture = false
   }
 
   return result;
-}
-
-function readTestnetMode() {
-  const envPath = path.join(REPO_ROOT, '.env');
-
-  if (!fs.existsSync(envPath)) {
-    return 'on';
-  }
-
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  const match = envContent.match(/^ALTERNUN_TESTNET_MODE=(.+)$/m);
-
-  if (!match) {
-    return 'on';
-  }
-
-  return match[1].replace(/["'\s]/g, '').toLowerCase();
-}
-
-function isTestnetModeEnabled() {
-  return ['on', 'true', '1', 'yes'].includes(readTestnetMode());
 }
 
 function getCurrentBranch() {
@@ -650,33 +629,8 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
 
 function promoteRelease({ version, remote, dryRun, productionBranch }) {
   const currentBranch = getCurrentBranch();
-
-  if (isTestnetModeEnabled()) {
-    if (currentBranch !== productionBranch) {
-      throw new Error(
-        `ALTERNUN_TESTNET_MODE=on requires promotion from ${productionBranch}. Current branch: ${currentBranch}`
-      );
-    }
-
-    run('git', ['push', remote, productionBranch, '--follow-tags'], { dryRun });
-    run('bash', ['packages/infra/scripts/sync-master-develop.sh'], {
-      dryRun,
-      env: {
-        ...process.env,
-        REMOTE: remote,
-        SOURCE_BRANCH: productionBranch,
-        TARGET_BRANCH: 'develop',
-        RETURN_BRANCH: productionBranch,
-      },
-    });
-    console.log(`Promoted v${version}: pushed ${productionBranch} and fast-forwarded develop.`);
-    return;
-  }
-
   if (currentBranch !== 'develop') {
-    throw new Error(
-      `ALTERNUN_TESTNET_MODE=off requires promotion from develop. Current branch: ${currentBranch}`
-    );
+    throw new Error(`Release promotion requires develop. Current branch: ${currentBranch}`);
   }
 
   run('git', ['push', remote, 'develop', '--follow-tags'], { dryRun });
