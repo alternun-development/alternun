@@ -46,8 +46,9 @@ export function buildDashboardPipelineSpecs({
     env.INFRA_BACKEND_API_BETTER_AUTH_SECRET ?? env.BETTER_AUTH_SECRET ?? env.AUTH_SECRET ?? '';
   const betterAuthTrustedOrigins =
     env.INFRA_BACKEND_API_BETTER_AUTH_TRUSTED_ORIGINS ?? env.BETTER_AUTH_TRUSTED_ORIGINS ?? '';
-  const backendDatabaseUrl =
-    env.INFRA_BACKEND_API_DATABASE_URL ?? env.DATABASE_URL ?? env.SUPABASE_DATABASE_URL ?? '';
+  // Backend-aligned stacks must use the dedicated backend DB secret only.
+  // Falling back to the shared DATABASE_URL would silently pin testnet to the wrong project.
+  const backendDatabaseUrl = env.INFRA_BACKEND_API_DATABASE_URL ?? '';
 
   return {
     'dashboard-dev': {
