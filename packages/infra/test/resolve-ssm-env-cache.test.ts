@@ -21,6 +21,6 @@ void test('resolve-ssm-env rejects cached backend-aligned stages missing the bac
   );
   assert.match(
     source,
-    /export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url" "\$\{DATABASE_URL:-\}"/
+    /if stage_requires_backend_database_url; then\n\s+export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url"\n\s+else\n\s+export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url" "\$\{DATABASE_URL:-\}"\n\s+fi/
   );
 });

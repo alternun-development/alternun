@@ -170,12 +170,21 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const repoRoot = path.resolve(process.cwd(), '..', '..');
-const packagePath = path.join(repoRoot, 'apps/mobile/package.json');
-const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-const version = String(packageJson.version ?? '').trim();
+const stage = String(process.env.SST_STAGE ?? process.env.STACK ?? process.env.EXPO_PUBLIC_STAGE ?? process.env.EXPO_PUBLIC_ENV ?? '')
+  .trim()
+  .toLowerCase();
+const versionFile =
+  stage === 'prod' ||
+  stage === 'production' ||
+  stage.includes('production')
+    ? 'version.production.json'
+    : 'version.development.json';
+const versionPath = path.join(repoRoot, versionFile);
+const versionJson = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+const version = String(versionJson.version ?? '').trim();
 
 if (!version) {
-  console.error(`ERROR: ${packagePath} is missing a version.`);
+  console.error(`ERROR: ${versionPath} is missing a version.`);
   process.exit(1);
 }
 

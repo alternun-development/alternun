@@ -6,6 +6,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import type { BetterAuthDevConfig, BetterAuthDevOAuthProxyConfig } from './better-auth-dev.config';
 import { getDatabase } from '../../common/database/connection';
 import * as betterAuthSchema from '../../common/database/better-auth.schema';
+import { sendAuthVerificationEmail } from '../auth-exchange/auth-confirmation.email';
 
 function uniqueStrings(values: Array<string | undefined | null>): string[] {
   const trimmedValues: string[] = [];
@@ -102,6 +103,22 @@ export function createBetterAuthDevAuth(
     emailAndPassword: {
       enabled: true,
       autoSignIn: true,
+      requireEmailVerification: true,
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      async sendVerificationEmail({ user, url, token }, request) {
+        await sendAuthVerificationEmail(
+          {
+            to: user.email,
+            displayName: user.name,
+            confirmationUrl: url,
+            token,
+            locale: request?.headers.get('accept-language') ?? undefined,
+          },
+          process.env
+        );
+      },
     },
     account: {
       storeAccountCookie: true,
