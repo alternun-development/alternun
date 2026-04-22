@@ -10,6 +10,8 @@ void test('dashboard pipeline spec forwards Better Auth runtime env to backend d
 
   assert.match(source, /INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL/);
   assert.match(source, /INFRA_BACKEND_API_DATABASE_URL/);
+  assert.match(source, /AUTHENTIK_SMTP_SECRET_ARN/);
+  assert.match(source, /AIRS_SMTP_SECRET_ARN/);
   assert.doesNotMatch(
     source,
     /env\.INFRA_BACKEND_API_DATABASE_URL\s*\?\?\s*env\.DATABASE_URL\s*\?\?\s*env\.SUPABASE_DATABASE_URL/
