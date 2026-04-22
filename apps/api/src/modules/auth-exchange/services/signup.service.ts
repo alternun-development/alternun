@@ -68,6 +68,35 @@ function deriveSignupName(email: string, providedName?: string): string {
   return email.trim();
 }
 
+function resolveVerificationCallbackUrl(env: NodeJS.ProcessEnv = process.env): string {
+  const explicitUrl = env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI ?? env.AUTHENTIK_REDIRECT_URI;
+  if (explicitUrl?.trim()) {
+    return explicitUrl.trim().replace(/\/+$/, '');
+  }
+
+  const baseUrl =
+    env.EXPO_PUBLIC_BETTER_AUTH_URL ?? env.AUTH_BETTER_AUTH_URL ?? env.BETTER_AUTH_URL;
+  if (baseUrl?.trim()) {
+    try {
+      const url = new URL(baseUrl.trim().replace(/\/+$/, ''));
+      const hostnameParts = url.hostname.split('.');
+      const apiIndex = hostnameParts.indexOf('api');
+      if (apiIndex >= 0) {
+        hostnameParts[apiIndex] = 'airs';
+        url.hostname = hostnameParts.join('.');
+      }
+      url.pathname = '/auth/callback';
+      url.search = '';
+      url.hash = '';
+      return url.toString().replace(/\/+$/, '');
+    } catch {
+      return baseUrl.trim().replace(/\/+$/, '');
+    }
+  }
+
+  return 'https://testnet.airs.alternun.co/auth/callback';
+}
+
 function extractErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
@@ -158,6 +187,7 @@ export class SignupService {
     const name = deriveSignupName(email, request.name);
     const locale = firstNonEmptyTrimmed([request.locale]);
     const authApi = this.authApi ?? resolveBetterAuthSignupApi();
+    const callbackURL = resolveVerificationCallbackUrl(process.env);
 
     try {
       const response = await authApi.signUpEmail({
@@ -165,6 +195,7 @@ export class SignupService {
           name,
           email,
           password,
+          callbackURL,
           ...(locale ? { locale } : {}),
         },
       });

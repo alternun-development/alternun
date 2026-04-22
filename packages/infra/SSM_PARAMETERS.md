@@ -120,7 +120,7 @@ For each variable, resolution order is:
 3. **Local `.env` files** (dev path)
 4. **Hardcoded defaults** — lowest priority
 
-The CI helper intentionally resets the auth contract vars before applying that chain so stage-scoped SSM values win for auth execution and Better Auth routing, then derives the execution provider from the resolved Better Auth URLs.
+The CI helper intentionally resets the auth contract vars before applying that chain so stage-scoped SSM values win for auth execution and Better Auth routing, then derives the execution provider from the resolved Better Auth URLs. Backend-aligned stages resolve `INFRA_BACKEND_API_DATABASE_URL` from the dedicated backend parameter only; they do not inherit the shared `DATABASE_URL` fallback so testnet/dashboard dev cannot drift onto the wrong database by accident.
 
 ## Key Security Considerations
 

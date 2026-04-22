@@ -39,7 +39,7 @@ This flow:
 - updates `package.json` plus `version.production.json`
 - rebuilds the release artifacts in production mode
 - creates the production promotion commit and tag
-- opens a pull request into `master`
+- opens or updates the pull request into `master`
 
 ## Why Two Commands
 
@@ -48,7 +48,7 @@ The repo treats development and production as separate version sources of truth.
 In practice:
 
 - `release:patch` owns `version.development.json`
-- `release:patch:promote` owns `version.production.json` and opens the production PR
+- `release:patch:promote` owns `version.production.json` and opens or updates the production PR
 
 ## Compatibility
 

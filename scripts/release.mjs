@@ -563,6 +563,54 @@ function buildCompareUrl(remoteUrl, base, head) {
   return null;
 }
 
+function findOpenPullRequest({ remote, base, head, dryRun }) {
+  if (dryRun) {
+    return null;
+  }
+
+  const probe = spawnSync('gh', ['--version'], {
+    cwd: REPO_ROOT,
+    stdio: 'ignore',
+  });
+
+  if (probe.status !== 0) {
+    return null;
+  }
+
+  const result = spawnSync(
+    'gh',
+    ['pr', 'list', '--base', base, '--head', head, '--state', 'open', '--json', 'number,url'],
+    {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+      stdio: 'pipe',
+    }
+  );
+
+  if ((result.status ?? 1) !== 0) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(result.stdout || '[]');
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return null;
+    }
+
+    const first = parsed[0];
+    if (!first || typeof first.number !== 'number') {
+      return null;
+    }
+
+    return {
+      number: first.number,
+      url: typeof first.url === 'string' ? first.url : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
   const remoteUrl = run('git', ['remote', 'get-url', remote], { capture: true }).stdout.trim();
   const compareUrl = buildCompareUrl(remoteUrl, base, head);
@@ -575,11 +623,18 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
   ].join('\n');
 
   if (dryRun) {
+    console.log(`[dry-run] gh pr list --base ${base} --head ${head} --state open --json number,url`);
+    console.log(`[dry-run] gh pr edit <number> --title \"${title}\" --body <release body>`);
     console.log(`[dry-run] gh pr create --base ${base} --head ${head} --title \"${title}\"`);
     if (compareUrl) {
       console.log(`[dry-run] PR URL: ${compareUrl}`);
     }
     return;
+  }
+
+  const existingPullRequest = findOpenPullRequest({ remote, base, head, dryRun });
+  if (!existingPullRequest && compareUrl) {
+    // no-op, keep compareUrl available for fallback logging
   }
 
   const probe = spawnSync('gh', ['--version'], {
@@ -597,6 +652,45 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
     return;
   }
 
+  if (existingPullRequest) {
+    const result = spawnSync(
+      'gh',
+      [
+        'pr',
+        'edit',
+        String(existingPullRequest.number),
+        '--title',
+        title,
+        '--body',
+        body,
+      ],
+      {
+        cwd: REPO_ROOT,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      }
+    );
+
+    if ((result.status ?? 1) === 0) {
+      const output = result.stdout.trim();
+      if (output.length > 0) {
+        console.log(output);
+      }
+      console.log(
+        `Updated existing pull request #${existingPullRequest.number} for ${base} <- ${head}.`
+      );
+      return;
+    }
+
+    if (result.stderr) {
+      process.stderr.write(result.stderr);
+    }
+
+    console.warn(
+      `gh pr edit failed for #${existingPullRequest.number}; falling back to a new PR if needed.`
+    );
+  }
+
   const result = spawnSync(
     'gh',
     ['pr', 'create', '--base', base, '--head', head, '--title', title, '--body', body],
@@ -612,6 +706,7 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
     if (output.length > 0) {
       console.log(output);
     }
+    console.log(`Created pull request for ${base} <- ${head}.`);
     return;
   }
 

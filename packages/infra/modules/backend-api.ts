@@ -160,8 +160,15 @@ function isTestnetStage(stage: string | undefined): boolean {
 const TESTNET_BETTER_AUTH_URL = 'https://testnet.api.alternun.co';
 
 function resolveBackendDatabaseUrl(env: NodeJS.ProcessEnv): string {
+  const preferDedicatedBackendDatabase =
+    env.ALTERNUN_TESTNET_MODE === 'on' || isTestnetStage(env.SST_STAGE ?? env.STACK);
+
+  const databaseCandidates = preferDedicatedBackendDatabase
+    ? [env.INFRA_BACKEND_API_DATABASE_URL]
+    : [env.INFRA_BACKEND_API_DATABASE_URL, env.DATABASE_URL, env.SUPABASE_DATABASE_URL];
+
   return (
-    [env.INFRA_BACKEND_API_DATABASE_URL, env.DATABASE_URL, env.SUPABASE_DATABASE_URL]
+    databaseCandidates
       .map((value) => value?.trim())
       .find((value): value is string => Boolean(value)) ?? ''
   );

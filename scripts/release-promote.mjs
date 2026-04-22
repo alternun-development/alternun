@@ -12,7 +12,8 @@ function printUsage() {
   pnpm release:patch:promote [options]
 
 This is a thin wrapper around \`node scripts/release.mjs --promote\`.
-It promotes the current develop release to the production branch and opens the PR.
+It promotes the current develop release to the production branch and opens or updates
+the develop -> master/main PR.
 `);
 }
 
