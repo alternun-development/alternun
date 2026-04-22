@@ -20,9 +20,9 @@ Set AWS credentials and region for the IAM user with deploy permissions.
 
 Current testnet mode:
 
-- `master` is the working branch
-- `develop` is the mirrored branch for the dev/testnet pipeline
-- every push to `master`/`main` is mirrored into `develop` by GitHub Actions
+- `master` owns production releases
+- `develop` owns dev/testnet releases
+- the branches are independent unless you explicitly run the sync helper
 
 Manual sync remains available when needed.
 
