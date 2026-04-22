@@ -645,8 +645,11 @@ export function createInfrastructure() {
   const backendApiInfrastructure = backendApiEnabledForStage
     ? deployBackendApiInfrastructure({
         appName,
+        authentikSmtpSecretArn:
+          process.env.AUTHENTIK_SMTP_SECRET_ARN ??
+          process.env.AIRS_SMTP_SECRET_ARN ??
+          identityInfrastructure?.secrets.smtpCredentials.arn,
         authentikJwtSigningKey: identityInfrastructure?.secrets.jwtSigningKey.value,
-        authentikSmtpSecretArn: identityInfrastructure?.secrets.smtpCredentials.arn,
         env: process.env,
         hostedZoneId: process.env.INFRA_ROUTE53_HOSTED_ZONE_ID,
         rootDomain,
