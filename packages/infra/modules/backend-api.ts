@@ -488,7 +488,10 @@ export function deployBackendApiInfrastructure(
             ? { SUPABASE_SERVICE_ROLE_KEY: args.env.SUPABASE_SERVICE_ROLE_KEY }
             : {}),
           ...(args.authentikSmtpSecretArn
-            ? { AUTHENTIK_SMTP_SECRET_ARN: args.authentikSmtpSecretArn }
+            ? {
+                AUTHENTIK_SMTP_SECRET_ARN: args.authentikSmtpSecretArn,
+                AIRS_SMTP_SECRET_ARN: args.authentikSmtpSecretArn,
+              }
             : {}),
           ...(args.settings.environment.AUTH_BETTER_AUTH_URL
             ? {
