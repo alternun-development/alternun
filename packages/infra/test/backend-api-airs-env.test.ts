@@ -11,4 +11,5 @@ void test('backend API module forwards AIRS onboarding env into the Lambda confi
   assert.match(source, /SUPABASE_URL/);
   assert.match(source, /SUPABASE_ANON_KEY/);
   assert.match(source, /AUTHENTIK_SMTP_SECRET_ARN/);
+  assert.match(source, /AIRS_SMTP_SECRET_ARN/);
 });

@@ -60,6 +60,7 @@ import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import LoadingButton from '../common/LoadingButton';
 import { AuthFooter } from './AuthFooter';
 import { getAuthErrorMessage, getSocialSignInErrorMessage } from './authErrorMessages';
+import { resolveConfirmationEmail, shouldTransitionToEmailConfirmation } from './authSignInFlow';
 const RESEND_COOLDOWN_SECONDS = 45;
 const SOCIAL_REDIRECT_TIMEOUT_MS = 15000; // 15 seconds
 
@@ -99,6 +100,7 @@ interface SignUpResult {
   needsEmailVerification: boolean;
   emailAlreadyRegistered?: boolean;
   confirmationEmailSent?: boolean;
+  session?: unknown;
   error?: string;
 }
 
@@ -200,7 +202,10 @@ export default function AuthSignInScreen({
 
   const googleProvider = resolvePrimaryOAuthProvider();
 
-  const rawEffectiveError = localError ?? (submitMode !== null ? error : null);
+  const rawEffectiveError =
+    authStep === 'emailConfirmation' && submitMode === 'resend'
+      ? null
+      : localError ?? (submitMode !== null ? error : null);
   const effectiveError = rawEffectiveError
     ? getAuthErrorMessage(rawEffectiveError, t('authModal.errors.authenticationFailed'))
     : null;
@@ -217,6 +222,7 @@ export default function AuthSignInScreen({
     ? AIRS_LOGO_LIGHT
     : AIRS_LOGO_DARK;
   const hasEmailInputError = requiredFields.email || invalidEmail;
+  const hasConfirmationEmail = Boolean(resolveConfirmationEmail(confirmationEmail));
   const dismissToast = useCallback((id: string): void => {
     setToasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
@@ -582,12 +588,11 @@ export default function AuthSignInScreen({
         return;
       }
 
-      if (result.needsEmailVerification) {
+      if (shouldTransitionToEmailConfirmation(result)) {
         setConfirmationEmail(normalizedEmail);
         setConfirmationCode('');
         setConfirmationCodeRequired(false);
         if (result.emailAlreadyRegistered) {
-          setLocalError(t('authModal.errors.accountExistsSignInOrResend'));
           setNotice(t('authModal.notices.requestNewConfirmation'));
           setResendCooldown(0);
         } else {
@@ -625,18 +630,14 @@ export default function AuthSignInScreen({
       return;
     }
 
-    const emailCandidate = (confirmationEmail ?? email).trim();
+    const emailCandidate = resolveConfirmationEmail(confirmationEmail);
     if (!emailCandidate) {
       setLocalError(t('authModal.errors.enterEmailFirst'));
       return;
     }
 
-    const normalizedEmail = normalizeEmailOrSetError(emailCandidate);
-    if (!normalizedEmail) {
-      return;
-    }
-
-    if (!client || typeof client.resendEmailConfirmation !== 'function') {
+    const emailAuthClient = client as EmailAuthCapableClient | null;
+    if (!emailAuthClient || typeof emailAuthClient.resendEmailConfirmation !== 'function') {
       const msg = 'Resend not available. Check your email inbox or spam folder.';
       setLocalError(msg);
       pushToast(t('authModal.errors.authenticationFailed'), msg);
@@ -645,16 +646,15 @@ export default function AuthSignInScreen({
 
     setSubmitMode('resend');
     try {
-      const emailAuthClient = client as unknown as EmailAuthCapableClient;
       await Promise.race<void>([
-        emailAuthClient.resendEmailConfirmation(normalizedEmail),
+        emailAuthClient.resendEmailConfirmation(emailCandidate),
         new Promise<void>((_, reject) =>
           setTimeout(() => reject(new Error('Request timeout')), 15000)
         ),
       ]);
 
-      setConfirmationEmail(normalizedEmail);
-      setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail }));
+      setConfirmationEmail(emailCandidate);
+      setNotice(t('authModal.notices.confirmationSent', { email: emailCandidate }));
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
       setLocalError(null);
     } catch (authError) {
@@ -697,7 +697,8 @@ export default function AuthSignInScreen({
         return;
       }
 
-      if (!client || typeof client.verifyEmailConfirmationCode !== 'function') {
+      const emailAuthClient = client as EmailAuthCapableClient | null;
+      if (!emailAuthClient || typeof emailAuthClient.verifyEmailConfirmationCode !== 'function') {
         const msg =
           'Email verification not available. Please check your email for confirmation link.';
         setLocalError(msg);
@@ -706,7 +707,6 @@ export default function AuthSignInScreen({
         return;
       }
 
-      const emailAuthClient = client as unknown as EmailAuthCapableClient;
       await emailAuthClient.verifyEmailConfirmationCode(normalizedEmail, normalizedCode);
       setConfirmationEmail(normalizedEmail);
       setResendCooldown(0);
@@ -1729,11 +1729,15 @@ export default function AuthSignInScreen({
                   <TouchableOpacity
                     activeOpacity={0.8}
                     onPress={() => {
-                      if (!isBusy && resendCooldown === 0) {
+                      if (!isBusy && resendCooldown === 0 && hasConfirmationEmail) {
                         void handleResendConfirmation();
                       }
                     }}
-                    style={[styles.linkButton, resendCooldown > 0 && styles.buttonDisabled]}
+                    disabled={isBusy || resendCooldown > 0 || !hasConfirmationEmail}
+                    style={[
+                      styles.linkButton,
+                      (resendCooldown > 0 || !hasConfirmationEmail) && styles.buttonDisabled,
+                    ]}
                   >
                     {submitMode === 'resend' ? (
                       <ActivityIndicator color={p.accent} size='small' />

@@ -46,8 +46,13 @@ export function buildDashboardPipelineSpecs({
     env.INFRA_BACKEND_API_BETTER_AUTH_SECRET ?? env.BETTER_AUTH_SECRET ?? env.AUTH_SECRET ?? '';
   const betterAuthTrustedOrigins =
     env.INFRA_BACKEND_API_BETTER_AUTH_TRUSTED_ORIGINS ?? env.BETTER_AUTH_TRUSTED_ORIGINS ?? '';
-  const backendDatabaseUrl =
-    env.INFRA_BACKEND_API_DATABASE_URL ?? env.DATABASE_URL ?? env.SUPABASE_DATABASE_URL ?? '';
+  // Backend-aligned stacks must use the dedicated backend DB secret only.
+  // Falling back to the shared DATABASE_URL would silently pin testnet to the wrong project.
+  const backendDatabaseUrl = env.INFRA_BACKEND_API_DATABASE_URL ?? '';
+  const smtpSecretArn =
+    env.AUTHENTIK_SMTP_SECRET_ARN ??
+    env.AIRS_SMTP_SECRET_ARN ??
+    'alternun-infra/identity/smtp-credentials';
 
   return {
     'dashboard-dev': {
@@ -71,6 +76,8 @@ export function buildDashboardPipelineSpecs({
         INFRA_BACKEND_API_ENABLED_STAGES: 'dev',
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlDev,
         INFRA_BACKEND_API_DATABASE_URL: backendDatabaseUrl,
+        AUTHENTIK_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-dev`,
+        AIRS_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-dev`,
         AUTH_BETTER_AUTH_URL: betterAuthUrlDev,
         BETTER_AUTH_URL: betterAuthUrlDev,
         ALTERNUN_TESTNET_MODE: 'on',
@@ -106,6 +113,8 @@ export function buildDashboardPipelineSpecs({
         INFRA_BACKEND_API_ENABLED_STAGES: 'production',
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlProd,
         INFRA_BACKEND_API_DATABASE_URL: backendDatabaseUrl,
+        AUTHENTIK_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-prod`,
+        AIRS_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-prod`,
         INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
         ...(discordAuthClientId
           ? { INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID: discordAuthClientId }
