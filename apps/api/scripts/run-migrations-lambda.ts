@@ -17,6 +17,8 @@ interface Migration {
   path: string;
 }
 
+const skippedMigrationVersions = new Set(['20260417_0009', '20260417_0010']);
+
 async function ensureMigrationsTable(client: PoolClient): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const tableExists = await client
@@ -59,20 +61,22 @@ function getMigrationFiles(): Migration[] {
       .filter((file) => file.endsWith('.sql'))
       .sort();
 
-    return files.map((file) => {
-      const match = file.match(/^(\d+)_(.+)\.sql$/);
-      if (!match) {
-        throw new Error(
-          `Invalid migration filename: ${file}. Use format: YYYYMMDD_NNNN_description.sql`
-        );
-      }
-      const [, version, name] = match;
-      return {
-        name: name ?? 'unknown',
-        version: version ?? '0',
-        path: resolve(migrationsDir, file),
-      };
-    });
+    return files
+      .map((file) => {
+        const match = file.match(/^(\d+_\d+)_(.+)\.sql$/);
+        if (!match) {
+          throw new Error(
+            `Invalid migration filename: ${file}. Use format: YYYYMMDD_NNNN_description.sql`
+          );
+        }
+        const [, version, name] = match;
+        return {
+          name: name ?? 'unknown',
+          version: version ?? '0',
+          path: resolve(migrationsDir, file),
+        };
+      })
+      .filter((migration) => !skippedMigrationVersions.has(migration.version));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return [];
