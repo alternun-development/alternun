@@ -203,7 +203,7 @@ Enable/configure through env or local config:
 - `INFRA_BACKEND_API_AUTHENTIK_JWKS_URL`
 - `INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED` (set `true` to make `/auth/exchange` fail closed when issuer-owned minting is unavailable)
 - `INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY` (preferred: sourced from the identity stack's JWT secret output; the `sst-deploy.sh` hydration remains a compatibility fallback)
-- `INFRA_BACKEND_API_DATABASE_URL` (preferred backend Lambda DB URL; the backend deploy also falls back to the shared `DATABASE_URL` / `SUPABASE_DATABASE_URL` stage env when this dedicated alias is absent)
+- `INFRA_BACKEND_API_DATABASE_URL` (preferred backend Lambda DB URL; backend-aligned stages do not inherit the shared `DATABASE_URL` / `SUPABASE_DATABASE_URL` fallback so testnet cannot silently point at the wrong Supabase project)
 
 Important behavior:
 
@@ -510,7 +510,7 @@ Run only from a clean working tree:
 pnpm --filter @alternun/infra run sync:master-develop
 ```
 
-Current testnet mode keeps `master` and `develop` independent by default.
+Current testnet mode keeps `master` and `develop` independent unless you explicitly run a sync helper.
 
 The helper does a fast-forward-only sync when you explicitly run it:
 
@@ -527,7 +527,9 @@ The legacy promotion helper still exists:
 pnpm --filter @alternun/infra run sync:develop-master
 ```
 
-Use it only when testnet mode is disabled and the traditional `develop -> master` release flow is restored.
+Use it when you explicitly want to fast-forward `master` from `develop`.
+The release promotion flow now stays on `develop`, then opens a PR into `master/main` without requiring a branch switch.
+For patch releases, `develop` is the only working branch you need to touch.
 
 ## Deploy
 

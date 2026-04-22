@@ -1,3 +1,31 @@
+## [1.0.196](https://github.com/alternun-development/alternun/compare/v1.0.196-dev.0...v1.0.196) (2026-04-22)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): relax legacy export validation
+- **repo:** fix(release): promote develop and update open pr
+
+### Bug Fixes
+
+- **mobile:** relax legacy export validation ([9b8ccea](https://github.com/alternun-development/alternun/commit/9b8cceaa38076e8855a44dffb4bf3edd4607f4d2))
+- **release:** promote develop and update open pr ([e59f695](https://github.com/alternun-development/alternun/commit/e59f695f40b4abd6476baa550dedde639647011d))
+
+## [1.0.196](https://github.com/alternun-development/alternun/compare/v1.0.195...v1.0.196) (2026-04-22)
+
+### Bug Fixes
+
+- **repo:** fix(repo): keep master sync manual on develop
+- **repo:** fix(mobile): validate bundle version from package manifest
+- **repo:** docs: clarify release promotion starts from develop
+- **repo:** refactor: keep release promotion on develop
+- **repo:** chore: release v1.0.195
+
+### Bug Fixes
+
+- **api:** bootstrap legacy migrations on dev ([4376520](https://github.com/alternun-development/alternun/commit/43765200efc48d0893741e49b0e313b087996c2b))
+- **mobile:** validate bundle version from package manifest ([13ab2e6](https://github.com/alternun-development/alternun/commit/13ab2e6b0f328c675f9d69d900955b07041bfcd3))
+- **repo:** keep master sync manual on develop ([c1a54ac](https://github.com/alternun-development/alternun/commit/c1a54ac8cf2c7dbc6d08c7c6c5fb34fa233b36c9))
+
 ## [1.0.195](https://github.com/alternun-development/alternun/compare/v1.0.194-dev.0...v1.0.195) (2026-04-22)
 
 ### Bug Fixes

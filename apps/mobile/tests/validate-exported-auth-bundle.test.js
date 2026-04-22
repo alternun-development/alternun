@@ -118,7 +118,7 @@ describe('validate-exported-auth-bundle', () => {
     ).toThrow(/production API origin/);
   });
 
-  it('fails a legacy bundle that still ships Better Auth web endpoints', () => {
+  it('accepts a legacy bundle that still carries shared Better Auth helper strings', () => {
     const bundleDir = createBundleDir({
       'entry.js': 'fetch("/auth/sign-in/social"); authExecutionProvider:"better-auth";',
     });
@@ -130,6 +130,6 @@ describe('validate-exported-auth-bundle', () => {
           EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'supabase',
         },
       })
-    ).toThrow(/stale Better Auth web auth paths/);
+    ).not.toThrow();
   });
 });

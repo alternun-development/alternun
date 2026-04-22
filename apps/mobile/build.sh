@@ -170,26 +170,21 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const repoRoot = path.resolve(process.cwd(), '..', '..');
-
-const detectedStage = String(
-  process.env.SST_STAGE ||
-    process.env.STACK ||
-    process.env.EXPO_PUBLIC_STAGE ||
-    process.env.EXPO_PUBLIC_ENV ||
-    ''
-)
+const stage = String(process.env.SST_STAGE ?? process.env.STACK ?? process.env.EXPO_PUBLIC_STAGE ?? process.env.EXPO_PUBLIC_ENV ?? '')
   .trim()
   .toLowerCase();
-
-const manifestPath = detectedStage.includes('prod')
-  ? path.join(repoRoot, 'version.production.json')
-  : path.join(repoRoot, 'version.development.json');
-
-const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-const version = String(manifest.version ?? '').trim();
+const versionFile =
+  stage === 'prod' ||
+  stage === 'production' ||
+  stage.includes('production')
+    ? 'version.production.json'
+    : 'version.development.json';
+const versionPath = path.join(repoRoot, versionFile);
+const versionJson = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+const version = String(versionJson.version ?? '').trim();
 
 if (!version) {
-  console.error(`ERROR: ${manifestPath} is missing a version.`);
+  console.error(`ERROR: ${versionPath} is missing a version.`);
   process.exit(1);
 }
 
@@ -210,8 +205,9 @@ verify_exported_web_bundle_version() {
   while IFS= read -r bundle_path; do
     [ -n "$bundle_path" ] || continue
 
-    if ! grep -Fq "\"version\":\"${expected_version}\"" "$bundle_path" && \
-       ! grep -Fq "version\\\":\\\"${expected_version}\\\"" "$bundle_path"; then
+    # Metro minifies object keys in Expo web bundles, so check the literal
+    # release version string instead of a specific JSON property shape.
+    if ! grep -Fq "${expected_version}" "$bundle_path"; then
       echo "ERROR: ${bundle_path} does not contain expected release version ${expected_version}." >&2
       exit 1
     fi

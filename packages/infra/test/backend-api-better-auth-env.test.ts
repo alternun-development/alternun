@@ -10,6 +10,8 @@ void test('backend API module forwards Better Auth runtime env into the Lambda c
 
   assert.match(source, /AUTH_BETTER_AUTH_URL/);
   assert.match(source, /resolveBackendDatabaseUrl/);
+  assert.match(source, /preferDedicatedBackendDatabase/);
+  assert.match(source, /isTestnetStage\(env\.SST_STAGE \?\? env\.STACK\)/);
   assert.match(source, /INFRA_BACKEND_API_DATABASE_URL/);
   assert.match(source, /DATABASE_URL/);
   assert.match(source, /SUPABASE_DATABASE_URL/);

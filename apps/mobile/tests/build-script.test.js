@@ -17,6 +17,9 @@ describe('mobile build script cleanup', () => {
     expect(buildScript).toContain('resolve_expected_release_version()');
     expect(buildScript).toContain('verify_exported_web_bundle_version()');
     expect(buildScript).toContain('does not contain expected release version');
+    expect(buildScript).toContain('grep -Fq "${expected_version}" "$bundle_path"');
+    expect(buildScript).toContain('version.development.json');
+    expect(buildScript).toContain('version.production.json');
     expect(buildScript).not.toContain(devSupabaseKey);
     expect(buildScript).not.toContain(prodSupabaseKey);
   });
