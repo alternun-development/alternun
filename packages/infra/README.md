@@ -526,6 +526,7 @@ pnpm --filter @alternun/infra run sync:develop-master
 
 Use it when you explicitly want to fast-forward `master` from `develop`.
 The release promotion flow now stays on `develop`, then opens a PR into `master/main` without requiring a branch switch.
+For patch releases, `develop` is the only working branch you need to touch.
 
 ## Deploy
 
