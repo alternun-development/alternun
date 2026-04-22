@@ -659,17 +659,7 @@ function promoteRelease({ version, remote, dryRun, productionBranch }) {
     }
 
     run('git', ['push', remote, productionBranch, '--follow-tags'], { dryRun });
-    run('bash', ['packages/infra/scripts/sync-master-develop.sh'], {
-      dryRun,
-      env: {
-        ...process.env,
-        REMOTE: remote,
-        SOURCE_BRANCH: productionBranch,
-        TARGET_BRANCH: 'develop',
-        RETURN_BRANCH: productionBranch,
-      },
-    });
-    console.log(`Promoted v${version}: pushed ${productionBranch} and fast-forwarded develop.`);
+    console.log(`Promoted v${version}: pushed ${productionBranch}.`);
     return;
   }
 

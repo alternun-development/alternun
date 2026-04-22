@@ -23,7 +23,7 @@ jobs:
           case "$mode" in
             on|ON|true|TRUE|1|yes|YES)
               echo "✅ Testnet mode enabled: direct pushes to master/main are allowed."
-              echo "🔄 master/main will be mirrored into develop by workflow."
+              echo "ℹ️ master/main no longer auto-mirrors into develop; use the sync workflow manually when needed."
               exit 0
               ;;
           esac
