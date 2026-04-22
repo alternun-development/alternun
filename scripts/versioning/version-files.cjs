@@ -124,6 +124,101 @@ function stripVersionSuffix(version) {
   return match ? match[1] : version;
 }
 
+function parseReleaseVersion(version) {
+  if (typeof version !== 'string' || version.length === 0) {
+    return null;
+  }
+
+  const match = version.match(/^(\d+)\.(\d+)\.(\d+)(?:-dev\.(\d+))?$/);
+  if (!match) {
+    return null;
+  }
+
+  return {
+    major: Number.parseInt(match[1], 10),
+    minor: Number.parseInt(match[2], 10),
+    patch: Number.parseInt(match[3], 10),
+    isDevelopment: typeof match[4] === 'string',
+    build: typeof match[4] === 'string' ? Number.parseInt(match[4], 10) : null,
+  };
+}
+
+function compareReleaseVersions(leftVersion, rightVersion) {
+  const left = parseReleaseVersion(leftVersion);
+  const right = parseReleaseVersion(rightVersion);
+
+  if (left === null || right === null) {
+    throw new Error(
+      `Unable to compare release versions "${leftVersion}" and "${rightVersion}".`
+    );
+  }
+
+  if (left.major !== right.major) {
+    return left.major > right.major ? 1 : -1;
+  }
+
+  if (left.minor !== right.minor) {
+    return left.minor > right.minor ? 1 : -1;
+  }
+
+  if (left.patch !== right.patch) {
+    return left.patch > right.patch ? 1 : -1;
+  }
+
+  if (left.isDevelopment !== right.isDevelopment) {
+    return left.isDevelopment ? -1 : 1;
+  }
+
+  if (!left.isDevelopment && !right.isDevelopment) {
+    return 0;
+  }
+
+  const leftBuild = left.build ?? 0;
+  const rightBuild = right.build ?? 0;
+
+  if (leftBuild !== rightBuild) {
+    return leftBuild > rightBuild ? 1 : -1;
+  }
+
+  return 0;
+}
+
+function compareManifestVersions(existingVersion, nextVersion, environment) {
+  const existing = parseReleaseVersion(existingVersion);
+  const next = parseReleaseVersion(nextVersion);
+
+  if (existing === null || next === null) {
+    throw new Error(
+      `Unable to compare manifest versions "${existingVersion}" and "${nextVersion}".`
+    );
+  }
+
+  if (existing.major !== next.major) {
+    return next.major > existing.major ? 1 : -1;
+  }
+
+  if (existing.minor !== next.minor) {
+    return next.minor > existing.minor ? 1 : -1;
+  }
+
+  if (existing.patch !== next.patch) {
+    return next.patch > existing.patch ? 1 : -1;
+  }
+
+  if (environment === 'production') {
+    return 0;
+  }
+
+  const existingBuild = existing.isDevelopment ? existing.build ?? 0 : 0;
+  const nextBuild = next.isDevelopment ? next.build ?? 0 : 0;
+
+  if (existingBuild !== nextBuild) {
+    return nextBuild > existingBuild ? 1 : -1;
+  }
+
+  return 0;
+}
+
 function parseSemanticVersion(version) {
   if (typeof version !== 'string' || version.length === 0) {
     return null;
@@ -283,6 +378,14 @@ function buildVersionManifest({
   const existingLastDeployment = normalizeDeploymentRecord(existing.lastDeployment);
   const manifestVersion = normalizeVersion ? stripVersionSuffix(sourceVersion) : sourceVersion;
   const sourceBuild = extractBuildNumber(sourceVersion);
+  const existingVersion = typeof existing.version === 'string' ? existing.version : null;
+
+  if (existingVersion && compareManifestVersions(existingVersion, manifestVersion, environment) < 0) {
+    throw new Error(
+      `Refusing to roll back ${environment} manifest from ${existingVersion} to ${manifestVersion}.`
+    );
+  }
+
   const sameVersion = typeof existing.version === 'string' && existing.version === manifestVersion;
   const resolvedBuild =
     Number.isInteger(build) && build >= 0
@@ -957,10 +1060,12 @@ module.exports = {
   incrementDevelopmentBuildVersion,
   incrementDevelopmentSemanticVersion,
   incrementSemanticVersion,
+  compareReleaseVersions,
   readRootVersion,
   readVersionManifest,
   readVersioningConfig,
   parseSemanticVersion,
+  parseReleaseVersion,
   stripVersionSuffix,
   resolveVersionContextBranch,
   setRootVersion,
