@@ -232,6 +232,7 @@ const devToTestnetCertArn = expoConfig.redirects.devToTestnetCertArn;
 const enableRootDomainRedirect = expoConfig.redirects.enableRootDomainRedirect;
 const rootDomainRedirectTarget = expoConfig.redirects.rootDomainRedirectTarget;
 const rootDomainRedirectCertArn = expoConfig.redirects.rootDomainRedirectCertArn;
+const expoSiteBucketName = expoConfig.siteBucketName;
 const assetBucketNames = expoConfig.assetBucketNames;
 
 const commonBuildEnv = {
@@ -338,6 +339,7 @@ const commonBuildEnv = {
   INFRA_EXPO_CERT_ARN_MOBILE: expoCerts.mobile ?? '',
   INFRA_EXPO_BUILD_COMMAND: expoBuildCommand,
   INFRA_EXPO_BUILD_OUTPUT: expoBuildOutput,
+  INFRA_EXPO_SITE_BUCKET_NAME: expoSiteBucketName,
   INFRA_ENABLE_EXPO_SITE: String(enableExpoSite),
   INFRA_REQUIRE_EXPO_PUBLIC_AUTH: String(requireExpoPublicAuthEnv),
   INFRA_ENABLE_ADMIN_SITE: String(adminSiteSettings.enabled),

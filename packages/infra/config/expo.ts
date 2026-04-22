@@ -59,6 +59,7 @@ export interface ResolvedExpoConfig {
     rootDomainRedirectTarget: string;
     rootDomainRedirectCertArn?: string;
   };
+  siteBucketName: string;
   assetBucketNames: Record<PipelineStage, string>;
 }
 
@@ -607,6 +608,8 @@ export function resolveExpoConfig({
     dev: createExpoPublicAssetBucketName('dev', pipelinePrefix, rootDomain),
     mobile: createExpoPublicAssetBucketName('mobile', pipelinePrefix, rootDomain),
   };
+  const siteBucketStage: PipelineStage = deploymentStage ?? 'production';
+  const siteBucketName = createExpoWebSiteBucketName(siteBucketStage, pipelinePrefix, rootDomain);
 
   return {
     appPath,
@@ -621,6 +624,7 @@ export function resolveExpoConfig({
     enableExpoSite,
     publicEnv,
     redirects,
+    siteBucketName,
     assetBucketNames,
   };
 }
