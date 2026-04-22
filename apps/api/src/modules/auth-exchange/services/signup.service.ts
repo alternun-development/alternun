@@ -200,16 +200,18 @@ export class SignupService {
         },
       });
 
-      const token = typeof response.token === 'string' ? response.token : null;
-      const accessToken = token;
+      const isEmailVerified = Boolean(response.user?.emailVerified);
+      const token = isEmailVerified && typeof response.token === 'string' ? response.token : null;
+      const accessToken = isEmailVerified ? token : null;
       const user = normalizeBetterAuthUser(response.user);
-      const needsEmailVerification = !accessToken;
+      const needsEmailVerification = !isEmailVerified;
 
       this.logger.debug('Better Auth signup completed', {
         email,
         name,
         needsEmailVerification,
         hasToken: Boolean(accessToken),
+        emailVerified: isEmailVerified,
       });
 
       return {

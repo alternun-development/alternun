@@ -230,6 +230,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === 'object');
 }
 
+function isVerifiedEmailSignup(result: unknown): boolean {
+  if (!isRecord(result)) {
+    return false;
+  }
+
+  const user = result.user;
+  if (!isRecord(user)) {
+    return false;
+  }
+
+  return user.emailVerified === true;
+}
+
+function isEmailVerificationPendingResult(result: AuthExecutionResult): boolean {
+  return (
+    result.needsEmailVerification === true ||
+    result.confirmationEmailSent === true ||
+    result.externalIdentity?.emailVerified === false
+  );
+}
+
 function normalizeMaybeDate(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return value > 1e12 ? value : value * 1000;
@@ -441,10 +462,35 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       const redirectUrl = extractRedirectTarget(result);
       const normalizedSession =
         provider !== 'email' && redirectUrl ? null : normalizeSession(result, provider);
+      const needsEmailVerification =
+        provider === 'email'
+          ? typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
+            ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
+            : normalizedSession?.externalIdentity?.emailVerified === false
+          : undefined;
+      const confirmationEmailSent =
+        provider === 'email'
+          ? typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
+            ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
+            : normalizedSession?.externalIdentity?.emailVerified === false
+          : undefined;
+      const emailAlreadyRegistered =
+        provider === 'email'
+          ? typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
+            ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
+            : undefined
+          : undefined;
       return {
         session: normalizedSession,
         externalIdentity: normalizedSession?.externalIdentity ?? null,
         redirectUrl,
+        ...(provider === 'email'
+          ? {
+              needsEmailVerification,
+              confirmationEmailSent,
+              ...(typeof emailAlreadyRegistered === 'boolean' ? { emailAlreadyRegistered } : {}),
+            }
+          : {}),
       };
     }
 
@@ -466,10 +512,25 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         }
 
         const normalizedSession = normalizeSession(result, 'email');
+        const needsEmailVerification =
+          typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
+            ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
+            : normalizedSession?.externalIdentity?.emailVerified === false;
+        const confirmationEmailSent =
+          typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
+            ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
+            : normalizedSession?.externalIdentity?.emailVerified === false;
+        const emailAlreadyRegistered =
+          typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
+            ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
+            : undefined;
         return {
           session: normalizedSession,
           externalIdentity: normalizedSession?.externalIdentity ?? null,
           redirectUrl: extractRedirectTarget(result),
+          needsEmailVerification,
+          confirmationEmailSent,
+          ...(typeof emailAlreadyRegistered === 'boolean' ? { emailAlreadyRegistered } : {}),
         };
       }
 
@@ -524,22 +585,35 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     const redirectUrl = extractRedirectTarget(response);
     const session =
       redirectUrl && provider !== 'email' ? null : normalizeSession(response, provider);
+    const needsEmailVerification =
+      provider === 'email'
+        ? typeof (response as Record<string, unknown>)?.needsEmailVerification === 'boolean'
+          ? ((response as Record<string, unknown>).needsEmailVerification as boolean)
+          : session?.externalIdentity?.emailVerified === false
+        : undefined;
+    const confirmationEmailSent =
+      provider === 'email'
+        ? typeof (response as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
+          ? ((response as Record<string, unknown>).confirmationEmailSent as boolean)
+          : session?.externalIdentity?.emailVerified === false
+        : undefined;
+    const emailAlreadyRegistered =
+      provider === 'email'
+        ? typeof (response as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
+          ? ((response as Record<string, unknown>).emailAlreadyRegistered as boolean)
+          : undefined
+        : undefined;
     return {
       session,
       externalIdentity: session?.externalIdentity ?? null,
       redirectUrl,
-      needsEmailVerification:
-        typeof (response as Record<string, unknown>)?.needsEmailVerification === 'boolean'
-          ? ((response as Record<string, unknown>).needsEmailVerification as boolean)
-          : undefined,
-      emailAlreadyRegistered:
-        typeof (response as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
-          ? ((response as Record<string, unknown>).emailAlreadyRegistered as boolean)
-          : undefined,
-      confirmationEmailSent:
-        typeof (response as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
-          ? ((response as Record<string, unknown>).confirmationEmailSent as boolean)
-          : undefined,
+      ...(provider === 'email'
+        ? {
+            needsEmailVerification,
+            confirmationEmailSent,
+            ...(typeof emailAlreadyRegistered === 'boolean' ? { emailAlreadyRegistered } : {}),
+          }
+        : {}),
     };
   }
 
@@ -561,11 +635,12 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       }
 
       const normalizedSession = normalizeSession(result, 'email');
+      const verifiedEmailSignup = isVerifiedEmailSignup(result);
       const accessToken = normalizedSession?.accessToken ?? null;
       const needsEmailVerification =
         typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
           ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
-          : !accessToken;
+          : !verifiedEmailSignup || !accessToken;
       const emailAlreadyRegistered =
         typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
           ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
@@ -573,9 +648,9 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       const confirmationEmailSent =
         typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
           ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
-          : !accessToken;
+          : !verifiedEmailSignup || !accessToken;
       return {
-        session: normalizedSession,
+        session: verifiedEmailSignup ? normalizedSession : null,
         externalIdentity: normalizedSession?.externalIdentity ?? null,
         needsEmailVerification,
         emailAlreadyRegistered,
@@ -603,11 +678,12 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       }
 
       const normalizedSession = normalizeSession(result, 'email');
+      const verifiedEmailSignup = isVerifiedEmailSignup(result);
       const accessToken = normalizedSession?.accessToken ?? null;
       const needsEmailVerification =
         typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
           ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
-          : !accessToken;
+          : !verifiedEmailSignup || !accessToken;
       const emailAlreadyRegistered =
         typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
           ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
@@ -615,9 +691,9 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       const confirmationEmailSent =
         typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
           ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
-          : !accessToken;
+          : !verifiedEmailSignup || !accessToken;
       return {
-        session: normalizedSession,
+        session: verifiedEmailSignup ? normalizedSession : null,
         externalIdentity: normalizedSession?.externalIdentity ?? null,
         needsEmailVerification,
         emailAlreadyRegistered,
@@ -640,11 +716,12 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     );
 
     const session = normalizeSession(response, 'email');
+    const verifiedEmailSignup = isVerifiedEmailSignup(response);
     const accessToken = session?.accessToken ?? null;
     const needsEmailVerification =
       typeof (response as Record<string, unknown>)?.needsEmailVerification === 'boolean'
         ? ((response as Record<string, unknown>).needsEmailVerification as boolean)
-        : !accessToken;
+        : !verifiedEmailSignup || !accessToken;
     const emailAlreadyRegistered =
       typeof (response as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
         ? ((response as Record<string, unknown>).emailAlreadyRegistered as boolean)
@@ -652,9 +729,9 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     const confirmationEmailSent =
       typeof (response as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
         ? ((response as Record<string, unknown>).confirmationEmailSent as boolean)
-        : !accessToken;
+        : !verifiedEmailSignup || !accessToken;
     return {
-      session,
+      session: verifiedEmailSignup ? session : null,
       externalIdentity: session?.externalIdentity ?? null,
       needsEmailVerification,
       emailAlreadyRegistered,
@@ -846,6 +923,29 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       });
 
       const session = normalizeSession(result, 'email');
+      const authResult: AuthExecutionResult = {
+        session,
+        externalIdentity: session?.externalIdentity ?? null,
+        needsEmailVerification:
+          typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
+            ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
+            : session?.externalIdentity?.emailVerified === false,
+        confirmationEmailSent:
+          typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
+            ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
+            : session?.externalIdentity?.emailVerified === false,
+        emailAlreadyRegistered:
+          typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
+            ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
+            : undefined,
+      };
+
+      if (isEmailVerificationPendingResult(authResult)) {
+        throw new AlternunProviderError(
+          'Email not confirmed. Please check your inbox before signing in.'
+        );
+      }
+
       if (session?.externalIdentity) {
         return {
           id: session.externalIdentity.providerUserId,
@@ -865,6 +965,12 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         email,
         password,
       });
+
+      if (isEmailVerificationPendingResult(result)) {
+        throw new AlternunProviderError(
+          'Email not confirmed. Please check your inbox before signing in.'
+        );
+      }
 
       if (result.externalIdentity) {
         return {
@@ -886,6 +992,12 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       email,
       password,
     });
+
+    if (isEmailVerificationPendingResult(result)) {
+      throw new AlternunProviderError(
+        'Email not confirmed. Please check your inbox before signing in.'
+      );
+    }
 
     if (result.externalIdentity) {
       return {

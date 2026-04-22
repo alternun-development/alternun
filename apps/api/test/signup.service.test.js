@@ -42,11 +42,11 @@ test('SignupService calls Better Auth signUpEmail with a derived name', async ()
       locale: 'en',
     });
     assert.deepEqual(result, {
-      needsEmailVerification: false,
+      needsEmailVerification: true,
       emailAlreadyRegistered: false,
-      confirmationEmailSent: false,
-      token: 'better-auth-signup-token',
-      accessToken: 'better-auth-signup-token',
+      confirmationEmailSent: true,
+      token: null,
+      accessToken: null,
       user: {
         id: 'user-123',
         createdAt: new Date('2026-04-20T00:00:00.000Z'),
@@ -59,6 +59,44 @@ test('SignupService calls Better Auth signUpEmail with a derived name', async ()
   } finally {
     process.env = originalEnv;
   }
+});
+
+test('SignupService exposes a session only after Better Auth reports a verified email', async () => {
+  const service = new SignupService({
+    signUpEmail: async () => ({
+      token: 'better-auth-signup-token',
+      user: {
+        id: 'user-123',
+        createdAt: new Date('2026-04-20T00:00:00.000Z'),
+        updatedAt: new Date('2026-04-20T00:00:00.000Z'),
+        email: 'ada@example.com',
+        emailVerified: true,
+        name: 'ada',
+        image: null,
+      },
+    }),
+  });
+
+  const result = await service.signUp({
+    email: 'ada@example.com',
+    password: 'Password123!',
+  });
+
+  assert.deepEqual(result, {
+    needsEmailVerification: false,
+    emailAlreadyRegistered: false,
+    confirmationEmailSent: false,
+    token: 'better-auth-signup-token',
+    accessToken: 'better-auth-signup-token',
+    user: {
+      id: 'user-123',
+      createdAt: new Date('2026-04-20T00:00:00.000Z'),
+      updatedAt: new Date('2026-04-20T00:00:00.000Z'),
+      email: 'ada@example.com',
+      emailVerified: true,
+      name: 'ada',
+    },
+  });
 });
 
 test('SignupService returns duplicate-account flags for Better Auth duplicate errors', async () => {
