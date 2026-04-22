@@ -347,6 +347,26 @@ hydrate_backend_api_jwt_signing_key() {
   echo "Hydrated INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY from ${identity_secret_name}."
 }
 
+build_backend_api_artifacts() {
+  if [ "$is_backend_api_stage" != "true" ]; then
+    return 0
+  fi
+
+  if ! is_truthy "${INFRA_ENABLE_BACKEND_API:-false}"; then
+    echo "Skipping backend API build (INFRA_ENABLE_BACKEND_API=${INFRA_ENABLE_BACKEND_API:-false})"
+    return 0
+  fi
+
+  local build_command
+  build_command="${INFRA_BACKEND_API_BUILD_COMMAND:-pnpm --filter @alternun/api run build}"
+
+  echo "Building backend API with: ${build_command}"
+  (
+    cd "$REPO_ROOT"
+    bash -lc "$build_command"
+  )
+}
+
 remove_state_resource() {
   local target=$1
 
@@ -710,6 +730,8 @@ fi
 validate_identity_database_mode_transition
 
 hydrate_backend_api_jwt_signing_key
+
+build_backend_api_artifacts
 
 echo "DEBUG: Starting pre-deploy pipeline checks..."
 selected_pipeline_csv=$(resolve_selected_pipeline_csv)

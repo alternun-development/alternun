@@ -33,6 +33,12 @@ void test('destructive infra cleanup stays opt-in across deploy scripts, env def
     sstDeploySource,
     /if \[ "\$\{CLOUDFRONT_ALIAS_CLEANUP_ATTEMPTED:-false\}" = "true" \]; then\n\s+# CloudFront was mutated outside SST, so refresh state before synthesis\/deploy\.\n\s+refresh_sst_state_after_alias_cleanup\n\s+else\n\s+echo "Skipping SST state refresh because CloudFront alias cleanup was not performed\."\n\s+fi/
   );
+  assert.match(
+    sstDeploySource,
+    /build_backend_api_artifacts\(\)[\s\S]*?if \[ "\$is_backend_api_stage" != "true" \]; then[\s\S]*?return 0[\s\S]*?if ! is_truthy "\$\{INFRA_ENABLE_BACKEND_API:-false\}"; then[\s\S]*?echo "Skipping backend API build \(INFRA_ENABLE_BACKEND_API=\$\{INFRA_ENABLE_BACKEND_API:-false\}\)"/
+  );
+  assert.match(sstDeploySource, /Building backend API with: \$\{build_command\}/);
+  assert.match(sstDeploySource, /\(\s*cd "\$REPO_ROOT"\s*\n\s*bash -lc "\$build_command"\s*\)/);
 
   assert.match(
     predeploySource,

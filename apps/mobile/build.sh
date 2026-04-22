@@ -164,6 +164,62 @@ for (const workerPath of workerPaths) {
 ' "$app_version"
 }
 
+resolve_expected_release_version() {
+  node - <<'NODE'
+const fs = require('node:fs');
+const path = require('node:path');
+
+const repoRoot = path.resolve(process.cwd(), '..', '..');
+
+const detectedStage = String(
+  process.env.SST_STAGE ||
+    process.env.STACK ||
+    process.env.EXPO_PUBLIC_STAGE ||
+    process.env.EXPO_PUBLIC_ENV ||
+    ''
+)
+  .trim()
+  .toLowerCase();
+
+const manifestPath = detectedStage.includes('prod')
+  ? path.join(repoRoot, 'version.production.json')
+  : path.join(repoRoot, 'version.development.json');
+
+const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+const version = String(manifest.version ?? '').trim();
+
+if (!version) {
+  console.error(`ERROR: ${manifestPath} is missing a version.`);
+  process.exit(1);
+}
+
+process.stdout.write(version);
+NODE
+}
+
+verify_exported_web_bundle_version() {
+  local expected_version bundle_candidates bundle_path
+  expected_version=$(resolve_expected_release_version)
+
+  bundle_candidates=$(find dist public -path '*/_expo/static/js/web/entry-*.js' -type f 2>/dev/null | sort)
+  if [ -z "$bundle_candidates" ]; then
+    echo "ERROR: No Expo entry bundle found after export." >&2
+    exit 1
+  fi
+
+  while IFS= read -r bundle_path; do
+    [ -n "$bundle_path" ] || continue
+
+    if ! grep -Fq "\"version\":\"${expected_version}\"" "$bundle_path" && \
+       ! grep -Fq "version\\\":\\\"${expected_version}\\\"" "$bundle_path"; then
+      echo "ERROR: ${bundle_path} does not contain expected release version ${expected_version}." >&2
+      exit 1
+    fi
+  done <<EOF
+$bundle_candidates
+EOF
+}
+
 # Generate changelog data file for the app
 node ../../scripts/generate-changelog-data.mjs apps/mobile
 
@@ -269,4 +325,5 @@ else
   npx expo export -p web
 fi
 verify_exported_release_artifacts
+verify_exported_web_bundle_version
 validate_exported_auth_bundle
