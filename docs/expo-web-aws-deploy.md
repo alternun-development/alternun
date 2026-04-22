@@ -18,11 +18,11 @@ Set AWS credentials and region for the IAM user with deploy permissions.
 
 ## 2. Sync Branches
 
-Current testnet mode:
+Current branch model:
 
 - `master` owns production releases
 - `develop` owns dev/testnet releases
-- the branches are independent unless you explicitly run the sync helper
+- branches are independent unless you explicitly run a sync helper
 
 Manual sync remains available when needed.
 
@@ -32,7 +32,10 @@ Only when working tree is clean:
 pnpm --filter @alternun/infra run sync:master-develop
 ```
 
-If fast-forward fails, resolve the branch divergence before pushing again. The automated sync is intentionally fast-forward-only.
+If fast-forward fails, resolve the branch divergence before pushing again. The helper is intentionally fast-forward-only.
+
+For patch promotions, stay on `develop` and run the release promotion flow from there. It opens the `develop -> master` PR without requiring a manual checkout to `master`.
+That means `develop` is the only branch you need for release patch work.
 
 ## 3. Deploy Dev
 
