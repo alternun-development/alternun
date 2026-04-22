@@ -315,9 +315,7 @@ export class BetterAuthExecutionProvider {
                     ? {
                         needsEmailVerification,
                         confirmationEmailSent,
-                        ...(typeof emailAlreadyRegistered === 'boolean'
-                            ? { emailAlreadyRegistered }
-                            : {}),
+                        ...(typeof emailAlreadyRegistered === 'boolean' ? { emailAlreadyRegistered } : {}),
                     }
                     : {}),
             };
@@ -351,9 +349,7 @@ export class BetterAuthExecutionProvider {
                     redirectUrl: extractRedirectTarget(result),
                     needsEmailVerification,
                     confirmationEmailSent,
-                    ...(typeof emailAlreadyRegistered === 'boolean'
-                        ? { emailAlreadyRegistered }
-                        : {}),
+                    ...(typeof emailAlreadyRegistered === 'boolean' ? { emailAlreadyRegistered } : {}),
                 };
             }
             if (browserClient.signIn.social) {
@@ -418,9 +414,7 @@ export class BetterAuthExecutionProvider {
                 ? {
                     needsEmailVerification,
                     confirmationEmailSent,
-                    ...(typeof emailAlreadyRegistered === 'boolean'
-                        ? { emailAlreadyRegistered }
-                        : {}),
+                    ...(typeof emailAlreadyRegistered === 'boolean' ? { emailAlreadyRegistered } : {}),
                 }
                 : {}),
         };

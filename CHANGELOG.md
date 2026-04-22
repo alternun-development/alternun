@@ -1,3 +1,15 @@
+## [1.0.199](https://github.com/alternun-development/alternun/compare/v1.0.198-dev.0...v1.0.199) (2026-04-22)
+
+### Bug Fixes
+
+- **repo:** test(api,auth): signup.service, better-auth-dev.server, better-auth-dev-server.test, signup.service.test
+- **repo:** feat(release): auto-create promotion PR
+- **repo:** chore: release v1.0.198
+
+### Features
+
+- **release:** auto-create promotion PR ([6cbbf43](https://github.com/alternun-development/alternun/commit/6cbbf431ce96e88532a90bbdbce3d33d86735069))
+
 ## [1.0.198](https://github.com/alternun-development/alternun/compare/v1.0.198-dev.0...v1.0.198) (2026-04-22)
 
 ### Bug Fixes
