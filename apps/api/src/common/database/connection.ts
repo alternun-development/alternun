@@ -4,19 +4,37 @@ import * as betterAuthSchema from './better-auth.schema';
 
 let db: ReturnType<typeof drizzle> | null = null;
 
+function isTestnetAlignedDatabaseEnv(env: NodeJS.ProcessEnv): boolean {
+  const stage = (env.SST_STAGE ?? env.STACK ?? '').trim().toLowerCase().replace(/_/g, '-');
+
+  return (
+    env.ALTERNUN_TESTNET_MODE === 'on' ||
+    stage === 'dev' ||
+    stage === 'testnet' ||
+    stage.includes('testnet') ||
+    stage.endsWith('-dev')
+  );
+}
+
+export function resolveDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string | null {
+  const databaseCandidates = isTestnetAlignedDatabaseEnv(env)
+    ? [env.INFRA_BACKEND_API_DATABASE_URL]
+    : [env.INFRA_BACKEND_API_DATABASE_URL, env.DATABASE_URL, env.SUPABASE_DATABASE_URL];
+
+  const databaseUrl = databaseCandidates
+    .map((value) => value?.trim())
+    .find((value): value is string => Boolean(value));
+
+  return databaseUrl ?? null;
+}
+
 export function getDatabase(): ReturnType<typeof drizzle> {
   if (!db) {
-    const databaseUrl = [
-      process.env.DATABASE_URL,
-      process.env.SUPABASE_DATABASE_URL,
-      process.env.INFRA_BACKEND_API_DATABASE_URL,
-    ]
-      .map((value) => value?.trim())
-      .find((value): value is string => Boolean(value));
+    const databaseUrl = resolveDatabaseUrl();
 
     if (!databaseUrl) {
       throw new Error(
-        'DATABASE_URL, SUPABASE_DATABASE_URL, or INFRA_BACKEND_API_DATABASE_URL environment variable is not set'
+        'No database URL is configured. Set INFRA_BACKEND_API_DATABASE_URL for testnet-aligned stages or DATABASE_URL/SUPABASE_DATABASE_URL for shared runtimes.'
       );
     }
 

@@ -5,52 +5,60 @@ const { SignupService } = require('../src/modules/auth-exchange/services/signup.
 
 test('SignupService calls Better Auth signUpEmail with a derived name', async () => {
   let observedBody = null;
+  const originalEnv = { ...process.env };
 
-  const service = new SignupService({
-    signUpEmail: async ({ body }) => {
-      observedBody = body;
-      return {
-        token: 'better-auth-signup-token',
-        user: {
-          id: 'user-123',
-          createdAt: new Date('2026-04-20T00:00:00.000Z'),
-          updatedAt: new Date('2026-04-20T00:00:00.000Z'),
-          email: 'ada@example.com',
-          emailVerified: false,
-          name: 'ada',
-          image: null,
-        },
-      };
-    },
-  });
+  try {
+    process.env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI = 'https://airs.alternun.co/auth/callback';
 
-  const result = await service.signUp({
-    email: 'ada@example.com',
-    password: 'Password123!',
-    locale: 'en',
-  });
+    const service = new SignupService({
+      signUpEmail: async ({ body }) => {
+        observedBody = body;
+        return {
+          token: 'better-auth-signup-token',
+          user: {
+            id: 'user-123',
+            createdAt: new Date('2026-04-20T00:00:00.000Z'),
+            updatedAt: new Date('2026-04-20T00:00:00.000Z'),
+            email: 'ada@example.com',
+            emailVerified: false,
+            name: 'ada',
+            image: null,
+          },
+        };
+      },
+    });
 
-  assert.deepEqual(observedBody, {
-    name: 'ada',
-    email: 'ada@example.com',
-    password: 'Password123!',
-    locale: 'en',
-  });
-  assert.deepEqual(result, {
-    needsEmailVerification: false,
-    emailAlreadyRegistered: false,
-    confirmationEmailSent: false,
-    token: 'better-auth-signup-token',
-    accessToken: 'better-auth-signup-token',
-    user: {
-      id: 'user-123',
-      createdAt: new Date('2026-04-20T00:00:00.000Z'),
-      updatedAt: new Date('2026-04-20T00:00:00.000Z'),
+    const result = await service.signUp({
       email: 'ada@example.com',
-      emailVerified: false,
+      password: 'Password123!',
+      locale: 'en',
+    });
+
+    assert.deepEqual(observedBody, {
       name: 'ada',
-    },
-  });
+      email: 'ada@example.com',
+      password: 'Password123!',
+      callbackURL: 'https://airs.alternun.co/auth/callback',
+      locale: 'en',
+    });
+    assert.deepEqual(result, {
+      needsEmailVerification: false,
+      emailAlreadyRegistered: false,
+      confirmationEmailSent: false,
+      token: 'better-auth-signup-token',
+      accessToken: 'better-auth-signup-token',
+      user: {
+        id: 'user-123',
+        createdAt: new Date('2026-04-20T00:00:00.000Z'),
+        updatedAt: new Date('2026-04-20T00:00:00.000Z'),
+        email: 'ada@example.com',
+        emailVerified: false,
+        name: 'ada',
+      },
+    });
+  } finally {
+    process.env = originalEnv;
+  }
 });
 
 test('SignupService returns duplicate-account flags for Better Auth duplicate errors', async () => {

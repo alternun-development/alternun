@@ -383,9 +383,13 @@ main() {
     export AUTH_EXCHANGE_URL="${EXPO_PUBLIC_AUTH_EXCHANGE_URL}"
   fi
 
-  # Backend API should use the shared stage database URL if the dedicated backend
-  # parameter has not been bootstrapped yet.
-  export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url" "${DATABASE_URL:-}"
+  # Backend-aligned stages must not inherit the shared DATABASE_URL fallback.
+  # That can silently pin testnet/dashboard dev to the wrong Supabase project.
+  if stage_requires_backend_database_url; then
+    export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url"
+  else
+    export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url" "${DATABASE_URL:-}"
+  fi
 
   AUTH_EXECUTION_PROVIDER=$(resolve_auth_execution_provider)
   export AUTH_EXECUTION_PROVIDER
