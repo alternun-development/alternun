@@ -1,3 +1,10 @@
+## [1.0.198](https://github.com/alternun-development/alternun/compare/v1.0.198-dev.0...v1.0.198) (2026-04-22)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.198-dev.0
+- **repo:** test(infra): dashboard, infra.config, backend-api, backend-api-airs-env.test
+
 ## [1.0.198](https://github.com/alternun-development/alternun/compare/v1.0.197-dev.0...v1.0.198) (2026-04-22)
 
 ### Bug Fixes
