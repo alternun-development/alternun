@@ -35,6 +35,7 @@ pnpm --filter @alternun/infra run sync:master-develop
 If fast-forward fails, resolve the branch divergence before pushing again. The helper is intentionally fast-forward-only.
 
 For patch promotions, stay on `develop` and run the release promotion flow from there. It opens the `develop -> master` PR without requiring a manual checkout to `master`.
+That means `develop` is the only branch you need for release patch work.
 
 ## 3. Deploy Dev
 
