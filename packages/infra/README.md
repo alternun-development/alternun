@@ -512,11 +512,14 @@ pnpm --filter @alternun/infra run sync:master-develop
 
 Current testnet mode keeps `master` and `develop` independent unless you explicitly run a sync helper.
 
-This script does a fast-forward-only sync:
+The helper does a fast-forward-only sync when you explicitly run it:
 
 1. fetches `master` and `develop`
 2. fast-forwards `develop` from `master`
 3. pushes `develop`
+
+The GitHub Actions workflow that used to mirror `master` into `develop` is now manual-only.
+Use it only when you deliberately want to resync testnet from production.
 
 The legacy promotion helper still exists:
 
