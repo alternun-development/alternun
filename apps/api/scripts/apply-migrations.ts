@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { Pool, type PoolClient } from 'pg';
 
 const databaseUrl = process.env.DATABASE_URL ?? process.env.SUPABASE_DATABASE_URL;
+const skippedMigrationVersions = new Set(['20260417_0009', '20260417_0010']);
 
 if (!databaseUrl) {
   console.error('❌ DATABASE_URL or SUPABASE_DATABASE_URL not set');
@@ -59,20 +60,22 @@ function getMigrationFiles(): Migration[] {
     .filter((file) => file.endsWith('.sql'))
     .sort();
 
-  return files.map((file) => {
-    const match = file.match(/^(\d+)_(.+)\.sql$/);
-    if (!match) {
-      throw new Error(
-        `Invalid migration filename: ${file}. Use format: YYYYMMDD_NNNN_description.sql`
-      );
-    }
-    const [, version, name] = match;
-    return {
-      name: name ?? 'unknown',
-      version: version ?? '0',
-      path: resolve(MIGRATIONS_DIR, file),
-    };
-  });
+  return files
+    .map((file) => {
+      const match = file.match(/^(\d+_\d+)_(.+)\.sql$/);
+      if (!match) {
+        throw new Error(
+          `Invalid migration filename: ${file}. Use format: YYYYMMDD_NNNN_description.sql`
+        );
+      }
+      const [, version, name] = match;
+      return {
+        name: name ?? 'unknown',
+        version: version ?? '0',
+        path: resolve(MIGRATIONS_DIR, file),
+      };
+    })
+    .filter((migration) => !skippedMigrationVersions.has(migration.version));
 }
 
 async function runMigration(client: PoolClient, migration: Migration): Promise<void> {
