@@ -1,3 +1,16 @@
+## [1.0.195](https://github.com/alternun-development/alternun/compare/v1.0.194-dev.0...v1.0.195) (2026-04-22)
+
+### Bug Fixes
+
+- **repo:** fix(infra): build expo site before sync
+- **repo:** updates
+- **repo:** fix(infra): rebuild backend api before deploy
+
+### Bug Fixes
+
+- **infra:** build expo site before sync ([0a0d694](https://github.com/alternun-development/alternun/commit/0a0d6941bd776988f0c311429a98c3e0449df767))
+- **infra:** rebuild backend api before deploy ([5733668](https://github.com/alternun-development/alternun/commit/5733668ccee45d907b89161ac7a8f3614e043423))
+
 ## [1.0.194](https://github.com/alternun-development/alternun/compare/v1.0.193-dev.0...v1.0.194) (2026-04-21)
 
 ### Bug Fixes
