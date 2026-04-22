@@ -107,7 +107,7 @@ async function loadVerificationEmailConfig(
   const host = firstNonEmptyTrimmed([payload.host]);
   const username = firstNonEmptyTrimmed([payload.username]);
   const password = firstNonEmptyTrimmed([payload.password]);
-  const from = firstNonEmptyTrimmed([payload.from, env.EMAIL_FROM, env.AUTH_EMAIL_FROM]);
+  const from = firstNonEmptyTrimmed([payload.from, env.EMAIL_FROM, env.AUTH_EMAIL_FROM, username]);
 
   if (!host || !username || !password || !from) {
     return null;
@@ -223,62 +223,72 @@ export async function sendAuthVerificationEmail(
   input: BetterAuthVerificationEmailInput,
   env: Record<string, string | undefined> = process.env
 ): Promise<void> {
-  const config = await resolveVerificationEmailConfig(env);
-  const locale = normalizeEmailLocale(input.locale, 'en');
-  const translation = renderEmailTemplateTranslation({
-    locale,
-    template: 'confirm-signup-email',
-    params: {
-      email: input.to,
+  try {
+    const config = await resolveVerificationEmailConfig(env);
+    const locale = normalizeEmailLocale(input.locale, 'en');
+    const translation = renderEmailTemplateTranslation({
+      locale,
+      template: 'confirm-signup-email',
+      params: {
+        email: input.to,
+        token: input.token,
+        url: input.confirmationUrl,
+        confirmationUrl: input.confirmationUrl,
+      },
+    });
+
+    const transporter = nodemailer.createTransport({
+      host: config.host,
+      port: config.port,
+      secure: config.secure,
+      requireTLS: config.requireTls,
+      auth: {
+        user: config.username,
+        pass: config.password,
+      },
+    });
+
+    const html = buildVerificationEmailHtml({
+      subject: translation.subject,
+      preview: translation.preview,
+      greeting: translation.greeting,
+      intro: translation.intro,
       token: input.token,
-      url: input.confirmationUrl,
       confirmationUrl: input.confirmationUrl,
-    },
-  });
+      ctaLabel: translation.ctaLabel,
+      ignoreNotice: translation.ignoreNotice,
+      footer: translation.footer,
+    });
 
-  const transporter = nodemailer.createTransport({
-    host: config.host,
-    port: config.port,
-    secure: config.secure,
-    requireTLS: config.requireTls,
-    auth: {
-      user: config.username,
-      pass: config.password,
-    },
-  });
+    const text = [
+      translation.subject,
+      '',
+      translation.greeting,
+      '',
+      translation.intro,
+      '',
+      `${translation.codeLabel ?? 'Verification code'}: ${input.token}`,
+      `${translation.ctaLabel}: ${input.confirmationUrl}`,
+      '',
+      translation.ignoreNotice,
+      '',
+      translation.footer,
+    ].join('\n');
 
-  const html = buildVerificationEmailHtml({
-    subject: translation.subject,
-    preview: translation.preview,
-    greeting: translation.greeting,
-    intro: translation.intro,
-    token: input.token,
-    confirmationUrl: input.confirmationUrl,
-    ctaLabel: translation.ctaLabel,
-    ignoreNotice: translation.ignoreNotice,
-    footer: translation.footer,
-  });
-
-  const text = [
-    translation.subject,
-    '',
-    translation.greeting,
-    '',
-    translation.intro,
-    '',
-    `${translation.codeLabel ?? 'Verification code'}: ${input.token}`,
-    `${translation.ctaLabel}: ${input.confirmationUrl}`,
-    '',
-    translation.ignoreNotice,
-    '',
-    translation.footer,
-  ].join('\n');
-
-  await transporter.sendMail({
-    from: `"${config.senderName}" <${config.from}>`,
-    to: input.to,
-    subject: translation.subject,
-    text,
-    html,
-  });
+    await transporter.sendMail({
+      from: `"${config.senderName}" <${config.from}>`,
+      to: input.to,
+      subject: translation.subject,
+      text,
+      html,
+    });
+  } catch (error) {
+    // Keep the signup log actionable when SMTP is misconfigured or rejected.
+    // eslint-disable-next-line no-console
+    console.error('Failed to send auth verification email', {
+      to: input.to,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }

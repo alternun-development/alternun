@@ -68,6 +68,9 @@ public.users      public.user_profiles
 ## Important Notes
 
 - **public.users is the source of truth** for user identity
+- The triggers in this migration are one-way: they mirror `auth.users -> public.users` and `public.user_profiles`
+- They do **not** create `auth.users` from `public.users`
+- If a flow starts by inserting directly into `public.users`, it must also provision the auth-side user separately
 - Triggers use `SECURITY DEFINER` to ensure they can write even if row-level security is enabled
 - Anonymous users are skipped (trigger returns early)
 - Both triggers use `ON CONFLICT ... DO UPDATE` to handle re-runs safely

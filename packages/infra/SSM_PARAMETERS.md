@@ -122,6 +122,18 @@ For each variable, resolution order is:
 
 The CI helper intentionally resets the auth contract vars before applying that chain so stage-scoped SSM values win for auth execution and Better Auth routing, then derives the execution provider from the resolved Better Auth URLs. Backend-aligned stages resolve `INFRA_BACKEND_API_DATABASE_URL` from the dedicated backend parameter only; they do not inherit the shared `DATABASE_URL` fallback so testnet/dashboard dev cannot drift onto the wrong database by accident.
 
+When running deploy/migration helpers directly, use the stage-scoped backend database secret name:
+
+- dev/testnet-like stages default to `alternun/api/database-url-dev`
+- production-like stages default to `alternun/api/database-url`
+- override with `INFRA_BACKEND_API_DATABASE_URL_SECRET_NAME` when a different secret name is needed
+
+You can write the same value to both Secrets Manager and SSM with:
+
+```bash
+INFRA_BACKEND_API_DATABASE_URL='postgresql://...' bash scripts/bootstrap-backend-database-secret.sh
+```
+
 ## Key Security Considerations
 
 ✅ **DO:**

@@ -28,6 +28,25 @@ export function resolveDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string
   return databaseUrl ?? null;
 }
 
+function createPoolConfig(databaseUrl: string): ConstructorParameters<typeof Pool>[0] {
+  try {
+    const url = new URL(databaseUrl);
+    return {
+      user: decodeURIComponent(url.username),
+      password: decodeURIComponent(url.password),
+      host: url.hostname,
+      port: url.port ? Number(url.port) : undefined,
+      database: url.pathname.replace(/^\/+/, '') || undefined,
+      ssl: url.hostname.includes('supabase') ? { rejectUnauthorized: false } : false,
+    };
+  } catch {
+    return {
+      connectionString: databaseUrl,
+      ssl: databaseUrl.includes('supabase') ? { rejectUnauthorized: false } : false,
+    };
+  }
+}
+
 export function getDatabase(): ReturnType<typeof drizzle> {
   if (!db) {
     const databaseUrl = resolveDatabaseUrl();
@@ -38,10 +57,7 @@ export function getDatabase(): ReturnType<typeof drizzle> {
       );
     }
 
-    const pool = new Pool({
-      connectionString: databaseUrl,
-      ssl: databaseUrl.includes('supabase') ? { rejectUnauthorized: false } : false,
-    });
+    const pool = new Pool(createPoolConfig(databaseUrl));
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     db = drizzle(pool, { schema: betterAuthSchema });

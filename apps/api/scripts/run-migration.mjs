@@ -2,11 +2,38 @@ import { readFileSync } from 'fs';
 import { Pool } from 'pg';
 
 const databaseUrl =
-  process.env.DATABASE_URL || 'postgresql://postgres:E~)V96LKh;yOOM.Kq&u&@db.rjebeugdvwbjpaktrrbx.supabase.co:5432/postgres';
+  process.env.INFRA_BACKEND_API_DATABASE_URL ||
+  process.env.DATABASE_URL ||
+  process.env.SUPABASE_DATABASE_URL;
+
+if (!databaseUrl) {
+  console.error(
+    '❌ INFRA_BACKEND_API_DATABASE_URL, DATABASE_URL, or SUPABASE_DATABASE_URL is required'
+  );
+  process.exit(1);
+}
+
+function createPoolConfig(urlValue) {
+  try {
+    const parsed = new URL(urlValue);
+    return {
+      user: decodeURIComponent(parsed.username),
+      password: decodeURIComponent(parsed.password),
+      host: parsed.hostname,
+      port: parsed.port ? Number(parsed.port) : undefined,
+      database: parsed.pathname.replace(/^\/+/, '') || undefined,
+      ssl: parsed.hostname.includes('supabase') ? { rejectUnauthorized: false } : false,
+    };
+  } catch {
+    return {
+      connectionString: urlValue,
+      ssl: urlValue.includes('supabase') ? { rejectUnauthorized: false } : false,
+    };
+  }
+}
 
 const pool = new Pool({
-  connectionString: databaseUrl,
-  ssl: { rejectUnauthorized: false },
+  ...createPoolConfig(databaseUrl),
 });
 
 async function runMigration() {
