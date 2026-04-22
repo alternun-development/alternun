@@ -1,3 +1,15 @@
+## [1.0.196](https://github.com/alternun-development/alternun/compare/v1.0.196-dev.0...v1.0.196) (2026-04-22)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): relax legacy export validation
+- **repo:** fix(release): promote develop and update open pr
+
+### Bug Fixes
+
+- **mobile:** relax legacy export validation ([9b8ccea](https://github.com/alternun-development/alternun/commit/9b8cceaa38076e8855a44dffb4bf3edd4607f4d2))
+- **release:** promote develop and update open pr ([e59f695](https://github.com/alternun-development/alternun/commit/e59f695f40b4abd6476baa550dedde639647011d))
+
 ## [1.0.196](https://github.com/alternun-development/alternun/compare/v1.0.195...v1.0.196) (2026-04-22)
 
 ### Bug Fixes
