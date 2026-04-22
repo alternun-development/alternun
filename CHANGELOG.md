@@ -1,3 +1,15 @@
+## [1.0.197](https://github.com/alternun-development/alternun/compare/v1.0.196...v1.0.197) (2026-04-22)
+
+### Bug Fixes
+
+- **repo:** test(mobile,infra): AuthSignInScreen, authSignInFlow.test, authSignInFlow, dashboard
+- **repo:** chore(version): sync develop app version
+- **repo:** fix(mobile): relax Expo bundle version check
+
+### Bug Fixes
+
+- **mobile:** relax Expo bundle version check ([65fc490](https://github.com/alternun-development/alternun/commit/65fc4908a9df2c079e23602ef70f0cc9584f4425))
+
 ## [1.0.196](https://github.com/alternun-development/alternun/compare/v1.0.196-dev.0...v1.0.196) (2026-04-22)
 
 ### Bug Fixes
