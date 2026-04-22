@@ -411,6 +411,13 @@ phases:
           echo "Skipping backend API build (INFRA_ENABLE_BACKEND_API=${INFRA_ENABLE_BACKEND_API:-false})"
         fi
 
+        if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "true" ]; then
+          echo "Building Expo web app with: pnpm --filter @alternun/mobile run build:web"
+          pnpm --filter @alternun/mobile run build:web
+        else
+          echo "Skipping Expo web build (INFRA_ENABLE_EXPO_SITE=${INFRA_ENABLE_EXPO_SITE:-true})"
+        fi
+
         if [ "${INFRA_ENABLE_SST_REFRESH}" = "true" ]; then
           (cd "${INFRA_PATH}" && npx sst refresh --stage ${SST_STAGE})
         else
