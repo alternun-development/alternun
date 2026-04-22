@@ -1,8 +1,12 @@
 name: Sync Master To Develop
 
 on:
-  push:
-    branches: [master, main]
+  workflow_dispatch:
+    inputs:
+      source_branch:
+        description: Branch to mirror into develop
+        required: true
+        default: master
 
 permissions:
   contents: write
@@ -51,7 +55,7 @@ jobs:
       - name: Fast-forward develop from master/main
         if: steps.mode.outputs.enabled == 'true'
         env:
-          SOURCE_BRANCH: ${{ github.ref_name }}
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
         run: |
           git fetch origin develop "$SOURCE_BRANCH"
           git checkout -B develop-sync "origin/develop"
