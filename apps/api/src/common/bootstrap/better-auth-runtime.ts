@@ -17,6 +17,7 @@ const HOP_BY_HOP_HEADERS = new Set([
   'transfer-encoding',
   'upgrade',
 ]);
+const BETTER_AUTH_SUPABASE_EMAIL_PATHS = new Set(['/auth/sign-in/email', '/auth/sign-up/email']);
 
 type BetterAuthRequestHeaderValue = string | string[] | number | undefined;
 type BetterAuthRequestHeaders = Record<string, BetterAuthRequestHeaderValue>;
@@ -208,6 +209,11 @@ export async function handleBetterAuthRuntimeRequest(
 
   if (!shouldProxyBetterAuthPath(requestPath)) {
     console.log('[Better Auth Handler] Path not matched:', requestPath);
+    return false;
+  }
+
+  if (BETTER_AUTH_SUPABASE_EMAIL_PATHS.has(requestPath)) {
+    console.log('[Better Auth Handler] Supabase email auth path bypassed:', requestPath);
     return false;
   }
 
