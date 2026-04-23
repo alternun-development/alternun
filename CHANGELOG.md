@@ -1,3 +1,9 @@
+## [1.0.212](https://github.com/alternun-development/alternun/compare/v1.0.211-dev.0...v1.0.212) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile): better-auth-proxy, better-auth-runtime, auth-exchange.controller, auth-exchange.module
+
 ## [1.0.211](https://github.com/alternun-development/alternun/compare/v1.0.210-dev.0...v1.0.211) (2026-04-23)
 
 ### Bug Fixes
