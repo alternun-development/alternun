@@ -3,6 +3,7 @@ import { applyBetterAuthCorsHeaders } from './better-auth-cors';
 
 const BETTER_AUTH_PUBLIC_PREFIX = '/auth';
 const BETTER_AUTH_EXCHANGE_PATH = '/auth/exchange';
+const BETTER_AUTH_SUPABASE_EMAIL_PATHS = new Set(['/auth/sign-in/email', '/auth/sign-up/email']);
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
   'keep-alive',
@@ -76,6 +77,10 @@ function serializeRequestBody(body: unknown): string | undefined {
 
 export function shouldProxyBetterAuthPath(pathname: string): boolean {
   if (!pathname.startsWith(BETTER_AUTH_PUBLIC_PREFIX)) {
+    return false;
+  }
+
+  if (BETTER_AUTH_SUPABASE_EMAIL_PATHS.has(pathname)) {
     return false;
   }
 
