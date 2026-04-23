@@ -340,8 +340,8 @@ main() {
 
   export_env_from_ssm "EXPO_PUBLIC_SUPABASE_URL" "expo-public-supabase-url"
   export_env_from_ssm "EXPO_PUBLIC_SUPABASE_KEY" "expo-public-supabase-key"
-  export INFRA_BACKEND_API_SUPABASE_URL="${EXPO_PUBLIC_SUPABASE_URL}"
-  export INFRA_BACKEND_API_SUPABASE_ANON_KEY="${EXPO_PUBLIC_SUPABASE_KEY}"
+  export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_URL" "expo-public-supabase-url"
+  export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_ANON_KEY" "expo-public-supabase-key"
   export_env_from_ssm "EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID" "expo-public-walletconnect-project-id"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_ISSUER" "expo-public-authentik-issuer"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_CLIENT_ID" "expo-public-authentik-client-id"
