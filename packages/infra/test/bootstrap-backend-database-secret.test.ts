@@ -8,8 +8,8 @@ const scriptPath = path.resolve('../../scripts/bootstrap-backend-database-secret
 void test('bootstrap-backend-database-secret writes the stage-scoped secret names', () => {
   const source = fs.readFileSync(scriptPath, 'utf8');
 
-  assert.match(source, /alternun\/api\/database-url-dev/);
-  assert.match(source, /alternun\/api\/database-url/);
+  assert.match(source, /alternun\/api\/infra-backend-api-database-url-dev/);
+  assert.match(source, /alternun\/api\/infra-backend-api-database-url-prod/);
   assert.match(source, /infra-backend-api-database-url-dev/);
   assert.match(source, /infra-backend-api-database-url-prod/);
   assert.match(source, /put-secret-value/);
