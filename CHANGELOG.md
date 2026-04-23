@@ -1,3 +1,13 @@
+## [1.0.201](https://github.com/alternun-development/alternun/compare/v1.0.201-dev.0...v1.0.201) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,root): env resolver and discord placeholder
+
+### Bug Fixes
+
+- **mobile,root:** env resolver and discord placeholder ([7210c22](https://github.com/alternun-development/alternun/commit/7210c227046956fab2b44f8af5a4e5035f7c0304))
+
 ## [1.0.201](https://github.com/alternun-development/alternun/compare/v1.0.200-dev.0...v1.0.201) (2026-04-23)
 
 ### Bug Fixes
