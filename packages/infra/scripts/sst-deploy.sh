@@ -18,6 +18,23 @@ STACK=${STACK:-${1:-${SST_STAGE:-production}}}
 export STACK
 export SST_STAGE="${SST_STAGE:-$STACK}"
 
+pre_stage_normalized=$(echo "$STACK" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+case "$pre_stage_normalized" in
+  dashboard-dev|dashboard-prod|dashboard-production|api-dev|api-prod|api-production|backend-dev|backend-prod|backend-production|backend-api-dev|backend-api-prod|backend-api-production)
+    if [ -z "${INFRA_ENABLE_BACKEND_API:-}" ]; then
+      export INFRA_ENABLE_BACKEND_API=true
+    fi
+    ;;
+esac
+
+case "$pre_stage_normalized" in
+  dashboard-dev|dashboard-prod|dashboard-production|admin-dev|admin-prod|admin-production|backoffice-dev|backoffice-prod|backoffice-admin-dev|backoffice-admin-prod)
+    if [ -z "${INFRA_ENABLE_ADMIN_SITE:-}" ]; then
+      export INFRA_ENABLE_ADMIN_SITE=true
+    fi
+    ;;
+esac
+
 # CodeBuild phases do not preserve exports from pre_build, so reload the auth env here
 # before any deploy-time validation or stack synthesis runs.
 if [ -f "$SCRIPT_DIR/resolve-ssm-env.sh" ]; then

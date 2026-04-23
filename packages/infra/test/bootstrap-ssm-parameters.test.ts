@@ -21,6 +21,10 @@ void test('bootstrap and mobile build scripts use stage-specific Supabase public
     /SUPABASE_KEY="\$\{EXPO_PUBLIC_SUPABASE_KEY_PROD:-\$\{SUPABASE_KEY_PROD:-\$\{EXPO_PUBLIC_SUPABASE_KEY:-\$\{SUPABASE_KEY:-\}\}\}\}"/
   );
   assert.match(
+    bootstrapSource,
+    /ERROR: Missing Supabase publishable key for stage '\$\{STAGE\}'\./
+  );
+  assert.match(
     mobileBuildSource,
     /EXPO_PUBLIC_SUPABASE_URL=https:\/\/rjebeugdvwbjpaktrrbx\.supabase\.co/
   );
