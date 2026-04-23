@@ -101,7 +101,25 @@ resolve_ssm_stage_name() {
   esac
 }
 
+resolve_shared_ssm_stage_name() {
+  local normalized
+  normalized=$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+
+  case "$normalized" in
+    dev|testnet|*testnet*|dashboard-dev|backend-dev|backend-api-dev|api-dev|identity-dev|auth-dev|authentik-dev|admin-dev|backoffice-dev|backoffice-admin-dev)
+      printf '%s\n' 'dev'
+      ;;
+    prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
+      printf '%s\n' 'production'
+      ;;
+    *)
+      printf '%s' "$normalized"
+      ;;
+  esac
+}
+
 SSM_STAGE="$(resolve_ssm_stage_name "$STAGE")"
+SSM_SHARED_STAGE="$(resolve_shared_ssm_stage_name "$STAGE")"
 
 # SSM parameter name builder: /{app}/{stage}/{param_key}
 # e.g. /alternun-infra/dev/expo-public-authentik-social-login-mode
@@ -163,7 +181,7 @@ prime_ssm_param_cache() {
 # Get a single param; echo empty string if not found (don't error)
 get_ssm_param() {
   local key=$1
-  local param_name=$(build_param_name "$key")
+  local param_name=$(build_param_name "$key" "${2:-${APP_NAME}}" "${3:-${SSM_STAGE}}")
 
   if [ -n "${SSM_PARAM_CACHE[$key]+x}" ]; then
     printf '%s\n' "${SSM_PARAM_CACHE[$key]}"
@@ -183,6 +201,7 @@ resolve_env() {
   local var_name=$1
   local ssm_key=$2
   local default_value="${3:-}"
+  local stage_override="${4:-${SSM_STAGE}}"
   local ssm_cached_value
 
   # Already in shell env: keep it
@@ -199,7 +218,7 @@ resolve_env() {
 
   # Try SSM
   local ssm_value
-  ssm_value=$(get_ssm_param "$ssm_key")
+  ssm_value=$(get_ssm_param "$ssm_key" "$APP_NAME" "$stage_override")
   if [ -n "$ssm_value" ]; then
     echo "$ssm_value"
     return 0
@@ -214,9 +233,10 @@ export_env_from_ssm() {
   local var_name=$1
   local ssm_key=$2
   local default_value="${3:-}"
+  local stage_override="${4:-${SSM_STAGE}}"
 
   local resolved
-  resolved=$(resolve_env "$var_name" "$ssm_key" "$default_value")
+  resolved=$(resolve_env "$var_name" "$ssm_key" "$default_value" "$stage_override")
   if [ -n "$resolved" ]; then
     export "$var_name=$resolved"
   fi
@@ -306,15 +326,7 @@ main() {
     return 0
   fi
 
-  local -a ssm_param_names=(
-    expo-public-supabase-url
-    expo-public-supabase-key
-    expo-public-walletconnect-project-id
-    expo-public-authentik-issuer
-    expo-public-authentik-client-id
-    expo-public-authentik-login-entry-mode
-    database-url
-  )
+  local -a ssm_param_names=(database-url)
 
   # Auth provider config (stage-specific)
   # Dedicated pipeline stages (dashboard-dev, backend-dev, api-dev, identity-dev) must map to
@@ -362,14 +374,14 @@ main() {
 
   prime_ssm_param_cache "${ssm_param_names[@]}"
 
-  export_env_from_ssm "EXPO_PUBLIC_SUPABASE_URL" "expo-public-supabase-url"
-  export_env_from_ssm "EXPO_PUBLIC_SUPABASE_KEY" "expo-public-supabase-key"
-  export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_URL" "expo-public-supabase-url"
-  export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_ANON_KEY" "expo-public-supabase-key"
-  export_env_from_ssm "EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID" "expo-public-walletconnect-project-id"
-  export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_ISSUER" "expo-public-authentik-issuer"
-  export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_CLIENT_ID" "expo-public-authentik-client-id"
-  export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE" "expo-public-authentik-login-entry-mode" "source"
+  export_env_from_ssm "EXPO_PUBLIC_SUPABASE_URL" "expo-public-supabase-url" "" "${SSM_SHARED_STAGE}"
+  export_env_from_ssm "EXPO_PUBLIC_SUPABASE_KEY" "expo-public-supabase-key" "" "${SSM_SHARED_STAGE}"
+  export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_URL" "expo-public-supabase-url" "" "${SSM_SHARED_STAGE}"
+  export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_ANON_KEY" "expo-public-supabase-key" "" "${SSM_SHARED_STAGE}"
+  export_env_from_ssm "EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID" "expo-public-walletconnect-project-id" "" "${SSM_SHARED_STAGE}"
+  export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_ISSUER" "expo-public-authentik-issuer" "" "${SSM_SHARED_STAGE}"
+  export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_CLIENT_ID" "expo-public-authentik-client-id" "" "${SSM_SHARED_STAGE}"
+  export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE" "expo-public-authentik-login-entry-mode" "source" "${SSM_SHARED_STAGE}"
   export_env_from_ssm "DATABASE_URL" "database-url"
 
   case "$STAGE" in
