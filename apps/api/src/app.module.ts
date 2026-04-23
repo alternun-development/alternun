@@ -6,6 +6,7 @@ import { AuthentikModule } from './modules/authentik/authentik.module';
 import { DecapModule } from './modules/decap/decap.module';
 import { HealthModule } from './modules/health/health.module';
 import { LegalModule } from './modules/legal/legal.module';
+import { ReferralsModule } from './modules/referrals/referrals.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { LegalModule } from './modules/legal/legal.module';
     AirsModule,
     ActivityModule,
     LegalModule,
+    ReferralsModule,
   ],
 })
 export class AppModule {}
