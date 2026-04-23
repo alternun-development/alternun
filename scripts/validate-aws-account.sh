@@ -14,6 +14,18 @@ set -euo pipefail
 ALTERNUN_ACCOUNT_ID="124120088516"
 WRONG_ACCOUNT_ID="058264267235"
 ENFORCE="${1:-check}"
+ALLOW_DEFAULT_AWS="${CLAUDE_ALLOW_DEFAULT_AWS:-0}"
+
+is_default_aws_allowed() {
+  case "$ALLOW_DEFAULT_AWS" in
+    1|true|TRUE|yes|YES)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
 
 # Auto-load credentials from .env if they exist and not already set
 if [ -f ".env" ] && [ -z "${AWS_ACCESS_KEY_ID:-}" ]; then
@@ -86,7 +98,7 @@ FIX:
 
 See CLAUDE.md section "AWS Account Guard" for details.
 EOF
-  if [ "$ENFORCE" = "enforce" ]; then
+  if [ "$ENFORCE" = "enforce" ] || ! is_default_aws_allowed; then
     exit 1
   fi
   exit 0
@@ -105,7 +117,7 @@ Correct account: $ALTERNUN_ACCOUNT_ID
 
 See CLAUDE.md section "AWS Account Guard" for details.
 EOF
-if [ "$ENFORCE" = "enforce" ]; then
+if [ "$ENFORCE" = "enforce" ] || ! is_default_aws_allowed; then
   exit 1
 fi
 exit 0

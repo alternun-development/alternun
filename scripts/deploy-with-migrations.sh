@@ -3,38 +3,12 @@ set -e
 
 # Deploy API with migrations enabled using AWS Secrets
 
-normalize_stage() {
-  printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-'
-}
-
-resolve_database_secret_name() {
-  local stage_name secret_name
-  stage_name=$(normalize_stage "${STACK:-${SST_STAGE:-dev}}")
-
-  if [ -n "${INFRA_BACKEND_API_DATABASE_URL_SECRET_NAME:-}" ]; then
-    printf '%s\n' "${INFRA_BACKEND_API_DATABASE_URL_SECRET_NAME}"
-    return 0
-  fi
-
-  case "$stage_name" in
-    prod|api-prod|production|*production*)
-      secret_name="alternun/api/database-url"
-      ;;
-    dev|api-dev|*testnet*|*development*)
-      secret_name="alternun/api/database-url-dev"
-      ;;
-    *)
-      secret_name="alternun/api/database-url"
-      ;;
-  esac
-
-  printf '%s\n' "$secret_name"
-}
+source scripts/backend-database-secret.sh
 
 echo "🔐 Loading Alternun AWS credentials..."
 source scripts/setup-aws-account.sh
 
-DATABASE_SECRET_NAME=$(resolve_database_secret_name)
+DATABASE_SECRET_NAME=$(resolve_backend_database_secret_name)
 
 echo "📡 Retrieving DATABASE_URL from AWS Secrets (${DATABASE_SECRET_NAME})..."
 export INFRA_BACKEND_API_DATABASE_URL=$(aws secretsmanager get-secret-value \

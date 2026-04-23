@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const test = require('node:test');
 
 const {
@@ -16,10 +18,13 @@ const {
   restoreFileContents,
   syncBranchVersionManifests,
   validateBranchVersionFiles,
+  validateSupplementalVersionFiles,
   validateProductionVersionMirror,
   validateVersionManifestStructure,
   validateWorkspacePackageVersions,
 } = require('./version-files.cjs');
+
+const mobileAppJsonPath = path.join(__dirname, '..', '..', 'apps', 'mobile', 'app.json');
 
 test('development branches resolve to the development version manifest', () => {
   assert.equal(resolveBranchVersionFile('develop'), 'version.development.json');
@@ -99,14 +104,44 @@ test('current repository version files stay consistent', () => {
   });
 });
 
-test('develop branch sync only updates the development manifest track', () => {
-  const snapshot = captureFileContents(['version.development.json', 'version.production.json']);
+test('supplemental version mirror accepts dev and promoted semantic versions', () => {
+  const originalContents = fs.readFileSync(mobileAppJsonPath, 'utf8');
 
   try {
-    const touchedFiles = syncBranchVersionManifests('1.0.191-dev.4', 'develop', {
-      now: '2026-04-21T00:00:00.000Z',
-      developmentBuild: 4,
+    const semanticMirror = JSON.parse(originalContents);
+    semanticMirror.expo.version = '1.0.203';
+    fs.writeFileSync(mobileAppJsonPath, `${JSON.stringify(semanticMirror, null, 2)}\n`);
+
+    assert.deepEqual(validateSupplementalVersionFiles('1.0.203-dev.0'), {
+      valid: true,
+      issues: [],
     });
+
+    semanticMirror.expo.version = '1.0.203-dev.0';
+    fs.writeFileSync(mobileAppJsonPath, `${JSON.stringify(semanticMirror, null, 2)}\n`);
+
+    assert.deepEqual(validateSupplementalVersionFiles('1.0.203'), {
+      valid: true,
+      issues: [],
+    });
+  } finally {
+    fs.writeFileSync(mobileAppJsonPath, originalContents);
+  }
+});
+
+test('develop branch sync only updates the development manifest track', () => {
+  const snapshot = captureFileContents(['version.development.json', 'version.production.json']);
+  const developmentVersion = readRootVersion('develop');
+
+  try {
+    const touchedFiles = syncBranchVersionManifests(
+      incrementDevelopmentBuildVersion(developmentVersion),
+      'develop',
+      {
+        now: '2026-04-21T00:00:00.000Z',
+        developmentBuild: 4,
+      }
+    );
 
     assert.deepEqual(touchedFiles, ['version.development.json']);
   } finally {

@@ -1031,8 +1031,10 @@ function validateSupplementalVersionFiles(expectedVersion = readRootVersion()) {
 
     const json = readJson(absolutePath);
     const actualVersion = entry.read(json);
+    const actualBaseVersion = stripVersionSuffix(actualVersion);
+    const expectedBaseVersion = stripVersionSuffix(expectedVersion);
 
-    if (actualVersion !== expectedVersion) {
+    if (actualBaseVersion !== expectedBaseVersion) {
       issues.push(`${entry.label} is ${String(actualVersion)} but expected ${expectedVersion}`);
     }
   }

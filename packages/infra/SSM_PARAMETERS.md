@@ -124,8 +124,8 @@ The CI helper intentionally resets the auth contract vars before applying that c
 
 When running deploy/migration helpers directly, use the stage-scoped backend database secret name:
 
-- dev/testnet-like stages default to `alternun/api/database-url-dev`
-- production-like stages default to `alternun/api/database-url`
+- dev/testnet-like stages default to `alternun/api/infra-backend-api-database-url-dev`
+- production-like stages default to `alternun/api/infra-backend-api-database-url-prod`
 - override with `INFRA_BACKEND_API_DATABASE_URL_SECRET_NAME` when a different secret name is needed
 
 You can write the same value to both Secrets Manager and SSM with:
