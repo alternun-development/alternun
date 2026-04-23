@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 
 const { SignupService } = require('../src/modules/auth-exchange/services/signup.service.ts');
+const { resolveSignupProviderName } = require('../src/modules/auth-exchange/services/signup/signup.utils.ts');
 
 test('SignupService calls Supabase signup with a derived name', async () => {
   let observedBody = null;
@@ -154,6 +155,34 @@ test('SignupService keeps duplicate signups generic when the database error is n
     emailAlreadyRegistered: false,
     confirmationEmailSent: false,
   });
+});
+
+test('resolveSignupProviderName infers better-auth when the Better Auth URL is configured', () => {
+  assert.equal(
+    resolveSignupProviderName({
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
+    }),
+    'better-auth'
+  );
+});
+
+test('resolveSignupProviderName infers better-auth from the auth exchange URL when needed', () => {
+  assert.equal(
+    resolveSignupProviderName({
+      AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+    }),
+    'better-auth'
+  );
+});
+
+test('resolveSignupProviderName still honors an explicit Supabase rollback flag', () => {
+  assert.equal(
+    resolveSignupProviderName({
+      AUTH_EXECUTION_PROVIDER: 'supabase',
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
+    }),
+    'supabase'
+  );
 });
 
 test('SignupService returns the verification flow when auth.users already has an unverified email', async () => {
