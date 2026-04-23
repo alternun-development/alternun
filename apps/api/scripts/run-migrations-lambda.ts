@@ -20,6 +20,8 @@ interface Migration {
 const skippedMigrationVersions = new Set(['20260417_0009', '20260417_0010']);
 
 function createPoolConfig(databaseUrl: string): ConstructorParameters<typeof Pool>[0] {
+  const searchPathOptions = '-c search_path=public';
+
   try {
     const url = new URL(databaseUrl);
     return {
@@ -29,11 +31,13 @@ function createPoolConfig(databaseUrl: string): ConstructorParameters<typeof Poo
       port: url.port ? Number(url.port) : undefined,
       database: url.pathname.replace(/^\/+/, '') || undefined,
       ssl: url.hostname.includes('supabase') ? { rejectUnauthorized: false } : false,
+      options: searchPathOptions,
     };
   } catch {
     return {
       connectionString: databaseUrl,
       ssl: databaseUrl.includes('supabase') ? { rejectUnauthorized: false } : false,
+      options: searchPathOptions,
     };
   }
 }
@@ -128,12 +132,15 @@ export async function initMigrations(): Promise<void> {
 
   const databaseUrl =
     process.env.INFRA_BACKEND_API_DATABASE_URL ??
+    process.env.DATABASE_URL_DEV ??
+    process.env.DATABASE_URL_DEV_IPV4 ??
+    process.env.DATABASE_URL_DEV_NOIPV4 ??
     process.env.DATABASE_URL ??
     process.env.SUPABASE_DATABASE_URL;
 
   if (!databaseUrl) {
     console.warn(
-      '[migrations] INFRA_BACKEND_API_DATABASE_URL / DATABASE_URL / SUPABASE_DATABASE_URL not set, skipping'
+      '[migrations] INFRA_BACKEND_API_DATABASE_URL / DATABASE_URL_DEV / DATABASE_URL / SUPABASE_DATABASE_URL not set, skipping'
     );
     return;
   }

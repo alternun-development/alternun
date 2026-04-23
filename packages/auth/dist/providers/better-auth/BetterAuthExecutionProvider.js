@@ -438,9 +438,6 @@ export class BetterAuthExecutionProvider {
             const needsEmailVerification = typeof (result === null || result === void 0 ? void 0 : result.needsEmailVerification) === 'boolean'
                 ? result.needsEmailVerification
                 : !verifiedEmailSignup || !accessToken;
-            const emailAlreadyRegistered = typeof (result === null || result === void 0 ? void 0 : result.emailAlreadyRegistered) === 'boolean'
-                ? result.emailAlreadyRegistered
-                : false;
             const confirmationEmailSent = typeof (result === null || result === void 0 ? void 0 : result.confirmationEmailSent) === 'boolean'
                 ? result.confirmationEmailSent
                 : !verifiedEmailSignup || !accessToken;
@@ -448,7 +445,7 @@ export class BetterAuthExecutionProvider {
                 session: verifiedEmailSignup ? normalizedSession : null,
                 externalIdentity: (_b = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _b !== void 0 ? _b : null,
                 needsEmailVerification,
-                emailAlreadyRegistered,
+                emailAlreadyRegistered: false,
                 confirmationEmailSent,
             };
         }
@@ -473,9 +470,6 @@ export class BetterAuthExecutionProvider {
             const needsEmailVerification = typeof (result === null || result === void 0 ? void 0 : result.needsEmailVerification) === 'boolean'
                 ? result.needsEmailVerification
                 : !verifiedEmailSignup || !accessToken;
-            const emailAlreadyRegistered = typeof (result === null || result === void 0 ? void 0 : result.emailAlreadyRegistered) === 'boolean'
-                ? result.emailAlreadyRegistered
-                : false;
             const confirmationEmailSent = typeof (result === null || result === void 0 ? void 0 : result.confirmationEmailSent) === 'boolean'
                 ? result.confirmationEmailSent
                 : !verifiedEmailSignup || !accessToken;
@@ -483,7 +477,7 @@ export class BetterAuthExecutionProvider {
                 session: verifiedEmailSignup ? normalizedSession : null,
                 externalIdentity: (_e = normalizedSession === null || normalizedSession === void 0 ? void 0 : normalizedSession.externalIdentity) !== null && _e !== void 0 ? _e : null,
                 needsEmailVerification,
-                emailAlreadyRegistered,
+                emailAlreadyRegistered: false,
                 confirmationEmailSent,
             };
         }
@@ -501,9 +495,6 @@ export class BetterAuthExecutionProvider {
         const needsEmailVerification = typeof (response === null || response === void 0 ? void 0 : response.needsEmailVerification) === 'boolean'
             ? response.needsEmailVerification
             : !verifiedEmailSignup || !accessToken;
-        const emailAlreadyRegistered = typeof (response === null || response === void 0 ? void 0 : response.emailAlreadyRegistered) === 'boolean'
-            ? response.emailAlreadyRegistered
-            : false;
         const confirmationEmailSent = typeof (response === null || response === void 0 ? void 0 : response.confirmationEmailSent) === 'boolean'
             ? response.confirmationEmailSent
             : !verifiedEmailSignup || !accessToken;
@@ -511,7 +502,7 @@ export class BetterAuthExecutionProvider {
             session: verifiedEmailSignup ? session : null,
             externalIdentity: (_j = session === null || session === void 0 ? void 0 : session.externalIdentity) !== null && _j !== void 0 ? _j : null,
             needsEmailVerification,
-            emailAlreadyRegistered,
+            emailAlreadyRegistered: false,
             confirmationEmailSent,
         };
     }
@@ -739,6 +730,12 @@ export class BetterAuthExecutionProvider {
         return this.signUp({ email, password, locale });
     }
     async resendEmailConfirmation(email) {
+        if (this.options.baseUrl) {
+            await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/send-verification-email', {
+                email,
+            });
+            return;
+        }
         if (this.emailFallbackProvider) {
             await this.emailFallbackProvider.resendEmailConfirmation(email);
             return;

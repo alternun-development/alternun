@@ -1,9 +1,9 @@
-import { pgTable, text, timestamp, boolean, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
-  sub: uuid('sub').unique(),
+  sub: text('sub').unique(),
   iss: text('iss'),
   aud: text('aud'),
   name: text('name'),

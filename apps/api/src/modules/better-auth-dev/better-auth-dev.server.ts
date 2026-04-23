@@ -137,6 +137,9 @@ export function createBetterAuthDevAuth(
       disableOriginCheck: false,
       skipTrailingSlashes: true,
       defaultCookieDomain: cookieDomain,
+      database: {
+        generateId: 'uuid',
+      },
     },
     telemetry: {
       enabled: false,

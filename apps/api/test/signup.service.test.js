@@ -3,7 +3,7 @@ const test = require('node:test');
 
 const { SignupService } = require('../src/modules/auth-exchange/services/signup.service.ts');
 
-test('SignupService calls Better Auth signUpEmail with a derived name', async () => {
+test('SignupService calls Supabase signup with a derived name', async () => {
   let observedBody = null;
   const originalEnv = { ...process.env };
 
@@ -14,15 +14,16 @@ test('SignupService calls Better Auth signUpEmail with a derived name', async ()
       signUpEmail: async ({ body }) => {
         observedBody = body;
         return {
-          token: 'better-auth-signup-token',
+          session: null,
           user: {
             id: 'user-123',
-            createdAt: new Date('2026-04-20T00:00:00.000Z'),
-            updatedAt: new Date('2026-04-20T00:00:00.000Z'),
+            created_at: '2026-04-20T00:00:00.000Z',
+            updated_at: '2026-04-20T00:00:00.000Z',
             email: 'ada@example.com',
-            emailVerified: false,
-            name: 'ada',
-            image: null,
+            email_confirmed_at: null,
+            user_metadata: {
+              name: 'ada',
+            },
           },
         };
       },
@@ -49,8 +50,8 @@ test('SignupService calls Better Auth signUpEmail with a derived name', async ()
       accessToken: null,
       user: {
         id: 'user-123',
-        createdAt: new Date('2026-04-20T00:00:00.000Z'),
-        updatedAt: new Date('2026-04-20T00:00:00.000Z'),
+        createdAt: '2026-04-20T00:00:00.000Z',
+        updatedAt: '2026-04-20T00:00:00.000Z',
         email: 'ada@example.com',
         emailVerified: false,
         name: 'ada',
@@ -61,18 +62,21 @@ test('SignupService calls Better Auth signUpEmail with a derived name', async ()
   }
 });
 
-test('SignupService exposes a session only after Better Auth reports a verified email', async () => {
+test('SignupService exposes a session only after Supabase reports a verified email', async () => {
   const service = new SignupService({
     signUpEmail: async () => ({
-      token: 'better-auth-signup-token',
+      session: {
+        access_token: 'supabase-signup-token',
+      },
       user: {
         id: 'user-123',
-        createdAt: new Date('2026-04-20T00:00:00.000Z'),
-        updatedAt: new Date('2026-04-20T00:00:00.000Z'),
+        created_at: '2026-04-20T00:00:00.000Z',
+        updated_at: '2026-04-20T00:00:00.000Z',
         email: 'ada@example.com',
-        emailVerified: true,
-        name: 'ada',
-        image: null,
+        email_confirmed_at: '2026-04-20T00:00:00.000Z',
+        user_metadata: {
+          name: 'ada',
+        },
       },
     }),
   });
@@ -86,12 +90,12 @@ test('SignupService exposes a session only after Better Auth reports a verified 
     needsEmailVerification: false,
     emailAlreadyRegistered: false,
     confirmationEmailSent: false,
-    token: 'better-auth-signup-token',
-    accessToken: 'better-auth-signup-token',
+    token: 'supabase-signup-token',
+    accessToken: 'supabase-signup-token',
     user: {
       id: 'user-123',
-      createdAt: new Date('2026-04-20T00:00:00.000Z'),
-      updatedAt: new Date('2026-04-20T00:00:00.000Z'),
+      createdAt: '2026-04-20T00:00:00.000Z',
+      updatedAt: '2026-04-20T00:00:00.000Z',
       email: 'ada@example.com',
       emailVerified: true,
       name: 'ada',
@@ -99,15 +103,19 @@ test('SignupService exposes a session only after Better Auth reports a verified 
   });
 });
 
-test('SignupService returns duplicate-account flags for Better Auth duplicate errors', async () => {
+test('SignupService returns duplicate-account flags for duplicate errors', async () => {
   const service = new SignupService({
     signUpEmail: async () => {
       throw {
-        status: 409,
         message: 'Email already exists',
+        error: {
+          code: '23505',
+          constraint: 'users_email_partial_key',
+          detail: 'duplicate key value violates unique constraint "users_email_partial_key"',
+        },
       };
     },
-  });
+  }, async () => false);
 
   const result = await service.signUp({
     email: 'ada@example.com',
@@ -116,7 +124,63 @@ test('SignupService returns duplicate-account flags for Better Auth duplicate er
 
   assert.deepEqual(result, {
     needsEmailVerification: true,
-    emailAlreadyRegistered: true,
+    emailAlreadyRegistered: false,
+    confirmationEmailSent: false,
+  });
+});
+
+test('SignupService keeps duplicate signups generic when the database error is nested', async () => {
+  const service = new SignupService({
+    signUpEmail: async () => {
+      throw {
+        message: 'Failed to create user',
+        error: {
+          message: 'Failed query: insert into auth.users ...',
+          code: '23505',
+          constraint: 'users_email_partial_key',
+          detail: 'duplicate key value violates unique constraint "users_email_partial_key"',
+        },
+      };
+    },
+  }, async () => false);
+
+  const result = await service.signUp({
+    email: 'ada@example.com',
+    password: 'Password123!',
+  });
+
+  assert.deepEqual(result, {
+    needsEmailVerification: true,
+    emailAlreadyRegistered: false,
+    confirmationEmailSent: false,
+  });
+});
+
+test('SignupService returns the verification flow when auth.users already has an unverified email', async () => {
+  const service = new SignupService(
+    {
+      signUpEmail: async () => {
+        throw {
+          message: 'Failed to create user',
+          error: {
+            message: 'Failed query: insert into auth.users ...',
+            code: '23505',
+            constraint: 'users_email_partial_key',
+          },
+        };
+      },
+    },
+    async () => true
+  );
+
+  const result = await service.signUp({
+    email: 'ada@example.com',
+    password: 'Password123!',
+  });
+
+  assert.deepEqual(result, {
+    needsEmailVerification: true,
+    emailAlreadyRegistered: false,
     confirmationEmailSent: false,
   });
 });

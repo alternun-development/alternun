@@ -158,6 +158,34 @@ test('AlternunAuthFacade preserves email sign-up flags', async () => {
   assert.equal(result.confirmationEmailSent, false);
 });
 
+test('AlternunAuthFacade sends Better Auth verification emails through the email provider', async () => {
+  let executionResendCalls = 0;
+  let emailResendCalls = 0;
+
+  const { facade } = createFacade({
+    executionProvider: {
+      name: 'better-auth',
+      resendEmailConfirmation: async () => {
+        executionResendCalls += 1;
+      },
+    },
+    emailProvider: {
+      name: 'postmark',
+      sendVerificationEmail: async () => {
+        emailResendCalls += 1;
+      },
+      sendPasswordResetEmail: async () => {},
+      sendMagicLink: async () => {},
+      healthcheck: async () => ({ ok: true, provider: 'postmark' }),
+    },
+  });
+
+  await facade.resendEmailConfirmation('ada@example.com');
+
+  assert.equal(executionResendCalls, 0);
+  assert.equal(emailResendCalls, 1);
+});
+
 test('AlternunAuthFacade delegates password reset email requests to the execution provider helper when available', async () => {
   let observedRequest = null;
   const { facade } = createFacade({

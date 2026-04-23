@@ -12,6 +12,7 @@ test('resolveDatabaseUrl prefers the dedicated backend database on testnet-align
     const env = {
       ALTERNUN_TESTNET_MODE: 'on',
       INFRA_BACKEND_API_DATABASE_URL: 'postgresql://backend:backend@127.0.0.1:5432/backend',
+      DATABASE_URL_DEV: 'postgresql://dev:dev@127.0.0.1:5432/dev',
       DATABASE_URL: 'postgresql://prod:prod@127.0.0.1:5432/prod',
       SUPABASE_DATABASE_URL: 'postgresql://supabase:supabase@127.0.0.1:5432/supabase',
     };
@@ -22,9 +23,21 @@ test('resolveDatabaseUrl prefers the dedicated backend database on testnet-align
   }
 });
 
+test('resolveDatabaseUrl prefers the dedicated dev database before shared fallback', () => {
+  const env = {
+    INFRA_BACKEND_API_DATABASE_URL: '',
+    DATABASE_URL_DEV: 'postgresql://dev:dev@127.0.0.1:5432/dev',
+    DATABASE_URL: 'postgresql://shared:shared@127.0.0.1:5432/shared',
+    SUPABASE_DATABASE_URL: 'postgresql://supabase:supabase@127.0.0.1:5432/supabase',
+  };
+
+  assert.equal(resolveDatabaseUrl(env), env.DATABASE_URL_DEV);
+});
+
 test('resolveDatabaseUrl falls back to the shared database outside testnet stages', () => {
   const env = {
     INFRA_BACKEND_API_DATABASE_URL: '',
+    DATABASE_URL_DEV: '',
     DATABASE_URL: 'postgresql://shared:shared@127.0.0.1:5432/shared',
     SUPABASE_DATABASE_URL: 'postgresql://supabase:supabase@127.0.0.1:5432/supabase',
   };

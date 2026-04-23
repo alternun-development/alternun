@@ -62,7 +62,7 @@ aws ssm put-parameter \
 
 | Parameter                 | Key                                       | Value                                                                                                             | Notes                                            |
 | ------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Supabase URL              | `expo-public-supabase-url`                | `dev/testnet: https://aznfyazjndfniwsocdka.supabase.co`<br>`production: https://rjebeugdvwbjpaktrrbx.supabase.co` | Stage-scoped public auth DB URL                  |
+| Supabase URL              | `expo-public-supabase-url`                | `dev/testnet: https://rjebeugdvwbjpaktrrbx.supabase.co`<br>`production: https://rjebeugdvwbjpaktrrbx.supabase.co` | Stage-scoped public auth DB URL                  |
 | Supabase Key              | `expo-public-supabase-key`                | `dev/testnet: sb_publishable_<redacted>`<br>`production: sb_publishable_<redacted>`                               | Stage-scoped public/publishable key              |
 | WalletConnect ID          | `expo-public-walletconnect-project-id`    | `d40ba2687be51a76...`                                                                                             | Web3 integration                                 |
 | Authentik Issuer          | `expo-public-authentik-issuer`            | `https://testnet.sso.alternun.co/...`                                                                             | OIDC server URL                                  |
