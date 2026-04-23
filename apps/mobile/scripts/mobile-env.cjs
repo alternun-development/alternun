@@ -211,7 +211,12 @@ function resolveMobileAuthExecutionProvider(env = process.env, options = {}) {
     return normalized;
   }
 
-  const betterAuthUrl = resolveMobileBetterAuthUrl(env, options);
+  const betterAuthUrl = readEnvValue(
+    env,
+    fileEnv,
+    ['EXPO_PUBLIC_AUTH_EXCHANGE_URL', 'AUTH_EXCHANGE_URL'],
+    ''
+  );
 
   return betterAuthUrl ? 'better-auth' : 'supabase';
 }
