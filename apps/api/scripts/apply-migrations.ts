@@ -5,13 +5,16 @@ import { Pool, type PoolClient } from 'pg';
 
 const databaseUrl =
   process.env.INFRA_BACKEND_API_DATABASE_URL ??
+  process.env.DATABASE_URL_DEV ??
+  process.env.DATABASE_URL_DEV_IPV4 ??
+  process.env.DATABASE_URL_DEV_NOIPV4 ??
   process.env.DATABASE_URL ??
   process.env.SUPABASE_DATABASE_URL;
 const skippedMigrationVersions = new Set(['20260417_0009', '20260417_0010']);
 
 if (!databaseUrl) {
   console.error(
-    '❌ INFRA_BACKEND_API_DATABASE_URL, DATABASE_URL, or SUPABASE_DATABASE_URL not set'
+    '❌ INFRA_BACKEND_API_DATABASE_URL, DATABASE_URL_DEV, DATABASE_URL_DEV_IPV4, DATABASE_URL_DEV_NOIPV4, DATABASE_URL, or SUPABASE_DATABASE_URL not set'
   );
   process.exit(1);
 }
@@ -19,6 +22,8 @@ if (!databaseUrl) {
 const MIGRATIONS_DIR = resolve('../../supabase/migrations');
 
 function createPoolConfig(databaseUrl: string): ConstructorParameters<typeof Pool>[0] {
+  const searchPathOptions = '-c search_path=public';
+
   try {
     const url = new URL(databaseUrl);
     return {
@@ -28,11 +33,13 @@ function createPoolConfig(databaseUrl: string): ConstructorParameters<typeof Poo
       port: url.port ? Number(url.port) : undefined,
       database: url.pathname.replace(/^\/+/, '') || undefined,
       ssl: url.hostname.includes('supabase') ? { rejectUnauthorized: false } : false,
+      options: searchPathOptions,
     };
   } catch {
     return {
       connectionString: databaseUrl,
       ssl: databaseUrl.includes('supabase') ? { rejectUnauthorized: false } : false,
+      options: searchPathOptions,
     };
   }
 }

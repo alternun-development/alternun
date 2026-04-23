@@ -231,12 +231,12 @@ Use `pnpm release patch` only when you need a versioned release; it is not the p
 
 ## Environment Variable Reference
 
-| Variable                                  | Local                                      | Testnet                                    | Purpose                   |
-| ----------------------------------------- | ------------------------------------------ | ------------------------------------------ | ------------------------- |
-| `EXPO_PUBLIC_BETTER_AUTH_URL`             | `http://localhost:8082/auth`               | `https://testnet.api.alternun.co/auth`     | Auth service base URL     |
-| `EXPO_PUBLIC_SUPABASE_URL`                | `https://rjebeugdvwbjpaktrrbx.supabase.co` | `https://rjebeugdvwbjpaktrrbx.supabase.co` | User data (same for all)  |
-| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` | `supabase`                                 | `authentik`                                | Discord button visibility |
-| `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER`     | `better-auth`                              | `better-auth`                              | Auth provider to use      |
+| Variable                                  | Local                                      | Testnet                                    | Purpose                    |
+| ----------------------------------------- | ------------------------------------------ | ------------------------------------------ | -------------------------- |
+| `EXPO_PUBLIC_BETTER_AUTH_URL`             | `http://localhost:8082/auth`               | `https://testnet.api.alternun.co/auth`     | Auth service base URL      |
+| `EXPO_PUBLIC_SUPABASE_URL`                | `https://rjebeugdvwbjpaktrrbx.supabase.co` | `https://rjebeugdvwbjpaktrrbx.supabase.co` | User data (dev/testnet DB) |
+| `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` | `supabase`                                 | `authentik`                                | Discord button visibility  |
+| `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER`     | `better-auth`                              | `better-auth`                              | Auth provider to use       |
 
 ---
 

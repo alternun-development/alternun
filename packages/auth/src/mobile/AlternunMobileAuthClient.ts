@@ -862,7 +862,7 @@ export class AlternunMobileAuthClient implements AuthClient {
       if (isEmailAlreadyRegisteredError(message)) {
         return {
           needsEmailVerification: true,
-          emailAlreadyRegistered: true,
+          emailAlreadyRegistered: false,
           confirmationEmailSent: false,
         };
       }

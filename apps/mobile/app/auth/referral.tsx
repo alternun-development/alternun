@@ -123,59 +123,62 @@ export default function ReferralRoute(): React.JSX.Element {
     );
   }, [formData]);
 
-  const saveReferralAndComplete = React.useCallback(async (userId: string): Promise<void> => {
-    // Check for form data or pending data from sessionStorage
-    let dataToSave = null;
+  const saveReferralAndComplete = React.useCallback(
+    async (userId: string): Promise<void> => {
+      // Check for form data or pending data from sessionStorage
+      let dataToSave = null;
 
-    if (hasAnyReferralData) {
-      dataToSave = {
-        referred_by_username: formData.referredByUsername ?? null,
-        referred_by_email: formData.referredByEmail ?? null,
-        invitation_code: formData.invitationCode ?? null,
-      };
-    } else if (typeof window !== 'undefined') {
-      const pending = sessionStorage.getItem('pendingReferralData');
-      if (pending) {
-        try {
-          const parsed = JSON.parse(pending) as Record<string, unknown>;
-          dataToSave = parsed as typeof dataToSave;
-          sessionStorage.removeItem('pendingReferralData');
-        } catch {
-          // Invalid JSON, ignore
+      if (hasAnyReferralData) {
+        dataToSave = {
+          referred_by_username: formData.referredByUsername ?? null,
+          referred_by_email: formData.referredByEmail ?? null,
+          invitation_code: formData.invitationCode ?? null,
+        };
+      } else if (typeof window !== 'undefined') {
+        const pending = sessionStorage.getItem('pendingReferralData');
+        if (pending) {
+          try {
+            const parsed = JSON.parse(pending) as Record<string, unknown>;
+            dataToSave = parsed as typeof dataToSave;
+            sessionStorage.removeItem('pendingReferralData');
+          } catch {
+            // Invalid JSON, ignore
+          }
         }
       }
-    }
 
-    if (!dataToSave) {
-      return;
-    }
-
-    try {
-      const sessionToken = await client.getSessionToken();
-      if (!sessionToken) {
+      if (!dataToSave) {
         return;
       }
 
-      const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
-      const response = await fetch(`${apiBaseUrl}/v1/referrals`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${sessionToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          ...dataToSave,
-        }),
-      });
+      try {
+        const sessionToken = await client.getSessionToken();
+        if (!sessionToken) {
+          return;
+        }
 
-      if (!response.ok) {
+        const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
+        const response = await fetch(`${apiBaseUrl}/v1/referrals`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            ...dataToSave,
+          }),
+        });
+
+        if (!response.ok) {
+          // Best-effort save - don't fail auth if referral save fails
+        }
+      } catch {
         // Best-effort save - don't fail auth if referral save fails
       }
-    } catch {
-      // Best-effort save - don't fail auth if referral save fails
-    }
-  }, [client, formData, hasAnyReferralData]);
+    },
+    [client, formData, hasAnyReferralData]
+  );
 
   const handleSkip = async (): Promise<void> => {
     setIsSubmitting(true);
@@ -208,7 +211,7 @@ export default function ReferralRoute(): React.JSX.Element {
                 referred_by_username: formData.referredByUsername || null,
                 referred_by_email: formData.referredByEmail || null,
                 invitation_code: formData.invitationCode || null,
-              }),
+              })
             );
           }
         }
@@ -246,10 +249,7 @@ export default function ReferralRoute(): React.JSX.Element {
       await new Promise<void>((resolve, reject) => {
         void handleAuthentikCallback(INITIAL_CALLBACK_SEARCH, {
           onSessionReady: async (_claims, _tokens: OidcTokens, session: OidcSession) => {
-            supabaseUserId = await authentikPreset.onSessionReady(
-              session.claims,
-              session.provider
-            );
+            supabaseUserId = await authentikPreset.onSessionReady(session.claims, session.provider);
           },
         })
           .then((s) => {
@@ -275,8 +275,8 @@ export default function ReferralRoute(): React.JSX.Element {
     stripAuthCallbackTokensFromUrl(window.location.href);
 
     await finalizeSupabaseCallbackSession(callbackClient, {
-      accessToken: callbackPayload.accessToken as string,
-      refreshToken: callbackPayload.refreshToken as string,
+      accessToken: callbackPayload.accessToken,
+      refreshToken: callbackPayload.refreshToken,
     });
 
     /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -317,17 +317,19 @@ export default function ReferralRoute(): React.JSX.Element {
   }, [isNavigationReady, callbackPayload, router, user, saveReferralAndComplete]);
 
   if (successMessage) {
+    const displayedSuccessMessage: string = String(successMessage ?? '');
+
     return (
       <View style={styles.container}>
         <AuroraBackground />
         <ReferralNavbar user={user} />
         <View style={styles.screen}>
           <View style={styles.card}>
-          <Text style={styles.title}>
-            {t('auth.referral.successTitle', undefined, 'All Set!')}
-          </Text>
-          <Text style={styles.message}>{successMessage}</Text>
-          <ActivityIndicator size="large" color="#1ccba1" style={styles.spinner} />
+            <Text style={styles.title}>
+              {t('auth.referral.successTitle', undefined, 'All Set!')}
+            </Text>
+            <Text style={styles.message}>{displayedSuccessMessage}</Text>
+            <ActivityIndicator size='large' color='#1ccba1' style={styles.spinner} />
           </View>
           <ToastSystem toasts={toasts} onDismiss={dismissToast} />
         </View>
@@ -336,24 +338,24 @@ export default function ReferralRoute(): React.JSX.Element {
   }
 
   if (errorMessage) {
+    const displayedErrorMessage: string = String(errorMessage ?? '');
+
     return (
       <View style={styles.container}>
         <AuroraBackground />
         <ReferralNavbar user={user} />
         <View style={styles.screen}>
-        <View style={styles.card}>
-          <Text style={styles.title}>
-            {t('authCallback.errors.title', undefined, 'Error')}
-          </Text>
-          <Text style={styles.message}>{errorMessage}</Text>
-          <Pressable onPress={() => router.replace('/auth')} style={styles.button}>
-            <Text style={styles.buttonLabel}>
-              {t('authModal.actions.backToSignIn', undefined, 'Back to sign in')}
-            </Text>
-          </Pressable>
+          <View style={styles.card}>
+            <Text style={styles.title}>{t('authCallback.errors.title', undefined, 'Error')}</Text>
+            <Text style={styles.message}>{displayedErrorMessage}</Text>
+            <Pressable onPress={() => router.replace('/auth')} style={styles.button}>
+              <Text style={styles.buttonLabel}>
+                {t('authModal.actions.backToSignIn', undefined, 'Back to sign in')}
+              </Text>
+            </Pressable>
+          </View>
+          <ToastSystem toasts={toasts} onDismiss={dismissToast} />
         </View>
-        <ToastSystem toasts={toasts} onDismiss={dismissToast} />
-      </View>
       </View>
     );
   }
@@ -364,106 +366,105 @@ export default function ReferralRoute(): React.JSX.Element {
       <ReferralNavbar user={user} />
       <ScrollView style={styles.screen} contentContainerStyle={styles.screenContent}>
         <View style={styles.card}>
-        <Text style={styles.title}>{t('auth.referral.title', undefined, 'You\'re Invited!')}</Text>
-        <Text style={styles.description}>
-          {user
-            ? t(
-              'auth.referral.description',
-              undefined,
-              'Help us learn how you heard about us. You can skip this if you prefer.'
-            )
-            : t(
-              'auth.referral.standaloneDescription',
-              undefined,
-              'Help us learn how you heard about us, then sign in to get started.'
-            )}
-        </Text>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>
-            {t('auth.referral.referredByUsername', undefined, 'Referred by username (optional)')}
+          <Text style={styles.title}>{t('auth.referral.title', undefined, "You're Invited!")}</Text>
+          <Text style={styles.description}>
+            {user
+              ? t(
+                  'auth.referral.description',
+                  undefined,
+                  'Help us learn how you heard about us. You can skip this if you prefer.'
+                )
+              : t(
+                  'auth.referral.standaloneDescription',
+                  undefined,
+                  'Help us learn how you heard about us, then sign in to get started.'
+                )}
           </Text>
-          <TextInput
-            style={styles.input}
-            placeholder={t('auth.referral.usernamePlaceholder', undefined, 'e.g., @john_doe')}
-            placeholderTextColor="rgba(248, 250, 252, 0.4)"
-            value={formData.referredByUsername}
-            onChangeText={(text) =>
-              setFormData({ ...formData, referredByUsername: text })
-            }
-            editable={!isSubmitting}
-          />
-        </View>
 
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>
-            {t('auth.referral.referredByEmail', undefined, 'Referred by email (optional)')}
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder={t('auth.referral.emailPlaceholder', undefined, 'e.g., friend@example.com')}
-            placeholderTextColor="rgba(248, 250, 252, 0.4)"
-            keyboardType="email-address"
-            value={formData.referredByEmail}
-            onChangeText={(text) =>
-              setFormData({ ...formData, referredByEmail: text })
-            }
-            editable={!isSubmitting}
-          />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>
-            {t('auth.referral.invitationCode', undefined, 'Invitation code (optional)')}
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder={t('auth.referral.codePlaceholder', undefined, 'e.g., INVITE123')}
-            placeholderTextColor="rgba(248, 250, 252, 0.4)"
-            value={formData.invitationCode}
-            onChangeText={(text) =>
-              setFormData({ ...formData, invitationCode: text })
-            }
-            editable={!isSubmitting}
-          />
-        </View>
-
-        <View style={styles.buttonGroup}>
-          <Pressable
-            style={[styles.button, styles.primaryButton]}
-            onPress={() => {
-              void handleSubmit();
-            }}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator size="small" color="#041710" />
-            ) : (
-              <Text style={styles.buttonLabel}>
-                {user
-                  ? t('auth.referral.submit', undefined, 'Continue')
-                  : t('auth.referral.submitStandalone', undefined, 'Continue to Sign In')}
-              </Text>
-            )}
-          </Pressable>
-
-          <Pressable
-            style={[styles.button, styles.secondaryButton]}
-            onPress={() => {
-              void handleSkip();
-            }}
-            disabled={isSubmitting}
-          >
-            <Text style={styles.secondaryButtonLabel}>
-              {user
-                ? t('auth.referral.skip', undefined, 'Skip')
-                : t('auth.referral.skipStandalone', undefined, 'Continue without Referral')}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>
+              {t('auth.referral.referredByUsername', undefined, 'Referred by username (optional)')}
             </Text>
-          </Pressable>
+            <TextInput
+              style={styles.input}
+              placeholder={t('auth.referral.usernamePlaceholder', undefined, 'e.g., @john_doe')}
+              placeholderTextColor='rgba(248, 250, 252, 0.4)'
+              value={formData.referredByUsername}
+              onChangeText={(text) => setFormData({ ...formData, referredByUsername: text })}
+              editable={!isSubmitting}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>
+              {t('auth.referral.referredByEmail', undefined, 'Referred by email (optional)')}
+            </Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t(
+                'auth.referral.emailPlaceholder',
+                undefined,
+                'e.g., friend@example.com'
+              )}
+              placeholderTextColor='rgba(248, 250, 252, 0.4)'
+              keyboardType='email-address'
+              value={formData.referredByEmail}
+              onChangeText={(text) => setFormData({ ...formData, referredByEmail: text })}
+              editable={!isSubmitting}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>
+              {t('auth.referral.invitationCode', undefined, 'Invitation code (optional)')}
+            </Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('auth.referral.codePlaceholder', undefined, 'e.g., INVITE123')}
+              placeholderTextColor='rgba(248, 250, 252, 0.4)'
+              value={formData.invitationCode}
+              onChangeText={(text) => setFormData({ ...formData, invitationCode: text })}
+              editable={!isSubmitting}
+            />
+          </View>
+
+          <View style={styles.buttonGroup}>
+            <Pressable
+              style={[styles.button, styles.primaryButton]}
+              onPress={() => {
+                void handleSubmit();
+              }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size='small' color='#041710' />
+              ) : (
+                <Text style={styles.buttonLabel}>
+                  {user
+                    ? t('auth.referral.submit', undefined, 'Continue')
+                    : t('auth.referral.submitStandalone', undefined, 'Continue to Sign In')}
+                </Text>
+              )}
+            </Pressable>
+
+            <Pressable
+              style={[styles.button, styles.secondaryButton]}
+              onPress={() => {
+                void handleSkip();
+              }}
+              disabled={isSubmitting}
+            >
+              <Text style={styles.secondaryButtonLabel}>
+                {user
+                  ? t('auth.referral.skip', undefined, 'Skip')
+                  : t('auth.referral.skipStandalone', undefined, 'Continue without Referral')}
+              </Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
-      <ToastSystem toasts={toasts} onDismiss={dismissToast} />
-    </ScrollView>
+        <ToastSystem toasts={toasts} onDismiss={dismissToast} />
+      </ScrollView>
+    </View>
   );
 }
 
@@ -497,6 +498,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     fontFamily: 'Sculpin-Bold',
+  },
+  message: {
+    color: 'rgba(248,250,252,0.82)',
+    fontSize: 14,
+    lineHeight: 21,
   },
   description: {
     color: 'rgba(248,250,252,0.82)',

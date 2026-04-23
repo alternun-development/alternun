@@ -23,6 +23,10 @@
     }
   ],
   "extensionConfig": {
+    "workspace-env": {
+      "enabled": true,
+      "manifestPath": "config/env/manifest.cjs"
+    },
     "secrets-check": {
       "allowlist": [
         "DATABASE_PASSWORD=",

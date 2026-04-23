@@ -12,7 +12,7 @@ The mobile app uses a **stage-aware environment system** that automatically load
 
 ```
 .env                    # Shared defaults + localhost fallback for local dev
-.env.development        # Testnet deployment stage overrides
+.env.development        # Testnet deployment stage overrides (generated)
 .env.production          # Production deployment stage overrides
 .env.local              # Personal developer overrides (highest priority)
 ```
@@ -35,9 +35,9 @@ Contains deployment-agnostic values and fallback URLs:
 - Release update mode
 
 ```bash
-EXPO_PUBLIC_SUPABASE_URL=https://rjebeugdvwbjpaktrrbx.supabase.co
+EXPO_PUBLIC_SUPABASE_URL=https://aznfyazjndfniwsocdka.supabase.co
 EXPO_PUBLIC_SUPABASE_KEY=...
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
 # Localhost fallback for local development
 EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
 ...
@@ -49,8 +49,8 @@ Located: `apps/mobile/.env` (tracked in repo)
 
 Shared defaults for local development:
 
-- Better-auth URLs pointing to `http://localhost:8082`
-- Auth exchange URLs for local better-auth service
+- Supabase-backed auth for local signup/sign-in
+- Auth exchange URLs for local identity handoff
 - Supabase fallback URLs and shared web3 settings
 - Auth execution provider preference for local web dev
 
@@ -58,15 +58,14 @@ Used when developing locally without setting `STACK` variable.
 
 ### `.env.development` (Testnet Deployment)
 
-Located: `apps/mobile/.env.development` (locally created, gitignored)
+Located: `apps/mobile/.env.development` (generated from the canonical env manifest)
 
 **Stage trigger:** `STACK=dev`, `STACK=dashboard-dev`, or any `*testnet*`/`*development*` stage marker
 
 Contains testnet-specific overrides:
 
 ```bash
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
-EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
 AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange
 EXPO_PUBLIC_AUTHENTIK_ISSUER=https://testnet.sso.alternun.co/...
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
@@ -76,7 +75,7 @@ EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=60000  # 60 seconds for testnet
 
 **Key values:**
 
-- **Auth provider:** better-auth (local embedded auth service)
+- **Auth provider:** supabase (traditional `auth.users` signup flow)
 - **API endpoint:** `https://testnet.api.alternun.co`
 - **Authentik:** testnet SSO at `testnet.sso.alternun.co`
 - **Discord:** visible through Authentik social login
@@ -96,7 +95,7 @@ EXPO_PUBLIC_BETTER_AUTH_URL=https://api.alternun.co/auth
 AUTH_EXCHANGE_URL=https://api.alternun.co/auth/exchange
 EXPO_PUBLIC_AUTHENTIK_ISSUER=https://sso.alternun.co/...
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
-EXPO_PUBLIC_SUPABASE_URL=https://rjebeugdvwbjpaktrrbx.supabase.co
+EXPO_PUBLIC_SUPABASE_URL=https://aznfyazjndfniwsocdka.supabase.co
 EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=300000  # 300 seconds (5 min)
 ```
 
@@ -135,7 +134,7 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
 The build system loads environment files in this order, with **later files overriding earlier ones**:
 
 1. **`.env`** (shared defaults) — loaded first
-2. **`.env.development` or `.env.production`** (stage-specific) — overrides `.env` when `STACK` is set
+2. **`.env.development` or `.env.production`** (stage-specific, generated) — overrides `.env` when `STACK` is set
 3. **`.env.local`** (personal) — highest priority, overrides everything
 
 ### Example
@@ -325,7 +324,7 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
 | Variable                   | Example                                    | Purpose                                           |
 | -------------------------- | ------------------------------------------ | ------------------------------------------------- |
 | `EXPO_PUBLIC_API_URL`      | `https://testnet.api.alternun.co`          | API base URL (derived from stage if not explicit) |
-| `EXPO_PUBLIC_SUPABASE_URL` | `https://rjebeugdvwbjpaktrrbx.supabase.co` | Supabase API endpoint (shared)                    |
+| `EXPO_PUBLIC_SUPABASE_URL` | `https://aznfyazjndfniwsocdka.supabase.co` | Supabase API endpoint (dev/testnet DB)            |
 | `EXPO_PUBLIC_SUPABASE_KEY` | `sb_publishable_...`                       | Supabase anon key (shared)                        |
 
 ### Release Updates
@@ -366,11 +365,11 @@ STACK=dev pnpm run build:web
 
 ### Modifying Auth Configuration
 
-**For all stages:** Edit `.env`
+**For all stages:** Edit the canonical root env and run `pnpm env:sync`
 
-**For testnet only:** Edit `.env.development`
+**For testnet only:** Regenerate `.env.development` via `pnpm env:sync` or the mobile build pipeline
 
-**For production only:** Edit `.env.production`
+**For production only:** Generate `.env.production` from the mobile build pipeline
 
 **For personal testing:** Edit `.env.local`
 
@@ -384,7 +383,7 @@ STACK=dev pnpm run build:web
 
 **Fix:**
 
-1. Verify `.env.development` exists and contains correct URLs
+1. Run `pnpm env:sync` and verify `.env.development` contains the correct URLs
 2. Verify `STACK=dev` or `STACK=dashboard-dev` is set during deployment
 3. Hard refresh browser (Ctrl+Shift+R) to clear cache
 4. Check DevTools Network tab to confirm new request URL
@@ -397,7 +396,7 @@ STACK=dev pnpm run build:web
 
 **Fix:**
 
-1. Check `.env.development` has `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth`
+1. Check `.env.development` has `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase`
 2. Check `.env.production` has `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase`
 3. Check `.env.development` has `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` if you expect Discord on testnet
 4. Redeploy after fixing

@@ -15,6 +15,18 @@ interface SocialSignInErrorMessages {
   fallback: string;
 }
 
+const COMMON_SIGNUP_FAILURE_PATTERNS = [
+  'invalid email or password',
+  'invalid credentials',
+  'authentication failed',
+  'user not found',
+  'email not found',
+  'already registered',
+  'already exists',
+  'duplicate',
+  'incorrect password',
+];
+
 type HttpStatusLike = {
   status?: unknown;
   statusCode?: unknown;
@@ -118,6 +130,17 @@ export function normalizeAuthErrorMessage(value: unknown): string | null {
 
 export function getAuthErrorMessage(error: unknown, fallbackMessage: string): string {
   return normalizeAuthErrorMessage(error) ?? fallbackMessage;
+}
+
+export function getSignupErrorMessage(error: unknown, fallbackMessage: string): string {
+  const message = getAuthErrorMessage(error, fallbackMessage);
+  const normalized = message.toLowerCase();
+
+  if (COMMON_SIGNUP_FAILURE_PATTERNS.some((pattern) => normalized.includes(pattern))) {
+    return fallbackMessage;
+  }
+
+  return message;
 }
 
 function readHttpStatusCode(value: unknown): number | null {
