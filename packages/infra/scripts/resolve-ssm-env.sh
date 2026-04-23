@@ -22,6 +22,9 @@ declare -A SSM_PARAM_CACHE=()
 declare -a CACHE_EXPORT_VARS=(
   EXPO_PUBLIC_SUPABASE_URL
   EXPO_PUBLIC_SUPABASE_KEY
+  INFRA_BACKEND_API_SUPABASE_URL
+  INFRA_BACKEND_API_SUPABASE_ANON_KEY
+  INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY
   EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID
   EXPO_PUBLIC_AUTHENTIK_ISSUER
   EXPO_PUBLIC_AUTHENTIK_CLIENT_ID
@@ -48,6 +51,9 @@ if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
     EXPO_PUBLIC_SUPABASE_URL \
     EXPO_PUBLIC_SUPABASE_KEY \
     EXPO_PUBLIC_SUPABASE_ANON_KEY \
+    INFRA_BACKEND_API_SUPABASE_URL \
+    INFRA_BACKEND_API_SUPABASE_ANON_KEY \
+    INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY \
     AUTH_EXECUTION_PROVIDER \
     EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER \
     DATABASE_URL \
@@ -78,12 +84,31 @@ resolve_auth_execution_provider() {
   echo "supabase"
 }
 
+resolve_ssm_stage_name() {
+  local normalized
+  normalized=$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+
+  case "$normalized" in
+    dev|testnet|*testnet*|dashboard-dev|backend-dev|backend-api-dev|api-dev|identity-dev|auth-dev|authentik-dev|admin-dev|backoffice-dev|backoffice-admin-dev)
+      printf '%s\n' 'dev'
+      ;;
+    prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
+      printf '%s\n' 'prod'
+      ;;
+    *)
+      printf '%s' "$normalized"
+      ;;
+  esac
+}
+
+SSM_STAGE="$(resolve_ssm_stage_name "$STAGE")"
+
 # SSM parameter name builder: /{app}/{stage}/{param_key}
 # e.g. /alternun-infra/dev/expo-public-authentik-social-login-mode
 build_param_name() {
   local key=$1
   local prefix="${2:-${APP_NAME}}"
-  local stage="${3:-${STAGE}}"
+  local stage="${3:-${SSM_STAGE}}"
   echo "/${prefix}/${stage}/${key}"
 }
 
@@ -334,6 +359,8 @@ main() {
 
   export_env_from_ssm "EXPO_PUBLIC_SUPABASE_URL" "expo-public-supabase-url"
   export_env_from_ssm "EXPO_PUBLIC_SUPABASE_KEY" "expo-public-supabase-key"
+  export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_URL" "expo-public-supabase-url"
+  export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_ANON_KEY" "expo-public-supabase-key"
   export_env_from_ssm "EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID" "expo-public-walletconnect-project-id"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_ISSUER" "expo-public-authentik-issuer"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_CLIENT_ID" "expo-public-authentik-client-id"
