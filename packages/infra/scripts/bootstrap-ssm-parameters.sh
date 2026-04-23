@@ -40,6 +40,12 @@ case "$stage_normalized" in
     ;;
 esac
 
+if [ -z "${SUPABASE_KEY:-}" ]; then
+  echo "ERROR: Missing Supabase publishable key for stage '${STAGE}'." >&2
+  echo "Set EXPO_PUBLIC_SUPABASE_KEY_${stage_normalized^^} or SUPABASE_KEY_${stage_normalized^^} before bootstrapping SSM." >&2
+  exit 1
+fi
+
 # Parameter definitions: key → (value, description, tier)
 # tier: Standard (4KB) or Advanced (8KB)
 declare -A PARAMS=(

@@ -61,6 +61,7 @@ import LoadingButton from '../common/LoadingButton';
 import { AuthFooter } from './AuthFooter';
 import {
   getAuthErrorMessage,
+  getConfirmationCodeErrorMessage,
   getSocialSignInErrorMessage,
   getSignupErrorMessage,
 } from './authErrorMessages';
@@ -475,18 +476,25 @@ export default function AuthSignInScreen({
     return true;
   };
 
-  const normalizeEmailOrSetError = (rawEmail: string): string | null => {
+  const normalizeEmailOrSetError = (
+    rawEmail: string,
+    mode: 'form' | 'confirmation' = 'form'
+  ): string | null => {
     try {
       const normalizedEmail = parseEmailAddress(rawEmail);
       setInvalidEmail(false);
       return normalizedEmail;
-    } catch (validationError) {
-      setInvalidEmail(true);
-      clearRequiredField('email');
-      if (authStep === 'form') {
-        focusRequiredField('email');
+    } catch {
+      if (mode === 'confirmation') {
+        setLocalError(t('authModal.errors.confirmationCodeInvalid'));
+      } else {
+        setInvalidEmail(true);
+        clearRequiredField('email');
+        if (authStep === 'form') {
+          focusRequiredField('email');
+        }
+        setLocalError(t('authModal.validation.validEmail'));
       }
-      setLocalError(t('authModal.validation.validEmail'));
       return null;
     }
   };
@@ -725,7 +733,7 @@ export default function AuthSignInScreen({
         return;
       }
 
-      const normalizedEmail = normalizeEmailOrSetError(emailCandidate);
+      const normalizedEmail = normalizeEmailOrSetError(emailCandidate, 'confirmation');
       if (!normalizedEmail) {
         setSubmitMode(null);
         return;
@@ -755,7 +763,7 @@ export default function AuthSignInScreen({
       setResendCooldown(0);
       transitionToSignInForm(normalizedEmail, t('authModal.notices.emailConfirmedSignIn'));
     } catch (authError) {
-      const errorMsg = getAuthErrorMessage(
+      const errorMsg = getConfirmationCodeErrorMessage(
         authError,
         t('authModal.errors.confirmationCodeInvalid')
       );

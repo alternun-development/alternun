@@ -10,6 +10,12 @@ describe('mobile build script cleanup', () => {
 
     expect(buildScript).toContain('clear_previous_export_artifacts()');
     expect(buildScript).toContain('stage_supabase_key="${EXPO_PUBLIC_SUPABASE_KEY:-${EXPO_PUBLIC_SUPABASE_ANON_KEY:-}}"');
+    expect(buildScript).toContain(
+      "grep -E '^(export[[:space:]]+)?EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)=' ../../.env.local"
+    );
+    expect(buildScript).toContain(
+      'ERROR: EXPO_PUBLIC_SUPABASE_KEY is required for mobile stage'
+    );
     expect(buildScript).toContain('EXPO_PUBLIC_SUPABASE_KEY=${stage_supabase_key}');
     expect(buildScript).toContain('rm -rf dist .expo');
     expect(buildScript).toContain('rm -rf node_modules/.cache/expo node_modules/.cache/metro');

@@ -1,3 +1,43 @@
+## [1.0.203](https://github.com/alternun-development/alternun/compare/v1.0.203-dev.0...v1.0.203) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.203-dev.0
+- **repo:** test(mobile): build, build-script.test
+- **repo:** test(mobile): build, build-script.test
+- **repo:** test(api,mobile,infra): connection, database-connection.test, build, AuthSignInScreen
+
+## [1.0.203](https://github.com/alternun-development/alternun/compare/v1.0.202-dev.0...v1.0.203) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(mobile): build, build-script.test
+- **repo:** test(mobile): build, build-script.test
+- **repo:** test(api,mobile,infra): connection, database-connection.test, build, AuthSignInScreen
+
+## [1.0.202](https://github.com/alternun-development/alternun/compare/v1.0.201-dev.1...v1.0.202) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(infra,scripts): bootstrap-backend-database-secret.test, apply-migrations-local, bootstrap-backend-database-secret, deploy-with-migrations
+- **repo:** chore(version): restore mobile app version for develop
+- **repo:** chore: release v1.0.201
+- **repo:** chore: release v1.0.201
+- **repo:** chore(infra): standardize backend db secrets
+
+## [1.0.201](https://github.com/alternun-development/alternun/compare/v1.0.201-dev.1...v1.0.201) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.201
+- **repo:** chore(infra): standardize backend db secrets
+
+## [1.0.201](https://github.com/alternun-development/alternun/compare/v1.0.201-dev.1...v1.0.201) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** chore(infra): standardize backend db secrets
+
 ## [1.0.201](https://github.com/alternun-development/alternun/compare/v1.0.201-dev.0...v1.0.201) (2026-04-23)
 
 ### Bug Fixes
