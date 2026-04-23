@@ -59,8 +59,17 @@ import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import LoadingButton from '../common/LoadingButton';
 import { AuthFooter } from './AuthFooter';
-import { getAuthErrorMessage, getSocialSignInErrorMessage } from './authErrorMessages';
-import { resolveConfirmationEmail, shouldTransitionToEmailConfirmation } from './authSignInFlow';
+import {
+  getAuthErrorMessage,
+  getSocialSignInErrorMessage,
+  getSignupErrorMessage,
+} from './authErrorMessages';
+import {
+  isEmailVerificationRequiredMessage,
+  resolveConfirmationEmail,
+  shouldTransitionToEmailConfirmation,
+  shouldSurfaceSharedAuthError,
+} from './authSignInFlow';
 const RESEND_COOLDOWN_SECONDS = 45;
 const SOCIAL_REDIRECT_TIMEOUT_MS = 15000; // 15 seconds
 
@@ -119,15 +128,6 @@ export interface AuthSignInScreenProps {
 function isEmailAuthCapable(client: unknown): client is EmailAuthCapableClient {
   return Boolean(
     client && typeof (client as EmailAuthCapableClient).signUpWithEmail === 'function'
-  );
-}
-
-function isEmailNotConfirmedMessage(message: string): boolean {
-  const normalized = message.toLowerCase();
-  return (
-    normalized.includes('email not confirmed') ||
-    normalized.includes('email is not confirmed') ||
-    normalized.includes('confirm your email')
   );
 }
 
@@ -191,6 +191,9 @@ export default function AuthSignInScreen({
   const passwordInputRef = useRef<TextInput>(null);
   const confirmPasswordInputRef = useRef<TextInput>(null);
   const confirmationCodeInputRef = useRef<TextInput>(null);
+  const emailDraftRef = useRef('');
+  const passwordDraftRef = useRef('');
+  const confirmPasswordDraftRef = useRef('');
   const emailLabelAnim = useRef(new Animated.Value(0)).current;
   const passwordLabelAnim = useRef(new Animated.Value(0)).current;
   const confirmLabelAnim = useRef(new Animated.Value(0)).current;
@@ -205,7 +208,8 @@ export default function AuthSignInScreen({
   const rawEffectiveError =
     authStep === 'emailConfirmation' && submitMode === 'resend'
       ? null
-      : localError ?? (submitMode !== null ? error : null);
+      : localError ??
+        (submitMode !== null && shouldSurfaceSharedAuthError(submitMode) ? error : null);
   const effectiveError = rawEffectiveError
     ? getAuthErrorMessage(rawEffectiveError, t('authModal.errors.authenticationFailed'))
     : null;
@@ -443,10 +447,10 @@ export default function AuthSignInScreen({
     for (const field of fields) {
       const value =
         field === 'email'
-          ? email.trim()
+          ? emailDraftRef.current.trim()
           : field === 'password'
-          ? password.trim()
-          : confirmPassword.trim();
+          ? passwordDraftRef.current.trim()
+          : confirmPasswordDraftRef.current.trim();
       const isMissing = !value;
 
       if (field === 'email') {
@@ -497,6 +501,9 @@ export default function AuthSignInScreen({
   ): void => {
     transitionToStep('form');
     setMode('signin');
+    emailDraftRef.current = prefilledEmail;
+    passwordDraftRef.current = '';
+    confirmPasswordDraftRef.current = '';
     setEmail(prefilledEmail);
     setPassword('');
     setConfirmPassword('');
@@ -523,17 +530,17 @@ export default function AuthSignInScreen({
       return;
     }
 
-    const normalizedEmail = normalizeEmailOrSetError(email);
+    const normalizedEmail = normalizeEmailOrSetError(emailDraftRef.current);
     if (!normalizedEmail) {
       return;
     }
 
     setSubmitMode('signin');
     try {
-      await signInWithEmail(normalizedEmail, password);
+      await signInWithEmail(normalizedEmail, passwordDraftRef.current);
     } catch (authError) {
       const message = getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed'));
-      if (normalizedEmail && isEmailNotConfirmedMessage(message)) {
+      if (normalizedEmail && isEmailVerificationRequiredMessage(message)) {
         setConfirmationEmail(normalizedEmail);
         setConfirmationCode('');
         setConfirmationCodeRequired(false);
@@ -553,13 +560,13 @@ export default function AuthSignInScreen({
       return;
     }
 
-    const normalizedEmail = normalizeEmailOrSetError(email);
+    const normalizedEmail = normalizeEmailOrSetError(emailDraftRef.current);
     if (!normalizedEmail) {
       return;
     }
 
     try {
-      parseSignUpPassword(password);
+      parseSignUpPassword(passwordDraftRef.current);
     } catch {
       setLocalError(t('authModal.validation.passwordMin'));
       return;
@@ -567,7 +574,7 @@ export default function AuthSignInScreen({
 
     // Comparing two user-entered form fields locally is not a secret check.
     // eslint-disable-next-line security/detect-possible-timing-attacks
-    if (password !== confirmPassword) {
+    if (passwordDraftRef.current !== confirmPasswordDraftRef.current) {
       setLocalError(t('authModal.validation.passwordMismatch'));
       return;
     }
@@ -580,10 +587,39 @@ export default function AuthSignInScreen({
     setSubmitMode('signup');
     setLocalError(null);
     try {
-      const result = await client.signUpWithEmail(normalizedEmail, password, locale);
+      const result = await client.signUpWithEmail(
+        normalizedEmail,
+        passwordDraftRef.current,
+        locale
+      );
 
       if (result.error && typeof result.error === 'string') {
-        setLocalError(result.error);
+        const message = getSignupErrorMessage(result.error, t('authModal.errors.signupFailed'));
+        if (result.needsEmailVerification || result.confirmationEmailSent) {
+          setConfirmationEmail(normalizedEmail);
+          setConfirmationCode('');
+          setConfirmationCodeRequired(false);
+          if (result.confirmationEmailSent) {
+            setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail }));
+            setResendCooldown(RESEND_COOLDOWN_SECONDS);
+          } else {
+            setNotice(t('authModal.notices.unverifiedEmail'));
+            setResendCooldown(0);
+          }
+          setMode('signin');
+          transitionToStep('emailConfirmation');
+          emailDraftRef.current = '';
+          passwordDraftRef.current = '';
+          confirmPasswordDraftRef.current = '';
+          setEmail('');
+          setPassword('');
+          setConfirmPassword('');
+          setShowPassword(false);
+          setShowConfirmPassword(false);
+          clearRequiredFields();
+        } else {
+          setLocalError(message);
+        }
         setSubmitMode(null);
         return;
       }
@@ -592,17 +628,18 @@ export default function AuthSignInScreen({
         setConfirmationEmail(normalizedEmail);
         setConfirmationCode('');
         setConfirmationCodeRequired(false);
-        if (result.emailAlreadyRegistered) {
-          setNotice(t('authModal.notices.requestNewConfirmation'));
-          setResendCooldown(0);
-        } else {
+        if (result.confirmationEmailSent) {
           setNotice(t('authModal.notices.confirmationSent', { email: normalizedEmail }));
-          if (result.confirmationEmailSent) {
-            setResendCooldown(RESEND_COOLDOWN_SECONDS);
-          }
+          setResendCooldown(RESEND_COOLDOWN_SECONDS);
+        } else {
+          setNotice(t('authModal.notices.unverifiedEmail'));
+          setResendCooldown(0);
         }
         setMode('signin');
         transitionToStep('emailConfirmation');
+        emailDraftRef.current = '';
+        passwordDraftRef.current = '';
+        confirmPasswordDraftRef.current = '';
         setEmail('');
         setPassword('');
         setConfirmPassword('');
@@ -618,7 +655,13 @@ export default function AuthSignInScreen({
       setNotice(t('authModal.notices.accountCreatedSigningIn'));
       setSubmitMode(null);
     } catch (authError) {
-      setLocalError(getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed')));
+      const message = getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed'));
+      const normalizedMessage = message.toLowerCase();
+      const isCommonSignupFailure =
+        normalizedMessage.includes('failed to create user') ||
+        normalizedMessage.includes('internal server error') ||
+        normalizedMessage.includes('provider error');
+      setLocalError(isCommonSignupFailure ? t('authModal.errors.signupFailed') : message);
       setSubmitMode(null);
     }
   };
@@ -675,7 +718,7 @@ export default function AuthSignInScreen({
       setConfirmationCodeRequired(false);
       setSubmitMode('verifyCode');
 
-      const emailCandidate = (confirmationEmail ?? email).trim();
+      const emailCandidate = (confirmationEmail ?? emailDraftRef.current).trim();
       if (!emailCandidate) {
         setLocalError(t('authModal.errors.enterEmailFirst'));
         setSubmitMode(null);
@@ -767,7 +810,7 @@ export default function AuthSignInScreen({
       pathname: '/auth/reset-password',
       params: {
         next: authReturnTo ?? '/',
-        email: email.trim() || undefined,
+        email: emailDraftRef.current.trim() || undefined,
       },
     });
   };
@@ -794,6 +837,9 @@ export default function AuthSignInScreen({
 
     transitionToStep('form');
     setMode(nextMode);
+    emailDraftRef.current = '';
+    passwordDraftRef.current = '';
+    confirmPasswordDraftRef.current = '';
     setEmail('');
     resetMessages();
     setPassword('');
@@ -1151,6 +1197,7 @@ export default function AuthSignInScreen({
                       autoCorrect={false}
                       keyboardType='email-address'
                       onChangeText={(value) => {
+                        emailDraftRef.current = value;
                         setEmail(value);
                         clearRequiredField('email');
                         setInvalidEmail(false);
@@ -1231,6 +1278,7 @@ export default function AuthSignInScreen({
                       autoCapitalize='none'
                       autoCorrect={false}
                       onChangeText={(value) => {
+                        passwordDraftRef.current = value;
                         setPassword(value);
                         clearRequiredField('password');
                         setLocalError(null);
@@ -1246,6 +1294,10 @@ export default function AuthSignInScreen({
                         } else {
                           setPasswordValidationError(null);
                         }
+                        setPasswordMismatch(
+                          confirmPasswordDraftRef.current.length > 0 &&
+                            confirmPasswordDraftRef.current !== value
+                        );
                       }}
                       onFocus={() => setFocusedField('password')}
                       onBlur={() =>
@@ -1290,7 +1342,7 @@ export default function AuthSignInScreen({
                   ) : null}
                 </View>
 
-                {mode === 'signup' && password.length > 0 ? (
+                {mode === 'signup' && passwordDraftRef.current.length > 0 ? (
                   <View style={styles.inputGroup}>
                     <Animated.Text
                       style={[
@@ -1352,10 +1404,13 @@ export default function AuthSignInScreen({
                         autoCapitalize='none'
                         autoCorrect={false}
                         onChangeText={(value) => {
+                          confirmPasswordDraftRef.current = value;
                           setConfirmPassword(value);
                           clearRequiredField('confirmPassword');
                           setLocalError(null);
-                          setPasswordMismatch(value.length > 0 && value !== password);
+                          setPasswordMismatch(
+                            value.length > 0 && value !== passwordDraftRef.current
+                          );
                           animateLabel(confirmLabelAnim, value.length > 0);
                         }}
                         onFocus={() => setFocusedField('confirmPassword')}

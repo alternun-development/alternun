@@ -408,7 +408,9 @@ test('BetterAuthExecutionProvider prefers the Better Auth client for email flows
   assert.equal(betterAuthSignUpCalls, 1);
   assert.equal(observedBetterAuthSignUpOptions.name, 'ada');
   assert.equal(signUpResult.externalIdentity?.email, 'ada@example.com');
-  assert.equal(signUpResult.session?.accessToken, 'email-signup-token');
+  assert.equal(signUpResult.session, null);
+  assert.equal(signUpResult.needsEmailVerification, true);
+  assert.equal(signUpResult.confirmationEmailSent, true);
   assert.equal(fallbackCalls.signUpWithEmail, 0);
 
   await provider.resendEmailConfirmation('ada@example.com');

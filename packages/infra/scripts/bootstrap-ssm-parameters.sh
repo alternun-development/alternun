@@ -25,7 +25,7 @@ case "$stage_normalized" in
     AUTH_EXCHANGE_URL="https://api.alternun.co/auth/exchange"
     ;;
   dev|api-dev|*testnet*|*development*)
-    SUPABASE_URL="https://aznfyazjndfniwsocdka.supabase.co"
+    SUPABASE_URL="https://rjebeugdvwbjpaktrrbx.supabase.co"
     SUPABASE_KEY="${EXPO_PUBLIC_SUPABASE_KEY_DEV:-${SUPABASE_KEY_DEV:-${EXPO_PUBLIC_SUPABASE_KEY:-${SUPABASE_KEY:-}}}}"
     AUTHENTIK_ISSUER="https://testnet.sso.alternun.co/application/o/alternun-mobile/"
     BETTER_AUTH_URL="https://testnet.api.alternun.co/auth"

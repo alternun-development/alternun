@@ -39,6 +39,7 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', () => {
     assert.equal(auth.options.emailVerification.sendOnSignUp, true);
     assert.equal(auth.options.emailVerification.sendOnSignIn, true);
     assert.equal(typeof auth.options.emailVerification.sendVerificationEmail, 'function');
+    assert.equal(auth.options.advanced.database.generateId, 'uuid');
     assert.equal(auth.options.account.skipStateCookieCheck, true);
     assert.equal(auth.options.account.accountLinking.trustedProviders.includes('discord'), true);
     assert.equal(Boolean(auth.options.socialProviders.discord), true);
@@ -82,6 +83,7 @@ test('createBetterAuthDevAuth accepts backend database env fallback', () => {
     assert.equal(auth.options.emailVerification.sendOnSignUp, true);
     assert.equal(auth.options.emailAndPassword.autoSignIn, false);
     assert.equal(auth.options.emailVerification.sendOnSignIn, true);
+    assert.equal(auth.options.advanced.database.generateId, 'uuid');
   } finally {
     process.env = originalEnv;
   }
