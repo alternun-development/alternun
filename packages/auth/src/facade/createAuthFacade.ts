@@ -22,6 +22,7 @@ import { SupabaseIdentityRepository } from '../providers/supabase-legacy/Supabas
 import { PostmarkEmailProvider } from '../providers/email/PostmarkEmailProvider';
 import { SesEmailProvider } from '../providers/email/SesEmailProvider';
 import { SupabaseEmailProvider } from '../providers/email/SupabaseEmailProvider';
+import { BetterAuthEmailProvider } from '../providers/email/BetterAuthEmailProvider';
 import { upsertOidcUser } from '../compat/upsertOidcUser';
 import { AlternunAuthFacade } from './AlternunAuthFacade';
 
@@ -153,6 +154,13 @@ function createEmailProvider(
 ): EmailProvider {
   if (options.emailProvider) {
     return options.emailProvider;
+  }
+
+  if (runtime.executionProvider === 'better-auth') {
+    return new BetterAuthEmailProvider({
+      baseUrl: runtime.betterAuthBaseUrl,
+      fetchFn: options.fetchFn,
+    });
   }
 
   switch (runtime.emailProvider) {

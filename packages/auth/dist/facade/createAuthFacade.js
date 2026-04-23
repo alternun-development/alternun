@@ -8,6 +8,7 @@ import { SupabaseIdentityRepository } from '../providers/supabase-legacy/Supabas
 import { PostmarkEmailProvider } from '../providers/email/PostmarkEmailProvider.js';
 import { SesEmailProvider } from '../providers/email/SesEmailProvider.js';
 import { SupabaseEmailProvider } from '../providers/email/SupabaseEmailProvider.js';
+import { BetterAuthEmailProvider } from '../providers/email/BetterAuthEmailProvider.js';
 import { upsertOidcUser } from '../compat/upsertOidcUser.js';
 import { AlternunAuthFacade } from './AlternunAuthFacade.js';
 function resolveRuntimeConfig(input) {
@@ -99,6 +100,12 @@ function createIssuerProvider(runtime, options, identityRepository) {
 function createEmailProvider(runtime, options) {
     if (options.emailProvider) {
         return options.emailProvider;
+    }
+    if (runtime.executionProvider === 'better-auth') {
+        return new BetterAuthEmailProvider({
+            baseUrl: runtime.betterAuthBaseUrl,
+            fetchFn: options.fetchFn,
+        });
     }
     switch (runtime.emailProvider) {
         case 'postmark':

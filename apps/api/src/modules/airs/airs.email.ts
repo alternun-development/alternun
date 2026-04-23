@@ -111,7 +111,12 @@ async function loadSmtpSecret(
   const host = firstNonEmptyTrimmed([payload.host]);
   const username = firstNonEmptyTrimmed([payload.username]);
   const password = firstNonEmptyTrimmed([payload.password]);
-  const from = firstNonEmptyTrimmed([payload.from, env.AIRS_EMAIL_FROM, env.AUTH_EMAIL_FROM]);
+  const from = firstNonEmptyTrimmed([
+    payload.from,
+    env.AIRS_EMAIL_FROM,
+    env.AUTH_EMAIL_FROM,
+    username,
+  ]);
 
   if (!host || !username || !password || !from) {
     return null;

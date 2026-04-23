@@ -1,6 +1,6 @@
 {
   "name": "@alternun/ui",
-  "version": "1.0.198",
+  "version": "1.0.201",
   "description": "Common UI components for Alternun",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

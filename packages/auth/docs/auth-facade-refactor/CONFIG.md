@@ -31,6 +31,7 @@ Accepted aliases include:
 - `AUTH_EXECUTION_PROVIDER=better-auth` means Better Auth is the primary execution path.
 - Legacy Supabase session state is no longer allowed to silently win over a Better Auth session.
 - Supabase-backed execution remains available as the compatibility path when `AUTH_EXECUTION_PROVIDER=supabase`.
+- When Better Auth execution is active, verification-email resend uses the Better Auth `/auth/send-verification-email` endpoint automatically; `AUTH_EMAIL_PROVIDER` continues to apply to the legacy Supabase email path.
 - Web social login now prefers the Better Auth browser client when it is available, and the provider falls back to the explicit Better Auth social/email routes only when the browser client cannot be created.
 - Email/password sign-in and sign-up now use the Better Auth client or Better Auth HTTP routes when the Better Auth execution mode is active; the legacy client remains only for recovery helpers.
 - Authentik remains the issuer/trust layer.

@@ -408,7 +408,9 @@ test('BetterAuthExecutionProvider prefers the Better Auth client for email flows
   assert.equal(betterAuthSignUpCalls, 1);
   assert.equal(observedBetterAuthSignUpOptions.name, 'ada');
   assert.equal(signUpResult.externalIdentity?.email, 'ada@example.com');
-  assert.equal(signUpResult.session?.accessToken, 'email-signup-token');
+  assert.equal(signUpResult.session, null);
+  assert.equal(signUpResult.needsEmailVerification, true);
+  assert.equal(signUpResult.confirmationEmailSent, true);
   assert.equal(fallbackCalls.signUpWithEmail, 0);
 
   await provider.resendEmailConfirmation('ada@example.com');
@@ -494,6 +496,51 @@ test('BetterAuthExecutionProvider normalizes Better Auth email sign-in responses
   assert.equal(result.externalIdentity?.providerUserId, 'email-123');
 });
 
+test('BetterAuthExecutionProvider blocks unverified email sign-in attempts', async () => {
+  const provider = new BetterAuthExecutionProvider({
+    baseUrl: 'https://api.example.com/auth',
+    fetchFn: async () => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'content-type': 'application/json' }),
+      async json() {
+        return {
+          redirect: false,
+          token: 'http-sign-in-token',
+          user: {
+            id: 'email-123',
+            email: 'ada@example.com',
+            name: 'Ada Lovelace',
+            image: 'https://example.com/avatar.png',
+            emailVerified: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        };
+      },
+      async text() {
+        return JSON.stringify({
+          redirect: false,
+          token: 'http-sign-in-token',
+          user: {
+            id: 'email-123',
+            email: 'ada@example.com',
+            name: 'Ada Lovelace',
+            image: 'https://example.com/avatar.png',
+            emailVerified: false,
+          },
+        });
+      },
+    }),
+  });
+
+  await assert.rejects(
+    provider.signInWithEmail('ada@example.com', 'password123'),
+    /Email not confirmed/i
+  );
+});
+
 test('BetterAuthExecutionProvider derives a sign-up name for the Better Auth HTTP path', async () => {
   let observedUrl = null;
   let observedBody = null;
@@ -547,11 +594,11 @@ test('BetterAuthExecutionProvider derives a sign-up name for the Better Auth HTT
     name: 'ada',
     locale: 'en',
   });
-  assert.equal(result.session?.accessToken, 'http-sign-up-token');
+  assert.equal(result.session, null);
   assert.equal(result.externalIdentity?.provider, 'email');
   assert.equal(result.externalIdentity?.providerUserId, 'email-123');
-  assert.equal(result.needsEmailVerification, false);
-  assert.equal(result.confirmationEmailSent, false);
+  assert.equal(result.needsEmailVerification, true);
+  assert.equal(result.confirmationEmailSent, true);
 });
 
 test('SupabaseExecutionProvider preserves auth method binding when requesting password reset emails', async () => {
