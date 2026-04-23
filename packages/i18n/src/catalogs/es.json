@@ -22,6 +22,25 @@
     }
   },
   "mobile": {
+    "auth": {
+      "referral": {
+        "title": "Tienes una invitacion!",
+        "description": "Ayudanos a saber como te enteraste de nosotros. Puedes saltarte esto si prefieres.",
+        "standaloneDescription": "Ayudanos a saber como te enteraste de nosotros, luego inicia sesion para comenzar.",
+        "referredByUsername": "Referido por usuario (opcional)",
+        "usernamePlaceholder": "p.ej., @juan_pérez",
+        "referredByEmail": "Referido por correo (opcional)",
+        "emailPlaceholder": "p.ej., amigo@ejemplo.com",
+        "invitationCode": "Codigo de invitacion (opcional)",
+        "codePlaceholder": "p.ej., INVITA123",
+        "submit": "Continuar",
+        "submitStandalone": "Continuar a Iniciar Sesion",
+        "skip": "Saltar",
+        "skipStandalone": "Continuar sin Referencia",
+        "success": "Bienvenido!",
+        "successTitle": "Todo listo!"
+      }
+    },
     "authCallback": {
       "errors": {
         "failed": "La devolucion de autenticacion fallo.",
@@ -72,6 +91,7 @@
         "authenticationFailed": "La autenticacion fallo. Intentalo de nuevo.",
         "confirmationCodeInvalid": "El codigo de confirmacion es invalido o vencio. Solicita un nuevo correo e intentalo otra vez.",
         "enterEmailFirst": "Ingresa tu correo primero.",
+        "signupFailed": "No pudimos crear tu cuenta. Revisa tu correo o intenta de nuevo.",
         "socialSignInRedirectTimedOut": "El inicio de sesión social está tardando demasiado. Inténtalo de nuevo.",
         "socialSignInServerError": "El servicio de inicio de sesión social encontró un error interno del servidor. Inténtalo de nuevo más tarde.",
         "socialSignInTitle": "Inicio de sesión no disponible",
