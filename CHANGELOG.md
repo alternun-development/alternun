@@ -1,3 +1,17 @@
+## [1.0.216](https://github.com/alternun-development/alternun/compare/v1.0.216-dev.0...v1.0.216) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** fix: polish mobile auth and landing transitions
+- **repo:** chore(mobile): restore dropped SVG assets
+- **repo:** docs(claude): add git safety rules for uncommitted changes
+- **repo:** fix(mobile): improve navbar dropdown positioning and closing behavior on desktop
+
+### Bug Fixes
+
+- **mobile:** improve navbar dropdown positioning and closing behavior on desktop ([4df0ff4](https://github.com/alternun-development/alternun/commit/4df0ff4ce3971639ade46edf72900ffc11f4226c))
+- polish mobile auth and landing transitions ([0791756](https://github.com/alternun-development/alternun/commit/07917567c9fca647cd7dd0f981c94ecee7a1b661))
+
 ## [1.0.216](https://github.com/alternun-development/alternun/compare/v1.0.215...v1.0.216) (2026-04-23)
 
 ### Bug Fixes
