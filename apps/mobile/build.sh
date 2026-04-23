@@ -239,7 +239,12 @@ if [ -n "$detected_stage" ]; then
   # embedding a literal key in this script so secret scanning stays clean.
   stage_supabase_key="${EXPO_PUBLIC_SUPABASE_KEY:-${EXPO_PUBLIC_SUPABASE_ANON_KEY:-}}"
   if [ -z "$stage_supabase_key" ] && [ -f "../../.env.local" ]; then
-    stage_supabase_key=$(grep -E '^EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)=' ../../.env.local | head -n 1 | cut -d= -f2- | tr -d '\n')
+    stage_supabase_key=$(
+      grep -E '^(export[[:space:]]+)?EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)=' ../../.env.local \
+        | head -n 1 \
+        | sed -E 's/^(export[[:space:]]+)?EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)=//' \
+        | tr -d '\n'
+    )
   fi
   if [ -z "$stage_supabase_key" ]; then
     echo "ERROR: EXPO_PUBLIC_SUPABASE_KEY is required for mobile stage '${detected_stage}'." >&2
