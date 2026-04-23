@@ -84,12 +84,31 @@ resolve_auth_execution_provider() {
   echo "supabase"
 }
 
+resolve_ssm_stage_name() {
+  local normalized
+  normalized=$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+
+  case "$normalized" in
+    dev|testnet|*testnet*|dashboard-dev|backend-dev|backend-api-dev|api-dev|identity-dev|auth-dev|authentik-dev|admin-dev|backoffice-dev|backoffice-admin-dev)
+      printf '%s\n' 'dev'
+      ;;
+    prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
+      printf '%s\n' 'prod'
+      ;;
+    *)
+      printf '%s' "$normalized"
+      ;;
+  esac
+}
+
+SSM_STAGE="$(resolve_ssm_stage_name "$STAGE")"
+
 # SSM parameter name builder: /{app}/{stage}/{param_key}
 # e.g. /alternun-infra/dev/expo-public-authentik-social-login-mode
 build_param_name() {
   local key=$1
   local prefix="${2:-${APP_NAME}}"
-  local stage="${3:-${STAGE}}"
+  local stage="${3:-${SSM_STAGE}}"
   echo "/${prefix}/${stage}/${key}"
 }
 
