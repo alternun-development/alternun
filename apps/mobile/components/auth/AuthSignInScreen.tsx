@@ -900,11 +900,6 @@ export default function AuthSignInScreen({
           ]}
           keyboardShouldPersistTaps='handled'
           showsVerticalScrollIndicator={false}
-          onTouchStart={() => {
-            if (settingsMenuOpen) {
-              closeSettingsMenu();
-            }
-          }}
         >
           <View
             style={[
@@ -914,6 +909,13 @@ export default function AuthSignInScreen({
               { backgroundColor: p.cardBg, borderColor: p.cardBorder },
             ]}
           >
+            {settingsMenuOpen ? (
+              <Pressable
+                accessibilityRole='button'
+                onPress={closeSettingsMenu}
+                style={styles.settingsMenuBackdrop}
+              />
+            ) : null}
             <View
               style={[
                 styles.header,
@@ -1061,7 +1063,6 @@ export default function AuthSignInScreen({
                           activeOpacity={0.8}
                           onPress={() => {
                             cycleLanguage();
-                            closeSettingsMenu();
                           }}
                           style={styles.settingsDropdownItem}
                         >
@@ -1083,7 +1084,6 @@ export default function AuthSignInScreen({
                           activeOpacity={0.8}
                           onPress={() => {
                             toggleThemeMode();
-                            closeSettingsMenu();
                           }}
                           style={styles.settingsDropdownItem}
                         >
@@ -2024,7 +2024,7 @@ const styles = createTypographyStyles({
   },
   settingsDropdown: {
     position: 'absolute',
-    top: 38,
+    top: 31,
     right: 0,
     zIndex: 9999,
     minWidth: 168,
@@ -2040,13 +2040,21 @@ const styles = createTypographyStyles({
   },
   settingsDropdownCompact: {
     position: 'absolute',
-    top: 36,
+    top: 30,
     right: 0,
     zIndex: 99999,
     minWidth: 180,
     alignSelf: 'flex-end',
     marginTop: 0,
     marginBottom: 0,
+  },
+  settingsMenuBackdrop: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 9997,
   },
   settingsDropdownItem: {
     flexDirection: 'row',
