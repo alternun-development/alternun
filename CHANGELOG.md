@@ -1,3 +1,9 @@
+## [1.0.206](https://github.com/alternun-development/alternun/compare/v1.0.205-dev.0...v1.0.206) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile): signup.utils, signup.service.test, callback, referral
+
 ## [1.0.205](https://github.com/alternun-development/alternun/compare/v1.0.204-dev.0...v1.0.205) (2026-04-23)
 
 ### Bug Fixes
