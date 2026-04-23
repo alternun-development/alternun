@@ -1,3 +1,9 @@
+## [1.0.207](https://github.com/alternun-development/alternun/compare/v1.0.206-dev.0...v1.0.207) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(infra): api, dashboard, dashboard-pipeline-better-auth-env.test, backend-pipeline-supabase-env.test
+
 ## [1.0.206](https://github.com/alternun-development/alternun/compare/v1.0.205-dev.0...v1.0.206) (2026-04-23)
 
 ### Bug Fixes
