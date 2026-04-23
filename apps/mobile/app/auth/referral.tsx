@@ -29,6 +29,8 @@ import {
 } from '../../components/auth/authWebSession';
 import { ToastSystem, type ToastItem } from '@alternun/ui';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
+import { AuroraBackground } from '../../components/referral/AuroraBackground';
+import { ReferralNavbar } from '../../components/referral/ReferralNavbar';
 
 const INITIAL_CALLBACK_SEARCH = typeof window !== 'undefined' ? window.location.search : '';
 const INITIAL_CALLBACK_HASH = typeof window !== 'undefined' ? window.location.hash : '';
@@ -316,22 +318,29 @@ export default function ReferralRoute(): React.JSX.Element {
 
   if (successMessage) {
     return (
-      <View style={styles.screen}>
-        <View style={styles.card}>
+      <View style={styles.container}>
+        <AuroraBackground />
+        <ReferralNavbar user={user} />
+        <View style={styles.screen}>
+          <View style={styles.card}>
           <Text style={styles.title}>
             {t('auth.referral.successTitle', undefined, 'All Set!')}
           </Text>
           <Text style={styles.message}>{successMessage}</Text>
           <ActivityIndicator size="large" color="#1ccba1" style={styles.spinner} />
+          </View>
+          <ToastSystem toasts={toasts} onDismiss={dismissToast} />
         </View>
-        <ToastSystem toasts={toasts} onDismiss={dismissToast} />
       </View>
     );
   }
 
   if (errorMessage) {
     return (
-      <View style={styles.screen}>
+      <View style={styles.container}>
+        <AuroraBackground />
+        <ReferralNavbar user={user} />
+        <View style={styles.screen}>
         <View style={styles.card}>
           <Text style={styles.title}>
             {t('authCallback.errors.title', undefined, 'Error')}
@@ -345,12 +354,16 @@ export default function ReferralRoute(): React.JSX.Element {
         </View>
         <ToastSystem toasts={toasts} onDismiss={dismissToast} />
       </View>
+      </View>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.screenContent}>
-      <View style={styles.card}>
+    <View style={styles.container}>
+      <AuroraBackground />
+      <ReferralNavbar user={user} />
+      <ScrollView style={styles.screen} contentContainerStyle={styles.screenContent}>
+        <View style={styles.card}>
         <Text style={styles.title}>{t('auth.referral.title', undefined, 'You\'re Invited!')}</Text>
         <Text style={styles.description}>
           {user
@@ -455,11 +468,17 @@ export default function ReferralRoute(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
     backgroundColor: '#050510',
+    position: 'relative',
+  },
+  screen: {
+    flex: 1,
+    backgroundColor: 'transparent',
     paddingHorizontal: 24,
     paddingVertical: 32,
+    marginTop: 80,
   },
   screenContent: {
     justifyContent: 'center',
