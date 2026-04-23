@@ -1,3 +1,9 @@
+## [1.0.215](https://github.com/alternun-development/alternun/compare/v1.0.214...v1.0.215) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(infra): resolve-ssm-env, resolve-ssm-env-cache.test
+
 ## [1.0.214](https://github.com/alternun-development/alternun/compare/v1.0.214-dev.0...v1.0.214) (2026-04-23)
 
 ### Bug Fixes
