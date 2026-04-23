@@ -272,6 +272,11 @@ load_cached_env() {
     return 1
   fi
 
+  if [ -z "${EXPO_PUBLIC_SUPABASE_URL:-}" ] || [ -z "${EXPO_PUBLIC_SUPABASE_KEY:-}" ]; then
+    echo "Cached SSM env for stage '${STAGE}' is missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_KEY; refreshing from SSM." >&2
+    return 1
+  fi
+
   echo "Loaded cached SSM parameters for stage '${STAGE}' from ${CACHE_FILE}." >&2
   return 0
 }
