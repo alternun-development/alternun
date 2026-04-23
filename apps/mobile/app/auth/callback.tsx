@@ -55,6 +55,7 @@ export default function AuthCallbackRoute(): React.JSX.Element {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const hasHandledRef = useRef(false);
+  const redirectFallbackTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const isNavigationReady = Boolean(rootNavigationState?.key);
   const isBetterAuthExecution = isBetterAuthExecutionEnabled();
   const callbackPayload = useMemo(() => {
@@ -108,7 +109,7 @@ export default function AuthCallbackRoute(): React.JSX.Element {
 
   const pushToast = (title: string, message: string): void => {
     const id = `${Date.now()}-${Math.random()}`;
-    setToasts((current) => [...current, { id, title, message }]);
+    setToasts((current) => [...current, { id, type: 'success', title, message }]);
     setTimeout(() => dismissToast(id), 4000);
   };
 
@@ -127,6 +128,20 @@ export default function AuthCallbackRoute(): React.JSX.Element {
     const finishRedirect = (): void => {
       clearAuthReturnTo();
       router.replace(redirectTarget as AuthCallbackHref);
+
+      if (typeof window === 'undefined') {
+        return;
+      }
+
+      if (redirectFallbackTimerRef.current !== null) {
+        window.clearTimeout(redirectFallbackTimerRef.current);
+      }
+
+      redirectFallbackTimerRef.current = window.setTimeout(() => {
+        if (window.location.pathname === '/auth/callback') {
+          window.location.replace(redirectTarget);
+        }
+      }, 750);
     };
 
     if (recoveryRedirectPath?.startsWith('/auth/reset-password')) {
@@ -214,6 +229,14 @@ export default function AuthCallbackRoute(): React.JSX.Element {
     successCopy.title,
     t,
   ]);
+
+  useEffect(() => {
+    return () => {
+      if (redirectFallbackTimerRef.current !== null && typeof window !== 'undefined') {
+        window.clearTimeout(redirectFallbackTimerRef.current);
+      }
+    };
+  }, []);
 
   if (successMessage) {
     return (

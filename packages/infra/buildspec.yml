@@ -508,4 +508,7 @@ phases:
 cache:
   paths:
     - /root/.pnpm-store/**/*
+    - /root/.cache/expo/**/*
+    - /root/.cache/metro/**/*
+    - apps/mobile/node_modules/.cache/**/*
     - packages/infra/.sst/**/*
