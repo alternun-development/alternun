@@ -8,14 +8,23 @@ Organized structure for database schema, functions, triggers, and migrations.
 supabase/
 ├── migrations/          Schema migrations (auto-applied on deploy)
 │   ├── YYYYMMDD_NNNN_*.sql
-│   └── 20260419_0002_auth_sync_triggers.sql  (applies functions & triggers)
+│   ├── 20260422_0003_bidirectional_auth_user_sync.sql  (historical)
+│   ├── 20260422_0010_public_users_reuse_existing_auth_identity.sql  (historical)
+│   ├── 20260422_0011_backfill_public_users_into_auth_users.sql  (historical)
+│   └── 20260422_0013_auth_users_source_of_truth.sql
 │
 ├── functions/           Trigger functions & stored procedures (source of truth)
+│   ├── fill_public_users_better_auth_identity.sql  (legacy cleanup script)
+│   ├── delete_public_user_auth_user.sql  (legacy cleanup script)
 │   ├── sync_auth_user_to_app_users.sql
+│   ├── sync_public_user_to_auth_user.sql  (legacy cleanup script)
 │   └── user_profiles_handle_auth_user_created.sql
 │
 ├── triggers/            Trigger definitions (source of truth)
-│   └── auth_users_sync.sql
+│   ├── auth_users_sync.sql
+│   ├── public_users_delete.sql  (legacy cleanup script)
+│   ├── public_users_fill_better_auth_identity.sql  (legacy cleanup script)
+│   └── public_users_sync.sql  (legacy cleanup script)
 │
 └── README.md           (this file)
 ```
@@ -46,6 +55,8 @@ pnpm run db:migrate
 - **functions/** and **triggers/** are for organization and clarity
 - Keep migrations as source of truth for what's deployed
 - Always update function source files AND the migration file together
+- When a trigger behavior changes in production/dev, update the matching file in
+  `triggers/` and the corresponding migration that introduced it
 
 ## Common Tasks
 
@@ -72,5 +83,5 @@ WHERE trigger_schema != 'pg_catalog';
 
 ## Related Documentation
 
-- [AUTH_SYNC_TRIGGERS.md](../docs/AUTH_SYNC_TRIGGERS.md) - Detailed explanation of auth sync triggers
+- [AUTH_SYNC_TRIGGERS.md](../docs/AUTH_SYNC_TRIGGERS.md) - Detailed explanation of the bidirectional auth sync triggers
 - [CLAUDE.md](../CLAUDE.md) - Project guidelines

@@ -102,11 +102,12 @@ export function createBetterAuthDevAuth(
     socialProviders,
     emailAndPassword: {
       enabled: true,
-      autoSignIn: true,
+      autoSignIn: false,
       requireEmailVerification: true,
     },
     emailVerification: {
       sendOnSignUp: true,
+      sendOnSignIn: true,
       async sendVerificationEmail({ user, url, token }, request) {
         await sendAuthVerificationEmail(
           {
@@ -136,6 +137,9 @@ export function createBetterAuthDevAuth(
       disableOriginCheck: false,
       skipTrailingSlashes: true,
       defaultCookieDomain: cookieDomain,
+      database: {
+        generateId: 'uuid',
+      },
     },
     telemetry: {
       enabled: false,

@@ -22,6 +22,25 @@
     }
   },
   "mobile": {
+    "auth": {
+      "referral": {
+        "title": "You're Invited!",
+        "description": "Help us learn how you heard about us. You can skip this if you prefer.",
+        "standaloneDescription": "Help us learn how you heard about us, then sign in to get started.",
+        "referredByUsername": "Referred by username (optional)",
+        "usernamePlaceholder": "e.g., @john_doe",
+        "referredByEmail": "Referred by email (optional)",
+        "emailPlaceholder": "e.g., friend@example.com",
+        "invitationCode": "Invitation code (optional)",
+        "codePlaceholder": "e.g., INVITE123",
+        "submit": "Continue",
+        "submitStandalone": "Continue to Sign In",
+        "skip": "Skip",
+        "skipStandalone": "Continue without Referral",
+        "success": "Welcome!",
+        "successTitle": "All Set!"
+      }
+    },
     "authCallback": {
       "errors": {
         "failed": "Authentication callback failed.",
@@ -72,6 +91,7 @@
         "authenticationFailed": "Authentication failed. Please try again.",
         "confirmationCodeInvalid": "The confirmation code is invalid or expired. Request a new email and try again.",
         "enterEmailFirst": "Enter your email first.",
+        "signupFailed": "We couldn't create your account. Check your email or try again.",
         "socialSignInRedirectTimedOut": "Social sign-in is taking too long. Please try again.",
         "socialSignInServerError": "The social sign-in service hit an internal error. Please try again later.",
         "socialSignInTitle": "Sign-in unavailable",

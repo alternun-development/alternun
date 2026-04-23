@@ -19,6 +19,29 @@ interface Migration {
 
 const skippedMigrationVersions = new Set(['20260417_0009', '20260417_0010']);
 
+function createPoolConfig(databaseUrl: string): ConstructorParameters<typeof Pool>[0] {
+  const searchPathOptions = '-c search_path=public';
+
+  try {
+    const url = new URL(databaseUrl);
+    return {
+      user: decodeURIComponent(url.username),
+      password: decodeURIComponent(url.password),
+      host: url.hostname,
+      port: url.port ? Number(url.port) : undefined,
+      database: url.pathname.replace(/^\/+/, '') || undefined,
+      ssl: url.hostname.includes('supabase') ? { rejectUnauthorized: false } : false,
+      options: searchPathOptions,
+    };
+  } catch {
+    return {
+      connectionString: databaseUrl,
+      ssl: databaseUrl.includes('supabase') ? { rejectUnauthorized: false } : false,
+      options: searchPathOptions,
+    };
+  }
+}
+
 async function ensureMigrationsTable(client: PoolClient): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const tableExists = await client
@@ -107,16 +130,23 @@ export async function initMigrations(): Promise<void> {
     return;
   }
 
-  const databaseUrl = process.env.DATABASE_URL ?? process.env.SUPABASE_DATABASE_URL;
+  const databaseUrl =
+    process.env.INFRA_BACKEND_API_DATABASE_URL ??
+    process.env.DATABASE_URL_DEV ??
+    process.env.DATABASE_URL_DEV_IPV4 ??
+    process.env.DATABASE_URL_DEV_NOIPV4 ??
+    process.env.DATABASE_URL ??
+    process.env.SUPABASE_DATABASE_URL;
 
   if (!databaseUrl) {
-    console.warn('[migrations] DATABASE_URL not set, skipping');
+    console.warn(
+      '[migrations] INFRA_BACKEND_API_DATABASE_URL / DATABASE_URL_DEV / DATABASE_URL / SUPABASE_DATABASE_URL not set, skipping'
+    );
     return;
   }
 
   const pool = new Pool({
-    connectionString: databaseUrl,
-    ssl: databaseUrl.includes('supabase') ? { rejectUnauthorized: false } : false,
+    ...createPoolConfig(databaseUrl),
     max: 1,
   });
 

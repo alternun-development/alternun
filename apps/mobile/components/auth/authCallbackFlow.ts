@@ -2,6 +2,7 @@ import { AUTH_WEB_PASSWORD_RESET_ROUTE } from './authPasswordResetFlow';
 import { readWebAuthCallbackPayload } from '../../../../packages/auth/src/runtime/web/callbackPayload';
 
 export const AUTH_WEB_CALLBACK_ROUTE = '/auth/callback';
+export const AUTH_WEB_REFERRAL_ROUTE = '/auth/referral';
 
 function normalizeCallbackPath(callbackPath: string): string {
   const trimmedPath = callbackPath.trim();
@@ -41,10 +42,15 @@ export function buildWebAuthCallbackRedirectPath(
   }
 
   const normalizedType = callbackPayload.callbackType?.trim().toLowerCase();
-  const redirectPath =
-    normalizedType === 'recovery' || normalizedType === 'reset_password'
-      ? AUTH_WEB_PASSWORD_RESET_ROUTE
-      : callbackPath;
+  let redirectPath: string;
+
+  if (normalizedType === 'invite') {
+    redirectPath = AUTH_WEB_REFERRAL_ROUTE;
+  } else if (normalizedType === 'recovery' || normalizedType === 'reset_password') {
+    redirectPath = AUTH_WEB_PASSWORD_RESET_ROUTE;
+  } else {
+    redirectPath = callbackPath;
+  }
 
   return `${normalizeCallbackPath(redirectPath)}${normalizeSearch(searchValue)}${normalizeHash(
     hashValue

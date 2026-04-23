@@ -140,6 +140,7 @@ Do not switch production/shared rollback environments to this shape until the te
 - `createAuthFacade` can accept explicit provider instances for tests and server-side orchestration.
 - `AUTH_BETTER_AUTH_CLIENT_ID` is reserved for future use.
 - Better Auth is embedded in the API runtime at the same origin root.
+- Better Auth verification-email resend uses the API-origin `/auth/send-verification-email` endpoint when Better Auth execution is active; the legacy `AUTH_EMAIL_PROVIDER` selection still governs Supabase-mode delivery.
 - When `AUTH_EXECUTION_PROVIDER=better-auth`, the package routes web social login through the Better Auth browser client when possible and falls back to the explicit Better Auth social/email routes only when the browser client cannot be created. Email/password sign-in and sign-up now stay on the Better Auth client or Better Auth HTTP routes; the legacy Supabase fallback remains only for recovery helpers and explicit rollback paths.
 - Legacy Supabase session state is not allowed to override a Better Auth session unless compatibility fallback is enabled explicitly in code.
 - `AUTHENTIK_JWT_SIGNING_KEY` is required only when the backend should mint issuer-owned JWTs instead of returning compatibility fallback tokens.
