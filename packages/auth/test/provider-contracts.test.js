@@ -283,10 +283,11 @@ test('BetterAuthExecutionProvider joins a canonical /auth baseUrl without duplic
   assert.equal(result.redirectUrl, 'https://auth.example.com/oauth/start');
 });
 
-test('BetterAuthExecutionProvider prefers the Better Auth client for email flows', async () => {
+test('BetterAuthExecutionProvider uses the Supabase fallback for email flows when available', async () => {
   let betterAuthSignInCalls = 0;
   let betterAuthSignUpCalls = 0;
   let observedBetterAuthSignUpOptions = null;
+  let fallbackUser = null;
   const fallbackCalls = {
     signInWithEmail: 0,
     signUpWithEmail: 0,
@@ -337,13 +338,14 @@ test('BetterAuthExecutionProvider prefers the Better Auth client for email flows
       runtime: 'web',
       signInWithEmail: async () => {
         fallbackCalls.signInWithEmail += 1;
-        return {
+        fallbackUser = {
           id: 'legacy-email-123',
-          email: 'legacy@example.com',
+          email: 'ada@example.com',
           provider: 'email',
           providerUserId: 'legacy-email-123',
           metadata: {},
         };
+        return fallbackUser;
       },
       signUpWithEmail: async () => {
         fallbackCalls.signUpWithEmail += 1;
@@ -362,14 +364,8 @@ test('BetterAuthExecutionProvider prefers the Better Auth client for email flows
       signIn: async () => {},
       signOut: async () => {},
       onAuthStateChange: () => () => {},
-      getUser: async () => ({
-        id: 'legacy-email-123',
-        email: 'legacy@example.com',
-        provider: 'email',
-        providerUserId: 'legacy-email-123',
-        metadata: {},
-      }),
-      getSessionToken: async () => 'legacy-token',
+      getUser: async () => fallbackUser,
+      getSessionToken: async () => (fallbackUser ? 'legacy-token' : null),
       capabilities: () => ({ runtime: 'web', supportedFlows: ['native'] }),
       linkProvider: async () => null,
       unlinkProvider: async () => {},
@@ -393,25 +389,24 @@ test('BetterAuthExecutionProvider prefers the Better Auth client for email flows
     password: 'password123',
   });
 
-  assert.equal(betterAuthSignInCalls, 1);
+  assert.equal(betterAuthSignInCalls, 0);
   assert.equal(result.externalIdentity?.provider, 'email');
-  assert.equal(result.externalIdentity?.providerUserId, 'email-123');
+  assert.equal(result.externalIdentity?.providerUserId, 'legacy-email-123');
   assert.equal(result.session?.provider, 'email');
-  assert.equal(result.session?.accessToken, 'email-token');
-  assert.equal(fallbackCalls.signInWithEmail, 0);
+  assert.equal(result.session?.accessToken, 'legacy-token');
+  assert.equal(fallbackCalls.signInWithEmail, 1);
 
   const signInUser = await provider.signInWithEmail('ada@example.com', 'password123');
   assert.equal(signInUser.email, 'ada@example.com');
-  assert.equal(betterAuthSignInCalls, 2);
+  assert.equal(betterAuthSignInCalls, 0);
+  assert.equal(fallbackCalls.signInWithEmail, 2);
 
   const signUpResult = await provider.signUpWithEmail('ada@example.com', 'password123', 'en');
-  assert.equal(betterAuthSignUpCalls, 1);
-  assert.equal(observedBetterAuthSignUpOptions.name, 'ada');
-  assert.equal(signUpResult.externalIdentity?.email, 'ada@example.com');
-  assert.equal(signUpResult.session, null);
-  assert.equal(signUpResult.needsEmailVerification, true);
-  assert.equal(signUpResult.confirmationEmailSent, true);
-  assert.equal(fallbackCalls.signUpWithEmail, 0);
+  assert.equal(betterAuthSignUpCalls, 0);
+  assert.equal(observedBetterAuthSignUpOptions, null);
+  assert.equal(signUpResult.needsEmailVerification, false);
+  assert.equal(signUpResult.confirmationEmailSent, false);
+  assert.equal(fallbackCalls.signUpWithEmail, 1);
 
   await provider.resendEmailConfirmation('ada@example.com');
   await provider.verifyEmailConfirmationCode('ada@example.com', '123456');
