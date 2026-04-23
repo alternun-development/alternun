@@ -134,6 +134,12 @@ function resolveStageKey(stage: string): keyof BackendApiSettings['stageDomains'
   return 'dev';
 }
 
+function resolveAuthSmtpSecretArn(stage: string, appName: string): string {
+  const stageKey = resolveStageKey(stage);
+  const suffix = stageKey === 'production' ? 'identity-prod' : 'identity-dev';
+  return `${appName}/identity/smtp-credentials/${suffix}`;
+}
+
 // Testnet-aligned stages must boot Better Auth in embedded mode. If the release path
 // leaves AUTH_BETTER_AUTH_URL empty the Lambda silently falls back to Authentik — which
 // is not ready. These stages force the testnet Better Auth URL as a last-resort fallback.
@@ -411,6 +417,8 @@ export function deployBackendApiInfrastructure(
   const resolvedAppPath = resolveBackendApiAppPath(args.settings.appPath);
   const bundlePath = path.resolve(resolvedAppPath, args.settings.buildOutput);
   const backendDatabaseUrl = resolveBackendDatabaseUrl(args.env);
+  const smtpSecretArn =
+    args.authentikSmtpSecretArn ?? resolveAuthSmtpSecretArn(args.stage, args.appName);
 
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   if (!fs.existsSync(bundlePath)) {
@@ -487,11 +495,33 @@ export function deployBackendApiInfrastructure(
             : args.env.SUPABASE_SERVICE_ROLE_KEY
             ? { SUPABASE_SERVICE_ROLE_KEY: args.env.SUPABASE_SERVICE_ROLE_KEY }
             : {}),
-          ...(args.authentikSmtpSecretArn
-            ? {
-                AUTHENTIK_SMTP_SECRET_ARN: args.authentikSmtpSecretArn,
-                AIRS_SMTP_SECRET_ARN: args.authentikSmtpSecretArn,
-              }
+          AUTHENTIK_SMTP_SECRET_ARN: smtpSecretArn,
+          AIRS_SMTP_SECRET_ARN: smtpSecretArn,
+          ...(args.env.INFRA_BACKEND_API_AUTH_EMAIL_FROM
+            ? { AUTH_EMAIL_FROM: args.env.INFRA_BACKEND_API_AUTH_EMAIL_FROM }
+            : args.env.AUTH_EMAIL_FROM
+            ? { AUTH_EMAIL_FROM: args.env.AUTH_EMAIL_FROM }
+            : args.env.EMAIL_FROM
+            ? { AUTH_EMAIL_FROM: args.env.EMAIL_FROM }
+            : {}),
+          ...(args.env.INFRA_BACKEND_API_AIRS_EMAIL_FROM
+            ? { AIRS_EMAIL_FROM: args.env.INFRA_BACKEND_API_AIRS_EMAIL_FROM }
+            : args.env.AIRS_EMAIL_FROM
+            ? { AIRS_EMAIL_FROM: args.env.AIRS_EMAIL_FROM }
+            : args.env.AUTH_EMAIL_FROM
+            ? { AIRS_EMAIL_FROM: args.env.AUTH_EMAIL_FROM }
+            : args.env.EMAIL_FROM
+            ? { AIRS_EMAIL_FROM: args.env.EMAIL_FROM }
+            : {}),
+          ...(args.env.EMAIL_FROM
+            ? { EMAIL_FROM: args.env.EMAIL_FROM }
+            : args.env.AUTH_EMAIL_FROM
+            ? { EMAIL_FROM: args.env.AUTH_EMAIL_FROM }
+            : {}),
+          ...(args.env.AUTH_EMAIL_SENDER_NAME
+            ? { AUTH_EMAIL_SENDER_NAME: args.env.AUTH_EMAIL_SENDER_NAME }
+            : args.env.EMAIL_SENDER_NAME
+            ? { AUTH_EMAIL_SENDER_NAME: args.env.EMAIL_SENDER_NAME }
             : {}),
           ...(args.settings.environment.AUTH_BETTER_AUTH_URL
             ? {

@@ -1,4 +1,8 @@
-import { getAuthErrorMessage, getSocialSignInErrorMessage } from '../authErrorMessages';
+import {
+  getAuthErrorMessage,
+  getSignupErrorMessage,
+  getSocialSignInErrorMessage,
+} from '../authErrorMessages';
 
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 type TestFn = (name: string, fn: () => void) => void;
@@ -67,6 +71,13 @@ describe('authErrorMessages', () => {
         'fallback'
       )
     ).toBe('Password must be at least 8 characters.');
+  });
+
+  it('redacts common sign-up auth failures to the generic signup message', () => {
+    expect(getSignupErrorMessage('Invalid email or password', 'signup-failed')).toBe(
+      'signup-failed'
+    );
+    expect(getSignupErrorMessage('User already exists', 'signup-failed')).toBe('signup-failed');
   });
 
   it('falls back to the provided generic auth message when no status is present', () => {
