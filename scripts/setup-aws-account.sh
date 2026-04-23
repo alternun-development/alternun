@@ -27,7 +27,7 @@ if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ -n "${CODEBUILD_BUILD_SUCCEEDING:-}" ] 
   echo "✅ Detected CodeBuild environment - using IAM role credentials"
   export AWS_REGION="${AWS_REGION:-us-east-1}"
   bash "$REPO_ROOT/scripts/validate-aws-account.sh"
-  exit 0
+  return 0 2>/dev/null || exit 0
 fi
 
 # Check if credentials are already set in environment (from other CI systems or local shell)
@@ -35,7 +35,7 @@ if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
   echo "✅ AWS credentials already set in environment"
   export AWS_REGION="${AWS_REGION:-us-east-1}"
   bash "$REPO_ROOT/scripts/validate-aws-account.sh"
-  exit 0
+  return 0 2>/dev/null || exit 0
 fi
 
 # Local development - load from .env
