@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 
 const { SignupService } = require('../src/modules/auth-exchange/services/signup.service.ts');
+const { resolveSignupProviderName } = require('../src/modules/auth-exchange/services/signup/signup.utils.ts');
 
 test('SignupService calls Supabase signup with a derived name', async () => {
   let observedBody = null;
@@ -154,6 +155,25 @@ test('SignupService keeps duplicate signups generic when the database error is n
     emailAlreadyRegistered: false,
     confirmationEmailSent: false,
   });
+});
+
+test('resolveSignupProviderName keeps signup on Supabase when Better Auth URLs are configured', () => {
+  assert.equal(
+    resolveSignupProviderName({
+      EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co/auth',
+    }),
+    'supabase'
+  );
+});
+
+test('resolveSignupProviderName ignores the execution provider and stays on Supabase unless explicitly overridden', () => {
+  assert.equal(
+    resolveSignupProviderName({
+      AUTH_EXECUTION_PROVIDER: 'better-auth',
+      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+    }),
+    'supabase'
+  );
 });
 
 test('SignupService returns the verification flow when auth.users already has an unverified email', async () => {

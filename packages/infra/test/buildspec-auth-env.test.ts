@@ -22,6 +22,12 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
   assert.match(source, /source "\$\{INFRA_PATH\}\/scripts\/resolve-secrets-manager-env\.sh"/);
   assert.ok((resolveSsmSources?.length ?? 0) >= 2);
   assert.ok((resolveSecretsSources?.length ?? 0) >= 2);
+  assert.doesNotMatch(source, /alternun\/ci\/infra\/expo-public:EXPO_PUBLIC_SUPABASE_URL/);
+  assert.doesNotMatch(source, /alternun\/ci\/infra\/expo-public:EXPO_PUBLIC_SUPABASE_KEY/);
+  assert.doesNotMatch(
+    source,
+    /alternun\/ci\/infra\/expo-public:EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID/
+  );
   assert.match(source, /canonical SSM helper/);
   assert.match(source, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS: 'false'/);
   assert.match(source, /INFRA_STATIC_SITE_INVALIDATION_WAIT: 'false'/);
@@ -29,6 +35,9 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
     helperSource,
     /unset\s+\\[\s\S]*?EXPO_PUBLIC_API_URL[\s\S]*?EXPO_PUBLIC_SUPABASE_URL[\s\S]*?EXPO_PUBLIC_SUPABASE_KEY[\s\S]*?EXPO_PUBLIC_SUPABASE_ANON_KEY[\s\S]*?AUTH_EXECUTION_PROVIDER[\s\S]*?EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER/
   );
+  assert.match(helperSource, /INFRA_BACKEND_API_SUPABASE_URL/);
+  assert.match(helperSource, /INFRA_BACKEND_API_SUPABASE_ANON_KEY/);
+  assert.match(helperSource, /INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY/);
   assert.match(
     helperSource,
     /unset\s+\\[\s\S]*?EXPO_PUBLIC_SUPABASE_URL[\s\S]*?EXPO_PUBLIC_SUPABASE_KEY[\s\S]*?EXPO_PUBLIC_SUPABASE_ANON_KEY[\s\S]*?AUTH_EXECUTION_PROVIDER[\s\S]*?EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER[\s\S]*?DATABASE_URL[\s\S]*?SUPABASE_URL[\s\S]*?SUPABASE_KEY[\s\S]*?SUPABASE_ANON_KEY[\s\S]*?SUPABASE_DATABASE_URL/

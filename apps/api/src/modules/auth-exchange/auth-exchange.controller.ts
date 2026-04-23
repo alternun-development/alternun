@@ -2,9 +2,12 @@ import { Body, Controller, HttpCode, Post, VERSION_NEUTRAL } from '@nestjs/commo
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthExchangeRequestDto } from './dto/auth-exchange-request.dto';
 import { AuthExchangeResponseDto } from './dto/auth-exchange-response.dto';
+import { SignInRequestDto } from './dto/signin-request.dto';
+import { SignInResponseDto } from './dto/signin-response.dto';
 import { SignUpRequestDto } from './dto/signup-request.dto';
 import { SignUpResponseDto } from './dto/signup-response.dto';
 import { AuthExchangeService } from './auth-exchange.service';
+import { SignInService } from './services/signin.service';
 import { SignupService } from './services/signup.service';
 import { SocialSignInService } from './services/social-signin.service';
 import { SocialSignInRequestDto } from './dto/social-signin-request.dto';
@@ -17,6 +20,7 @@ import { SocialSignInRequestDto } from './dto/social-signin-request.dto';
 export class AuthExchangeController {
   constructor(
     private readonly authExchangeService: AuthExchangeService,
+    private readonly signInService: SignInService,
     private readonly signupService: SignupService,
     private readonly socialSignInService: SocialSignInService
   ) {}
@@ -45,6 +49,19 @@ export class AuthExchangeController {
   })
   async signUpEmail(@Body() body: SignUpRequestDto): Promise<SignUpResponseDto> {
     return this.signupService.signUp(body);
+  }
+
+  @Post('sign-in/email')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Sign in an existing user with email and password',
+  })
+  @ApiOkResponse({
+    description: 'Signin result with session status.',
+    type: SignInResponseDto,
+  })
+  async signInEmail(@Body() body: SignInRequestDto): Promise<SignInResponseDto> {
+    return this.signInService.signIn(body);
   }
 
   @Post('sign-in/social')
