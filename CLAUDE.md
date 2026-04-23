@@ -159,7 +159,78 @@ No — don't modify `~/.aws/credentials`. Instead, always load Alternun credenti
 
 ---
 
-## 6. AWS Resource Naming Conventions
+## 6. Git Safety & Uncommitted Changes
+
+**CRITICAL: Never silently drop uncommitted work.**
+
+Uncommitted changes are the most fragile form of work - they're not in git history and can't be recovered. Before running any git command that affects uncommitted changes, **always confirm with the user first**.
+
+### Protection Rules
+
+**ALWAYS ASK TWICE before:**
+
+- `git restore .` (restore all working directory changes)
+- `git restore <file>` (restore specific files)
+- `git reset --hard` (discard all changes)
+- `git clean -f` (remove untracked files)
+- Any operation that would discard uncommitted changes
+
+### The Protocol
+
+1. **First Ask**: Show what files have uncommitted changes
+
+   ```
+   M apps/mobile/components/auth/AuthSignInScreen.tsx
+   M apps/mobile/components/onboarding/AirsIntroExperience.tsx
+   ?? packages/auth/dist/core/contracts.d.ts
+   ```
+
+2. **Second Ask**: Explicitly confirm before executing
+
+   ```
+   These files have uncommitted changes that will be PERMANENTLY LOST.
+   Should I proceed with git restore .? (yes/no)
+   ```
+
+3. **After Confirmation**: Execute the command and verify
+   - Run `git status` to confirm changes are gone
+   - Show the result to the user
+
+### Common Scenarios
+
+**Linting failures blocking commit:**
+
+- ❌ WRONG: Silently run `git restore .` to fix linting errors
+- ✅ RIGHT: Show the errors, ask if user wants to discard changes or fix them
+
+**Build artifacts with uncommitted changes:**
+
+- ❌ WRONG: Silently discard build artifact changes
+- ✅ RIGHT: Ask if those artifacts were intentional or can be discarded
+
+**Multiple tools (LSP, formatter) making changes:**
+
+- ❌ WRONG: Run restore to clean up
+- ✅ RIGHT: Show what changed, ask before discarding
+
+### Example Dialog
+
+```
+User: "push all unstaged changes"
+
+Me: "I see uncommitted changes in these files:
+ - AuthSignInScreen.tsx
+ - AirsIntroExperience.tsx
+ - auth dist files (8 files)
+
+Should I commit these, or were they temporary and can be discarded?"
+
+[Wait for user response before proceeding]
+```
+
+---
+
+## 7. AWS Resource Naming Conventions
 
 **Use clear, consistent names. Don't expose implementation details.**
 
@@ -204,7 +275,7 @@ See `docs/AWS_RESOURCE_NAMING.md` for:
 
 ---
 
-## 8. Repository Organization & Cleanup
+## 8. Repository Organization & Cleanup (Updated)
 
 **Keep root clean. Archive non-critical docs in `docs/`.**
 
