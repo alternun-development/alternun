@@ -1,3 +1,9 @@
+## [1.0.211](https://github.com/alternun-development/alternun/compare/v1.0.210-dev.0...v1.0.211) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(api,infra): lambda, lambda-response-normalization.test, resolve-ssm-env, resolve-ssm-env-cache.test
+
 ## [1.0.210](https://github.com/alternun-development/alternun/compare/v1.0.209-dev.0...v1.0.210) (2026-04-23)
 
 ### Bug Fixes
