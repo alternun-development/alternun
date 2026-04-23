@@ -9,6 +9,8 @@ void test('resolve-ssm-env rejects cached backend-aligned stages missing the bac
   const source = fs.readFileSync(helperPath, 'utf8');
 
   assert.match(source, /normalize_stage_value\(\)/);
+  assert.match(source, /resolve_ssm_stage_name\(\)/);
+  assert.match(source, /backend-api-dev\|api-dev/);
   assert.match(source, /stage_requires_backend_database_url\(\)/);
   assert.match(source, /dashboard\*\|api\*\|backend\*/);
   assert.match(
