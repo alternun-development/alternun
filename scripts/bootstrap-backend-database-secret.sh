@@ -1,44 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-normalize_stage() {
-  printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-'
-}
-
-resolve_backend_database_names() {
-  local stage_name secret_name ssm_key
-  stage_name=$(normalize_stage "${STACK:-${SST_STAGE:-dev}}")
-
-  if [ -n "${INFRA_BACKEND_API_DATABASE_URL_SECRET_NAME:-}" ]; then
-    secret_name="${INFRA_BACKEND_API_DATABASE_URL_SECRET_NAME}"
-  else
-    case "$stage_name" in
-      prod|api-prod|production|*production*)
-        secret_name="alternun/api/infra-backend-api-database-url-prod"
-        ;;
-      dev|api-dev|*testnet*|*development*)
-        secret_name="alternun/api/infra-backend-api-database-url-dev"
-        ;;
-      *)
-        secret_name="alternun/api/infra-backend-api-database-url-prod"
-        ;;
-    esac
-  fi
-
-  case "$stage_name" in
-    prod|api-prod|production|*production*)
-      ssm_key="infra-backend-api-database-url-prod"
-      ;;
-    dev|api-dev|*testnet*|*development*)
-      ssm_key="infra-backend-api-database-url-dev"
-      ;;
-    *)
-      ssm_key="infra-backend-api-database-url"
-      ;;
-  esac
-
-  printf '%s\t%s\n' "$secret_name" "$ssm_key"
-}
+source scripts/backend-database-secret.sh
 
 extract_database_url() {
   local value="${INFRA_BACKEND_API_DATABASE_URL:-${DATABASE_URL:-${SUPABASE_DATABASE_URL:-}}}"
@@ -52,7 +15,8 @@ fi
 
 source scripts/setup-aws-account.sh
 
-IFS=$'\t' read -r SECRET_NAME SSM_KEY < <(resolve_backend_database_names)
+SECRET_NAME=$(resolve_backend_database_secret_name)
+SSM_KEY=$(resolve_backend_database_ssm_key)
 DATABASE_URL_VALUE=$(extract_database_url)
 
 if [ -z "$DATABASE_URL_VALUE" ]; then
