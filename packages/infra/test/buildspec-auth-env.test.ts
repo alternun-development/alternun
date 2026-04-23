@@ -22,6 +22,12 @@ void test('buildspec sources the canonical SSM auth env helper and clears stale 
   assert.match(source, /source "\$\{INFRA_PATH\}\/scripts\/resolve-secrets-manager-env\.sh"/);
   assert.ok((resolveSsmSources?.length ?? 0) >= 2);
   assert.ok((resolveSecretsSources?.length ?? 0) >= 2);
+  assert.doesNotMatch(source, /alternun\/ci\/infra\/expo-public:EXPO_PUBLIC_SUPABASE_URL/);
+  assert.doesNotMatch(source, /alternun\/ci\/infra\/expo-public:EXPO_PUBLIC_SUPABASE_KEY/);
+  assert.doesNotMatch(
+    source,
+    /alternun\/ci\/infra\/expo-public:EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID/
+  );
   assert.match(source, /canonical SSM helper/);
   assert.match(source, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS: 'false'/);
   assert.match(source, /INFRA_STATIC_SITE_INVALIDATION_WAIT: 'false'/);
