@@ -439,6 +439,18 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       this.normalizeProvider(this.options.defaultProvider) ??
       'google';
 
+    if (provider === 'email' && this.emailFallbackProvider) {
+      return this.emailFallbackProvider.signIn({
+        provider: 'email',
+        flow: options.flow ?? 'native',
+        redirectUri: options.redirectUri,
+        web3: options.web3,
+        email: options.email,
+        password: options.password,
+        metadata: options.metadata,
+      });
+    }
+
     const browserClient = await this.resolveBrowserClient();
 
     if (client?.signIn) {
@@ -618,6 +630,14 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signUp(input: AuthExecutionSignUpInput): Promise<AuthExecutionResult> {
+    if (this.emailFallbackProvider) {
+      return (await this.emailFallbackProvider.signUpWithEmail(
+        input.email,
+        input.password,
+        input.locale
+      )) as AuthExecutionResult;
+    }
+
     const client = this.client;
     const signUpName = deriveSignUpName(input.email, input.name);
 
@@ -903,6 +923,10 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signInWithEmail(email: string, password: string): Promise<User> {
+    if (this.emailFallbackProvider) {
+      return this.emailFallbackProvider.signInWithEmail(email, password);
+    }
+
     const browserClient = await this.resolveBrowserClient();
     if (browserClient?.signIn?.email) {
       const result = await browserClient.signIn.email({
@@ -1006,19 +1030,27 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     password: string,
     locale?: string
   ): Promise<AuthExecutionResult> {
+    if (this.emailFallbackProvider) {
+      return (await this.emailFallbackProvider.signUpWithEmail(
+        email,
+        password,
+        locale
+      )) as AuthExecutionResult;
+    }
+
     return this.signUp({ email, password, locale });
   }
 
   async resendEmailConfirmation(email: string): Promise<void> {
+    if (this.emailFallbackProvider) {
+      await this.emailFallbackProvider.resendEmailConfirmation(email);
+      return;
+    }
+
     if (this.options.baseUrl) {
       await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/send-verification-email', {
         email,
       });
-      return;
-    }
-
-    if (this.emailFallbackProvider) {
-      await this.emailFallbackProvider.resendEmailConfirmation(email);
       return;
     }
 
