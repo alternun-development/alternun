@@ -238,6 +238,11 @@ if [ -n "$detected_stage" ]; then
   # Pull the Supabase publishable key from the runtime environment instead of
   # embedding a literal key in this script so secret scanning stays clean.
   stage_supabase_key="${EXPO_PUBLIC_SUPABASE_KEY:-${EXPO_PUBLIC_SUPABASE_ANON_KEY:-}}"
+  if [ -z "$stage_supabase_key" ]; then
+    echo "ERROR: EXPO_PUBLIC_SUPABASE_KEY is required for mobile stage '${detected_stage}'." >&2
+    echo "Set EXPO_PUBLIC_SUPABASE_KEY or EXPO_PUBLIC_SUPABASE_ANON_KEY before generating .env.production/.env.development." >&2
+    exit 1
+  fi
   case "$detected_stage_lower" in
     dev|*testnet*|*development*|*preview*)
       cat > .env.development << ENVFILE

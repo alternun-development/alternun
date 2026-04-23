@@ -1,5 +1,6 @@
 import {
   getAuthErrorMessage,
+  getConfirmationCodeErrorMessage,
   getSignupErrorMessage,
   getSocialSignInErrorMessage,
 } from '../authErrorMessages';
@@ -78,6 +79,31 @@ describe('authErrorMessages', () => {
       'signup-failed'
     );
     expect(getSignupErrorMessage('User already exists', 'signup-failed')).toBe('signup-failed');
+  });
+
+  it('redacts email-and-code validation errors to the generic confirmation code message', () => {
+    expect(
+      getConfirmationCodeErrorMessage(
+        'VALIDATION_ERROR: Enter a valid email address and verification code.',
+        'confirmation-failed'
+      )
+    ).toBe('confirmation-failed');
+
+    expect(
+      getConfirmationCodeErrorMessage(
+        'VALIDATION_ERROR: Enter a valid email or verification code.',
+        'confirmation-failed'
+      )
+    ).toBe('confirmation-failed');
+  });
+
+  it('keeps token expiry errors visible during verification', () => {
+    expect(
+      getConfirmationCodeErrorMessage(
+        'PROVIDER_ERROR: Token has expired or is invalid',
+        'confirmation-failed'
+      )
+    ).toBe('Token has expired or is invalid');
   });
 
   it('falls back to the provided generic auth message when no status is present', () => {

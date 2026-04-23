@@ -23,6 +23,7 @@ export function resolveDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string
         env.DATABASE_URL_DEV,
         env.DATABASE_URL_DEV_IPV4,
         env.DATABASE_URL_DEV_NOIPV4,
+        env.DATABASE_URL,
       ]
     : [
         env.INFRA_BACKEND_API_DATABASE_URL,
@@ -69,7 +70,7 @@ export function getDatabase(): ReturnType<typeof drizzle> {
 
     if (!databaseUrl) {
       throw new Error(
-        'No database URL is configured. Set INFRA_BACKEND_API_DATABASE_URL for testnet-aligned stages, DATABASE_URL_DEV / DATABASE_URL_DEV_IPV4 / DATABASE_URL_DEV_NOIPV4 for local testnet/dev, or DATABASE_URL/SUPABASE_DATABASE_URL for shared runtimes.'
+        'No database URL is configured. Set INFRA_BACKEND_API_DATABASE_URL for testnet-aligned stages, DATABASE_URL_DEV / DATABASE_URL_DEV_IPV4 / DATABASE_URL_DEV_NOIPV4 for local testnet/dev, or DATABASE_URL / SUPABASE_DATABASE_URL for shared runtimes.'
       );
     }
 
