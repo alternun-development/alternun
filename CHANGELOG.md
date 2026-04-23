@@ -1,3 +1,21 @@
+## [1.0.201](https://github.com/alternun-development/alternun/compare/v1.0.200-dev.0...v1.0.201) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** fix(api): referral-response.dto, referrals.controller
+- **repo:** test(repo,admin,api): .env, apply-migrations
+- **repo:** feat(mobile): add THREE.js aurora animation and navbar to referral page
+- **repo:** feat(mobile): make referral page publicly accessible as standalone page
+
+### Bug Fixes
+
+- **api:** referral-response.dto, referrals.controller ([22bc20a](https://github.com/alternun-development/alternun/commit/22bc20a9ef229fb27b3d1e3961bc9060de0e3157))
+
+### Features
+
+- **mobile:** add THREE.js aurora animation and navbar to referral page ([86e5706](https://github.com/alternun-development/alternun/commit/86e5706a86a1eaa918de1ae882c01d1bf0f54a57))
+- **mobile:** make referral page publicly accessible as standalone page ([f4c5989](https://github.com/alternun-development/alternun/commit/f4c59897abef0ee00ef1487f3ebde7d148d9a209))
+
 ## [1.0.200](https://github.com/alternun-development/alternun/compare/v1.0.199-dev.0...v1.0.200) (2026-04-22)
 
 ### Bug Fixes
