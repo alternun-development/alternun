@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger, Optional } from '@nestjs/common';
 import { SignInRequestDto } from '../dto/signin-request.dto';
 import { SignInResponseDto } from '../dto/signin-response.dto';
 import {
@@ -78,6 +78,7 @@ export class SignInService {
   private readonly logger = new Logger(SignInService.name);
 
   constructor(
+    @Optional()
     private readonly authUserLookup: (
       email: string
     ) => Promise<boolean> = hasUnverifiedAuthUserByEmail
