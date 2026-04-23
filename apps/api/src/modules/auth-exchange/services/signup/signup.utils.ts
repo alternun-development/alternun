@@ -73,16 +73,6 @@ export function resolveSignupProviderName(
     return selection;
   }
 
-  const betterAuthBaseUrl = resolveBetterAuthBaseUrl(env);
-  const authExchangeUrl = firstNonEmptyTrimmed([
-    env.AUTH_EXCHANGE_URL,
-    env.EXPO_PUBLIC_AUTH_EXCHANGE_URL,
-  ]);
-
-  if (betterAuthBaseUrl ?? authExchangeUrl) {
-    return 'better-auth';
-  }
-
   return 'supabase';
 }
 
