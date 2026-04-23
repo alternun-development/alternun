@@ -23,6 +23,19 @@ test('resolveDatabaseUrl prefers the dedicated backend database on testnet-align
   }
 });
 
+test('resolveDatabaseUrl falls back to DATABASE_URL on testnet-aligned stages when the dedicated backend database is unavailable', () => {
+  const env = {
+    ALTERNUN_TESTNET_MODE: 'on',
+    INFRA_BACKEND_API_DATABASE_URL: '',
+    DATABASE_URL_DEV: '',
+    DATABASE_URL_DEV_IPV4: '',
+    DATABASE_URL_DEV_NOIPV4: '',
+    DATABASE_URL: 'postgresql://shared:shared@127.0.0.1:5432/shared',
+  };
+
+  assert.equal(resolveDatabaseUrl(env), env.DATABASE_URL);
+});
+
 test('resolveDatabaseUrl prefers the dedicated dev database before shared fallback', () => {
   const env = {
     INFRA_BACKEND_API_DATABASE_URL: '',

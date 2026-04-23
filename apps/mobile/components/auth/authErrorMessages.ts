@@ -27,6 +27,18 @@ const COMMON_SIGNUP_FAILURE_PATTERNS = [
   'incorrect password',
 ];
 
+const COMMON_CONFIRMATION_CODE_FAILURE_PATTERNS = [
+  'enter a valid email address and verification code',
+  'enter a valid email address or verification code',
+  'enter a valid email or verification code',
+  'valid email and verification code',
+  'valid email or verification code',
+  'email address and verification code',
+  'verification code and email',
+  'email is required',
+  'email required',
+];
+
 type HttpStatusLike = {
   status?: unknown;
   statusCode?: unknown;
@@ -137,6 +149,17 @@ export function getSignupErrorMessage(error: unknown, fallbackMessage: string): 
   const normalized = message.toLowerCase();
 
   if (COMMON_SIGNUP_FAILURE_PATTERNS.some((pattern) => normalized.includes(pattern))) {
+    return fallbackMessage;
+  }
+
+  return message;
+}
+
+export function getConfirmationCodeErrorMessage(error: unknown, fallbackMessage: string): string {
+  const message = getAuthErrorMessage(error, fallbackMessage);
+  const normalized = message.toLowerCase();
+
+  if (COMMON_CONFIRMATION_CODE_FAILURE_PATTERNS.some((pattern) => normalized.includes(pattern))) {
     return fallbackMessage;
   }
 
