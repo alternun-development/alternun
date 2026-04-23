@@ -1,3 +1,14 @@
+## [1.0.205](https://github.com/alternun-development/alternun/compare/v1.0.204-dev.0...v1.0.205) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** chore: clean up auth and build changes
+- **repo:** fix(auth): keep signup on Supabase
+
+### Bug Fixes
+
+- **auth:** keep signup on Supabase ([63cfdd8](https://github.com/alternun-development/alternun/commit/63cfdd80dca3a66e32fb68593a2022a95fbcff22))
+
 ## [1.0.204](https://github.com/alternun-development/alternun/compare/v1.0.203...v1.0.204) (2026-04-23)
 
 ### Bug Fixes
