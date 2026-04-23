@@ -1,3 +1,9 @@
+## [1.0.210](https://github.com/alternun-development/alternun/compare/v1.0.209-dev.0...v1.0.210) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(infra): buildspec, bootstrap-ssm-parameters, bootstrap-ssm-parameters.test, buildspec-auth-env.test
+
 ## [1.0.209](https://github.com/alternun-development/alternun/compare/v1.0.208-dev.0...v1.0.209) (2026-04-23)
 
 ### Bug Fixes
