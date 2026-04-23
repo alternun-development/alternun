@@ -166,6 +166,16 @@ test('resolveSignupProviderName keeps signup on Supabase when Better Auth URLs a
   );
 });
 
+test('resolveSignupProviderName ignores the execution provider and stays on Supabase unless explicitly overridden', () => {
+  assert.equal(
+    resolveSignupProviderName({
+      AUTH_EXECUTION_PROVIDER: 'better-auth',
+      EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+    }),
+    'supabase'
+  );
+});
+
 test('SignupService returns the verification flow when auth.users already has an unverified email', async () => {
   const service = new SignupService(
     {

@@ -63,11 +63,7 @@ export function resolveVerificationCallbackUrl(env: NodeJS.ProcessEnv = process.
 export function resolveSignupProviderName(
   env: NodeJS.ProcessEnv = process.env
 ): SignupProviderName {
-  const selection = firstNonEmptyTrimmed([
-    env.AUTH_SIGNUP_PROVIDER,
-    env.AUTH_EXECUTION_PROVIDER,
-    env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER,
-  ])?.toLowerCase();
+  const selection = firstNonEmptyTrimmed([env.AUTH_SIGNUP_PROVIDER])?.toLowerCase();
 
   if (selection === 'better-auth' || selection === 'supabase' || selection === 'authentik') {
     return selection;

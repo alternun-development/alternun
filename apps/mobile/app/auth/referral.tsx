@@ -102,6 +102,7 @@ export default function ReferralRoute(): React.JSX.Element {
     invitationCode: readSearchParam(code) ?? '',
   });
   const hasHandledRef = useRef(false);
+  const successRedirectTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const isNavigationReady = Boolean(rootNavigationState?.key);
   const isBetterAuthExecution = isBetterAuthExecutionEnabled();
   const callbackPayload = useMemo(() => {
@@ -119,6 +120,17 @@ export default function ReferralRoute(): React.JSX.Element {
     const id = `${Date.now()}-${Math.random()}`;
     setToasts((current) => [...current, { id, type: 'success', title, message }]);
     setTimeout(() => dismissToast(id), 4000);
+  };
+
+  const clearRedirectTimers = (): void => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (successRedirectTimerRef.current !== null) {
+      window.clearTimeout(successRedirectTimerRef.current);
+      successRedirectTimerRef.current = null;
+    }
   };
 
   const hasAnyReferralData = useMemo(() => {
@@ -295,10 +307,19 @@ export default function ReferralRoute(): React.JSX.Element {
     setSuccessMessage(t('auth.referral.success', undefined, 'Welcome!'));
     pushToast('Success', t('auth.referral.success', undefined, 'Welcome!'));
 
-    setTimeout(() => {
+    if (typeof window !== 'undefined') {
+      successRedirectTimerRef.current = window.setTimeout(() => {
+        clearRedirectTimers();
+        const redirectTarget = readSearchParam(next) ?? '/';
+        router.replace(redirectTarget as AuthCallbackHref);
+      }, 120);
+      return;
+    }
+
+    {
       const redirectTarget = readSearchParam(next) ?? '/';
       router.replace(redirectTarget as AuthCallbackHref);
-    }, 2000);
+    }
   };
 
   useEffect(() => {
@@ -322,6 +343,15 @@ export default function ReferralRoute(): React.JSX.Element {
     }
   }, [isNavigationReady, callbackPayload, router, user, saveReferralAndComplete]);
 
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && successRedirectTimerRef.current !== null) {
+        window.clearTimeout(successRedirectTimerRef.current);
+        successRedirectTimerRef.current = null;
+      }
+    };
+  }, []);
+
   if (successMessage) {
     const displayedSuccessMessage: string = String(successMessage ?? '');
 
@@ -335,7 +365,6 @@ export default function ReferralRoute(): React.JSX.Element {
               {t('auth.referral.successTitle', undefined, 'All Set!')}
             </Text>
             <Text style={styles.message}>{displayedSuccessMessage}</Text>
-            <ActivityIndicator size='large' color='#1ccba1' style={styles.spinner} />
           </View>
           <ToastSystem toasts={toasts} onDismiss={dismissToast} />
         </View>
