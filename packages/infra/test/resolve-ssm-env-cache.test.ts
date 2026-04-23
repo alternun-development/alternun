@@ -10,7 +10,10 @@ void test('resolve-ssm-env rejects cached backend-aligned stages missing the bac
 
   assert.match(source, /normalize_stage_value\(\)/);
   assert.match(source, /resolve_ssm_stage_name\(\)/);
+  assert.match(source, /resolve_shared_ssm_stage_name\(\)/);
   assert.match(source, /backend-api-dev\|api-dev/);
+  assert.match(source, /prod\|production\|\*production\*\|dashboard-prod/);
+  assert.match(source, /printf '%s\\n' 'production'/);
   assert.match(source, /stage_requires_backend_database_url\(\)/);
   assert.match(source, /dashboard\*\|api\*\|backend\*/);
   assert.match(
@@ -37,5 +40,13 @@ void test('resolve-ssm-env refreshes cached auth env when the public Supabase ke
   assert.match(
     source,
     /if \[ -z "\$\{EXPO_PUBLIC_SUPABASE_URL:-\}" \] \|\| \[ -z "\$\{EXPO_PUBLIC_SUPABASE_KEY:-\}" \]; then/
+  );
+  assert.match(
+    source,
+    /export_env_from_ssm "EXPO_PUBLIC_SUPABASE_URL" "expo-public-supabase-url" "" "\$\{SSM_SHARED_STAGE\}"/
+  );
+  assert.match(
+    source,
+    /export_env_from_ssm "EXPO_PUBLIC_SUPABASE_KEY" "expo-public-supabase-key" "" "\$\{SSM_SHARED_STAGE\}"/
   );
 });
