@@ -96,6 +96,8 @@ export default function ReferralRoute(): React.JSX.Element {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [currentLanguage, setCurrentLanguage] = useState<string>('en');
   const [formData, setFormData] = useState<ReferralFormData>({
     referredByUsername: readSearchParam(username) ?? '',
     referredByEmail: readSearchParam(email) ?? '',
@@ -358,7 +360,13 @@ export default function ReferralRoute(): React.JSX.Element {
     return (
       <View style={styles.container}>
         <AuroraBackground />
-        <ReferralNavbar user={user} />
+        <ReferralNavbar
+          user={user}
+          theme={theme}
+          onThemeChange={setTheme}
+          currentLanguage={currentLanguage}
+          onLanguageChange={setCurrentLanguage}
+        />
         <View style={styles.screen}>
           <View style={styles.card}>
             <Text style={styles.title}>
@@ -378,7 +386,13 @@ export default function ReferralRoute(): React.JSX.Element {
     return (
       <View style={styles.container}>
         <AuroraBackground />
-        <ReferralNavbar user={user} />
+        <ReferralNavbar
+          user={user}
+          theme={theme}
+          onThemeChange={setTheme}
+          currentLanguage={currentLanguage}
+          onLanguageChange={setCurrentLanguage}
+        />
         <View style={styles.screen}>
           <View style={styles.card}>
             <Text style={styles.title}>{t('authCallback.errors.title', undefined, 'Error')}</Text>
@@ -398,7 +412,13 @@ export default function ReferralRoute(): React.JSX.Element {
   return (
     <View style={styles.container}>
       <AuroraBackground />
-      <ReferralNavbar user={user} />
+      <ReferralNavbar
+        user={user}
+        theme={theme}
+        onThemeChange={setTheme}
+        currentLanguage={currentLanguage}
+        onLanguageChange={setCurrentLanguage}
+      />
       <ScrollView style={styles.screen} contentContainerStyle={styles.screenContent}>
         <View style={styles.card}>
           <Text style={styles.title}>{t('auth.referral.title', undefined, "You're Invited!")}</Text>

@@ -900,11 +900,6 @@ export default function AuthSignInScreen({
           ]}
           keyboardShouldPersistTaps='handled'
           showsVerticalScrollIndicator={false}
-          onTouchStart={() => {
-            if (settingsMenuOpen) {
-              closeSettingsMenu();
-            }
-          }}
         >
           <View
             style={[
@@ -914,6 +909,13 @@ export default function AuthSignInScreen({
               { backgroundColor: p.cardBg, borderColor: p.cardBorder },
             ]}
           >
+            {settingsMenuOpen ? (
+              <Pressable
+                accessibilityRole='button'
+                onPress={closeSettingsMenu}
+                style={styles.settingsMenuBackdrop}
+              />
+            ) : null}
             <View
               style={[
                 styles.header,
@@ -1061,7 +1063,6 @@ export default function AuthSignInScreen({
                           activeOpacity={0.8}
                           onPress={() => {
                             cycleLanguage();
-                            closeSettingsMenu();
                           }}
                           style={styles.settingsDropdownItem}
                         >
@@ -1083,7 +1084,6 @@ export default function AuthSignInScreen({
                           activeOpacity={0.8}
                           onPress={() => {
                             toggleThemeMode();
-                            closeSettingsMenu();
                           }}
                           style={styles.settingsDropdownItem}
                         >
@@ -1735,14 +1735,15 @@ export default function AuthSignInScreen({
                       }
                     }}
                     style={[
-                      styles.resendButton,
-                      { borderColor: p.noticeBorder, backgroundColor: p.noticeBg },
+                      styles.primaryButton,
+                      styles.confirmationVerifyButton,
+                      { backgroundColor: p.primaryBtnBg },
                     ]}
                   >
                     {submitMode === 'verifyCode' ? (
-                      <ActivityIndicator color={p.accent} size='small' />
+                      <ActivityIndicator color={p.primaryBtnText} size='small' />
                     ) : (
-                      <Text style={[styles.resendButtonText, { color: p.noticeText }]}>
+                      <Text style={[styles.primaryButtonText, { color: p.primaryBtnText }]}>
                         {t('authModal.actions.verifyConfirmationCode')}
                       </Text>
                     )}
@@ -1821,9 +1822,14 @@ export default function AuthSignInScreen({
                       transitionToSignInForm(confirmationEmail ?? '');
                     }
                   }}
-                  style={[styles.primaryButton, { backgroundColor: p.primaryBtnBg }]}
+                  style={[
+                    styles.confirmationSecondaryButton,
+                    { borderColor: p.inputBorder, backgroundColor: p.inputBg },
+                  ]}
                 >
-                  <Text style={[styles.primaryButtonText, { color: p.primaryBtnText }]}>
+                  <Text
+                    style={[styles.confirmationSecondaryButtonText, { color: p.textSecondary }]}
+                  >
                     {t('authModal.actions.alreadyConfirmedContinue')}
                   </Text>
                 </TouchableOpacity>
@@ -2018,7 +2024,7 @@ const styles = createTypographyStyles({
   },
   settingsDropdown: {
     position: 'absolute',
-    top: 38,
+    top: 31,
     right: 0,
     zIndex: 9999,
     minWidth: 168,
@@ -2034,13 +2040,21 @@ const styles = createTypographyStyles({
   },
   settingsDropdownCompact: {
     position: 'absolute',
-    top: 36,
+    top: 30,
     right: 0,
     zIndex: 99999,
     minWidth: 180,
     alignSelf: 'flex-end',
     marginTop: 0,
     marginBottom: 0,
+  },
+  settingsMenuBackdrop: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 9997,
   },
   settingsDropdownItem: {
     flexDirection: 'row',
@@ -2203,6 +2217,10 @@ const styles = createTypographyStyles({
     minHeight: 48,
     paddingHorizontal: 32,
   },
+  confirmationVerifyButton: {
+    alignSelf: 'stretch',
+    marginTop: 4,
+  },
   primaryButtonText: {
     color: '#050510',
     fontSize: 15,
@@ -2224,6 +2242,19 @@ const styles = createTypographyStyles({
   secondaryButtonText: {
     color: '#e8e8ff',
     fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  confirmationSecondaryButton: {
+    alignSelf: 'stretch',
+    minHeight: 40,
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: 18,
+  },
+  confirmationSecondaryButtonText: {
+    color: '#cfd1ea',
+    fontSize: 13,
     fontWeight: '700',
     letterSpacing: 0.2,
   },

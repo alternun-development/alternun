@@ -10,6 +10,7 @@ import React, {
 } from 'react';
 import {
   Animated,
+  Easing,
   Pressable,
   StyleSheet,
   StyleProp,
@@ -60,6 +61,7 @@ type HeroGlassButtonProps = {
   width: number | string;
   fontSize: number;
   isDark: boolean;
+  borderWidth: number;
 };
 
 function HeroGlassButton({
@@ -68,6 +70,7 @@ function HeroGlassButton({
   width,
   fontSize,
   isDark,
+  borderWidth,
 }: HeroGlassButtonProps): React.ReactElement {
   const pillBgColor = isDark ? 'rgba(11,90,95,0.25)' : 'rgba(255,255,255,0.25)';
   const pillBgColorHover = isDark ? 'rgba(11,90,95,0.45)' : 'rgba(255,255,255,0.45)';
@@ -86,6 +89,7 @@ function HeroGlassButton({
         ({
           ...styles.heroGlassButton,
           width,
+          borderWidth,
           backgroundColor: hovered ? pillBgColorHover : pillBgColor,
           borderColor: hovered ? pillBorderColorHover : pillBorderColor,
           transform: [{ scale: pressed ? 0.98 : hovered ? 1.02 : 1 }],
@@ -164,7 +168,7 @@ const AirsIntroExperience = forwardRef<
 >(
   (
     {
-      onContinueToDashboard,
+      onContinueToDashboard: _onContinueToDashboard,
       onSignIn,
       onOpenSettings: _onOpenSettings,
       extraSections,
@@ -211,16 +215,24 @@ const AirsIntroExperience = forwardRef<
     const isMobile = screenWidth < 720;
     const heroVideoSource = isMobile ? HERO_VIDEO_MOBILE : HERO_VIDEO_DESKTOP;
     const [headerNavMobileMenuVisible, setHeaderNavMobileMenuVisible] = useState(false);
-    const headerNavMobileMenuAnim = useRef(new Animated.Value(0)).current;
+    const headerNavDropdownAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-      Animated.spring(headerNavMobileMenuAnim, {
-        toValue: headerNavMobileMenuVisible ? 1 : 0,
+      const anyHeaderMenuVisible =
+        headerNavMobileMenuVisible || headerNavSettingsMenuVisible || profileMenuVisible;
+
+      Animated.timing(headerNavDropdownAnim, {
+        toValue: anyHeaderMenuVisible ? 1 : 0,
+        duration: 190,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
-        friction: 8,
-        tension: 40,
       }).start();
-    }, [headerNavMobileMenuVisible, headerNavMobileMenuAnim]);
+    }, [
+      headerNavDropdownAnim,
+      headerNavMobileMenuVisible,
+      headerNavSettingsMenuVisible,
+      profileMenuVisible,
+    ]);
 
     const scrollY = useRef(new Animated.Value(0)).current;
     const isMutedRef = useRef(isMuted);
@@ -324,7 +336,6 @@ const AirsIntroExperience = forwardRef<
     );
 
     const heroHeight = Math.max(screenHeight * 1.05, 740);
-    const cardStartWidth = Math.min(screenWidth * 0.56, 700);
     const isDesktopView = screenWidth >= 720;
     const isCompactDesktop = isDesktopView && screenWidth < 1280;
     const heroWordmarkHeight = isDesktopView
@@ -369,6 +380,17 @@ const AirsIntroExperience = forwardRef<
       outputRange: [0, 1],
       extrapolate: 'clamp',
     });
+    const firstSectionTransitionLift = isMobile ? 44 : isCompactDesktop ? 64 : 84;
+    const extraSectionsOpacity = scrollY.interpolate({
+      inputRange: [0, heroHeight * 0.14, heroHeight * 0.32],
+      outputRange: [0.92, 0.98, 1],
+      extrapolate: 'clamp',
+    });
+    const extraSectionsTranslateY = scrollY.interpolate({
+      inputRange: [0, heroHeight * 0.16, heroHeight * 0.42],
+      outputRange: [0, -firstSectionTransitionLift, 0],
+      extrapolate: 'clamp',
+    });
     const bgScale = scrollY.interpolate({
       inputRange: [0, HERO_EXPANSION_RANGE],
       outputRange: [1, 1.08],
@@ -389,16 +411,6 @@ const AirsIntroExperience = forwardRef<
     const footerTranslateY = scrollY.interpolate({
       inputRange: [0, HERO_EXPANSION_RANGE * 0.7],
       outputRange: [0, 24],
-      extrapolate: 'clamp',
-    });
-    const contentOpacity = scrollY.interpolate({
-      inputRange: [0, 120],
-      outputRange: [0.94, 1],
-      extrapolate: 'clamp',
-    });
-    const contentTranslateY = scrollY.interpolate({
-      inputRange: [0, 120],
-      outputRange: [10, 0],
       extrapolate: 'clamp',
     });
     const mediaTagOpacity = scrollY.interpolate({
@@ -456,8 +468,29 @@ const AirsIntroExperience = forwardRef<
     const heroKickerLineHeight = heroKickerSize * 1.02;
     const heroButtonWidth = isMobile ? '100%' : Math.min(screenWidth * 0.28, 360);
     const heroButtonFontSize = Math.min(Math.max(screenWidth * 0.023, 18), 24);
+    const heroButtonBorderWidth = isDesktopView ? 1.35 : 1;
     const heroFooterTextColor = isDark ? 'rgba(248,251,255,0.96)' : '#020617';
     const heroFooterShadowColor = isDark ? 'rgba(0,0,0,0.28)' : 'transparent';
+    const headerNavDropdownAnimatedStyle = useMemo(
+      () => ({
+        opacity: headerNavDropdownAnim,
+        transform: [
+          {
+            scale: headerNavDropdownAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0.96, 1],
+            }),
+          },
+          {
+            translateY: headerNavDropdownAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [-12, 0],
+            }),
+          },
+        ],
+      }),
+      [headerNavDropdownAnim]
+    );
     const closeProfileMenu = (): void => {
       setProfileMenuVisible(false);
       setSettingsExpanded(false);
@@ -592,24 +625,8 @@ const AirsIntroExperience = forwardRef<
                           backgroundColor: palette.contentCard,
                           borderColor: palette.contentBorder,
                         },
-                        !isMobile && { paddingHorizontal: 8, paddingVertical: 8 },
-                        {
-                          opacity: headerNavMobileMenuAnim,
-                          transform: [
-                            {
-                              scale: headerNavMobileMenuAnim.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0.95, 1],
-                              }),
-                            },
-                            {
-                              translateY: headerNavMobileMenuAnim.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [-10, 0],
-                              }),
-                            },
-                          ],
-                        },
+                        !isMobile && { paddingHorizontal: 12, paddingVertical: 12 },
+                        headerNavDropdownAnimatedStyle,
                       ]}
                       pointerEvents='auto'
                     >
@@ -833,28 +850,32 @@ const AirsIntroExperience = forwardRef<
                             <SettingsIcon size={17} color='#f7fffd' strokeWidth={2.1} />
                           </Pressable>
 
-                          <AnimatedCollapsibleContent
-                            expanded={headerNavSettingsMenuVisible}
-                            style={[
-                              styles.headerNavSettingsDropdown,
-                              {
-                                backgroundColor: palette.contentCard,
-                                borderColor: palette.contentBorder,
-                              },
-                            ]}
-                          >
-                            <AirsIntroSettingsMenu
-                              palette={palette}
-                              onOpenSettings={
-                                _onOpenSettings
-                                  ? (): void => {
-                                      closeHeaderNavSettingsMenu();
-                                      _onOpenSettings();
-                                    }
-                                  : undefined
-                              }
-                            />
-                          </AnimatedCollapsibleContent>
+                          {headerNavSettingsMenuVisible ? (
+                            <Animated.View
+                              style={[
+                                styles.headerNavSettingsDropdown,
+                                {
+                                  backgroundColor: palette.contentCard,
+                                  borderColor: palette.contentBorder,
+                                },
+                                headerNavDropdownAnimatedStyle,
+                              ]}
+                            >
+                              <AnimatedCollapsibleContent expanded={headerNavSettingsMenuVisible}>
+                                <AirsIntroSettingsMenu
+                                  palette={palette}
+                                  onOpenSettings={
+                                    _onOpenSettings
+                                      ? (): void => {
+                                          closeHeaderNavSettingsMenu();
+                                          _onOpenSettings();
+                                        }
+                                      : undefined
+                                  }
+                                />
+                              </AnimatedCollapsibleContent>
+                            </Animated.View>
+                          ) : null}
                         </View>
                       </View>
                     </View>
@@ -923,7 +944,7 @@ const AirsIntroExperience = forwardRef<
 
         {/* Profile dropdown menu (logged-in state) */}
         {!showCta && profileMenuVisible && (
-          <View style={styles.headerDropdownContainer}>
+          <Animated.View style={[styles.headerDropdownContainer, headerNavDropdownAnimatedStyle]}>
             <View
               style={[
                 styles.floatingMenu,
@@ -967,7 +988,7 @@ const AirsIntroExperience = forwardRef<
                 <AirsIntroSettingsMenu palette={palette} />
               </AnimatedCollapsibleContent>
             </View>
-          </View>
+          </Animated.View>
         )}
 
         {!showCta && profileMenuVisible && (
@@ -997,10 +1018,11 @@ const AirsIntroExperience = forwardRef<
             </TouchableOpacity>
 
             {profileMenuVisible ? (
-              <View
+              <Animated.View
                 style={[
                   styles.floatingMenu,
                   { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
+                  headerNavDropdownAnimatedStyle,
                 ]}
               >
                 <TouchableOpacity
@@ -1038,7 +1060,7 @@ const AirsIntroExperience = forwardRef<
                 <AnimatedCollapsibleContent expanded={settingsExpanded}>
                   <AirsIntroSettingsMenu palette={palette} />
                 </AnimatedCollapsibleContent>
-              </View>
+              </Animated.View>
             ) : null}
           </View>
         )}
@@ -1118,6 +1140,7 @@ const AirsIntroExperience = forwardRef<
                     width={heroButtonWidth}
                     fontSize={heroButtonFontSize}
                     isDark={isDark}
+                    borderWidth={heroButtonBorderWidth}
                   />
                   <HeroGlassButton
                     onPress={onSignIn}
@@ -1125,6 +1148,7 @@ const AirsIntroExperience = forwardRef<
                     width={heroButtonWidth}
                     fontSize={heroButtonFontSize}
                     isDark={isDark}
+                    borderWidth={heroButtonBorderWidth}
                   />
                 </View>
               </Animated.View>
@@ -1159,63 +1183,19 @@ const AirsIntroExperience = forwardRef<
             </Animated.View>
           </View>
 
-          <Animated.View
-            style={[
-              styles.contentCard,
-              {
-                opacity: contentOpacity,
-                transform: [{ translateY: contentTranslateY }],
-              },
-              !isMobile && {
-                maxWidth: Math.min(cardStartWidth + 40, 760),
-                alignSelf: 'center',
-                width: '100%',
-              },
-            ]}
-          >
-            <View style={styles.contentTitleWrap}>
-              <ExpoImage
-                source={heroWordmarkSource}
-                style={styles.contentTitleLogo}
-                contentFit='contain'
-              />
-            </View>
-            <Text style={[styles.contentText, { color: palette.textMuted }]}>
-              {t('landing.info.scoreLine')}
-            </Text>
-            <Text style={[styles.contentText, { color: palette.textMuted }]}>
-              {t('landing.info.summaryLine')}
-            </Text>
-            <View style={styles.minimalActions}>
-              <TouchableOpacity activeOpacity={0.75} onPress={() => onContinueToDashboard(false)}>
-                <Text style={[styles.linkAction, { color: palette.accent }]}>
-                  {t('landing.actions.goToDashboard')}
-                </Text>
-              </TouchableOpacity>
-              {onHeroNavigate && (
-                <>
-                  <TouchableOpacity
-                    activeOpacity={0.75}
-                    onPress={() => onHeroNavigate('como-funciona')}
-                  >
-                    <Text style={[styles.linkAction, { color: palette.accent }]}>
-                      {t('landing.nav.howItWorks')}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.75}
-                    onPress={() => onHeroNavigate('beneficios')}
-                  >
-                    <Text style={[styles.linkAction, { color: palette.accent }]}>
-                      {t('landing.nav.benefits')}
-                    </Text>
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
-          </Animated.View>
-
-          {extraSections}
+          {extraSections ? (
+            <Animated.View
+              style={[
+                styles.extraSectionsTransition,
+                {
+                  opacity: extraSectionsOpacity,
+                  transform: [{ translateY: extraSectionsTranslateY }],
+                },
+              ]}
+            >
+              {extraSections}
+            </Animated.View>
+          ) : null}
 
           <LandingFooter />
         </Animated.ScrollView>
@@ -1260,7 +1240,6 @@ const styles = createTypographyStyles({
     zIndex: 40,
   },
   floatingProfileTrigger: {
-    borderWidth: 1,
     borderRadius: 999,
     minHeight: 42,
     paddingHorizontal: 8,
@@ -1282,11 +1261,11 @@ const styles = createTypographyStyles({
   },
   floatingMenu: {
     marginTop: 8,
-    width: 220,
+    width: 200,
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 8,
-    gap: 6,
+    borderRadius: 20,
+    padding: 12,
+    gap: 8,
     boxShadow: '0px 6px 16px 0px rgba(0, 0, 0, 0.24)',
   },
   floatingMenuItem: {
@@ -1396,6 +1375,10 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     zIndex: 3,
   },
+  extraSectionsTransition: {
+    position: 'relative',
+    zIndex: 2,
+  },
   heroMetaLeftBlock: {
     gap: 2,
     flexShrink: 1,
@@ -1475,37 +1458,6 @@ const styles = createTypographyStyles({
     marginTop: 0,
     width: '100%',
   },
-  contentCard: {
-    marginHorizontal: 20,
-    marginTop: 18,
-    paddingHorizontal: 2,
-    paddingVertical: 0,
-    gap: 6,
-  },
-  contentTitleWrap: {
-    minHeight: 32,
-    justifyContent: 'center',
-  },
-  contentTitleLogo: {
-    width: 92,
-    height: 32,
-  },
-  contentText: {
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  minimalActions: {
-    marginTop: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  linkAction: {
-    fontSize: 12,
-    fontWeight: '700',
-    textDecorationLine: 'underline',
-  },
-
   // ── Progressive blur header bar ──────────────────────────────────────────
   progressiveBlurHeader: {
     position: 'absolute',
@@ -1614,7 +1566,6 @@ const styles = createTypographyStyles({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 9,
@@ -1628,12 +1579,12 @@ const styles = createTypographyStyles({
   },
   headerNavDesktopAvatarDropdown: {
     position: 'absolute',
-    top: 40,
+    top: 50,
     right: 0,
-    minWidth: 180,
-    borderRadius: 12,
+    minWidth: 200,
+    borderRadius: 20,
     borderWidth: 1,
-    paddingVertical: 6,
+    padding: 12,
     zIndex: 100,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
@@ -1742,13 +1693,13 @@ const styles = createTypographyStyles({
   },
   headerNavSettingsDropdown: {
     position: 'absolute',
-    top: 58,
+    top: 50,
     right: 0,
-    width: 220,
-    borderRadius: 14,
+    width: 200,
+    borderRadius: 20,
     borderWidth: 1,
-    padding: 8,
-    gap: 6,
+    padding: 12,
+    gap: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 14 },
     shadowOpacity: 0.22,
@@ -1810,7 +1761,7 @@ const styles = createTypographyStyles({
   },
   headerDropdownContainer: {
     position: 'absolute',
-    top: 68,
+    top: 50,
     right: 24,
     zIndex: 55,
     minWidth: 200,
