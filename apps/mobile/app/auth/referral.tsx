@@ -43,6 +43,12 @@ interface ReferralFormData {
   invitationCode: string;
 }
 
+interface ReferralSubmissionData {
+  referred_by_username: string | null;
+  referred_by_email: string | null;
+  invitation_code: string | null;
+}
+
 function readSearchParam(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) {
     return value[0] ?? null;
@@ -111,7 +117,7 @@ export default function ReferralRoute(): React.JSX.Element {
 
   const pushToast = (title: string, message: string): void => {
     const id = `${Date.now()}-${Math.random()}`;
-    setToasts((current) => [...current, { id, title, message }]);
+    setToasts((current) => [...current, { id, type: 'success', title, message }]);
     setTimeout(() => dismissToast(id), 4000);
   };
 
@@ -126,7 +132,7 @@ export default function ReferralRoute(): React.JSX.Element {
   const saveReferralAndComplete = React.useCallback(
     async (userId: string): Promise<void> => {
       // Check for form data or pending data from sessionStorage
-      let dataToSave = null;
+      let dataToSave: ReferralSubmissionData | null = null;
 
       if (hasAnyReferralData) {
         dataToSave = {
@@ -139,7 +145,7 @@ export default function ReferralRoute(): React.JSX.Element {
         if (pending) {
           try {
             const parsed = JSON.parse(pending) as Record<string, unknown>;
-            dataToSave = parsed as typeof dataToSave;
+            dataToSave = parsed as unknown as ReferralSubmissionData;
             sessionStorage.removeItem('pendingReferralData');
           } catch {
             // Invalid JSON, ignore

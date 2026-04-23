@@ -107,9 +107,9 @@ clear_metro_cache_if_needed() {
 
 clear_previous_export_artifacts() {
   # Start each deploy from a clean export tree so stale bundle files cannot be
-  # re-uploaded from a previous run.
+  # re-uploaded from a previous run. Keep the package caches so CodeBuild can
+  # reuse them across runs and avoid rebuilding the same Metro/Expo work.
   rm -rf dist .expo
-  rm -rf node_modules/.cache/expo node_modules/.cache/metro
 }
 
 verify_exported_release_artifacts() {
