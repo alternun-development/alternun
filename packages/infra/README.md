@@ -204,7 +204,7 @@ Enable/configure through env or local config:
 - `INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED` (set `true` to make `/auth/exchange` fail closed when issuer-owned minting is unavailable)
 - `INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY` (preferred: sourced from the identity stack's JWT secret output; the `sst-deploy.sh` hydration remains a compatibility fallback)
 - `INFRA_BACKEND_API_DATABASE_URL` (preferred backend Lambda DB URL; backend-aligned stages do not inherit the shared `DATABASE_URL` / `SUPABASE_DATABASE_URL` fallback so testnet cannot silently point at the wrong Supabase project)
-- `INFRA_BACKEND_API_DATABASE_URL_SECRET_NAME` (optional override for the Secrets Manager secret used by migration/deploy helpers; defaults to `alternun/api/database-url-dev` for dev/testnet-like stages and `alternun/api/database-url` for production-like stages)
+- `INFRA_BACKEND_API_DATABASE_URL_SECRET_NAME` (optional override for the Secrets Manager secret used by migration/deploy helpers; defaults to `alternun/api/infra-backend-api-database-url-dev` for dev/testnet-like stages and `alternun/api/infra-backend-api-database-url-prod` for production-like stages)
 
 To bootstrap the backend DB secret into both Secrets Manager and SSM, use:
 

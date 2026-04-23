@@ -18,13 +18,13 @@ resolve_database_secret_name() {
 
   case "$stage_name" in
     prod|api-prod|production|*production*)
-      secret_name="alternun/api/database-url"
+      secret_name="alternun/api/infra-backend-api-database-url-prod"
       ;;
     dev|api-dev|*testnet*|*development*)
-      secret_name="alternun/api/database-url-dev"
+      secret_name="alternun/api/infra-backend-api-database-url-dev"
       ;;
     *)
-      secret_name="alternun/api/database-url"
+      secret_name="alternun/api/infra-backend-api-database-url-prod"
       ;;
   esac
 
