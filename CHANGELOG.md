@@ -1,3 +1,14 @@
+## [1.0.216](https://github.com/alternun-development/alternun/compare/v1.0.215...v1.0.216) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(infra): resolve-ssm-env, resolve-ssm-env-cache.test
+- **repo:** feat(mobile): enhance referral navbar with theme toggle, language selector, and avatar dropdown
+
+### Features
+
+- **mobile:** enhance referral navbar with theme toggle, language selector, and avatar dropdown ([e3d7f05](https://github.com/alternun-development/alternun/commit/e3d7f051e34eaad40b196f2afeec0de59bb29059))
+
 ## [1.0.215](https://github.com/alternun-development/alternun/compare/v1.0.215-dev.0...v1.0.215) (2026-04-23)
 
 ### Bug Fixes
