@@ -147,11 +147,6 @@ env:
     EXPO_PUBLIC_AUTHENTIK_ISSUER: ''
     EXPO_PUBLIC_AUTHENTIK_CLIENT_ID: ''
     EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI: ''
-  secrets-manager:
-    EXPO_PUBLIC_SUPABASE_URL: 'alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_URL'
-    EXPO_PUBLIC_SUPABASE_KEY: 'alternun/ci/infra/expo-public:EXPO_PUBLIC_SUPABASE_KEY'
-    EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID: 'alternun/ci/infra/expo-public:EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID'
-
 phases:
   install:
     runtime-versions:
