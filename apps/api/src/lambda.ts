@@ -10,6 +10,17 @@ import { normalizeLambdaRequestPath } from './common/bootstrap/request-path';
 
 let cachedFastifyApp: FastifyInstance | undefined;
 
+const HOP_BY_HOP_HEADERS = new Set([
+  'connection',
+  'keep-alive',
+  'proxy-authenticate',
+  'proxy-authorization',
+  'te',
+  'trailer',
+  'transfer-encoding',
+  'upgrade',
+]);
+
 type LambdaResponseHeaders = Record<string, string>;
 type LambdaResponseHeaderEntries = Array<readonly [string, unknown]>;
 
@@ -37,14 +48,14 @@ async function getFastifyApp(): Promise<FastifyInstance> {
   // eslint-disable-next-line no-console
   console.log('[getFastifyApp] Creating new app');
   try {
-    const app = await createApp();
+    const app: Awaited<ReturnType<typeof createApp>> = await createApp();
     // eslint-disable-next-line no-console
     console.log('[getFastifyApp] App created, calling init');
     await app.init();
     // eslint-disable-next-line no-console
     console.log('[getFastifyApp] App initialized');
 
-    const fastify = app.getHttpAdapter().getInstance();
+    const fastify = app.getHttpAdapter().getInstance() as FastifyInstance;
     // eslint-disable-next-line no-console
     console.log('[getFastifyApp] Got fastify instance, calling ready');
     await fastify.ready();
@@ -80,6 +91,14 @@ export function normalizeLambdaResponseHeaders(
           cookies.push(normalizedCookie);
         }
       }
+      continue;
+    }
+
+    if (
+      normalizedName === 'content-length' ||
+      normalizedName === 'host' ||
+      HOP_BY_HOP_HEADERS.has(normalizedName)
+    ) {
       continue;
     }
 
