@@ -122,12 +122,28 @@ export function extractErrorMessage(error: unknown): string {
       return error.message;
     }
 
+    if (typeof error.msg === 'string' && error.msg.trim()) {
+      return error.msg;
+    }
+
+    if (typeof error.error_description === 'string' && error.error_description.trim()) {
+      return error.error_description;
+    }
+
     if (typeof error.error === 'string' && error.error.trim()) {
       return error.error;
     }
 
     if (isRecord(error.error) && typeof error.error.message === 'string') {
       return error.error.message;
+    }
+
+    if (isRecord(error.error) && typeof error.error.msg === 'string') {
+      return error.error.msg;
+    }
+
+    if (isRecord(error.error) && typeof error.error.error_description === 'string') {
+      return error.error.error_description;
     }
   }
 

@@ -221,6 +221,11 @@ export default function AuthCallbackRoute(): React.JSX.Element {
       refreshToken: callbackPayload.refreshToken,
     })
       .then(() => {
+        return Promise.resolve(
+          typeof callbackClient.getUser === 'function' ? callbackClient.getUser() : null
+        ).catch(() => undefined);
+      })
+      .then(() => {
         setSuccessMessage(successCopy.message);
         pushToast(successCopy.title, successCopy.message);
         if (typeof window !== 'undefined') {
