@@ -26,3 +26,16 @@ void test('resolve-ssm-env rejects cached backend-aligned stages missing the bac
     /if stage_requires_backend_database_url; then\n\s+export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url"\n\s+else\n\s+export_env_from_ssm "INFRA_BACKEND_API_DATABASE_URL" "infra-backend-api-database-url" "\$\{DATABASE_URL:-\}"\n\s+fi/
   );
 });
+
+void test('resolve-ssm-env refreshes cached auth env when the public Supabase key is missing', () => {
+  const source = fs.readFileSync(helperPath, 'utf8');
+
+  assert.match(
+    source,
+    /Cached SSM env for stage '\$\{STAGE\}' is missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_KEY; refreshing from SSM\./
+  );
+  assert.match(
+    source,
+    /if \[ -z "\$\{EXPO_PUBLIC_SUPABASE_URL:-\}" \] \|\| \[ -z "\$\{EXPO_PUBLIC_SUPABASE_KEY:-\}" \]; then/
+  );
+});
