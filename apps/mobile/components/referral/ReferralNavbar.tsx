@@ -56,7 +56,10 @@ export const ReferralNavbar: React.FC<ReferralNavbarProps> = ({
             {/* Language Menu */}
             <View style={styles.languageMenuContainer}>
               <Pressable
-                onPress={() => setShowLanguageMenu(!showLanguageMenu)}
+                onPress={() => {
+                  setShowLanguageMenu(!showLanguageMenu);
+                  setShowDropdown(false);
+                }}
                 style={[styles.iconButton, isDark ? styles.iconButtonDark : styles.iconButtonLight]}
               >
                 <Text style={styles.iconButtonText}>🌐</Text>
@@ -65,6 +68,7 @@ export const ReferralNavbar: React.FC<ReferralNavbarProps> = ({
                 <View
                   style={[
                     styles.dropdownMenu,
+                    styles.languageDropdown,
                     isDark ? styles.dropdownMenuDark : styles.dropdownMenuLight,
                   ]}
                 >
@@ -99,7 +103,10 @@ export const ReferralNavbar: React.FC<ReferralNavbarProps> = ({
             {user ? (
               <View style={styles.avatarMenuContainer}>
                 <Pressable
-                  onPress={() => setShowDropdown(!showDropdown)}
+                  onPress={() => {
+                    setShowDropdown(!showDropdown);
+                    setShowLanguageMenu(false);
+                  }}
                   style={[styles.avatar, isDark ? styles.avatarDark : styles.avatarLight]}
                 >
                   <Text style={styles.avatarText}>{avatarInitials}</Text>
@@ -108,13 +115,14 @@ export const ReferralNavbar: React.FC<ReferralNavbarProps> = ({
                   <View
                     style={[
                       styles.dropdownMenu,
+                      styles.avatarDropdown,
                       isDark ? styles.dropdownMenuDark : styles.dropdownMenuLight,
                     ]}
                   >
                     <Pressable
                       onPress={() => {
-                        router.push('/mi-perfil');
                         setShowDropdown(false);
+                        setTimeout(() => router.push('/mi-perfil'), 0);
                       }}
                       style={styles.menuItem}
                     >
@@ -126,8 +134,8 @@ export const ReferralNavbar: React.FC<ReferralNavbarProps> = ({
                     </Pressable>
                     <Pressable
                       onPress={() => {
-                        router.push('/settings');
                         setShowDropdown(false);
+                        setTimeout(() => router.push('/settings'), 0);
                       }}
                       style={styles.menuItem}
                     >
@@ -140,8 +148,8 @@ export const ReferralNavbar: React.FC<ReferralNavbarProps> = ({
                     <View style={styles.menuDivider} />
                     <Pressable
                       onPress={() => {
-                        router.push('/auth?mode=logout');
                         setShowDropdown(false);
+                        setTimeout(() => router.push('/auth?mode=logout'), 0);
                       }}
                       style={styles.menuItem}
                     >
@@ -228,7 +236,8 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
+    justifyContent: 'flex-end',
   },
   iconButton: {
     width: 40,
@@ -279,23 +288,28 @@ const styles = StyleSheet.create({
   dropdownMenu: {
     position: 'absolute',
     top: 48,
-    right: 0,
     borderRadius: 12,
     borderWidth: 1,
-    minWidth: 200,
+    minWidth: 180,
     zIndex: 1000,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  avatarDropdown: {
+    right: 0,
+  },
+  languageDropdown: {
+    right: 50,
   },
   dropdownMenuDark: {
-    backgroundColor: 'rgba(10, 11, 28, 0.95)',
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: 'rgba(10, 11, 28, 0.98)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   dropdownMenuLight: {
-    backgroundColor: 'rgba(248, 250, 252, 0.95)',
+    backgroundColor: 'rgba(248, 250, 252, 0.98)',
     borderColor: 'rgba(0, 0, 0, 0.12)',
   },
   menuItem: {
