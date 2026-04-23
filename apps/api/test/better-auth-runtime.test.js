@@ -5,6 +5,7 @@ const {
   handleBetterAuthRuntimeRequest,
   resolveBetterAuthBootstrapConfig,
 } = require('../src/common/bootstrap/better-auth-runtime.ts');
+const { shouldProxyBetterAuthPath } = require('../src/common/bootstrap/better-auth-proxy.ts');
 
 function createReply() {
   return {
@@ -39,6 +40,12 @@ test('resolveBetterAuthBootstrapConfig keeps the local external Better Auth prox
 
   assert.equal(config.mode, 'proxy');
   assert.equal(config.targetBaseUrl, 'http://127.0.0.1:8084');
+});
+
+test('shouldProxyBetterAuthPath skips Supabase email auth routes', () => {
+  assert.equal(shouldProxyBetterAuthPath('/auth/sign-in/email'), false);
+  assert.equal(shouldProxyBetterAuthPath('/auth/sign-up/email'), false);
+  assert.equal(shouldProxyBetterAuthPath('/auth/sign-in/social'), true);
 });
 
 test('resolveBetterAuthBootstrapConfig embeds Better Auth when the public API origin is configured', () => {

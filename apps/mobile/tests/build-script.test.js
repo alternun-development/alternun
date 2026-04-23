@@ -18,7 +18,7 @@ describe('mobile build script cleanup', () => {
     );
     expect(buildScript).toContain('EXPO_PUBLIC_SUPABASE_KEY=${stage_supabase_key}');
     expect(buildScript).toContain('rm -rf dist .expo');
-    expect(buildScript).toContain('rm -rf node_modules/.cache/expo node_modules/.cache/metro');
+    expect(buildScript).not.toContain('rm -rf node_modules/.cache/expo node_modules/.cache/metro');
     expect(buildScript).toMatch(/clear_previous_export_artifacts\(\)[\s\S]*npx expo export -p web/);
     expect(buildScript).toContain('resolve_expected_release_version()');
     expect(buildScript).toContain('verify_exported_web_bundle_version()');

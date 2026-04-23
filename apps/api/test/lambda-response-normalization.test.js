@@ -11,7 +11,15 @@ test('lambda proxy response normalizes set-cookie into the v2 cookies field', ()
   assert.match(source, /export function normalizeLambdaResponseHeaders\(/);
   assert.match(source, /normalizedName === 'set-cookie'/);
   assert.match(source, /cookies: string\[\] = \[\]/);
+  assert.match(source, /HOP_BY_HOP_HEADERS/);
+  assert.match(
+    source,
+    /normalizedName === 'content-length'[\s\S]*normalizedName === 'host'[\s\S]*HOP_BY_HOP_HEADERS\.has\(normalizedName\)/
+  );
   assert.match(source, /headers: responseEnvelope\.headers/);
-  assert.match(source, /cookies: responseEnvelope\.cookies/);
+  assert.match(
+    source,
+    /responseEnvelope\.cookies \? \{ cookies: responseEnvelope\.cookies \} : \{\}/
+  );
   assert.match(source, /headers: Record<string, string>/);
 });

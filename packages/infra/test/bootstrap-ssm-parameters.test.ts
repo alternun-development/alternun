@@ -10,7 +10,7 @@ void test('bootstrap and mobile build scripts use stage-specific Supabase public
   const bootstrapSource = fs.readFileSync(bootstrapPath, 'utf8');
   const mobileBuildSource = fs.readFileSync(mobileBuildPath, 'utf8');
 
-  assert.match(bootstrapSource, /SUPABASE_URL="https:\/\/rjebeugdvwbjpaktrrbx\.supabase\.co"/);
+  assert.match(bootstrapSource, /SUPABASE_URL="https:\/\/aznfyazjndfniwsocdka\.supabase\.co"/);
   assert.match(
     bootstrapSource,
     /SUPABASE_KEY="\$\{EXPO_PUBLIC_SUPABASE_KEY_DEV:-\$\{SUPABASE_KEY_DEV:-\$\{EXPO_PUBLIC_SUPABASE_KEY:-\$\{SUPABASE_KEY:-\}\}\}\}"/

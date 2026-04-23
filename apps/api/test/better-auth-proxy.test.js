@@ -32,6 +32,8 @@ function createReply() {
 
 test('shouldProxyBetterAuthPath skips /auth/exchange', () => {
   assert.equal(shouldProxyBetterAuthPath('/auth/sign-in/social'), true);
+  assert.equal(shouldProxyBetterAuthPath('/auth/sign-in/email'), false);
+  assert.equal(shouldProxyBetterAuthPath('/auth/sign-up/email'), false);
   assert.equal(shouldProxyBetterAuthPath('/auth/exchange'), false);
   assert.equal(shouldProxyBetterAuthPath('/auth/exchange/'), false);
 });

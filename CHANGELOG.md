@@ -1,3 +1,79 @@
+## [1.0.212](https://github.com/alternun-development/alternun/compare/v1.0.212-dev.0...v1.0.212) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.212-dev.0
+- **repo:** test(api,mobile): better-auth-proxy, better-auth-runtime, auth-exchange.controller, auth-exchange.module
+
+## [1.0.212](https://github.com/alternun-development/alternun/compare/v1.0.211-dev.0...v1.0.212) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile): better-auth-proxy, better-auth-runtime, auth-exchange.controller, auth-exchange.module
+
+## [1.0.211](https://github.com/alternun-development/alternun/compare/v1.0.210-dev.0...v1.0.211) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(api,infra): lambda, lambda-response-normalization.test, resolve-ssm-env, resolve-ssm-env-cache.test
+
+## [1.0.210](https://github.com/alternun-development/alternun/compare/v1.0.209-dev.0...v1.0.210) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(infra): buildspec, bootstrap-ssm-parameters, bootstrap-ssm-parameters.test, buildspec-auth-env.test
+
+## [1.0.209](https://github.com/alternun-development/alternun/compare/v1.0.208-dev.0...v1.0.209) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** fix(infra): resolve-ssm-env
+
+### Bug Fixes
+
+- **infra:** resolve-ssm-env ([d122eec](https://github.com/alternun-development/alternun/commit/d122eec2885cb2103316e82a86add802427f5f59))
+
+## [1.0.208](https://github.com/alternun-development/alternun/compare/v1.0.207-dev.0...v1.0.208) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(infra): resolve-ssm-env, buildspec-auth-env.test
+
+## [1.0.207](https://github.com/alternun-development/alternun/compare/v1.0.206-dev.0...v1.0.207) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(infra): api, dashboard, dashboard-pipeline-better-auth-env.test, backend-pipeline-supabase-env.test
+
+## [1.0.206](https://github.com/alternun-development/alternun/compare/v1.0.205-dev.0...v1.0.206) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile): signup.utils, signup.service.test, callback, referral
+
+## [1.0.205](https://github.com/alternun-development/alternun/compare/v1.0.204-dev.0...v1.0.205) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** chore: clean up auth and build changes
+- **repo:** fix(auth): keep signup on Supabase
+
+### Bug Fixes
+
+- **auth:** keep signup on Supabase ([63cfdd8](https://github.com/alternun-development/alternun/commit/63cfdd80dca3a66e32fb68593a2022a95fbcff22))
+
+## [1.0.204](https://github.com/alternun-development/alternun/compare/v1.0.203...v1.0.204) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** fix(auth): infer better-auth signup on testnet
+- **repo:** fix(versioning): accept promoted mobile app version mirror
+
+### Bug Fixes
+
+- **auth:** infer better-auth signup on testnet ([f7cd4d1](https://github.com/alternun-development/alternun/commit/f7cd4d1ce3eb53db2dc133076b412de60cd33ccb))
+- **versioning:** accept promoted mobile app version mirror ([7213270](https://github.com/alternun-development/alternun/commit/7213270a03d8d2774fb4d0f77758e0cf72a5f1ff))
+
 ## [1.0.203](https://github.com/alternun-development/alternun/compare/v1.0.203-dev.0...v1.0.203) (2026-04-23)
 
 ### Bug Fixes
