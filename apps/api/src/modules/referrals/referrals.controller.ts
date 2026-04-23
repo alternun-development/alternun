@@ -1,6 +1,6 @@
 import { Body, Controller, Post, Req, Version, UnauthorizedException } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
+import type { FastifyRequest } from 'fastify';
 import { ReferralsService } from './referrals.service';
 import { CreateReferralDto } from './dto/create-referral.dto';
 import { ReferralResponseDto } from './dto/referral-response.dto';
@@ -9,7 +9,7 @@ interface AuthenticatedUser {
   sub: string;
 }
 
-interface AuthenticatedRequest extends Request {
+interface AuthenticatedRequest extends FastifyRequest {
   user?: AuthenticatedUser;
 }
 
