@@ -407,17 +407,6 @@ export class AlternunAuthFacade {
         return normalized;
     }
     async resendEmailConfirmation(email) {
-        if (this.executionProvider.name === 'better-auth') {
-            await this.emailProvider.sendVerificationEmail({
-                email,
-                templateName: 'verification',
-                metadata: {
-                    source: 'facade',
-                },
-            });
-            this.log('email-provider', 'sendVerificationEmail', 'success', { email });
-            return;
-        }
         if (this.executionProvider.resendEmailConfirmation) {
             await this.executionProvider.resendEmailConfirmation(email);
             this.log('email-provider', 'resendEmailConfirmation', 'success', { email });
