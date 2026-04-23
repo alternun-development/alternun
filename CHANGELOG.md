@@ -1,3 +1,13 @@
+## [1.0.209](https://github.com/alternun-development/alternun/compare/v1.0.208-dev.0...v1.0.209) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** fix(infra): resolve-ssm-env
+
+### Bug Fixes
+
+- **infra:** resolve-ssm-env ([d122eec](https://github.com/alternun-development/alternun/commit/d122eec2885cb2103316e82a86add802427f5f59))
+
 ## [1.0.208](https://github.com/alternun-development/alternun/compare/v1.0.207-dev.0...v1.0.208) (2026-04-23)
 
 ### Bug Fixes
