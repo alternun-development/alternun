@@ -1,3 +1,15 @@
+## [1.0.204](https://github.com/alternun-development/alternun/compare/v1.0.203...v1.0.204) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** fix(auth): infer better-auth signup on testnet
+- **repo:** fix(versioning): accept promoted mobile app version mirror
+
+### Bug Fixes
+
+- **auth:** infer better-auth signup on testnet ([f7cd4d1](https://github.com/alternun-development/alternun/commit/f7cd4d1ce3eb53db2dc133076b412de60cd33ccb))
+- **versioning:** accept promoted mobile app version mirror ([7213270](https://github.com/alternun-development/alternun/commit/7213270a03d8d2774fb4d0f77758e0cf72a5f1ff))
+
 ## [1.0.203](https://github.com/alternun-development/alternun/compare/v1.0.203-dev.0...v1.0.203) (2026-04-23)
 
 ### Bug Fixes
