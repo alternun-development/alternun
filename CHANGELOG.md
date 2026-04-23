@@ -1,3 +1,14 @@
+## [1.0.214](https://github.com/alternun-development/alternun/compare/v1.0.213...v1.0.214) (2026-04-23)
+
+### Bug Fixes
+
+- **repo:** test(auth): AlternunAuthFacade, BetterAuthExecutionProvider, facade.test, provider-contracts.test
+- **repo:** fix: restore SSM Supabase precedence in CI
+
+### Bug Fixes
+
+- restore SSM Supabase precedence in CI ([a040746](https://github.com/alternun-development/alternun/commit/a040746e8eaeee0e4a58e3f61d16c451c9c94ef9))
+
 ## [1.0.213](https://github.com/alternun-development/alternun/compare/v1.0.213-dev.0...v1.0.213) (2026-04-23)
 
 ### Bug Fixes
