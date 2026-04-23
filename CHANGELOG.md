@@ -2,6 +2,13 @@
 
 ### Bug Fixes
 
+- **repo:** chore: release v1.0.201
+- **repo:** chore(infra): standardize backend db secrets
+
+## [1.0.201](https://github.com/alternun-development/alternun/compare/v1.0.201-dev.1...v1.0.201) (2026-04-23)
+
+### Bug Fixes
+
 - **repo:** chore(infra): standardize backend db secrets
 
 ## [1.0.201](https://github.com/alternun-development/alternun/compare/v1.0.201-dev.0...v1.0.201) (2026-04-23)
