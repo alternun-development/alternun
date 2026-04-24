@@ -1,3 +1,13 @@
+## [1.0.220](https://github.com/alternun-development/alternun/compare/v1.0.219-dev.0...v1.0.220) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n,ui): Update footer tagline and styling
+
+### Bug Fixes
+
+- **mobile,i18n,ui:** Update footer tagline and styling ([e6426fa](https://github.com/alternun-development/alternun/commit/e6426fa322047e6c9cd47a19dd14c6e0a31d4e83))
+
 ## [1.0.219](https://github.com/alternun-development/alternun/compare/v1.0.218-dev.0...v1.0.219) (2026-04-24)
 
 ### Bug Fixes
