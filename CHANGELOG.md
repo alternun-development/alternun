@@ -1,3 +1,9 @@
+## [1.0.224](https://github.com/alternun-development/alternun/compare/v1.0.224-dev.0...v1.0.224) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** chore: sync release and env promotion
+
 ## [1.0.224](https://github.com/alternun-development/alternun/compare/v1.0.223-dev.1...v1.0.224) (2026-04-24)
 
 ### Bug Fixes
