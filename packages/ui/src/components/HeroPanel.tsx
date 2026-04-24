@@ -157,7 +157,7 @@ export function HeroPanel({
   const firstName = displayName?.trim().split(/\s+/)[0] ?? '';
 
   // ─── Palette ─────────────────────────────────────────────────────────────────
-  const textPrimary = isDark ? '#ffffff' : '#ffffff';
+  const textPrimary = '#CBAB35';
   const textMuted = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.75)';
   const orbA = isDark ? 'rgba(28,203,161,0.11)' : 'rgba(28,203,161,0.08)';
   const orbB = isDark ? 'rgba(11,90,95,0.20)' : 'rgba(11,90,95,0.06)';
