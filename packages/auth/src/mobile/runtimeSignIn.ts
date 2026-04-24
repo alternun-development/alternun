@@ -130,9 +130,8 @@ function shouldUseBetterAuthWebFlow(
   provider: string,
   authentikProviderHint?: OidcProvider
 ): boolean {
-  // Better Auth owns the social-login migration path here; the facade will
-  // exchange the resulting external identity into the canonical Authentik
-  // session after callback completion.
+  // Better Auth is only a fallback browser execution path when Authentik is
+  // not the selected social-login owner for the current web flow.
   const normalizedProvider = provider.trim().toLowerCase();
   return (
     strategy.executionProvider === 'better-auth' &&
