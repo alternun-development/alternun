@@ -562,93 +562,99 @@ export default function TopNav({
                     </TouchableOpacity>
                   )}
 
-                  {/* Nav items */}
-                  <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
-                    {NAV_SECTIONS.map((section) => {
-                      const isActive = activeSection === section.key;
-                      const isComingSoon = Boolean(section.comingSoon);
-                      const IconComp = section.icon;
-                      return (
-                        <TouchableOpacity
-                          key={section.key}
-                          style={[
-                            styles.navItem,
-                            isExtraSmall && styles.navItemExtraSmall,
-                            {
-                              backgroundColor: isActive
-                                ? p.navActive
-                                : isComingSoon
-                                ? isDark
-                                  ? 'rgba(255,255,255,0.03)'
-                                  : 'rgba(15,23,42,0.03)'
-                                : 'transparent',
-                              borderWidth: isActive || isComingSoon ? 1 : 0,
-                              borderColor: isActive
-                                ? p.navActiveBorder
-                                : isComingSoon
-                                ? p.dropDivider
-                                : 'transparent',
-                              opacity: isComingSoon ? 0.74 : 1,
-                            },
-                          ]}
-                          onPress={() => handleNavSectionPress(section)}
-                          activeOpacity={0.8}
-                        >
-                          <IconComp
-                            size={15}
-                            color={
-                              isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.iconIdle
-                            }
-                          />
-                          <Text
+                  {/* Nav items - only show when signed in */}
+                  {signedIn && (
+                    <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
+                      {NAV_SECTIONS.map((section) => {
+                        const isActive = activeSection === section.key;
+                        const isComingSoon = Boolean(section.comingSoon);
+                        const IconComp = section.icon;
+                        return (
+                          <TouchableOpacity
+                            key={section.key}
                             style={[
-                              styles.navItemText,
+                              styles.navItem,
+                              isExtraSmall && styles.navItemExtraSmall,
                               {
-                                color: isActive
-                                  ? p.navActiveText
+                                backgroundColor: isActive
+                                  ? p.navActive
                                   : isComingSoon
-                                  ? p.dropSub
-                                  : p.dropText,
+                                  ? isDark
+                                    ? 'rgba(255,255,255,0.03)'
+                                    : 'rgba(15,23,42,0.03)'
+                                  : 'transparent',
+                                borderWidth: isActive || isComingSoon ? 1 : 0,
+                                borderColor: isActive
+                                  ? p.navActiveBorder
+                                  : isComingSoon
+                                  ? p.dropDivider
+                                  : 'transparent',
+                                opacity: isComingSoon ? 0.74 : 1,
                               },
-                              isActive && styles.navItemTextActive,
                             ]}
+                            onPress={() => handleNavSectionPress(section)}
+                            activeOpacity={0.8}
                           >
-                            {section.label}
-                          </Text>
-                          {isComingSoon ? (
-                            <View style={[styles.comingSoonPill, { borderColor: p.dropDivider }]}>
-                              <Text style={[styles.comingSoonText, { color: p.dropSub }]}>
-                                Coming soon
-                              </Text>
-                            </View>
-                          ) : isActive ? (
-                            <View style={[styles.activeIndicator, { backgroundColor: p.accent }]} />
-                          ) : null}
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
+                            <IconComp
+                              size={15}
+                              color={
+                                isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.iconIdle
+                              }
+                            />
+                            <Text
+                              style={[
+                                styles.navItemText,
+                                {
+                                  color: isActive
+                                    ? p.navActiveText
+                                    : isComingSoon
+                                    ? p.dropSub
+                                    : p.dropText,
+                                },
+                                isActive && styles.navItemTextActive,
+                              ]}
+                            >
+                              {section.label}
+                            </Text>
+                            {isComingSoon ? (
+                              <View style={[styles.comingSoonPill, { borderColor: p.dropDivider }]}>
+                                <Text style={[styles.comingSoonText, { color: p.dropSub }]}>
+                                  Coming soon
+                                </Text>
+                              </View>
+                            ) : isActive ? (
+                              <View
+                                style={[styles.activeIndicator, { backgroundColor: p.accent }]}
+                              />
+                            ) : null}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
 
-                  {/* Settings expandable */}
-                  <TouchableOpacity
-                    style={[
-                      styles.navItem,
-                      isExtraSmall && styles.navItemExtraSmall,
-                      { backgroundColor: 'transparent' },
-                    ]}
-                    onPress={() => setSettingsExpanded((v) => !v)}
-                    activeOpacity={0.8}
-                  >
-                    <SettingsIcon size={15} color={p.iconIdle} />
-                    <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                      {t('labels.settings')}
-                    </Text>
-                    {settingsExpanded ? (
-                      <ChevronDownIcon size={13} color={p.chevron} />
-                    ) : (
-                      <ChevronRightIcon size={13} color={p.chevron} />
-                    )}
-                  </TouchableOpacity>
+                  {/* Settings expandable - only show when signed in */}
+                  {signedIn && (
+                    <TouchableOpacity
+                      style={[
+                        styles.navItem,
+                        isExtraSmall && styles.navItemExtraSmall,
+                        { backgroundColor: 'transparent' },
+                      ]}
+                      onPress={() => setSettingsExpanded((v) => !v)}
+                      activeOpacity={0.8}
+                    >
+                      <SettingsIcon size={15} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        {t('labels.settings')}
+                      </Text>
+                      {settingsExpanded ? (
+                        <ChevronDownIcon size={13} color={p.chevron} />
+                      ) : (
+                        <ChevronRightIcon size={13} color={p.chevron} />
+                      )}
+                    </TouchableOpacity>
+                  )}
 
                   <AnimatedCollapsibleContent expanded={settingsExpanded}>
                     <TouchableOpacity
