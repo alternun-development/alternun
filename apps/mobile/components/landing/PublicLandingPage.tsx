@@ -1761,7 +1761,11 @@ function PlaceCard({
               onPress={onPress}
               activeOpacity={0.82}
             >
-              <Text style={[styles.placeCardButtonText, { color: isDark ? '#050510' : '#fff' }]}>
+              <Text
+                style={[styles.placeCardButtonText, { color: isDark ? '#050510' : '#fff' }]}
+                numberOfLines={1}
+                ellipsizeMode='tail'
+              >
                 {ctaLabel}
               </Text>
               <ArrowRightIcon size={14} color={isDark ? '#050510' : '#fff'} strokeWidth={2.5} />
