@@ -1,19 +1,20 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, } from 'react-native';
-import { createTypographyStyles, } from '../theme/typography';
-import { ToastMessage, } from './types';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { createTypographyStyles } from '../theme/typography';
+import { ToastMessage } from './types';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 interface ToastProps {
   toasts: ToastMessage[];
   onDismiss: (id: string) => void;
 }
 
-export default function ToastSystem({ toasts, onDismiss, }: ToastProps,) {
+export default function ToastSystem({ toasts, onDismiss }: ToastProps) {
   if (toasts.length === 0) return null;
 
   return (
     <View style={styles.container} pointerEvents='box-none'>
-      {toasts.map((toast,) => (
+      {toasts.map((toast) => (
         <TouchableOpacity
           key={toast.id}
           style={[
@@ -21,10 +22,10 @@ export default function ToastSystem({ toasts, onDismiss, }: ToastProps,) {
             toast.type === 'error'
               ? styles.toastError
               : toast.type === 'info'
-                ? styles.toastInfo
-                : styles.toastSuccess,
+              ? styles.toastInfo
+              : styles.toastSuccess,
           ]}
-          onPress={() => onDismiss(toast.id,)}
+          onPress={() => onDismiss(toast.id)}
           activeOpacity={0.9}
         >
           <View
@@ -39,7 +40,7 @@ export default function ToastSystem({ toasts, onDismiss, }: ToastProps,) {
           </View>
           <Text style={styles.closeIcon}>×</Text>
         </TouchableOpacity>
-      ),)}
+      ))}
     </View>
   );
 }
@@ -61,7 +62,7 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(255,255,255,0.1)',
     overflow: 'hidden',
     shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 4, },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 12,
     elevation: 8,
@@ -90,12 +91,14 @@ const styles = createTypographyStyles({
     padding: 12,
   },
   toastTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#e8e8ff',
     fontSize: 13,
     fontWeight: '600',
     marginBottom: 2,
   },
   toastMessage: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.6)',
     fontSize: 12,
   },
@@ -105,4 +108,4 @@ const styles = createTypographyStyles({
     paddingRight: 12,
     paddingLeft: 4,
   },
-},);
+});

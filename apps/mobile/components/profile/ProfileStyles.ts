@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 export const profileStylesEnhanced = (isDark: boolean) => {
   const colors = isDark
@@ -83,6 +84,7 @@ export const profileStylesEnhanced = (isDark: boolean) => {
       marginBottom: 20,
     },
     avatarText: {
+      fontFamily: ANEK_EXPANDED_FAMILY,
       fontSize: 32,
       fontWeight: '800',
       color: colors.accent,
@@ -112,6 +114,7 @@ export const profileStylesEnhanced = (isDark: boolean) => {
       gap: 6,
     },
     authLabel: {
+      fontFamily: ANEK_EXPANDED_FAMILY,
       fontSize: 12,
       fontWeight: '700',
       color: colors.accent,
@@ -135,6 +138,7 @@ export const profileStylesEnhanced = (isDark: boolean) => {
       elevation: 3,
     },
     infoTitle: {
+      fontFamily: ANEK_EXPANDED_FAMILY,
       fontSize: 15,
       fontWeight: '800',
       color: colors.text,
@@ -154,12 +158,14 @@ export const profileStylesEnhanced = (isDark: boolean) => {
       borderBottomWidth: 0,
     },
     infoLabel: {
+      fontFamily: ANEK_EXPANDED_FAMILY,
       fontSize: 13,
       fontWeight: '600',
       color: colors.muted,
       flex: 0.4,
     },
     infoValue: {
+      fontFamily: ANEK_EXPANDED_FAMILY,
       fontSize: 13,
       fontWeight: '700',
       color: colors.text,
@@ -200,12 +206,14 @@ export const profileStylesEnhanced = (isDark: boolean) => {
       borderColor: 'rgba(255, 59, 48, 0.3)',
     },
     btnText: {
+      fontFamily: ANEK_EXPANDED_FAMILY,
       fontSize: 15,
       fontWeight: '700',
       color: colors.text,
       letterSpacing: -0.3,
     },
     dangerBtnText: {
+      fontFamily: ANEK_EXPANDED_FAMILY,
       fontSize: 15,
       fontWeight: '700',
       color: '#ff3b30',
@@ -243,6 +251,7 @@ export const profileStylesEnhanced = (isDark: boolean) => {
       borderWidth: 1.5,
     },
     signInBtnText: {
+      fontFamily: ANEK_EXPANDED_FAMILY,
       fontWeight: '700',
       fontSize: 15,
       letterSpacing: -0.3,

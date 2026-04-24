@@ -1,6 +1,7 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, ViewStyle, } from 'react-native';
-import { useAppPalette, } from '../theme/useAppPalette';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
+import { useAppPalette } from '../theme/useAppPalette';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 type ButtonVariant = 'primary' | 'secondary';
 
@@ -74,14 +75,14 @@ export default function LoadingButton({
   variant = 'primary',
   icon: Icon,
   containerStyle,
-}: LoadingButtonProps,): JSX.Element {
+}: LoadingButtonProps): JSX.Element {
   const p = useAppPalette();
   const isDisabled = disabled || isLoading;
 
   const baseButtonStyle =
     variant === 'primary'
-      ? { backgroundColor: p.primaryBtnBg, }
-      : { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder, };
+      ? { backgroundColor: p.primaryBtnBg }
+      : { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder };
 
   const baseTextColor = variant === 'primary' ? p.primaryBtnText : p.secondaryBtnText;
 
@@ -100,12 +101,12 @@ export default function LoadingButton({
       {isLoading ? (
         <>
           <ActivityIndicator color={baseTextColor} size='small' />
-          <Text style={[styles.buttonText, { color: baseTextColor, },]}>{loadingLabel ?? label}</Text>
+          <Text style={[styles.buttonText, { color: baseTextColor }]}>{loadingLabel ?? label}</Text>
         </>
       ) : (
         <>
           {Icon ? <Icon size={16} color={baseTextColor} /> : null}
-          <Text style={[styles.buttonText, { color: baseTextColor, },]}>{label}</Text>
+          <Text style={[styles.buttonText, { color: baseTextColor }]}>{label}</Text>
         </>
       )}
     </TouchableOpacity>
@@ -131,10 +132,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   buttonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '700',
   },
   buttonDisabled: {
     opacity: 0.6,
   },
-},);
+});

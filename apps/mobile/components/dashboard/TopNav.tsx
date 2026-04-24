@@ -37,6 +37,7 @@ import NotificationDropdown, { type NotificationItem } from './NotificationDropd
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { getFirstName } from './userDisplayName';
 import { NAV_SECTIONS, type NavSection } from './navSections';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const AIRS_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg') as number;
@@ -861,12 +862,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   bylineSubtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 10,
     fontWeight: '500',
     letterSpacing: 0.05,
     flexShrink: 1,
   },
   bylineSubtitleMobile: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 9,
     fontWeight: '400',
   },
@@ -932,6 +935,7 @@ const styles = StyleSheet.create({
     borderRadius: 13,
   },
   avatarText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '800',
   },
@@ -1055,6 +1059,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   dropAvatarText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '800',
   },
@@ -1078,6 +1083,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   dropScoreText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 10,
     fontWeight: '700',
   },
@@ -1118,6 +1124,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   comingSoonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.2,
@@ -1140,6 +1147,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   navItemValue: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     fontWeight: '700',
   },

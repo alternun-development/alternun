@@ -12,6 +12,7 @@ import {
 import { PlayCircle, RotateCcw, Volume2, VolumeX } from 'lucide-react-native';
 
 import { useAppTranslation } from '../i18n/useAppTranslation';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 type NativeWebViewMessage = {
   nativeEvent?: {
@@ -513,6 +514,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
   },
   videoControlText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#f8fbff',
     fontSize: 11,
     fontWeight: '700',
@@ -529,6 +531,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#04040f',
   },
   videoFallbackText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '700',

@@ -14,6 +14,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 interface DynamicMessageBarProps {
   message: string;
@@ -108,6 +109,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   text: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: 0.3,

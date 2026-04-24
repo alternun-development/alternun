@@ -8,6 +8,7 @@ import {
   Phone,
   ArrowLeft,
 } from 'lucide-react-native';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 export interface SupportButtonProps {
   supportEmail: string;
@@ -336,6 +337,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.1)',
   },
   dialogTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 0.1,
@@ -347,6 +349,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   closeButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -375,11 +378,13 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   optionTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.2,
   },
   optionDescription: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 16,
   },
@@ -392,6 +397,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   backButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: 0.2,

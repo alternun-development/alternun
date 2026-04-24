@@ -1,4 +1,4 @@
-import React, { useState, } from 'react';
+import React, { useState } from 'react';
 import {
   Linking,
   StyleSheet,
@@ -16,7 +16,8 @@ import {
   Wallet,
   type LucideProps,
 } from 'lucide-react-native';
-import { useAppPreferences, } from '../settings/AppPreferencesProvider';
+import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 const GlobeIcon = Globe as React.FC<LucideProps>;
 const CoinsIcon = Coins as React.FC<LucideProps>;
@@ -29,7 +30,7 @@ interface DashboardSummaryCardsProps {
   onNavigate?: (key: string) => void;
 }
 
-function getPalette(isDark: boolean,): {
+function getPalette(isDark: boolean): {
   cardBg: string;
   cardBorder: string;
   cardShadow: string;
@@ -51,45 +52,45 @@ function getPalette(isDark: boolean,): {
 } {
   return isDark
     ? {
-      cardBg: 'rgba(11,18,27,0.96)',
-      cardBorder: 'rgba(124,146,182,0.18)',
-      cardShadow: 'rgba(0,0,0,0.34)',
-      title: '#DCE5FF',
-      subtitle: '#93A4C8',
-      copy: '#B5C0D6',
-      muted: '#7F8AA4',
-      accent: '#27C8A3',
-      accentSoft: 'rgba(39,200,163,0.12)',
-      accentStrong: '#4DE2BC',
-      warning: '#E6B44E',
-      warningSoft: 'rgba(230,180,78,0.14)',
-      line: 'rgba(154,170,202,0.14)',
-      panelBg: 'rgba(18,27,39,0.86)',
-      panelBorder: 'rgba(128,146,184,0.18)',
-      iconBg: 'rgba(58,78,124,0.28)',
-      iconColor: '#9FB2FF',
-      heroBadgeBg: '#3140A8',
-    }
+        cardBg: 'rgba(11,18,27,0.96)',
+        cardBorder: 'rgba(124,146,182,0.18)',
+        cardShadow: 'rgba(0,0,0,0.34)',
+        title: '#DCE5FF',
+        subtitle: '#93A4C8',
+        copy: '#B5C0D6',
+        muted: '#7F8AA4',
+        accent: '#27C8A3',
+        accentSoft: 'rgba(39,200,163,0.12)',
+        accentStrong: '#4DE2BC',
+        warning: '#E6B44E',
+        warningSoft: 'rgba(230,180,78,0.14)',
+        line: 'rgba(154,170,202,0.14)',
+        panelBg: 'rgba(18,27,39,0.86)',
+        panelBorder: 'rgba(128,146,184,0.18)',
+        iconBg: 'rgba(58,78,124,0.28)',
+        iconColor: '#9FB2FF',
+        heroBadgeBg: '#3140A8',
+      }
     : {
-      cardBg: '#FBFCFE',
-      cardBorder: 'rgba(112,124,151,0.22)',
-      cardShadow: 'rgba(12,18,38,0.14)',
-      title: '#313A91',
-      subtitle: '#566287',
-      copy: '#636A82',
-      muted: '#7A8098',
-      accent: '#11826B',
-      accentSoft: 'rgba(17,130,107,0.10)',
-      accentStrong: '#0E8D71',
-      warning: '#D2A12F',
-      warningSoft: 'rgba(210,161,47,0.16)',
-      line: 'rgba(69,80,118,0.12)',
-      panelBg: '#F1F4F8',
-      panelBorder: 'rgba(119,126,155,0.22)',
-      iconBg: 'rgba(49,58,145,0.08)',
-      iconColor: '#313A91',
-      heroBadgeBg: '#313A91',
-    };
+        cardBg: '#FBFCFE',
+        cardBorder: 'rgba(112,124,151,0.22)',
+        cardShadow: 'rgba(12,18,38,0.14)',
+        title: '#313A91',
+        subtitle: '#566287',
+        copy: '#636A82',
+        muted: '#7A8098',
+        accent: '#11826B',
+        accentSoft: 'rgba(17,130,107,0.10)',
+        accentStrong: '#0E8D71',
+        warning: '#D2A12F',
+        warningSoft: 'rgba(210,161,47,0.16)',
+        line: 'rgba(69,80,118,0.12)',
+        panelBg: '#F1F4F8',
+        panelBorder: 'rgba(119,126,155,0.22)',
+        iconBg: 'rgba(49,58,145,0.08)',
+        iconColor: '#313A91',
+        heroBadgeBg: '#313A91',
+      };
 }
 
 function SummaryCard({
@@ -100,7 +101,7 @@ function SummaryCard({
   children: React.ReactNode;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-},): React.JSX.Element {
+}): React.JSX.Element {
   return (
     <View
       style={[
@@ -128,13 +129,13 @@ function CardTitle({
   sub: string;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-},): React.JSX.Element {
+}): React.JSX.Element {
   return (
-    <View style={[styles.titleBlock, compact && styles.titleBlockCompact,]}>
-      <Text style={[styles.title, compact && styles.titleCompact, { color: p.title, },]}>
+    <View style={[styles.titleBlock, compact && styles.titleBlockCompact]}>
+      <Text style={[styles.title, compact && styles.titleCompact, { color: p.title }]}>
         {label}
       </Text>
-      <Text style={[styles.subtitle, compact && styles.subtitleCompact, { color: p.subtitle, },]}>
+      <Text style={[styles.subtitle, compact && styles.subtitleCompact, { color: p.subtitle }]}>
         {sub}
       </Text>
     </View>
@@ -147,9 +148,9 @@ function Divider({
 }: {
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-},): React.JSX.Element {
+}): React.JSX.Element {
   return (
-    <View style={[styles.divider, compact && styles.dividerCompact, { backgroundColor: p.line, },]} />
+    <View style={[styles.divider, compact && styles.dividerCompact, { backgroundColor: p.line }]} />
   );
 }
 
@@ -165,25 +166,25 @@ function PositionRow({
   value: string;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-},): React.JSX.Element {
+}): React.JSX.Element {
   return (
-    <View style={[styles.positionRow, compact && styles.positionRowCompact,]}>
+    <View style={[styles.positionRow, compact && styles.positionRowCompact]}>
       <View
         style={[
           styles.positionIcon,
           compact && styles.positionIconCompact,
-          { backgroundColor: p.iconBg, },
+          { backgroundColor: p.iconBg },
         ]}
       >
         {icon}
       </View>
       <Text
-        style={[styles.positionLabel, compact && styles.positionLabelCompact, { color: p.title, },]}
+        style={[styles.positionLabel, compact && styles.positionLabelCompact, { color: p.title }]}
       >
         {label}
       </Text>
       <Text
-        style={[styles.positionValue, compact && styles.positionValueCompact, { color: p.title, },]}
+        style={[styles.positionValue, compact && styles.positionValueCompact, { color: p.title }]}
       >
         {value}
       </Text>
@@ -197,7 +198,7 @@ function PositionCard({
 }: {
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-},): React.JSX.Element {
+}): React.JSX.Element {
   return (
     <SummaryCard p={p} compact={compact}>
       <CardTitle
@@ -207,7 +208,7 @@ function PositionCard({
         compact={compact}
       />
 
-      <View style={[styles.positionList, compact && styles.positionListCompact,]}>
+      <View style={[styles.positionList, compact && styles.positionListCompact]}>
         <PositionRow
           icon={<GlobeIcon size={18} color={p.accent} />}
           label='Global'
@@ -235,14 +236,14 @@ function PositionCard({
         style={[
           styles.positionFooter,
           compact && styles.positionFooterCompact,
-          { borderTopColor: p.line, },
+          { borderTopColor: p.line },
         ]}
       >
         <Text
           style={[
             styles.positionFootnote,
             compact && styles.positionFootnoteCompact,
-            { color: p.muted, },
+            { color: p.muted },
           ]}
         >
           Ranking basado en Airs acumulados
@@ -258,9 +259,9 @@ function RBICard({
 }: {
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-},): React.JSX.Element {
-  const [isExpanded, setIsExpanded,] = useState(false,);
-  const { language, } = useAppPreferences();
+}): React.JSX.Element {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { language } = useAppPreferences();
 
   const getDocumentationUrl = (): string => {
     const baseUrl = 'https://alternun-development.github.io';
@@ -279,15 +280,15 @@ function RBICard({
         compact={compact}
       />
 
-      <View style={[styles.rbiHero, compact && styles.rbiHeroCompact,]}>
-        <Text style={[styles.rbiValue, compact && styles.rbiValueCompact, { color: p.accent, },]}>
+      <View style={[styles.rbiHero, compact && styles.rbiHeroCompact]}>
+        <Text style={[styles.rbiValue, compact && styles.rbiValueCompact, { color: p.accent }]}>
           Coming soon
         </Text>
         <View
           style={[
             styles.heroBadge,
             compact && styles.heroBadgeCompact,
-            { backgroundColor: p.heroBadgeBg, },
+            { backgroundColor: p.heroBadgeBg },
           ]}
         >
           <CoinsIcon size={14} color='#F8FAFC' />
@@ -296,28 +297,28 @@ function RBICard({
 
       <Divider p={p} compact={compact} />
 
-      <View style={[styles.statList, compact && styles.statListCompact,]}>
+      <View style={[styles.statList, compact && styles.statListCompact]}>
         <View style={styles.statRow}>
-          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy, },]}>
+          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
             Pool RBI estimado:
           </Text>
-          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title, },]}>
+          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
             Coming soon
           </Text>
         </View>
         <View style={styles.statRow}>
-          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy, },]}>
+          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
             Usuarios elegibles:
           </Text>
-          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title, },]}>
+          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
             Coming soon
           </Text>
         </View>
         <View style={styles.statRow}>
-          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy, },]}>
+          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
             Tu puntaje Airs:
           </Text>
-          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title, },]}>
+          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
             Coming soon
           </Text>
         </View>
@@ -325,12 +326,12 @@ function RBICard({
 
       <Divider p={p} compact={compact} />
 
-      <TouchableOpacity onPress={() => setIsExpanded(!isExpanded,)} activeOpacity={0.7}>
+      <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)} activeOpacity={0.7}>
         <View
           style={[
             styles.rbiInfoBox,
             compact && styles.rbiInfoBoxCompact,
-            { backgroundColor: p.accentSoft, borderColor: p.accent, },
+            { backgroundColor: p.accentSoft, borderColor: p.accent },
           ]}
         >
           <View style={styles.rbiInfoHeader}>
@@ -338,7 +339,7 @@ function RBICard({
               style={[
                 styles.rbiInfoTitle,
                 compact && styles.rbiInfoTitleCompact,
-                { color: p.accent, },
+                { color: p.accent },
               ]}
             >
               ¿Qué es el RBI?
@@ -347,7 +348,7 @@ function RBICard({
               size={16}
               color={p.accent}
               style={{
-                transform: [{ rotate: isExpanded ? '90deg' : '0deg', },],
+                transform: [{ rotate: isExpanded ? '90deg' : '0deg' }],
               }}
             />
           </View>
@@ -356,12 +357,12 @@ function RBICard({
 
       {isExpanded && (
         <>
-          <View style={[styles.rbiExplanation, compact && styles.rbiExplanationCompact,]}>
+          <View style={[styles.rbiExplanation, compact && styles.rbiExplanationCompact]}>
             <Text
               style={[
                 styles.rbiExplanationText,
                 compact && styles.rbiExplanationTextCompact,
-                { color: p.copy, },
+                { color: p.copy },
               ]}
             >
               El Regenerative Basic Income es un ingreso periódico que se distribuye entre los
@@ -376,7 +377,7 @@ function RBICard({
 
           <TouchableOpacity
             onPress={() => {
-              void Linking.openURL(getDocumentationUrl(),);
+              void Linking.openURL(getDocumentationUrl());
             }}
             activeOpacity={0.7}
           >
@@ -384,14 +385,14 @@ function RBICard({
               style={[
                 styles.rbiDocLink,
                 compact && styles.rbiDocLinkCompact,
-                { backgroundColor: p.accentSoft, borderColor: p.accent, },
+                { backgroundColor: p.accentSoft, borderColor: p.accent },
               ]}
             >
               <Text
                 style={[
                   styles.rbiDocLinkText,
                   compact && styles.rbiDocLinkTextCompact,
-                  { color: p.accent, },
+                  { color: p.accent },
                 ]}
               >
                 Documentación completa
@@ -415,17 +416,17 @@ function ATNCard({
   compact?: boolean;
   dense?: boolean;
   onNavigate?: (key: string) => void;
-},): React.JSX.Element {
+}): React.JSX.Element {
   const useDenseLayout = compact || dense;
 
   return (
     <SummaryCard p={p} compact={compact}>
       <CardTitle label='Mis ATN' sub='Tus tokens regenerativos' p={p} compact={compact} />
 
-      <View style={[styles.tokenRow, compact && styles.tokenRowCompact,]}>
+      <View style={[styles.tokenRow, compact && styles.tokenRowCompact]}>
         <View style={styles.tokenLabelBlock}>
           <Text
-            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title, },]}
+            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
           >
             ATN disponibles
           </Text>
@@ -433,21 +434,21 @@ function ATNCard({
             style={[
               styles.tokenSubLabel,
               compact && styles.tokenSubLabelCompact,
-              { color: p.muted, },
+              { color: p.muted },
             ]}
           >
             Listos para usar
           </Text>
         </View>
-        <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title, },]}>
+        <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
           Coming soon
         </Text>
       </View>
       <Divider p={p} compact={compact} />
-      <View style={[styles.tokenRow, compact && styles.tokenRowCompact,]}>
+      <View style={[styles.tokenRow, compact && styles.tokenRowCompact]}>
         <View style={styles.tokenLabelBlock}>
           <Text
-            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title, },]}
+            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
           >
             ATN en stacking
           </Text>
@@ -455,19 +456,19 @@ function ATNCard({
             style={[
               styles.tokenSubLabel,
               compact && styles.tokenSubLabelCompact,
-              { color: p.muted, },
+              { color: p.muted },
             ]}
           >
             Participando en proyectos
           </Text>
         </View>
-        <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title, },]}>
+        <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
           Coming soon
         </Text>
       </View>
 
-      <View style={[styles.totalRow, compact && styles.totalRowCompact,]}>
-        <Text style={[styles.totalLabel, compact && styles.totalLabelCompact, { color: p.title, },]}>
+      <View style={[styles.totalRow, compact && styles.totalRowCompact]}>
+        <Text style={[styles.totalLabel, compact && styles.totalLabelCompact, { color: p.title }]}>
           Total ATN
         </Text>
         <View style={styles.totalValueWrap}>
@@ -476,7 +477,7 @@ function ATNCard({
             style={[
               styles.totalValue,
               compact && styles.totalValueCompact,
-              { color: p.accentStrong, },
+              { color: p.accentStrong },
             ]}
           >
             Coming soon
@@ -489,15 +490,15 @@ function ATNCard({
           styles.walletPanel,
           useDenseLayout && styles.walletPanelDense,
           compact && styles.walletPanelCompact,
-          { backgroundColor: p.panelBg, borderColor: p.panelBorder, },
+          { backgroundColor: p.panelBg, borderColor: p.panelBorder },
         ]}
       >
-        <View style={[styles.walletPanelTop, useDenseLayout && styles.walletPanelTopDense,]}>
+        <View style={[styles.walletPanelTop, useDenseLayout && styles.walletPanelTopDense]}>
           <Text
             style={[
               styles.walletPanelLabel,
               compact && styles.walletPanelLabelCompact,
-              { color: p.title, },
+              { color: p.title },
             ]}
           >
             Wallet principal
@@ -507,7 +508,7 @@ function ATNCard({
               styles.walletPanelMeta,
               useDenseLayout && styles.walletPanelMetaDense,
               compact && styles.walletPanelMetaCompact,
-              { color: p.muted, },
+              { color: p.muted },
             ]}
           >
             Interna
@@ -519,20 +520,20 @@ function ATNCard({
             styles.walletAddress,
             useDenseLayout && styles.walletAddressDense,
             compact && styles.walletAddressCompact,
-            { color: p.copy, },
+            { color: p.copy },
           ]}
         >
           0xA8f9...Wq77E4c2
         </Text>
-        <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet',)} activeOpacity={0.7}>
-          <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense,]}>
+        <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet')} activeOpacity={0.7}>
+          <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense]}>
             <WalletIcon size={15} color={p.title} />
             <Text
               style={[
                 styles.walletLinkText,
                 useDenseLayout && styles.walletLinkTextDense,
                 compact && styles.walletLinkTextCompact,
-                { color: p.title, },
+                { color: p.title },
               ]}
             >
               Gestionar wallet
@@ -548,15 +549,15 @@ function ATNCard({
 export default function DashboardSummaryCards({
   isDark,
   onNavigate,
-}: DashboardSummaryCardsProps,): React.JSX.Element {
-  const p = getPalette(isDark,);
-  const { width, } = useWindowDimensions();
+}: DashboardSummaryCardsProps): React.JSX.Element {
+  const p = getPalette(isDark);
+  const { width } = useWindowDimensions();
   const isMobile = width < 920;
   const isCompactMobile = width < 520;
   const isDenseAtnCard = width < 720;
 
   return (
-    <View style={[styles.root, isCompactMobile && styles.rootCompact,]}>
+    <View style={[styles.root, isCompactMobile && styles.rootCompact]}>
       <View
         style={[
           styles.grid,
@@ -641,11 +642,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Sculpin-Bold',
   },
   subtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '500',
   },
   subtitleCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 16,
   },
@@ -689,20 +692,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   positionLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: -0.2,
   },
   positionLabelCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 16,
   },
   positionValue: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 24,
     fontWeight: '900',
     letterSpacing: -0.8,
   },
   positionValueCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 21,
     letterSpacing: -0.6,
   },
@@ -735,12 +742,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   rbiValue: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
     fontSize: 30,
     fontWeight: '900',
     letterSpacing: -1.1,
   },
   rbiValueCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 24,
     letterSpacing: -0.75,
   },
@@ -768,22 +777,26 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   statLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '500',
   },
   statLabelCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 16,
   },
   statValue: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '800',
     textAlign: 'right',
   },
   statValueCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 16,
   },
@@ -819,18 +832,22 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   calloutTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '800',
   },
   calloutTitleCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
   },
   calloutText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '500',
   },
   calloutTextCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     lineHeight: 15,
   },
@@ -851,6 +868,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   tipText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
     fontSize: 12,
     lineHeight: 18,
@@ -858,11 +876,13 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   tipTextCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     lineHeight: 16,
     flexWrap: 'wrap',
   },
   tipTextDense: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     lineHeight: 16,
   },
@@ -885,11 +905,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   rbiInfoTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
     fontSize: 14,
     fontWeight: '800',
   },
   rbiInfoTitleCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
   },
   rbiExplanation: {
@@ -903,11 +925,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   rbiExplanationText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     lineHeight: 20,
     fontWeight: '500',
   },
   rbiExplanationTextCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 18,
   },
@@ -929,11 +953,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   rbiDocLinkText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
     fontSize: 13,
     fontWeight: '700',
   },
   rbiDocLinkTextCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
   },
 
@@ -952,28 +978,34 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   tokenLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: -0.2,
   },
   tokenLabelCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
   },
   tokenSubLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '500',
   },
   tokenSubLabelCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     lineHeight: 14,
   },
   tokenValue: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 24,
     fontWeight: '900',
     letterSpacing: -0.8,
   },
   tokenValueCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 20,
     letterSpacing: -0.55,
   },
@@ -989,11 +1021,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   totalLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 17,
     fontWeight: '900',
     letterSpacing: -0.3,
   },
   totalLabelCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 15,
   },
   totalValueWrap: {
@@ -1002,11 +1036,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   totalValue: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 26,
     fontWeight: '900',
     letterSpacing: -0.9,
   },
   totalValueCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 22,
     letterSpacing: -0.65,
   },
@@ -1042,11 +1078,13 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   walletPanelLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '800',
     flexShrink: 1,
   },
   walletPanelLabelCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
   },
   walletPanelMeta: {
@@ -1089,13 +1127,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   walletLinkText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '800',
   },
   walletLinkTextDense: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
   },
   walletLinkTextCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
   },
-},);
+});

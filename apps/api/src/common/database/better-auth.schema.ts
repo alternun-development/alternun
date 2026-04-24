@@ -15,6 +15,7 @@ export const users = pgTable('users', {
   picture: text('picture'),
   phone: text('phone'),
   phoneVerified: boolean('phone_verified').default(false),
+  provider: text('provider').default('better-auth'),
   confirmationSentAt: timestamp('confirmation_sent_at', { withTimezone: true }),
   lastSignInAt: timestamp('last_sign_in_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),

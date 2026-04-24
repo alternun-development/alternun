@@ -38,6 +38,7 @@ import LoadingButton from '../common/LoadingButton';
 import ShaderBackground from './ShaderBackground';
 import { AuthFooter } from './AuthFooter';
 import { createTypographyStyles } from '../theme/typography';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppPalette } from '../theme/useAppPalette';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -1092,6 +1093,7 @@ const styles = createTypographyStyles({
     borderWidth: 1,
   },
   heroBadgeText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.3,
@@ -1121,6 +1123,7 @@ const styles = createTypographyStyles({
     fontFamily: 'Sculpin-Bold',
   },
   subtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     lineHeight: 21,
   },
@@ -1145,6 +1148,7 @@ const styles = createTypographyStyles({
     fontWeight: '800',
   },
   heroStepText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
     fontSize: 12,
     lineHeight: 17,
@@ -1156,6 +1160,7 @@ const styles = createTypographyStyles({
     paddingVertical: 12,
   },
   noticeText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 18,
   },
@@ -1173,6 +1178,7 @@ const styles = createTypographyStyles({
     flexShrink: 0,
   },
   errorText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
     fontSize: 13,
     lineHeight: 18,
@@ -1190,22 +1196,26 @@ const styles = createTypographyStyles({
     paddingVertical: 16,
   },
   redirectingTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 18,
     lineHeight: 24,
     fontWeight: '700',
     textAlign: 'center',
   },
   redirectingText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     lineHeight: 20,
     textAlign: 'center',
   },
   codeSectionTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 0.2,
   },
   codeSectionText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 18,
   },
@@ -1217,6 +1227,7 @@ const styles = createTypographyStyles({
     gap: 6,
   },
   inputLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.4,
@@ -1261,6 +1272,7 @@ const styles = createTypographyStyles({
     paddingHorizontal: 0,
   },
   linkButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '700',
     textDecorationLine: 'underline',
@@ -1276,6 +1288,7 @@ const styles = createTypographyStyles({
     paddingHorizontal: 16,
   },
   secondaryLinkText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '600',
   },

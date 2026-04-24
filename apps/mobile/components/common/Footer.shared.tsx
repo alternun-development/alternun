@@ -7,6 +7,7 @@ import developmentVersionManifest from '../../../../version.development.json';
 import productionVersionManifest from '../../../../version.production.json';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import type { FooterPrimaryLink } from './AppInfoFooter.links';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 export type LinkIconProps = {
   size?: number | string;
@@ -338,11 +339,13 @@ const styles = StyleSheet.create({
     opacity: 0.65,
   },
   textLinkText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '600',
     letterSpacing: 0.12,
   },
   textLinkTextCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
   },
   textLinkTextCenter: {
@@ -362,6 +365,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   copyrightText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     fontWeight: '700',
   },
