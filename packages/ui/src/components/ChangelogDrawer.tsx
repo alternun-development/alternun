@@ -330,7 +330,7 @@ function SectionBlock({
                 style={{ color: mutedColor }}
                 onPress={
                   item.commitUrl
-                    ? () => {
+                    ? (): void => {
                         void Linking.openURL(item.commitUrl ?? '');
                       }
                     : undefined
@@ -378,11 +378,12 @@ export function ChangelogDrawer({
   const textPrimary = theme.textPrimary;
   const textMuted = theme.textMuted;
   const cardBg = isDark ? '#0d0d1f' : '#ffffff';
-  const overlayBg = isDark ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0.38)';
-  const sheetBg = isDark ? '#0d0d1f' : '#f8fafb';
-  const borderColor = isDark ? 'rgba(255,255,255,0.09)' : 'rgba(15,23,42,0.1)';
-  const pillBg = isDark ? `${accent}22` : `${accent}18`;
-  const pillBorder = isDark ? `${accent}44` : `${accent}55`;
+  const overlayBg = isDark ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0.48)';
+  const sheetBg = isDark ? '#0d0d1f' : '#ffffff';
+  const borderColor = isDark ? 'rgba(255,255,255,0.09)' : 'rgba(15,23,42,0.12)';
+  const pillBg = isDark ? `${accent}22` : `${accent}12`;
+  const pillBorder = isDark ? `${accent}44` : `${accent}35`;
+  const pillTextColor = isDark ? accent : '#ffffff';
 
   const handleOpen = useCallback(() => {
     setPage(0);
@@ -413,8 +414,8 @@ export function ChangelogDrawer({
         accessibilityRole='button'
         accessibilityLabel={`Open changelog — ${label}`}
       >
-        <Text style={[innerStyles.triggerText, { color: accent }]}>{label}</Text>
-        <Text style={[innerStyles.triggerChevron, { color: accent }]}>▾</Text>
+        <Text style={[innerStyles.triggerText, { color: pillTextColor }]}>{label}</Text>
+        <Text style={[innerStyles.triggerChevron, { color: pillTextColor }]}>▾</Text>
       </TouchableOpacity>
 
       {/* ── Bottom-sheet modal ── */}
@@ -444,7 +445,10 @@ export function ChangelogDrawer({
             />
 
             {/* Header */}
-            <View style={[innerStyles.sheetHeader, { borderBottomColor: borderColor }]}>
+            <Pressable
+              onPress={handleClose}
+              style={[innerStyles.sheetHeader, { borderBottomColor: borderColor }]}
+            >
               <View style={innerStyles.sheetHeaderLeft}>
                 <Text style={[innerStyles.sheetTitle, { color: textPrimary }]}>
                   Release History
@@ -456,14 +460,8 @@ export function ChangelogDrawer({
                   </Text>
                 )}
               </View>
-              <TouchableOpacity
-                onPress={handleClose}
-                activeOpacity={0.75}
-                style={innerStyles.closeBtn}
-              >
-                <Text style={[innerStyles.closeBtnText, { color: textMuted }]}>✕</Text>
-              </TouchableOpacity>
-            </View>
+              <Text style={[innerStyles.closeBtnText, { color: textMuted }]}>✕</Text>
+            </Pressable>
 
             {/* Entries */}
             <ScrollView
@@ -666,12 +664,6 @@ const innerStyles = StyleSheet.create({
   pageLabel: {
     fontSize: fontSize.xs,
     fontWeight: '500',
-  },
-  closeBtn: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   closeBtnText: {
     fontSize: fontSize.sm,
