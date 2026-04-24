@@ -2,6 +2,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { Pool, type PoolClient } from 'pg';
+import '../src/bootstrap-env';
 
 const databaseUrl =
   process.env.INFRA_BACKEND_API_DATABASE_URL ??

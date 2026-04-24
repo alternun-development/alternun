@@ -3,6 +3,9 @@
 -- missing public.users rows from auth.users, and keeps the auth -> public
 -- mirror active.
 
+alter table public.users
+  add column if not exists provider text;
+
 insert into public.users (
   id,
   sub,
