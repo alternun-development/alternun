@@ -63,6 +63,7 @@ import {
 } from './membershipMarquee';
 import { getBenefitCardDefaultDetailsExpanded } from './benefitCard';
 import { getTokenCardDefaultExpanded } from './tokenCard';
+import DynamicMessageBar from './DynamicMessageBar';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
@@ -91,7 +92,8 @@ const TOKEN_IMAGES: Record<'airs' | 'rbi' | 'atn', ImageSourcePropType> = {
 };
 
 const MEMBERSHIP_LOGO = require('../../assets/logo.png') as ImageSourcePropType;
-const MEMBERSHIP_LOGO_LIGHT = require('../../assets/SVGs/AIRS-logo-light.svg') as ImageSourcePropType;
+const MEMBERSHIP_LOGO_LIGHT =
+  require('../../assets/SVGs/AIRS-logo-light.svg') as ImageSourcePropType;
 const MEMBERSHIP_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg') as ImageSourcePropType;
 const MEMBERSHIP_LOGO_LIGHT_REALISTIC =
   require('../../assets/AIRS-logo-light-realistic.svg') as ImageSourcePropType;
@@ -300,7 +302,28 @@ function PublicLandingPageWrapper({
   accentColor,
   isMobile: _isMobile,
 }: PublicLandingPageWrapperProps): React.JSX.Element {
+  const { t } = useAppTranslation('mobile');
   const airsIntroRef = useRef<AirsIntroExperienceHandle | null>(null);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+
+  const messages = [
+    t(
+      'landing.message.regenerative',
+      'Únete a Airs By Alternun: Capitalismo regenerativo en acción'
+    ),
+    t('landing.message.welcome', 'Welcome to AIRS: Your Gateway to Digital Opportunities'),
+    t('landing.message.earn', 'Earn AIRS Tokens: Participate and Grow Your Rewards'),
+    t('landing.message.community', 'Join Our Community: Connect With Blockchain Enthusiasts'),
+    t('landing.message.impact', 'Make an Impact: Turn Your Actions Into Real Value'),
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
+    }, 16600);
+    return () => clearInterval(interval);
+  }, [messages.length]);
+
   const handleContinueToDashboard = useCallback(
     (_: boolean): void => {
       onSignIn();
@@ -342,6 +365,12 @@ function PublicLandingPageWrapper({
 
   return (
     <View style={styles.publicLandingContainer}>
+      <DynamicMessageBar
+        message={messages[currentMessageIndex]}
+        bgColor='#333480'
+        textColor='#ffffff'
+        duration={15600}
+      />
       <AirsIntroExperience
         ref={airsIntroRef}
         onContinueToDashboard={onContinueToDashboard ?? handleContinueToDashboard}
