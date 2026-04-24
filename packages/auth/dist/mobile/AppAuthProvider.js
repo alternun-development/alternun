@@ -1,6 +1,6 @@
 import { AuthProvider as UniversalAuthProvider, useAuth as useUniversalAuth, } from '@edcalderon/auth';
 import { createElement, useMemo, } from 'react';
-import { createAuthFacade } from '../facade/createAuthFacade.js';
+import { createAuthFacade } from '../facade/createAuthFacade';
 const UniversalAuthProviderCompat = UniversalAuthProvider;
 export function AppAuthProvider({ children, options }) {
     const client = useMemo(() => createAuthFacade({

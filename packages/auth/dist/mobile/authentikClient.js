@@ -1,5 +1,5 @@
 import { OIDC_INITIAL_SEARCH, clearOidcSession as rawClearOidcSession, handleAuthentikCallback as rawHandleAuthentikCallback, hasPendingAuthentikCallback as rawHasPendingAuthentikCallback, readOidcSession as rawReadOidcSession, } from '@edcalderon/auth';
-import { buildAuthentikOAuthFlowStartUrl as buildOauthStartUrl, resolveAuthentikClientId, resolveAuthentikIssuer, resolveAuthentikRedirectUri, } from './authentikUrls.js';
+import { buildAuthentikOAuthFlowStartUrl as buildOauthStartUrl, resolveAuthentikClientId, resolveAuthentikIssuer, resolveAuthentikRedirectUri, } from './authentikUrls';
 const DEFAULT_ENV_KEYS = {
     issuer: 'EXPO_PUBLIC_AUTHENTIK_ISSUER',
     clientId: 'EXPO_PUBLIC_AUTHENTIK_CLIENT_ID',
@@ -95,7 +95,7 @@ function buildAuthentikLogoutUrl({ issuer, clientId, postLogoutRedirectUri, idTo
 export function buildAlternunAuthentikOAuthFlowStartUrl(input) {
     return buildOauthStartUrl(input);
 }
-export { buildAuthentikOAuthFlowStartUrl, resolveAuthentikRedirectUri } from './authentikUrls.js';
+export { buildAuthentikOAuthFlowStartUrl, resolveAuthentikRedirectUri } from './authentikUrls';
 export function readPendingAuthentikOAuthProvider(config = {}) {
     var _a, _b;
     const key = config.pendingStorageKey

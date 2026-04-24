@@ -157,10 +157,11 @@ export function HeroPanel({
   const firstName = displayName?.trim().split(/\s+/)[0] ?? '';
 
   // ─── Palette ─────────────────────────────────────────────────────────────────
-  const textPrimary = '#CBAB35';
+  const greetingColor = '#CBAB35';
+  const textPrimary = '#ffffff';
   const textMuted = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.75)';
-  const orbA = isDark ? 'rgba(28,203,161,0.11)' : 'rgba(28,203,161,0.08)';
-  const orbB = isDark ? 'rgba(11,90,95,0.20)' : 'rgba(11,90,95,0.06)';
+  const orbA = isDark ? 'rgba(28,203,161,0.11)' : 'rgba(11,130,120,0.08)';
+  const orbB = isDark ? 'rgba(11,90,95,0.20)' : 'rgba(11,90,95,0.10)';
   const divider = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.10)';
   const accentColor = isDark ? palette.teal : palette.tealDark;
 
@@ -362,7 +363,7 @@ export function HeroPanel({
 
         {/* Greeting */}
         {firstName ? (
-          <Text style={[styles.greeting, { color: textPrimary }]}>{`Hola, ${firstName}`}</Text>
+          <Text style={[styles.greeting, { color: greetingColor }]}>{`Hola, ${firstName}`}</Text>
         ) : null}
 
         <Text style={[styles.subtitle, { color: textMuted }]}>Tu puntuación regenerativa es:</Text>

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { AlternunConfigError } from '../../core/errors.js';
-import { externalIdentityToPrincipal } from '../../identity/mapping.js';
+import { AlternunConfigError } from '../../core/errors';
+import { externalIdentityToPrincipal } from '../../identity/mapping';
 function stablePrincipalId(principal) {
     return createHash('sha256').update(`${principal.issuer}:${principal.subject}`).digest('hex');
 }

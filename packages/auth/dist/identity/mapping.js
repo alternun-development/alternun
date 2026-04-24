@@ -1,5 +1,5 @@
-import { buildLinkedAccountsFromIdentity, claimsToExternalIdentity as claimsToExternalIdentityFromSession, } from '../core/session.js';
-import { createPrincipalFromIdentity } from './principal.js';
+import { buildLinkedAccountsFromIdentity, claimsToExternalIdentity as claimsToExternalIdentityFromSession, } from '../core/session';
+import { createPrincipalFromIdentity } from './principal';
 export function externalIdentityToPrincipal(input) {
     return createPrincipalFromIdentity(input);
 }

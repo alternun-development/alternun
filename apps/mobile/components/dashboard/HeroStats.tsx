@@ -5,7 +5,7 @@ import AirsBrandMark from '../branding/AirsBrandMark';
 import { palette } from '@alternun/ui';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
 const DASHBOARD_BG =
   require('../../assets/images/pexels-shella-mijos-2438861-5068057@2x-dashboard.png') as ImageSourcePropType;
 
@@ -41,6 +41,7 @@ export default function HeroStats({
         imageStyle={{
           resizeMode: 'contain',
           borderRadius: 20,
+          opacity: 1,
         }}
       >
         <HeroPanel
