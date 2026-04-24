@@ -159,7 +159,6 @@ export function HeroPanel({
   // ─── Palette ─────────────────────────────────────────────────────────────────
   const textPrimary = isDark ? '#ffffff' : '#ffffff';
   const textMuted = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.75)';
-  const heroBg = isDark ? 'transparent' : 'transparent';
   const orbA = isDark ? 'rgba(28,203,161,0.11)' : 'rgba(28,203,161,0.08)';
   const orbB = isDark ? 'rgba(11,90,95,0.20)' : 'rgba(11,90,95,0.06)';
   const divider = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.10)';
@@ -335,7 +334,7 @@ export function HeroPanel({
 
   return (
     <ThemeProvider mode={isDark ? 'dark' : 'light'}>
-      <View style={[styles.container, { backgroundColor: heroBg }]}>
+      <View style={[styles.container]}>
         {/* Decorative ambient orbs — top-right + bottom-left */}
         <Animated.View
           pointerEvents='none'
@@ -521,6 +520,7 @@ const styles = StyleSheet.create({
     overflow: 'visible',
     position: 'relative',
     borderRadius: 20,
+    backgroundColor: 'transparent',
   },
 
   /* Reload button — top-right corner */
