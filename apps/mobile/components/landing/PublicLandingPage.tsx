@@ -92,13 +92,12 @@ const TOKEN_IMAGES: Record<'airs' | 'rbi' | 'atn', ImageSourcePropType> = {
 };
 
 const MEMBERSHIP_LOGO = require('../../assets/logo.png') as ImageSourcePropType;
-const MEMBERSHIP_LOGO_LIGHT =
-  require('../../assets/SVGs/AIRS-logo-light.svg') as ImageSourcePropType;
-const MEMBERSHIP_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg') as ImageSourcePropType;
+const MEMBERSHIP_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as ImageSourcePropType;
+const MEMBERSHIP_LOGO_DARK = require('../../assets/AIRS-logo-dark.png') as ImageSourcePropType;
 const MEMBERSHIP_LOGO_LIGHT_REALISTIC =
-  require('../../assets/AIRS-logo-light-realistic.svg') as ImageSourcePropType;
+  require('../../assets/AIRS-logo-light.png') as ImageSourcePropType;
 const MEMBERSHIP_LOGO_DARK_REALISTIC =
-  require('../../assets/AIRS-logo-dark-realistic.svg') as ImageSourcePropType;
+  require('../../assets/AIRS-logo-dark.png') as ImageSourcePropType;
 
 const BENEFIT_IMAGES: Record<'eco' | 'experiencias' | 'premium' | 'cursos', ImageSourcePropType[]> =
   {
