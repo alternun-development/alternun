@@ -157,9 +157,9 @@ export function HeroPanel({
   const firstName = displayName?.trim().split(/\s+/)[0] ?? '';
 
   // ─── Palette ─────────────────────────────────────────────────────────────────
-  const textPrimary = isDark ? '#ffffff' : '#0b2d31';
-  const textMuted = isDark ? 'rgba(255,255,255,0.60)' : 'rgba(11,45,49,0.62)';
-  const heroBg = isDark ? 'rgba(5, 15, 12, 0.15)' : 'rgba(234, 248, 243, 0.20)';
+  const textPrimary = isDark ? '#ffffff' : '#ffffff';
+  const textMuted = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.75)';
+  const heroBg = isDark ? 'transparent' : 'transparent';
   const orbA = isDark ? 'rgba(28,203,161,0.11)' : 'rgba(28,203,161,0.08)';
   const orbB = isDark ? 'rgba(11,90,95,0.20)' : 'rgba(11,90,95,0.06)';
   const divider = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.10)';
@@ -564,12 +564,18 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     marginBottom: spacing[1],
     fontFamily: 'Sculpin-Bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   subtitle: {
     fontSize: fontSize.sm,
     fontWeight: '500',
     letterSpacing: 0.1,
     marginBottom: spacing[3],
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
 
   /* Score */
@@ -591,6 +597,9 @@ const styles = StyleSheet.create({
     letterSpacing: -2,
     lineHeight: 56,
     flexShrink: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 5,
   },
 
   /* Tier badge */
