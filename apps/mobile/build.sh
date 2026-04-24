@@ -255,8 +255,8 @@ if [ -n "$detected_stage" ]; then
     dev|*testnet*|*development*|*preview*)
       cat > .env.development << ENVFILE
 EXPO_PUBLIC_API_URL=https://testnet.api.alternun.co
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
-AUTH_EXECUTION_PROVIDER=supabase
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
+AUTH_EXECUTION_PROVIDER=better-auth
 EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 AUTH_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 EXPO_PUBLIC_AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange

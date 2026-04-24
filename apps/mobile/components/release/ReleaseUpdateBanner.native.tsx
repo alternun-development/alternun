@@ -36,6 +36,11 @@ export default function ReleaseUpdateBanner({
     return null;
   }
 
+  const handleReload = () => {
+    state.dismiss();
+    state.reload();
+  };
+
   return (
     <ThemeProvider mode={themeMode}>
       <ReleaseUpdateToast
@@ -69,7 +74,7 @@ export default function ReleaseUpdateBanner({
         reloadLabel={t('releaseUpdate.reload', undefined, 'Reload')}
         bottomOffset={bottomOffset}
         onLater={state.dismiss}
-        onReload={state.reload}
+        onReload={handleReload}
       />
     </ThemeProvider>
   );
