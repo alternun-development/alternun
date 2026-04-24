@@ -216,7 +216,7 @@ export default function AuthSignInScreen({
   const isModal = presentation === 'modal';
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const isCompactModal = isModal && windowWidth < 560;
-  const wordmarkSource = p.isDark ? AIRS_LOGO_LIGHT : AIRS_LOGO_DARK;
+  const wordmarkSource = p.isDark ? AIRS_LOGO_DARK : AIRS_LOGO_LIGHT;
   const hasEmailInputError = requiredFields.email || invalidEmail;
   const hasConfirmationEmail = Boolean(resolveConfirmationEmail(confirmationEmail));
   const dismissToast = useCallback((id: string): void => {
