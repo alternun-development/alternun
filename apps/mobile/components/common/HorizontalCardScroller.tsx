@@ -11,6 +11,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { ChevronLeft, ChevronRight, type LucideProps } from 'lucide-react-native';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 const ChevronLeftIcon = ChevronLeft as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
@@ -230,6 +231,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   hintLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.2,

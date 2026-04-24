@@ -1,8 +1,9 @@
-import React, { useState, } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Modal, } from 'react-native';
-import { createTypographyStyles, } from '../theme/typography';
-import { Leaf, ChevronDown, CreditCard, Check, X, } from 'lucide-react-native';
-import { Project, } from './types';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { createTypographyStyles } from '../theme/typography';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { Leaf, ChevronDown, CreditCard, Check, X } from 'lucide-react-native';
+import { Project } from './types';
 
 interface CompensationFlowProps {
   projects: Project[];
@@ -11,28 +12,28 @@ interface CompensationFlowProps {
 
 type Step = 1 | 2 | 3 | 4;
 
-export default function CompensationFlow({ projects, onCompensate, }: CompensationFlowProps,) {
-  const [currentStep, setCurrentStep,] = useState<Step>(1,);
-  const [selectedProject, setSelectedProject,] = useState<Project | null>(null,);
-  const [amount, setAmount,] = useState('',);
-  const [projectPickerVisible, setProjectPickerVisible,] = useState(false,);
+export default function CompensationFlow({ projects, onCompensate }: CompensationFlowProps) {
+  const [currentStep, setCurrentStep] = useState<Step>(1);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [amount, setAmount] = useState('');
+  const [projectPickerVisible, setProjectPickerVisible] = useState(false);
 
-  const steps = ['Choose Project', 'Set Amount', 'Pay', 'Certificate',];
+  const steps = ['Choose Project', 'Set Amount', 'Pay', 'Certificate'];
 
   const handleCompensate = () => {
     if (!selectedProject || !amount) return;
-    setCurrentStep(3,);
+    setCurrentStep(3);
     // Simulate payment
     setTimeout(() => {
-      onCompensate(selectedProject.id, parseFloat(amount,),);
-      setCurrentStep(4,);
-    }, 1500,);
+      onCompensate(selectedProject.id, parseFloat(amount));
+      setCurrentStep(4);
+    }, 1500);
   };
 
   const handleReset = () => {
-    setCurrentStep(1,);
-    setSelectedProject(null,);
-    setAmount('',);
+    setCurrentStep(1);
+    setSelectedProject(null);
+    setAmount('');
   };
 
   return (
@@ -50,7 +51,7 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
 
         {/* Step Indicator */}
         <View style={styles.stepIndicator}>
-          {steps.map((step, index,) => {
+          {steps.map((step, index) => {
             const stepNum = (index + 1) as Step;
             const isActive = stepNum === currentStep;
             const isCompleted = stepNum < currentStep;
@@ -63,8 +64,8 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
                       isCompleted
                         ? styles.stepDotCompleted
                         : isActive
-                          ? styles.stepDotActive
-                          : styles.stepDotInactive,
+                        ? styles.stepDotActive
+                        : styles.stepDotInactive,
                     ]}
                   >
                     {isCompleted ? (
@@ -99,7 +100,7 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
                 )}
               </React.Fragment>
             );
-          },)}
+          })}
         </View>
 
         {/* Step Content */}
@@ -108,7 +109,7 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
             <Text style={styles.stepContentTitle}>Select a Project</Text>
             <TouchableOpacity
               style={styles.projectSelector}
-              onPress={() => setProjectPickerVisible(true,)}
+              onPress={() => setProjectPickerVisible(true)}
               activeOpacity={0.8}
             >
               {selectedProject ? (
@@ -127,12 +128,12 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
               <ChevronDown size={16} color='rgba(232,232,255,0.4)' />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.nextButton, !selectedProject && styles.nextButtonDisabled,]}
-              onPress={() => selectedProject && setCurrentStep(2,)}
+              style={[styles.nextButton, !selectedProject && styles.nextButtonDisabled]}
+              onPress={() => selectedProject && setCurrentStep(2)}
               activeOpacity={0.8}
             >
               <Text
-                style={[styles.nextButtonText, !selectedProject && styles.nextButtonTextDisabled,]}
+                style={[styles.nextButtonText, !selectedProject && styles.nextButtonTextDisabled]}
               >
                 Continue →
               </Text>
@@ -156,11 +157,11 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
               <Text style={styles.currencyLabel}>USD</Text>
             </View>
             <View style={styles.quickAmounts}>
-              {['10', '25', '50', '100',].map((preset,) => (
+              {['10', '25', '50', '100'].map((preset) => (
                 <TouchableOpacity
                   key={preset}
-                  style={[styles.quickAmount, amount === preset && styles.quickAmountActive,]}
-                  onPress={() => setAmount(preset,)}
+                  style={[styles.quickAmount, amount === preset && styles.quickAmountActive]}
+                  onPress={() => setAmount(preset)}
                   activeOpacity={0.7}
                 >
                   <Text
@@ -172,18 +173,18 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
                     ${preset}
                   </Text>
                 </TouchableOpacity>
-              ),)}
+              ))}
             </View>
             <View style={styles.rowButtons}>
               <TouchableOpacity
                 style={styles.backButton}
-                onPress={() => setCurrentStep(1,)}
+                onPress={() => setCurrentStep(1)}
                 activeOpacity={0.8}
               >
                 <Text style={styles.backButtonText}>Back</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.compensateButton, !amount && styles.nextButtonDisabled,]}
+                style={[styles.compensateButton, !amount && styles.nextButtonDisabled]}
                 onPress={handleCompensate}
                 activeOpacity={0.8}
               >
@@ -239,11 +240,11 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
             <View style={styles.pickerHandle} />
             <View style={styles.pickerHeader}>
               <Text style={styles.pickerTitle}>Choose Project</Text>
-              <TouchableOpacity onPress={() => setProjectPickerVisible(false,)}>
+              <TouchableOpacity onPress={() => setProjectPickerVisible(false)}>
                 <X size={20} color='rgba(232,232,255,0.6)' />
               </TouchableOpacity>
             </View>
-            {projects.map((project,) => (
+            {projects.map((project) => (
               <TouchableOpacity
                 key={project.id}
                 style={[
@@ -251,8 +252,8 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
                   selectedProject?.id === project.id && styles.projectOptionSelected,
                 ]}
                 onPress={() => {
-                  setSelectedProject(project,);
-                  setProjectPickerVisible(false,);
+                  setSelectedProject(project);
+                  setProjectPickerVisible(false);
                 }}
                 activeOpacity={0.8}
               >
@@ -265,7 +266,7 @@ export default function CompensationFlow({ projects, onCompensate, }: Compensati
                 </View>
                 {selectedProject?.id === project.id && <Check size={16} color='#1ccba1' />}
               </TouchableOpacity>
-            ),)}
+            ))}
           </View>
         </View>
       </Modal>
@@ -285,7 +286,7 @@ const styles = createTypographyStyles({
     borderRadius: 20,
     padding: 20,
     shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8, },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.5,
     shadowRadius: 14,
     elevation: 5,
@@ -314,6 +315,7 @@ const styles = createTypographyStyles({
     fontFamily: 'Sculpin-Bold',
   },
   cardSubtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.45)',
     fontSize: 12,
     marginTop: 2,
@@ -340,7 +342,7 @@ const styles = createTypographyStyles({
   stepDotActive: {
     backgroundColor: '#1ccba1',
     shadowColor: '#1ccba1',
-    shadowOffset: { width: 0, height: 0, },
+    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 6,
   },
@@ -350,6 +352,7 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   stepDotText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 10,
     fontWeight: '700',
   },
@@ -360,6 +363,7 @@ const styles = createTypographyStyles({
     color: 'rgba(232,232,255,0.3)',
   },
   stepLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 9,
     textAlign: 'center',
     maxWidth: 50,
@@ -387,6 +391,7 @@ const styles = createTypographyStyles({
     gap: 12,
   },
   stepContentTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#e8e8ff',
     fontSize: 14,
     fontWeight: '600',
@@ -439,6 +444,7 @@ const styles = createTypographyStyles({
     backgroundColor: 'rgba(28,203,161,0.2)',
   },
   nextButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#050510',
     fontSize: 14,
     fontWeight: '700',
@@ -463,6 +469,7 @@ const styles = createTypographyStyles({
     marginRight: 4,
   },
   amountInput: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
     color: '#e8e8ff',
     fontSize: 24,
@@ -470,6 +477,7 @@ const styles = createTypographyStyles({
     paddingVertical: 10,
   },
   currencyLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.4)',
     fontSize: 13,
     fontWeight: '600',
@@ -492,6 +500,7 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(28,203,161,0.35)',
   },
   quickAmountText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.5)',
     fontSize: 12,
     fontWeight: '600',
@@ -514,6 +523,7 @@ const styles = createTypographyStyles({
     alignItems: 'center',
   },
   backButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.6)',
     fontSize: 14,
     fontWeight: '600',
@@ -529,6 +539,7 @@ const styles = createTypographyStyles({
     borderRadius: 12,
   },
   compensateButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#050510',
     fontSize: 14,
     fontWeight: '700',
@@ -547,6 +558,7 @@ const styles = createTypographyStyles({
     justifyContent: 'center',
   },
   processingTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#e8e8ff',
     fontSize: 16,
     fontWeight: '700',
@@ -568,12 +580,13 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#1ccba1',
-    shadowOffset: { width: 0, height: 0, },
+    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 14,
     elevation: 6,
   },
   successTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#e8e8ff',
     fontSize: 17,
     fontWeight: '700',
@@ -592,6 +605,7 @@ const styles = createTypographyStyles({
     marginTop: 4,
   },
   viewCertButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#050510',
     fontSize: 14,
     fontWeight: '700',
@@ -600,6 +614,7 @@ const styles = createTypographyStyles({
     paddingVertical: 8,
   },
   resetButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.45)',
     fontSize: 13,
   },
@@ -634,6 +649,7 @@ const styles = createTypographyStyles({
     marginBottom: 12,
   },
   pickerTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#e8e8ff',
     fontSize: 16,
     fontWeight: '700',
@@ -673,4 +689,4 @@ const styles = createTypographyStyles({
     fontSize: 11,
     marginTop: 2,
   },
-},);
+});

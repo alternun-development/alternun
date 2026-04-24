@@ -2,7 +2,9 @@ import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const users = pgTable('users', {
-  id: text('id').primaryKey(),
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()::text`),
   sub: text('sub').unique(),
   iss: text('iss'),
   aud: text('aud'),
@@ -13,6 +15,7 @@ export const users = pgTable('users', {
   picture: text('picture'),
   phone: text('phone'),
   phoneVerified: boolean('phone_verified').default(false),
+  provider: text('provider').default('better-auth'),
   confirmationSentAt: timestamp('confirmation_sent_at', { withTimezone: true }),
   lastSignInAt: timestamp('last_sign_in_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
@@ -20,7 +23,9 @@ export const users = pgTable('users', {
 });
 
 export const accounts = pgTable('accounts', {
-  id: text('id').primaryKey(),
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()::text`),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
@@ -38,7 +43,9 @@ export const accounts = pgTable('accounts', {
 });
 
 export const sessions = pgTable('sessions', {
-  id: text('id').primaryKey(),
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()::text`),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
@@ -51,7 +58,9 @@ export const sessions = pgTable('sessions', {
 });
 
 export const verifications = pgTable('verifications', {
-  id: text('id').primaryKey(),
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()::text`),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),

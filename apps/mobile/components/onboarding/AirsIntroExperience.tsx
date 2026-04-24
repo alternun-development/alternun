@@ -21,6 +21,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { createTypographyStyles } from '../theme/typography';
+import { ANEK_EXPANDED_FAMILY, SCULPIN_FONT_FAMILY } from '../theme/fonts';
 import { Image as ExpoImage } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import {
@@ -38,7 +39,6 @@ import { BackToTopButton } from '../common/BackToTopButton';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import AirsIntroSettingsMenu from './AirsIntroSettingsMenu';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
-import { SCULPIN_FONT_FAMILY } from '../theme/fonts';
 import { HeroVideoNative } from './HeroVideoNative';
 
 const HERO_EXPANSION_RANGE = 420;
@@ -50,10 +50,9 @@ const TOP_PAUSE_SCROLL_Y = 6;
 const HERO_VIDEO_MOBILE = require('../../assets/videos/landing.mp4');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const HERO_VIDEO_DESKTOP = require('../../assets/videos/landing-backup.mp4');
-const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png');
-const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png');
-const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png');
-const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png');
+const AIRS_LOGO_LIGHT = require('../../assets/SVGs/AIRS-logo-light.svg');
+const AIRS_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg');
+const AIRS_LOGO_BLACK_DARK = require('../../assets/SVGs/AIRS-logo-black-dark.svg');
 
 type HeroGlassButtonProps = {
   label: string;
@@ -211,6 +210,7 @@ const AirsIntroExperience = forwardRef<
     const [hasAutoUnmuted, setHasAutoUnmuted] = useState(false);
     const [hasScrollActivatedPlayback, setHasScrollActivatedPlayback] = useState(false);
     const [showBackToTop, setShowBackToTop] = useState(false);
+    const [logoAtTop, setLogoAtTop] = useState(true);
     const { width: screenWidth, height: screenHeight } = useWindowDimensions();
     const isMobile = screenWidth < 720;
     const heroVideoSource = isMobile ? HERO_VIDEO_MOBILE : HERO_VIDEO_DESKTOP;
@@ -292,6 +292,7 @@ const AirsIntroExperience = forwardRef<
         maybeAutoUnmuteFromScroll(value);
         syncTopZoneState(value);
         setShowBackToTop(value > 400);
+        setLogoAtTop(value <= 50);
 
         // Track active section based on scroll position
         if (onActiveSectionChange && sectionOffsets && heroHeightProp) {
@@ -338,15 +339,16 @@ const AirsIntroExperience = forwardRef<
     const heroHeight = Math.max(screenHeight * 1.05, 740);
     const isDesktopView = screenWidth >= 720;
     const isCompactDesktop = isDesktopView && screenWidth < 1280;
+    const heroSideInset = isMobile ? 24 : isCompactDesktop ? 56 : 48;
     const heroWordmarkHeight = isDesktopView
       ? Math.min(
-          Math.max(screenWidth * 0.023, isCompactDesktop ? 35 : 43),
-          isCompactDesktop ? 54 : 64
+          Math.max(screenWidth * 0.035, isCompactDesktop ? 56 : 72),
+          isCompactDesktop ? 100 : 125
         )
-      : Math.min(Math.max(screenWidth * 0.04, 30), 47);
+      : Math.min(Math.max(screenWidth * 0.065, 45), 80);
     const heroWordmarkWidth = Math.round(heroWordmarkHeight * 2.68);
-    const pillBgColor = isDark ? 'rgba(11,90,95,0.08)' : 'rgba(201,239,234,0.08)';
-    const pillBorderColor = isDark ? 'rgba(28,203,161,0.04)' : 'rgba(10,92,97,0.02)';
+    const pillBgColor = isDark ? 'rgba(11,90,95,0.18)' : 'rgba(13,148,136,0.16)';
+    const pillBorderColor = isDark ? 'rgba(28,203,161,0.24)' : 'rgba(13,148,136,0.32)';
     const pillGlassTint = isDark ? 'dark' : 'light';
     const headerNavLinkColor = isDark ? 'rgba(255,255,255,0.82)' : '#215b60';
     const headerNavLinkActiveColor = isDark ? '#ffffff' : '#073f45';
@@ -355,14 +357,15 @@ const AirsIntroExperience = forwardRef<
     const headerNavDividerColor = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,92,97,0.18)';
     const headerNavSettingsBg = isDark ? 'rgba(5, 16, 18, 0.72)' : 'rgba(11,90,95,0.92)';
     const headerNavSettingsBgHover = isDark ? 'rgba(5, 16, 18, 0.82)' : 'rgba(7,76,81,0.96)';
-    const headerNavPillPaddingHorizontal = isCompactDesktop ? 8 : 10;
-    const headerNavPillPaddingVertical = isCompactDesktop ? 8 : 10;
-    const headerNavPillGap = isCompactDesktop ? 4 : 6;
-    const headerNavPillItemPaddingHorizontal = isCompactDesktop ? 13 : 16;
-    const headerNavPillItemPaddingVertical = isCompactDesktop ? 8 : 10;
+    const headerNavPillPaddingHorizontal = isCompactDesktop ? 12 : 14;
+    const headerNavPillPaddingVertical = isCompactDesktop ? 10 : 12;
+    const headerNavPillGap = isCompactDesktop ? 6 : 8;
+    const headerNavPillItemPaddingHorizontal = isCompactDesktop ? 16 : 20;
+    const headerNavPillItemPaddingVertical = isCompactDesktop ? 10 : 12;
     const headerNavCtaPaddingHorizontal = isCompactDesktop ? 18 : 20;
     const headerNavCtaPaddingVertical = isCompactDesktop ? 8 : 9;
     const headerNavCtaFontSize = isCompactDesktop ? 13 : 14;
+    const desktopHeaderNavLeft = heroSideInset + heroWordmarkWidth + 28;
 
     useEffect(() => {
       if (!showCta || isMobile || isCompactDesktop) {
@@ -380,15 +383,16 @@ const AirsIntroExperience = forwardRef<
       outputRange: [0, 1],
       extrapolate: 'clamp',
     });
-    const firstSectionTransitionLift = isMobile ? 44 : isCompactDesktop ? 64 : 84;
+    const firstSectionOverlap = isMobile ? 116 : isCompactDesktop ? 148 : 180;
+    const firstSectionEntranceDrop = isMobile ? 52 : isCompactDesktop ? 72 : 92;
     const extraSectionsOpacity = scrollY.interpolate({
-      inputRange: [0, heroHeight * 0.14, heroHeight * 0.32],
-      outputRange: [0.92, 0.98, 1],
+      inputRange: [0, heroHeight * 0.1, heroHeight * 0.28],
+      outputRange: [0.72, 0.94, 1],
       extrapolate: 'clamp',
     });
     const extraSectionsTranslateY = scrollY.interpolate({
-      inputRange: [0, heroHeight * 0.16, heroHeight * 0.42],
-      outputRange: [0, -firstSectionTransitionLift, 0],
+      inputRange: [0, heroHeight * 0.12, heroHeight * 0.34],
+      outputRange: [firstSectionEntranceDrop, 10, 0],
       extrapolate: 'clamp',
     });
     const bgScale = scrollY.interpolate({
@@ -447,13 +451,11 @@ const AirsIntroExperience = forwardRef<
           mutedButtonBorder: 'rgba(15,23,42,0.16)',
         };
 
-    const heroWordmarkSource = isDesktopView
-      ? isDark
-        ? AIRS_LOGO_LIGHT_2X
-        : AIRS_LOGO_DARK_2X
-      : isDark
-      ? AIRS_LOGO_LIGHT
-      : AIRS_LOGO_DARK;
+    const heroWordmarkSource = isDark
+      ? logoAtTop
+        ? AIRS_LOGO_BLACK_DARK
+        : AIRS_LOGO_DARK
+      : AIRS_LOGO_LIGHT;
     const heroCopyTop = isMobile
       ? Math.min(heroHeight * 0.29, 240)
       : Math.min(heroHeight * 0.34, 330);
@@ -553,7 +555,7 @@ const AirsIntroExperience = forwardRef<
           />
         ) : null}
 
-        <View pointerEvents='none' style={styles.floatingLeftTop}>
+        <View pointerEvents='none' style={[styles.floatingLeftTop, { left: heroSideInset }]}>
           <View style={styles.heroBrandRow}>
             <View style={styles.heroBrandTextBlock}>
               <ExpoImage
@@ -573,9 +575,10 @@ const AirsIntroExperience = forwardRef<
             <>
               {isMobile || isCompactDesktop ? (
                 <View
-                  style={
-                    isMobile ? styles.headerNavMobileContainer : styles.headerNavDesktopWrapper
-                  }
+                  style={[
+                    isMobile ? styles.headerNavMobileContainer : styles.headerNavDesktopWrapper,
+                    { right: heroSideInset },
+                  ]}
                   pointerEvents='box-none'
                 >
                   <TouchableOpacity
@@ -710,7 +713,17 @@ const AirsIntroExperience = forwardRef<
                 </View>
               ) : (
                 /* Desktop: one integrated pill with nav links + sign-in + settings */
-                <View style={styles.headerNavDesktopWrapper} pointerEvents='box-none'>
+                <View
+                  style={[
+                    styles.headerNavDesktopWrapper,
+                    {
+                      left: desktopHeaderNavLeft,
+                      right: heroSideInset,
+                      alignItems: 'flex-end',
+                    },
+                  ]}
+                  pointerEvents='box-none'
+                >
                   <Animated.View
                     style={[
                       styles.headerNavPill,
@@ -885,7 +898,7 @@ const AirsIntroExperience = forwardRef<
             </>
           ) : (
             /* Logged-in: clean nav links with underline + avatar */
-            <View style={styles.headerNavLoggedInContainer}>
+            <View style={[styles.headerNavLoggedInContainer, { right: heroSideInset }]}>
               <View style={styles.headerNavLinksRow}>
                 {headerNavLinks.map((link) => (
                   <TouchableOpacity
@@ -944,7 +957,13 @@ const AirsIntroExperience = forwardRef<
 
         {/* Profile dropdown menu (logged-in state) */}
         {!showCta && profileMenuVisible && (
-          <Animated.View style={[styles.headerDropdownContainer, headerNavDropdownAnimatedStyle]}>
+          <Animated.View
+            style={[
+              styles.headerDropdownContainer,
+              { right: heroSideInset },
+              headerNavDropdownAnimatedStyle,
+            ]}
+          >
             <View
               style={[
                 styles.floatingMenu,
@@ -1002,7 +1021,7 @@ const AirsIntroExperience = forwardRef<
         )}
 
         {!showCta && (
-          <View style={styles.floatingRightTop}>
+          <View style={[styles.floatingRightTop, { right: heroSideInset }]}>
             <TouchableOpacity
               style={[
                 styles.floatingProfileTrigger,
@@ -1188,6 +1207,7 @@ const AirsIntroExperience = forwardRef<
               style={[
                 styles.extraSectionsTransition,
                 {
+                  marginTop: -firstSectionOverlap,
                   opacity: extraSectionsOpacity,
                   transform: [{ translateY: extraSectionsTranslateY }],
                 },
@@ -1222,15 +1242,13 @@ const styles = createTypographyStyles({
   },
   floatingLeftTop: {
     position: 'absolute',
-    top: 16,
-    left: 20,
+    top: 28,
     zIndex: 81,
     maxWidth: '72%',
   },
   floatingRightTop: {
     position: 'absolute',
     top: 18,
-    right: 24,
     zIndex: 80,
     alignItems: 'flex-end',
   },
@@ -1256,6 +1274,7 @@ const styles = createTypographyStyles({
     justifyContent: 'center',
   },
   floatingAvatarText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     fontWeight: '800',
   },
@@ -1277,6 +1296,7 @@ const styles = createTypographyStyles({
     gap: 8,
   },
   floatingMenuText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -1473,7 +1493,6 @@ const styles = createTypographyStyles({
   headerNavMobileContainer: {
     position: 'absolute',
     top: 18,
-    right: 18,
     zIndex: 50,
   },
   headerNavMobileAvatarTrigger: {
@@ -1554,9 +1573,9 @@ const styles = createTypographyStyles({
   // ── Logged-out: desktop pill with nav links + CTA ─────────────────────────
   headerNavDesktopWrapper: {
     position: 'absolute',
-    top: 18,
-    right: 18,
+    top: 28,
     zIndex: 50,
+    alignItems: 'center',
   },
   headerNavDesktopAvatarWrap: {
     position: 'relative',
@@ -1599,7 +1618,7 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     position: 'relative',
     borderRadius: 999,
-    borderWidth: 1,
+    borderWidth: 2,
     overflow: 'visible',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
@@ -1712,7 +1731,6 @@ const styles = createTypographyStyles({
   headerNavLoggedInContainer: {
     position: 'absolute',
     top: 24,
-    right: 24,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 18,
@@ -1756,13 +1774,13 @@ const styles = createTypographyStyles({
     justifyContent: 'center',
   },
   headerAvatarText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '700',
   },
   headerDropdownContainer: {
     position: 'absolute',
     top: 50,
-    right: 24,
     zIndex: 55,
     minWidth: 200,
   },
