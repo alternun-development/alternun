@@ -1,4 +1,4 @@
-import { parseAuthProviderSelection, parseBooleanLike } from '../validation/providerConfig';
+import { parseAuthProviderSelection, parseBooleanLike } from '../validation/providerConfig.js';
 export function getProcessEnv() {
     return {
         AUTH_EXECUTION_PROVIDER: process.env.AUTH_EXECUTION_PROVIDER,

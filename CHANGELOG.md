@@ -1,3 +1,26 @@
+## [1.0.223](https://github.com/alternun-development/alternun/compare/v1.0.222-dev.0...v1.0.223) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n,ui): HeroStats, HeroPanel
+- **repo:** feat(ui): Update HeroPanel greeting text color to gold (#CBAB35)
+- **repo:** fix(ui): Remove all background colors from HeroPanel for full image transparency
+- **repo:** fix(mobile): Adjust dashboard background image to fit better on all screen sizes
+- **repo:** fix(ui): Make HeroPanel background fully transparent with text shadows for contrast
+
+### Bug Fixes
+
+- **mobile,i18n,ui:** HeroStats, HeroPanel ([97d795a](https://github.com/alternun-development/alternun/commit/97d795aad66b0e51f79819508dd4340159dca7e8))
+- **mobile:** Adjust dashboard background image to fit better on all screen sizes ([bbc0b14](https://github.com/alternun-development/alternun/commit/bbc0b1455c5b62e9d161efaa45dd4caa74b3b5b5))
+- **ui,mobile:** Improve background image visibility with minimal opacity ([4a3664b](https://github.com/alternun-development/alternun/commit/4a3664b0b683c702e03489c569bcc0f1a97ca127))
+- **ui:** Make HeroPanel background fully transparent with text shadows for contrast ([167d2f1](https://github.com/alternun-development/alternun/commit/167d2f161a433c5156ab02d2965a8cd1da474b05))
+- **ui:** Remove all background colors from HeroPanel for full image transparency ([8a54993](https://github.com/alternun-development/alternun/commit/8a549937b86e0c6b59350f8024f62bbd73f74832))
+
+### Features
+
+- **mobile:** Add dashboard background image to HeroStats card ([a3a73a9](https://github.com/alternun-development/alternun/commit/a3a73a93c9cf603b8b70b3f30ce18d535819ce61))
+- **ui:** Update HeroPanel greeting text color to gold (#CBAB35) ([8959bf9](https://github.com/alternun-development/alternun/commit/8959bf9f13791f12a04df65830f32e9e2d81d0d4)), closes [#CBAB35](https://github.com/alternun-development/alternun/issues/CBAB35) [#CBAB35](https://github.com/alternun-development/alternun/issues/CBAB35)
+
 ## [1.0.222](https://github.com/alternun-development/alternun/compare/v1.0.221-dev.0...v1.0.222) (2026-04-24)
 
 ### Bug Fixes
