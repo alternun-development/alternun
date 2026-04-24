@@ -373,6 +373,52 @@
           "description": "Conecta mediante codigo QR"
         }
       }
+    },
+    "profile": {
+      "sections": {
+        "achievements": "Logros",
+        "account": "Cuenta",
+        "preferences": "Preferencias"
+      },
+      "header": {
+        "personalInfo": "Información Personal",
+        "verified": "Información Verificada"
+      },
+      "tierJourney": "Trayecto de Tier",
+      "accountRows": {
+        "personalInfo": "Información personal",
+        "wallet": "Wallet",
+        "accessMethod": "Método de acceso",
+        "notifications": "Notificaciones"
+      },
+      "preferenceRows": {
+        "theme": "Tema",
+        "language": "Idioma",
+        "settings": "Configuración",
+        "signOut": "Cerrar sesión"
+      },
+      "accessMethodsAlert": {
+        "title": "Métodos de acceso",
+        "available": "Métodos disponibles:\n• Email\n• Google\n• Discord"
+      },
+      "modal": {
+        "title": "Información Personal",
+        "firstName": "Nombre",
+        "lastName": "Apellido",
+        "email": "Email",
+        "close": "Cerrar"
+      },
+      "achievements": {
+        "firstTree": "Primer Árbol",
+        "co2Badge": "10 kg CO₂",
+        "airs1k": "1K Airs",
+        "airs5k": "5K Airs",
+        "kycVerified": "KYC Verificado",
+        "recruiter": "Recluta",
+        "partner": "Socio",
+        "platinum": "Platinum"
+      },
+      "footer": "Alternun Airs · v1.0.223"
     }
   },
   "web": {
