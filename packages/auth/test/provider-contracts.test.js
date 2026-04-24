@@ -246,6 +246,62 @@ test('BetterAuthExecutionProvider.signInWithGoogle prefers the browser client wh
   }
 });
 
+test('BetterAuthExecutionProvider.signInWithDiscord fetches the social sign-in URL and redirects', async () => {
+  const redirectUrl = 'https://discord.com/oauth2/authorize?client_id=test';
+  let observedRequestUrl = null;
+  let observedRequestBody = null;
+  let redirectedTo = null;
+  const originalWindow = globalThis.window;
+
+  globalThis.window = {
+    location: {
+      assign: (url) => {
+        redirectedTo = url;
+      },
+    },
+  };
+
+  try {
+    const provider = new BetterAuthExecutionProvider({
+      baseUrl: 'https://api.example.com/auth',
+      fetchFn: async (url, init) => {
+        observedRequestUrl = String(url);
+        observedRequestBody = init?.body ? JSON.parse(String(init.body)) : null;
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          async json() {
+            return {
+              url: redirectUrl,
+            };
+          },
+          async text() {
+            return JSON.stringify({
+              url: redirectUrl,
+            });
+          },
+        };
+      },
+    });
+
+    await provider.signInWithDiscord('https://app.example.com/auth/callback');
+
+    assert.equal(observedRequestUrl, 'https://api.example.com/auth/sign-in/social');
+    assert.deepEqual(observedRequestBody, {
+      provider: 'discord',
+      flow: 'redirect',
+      callbackURL: 'https://app.example.com/auth/callback',
+      errorCallbackURL: 'https://app.example.com/auth/callback',
+      newUserCallbackURL: 'https://app.example.com/auth/callback',
+    });
+    assert.equal(redirectedTo, redirectUrl);
+  } finally {
+    globalThis.window = originalWindow;
+  }
+});
+
 test('BetterAuthExecutionProvider joins a canonical /auth baseUrl without duplicating the prefix', async () => {
   let observedUrl;
   let observedBody;
