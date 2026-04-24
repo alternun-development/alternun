@@ -383,15 +383,16 @@ const AirsIntroExperience = forwardRef<
       outputRange: [0, 1],
       extrapolate: 'clamp',
     });
-    const firstSectionTransitionLift = isMobile ? 44 : isCompactDesktop ? 64 : 84;
+    const firstSectionOverlap = isMobile ? 116 : isCompactDesktop ? 148 : 180;
+    const firstSectionEntranceDrop = isMobile ? 52 : isCompactDesktop ? 72 : 92;
     const extraSectionsOpacity = scrollY.interpolate({
-      inputRange: [0, heroHeight * 0.14, heroHeight * 0.32],
-      outputRange: [0.92, 0.98, 1],
+      inputRange: [0, heroHeight * 0.1, heroHeight * 0.28],
+      outputRange: [0.72, 0.94, 1],
       extrapolate: 'clamp',
     });
     const extraSectionsTranslateY = scrollY.interpolate({
-      inputRange: [0, heroHeight * 0.16, heroHeight * 0.42],
-      outputRange: [0, -firstSectionTransitionLift, 0],
+      inputRange: [0, heroHeight * 0.12, heroHeight * 0.34],
+      outputRange: [firstSectionEntranceDrop, 10, 0],
       extrapolate: 'clamp',
     });
     const bgScale = scrollY.interpolate({
@@ -1206,6 +1207,7 @@ const AirsIntroExperience = forwardRef<
               style={[
                 styles.extraSectionsTransition,
                 {
+                  marginTop: -firstSectionOverlap,
                   opacity: extraSectionsOpacity,
                   transform: [{ translateY: extraSectionsTranslateY }],
                 },
