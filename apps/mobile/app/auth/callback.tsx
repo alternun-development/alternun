@@ -165,6 +165,16 @@ export default function AuthCallbackRoute(): React.JSX.Element {
 
     if (isBetterAuthExecution) {
       clearOidcSession();
+      const callbackError =
+        callbackPayload.callbackErrorDescription ??
+        callbackPayload.callbackError ??
+        callbackPayload.callbackErrorCode;
+      if (callbackError) {
+        stripAuthCallbackTokensFromUrl(window.location.href);
+        setErrorMessage(callbackError);
+        return;
+      }
+
       void Promise.resolve(
         typeof callbackClient.getUser === 'function' ? callbackClient.getUser() : null
       )
@@ -246,6 +256,7 @@ export default function AuthCallbackRoute(): React.JSX.Element {
     callbackPayload,
     client,
     isNavigationReady,
+    isBetterAuthExecution,
     recoveryRedirectPath,
     redirectTarget,
     router,
