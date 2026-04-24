@@ -903,6 +903,7 @@ export default function AuthSignInScreen({
               <Pressable
                 accessibilityRole='button'
                 onPress={closeSettingsMenu}
+                pointerEvents='box-only'
                 style={styles.settingsMenuBackdrop}
               >
                 {/* Backdrop overlay - touches on empty areas close menu */}
@@ -979,7 +980,7 @@ export default function AuthSignInScreen({
                       activeOpacity={0.8}
                       onPress={() => {
                         cycleLanguage();
-                        setTimeout(() => setSettingsMenuOpen(false), 200);
+                        setTimeout(() => setSettingsMenuOpen(false), 300);
                       }}
                       style={styles.settingsDropdownItem}
                     >
@@ -1001,7 +1002,7 @@ export default function AuthSignInScreen({
                       activeOpacity={0.8}
                       onPress={() => {
                         toggleThemeMode();
-                        setTimeout(() => setSettingsMenuOpen(false), 200);
+                        setTimeout(() => setSettingsMenuOpen(false), 300);
                       }}
                       style={styles.settingsDropdownItem}
                     >
@@ -1061,7 +1062,7 @@ export default function AuthSignInScreen({
                           activeOpacity={0.8}
                           onPress={() => {
                             cycleLanguage();
-                            setTimeout(() => setSettingsMenuOpen(false), 200);
+                            setTimeout(() => setSettingsMenuOpen(false), 300);
                           }}
                           style={styles.settingsDropdownItem}
                         >
@@ -1083,7 +1084,7 @@ export default function AuthSignInScreen({
                           activeOpacity={0.8}
                           onPress={() => {
                             toggleThemeMode();
-                            setTimeout(() => setSettingsMenuOpen(false), 200);
+                            setTimeout(() => setSettingsMenuOpen(false), 300);
                           }}
                           style={styles.settingsDropdownItem}
                         >
