@@ -150,7 +150,9 @@ const codestarConnectionArn =
 const selectedPipelinesRaw =
   process.env.INFRA_PIPELINES ?? localConfig.pipeline?.pipelines ?? ALL_PIPELINE_SET;
 const pipelineComputeTypeDefault = (pipeline: ManagedPipeline): PipelineComputeType =>
-  pipeline === 'dev' ? 'BUILD_GENERAL1_LARGE' : 'BUILD_GENERAL1_MEDIUM';
+  pipeline === 'dev' || pipeline === 'production' || pipeline.endsWith('-prod')
+    ? 'BUILD_GENERAL1_LARGE'
+    : 'BUILD_GENERAL1_MEDIUM';
 const adminSiteEnabledStagesRaw = process.env.INFRA_ADMIN_ENABLED_STAGES ?? '';
 const backendApiEnabledStagesRaw = process.env.INFRA_BACKEND_API_ENABLED_STAGES ?? '';
 const identityEnabledStagesRaw = process.env.INFRA_IDENTITY_ENABLED_STAGES ?? '';
@@ -486,6 +488,35 @@ pulumiRuntime.registerStackTransformation((args) => {
     props: {
       ...props,
       executionMode: 'QUEUED',
+    },
+    opts: args.opts,
+  };
+});
+
+pulumiRuntime.registerStackTransformation((args) => {
+  if (args.type !== 'aws:codebuild/project:Project') {
+    return undefined;
+  }
+
+  const props = args.props as Record<string, unknown>;
+  const projectName =
+    typeof props.name === 'string' ? props.name : typeof args.name === 'string' ? args.name : '';
+
+  if (!projectName.endsWith('-build')) {
+    return undefined;
+  }
+
+  if (props.cache !== undefined) {
+    return undefined;
+  }
+
+  return {
+    props: {
+      ...props,
+      cache: {
+        type: 'LOCAL',
+        modes: ['LOCAL_SOURCE_CACHE', 'LOCAL_CUSTOM_CACHE'],
+      },
     },
     opts: args.opts,
   };

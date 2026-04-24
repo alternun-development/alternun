@@ -44,6 +44,20 @@ void test('dev pipeline spec injects Better Auth API-origin URLs', () => {
   assert.match(source, /\.\.\.buildBetterAuthEnvForStage\('dev', env\)/);
 });
 
+void test('production-style pipelines default to larger CodeBuild capacity and local cache', () => {
+  const source = fs.readFileSync(infraConfigPath, 'utf8');
+
+  assert.match(
+    source,
+    /pipeline === 'dev' \|\| pipeline === 'production' \|\| pipeline\.endsWith\('-prod'\)/
+  );
+  assert.match(source, /args\.type !== 'aws:codebuild\/project:Project'/);
+  assert.match(source, /projectName\.endsWith\('-build'\)/);
+  assert.match(source, /type: 'LOCAL'/);
+  assert.match(source, /LOCAL_SOURCE_CACHE/);
+  assert.match(source, /LOCAL_CUSTOM_CACHE/);
+});
+
 void test('managed CodePipeline resources are forced into queued execution mode', () => {
   const source = fs.readFileSync(infraConfigPath, 'utf8');
 
