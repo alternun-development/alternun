@@ -1,4 +1,4 @@
-import { AlternunConfigError, AlternunProviderError } from '../../core/errors.js';
+import { AlternunConfigError, AlternunProviderError } from '../../core/errors';
 async function postJson(fetchFn, baseUrl, path, body) {
     const normalizedBaseUrl = baseUrl
         .trim()
