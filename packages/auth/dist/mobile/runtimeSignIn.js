@@ -6,8 +6,11 @@ const AUTH_RETURN_TO_STORAGE_KEY = 'alternun:auth:return-to';
 function canUseBrowserRuntime() {
     return typeof window !== 'undefined' && typeof document !== 'undefined';
 }
-function hasGoogleSignIn(client) {
-    return typeof client.signInWithGoogle === 'function';
+function hasBetterAuthSocialSignIn(client, provider) {
+    const socialClient = client;
+    return provider === 'google'
+        ? typeof socialClient.signInWithGoogle === 'function'
+        : typeof socialClient.signInWithDiscord === 'function';
 }
 export function resolveAuthRuntime() {
     return canUseBrowserRuntime() ? 'web' : 'native';
@@ -73,15 +76,15 @@ function shouldUseAuthentikWebFlow(strategy, authentikReady, authentikProviderHi
     return authentikReady;
 }
 function shouldUseBetterAuthWebFlow(strategy, provider, authentikProviderHint) {
-    // Better Auth owns the social-login migration path here; the facade will
-    // exchange the resulting external identity into the canonical Authentik
-    // session after callback completion.
+    // Better Auth is only a fallback browser execution path when Authentik is
+    // not the selected social-login owner for the current web flow.
     const normalizedProvider = provider.trim().toLowerCase();
     return (strategy.executionProvider === 'better-auth' &&
         (normalizedProvider === 'google' || normalizedProvider === 'discord') &&
         authentikProviderHint === normalizedProvider);
 }
 export async function webRedirectSignIn({ client, provider, redirectTo, authentikProviderHint, forceFreshSession = false, strategy = resolveAuthentikLoginStrategy(), }) {
+    var _a, _b;
     if (!canUseBrowserRuntime()) {
         throw new Error('CONFIG_ERROR: webRedirectSignIn requires a browser runtime');
     }
@@ -91,8 +94,14 @@ export async function webRedirectSignIn({ client, provider, redirectTo, authenti
     });
     storeAuthReturnTo(redirectTo);
     if (shouldUseBetterAuthWebFlow(strategy, provider, authentikProviderHint)) {
-        if (provider === 'google' && hasGoogleSignIn(client)) {
-            await client.signInWithGoogle(callbackUrl);
+        if ((provider === 'google' || provider === 'discord') &&
+            hasBetterAuthSocialSignIn(client, provider)) {
+            if (provider === 'google') {
+                await ((_a = client.signInWithGoogle) === null || _a === void 0 ? void 0 : _a.call(client, callbackUrl));
+            }
+            else {
+                await ((_b = client.signInWithDiscord) === null || _b === void 0 ? void 0 : _b.call(client, callbackUrl));
+            }
             return 'better-auth';
         }
         await client.signIn({
