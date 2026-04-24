@@ -24,7 +24,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { ChangelogDrawer } from '@alternun/ui';
+import { ChangelogDrawer, ThemeProvider } from '@alternun/ui';
 import SupportButton from './SupportButton';
 import { createTypographyStyles } from '../theme/typography';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -34,7 +34,7 @@ import {
 } from './AppInfoFooter.links';
 import {
   AIRS_LOGO_DARK,
-  AIRS_LOGO_LIGHT,
+  AIRS_LOGO_WHITE,
   FooterCopyright,
   FooterTextLink,
   SocialPill,
@@ -82,7 +82,7 @@ export default function LandingFooter(): React.JSX.Element {
   const isMobile = width < 720;
   const isWide = width >= 1120;
   const useCompactFooter = !isWide;
-  const wordmarkSource = isDark ? AIRS_LOGO_LIGHT : AIRS_LOGO_DARK;
+  const wordmarkSource = isDark ? AIRS_LOGO_DARK : AIRS_LOGO_WHITE;
   const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
 
   // Floating orb animations
@@ -145,9 +145,9 @@ export default function LandingFooter(): React.JSX.Element {
         title: '#effff9',
         text: 'rgba(239,255,249,0.82)',
         muted: 'rgba(220,255,246,0.62)',
-        socialBg: 'rgba(30,230,181,0.18)',
-        socialBorder: 'rgba(173,255,233,0.24)',
-        accent: '#1ee6b5',
+        socialBg: 'rgba(255,255,255,0.14)',
+        socialBorder: 'rgba(255,255,255,0.28)',
+        accent: '#ffffff',
         markCutout: '#063339',
         bottomBar: 'rgba(0,0,0,0.12)',
       };
@@ -363,12 +363,14 @@ export default function LandingFooter(): React.JSX.Element {
           >
             <FooterCopyright color={palette.title} />
             <View style={styles.bottomRightSection}>
-              <ChangelogDrawer
-                changelog={changelogContent}
-                githubUrl={GITHUB_REPO_URL}
-                pageSize={3}
-                triggerLabel={`v${versionMetadata.version}`}
-              />
+              <ThemeProvider mode={isDark ? 'dark' : 'light'}>
+                <ChangelogDrawer
+                  changelog={changelogContent}
+                  githubUrl={GITHUB_REPO_URL}
+                  pageSize={3}
+                  triggerLabel={`v${versionMetadata.version}`}
+                />
+              </ThemeProvider>
               <SupportButton supportEmail='support@alternun.co' palette={palette} />
             </View>
           </View>
