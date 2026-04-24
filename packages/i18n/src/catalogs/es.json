@@ -163,7 +163,7 @@
         "terms": "Términos",
         "support": "Soporte"
       },
-      "tagline": "Una \"manera diferente de hacer las cosas\" - Alternun"
+      "tagline": "Una \"manera diferente de hacer las cosas\" - Alternun.io"
     },
     "releaseUpdate": {
       "eyebrow": "Nueva versión disponible",
@@ -177,6 +177,18 @@
     "landing": {
       "actions": {
         "goToDashboard": "Ir al panel"
+      },
+      "message": {
+        "regenerative": "Únete a Airs By Alternun: Capitalismo regenerativo en acción",
+        "welcome": "Bienvenido a AIRS: Tu puerta de entrada a oportunidades digitales",
+        "earn": "Gana tokens AIRS: Participa y aumenta tus recompensas",
+        "community": "Únete a nuestra comunidad: Conecta con entusiastas del blockchain",
+        "impact": "Haz un Impacto: Convierte tus acciones en valor real"
+      },
+      "messageCta": {
+        "joinHere": "Únete aquí",
+        "infoHere": "Info aquí",
+        "learnMore": "Más info"
       },
       "hero": {
         "presentedBy": "Alternun presenta",
@@ -281,7 +293,7 @@
             "atn": "Variable",
             "meta": "Proyectos regenerativos",
             "title": "Proyectos regenerativos",
-            "cta": "Invertir para acumular",
+            "cta": "Invertir",
             "infoBody": "Los aportes a proyectos validados generan Airs con tasas variables según el impacto, la trazabilidad y el monto comprometido."
           },
           "marketplace": {

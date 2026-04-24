@@ -37,15 +37,12 @@ import NotificationDropdown, { type NotificationItem } from './NotificationDropd
 import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { getFirstName } from './userDisplayName';
 import { NAV_SECTIONS, type NavSection } from './navSections';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png') as number;
+const AIRS_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png') as number;
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as number;
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as number;
+const AIRS_LOGO_LIGHT = require('../../assets/SVGs/AIRS-logo-light.svg') as number;
 
 // ── JSX-safe casts ────────────────────────────────────────────────────────────
 const ExpoImage = ExpoImageRaw as unknown as React.FC<React.ComponentProps<typeof ExpoImageRaw>>;
@@ -142,13 +139,7 @@ export default function TopNav({
   const brandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
   const brandMarkCutout = isDark ? '#03292f' : '#d9fff4';
   const isDesktop = width >= 720;
-  const wordmarkSource = isDesktop
-    ? isDark
-      ? AIRS_LOGO_LIGHT_2X
-      : AIRS_LOGO_DARK_2X
-    : isDark
-    ? AIRS_LOGO_LIGHT
-    : AIRS_LOGO_DARK;
+  const wordmarkSource = isDark ? AIRS_LOGO_DARK : AIRS_LOGO_LIGHT;
   const ThemeIconComp = isDark ? SunIcon : MoonIcon;
   const themeLabel = isDark ? t('labels.dark') : t('labels.light');
 
@@ -571,93 +562,99 @@ export default function TopNav({
                     </TouchableOpacity>
                   )}
 
-                  {/* Nav items */}
-                  <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
-                    {NAV_SECTIONS.map((section) => {
-                      const isActive = activeSection === section.key;
-                      const isComingSoon = Boolean(section.comingSoon);
-                      const IconComp = section.icon;
-                      return (
-                        <TouchableOpacity
-                          key={section.key}
-                          style={[
-                            styles.navItem,
-                            isExtraSmall && styles.navItemExtraSmall,
-                            {
-                              backgroundColor: isActive
-                                ? p.navActive
-                                : isComingSoon
-                                ? isDark
-                                  ? 'rgba(255,255,255,0.03)'
-                                  : 'rgba(15,23,42,0.03)'
-                                : 'transparent',
-                              borderWidth: isActive || isComingSoon ? 1 : 0,
-                              borderColor: isActive
-                                ? p.navActiveBorder
-                                : isComingSoon
-                                ? p.dropDivider
-                                : 'transparent',
-                              opacity: isComingSoon ? 0.74 : 1,
-                            },
-                          ]}
-                          onPress={() => handleNavSectionPress(section)}
-                          activeOpacity={0.8}
-                        >
-                          <IconComp
-                            size={15}
-                            color={
-                              isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.iconIdle
-                            }
-                          />
-                          <Text
+                  {/* Nav items - only show when signed in */}
+                  {signedIn && (
+                    <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
+                      {NAV_SECTIONS.map((section) => {
+                        const isActive = activeSection === section.key;
+                        const isComingSoon = Boolean(section.comingSoon);
+                        const IconComp = section.icon;
+                        return (
+                          <TouchableOpacity
+                            key={section.key}
                             style={[
-                              styles.navItemText,
+                              styles.navItem,
+                              isExtraSmall && styles.navItemExtraSmall,
                               {
-                                color: isActive
-                                  ? p.navActiveText
+                                backgroundColor: isActive
+                                  ? p.navActive
                                   : isComingSoon
-                                  ? p.dropSub
-                                  : p.dropText,
+                                  ? isDark
+                                    ? 'rgba(255,255,255,0.03)'
+                                    : 'rgba(15,23,42,0.03)'
+                                  : 'transparent',
+                                borderWidth: isActive || isComingSoon ? 1 : 0,
+                                borderColor: isActive
+                                  ? p.navActiveBorder
+                                  : isComingSoon
+                                  ? p.dropDivider
+                                  : 'transparent',
+                                opacity: isComingSoon ? 0.74 : 1,
                               },
-                              isActive && styles.navItemTextActive,
                             ]}
+                            onPress={() => handleNavSectionPress(section)}
+                            activeOpacity={0.8}
                           >
-                            {section.label}
-                          </Text>
-                          {isComingSoon ? (
-                            <View style={[styles.comingSoonPill, { borderColor: p.dropDivider }]}>
-                              <Text style={[styles.comingSoonText, { color: p.dropSub }]}>
-                                Coming soon
-                              </Text>
-                            </View>
-                          ) : isActive ? (
-                            <View style={[styles.activeIndicator, { backgroundColor: p.accent }]} />
-                          ) : null}
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
+                            <IconComp
+                              size={15}
+                              color={
+                                isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.iconIdle
+                              }
+                            />
+                            <Text
+                              style={[
+                                styles.navItemText,
+                                {
+                                  color: isActive
+                                    ? p.navActiveText
+                                    : isComingSoon
+                                    ? p.dropSub
+                                    : p.dropText,
+                                },
+                                isActive && styles.navItemTextActive,
+                              ]}
+                            >
+                              {section.label}
+                            </Text>
+                            {isComingSoon ? (
+                              <View style={[styles.comingSoonPill, { borderColor: p.dropDivider }]}>
+                                <Text style={[styles.comingSoonText, { color: p.dropSub }]}>
+                                  Coming soon
+                                </Text>
+                              </View>
+                            ) : isActive ? (
+                              <View
+                                style={[styles.activeIndicator, { backgroundColor: p.accent }]}
+                              />
+                            ) : null}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
 
-                  {/* Settings expandable */}
-                  <TouchableOpacity
-                    style={[
-                      styles.navItem,
-                      isExtraSmall && styles.navItemExtraSmall,
-                      { backgroundColor: 'transparent' },
-                    ]}
-                    onPress={() => setSettingsExpanded((v) => !v)}
-                    activeOpacity={0.8}
-                  >
-                    <SettingsIcon size={15} color={p.iconIdle} />
-                    <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                      {t('labels.settings')}
-                    </Text>
-                    {settingsExpanded ? (
-                      <ChevronDownIcon size={13} color={p.chevron} />
-                    ) : (
-                      <ChevronRightIcon size={13} color={p.chevron} />
-                    )}
-                  </TouchableOpacity>
+                  {/* Settings expandable - only show when signed in */}
+                  {signedIn && (
+                    <TouchableOpacity
+                      style={[
+                        styles.navItem,
+                        isExtraSmall && styles.navItemExtraSmall,
+                        { backgroundColor: 'transparent' },
+                      ]}
+                      onPress={() => setSettingsExpanded((v) => !v)}
+                      activeOpacity={0.8}
+                    >
+                      <SettingsIcon size={15} color={p.iconIdle} />
+                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                        {t('labels.settings')}
+                      </Text>
+                      {settingsExpanded ? (
+                        <ChevronDownIcon size={13} color={p.chevron} />
+                      ) : (
+                        <ChevronRightIcon size={13} color={p.chevron} />
+                      )}
+                    </TouchableOpacity>
+                  )}
 
                   <AnimatedCollapsibleContent expanded={settingsExpanded}>
                     <TouchableOpacity
@@ -786,8 +783,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     // NO overflow: 'hidden' here — dropdown must render beyond these bounds
     zIndex: 1100,
     position: 'relative',
@@ -847,8 +844,8 @@ const styles = StyleSheet.create({
     height: 26,
   },
   wordmarkDesktop: {
-    width: 144,
-    height: 52,
+    width: 180,
+    height: 64,
   },
   wordmarkMobile: {
     width: 52,
@@ -866,17 +863,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
   bylineLogo: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
   bylineSubtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 10,
     fontWeight: '500',
     letterSpacing: 0.05,
     flexShrink: 1,
   },
   bylineSubtitleMobile: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 9,
     fontWeight: '400',
   },
@@ -942,6 +941,7 @@ const styles = StyleSheet.create({
     borderRadius: 13,
   },
   avatarText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '800',
   },
@@ -1065,6 +1065,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   dropAvatarText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '800',
   },
@@ -1088,6 +1089,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   dropScoreText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 10,
     fontWeight: '700',
   },
@@ -1128,6 +1130,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   comingSoonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.2,
@@ -1150,6 +1153,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   navItemValue: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     fontWeight: '700',
   },

@@ -1,5 +1,4 @@
 import { useAppTranslation } from '../i18n/useAppTranslation';
-import { BlurView } from 'expo-blur';
 import { Image as ExpoImage } from 'expo-image';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -10,6 +9,8 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
+  ImageBackground,
+  type ImageSourcePropType,
 } from 'react-native';
 import { PolicyDrawerContent } from '../auth/AuthFooter';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
@@ -23,7 +24,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { ChangelogDrawer } from '@alternun/ui';
+import { ChangelogDrawer, ThemeProvider } from '@alternun/ui';
 import SupportButton from './SupportButton';
 import { createTypographyStyles } from '../theme/typography';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -33,17 +34,20 @@ import {
 } from './AppInfoFooter.links';
 import {
   AIRS_LOGO_DARK,
-  AIRS_LOGO_DARK_2X,
   AIRS_LOGO_LIGHT,
-  AIRS_LOGO_LIGHT_2X,
   FooterCopyright,
   FooterTextLink,
-  FooterTopFade,
   SocialPill,
   SOCIAL_LINKS,
   resolveVersionMetadata,
 } from './Footer.shared';
 import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+
+// Metro resolves static image requires for React Native asset bundling.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const FOOTER_BG =
+  require('../../assets/images/pexels-shella-mijos-2438861-5068057-footer.png') as ImageSourcePropType;
 
 export default function LandingFooter(): React.JSX.Element {
   const { themeMode, language } = useAppPreferences();
@@ -78,13 +82,7 @@ export default function LandingFooter(): React.JSX.Element {
   const isMobile = width < 720;
   const isWide = width >= 1120;
   const useCompactFooter = !isWide;
-  const wordmarkSource = isWide
-    ? isDark
-      ? AIRS_LOGO_LIGHT_2X
-      : AIRS_LOGO_DARK_2X
-    : isDark
-    ? AIRS_LOGO_LIGHT
-    : AIRS_LOGO_DARK;
+  const wordmarkSource = isDark ? AIRS_LOGO_DARK : AIRS_LOGO_LIGHT;
   const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
 
   // Floating orb animations
@@ -144,19 +142,18 @@ export default function LandingFooter(): React.JSX.Element {
         shellBorder: 'rgba(11, 90, 95, 0.08)',
         glowA: 'rgba(30, 230, 181, 0.12)',
         glowB: 'rgba(11, 90, 95, 0.08)',
-        title: '#0b2d31',
-        text: 'rgba(11,45,49,0.82)',
-        muted: 'rgba(11,45,49,0.58)',
-        socialBg: 'rgba(11,90,95,0.08)',
-        socialBorder: 'rgba(11,90,95,0.14)',
-        accent: '#0b5a5f',
-        markCutout: '#dffcf3',
-        bottomBar: 'rgba(255,255,255,0.2)',
+        title: '#effff9',
+        text: 'rgba(239,255,249,0.82)',
+        muted: 'rgba(220,255,246,0.62)',
+        socialBg: 'rgba(255,255,255,0.14)',
+        socialBorder: 'rgba(255,255,255,0.28)',
+        accent: '#ffffff',
+        markCutout: '#063339',
+        bottomBar: 'rgba(0,0,0,0.12)',
       };
 
   const shellPadding = isWide ? 20 : isMobile ? 12 : 14;
   const shellRadius = isWide ? 26 : isMobile ? 16 : 20;
-  const shellRevealHeight = isWide ? 20 : isMobile ? 12 : 14;
   const wordmarkWidth = isWide ? 126 : isMobile ? 88 : 104;
   const wordmarkHeight = isWide ? 44 : isMobile ? 30 : 36;
 
@@ -175,7 +172,8 @@ export default function LandingFooter(): React.JSX.Element {
           },
         ]}
       >
-        <View
+        <ImageBackground
+          source={FOOTER_BG}
           style={[
             styles.shell,
             {
@@ -184,26 +182,44 @@ export default function LandingFooter(): React.JSX.Element {
               padding: shellPadding,
             },
           ]}
+          imageStyle={{
+            resizeMode: 'cover',
+            borderRadius: shellRadius,
+            width: '100%',
+            height: '100%',
+          }}
         >
-          <BlurView
-            intensity={isWide ? 48 : 34}
-            tint={isDark ? 'dark' : 'light'}
-            style={[StyleSheet.absoluteFill, { borderRadius: shellRadius }]}
-          />
-          <View
-            pointerEvents='none'
-            style={[
-              styles.shellSurfaceBody,
-              { top: shellRevealHeight, backgroundColor: palette.shellBodyBg },
-            ]}
-          />
-          <FooterTopFade height={shellRevealHeight} color={palette.shellTopBg} />
+          {isDark ? (
+            <View
+              pointerEvents='none'
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  backgroundColor: 'rgba(0, 0, 0, 0.15)',
+                  borderRadius: shellRadius,
+                },
+              ]}
+            />
+          ) : (
+            <View
+              pointerEvents='none'
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                  borderRadius: shellRadius,
+                },
+              ]}
+            />
+          )}
           <Animated.View
             pointerEvents='none'
             style={[
               styles.glowOrb,
               styles.glowOrbLeft,
-              { backgroundColor: palette.glowA },
+              {
+                backgroundColor: isDark ? palette.glowA : 'rgba(255, 255, 255, 0.12)',
+              },
               orbLeftStyle,
             ]}
           />
@@ -212,7 +228,9 @@ export default function LandingFooter(): React.JSX.Element {
             style={[
               styles.glowOrb,
               styles.glowOrbRight,
-              { backgroundColor: palette.glowB },
+              {
+                backgroundColor: isDark ? palette.glowB : 'rgba(255, 255, 255, 0.1)',
+              },
               orbRightStyle,
             ]}
           />
@@ -345,16 +363,18 @@ export default function LandingFooter(): React.JSX.Element {
           >
             <FooterCopyright color={palette.title} />
             <View style={styles.bottomRightSection}>
-              <ChangelogDrawer
-                changelog={changelogContent}
-                githubUrl={GITHUB_REPO_URL}
-                pageSize={3}
-                triggerLabel={`v${versionMetadata.version}`}
-              />
+              <ThemeProvider mode={isDark ? 'dark' : 'light'}>
+                <ChangelogDrawer
+                  changelog={changelogContent}
+                  githubUrl={GITHUB_REPO_URL}
+                  pageSize={3}
+                  triggerLabel={`v${versionMetadata.version}`}
+                />
+              </ThemeProvider>
               <SupportButton supportEmail='support@alternun.co' palette={palette} />
             </View>
           </View>
-        </View>
+        </ImageBackground>
       </View>
 
       {/* Privacy Policy Drawer */}
@@ -482,9 +502,18 @@ const drawerStyles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
-  sheetTitle: { fontSize: 16, fontWeight: '700', letterSpacing: 0.1 },
+  sheetTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.1,
+  },
   closeBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
-  closeBtnText: { fontSize: 14, fontWeight: '600' },
+  closeBtnText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
 
 const styles = createTypographyStyles({
@@ -553,11 +582,13 @@ const styles = createTypographyStyles({
     paddingLeft: 2,
   },
   bylineText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.12,
   },
   bylineTextCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
   },
   bylineLogo: {
@@ -617,6 +648,7 @@ const styles = createTypographyStyles({
     justifyContent: 'center',
   },
   taglineText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 18,
   },

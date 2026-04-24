@@ -1,4 +1,5 @@
 import { createServer, type Server } from 'node:http';
+import { randomUUID } from 'node:crypto';
 import { betterAuth } from 'better-auth';
 import { toNodeHandler } from 'better-auth/node';
 import { oAuthProxy } from 'better-auth/plugins/oauth-proxy';
@@ -33,6 +34,26 @@ function buildOAuthProxyPlugin(
     ...(proxy.secret ? { secret: proxy.secret } : {}),
     ...(proxy.maxAge ? { maxAge: proxy.maxAge } : {}),
   });
+}
+
+function normalizeString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function fillBetterAuthUserIdentity(user: Record<string, unknown>): Record<string, unknown> {
+  const id = normalizeString(user.id) ?? randomUUID();
+  const image = normalizeString(user.image);
+  const picture = normalizeString(user.picture);
+
+  return {
+    ...user,
+    id,
+    sub: normalizeString(user.sub) ?? id,
+    iss: normalizeString(user.iss) ?? 'better-auth',
+    aud: normalizeString(user.aud) ?? 'authenticated',
+    provider: normalizeString(user.provider) ?? 'better-auth',
+    ...(picture !== null || image === null ? {} : { picture: image }),
+  };
 }
 
 export function createBetterAuthDevAuth(
@@ -121,6 +142,17 @@ export function createBetterAuthDevAuth(
         );
       },
     },
+    databaseHooks: {
+      user: {
+        create: {
+          before(user: Record<string, unknown>) {
+            return Promise.resolve({
+              data: fillBetterAuthUserIdentity(user),
+            });
+          },
+        },
+      },
+    },
     account: {
       storeAccountCookie: true,
       encryptOAuthTokens: true,
@@ -136,7 +168,14 @@ export function createBetterAuthDevAuth(
       disableCSRFCheck: false,
       disableOriginCheck: false,
       skipTrailingSlashes: true,
-      defaultCookieDomain: cookieDomain,
+      ...(cookieDomain
+        ? {
+            crossSubDomainCookies: {
+              enabled: true,
+              domain: cookieDomain,
+            },
+          }
+        : {}),
       database: {
         generateId: 'uuid',
       },

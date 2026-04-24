@@ -288,6 +288,18 @@ export class AlternunAuthFacade {
             redirectUri: redirectTo,
         });
     }
+    async signInWithDiscord(redirectTo) {
+        const provider = this.executionProvider;
+        if (typeof provider.signInWithDiscord === 'function') {
+            await provider.signInWithDiscord(redirectTo);
+            return;
+        }
+        await this.signIn({
+            provider: 'discord',
+            flow: this.runtime === 'web' ? 'redirect' : 'native',
+            redirectUri: redirectTo,
+        });
+    }
     async signIn(options) {
         var _a, _b, _c, _d;
         this.log('execution-provider', 'signIn', 'start', {

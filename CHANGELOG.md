@@ -1,3 +1,128 @@
+## [1.0.223](https://github.com/alternun-development/alternun/compare/v1.0.223-dev.0...v1.0.223) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.223-dev.0
+- **repo:** fix(mobile,i18n,ui): HeroStats, HeroPanel
+- **repo:** feat(ui): Update HeroPanel greeting text color to gold (#CBAB35)
+- **repo:** fix(ui): Remove all background colors from HeroPanel for full image transparency
+- **repo:** fix(mobile): Adjust dashboard background image to fit better on all screen sizes
+
+## [1.0.223](https://github.com/alternun-development/alternun/compare/v1.0.222-dev.0...v1.0.223) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n,ui): HeroStats, HeroPanel
+- **repo:** feat(ui): Update HeroPanel greeting text color to gold (#CBAB35)
+- **repo:** fix(ui): Remove all background colors from HeroPanel for full image transparency
+- **repo:** fix(mobile): Adjust dashboard background image to fit better on all screen sizes
+- **repo:** fix(ui): Make HeroPanel background fully transparent with text shadows for contrast
+
+### Bug Fixes
+
+- **mobile,i18n,ui:** HeroStats, HeroPanel ([97d795a](https://github.com/alternun-development/alternun/commit/97d795aad66b0e51f79819508dd4340159dca7e8))
+- **mobile:** Adjust dashboard background image to fit better on all screen sizes ([bbc0b14](https://github.com/alternun-development/alternun/commit/bbc0b1455c5b62e9d161efaa45dd4caa74b3b5b5))
+- **ui,mobile:** Improve background image visibility with minimal opacity ([4a3664b](https://github.com/alternun-development/alternun/commit/4a3664b0b683c702e03489c569bcc0f1a97ca127))
+- **ui:** Make HeroPanel background fully transparent with text shadows for contrast ([167d2f1](https://github.com/alternun-development/alternun/commit/167d2f161a433c5156ab02d2965a8cd1da474b05))
+- **ui:** Remove all background colors from HeroPanel for full image transparency ([8a54993](https://github.com/alternun-development/alternun/commit/8a549937b86e0c6b59350f8024f62bbd73f74832))
+
+### Features
+
+- **mobile:** Add dashboard background image to HeroStats card ([a3a73a9](https://github.com/alternun-development/alternun/commit/a3a73a93c9cf603b8b70b3f30ce18d535819ce61))
+- **ui:** Update HeroPanel greeting text color to gold (#CBAB35) ([8959bf9](https://github.com/alternun-development/alternun/commit/8959bf9f13791f12a04df65830f32e9e2d81d0d4)), closes [#CBAB35](https://github.com/alternun-development/alternun/issues/CBAB35) [#CBAB35](https://github.com/alternun-development/alternun/issues/CBAB35)
+
+## [1.0.222](https://github.com/alternun-development/alternun/compare/v1.0.221-dev.0...v1.0.222) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(ui): Improve version pill text contrast by using accent color
+- **repo:** fix(mobile): Fix logo selection across dashboard, footer, and notifications
+- **repo:** fix(auth): Hide private views and menu items from unauthenticated users
+
+### Bug Fixes
+
+- **auth:** Hide private views and menu items from unauthenticated users ([0c02e6a](https://github.com/alternun-development/alternun/commit/0c02e6a8f1b96e2c314456ff26637a1ab14321af))
+- **mobile:** Fix logo selection across dashboard, footer, and notifications ([6b2d53d](https://github.com/alternun-development/alternun/commit/6b2d53dc6c273779ae7230319c5abb7a4a80ed44))
+- **ui:** Improve version pill text contrast by using accent color ([186e5aa](https://github.com/alternun-development/alternun/commit/186e5aa74c1169a1217b5bcef613b40c08b718f4))
+
+## [1.0.221](https://github.com/alternun-development/alternun/compare/v1.0.220-dev.0...v1.0.221) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(auth): Correct logo selection for light and dark modes
+
+### Bug Fixes
+
+- **auth:** Correct logo selection for light and dark modes ([ff54c74](https://github.com/alternun-development/alternun/commit/ff54c746b0e60d20645b55b4b123b5c7071e8884))
+
+## [1.0.220](https://github.com/alternun-development/alternun/compare/v1.0.219-dev.0...v1.0.220) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n,ui): Update footer tagline and styling
+
+### Bug Fixes
+
+- **mobile,i18n,ui:** Update footer tagline and styling ([e6426fa](https://github.com/alternun-development/alternun/commit/e6426fa322047e6c9cd47a19dd14c6e0a31d4e83))
+
+## [1.0.219](https://github.com/alternun-development/alternun/compare/v1.0.218-dev.0...v1.0.219) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n): AirsIntroExperience
+
+### Bug Fixes
+
+- **mobile,i18n:** AirsIntroExperience ([59024e5](https://github.com/alternun-development/alternun/commit/59024e591cf250eedad1e87952bea9bc79105e40))
+
+## [1.0.218](https://github.com/alternun-development/alternun/compare/v1.0.217-dev.1...v1.0.218) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n): DynamicMessageBar, PublicLandingPage, AirsIntroExperience, en
+
+### Bug Fixes
+
+- **mobile,i18n:** DynamicMessageBar, PublicLandingPage, AirsIntroExperience, en ([514bb9d](https://github.com/alternun-development/alternun/commit/514bb9d62ad1c7739ac56dfb88bca7369a9781f2))
+
+## [1.0.217](https://github.com/alternun-development/alternun/compare/v1.0.217-dev.0...v1.0.217) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(auth,mobile): stabilize oauth and airs ui
+
+### Bug Fixes
+
+- **auth,mobile:** stabilize oauth and airs ui ([b04ac5a](https://github.com/alternun-development/alternun/commit/b04ac5a108882f6ebc60ea80342cccb28ce7f4ac))
+
+## [1.0.217](https://github.com/alternun-development/alternun/compare/v1.0.216...v1.0.217) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(api,auth,repo): apply-migrations, runtimeSignIn, 20260422_0012_create_referrals_table, 20260422_0013_auth_users_source_of_truth
+- **repo:** fix(mobile): keep dropdown open after language/theme change
+- **repo:** fix(mobile): fix auth modal dropdown closing on click
+- **repo:** fix(mobile): use SVGs from main assets folder for membership logos
+- **repo:** fix(mobile): update membership logos to use realistic SVGs and SVG folder logos
+
+### Bug Fixes
+
+- **api,auth,repo:** apply-migrations, runtimeSignIn, 20260422_0012_create_referrals_table, 20260422_0013_auth_users_source_of_truth ([7521e35](https://github.com/alternun-development/alternun/commit/7521e35fba5a3dfff65c9e635a309aae9b80cfa3))
+- **mobile:** add missing Pressable import in AuthSignInScreen ([fe6f59e](https://github.com/alternun-development/alternun/commit/fe6f59e43478fa79e0d511bcd24adb054bb7b091))
+- **mobile:** fix auth modal dropdown closing on click ([3ff3c66](https://github.com/alternun-development/alternun/commit/3ff3c66a34be12f7734edf0c416499ddbca46403))
+- **mobile:** fix settings dropdown menu not responding to clicks ([f3184ad](https://github.com/alternun-development/alternun/commit/f3184adf4204642d1032ec412f82ff2efd125840))
+- **mobile:** fix settings dropdown not changing language/theme on click ([cacb2e3](https://github.com/alternun-development/alternun/commit/cacb2e32af7ee65de8c50da4e929d877996e502f))
+- **mobile:** keep dropdown open after language/theme change ([43c9210](https://github.com/alternun-development/alternun/commit/43c9210245d51bd0573836b127b95d063506e53a))
+- **mobile:** revert membership logos to use PNG assets instead of SVGs ([e3be2f2](https://github.com/alternun-development/alternun/commit/e3be2f20a3914b3c985e9e0dc4b6bd92a8905ce7))
+- **mobile:** update membership logos to use realistic SVGs and SVG folder logos ([fdc51a2](https://github.com/alternun-development/alternun/commit/fdc51a25b9cb37a02eeae156e01386d445aff883))
+- **mobile:** use SVGs from main assets folder for membership logos ([c889787](https://github.com/alternun-development/alternun/commit/c889787f11da33fb1ab6f63c85b64d3afef1162f))
+
+### Features
+
+- **mobile:** add dynamic message bar with interactive pause/resume ([c761851](https://github.com/alternun-development/alternun/commit/c761851bb7f76c2be4ba5cbb1519b21c08f6ca1c)), closes [#333480](https://github.com/alternun-development/alternun/issues/333480)
+- **mobile:** increase logo and navigation bar size on desktop view ([9557cbc](https://github.com/alternun-development/alternun/commit/9557cbcd1cfd215073a2bce4273f508c8233030f))
+- **mobile:** migrate logo assets from PNG to SVG format ([700fa8f](https://github.com/alternun-development/alternun/commit/700fa8f8e9bed83fdbbbd9abf93b2f0ec27b6e4c))
+
 ## [1.0.216](https://github.com/alternun-development/alternun/compare/v1.0.216-dev.0...v1.0.216) (2026-04-23)
 
 ### Bug Fixes

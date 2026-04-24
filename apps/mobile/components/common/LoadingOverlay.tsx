@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useAppPalette } from '../theme/useAppPalette';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 export interface LoadingOverlayProps {
   /**
@@ -82,6 +83,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   message: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#e8e8ff',
     fontSize: 18,
     fontWeight: '700',
@@ -89,6 +91,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   subtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.6)',
     fontSize: 14,
     textAlign: 'center',
