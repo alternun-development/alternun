@@ -185,6 +185,11 @@
         "community": "เข้าร่วมชุมชนของเรา: เชื่อมต่อกับผู้บุกเบิก Blockchain",
         "impact": "สร้างผลกระทบ: เปลี่ยนการกระทำของคุณเป็นมูลค่าจริง"
       },
+      "messageCta": {
+        "joinHere": "เข้าร่วมที่นี่",
+        "infoHere": "ข้อมูลที่นี่",
+        "learnMore": "ดูเพิ่มเติม"
+      },
       "hero": {
         "presentedBy": "Alternun นำเสนอ",
         "scrollToInteract": "เลื่อนเพื่อโต้ตอบ"
