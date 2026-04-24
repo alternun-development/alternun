@@ -1,3 +1,13 @@
+## [1.0.217](https://github.com/alternun-development/alternun/compare/v1.0.217-dev.0...v1.0.217) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(auth,mobile): stabilize oauth and airs ui
+
+### Bug Fixes
+
+- **auth,mobile:** stabilize oauth and airs ui ([b04ac5a](https://github.com/alternun-development/alternun/commit/b04ac5a108882f6ebc60ea80342cccb28ce7f4ac))
+
 ## [1.0.217](https://github.com/alternun-development/alternun/compare/v1.0.216...v1.0.217) (2026-04-24)
 
 ### Bug Fixes
