@@ -17,6 +17,11 @@ export default function ReleaseUpdateBanner(): React.JSX.Element | null {
     return null;
   }
 
+  const handleReload = () => {
+    state.dismiss();
+    state.reload();
+  };
+
   return (
     <ThemeProvider mode={themeMode}>
       <ReleaseUpdateToast
@@ -50,7 +55,7 @@ export default function ReleaseUpdateBanner(): React.JSX.Element | null {
         reloadLabel={t('releaseUpdate.reload', undefined, 'Reload')}
         bottomOffset={72}
         onLater={state.dismiss}
-        onReload={state.reload}
+        onReload={handleReload}
       />
     </ThemeProvider>
   );
