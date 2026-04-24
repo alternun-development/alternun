@@ -37,6 +37,7 @@ type ExecutionProviderCompat = AuthExecutionProvider & {
   requestPasswordResetEmail?: (email: string, redirectTo?: string) => Promise<void>;
   resetPassword?: (newPassword: string, token?: string) => Promise<void>;
   signInWithGoogle?: (redirectTo?: string) => Promise<void>;
+  signInWithDiscord?: (redirectTo?: string) => Promise<void>;
   getSessionToken?: () => Promise<string | null>;
   setOidcUser?: (user: User | null) => void;
   supabase?: unknown;
@@ -68,6 +69,8 @@ type SupabaseCompatClientLike = {
 };
 
 export interface AlternunAuthFacadeCompat extends AuthClient {
+  signInWithGoogle(redirectTo?: string): Promise<void>;
+  signInWithDiscord(redirectTo?: string): Promise<void>;
   signUpWithEmail(email: string, password: string, locale?: string): Promise<AuthExecutionResult>;
   resendEmailConfirmation(email: string): Promise<void>;
   verifyEmailConfirmationCode(email: string, code: string): Promise<void>;
@@ -416,6 +419,20 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
 
     await this.signIn({
       provider: 'google',
+      flow: this.runtime === 'web' ? 'redirect' : 'native',
+      redirectUri: redirectTo,
+    });
+  }
+
+  async signInWithDiscord(redirectTo?: string): Promise<void> {
+    const provider = this.executionProvider;
+    if (typeof provider.signInWithDiscord === 'function') {
+      await provider.signInWithDiscord(redirectTo);
+      return;
+    }
+
+    await this.signIn({
+      provider: 'discord',
       flow: this.runtime === 'web' ? 'redirect' : 'native',
       redirectUri: redirectTo,
     });

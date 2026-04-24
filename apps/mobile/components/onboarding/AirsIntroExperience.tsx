@@ -50,10 +50,8 @@ const TOP_PAUSE_SCROLL_Y = 6;
 const HERO_VIDEO_MOBILE = require('../../assets/videos/landing.mp4');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const HERO_VIDEO_DESKTOP = require('../../assets/videos/landing-backup.mp4');
-const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png');
-const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png');
-const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png');
-const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png');
+const AIRS_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg');
+const AIRS_LOGO_LIGHT = require('../../assets/SVGs/AIRS-logo-light.svg');
 
 type HeroGlassButtonProps = {
   label: string;
@@ -447,13 +445,7 @@ const AirsIntroExperience = forwardRef<
           mutedButtonBorder: 'rgba(15,23,42,0.16)',
         };
 
-    const heroWordmarkSource = isDesktopView
-      ? isDark
-        ? AIRS_LOGO_LIGHT_2X
-        : AIRS_LOGO_DARK_2X
-      : isDark
-      ? AIRS_LOGO_LIGHT
-      : AIRS_LOGO_DARK;
+    const heroWordmarkSource = isDark ? AIRS_LOGO_LIGHT : AIRS_LOGO_DARK;
     const heroCopyTop = isMobile
       ? Math.min(heroHeight * 0.29, 240)
       : Math.min(heroHeight * 0.34, 330);

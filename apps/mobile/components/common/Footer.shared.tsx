@@ -37,13 +37,9 @@ type ExpoImageSource = React.ComponentProps<typeof ExpoImage>['source'];
 
 // Metro asset loading still relies on require() for local image modules here.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png') as ExpoImageSource;
+export const AIRS_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg') as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png') as ExpoImageSource;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as ExpoImageSource;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as ExpoImageSource;
+export const AIRS_LOGO_LIGHT = require('../../assets/SVGs/AIRS-logo-light.svg') as ExpoImageSource;
 // Keep footer version aligned with the branch-specific version manifest used by releases.
 const DEVELOPMENT_VERSION_MANIFEST = developmentVersionManifest as VersionManifest;
 const PRODUCTION_VERSION_MANIFEST = productionVersionManifest as VersionManifest;

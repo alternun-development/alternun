@@ -37,7 +37,7 @@ Contains deployment-agnostic values and fallback URLs:
 ```bash
 EXPO_PUBLIC_SUPABASE_URL=https://aznfyazjndfniwsocdka.supabase.co
 EXPO_PUBLIC_SUPABASE_KEY=...
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 # Localhost fallback for local development
 EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
 ...
@@ -49,10 +49,10 @@ Located: `apps/mobile/.env` (tracked in repo)
 
 Shared defaults for local development:
 
-- Supabase-backed auth for local signup/sign-in
+- Better Auth-backed social login for Google and Discord
+- Supabase-backed email/password fallback for local signup/sign-in
 - Auth exchange URLs for local identity handoff
-- Supabase fallback URLs and shared web3 settings
-- Auth execution provider preference for local web dev
+- Shared web3 settings
 
 Used when developing locally without setting `STACK` variable.
 
@@ -65,7 +65,7 @@ Located: `apps/mobile/.env.development` (generated from the canonical env manife
 Contains testnet-specific overrides:
 
 ```bash
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange
 EXPO_PUBLIC_AUTHENTIK_ISSUER=https://testnet.sso.alternun.co/...
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
@@ -75,7 +75,7 @@ EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=60000  # 60 seconds for testnet
 
 **Key values:**
 
-- **Auth provider:** supabase (traditional `auth.users` signup flow)
+- **Auth provider:** better-auth for social login, with Supabase fallback for email/password flows
 - **API endpoint:** `https://testnet.api.alternun.co`
 - **Authentik:** testnet SSO at `testnet.sso.alternun.co`
 - **Discord:** visible through Authentik social login
@@ -90,7 +90,7 @@ Located: `apps/mobile/.env.production` (locally created, gitignored)
 Contains production-specific overrides:
 
 ```bash
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 EXPO_PUBLIC_BETTER_AUTH_URL=https://api.alternun.co/auth
 AUTH_EXCHANGE_URL=https://api.alternun.co/auth/exchange
 EXPO_PUBLIC_AUTHENTIK_ISSUER=https://sso.alternun.co/...
@@ -101,7 +101,7 @@ EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=300000  # 300 seconds (5 min)
 
 **Key differences from testnet:**
 
-- **Auth provider:** supabase (external auth service)
+- **Auth provider:** better-auth for social login, with Supabase fallback for email/password flows
 - **API endpoint:** `https://api.alternun.co` (production)
 - **Authentik:** production SSO at `sso.alternun.co`
 - **Discord:** visible through Authentik social login
@@ -126,7 +126,7 @@ Example:
 EXPO_PUBLIC_API_URL=http://localhost:3000
 
 # Test production auth flow locally
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 ```
 
 ## Environment Variable Precedence (Highest to Lowest)
@@ -297,7 +297,7 @@ STACK=production pnpm run infra:deploy:production
 ```bash
 # Create .env.local for personal testing
 EXPO_PUBLIC_API_URL=http://my-custom-backend:3000
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 ```
 
 **Result:**
@@ -396,8 +396,8 @@ STACK=dev pnpm run build:web
 
 **Fix:**
 
-1. Check `.env.development` has `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase`
-2. Check `.env.production` has `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase`
+1. Check `.env.development` has `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth`
+2. Check `.env.production` has `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth`
 3. Check `.env.development` has `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` if you expect Discord on testnet
 4. Redeploy after fixing
 

@@ -36,9 +36,7 @@ import {
 import ParticleBubbles from '../dashboard/ParticleBubbles';
 import {
   AIRS_LOGO_DARK,
-  AIRS_LOGO_DARK_2X,
   AIRS_LOGO_LIGHT,
-  AIRS_LOGO_LIGHT_2X,
   FooterCopyright,
   FooterTextLink,
   FooterTopFade,
@@ -84,13 +82,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
 
   const isMobile = width < 720;
   const isWide = width >= 1120;
-  const wordmarkSource = isWide
-    ? isDark
-      ? AIRS_LOGO_LIGHT_2X
-      : AIRS_LOGO_DARK_2X
-    : isDark
-    ? AIRS_LOGO_LIGHT
-    : AIRS_LOGO_DARK;
+  const wordmarkSource = isDark ? AIRS_LOGO_LIGHT : AIRS_LOGO_DARK;
   const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
 
   // Floating orb animations
