@@ -1,5 +1,13 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import {
+  Animated,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Modal,
+} from 'react-native';
 import {
   Bell,
   ArrowLeft,
@@ -54,18 +62,6 @@ export default function NotificationsScreen(): React.JSX.Element {
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
-
-  // Guard: redirect if not authenticated
-  useEffect(() => {
-    if (!user) {
-      router.replace('/');
-    }
-  }, [user, router]);
-
-  // If not authenticated, show nothing (redirect in progress)
-  if (!user) {
-    return <View style={{ flex: 1 }} />;
-  }
 
   React.useEffect(() => {
     Animated.parallel([
@@ -136,6 +132,60 @@ export default function NotificationsScreen(): React.JSX.Element {
     { key: 'inbox', label: 'Inbox', icon: InboxIcon },
     { key: 'archived', label: 'Archived', icon: ArchiveIcon },
   ];
+
+  if (!user) {
+    return (
+      <Modal visible transparent animationType='fade'>
+        <View
+          style={[
+            styles.modalOverlay,
+            { backgroundColor: isDark ? 'rgba(5,5,22,0.85)' : 'rgba(0,0,0,0.5)' },
+          ]}
+        >
+          <View style={[styles.modalContent, { backgroundColor: isDark ? '#0a0a1a' : '#ffffff' }]}>
+            <View style={styles.modalIconContainer}>
+              <Bell size={48} color={isDark ? '#1ee6b5' : '#0d9488'} />
+            </View>
+            <Text style={[styles.modalTitle, { color: isDark ? '#e8fff6' : '#0f172a' }]}>
+              Sign In to View Notifications
+            </Text>
+            <Text
+              style={[
+                styles.modalSubtitle,
+                { color: isDark ? 'rgba(232,255,246,0.6)' : '#475569' },
+              ]}
+            >
+              You need to sign in to access your notifications and stay updated.
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalBtn, { backgroundColor: isDark ? '#1EE6B5' : '#0d9488' }]}
+                onPress={() => router.push('/signin')}
+              >
+                <Text style={[styles.modalBtnText, { color: isDark ? '#0a0a1a' : '#ffffff' }]}>
+                  Sign In
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.modalBtn,
+                  styles.modalBtnSecondary,
+                  { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.08)' },
+                ]}
+                onPress={() => router.back()}
+              >
+                <Text
+                  style={[styles.modalBtnTextSecondary, { color: isDark ? '#e8fff6' : '#0f172a' }]}
+                >
+                  Go Back
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
 
   return (
     <ScreenShell activeSection='notifications' backgroundColor={c.bg}>
@@ -476,5 +526,59 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    marginHorizontal: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  modalIconContainer: {
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  modalButtons: {
+    width: '100%',
+    gap: 10,
+  },
+  modalBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalBtnSecondary: {
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  modalBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalBtnTextSecondary: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

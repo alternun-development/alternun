@@ -34,7 +34,7 @@ import {
 } from './AppInfoFooter.links';
 import {
   AIRS_LOGO_DARK,
-  AIRS_LOGO_WHITE,
+  AIRS_LOGO_LIGHT,
   FooterCopyright,
   FooterTextLink,
   SocialPill,
@@ -82,7 +82,7 @@ export default function LandingFooter(): React.JSX.Element {
   const isMobile = width < 720;
   const isWide = width >= 1120;
   const useCompactFooter = !isWide;
-  const wordmarkSource = isDark ? AIRS_LOGO_DARK : AIRS_LOGO_WHITE;
+  const wordmarkSource = isDark ? AIRS_LOGO_DARK : AIRS_LOGO_LIGHT;
   const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
 
   // Floating orb animations
