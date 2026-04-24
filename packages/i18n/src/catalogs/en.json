@@ -185,6 +185,11 @@
         "community": "Join Our Community: Connect With Blockchain Enthusiasts",
         "impact": "Make an Impact: Turn Your Actions Into Real Value"
       },
+      "messageCta": {
+        "joinHere": "Join here",
+        "infoHere": "Info here",
+        "learnMore": "Learn more"
+      },
       "hero": {
         "presentedBy": "Alternun Presents",
         "scrollToInteract": "Scroll to interact"

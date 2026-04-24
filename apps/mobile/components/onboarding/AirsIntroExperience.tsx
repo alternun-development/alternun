@@ -339,6 +339,7 @@ const AirsIntroExperience = forwardRef<
     const heroHeight = Math.max(screenHeight * 1.05, 740);
     const isDesktopView = screenWidth >= 720;
     const isCompactDesktop = isDesktopView && screenWidth < 1280;
+    const heroSideInset = isMobile ? 24 : isCompactDesktop ? 56 : 48;
     const heroWordmarkHeight = isDesktopView
       ? Math.min(
           Math.max(screenWidth * 0.035, isCompactDesktop ? 56 : 72),
@@ -364,7 +365,7 @@ const AirsIntroExperience = forwardRef<
     const headerNavCtaPaddingHorizontal = isCompactDesktop ? 18 : 20;
     const headerNavCtaPaddingVertical = isCompactDesktop ? 8 : 9;
     const headerNavCtaFontSize = isCompactDesktop ? 13 : 14;
-    const headerNavWrapperPaddingHorizontal = Math.max(screenWidth * 0.04, 48);
+    const desktopHeaderNavLeft = heroSideInset + heroWordmarkWidth + 28;
 
     useEffect(() => {
       if (!showCta || isMobile || isCompactDesktop) {
@@ -553,7 +554,7 @@ const AirsIntroExperience = forwardRef<
           />
         ) : null}
 
-        <View pointerEvents='none' style={styles.floatingLeftTop}>
+        <View pointerEvents='none' style={[styles.floatingLeftTop, { left: heroSideInset }]}>
           <View style={styles.heroBrandRow}>
             <View style={styles.heroBrandTextBlock}>
               <ExpoImage
@@ -573,9 +574,10 @@ const AirsIntroExperience = forwardRef<
             <>
               {isMobile || isCompactDesktop ? (
                 <View
-                  style={
-                    isMobile ? styles.headerNavMobileContainer : styles.headerNavDesktopWrapper
-                  }
+                  style={[
+                    isMobile ? styles.headerNavMobileContainer : styles.headerNavDesktopWrapper,
+                    { right: heroSideInset },
+                  ]}
                   pointerEvents='box-none'
                 >
                   <TouchableOpacity
@@ -713,7 +715,11 @@ const AirsIntroExperience = forwardRef<
                 <View
                   style={[
                     styles.headerNavDesktopWrapper,
-                    { paddingHorizontal: headerNavWrapperPaddingHorizontal },
+                    {
+                      left: desktopHeaderNavLeft,
+                      right: heroSideInset,
+                      alignItems: 'flex-end',
+                    },
                   ]}
                   pointerEvents='box-none'
                 >
@@ -891,7 +897,7 @@ const AirsIntroExperience = forwardRef<
             </>
           ) : (
             /* Logged-in: clean nav links with underline + avatar */
-            <View style={styles.headerNavLoggedInContainer}>
+            <View style={[styles.headerNavLoggedInContainer, { right: heroSideInset }]}>
               <View style={styles.headerNavLinksRow}>
                 {headerNavLinks.map((link) => (
                   <TouchableOpacity
@@ -950,7 +956,13 @@ const AirsIntroExperience = forwardRef<
 
         {/* Profile dropdown menu (logged-in state) */}
         {!showCta && profileMenuVisible && (
-          <Animated.View style={[styles.headerDropdownContainer, headerNavDropdownAnimatedStyle]}>
+          <Animated.View
+            style={[
+              styles.headerDropdownContainer,
+              { right: heroSideInset },
+              headerNavDropdownAnimatedStyle,
+            ]}
+          >
             <View
               style={[
                 styles.floatingMenu,
@@ -1008,7 +1020,7 @@ const AirsIntroExperience = forwardRef<
         )}
 
         {!showCta && (
-          <View style={styles.floatingRightTop}>
+          <View style={[styles.floatingRightTop, { right: heroSideInset }]}>
             <TouchableOpacity
               style={[
                 styles.floatingProfileTrigger,
@@ -1229,14 +1241,12 @@ const styles = createTypographyStyles({
   floatingLeftTop: {
     position: 'absolute',
     top: 28,
-    left: 48,
     zIndex: 81,
     maxWidth: '72%',
   },
   floatingRightTop: {
     position: 'absolute',
     top: 18,
-    right: 24,
     zIndex: 80,
     alignItems: 'flex-end',
   },
@@ -1481,7 +1491,6 @@ const styles = createTypographyStyles({
   headerNavMobileContainer: {
     position: 'absolute',
     top: 18,
-    right: 18,
     zIndex: 50,
   },
   headerNavMobileAvatarTrigger: {
@@ -1563,7 +1572,6 @@ const styles = createTypographyStyles({
   headerNavDesktopWrapper: {
     position: 'absolute',
     top: 28,
-    right: 0,
     zIndex: 50,
     alignItems: 'center',
   },
@@ -1721,7 +1729,6 @@ const styles = createTypographyStyles({
   headerNavLoggedInContainer: {
     position: 'absolute',
     top: 24,
-    right: 24,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 18,
@@ -1772,7 +1779,6 @@ const styles = createTypographyStyles({
   headerDropdownContainer: {
     position: 'absolute',
     top: 50,
-    right: 24,
     zIndex: 55,
     minWidth: 200,
   },

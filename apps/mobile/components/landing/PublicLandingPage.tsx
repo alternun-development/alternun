@@ -65,7 +65,7 @@ import {
 } from './membershipMarquee';
 import { getBenefitCardDefaultDetailsExpanded } from './benefitCard';
 import { getTokenCardDefaultExpanded } from './tokenCard';
-import DynamicMessageBar from './DynamicMessageBar';
+import DynamicMessageBar, { type DynamicMessageContent } from './DynamicMessageBar';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
@@ -307,24 +307,6 @@ function PublicLandingPageWrapper({
   const airsIntroRef = useRef<AirsIntroExperienceHandle | null>(null);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
-  const messages = [
-    t(
-      'landing.message.regenerative',
-      'Únete a Airs By Alternun: Capitalismo regenerativo en acción'
-    ),
-    t('landing.message.welcome', 'Welcome to AIRS: Your Gateway to Digital Opportunities'),
-    t('landing.message.earn', 'Earn AIRS Tokens: Participate and Grow Your Rewards'),
-    t('landing.message.community', 'Join Our Community: Connect With Blockchain Enthusiasts'),
-    t('landing.message.impact', 'Make an Impact: Turn Your Actions Into Real Value'),
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
-    }, 16600);
-    return () => clearInterval(interval);
-  }, [messages.length]);
-
   const handleContinueToDashboard = useCallback(
     (_: boolean): void => {
       onSignIn();
@@ -348,6 +330,58 @@ function PublicLandingPageWrapper({
     [setActiveSection, sectionOffsetsRef]
   );
 
+  const joinHereLabel = t('landing.messageCta.joinHere', 'Join here');
+  const infoHereLabel = t('landing.messageCta.infoHere', 'Info here');
+  const learnMoreLabel = t('landing.messageCta.learnMore', 'Learn more');
+  const messages = useMemo<DynamicMessageContent[]>(
+    () => [
+      {
+        text: t(
+          'landing.message.regenerative',
+          'Únete a Airs By Alternun: Capitalismo regenerativo en acción'
+        ),
+      },
+      {
+        text: t(
+          'landing.message.welcome',
+          'Welcome to AIRS: Your Gateway to Digital Opportunities'
+        ),
+      },
+      {
+        text: t('landing.message.earn', 'Earn AIRS Tokens: Participate and Grow Your Rewards'),
+        link: {
+          label: infoHereLabel,
+          onPress: () => handleNavPress('beneficios'),
+        },
+      },
+      {
+        text: t(
+          'landing.message.community',
+          'Join Our Community: Connect With Blockchain Enthusiasts'
+        ),
+        link: {
+          label: joinHereLabel,
+          onPress: onSignIn,
+        },
+      },
+      {
+        text: t('landing.message.impact', 'Make an Impact: Turn Your Actions Into Real Value'),
+        link: {
+          label: learnMoreLabel,
+          onPress: () => handleNavPress('como-funciona'),
+        },
+      },
+    ],
+    [handleNavPress, infoHereLabel, joinHereLabel, learnMoreLabel, onSignIn, t]
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
+    }, 16600);
+    return () => clearInterval(interval);
+  }, [messages.length]);
+
   // Callback for scroll-based section tracking
   const handleActiveSectionChange = useCallback(
     (sectionId: string) => {
@@ -368,9 +402,10 @@ function PublicLandingPageWrapper({
     <View style={styles.publicLandingContainer}>
       <DynamicMessageBar
         message={messages[currentMessageIndex]}
-        bgColor='#333480'
+        bgColor={isDark ? '#000000' : '#333480'}
         textColor='#ffffff'
-        duration={15600}
+        duration={24000}
+        isDark={isDark}
       />
       <AirsIntroExperience
         ref={airsIntroRef}
