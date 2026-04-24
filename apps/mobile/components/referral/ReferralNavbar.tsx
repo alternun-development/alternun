@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAppTranslation } from '../i18n/useAppTranslation';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 interface ReferralNavbarProps {
   user?: { id: string; email?: string } | null;
@@ -256,6 +257,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.12)',
   },
   iconButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 20,
   },
   languageMenuContainer: {
@@ -281,6 +283,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(28, 203, 161, 0.3)',
   },
   avatarText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#041710',
     fontSize: 16,
     fontWeight: '700',
@@ -321,6 +324,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(28, 203, 161, 0.1)',
   },
   menuItemText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -351,6 +355,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.2)',
   },
   signInText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#f8fafc',
     fontSize: 14,
     fontWeight: '600',
@@ -368,6 +373,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1ccba1',
   },
   signUpText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#041710',
     fontSize: 14,
     fontWeight: '700',

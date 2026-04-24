@@ -50,6 +50,8 @@ import {
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { createTypographyStyles } from '../theme/typography';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { useAppPalette } from '../theme/useAppPalette';
 import AirsIntroExperience from '../onboarding/AirsIntroExperience';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { getStepTimelineProgressRange, getStepTimelineTrackMetrics } from './stepTimeline';
@@ -1296,6 +1298,7 @@ function MembresiaSection({
   isMobile: _isMobile,
 }: SectionProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
+  const palette = useAppPalette();
   const { width: windowWidth } = useWindowDimensions();
   const [trackWidth, setTrackWidth] = useState(0);
 
@@ -1375,8 +1378,8 @@ function MembresiaSection({
     transform: [{ translateX: scrollRight.value }],
   }));
 
-  const bgColor = isDark ? '#0a0a14' : '#f0f4f9';
-  const descriptionColor = isDark ? 'rgba(232,232,255,0.75)' : '#475569';
+  const bgColor = '#333782';
+  const descriptionColor = 'rgba(232,232,255,0.85)';
 
   return (
     <Animated.View
@@ -1387,12 +1390,14 @@ function MembresiaSection({
     >
       {/* Header */}
       <View style={styles.membresiaSectionHeader}>
-        <Text style={[styles.sectionTitle, { color: textColor }]}>
+        <Text style={[styles.sectionTitle, { color: isDark ? textColor : palette.accentBold }]}>
           {t('landing.membresia.sectionTitle')}
         </Text>
         <Text style={[styles.membresiaDescription, { color: descriptionColor }]}>
           <Text>{t('landing.membresia.descriptionPart1')} </Text>
-          <Text style={{ fontWeight: '700', color: textColor }}>
+          <Text
+            style={{ fontWeight: '700', color: isDark ? palette.accentBold : palette.textPrimary }}
+          >
             {t('landing.membresia.descriptionPart2Bold')}
           </Text>
           <Text>{` ${t('landing.membresia.descriptionPart3')} `}</Text>
@@ -1893,6 +1898,7 @@ const infoModalStyles = StyleSheet.create({
     lineHeight: 26,
   },
   body: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     lineHeight: 22,
   },
@@ -1905,6 +1911,7 @@ const infoModalStyles = StyleSheet.create({
     borderRadius: 12,
   },
   availableText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -1914,6 +1921,7 @@ const infoModalStyles = StyleSheet.create({
     alignItems: 'center',
   },
   redeemButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 15,
     fontWeight: '700',
   },
@@ -2115,6 +2123,7 @@ const styles = createTypographyStyles({
     flex: 1,
   },
   navItem: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '500',
     letterSpacing: 0.1,
@@ -2130,6 +2139,7 @@ const styles = createTypographyStyles({
     alignItems: 'center',
   },
   avatarText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.4,
@@ -2268,6 +2278,7 @@ const styles = createTypographyStyles({
     paddingHorizontal: 12,
   },
   projectCardBodyText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 16,
     fontWeight: '400',
     lineHeight: 26,
@@ -2288,6 +2299,7 @@ const styles = createTypographyStyles({
     gap: 12,
   },
   comoFuncionaSubtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 15,
     fontWeight: '400',
     textAlign: 'center',
@@ -2306,6 +2318,7 @@ const styles = createTypographyStyles({
     gap: 16,
   },
   membresiaDescription: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '400',
     textAlign: 'center',
@@ -2344,7 +2357,7 @@ const styles = createTypographyStyles({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    marginBottom: -16,
+    marginBottom: 0,
     height: 36,
   },
   stepConnectorLine: {
@@ -2399,10 +2412,11 @@ const styles = createTypographyStyles({
   },
   stepsContainer: {
     flexDirection: 'row',
-    gap: 14,
+    gap: 20,
     flexWrap: 'wrap',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'stretch',
+    rowGap: 24,
   },
   stepsContainerMobile: {
     flexDirection: 'column',
@@ -2413,10 +2427,11 @@ const styles = createTypographyStyles({
     maxWidth: 280,
   },
   stepCard: {
-    padding: 20,
+    padding: 24,
+    paddingBottom: 28,
     borderRadius: 22,
     borderWidth: 1.5,
-    gap: 10,
+    gap: 12,
     alignItems: 'flex-start',
     overflow: 'hidden',
   },
@@ -2451,6 +2466,7 @@ const styles = createTypographyStyles({
     fontFamily: 'Sculpin-Bold',
   },
   stepDescription: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '400',
     lineHeight: 20,
@@ -2502,6 +2518,7 @@ const styles = createTypographyStyles({
 
   // ── PlaceCard (Beneficios) ────────────────────────────────────────────────────
   beneficiosSubtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '400',
     textAlign: 'center',
@@ -2641,10 +2658,12 @@ const styles = createTypographyStyles({
     fontWeight: '600',
   },
   placeCardMeta: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '400',
   },
   placeCardDescription: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '400',
     lineHeight: 18,
@@ -2661,10 +2680,12 @@ const styles = createTypographyStyles({
     gap: 6,
   },
   placeCardPrice: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 15,
     fontWeight: '700',
   },
   placeCardPriceSub: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '400',
   },
@@ -2677,6 +2698,7 @@ const styles = createTypographyStyles({
     borderRadius: 20,
   },
   placeCardButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '600',
   },

@@ -18,6 +18,7 @@ import {
   type LucideProps,
 } from 'lucide-react-native';
 import { useTheme } from '@alternun/ui';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 const SearchIcon = Search as React.FC<LucideProps>;
 const FilterIcon = SlidersHorizontal as React.FC<LucideProps>;
@@ -277,6 +278,7 @@ const styles = StyleSheet.create({
     minHeight: 38,
   },
   filterLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '700',
     flexShrink: 1,
@@ -291,6 +293,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   dropdownLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 10.5,
     fontWeight: '700',
     letterSpacing: 0.5,
@@ -321,6 +324,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   optionText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '600',
   },

@@ -44,6 +44,7 @@ import { getLocaleLabel } from '@alternun/i18n';
 import { ToastSystem, type ToastItem } from '@alternun/ui';
 import { useRouter } from 'expo-router';
 import { createTypographyStyles } from '../theme/typography';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppPalette } from '../theme/useAppPalette';
 import ShaderBackground from './ShaderBackground';
 import WalletConnectModal from '../dashboard/WalletConnectModal';
@@ -2050,12 +2051,14 @@ const styles = createTypographyStyles({
     zIndex: 9998,
   },
   settingsDropdownLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
     color: 'rgba(232,232,255,0.8)',
     fontSize: 12,
     fontWeight: '600',
   },
   settingsDropdownValue: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#1ccba1',
     fontSize: 12,
     fontWeight: '700',
@@ -2091,6 +2094,7 @@ const styles = createTypographyStyles({
     height: 48,
   },
   subtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.55)',
     fontSize: 13,
   },
@@ -2128,6 +2132,7 @@ const styles = createTypographyStyles({
     backgroundColor: '#1EE6B5',
   },
   modeButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.6)',
     fontSize: 14,
     fontWeight: '700',
@@ -2140,6 +2145,7 @@ const styles = createTypographyStyles({
     gap: 6,
   },
   inputLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 0.5,
@@ -2179,6 +2185,7 @@ const styles = createTypographyStyles({
     letterSpacing: 0.3,
   },
   requiredFieldText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     marginTop: 2,
     marginLeft: 4,
     color: '#fca5a5',
@@ -2208,6 +2215,7 @@ const styles = createTypographyStyles({
     marginTop: 4,
   },
   primaryButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#050510',
     fontSize: 15,
     fontWeight: '800',
@@ -2226,6 +2234,7 @@ const styles = createTypographyStyles({
     paddingHorizontal: 24,
   },
   secondaryButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#e8e8ff',
     fontSize: 15,
     fontWeight: '700',
@@ -2239,6 +2248,7 @@ const styles = createTypographyStyles({
     paddingHorizontal: 18,
   },
   confirmationSecondaryButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#cfd1ea',
     fontSize: 13,
     fontWeight: '700',
@@ -2274,6 +2284,7 @@ const styles = createTypographyStyles({
     fontFamily: 'Sculpin-Bold',
   },
   confirmationSubtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.7)',
     fontSize: 12,
   },
@@ -2300,6 +2311,7 @@ const styles = createTypographyStyles({
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
   dividerText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.45)',
     fontSize: 12,
     fontWeight: '600',
@@ -2313,6 +2325,7 @@ const styles = createTypographyStyles({
     paddingVertical: 8,
   },
   noticeText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#66e6c5',
     fontSize: 12,
     lineHeight: 18,
@@ -2329,6 +2342,7 @@ const styles = createTypographyStyles({
     paddingVertical: 12,
   },
   errorText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#ff6b6b',
     fontSize: 13,
     fontWeight: '500',
@@ -2346,6 +2360,7 @@ const styles = createTypographyStyles({
     paddingVertical: 8,
   },
   infoText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#60a5fa',
     fontSize: 12,
     flex: 1,
@@ -2360,6 +2375,7 @@ const styles = createTypographyStyles({
     gap: 8,
   },
   resendText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.78)',
     fontSize: 12,
     lineHeight: 17,
@@ -2381,6 +2397,7 @@ const styles = createTypographyStyles({
     paddingHorizontal: 10,
   },
   resendButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#66e6c5',
     fontSize: 12,
     fontWeight: '700',
@@ -2395,6 +2412,7 @@ const styles = createTypographyStyles({
     marginBottom: 2,
   },
   linkButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#66e6c5',
     fontSize: 12,
     fontWeight: '600',
@@ -2406,6 +2424,7 @@ const styles = createTypographyStyles({
     paddingVertical: 6,
   },
   footerToggleText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.65)',
     fontSize: 12,
     fontWeight: '600',

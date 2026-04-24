@@ -42,6 +42,20 @@ test('resolveBetterAuthBootstrapConfig keeps the local external Better Auth prox
   assert.equal(config.targetBaseUrl, 'http://127.0.0.1:8084');
 });
 
+test('resolveBetterAuthBootstrapConfig embeds Better Auth for the local API origin', () => {
+  const config = resolveBetterAuthBootstrapConfig({
+    BETTER_AUTH_URL: 'http://localhost:8082/auth',
+    AUTH_BETTER_AUTH_URL: 'http://localhost:8082/auth',
+    AUTH_EXECUTION_PROVIDER: 'better-auth',
+    GOOGLE_AUTH_CLIENT_ID: 'example-google-client',
+    GOOGLEA_AUTH_CLIENT_SECRET: 'example-google-secret',
+    AUTHENTIK_JWT_SIGNING_KEY: 'issuer-signing-key',
+  });
+
+  assert.equal(config.mode, 'embedded');
+  assert.equal(config.runtimeConfig.baseURL, 'http://localhost:8082');
+});
+
 test('shouldProxyBetterAuthPath skips Supabase email auth routes', () => {
   assert.equal(shouldProxyBetterAuthPath('/auth/sign-in/email'), false);
   assert.equal(shouldProxyBetterAuthPath('/auth/sign-up/email'), false);

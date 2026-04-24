@@ -178,6 +178,13 @@
       "actions": {
         "goToDashboard": "Go to dashboard"
       },
+      "message": {
+        "regenerative": "Join Airs By Alternun: Regenerative Capitalism in Action",
+        "welcome": "Welcome to AIRS: Your Gateway to Digital Opportunities",
+        "earn": "Earn AIRS Tokens: Participate and Grow Your Rewards",
+        "community": "Join Our Community: Connect With Blockchain Enthusiasts",
+        "impact": "Make an Impact: Turn Your Actions Into Real Value"
+      },
       "hero": {
         "presentedBy": "Alternun Presents",
         "scrollToInteract": "Scroll to interact"
