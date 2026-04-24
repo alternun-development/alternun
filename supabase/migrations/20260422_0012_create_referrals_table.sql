@@ -1,7 +1,7 @@
 -- Create referrals table to track user invitations and referral sources
 CREATE TABLE public.referrals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL,
+  user_id TEXT NOT NULL,
   referred_by_username TEXT,
   referred_by_email TEXT,
   invitation_code TEXT,
@@ -23,10 +23,10 @@ ALTER TABLE public.referrals ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their own referral data"
   ON public.referrals
   FOR SELECT
-  USING (auth.uid() = user_id);
+  USING (auth.uid()::text = user_id);
 
 -- RLS policy: users can insert their own referral data (for auth flow)
 CREATE POLICY "Users can insert their own referral data during signup"
   ON public.referrals
   FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (auth.uid()::text = user_id);

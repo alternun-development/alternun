@@ -13,6 +13,8 @@ import type {
 } from '../core/types';
 import type { CreateAuthFacadeInput } from '../core/contracts';
 export interface AlternunAuthFacadeCompat extends AuthClient {
+  signInWithGoogle(redirectTo?: string): Promise<void>;
+  signInWithDiscord(redirectTo?: string): Promise<void>;
   signUpWithEmail(email: string, password: string, locale?: string): Promise<AuthExecutionResult>;
   resendEmailConfirmation(email: string): Promise<void>;
   verifyEmailConfirmationCode(email: string, code: string): Promise<void>;
@@ -58,6 +60,7 @@ export declare class AlternunAuthFacade implements AlternunAuthFacadeCompat {
   getUser(): Promise<User | null>;
   signInWithEmail(email: string, password: string): Promise<User>;
   signInWithGoogle(redirectTo?: string): Promise<void>;
+  signInWithDiscord(redirectTo?: string): Promise<void>;
   signIn(options: SignInOptions): Promise<void>;
   signUpWithEmail(email: string, password: string, locale?: string): Promise<AuthExecutionResult>;
   resendEmailConfirmation(email: string): Promise<void>;

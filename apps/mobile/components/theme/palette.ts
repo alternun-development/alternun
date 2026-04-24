@@ -24,6 +24,7 @@ export interface AppPalette {
   accent: string;
   accentMuted: string;
   accentText: string; // text that sits ON accent bg
+  accentBold: string; // bright accent for emphasis/bold text
 
   // Status
   errorBg: string;
@@ -79,6 +80,7 @@ export const DARK_PALETTE: AppPalette = {
   accent: '#1EE6B5',
   accentMuted: 'rgba(30,230,181,0.16)',
   accentText: '#050510',
+  accentBold: '#62E2B6',
 
   errorBg: 'rgba(248,113,113,0.1)',
   errorBorder: 'rgba(248,113,113,0.35)',
@@ -128,6 +130,7 @@ export const LIGHT_PALETTE: AppPalette = {
   accent: '#0d9488',
   accentMuted: 'rgba(13,148,136,0.12)',
   accentText: '#ffffff',
+  accentBold: '#0f766e',
 
   errorBg: 'rgba(239,68,68,0.08)',
   errorBorder: 'rgba(239,68,68,0.3)',

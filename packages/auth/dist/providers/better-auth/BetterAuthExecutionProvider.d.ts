@@ -111,6 +111,8 @@ export declare class BetterAuthExecutionProvider implements AuthExecutionProvide
   requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void>;
   resetPassword(newPassword: string, token?: string): Promise<void>;
   signInWithGoogle(redirectTo?: string): Promise<void>;
+  signInWithDiscord(redirectTo?: string): Promise<void>;
+  private signInWithSocialProvider;
   capabilities(): AuthCapabilities;
   getUser(): Promise<User | null>;
   getSessionToken(): Promise<string | null>;

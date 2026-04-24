@@ -50,6 +50,8 @@ import {
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { createTypographyStyles } from '../theme/typography';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { useAppPalette } from '../theme/useAppPalette';
 import AirsIntroExperience from '../onboarding/AirsIntroExperience';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { getStepTimelineProgressRange, getStepTimelineTrackMetrics } from './stepTimeline';
@@ -63,6 +65,7 @@ import {
 } from './membershipMarquee';
 import { getBenefitCardDefaultDetailsExpanded } from './benefitCard';
 import { getTokenCardDefaultExpanded } from './tokenCard';
+import DynamicMessageBar, { type DynamicMessageContent } from './DynamicMessageBar';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
@@ -300,7 +303,10 @@ function PublicLandingPageWrapper({
   accentColor,
   isMobile: _isMobile,
 }: PublicLandingPageWrapperProps): React.JSX.Element {
+  const { t } = useAppTranslation('mobile');
   const airsIntroRef = useRef<AirsIntroExperienceHandle | null>(null);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+
   const handleContinueToDashboard = useCallback(
     (_: boolean): void => {
       onSignIn();
@@ -324,6 +330,58 @@ function PublicLandingPageWrapper({
     [setActiveSection, sectionOffsetsRef]
   );
 
+  const joinHereLabel = t('landing.messageCta.joinHere', 'Join here');
+  const infoHereLabel = t('landing.messageCta.infoHere', 'Info here');
+  const learnMoreLabel = t('landing.messageCta.learnMore', 'Learn more');
+  const messages = useMemo<DynamicMessageContent[]>(
+    () => [
+      {
+        text: t(
+          'landing.message.regenerative',
+          'Únete a Airs By Alternun: Capitalismo regenerativo en acción'
+        ),
+      },
+      {
+        text: t(
+          'landing.message.welcome',
+          'Welcome to AIRS: Your Gateway to Digital Opportunities'
+        ),
+      },
+      {
+        text: t('landing.message.earn', 'Earn AIRS Tokens: Participate and Grow Your Rewards'),
+        link: {
+          label: infoHereLabel,
+          onPress: () => handleNavPress('beneficios'),
+        },
+      },
+      {
+        text: t(
+          'landing.message.community',
+          'Join Our Community: Connect With Blockchain Enthusiasts'
+        ),
+        link: {
+          label: joinHereLabel,
+          onPress: onSignIn,
+        },
+      },
+      {
+        text: t('landing.message.impact', 'Make an Impact: Turn Your Actions Into Real Value'),
+        link: {
+          label: learnMoreLabel,
+          onPress: () => handleNavPress('como-funciona'),
+        },
+      },
+    ],
+    [handleNavPress, infoHereLabel, joinHereLabel, learnMoreLabel, onSignIn, t]
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
+    }, 16600);
+    return () => clearInterval(interval);
+  }, [messages.length]);
+
   // Callback for scroll-based section tracking
   const handleActiveSectionChange = useCallback(
     (sectionId: string) => {
@@ -342,6 +400,13 @@ function PublicLandingPageWrapper({
 
   return (
     <View style={styles.publicLandingContainer}>
+      <DynamicMessageBar
+        message={messages[currentMessageIndex]}
+        bgColor={isDark ? '#000000' : '#333480'}
+        textColor='#ffffff'
+        duration={24000}
+        isDark={isDark}
+      />
       <AirsIntroExperience
         ref={airsIntroRef}
         onContinueToDashboard={onContinueToDashboard ?? handleContinueToDashboard}
@@ -1268,6 +1333,7 @@ function MembresiaSection({
   isMobile: _isMobile,
 }: SectionProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
+  const palette = useAppPalette();
   const { width: windowWidth } = useWindowDimensions();
   const [trackWidth, setTrackWidth] = useState(0);
 
@@ -1347,8 +1413,8 @@ function MembresiaSection({
     transform: [{ translateX: scrollRight.value }],
   }));
 
-  const bgColor = isDark ? '#0a0a14' : '#f0f4f9';
-  const descriptionColor = isDark ? 'rgba(232,232,255,0.75)' : '#475569';
+  const bgColor = '#333782';
+  const descriptionColor = 'rgba(232,232,255,0.85)';
 
   return (
     <Animated.View
@@ -1359,12 +1425,14 @@ function MembresiaSection({
     >
       {/* Header */}
       <View style={styles.membresiaSectionHeader}>
-        <Text style={[styles.sectionTitle, { color: textColor }]}>
+        <Text style={[styles.sectionTitle, { color: isDark ? textColor : palette.accentBold }]}>
           {t('landing.membresia.sectionTitle')}
         </Text>
         <Text style={[styles.membresiaDescription, { color: descriptionColor }]}>
           <Text>{t('landing.membresia.descriptionPart1')} </Text>
-          <Text style={{ fontWeight: '700', color: textColor }}>
+          <Text
+            style={{ fontWeight: '700', color: isDark ? palette.accentBold : palette.textPrimary }}
+          >
             {t('landing.membresia.descriptionPart2Bold')}
           </Text>
           <Text>{` ${t('landing.membresia.descriptionPart3')} `}</Text>
@@ -1693,7 +1761,11 @@ function PlaceCard({
               onPress={onPress}
               activeOpacity={0.82}
             >
-              <Text style={[styles.placeCardButtonText, { color: isDark ? '#050510' : '#fff' }]}>
+              <Text
+                style={[styles.placeCardButtonText, { color: isDark ? '#050510' : '#fff' }]}
+                numberOfLines={1}
+                ellipsizeMode='tail'
+              >
                 {ctaLabel}
               </Text>
               <ArrowRightIcon size={14} color={isDark ? '#050510' : '#fff'} strokeWidth={2.5} />
@@ -1865,6 +1937,7 @@ const infoModalStyles = StyleSheet.create({
     lineHeight: 26,
   },
   body: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     lineHeight: 22,
   },
@@ -1877,6 +1950,7 @@ const infoModalStyles = StyleSheet.create({
     borderRadius: 12,
   },
   availableText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -1886,6 +1960,7 @@ const infoModalStyles = StyleSheet.create({
     alignItems: 'center',
   },
   redeemButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 15,
     fontWeight: '700',
   },
@@ -2087,6 +2162,7 @@ const styles = createTypographyStyles({
     flex: 1,
   },
   navItem: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '500',
     letterSpacing: 0.1,
@@ -2102,6 +2178,7 @@ const styles = createTypographyStyles({
     alignItems: 'center',
   },
   avatarText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.4,
@@ -2240,6 +2317,7 @@ const styles = createTypographyStyles({
     paddingHorizontal: 12,
   },
   projectCardBodyText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 16,
     fontWeight: '400',
     lineHeight: 26,
@@ -2260,6 +2338,7 @@ const styles = createTypographyStyles({
     gap: 12,
   },
   comoFuncionaSubtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 15,
     fontWeight: '400',
     textAlign: 'center',
@@ -2278,6 +2357,7 @@ const styles = createTypographyStyles({
     gap: 16,
   },
   membresiaDescription: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '400',
     textAlign: 'center',
@@ -2316,7 +2396,7 @@ const styles = createTypographyStyles({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    marginBottom: -16,
+    marginBottom: 0,
     height: 36,
   },
   stepConnectorLine: {
@@ -2371,10 +2451,11 @@ const styles = createTypographyStyles({
   },
   stepsContainer: {
     flexDirection: 'row',
-    gap: 14,
+    gap: 20,
     flexWrap: 'wrap',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'stretch',
+    rowGap: 24,
   },
   stepsContainerMobile: {
     flexDirection: 'column',
@@ -2385,10 +2466,11 @@ const styles = createTypographyStyles({
     maxWidth: 280,
   },
   stepCard: {
-    padding: 20,
+    padding: 24,
+    paddingBottom: 28,
     borderRadius: 22,
     borderWidth: 1.5,
-    gap: 10,
+    gap: 12,
     alignItems: 'flex-start',
     overflow: 'hidden',
   },
@@ -2423,6 +2505,7 @@ const styles = createTypographyStyles({
     fontFamily: 'Sculpin-Bold',
   },
   stepDescription: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '400',
     lineHeight: 20,
@@ -2474,6 +2557,7 @@ const styles = createTypographyStyles({
 
   // ── PlaceCard (Beneficios) ────────────────────────────────────────────────────
   beneficiosSubtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '400',
     textAlign: 'center',
@@ -2613,10 +2697,12 @@ const styles = createTypographyStyles({
     fontWeight: '600',
   },
   placeCardMeta: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '400',
   },
   placeCardDescription: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '400',
     lineHeight: 18,
@@ -2633,10 +2719,12 @@ const styles = createTypographyStyles({
     gap: 6,
   },
   placeCardPrice: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 15,
     fontWeight: '700',
   },
   placeCardPriceSub: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '400',
   },
@@ -2649,6 +2737,7 @@ const styles = createTypographyStyles({
     borderRadius: 20,
   },
   placeCardButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '600',
   },

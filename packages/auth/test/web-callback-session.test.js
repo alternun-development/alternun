@@ -92,6 +92,13 @@ test('readWebAuthCallbackPayload merges hash and query callback parameters', () 
   assert.equal(payload.hasPayload, true);
 });
 
+test('readWebAuthCallbackPayload detects Better Auth callback errors in the query string', () => {
+  const payload = readWebAuthCallbackPayload('?error=user_creation_failed', '');
+
+  assert.equal(payload.callbackError, 'user_creation_failed');
+  assert.equal(payload.hasPayload, true);
+});
+
 test('stripAuthCallbackTokensFromUrl removes callback tokens from the address bar', () => {
   const replaceCalls = [];
 

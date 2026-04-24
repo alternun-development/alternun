@@ -21,6 +21,7 @@ import {
   type LucideProps,
 } from 'lucide-react-native';
 import SearchFilterBar, { type SearchFilterOption } from '../common/SearchFilterBar';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const CartIcon = ShoppingCart as React.FC<LucideProps>;
@@ -458,6 +459,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Sculpin-Bold',
   },
   sectionSubtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     marginTop: 2,
   },
@@ -479,6 +481,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   liveText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     fontWeight: '700',
   },
@@ -527,6 +530,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   rowActionText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '500',
     flex: 1,
@@ -556,6 +560,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
   },
   pagination: {

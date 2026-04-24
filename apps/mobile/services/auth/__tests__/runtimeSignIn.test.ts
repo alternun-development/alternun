@@ -87,9 +87,11 @@ describe('runtimeSignIn', () => {
 
   it('routes discord social login through Better Auth when the execution provider is better-auth', async () => {
     const signIn = jest.fn().mockResolvedValue(undefined);
+    const signInWithDiscord = jest.fn().mockResolvedValue(undefined);
     const client = {
       signIn,
-    } satisfies Pick<AuthClient, 'signIn'>;
+      signInWithDiscord,
+    } as AuthClient & { signInWithDiscord: (redirectTo?: string) => Promise<void> };
 
     const result = await webRedirectSignIn({
       client: client as AuthClient,
@@ -105,13 +107,8 @@ describe('runtimeSignIn', () => {
     });
 
     expect(result).toBe('better-auth');
-    expect(signIn).toHaveBeenCalledWith(
-      expect.objectContaining({
-        provider: 'discord',
-        flow: 'redirect',
-        redirectUri: expect.stringContaining('/auth/callback'),
-      })
-    );
+    expect(signInWithDiscord).toHaveBeenCalledWith(expect.stringContaining('/auth/callback'));
+    expect(signIn).not.toHaveBeenCalled();
   });
 
   it('routes google web social login through Authentik on the stable supabase path', async () => {

@@ -5,7 +5,7 @@ const {
   createBetterAuthDevAuth,
 } = require('../src/modules/better-auth-dev/better-auth-dev.server.ts');
 
-test('createBetterAuthDevAuth includes oauth proxy when configured', () => {
+test('createBetterAuthDevAuth includes oauth proxy when configured', async () => {
   const originalEnv = { ...process.env };
 
   try {
@@ -45,6 +45,17 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', () => {
     assert.equal(Boolean(auth.options.socialProviders.discord), true);
     assert.equal(auth.options.socialProviders.google.redirectURI, undefined);
     assert.equal(auth.options.socialProviders.discord.redirectURI, undefined);
+
+    const hookResult = await auth.options.databaseHooks.user.create.before({
+      email: 'edward@example.com',
+      image: 'https://example.com/avatar.png',
+    });
+    assert.match(hookResult.data.id, /^[0-9a-f-]{36}$/);
+    assert.equal(hookResult.data.sub, hookResult.data.id);
+    assert.equal(hookResult.data.iss, 'better-auth');
+    assert.equal(hookResult.data.aud, 'authenticated');
+    assert.equal(hookResult.data.provider, 'better-auth');
+    assert.equal(hookResult.data.picture, 'https://example.com/avatar.png');
   } finally {
     process.env = originalEnv;
   }

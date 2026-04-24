@@ -1093,16 +1093,32 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signInWithGoogle(redirectTo?: string): Promise<void> {
-    const result = await this.signIn({
-      provider: 'google',
-      flow: 'redirect',
-      redirectUri: redirectTo,
-    });
+    const result = await this.signInWithSocialProvider('google', redirectTo);
 
     const redirectTarget = result.redirectUrl;
     if (redirectTarget && typeof window !== 'undefined') {
       window.location.assign(redirectTarget);
     }
+  }
+
+  async signInWithDiscord(redirectTo?: string): Promise<void> {
+    const result = await this.signInWithSocialProvider('discord', redirectTo);
+
+    const redirectTarget = result.redirectUrl;
+    if (redirectTarget && typeof window !== 'undefined') {
+      window.location.assign(redirectTarget);
+    }
+  }
+
+  private async signInWithSocialProvider(
+    provider: 'google' | 'discord',
+    redirectTo?: string
+  ): Promise<AuthExecutionResult> {
+    return this.signIn({
+      provider,
+      flow: 'redirect',
+      redirectUri: redirectTo,
+    });
   }
 
   capabilities(): AuthCapabilities {

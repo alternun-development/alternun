@@ -1,10 +1,11 @@
-import React, { useMemo, useState, } from 'react';
-import { View, Text, TouchableOpacity, Modal, TextInput, } from 'react-native';
-import { createTypographyStyles, } from '../theme/typography';
-import { Plus, ArrowUpFromLine, Flame, ArrowRightLeft, X, } from 'lucide-react-native';
-import { StatusPill, } from '@alternun/ui';
-import SearchFilterBar, { type SearchFilterOption, } from '../common/SearchFilterBar';
-import { ImpactToken, TokenState, } from './types';
+import React, { useMemo, useState } from 'react';
+import { View, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
+import { createTypographyStyles } from '../theme/typography';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { Plus, ArrowUpFromLine, Flame, ArrowRightLeft, X } from 'lucide-react-native';
+import { StatusPill } from '@alternun/ui';
+import SearchFilterBar, { type SearchFilterOption } from '../common/SearchFilterBar';
+import { ImpactToken, TokenState } from './types';
 
 interface TokenPortfolioProps {
   tokens: ImpactToken[];
@@ -17,10 +18,10 @@ interface TokenPortfolioProps {
 type FilterType = 'All' | TokenState;
 
 const FILTER_OPTIONS: SearchFilterOption[] = [
-  { key: 'All', label: 'Todos', },
-  { key: 'Free', label: 'Libre', },
-  { key: 'Deposited', label: 'Depositado', },
-  { key: 'Consumed', label: 'Retirado', },
+  { key: 'All', label: 'Todos' },
+  { key: 'Free', label: 'Libre' },
+  { key: 'Deposited', label: 'Depositado' },
+  { key: 'Consumed', label: 'Retirado' },
 ];
 
 export default function TokenPortfolio({
@@ -29,41 +30,41 @@ export default function TokenPortfolio({
   onDepositToPool,
   onRetireToken,
   onTransferToken,
-}: TokenPortfolioProps,) {
-  const [filter, setFilter,] = useState<FilterType>('All',);
-  const [search, setSearch,] = useState('',);
-  const [depositModal, setDepositModal,] = useState<ImpactToken | null>(null,);
-  const [retireModal, setRetireModal,] = useState<ImpactToken | null>(null,);
-  const [transferModal, setTransferModal,] = useState<ImpactToken | null>(null,);
-  const [costBasis, setCostBasis,] = useState('',);
-  const [profitShare, setProfitShare,] = useState('',);
-  const [recipientAddress, setRecipientAddress,] = useState('',);
+}: TokenPortfolioProps) {
+  const [filter, setFilter] = useState<FilterType>('All');
+  const [search, setSearch] = useState('');
+  const [depositModal, setDepositModal] = useState<ImpactToken | null>(null);
+  const [retireModal, setRetireModal] = useState<ImpactToken | null>(null);
+  const [transferModal, setTransferModal] = useState<ImpactToken | null>(null);
+  const [costBasis, setCostBasis] = useState('');
+  const [profitShare, setProfitShare] = useState('');
+  const [recipientAddress, setRecipientAddress] = useState('');
 
   const filtered = useMemo(() => {
     const normalizedQuery = search.trim().toLowerCase();
-    return tokens.filter((token,) => {
+    return tokens.filter((token) => {
       const matchesFilter = filter === 'All' || token.state === filter;
       const matchesSearch =
         !normalizedQuery ||
-        token.tokenId.toLowerCase().includes(normalizedQuery,) ||
-        token.projectName.toLowerCase().includes(normalizedQuery,);
+        token.tokenId.toLowerCase().includes(normalizedQuery) ||
+        token.projectName.toLowerCase().includes(normalizedQuery);
       return matchesFilter && matchesSearch;
-    },);
-  }, [filter, search, tokens,],);
+    });
+  }, [filter, search, tokens]);
 
   const handleDeposit = () => {
     if (!depositModal) return;
-    onDepositToPool(depositModal, parseFloat(costBasis,) || 0, parseFloat(profitShare,) || 0,);
-    setDepositModal(null,);
-    setCostBasis('',);
-    setProfitShare('',);
+    onDepositToPool(depositModal, parseFloat(costBasis) || 0, parseFloat(profitShare) || 0);
+    setDepositModal(null);
+    setCostBasis('');
+    setProfitShare('');
   };
 
   const handleTransfer = () => {
     if (!transferModal || !recipientAddress) return;
-    onTransferToken(transferModal, recipientAddress,);
-    setTransferModal(null,);
-    setRecipientAddress('',);
+    onTransferToken(transferModal, recipientAddress);
+    setTransferModal(null);
+    setRecipientAddress('');
   };
 
   return (
@@ -85,12 +86,12 @@ export default function TokenPortfolio({
         placeholder='Buscar token o proyecto...'
         filters={FILTER_OPTIONS}
         activeFilter={filter}
-        onChangeFilter={(filterKey,) => setFilter(filterKey as FilterType,)}
+        onChangeFilter={(filterKey) => setFilter(filterKey as FilterType)}
       />
 
       {/* Token Cards */}
       <View style={styles.tokenGrid}>
-        {filtered.map((token,) => (
+        {filtered.map((token) => (
           <View key={token.tokenId} style={styles.tokenCard}>
             <View style={styles.tokenHeader}>
               <Text style={styles.tokenId}>{token.tokenId}</Text>
@@ -104,7 +105,7 @@ export default function TokenPortfolio({
               <View style={styles.tokenActions}>
                 <TouchableOpacity
                   style={styles.actionBtn}
-                  onPress={() => setDepositModal(token,)}
+                  onPress={() => setDepositModal(token)}
                   activeOpacity={0.8}
                 >
                   <ArrowUpFromLine size={12} color='#1ccba1' />
@@ -112,7 +113,7 @@ export default function TokenPortfolio({
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionBtnGhost}
-                  onPress={() => setRetireModal(token,)}
+                  onPress={() => setRetireModal(token)}
                   activeOpacity={0.8}
                 >
                   <Flame size={12} color='rgba(232,232,255,0.6)' />
@@ -120,7 +121,7 @@ export default function TokenPortfolio({
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionBtnGhost}
-                  onPress={() => setTransferModal(token,)}
+                  onPress={() => setTransferModal(token)}
                   activeOpacity={0.8}
                 >
                   <ArrowRightLeft size={12} color='rgba(232,232,255,0.6)' />
@@ -139,7 +140,7 @@ export default function TokenPortfolio({
               </View>
             )}
           </View>
-        ),)}
+        ))}
       </View>
 
       {/* Deposit Modal */}
@@ -149,7 +150,7 @@ export default function TokenPortfolio({
             <View style={styles.modalHandle} />
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Deposit to Pool</Text>
-              <TouchableOpacity onPress={() => setDepositModal(null,)}>
+              <TouchableOpacity onPress={() => setDepositModal(null)}>
                 <X size={20} color='rgba(232,232,255,0.6)' />
               </TouchableOpacity>
             </View>
@@ -200,7 +201,7 @@ export default function TokenPortfolio({
           <View style={styles.modalDialog}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Retire Token</Text>
-              <TouchableOpacity onPress={() => setRetireModal(null,)}>
+              <TouchableOpacity onPress={() => setRetireModal(null)}>
                 <X size={20} color='rgba(232,232,255,0.6)' />
               </TouchableOpacity>
             </View>
@@ -211,7 +212,7 @@ export default function TokenPortfolio({
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.ghostButton}
-                onPress={() => setRetireModal(null,)}
+                onPress={() => setRetireModal(null)}
                 activeOpacity={0.8}
               >
                 <Text style={styles.ghostButtonText}>Cancel</Text>
@@ -219,8 +220,8 @@ export default function TokenPortfolio({
               <TouchableOpacity
                 style={styles.dangerButton}
                 onPress={() => {
-                  if (retireModal) onRetireToken(retireModal,);
-                  setRetireModal(null,);
+                  if (retireModal) onRetireToken(retireModal);
+                  setRetireModal(null);
                 }}
                 activeOpacity={0.8}
               >
@@ -237,7 +238,7 @@ export default function TokenPortfolio({
           <View style={styles.modalDialog}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Transfer Token</Text>
-              <TouchableOpacity onPress={() => setTransferModal(null,)}>
+              <TouchableOpacity onPress={() => setTransferModal(null)}>
                 <X size={20} color='rgba(232,232,255,0.6)' />
               </TouchableOpacity>
             </View>
@@ -255,7 +256,7 @@ export default function TokenPortfolio({
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.ghostButton}
-                onPress={() => setTransferModal(null,)}
+                onPress={() => setTransferModal(null)}
                 activeOpacity={0.8}
               >
                 <Text style={styles.ghostButtonText}>Cancel</Text>
@@ -294,6 +295,7 @@ const styles = createTypographyStyles({
     fontFamily: 'Sculpin-Bold',
   },
   sectionSubtitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.4)',
     fontSize: 12,
     marginTop: 2,
@@ -308,6 +310,7 @@ const styles = createTypographyStyles({
     borderRadius: 20,
   },
   buyButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#050510',
     fontSize: 13,
     fontWeight: '700',
@@ -325,7 +328,7 @@ const styles = createTypographyStyles({
     borderRadius: 16,
     padding: 14,
     shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8, },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 4,
@@ -361,16 +364,19 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(148,163,184,0.2)',
   },
   pillTextFree: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#1ccba1',
     fontSize: 10,
     fontWeight: '600',
   },
   pillTextDeposited: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#f59e0b',
     fontSize: 10,
     fontWeight: '600',
   },
   pillTextConsumed: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(148,163,184,0.7)',
     fontSize: 10,
     fontWeight: '600',
@@ -382,11 +388,13 @@ const styles = createTypographyStyles({
     fontFamily: 'Sculpin-Bold',
   },
   tokenPrice: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#e8e8ff',
     fontSize: 18,
     fontWeight: '700',
   },
   tokenPriceLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.35)',
     fontSize: 10,
     marginBottom: 12,
@@ -408,6 +416,7 @@ const styles = createTypographyStyles({
     borderRadius: 8,
   },
   actionBtnText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#1ccba1',
     fontSize: 10,
     fontWeight: '600',
@@ -424,6 +433,7 @@ const styles = createTypographyStyles({
     borderRadius: 8,
   },
   actionBtnGhostText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.6)',
     fontSize: 10,
     fontWeight: '500',
@@ -438,6 +448,7 @@ const styles = createTypographyStyles({
     alignSelf: 'flex-start',
   },
   depositedBadgeText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#f59e0b',
     fontSize: 10,
     fontWeight: '600',
@@ -452,6 +463,7 @@ const styles = createTypographyStyles({
     alignSelf: 'flex-start',
   },
   consumedBadgeText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(148,163,184,0.6)',
     fontSize: 10,
     fontWeight: '600',
@@ -510,10 +522,12 @@ const styles = createTypographyStyles({
     marginBottom: 16,
   },
   modalInfoLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.5)',
     fontSize: 13,
   },
   modalInfoValue: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#e8e8ff',
     fontSize: 13,
     fontWeight: '600',
@@ -528,6 +542,7 @@ const styles = createTypographyStyles({
     marginBottom: 14,
   },
   inputLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.6)',
     fontSize: 13,
     fontWeight: '500',
@@ -556,6 +571,7 @@ const styles = createTypographyStyles({
     marginTop: 8,
   },
   primaryButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#050510',
     fontSize: 15,
     fontWeight: '700',
@@ -570,6 +586,7 @@ const styles = createTypographyStyles({
     alignItems: 'center',
   },
   ghostButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: 'rgba(232,232,255,0.7)',
     fontSize: 14,
     fontWeight: '600',
@@ -584,8 +601,9 @@ const styles = createTypographyStyles({
     alignItems: 'center',
   },
   dangerButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     color: '#ef4444',
     fontSize: 14,
     fontWeight: '600',
   },
-},);
+});

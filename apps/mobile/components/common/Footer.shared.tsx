@@ -7,6 +7,7 @@ import developmentVersionManifest from '../../../../version.development.json';
 import productionVersionManifest from '../../../../version.production.json';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import type { FooterPrimaryLink } from './AppInfoFooter.links';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 export type LinkIconProps = {
   size?: number | string;
@@ -37,13 +38,14 @@ type ExpoImageSource = React.ComponentProps<typeof ExpoImage>['source'];
 
 // Metro asset loading still relies on require() for local image modules here.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png') as ExpoImageSource;
+export const AIRS_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg') as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png') as ExpoImageSource;
+export const AIRS_LOGO_LIGHT = require('../../assets/SVGs/AIRS-logo-light.svg') as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as ExpoImageSource;
+export const AIRS_LOGO_WHITE = require('../../assets/SVGs/AIRS-logo-white.svg') as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as ExpoImageSource;
+export const AIRS_LOGO_BLACK_DARK =
+  require('../../assets/SVGs/AIRS-logo-black-dark.svg') as ExpoImageSource;
 // Keep footer version aligned with the branch-specific version manifest used by releases.
 const DEVELOPMENT_VERSION_MANIFEST = developmentVersionManifest as VersionManifest;
 const PRODUCTION_VERSION_MANIFEST = productionVersionManifest as VersionManifest;
@@ -219,8 +221,8 @@ export function FooterTextLink({
 }): React.JSX.Element {
   return (
     <Pressable
-      onPress={onPress ?? (() => openExternalUrl(url))}
-      style={({ hovered, pressed }) =>
+      onPress={onPress ?? ((): void => openExternalUrl(url))}
+      style={({ hovered, pressed }): StyleProp<ViewStyle> =>
         [
           styles.textLinkPressable,
           compact && styles.textLinkPressableCompact,
@@ -342,11 +344,13 @@ const styles = StyleSheet.create({
     opacity: 0.65,
   },
   textLinkText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '600',
     letterSpacing: 0.12,
   },
   textLinkTextCompact: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
   },
   textLinkTextCenter: {
@@ -366,6 +370,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   copyrightText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     fontWeight: '700',
   },

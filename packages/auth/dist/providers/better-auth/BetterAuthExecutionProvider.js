@@ -791,15 +791,25 @@ export class BetterAuthExecutionProvider {
         });
     }
     async signInWithGoogle(redirectTo) {
-        const result = await this.signIn({
-            provider: 'google',
-            flow: 'redirect',
-            redirectUri: redirectTo,
-        });
+        const result = await this.signInWithSocialProvider('google', redirectTo);
         const redirectTarget = result.redirectUrl;
         if (redirectTarget && typeof window !== 'undefined') {
             window.location.assign(redirectTarget);
         }
+    }
+    async signInWithDiscord(redirectTo) {
+        const result = await this.signInWithSocialProvider('discord', redirectTo);
+        const redirectTarget = result.redirectUrl;
+        if (redirectTarget && typeof window !== 'undefined') {
+            window.location.assign(redirectTarget);
+        }
+    }
+    async signInWithSocialProvider(provider, redirectTo) {
+        return this.signIn({
+            provider,
+            flow: 'redirect',
+            redirectUri: redirectTo,
+        });
     }
     capabilities() {
         return {

@@ -28,6 +28,7 @@ import Animated, {
 import { ChangelogDrawer } from '@alternun/ui';
 import SupportButton from './SupportButton';
 import { createTypographyStyles } from '../theme/typography';
+import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import {
   resolvePrimaryLinkPressHandler,
@@ -35,10 +36,8 @@ import {
 } from './AppInfoFooter.links';
 import ParticleBubbles from '../dashboard/ParticleBubbles';
 import {
-  AIRS_LOGO_DARK,
-  AIRS_LOGO_DARK_2X,
-  AIRS_LOGO_LIGHT,
-  AIRS_LOGO_LIGHT_2X,
+  AIRS_LOGO_WHITE,
+  AIRS_LOGO_BLACK_DARK,
   FooterCopyright,
   FooterTextLink,
   FooterTopFade,
@@ -84,13 +83,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
 
   const isMobile = width < 720;
   const isWide = width >= 1120;
-  const wordmarkSource = isWide
-    ? isDark
-      ? AIRS_LOGO_LIGHT_2X
-      : AIRS_LOGO_DARK_2X
-    : isDark
-    ? AIRS_LOGO_LIGHT
-    : AIRS_LOGO_DARK;
+  const wordmarkSource = isDark ? AIRS_LOGO_WHITE : AIRS_LOGO_BLACK_DARK;
   const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
 
   // Floating orb animations
@@ -452,9 +445,18 @@ const drawerStyles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
-  sheetTitle: { fontSize: 16, fontWeight: '700', letterSpacing: 0.1 },
+  sheetTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.1,
+  },
   closeBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
-  closeBtnText: { fontSize: 14, fontWeight: '600' },
+  closeBtnText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
 
 const styles = createTypographyStyles({
@@ -519,6 +521,7 @@ const styles = createTypographyStyles({
     paddingLeft: 2,
   },
   bylineText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.12,

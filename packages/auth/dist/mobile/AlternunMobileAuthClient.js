@@ -502,6 +502,12 @@ export class AlternunMobileAuthClient {
         }
     }
     async signInWithGoogle(redirectTo) {
+        await this.signInWithSocialProvider('google', redirectTo);
+    }
+    async signInWithDiscord(redirectTo) {
+        await this.signInWithSocialProvider('discord', redirectTo);
+    }
+    async signInWithSocialProvider(provider, redirectTo) {
         let baseUrl = process.env.REACT_APP_API_URL || process.env.EXPO_PUBLIC_API_URL;
         if (!baseUrl && typeof window !== 'undefined') {
             const origin = window.location.origin;
@@ -517,12 +523,12 @@ export class AlternunMobileAuthClient {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    provider: 'google',
+                    provider,
                     redirectUri: redirectTo,
                 }),
             });
             if (!response.ok) {
-                throw new Error('Failed to initiate Google sign-in');
+                throw new Error(`Failed to initiate ${provider} sign-in`);
             }
             const data = await response.json();
             const signInUrl = typeof (data === null || data === void 0 ? void 0 : data.url) === 'string' ? data.url : null;
@@ -539,7 +545,7 @@ export class AlternunMobileAuthClient {
                 // Native runtime - would need to open URL in browser or use native OAuth handler
                 // For now, fall back to the original flow
                 await this.signIn({
-                    provider: 'google',
+                    provider,
                     flow: 'native',
                     redirectUri: redirectTo,
                 });
@@ -548,7 +554,7 @@ export class AlternunMobileAuthClient {
         catch (error) {
             // Fall back to direct sign-in if API endpoint fails
             await this.signIn({
-                provider: 'google',
+                provider,
                 flow: this.runtime === 'web' ? 'redirect' : 'native',
                 redirectUri: redirectTo,
             });
