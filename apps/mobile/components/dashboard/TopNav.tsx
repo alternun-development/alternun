@@ -776,8 +776,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     // NO overflow: 'hidden' here — dropdown must render beyond these bounds
     zIndex: 1100,
     position: 'relative',
@@ -837,8 +837,8 @@ const styles = StyleSheet.create({
     height: 26,
   },
   wordmarkDesktop: {
-    width: 144,
-    height: 52,
+    width: 180,
+    height: 64,
   },
   wordmarkMobile: {
     width: 52,
@@ -856,9 +856,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
   bylineLogo: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
   bylineSubtitle: {
     fontSize: 10,
