@@ -338,8 +338,8 @@ const AirsIntroExperience = forwardRef<
     const isCompactDesktop = isDesktopView && screenWidth < 1280;
     const heroWordmarkHeight = isDesktopView
       ? Math.min(
-          Math.max(screenWidth * 0.023, isCompactDesktop ? 35 : 43),
-          isCompactDesktop ? 54 : 64
+          Math.max(screenWidth * 0.028, isCompactDesktop ? 42 : 52),
+          isCompactDesktop ? 70 : 80
         )
       : Math.min(Math.max(screenWidth * 0.04, 30), 47);
     const heroWordmarkWidth = Math.round(heroWordmarkHeight * 2.68);
