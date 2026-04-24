@@ -1,3 +1,17 @@
+## [1.0.222](https://github.com/alternun-development/alternun/compare/v1.0.221-dev.0...v1.0.222) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(ui): Improve version pill text contrast by using accent color
+- **repo:** fix(mobile): Fix logo selection across dashboard, footer, and notifications
+- **repo:** fix(auth): Hide private views and menu items from unauthenticated users
+
+### Bug Fixes
+
+- **auth:** Hide private views and menu items from unauthenticated users ([0c02e6a](https://github.com/alternun-development/alternun/commit/0c02e6a8f1b96e2c314456ff26637a1ab14321af))
+- **mobile:** Fix logo selection across dashboard, footer, and notifications ([6b2d53d](https://github.com/alternun-development/alternun/commit/6b2d53dc6c273779ae7230319c5abb7a4a80ed44))
+- **ui:** Improve version pill text contrast by using accent color ([186e5aa](https://github.com/alternun-development/alternun/commit/186e5aa74c1169a1217b5bcef613b40c08b718f4))
+
 ## [1.0.221](https://github.com/alternun-development/alternun/compare/v1.0.220-dev.0...v1.0.221) (2026-04-24)
 
 ### Bug Fixes
