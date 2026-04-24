@@ -1,4 +1,4 @@
-import { AlternunConfigError } from '../../core/errors';
+import { AlternunConfigError } from '../../core/errors.js';
 export class PostmarkEmailProvider {
     constructor(options = {}) {
         this.options = options;

@@ -1,7 +1,7 @@
-import { claimsToExternalIdentity } from '../identity/claims';
-import { externalIdentityToLinkedAccount, externalIdentityToPrincipal, principalToUserProjection, } from '../identity/mapping';
-import { createSupabaseIdentityRepository } from '../providers/supabase-legacy/SupabaseIdentityRepository';
-import { resolveAuthRuntimeConfig } from '../runtime/config';
+import { claimsToExternalIdentity } from '../identity/claims.js';
+import { externalIdentityToLinkedAccount, externalIdentityToPrincipal, principalToUserProjection, } from '../identity/mapping.js';
+import { createSupabaseIdentityRepository } from '../providers/supabase-legacy/SupabaseIdentityRepository.js';
+import { resolveAuthRuntimeConfig } from '../runtime/config.js';
 /**
  * Compatibility shim for legacy Authentik → Supabase provisioning flows.
  * New consumers should use the identity repository abstraction directly.

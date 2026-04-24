@@ -1,9 +1,9 @@
-import { AlternunConfigError, AlternunProviderError } from '../../core/errors';
-import { createAlternunSession, claimsToExternalIdentity, issuerSessionToUser, } from '../../core/session';
-import { buildProvisioningEvent, externalIdentityToLinkedAccount, externalIdentityToPrincipal, principalToUserProjection, } from '../../identity/mapping';
-import { clearOidcSession, readOidcSession } from '../../mobile/authentikClient';
-import { getAuthentikEndpointBaseFromIssuer } from '../../mobile/authentikUrls';
-import { resolveAuthentikClientId, resolveAuthentikIssuer, resolveAuthentikRedirectUri, } from '../../mobile/authentikUrls';
+import { AlternunConfigError, AlternunProviderError } from '../../core/errors.js';
+import { createAlternunSession, claimsToExternalIdentity, issuerSessionToUser, } from '../../core/session.js';
+import { buildProvisioningEvent, externalIdentityToLinkedAccount, externalIdentityToPrincipal, principalToUserProjection, } from '../../identity/mapping.js';
+import { clearOidcSession, readOidcSession } from '../../mobile/authentikClient.js';
+import { getAuthentikEndpointBaseFromIssuer } from '../../mobile/authentikUrls.js';
+import { resolveAuthentikClientId, resolveAuthentikIssuer, resolveAuthentikRedirectUri, } from '../../mobile/authentikUrls.js';
 function resolveIssuer(options) {
     var _a;
     if ((_a = options.issuer) === null || _a === void 0 ? void 0 : _a.trim()) {
