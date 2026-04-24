@@ -383,7 +383,7 @@ export function ChangelogDrawer({
   const borderColor = isDark ? 'rgba(255,255,255,0.09)' : 'rgba(15,23,42,0.12)';
   const pillBg = isDark ? `${accent}22` : `${accent}12`;
   const pillBorder = isDark ? `${accent}44` : `${accent}35`;
-  const pillTextColor = isDark ? accent : '#ffffff';
+  const pillTextColor = accent;
 
   const handleOpen = useCallback(() => {
     setPage(0);
