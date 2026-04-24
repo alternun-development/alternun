@@ -900,16 +900,12 @@ export default function AuthSignInScreen({
             ]}
           >
             {settingsMenuOpen ? (
-              <Pressable
-                accessibilityRole='button'
-                onPress={closeSettingsMenu}
-                pointerEvents='box-only'
-                style={styles.settingsMenuBackdrop}
-              >
-                {/* Backdrop overlay - touches on empty areas close menu */}
-              </Pressable>
+              <View pointerEvents='none' style={styles.settingsMenuBackdrop}>
+                {/* Visual backdrop only - does not intercept touches */}
+              </View>
             ) : null}
-            <View
+            <Pressable
+              onPress={settingsMenuOpen ? closeSettingsMenu : undefined}
               style={[
                 styles.header,
                 isModal && styles.headerModal,
@@ -978,10 +974,7 @@ export default function AuthSignInScreen({
                   >
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      onPress={() => {
-                        cycleLanguage();
-                        setTimeout(() => setSettingsMenuOpen(false), 300);
-                      }}
+                      onPress={() => cycleLanguage()}
                       style={styles.settingsDropdownItem}
                     >
                       <Languages size={13} color={p.iconDefault} />
@@ -1000,10 +993,7 @@ export default function AuthSignInScreen({
                     />
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      onPress={() => {
-                        toggleThemeMode();
-                        setTimeout(() => setSettingsMenuOpen(false), 300);
-                      }}
+                      onPress={() => toggleThemeMode()}
                       style={styles.settingsDropdownItem}
                     >
                       <ThemeIcon size={13} color={p.iconDefault} />
@@ -1060,10 +1050,7 @@ export default function AuthSignInScreen({
                       >
                         <TouchableOpacity
                           activeOpacity={0.8}
-                          onPress={() => {
-                            cycleLanguage();
-                            setTimeout(() => setSettingsMenuOpen(false), 300);
-                          }}
+                          onPress={() => cycleLanguage()}
                           style={styles.settingsDropdownItem}
                         >
                           <Languages size={13} color={p.iconDefault} />
@@ -1082,10 +1069,7 @@ export default function AuthSignInScreen({
                         />
                         <TouchableOpacity
                           activeOpacity={0.8}
-                          onPress={() => {
-                            toggleThemeMode();
-                            setTimeout(() => setSettingsMenuOpen(false), 300);
-                          }}
+                          onPress={() => toggleThemeMode()}
                           style={styles.settingsDropdownItem}
                         >
                           <ThemeIcon size={13} color={p.iconDefault} />
@@ -1110,7 +1094,7 @@ export default function AuthSignInScreen({
                   </View>
                 </>
               )}
-            </View>
+            </Pressable>
 
             {authStep === 'form' ? (
               <>
