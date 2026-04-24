@@ -139,7 +139,7 @@ export default function TopNav({
   const brandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
   const brandMarkCutout = isDark ? '#03292f' : '#d9fff4';
   const isDesktop = width >= 720;
-  const wordmarkSource = isDark ? AIRS_LOGO_LIGHT : AIRS_LOGO_DARK;
+  const wordmarkSource = isDark ? AIRS_LOGO_DARK : AIRS_LOGO_LIGHT;
   const ThemeIconComp = isDark ? SunIcon : MoonIcon;
   const themeLabel = isDark ? t('labels.dark') : t('labels.light');
 

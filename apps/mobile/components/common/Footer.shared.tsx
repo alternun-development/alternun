@@ -43,6 +43,9 @@ export const AIRS_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg') as
 export const AIRS_LOGO_LIGHT = require('../../assets/SVGs/AIRS-logo-light.svg') as ExpoImageSource;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const AIRS_LOGO_WHITE = require('../../assets/SVGs/AIRS-logo-white.svg') as ExpoImageSource;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+export const AIRS_LOGO_BLACK_DARK =
+  require('../../assets/SVGs/AIRS-logo-black-dark.svg') as ExpoImageSource;
 // Keep footer version aligned with the branch-specific version manifest used by releases.
 const DEVELOPMENT_VERSION_MANIFEST = developmentVersionManifest as VersionManifest;
 const PRODUCTION_VERSION_MANIFEST = productionVersionManifest as VersionManifest;
