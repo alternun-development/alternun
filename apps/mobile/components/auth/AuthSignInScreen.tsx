@@ -977,7 +977,10 @@ export default function AuthSignInScreen({
                   >
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      onPress={() => cycleLanguage()}
+                      onPress={() => {
+                        cycleLanguage();
+                        setTimeout(() => setSettingsMenuOpen(false), 200);
+                      }}
                       style={styles.settingsDropdownItem}
                     >
                       <Languages size={13} color={p.iconDefault} />
@@ -996,7 +999,10 @@ export default function AuthSignInScreen({
                     />
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      onPress={() => toggleThemeMode()}
+                      onPress={() => {
+                        toggleThemeMode();
+                        setTimeout(() => setSettingsMenuOpen(false), 200);
+                      }}
                       style={styles.settingsDropdownItem}
                     >
                       <ThemeIcon size={13} color={p.iconDefault} />
@@ -1055,6 +1061,7 @@ export default function AuthSignInScreen({
                           activeOpacity={0.8}
                           onPress={() => {
                             cycleLanguage();
+                            setTimeout(() => setSettingsMenuOpen(false), 200);
                           }}
                           style={styles.settingsDropdownItem}
                         >
@@ -1076,6 +1083,7 @@ export default function AuthSignInScreen({
                           activeOpacity={0.8}
                           onPress={() => {
                             toggleThemeMode();
+                            setTimeout(() => setSettingsMenuOpen(false), 200);
                           }}
                           style={styles.settingsDropdownItem}
                         >
