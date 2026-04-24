@@ -23,16 +23,23 @@ export interface NativeSignInOptions {
   redirectUri?: string | null;
 }
 
-interface GoogleSignInCapableClient {
+interface BetterAuthSocialSignInCapableClient {
   signInWithGoogle?: (redirectTo?: string) => Promise<void>;
+  signInWithDiscord?: (redirectTo?: string) => Promise<void>;
 }
 
 function canUseBrowserRuntime(): boolean {
   return typeof window !== 'undefined' && typeof document !== 'undefined';
 }
 
-function hasGoogleSignIn(client: AuthClient): client is AuthClient & GoogleSignInCapableClient {
-  return typeof (client as GoogleSignInCapableClient).signInWithGoogle === 'function';
+function hasBetterAuthSocialSignIn(
+  client: AuthClient,
+  provider: 'google' | 'discord'
+): client is AuthClient & BetterAuthSocialSignInCapableClient {
+  const socialClient = client as BetterAuthSocialSignInCapableClient;
+  return provider === 'google'
+    ? typeof socialClient.signInWithGoogle === 'function'
+    : typeof socialClient.signInWithDiscord === 'function';
 }
 
 export function resolveAuthRuntime(): AuthRuntime {
@@ -154,8 +161,15 @@ export async function webRedirectSignIn({
   storeAuthReturnTo(redirectTo);
 
   if (shouldUseBetterAuthWebFlow(strategy, provider, authentikProviderHint)) {
-    if (provider === 'google' && hasGoogleSignIn(client)) {
-      await client.signInWithGoogle(callbackUrl);
+    if (
+      (provider === 'google' || provider === 'discord') &&
+      hasBetterAuthSocialSignIn(client, provider)
+    ) {
+      if (provider === 'google') {
+        await client.signInWithGoogle?.(callbackUrl);
+      } else {
+        await client.signInWithDiscord?.(callbackUrl);
+      }
       return 'better-auth';
     }
 

@@ -72,6 +72,7 @@ test('createAuthFacade preserves the current app-facing compatibility surface', 
   });
 
   assert.equal(typeof facade.signInWithGoogle, 'function');
+  assert.equal(typeof facade.signInWithDiscord, 'function');
   assert.equal(typeof facade.signUpWithEmail, 'function');
   assert.equal(typeof facade.setOidcUser, 'function');
   assert.ok('supabase' in facade);

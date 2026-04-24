@@ -731,6 +731,17 @@ export class AlternunMobileAuthClient implements AuthClient {
   }
 
   async signInWithGoogle(redirectTo?: string): Promise<void> {
+    await this.signInWithSocialProvider('google', redirectTo);
+  }
+
+  async signInWithDiscord(redirectTo?: string): Promise<void> {
+    await this.signInWithSocialProvider('discord', redirectTo);
+  }
+
+  private async signInWithSocialProvider(
+    provider: 'google' | 'discord',
+    redirectTo?: string
+  ): Promise<void> {
     let baseUrl = process.env.REACT_APP_API_URL || process.env.EXPO_PUBLIC_API_URL;
 
     if (!baseUrl && typeof window !== 'undefined') {
@@ -749,13 +760,13 @@ export class AlternunMobileAuthClient implements AuthClient {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          provider: 'google',
+          provider,
           redirectUri: redirectTo,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to initiate Google sign-in');
+        throw new Error(`Failed to initiate ${provider} sign-in`);
       }
 
       const data = await response.json();
@@ -774,7 +785,7 @@ export class AlternunMobileAuthClient implements AuthClient {
         // Native runtime - would need to open URL in browser or use native OAuth handler
         // For now, fall back to the original flow
         await this.signIn({
-          provider: 'google',
+          provider,
           flow: 'native',
           redirectUri: redirectTo,
         });
@@ -782,7 +793,7 @@ export class AlternunMobileAuthClient implements AuthClient {
     } catch (error) {
       // Fall back to direct sign-in if API endpoint fails
       await this.signIn({
-        provider: 'google',
+        provider,
         flow: this.runtime === 'web' ? 'redirect' : 'native',
         redirectUri: redirectTo,
       });

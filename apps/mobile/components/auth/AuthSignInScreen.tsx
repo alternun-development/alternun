@@ -78,13 +78,9 @@ const SOCIAL_REDIRECT_TIMEOUT_MS = 15000; // 15 seconds
 const ENABLE_WEB3_LOGIN = false; // Temporarily disabled: full web3 login flow not implemented
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const AIRS_LOGO_LIGHT = require('../../assets/AIRS-logo-light.png') as number;
+const AIRS_LOGO_LIGHT = require('../../assets/SVGs/AIRS-logo-light.svg') as number;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const AIRS_LOGO_LIGHT_2X = require('../../assets/AIRS-logo-light-2x.png') as number;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const AIRS_LOGO_DARK = require('../../assets/AIRS-logo-dark.png') as number;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const AIRS_LOGO_DARK_2X = require('../../assets/AIRS-logo-dark-2x.png') as number;
+const AIRS_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg') as number;
 
 type SubmitMode =
   | 'signin'
@@ -217,15 +213,8 @@ export default function AuthSignInScreen({
   const isBusy = loading || submitMode !== null;
   const isModal = presentation === 'modal';
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const isDesktop = windowWidth >= 720;
   const isCompactModal = isModal && windowWidth < 560;
-  const wordmarkSource = isDesktop
-    ? p.isDark
-      ? AIRS_LOGO_LIGHT_2X
-      : AIRS_LOGO_DARK_2X
-    : p.isDark
-    ? AIRS_LOGO_LIGHT
-    : AIRS_LOGO_DARK;
+  const wordmarkSource = p.isDark ? AIRS_LOGO_LIGHT : AIRS_LOGO_DARK;
   const hasEmailInputError = requiredFields.email || invalidEmail;
   const hasConfirmationEmail = Boolean(resolveConfirmationEmail(confirmationEmail));
   const dismissToast = useCallback((id: string): void => {
