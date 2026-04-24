@@ -1,3 +1,13 @@
+## [1.0.218](https://github.com/alternun-development/alternun/compare/v1.0.217-dev.1...v1.0.218) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n): DynamicMessageBar, PublicLandingPage, AirsIntroExperience, en
+
+### Bug Fixes
+
+- **mobile,i18n:** DynamicMessageBar, PublicLandingPage, AirsIntroExperience, en ([514bb9d](https://github.com/alternun-development/alternun/commit/514bb9d62ad1c7739ac56dfb88bca7369a9781f2))
+
 ## [1.0.217](https://github.com/alternun-development/alternun/compare/v1.0.217-dev.0...v1.0.217) (2026-04-24)
 
 ### Bug Fixes
