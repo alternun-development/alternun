@@ -28,7 +28,7 @@ export default function HeroStats({
   previewMode = false,
   isDark = true,
   displayName,
-}: HeroStatsProps) {
+}: HeroStatsProps): React.JSX.Element {
   const { motionLevel } = useAppPreferences();
   const markFill = isDark ? palette.teal : palette.tealDark;
   const markCutout = isDark ? '#050f0c' : '#eaf8f3';
@@ -43,34 +43,16 @@ export default function HeroStats({
           borderRadius: 20,
         }}
       >
-        {/* Overlay for text visibility */}
-        <View
-          pointerEvents='none'
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: isDark ? 'rgba(0, 0, 0, 0.25)' : 'rgba(0, 0, 0, 0.35)',
-              borderRadius: 20,
-              zIndex: 1,
-            },
-          ]}
+        <HeroPanel
+          displayName={displayName}
+          score={totalAIRS}
+          isLoading={isLoading}
+          onReload={onReload}
+          previewMode={previewMode}
+          isDark={isDark}
+          animateOrbs={motionLevel !== 'off'}
+          brandMark={<AirsBrandMark size={44} fillColor={markFill} cutoutColor={markCutout} />}
         />
-        <View style={{ position: 'relative', zIndex: 2 }}>
-          <HeroPanel
-            displayName={displayName}
-            score={totalAIRS}
-            isLoading={isLoading}
-            onReload={onReload}
-            previewMode={previewMode}
-            isDark={isDark}
-            animateOrbs={motionLevel !== 'off'}
-            brandMark={<AirsBrandMark size={44} fillColor={markFill} cutoutColor={markCutout} />}
-          />
-        </View>
       </ImageBackground>
     </View>
   );

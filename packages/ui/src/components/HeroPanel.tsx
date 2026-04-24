@@ -159,7 +159,7 @@ export function HeroPanel({
   // ─── Palette ─────────────────────────────────────────────────────────────────
   const textPrimary = isDark ? '#ffffff' : '#0b2d31';
   const textMuted = isDark ? 'rgba(255,255,255,0.60)' : 'rgba(11,45,49,0.62)';
-  const heroBg = isDark ? '#050f0c' : '#eaf8f3';
+  const heroBg = isDark ? 'rgba(5, 15, 12, 0.15)' : 'rgba(234, 248, 243, 0.20)';
   const orbA = isDark ? 'rgba(28,203,161,0.11)' : 'rgba(28,203,161,0.08)';
   const orbB = isDark ? 'rgba(11,90,95,0.20)' : 'rgba(11,90,95,0.06)';
   const divider = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.10)';
