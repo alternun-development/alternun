@@ -1,3 +1,13 @@
+## [1.0.219](https://github.com/alternun-development/alternun/compare/v1.0.218-dev.0...v1.0.219) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n): AirsIntroExperience
+
+### Bug Fixes
+
+- **mobile,i18n:** AirsIntroExperience ([59024e5](https://github.com/alternun-development/alternun/commit/59024e591cf250eedad1e87952bea9bc79105e40))
+
 ## [1.0.218](https://github.com/alternun-development/alternun/compare/v1.0.217-dev.1...v1.0.218) (2026-04-24)
 
 ### Bug Fixes
