@@ -1,3 +1,13 @@
+## [1.0.221](https://github.com/alternun-development/alternun/compare/v1.0.220-dev.0...v1.0.221) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** fix(auth): Correct logo selection for light and dark modes
+
+### Bug Fixes
+
+- **auth:** Correct logo selection for light and dark modes ([ff54c74](https://github.com/alternun-development/alternun/commit/ff54c746b0e60d20645b55b4b123b5c7071e8884))
+
 ## [1.0.220](https://github.com/alternun-development/alternun/compare/v1.0.219-dev.0...v1.0.220) (2026-04-24)
 
 ### Bug Fixes
