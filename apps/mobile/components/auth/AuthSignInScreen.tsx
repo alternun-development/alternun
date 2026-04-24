@@ -904,7 +904,9 @@ export default function AuthSignInScreen({
                 accessibilityRole='button'
                 onPress={closeSettingsMenu}
                 style={styles.settingsMenuBackdrop}
-              />
+              >
+                {/* Backdrop overlay - touches on empty areas close menu */}
+              </Pressable>
             ) : null}
             <View
               style={[
@@ -2052,6 +2054,7 @@ const styles = createTypographyStyles({
     gap: 8,
     paddingHorizontal: 14,
     paddingVertical: 11,
+    zIndex: 9998,
   },
   settingsDropdownLabel: {
     flex: 1,
