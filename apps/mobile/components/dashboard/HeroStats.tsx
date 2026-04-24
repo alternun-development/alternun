@@ -39,7 +39,7 @@ export default function HeroStats({
         source={DASHBOARD_BG}
         style={{ borderRadius: 20, overflow: 'hidden' }}
         imageStyle={{
-          resizeMode: 'cover',
+          resizeMode: 'contain',
           borderRadius: 20,
         }}
       >
