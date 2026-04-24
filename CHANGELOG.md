@@ -1,3 +1,13 @@
+## [1.0.223](https://github.com/alternun-development/alternun/compare/v1.0.223-dev.0...v1.0.223) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.223-dev.0
+- **repo:** fix(mobile,i18n,ui): HeroStats, HeroPanel
+- **repo:** feat(ui): Update HeroPanel greeting text color to gold (#CBAB35)
+- **repo:** fix(ui): Remove all background colors from HeroPanel for full image transparency
+- **repo:** fix(mobile): Adjust dashboard background image to fit better on all screen sizes
+
 ## [1.0.223](https://github.com/alternun-development/alternun/compare/v1.0.222-dev.0...v1.0.223) (2026-04-24)
 
 ### Bug Fixes
