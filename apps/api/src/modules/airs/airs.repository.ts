@@ -140,6 +140,17 @@ async function readRpcBody(response: Response): Promise<Record<string, unknown> 
   return typeof body === 'object' ? (body as Record<string, unknown>) : null;
 }
 
+async function readRpcArrayBody(response: Response): Promise<Array<Record<string, unknown>>> {
+  const body = (await response.json().catch(() => null)) as unknown;
+  if (!Array.isArray(body)) {
+    return [];
+  }
+
+  return body.filter((entry): entry is Record<string, unknown> =>
+    Boolean(entry && typeof entry === 'object' && !Array.isArray(entry))
+  );
+}
+
 function asText(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
@@ -221,6 +232,36 @@ export async function supabaseRpc<T = Record<string, unknown>>(
 
   const body = await readRpcBody(response);
   return (body ?? {}) as T;
+}
+
+export async function supabaseRpcArray<T extends Record<string, unknown> = Record<string, unknown>>(
+  rpcName: string,
+  payload: Record<string, unknown>,
+  env: Record<string, string | undefined> = process.env
+): Promise<T[]> {
+  const config = resolveAirsSupabaseConfig(env);
+  if (!config) {
+    throw new Error(`Supabase is not configured for AIRS RPC ${rpcName}.`);
+  }
+
+  const response = await fetch(`${config.url.replace(/\/$/, '')}/rest/v1/rpc/${rpcName}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: config.key,
+      Authorization: `Bearer ${config.key}`,
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`Supabase RPC ${rpcName} failed [${response.status}]: ${text}`);
+  }
+
+  const body = await readRpcArrayBody(response);
+  return body as T[];
 }
 
 export async function recordAirsDashboardVisit(
@@ -409,17 +450,13 @@ export async function getUserAchievements(
   },
   env: Record<string, string | undefined> = process.env
 ): Promise<UserAchievement[]> {
-  const body = await supabaseRpc<Array<Record<string, unknown>>>(
+  const body = await supabaseRpcArray(
     'get_user_achievements',
     {
       p_user_id: input.userId,
     },
     env
   );
-
-  if (!Array.isArray(body)) {
-    return [];
-  }
 
   return body.map(
     (row): UserAchievement => ({
