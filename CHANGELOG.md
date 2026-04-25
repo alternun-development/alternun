@@ -1,3 +1,20 @@
+## [1.0.230](https://github.com/alternun-development/alternun/compare/v1.0.229-dev.0...v1.0.230) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** test(repo,api,mobile): .eslintrc, airs.repository, airs.service, airs-registration-bonus.controller
+- **repo:** fix(dashboard): correct welcome bonus endpoint URL and cleanup unused state
+- **repo:** fix(auth): simplify to rely on Better Auth HTTP-only cookies only
+- **repo:** debug(auth): add console logging for session restoration flow
+- **repo:** fix(auth): simplify session token sync to prevent infinite refresh loops
+
+### Bug Fixes
+
+- **auth:** persist Better Auth email login sessions in localStorage ([e2df28d](https://github.com/alternun-development/alternun/commit/e2df28d178f4f03691719f3f08af725504ca4b1c))
+- **auth:** simplify session token sync to prevent infinite refresh loops ([9f56833](https://github.com/alternun-development/alternun/commit/9f56833b53f8a082ef18b86c2b93aa3fb71fe417))
+- **auth:** simplify to rely on Better Auth HTTP-only cookies only ([2608047](https://github.com/alternun-development/alternun/commit/2608047a38c25d224c5dfbb0ed15cd639b494276))
+- **dashboard:** correct welcome bonus endpoint URL and cleanup unused state ([d6167f6](https://github.com/alternun-development/alternun/commit/d6167f631ce220424a1a791b2870b978027ccfe9))
+
 ## [1.0.229](https://github.com/alternun-development/alternun/compare/v1.0.228-dev.0...v1.0.229) (2026-04-25)
 
 ### Bug Fixes
