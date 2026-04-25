@@ -46,11 +46,11 @@ jobs:
         env:
           INFRA_ENABLE_BACKEND_API: 'true'
           APPROVE: 'true'
-          STACK: api-dev
+          STACK: dashboard-dev
           AWS_REGION: ${{ env.AWS_REGION }}
         run: |
           cd packages/infra
-          npx sst deploy --stage api-dev --continue
+          npx sst deploy --stage dashboard-dev --continue
 
       - name: Verify deployment
         run: |

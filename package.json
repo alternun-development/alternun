@@ -22,8 +22,6 @@
     "db:migrate:dry-run": "pnpm --filter @alternun/api run db:migrate -- --dry-run",
     "infra:deploy:dev": "pnpm --filter @alternun/infra run deploy:dev",
     "infra:deploy:production": "pnpm --filter @alternun/infra run deploy:production",
-    "infra:deploy:api-dev": "pnpm --filter @alternun/infra run deploy:api-dev",
-    "infra:deploy:api-prod": "pnpm --filter @alternun/infra run deploy:api-prod",
     "infra:deploy:dashboard-dev": "pnpm --filter @alternun/infra run deploy:dashboard-dev",
     "infra:deploy:dashboard-prod": "pnpm --filter @alternun/infra run deploy:dashboard-prod",
     "infra:deploy:admin-dev": "pnpm --filter @alternun/infra run deploy:admin-dev",
@@ -99,7 +97,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx,d.ts}": [
-      "eslint --fix",
+      "eslint --fix --quiet",
       "prettier --write"
     ],
     "*.{md,json}": [

@@ -88,7 +88,7 @@ If popup auth is added later, it should be implemented as a separate explicit AP
 
 ## Deployment Note
 
-On the current testnet rollout, the user-facing bundle is deployed from `dev`, the live API/auth runtime is owned by `dashboard-dev`, and Authentik lives in `identity-dev`. `api-dev` is a backend-only escape hatch, not the owning stack for `testnet.api.alternun.co`.
+On the current testnet rollout, the user-facing bundle is deployed from `dev`, the live API/auth runtime is owned by `dashboard-dev`, and Authentik lives in `identity-dev`. Former backend-only aliases such as `api-dev` and `backend-*` are retired and must not be used for `testnet.api.alternun.co`.
 
 ## Shared Package Contract
 

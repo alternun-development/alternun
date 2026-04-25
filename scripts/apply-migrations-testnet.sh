@@ -10,7 +10,7 @@ echo "🔐 Loading Alternun AWS credentials..."
 source scripts/setup-aws-account.sh
 
 # Use testnet database (which maps to dev in the backend)
-STACK=api-dev
+STACK=dashboard-dev
 DATABASE_SECRET_NAME=$(resolve_backend_database_secret_name)
 
 echo "📡 Retrieving DATABASE_URL from AWS Secrets (${DATABASE_SECRET_NAME})..."

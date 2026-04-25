@@ -522,8 +522,43 @@ pulumiRuntime.registerStackTransformation((args) => {
   };
 });
 
+function resolveRetiredBackendStageReplacement(
+  stage: string
+): 'dashboard-dev' | 'dashboard-prod' | null {
+  const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
+
+  switch (normalized) {
+    case 'api':
+    case 'api-dev':
+    case 'backend':
+    case 'backend-dev':
+    case 'backend-api':
+    case 'backend-api-dev':
+      return 'dashboard-dev';
+    case 'api-prod':
+    case 'api-production':
+    case 'backend-prod':
+    case 'backend-production':
+    case 'backend-api-prod':
+    case 'backend-api-production':
+      return 'dashboard-prod';
+    default:
+      return null;
+  }
+}
+
 export function createInfrastructure() {
   const stage = String($app.stage);
+  const retiredBackendStageReplacement = resolveRetiredBackendStageReplacement(stage);
+  if (retiredBackendStageReplacement) {
+    throw new Error(
+      [
+        `Stage "${stage}" is retired.`,
+        `Use "${retiredBackendStageReplacement}" instead.`,
+        'The live backend API/admin runtime is owned only by dashboard stacks.',
+      ].join(' ')
+    );
+  }
   const dashboardStackStage = isDashboardStackStage(stage);
   const adminSiteStackStage = isAdminSiteStackStage(stage);
   const backendApiStackStage = isBackendApiStackStage(stage);
@@ -544,7 +579,7 @@ export function createInfrastructure() {
       [
         `Refusing to deploy stage "${stage}" with INFRA_ENABLE_EXPO_SITE=false.`,
         'This would remove Expo/web resources from a primary app stack.',
-        'Use STACK=identity-dev, STACK=identity-prod, STACK=api-dev, STACK=api-prod, STACK=admin-dev, STACK=admin-prod, STACK=dashboard-dev, or STACK=dashboard-prod for dedicated non-Expo deployments.',
+        'Use STACK=identity-dev, STACK=identity-prod, STACK=admin-dev, STACK=admin-prod, STACK=dashboard-dev, or STACK=dashboard-prod for dedicated non-Expo deployments.',
       ].join(' ')
     );
   }
@@ -645,7 +680,7 @@ export function createInfrastructure() {
     console.log(
       [
         `Backend API is enabled but skipped for stack "${stage}" because INFRA_BACKEND_API_DEDICATED_STACKS_ONLY=true.`,
-        'Use STACK=api-dev, STACK=api-prod, STACK=dashboard-dev, or STACK=dashboard-prod to provision backend API resources.',
+        'Use STACK=dashboard-dev or STACK=dashboard-prod to provision backend API resources.',
       ].join(' ')
     );
   }

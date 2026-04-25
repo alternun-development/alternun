@@ -33,14 +33,20 @@ Default public domains:
 
 - `dashboard-dev`
 - `dashboard-prod`
-- `api-dev`
-- `api-prod`
 - `admin-dev`
 - `admin-prod`
 - `identity-dev`
 - `identity-prod`
 
 These let the team deploy internal surfaces independently or as a combined release unit.
+
+Retired stage aliases:
+
+- `api-dev`, `api-prod`
+- `backend-dev`, `backend-prod`
+- `backend-api-dev`, `backend-api-prod`
+
+Those old backend-only aliases normalize to the dashboard stacks in local tooling and must not be used as standalone live deploy targets.
 
 ## Domain Model
 
@@ -124,6 +130,16 @@ The default pipeline catalog includes:
 
 The default branch map in the infra config sends dev-oriented stacks to `develop` and production-oriented stacks to `master`.
 
+## Current Testnet Ownership
+
+The live testnet rollout is intentionally split:
+
+- `dev` owns `testnet.airs.alternun.co`
+- `dashboard-dev` owns `testnet.api.alternun.co` and `testnet.admin.alternun.co`
+- `identity-dev` owns `testnet.sso.alternun.co`
+
+This is the canonical ownership model. Retired backend-only stage aliases must not be used for live testnet API/admin deploys.
+
 ## Delivery Flow
 
 ```mermaid
@@ -143,13 +159,15 @@ flowchart LR
 The infra system supports both:
 
 - **combined dashboard stacks** for admin and API together
-- **dedicated escape-hatch stacks** for manual API-only or admin-only operations
+- **dedicated stacks** for admin-only and identity-only operations
 
 That design is pragmatic:
 
 - it keeps normal releases simpler
-- it still allows controlled component-specific deployment paths
+- it still allows controlled component-specific deployment paths where they are intentionally supported
 - it reduces accidental deletion risk by putting safety guards into the infra logic
+
+The former backend-only `api-*` and `backend-*` stages were retired after they created duplicate public testnet resources and routing drift.
 
 ## Practical Source Of Truth
 

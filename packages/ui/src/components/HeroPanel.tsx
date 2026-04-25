@@ -115,7 +115,7 @@ function fmtScore(n: number): string {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export interface HeroPanelProps {
-  /** Shown as "Hola, {firstName}" — only the first word is used. */
+  /** Shown as "{{greetingPrefix}} {firstName}" — only the first word is used. */
   displayName?: string;
   /** Total Airs earned. Pass `null` while loading. */
   score: number | null;
@@ -137,6 +137,28 @@ export interface HeroPanelProps {
   animateOrbs?: boolean;
   /** Validity end date for status tier (ISO string). Shows in info tooltip. */
   tierValidUntil?: string;
+  /** Greeting prefix (e.g., "Hola," or "Hello,"). Defaults to "Hola,". */
+  greetingPrefix?: string;
+  /** Subtitle text. Defaults to "Tu puntuación regenerativa es:". */
+  subtitle?: string;
+  /** Status label template with {{tier}} placeholder. Defaults to "Status {{tier}}". */
+  statusLabel?: string;
+  /** Progress text template with {{nextTier}} placeholder. Defaults to "Progreso a {{nextTier}} —". */
+  progressLabel?: string;
+  /** Progress hint template with {{remaining}} and {{nextTier}} placeholders. */
+  progressHint?: string;
+  /** Max tier reached message template with {{tier}} placeholder. */
+  maxTierMessage?: string;
+  /** Reload button accessibility label. */
+  reloadButtonLabel?: string;
+  /** Status info button accessibility label. */
+  statusInfoButtonLabel?: string;
+  /** Tooltip title. Defaults to "Información de estado". */
+  tooltipTitle?: string;
+  /** "Updated" label in tooltip. */
+  tooltipUpdatedLabel?: string;
+  /** "Valid until" label in tooltip. */
+  tooltipValidUntilLabel?: string;
 }
 
 export function HeroPanel({
@@ -150,6 +172,17 @@ export function HeroPanel({
   isDark = true,
   animateOrbs = true,
   tierValidUntil,
+  greetingPrefix = 'Hola,',
+  subtitle = 'Tu puntuación regenerativa es:',
+  statusLabel = 'Status {{tier}}',
+  progressLabel = 'Progreso a {{nextTier}} —',
+  progressHint,
+  maxTierMessage,
+  reloadButtonLabel = 'Recargar puntuación',
+  statusInfoButtonLabel = 'Información del estado',
+  tooltipTitle = 'Información de estado',
+  tooltipUpdatedLabel = 'Actualizado:',
+  tooltipValidUntilLabel = 'Válido hasta:',
 }: HeroPanelProps): React.JSX.Element {
   const safeScore = score ?? 0;
   const tier = previewMode || score == null ? 'bronze' : resolveTier(safeScore);
@@ -325,17 +358,17 @@ export function HeroPanel({
 
   const statusTooltipContent = (
     <View style={styles.tooltipContent}>
-      <Text style={[styles.tooltipLabel, { color: accentColor }]}>Información de estado</Text>
+      <Text style={[styles.tooltipLabel, { color: accentColor }]}>{tooltipTitle}</Text>
       <View style={styles.tooltipDivider} />
       <View style={styles.tooltipLine}>
-        <Text style={[styles.tooltipKey, { color: textMuted }]}>Actualizado:</Text>
+        <Text style={[styles.tooltipKey, { color: textMuted }]}>{tooltipUpdatedLabel}</Text>
         <Text style={[styles.tooltipValue, { color: textPrimary }]}>
           {formatDateWithTime(lastUpdatedAt)}
         </Text>
       </View>
       {tierValidUntil && (
         <View style={styles.tooltipLine}>
-          <Text style={[styles.tooltipKey, { color: textMuted }]}>Válido hasta:</Text>
+          <Text style={[styles.tooltipKey, { color: textMuted }]}>{tooltipValidUntilLabel}</Text>
           <Text style={[styles.tooltipValue, { color: textPrimary }]}>
             {formatDate(tierValidUntil)}
           </Text>
@@ -358,7 +391,7 @@ export function HeroPanel({
             onPress={onReload}
             disabled={isLoading}
             accessibilityRole='button'
-            accessibilityLabel='Recargar puntuación'
+            accessibilityLabel={reloadButtonLabel}
           >
             <Animated.View style={reloadRotateStyle}>
               <ReloadIcon size={16} color={accentColor} strokeWidth={2.5} />
@@ -368,10 +401,12 @@ export function HeroPanel({
 
         {/* Greeting */}
         {firstName ? (
-          <Text style={[styles.greeting, { color: greetingColor }]}>{`Hola, ${firstName}`}</Text>
+          <Text
+            style={[styles.greeting, { color: greetingColor }]}
+          >{`${greetingPrefix} ${firstName}`}</Text>
         ) : null}
 
-        <Text style={[styles.subtitle, { color: textMuted }]}>Tu puntuación regenerativa es:</Text>
+        <Text style={[styles.subtitle, { color: textMuted }]}>{subtitle}</Text>
 
         {/* Score row */}
         <View style={styles.scoreRow}>
@@ -398,7 +433,7 @@ export function HeroPanel({
               <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
                 <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
                 <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
-                  {`Status ${tierSpec.label.toUpperCase()}`}
+                  {statusLabel.replace('{{tier}}', tierSpec.label.toUpperCase())}
                 </Text>
               </View>
               <View style={styles.iconButtonWrapper}>
@@ -412,7 +447,7 @@ export function HeroPanel({
                     if (showStatusTooltip) toggleStatusTooltip();
                   }}
                   accessibilityRole='button'
-                  accessibilityLabel='Información del estado'
+                  accessibilityLabel={statusInfoButtonLabel}
                 >
                   <InfoIcon size={16} color={accentColor} strokeWidth={2} />
                 </TouchableOpacity>
@@ -474,7 +509,7 @@ export function HeroPanel({
                 <View style={styles.progressLabelRow}>
                   <View style={styles.progressLeftGroup}>
                     <Text style={[styles.progressLeft, { color: textPrimary }]} numberOfLines={1}>
-                      {`Progreso a ${progressNextLabel} —`}
+                      {progressLabel.replace('{{nextTier}}', progressNextLabel)}
                     </Text>
                     <Text
                       style={[styles.progressPercent, { color: textPrimary }]}
@@ -494,20 +529,22 @@ export function HeroPanel({
                   style={styles.progressBar}
                   showPercentage={false}
                 />
-                <Text style={[styles.progressHint, { color: textMuted }]}>
-                  {`Te faltan ${fmtScore(
-                    progressMax - safeScore
-                  )} Airs para alcanzar ${progressNextLabel} y desbloquear beneficios exclusivos`}
-                </Text>
+                {progressHint && (
+                  <Text style={[styles.progressHint, { color: textMuted }]}>
+                    {progressHint
+                      .replace('{{remaining}}', fmtScore(progressMax - safeScore))
+                      .replace('{{nextTier}}', progressNextLabel)}
+                  </Text>
+                )}
               </>
             )}
           </View>
         )}
 
         {/* Platinum — max tier */}
-        {tierSpec.max == null && !previewMode && score != null && (
+        {tierSpec.max == null && !previewMode && score != null && maxTierMessage && (
           <Text style={[styles.progressHint, { color: tierSpec.color }]}>
-            Has alcanzado el nivel máximo Platinum
+            {maxTierMessage.replace('{{tier}}', tierSpec.label)}
           </Text>
         )}
       </View>

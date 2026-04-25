@@ -61,11 +61,11 @@ canonicalize_backend_stack_stage() {
   normalized=$(echo "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 
   case "$normalized" in
-    api|backend|backend-dev|backend-api|backend-api-dev)
-      printf '%s\n' 'api-dev'
+    api|api-dev|backend|backend-dev|backend-api|backend-api-dev)
+      printf '%s\n' 'dashboard-dev'
       ;;
     api-prod|api-production|backend-prod|backend-production|backend-api-prod|backend-api-production)
-      printf '%s\n' 'api-prod'
+      printf '%s\n' 'dashboard-prod'
       ;;
     *)
       printf '%s\n' "$normalized"
@@ -96,13 +96,13 @@ if [ "$stage_normalized" = "identity-dev" ] || \
 fi
 
 case "$stage_normalized" in
-  api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod|dashboard-dev|dashboard-prod|dashboard-production)
+  dashboard-dev|dashboard-prod|dashboard-production)
     is_backend_api_stage=true
     ;;
 esac
 
 case "$stage_normalized" in
-  identity-dev|identity-prod|identity-production|auth-dev|auth-prod|authentik-dev|authentik-prod|api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod|admin-dev|admin-prod|admin-production|backoffice-dev|backoffice-prod|backoffice-admin-dev|backoffice-admin-prod|dashboard-dev|dashboard-prod|dashboard-production)
+  identity-dev|identity-prod|identity-production|auth-dev|auth-prod|authentik-dev|authentik-prod|admin-dev|admin-prod|admin-production|backoffice-dev|backoffice-prod|backoffice-admin-dev|backoffice-admin-prod|dashboard-dev|dashboard-prod|dashboard-production)
     is_dedicated_non_expo_stage=true
     ;;
 esac
@@ -117,7 +117,7 @@ if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ] && \
     case "${INFRA_AUTO_FORCE_EXPO_SITE:-true}" in
       0 | false | FALSE | no | NO | off | OFF)
         echo "ERROR: INFRA_ENABLE_EXPO_SITE=false is only allowed on dedicated non-Expo stack stages." >&2
-        echo "ERROR: Use STACK=identity-dev, STACK=identity-prod, STACK=api-dev, STACK=api-prod, STACK=admin-dev, STACK=admin-prod, STACK=dashboard-dev, or STACK=dashboard-prod." >&2
+        echo "ERROR: Use STACK=identity-dev, STACK=identity-prod, STACK=admin-dev, STACK=admin-prod, STACK=dashboard-dev, or STACK=dashboard-prod." >&2
         echo "ERROR: Set INFRA_AUTO_FORCE_EXPO_SITE=true to auto-correct this." >&2
         exit 1
         ;;
@@ -189,9 +189,6 @@ enforce_dedicated_stack_component_flags() {
       ;;
     admin-dev|admin-prod|admin-production|backoffice-dev|backoffice-prod|backoffice-admin-dev|backoffice-admin-prod)
       enforce_component_enabled_for_stack "INFRA_ENABLE_ADMIN_SITE" "$STACK" "admin site"
-      ;;
-    api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod)
-      enforce_component_enabled_for_stack "INFRA_ENABLE_BACKEND_API" "$STACK" "backend API"
       ;;
   esac
 }
