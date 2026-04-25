@@ -373,6 +373,52 @@
           "description": "Connect via QR code"
         }
       }
+    },
+    "profile": {
+      "sections": {
+        "achievements": "Achievements",
+        "account": "Account",
+        "preferences": "Preferences"
+      },
+      "header": {
+        "personalInfo": "Personal Information",
+        "verified": "Information Verified"
+      },
+      "tierJourney": "Tier Journey",
+      "accountRows": {
+        "personalInfo": "Personal information",
+        "wallet": "Wallet",
+        "accessMethod": "Access method",
+        "notifications": "Notifications"
+      },
+      "preferenceRows": {
+        "theme": "Theme",
+        "language": "Language",
+        "settings": "Settings",
+        "signOut": "Sign out"
+      },
+      "accessMethodsAlert": {
+        "title": "Access Methods",
+        "available": "Available methods:\n• Email\n• Google\n• Discord"
+      },
+      "modal": {
+        "title": "Personal Information",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "close": "Close"
+      },
+      "achievements": {
+        "firstTree": "First Tree",
+        "co2Badge": "10 kg CO₂",
+        "airs1k": "1K Airs",
+        "airs5k": "5K Airs",
+        "kycVerified": "KYC Verified",
+        "recruiter": "Recruiter",
+        "partner": "Partner",
+        "platinum": "Platinum"
+      },
+      "footer": "Alternun Airs · v{{version}}"
     }
   },
   "web": {

@@ -8,41 +8,115 @@ set -euo pipefail
 STAGE="${1:-${STACK:-${SST_STAGE:-dev}}}"
 APP_NAME="${INFRA_APP_NAME:-alternun-infra}"
 REGION="${AWS_REGION:-us-east-1}"
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+REPO_ROOT=$(cd "$SCRIPT_DIR/../../.." && pwd)
 
 if ! command -v aws >/dev/null 2>&1; then
   echo "ERROR: aws CLI is required." >&2
   exit 1
 fi
 
+load_env_file() {
+  local env_file=$1
+  local line key value
+
+  [ -f "$env_file" ] || return 0
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    line="${line%$'\r'}"
+
+    case "$line" in
+      '' | \#*) continue ;;
+      export\ *) line="${line#export }" ;;
+    esac
+
+    key=${line%%=*}
+    value=${line#*=}
+
+    key=$(echo "$key" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    value=$(echo "$value" | sed -e 's/^[[:space:]]*//')
+
+    if [[ "$value" == \"*\" && "$value" == *\" ]]; then
+      value=${value:1:${#value}-2}
+    elif [[ "$value" == \'*\' && "$value" == *\' ]]; then
+      value=${value:1:${#value}-2}
+    fi
+
+    if [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+      if [[ -n "${!key+x}" ]]; then
+        continue
+      fi
+      export "$key=$value"
+    fi
+  done < "$env_file"
+}
+
+resolve_publishable_key_stage_suffix() {
+  case "${1:-}" in
+    prod|api-prod|production|*production*)
+      printf '%s\n' 'PROD'
+      ;;
+    dev|api-dev|*testnet*|*development*)
+      printf '%s\n' 'DEV'
+      ;;
+    *)
+      printf '%s\n' "$(printf '%s' "${1:-}" | tr '[:lower:]-' '[:upper:]_')"
+      ;;
+  esac
+}
+
+resolve_publishable_key() {
+  local stage_suffix=$1
+  local candidate
+
+  for candidate in \
+    "SUPABASE_PUBLISHABLE_KEY_${stage_suffix}" \
+    "EXPO_PUBLIC_SUPABASE_KEY_${stage_suffix}" \
+    "SUPABASE_KEY_${stage_suffix}" \
+    "SUPABASE_PUBLISHABLE_KEY" \
+    "EXPO_PUBLIC_SUPABASE_KEY" \
+    "SUPABASE_KEY" \
+    "EXPO_PUBLIC_SUPABASE_ANON_KEY" \
+    "SUPABASE_ANON_KEY"
+  do
+    if [ -n "${!candidate:-}" ]; then
+      printf '%s\n' "${!candidate}"
+      return 0
+    fi
+  done
+}
+
+load_env_file "$REPO_ROOT/.env"
+
 stage_normalized=$(printf '%s' "$STAGE" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+stage_key_suffix=$(resolve_publishable_key_stage_suffix "$stage_normalized")
 
 case "$stage_normalized" in
   prod|api-prod|production|*production*)
     SUPABASE_URL="https://rjebeugdvwbjpaktrrbx.supabase.co"
-    SUPABASE_KEY="${EXPO_PUBLIC_SUPABASE_KEY_PROD:-${SUPABASE_KEY_PROD:-${EXPO_PUBLIC_SUPABASE_KEY:-${SUPABASE_KEY:-}}}}"
     AUTHENTIK_ISSUER="https://sso.alternun.co/application/o/alternun-mobile/"
     BETTER_AUTH_URL="https://api.alternun.co/auth"
     AUTH_EXCHANGE_URL="https://api.alternun.co/auth/exchange"
     ;;
   dev|api-dev|*testnet*|*development*)
     SUPABASE_URL="https://aznfyazjndfniwsocdka.supabase.co"
-    SUPABASE_KEY="${EXPO_PUBLIC_SUPABASE_KEY_DEV:-${SUPABASE_KEY_DEV:-${EXPO_PUBLIC_SUPABASE_KEY:-${SUPABASE_KEY:-}}}}"
     AUTHENTIK_ISSUER="https://testnet.sso.alternun.co/application/o/alternun-mobile/"
     BETTER_AUTH_URL="https://testnet.api.alternun.co/auth"
     AUTH_EXCHANGE_URL="https://testnet.api.alternun.co/auth/exchange"
     ;;
   *)
     SUPABASE_URL="https://rjebeugdvwbjpaktrrbx.supabase.co"
-    SUPABASE_KEY="${EXPO_PUBLIC_SUPABASE_KEY_PROD:-${SUPABASE_KEY_PROD:-${EXPO_PUBLIC_SUPABASE_KEY:-${SUPABASE_KEY:-}}}}"
     AUTHENTIK_ISSUER="https://testnet.sso.alternun.co/application/o/alternun-mobile/"
     BETTER_AUTH_URL="https://testnet.api.alternun.co/auth"
     AUTH_EXCHANGE_URL="https://testnet.api.alternun.co/auth/exchange"
     ;;
 esac
 
+SUPABASE_KEY=$(resolve_publishable_key "$stage_key_suffix")
+
 if [ -z "${SUPABASE_KEY:-}" ]; then
   echo "ERROR: Missing Supabase publishable key for stage '${STAGE}'." >&2
-  echo "Set EXPO_PUBLIC_SUPABASE_KEY_${stage_normalized^^} or SUPABASE_KEY_${stage_normalized^^} before bootstrapping SSM." >&2
+  echo "Set SUPABASE_PUBLISHABLE_KEY_${stage_key_suffix}, EXPO_PUBLIC_SUPABASE_KEY_${stage_key_suffix}, or the legacy EXPO_PUBLIC_SUPABASE_KEY / SUPABASE_KEY aliases before bootstrapping SSM." >&2
   exit 1
 fi
 

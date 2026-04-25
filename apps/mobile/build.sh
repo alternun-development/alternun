@@ -34,6 +34,74 @@ load_env_file() {
   done < "${env_file}"
 }
 
+resolve_supabase_key_stage_suffix() {
+  case "${1:-}" in
+    prod|production|api-prod|dashboard-prod|admin-prod|backend-prod|identity-prod|*production*)
+      printf '%s\n' 'PROD'
+      ;;
+    dev|api-dev|dashboard-dev|admin-dev|backend-dev|identity-dev|mobile|*testnet*|*development*|*preview*)
+      printf '%s\n' 'DEV'
+      ;;
+    *)
+      printf '%s\n' "$(printf '%s' "${1:-}" | tr '[:lower:]-' '[:upper:]_')"
+      ;;
+  esac
+}
+
+resolve_stage_supabase_key() {
+  local stage_suffix=$1
+  local candidate
+  local env_file
+  local value
+
+  for candidate in \
+    "SUPABASE_PUBLISHABLE_KEY_${stage_suffix}" \
+    "EXPO_PUBLIC_SUPABASE_KEY_${stage_suffix}" \
+    "SUPABASE_KEY_${stage_suffix}" \
+    "SUPABASE_PUBLISHABLE_KEY" \
+    "EXPO_PUBLIC_SUPABASE_KEY" \
+    "SUPABASE_KEY" \
+    "EXPO_PUBLIC_SUPABASE_ANON_KEY" \
+    "SUPABASE_ANON_KEY"
+  do
+    if [ -n "${!candidate:-}" ]; then
+      printf '%s\n' "${!candidate}"
+      return 0
+    fi
+  done
+
+  for env_file in ../../.env ../../.env.local; do
+    for candidate in \
+      "SUPABASE_PUBLISHABLE_KEY_${stage_suffix}" \
+      "EXPO_PUBLIC_SUPABASE_KEY_${stage_suffix}" \
+      "SUPABASE_KEY_${stage_suffix}" \
+      "SUPABASE_PUBLISHABLE_KEY" \
+      "EXPO_PUBLIC_SUPABASE_KEY" \
+      "SUPABASE_KEY" \
+      "EXPO_PUBLIC_SUPABASE_ANON_KEY" \
+      "SUPABASE_ANON_KEY"
+    do
+      value=$(read_env_file_value "$env_file" "$candidate")
+      if [ -n "$value" ]; then
+        printf '%s\n' "$value"
+        return 0
+      fi
+    done
+  done
+}
+
+read_env_file_value() {
+  local env_file=$1
+  local key=$2
+
+  [ -f "$env_file" ] || return 0
+
+  grep -E "^(export[[:space:]]+)?${key}=" "$env_file" \
+    | head -n 1 \
+    | sed -E "s/^(export[[:space:]]+)?${key}=//" \
+    | tr -d '\n'
+}
+
 seed_build_auth_env() {
   while IFS='=' read -r key value; do
     [[ -z "${key}" ]] && continue
@@ -235,28 +303,29 @@ fi
 detected_stage="${SST_STAGE:-${STACK:-${EXPO_PUBLIC_STAGE:-${EXPO_PUBLIC_ENV:-}}}}"
 if [ -n "$detected_stage" ]; then
   detected_stage_lower=$(echo "$detected_stage" | tr '[:upper:]' '[:lower:]')
+  stage_key_suffix=$(resolve_supabase_key_stage_suffix "$detected_stage_lower")
   # Pull the Supabase publishable key from the runtime environment instead of
   # embedding a literal key in this script so secret scanning stays clean.
-  stage_supabase_key="${EXPO_PUBLIC_SUPABASE_KEY:-${EXPO_PUBLIC_SUPABASE_ANON_KEY:-}}"
+  stage_supabase_key=$(resolve_stage_supabase_key "$stage_key_suffix")
   if [ -z "$stage_supabase_key" ] && [ -f "../../.env.local" ]; then
     stage_supabase_key=$(
-      grep -E '^(export[[:space:]]+)?EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)=' ../../.env.local \
+      grep -E '^(export[[:space:]]+)?(SUPABASE_PUBLISHABLE_KEY|EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)|SUPABASE_(KEY|ANON_KEY))=' ../../.env.local \
         | head -n 1 \
-        | sed -E 's/^(export[[:space:]]+)?EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)=//' \
+        | sed -E 's/^(export[[:space:]]+)?(SUPABASE_PUBLISHABLE_KEY|EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)|SUPABASE_(KEY|ANON_KEY))=//' \
         | tr -d '\n'
     )
   fi
   if [ -z "$stage_supabase_key" ]; then
-    echo "ERROR: EXPO_PUBLIC_SUPABASE_KEY is required for mobile stage '${detected_stage}'." >&2
-    echo "Set EXPO_PUBLIC_SUPABASE_KEY or EXPO_PUBLIC_SUPABASE_ANON_KEY before generating .env.production/.env.development." >&2
+    echo "ERROR: SUPABASE_PUBLISHABLE_KEY_${stage_key_suffix} is required for mobile stage '${detected_stage}'." >&2
+    echo "Set SUPABASE_PUBLISHABLE_KEY_${stage_key_suffix}, EXPO_PUBLIC_SUPABASE_KEY_${stage_key_suffix}, or the legacy EXPO_PUBLIC_SUPABASE_KEY / SUPABASE_KEY aliases before generating .env.production/.env.development." >&2
     exit 1
   fi
   case "$detected_stage_lower" in
     dev|*testnet*|*development*|*preview*)
       cat > .env.development << ENVFILE
 EXPO_PUBLIC_API_URL=https://testnet.api.alternun.co
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
-AUTH_EXECUTION_PROVIDER=supabase
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
+AUTH_EXECUTION_PROVIDER=better-auth
 EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 AUTH_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 EXPO_PUBLIC_AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange
