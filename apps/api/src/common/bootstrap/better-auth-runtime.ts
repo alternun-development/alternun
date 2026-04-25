@@ -4,6 +4,7 @@ import {
   resolveBetterAuthDevConfig,
 } from '../../modules/better-auth-dev/better-auth-dev.config';
 import { createBetterAuthDevAuth } from '../../modules/better-auth-dev/better-auth-dev.server';
+import { normalizeBetterAuthRequestBody } from './better-auth-request-body';
 import { applyBetterAuthCorsHeaders } from './better-auth-cors';
 import { shouldProxyBetterAuthPath } from './better-auth-proxy';
 
@@ -241,8 +242,9 @@ export async function handleBetterAuthRuntimeRequest(
   }
 
   const method = request.method.toUpperCase();
+  const normalizedRequestBody = normalizeBetterAuthRequestBody(requestPath, request.body);
   const requestBody =
-    method === 'GET' || method === 'HEAD' ? undefined : serializeRequestBody(request.body);
+    method === 'GET' || method === 'HEAD' ? undefined : serializeRequestBody(normalizedRequestBody);
   const runtimeRequest = new Request(
     buildRuntimeRequestUrl(requestUrl, requestHeaders, options.baseUrl),
     {
