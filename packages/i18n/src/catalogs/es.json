@@ -31,8 +31,9 @@
         "usernamePlaceholder": "p.ej., @juan_pérez",
         "referredByEmail": "Referido por correo (opcional)",
         "emailPlaceholder": "p.ej., amigo@ejemplo.com",
-        "invitationCode": "Codigo de invitacion (opcional)",
-        "codePlaceholder": "p.ej., INVITA123",
+        "invitationCode": "Codigo de referido (opcional)",
+        "codePlaceholder": "p.ej., edward-44ft34",
+        "detected": "Codigo de referido detectado: {{code}}",
         "submit": "Continuar",
         "submitStandalone": "Continuar a Iniciar Sesion",
         "skip": "Saltar",
@@ -86,6 +87,7 @@
       "divider": {
         "or": "o"
       },
+      "underMaintenance": "En mantenimiento",
       "errors": {
         "accountExistsSignInOrResend": "Ya existe una cuenta con este correo. Inicia sesion o reenvia la confirmacion abajo.",
         "authenticationFailed": "La autenticacion fallo. Intentalo de nuevo.",
@@ -103,6 +105,11 @@
       "footer": {
         "alreadyHaveAccount": "Ya tienes una cuenta? Inicia sesion",
         "dontHaveAccount": "No tienes una cuenta? Crea una"
+      },
+      "referral": {
+        "prompt": "Tienes un codigo de referido?",
+        "helper": "Agregalo antes de crear la cuenta. Lo conservaremos para el registro.",
+        "placeholder": "p.ej., edward-44ft34"
       },
       "modes": {
         "signIn": "Iniciar sesion",
@@ -504,6 +511,7 @@
       "sections": {
         "achievements": "Logros",
         "account": "Cuenta",
+        "referrals": "Referidos",
         "preferences": "Preferencias"
       },
       "header": {
@@ -543,6 +551,20 @@
         "recruiter": "Recluta",
         "partner": "Socio",
         "platinum": "Platinum"
+      },
+      "referral": {
+        "title": "Tu codigo de referido",
+        "subtitle": "Comparte tu codigo para invitar nuevos miembros.",
+        "codeLabel": "Codigo de referido",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "shareTitle": "Comparte tu enlace de referido",
+        "shareMessage": "Únete a Airs By Alternun con el codigo {{code}}: {{link}}",
+        "referralCount": "Miembros invitados",
+        "wasReferred": "Referencia registrada",
+        "referredBy": "Referido por {{name}}",
+        "codePending": "Cargando...",
+        "error": "No pudimos cargar los detalles de referido ahora mismo."
       },
       "footer": "Alternun Airs · v{{version}}"
     }

@@ -56,10 +56,38 @@ function fillBetterAuthUserIdentity(user: Record<string, unknown>): Record<strin
   };
 }
 
+type BetterAuthDevDatabase = {
+  updateTable(tableName: string): {
+    set(values: Record<string, unknown>): {
+      where(
+        column: string,
+        operator: string,
+        value: string
+      ): {
+        execute(): Promise<unknown>;
+      };
+    };
+  };
+  selectFrom(tableName: string): {
+    selectAll(): {
+      where(
+        column: string,
+        operator: string,
+        value: string
+      ): {
+        executeTakeFirst(): Promise<Record<string, unknown> | undefined>;
+      };
+    };
+  };
+};
+
+function getBetterAuthDevDatabase(): BetterAuthDevDatabase {
+  return getDatabase() as unknown as BetterAuthDevDatabase;
+}
+
 export function createBetterAuthDevAuth(
   config: BetterAuthDevConfig
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any {
+): ReturnType<typeof betterAuth> {
   const oauthProxyPlugin = buildOAuthProxyPlugin(config.oauthProxy);
   const hasGoogleProvider = Boolean(config.googleClientId && config.googleClientSecret);
   const hasDiscordProvider = Boolean(config.discordClientId && config.discordClientSecret);
@@ -107,14 +135,12 @@ export function createBetterAuthDevAuth(
   const isProduction = process.env.NODE_ENV === 'production';
   const db = getDatabase();
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   return betterAuth({
     appName: 'Alternun Dev Better Auth',
     baseURL: config.baseURL,
     basePath: '/auth',
     secret: config.secret,
     trustedOrigins,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     database: drizzleAdapter(db, {
       provider: 'pg',
       schema: betterAuthSchema,
@@ -149,6 +175,95 @@ export function createBetterAuthDevAuth(
             return Promise.resolve({
               data: fillBetterAuthUserIdentity(user),
             });
+          },
+          after: async (user: Record<string, unknown>) => {
+            // Send AIRS welcome email after user creation
+            const { sendAirsWelcomeEmail } = await import('../auth-exchange/airs-welcome.email');
+            const userId = user?.id;
+            const locale = user?.locale;
+            const email = user?.email;
+            const name = user?.name;
+
+            if (email && typeof email === 'string') {
+              try {
+                await sendAirsWelcomeEmail({
+                  to: email,
+                  displayName: typeof name === 'string' ? name : undefined,
+                  locale: typeof locale === 'string' ? locale : undefined,
+                  bonusAirs: 10,
+                });
+
+                // Mark welcome email as sent in database
+                if (userId && typeof userId === 'string') {
+                  const dbAny = getBetterAuthDevDatabase();
+                  try {
+                    await dbAny
+                      .updateTable('public.users' as never)
+                      .set({
+                        welcome_email_sent: true,
+                        welcome_email_sent_at: new Date(),
+                      } as never)
+                      .where('id' as never, '=' as never, userId as never)
+                      .execute();
+                  } catch (dbError) {
+                    console.error('Failed to mark welcome email as sent:', dbError);
+                  }
+                }
+              } catch (error) {
+                console.error('Failed to send AIRS welcome email:', error);
+              }
+            }
+          },
+        },
+      },
+      session: {
+        create: {
+          after: async (session: Record<string, unknown>) => {
+            try {
+              const userId = session?.userId;
+              if (!userId || typeof userId !== 'string') return;
+
+              const db = getBetterAuthDevDatabase();
+              const user = await db
+                .selectFrom('public.users' as never)
+                .selectAll()
+                .where('id' as never, '=' as never, userId as never)
+                .executeTakeFirst();
+
+              const userRecord = user;
+              if (!userRecord) return;
+
+              const welcomeEmailSent = userRecord.welcome_email_sent as boolean | undefined;
+              if (welcomeEmailSent === true) return;
+
+              const email = userRecord.email as string | undefined;
+              if (!email) return;
+
+              const { sendAirsWelcomeEmail } = await import('../auth-exchange/airs-welcome.email');
+              try {
+                await sendAirsWelcomeEmail({
+                  to: email,
+                  displayName: typeof userRecord.name === 'string' ? userRecord.name : undefined,
+                  locale: typeof userRecord.locale === 'string' ? userRecord.locale : undefined,
+                  bonusAirs: 10,
+                });
+
+                // Mark as sent
+                const dbAny = getBetterAuthDevDatabase();
+                await dbAny
+                  .updateTable('public.users' as never)
+                  .set({
+                    welcome_email_sent: true,
+                    welcome_email_sent_at: new Date(),
+                  } as never)
+                  .where('id' as never, '=' as never, userId as never)
+                  .execute();
+              } catch (emailError) {
+                console.error('Failed to send welcome email on login:', emailError);
+              }
+            } catch (error) {
+              console.error('Error checking welcome email status at login:', error);
+            }
           },
         },
       },
@@ -194,9 +309,7 @@ export function createBetterAuthDevAuth(
 }
 
 export function createBetterAuthDevServer(config: BetterAuthDevConfig): Server {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const auth = createBetterAuthDevAuth(config);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
   const authHandler = toNodeHandler(auth.handler);
 
   return createServer((req, res) => {

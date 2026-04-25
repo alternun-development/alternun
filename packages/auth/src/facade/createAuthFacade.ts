@@ -110,7 +110,7 @@ function createExecutionProvider(runtime: AuthRuntimeConfig, options: CreateAuth
       baseUrl: runtime.betterAuthBaseUrl,
       fetchFn: options.fetchFn,
       defaultProvider: 'google',
-      allowLegacySessionFallback: false,
+      allowLegacySessionFallback: hasLegacyEmailSupport(runtime),
       walletBridge: options.walletBridge ?? null,
       emailFallbackClient: hasLegacyEmailSupport(runtime) ? legacyClient : null,
     });

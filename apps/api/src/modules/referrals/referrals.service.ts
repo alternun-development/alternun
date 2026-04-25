@@ -1,6 +1,14 @@
-import { Injectable, InternalServerErrorException, Logger, ServiceUnavailableException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { CreateReferralDto } from './dto/create-referral.dto';
 import { ReferralResponseDto } from './dto/referral-response.dto';
+import { ReferralSummaryDto } from './dto/referral-summary.dto';
 
 interface ReferralRecord {
   id: string;
@@ -8,7 +16,19 @@ interface ReferralRecord {
   referred_by_username: string | null;
   referred_by_email: string | null;
   invitation_code: string | null;
+  referrer_user_id: string | null;
+  referrer_referral_code: string | null;
+  referral_link: string | null;
   created_at: string;
+}
+
+interface UserRecord {
+  id: string;
+  referral_code: string | null;
+  referred_by_user_id: string | null;
+  referred_by_referral_code: string | null;
+  email: string | null;
+  name: string | null;
 }
 
 interface SupabaseConfig {
@@ -16,14 +36,15 @@ interface SupabaseConfig {
   key: string;
 }
 
+function trimRuntimeValue(value: string | null | undefined): string {
+  return (value ?? '').trim();
+}
+
 function resolveSupabaseConfig(env: NodeJS.ProcessEnv = process.env): SupabaseConfig | null {
-  const url = (env.SUPABASE_URL ?? env.EXPO_PUBLIC_SUPABASE_URL ?? '').trim();
-  const key = (
-    env.SUPABASE_SERVICE_ROLE_KEY ??
-    env.SUPABASE_ANON_KEY ??
-    env.EXPO_PUBLIC_SUPABASE_KEY ??
-    ''
-  ).trim();
+  const url = trimRuntimeValue(env.SUPABASE_URL ?? env.EXPO_PUBLIC_SUPABASE_URL);
+  const key = trimRuntimeValue(
+    env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_ANON_KEY ?? env.EXPO_PUBLIC_SUPABASE_KEY
+  );
 
   if (!url || !key) {
     return null;
@@ -35,18 +56,151 @@ function resolveSupabaseConfig(env: NodeJS.ProcessEnv = process.env): SupabaseCo
   };
 }
 
-async function supabaseInsert<T>(
-  table: string,
-  body: Record<string, unknown>,
+function normalizeReferralCode(value: string | null | undefined): string | null {
+  const trimmed = trimRuntimeValue(value);
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed.toLowerCase();
+}
+
+function resolveReferralInput(dto: CreateReferralDto): string | null {
+  return normalizeReferralCode(dto.referral_code ?? dto.invitation_code ?? null);
+}
+
+function resolveReferralShareBaseUrl(
+  env: NodeJS.ProcessEnv,
+  requestedOrigin?: string | null
+): string {
+  const explicit =
+    trimRuntimeValue(env.EXPO_PUBLIC_ORIGIN) || trimRuntimeValue(env.AIRS_WEB_URL) || '';
+  if (explicit) {
+    return explicit.replace(/\/+$/, '');
+  }
+
+  const requestOrigin = trimRuntimeValue(requestedOrigin);
+  if (requestOrigin) {
+    return requestOrigin.replace(/\/+$/, '');
+  }
+
+  return 'https://airs.alternun.co';
+}
+
+function buildReferralLink(
+  referralCode: string,
+  env: NodeJS.ProcessEnv,
+  requestedOrigin?: string | null
+): string {
+  const baseUrl = resolveReferralShareBaseUrl(env, requestedOrigin);
+  return `${baseUrl}/auth/referral?code=${encodeURIComponent(referralCode)}`;
+}
+
+function parseCountHeader(contentRange: string | null): number {
+  if (!contentRange) {
+    return 0;
+  }
+
+  const match = contentRange.match(/\/(\d+|\*)$/);
+  if (!match || match[1] === '*') {
+    return 0;
+  }
+
+  const count = Number(match[1]);
+  return Number.isFinite(count) ? count : 0;
+}
+
+async function supabaseSelectOne<T>(
+  path: string,
+  query: Record<string, string>,
+  select: string,
   env: NodeJS.ProcessEnv = process.env
-): Promise<T> {
+): Promise<T | null> {
+  const url = new URL(`/rest/v1/${path}`, 'https://placeholder.local');
+  for (const [key, value] of Object.entries(query)) {
+    url.searchParams.set(key, value);
+  }
+  url.searchParams.set('select', select);
+
   const cfg = resolveSupabaseConfig(env);
   if (!cfg) {
     throw new ServiceUnavailableException('Supabase referrals integration is not configured');
   }
 
-  const res = await fetch(`${cfg.url}/rest/v1/${table}`, {
-    method: 'POST',
+  const response = await fetch(`${cfg.url}${url.pathname}${url.search}`, {
+    method: 'GET',
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      Accept: 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new InternalServerErrorException(
+      `Failed to read ${path}: ${response.status} ${text}`.trim()
+    );
+  }
+
+  const rows = (await response.json().catch(() => [])) as T[];
+  return rows[0] ?? null;
+}
+
+async function supabaseSelectCount(
+  path: string,
+  query: Record<string, string>,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<number> {
+  const url = new URL(`/rest/v1/${path}`, 'https://placeholder.local');
+  for (const [key, value] of Object.entries(query)) {
+    url.searchParams.set(key, value);
+  }
+  url.searchParams.set('select', 'id');
+
+  const cfg = resolveSupabaseConfig(env);
+  if (!cfg) {
+    throw new ServiceUnavailableException('Supabase referrals integration is not configured');
+  }
+
+  const response = await fetch(`${cfg.url}${url.pathname}${url.search}`, {
+    method: 'GET',
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      Accept: 'application/json',
+      Prefer: 'count=exact',
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new InternalServerErrorException(
+      `Failed to count ${path}: ${response.status} ${text}`.trim()
+    );
+  }
+
+  return parseCountHeader(response.headers.get('content-range'));
+}
+
+async function supabaseUpdateOne<T>(
+  path: string,
+  query: Record<string, string>,
+  body: Record<string, unknown>,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<T | null> {
+  const url = new URL(`/rest/v1/${path}`, 'https://placeholder.local');
+  for (const [key, value] of Object.entries(query)) {
+    url.searchParams.set(key, value);
+  }
+
+  const cfg = resolveSupabaseConfig(env);
+  if (!cfg) {
+    throw new ServiceUnavailableException('Supabase referrals integration is not configured');
+  }
+
+  const response = await fetch(`${cfg.url}${url.pathname}${url.search}`, {
+    method: 'PATCH',
     headers: {
       apikey: cfg.key,
       Authorization: `Bearer ${cfg.key}`,
@@ -57,19 +211,49 @@ async function supabaseInsert<T>(
     body: JSON.stringify(body),
   });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
     throw new InternalServerErrorException(
-      `Failed to create referral: ${res.status} ${text}`.trim()
+      `Failed to update ${path}: ${response.status} ${text}`.trim()
     );
   }
 
-  const rows = (await res.json()) as T[];
-  if (!rows.length) {
-    throw new InternalServerErrorException('Failed to create referral: empty response');
+  const rows = (await response.json().catch(() => [])) as T[];
+  return rows[0] ?? null;
+}
+
+async function supabaseUpsertOne<T>(
+  path: string,
+  conflictKey: string,
+  body: Record<string, unknown>,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<T | null> {
+  const cfg = resolveSupabaseConfig(env);
+  if (!cfg) {
+    throw new ServiceUnavailableException('Supabase referrals integration is not configured');
   }
 
-  return rows[0];
+  const response = await fetch(`${cfg.url}/rest/v1/${path}?on_conflict=${conflictKey}`, {
+    method: 'POST',
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates,return=representation',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new InternalServerErrorException(
+      `Failed to upsert ${path}: ${response.status} ${text}`.trim()
+    );
+  }
+
+  const rows = (await response.json().catch(() => [])) as T[];
+  return rows[0] ?? null;
 }
 
 @Injectable()
@@ -82,29 +266,137 @@ export class ReferralsService {
       this.logger.warn(
         'Supabase referrals integration is not configured; refusing referral creation.'
       );
-      throw new ServiceUnavailableException(
-        'Supabase referrals integration is not configured'
-      );
+      throw new ServiceUnavailableException('Supabase referrals integration is not configured');
     }
 
-    const data = await supabaseInsert<ReferralRecord>('referrals', {
+    const currentUser = await this.getUserById(userId);
+    if (!currentUser) {
+      throw new NotFoundException(`User ${userId} not found`);
+    }
+
+    const referralCode = resolveReferralInput(dto);
+    const referredByUsername = trimRuntimeValue(dto.referred_by_username) || null;
+    const referredByEmail = trimRuntimeValue(dto.referred_by_email) || null;
+
+    let resolvedReferrerUserId = currentUser.referred_by_user_id;
+    let resolvedReferrerReferralCode = currentUser.referred_by_referral_code;
+
+    if (!resolvedReferrerUserId && referralCode) {
+      const referrer = await this.getUserByReferralCode(referralCode);
+      if (!referrer) {
+        throw new BadRequestException(`Referral code ${referralCode} is invalid`);
+      }
+
+      if (referrer.id === userId) {
+        throw new BadRequestException('Self-referrals are not allowed');
+      }
+
+      const updatedUser = await supabaseUpdateOne<UserRecord>(
+        'users',
+        { id: `eq.${userId}` },
+        {
+          referred_by_user_id: referrer.id,
+          referred_by_referral_code: referrer.referral_code ?? referralCode,
+        }
+      );
+
+      resolvedReferrerUserId = updatedUser?.referred_by_user_id ?? referrer.id;
+      resolvedReferrerReferralCode =
+        updatedUser?.referred_by_referral_code ?? referrer.referral_code ?? referralCode;
+    }
+
+    if (resolvedReferrerUserId && !resolvedReferrerReferralCode) {
+      const existingReferrer = await this.getUserById(resolvedReferrerUserId);
+      resolvedReferrerReferralCode = existingReferrer?.referral_code ?? null;
+    }
+
+    const record = await supabaseUpsertOne<ReferralRecord>('referrals', 'user_id', {
       user_id: userId,
-      referred_by_username: dto.referred_by_username ?? null,
-      referred_by_email: dto.referred_by_email ?? null,
-      invitation_code: dto.invitation_code ?? null,
+      referred_by_username: referredByUsername,
+      referred_by_email: referredByEmail,
+      invitation_code: resolvedReferrerReferralCode,
+      referrer_user_id: resolvedReferrerUserId,
+      referrer_referral_code: resolvedReferrerReferralCode,
+      referral_link: resolvedReferrerReferralCode
+        ? buildReferralLink(resolvedReferrerReferralCode, process.env)
+        : null,
     });
 
-    return this.toDto(data);
+    if (!record) {
+      throw new InternalServerErrorException('Failed to persist referral record');
+    }
+
+    return this.toResponse(record);
   }
 
-  private toDto(data: ReferralRecord): ReferralResponseDto {
+  async getMe(userId: string, requestedOrigin?: string | null): Promise<ReferralSummaryDto> {
+    const cfg = resolveSupabaseConfig();
+    if (!cfg) {
+      this.logger.warn(
+        'Supabase referrals integration is not configured; refusing referral lookup.'
+      );
+      throw new ServiceUnavailableException('Supabase referrals integration is not configured');
+    }
+
+    const user = await this.getUserById(userId);
+    if (!user) {
+      throw new NotFoundException(`User ${userId} not found`);
+    }
+
+    const referralCount = await supabaseSelectCount('referrals', {
+      referrer_user_id: `eq.${userId}`,
+    });
+
+    let referrer: UserRecord | null = null;
+    if (user.referred_by_user_id) {
+      referrer = await this.getUserById(user.referred_by_user_id);
+    }
+
+    const referralCode = user.referral_code;
+    if (!referralCode) {
+      this.logger.warn(`User ${userId} has no referral code`);
+      throw new InternalServerErrorException('Referral code missing for user');
+    }
+
     return {
-      id: data.id,
-      user_id: data.user_id,
-      referred_by_username: data.referred_by_username,
-      referred_by_email: data.referred_by_email,
-      invitation_code: data.invitation_code,
-      created_at: data.created_at,
+      user_id: user.id,
+      referral_code: referralCode,
+      referral_link: buildReferralLink(referralCode, process.env, requestedOrigin),
+      referral_count: referralCount,
+      referred_by_user_id: user.referred_by_user_id,
+      referred_by_referral_code: user.referred_by_referral_code,
+      referred_by_name: referrer?.name ?? null,
+      referred_by_email: referrer?.email ?? null,
+    };
+  }
+
+  private async getUserById(userId: string): Promise<UserRecord | null> {
+    return supabaseSelectOne<UserRecord>(
+      'users',
+      { id: `eq.${userId}` },
+      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name'
+    );
+  }
+
+  private async getUserByReferralCode(referralCode: string): Promise<UserRecord | null> {
+    return supabaseSelectOne<UserRecord>(
+      'users',
+      { referral_code: `eq.${normalizeReferralCode(referralCode) ?? ''}` },
+      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name'
+    );
+  }
+
+  private toResponse(record: ReferralRecord): ReferralResponseDto {
+    return {
+      id: record.id,
+      user_id: record.user_id,
+      referred_by_username: record.referred_by_username,
+      referred_by_email: record.referred_by_email,
+      invitation_code: record.invitation_code,
+      referrer_user_id: record.referrer_user_id,
+      referrer_referral_code: record.referrer_referral_code,
+      referral_link: record.referral_link,
+      created_at: record.created_at,
     };
   }
 }

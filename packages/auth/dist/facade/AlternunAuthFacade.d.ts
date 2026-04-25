@@ -33,6 +33,7 @@ export declare class AlternunAuthFacade implements AlternunAuthFacadeCompat {
   private readonly options;
   runtime: AuthRuntime;
   private currentUser;
+  private hasResolvedAuthState;
   private currentCompatUser;
   private currentExecutionSession;
   private currentIssuerSession;
