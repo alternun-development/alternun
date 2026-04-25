@@ -175,6 +175,18 @@
           "message": "{{error}}"
         }
       },
+      "welcomeBonusModal": {
+        "title": "Welcome to Airs By Alternun!",
+        "subtitle": "You've received your welcome bonus",
+        "description": "As a new member, we're giving you 10 Airs to kick start your sustainable journey. Use them to explore projects and make a real environmental impact.",
+        "amount": "10 AIRS",
+        "claimButton": "Claim Bonus",
+        "claimingButton": "Claiming...",
+        "alreadyClaimed": "Bonus Already Claimed",
+        "alreadyClaimedMessage": "You've already claimed your welcome bonus.",
+        "successTitle": "Bonus Claimed!",
+        "successMessage": "Your 10 Airs are now in your account. Start earning more by participating in sustainable activities!"
+      },
       "activityFeed": {
         "title": "Recent Activity",
         "subtitle": {
@@ -470,6 +482,8 @@
         "onboarding": "Onboarding"
       },
       "showIntroAgain": "Don't Show Intro Again",
+      "showWelcomeBonusModal": "Show Welcome Bonus",
+      "localPreferenceHelp": "Stored locally on this device",
       "subtitle": "Manage interface preferences and account-level controls.",
       "title": "Settings"
     },

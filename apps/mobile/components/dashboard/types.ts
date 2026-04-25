@@ -40,6 +40,7 @@ export interface AirsDashboardSnapshot {
   locale: string | null;
   profileComplete: boolean;
   firstDashboardRecorded: boolean;
+  registrationBonusClaimed: boolean;
   welcomeEmailSentAt: string | null;
   profileBonusAwardedAt: string | null;
   profileCompletedAt: string | null;

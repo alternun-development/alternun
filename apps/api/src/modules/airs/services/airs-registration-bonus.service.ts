@@ -89,8 +89,21 @@ export class AirsRegistrationBonusService {
         balance: rpcData.airs_balance ?? 0,
       };
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (
+        message.includes('not found') ||
+        message.includes('failed [400]') ||
+        message.includes('AIRS user id') ||
+        message.includes('Invalid or missing user ID in token')
+      ) {
+        this.logger.warn('Registration bonus claim skipped', {
+          error: message,
+        });
+        return { awarded: false, balance: 0 };
+      }
+
       this.logger.error('Error in awardRegistrationBonus', {
-        error: error instanceof Error ? error.message : String(error),
+        error: message,
       });
       throw error;
     }

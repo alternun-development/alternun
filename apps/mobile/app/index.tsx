@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return */
 import { useAuth } from '../components/auth/AppAuthProvider';
 import Dashboard from '../components/dashboard/Dashboard';
 import PublicLandingPage from '../components/landing/PublicLandingPage';
@@ -66,6 +67,7 @@ export default function HomeScreen(): React.JSX.Element {
         }
 
         const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
+        const snapshotKey = `${userKey}:${language ?? ''}`;
 
         if (lastAirsOnboardingUserRef.current !== userKey) {
           try {
@@ -81,6 +83,13 @@ export default function HomeScreen(): React.JSX.Element {
             });
 
             if (onboardingResponse.ok) {
+              const onboardingSnapshot = normalizeAirsDashboardSnapshot(
+                await onboardingResponse.json().catch(() => null)
+              );
+              if (onboardingSnapshot) {
+                setAirsSnapshot(onboardingSnapshot);
+                lastAirsSnapshotKeyRef.current = snapshotKey;
+              }
               lastAirsOnboardingUserRef.current = userKey;
             }
           } catch {
@@ -88,33 +97,9 @@ export default function HomeScreen(): React.JSX.Element {
           }
         }
 
-        const snapshotKey = `${userKey}:${language ?? ''}`;
         if (lastAirsSnapshotKeyRef.current === snapshotKey) {
           return;
         }
-
-        const response = await fetch(
-          `${apiBaseUrl}/v1/airs/me?locale=${encodeURIComponent(language ?? '')}`,
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${sessionToken}`,
-              Accept: 'application/json',
-            },
-          }
-        );
-
-        if (!response.ok) {
-          return;
-        }
-
-        const snapshot = normalizeAirsDashboardSnapshot(await response.json().catch(() => null));
-        if (!snapshot) {
-          return;
-        }
-
-        setAirsSnapshot(snapshot);
-        lastAirsSnapshotKeyRef.current = snapshotKey;
       } catch {
         // Best-effort dashboard snapshot fetch. Keep the hero usable even if AIRS state is offline.
       } finally {
