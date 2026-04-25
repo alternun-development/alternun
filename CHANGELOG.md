@@ -1,3 +1,16 @@
+## [1.0.231](https://github.com/alternun-development/alternun/compare/v1.0.230-dev.0...v1.0.231) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** fix(docs,web): build
+- **repo:** fix(api): better-auth-signup.provider, better-auth-dev.server
+- **repo:** test(repo,api,docs): .env, airs-welcome.email, better-auth-dev.server, create-referral.dto
+
+### Bug Fixes
+
+- **api:** better-auth-signup.provider, better-auth-dev.server ([b736031](https://github.com/alternun-development/alternun/commit/b73603115a3d115d30a57ddabad2805e36510785))
+- **docs,web:** build ([68d781d](https://github.com/alternun-development/alternun/commit/68d781dcda0c107e45234822633a5749eaf6ce21))
+
 ## [1.0.230](https://github.com/alternun-development/alternun/compare/v1.0.229-dev.0...v1.0.230) (2026-04-25)
 
 ### Bug Fixes
