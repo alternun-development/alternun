@@ -287,12 +287,13 @@ export default function Dashboard({
   onOpenSettingsPage,
   onWalletConnect,
   onSignOut,
-}: DashboardProps) {
+}: DashboardProps): React.JSX.Element {
   const [walletModalVisible, setWalletModalVisible] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [footerHeight, setFooterHeight] = useState(0);
   const [topNavHeight, setTopNavHeight] = useState(0);
+  const [bonusNotificationShown, setBonusNotificationShown] = useState(false);
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
   const scrollTopInset = Math.max(topNavHeight > 0 ? topNavHeight + 16 : 0, isMobile ? 88 : 104);
@@ -303,6 +304,7 @@ export default function Dashboard({
     items: notificationItems,
     markAllRead: markAllNotificationsRead,
     deleteNotif: dismissNotification,
+    addNotification,
   } = useNotifications();
   const router = useRouter();
   const isDark = themeMode === 'dark';
@@ -339,6 +341,32 @@ export default function Dashboard({
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+
+  // Show welcome bonus notification on first dashboard visit
+  React.useEffect(() => {
+    if (user && !bonusNotificationShown) {
+      const storageKey = `airs_welcome_bonus_${user.id}`;
+      const wasShown = typeof window !== 'undefined' && localStorage.getItem(storageKey);
+
+      if (!wasShown) {
+        // Show welcome bonus notification
+        addNotification({
+          type: 'success',
+          title: '¡Bienvenido!',
+          body: 'Has recibido 10 Airs como bono de bienvenida. ¡Comienza tu jornada sustentable!',
+          timestamp: new Date(),
+          read: false,
+          archived: false,
+        });
+
+        // Mark as shown to avoid duplicate notifications
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(storageKey, '1');
+        }
+        setBonusNotificationShown(true);
+      }
+    }
+  }, [user, bonusNotificationShown, addNotification]);
 
   const walletAddress = getWalletAddress(user);
   const walletProvider = getWalletProvider(user);
@@ -576,7 +604,7 @@ export default function Dashboard({
   );
 }
 
-function SectionDivider({ isDark }: { isDark: boolean }) {
+function SectionDivider({ isDark }: { isDark: boolean }): React.JSX.Element {
   return (
     <View
       style={[

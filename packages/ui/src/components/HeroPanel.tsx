@@ -95,6 +95,19 @@ export function resolveTier(score: number): AirsTier {
   return 'bronze';
 }
 
+function resolveTierSpec(tier: AirsTier): TierSpec {
+  switch (tier) {
+    case 'bronze':
+      return TIERS.bronze;
+    case 'silver':
+      return TIERS.silver;
+    case 'gold':
+      return TIERS.gold;
+    case 'platinum':
+      return TIERS.platinum;
+  }
+}
+
 function fmtScore(n: number): string {
   return n.toLocaleString();
 }
@@ -140,7 +153,7 @@ export function HeroPanel({
 }: HeroPanelProps): React.JSX.Element {
   const safeScore = score ?? 0;
   const tier = previewMode || score == null ? 'bronze' : resolveTier(safeScore);
-  const tierSpec = TIERS[tier];
+  const tierSpec = resolveTierSpec(tier);
 
   // Compute last updated time: use provided updatedAt or fallback to now (initial load)
   const lastUpdatedAt = _updatedAt ?? new Date().toISOString();
@@ -160,8 +173,6 @@ export function HeroPanel({
   const greetingColor = '#CBAB35';
   const textPrimary = '#ffffff';
   const textMuted = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.75)';
-  const orbA = isDark ? 'rgba(28,203,161,0.11)' : 'rgba(11,130,120,0.08)';
-  const orbB = isDark ? 'rgba(11,90,95,0.20)' : 'rgba(11,90,95,0.10)';
   const divider = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.10)';
   const accentColor = isDark ? palette.teal : palette.tealDark;
 
@@ -337,14 +348,8 @@ export function HeroPanel({
     <ThemeProvider mode={isDark ? 'dark' : 'light'}>
       <View style={[styles.container]}>
         {/* Decorative ambient orbs — top-right + bottom-left */}
-        <Animated.View
-          pointerEvents='none'
-          style={[styles.orbTR, { backgroundColor: orbA }, orbTRStyle]}
-        />
-        <Animated.View
-          pointerEvents='none'
-          style={[styles.orbBL, { backgroundColor: orbB }, orbBLStyle]}
-        />
+        <Animated.View pointerEvents='none' style={[styles.orbTR, orbTRStyle]} />
+        <Animated.View pointerEvents='none' style={[styles.orbBL, orbBLStyle]} />
 
         {/* Reload button (top-right) — shown when onReload is provided */}
         {onReload && (
@@ -548,6 +553,11 @@ const styles = StyleSheet.create({
     borderRadius: 160,
     top: -120,
     right: -100,
+    backgroundColor: 'transparent',
+    shadowColor: 'rgba(28,203,161,0.12)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 90,
   },
   orbBL: {
     position: 'absolute',
@@ -556,6 +566,11 @@ const styles = StyleSheet.create({
     borderRadius: 120,
     bottom: -80,
     left: -70,
+    backgroundColor: 'transparent',
+    shadowColor: 'rgba(11,90,95,0.20)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 85,
   },
 
   /* Text */

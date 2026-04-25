@@ -397,6 +397,9 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
           ({ createAuthClient }) =>
             createAuthClient({
               baseURL: resolveBrowserClientBaseUrl(this.requireBaseUrl()),
+              fetchOptions: {
+                credentials: 'include',
+              },
             }) as unknown as BetterAuthBrowserClientLike
         )
         .catch(() => null);
