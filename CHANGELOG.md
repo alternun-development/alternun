@@ -1,3 +1,32 @@
+## [1.0.227](https://github.com/alternun-development/alternun/compare/v1.0.226-dev.0...v1.0.227) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** feat: add comprehensive database migration system with environment detection
+- **repo:** fix(achievements): fix RPC function column names and SQL syntax
+- **repo:** fix(achievements): handle array responses from get_user_achievements RPC
+- **repo:** feat(achievements): expand to 16 total achievements
+- **repo:** feat(achievements): implement user achievement tracking system
+
+### Bug Fixes
+
+- **achievements:** fix RPC function column names and SQL syntax ([2d0abc6](https://github.com/alternun-development/alternun/commit/2d0abc6e7dc9b3ba8e6d4cf1d1660ef186f99b8e))
+- **achievements:** handle array responses from get_user_achievements RPC ([e23373e](https://github.com/alternun-development/alternun/commit/e23373eeb587e1a980c1cd3ff692a0c0ce89b97e))
+- **airs,mobile:** award registration bonus after email verification ([b71450e](https://github.com/alternun-development/alternun/commit/b71450e561fdf4729c6f41b13beda739c6c89475))
+- **mobile:** add textAlign center to confirmation button text ([37956c1](https://github.com/alternun-development/alternun/commit/37956c17af81f40259178394f7eb77f6c3b27726))
+- **mobile:** improve email confirmation button styling and interactions ([b2a0f5b](https://github.com/alternun-development/alternun/commit/b2a0f5ba3283c86b419781899283881dccad44f3))
+- **mobile:** refresh user state after email verification ([b36b25b](https://github.com/alternun-development/alternun/commit/b36b25b9827e9058416f9c8082b9dbb66822c29d))
+- **mobile:** refresh user state periodically for email verification ([cb6388c](https://github.com/alternun-development/alternun/commit/cb6388cbb28afed13db89009143262a8738f26a2))
+- **mobile:** remove redundant error box from email confirmation section only ([771727f](https://github.com/alternun-development/alternun/commit/771727ffe1ea33156bc3e4e42083cc357023d7c0))
+- **mobile:** use width 100% for confirmation button to ensure full stretch ([7f6eadb](https://github.com/alternun-development/alternun/commit/7f6eadb1b475622ecdc0b61e7af6f9453ee96018))
+- **mobile:** wrap button content in View for proper style application ([d78aa75](https://github.com/alternun-development/alternun/commit/d78aa75e1e4ca5d243f1f0d32ca74c588ea3ff62))
+
+### Features
+
+- **achievements:** expand to 16 total achievements ([6b42e82](https://github.com/alternun-development/alternun/commit/6b42e820cd661b65f373df82ce761430e3384c30))
+- **achievements:** implement user achievement tracking system ([7316fd5](https://github.com/alternun-development/alternun/commit/7316fd5c4f69fc75775f0f547f66cfcd119caa3b))
+- add comprehensive database migration system with environment detection ([43a2847](https://github.com/alternun-development/alternun/commit/43a2847c04e4e21edf6f328478f3893a7d2f0316))
+
 ## [1.0.226](https://github.com/alternun-development/alternun/compare/v1.0.225-dev.0...v1.0.226) (2026-04-25)
 
 ### Bug Fixes
