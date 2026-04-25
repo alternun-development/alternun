@@ -130,7 +130,9 @@ async function copyRuntimeResponse(
   void reply.code(response.status);
 
   const responseHeaders = response.headers as ResponseHeadersWithCookies;
-  const setCookies = responseHeaders.getSetCookie?.();
+  const setCookies =
+    responseHeaders.getSetCookie?.() ??
+    (response.headers.get('set-cookie') ? [response.headers.get('set-cookie') as string] : []);
   if (setCookies?.length) {
     void reply.header('set-cookie', setCookies);
   }

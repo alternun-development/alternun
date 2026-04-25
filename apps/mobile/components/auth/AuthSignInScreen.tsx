@@ -1807,23 +1807,26 @@ export default function AuthSignInScreen({
                       transitionToSignInForm(confirmationEmail ?? '');
                     }
                   }}
-                  style={({ pressed }) => [
-                    styles.confirmationSecondaryButton,
-                    {
-                      borderColor: p.accent,
-                      backgroundColor: pressed ? p.accent : 'transparent',
-                    },
-                  ]}
                 >
                   {({ pressed }) => (
-                    <Text
+                    <View
                       style={[
-                        styles.confirmationSecondaryButtonText,
-                        { color: pressed ? '#050510' : p.accent, textAlign: 'center' },
+                        styles.confirmationSecondaryButton,
+                        {
+                          borderColor: p.accent,
+                          backgroundColor: pressed ? p.accent : 'transparent',
+                        },
                       ]}
                     >
-                      {t('authModal.actions.alreadyConfirmedContinue')}
-                    </Text>
+                      <Text
+                        style={[
+                          styles.confirmationSecondaryButtonText,
+                          { color: pressed ? '#050510' : p.accent },
+                        ]}
+                      >
+                        {t('authModal.actions.alreadyConfirmedContinue')}
+                      </Text>
+                    </View>
                   )}
                 </Pressable>
 
