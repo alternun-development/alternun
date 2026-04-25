@@ -1801,24 +1801,31 @@ export default function AuthSignInScreen({
                   </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity
-                  activeOpacity={0.85}
+                <Pressable
                   onPress={() => {
                     if (!isBusy) {
                       transitionToSignInForm(confirmationEmail ?? '');
                     }
                   }}
-                  style={[
+                  style={({ pressed }) => [
                     styles.confirmationSecondaryButton,
-                    { borderColor: p.inputBorder, backgroundColor: p.inputBg },
+                    {
+                      borderColor: p.accent,
+                      backgroundColor: pressed ? p.accent : 'transparent',
+                    },
                   ]}
                 >
-                  <Text
-                    style={[styles.confirmationSecondaryButtonText, { color: p.textSecondary }]}
-                  >
-                    {t('authModal.actions.alreadyConfirmedContinue')}
-                  </Text>
-                </TouchableOpacity>
+                  {({ pressed }) => (
+                    <Text
+                      style={[
+                        styles.confirmationSecondaryButtonText,
+                        { color: pressed ? '#050510' : p.accent },
+                      ]}
+                    >
+                      {t('authModal.actions.alreadyConfirmedContinue')}
+                    </Text>
+                  )}
+                </Pressable>
 
                 <TouchableOpacity
                   activeOpacity={0.8}
@@ -2242,17 +2249,19 @@ const styles = createTypographyStyles({
   },
   confirmationSecondaryButton: {
     alignSelf: 'stretch',
-    minHeight: 40,
-    borderRadius: 18,
-    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    borderRadius: 24,
+    borderWidth: 2,
     paddingHorizontal: 18,
+    paddingVertical: 12,
   },
   confirmationSecondaryButtonText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    color: '#cfd1ea',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
   buttonDisabled: {
     opacity: 0.6,
