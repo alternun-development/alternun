@@ -1406,9 +1406,11 @@ function PerfilTab({
             unlockedAt: string | null;
           }>;
           setAchievements(data);
+        } else {
+          console.warn(`Failed to fetch achievements: ${response.status}`, await response.text());
         }
-      } catch {
-        // Silently fail if achievements endpoint is unavailable
+      } catch (error) {
+        console.warn('Error fetching achievements:', error);
       }
     };
 
