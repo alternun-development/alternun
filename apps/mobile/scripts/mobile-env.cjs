@@ -52,7 +52,8 @@ function loadMobileEnv(
 
   // Load stage-specific environment file if deploying
   // Priority: .env.development/.env.production → .env.local → shell env
-  const stage = envVars.SST_STAGE || envVars.STACK || envVars.EXPO_PUBLIC_STAGE || envVars.EXPO_PUBLIC_ENV;
+  const stage =
+    envVars.SST_STAGE || envVars.STACK || envVars.EXPO_PUBLIC_STAGE || envVars.EXPO_PUBLIC_ENV;
   if (stage) {
     const stageNormalized = stage.toLowerCase();
     let stageFile = '';
@@ -119,8 +120,7 @@ function shouldUseInfraEnvFallback(env = process.env) {
 
 function resolveFileEnv(env = process.env, options = {}) {
   const fileEnv = options.fileEnv ?? loadMobileEnv(options.mobileRoot, env, options);
-  const useInfraEnvFallback =
-    options.useInfraEnvFallback ?? shouldUseInfraEnvFallback(env);
+  const useInfraEnvFallback = options.useInfraEnvFallback ?? shouldUseInfraEnvFallback(env);
 
   if (!useInfraEnvFallback) {
     return fileEnv;
@@ -246,18 +246,9 @@ function resolveMobilePublicAuthEnv(env = process.env, options = {}) {
       ['EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE'],
       ''
     ),
-    authentikIssuer: readEnvValue(
-      env,
-      fileEnv,
-      ['EXPO_PUBLIC_AUTHENTIK_ISSUER'],
-      ''
-    ),
-    authentikClientId: readEnvValue(
-      env,
-      fileEnv,
-      ['EXPO_PUBLIC_AUTHENTIK_CLIENT_ID'],
-      ''
-    ),
+    authentikIssuer: readEnvValue(env, fileEnv, ['EXPO_PUBLIC_AUTHENTIK_ISSUER'], ''),
+    authentikClientId: readEnvValue(env, fileEnv, ['EXPO_PUBLIC_AUTHENTIK_CLIENT_ID'], ''),
+    enableSocialAuth: readEnvValue(env, fileEnv, ['EXPO_PUBLIC_ENABLE_SOCIAL_AUTH'], ''),
   };
 }
 
@@ -277,6 +268,7 @@ function resolveMobileBuildAuthEnv(env = process.env, options = {}) {
     : publicEnv.authentikSocialLoginMode || '';
   const authentikIssuer = publicEnv.authentikIssuer || '';
   const authentikClientId = publicEnv.authentikClientId || '';
+  const enableSocialAuth = deployStage ? 'false' : publicEnv.enableSocialAuth || '';
 
   const buildEnv = {
     AUTH_EXECUTION_PROVIDER: executionProvider,
@@ -297,6 +289,9 @@ function resolveMobileBuildAuthEnv(env = process.env, options = {}) {
   if (authentikClientId) {
     buildEnv.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID = authentikClientId;
   }
+  if (enableSocialAuth) {
+    buildEnv.EXPO_PUBLIC_ENABLE_SOCIAL_AUTH = enableSocialAuth;
+  }
 
   return buildEnv;
 }
@@ -312,6 +307,7 @@ function shouldDisableExpoDotenv(env = process.env, options = {}) {
     'AUTH_EXCHANGE_URL',
     'EXPO_PUBLIC_AUTHENTIK_ISSUER',
     'EXPO_PUBLIC_AUTHENTIK_CLIENT_ID',
+    'EXPO_PUBLIC_ENABLE_SOCIAL_AUTH',
   ].some((key) => {
     const value = env[key];
     return typeof value === 'string' && value.trim().length > 0;
@@ -321,8 +317,7 @@ function shouldDisableExpoDotenv(env = process.env, options = {}) {
     return true;
   }
 
-  const useInfraEnvFallback =
-    options.useInfraEnvFallback ?? shouldUseInfraEnvFallback(env);
+  const useInfraEnvFallback = options.useInfraEnvFallback ?? shouldUseInfraEnvFallback(env);
   if (!useInfraEnvFallback) {
     return false;
   }
@@ -338,6 +333,7 @@ function shouldDisableExpoDotenv(env = process.env, options = {}) {
     'AUTH_EXCHANGE_URL',
     'EXPO_PUBLIC_AUTHENTIK_ISSUER',
     'EXPO_PUBLIC_AUTHENTIK_CLIENT_ID',
+    'EXPO_PUBLIC_ENABLE_SOCIAL_AUTH',
   ].some((key) => {
     const value = infraEnv[key];
     return typeof value === 'string' && value.trim().length > 0;

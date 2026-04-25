@@ -90,6 +90,7 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
   runtime: AuthRuntime;
 
   private currentUser: User | null = null;
+  private hasResolvedAuthState = false;
   private currentCompatUser: User | null = null;
   private currentExecutionSession: ExecutionSession | null = null;
   private currentIssuerSession: IssuerSession | null = null;
@@ -159,6 +160,7 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
 
   private emit(user: User | null): void {
     this.currentUser = user;
+    this.hasResolvedAuthState = true;
     for (const listener of this.listeners) {
       listener(user);
     }
@@ -366,6 +368,10 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
   }
 
   async getUser(): Promise<User | null> {
+    if (this.hasResolvedAuthState) {
+      return this.currentUser;
+    }
+
     return this.refreshState('getUser', { allowExchange: true });
   }
 
@@ -701,6 +707,7 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
 
   async refreshExecutionSession(): Promise<ExecutionSession | null> {
     this.currentExecutionSession = await this.executionProvider.refreshExecutionSession();
+    this.hasResolvedAuthState = false;
     await this.refreshState('refreshExecutionSession', { allowExchange: true });
     return this.currentExecutionSession;
   }
@@ -713,6 +720,7 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
 
   async refreshIssuerSession(): Promise<IssuerSession | null> {
     this.currentIssuerSession = await this.issuerProvider.refreshIssuerSession();
+    this.hasResolvedAuthState = false;
     await this.refreshState('refreshIssuerSession', { allowExchange: true });
     return this.currentIssuerSession;
   }
@@ -724,6 +732,7 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
     await this.issuerProvider.logoutIssuerSession(options);
     this.currentIssuerSession = null;
     this.currentAlternunSession = null;
+    this.hasResolvedAuthState = false;
     await this.refreshState('logoutIssuerSession', { allowExchange: false });
   }
 

@@ -31,6 +31,11 @@ import { ToastSystem, type ToastItem } from '@alternun/ui';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import { AuroraBackground } from '../../components/referral/AuroraBackground';
 import { ReferralNavbar } from '../../components/referral/ReferralNavbar';
+import {
+  clearPendingReferralData,
+  readPendingReferralData,
+  writePendingReferralData,
+} from '../../components/auth/referralStorage';
 
 const INITIAL_CALLBACK_SEARCH = typeof window !== 'undefined' ? window.location.search : '';
 const INITIAL_CALLBACK_HASH = typeof window !== 'undefined' ? window.location.hash : '';
@@ -46,6 +51,7 @@ interface ReferralFormData {
 interface ReferralSubmissionData {
   referred_by_username: string | null;
   referred_by_email: string | null;
+  referral_code: string | null;
   invitation_code: string | null;
 }
 
@@ -84,9 +90,11 @@ async function getUserIdFromCallback(client: any): Promise<string | undefined> {
 export default function ReferralRoute(): React.JSX.Element {
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
-  const { next, code, username, email } = useLocalSearchParams<{
+  const { next, code, ref, referralCode, username, email } = useLocalSearchParams<{
     next?: string | string[];
     code?: string | string[];
+    ref?: string | string[];
+    referralCode?: string | string[];
     username?: string | string[];
     email?: string | string[];
   }>();
@@ -98,10 +106,14 @@ export default function ReferralRoute(): React.JSX.Element {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [currentLanguage, setCurrentLanguage] = useState<string>('en');
+  const resolvedReferralCode =
+    readSearchParam(code) ?? readSearchParam(ref) ?? readSearchParam(referralCode);
+  const referralReturnTarget =
+    readSearchParam(next) === '/auth/referral' ? '/' : readSearchParam(next) ?? '/';
   const [formData, setFormData] = useState<ReferralFormData>({
     referredByUsername: readSearchParam(username) ?? '',
     referredByEmail: readSearchParam(email) ?? '',
-    invitationCode: readSearchParam(code) ?? '',
+    invitationCode: resolvedReferralCode ?? '',
   });
   const hasHandledRef = useRef(false);
   const successRedirectTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
@@ -110,9 +122,7 @@ export default function ReferralRoute(): React.JSX.Element {
   const callbackPayload = useMemo(() => {
     return readWebAuthCallbackPayload(INITIAL_CALLBACK_SEARCH, INITIAL_CALLBACK_HASH);
   }, []);
-  const isCallbackMode = useMemo(() => {
-    return callbackPayload.hasPayload;
-  }, [callbackPayload.hasPayload]);
+  const isCallbackMode = callbackPayload.hasPayload;
 
   const dismissToast = (id: string): void => {
     setToasts((current) => current.filter((t) => t.id !== id));
@@ -152,18 +162,14 @@ export default function ReferralRoute(): React.JSX.Element {
         dataToSave = {
           referred_by_username: formData.referredByUsername ?? null,
           referred_by_email: formData.referredByEmail ?? null,
+          referral_code: formData.invitationCode ?? null,
           invitation_code: formData.invitationCode ?? null,
         };
-      } else if (typeof window !== 'undefined') {
-        const pending = sessionStorage.getItem('pendingReferralData');
+      } else {
+        const pending = readPendingReferralData();
         if (pending) {
-          try {
-            const parsed = JSON.parse(pending) as Record<string, unknown>;
-            dataToSave = parsed as unknown as ReferralSubmissionData;
-            sessionStorage.removeItem('pendingReferralData');
-          } catch {
-            // Invalid JSON, ignore
-          }
+          dataToSave = pending;
+          clearPendingReferralData();
         }
       }
 
@@ -207,7 +213,7 @@ export default function ReferralRoute(): React.JSX.Element {
         await completeAuthFlow();
       } else {
         // Standalone mode: redirect to sign in
-        router.push({ pathname: '/auth', params: { next: '/auth/referral' } });
+        router.push({ pathname: '/auth', params: { next: referralReturnTarget } });
       }
     } finally {
       setIsSubmitting(false);
@@ -224,18 +230,14 @@ export default function ReferralRoute(): React.JSX.Element {
       } else {
         // Standalone mode: save referral to sessionStorage and redirect to sign in
         if (hasAnyReferralData) {
-          if (typeof window !== 'undefined') {
-            sessionStorage.setItem(
-              'pendingReferralData',
-              JSON.stringify({
-                referred_by_username: formData.referredByUsername || null,
-                referred_by_email: formData.referredByEmail || null,
-                invitation_code: formData.invitationCode || null,
-              })
-            );
-          }
+          writePendingReferralData({
+            referred_by_username: formData.referredByUsername || null,
+            referred_by_email: formData.referredByEmail || null,
+            referral_code: formData.invitationCode || null,
+            invitation_code: formData.invitationCode || null,
+          });
         }
-        router.push({ pathname: '/auth', params: { next: '/auth/referral' } });
+        router.push({ pathname: '/auth', params: { next: referralReturnTarget } });
       }
     } catch (error) {
       setErrorMessage(
@@ -258,7 +260,7 @@ export default function ReferralRoute(): React.JSX.Element {
         await saveReferralAndComplete(userId);
       }
 
-      const redirectTarget = readSearchParam(next) ?? '/';
+      const redirectTarget = referralReturnTarget;
       router.replace(redirectTarget as AuthCallbackHref);
       return;
     }
@@ -283,7 +285,7 @@ export default function ReferralRoute(): React.JSX.Element {
         await saveReferralAndComplete(supabaseUserId);
       }
 
-      const redirectTarget = readSearchParam(next) ?? '/';
+      const redirectTarget = referralReturnTarget;
       router.replace(redirectTarget as AuthCallbackHref);
       return;
     }
@@ -312,14 +314,14 @@ export default function ReferralRoute(): React.JSX.Element {
     if (typeof window !== 'undefined') {
       successRedirectTimerRef.current = window.setTimeout(() => {
         clearRedirectTimers();
-        const redirectTarget = readSearchParam(next) ?? '/';
+        const redirectTarget = referralReturnTarget;
         router.replace(redirectTarget as AuthCallbackHref);
       }, 120);
       return;
     }
 
     {
-      const redirectTarget = readSearchParam(next) ?? '/';
+      const redirectTarget = referralReturnTarget;
       router.replace(redirectTarget as AuthCallbackHref);
     }
   };
@@ -422,6 +424,17 @@ export default function ReferralRoute(): React.JSX.Element {
       <ScrollView style={styles.screen} contentContainerStyle={styles.screenContent}>
         <View style={styles.card}>
           <Text style={styles.title}>{t('auth.referral.title', undefined, "You're Invited!")}</Text>
+          {resolvedReferralCode ? (
+            <View style={styles.detectedCodePill}>
+              <Text style={styles.detectedCodeLabel}>
+                {t(
+                  'auth.referral.detected',
+                  { code: resolvedReferralCode },
+                  `Referral code detected: ${resolvedReferralCode}`
+                )}
+              </Text>
+            </View>
+          ) : null}
           <Text style={styles.description}>
             {user
               ? t(
@@ -471,11 +484,11 @@ export default function ReferralRoute(): React.JSX.Element {
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>
-              {t('auth.referral.invitationCode', undefined, 'Invitation code (optional)')}
+              {t('auth.referral.invitationCode', undefined, 'Referral code (optional)')}
             </Text>
             <TextInput
               style={styles.input}
-              placeholder={t('auth.referral.codePlaceholder', undefined, 'e.g., INVITE123')}
+              placeholder={t('auth.referral.codePlaceholder', undefined, 'e.g., edward-44ft34')}
               placeholderTextColor='rgba(248, 250, 252, 0.4)'
               value={formData.invitationCode}
               onChangeText={(text) => setFormData({ ...formData, invitationCode: text })}
@@ -558,6 +571,21 @@ const styles = StyleSheet.create({
     color: 'rgba(248,250,252,0.82)',
     fontSize: 14,
     lineHeight: 21,
+  },
+  detectedCodePill: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(30,230,181,0.35)',
+    backgroundColor: 'rgba(30,230,181,0.12)',
+  },
+  detectedCodeLabel: {
+    color: '#b8ffee',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   description: {
     color: 'rgba(248,250,252,0.82)',

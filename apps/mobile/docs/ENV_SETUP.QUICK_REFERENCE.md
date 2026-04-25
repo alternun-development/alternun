@@ -57,6 +57,10 @@ This generates the testnet overlay from the canonical root env. If you need to
 adjust stage-specific values for local testing, edit the root env source and
 rerun `pnpm env:sync`.
 
+Note: the mobile app reads `apps/mobile/.env*` at build time. Changing the
+repo-root `.env` alone does not update Expo until `pnpm env:sync` regenerates
+the mobile files.
+
 ### Deploy to Testnet
 
 ```bash
@@ -94,6 +98,8 @@ Update check interval: 60 seconds
 ```
 
 Testnet social mode is `authentik` so the Discord button stays visible.
+The social-auth button flag is `false` on testnet, so the mobile sign-in screen
+does not render the extra social buttons unless a local override enables them.
 
 ### Production (.env.production)
 

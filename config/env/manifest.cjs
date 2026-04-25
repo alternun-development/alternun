@@ -201,6 +201,15 @@ const variables = {
       api: 'EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH',
     },
   },
+  EXPO_PUBLIC_ENABLE_SOCIAL_AUTH: {
+    description: 'Enable social auth buttons in the mobile auth screen',
+    example: 'true',
+    targets: {
+      mobile: 'EXPO_PUBLIC_ENABLE_SOCIAL_AUTH',
+      mobileLocal: 'EXPO_PUBLIC_ENABLE_SOCIAL_AUTH',
+      mobileDev: 'EXPO_PUBLIC_ENABLE_SOCIAL_AUTH',
+    },
+  },
   EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: {
     description: 'Auth execution provider selector',
     example: 'supabase',

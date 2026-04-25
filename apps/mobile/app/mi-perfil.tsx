@@ -49,6 +49,7 @@ import {
   type AchievementDef,
   type ColorPalette,
 } from '../components/profile/AchievementBadge';
+import { ReferralCard } from '../components/profile/ReferralCard';
 
 const AwardIcon = Award as React.FC<LucideProps>;
 const BellIcon = Bell as React.FC<LucideProps>;
@@ -1430,6 +1431,7 @@ function PerfilTab({
   const walletProvider = useMemo(() => getWalletProvider(user), [user]);
   const walletConnected = Boolean(walletAddress || walletProvider);
   const authMethod = useMemo(() => getAuthMethodLabel(user), [user]);
+  const { t } = useAppTranslation('mobile');
   const [showAccountInfoModal, setShowAccountInfoModal] = useState(false);
   const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -1598,6 +1600,14 @@ function PerfilTab({
               </TouchableOpacity>
             )}
           </View>
+        </SectionContainer>
+
+        {/* Referrals */}
+        <SectionContainer
+          title={t('profile.sections.referrals', undefined, 'Referidos')}
+          style={{ margin: 12 }}
+        >
+          <ReferralCard user={user} client={client} isDark={isDark} c={c} />
         </SectionContainer>
 
         {/* Cuenta */}

@@ -31,8 +31,9 @@
         "usernamePlaceholder": "e.g., @john_doe",
         "referredByEmail": "Referred by email (optional)",
         "emailPlaceholder": "e.g., friend@example.com",
-        "invitationCode": "Invitation code (optional)",
-        "codePlaceholder": "e.g., INVITE123",
+        "invitationCode": "Referral code (optional)",
+        "codePlaceholder": "e.g., edward-44ft34",
+        "detected": "Referral code detected: {{code}}",
         "submit": "Continue",
         "submitStandalone": "Continue to Sign In",
         "skip": "Skip",
@@ -86,6 +87,7 @@
       "divider": {
         "or": "or"
       },
+      "underMaintenance": "Under Maintenance",
       "errors": {
         "accountExistsSignInOrResend": "An account with this email already exists. Sign in, or resend the confirmation email below.",
         "authenticationFailed": "Authentication failed. Please try again.",
@@ -103,6 +105,11 @@
       "footer": {
         "alreadyHaveAccount": "Already have an account? Sign In",
         "dontHaveAccount": "Don't have an account? Sign Up"
+      },
+      "referral": {
+        "prompt": "Have a referral code?",
+        "helper": "Add it before you create the account. We will keep it for signup.",
+        "placeholder": "e.g., edward-44ft34"
       },
       "modes": {
         "signIn": "Sign In",
@@ -504,6 +511,7 @@
       "sections": {
         "achievements": "Achievements",
         "account": "Account",
+        "referrals": "Referrals",
         "preferences": "Preferences"
       },
       "header": {
@@ -543,6 +551,20 @@
         "recruiter": "Recruiter",
         "partner": "Partner",
         "platinum": "Platinum"
+      },
+      "referral": {
+        "title": "Your referral code",
+        "subtitle": "Share your code to invite new members.",
+        "codeLabel": "Referral code",
+        "copy": "Copy",
+        "copied": "Copied",
+        "shareTitle": "Share your referral link",
+        "shareMessage": "Join me on Airs By Alternun with code {{code}}: {{link}}",
+        "referralCount": "Invited members",
+        "wasReferred": "Referral on file",
+        "referredBy": "Referred by {{name}}",
+        "codePending": "Loading...",
+        "error": "Unable to load referral details right now."
       },
       "footer": "Alternun Airs · v{{version}}"
     }

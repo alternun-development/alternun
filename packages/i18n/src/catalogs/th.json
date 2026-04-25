@@ -31,8 +31,9 @@
         "usernamePlaceholder": "เช่น @john_doe",
         "referredByEmail": "อ้างอิงจากอีเมล (ตัวเลือก)",
         "emailPlaceholder": "เช่น friend@example.com",
-        "invitationCode": "รหัสเชิญ (ตัวเลือก)",
-        "codePlaceholder": "เช่น INVITE123",
+        "invitationCode": "รหัสแนะนำ (ตัวเลือก)",
+        "codePlaceholder": "เช่น edward-44ft34",
+        "detected": "ตรวจพบรหัสแนะนำ: {{code}}",
         "submit": "ดำเนินการต่อ",
         "submitStandalone": "ดำเนินการต่อไปยังลงชื่อเข้า",
         "skip": "ข้าม",
@@ -86,6 +87,7 @@
       "divider": {
         "or": "หรือ"
       },
+      "underMaintenance": "อยู่ระหว่างการบำรุงรักษา",
       "errors": {
         "accountExistsSignInOrResend": "มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว เข้าสู่ระบบหรือส่งอีเมลยืนยันอีกครั้งด้านล่าง",
         "authenticationFailed": "การยืนยันตัวตนล้มเหลว กรุณาลองใหม่อีกครั้ง",
@@ -103,6 +105,11 @@
       "footer": {
         "alreadyHaveAccount": "มีบัญชีอยู่แล้ว? เข้าสู่ระบบ",
         "dontHaveAccount": "ยังไม่มีบัญชี? สมัครใช้งาน"
+      },
+      "referral": {
+        "prompt": "มีรหัสแนะนำไหม?",
+        "helper": "เพิ่มรหัสก่อนสร้างบัญชี เราจะเก็บไว้ใช้ตอนสมัครใช้งาน",
+        "placeholder": "เช่น edward-44ft34"
       },
       "modes": {
         "signIn": "เข้าสู่ระบบ",
@@ -378,6 +385,7 @@
       "sections": {
         "achievements": "ความสำเร็จ",
         "account": "บัญชี",
+        "referrals": "การแนะนำ",
         "preferences": "ค่าปรับแต่ง"
       },
       "header": {
@@ -417,6 +425,20 @@
         "recruiter": "ผู้สรรหา",
         "partner": "พาร์ตเนอร์",
         "platinum": "แพลตตินัม"
+      },
+      "referral": {
+        "title": "รหัสแนะนำของคุณ",
+        "subtitle": "แชร์รหัสของคุณเพื่อเชิญสมาชิกใหม่",
+        "codeLabel": "รหัสแนะนำ",
+        "copy": "คัดลอก",
+        "copied": "คัดลอกแล้ว",
+        "shareTitle": "แชร์ลิงก์แนะนำของคุณ",
+        "shareMessage": "เข้าร่วม Airs By Alternun ด้วยรหัส {{code}}: {{link}}",
+        "referralCount": "สมาชิกที่เชิญ",
+        "wasReferred": "มีการแนะนำในระบบ",
+        "referredBy": "ถูกแนะนำโดย {{name}}",
+        "codePending": "กำลังโหลด...",
+        "error": "ไม่สามารถโหลดรายละเอียดการแนะนำได้ในขณะนี้"
       },
       "footer": "Alternun Airs · v{{version}}"
     }
