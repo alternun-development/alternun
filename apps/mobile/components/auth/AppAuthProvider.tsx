@@ -51,6 +51,36 @@ function getBetterAuthUrl(): string | undefined {
   return undefined;
 }
 
+const BETTER_AUTH_SESSION_KEY = 'alternun.better-auth.session';
+
+function readStoredBetterAuthSession(): string | null {
+  if (typeof globalThis?.localStorage === 'undefined') {
+    return null;
+  }
+
+  try {
+    return globalThis.localStorage.getItem(BETTER_AUTH_SESSION_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function storeBetterAuthSession(token: string | null): void {
+  if (typeof globalThis?.localStorage === 'undefined') {
+    return;
+  }
+
+  try {
+    if (token) {
+      globalThis.localStorage.setItem(BETTER_AUTH_SESSION_KEY, token);
+    } else {
+      globalThis.localStorage.removeItem(BETTER_AUTH_SESSION_KEY);
+    }
+  } catch {
+    // Silently fail - storage might be unavailable
+  }
+}
+
 function AuthSessionBridge(): null {
   const { client } = useAlternunAuth();
   const hasReceivedAuthStateRef = useRef(false);
@@ -63,6 +93,35 @@ function AuthSessionBridge(): null {
 
     if (isBetterAuthExecution) {
       clearOidcSession();
+      // For Better Auth, restore session from localStorage first (faster), then from cookies
+      const restoreSession = async () => {
+        try {
+          // Try to restore from localStorage first for faster initialization
+          const storedToken = readStoredBetterAuthSession();
+          if (storedToken) {
+            // We have a stored token, but still call getUser() to validate it with the server
+            // and get the latest user data
+          }
+
+          // Restore from cookies and validate with server
+          const user = await client.getUser();
+
+          // If we got a user, store their session token in localStorage for next time
+          if (user) {
+            const token = await client.getSessionToken?.();
+            if (token) {
+              storeBetterAuthSession(token);
+            }
+          } else {
+            // Clear stored session if validation failed
+            storeBetterAuthSession(null);
+          }
+        } catch (error) {
+          // Silently fail - user will see the landing page and can sign in
+          storeBetterAuthSession(null);
+        }
+      };
+      void restoreSession();
       return;
     }
 
@@ -80,13 +139,34 @@ function AuthSessionBridge(): null {
       });
   }, [client, isBetterAuthExecution]);
 
-  // Clear OIDC session and revoke token when user signs out
+  // Clear OIDC session and revoke token when user signs out; sync Better Auth session token on sign in
   useEffect(() => {
     if (Platform.OS !== 'web') return;
 
     if (isBetterAuthExecution) {
       clearOidcSession();
-      return;
+      // Also clear the stored Better Auth session from localStorage on sign out
+      storeBetterAuthSession(null);
+
+      // Listen for auth state changes to sync session token for all signin methods
+      return client.onAuthStateChange((user) => {
+        if (user) {
+          // User logged in - store session token for persistence across reloads
+          void (async () => {
+            try {
+              const token = await client.getSessionToken?.();
+              if (token) {
+                storeBetterAuthSession(token);
+              }
+            } catch {
+              // Silently fail
+            }
+          })();
+        } else {
+          // User logged out
+          storeBetterAuthSession(null);
+        }
+      });
     }
 
     return client.onAuthStateChange((user) => {
