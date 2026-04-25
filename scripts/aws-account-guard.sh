@@ -10,6 +10,19 @@ ALTERNUN_ACCOUNT_ID="124120088516"
 WRONG_ACCOUNT_ID="058264267235"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+mask_account_id() {
+    local account_id="$1"
+    if [ "${#account_id}" -lt 4 ]; then
+        printf '%s' "$account_id"
+        return
+    fi
+
+    printf '%s....%s' "${account_id:0:2}" "${account_id: -2}"
+}
+
+MASKED_ALTERNUN_ACCOUNT_ID="$(mask_account_id "${ALTERNUN_ACCOUNT_ID}")"
+MASKED_WRONG_ACCOUNT_ID="$(mask_account_id "${WRONG_ACCOUNT_ID}")"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -38,8 +51,8 @@ CURRENT_ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text 2>
 # FAIL if using wrong account
 if [ "${CURRENT_ACCOUNT}" = "${WRONG_ACCOUNT_ID}" ]; then
     echo -e "${RED}❌ CRITICAL: AWS CLI is using the WRONG account!${NC}"
-    echo -e "${RED}   Current account: ${CURRENT_ACCOUNT} (DEFAULT - DO NOT USE)${NC}"
-    echo -e "${RED}   Correct account: ${ALTERNUN_ACCOUNT_ID} (Alternun)${NC}"
+    echo -e "${RED}   Current account: $(mask_account_id "${CURRENT_ACCOUNT}") (DEFAULT - DO NOT USE)${NC}"
+    echo -e "${RED}   Correct account: ${MASKED_ALTERNUN_ACCOUNT_ID} (Alternun)${NC}"
     echo -e "${YELLOW}Run: bash scripts/setup-aws-account.sh${NC}"
     exit 1
 fi
@@ -53,9 +66,9 @@ fi
 
 # WARN if using unexpected account
 if [ "${CURRENT_ACCOUNT}" != "${ALTERNUN_ACCOUNT_ID}" ]; then
-    echo -e "${YELLOW}⚠️  WARNING: Using account ${CURRENT_ACCOUNT} (not ${ALTERNUN_ACCOUNT_ID})${NC}"
+    echo -e "${YELLOW}⚠️  WARNING: Using account $(mask_account_id "${CURRENT_ACCOUNT}") (not ${MASKED_ALTERNUN_ACCOUNT_ID})${NC}"
     echo -e "${YELLOW}   This may not be the Alternun account. Verify before proceeding.${NC}"
 fi
 
 # SUCCESS
-echo -e "${GREEN}✅ Using CORRECT Alternun AWS account: ${CURRENT_ACCOUNT}${NC}"
+echo -e "${GREEN}✅ Using CORRECT Alternun AWS account: $(mask_account_id "${CURRENT_ACCOUNT}")${NC}"
