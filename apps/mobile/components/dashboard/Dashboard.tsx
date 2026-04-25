@@ -14,6 +14,7 @@ import AppInfoFooter from '../common/AppInfoFooter';
 import { createTypographyStyles } from '../theme/typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemeProvider } from '@alternun/ui';
+import { useAppTranslation } from '../i18n/useAppTranslation';
 
 import TopNav from './TopNav';
 import HeroStats from './HeroStats';
@@ -315,6 +316,7 @@ export default function Dashboard({
   } = useNotifications();
   const router = useRouter();
   const isDark = themeMode === 'dark';
+  const t = useAppTranslation();
 
   const { scrollRef, showBackToTop, handleScroll, scrollToTop, bounceStyle } = useBackToTop({
     scrollThreshold: 200,
@@ -394,8 +396,8 @@ export default function Dashboard({
         await response.json();
         addNotification({
           type: 'success',
-          title: '¡Bienvenido!',
-          body: 'Has recibido 10 Airs como bono de bienvenida. ¡Comienza tu jornada sustentable!',
+          title: t.t('dashboard.notifications.welcomeBonus.title'),
+          body: t.t('dashboard.notifications.welcomeBonus.message'),
           timestamp: new Date(),
           read: false,
           archived: false,
@@ -426,27 +428,35 @@ export default function Dashboard({
 
   const handleOpenWalletConnect = useCallback(() => {
     if (!user) {
-      addToast('info', 'Sign In Required', 'Sign in first to connect a wallet.');
+      addToast(
+        'info',
+        t.t('dashboard.notifications.signInRequired.title'),
+        t.t('dashboard.notifications.signInRequired.message')
+      );
       onRequireSignIn();
       return;
     }
 
     setWalletModalVisible(true);
-  }, [addToast, onRequireSignIn, user]);
+  }, [addToast, onRequireSignIn, user, t]);
 
   const handleConnect = useCallback(
     async (walletType: string) => {
       setWalletModalVisible(false);
       try {
         await onWalletConnect(walletType);
-        addToast('success', 'Wallet Connected', 'Wallet authentication completed.');
+        addToast(
+          'success',
+          t.t('dashboard.notifications.walletConnected.title'),
+          t.t('dashboard.notifications.walletConnected.message')
+        );
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Unable to connect wallet at this time.';
-        addToast('error', 'Wallet Connection Failed', message);
+        addToast('error', t.t('dashboard.notifications.walletConnectionFailed.title'), message);
       }
     },
-    [addToast, onWalletConnect]
+    [addToast, onWalletConnect, t]
   );
 
   const handleSignOut = useCallback(async () => {
@@ -459,9 +469,9 @@ export default function Dashboard({
       await onSignOut();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to sign out right now.';
-      addToast('error', 'Sign Out Failed', message);
+      addToast('error', t.t('dashboard.notifications.signOutFailed.title'), message);
     }
-  }, [addToast, onRequireSignIn, onSignOut, user]);
+  }, [addToast, onRequireSignIn, onSignOut, user, t]);
 
   const handleOpenProfile = useCallback(() => {
     onOpenProfilePage();
@@ -543,7 +553,7 @@ export default function Dashboard({
                       { color: isDark ? 'rgba(232,232,255,0.72)' : '#475569' },
                     ]}
                   >
-                    Sign in from the top-right profile menu to activate actions.
+                    {t.t('dashboard.hero.hint')}
                   </Text>
                 </View>
               ) : null}

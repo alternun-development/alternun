@@ -149,7 +149,119 @@
       }
     },
     "dashboard": {
-      "backToTop": "Top"
+      "backToTop": "Top",
+      "hero": {
+        "hint": "Sign in from the top-right profile menu to activate actions."
+      },
+      "notifications": {
+        "welcomeBonus": {
+          "title": "Welcome!",
+          "message": "You received 10 Airs as a welcome bonus. Start your sustainable journey!"
+        },
+        "signInRequired": {
+          "title": "Sign In Required",
+          "message": "Sign in first to connect a wallet."
+        },
+        "walletConnected": {
+          "title": "Wallet Connected",
+          "message": "Wallet authentication completed."
+        },
+        "walletConnectionFailed": {
+          "title": "Wallet Connection Failed",
+          "message": "{{error}}"
+        },
+        "signOutFailed": {
+          "title": "Sign Out Failed",
+          "message": "{{error}}"
+        }
+      },
+      "activityFeed": {
+        "title": "Recent Activity",
+        "subtitle": {
+          "global": "Real-time platform activity",
+          "user": "How you've accumulated your Airs By Alternun."
+        },
+        "tabs": {
+          "global": "Global Activity",
+          "user": "My Activity"
+        },
+        "search": "Search activity or source...",
+        "tableHeaders": {
+          "action": "Action",
+          "source": "Source",
+          "airs": "Airs",
+          "date": "Date"
+        },
+        "empty": "No activity found for this search.",
+        "now": "Now",
+        "activityTypes": {
+          "compensation": "Environmental Compensation",
+          "purchase": "Compensation Purchase",
+          "profile": "Profile Completed",
+          "account": "Account Created",
+          "reward": "Referral Reward",
+          "certificate": "Certificate Issued",
+          "verification": "Verification Completed",
+          "wallet": "Wallet Connected"
+        },
+        "typeLabels": {
+          "compensation": "Compensation",
+          "purchase": "Purchase",
+          "profile": "Profile",
+          "account": "Account",
+          "reward": "Reward",
+          "certificate": "Certificate"
+        },
+        "filters": {
+          "all": "All",
+          "compensation": "Compensation",
+          "purchase": "Purchase",
+          "profile": "Profile",
+          "account": "Account",
+          "reward": "Reward"
+        }
+      },
+      "heroPanel": {
+        "subtitle": "Your regenerative score is:",
+        "statusLabel": "Status {{tier}}",
+        "progressTo": "Progress to {{nextTier}}",
+        "progressHint": "You need {{remaining}} more Airs to reach {{nextTier}} and unlock exclusive benefits",
+        "maxTierReached": "You've reached the maximum {{tier}} level",
+        "statusInfo": "Status information",
+        "updatedAt": "Updated:",
+        "validUntil": "Valid until:",
+        "reloadButton": "Reload score",
+        "statusInfoButton": "Status information"
+      },
+      "summaryCards": {
+        "position": {
+          "title": "Your Position",
+          "subtitle": "Among Airs By Alternun members",
+          "global": "Global",
+          "colombia": "Colombia",
+          "medellin": "Medellín",
+          "rankingNote": "Ranking based on accumulated Airs"
+        },
+        "rbi": {
+          "title": "RBI Projection",
+          "subtitle": "Estimated income for next cycle",
+          "estimatedPool": "Estimated RBI Pool:",
+          "eligibleUsers": "Eligible Users:",
+          "airsScore": "Your Airs Score:",
+          "whatIsRbi": "What is RBI?",
+          "explanation": "Regenerative Basic Income is a periodic income distributed among Alternun users who contribute to the ecosystem.\\n\\nIt doesn't depend on how much money you have, but on your participation, commitment, and impact, measured through your AIRS score.\\n\\nEach time Alternun facilitates a compensation, a sale from the compensation pool, or an economic activity within the platform, part of that value goes directly to the RBI fund.",
+          "fullDocumentation": "Full Documentation"
+        },
+        "atn": {
+          "title": "My ATN",
+          "subtitle": "Your regenerative tokens",
+          "availableLabel": "Available ATN",
+          "availableDesc": "Ready to use",
+          "stackingLabel": "ATN in stacking",
+          "stackingDesc": "Participating in projects",
+          "totalLabel": "Total ATN"
+        }
+      }
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. All rights reserved.",

@@ -4,6 +4,7 @@ import { HeroPanel } from '@alternun/ui';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { palette } from '@alternun/ui';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { useAppTranslation } from '../i18n/useAppTranslation';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require, @typescript-eslint/no-var-requires
 const DASHBOARD_BG =
@@ -30,6 +31,7 @@ export default function HeroStats({
   displayName,
 }: HeroStatsProps): React.JSX.Element {
   const { motionLevel } = useAppPreferences();
+  const t = useAppTranslation();
   const [imageLoaded, setImageLoaded] = useState(false);
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
@@ -45,6 +47,13 @@ export default function HeroStats({
 
   const markFill = isDark ? palette.teal : palette.tealDark;
   const markCutout = isDark ? '#050f0c' : '#eaf8f3';
+
+  // Get localized strings (use fallback defaults matching original Spanish)
+  const subtitle = t.t('dashboard.heroPanel.subtitle');
+  const statusLabel = t.t('dashboard.heroPanel.statusLabel');
+  const progressLabel = `${t.t('dashboard.heroPanel.progressTo')} —`;
+  const progressHint = t.t('dashboard.heroPanel.progressHint');
+  const maxTierMessage = t.t('dashboard.heroPanel.maxTierReached');
 
   return (
     <View style={{ marginHorizontal: 12 }}>
@@ -89,6 +98,16 @@ export default function HeroStats({
             isDark={isDark}
             animateOrbs={motionLevel !== 'off'}
             brandMark={<AirsBrandMark size={44} fillColor={markFill} cutoutColor={markCutout} />}
+            subtitle={subtitle}
+            statusLabel={statusLabel}
+            progressLabel={progressLabel}
+            progressHint={progressHint}
+            maxTierMessage={maxTierMessage}
+            reloadButtonLabel={t.t('dashboard.heroPanel.reloadButton')}
+            statusInfoButtonLabel={t.t('dashboard.heroPanel.statusInfoButton')}
+            tooltipTitle={t.t('dashboard.heroPanel.statusInfo')}
+            tooltipUpdatedLabel={t.t('dashboard.heroPanel.updatedAt')}
+            tooltipValidUntilLabel={t.t('dashboard.heroPanel.validUntil')}
           />
         </ImageBackground>
       </Animated.View>

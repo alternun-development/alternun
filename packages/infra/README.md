@@ -30,7 +30,7 @@ The live testnet rollout is split across three deploy targets:
 - `dashboard-dev` owns `testnet.api.alternun.co` and carries the combined admin + API runtime used by the live testnet surface
 - `identity-dev` owns `testnet.sso.alternun.co`
 
-`api-dev` remains a backend-only escape hatch for isolated API work. It is not the owning stack for the live testnet API domain.
+Legacy `api-dev` / `backend-*` stage names are retired. Use `dashboard-dev` for the live testnet API/admin runtime.
 
 When you change the current testnet auth path, keep those three targets aligned instead of deploying only one of them.
 
@@ -59,7 +59,7 @@ curl -k -i -X POST -H 'content-type: application/json' \
   https://testnet.api.alternun.co/auth/sign-in/social
 ```
 
-`dev` owns the Expo bundle, `dashboard-dev` owns the API/auth runtime, and `identity-dev` owns Authentik. `release:patch` remains the versioned release flow, but it is not the preferred path for live testnet auth changes.
+`dev` owns the Expo bundle, `dashboard-dev` owns the API/auth runtime, and `identity-dev` owns Authentik. `release:patch` remains the versioned release flow, but `dashboard-dev` is the live testnet API/admin deploy target.
 
 The `dev` CodeBuild pipeline now runs post-deploy DNS sync for redirect aliases and keeps redirect probes advisory by default. Set `INFRA_ENFORCE_REDIRECT_CHECKS=true` only when you want redirect host mismatches to fail the build.
 Managed CodePipeline releases now run in `QUEUED` execution mode so a newer push waits for the active release to finish instead of superseding it mid-deploy.
@@ -214,39 +214,21 @@ INFRA_BACKEND_API_DATABASE_URL='postgresql://...' bash scripts/bootstrap-backend
 
 Important behavior:
 
-- backend provisioning is isolated to dedicated stacks by default (`api-dev`, `api-prod`) to avoid mixing API runtime changes into the Expo stacks; for the live testnet API domain, `dashboard-dev` is the owning stack
-- `api-dev` / `api-prod` are the canonical backend-only stack names; legacy `backend-*` aliases are normalized to those canonical stages by the deploy wrapper
-- dedicated backend pipelines force `INFRA_ENABLE_EXPO_SITE=false`, so they do not build/deploy or modify the static app site
+- backend provisioning for the live surfaces is owned by `dashboard-dev` / `dashboard-prod`
+- retired `api-dev` / `api-prod` and `backend-*` stage names must not be used for live API deploys
+- dashboard deploys force the backend API component to remain enabled, so the live API/auth runtime cannot silently drift off the owning stack
 - the current backend target is Lambda + API Gateway, which keeps the first provisioning increment aligned with the existing SST pipeline model
 - backend deploys now receive `AUTHENTIK_JWT_SIGNING_KEY` from the matching identity-stage secret output so `/auth/exchange` can mint issuer-owned JWTs without manual secret copying; the deploy script still hydrates it as a compatibility fallback for older flows, and `INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` makes the backend fail closed instead of accepting compatibility fallback
 - approved runtime direction is Lambda for development/testnet and a dedicated `t4g.small` host for the first production backend target
 - SST outputs expose backend API deployment metadata including invoke URL, Lambda identifiers, log group, and custom domain when present
 - for dependent admin + API releases, prefer the combined `dashboard-dev` / `dashboard-prod` pipelines
 
-### Backend API-Only IaC Provisioning
+### Retired Backend-Only Stages
 
-Deploy backend infrastructure without touching Expo/site resources:
+Standalone backend deploy stages such as `api-dev`, `api-prod`, and `backend-*` are retired. The single live backend/API-admin owners are:
 
-Use dedicated backend stacks. Do not run backend-only toggles against `dev` or `production` stacks, or Pulumi will plan deletions for resources not declared in that run.
-
-Fail-safe guardrails are enforced in both IaC and CI:
-
-- `INFRA_ENABLE_EXPO_SITE=false` is rejected for non-dedicated stack stages
-- only `api-dev` / `api-prod` style stages can run backend-only mode
-
-```bash
-INFRA_ENABLE_BACKEND_API=true \
-INFRA_BACKEND_API_ENABLED_STAGES=dev \
-pnpm --filter @alternun/infra run deploy:api-dev
-```
-
-For production backend:
-
-```bash
-INFRA_ENABLE_BACKEND_API=true \
-INFRA_BACKEND_API_ENABLED_STAGES=production \
-pnpm --filter @alternun/infra run deploy:api-prod
-```
+- `dashboard-dev` for testnet
+- `dashboard-prod` for production
 
 ## Identity Infrastructure
 
@@ -292,7 +274,7 @@ The Expo build also receives `EXPO_PUBLIC_API_URL` for the matching stage API or
 Better Auth is embedded in the API runtime at the same origin. The browser-facing URL stays on the API origin root (`https://<api-host>/auth`). The backend runtime derives its Better Auth secret from the issuer signing key when you do not provide `INFRA_BACKEND_API_BETTER_AUTH_SECRET` explicitly.
 The core web pipelines now set `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` from stage env, keep `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`, set `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` for the deployed testnet and production bundles, inject `EXPO_PUBLIC_API_URL` for the matching stage API origin, derive `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` plus `AUTH_EXCHANGE_URL` / `EXPO_PUBLIC_AUTH_EXCHANGE_URL` from that API origin whenever Better Auth owns the stage, and set `EXPO_PUBLIC_RELEASE_UPDATE_MODE=on` so the bundles fetch policy content from the correct API and get a reload prompt when a new release is detected. The current testnet env opts into Better Auth execution while production stays on the legacy path unless you explicitly override it. When Better Auth is enabled, the browser still talks to the API `/auth` route rather than a separate public auth port.
 
-On the live testnet rollout, `dev` ships the bundle, `dashboard-dev` owns the API/auth runtime, and `identity-dev` owns Authentik; do not treat `api-dev` as the owning testnet deployment target. Stage-specific mobile env now stays ahead of infra defaults so release builds do not drift back to the Discord-hidden social mode on testnet. The `dashboard-dev` and `identity-dev` pipelines forward Google and Discord OAuth credentials into the appropriate auth runtime when those stages are building, while Expo-only bundle builds skip the Secrets Manager auth resolver entirely. CodeBuild now sources the same canonical SSM helper as local stage-aware builds, so release deployments get the same Better Auth base URL and stage auth flags instead of drifting to localhost defaults.
+On the live testnet rollout, `dev` ships the bundle, `dashboard-dev` owns the API/auth runtime, and `identity-dev` owns Authentik; do not treat any retired `api-dev` / `backend-*` alias as the owning testnet deployment target. Stage-specific mobile env now stays ahead of infra defaults so release builds do not drift back to the Discord-hidden social mode on testnet. The `dashboard-dev` and `identity-dev` pipelines forward Google and Discord OAuth credentials into the appropriate auth runtime when those stages are building, while Expo-only bundle builds skip the Secrets Manager auth resolver entirely. CodeBuild now sources the same canonical SSM helper as local stage-aware builds, so release deployments get the same Better Auth base URL and stage auth flags instead of drifting to localhost defaults.
 `EXPO_PUBLIC_AUTHENTIK_ISSUER` and `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID` should be present in env, but deployed web builds now derive sane defaults from the live `airs` origin if they are omitted. `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI` is also optional in deployed web builds; when omitted, the shared auth helpers derive `https://<airs-domain>/auth/callback` from the current browser origin. During local web development, the active browser origin wins over stale loopback or testnet redirect values so callbacks stay on the current app instance.
 Custom Authentik provider-flow slugs are now explicit only. Set `EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS=true` and `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` or `INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS=true` and `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG` / `INFRA_IDENTITY_DISCORD_LOGIN_FLOW_SLUG` only when you intentionally want a custom starter flow. When those values are blank, the app uses the direct source-login path and the identity bootstrap stays on the direct source-login flows. For Google, `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE=logout-then-source` is still experimental; leave it at `source` unless you are deliberately testing the logout-first custom flow.
 The deploy path validates that non-Better-Auth web builds do not carry Better Auth URLs in env, and the Expo web export fails if the emitted bundle contains stale Better Auth execution defaults.
@@ -549,8 +531,8 @@ From repo root:
 ```bash
 pnpm --filter @alternun/infra run deploy:dev
 pnpm --filter @alternun/infra run deploy:production
-pnpm --filter @alternun/infra run deploy:api-dev
-pnpm --filter @alternun/infra run deploy:api-prod
+pnpm --filter @alternun/infra run deploy:dashboard-dev
+pnpm --filter @alternun/infra run deploy:dashboard-prod
 pnpm --filter @alternun/infra run deploy:identity-dev
 pnpm --filter @alternun/infra run deploy:identity-prod
 ```
@@ -618,7 +600,7 @@ Safety behavior:
 
 Legacy alias: `identity` maps to `identity-dev`.
 Created pipeline names include `alternun-prod-pipeline`, `alternun-dev-pipeline`, `alternun-auth-dev-pipeline`, `alternun-auth-prod-pipeline`, `alternun-dash-dev-pipeline`, and `alternun-dash-prod-pipeline`.
-Manual escape hatches remain available through the dedicated stack deploy commands (`deploy:api-dev`, `deploy:api-prod`, `deploy:admin-dev`, `deploy:admin-prod`), but they are no longer managed production-pipeline targets.
+Manual escape hatches remain available through the dedicated stack deploy commands for admin and identity stacks, but the live backend/API-admin runtime is owned only by `dashboard-dev` / `dashboard-prod`.
 
 ## Required CI/Runtime Env Contract
 

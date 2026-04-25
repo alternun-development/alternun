@@ -17,15 +17,17 @@ void test('admin-dev stays admin-only and does not resolve as a dashboard pipeli
   assert.equal(isDashboardStackStage('dashboard-admin-dev'), true);
 });
 
-void test('sst deploy canonicalizes legacy backend aliases to api-dev and api-prod', () => {
+void test('sst deploy canonicalizes legacy backend aliases to dashboard-dev and dashboard-prod', () => {
   const source = fs.readFileSync(sstDeployPath, 'utf8');
 
   assert.match(source, /canonicalize_backend_stack_stage/);
-  assert.match(source, /backend\|backend-dev\|backend-api\|backend-api-dev/);
+  assert.match(source, /api\|api-dev\|backend\|backend-dev\|backend-api\|backend-api-dev/);
   assert.match(
     source,
     /api-prod\|api-production\|backend-prod\|backend-production\|backend-api-prod\|backend-api-production/
   );
+  assert.match(source, /printf '%s\\n' 'dashboard-dev'/);
+  assert.match(source, /printf '%s\\n' 'dashboard-prod'/);
   assert.match(source, /Legacy backend stage .*deprecated/);
   assert.match(source, /using canonical stack/);
 });

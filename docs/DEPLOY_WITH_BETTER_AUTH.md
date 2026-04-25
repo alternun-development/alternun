@@ -87,7 +87,7 @@ These are automatically loaded from AWS Secrets and passed to Lambda:
 source scripts/setup-aws-account.sh
 
 # View Lambda logs
-aws logs tail /aws/lambda/alternun-api-dev --follow
+aws logs tail /aws/lambda/alternun-infra-dashboard-dev-nestjs-api --follow
 ```
 
 **Look for migration logs:**
