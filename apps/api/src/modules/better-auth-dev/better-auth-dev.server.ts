@@ -85,9 +85,7 @@ function getBetterAuthDevDatabase(): BetterAuthDevDatabase {
   return getDatabase() as unknown as BetterAuthDevDatabase;
 }
 
-export function createBetterAuthDevAuth(
-  config: BetterAuthDevConfig
-): ReturnType<typeof betterAuth> {
+export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
   const oauthProxyPlugin = buildOAuthProxyPlugin(config.oauthProxy);
   const hasGoogleProvider = Boolean(config.googleClientId && config.googleClientSecret);
   const hasDiscordProvider = Boolean(config.discordClientId && config.discordClientSecret);
