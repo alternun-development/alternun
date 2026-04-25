@@ -1,3 +1,9 @@
+## [1.0.226](https://github.com/alternun-development/alternun/compare/v1.0.225-dev.0...v1.0.226) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,auth): auth-exchange.controller, signup.service, social-signin.service, signup-welcome.email
+
 ## [1.0.225](https://github.com/alternun-development/alternun/compare/v1.0.224...v1.0.225) (2026-04-25)
 
 ### Bug Fixes
