@@ -1,3 +1,21 @@
+## [1.0.228](https://github.com/alternun-development/alternun/compare/v1.0.227-dev.0...v1.0.228) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,auth): better-auth-proxy, better-auth-runtime, auth-exchange.controller, better-auth-proxy.test
+- **repo:** fix(profile): remove duplicate Animated import
+- **repo:** feat(profile): add animated floating circles to profile hero background
+- **repo:** fix(profile): remove unsupported boxShadow causing square artifact in tier badge
+
+### Bug Fixes
+
+- **profile:** remove duplicate Animated import ([9177ee4](https://github.com/alternun-development/alternun/commit/9177ee4b9fc0524694caa67711ec05185aa4290d))
+- **profile:** remove unsupported boxShadow causing square artifact in tier badge ([f4d9bdb](https://github.com/alternun-development/alternun/commit/f4d9bdb14043e1db0e58b786ec4b089e37a7893b))
+
+### Features
+
+- **profile:** add animated floating circles to profile hero background ([dcd6aa1](https://github.com/alternun-development/alternun/commit/dcd6aa18d4955cc79d1c0da4ce646d07f6c4d9e5))
+
 ## [1.0.227](https://github.com/alternun-development/alternun/compare/v1.0.226-dev.0...v1.0.227) (2026-04-25)
 
 ### Bug Fixes
