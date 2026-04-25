@@ -1,6 +1,6 @@
 import { SupabaseClient as UniversalSupabaseClient } from '@edcalderon/auth/supabase';
 import { createClient } from '@supabase/supabase-js';
-import { getValidationErrorMessage, parseEmailAddress, parseSignInPassword, parseSignUpPassword, } from '../validation/authInputValidation.js';
+import { getValidationErrorMessage, parseEmailAddress, parseSignInPassword, parseSignUpPassword, } from '../validation/authInputValidation';
 const WALLET_PROVIDERS = ['metamask', 'walletconnect'];
 const EMAIL_TEMPLATE_LOCALES = ['en', 'es', 'th'];
 function resolveClientRuntime() {
@@ -519,6 +519,7 @@ export class AlternunMobileAuthClient {
         try {
             const response = await fetch(`${baseUrl}/auth/sign-in/social`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -584,6 +585,7 @@ export class AlternunMobileAuthClient {
         baseUrl = baseUrl || 'http://localhost:8082';
         const response = await fetch(`${baseUrl}/auth/sign-up/email`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
