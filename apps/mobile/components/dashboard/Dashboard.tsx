@@ -361,6 +361,20 @@ export default function Dashboard({
     }
   }, [user, bonusNotificationShown]);
 
+  // Periodically check if email was verified (for newly verified users)
+  React.useEffect(() => {
+    if (!user || user.emailVerified || bonusNotificationShown) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      void client.getUser();
+    }, 3000); // Check every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [user, bonusNotificationShown, client]);
+
   const claimRegistrationBonus = async (userId: string): Promise<void> => {
     try {
       const sessionToken = await client.getSessionToken();
