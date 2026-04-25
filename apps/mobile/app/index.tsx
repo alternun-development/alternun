@@ -208,6 +208,7 @@ export default function HomeScreen(): React.JSX.Element {
         setIntroDismissedThisSession(false);
         await signOutUser();
       }}
+      client={client}
     />
   );
 }
