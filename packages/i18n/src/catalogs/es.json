@@ -175,6 +175,18 @@
           "message": "{{error}}"
         }
       },
+      "welcomeBonusModal": {
+        "title": "¡Bienvenido a Airs By Alternun!",
+        "subtitle": "Has recibido tu bono de bienvenida",
+        "description": "Como nuevo miembro, te estamos dando 10 Airs para iniciar tu jornada sustentable. Úsalos para explorar proyectos e impactar el medio ambiente.",
+        "amount": "10 AIRS",
+        "claimButton": "Reclamar Bono",
+        "claimingButton": "Reclamando...",
+        "alreadyClaimed": "Bono Ya Reclamado",
+        "alreadyClaimedMessage": "Ya has reclamado tu bono de bienvenida.",
+        "successTitle": "¡Bono Reclamado!",
+        "successMessage": "Tus 10 Airs están ahora en tu cuenta. ¡Comienza a ganar más participando en actividades sustentables!"
+      },
       "activityFeed": {
         "title": "Actividad reciente",
         "subtitle": {
@@ -470,6 +482,8 @@
         "onboarding": "Introduccion"
       },
       "showIntroAgain": "No mostrar la introduccion otra vez",
+      "showWelcomeBonusModal": "Mostrar bono de bienvenida",
+      "localPreferenceHelp": "Se almacena localmente en este dispositivo",
       "subtitle": "Administra las preferencias de interfaz y los controles de cuenta.",
       "title": "Configuracion"
     },

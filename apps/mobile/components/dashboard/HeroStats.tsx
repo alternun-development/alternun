@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { View, ImageBackground, Animated, type ImageSourcePropType } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import { HeroPanel } from '@alternun/ui';
-import AirsBrandMark from '../branding/AirsBrandMark';
-import { palette } from '@alternun/ui';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require, @typescript-eslint/no-var-requires
 const DASHBOARD_BG =
   require('../../assets/images/pexels-shella-mijos-2438861-5068057@2x-dashboard.png') as ImageSourcePropType; // eslint-disable-line
+// eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+const DASHBOARD_MARK = require('../../assets/SVGs/airs-hero-dashboard.svg') as number;
 
 interface HeroStatsProps {
   totalAIRS: number | null;
@@ -45,8 +46,10 @@ export default function HeroStats({
     }
   }, [imageLoaded, fadeAnim]);
 
-  const markFill = isDark ? palette.teal : palette.tealDark;
-  const markCutout = isDark ? '#050f0c' : '#eaf8f3';
+  const heroImageScale = isDark ? 1 : 1.03;
+  const heroImageTranslateY = isDark ? 0 : -12;
+  const heroImageBackgroundColor = isDark ? '#0a0f0d' : '#08231f';
+  const heroImageOpacity = isDark ? 0.95 : 1;
 
   // Get localized strings (use fallback defaults matching original Spanish)
   const subtitle = t.t('dashboard.heroPanel.subtitle');
@@ -54,9 +57,12 @@ export default function HeroStats({
   const progressLabel = `${t.t('dashboard.heroPanel.progressTo')} —`;
   const progressHint = t.t('dashboard.heroPanel.progressHint');
   const maxTierMessage = t.t('dashboard.heroPanel.maxTierReached');
+  const heroBrandMark = (
+    <ExpoImage source={DASHBOARD_MARK} style={{ width: 58, height: 58 }} contentFit='contain' />
+  );
 
   return (
-    <View style={{ marginHorizontal: 12 }}>
+    <View style={{ marginHorizontal: 12, marginBottom: 12 }}>
       {/* Blur placeholder while loading */}
       {!imageLoaded && (
         <View
@@ -84,8 +90,11 @@ export default function HeroStats({
           imageStyle={{
             resizeMode: 'cover',
             borderRadius: 20,
-            backgroundColor: isDark ? '#0a0f0d' : '#e8f3f0',
-            opacity: 0.95,
+            backgroundColor: heroImageBackgroundColor,
+            opacity: heroImageOpacity,
+            transform: [{ scale: heroImageScale }, { translateY: heroImageTranslateY }],
+            width: '100%',
+            height: '100%',
           }}
           progressiveRenderingEnabled
         >
@@ -96,8 +105,8 @@ export default function HeroStats({
             onReload={onReload}
             previewMode={previewMode}
             isDark={isDark}
-            animateOrbs={motionLevel !== 'off'}
-            brandMark={<AirsBrandMark size={44} fillColor={markFill} cutoutColor={markCutout} />}
+            motionLevel={motionLevel}
+            brandMark={heroBrandMark}
             subtitle={subtitle}
             statusLabel={statusLabel}
             progressLabel={progressLabel}

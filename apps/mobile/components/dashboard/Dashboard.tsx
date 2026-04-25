@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return */
 import React, { useCallback, useMemo, useState } from 'react';
 import type { User } from '../auth/AppAuthProvider';
 import {
@@ -35,6 +36,7 @@ let toastIdCounter = 0;
 
 interface AuthClient {
   getSessionToken(): Promise<string | null>;
+  getUser?: () => Promise<unknown>;
 }
 
 interface DashboardProps {
@@ -299,12 +301,11 @@ export default function Dashboard({
 }: DashboardProps): React.JSX.Element {
   const [walletModalVisible, setWalletModalVisible] = useState(false);
   const [bonusModalVisible, setBonusModalVisible] = useState(false);
-  const [bonusAlreadyClaimed, setBonusAlreadyClaimed] = useState(false);
+  const [bonusAlreadyClaimedOverride, setBonusAlreadyClaimedOverride] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [footerHeight, setFooterHeight] = useState(0);
   const [topNavHeight, setTopNavHeight] = useState(0);
-  const [bonusNotificationShown, setBonusNotificationShown] = useState(false);
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
   const scrollTopInset = Math.max(topNavHeight > 0 ? topNavHeight + 16 : 0, isMobile ? 88 : 104);
@@ -362,28 +363,11 @@ export default function Dashboard({
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // Claim welcome bonus on login if not already claimed
   React.useEffect(() => {
-    if (user && !bonusNotificationShown) {
-      void claimRegistrationBonus();
-    }
-  }, [user, bonusNotificationShown, claimRegistrationBonus]);
+    setBonusAlreadyClaimedOverride(false);
+  }, [user?.id]);
 
-  // Periodically check if email was verified (for newly verified users)
-  React.useEffect(() => {
-    if (!user || user.emailVerified || bonusNotificationShown) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      void client.getUser();
-    }, 3000); // Check every 3 seconds
-
-    return () => clearInterval(interval);
-  }, [user, bonusNotificationShown, client]);
-
-  const claimRegistrationBonus = async (): Promise<void> => {
+  const claimRegistrationBonus = useCallback(async (): Promise<void> => {
     try {
       const sessionToken = await client.getSessionToken();
       if (!sessionToken) {
@@ -404,10 +388,7 @@ export default function Dashboard({
       if (response.ok) {
         const result = (await response.json()) as { success?: boolean; awarded?: boolean };
         const wasAwarded = result.success ?? result.awarded ?? false;
-
-        if (!wasAwarded) {
-          setBonusAlreadyClaimed(true);
-        }
+        setBonusAlreadyClaimedOverride(true);
 
         // Show the modal only if preference is enabled
         if (showWelcomeBonusModal) {
@@ -423,13 +404,29 @@ export default function Dashboard({
           archived: false,
         });
 
-        // Mark as processed to avoid duplicate requests
-        setBonusNotificationShown(true);
+        if (wasAwarded) {
+          lastAirsSnapshotKeyRef.current = null;
+          void client.getUser?.();
+        }
       }
     } catch {
       // Silently fail - bonus is nice to have but not critical
     }
-  };
+  }, [client, showWelcomeBonusModal, t, addNotification]);
+
+  // Periodically check if email was verified (for newly verified users)
+  React.useEffect(() => {
+    if (!user || user.emailVerified) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      void client.getUser();
+    }, 3000); // Check every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [user, client]);
 
   const walletAddress = getWalletAddress(user);
   const walletProvider = getWalletProvider(user);
@@ -438,6 +435,8 @@ export default function Dashboard({
   const userStats = useMemo(() => getUserDashboardStats(user), [user]);
   const profileInfo = useMemo(() => getUserProfileInfo(user), [user]);
   const airsScore = airsSnapshot?.balanceAIRS ?? userStats?.totalAIRS ?? null;
+  const bonusAlreadyClaimed =
+    Boolean(airsSnapshot?.registrationBonusClaimed) || bonusAlreadyClaimedOverride;
 
   const handleRequireSignIn = useCallback(() => {
     onRequireSignIn();

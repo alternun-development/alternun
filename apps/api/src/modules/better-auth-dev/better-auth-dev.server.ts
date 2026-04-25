@@ -163,6 +163,13 @@ export function createBetterAuthDevAuth(
       },
       skipStateCookieCheck: config.oauthProxy.enabled,
     },
+    session: {
+      expiresIn: 60 * 60 * 24 * 7, // 7 days
+      updateAge: 60 * 60 * 24, // Update session every 24 hours
+      cookieCache: {
+        enabled: true,
+      },
+    },
     advanced: {
       useSecureCookies: isProduction,
       disableCSRFCheck: false,

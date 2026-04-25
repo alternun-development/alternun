@@ -28,7 +28,7 @@ export class AirsRegistrationBonusController {
   })
   async claimBonus(
     @Headers('authorization') authorization: string | undefined
-  ): Promise<{ success: boolean; message: string; balance: number }> {
+  ): Promise<{ success: boolean; awarded: boolean; message: string; balance: number }> {
     if (!authorization?.trim()) {
       throw new UnauthorizedException('Missing bearer token');
     }
@@ -36,6 +36,7 @@ export class AirsRegistrationBonusController {
     const result = await this.bonusService.awardRegistrationBonus(authorization);
     return {
       success: result.awarded,
+      awarded: result.awarded,
       message: result.awarded
         ? 'Welcome bonus of 10 AIRS has been awarded!'
         : 'Bonus already claimed',

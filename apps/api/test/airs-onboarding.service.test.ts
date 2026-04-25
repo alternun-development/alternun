@@ -1,3 +1,4 @@
+/* eslint-disable */
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
@@ -42,6 +43,13 @@ test('processAirsOnboarding records the first dashboard visit, awards the bonus,
           airsLifetimeEarned: 0,
         };
       },
+      awardRegistrationBonus: async (input) => {
+        calls.push(['registration-bonus', input]);
+        return {
+          awarded: true,
+          airsBalance: 10,
+        };
+      },
       awardProfileBonus: async (input) => {
         calls.push(['bonus', input]);
         return {
@@ -50,6 +58,24 @@ test('processAirsOnboarding records the first dashboard visit, awards the bonus,
           airsBalance: 10,
           airsLifetimeEarned: 10,
           ledgerEntryId: 'ledger-1',
+        };
+      },
+      getDashboardSnapshot: async (input) => {
+        calls.push(['snapshot', input]);
+        return {
+          userId: 'user-123',
+          email: 'ada@example.com',
+          displayName: 'Ada Lovelace',
+          locale: 'es-MX',
+          profileComplete: true,
+          firstDashboardRecorded: true,
+          registrationBonusClaimed: true,
+          welcomeEmailSentAt: null,
+          profileBonusAwardedAt: null,
+          profileCompletedAt: '2026-04-17T00:00:00.000Z',
+          airsBalance: 20,
+          airsLifetimeEarned: 20,
+          recentLedgerEntries: [],
         };
       },
       sendWelcomeEmail: async (input) => {
@@ -74,12 +100,27 @@ test('processAirsOnboarding records the first dashboard visit, awards the bonus,
   assert.equal(result.userId, 'user-123');
   assert.equal(result.profileBonusAwarded, true);
   assert.equal(result.welcomeEmailSent, true);
-  assert.equal(result.airsBalance, 10);
-  assert.equal(result.airsLifetimeEarned, 10);
+  assert.equal(result.registrationBonusAwarded, true);
+  assert.equal(result.registrationBonusClaimed, true);
+  assert.equal(result.airsBalance, 20);
+  assert.equal(result.airsLifetimeEarned, 20);
+  assert.equal(
+    calls.some(([type]) => type === 'registration-bonus'),
+    true
+  );
   assert.deepEqual(calls[0], ['verify', 'issuer-session-token']);
-  assert.equal(calls.some(([type]) => type === 'bonus'), true);
-  assert.equal(calls.some(([type]) => type === 'email'), true);
-  assert.equal(calls.some(([type]) => type === 'email-sent'), true);
+  assert.equal(
+    calls.some(([type]) => type === 'bonus'),
+    true
+  );
+  assert.equal(
+    calls.some(([type]) => type === 'email'),
+    true
+  );
+  assert.equal(
+    calls.some(([type]) => type === 'email-sent'),
+    true
+  );
 });
 
 test('processAirsOnboarding is idempotent when the welcome email and bonus are already recorded', async () => {
@@ -118,6 +159,13 @@ test('processAirsOnboarding is idempotent when the welcome email and bonus are a
           airsLifetimeEarned: 10,
         };
       },
+      awardRegistrationBonus: async (input) => {
+        calls.push(['registration-bonus', input]);
+        return {
+          awarded: false,
+          airsBalance: 10,
+        };
+      },
       awardProfileBonus: async () => {
         calls.push(['bonus']);
         return {
@@ -126,6 +174,24 @@ test('processAirsOnboarding is idempotent when the welcome email and bonus are a
           airsBalance: 10,
           airsLifetimeEarned: 10,
           ledgerEntryId: 'ledger-1',
+        };
+      },
+      getDashboardSnapshot: async (input) => {
+        calls.push(['snapshot', input]);
+        return {
+          userId: 'user-123',
+          email: 'ada@example.com',
+          displayName: 'Ada Lovelace',
+          locale: 'en',
+          profileComplete: true,
+          firstDashboardRecorded: false,
+          registrationBonusClaimed: true,
+          welcomeEmailSentAt: '2026-04-17T00:00:00.000Z',
+          profileBonusAwardedAt: '2026-04-17T00:00:00.000Z',
+          profileCompletedAt: '2026-04-15T00:00:00.000Z',
+          airsBalance: 10,
+          airsLifetimeEarned: 10,
+          recentLedgerEntries: [],
         };
       },
       sendWelcomeEmail: async () => {
@@ -150,7 +216,22 @@ test('processAirsOnboarding is idempotent when the welcome email and bonus are a
 
   assert.equal(result.profileBonusAwarded, true);
   assert.equal(result.welcomeEmailSent, false);
-  assert.equal(calls.some(([type]) => type === 'bonus'), false);
-  assert.equal(calls.some(([type]) => type === 'email'), false);
-  assert.equal(calls.some(([type]) => type === 'email-sent'), false);
+  assert.equal(result.registrationBonusAwarded, false);
+  assert.equal(result.registrationBonusClaimed, true);
+  assert.equal(
+    calls.some(([type]) => type === 'registration-bonus'),
+    true
+  );
+  assert.equal(
+    calls.some(([type]) => type === 'bonus'),
+    false
+  );
+  assert.equal(
+    calls.some(([type]) => type === 'email'),
+    false
+  );
+  assert.equal(
+    calls.some(([type]) => type === 'email-sent'),
+    false
+  );
 });

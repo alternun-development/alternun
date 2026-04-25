@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return */
 import { Injectable, Logger } from '@nestjs/common';
 import { renderAirsWelcomeEmail } from '@alternun/email-templates';
 import { verifyIssuerJwt } from '../auth-exchange/auth-exchange-jwt';
 import {
+  awardAirsRegistrationBonus,
   awardAirsProfileBonus,
   getAirsDashboardSnapshot,
   getUserAchievements,
@@ -32,29 +34,25 @@ export interface AirsDashboardSnapshotInput {
   ledgerLimit?: number;
 }
 
-export interface AirsOnboardingResult {
-  userId: string;
-  email: string | null;
-  displayName: string | null;
-  locale: string | null;
-  profileComplete: boolean;
-  firstDashboardRecorded: boolean;
-  shouldSendWelcomeEmail: boolean;
+export interface AirsOnboardingResult extends Awaited<ReturnType<typeof getAirsDashboardSnapshot>> {
+  registrationBonusAwarded: boolean;
+  registrationBonusClaimed: boolean;
+  registrationBonusStatus: 'awarded' | 'already_awarded';
   welcomeEmailSent: boolean;
   welcomeEmailSkipped: boolean;
   profileBonusAwarded: boolean;
   profileBonusStatus: 'awarded' | 'already_awarded' | 'profile_incomplete';
-  airsBalance: number;
-  airsLifetimeEarned: number;
 }
 
 export interface AirsOnboardingDependencies {
   verifySessionToken: (token: string) => Promise<AirsSessionClaims>;
   recordDashboardVisit: typeof recordAirsDashboardVisit;
+  awardRegistrationBonus: typeof awardAirsRegistrationBonus;
   awardProfileBonus: typeof awardAirsProfileBonus;
   sendWelcomeEmail: typeof sendAirsWelcomeEmail;
   markWelcomeEmailSent: typeof markAirsWelcomeEmailSent;
   renderWelcomeEmail: typeof renderAirsWelcomeEmail;
+  getDashboardSnapshot: typeof getAirsDashboardSnapshot;
   env?: Record<string, string | undefined>;
   dashboardUrl?: string | null;
   bonusAirs?: number;
@@ -115,10 +113,16 @@ export async function processAirsOnboarding(
     env
   );
 
+  const registrationBonusResult = await dependencies.awardRegistrationBonus(
+    {
+      userId: tokenClaims.appUserId,
+      bonusAmount: dependencies.bonusAirs ?? 10,
+    },
+    env
+  );
+
   let profileBonusAwarded = Boolean(dashboardState.profileBonusAwardedAt);
   let profileBonusStatus: AirsOnboardingResult['profileBonusStatus'] = 'already_awarded';
-  let airsBalance = dashboardState.airsBalance;
-  let airsLifetimeEarned = dashboardState.airsLifetimeEarned;
 
   if (dashboardState.shouldAwardProfileBonus) {
     const bonusResult = await dependencies.awardProfileBonus(
@@ -138,8 +142,6 @@ export async function processAirsOnboarding(
 
     profileBonusAwarded = bonusResult.awarded;
     profileBonusStatus = bonusResult.status;
-    airsBalance = bonusResult.airsBalance;
-    airsLifetimeEarned = bonusResult.airsLifetimeEarned;
   } else if (!dashboardState.profileComplete) {
     profileBonusStatus = 'profile_incomplete';
   }
@@ -183,20 +185,24 @@ export async function processAirsOnboarding(
     welcomeEmailSkipped = true;
   }
 
+  const snapshot = await dependencies.getDashboardSnapshot(
+    {
+      userId: tokenClaims.appUserId,
+      locale: input.locale ?? dashboardState.locale ?? null,
+      ledgerLimit: 5,
+    },
+    env
+  );
+
   return {
-    userId: tokenClaims.appUserId,
-    email: dashboardState.email ?? tokenClaims.email,
-    displayName: dashboardState.displayName ?? tokenClaims.displayName,
-    locale: input.locale ?? dashboardState.locale ?? null,
-    profileComplete: dashboardState.profileComplete,
-    firstDashboardRecorded: dashboardState.firstDashboardRecorded,
-    shouldSendWelcomeEmail: dashboardState.shouldSendWelcomeEmail,
+    ...snapshot,
+    registrationBonusAwarded: registrationBonusResult.awarded,
+    registrationBonusClaimed: true,
+    registrationBonusStatus: registrationBonusResult.awarded ? 'awarded' : 'already_awarded',
     welcomeEmailSent,
     welcomeEmailSkipped,
     profileBonusAwarded,
     profileBonusStatus,
-    airsBalance,
-    airsLifetimeEarned,
   };
 }
 
@@ -258,10 +264,12 @@ export class AirsService {
         } as AirsSessionClaims);
       },
       recordDashboardVisit: recordAirsDashboardVisit,
+      awardRegistrationBonus: awardAirsRegistrationBonus,
       awardProfileBonus: awardAirsProfileBonus,
       sendWelcomeEmail: sendAirsWelcomeEmail,
       markWelcomeEmailSent: markAirsWelcomeEmailSent,
       renderWelcomeEmail: renderAirsWelcomeEmail,
+      getDashboardSnapshot: getAirsDashboardSnapshot,
       env: process.env,
     }).catch((error: unknown) => {
       this.logger.error(

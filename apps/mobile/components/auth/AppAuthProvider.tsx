@@ -51,47 +51,80 @@ function getBetterAuthUrl(): string | undefined {
   return undefined;
 }
 
+const SESSION_TOKEN_KEY = 'alternun_session_token';
+
+function getStoredSessionToken(): string | null {
+  if (!window?.localStorage) {
+    return null;
+  }
+  return window.localStorage.getItem(SESSION_TOKEN_KEY);
+}
+
+function storeSessionToken(token: string): void {
+  if (!window?.localStorage) {
+    return;
+  }
+  window.localStorage.setItem(SESSION_TOKEN_KEY, token);
+}
+
+function clearStoredSessionToken(): void {
+  if (!window?.localStorage) {
+    return;
+  }
+  window.localStorage.removeItem(SESSION_TOKEN_KEY);
+}
+
 function AuthSessionBridge(): null {
   const { client } = useAlternunAuth();
   const hasReceivedAuthStateRef = useRef(false);
   const previousUserRef = useRef<import('@alternun/auth').User | null | undefined>(undefined);
   const isBetterAuthExecution = isBetterAuthExecutionEnabled();
+  const hasAttemptedRestoreRef = useRef(false);
 
-  // Restore session on mount (relies on HTTP-only cookies set by Better Auth)
+  // Restore session on mount
   useEffect(() => {
     if (Platform.OS !== 'web') return;
+    if (hasAttemptedRestoreRef.current) return;
+    hasAttemptedRestoreRef.current = true;
 
     if (isBetterAuthExecution) {
       clearOidcSession();
       // For Better Auth, validate session from cookies
       const restoreSession = async () => {
         try {
-          console.log('[Auth] Attempting to restore session from cookies...');
-
-          // Check if cookies exist (browser DevTools can verify this)
-          const cookies = document.cookie;
-          console.log('[Auth] Browser cookies present:', cookies.length > 0 ? 'yes' : 'none');
-
-          // Restore from cookies and validate with server
-          const user = await client.getUser();
-          console.log(
-            '[Auth] getUser() on mount returned:',
-            user ? `user (${user.email})` : 'null'
-          );
-
-          if (!user) {
-            console.log('[Auth] No session found in cookies - user must sign in');
-          }
-        } catch (error) {
-          console.error(
-            '[Auth] Session restore error:',
-            error instanceof Error ? error.message : String(error)
-          );
-          // Silently fail - user will see the landing page and can sign in
+          await client.getUser();
+        } catch {
+          // Silently fail - user will see landing and can sign in
         }
       };
       void restoreSession();
       return;
+    }
+
+    // For Supabase, restore from stored token if available
+    const storedToken = getStoredSessionToken();
+    if (storedToken) {
+      console.log('[Session] Token found in localStorage, attempting restore');
+      const restoreSession = async () => {
+        try {
+          const user = await client.getUser();
+          if (user) {
+            console.log('[Session] Restored user:', user.email);
+          } else {
+            console.log('[Session] getUser() returned null, clearing token');
+            clearStoredSessionToken();
+          }
+        } catch (error) {
+          console.log(
+            '[Session] Restore failed:',
+            error instanceof Error ? error.message : String(error)
+          );
+          clearStoredSessionToken();
+        }
+      };
+      void restoreSession();
+    } else {
+      console.log('[Session] No stored token found on mount');
     }
 
     const session = readOidcSession();
@@ -114,22 +147,42 @@ function AuthSessionBridge(): null {
 
     if (isBetterAuthExecution) {
       clearOidcSession();
-      // Listen for auth state changes to sync session token for all signin methods
-      return client.onAuthStateChange((user) => {
-        if (user) {
-          console.log('[Auth] onAuthStateChange: user signed in:', user.email);
-          // User logged in - store session token for persistence across reloads
-          // Note: For email logins, the session is set via HTTP-only cookies by Better Auth
-          // We just need to ensure the cookies persist across reloads
-          console.log('[Auth] onAuthStateChange: session set via cookies (credentials: include)');
-          // No need to store token - cookies will be sent automatically on next request
-        } else {
-          console.log('[Auth] onAuthStateChange: user signed out');
-        }
+      // Better Auth handles session via HTTP-only cookies automatically
+      return client.onAuthStateChange(() => {
+        // No-op: Better Auth manages session state internally
       });
     }
 
     return client.onAuthStateChange((user) => {
+      // For Supabase, manage token storage on user signin/signout
+      if (user) {
+        console.log('[Session] User signed in:', user.email);
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          const token = (
+            client as unknown as { getSessionToken?(): Promise<string | null> }
+          ).getSessionToken?.();
+          if (token) {
+            void Promise.resolve(token).then((t) => {
+              if (t) {
+                console.log('[Session] Storing token for persistence');
+                storeSessionToken(t);
+              }
+            });
+          } else {
+            console.log('[Session] No getSessionToken available');
+          }
+        } catch (error) {
+          console.log(
+            '[Session] Error getting token:',
+            error instanceof Error ? error.message : String(error)
+          );
+        }
+      } else {
+        console.log('[Session] User signed out');
+        clearStoredSessionToken();
+      }
+
       const shouldClearOidcSession = shouldClearOidcSessionOnAuthStateChange({
         hasReceivedAuthState: hasReceivedAuthStateRef.current,
         previousUser: previousUserRef.current,

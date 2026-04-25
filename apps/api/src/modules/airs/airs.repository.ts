@@ -65,6 +65,7 @@ export interface AirsDashboardSnapshot {
   locale: string | null;
   profileComplete: boolean;
   firstDashboardRecorded: boolean;
+  registrationBonusClaimed: boolean;
   welcomeEmailSentAt: string | null;
   profileBonusAwardedAt: string | null;
   profileCompletedAt: string | null;
@@ -333,6 +334,31 @@ export async function awardAirsProfileBonus(
   };
 }
 
+export async function awardAirsRegistrationBonus(
+  input: {
+    userId: string;
+    bonusAmount?: number;
+  },
+  env: Record<string, string | undefined> = process.env
+): Promise<{
+  awarded: boolean;
+  airsBalance: number;
+}> {
+  const body = await supabaseRpc<Record<string, unknown>>(
+    'airs_award_registration_bonus',
+    {
+      p_user_id: input.userId,
+      p_bonus_amount: input.bonusAmount ?? 10,
+    },
+    env
+  );
+
+  return {
+    awarded: asBoolean(body.awarded),
+    airsBalance: asNumber(body.airs_balance),
+  };
+}
+
 export async function markAirsWelcomeEmailSent(
   input: {
     userId: string;
@@ -383,6 +409,7 @@ export async function getAirsDashboardSnapshot(
     locale: asText(body.locale),
     profileComplete: asBoolean(body.profile_complete),
     firstDashboardRecorded: asBoolean(body.first_dashboard_recorded),
+    registrationBonusClaimed: asBoolean(body.registration_bonus_claimed),
     welcomeEmailSentAt: asText(body.welcome_email_sent_at),
     profileBonusAwardedAt: asText(body.profile_bonus_awarded_at),
     profileCompletedAt: asText(body.profile_completed_at),
