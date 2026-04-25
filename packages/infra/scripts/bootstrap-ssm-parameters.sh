@@ -11,6 +11,10 @@ REGION="${AWS_REGION:-us-east-1}"
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/../../.." && pwd)
 
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/_load-infra-env.sh"
+load_infra_env
+
 if ! command -v aws >/dev/null 2>&1; then
   echo "ERROR: aws CLI is required." >&2
   exit 1
@@ -86,7 +90,44 @@ resolve_publishable_key() {
   done
 }
 
+first_non_empty() {
+  local value
+  for value in "$@"; do
+    if [ -n "${value:-}" ]; then
+      printf '%s\n' "$value"
+      return 0
+    fi
+  done
+
+  printf '\n'
+}
+
 load_env_file "$REPO_ROOT/.env"
+
+require_expected_account() {
+  local expected_account_id=${INFRA_AWS_ACCOUNT_ID:-}
+  local current_account_id
+
+  if [ -z "$expected_account_id" ]; then
+    echo "ERROR: INFRA_AWS_ACCOUNT_ID is not set. Refusing to write AWS resources." >&2
+    echo "Set INFRA_AWS_ACCOUNT_ID in packages/infra/.env before bootstrapping SSM." >&2
+    exit 1
+  fi
+
+  current_account_id=$(aws sts get-caller-identity --query 'Account' --output text 2>/dev/null || true)
+  if [ -z "$current_account_id" ] || [ "$current_account_id" = "None" ]; then
+    echo "ERROR: Unable to resolve AWS account via STS. Check credentials before bootstrapping SSM." >&2
+    exit 1
+  fi
+
+  if [ "$current_account_id" != "$expected_account_id" ]; then
+    echo "ERROR: AWS account mismatch. Expected ${expected_account_id}, got ${current_account_id}." >&2
+    echo "Refusing to seed SSM in the wrong account." >&2
+    exit 1
+  fi
+}
+
+require_expected_account
 
 stage_normalized=$(printf '%s' "$STAGE" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 stage_key_suffix=$(resolve_publishable_key_stage_suffix "$stage_normalized")
@@ -113,6 +154,32 @@ case "$stage_normalized" in
 esac
 
 SUPABASE_KEY=$(resolve_publishable_key "$stage_key_suffix")
+POSTMARK_SMTP_SERVER_VALUE=$(first_non_empty "${POSTMARK_SMTP_SERVER:-}" "smtp.postmarkapp.com")
+POSTMARK_SMTP_PORT_VALUE=$(first_non_empty "${POSTMARK_SMTP_PORT:-}" "587")
+POSTMARK_SMTP_USERNAME_VALUE=$(first_non_empty \
+  "${POSTMARK_SMTP_USERNAME:-}" \
+  "${POSTMARK_SMTP_ACCESS_KEY:-}" \
+  "${POSTMARK_SERVER_TOKEN:-}" \
+  "${POSTMARK_SERVER_API_TOKEN:-}" \
+  "${POSTMARK_API_TOKEN:-}")
+POSTMARK_SMTP_PASSWORD_VALUE=$(first_non_empty \
+  "${POSTMARK_SMTP_PASSWORD:-}" \
+  "${POSTMARK_SMTP_SECRET_KEY:-}" \
+  "${POSTMARK_SERVER_TOKEN:-}" \
+  "${POSTMARK_SERVER_API_TOKEN:-}" \
+  "${POSTMARK_API_TOKEN:-}")
+POSTMARK_SMTP_ACCESS_KEY_VALUE=$(first_non_empty "${POSTMARK_SMTP_ACCESS_KEY:-}" "${POSTMARK_SMTP_USERNAME:-}")
+POSTMARK_SMTP_SECRET_KEY_VALUE=$(first_non_empty "${POSTMARK_SMTP_SECRET_KEY:-}" "${POSTMARK_SMTP_PASSWORD:-}")
+POSTMARK_SERVER_TOKEN_VALUE=$(first_non_empty \
+  "${POSTMARK_SERVER_TOKEN:-}" \
+  "${POSTMARK_SERVER_API_TOKEN:-}" \
+  "${POSTMARK_API_TOKEN:-}")
+postmark_api_token_value=$(first_non_empty \
+  "${POSTMARK_API_TOKEN:-}" \
+  "${POSTMARK_SERVER_TOKEN:-}" \
+  "${POSTMARK_SERVER_API_TOKEN:-}")
+EMAIL_SENDER_NAME_VALUE=$(first_non_empty "${EMAIL_SENDER_NAME:-}" "Alternun")
+EMAIL_FROM_VALUE=$(first_non_empty "${EMAIL_FROM:-}" "noreply@alternun.co")
 
 if [ -z "${SUPABASE_KEY:-}" ]; then
   echo "ERROR: Missing Supabase publishable key for stage '${STAGE}'." >&2
@@ -133,6 +200,18 @@ declare -A PARAMS=(
   ["expo-public-auth-exchange-url-dev"]="https://testnet.api.alternun.co/auth/exchange|Better-auth exchange URL for dev stage|Standard"
   ["expo-public-better-auth-url-prod"]="https://api.alternun.co/auth|Better-auth base URL for prod stage|Standard"
   ["expo-public-auth-exchange-url-prod"]="https://api.alternun.co/auth/exchange|Better-auth exchange URL for prod stage|Standard"
+  ["expo-public-enable-social-auth"]="false|Enable social auth (Google, Discord) for mobile app|Standard"
+  ["postmark-api-token"]="${postmark_api_token_value}|Postmark API token for transactional emails|Standard"
+  ["postmark-smtp-server"]="${POSTMARK_SMTP_SERVER_VALUE}|Postmark SMTP server address|Standard"
+  ["postmark-smtp-port"]="${POSTMARK_SMTP_PORT_VALUE}|Postmark SMTP server port|Standard"
+  ["postmark-smtp-username"]="${POSTMARK_SMTP_USERNAME_VALUE}|Postmark SMTP username|Standard"
+  ["postmark-smtp-password"]="${POSTMARK_SMTP_PASSWORD_VALUE}|Postmark SMTP password|Standard"
+  ["postmark-smtp-access-key"]="${POSTMARK_SMTP_ACCESS_KEY_VALUE}|Postmark SMTP access key alias|Standard"
+  ["postmark-smtp-secret-key"]="${POSTMARK_SMTP_SECRET_KEY_VALUE}|Postmark SMTP secret key alias|Standard"
+  ["postmark-server-token"]="${POSTMARK_SERVER_TOKEN_VALUE}|Postmark server token alias|Standard"
+  ["postmark-server-api-token"]="${POSTMARK_SERVER_TOKEN_VALUE}|Postmark server API token alias|Standard"
+  ["email-sender-name"]="${EMAIL_SENDER_NAME_VALUE}|Default sender name for transactional emails|Standard"
+  ["email-from"]="${EMAIL_FROM_VALUE}|Default from email address|Standard"
 )
 
 put_param() {

@@ -1,9 +1,10 @@
-import { Body, Controller, Post, Req, Version, UnauthorizedException } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Req, Version, UnauthorizedException } from '@nestjs/common';
+import { ApiCreatedResponse, ApiOperation, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
 import { ReferralsService } from './referrals.service';
 import { CreateReferralDto } from './dto/create-referral.dto';
 import { ReferralResponseDto } from './dto/referral-response.dto';
+import { ReferralSummaryDto } from './dto/referral-summary.dto';
 
 interface AuthenticatedUser {
   sub: string;
@@ -35,5 +36,25 @@ export class ReferralsController {
     }
 
     return this.referralsService.create(userId, createReferralDto);
+  }
+
+  @Get('me')
+  @Version('1')
+  @ApiOperation({ summary: 'Get the authenticated user referral summary' })
+  @ApiOkResponse({
+    description: 'Referral summary fetched successfully.',
+    type: ReferralSummaryDto,
+  })
+  async getMe(@Req() request: AuthenticatedRequest): Promise<ReferralSummaryDto> {
+    const userId = request.user?.sub;
+    if (!userId) {
+      throw new UnauthorizedException('User ID not found in token');
+    }
+
+    const originHeader = request.headers.origin as string | string[] | undefined;
+    const requestedOrigin = Array.isArray(originHeader)
+      ? originHeader[0] ?? null
+      : originHeader ?? null;
+    return this.referralsService.getMe(userId, requestedOrigin);
   }
 }

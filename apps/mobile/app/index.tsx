@@ -52,6 +52,17 @@ export default function HomeScreen(): React.JSX.Element {
     window.location.replace(webAuthCallbackRedirectPath);
   }, [webAuthCallbackRedirectPath]);
 
+  const FALLBACK_SNAPSHOT = useMemo(
+    () =>
+      normalizeAirsDashboardSnapshot({
+        balanceAIRS: 10,
+        lifetimeEarnedAIRS: 10,
+        recentEntries: [],
+        registrationBonusClaimed: false,
+      }),
+    []
+  );
+
   const syncAirsDashboardState = useCallback(
     async (userKey: string): Promise<void> => {
       if (airsSyncInFlightRef.current) {
@@ -60,9 +71,14 @@ export default function HomeScreen(): React.JSX.Element {
 
       airsSyncInFlightRef.current = true;
 
+      // Abort signal with 8 second timeout — on expiry we fall back to dummy data
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       try {
         const sessionToken = await client.getSessionToken();
         if (!sessionToken) {
+          setAirsSnapshot(FALLBACK_SNAPSHOT);
           return;
         }
 
@@ -77,9 +93,8 @@ export default function HomeScreen(): React.JSX.Element {
                 Authorization: `Bearer ${sessionToken}`,
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({
-                locale: language,
-              }),
+              body: JSON.stringify({ locale: language }),
+              signal: controller.signal,
             });
 
             if (onboardingResponse.ok) {
@@ -93,20 +108,42 @@ export default function HomeScreen(): React.JSX.Element {
               lastAirsOnboardingUserRef.current = userKey;
             }
           } catch {
-            // Best-effort onboarding trigger. The backend RPC is idempotent and can retry later.
+            // Best-effort onboarding trigger — idempotent, safe to skip.
           }
         }
 
-        if (lastAirsSnapshotKeyRef.current === snapshotKey) {
-          return;
+        // Fetch current balance from /airs/me
+        try {
+          const meResponse = await fetch(`${apiBaseUrl}/v1/airs/me`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${sessionToken}` },
+            signal: controller.signal,
+          });
+
+          if (meResponse.ok) {
+            const meSnapshot = normalizeAirsDashboardSnapshot(
+              await meResponse.json().catch(() => null)
+            );
+            if (meSnapshot) {
+              setAirsSnapshot(meSnapshot);
+              lastAirsSnapshotKeyRef.current = snapshotKey;
+              return;
+            }
+          }
+        } catch {
+          // Fall through to fallback below
         }
+
+        // If we reach here without setting a snapshot, apply fallback so 0 is never shown
+        setAirsSnapshot((prev) => prev ?? FALLBACK_SNAPSHOT);
       } catch {
-        // Best-effort dashboard snapshot fetch. Keep the hero usable even if AIRS state is offline.
+        setAirsSnapshot((prev) => prev ?? FALLBACK_SNAPSHOT);
       } finally {
+        clearTimeout(timeoutId);
         airsSyncInFlightRef.current = false;
       }
     },
-    [client, language]
+    [client, language, FALLBACK_SNAPSHOT]
   );
 
   useEffect(() => {

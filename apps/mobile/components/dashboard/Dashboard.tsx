@@ -434,7 +434,8 @@ export default function Dashboard({
   const authMethodLabel = getAuthMethodLabel(user);
   const userStats = useMemo(() => getUserDashboardStats(user), [user]);
   const profileInfo = useMemo(() => getUserProfileInfo(user), [user]);
-  const airsScore = airsSnapshot?.balanceAIRS ?? userStats?.totalAIRS ?? null;
+  const airsScore = airsSnapshot?.balanceAIRS;
+  const airsLoading = !airsSnapshot;
   const bonusAlreadyClaimed =
     Boolean(airsSnapshot?.registrationBonusClaimed) || bonusAlreadyClaimedOverride;
 
@@ -554,7 +555,7 @@ export default function Dashboard({
                 activePositions={userStats ? userStats.activePositions : null}
                 tokensHeld={userStats ? userStats.tokensHeld : null}
                 compensationsCompleted={userStats ? userStats.compensationsCompleted : null}
-                isLoading={isLoading || isRefreshing}
+                isLoading={isLoading || isRefreshing || airsLoading}
                 onReload={handleRefresh}
                 previewMode={!user}
                 isDark={isDark}

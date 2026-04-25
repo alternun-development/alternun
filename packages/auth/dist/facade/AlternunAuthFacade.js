@@ -1,4 +1,4 @@
-import { AlternunProviderError, toAlternunAuthError } from '../core/errors.js';
+import { AlternunProviderError, toAlternunAuthError, } from '../core/errors.js';
 import { createAlternunSession, executionSessionToUser, issuerSessionToUser, principalToUser, } from '../core/session.js';
 function uniqueFlows(...candidates) {
     return Array.from(new Set(candidates.filter(Boolean)));
@@ -10,6 +10,7 @@ export class AlternunAuthFacade {
     constructor(options) {
         this.options = options;
         this.currentUser = null;
+        this.hasResolvedAuthState = false;
         this.currentCompatUser = null;
         this.currentExecutionSession = null;
         this.currentIssuerSession = null;
@@ -62,6 +63,7 @@ export class AlternunAuthFacade {
     }
     emit(user) {
         this.currentUser = user;
+        this.hasResolvedAuthState = true;
         for (const listener of this.listeners) {
             listener(user);
         }
@@ -175,7 +177,7 @@ export class AlternunAuthFacade {
     }
     async refreshState(trigger, options = {}) {
         var _a, _b, _c;
-        const [issuerSession, executionSession] = await Promise.all([
+        const [issuerSession, executionSession,] = await Promise.all([
             this.safeGetIssuerSession(),
             this.safeGetExecutionSession(),
         ]);
@@ -237,7 +239,10 @@ export class AlternunAuthFacade {
         return null;
     }
     async getUser() {
-        return this.refreshState('getUser', { allowExchange: true });
+        if (this.hasResolvedAuthState) {
+            return this.currentUser;
+        }
+        return this.refreshState('getUser', { allowExchange: true, });
     }
     async signInWithEmail(email, password) {
         var _a;
@@ -340,7 +345,7 @@ export class AlternunAuthFacade {
                 this.emit(user);
                 return;
             }
-            await this.refreshState('signIn', { allowExchange: true, preferExecution: true });
+            await this.refreshState('signIn', { allowExchange: true, preferExecution: true, });
             this.log('execution-provider', 'signIn', 'success', {
                 provider: options.provider,
             });
@@ -421,7 +426,7 @@ export class AlternunAuthFacade {
     async resendEmailConfirmation(email) {
         if (this.executionProvider.resendEmailConfirmation) {
             await this.executionProvider.resendEmailConfirmation(email);
-            this.log('email-provider', 'resendEmailConfirmation', 'success', { email });
+            this.log('email-provider', 'resendEmailConfirmation', 'success', { email, });
             return;
         }
         await this.emailProvider.sendVerificationEmail({
@@ -431,12 +436,12 @@ export class AlternunAuthFacade {
                 source: 'facade',
             },
         });
-        this.log('email-provider', 'sendVerificationEmail', 'success', { email });
+        this.log('email-provider', 'sendVerificationEmail', 'success', { email, });
     }
     async verifyEmailConfirmationCode(email, code) {
         if (this.executionProvider.verifyEmailConfirmationCode) {
             await this.executionProvider.verifyEmailConfirmationCode(email, code);
-            this.log('email-provider', 'verifyEmailConfirmationCode', 'success', { email });
+            this.log('email-provider', 'verifyEmailConfirmationCode', 'success', { email, });
             return;
         }
         throw new AlternunProviderError('Email confirmation code verification is not supported by the active execution provider.');
@@ -452,7 +457,7 @@ export class AlternunAuthFacade {
                 await this.executionProvider.requestPasswordResetEmail(email, redirectTo);
             }
             else if ((_a = this.supabaseAuth) === null || _a === void 0 ? void 0 : _a.resetPasswordForEmail) {
-                const result = await this.supabaseAuth.resetPasswordForEmail(email, redirectTo ? { redirectTo } : undefined);
+                const result = await this.supabaseAuth.resetPasswordForEmail(email, redirectTo ? { redirectTo, } : undefined);
                 if ((_b = result === null || result === void 0 ? void 0 : result.error) === null || _b === void 0 ? void 0 : _b.message) {
                     throw new Error(result.error.message);
                 }
@@ -460,7 +465,7 @@ export class AlternunAuthFacade {
             else {
                 throw new AlternunProviderError('Password reset email is not supported by the active execution provider.');
             }
-            this.log('execution-provider', 'requestPasswordResetEmail', 'success', { email });
+            this.log('execution-provider', 'requestPasswordResetEmail', 'success', { email, });
         }
         catch (error) {
             this.log('execution-provider', 'requestPasswordResetEmail', 'failure', {
@@ -485,7 +490,7 @@ export class AlternunAuthFacade {
                 }
             }
             else if ((_a = this.supabaseAuth) === null || _a === void 0 ? void 0 : _a.updateUser) {
-                const result = await this.supabaseAuth.updateUser({ password: newPassword });
+                const result = await this.supabaseAuth.updateUser({ password: newPassword, });
                 if ((_b = result === null || result === void 0 ? void 0 : result.error) === null || _b === void 0 ? void 0 : _b.message) {
                     throw new Error(result.error.message);
                 }
@@ -509,7 +514,7 @@ export class AlternunAuthFacade {
         this.log('execution-provider', 'signOut', 'start');
         await Promise.allSettled([
             this.executionProvider.signOut(),
-            this.issuerProvider.logoutIssuerSession({ reason: 'signOut' }),
+            this.issuerProvider.logoutIssuerSession({ reason: 'signOut', }),
         ]);
         this.currentExecutionSession = null;
         this.currentIssuerSession = null;
@@ -527,7 +532,8 @@ export class AlternunAuthFacade {
     }
     async refreshExecutionSession() {
         this.currentExecutionSession = await this.executionProvider.refreshExecutionSession();
-        await this.refreshState('refreshExecutionSession', { allowExchange: true });
+        this.hasResolvedAuthState = false;
+        await this.refreshState('refreshExecutionSession', { allowExchange: true, });
         return this.currentExecutionSession;
     }
     async getIssuerSession() {
@@ -538,14 +544,16 @@ export class AlternunAuthFacade {
     }
     async refreshIssuerSession() {
         this.currentIssuerSession = await this.issuerProvider.refreshIssuerSession();
-        await this.refreshState('refreshIssuerSession', { allowExchange: true });
+        this.hasResolvedAuthState = false;
+        await this.refreshState('refreshIssuerSession', { allowExchange: true, });
         return this.currentIssuerSession;
     }
     async logoutIssuerSession(options) {
         await this.issuerProvider.logoutIssuerSession(options);
         this.currentIssuerSession = null;
         this.currentAlternunSession = null;
-        await this.refreshState('logoutIssuerSession', { allowExchange: false });
+        this.hasResolvedAuthState = false;
+        await this.refreshState('logoutIssuerSession', { allowExchange: false, });
     }
     async getAlternunSession() {
         if (this.currentAlternunSession) {
