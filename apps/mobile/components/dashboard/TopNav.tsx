@@ -848,8 +848,8 @@ const styles = StyleSheet.create({
     height: 64,
   },
   wordmarkMobile: {
-    width: 52,
-    height: 20,
+    width: 70,
+    height: 28,
   },
   bylineRow: {
     flexDirection: 'row',

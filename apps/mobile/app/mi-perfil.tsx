@@ -28,12 +28,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { GlassCard, SectionContainer, TIERS, resolveTier } from '@alternun/ui';
+import { GlassCard, SectionContainer, resolveTier } from '@alternun/ui';
+import type { TierSpec } from '@alternun/ui';
 import { useAuth } from '../components/auth/AppAuthProvider';
+import { useAppTranslation } from '../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import ScreenShell from '../components/common/ScreenShell';
 import { PageTabBar, type TabItem } from '../components/common/PageTabBar';
 import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
+import { resolveAppPackageVersion } from '../components/common/Footer.shared';
 import profileStylesEnhanced from '../components/profile/ProfileStyles';
 
 const AwardIcon = Award as React.FC<LucideProps>;
@@ -187,6 +190,52 @@ function getInitials(name: string): string {
   return `${parts[0].slice(0, 1)}${parts[1].slice(0, 1)}`.toUpperCase();
 }
 
+function resolveTierSpec(tier: ReturnType<typeof resolveTier>): TierSpec {
+  switch (tier) {
+    case 'bronze':
+      return {
+        label: 'Bronze',
+        color: '#cd7f32',
+        trackColor: 'rgba(205,127,50,0.28)',
+        min: 0,
+        max: 1_000,
+        next: 'silver',
+        nextLabel: 'Silver',
+      };
+    case 'silver':
+      return {
+        label: 'Silver',
+        color: '#a8b8cc',
+        trackColor: 'rgba(168,184,204,0.28)',
+        min: 1_000,
+        max: 5_000,
+        next: 'gold',
+        nextLabel: 'Gold',
+      };
+    case 'gold':
+      return {
+        label: 'Gold',
+        color: '#d4b96a',
+        trackColor: 'rgba(212,185,106,0.28)',
+        min: 5_000,
+        max: 20_000,
+        next: 'platinum',
+        nextLabel: 'Platinum',
+      };
+    case 'platinum':
+    default:
+      return {
+        label: 'Platinum',
+        color: '#9ba9c4',
+        trackColor: 'rgba(155,169,196,0.28)',
+        min: 20_000,
+        max: null,
+        next: null,
+        nextLabel: null,
+      };
+  }
+}
+
 // ─── Profile components ──────────────────────────────────────────────────────
 
 function ProfileHeader({
@@ -204,7 +253,7 @@ function ProfileHeader({
 }): React.JSX.Element {
   const safeScore = score ?? 0;
   const tier = resolveTier(safeScore);
-  const spec = TIERS[tier];
+  const spec = resolveTierSpec(tier);
   const heroBg = isDark ? '#050f0c' : '#eaf8f3';
 
   return (
@@ -1063,6 +1112,7 @@ function PerfilTab({
   onToggleTheme,
   language,
   onCycleLanguage,
+  footerLabel,
 }: {
   isDark: boolean;
   c: ColorPalette;
@@ -1073,6 +1123,7 @@ function PerfilTab({
   onToggleTheme: () => void;
   language: string;
   onCycleLanguage: () => void;
+  footerLabel: string;
 }): React.JSX.Element {
   const profile = useMemo(() => getProfileInfo(user), [user]);
   const walletAddress = useMemo(() => getWalletAddress(user), [user]);
@@ -1342,7 +1393,7 @@ function PerfilTab({
             fontFamily: 'monospace',
           }}
         >
-          Alternun Airs · v1.0.223
+          {footerLabel}
         </Text>
       </ScrollView>
 
@@ -1370,8 +1421,11 @@ export default function MiPerfilScreen(): React.JSX.Element {
   const router = useRouter();
   const params = useLocalSearchParams<{ tab?: string }>();
   const { user, loading, signOutUser } = useAuth();
+  const { t } = useAppTranslation('mobile');
   const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
   const isDark = themeMode === 'dark';
+  const appVersion = resolveAppPackageVersion().version;
+  const footerLabel = t('profile.footer', { version: appVersion });
   const initialTab =
     typeof params.tab === 'string' && TABS.some((t) => t.key === params.tab)
       ? params.tab
@@ -1488,6 +1542,7 @@ export default function MiPerfilScreen(): React.JSX.Element {
               onCycleLanguage={() => {
                 void cycleLanguage?.();
               }}
+              footerLabel={footerLabel}
             />
           )}
         </Animated.View>

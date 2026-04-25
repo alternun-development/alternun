@@ -1,8 +1,11 @@
-import { Image as ExpoImage } from 'expo-image';
 import React from 'react';
 import { Instagram, Send, Twitter, Youtube } from 'lucide-react-native';
 import { Linking, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import AIRS_LOGO_DARK from '../../assets/SVGs/AIRS-logo-dark.svg';
+import AIRS_LOGO_LIGHT from '../../assets/SVGs/AIRS-logo-light.svg';
+import AIRS_LOGO_WHITE from '../../assets/SVGs/AIRS-logo-white.svg';
+import AIRS_LOGO_BLACK_DARK from '../../assets/SVGs/AIRS-logo-black-dark.svg';
 import developmentVersionManifest from '../../../../version.development.json';
 import productionVersionManifest from '../../../../version.production.json';
 import { useAppTranslation } from '../i18n/useAppTranslation';
@@ -34,18 +37,11 @@ type VersionManifest = {
   environment?: string | null;
 };
 
-type ExpoImageSource = React.ComponentProps<typeof ExpoImage>['source'];
+type PackageJsonVersion = {
+  version?: string | null;
+};
 
-// Metro asset loading still relies on require() for local image modules here.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg') as ExpoImageSource;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_LIGHT = require('../../assets/SVGs/AIRS-logo-light.svg') as ExpoImageSource;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_WHITE = require('../../assets/SVGs/AIRS-logo-white.svg') as ExpoImageSource;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-export const AIRS_LOGO_BLACK_DARK =
-  require('../../assets/SVGs/AIRS-logo-black-dark.svg') as ExpoImageSource;
+export { AIRS_LOGO_DARK, AIRS_LOGO_LIGHT, AIRS_LOGO_WHITE, AIRS_LOGO_BLACK_DARK };
 // Keep footer version aligned with the branch-specific version manifest used by releases.
 const DEVELOPMENT_VERSION_MANIFEST = developmentVersionManifest as VersionManifest;
 const PRODUCTION_VERSION_MANIFEST = productionVersionManifest as VersionManifest;
@@ -147,6 +143,30 @@ export function resolveVersionMetadata(): VersionMetadata {
   }
 
   return { version: 'unknown', source: 'unavailable' };
+}
+
+export function resolveAppPackageVersion(): VersionMetadata {
+  const releaseMetadata = resolveVersionMetadata();
+
+  if (releaseMetadata.source !== 'unavailable' && releaseMetadata.version !== 'unknown') {
+    return releaseMetadata;
+  }
+
+  try {
+    // Keep the footer badge aligned with the branch release manifest first, and
+    // only fall back to the package manifest when the release data is missing.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const appPackage = require('../../package.json') as PackageJsonVersion;
+    const version = trimVersion(appPackage.version);
+
+    if (version) {
+      return { version, source: 'apps/mobile/package.json' };
+    }
+  } catch {
+    // Fall through to the release metadata below.
+  }
+
+  return releaseMetadata;
 }
 
 export function openExternalUrl(url: string): void {
