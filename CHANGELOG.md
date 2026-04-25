@@ -1,3 +1,15 @@
+## [1.0.225](https://github.com/alternun-development/alternun/compare/v1.0.224...v1.0.225) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth): AirsIntroExperience, AlternunMobileAuthClient
+- **repo:** updates
+- **repo:** updates
+
+### Bug Fixes
+
+- **mobile,auth:** AirsIntroExperience, AlternunMobileAuthClient ([8060d38](https://github.com/alternun-development/alternun/commit/8060d382f63957e1f7978c5cfe079ce490fa02ef))
+
 ## [1.0.224](https://github.com/alternun-development/alternun/compare/v1.0.224-dev.0...v1.0.224) (2026-04-24)
 
 ### Bug Fixes
