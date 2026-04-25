@@ -16,7 +16,7 @@ create index if not exists idx_user_achievements_achievement_key on public.user_
 
 -- RPC: get_user_achievements(p_user_id)
 -- Returns all known achievements with unlocked status for a user.
--- account_confirmed → derived from users."emailVerified"
+-- account_confirmed → derived from users.email_verified
 -- first_10_airs     → derived from users.airs_balance >= 10
 -- first_50_airs     → derived from users.airs_balance >= 50
 -- first_100_airs    → derived from users.airs_balance >= 100
@@ -65,7 +65,7 @@ begin
 
     case v_key
       when 'account_confirmed' then
-        v_unlocked := coalesce(v_user."emailVerified", false);
+        v_unlocked := coalesce(v_user.email_verified, false);
         if v_unlocked then v_unlocked_at := now(); end if;
       when 'first_10_airs' then
         v_unlocked := coalesce(v_user.airs_balance, 0) >= 10;
@@ -81,8 +81,8 @@ begin
           where ua.user_id = p_user_id and ua.achievement_key = 'first_100_airs' limit 1);
       else
         -- Check user_achievements table for manually tracked achievements
-        select unlocked_at into v_unlocked_at from public.user_achievements
-          where user_id = p_user_id and achievement_key = v_key limit 1;
+        select ua.unlocked_at into v_unlocked_at from public.user_achievements ua
+          where ua.user_id = p_user_id and ua.achievement_key = v_key limit 1;
         v_unlocked := v_unlocked_at is not null;
     end case;
 
