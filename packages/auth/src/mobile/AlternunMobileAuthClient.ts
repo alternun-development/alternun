@@ -756,6 +756,7 @@ export class AlternunMobileAuthClient implements AuthClient {
     try {
       const response = await fetch(`${baseUrl}/auth/sign-in/social`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -837,6 +838,7 @@ export class AlternunMobileAuthClient implements AuthClient {
 
     const response = await fetch(`${baseUrl}/auth/sign-up/email`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },

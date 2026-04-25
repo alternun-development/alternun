@@ -27,7 +27,6 @@ import { BlurView } from 'expo-blur';
 import {
   ChevronDown,
   ChevronRight,
-  ChevronUp,
   LogIn,
   Settings as SettingsIcon,
   User,
@@ -227,12 +226,7 @@ const AirsIntroExperience = forwardRef<
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start();
-    }, [
-      headerNavDropdownAnim,
-      headerNavMobileMenuVisible,
-      headerNavSettingsMenuVisible,
-      profileMenuVisible,
-    ]);
+    }, [headerNavMobileMenuVisible, headerNavSettingsMenuVisible, profileMenuVisible]);
 
     const scrollY = useRef(new Animated.Value(0)).current;
     const isMutedRef = useRef(isMuted);
@@ -938,7 +932,10 @@ const AirsIntroExperience = forwardRef<
               <TouchableOpacity
                 style={[
                   styles.headerAvatarTrigger,
-                  { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
+                  {
+                    backgroundColor: isDark ? 'rgba(4,15,30,0.6)' : 'rgba(255,255,255,0.15)',
+                    borderColor: isDark ? 'rgba(28,203,161,0.4)' : 'rgba(15,92,97,0.3)',
+                  },
                 ]}
                 activeOpacity={0.86}
                 onPress={() => setProfileMenuVisible((prev) => !prev)}
@@ -946,11 +943,23 @@ const AirsIntroExperience = forwardRef<
                 <View style={[styles.headerAvatar, { backgroundColor: `${palette.accent}22` }]}>
                   <Text style={[styles.headerAvatarText, { color: palette.accent }]}>U</Text>
                 </View>
-                {profileMenuVisible ? (
-                  <ChevronUp size={14} color={palette.textPrimary} />
-                ) : (
-                  <ChevronDown size={14} color={palette.textPrimary} />
-                )}
+                <View
+                  style={{
+                    position: 'absolute',
+                    bottom: 5,
+                    right: 5,
+                  }}
+                >
+                  {profileMenuVisible ? (
+                    <ChevronDown
+                      size={18}
+                      color={palette.textPrimary}
+                      style={{ transform: [{ rotate: '180deg' }] }}
+                    />
+                  ) : (
+                    <ChevronDown size={18} color={palette.textPrimary} />
+                  )}
+                </View>
               </TouchableOpacity>
             </View>
           ))}
@@ -1025,7 +1034,10 @@ const AirsIntroExperience = forwardRef<
             <TouchableOpacity
               style={[
                 styles.floatingProfileTrigger,
-                { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
+                {
+                  backgroundColor: isDark ? 'rgba(4,15,30,0.6)' : 'rgba(255,255,255,0.15)',
+                  borderColor: isDark ? 'rgba(28,203,161,0.4)' : 'rgba(15,92,97,0.3)',
+                },
               ]}
               activeOpacity={0.86}
               onPress={() => setProfileMenuVisible((prev) => !prev)}
@@ -1033,7 +1045,23 @@ const AirsIntroExperience = forwardRef<
               <View style={[styles.floatingAvatar, { backgroundColor: `${palette.accent}22` }]}>
                 <Text style={[styles.floatingAvatarText, { color: palette.accent }]}>U</Text>
               </View>
-              <ChevronDown size={14} color={palette.textPrimary} />
+              <View
+                style={{
+                  position: 'absolute',
+                  bottom: 5,
+                  right: 5,
+                }}
+              >
+                {profileMenuVisible ? (
+                  <ChevronDown
+                    size={18}
+                    color={palette.textPrimary}
+                    style={{ transform: [{ rotate: '180deg' }] }}
+                  />
+                ) : (
+                  <ChevronDown size={18} color={palette.textPrimary} />
+                )}
+              </View>
             </TouchableOpacity>
 
             {profileMenuVisible ? (
@@ -1258,24 +1286,24 @@ const styles = createTypographyStyles({
     zIndex: 40,
   },
   floatingProfileTrigger: {
-    borderRadius: 999,
-    minHeight: 42,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    flexDirection: 'row',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
-    gap: 7,
+    justifyContent: 'center',
+    borderWidth: 1,
+    overflow: 'visible',
   },
   floatingAvatar: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
   floatingAvatarText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 11,
+    fontSize: 24,
     fontWeight: '800',
   },
   floatingMenu: {
@@ -1757,25 +1785,24 @@ const styles = createTypographyStyles({
     marginTop: 2,
   },
   headerAvatarTrigger: {
-    flexDirection: 'row',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
     borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    minHeight: 44,
+    overflow: 'visible',
   },
   headerAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerAvatarText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 13,
+    fontSize: 28,
     fontWeight: '700',
   },
   headerDropdownContainer: {
