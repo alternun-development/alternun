@@ -1819,7 +1819,7 @@ export default function AuthSignInScreen({
                     <Text
                       style={[
                         styles.confirmationSecondaryButtonText,
-                        { color: pressed ? '#050510' : p.accent },
+                        { color: pressed ? '#050510' : p.accent, textAlign: 'center' },
                       ]}
                     >
                       {t('authModal.actions.alreadyConfirmedContinue')}
