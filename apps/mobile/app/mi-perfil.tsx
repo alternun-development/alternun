@@ -19,7 +19,6 @@ import {
   type LucideProps,
 } from 'lucide-react-native';
 import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { Animated } from 'react-native';
 import {
   ActivityIndicator,
   Alert,
