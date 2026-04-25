@@ -525,6 +525,9 @@ export class AlternunMobileAuthClient {
                 },
                 body: JSON.stringify({
                     provider,
+                    callbackURL: redirectTo,
+                    errorCallbackURL: redirectTo,
+                    newUserCallbackURL: redirectTo,
                     redirectUri: redirectTo,
                 }),
             });
