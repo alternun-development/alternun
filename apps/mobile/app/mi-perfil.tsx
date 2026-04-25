@@ -302,7 +302,11 @@ function ProfileHeader({
               justifyContent: 'center',
               borderWidth: 3,
               borderColor: heroBg,
-              boxShadow: `0 0 0 2px ${spec.color}`,
+              shadowColor: spec.color,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
             }}
           >
             <Text
