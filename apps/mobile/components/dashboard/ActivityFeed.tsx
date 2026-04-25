@@ -196,7 +196,7 @@ interface RowProps {
   animValue: Animated.Value;
 }
 
-function ActivityRow({ item, isDark, isLast, animValue }: RowProps) {
+function ActivityRow({ item, isDark, isLast, animValue }: RowProps): React.JSX.Element {
   const accent = isDark ? '#1EE6B5' : '#0d9488';
   const textColor = isDark ? '#e8fff6' : '#0b2d31';
   const mutedColor = isDark ? 'rgba(232,255,246,0.55)' : 'rgba(11,45,49,0.55)';
@@ -245,12 +245,13 @@ interface ActivityFeedProps {
   isDark: boolean;
 }
 
-export default function ActivityFeed({ isDark }: ActivityFeedProps) {
+export default function ActivityFeed({ isDark }: ActivityFeedProps): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<ActivityType | 'all'>('all');
   const [page, setPage] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
+  const [viewMode, setViewMode] = useState<'global' | 'user'>('user');
   const rowAnims = useRef<Map<string, Animated.Value>>(new Map());
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -268,7 +269,12 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
     const q = search.toLowerCase();
     const matchesSearch =
       !q || a.action.toLowerCase().includes(q) || a.source.toLowerCase().includes(q);
-    return matchesFilter && matchesSearch;
+
+    // Filter by view mode
+    const isUserActivity = a.source === 'Alternun';
+    const matchesViewMode = viewMode === 'global' ? !isUserActivity : isUserActivity;
+
+    return matchesFilter && matchesSearch && matchesViewMode;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -295,7 +301,7 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
   }, [page, activeFilter, search, animateRow, pageItems]);
 
   // Simulated real-time polling
-  useEffect(() => {
+  useEffect((): (() => void) => {
     let idCounter = MOCK_ACTIVITIES.length + 1;
     pollRef.current = setInterval(() => {
       const newItem: ActivityItem = {
@@ -314,7 +320,7 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
     };
   }, []);
 
-  const handleRefresh = () => {
+  const handleRefresh = (): void => {
     setIsRefreshing(true);
     setTimeout(() => setIsRefreshing(false), 800);
   };
@@ -326,8 +332,14 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
         <View>
           <Text style={[styles.sectionTitle, { color: textColor }]}>Actividad reciente</Text>
           <Text style={[styles.sectionSubtitle, { color: mutedColor }]}>
-            Así has acumulado tus <Text style={{ fontWeight: '700', color: textColor }}>Airs</Text>{' '}
-            By Alternun.
+            {viewMode === 'global' ? (
+              'Actividad de la plataforma en tiempo real'
+            ) : (
+              <>
+                Así has acumulado tus{' '}
+                <Text style={{ fontWeight: '700', color: textColor }}>Airs</Text> By Alternun.
+              </>
+            )}
           </Text>
         </View>
         <TouchableOpacity onPress={handleRefresh} activeOpacity={0.7} style={styles.refreshBtn}>
@@ -339,6 +351,60 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
               <Text style={[styles.liveText, { color: accent }]}>Live</Text>
             </View>
           )}
+        </TouchableOpacity>
+      </View>
+
+      {/* View mode tabs */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            setViewMode('global');
+            setPage(0);
+          }}
+          style={[
+            styles.tab,
+            viewMode === 'global' && {
+              borderBottomWidth: 2,
+              borderBottomColor: accent,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.tabLabel,
+              {
+                color: viewMode === 'global' ? textColor : mutedColor,
+                fontWeight: viewMode === 'global' ? '600' : '400',
+              },
+            ]}
+          >
+            Actividad Global
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setViewMode('user');
+            setPage(0);
+          }}
+          style={[
+            styles.tab,
+            viewMode === 'user' && {
+              borderBottomWidth: 2,
+              borderBottomColor: accent,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.tabLabel,
+              {
+                color: viewMode === 'user' ? textColor : mutedColor,
+                fontWeight: viewMode === 'user' ? '600' : '400',
+              },
+            ]}
+          >
+            Mi Actividad
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -590,5 +656,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     minWidth: 40,
     textAlign: 'center',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    gap: 24,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
+  },
+  tab: {
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabLabel: {
+    fontSize: 14,
+    fontFamily: ANEK_EXPANDED_FAMILY,
   },
 });

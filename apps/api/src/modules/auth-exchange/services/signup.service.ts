@@ -12,6 +12,7 @@ import {
   extractErrorStatus,
 } from './signup/signup.utils';
 import { createSignupProvider } from './signup/signup.provider.factory';
+import { sendSignupWelcomeEmail } from '../signup-welcome.email';
 import type { SignupProvider, SignupResult } from './signup/signup.types';
 
 type AuthUserLookup = (email: string) => Promise<boolean>;
@@ -82,6 +83,16 @@ export class SignupService {
         emailVerified: !normalized.needsEmailVerification,
       });
 
+      // Send signup welcome email asynchronously
+      if (response.user) {
+        this.sendSignupWelcomeEmailAsync(email, name, locale).catch((err) => {
+          this.logger.warn('Failed to send signup welcome email', {
+            email,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        });
+      }
+
       return normalized;
     } catch (error) {
       const unverifiedAuthUserExists = await this.authUserLookup(email).catch(() => false);
@@ -127,6 +138,28 @@ export class SignupService {
       });
 
       throw new Error(`PROVIDER_ERROR: ${message}`);
+    }
+  }
+
+  private async sendSignupWelcomeEmailAsync(
+    email: string,
+    displayName: string,
+    locale?: string | null
+  ): Promise<void> {
+    try {
+      const dashboardUrl = process.env.DASHBOARD_URL ?? 'https://airs.alternun.co';
+      await sendSignupWelcomeEmail({
+        to: email,
+        displayName,
+        dashboardUrl,
+        locale,
+      });
+      this.logger.debug('Signup welcome email sent successfully', { email, displayName });
+    } catch (error) {
+      this.logger.error('Error sending signup welcome email', {
+        email,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 }
