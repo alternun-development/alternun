@@ -98,17 +98,19 @@ function AuthSessionBridge(): null {
         try {
           // Try to restore from localStorage first for faster initialization
           const storedToken = readStoredBetterAuthSession();
-          if (storedToken) {
-            // We have a stored token, but still call getUser() to validate it with the server
-            // and get the latest user data
-          }
+          console.log('[Auth] Stored token from localStorage:', storedToken ? 'exists' : 'none');
 
           // Restore from cookies and validate with server
           const user = await client.getUser();
+          console.log(
+            '[Auth] getUser() on mount returned:',
+            user ? `user (${user.email})` : 'null'
+          );
 
           // If we got a user, store their session token in localStorage for next time
           if (user) {
             const token = await client.getSessionToken?.();
+            console.log('[Auth] getSessionToken() on mount:', token ? 'exists' : 'null');
             if (token) {
               storeBetterAuthSession(token);
             }
@@ -117,6 +119,10 @@ function AuthSessionBridge(): null {
             storeBetterAuthSession(null);
           }
         } catch (error) {
+          console.error(
+            '[Auth] Session restore error:',
+            error instanceof Error ? error.message : String(error)
+          );
           // Silently fail - user will see the landing page and can sign in
           storeBetterAuthSession(null);
         }
@@ -151,6 +157,7 @@ function AuthSessionBridge(): null {
       // Listen for auth state changes to sync session token for all signin methods
       return client.onAuthStateChange((user) => {
         if (user) {
+          console.log('[Auth] onAuthStateChange: user signed in:', user.email);
           // User logged in - store session token for persistence across reloads
           void (async () => {
             try {
@@ -159,14 +166,24 @@ function AuthSessionBridge(): null {
 
               // Get the session token - this will fetch from server using cookies
               const token = await client.getSessionToken?.();
+              console.log(
+                '[Auth] onAuthStateChange: getSessionToken returned:',
+                token ? 'token exists' : 'null'
+              );
               if (token) {
                 storeBetterAuthSession(token);
+                console.log('[Auth] onAuthStateChange: stored token to localStorage');
               }
-            } catch {
+            } catch (error) {
+              console.error(
+                '[Auth] onAuthStateChange error:',
+                error instanceof Error ? error.message : String(error)
+              );
               // Silently fail - session will be restored from cookies if available
             }
           })();
         } else {
+          console.log('[Auth] onAuthStateChange: user signed out');
           // User logged out
           storeBetterAuthSession(null);
         }
