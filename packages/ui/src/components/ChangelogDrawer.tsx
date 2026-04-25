@@ -67,6 +67,14 @@ export interface ChangelogDrawerProps {
   style?: ViewStyle;
   /** Override label on the collapsed trigger. Default: "v{latest}" */
   triggerLabel?: string;
+  /** Override trigger pill background color. */
+  triggerBackgroundColor?: string;
+  /** Override trigger pill border color. */
+  triggerBorderColor?: string;
+  /** Override trigger label color. */
+  triggerTextColor?: string;
+  /** Override trigger chevron color. Defaults to triggerTextColor. */
+  triggerChevronColor?: string;
   /** Show the currently active/latest version highlighted. Default: true */
   highlightLatest?: boolean;
 }
@@ -86,7 +94,26 @@ const SECTION_ICONS: Record<string, string> = {
 
 function sectionIcon(label: string): string {
   const key = label.toLowerCase();
-  return Object.prototype.hasOwnProperty.call(SECTION_ICONS, key) ? SECTION_ICONS[key] : '•';
+  switch (key) {
+    case 'bug fixes':
+      return SECTION_ICONS['bug fixes'];
+    case 'features':
+      return SECTION_ICONS.features;
+    case 'breaking changes':
+      return SECTION_ICONS['breaking changes'];
+    case 'performance':
+      return SECTION_ICONS.performance;
+    case 'documentation':
+      return SECTION_ICONS.documentation;
+    case 'refactoring':
+      return SECTION_ICONS.refactoring;
+    case 'chore':
+      return SECTION_ICONS.chore;
+    case 'security':
+      return SECTION_ICONS.security;
+    default:
+      return '•';
+  }
 }
 
 interface CommitReference {
@@ -138,7 +165,7 @@ function extractTrailingCommitReference(input: string): CommitReference {
   }
 
   for (let index = urlEnd + 1; index < trimmed.length; index += 1) {
-    const char = trimmed[index];
+    const char = trimmed.charAt(index);
 
     if (char !== ')' && char !== ' ' && char !== '\t' && char !== '.') {
       return { text: input };
@@ -190,9 +217,7 @@ export function parseChangelog(raw: string): ChangelogEntry[] {
     const sections: ChangelogSection[] = [];
     let currentSection: ChangelogSection | null = null;
 
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i];
-
+    for (const line of lines.slice(1)) {
       if (/^### /.test(line)) {
         currentSection = { label: line.replace(/^### /, '').trim(), items: [] };
         sections.push(currentSection);
@@ -359,6 +384,10 @@ export function ChangelogDrawer({
   pageSize = 3,
   style,
   triggerLabel,
+  triggerBackgroundColor,
+  triggerBorderColor,
+  triggerTextColor,
+  triggerChevronColor,
   highlightLatest = true,
 }: ChangelogDrawerProps): React.JSX.Element {
   const { theme } = useTheme();
@@ -383,7 +412,8 @@ export function ChangelogDrawer({
   const borderColor = isDark ? 'rgba(255,255,255,0.09)' : 'rgba(15,23,42,0.12)';
   const pillBg = isDark ? `${accent}22` : `${accent}12`;
   const pillBorder = isDark ? `${accent}44` : `${accent}35`;
-  const pillTextColor = accent;
+  const pillTextColor = triggerTextColor ?? accent;
+  const pillChevronColor = triggerChevronColor ?? pillTextColor;
 
   const handleOpen = useCallback(() => {
     setPage(0);
@@ -408,14 +438,20 @@ export function ChangelogDrawer({
     <View style={style}>
       {/* ── Trigger pill ── */}
       <TouchableOpacity
-        style={[innerStyles.triggerPill, { backgroundColor: pillBg, borderColor: pillBorder }]}
+        style={[
+          innerStyles.triggerPill,
+          {
+            backgroundColor: triggerBackgroundColor ?? pillBg,
+            borderColor: triggerBorderColor ?? pillBorder,
+          },
+        ]}
         onPress={handleOpen}
         activeOpacity={0.75}
         accessibilityRole='button'
         accessibilityLabel={`Open changelog — ${label}`}
       >
         <Text style={[innerStyles.triggerText, { color: pillTextColor }]}>{label}</Text>
-        <Text style={[innerStyles.triggerChevron, { color: pillTextColor }]}>▾</Text>
+        <Text style={[innerStyles.triggerChevron, { color: pillChevronColor }]}>▾</Text>
       </TouchableOpacity>
 
       {/* ── Bottom-sheet modal ── */}
