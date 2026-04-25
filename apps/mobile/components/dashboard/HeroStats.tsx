@@ -1,13 +1,13 @@
-import React from 'react';
-import { View, ImageBackground, type ImageSourcePropType } from 'react-native';
+import React, { useState } from 'react';
+import { View, ImageBackground, Animated, type ImageSourcePropType } from 'react-native';
 import { HeroPanel } from '@alternun/ui';
 import AirsBrandMark from '../branding/AirsBrandMark';
 import { palette } from '@alternun/ui';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+// eslint-disable-next-line @typescript-eslint/no-var-requires, global-require, @typescript-eslint/no-var-requires
 const DASHBOARD_BG =
-  require('../../assets/images/pexels-shella-mijos-2438861-5068057@2x-dashboard.png') as ImageSourcePropType;
+  require('../../assets/images/pexels-shella-mijos-2438861-5068057@2x-dashboard.png') as ImageSourcePropType; // eslint-disable-line
 
 interface HeroStatsProps {
   totalAIRS: number | null;
@@ -30,31 +30,68 @@ export default function HeroStats({
   displayName,
 }: HeroStatsProps): React.JSX.Element {
   const { motionLevel } = useAppPreferences();
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    if (imageLoaded) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [imageLoaded, fadeAnim]);
+
   const markFill = isDark ? palette.teal : palette.tealDark;
   const markCutout = isDark ? '#050f0c' : '#eaf8f3';
 
   return (
     <View style={{ marginHorizontal: 12 }}>
-      <ImageBackground
-        source={DASHBOARD_BG}
-        style={{ borderRadius: 20, overflow: 'hidden' }}
-        imageStyle={{
-          resizeMode: 'contain',
+      {/* Blur placeholder while loading */}
+      {!imageLoaded && (
+        <View
+          style={{
+            borderRadius: 20,
+            overflow: 'hidden',
+            backgroundColor: isDark ? '#0a0f0d' : '#e8f3f0',
+            height: 280,
+          }}
+        />
+      )}
+
+      {/* Image with fade-in animation */}
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
           borderRadius: 20,
-          opacity: 1,
+          overflow: 'hidden',
         }}
       >
-        <HeroPanel
-          displayName={displayName}
-          score={totalAIRS}
-          isLoading={isLoading}
-          onReload={onReload}
-          previewMode={previewMode}
-          isDark={isDark}
-          animateOrbs={motionLevel !== 'off'}
-          brandMark={<AirsBrandMark size={44} fillColor={markFill} cutoutColor={markCutout} />}
-        />
-      </ImageBackground>
+        <ImageBackground
+          source={DASHBOARD_BG}
+          onLoad={() => setImageLoaded(true)}
+          style={{ borderRadius: 20, overflow: 'hidden', minHeight: 280 }}
+          imageStyle={{
+            resizeMode: 'cover',
+            borderRadius: 20,
+            backgroundColor: isDark ? '#0a0f0d' : '#e8f3f0',
+            opacity: 0.95,
+          }}
+          progressiveRenderingEnabled
+        >
+          <HeroPanel
+            displayName={displayName}
+            score={totalAIRS}
+            isLoading={isLoading}
+            onReload={onReload}
+            previewMode={previewMode}
+            isDark={isDark}
+            animateOrbs={motionLevel !== 'off'}
+            brandMark={<AirsBrandMark size={44} fillColor={markFill} cutoutColor={markCutout} />}
+          />
+        </ImageBackground>
+      </Animated.View>
     </View>
   );
 }

@@ -26,9 +26,14 @@ import { useNotifications } from '../notifications/NotificationsContext';
 import { ToastSystem, type ToastItem, type ToastType } from '@alternun/ui';
 import { useBackToTop } from '../../hooks/useBackToTop';
 import { BackToTopButton } from '../common/BackToTopButton';
+import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import type { AirsDashboardSnapshot } from './types';
 
 let toastIdCounter = 0;
+
+interface AuthClient {
+  getSessionToken(): Promise<string | null>;
+}
 
 interface DashboardProps {
   user: User | null;
@@ -42,6 +47,7 @@ interface DashboardProps {
   onOpenSettingsPage: () => void;
   onWalletConnect: (walletType: string) => Promise<void>;
   onSignOut: () => Promise<void>;
+  client: AuthClient;
 }
 type UserMetadata = Record<string, unknown>;
 
@@ -287,6 +293,7 @@ export default function Dashboard({
   onOpenSettingsPage,
   onWalletConnect,
   onSignOut,
+  client,
 }: DashboardProps): React.JSX.Element {
   const [walletModalVisible, setWalletModalVisible] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -342,14 +349,35 @@ export default function Dashboard({
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // Show welcome bonus notification on first dashboard visit
+  // Claim welcome bonus after email verification
   React.useEffect(() => {
-    if (user && !bonusNotificationShown) {
+    if (user?.emailVerified && !bonusNotificationShown) {
       const storageKey = `airs_welcome_bonus_${user.id}`;
-      const wasShown = typeof window !== 'undefined' && localStorage.getItem(storageKey);
+      const wasClaimed = typeof window !== 'undefined' && localStorage.getItem(storageKey);
 
-      if (!wasShown) {
-        // Show welcome bonus notification
+      if (!wasClaimed) {
+        void claimRegistrationBonus(user.id);
+      }
+    }
+  }, [user, bonusNotificationShown]);
+
+  const claimRegistrationBonus = async (userId: string): Promise<void> => {
+    try {
+      const sessionToken = await client.getSessionToken();
+      if (!sessionToken) {
+        return;
+      }
+
+      const response = await fetch(`${resolveMobileApiBaseUrl()}/airs/registration-bonus/claim`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionToken}`,
+        },
+      });
+
+      if (response.ok) {
+        await response.json();
         addNotification({
           type: 'success',
           title: '¡Bienvenido!',
@@ -359,14 +387,16 @@ export default function Dashboard({
           archived: false,
         });
 
-        // Mark as shown to avoid duplicate notifications
+        // Mark as claimed to avoid duplicate requests
         if (typeof window !== 'undefined') {
-          localStorage.setItem(storageKey, '1');
+          localStorage.setItem(`airs_welcome_bonus_${userId}`, '1');
         }
         setBonusNotificationShown(true);
       }
+    } catch {
+      // Silently fail - bonus is nice to have but not critical
     }
-  }, [user, bonusNotificationShown, addNotification]);
+  };
 
   const walletAddress = getWalletAddress(user);
   const walletProvider = getWalletProvider(user);
