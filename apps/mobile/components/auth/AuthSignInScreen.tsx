@@ -2248,7 +2248,7 @@ const styles = createTypographyStyles({
     letterSpacing: 0.2,
   },
   confirmationSecondaryButton: {
-    alignSelf: 'stretch',
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
