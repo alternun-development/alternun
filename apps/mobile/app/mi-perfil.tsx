@@ -6,6 +6,7 @@ import {
   BellOff,
   Check,
   ChevronRight,
+  Copy,
   Globe,
   LogOut,
   Moon,
@@ -22,6 +23,8 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Clipboard,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -38,6 +41,14 @@ import { PageTabBar, type TabItem } from '../components/common/PageTabBar';
 import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
 import { resolveAppPackageVersion } from '../components/common/Footer.shared';
 import profileStylesEnhanced from '../components/profile/ProfileStyles';
+import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
+import {
+  AchievementBadge,
+  AchievementTooltip,
+  ACHIEVEMENT_CATALOG,
+  type AchievementDef,
+  type ColorPalette,
+} from '../components/profile/AchievementBadge';
 
 const AwardIcon = Award as React.FC<LucideProps>;
 const BellIcon = Bell as React.FC<LucideProps>;
@@ -56,16 +67,6 @@ const WalletIcon = Wallet as React.FC<LucideProps>;
 // ─── Data & Helpers ──────────────────────────────────────────────────────────
 
 type UserMetadata = Record<string, unknown>;
-
-interface ColorPalette {
-  bg: string;
-  cardBg: string;
-  cardBorder: string;
-  border: string;
-  text: string;
-  muted: string;
-  accent: string;
-}
 
 const TOP_USERS = [
   { rank: 1, name: 'María González', score: '98.420', medal: '🥇', color: '#d4b96a' },
@@ -578,55 +579,6 @@ function TierJourney({
   );
 }
 
-function AchievementBadge({
-  icon,
-  label,
-  color,
-  unlocked = true,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  color: string;
-  unlocked?: boolean;
-}): React.JSX.Element {
-  return (
-    <View
-      style={{
-        alignItems: 'center',
-        gap: 6,
-        opacity: unlocked ? 1 : 0.4,
-      }}
-    >
-      <View
-        style={{
-          width: 56,
-          height: 56,
-          borderRadius: 16,
-          backgroundColor: unlocked ? `${color}2E` : 'rgba(255,255,255,0.04)',
-          borderWidth: 1,
-          borderColor: unlocked ? `${color}66` : 'rgba(255,255,255,0.12)',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {icon}
-      </View>
-      <Text
-        style={{
-          fontSize: 10,
-          fontWeight: '600',
-          color: 'rgba(255,255,255,0.7)',
-          textAlign: 'center',
-          lineHeight: 1.2,
-          maxWidth: 70,
-        }}
-      >
-        {label}
-      </Text>
-    </View>
-  );
-}
-
 function SettingRow({
   icon,
   label,
@@ -696,6 +648,289 @@ function SettingRow({
       )}
       {!hideChevron && <ChevronRightIcon size={16} color={c.muted} strokeWidth={2} />}
     </TouchableOpacity>
+  );
+}
+
+function AccountInfoModal({
+  visible,
+  user,
+  isDark,
+  c,
+  onClose,
+}: {
+  visible: boolean;
+  user: User | null;
+  isDark: boolean;
+  c: ColorPalette;
+  onClose: () => void;
+}): React.JSX.Element | null {
+  if (!visible || !user) return null;
+
+  const [copiedId, setCopiedId] = useState(false);
+  const createdAt = user.createdAt
+    ? new Date(user.createdAt as string).toLocaleDateString('es-ES')
+    : 'N/A';
+  const profile = useMemo(() => getProfileInfo(user), [user]);
+
+  const handleCopyId = (): void => {
+    if (user.id) {
+      void Clipboard.setString(user.id);
+      setCopiedId(true);
+      if (Platform.OS === 'android') {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires,@typescript-eslint/no-unsafe-assignment
+        const { ToastAndroid } = require('react-native');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+        ToastAndroid.show('ID copiado al portapapeles', ToastAndroid.SHORT);
+      }
+      setTimeout(() => {
+        setCopiedId(false);
+      }, 2000);
+    }
+  };
+
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.6)',
+        justifyContent: 'flex-end',
+        zIndex: 100,
+      }}
+    >
+      <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
+      <View
+        style={{
+          backgroundColor: isDark ? '#050f0c' : '#f0fdf9',
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
+          paddingHorizontal: 16,
+          paddingTop: 20,
+          paddingBottom: 40,
+          maxHeight: '85%',
+          borderTopWidth: 3,
+          borderTopColor: c.accent,
+        }}
+      >
+        <View
+          style={{
+            width: 40,
+            height: 4,
+            backgroundColor: c.muted,
+            borderRadius: 2,
+            alignSelf: 'center',
+            marginBottom: 16,
+            opacity: 0.4,
+          }}
+        />
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 24,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: '800',
+              color: c.text,
+              letterSpacing: -0.5,
+            }}
+          >
+            Información de Cuenta
+          </Text>
+          <TouchableOpacity onPress={onClose} style={{ padding: 8 }}>
+            <Text style={{ fontSize: 24, color: c.muted, fontWeight: '400' }}>✕</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false} style={{ marginBottom: 16 }}>
+          {/* Account ID */}
+          <View style={{ marginBottom: 18 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: c.muted,
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              ID de Cuenta
+            </Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: c.cardBorder,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: c.text,
+                  fontFamily: 'monospace',
+                  fontWeight: '500',
+                  lineHeight: 1.4,
+                  flex: 1,
+                }}
+              >
+                {user.id || 'N/A'}
+              </Text>
+              <TouchableOpacity onPress={handleCopyId} style={{ padding: 8, marginLeft: 8 }}>
+                {copiedId ? (
+                  <CheckIcon size={18} color={c.accent} strokeWidth={3} />
+                ) : (
+                  <Copy size={18} color={c.accent} strokeWidth={2} />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Email */}
+          <View style={{ marginBottom: 18 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: c.muted,
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              Email
+            </Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: c.cardBorder,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+              }}
+            >
+              <Text
+                style={{ fontSize: 14, color: c.text, fontFamily: 'monospace', fontWeight: '400' }}
+              >
+                {user.email ?? 'N/A'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Display Name */}
+          <View style={{ marginBottom: 18 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: c.muted,
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              Nombre de Usuario
+            </Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: c.cardBorder,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+              }}
+            >
+              <Text style={{ fontSize: 14, color: c.text, fontWeight: '500' }}>
+                {profile.displayName || 'N/A'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Creation Date */}
+          <View style={{ marginBottom: 18 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: c.muted,
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              Fecha de Creación
+            </Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: c.cardBorder,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+              }}
+            >
+              <Text
+                style={{ fontSize: 14, color: c.text, fontFamily: 'monospace', fontWeight: '400' }}
+              >
+                {createdAt}
+              </Text>
+            </View>
+          </View>
+
+          {/* Verified Badge */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              paddingHorizontal: 14,
+              paddingVertical: 12,
+              backgroundColor: `${c.accent}18`,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: `${c.accent}44`,
+              marginTop: 8,
+            }}
+          >
+            <CheckIcon size={18} color={c.accent} strokeWidth={2.5} />
+            <Text style={{ fontSize: 13, fontWeight: '700', color: c.accent }}>Cuenta Activa</Text>
+          </View>
+        </ScrollView>
+
+        <TouchableOpacity
+          onPress={onClose}
+          style={{
+            backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.08)',
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: c.cardBorder,
+          }}
+        >
+          <Text style={{ fontSize: 15, fontWeight: '700', color: c.text, letterSpacing: 0.3 }}>
+            Cerrar
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
@@ -1113,6 +1348,7 @@ function PerfilTab({
   language,
   onCycleLanguage,
   footerLabel,
+  client,
 }: {
   isDark: boolean;
   c: ColorPalette;
@@ -1124,14 +1360,60 @@ function PerfilTab({
   language: string;
   onCycleLanguage: () => void;
   footerLabel: string;
+  client: ReturnType<typeof useAuth>['client'];
 }): React.JSX.Element {
   const profile = useMemo(() => getProfileInfo(user), [user]);
   const walletAddress = useMemo(() => getWalletAddress(user), [user]);
   const walletProvider = useMemo(() => getWalletProvider(user), [user]);
   const walletConnected = Boolean(walletAddress || walletProvider);
   const authMethod = useMemo(() => getAuthMethodLabel(user), [user]);
+  const [showAccountInfoModal, setShowAccountInfoModal] = useState(false);
   const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [selectedAchievement, setSelectedAchievement] = useState<{
+    label: string;
+    color: string;
+  } | null>(null);
+  const [achievements, setAchievements] = useState<
+    Array<{ key: string; unlocked: boolean; unlockedAt: string | null }>
+  >([]);
+
+  useEffect(() => {
+    const fetchAchievements = async (): Promise<void> => {
+      try {
+        if (!user?.id) {
+          return;
+        }
+
+        const sessionToken = await client.getSessionToken();
+        if (!sessionToken) {
+          return;
+        }
+
+        const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
+        const response = await fetch(`${apiBaseUrl}/v1/airs/achievements`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+            Accept: 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = (await response.json()) as Array<{
+            key: string;
+            unlocked: boolean;
+            unlockedAt: string | null;
+          }>;
+          setAchievements(data);
+        }
+      } catch {
+        // Silently fail if achievements endpoint is unavailable
+      }
+    };
+
+    void fetchAchievements();
+  }, [user?.id, client]);
 
   return (
     <View style={{ flex: 1, position: 'relative' }}>
@@ -1160,62 +1442,67 @@ function PerfilTab({
               flexWrap: 'wrap',
               gap: 10,
               padding: 16,
+              position: 'relative',
             }}
           >
-            <AchievementBadge
-              icon={<Wallet size={22} color='#34d399' />}
-              label='Primer Árbol'
-              color='#34d399'
-              unlocked
-            />
-            <AchievementBadge
-              icon={<Trophy size={22} color={c.accent} />}
-              label='10 kg CO₂'
-              color={c.accent}
-              unlocked
-            />
-            <AchievementBadge
-              icon={<Trophy size={22} color='#d4b96a' />}
-              label='1K Airs'
-              color='#d4b96a'
-              unlocked
-            />
-            <AchievementBadge
-              icon={<Award size={22} color='#818cf8' />}
-              label='5K Airs'
-              color='#818cf8'
-              unlocked
-            />
-            <AchievementBadge
-              icon={<CheckIcon size={22} color={c.accent} />}
-              label='KYC Verificado'
-              color={c.accent}
-              unlocked
-            />
-            <AchievementBadge
-              icon={<UserCircle2 size={22} color='#a8b8cc' />}
-              label='Recluta'
-              color='#a8b8cc'
-              unlocked
-            />
-            <AchievementBadge
-              icon={<Wallet size={22} color='#cd7f32' />}
-              label='Socio'
-              color='#cd7f32'
-              unlocked
-            />
-            <AchievementBadge
-              icon={<Trophy size={22} color='#9ba9c4' />}
-              label='Platinum'
-              color='#9ba9c4'
-              unlocked={false}
-            />
+            {Object.entries(ACHIEVEMENT_CATALOG).map(([key, def]) => {
+              const achievement = achievements.find((a) => a.key === key);
+              const isUnlocked = achievement?.unlocked ?? false;
+
+              const achievementDef: AchievementDef = {
+                key,
+                label: def.label,
+                color: def.color,
+                icon: def.icon,
+                unlocked: isUnlocked,
+                unlockedAt: achievement?.unlockedAt ?? null,
+              };
+
+              return (
+                <AchievementBadge
+                  key={key}
+                  def={achievementDef}
+                  onPress={() => setSelectedAchievement({ label: def.label, color: def.color })}
+                />
+              );
+            })}
+
+            {/* Tooltip */}
+            {selectedAchievement && (
+              <TouchableOpacity
+                style={{ position: 'absolute', width: '100%', height: '100%' }}
+                onPress={() => setSelectedAchievement(null)}
+              >
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <AchievementTooltip
+                    visible={Boolean(selectedAchievement)}
+                    label={selectedAchievement?.label || ''}
+                    color={selectedAchievement?.color || ''}
+                    isDark={isDark}
+                    c={c}
+                  />
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
         </SectionContainer>
 
         {/* Cuenta */}
         <SectionContainer title='Cuenta' style={{ margin: 12 }}>
           <GlassCard>
+            <SettingRow
+              icon={UserCircle2}
+              label='Información de Cuenta'
+              value={user?.id ? truncateMiddle(user.id, 10, 6) : 'N/A'}
+              c={c}
+              onPress={() => setShowAccountInfoModal(true)}
+            />
             <SettingRow
               icon={UserCircle2}
               label='Información personal'
@@ -1397,6 +1684,15 @@ function PerfilTab({
         </Text>
       </ScrollView>
 
+      {/* Account Info Modal */}
+      <AccountInfoModal
+        visible={showAccountInfoModal}
+        user={user}
+        isDark={isDark}
+        c={c}
+        onClose={() => setShowAccountInfoModal(false)}
+      />
+
       {/* Personal Info Modal */}
       <PersonalInfoModal
         visible={showPersonalInfoModal}
@@ -1420,7 +1716,7 @@ const TABS: TabItem[] = [
 export default function MiPerfilScreen(): React.JSX.Element {
   const router = useRouter();
   const params = useLocalSearchParams<{ tab?: string }>();
-  const { user, loading, signOutUser } = useAuth();
+  const { user, loading, signOutUser, client } = useAuth();
   const { t } = useAppTranslation('mobile');
   const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
   const isDark = themeMode === 'dark';
@@ -1543,6 +1839,7 @@ export default function MiPerfilScreen(): React.JSX.Element {
                 void cycleLanguage?.();
               }}
               footerLabel={footerLabel}
+              client={client}
             />
           )}
         </Animated.View>
