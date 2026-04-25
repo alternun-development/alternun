@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Deploy API to testnet with correct stack parameter
+# Deploy the live testnet API/auth runtime via the owning dashboard stack.
 # Usage: ./scripts/deploy-testnet-api.sh
 # Or: ./scripts/deploy-testnet-api.sh [--no-prompt]
 
@@ -12,8 +12,8 @@ NC='\033[0m' # No Color
 
 NO_PROMPT=${1:-}
 
-echo -e "${YELLOW}Deploying API to testnet (api-dev stack)...${NC}"
-echo "This ensures the API Lambda code gets updated (not just infrastructure)"
+echo -e "${YELLOW}Deploying API to testnet (dashboard-dev stack)...${NC}"
+echo "This updates the live testnet API/auth runtime on the owning dashboard stack"
 echo ""
 
 if [ "$NO_PROMPT" != "--no-prompt" ]; then
@@ -28,9 +28,9 @@ fi
 # Load AWS credentials
 bash scripts/validate-aws-account.sh enforce
 
-# Deploy with correct STACK parameter for API
-echo -e "${GREEN}Running: APPROVE=true STACK=api-dev packages/infra/scripts/sst-deploy.sh${NC}"
-APPROVE=true STACK=api-dev packages/infra/scripts/sst-deploy.sh
+# Deploy with the owning dashboard stack for the live testnet API/admin runtime.
+echo -e "${GREEN}Running: APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh${NC}"
+APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 
 # Verify deployment
 echo ""

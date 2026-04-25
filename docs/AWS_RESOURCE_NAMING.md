@@ -10,12 +10,12 @@ Current naming conventions create long, confusing resource names that expose imp
 
   - Length: 41 characters
   - Exposes implementation detail (NestJS framework)
-  - "dashboard-dev" vs "api-dev" vs "backend-api-dev" aliases cause confusion
-  - Multiple stacks pointing to the same resource name create SST deployment conflicts
+  - old `api-dev` / `backend-*` stage names caused confusion
+  - multiple stacks pointing to the same public testnet domains created SST deployment conflicts
 
 - **API domain**: `testnet.api.alternun.co`
   - Already created by `dashboard-dev` stack
-  - `api-dev` stack tries to recreate it, causing conflicts
+  - the retired `api-dev` stack used to recreate it, causing conflicts
   - No clear indication of which component owns the resource
 
 ## Recommended Naming Convention
@@ -60,12 +60,12 @@ Current naming conventions create long, confusing resource names that expose imp
 
 **Format**: `{component}-{stage}`
 
-**Aliases allowed**: `{component}-dev`, `{component}-{alias}`, etc.
+**Aliases allowed**: legacy aliases may normalize to the canonical dashboard stack, but they must not be deployed as standalone stages.
 
 **Examples**:
 
-- Primary: `api-dev`
-- Aliases: `backend-api-dev`, `api-dev`, `backend-dev` (all point to same stack)
+- Primary: `dashboard-dev`
+- Legacy aliases: `api-dev`, `backend-api-dev`, `backend-dev` (all normalize to `dashboard-dev`)
 
 **Guidelines**:
 
@@ -130,10 +130,10 @@ This causes:
 
 ### Solution
 
-1. **Primary Stack Name**: Define one official stack name per component
+1. **Primary Stack Name**: Define one official stack name per live surface
 
-   - `api-dev` = primary name for API component in dev stage
-   - All aliases documented in pipeline config comments
+   - `dashboard-dev` = primary name for the live testnet API/admin runtime
+   - `dashboard-prod` = primary name for the live production API/admin runtime
 
 2. **Resource Naming**: Use primary name in resource names
 
@@ -146,20 +146,20 @@ This causes:
    - Document all aliases in `packages/infra/config/pipelines/stages.ts`
    - Avoid deploying same stack with different alias names
 
-4. **Example for API**:
+4. **Example for the live testnet API/admin runtime**:
 
    ```
-   MANAGED_PIPELINE_ALIASES['api-dev'] = [
-     'api-dev',           // Primary name
-     'backend-api-dev',   // Alias
-     'api',               // Alias for local dev
+   MANAGED_PIPELINE_ALIASES['dashboard-dev'] = [
+     'dashboard-dev',     // Primary name
+     'api-dev',           // Retired alias
+     'backend-api-dev',   // Retired alias
    ]
 
    # Deploy with:
-   STACK=api-dev pnpm deploy
+   STACK=dashboard-dev pnpm deploy
 
    # NOT:
-   STACK=backend-api-dev pnpm deploy  # Creates duplicate resources!
+   STACK=api-dev pnpm deploy          # Retired stale stage
    ```
 
 ## Migration Plan
@@ -168,8 +168,8 @@ This causes:
 
 1. **Lambda Functions**:
 
-   - `alternun-infra-dashboard-dev-nestjs-api` → `alternun-api-dev`
-   - Update environment variables SSM paths accordingly
+   - keep `dashboard-dev` as the single live owner for testnet API/admin resources
+   - remove stale `api-dev` state/resources so public domains cannot drift back
 
 2. **SST Stack State**:
 
@@ -184,11 +184,10 @@ This causes:
 ### Implementation Order
 
 1. Document convention (done)
-2. Update pipeline config comments with aliases
-3. Rename Lambda functions in SST config
-4. Redeploy with new names
-5. Update any hardcoded resource references
-6. Document in CLAUDE.md for future developers
+2. Retire stale `api-dev` / `backend-*` stack entrypoints
+3. Redeploy the canonical dashboard stack if shared domains need to be reasserted
+4. Update any hardcoded deployment references
+5. Document the canonical stack names for future developers
 
 ## Checklist for New Resources
 
