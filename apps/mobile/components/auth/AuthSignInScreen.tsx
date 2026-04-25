@@ -752,6 +752,8 @@ export default function AuthSignInScreen({
       await emailAuthClient.verifyEmailConfirmationCode(normalizedEmail, normalizedCode);
       setConfirmationEmail(normalizedEmail);
       setResendCooldown(0);
+      // Refresh user state to get updated emailVerified flag
+      void client.getUser();
       transitionToSignInForm(normalizedEmail, t('authModal.notices.emailConfirmedSignIn'));
     } catch (authError) {
       const errorMsg = getConfirmationCodeErrorMessage(
