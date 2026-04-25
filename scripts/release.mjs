@@ -397,7 +397,7 @@ function validateAwsAccount() {
   if ((result.status ?? 1) !== 0) {
     throw new Error(
       'AWS account validation failed. ' +
-        'You must use the Alternun AWS account (124120088516), not the default. ' +
+        'You must use the Alternun AWS account, not the default. ' +
         'Run: bash scripts/setup-aws-account.sh'
     );
   }

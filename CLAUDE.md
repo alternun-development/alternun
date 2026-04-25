@@ -81,8 +81,8 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 Your machine likely has **two** AWS CLI profiles:
 
-- **Default** (`~/.aws/credentials` → account `058264267235`) — DO NOT USE
-- **Alternun** (from `.env` → account `124120088516`) — MUST USE
+- **Default** (`~/.aws/credentials` → account `05....35`) — DO NOT USE
+- **Alternun** (from `.env` → account `12....16`) — MUST USE
 
 Accidental use of the default account will deploy to the wrong infrastructure and create resources in the wrong account.
 
@@ -96,7 +96,7 @@ bash scripts/setup-aws-account.sh
 
 # Verify
 bash scripts/validate-aws-account.sh
-# Output: ✅ Using CORRECT Alternun AWS account: 124120088516
+# Output: ✅ Using CORRECT Alternun AWS account: 12....16
 ```
 
 #### In Your Shell (permanent for session)

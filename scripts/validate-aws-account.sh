@@ -2,8 +2,8 @@
 # validate-aws-account.sh
 # Guards against accidentally using the default AWS CLI account instead of Alternun's.
 #
-# Alternun's AWS account ID: 124120088516
-# Default/wrong account: 058264267235 (should NOT be used for deployment)
+# Alternun's AWS account ID is masked in output.
+# Default/wrong account is masked in output and should NOT be used for deployment.
 #
 # Usage:
 #   bash scripts/validate-aws-account.sh          # Check current account
@@ -15,6 +15,19 @@ ALTERNUN_ACCOUNT_ID="124120088516"
 WRONG_ACCOUNT_ID="058264267235"
 ENFORCE="${1:-check}"
 ALLOW_DEFAULT_AWS="${CLAUDE_ALLOW_DEFAULT_AWS:-0}"
+
+mask_account_id() {
+  local account_id="$1"
+  if [ "${#account_id}" -lt 4 ]; then
+    printf '%s' "$account_id"
+    return
+  fi
+
+  printf '%s....%s' "${account_id:0:2}" "${account_id: -2}"
+}
+
+MASKED_ALTERNUN_ACCOUNT_ID="$(mask_account_id "$ALTERNUN_ACCOUNT_ID")"
+MASKED_WRONG_ACCOUNT_ID="$(mask_account_id "$WRONG_ACCOUNT_ID")"
 
 is_default_aws_allowed() {
   case "$ALLOW_DEFAULT_AWS" in
@@ -70,7 +83,7 @@ fi
 
 # Check if using correct account
 if [ "$current_account" = "$ALTERNUN_ACCOUNT_ID" ]; then
-  echo "✅ Using CORRECT Alternun AWS account: $current_account"
+  echo "✅ Using CORRECT Alternun AWS account: $(mask_account_id "$current_account")"
   exit 0
 fi
 
@@ -79,8 +92,8 @@ if [ "$current_account" = "$WRONG_ACCOUNT_ID" ]; then
   cat <<EOF
 ❌ WRONG AWS ACCOUNT DETECTED
 
-Current:  $current_account (DEFAULT cli-admin — DO NOT USE)
-Required: $ALTERNUN_ACCOUNT_ID (Alternun project account)
+Current:  $(mask_account_id "$current_account") (DEFAULT cli-admin — DO NOT USE)
+Required: $MASKED_ALTERNUN_ACCOUNT_ID (Alternun project account)
 
 You are using the default AWS CLI account instead of Alternun's.
 
@@ -108,12 +121,12 @@ fi
 cat <<EOF
 ⚠️  UNKNOWN AWS ACCOUNT
 
-Current:  $current_account
-Expected: $ALTERNUN_ACCOUNT_ID (Alternun project account)
+Current:  $(mask_account_id "$current_account")
+Expected: $MASKED_ALTERNUN_ACCOUNT_ID (Alternun project account)
 
 This account is not recognized as Alternun's account. Verify you're using the correct credentials.
 
-Correct account: $ALTERNUN_ACCOUNT_ID
+Correct account: $MASKED_ALTERNUN_ACCOUNT_ID
 
 See CLAUDE.md section "AWS Account Guard" for details.
 EOF
