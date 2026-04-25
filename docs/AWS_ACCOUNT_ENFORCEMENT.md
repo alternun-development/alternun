@@ -2,13 +2,13 @@
 
 ## ⚠️ CRITICAL: Alternun uses ONE AWS account ONLY
 
-| Property             | Value                                 |
-| -------------------- | ------------------------------------- |
-| **Correct Account**  | `124120088516` (Alternun)             |
-| **❌ Wrong Account** | `058264267235` (DEFAULT - DO NOT USE) |
-| **Region**           | `us-east-1`                           |
+| Property             | Value                             |
+| -------------------- | --------------------------------- |
+| **Correct Account**  | `12....16` (Alternun)             |
+| **❌ Wrong Account** | `05....35` (DEFAULT - DO NOT USE) |
+| **Region**           | `us-east-1`                       |
 
-## Existing Pipelines (Alternun Account 124120088516)
+## Existing Pipelines (Alternun Account 12....16)
 
 All pipelines are **SST-managed** in AWS CodePipeline and automatically trigger on repository events:
 
@@ -72,7 +72,7 @@ testnet.airs.alternun.co updated
 # Run this to enforce Alternun account
 bash scripts/setup-aws-account.sh
 
-# Verify (should show 124120088516)
+# Verify (should show Alternun account 12....16)
 aws sts get-caller-identity
 ```
 
