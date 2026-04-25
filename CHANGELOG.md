@@ -1,3 +1,9 @@
+## [1.0.229](https://github.com/alternun-development/alternun/compare/v1.0.228-dev.0...v1.0.229) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** test(repo,docs,mobile): release-deploy, authentication-and-session-flow, infrastructure-and-delivery, ActivityFeed
+
 ## [1.0.228](https://github.com/alternun-development/alternun/compare/v1.0.227-dev.0...v1.0.228) (2026-04-25)
 
 ### Bug Fixes
