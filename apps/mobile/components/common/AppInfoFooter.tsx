@@ -43,7 +43,7 @@ import {
   FooterTopFade,
   SocialPill,
   SOCIAL_LINKS,
-  resolveVersionMetadata,
+  resolveAppPackageVersion,
 } from './Footer.shared';
 import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 
@@ -56,7 +56,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
   const { width } = useWindowDimensions();
   const { t } = useAppTranslation('mobile');
   const isDark = themeMode === 'dark';
-  const versionMetadata = useMemo(resolveVersionMetadata, []);
+  const versionMetadata = useMemo(resolveAppPackageVersion, []);
   const changelogContent = useMemo(getChangelogContent, []);
   const resolvedApiUrl = resolveMobileApiBaseUrl();
 

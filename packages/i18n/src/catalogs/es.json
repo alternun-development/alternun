@@ -163,7 +163,7 @@
         "terms": "Términos",
         "support": "Soporte"
       },
-      "tagline": "Una \"manera diferente de hacer las cosas\" - Alternun.io"
+      "tagline": "“Una manera diferente de hacer las cosas” · Alternun.io"
     },
     "releaseUpdate": {
       "eyebrow": "Nueva versión disponible",
@@ -418,7 +418,7 @@
         "partner": "Socio",
         "platinum": "Platinum"
       },
-      "footer": "Alternun Airs · v1.0.223"
+      "footer": "Alternun Airs · v{{version}}"
     }
   },
   "web": {
