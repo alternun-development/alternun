@@ -1747,22 +1747,7 @@ export default function AuthSignInScreen({
                   </View>
                 ) : null}
 
-                {effectiveError ? (
-                  <View
-                    style={[
-                      styles.errorBox,
-                      { backgroundColor: p.errorBg, borderColor: p.errorBorder },
-                    ]}
-                  >
-                    <AlertCircle
-                      color={p.errorIcon}
-                      size={18}
-                      strokeWidth={2}
-                      style={{ marginTop: 1, flexShrink: 0 }}
-                    />
-                    <Text style={[styles.errorText, { color: p.errorText }]}>{effectiveError}</Text>
-                  </View>
-                ) : null}
+                {/* Error box removed - notice above already indicates email verification status */}
 
                 <View
                   style={[
