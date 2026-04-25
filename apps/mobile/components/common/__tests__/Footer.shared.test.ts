@@ -12,8 +12,7 @@ const developmentManifest = require('../../../../../version.development.json') a
 const productionManifest = require('../../../../../version.production.json') as {
   version: string;
 };
-
-import { resolveVersionMetadata } from '../Footer.shared';
+import { resolveAppPackageVersion, resolveVersionMetadata } from '../Footer.shared';
 
 describe('Footer.shared version metadata', () => {
   const originalOrigin = process.env.EXPO_PUBLIC_ORIGIN;
@@ -38,5 +37,14 @@ describe('Footer.shared version metadata', () => {
 
     expect(versionMetadata.version).toBe(productionManifest.version);
     expect(versionMetadata.source).toBe('version.production.json');
+  });
+
+  it('resolves the branch release version for the footer badge', () => {
+    process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
+
+    const versionMetadata = resolveAppPackageVersion();
+
+    expect(versionMetadata.version).toBe(developmentManifest.version);
+    expect(versionMetadata.source).toBe('version.development.json');
   });
 });

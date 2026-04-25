@@ -20,7 +20,7 @@ You need:
 - **Google OAuth 2.0 credentials** (Client ID and Client Secret) from Google Cloud Console
   - Already created from previous auth setup or new project
   - Must have testnet callback URL registered
-- **AWS Secrets Manager** access in the Alternun account (124120088516)
+- **AWS Secrets Manager** access in the Alternun account (12....16)
 - **GitHub repository** access to update workflow secrets
 - **Deployed testnet infrastructure** (api.testnet.alternun.co running)
 

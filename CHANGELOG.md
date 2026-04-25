@@ -1,3 +1,15 @@
+## [1.0.224](https://github.com/alternun-development/alternun/compare/v1.0.224-dev.0...v1.0.224) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** chore: sync release and env promotion
+
+## [1.0.224](https://github.com/alternun-development/alternun/compare/v1.0.223-dev.1...v1.0.224) (2026-04-24)
+
+### Bug Fixes
+
+- **repo:** test(mobile,i18n): build, ReleaseUpdateBanner.native, ReleaseUpdateBanner.web, mobile-env.test
+
 ## [1.0.223](https://github.com/alternun-development/alternun/compare/v1.0.223-dev.0...v1.0.223) (2026-04-24)
 
 ### Bug Fixes

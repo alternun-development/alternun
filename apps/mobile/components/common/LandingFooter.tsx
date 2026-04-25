@@ -10,7 +10,6 @@ import {
   useWindowDimensions,
   View,
   ImageBackground,
-  type ImageSourcePropType,
 } from 'react-native';
 import { PolicyDrawerContent } from '../auth/AuthFooter';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
@@ -34,27 +33,24 @@ import {
 } from './AppInfoFooter.links';
 import {
   AIRS_LOGO_DARK,
-  AIRS_LOGO_LIGHT,
+  AIRS_LOGO_WHITE,
   FooterCopyright,
   FooterTextLink,
   SocialPill,
   SOCIAL_LINKS,
-  resolveVersionMetadata,
+  resolveAppPackageVersion,
 } from './Footer.shared';
 import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
-// Metro resolves static image requires for React Native asset bundling.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const FOOTER_BG =
-  require('../../assets/images/pexels-shella-mijos-2438861-5068057-footer.png') as ImageSourcePropType;
+import FOOTER_BG from '../../assets/images/pexels-shella-mijos-2438861-5068057-footer.png';
 
 export default function LandingFooter(): React.JSX.Element {
   const { themeMode, language } = useAppPreferences();
   const { width } = useWindowDimensions();
   const { t } = useAppTranslation('mobile');
   const isDark = themeMode === 'dark';
-  const versionMetadata = useMemo(resolveVersionMetadata, []);
+  const versionMetadata = useMemo(resolveAppPackageVersion, []);
   const changelogContent = useMemo(getChangelogContent, []);
   const resolvedApiUrl = resolveMobileApiBaseUrl();
 
@@ -82,7 +78,7 @@ export default function LandingFooter(): React.JSX.Element {
   const isMobile = width < 720;
   const isWide = width >= 1120;
   const useCompactFooter = !isWide;
-  const wordmarkSource = isDark ? AIRS_LOGO_DARK : AIRS_LOGO_LIGHT;
+  const wordmarkSource = isDark ? AIRS_LOGO_DARK : AIRS_LOGO_WHITE;
   const primaryLinks = resolvePrimaryLinksForViewport({ isMobile, isWide }, language);
 
   // Floating orb animations
@@ -369,6 +365,10 @@ export default function LandingFooter(): React.JSX.Element {
                   githubUrl={GITHUB_REPO_URL}
                   pageSize={3}
                   triggerLabel={`v${versionMetadata.version}`}
+                  triggerTextColor={isDark ? undefined : '#ffffff'}
+                  triggerChevronColor={isDark ? undefined : '#ffffff'}
+                  triggerBackgroundColor={isDark ? undefined : 'rgba(4, 23, 29, 0.36)'}
+                  triggerBorderColor={isDark ? undefined : 'rgba(255,255,255,0.16)'}
                 />
               </ThemeProvider>
               <SupportButton supportEmail='support@alternun.co' palette={palette} />

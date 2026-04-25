@@ -373,6 +373,52 @@
           "description": "เชื่อมต่อผ่าน QR code"
         }
       }
+    },
+    "profile": {
+      "sections": {
+        "achievements": "ความสำเร็จ",
+        "account": "บัญชี",
+        "preferences": "ค่าปรับแต่ง"
+      },
+      "header": {
+        "personalInfo": "ข้อมูลส่วนบุคคล",
+        "verified": "ข้อมูลได้รับการยืนยัน"
+      },
+      "tierJourney": "การเดินทางระดับชั้น",
+      "accountRows": {
+        "personalInfo": "ข้อมูลส่วนบุคคล",
+        "wallet": "วอลเล็ต",
+        "accessMethod": "วิธีการเข้าถึง",
+        "notifications": "การแจ้งเตือน"
+      },
+      "preferenceRows": {
+        "theme": "ธีม",
+        "language": "ภาษา",
+        "settings": "การตั้งค่า",
+        "signOut": "ออกจากระบบ"
+      },
+      "accessMethodsAlert": {
+        "title": "วิธีการเข้าถึง",
+        "available": "วิธีการที่มี:\n• อีเมล\n• Google\n• Discord"
+      },
+      "modal": {
+        "title": "ข้อมูลส่วนบุคคล",
+        "firstName": "ชื่อจริง",
+        "lastName": "นามสกุล",
+        "email": "อีเมล",
+        "close": "ปิด"
+      },
+      "achievements": {
+        "firstTree": "ต้นไม้แรก",
+        "co2Badge": "10 kg CO₂",
+        "airs1k": "1K Airs",
+        "airs5k": "5K Airs",
+        "kycVerified": "ได้รับการยืนยัน KYC",
+        "recruiter": "ผู้สรรหา",
+        "partner": "พาร์ตเนอร์",
+        "platinum": "แพลตตินัม"
+      },
+      "footer": "Alternun Airs · v{{version}}"
     }
   },
   "web": {

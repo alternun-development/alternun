@@ -23,7 +23,7 @@ import {
   View,
 } from 'react-native';
 import { ChangelogDrawer, fontSize, radius, spacing } from '@alternun/ui';
-import { resolveVersionMetadata } from '../common/Footer.shared';
+import { resolveAppPackageVersion } from '../common/Footer.shared';
 import { useAppPalette } from '../theme/useAppPalette';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { CHANGELOG_TEXT } from '../../utils/changelogData';
@@ -269,7 +269,7 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
   const [privacyHovered, setPrivacyHovered] = useState(false);
   const [termsHovered, setTermsHovered] = useState(false);
   const resolvedApiUrl = resolveMobileApiBaseUrl(apiUrl);
-  const resolvedAppVersion = appVersion?.trim() ?? resolveVersionMetadata().version;
+  const resolvedAppVersion = appVersion?.trim() ?? resolveAppPackageVersion().version;
 
   // Detect environment and set documentation base URL
   const getDocsBaseUrl = useCallback(() => {

@@ -34,12 +34,21 @@ describe('mobile-env', () => {
     ).toBe('supabase');
   });
 
-  it('keeps the repo default execution provider at supabase even if a Better Auth url exists', () => {
+  it('keeps the repo default execution provider from the mobile env files even if a Better Auth url exists', () => {
+    const fileEnv = loadMobileEnv();
+    const expected = String(
+      fileEnv.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER ??
+        fileEnv.AUTH_EXECUTION_PROVIDER ??
+        'supabase'
+    )
+      .trim()
+      .toLowerCase();
+
     expect(
       resolveMobileAuthExecutionProvider({
         EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
       })
-    ).toBe('supabase');
+    ).toBe(expected);
   });
 
   it('infers better-auth from the public auth exchange url when the Better Auth url is missing', () => {

@@ -11,15 +11,10 @@ void test('bootstrap and mobile build scripts use stage-specific Supabase public
   const mobileBuildSource = fs.readFileSync(mobileBuildPath, 'utf8');
 
   assert.match(bootstrapSource, /SUPABASE_URL="https:\/\/aznfyazjndfniwsocdka\.supabase\.co"/);
-  assert.match(
-    bootstrapSource,
-    /SUPABASE_KEY="\$\{EXPO_PUBLIC_SUPABASE_KEY_DEV:-\$\{SUPABASE_KEY_DEV:-\$\{EXPO_PUBLIC_SUPABASE_KEY:-\$\{SUPABASE_KEY:-\}\}\}\}"/
-  );
+  assert.match(bootstrapSource, /resolve_publishable_key_stage_suffix\(\)/);
   assert.match(bootstrapSource, /SUPABASE_URL="https:\/\/rjebeugdvwbjpaktrrbx\.supabase\.co"/);
-  assert.match(
-    bootstrapSource,
-    /SUPABASE_KEY="\$\{EXPO_PUBLIC_SUPABASE_KEY_PROD:-\$\{SUPABASE_KEY_PROD:-\$\{EXPO_PUBLIC_SUPABASE_KEY:-\$\{SUPABASE_KEY:-\}\}\}\}"/
-  );
+  assert.match(bootstrapSource, /resolve_publishable_key\(\)/);
+  assert.match(bootstrapSource, /SUPABASE_PUBLISHABLE_KEY_\$\{stage_suffix\}/);
   assert.match(
     bootstrapSource,
     /ERROR: Missing Supabase publishable key for stage '\$\{STAGE\}'\./
@@ -28,10 +23,13 @@ void test('bootstrap and mobile build scripts use stage-specific Supabase public
     mobileBuildSource,
     /EXPO_PUBLIC_SUPABASE_URL=https:\/\/rjebeugdvwbjpaktrrbx\.supabase\.co/
   );
+  assert.match(mobileBuildSource, /resolve_supabase_key_stage_suffix\(\)/);
+  assert.match(mobileBuildSource, /resolve_stage_supabase_key\(\)/);
+  assert.match(mobileBuildSource, /read_env_file_value\(\)/);
+  assert.match(mobileBuildSource, /SUPABASE_PUBLISHABLE_KEY_\$\{stage_suffix\}/);
   assert.match(mobileBuildSource, /EXPO_PUBLIC_SUPABASE_KEY=\$\{stage_supabase_key\}/);
   assert.match(
     mobileBuildSource,
-    /EXPO_PUBLIC_SUPABASE_URL=https:\/\/rjebeugdvwbjpaktrrbx\.supabase\.co/
+    /SUPABASE_PUBLISHABLE_KEY_\$\{stage_key_suffix\} is required for mobile stage/
   );
-  assert.match(mobileBuildSource, /EXPO_PUBLIC_SUPABASE_KEY=\$\{stage_supabase_key\}/);
 });

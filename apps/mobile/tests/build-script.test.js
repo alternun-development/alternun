@@ -9,12 +9,15 @@ describe('mobile build script cleanup', () => {
     const prodSupabaseKey = ['sb', 'publishable', 'hPlMCyy51TS4c67V7WkkIw', 'p1Mv2Nze'].join('_');
 
     expect(buildScript).toContain('clear_previous_export_artifacts()');
-    expect(buildScript).toContain('stage_supabase_key="${EXPO_PUBLIC_SUPABASE_KEY:-${EXPO_PUBLIC_SUPABASE_ANON_KEY:-}}"');
+    expect(buildScript).toContain('resolve_supabase_key_stage_suffix()');
+    expect(buildScript).toContain('resolve_stage_supabase_key()');
+    expect(buildScript).toContain('read_env_file_value()');
+    expect(buildScript).toContain('SUPABASE_PUBLISHABLE_KEY_${stage_suffix}');
     expect(buildScript).toContain(
-      "grep -E '^(export[[:space:]]+)?EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)=' ../../.env.local"
+      "grep -E '^(export[[:space:]]+)?(SUPABASE_PUBLISHABLE_KEY|EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)|SUPABASE_(KEY|ANON_KEY))=' ../../.env.local"
     );
     expect(buildScript).toContain(
-      'ERROR: EXPO_PUBLIC_SUPABASE_KEY is required for mobile stage'
+      'ERROR: SUPABASE_PUBLISHABLE_KEY_${stage_key_suffix} is required for mobile stage'
     );
     expect(buildScript).toContain('EXPO_PUBLIC_SUPABASE_KEY=${stage_supabase_key}');
     expect(buildScript).toContain('rm -rf dist .expo');
