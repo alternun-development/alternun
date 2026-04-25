@@ -244,6 +244,9 @@ export class BetterAuthExecutionProvider {
             this.browserClientPromise = import('better-auth/client')
                 .then(({ createAuthClient }) => createAuthClient({
                 baseURL: resolveBrowserClientBaseUrl(this.requireBaseUrl()),
+                fetchOptions: {
+                    credentials: 'include',
+                },
             }))
                 .catch(() => null);
         }
