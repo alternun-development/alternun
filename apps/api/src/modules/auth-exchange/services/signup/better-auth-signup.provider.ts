@@ -4,7 +4,7 @@ import type { SignupEmailBody, SignupProvider, SignupResult } from './signup.typ
 
 export function createBetterAuthSignupProvider(): SignupProvider {
   const config = resolveBetterAuthDevConfig(process.env);
-  const auth = createBetterAuthDevAuth(config) as {
+  const auth = createBetterAuthDevAuth(config) as unknown as {
     api?: {
       signUpEmail?: (input: { body: SignupEmailBody }) => Promise<SignupResult>;
     };
