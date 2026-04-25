@@ -4,8 +4,10 @@ import { verifyIssuerJwt } from '../auth-exchange/auth-exchange-jwt';
 import {
   awardAirsProfileBonus,
   getAirsDashboardSnapshot,
+  getUserAchievements,
   markAirsWelcomeEmailSent,
   recordAirsDashboardVisit,
+  type UserAchievement,
 } from './airs.repository';
 import { sendAirsWelcomeEmail } from './airs.email';
 
@@ -306,6 +308,39 @@ export class AirsService {
     }).catch((error: unknown) => {
       this.logger.error(
         `AIRS snapshot failed: ${error instanceof Error ? error.message : String(error)}`
+      );
+      throw error;
+    });
+  }
+
+  async achievements(token: string): Promise<UserAchievement[]> {
+    const signingKey =
+      process.env.AUTHENTIK_JWT_SIGNING_KEY ??
+      process.env.AUTHENTIK_JWT_SIGNING_SECRET ??
+      process.env.AUTH_SESSION_SIGNING_KEY ??
+      '';
+
+    if (!signingKey.trim()) {
+      throw new Error('AUTHENTIK_JWT_SIGNING_KEY is required for AIRS achievements.');
+    }
+
+    const verified = verifyIssuerJwt(
+      token.trim().startsWith('Bearer ')
+        ? token.trim().slice('Bearer '.length).trim()
+        : token.trim(),
+      signingKey
+    );
+
+    const userId =
+      typeof verified.claims.app_user_id === 'string' ? verified.claims.app_user_id : '';
+
+    if (!userId) {
+      throw new Error('Invalid or missing user ID in token');
+    }
+
+    return getUserAchievements({ userId }, process.env).catch((error: unknown) => {
+      this.logger.error(
+        `AIRS achievements fetch failed: ${error instanceof Error ? error.message : String(error)}`
       );
       throw error;
     });
