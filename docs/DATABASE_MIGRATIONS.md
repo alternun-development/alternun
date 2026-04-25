@@ -1,277 +1,209 @@
-# Database Migrations Guide
+# Database Migrations
 
-Automated, version-tracked database migrations for Supabase PostgreSQL.
+This guide explains how to manage database migrations in Alternun using the automated migration system.
 
-## Overview
+## Quick Start
 
-- **Automatic Discovery**: Scans `supabase/migrations/` for `.sql` files
-- **Version Tracking**: `_migrations` table tracks applied migrations
-- **Idempotent**: Can be run multiple times safely
-- **Scalable**: Add new migrations without code changes
-- **Deployment-Ready**: Runs on Lambda cold start or manually
-
-## File Format
-
-Migrations must follow the naming convention:
-
-```
-YYYYMMDD_NNNN_description.sql
-```
-
-**Examples:**
-
-- `20260417_0001_create_better_auth_tables.sql`
-- `20260418_0002_add_user_profiles.sql`
-- `20260420_0003_create_audit_logs.sql`
-
-**Components:**
-
-- `YYYYMMDD` - Date migration was created (sortable)
-- `NNNN` - Sequence number (0001, 0002, etc.)
-- `description` - Human-readable name (snake_case)
-
-## AWS Configuration
-
-### Setup DATABASE_URL in Secrets Manager
-
-Store Supabase database URL securely:
+### Development Database
 
 ```bash
-aws secretsmanager create-secret \
-  --name alternun/api/database-url \
-  --secret-string "postgresql://postgres:PASSWORD@db.PROJECT_REF.supabase.co:5432/postgres"
+# Run pending migrations on development database
+pnpm db:migrate:dev
+
+# Preview what would be applied (dry-run)
+pnpm db:migrate:dry-run
 ```
 
-### Enable Migrations on Deploy
+### Production Database
 
-Update `packages/infra/config/deployment.config.json`:
-
-```json
-{
-  "backend": {
-    "api": {
-      "environment": {
-        "DATABASE_URL": "postgresql://postgres:...@db.rjebeugdvwbjpaktrrbx.supabase.co:5432/postgres",
-        "RUN_MIGRATIONS": "true"
-      }
-    }
-  }
-}
-```
-
-Or via environment variables:
+⚠️ **Production migrations require explicit approval:**
 
 ```bash
-export INFRA_BACKEND_API_DATABASE_URL="postgresql://postgres:...@..."
-export INFRA_BACKEND_API_MIGRATIONS_ENABLED="true"
+# Set environment variable to approve production migration
+APPROVE_PROD_MIGRATION=true pnpm db:migrate:dev
 
-# Deploy will pass these to Lambda
-bash scripts/setup-aws-account.sh && APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+# Or use the wrapper script with --force-prod
+./scripts/db-migrate.sh --force-prod
 ```
 
-### Disable Migrations (Emergency)
-
-For hotfixes or emergency deploys without schema changes:
+### Using the Wrapper Script
 
 ```bash
-export INFRA_BACKEND_API_MIGRATIONS_ENABLED="false"
-bash scripts/setup-aws-account.sh && APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+# Run with automatic environment detection
+./scripts/db-migrate.sh
+
+# Dry-run on development
+./scripts/db-migrate.sh --dry-run
+
+# Force production (after confirming)
+./scripts/db-migrate.sh --force-prod
 ```
 
-## Running Migrations
+## How It Works
 
-### During Development
+### Migration Tracking
 
-```bash
-# Run all pending migrations
-pnpm --filter @alternun/api run db:migrate
-
-# Output shows:
-# ✅ Connected to database
-# 📋 Creating _migrations tracking table...
-# 📦 Found 2 pending migration(s)
-# 🔄 Running migration: 20260417_0001_create_better_auth_tables
-# ✅ Applied: 20260417_0001_create_better_auth_tables
-# ✨ All migrations completed successfully!
-```
-
-### During Deployment (AWS Lambda)
-
-The API can automatically run migrations on cold start. Update `src/main.ts`:
-
-```typescript
-import { initMigrations } from '../scripts/run-migrations-lambda';
-
-async function main(): Promise<void> {
-  // Run pending migrations before starting API
-  await initMigrations();
-
-  const app = await createApp();
-  // ... rest of startup
-}
-
-main();
-```
-
-### Manual Deployment
-
-```bash
-# Compiled version (after build)
-pnpm --filter @alternun/api run db:migrate:compiled
-
-# Or with environment variable
-DATABASE_URL="postgresql://..." pnpm --filter @alternun/api run db:migrate
-```
-
-## Adding New Migrations
-
-1. **Create SQL File**
-
-```bash
-# Naming: YYYYMMDD_NNNN_description.sql
-touch supabase/migrations/20260420_0003_create_audit_logs.sql
-```
-
-2. **Write SQL**
-
-```sql
--- Make tables with IF NOT EXISTS for safety
-CREATE TABLE IF NOT EXISTS audit_logs (
-  id SERIAL PRIMARY KEY,
-  user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-  action VARCHAR(50) NOT NULL,
-  timestamp TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
-
-CREATE INDEX IF NOT EXISTS audit_logs_user_id_idx ON audit_logs(user_id);
-```
-
-3. **Test Locally**
-
-```bash
-pnpm --filter @alternun/api run db:migrate
-```
-
-4. **Commit & Deploy**
-
-```bash
-git add supabase/migrations/20260420_*.sql
-git commit -m "migration: add audit logs table"
-
-# Deploy will automatically apply migration
-bash scripts/setup-aws-account.sh && APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
-```
-
-## Migration Tracking Table
-
-The `_migrations` table tracks all applied migrations:
+Migrations are tracked in the `_migrations` table in your database:
 
 ```sql
 CREATE TABLE _migrations (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(255) UNIQUE NOT NULL,    -- "add_audit_logs"
-  version VARCHAR(50) UNIQUE NOT NULL,  -- "20260420_0003"
+  name VARCHAR(255) UNIQUE NOT NULL,
+  version VARCHAR(50) UNIQUE NOT NULL,
   executed_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 ```
 
-**Query applied migrations:**
+### Automatic Detection
 
-```sql
-SELECT * FROM _migrations ORDER BY version DESC;
+The system automatically detects:
+
+1. **Environment** (dev/prod) based on database hostname and env vars
+2. **Applied migrations** from the `_migrations` table
+3. **Pending migrations** by comparing available files to applied ones
+4. **Skipped migrations** (see `skippedMigrationVersions` in apply-migrations.ts)
+
+### Migration Naming
+
+Migrations must follow this naming convention:
+
+```
+supabase/migrations/YYYYMMDD_NNNN_description.sql
 ```
 
-## Best Practices
+Examples:
 
-### ✅ Do
+- `20260426_0001_create_user_achievements.sql`
+- `20260417_0006_create_airs_accumulation.sql`
 
-- **Use `IF NOT EXISTS`** for all CREATE TABLE/INDEX statements
-- **Name migrations clearly** - describe what they do
-- **Keep migrations simple** - one feature per migration
-- **Use CASCADE deletes** for foreign keys when appropriate
-- **Add indexes** for frequently queried columns
-- **Sort migrations by date** - filename ordering ensures execution order
+## Creating a New Migration
 
-### ❌ Don't
+### 1. Create the migration file
 
-- **Don't delete old migrations** - they're part of your schema history
-- **Don't use transactions** - Supabase handles this per query
-- **Don't rename columns mid-migration** - create new, migrate data, drop old
-- **Don't assume production schema** - always check and create if needed
+```bash
+touch supabase/migrations/20260430_0001_my_feature.sql
+```
+
+### 2. Write your SQL
+
+```sql
+-- Description of what this migration does
+-- Reason: Brief explanation of why
+
+CREATE TABLE my_table (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_my_table_user_id ON my_table(user_id);
+```
+
+### 3. Test it
+
+```bash
+# Preview the migration
+pnpm db:migrate:dry-run
+
+# Apply to development
+pnpm db:migrate:dev
+
+# Verify it worked
+psql $DATABASE_URL_DEV -c "SELECT * FROM my_table;"
+```
+
+### 4. Commit
+
+```bash
+git add supabase/migrations/20260430_0001_my_feature.sql
+git commit -m "feat(db): add my_feature table"
+```
+
+## Environment Detection
+
+The system detects the environment based on:
+
+1. **Database hostname** - Production uses different Supabase project
+2. **Environment variables**:
+   - `INFRA_BACKEND_API_DATABASE_URL` → Uses this if set
+   - `DATABASE_URL_DEV` → Development
+   - `DATABASE_URL_PROD` → Production
+   - `DATABASE_URL` → Falls back
+
+### How to Tell Which Environment
+
+```bash
+# Check which database URL is being used
+pnpm db:migrate --dry-run
+# Output will show: 🟢 Development or 🔴 PRODUCTION
+```
+
+## Safety Features
+
+### Production Checks
+
+- ❌ Won't run on production without `APPROVE_PROD_MIGRATION=true`
+- ✅ Prevents accidental production changes
+- 🔐 Requires explicit opt-in
+
+### Migration Validation
+
+- ✅ Validates filename format
+- ✅ Prevents duplicate migrations
+- ✅ Skips known problematic migrations
+- ✅ Tracks execution with timestamps
+
+### Idempotent Operations
+
+Use `IF NOT EXISTS` / `IF NOT FOUND` to make migrations safely re-runnable:
+
+```sql
+-- Good (safe for reruns)
+CREATE TABLE IF NOT EXISTS my_table (...)
+CREATE INDEX IF NOT EXISTS my_index ON ...
+DROP TABLE IF EXISTS old_table;
+
+-- Avoid (fails on rerun)
+CREATE TABLE my_table (...)
+DROP TABLE old_table;
+```
 
 ## Troubleshooting
 
-### "Table already exists" error
+### Migration fails with "permission denied"
 
-This is safe - the migration runner handles idempotent migrations:
+```
+ERROR: permission denied for schema public
+```
+
+**Solution**: Ensure the database user has proper permissions. On Supabase, use the service role key.
+
+### "User X not found" error
+
+```
+ERROR: User ... not found
+```
+
+**Solution**: The function is expecting UUID format. Check the user_id being passed.
+
+### Column reference ambiguous
+
+```
+ERROR: column reference "X" is ambiguous
+```
+
+**Solution**: Use table aliases in subqueries:
 
 ```sql
--- ✅ Safe, won't error if table exists
-CREATE TABLE IF NOT EXISTS users (...);
+-- ❌ Wrong
+SELECT column FROM table WHERE id = ...
 
--- ❌ Will fail on re-run
-CREATE TABLE users (...);
+-- ✅ Correct
+SELECT t.column FROM public.table t WHERE t.id = ...
 ```
 
-### "Migration failed: connect ENETUNREACH"
+## Related
 
-Local development can't reach Supabase database due to network restrictions. Use:
-
-- Supabase dashboard SQL editor for manual testing
-- Deploy to Lambda for automatic migration
-- Use connection pooler if deploying from CI/CD
-
-### Check migration status
-
-```bash
-# Connect to Supabase and query:
-SELECT version, name, executed_at FROM _migrations ORDER BY version;
-```
-
-## Example Migrations
-
-### Better Auth Schema
-
-```sql
--- File: 20260417_0001_create_better_auth_tables.sql
-CREATE TABLE IF NOT EXISTS users (
-  id TEXT NOT NULL PRIMARY KEY,
-  email TEXT UNIQUE,
-  name TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS sessions (
-  id TEXT NOT NULL PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  token TEXT NOT NULL UNIQUE,
-  expires_at TIMESTAMP WITH TIME ZONE NOT NULL
-);
-```
-
-### Adding User Profiles
-
-```sql
--- File: 20260420_0002_create_user_profiles.sql
-CREATE TABLE IF NOT EXISTS user_profiles (
-  id SERIAL PRIMARY KEY,
-  user_id TEXT UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  bio TEXT,
-  avatar_url TEXT,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
-
-CREATE INDEX IF NOT EXISTS user_profiles_user_id_idx ON user_profiles(user_id);
-```
-
-## Deployment Checklist
-
-Before deploying migrations:
-
-- [ ] Migration files added to `supabase/migrations/`
-- [ ] Filenames follow `YYYYMMDD_NNNN_description.sql` format
-- [ ] SQL uses `IF NOT EXISTS` for safety
-- [ ] Tested locally with `pnpm run db:migrate`
-- [ ] Committed to `develop` branch
-- [ ] Ready for deployment to testnet/production
+- [Supabase README](../supabase/README.md) - Migration file organization
+- [Auth sync triggers](../docs/AUTH_SYNC_TRIGGERS.md) - Example complex migrations
