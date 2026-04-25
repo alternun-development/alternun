@@ -154,12 +154,16 @@ function AuthSessionBridge(): null {
           // User logged in - store session token for persistence across reloads
           void (async () => {
             try {
+              // Wait briefly for cookies to be processed by browser
+              await new Promise((resolve) => setTimeout(resolve, 50));
+
+              // Get the session token - this will fetch from server using cookies
               const token = await client.getSessionToken?.();
               if (token) {
                 storeBetterAuthSession(token);
               }
             } catch {
-              // Silently fail
+              // Silently fail - session will be restored from cookies if available
             }
           })();
         } else {
