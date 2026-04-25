@@ -762,6 +762,9 @@ export class AlternunMobileAuthClient implements AuthClient {
         },
         body: JSON.stringify({
           provider,
+          callbackURL: redirectTo,
+          errorCallbackURL: redirectTo,
+          newUserCallbackURL: redirectTo,
           redirectUri: redirectTo,
         }),
       });

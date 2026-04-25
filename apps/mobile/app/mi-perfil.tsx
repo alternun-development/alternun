@@ -278,23 +278,9 @@ function ProfileHeader({
         },
       ]}
     >
-      {/* Decorative glow */}
-      <View
-        style={{
-          position: 'absolute',
-          top: -100,
-          right: -80,
-          width: 260,
-          height: 260,
-          borderRadius: 130,
-          backgroundColor: isDark ? 'rgba(30,230,181,0.12)' : 'rgba(13,148,136,0.08)',
-          pointerEvents: 'none',
-        }}
-      />
-
       {/* Animated floating circles */}
       {floatAnim1 && (
-        <Animated.View
+        <View
           style={{
             position: 'absolute',
             top: -120,
@@ -302,24 +288,33 @@ function ProfileHeader({
             width: 200,
             height: 200,
             borderRadius: 100,
-            backgroundColor: isDark ? 'rgba(30,230,181,0.08)' : 'rgba(13,148,136,0.05)',
+            overflow: 'hidden',
             pointerEvents: 'none',
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            transform: [
-              {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                translateY: floatAnim1.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, 30],
-                }),
-              },
-            ],
           }}
-        />
+        >
+          <Animated.View
+            style={{
+              width: 200,
+              height: 200,
+              borderRadius: 100,
+              backgroundColor: isDark ? 'rgba(30,230,181,0.08)' : 'rgba(13,148,136,0.05)',
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              transform: [
+                {
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                  translateY: floatAnim1.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 30],
+                  }),
+                },
+              ],
+            }}
+          />
+        </View>
       )}
 
       {floatAnim2 && (
-        <Animated.View
+        <View
           style={{
             position: 'absolute',
             bottom: -100,
@@ -327,20 +322,29 @@ function ProfileHeader({
             width: 150,
             height: 150,
             borderRadius: 75,
-            backgroundColor: isDark ? 'rgba(30,230,181,0.06)' : 'rgba(13,148,136,0.04)',
+            overflow: 'hidden',
             pointerEvents: 'none',
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            transform: [
-              {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                translateY: floatAnim2.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, -25],
-                }),
-              },
-            ],
           }}
-        />
+        >
+          <Animated.View
+            style={{
+              width: 150,
+              height: 150,
+              borderRadius: 75,
+              backgroundColor: isDark ? 'rgba(30,230,181,0.06)' : 'rgba(13,148,136,0.04)',
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              transform: [
+                {
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                  translateY: floatAnim2.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -25],
+                  }),
+                },
+              ],
+            }}
+          />
+        </View>
       )}
 
       {/* Content */}
@@ -1439,15 +1443,19 @@ function PerfilTab({
 
   // Animated circles
   const { motionLevel } = useAppPreferences();
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const floatAnim1 = useRef(new Animated.Value(0)).current;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const floatAnim2 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (motionLevel === 'off') return;
+    if (motionLevel === 'off') {
+      return;
+    }
 
-    const duration = 6000;
+    const duration = 3000;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const createLoop = (anim: Animated.Value): void => {
+    const startAnimation = (anim: Animated.Value): void => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       Animated.loop(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -1465,12 +1473,13 @@ function PerfilTab({
             useNativeDriver: true,
           }),
         ])
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       ).start();
     };
 
-    createLoop(floatAnim1);
-    createLoop(floatAnim2);
-  }, [motionLevel]);
+    startAnimation(floatAnim1);
+    startAnimation(floatAnim2);
+  }, [floatAnim1, floatAnim2, motionLevel]);
 
   useEffect(() => {
     const fetchAchievements = async (): Promise<void> => {

@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { normalizeBetterAuthRequestBody } from './better-auth-request-body';
 import { applyBetterAuthCorsHeaders } from './better-auth-cors';
 
 const BETTER_AUTH_PUBLIC_PREFIX = '/auth';
@@ -174,8 +175,9 @@ export async function proxyBetterAuthRequest(
   }
 
   const method = request.method.toUpperCase();
+  const normalizedRequestBody = normalizeBetterAuthRequestBody(incomingUrl.pathname, request.body);
   const requestBody =
-    method === 'GET' || method === 'HEAD' ? undefined : serializeRequestBody(request.body);
+    method === 'GET' || method === 'HEAD' ? undefined : serializeRequestBody(normalizedRequestBody);
 
   let upstream: Response;
 

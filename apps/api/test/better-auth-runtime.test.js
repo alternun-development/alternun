@@ -168,6 +168,50 @@ test('handleBetterAuthRuntimeRequest forwards Better Auth requests through the e
   assert.deepEqual(JSON.parse(reply.payload.toString('utf8')), { ok: true });
 });
 
+test('handleBetterAuthRuntimeRequest maps legacy redirectUri payloads to Better Auth callback URLs', async () => {
+  let observedBody = null;
+
+  const request = {
+    method: 'POST',
+    raw: {
+      url: '/auth/sign-in/social',
+    },
+    headers: {
+      origin: 'https://testnet.airs.alternun.co',
+      'content-type': 'application/json',
+      'x-forwarded-host': 'testnet.api.alternun.co',
+      'x-forwarded-proto': 'https',
+    },
+    body: {
+      provider: 'google',
+      redirectUri: 'https://testnet.airs.alternun.co/auth/callback',
+    },
+  };
+
+  const reply = createReply();
+  const handled = await handleBetterAuthRuntimeRequest(request, reply, {
+    baseUrl: 'https://testnet.api.alternun.co',
+    authHandler: async (runtimeRequest) => {
+      observedBody = JSON.parse(await runtimeRequest.text());
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      });
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(observedBody, {
+    provider: 'google',
+    redirectUri: 'https://testnet.airs.alternun.co/auth/callback',
+    callbackURL: 'https://testnet.airs.alternun.co/auth/callback',
+    errorCallbackURL: 'https://testnet.airs.alternun.co/auth/callback',
+    newUserCallbackURL: 'https://testnet.airs.alternun.co/auth/callback',
+  });
+});
+
 test('handleBetterAuthRuntimeRequest answers OPTIONS preflight locally', async () => {
   let called = false;
   const reply = createReply();
