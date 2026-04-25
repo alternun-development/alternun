@@ -65,10 +65,10 @@ export class AuthExchangeController {
     return this.signInService.signIn(body);
   }
 
-  @Post('sign-in/social')
+  @Post('sign-in/social-url')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Initiate social sign-in flow with provider',
+    summary: 'Compatibility endpoint that returns a social sign-in URL',
   })
   @ApiOkResponse({
     description: 'Social sign-in URL and provider info.',
