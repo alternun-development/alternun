@@ -22,6 +22,7 @@ import ActivityFeed from './ActivityFeed';
 import DashboardSummaryCards from './DashboardSummaryCards';
 import AIRSLedger from './AIRSLedger';
 import WalletConnectModal from './WalletConnectModal';
+import WelcomeBonusModal from './WelcomeBonusModal';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { useNotifications } from '../notifications/NotificationsContext';
 import { ToastSystem, type ToastItem, type ToastType } from '@alternun/ui';
@@ -297,6 +298,8 @@ export default function Dashboard({
   client,
 }: DashboardProps): React.JSX.Element {
   const [walletModalVisible, setWalletModalVisible] = useState(false);
+  const [bonusModalVisible, setBonusModalVisible] = useState(false);
+  const [bonusAlreadyClaimed, setBonusAlreadyClaimed] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [footerHeight, setFooterHeight] = useState(0);
@@ -306,8 +309,16 @@ export default function Dashboard({
   const isMobile = width < 720;
   const scrollTopInset = Math.max(topNavHeight > 0 ? topNavHeight + 16 : 0, isMobile ? 88 : 104);
   const scrollBottomInset = isMobile ? 18 : 8;
-  const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel } =
-    useAppPreferences();
+  const {
+    themeMode,
+    language,
+    motionLevel,
+    showWelcomeBonusModal,
+    setShowWelcomeBonusModal,
+    toggleThemeMode,
+    cycleLanguage,
+    cycleMotionLevel,
+  } = useAppPreferences();
   const {
     items: notificationItems,
     markAllRead: markAllNotificationsRead,
@@ -351,17 +362,12 @@ export default function Dashboard({
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // Claim welcome bonus after email verification
+  // Claim welcome bonus on login if not already claimed
   React.useEffect(() => {
-    if (user?.emailVerified && !bonusNotificationShown) {
-      const storageKey = `airs_welcome_bonus_${user.id}`;
-      const wasClaimed = typeof window !== 'undefined' && localStorage.getItem(storageKey);
-
-      if (!wasClaimed) {
-        void claimRegistrationBonus(user.id);
-      }
+    if (user && !bonusNotificationShown) {
+      void claimRegistrationBonus();
     }
-  }, [user, bonusNotificationShown]);
+  }, [user, bonusNotificationShown, claimRegistrationBonus]);
 
   // Periodically check if email was verified (for newly verified users)
   React.useEffect(() => {
@@ -377,23 +383,37 @@ export default function Dashboard({
     return () => clearInterval(interval);
   }, [user, bonusNotificationShown, client]);
 
-  const claimRegistrationBonus = async (userId: string): Promise<void> => {
+  const claimRegistrationBonus = async (): Promise<void> => {
     try {
       const sessionToken = await client.getSessionToken();
       if (!sessionToken) {
         return;
       }
 
-      const response = await fetch(`${resolveMobileApiBaseUrl()}/airs/registration-bonus/claim`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionToken}`,
-        },
-      });
+      const response = await fetch(
+        `${resolveMobileApiBaseUrl()}/v1/airs/registration-bonus/claim`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        }
+      );
 
       if (response.ok) {
-        await response.json();
+        const result = (await response.json()) as { success?: boolean; awarded?: boolean };
+        const wasAwarded = result.success ?? result.awarded ?? false;
+
+        if (!wasAwarded) {
+          setBonusAlreadyClaimed(true);
+        }
+
+        // Show the modal only if preference is enabled
+        if (showWelcomeBonusModal) {
+          setBonusModalVisible(true);
+        }
+
         addNotification({
           type: 'success',
           title: t.t('dashboard.notifications.welcomeBonus.title'),
@@ -403,10 +423,7 @@ export default function Dashboard({
           archived: false,
         });
 
-        // Mark as claimed to avoid duplicate requests
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(`airs_welcome_bonus_${userId}`, '1');
-        }
+        // Mark as processed to avoid duplicate requests
         setBonusNotificationShown(true);
       }
     } catch {
@@ -598,6 +615,14 @@ export default function Dashboard({
             onConnect={(walletType) => {
               void handleConnect(walletType);
             }}
+          />
+
+          <WelcomeBonusModal
+            visible={bonusModalVisible}
+            onClose={() => setBonusModalVisible(false)}
+            onClaim={() => claimRegistrationBonus()}
+            onDisableShowing={() => setShowWelcomeBonusModal(false)}
+            alreadyClaimed={bonusAlreadyClaimed}
           />
 
           {/* Floating nav — rendered last so it overlays content + dropdown isn't clipped */}
