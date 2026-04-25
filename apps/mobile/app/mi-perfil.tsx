@@ -19,6 +19,7 @@ import {
   type LucideProps,
 } from 'lucide-react-native';
 import React, { useMemo, useRef, useState, useEffect } from 'react';
+import { Animated } from 'react-native';
 import {
   ActivityIndicator,
   Alert,
@@ -245,12 +246,16 @@ function ProfileHeader({
   email,
   isDark,
   c,
+  floatAnim1,
+  floatAnim2,
 }: {
   displayName: string;
   score: number | null;
   email?: string;
   isDark: boolean;
   c: ColorPalette;
+  floatAnim1?: Animated.Value;
+  floatAnim2?: Animated.Value;
 }): React.JSX.Element {
   const safeScore = score ?? 0;
   const tier = resolveTier(safeScore);
@@ -287,6 +292,57 @@ function ProfileHeader({
           pointerEvents: 'none',
         }}
       />
+
+      {/* Animated floating circles */}
+      {floatAnim1 && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: -120,
+            left: -60,
+            width: 200,
+            height: 200,
+            borderRadius: 100,
+            backgroundColor: isDark ? 'rgba(30,230,181,0.08)' : 'rgba(13,148,136,0.05)',
+            pointerEvents: 'none',
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            transform: [
+              {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                translateY: floatAnim1.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 30],
+                }),
+              },
+            ],
+          }}
+        />
+      )}
+
+      {floatAnim2 && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            bottom: -100,
+            left: 20,
+            width: 150,
+            height: 150,
+            borderRadius: 75,
+            backgroundColor: isDark ? 'rgba(30,230,181,0.06)' : 'rgba(13,148,136,0.04)',
+            pointerEvents: 'none',
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            transform: [
+              {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                translateY: floatAnim2.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, -25],
+                }),
+              },
+            ],
+          }}
+        />
+      )}
 
       {/* Content */}
       <View style={{ alignItems: 'center', zIndex: 1 }}>
@@ -1382,6 +1438,41 @@ function PerfilTab({
     Array<{ key: string; unlocked: boolean; unlockedAt: string | null }>
   >([]);
 
+  // Animated circles
+  const { motionLevel } = useAppPreferences();
+  const floatAnim1 = useRef(new Animated.Value(0)).current;
+  const floatAnim2 = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (motionLevel === 'off') return;
+
+    const duration = 6000;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const createLoop = (anim: Animated.Value): void => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      Animated.loop(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        Animated.sequence([
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+          Animated.timing(anim, {
+            toValue: 1,
+            duration,
+            useNativeDriver: true,
+          }),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+          Animated.timing(anim, {
+            toValue: 0,
+            duration,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    };
+
+    createLoop(floatAnim1);
+    createLoop(floatAnim2);
+  }, [motionLevel]);
+
   useEffect(() => {
     const fetchAchievements = async (): Promise<void> => {
       try {
@@ -1435,6 +1526,8 @@ function PerfilTab({
           email={profile.email}
           isDark={isDark}
           c={c}
+          floatAnim1={floatAnim1}
+          floatAnim2={floatAnim2}
         />
 
         {/* Tier Journey */}
