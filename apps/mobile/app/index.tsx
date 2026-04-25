@@ -39,6 +39,7 @@ export default function HomeScreen(): React.JSX.Element {
   );
 
   const handleReload = (): void => {
+    lastAirsSnapshotKeyRef.current = null;
     void client.getUser();
   };
 
