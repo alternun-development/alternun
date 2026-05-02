@@ -54,7 +54,7 @@ EXPO_PUBLIC_AUTHENTIK_CLIENT_ID=alternun-mobile
 
 - Single file for dev/testnet stages (simpler than multiple files)
 - `mobile-env.cjs` loads it when stage is `dev|api-dev|*testnet*|*development*`
-- Local devs override with `.env.local` for localhost URLs
+- Local devs override with `.env` for localhost URLs
 
 ---
 
@@ -131,7 +131,7 @@ fi
 
 **Flow**:
 
-- **Local dev**: `STACK=dev npm run build` → uses `.env` / `.env.local`
+- **Local dev**: `STACK=dev npm run build` → uses `.env` / `.env`
 - **CI/CD**: CodeBuild sets `CODEBUILD_BUILD_ID` → build.sh sources SSM script → `mobile-env.cjs` uses SSM values
 
 ---
@@ -280,7 +280,7 @@ function getBetterAuthUrl(): string | undefined {
 - `${baseAuthUrl}/exchange`
 - Etc.
 
-**Local Dev Setup** (`.env.local`):
+**Local Dev Setup** (`.env`):
 
 ```bash
 EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
@@ -299,7 +299,7 @@ EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 - ✅ Works for both local (localhost:8082) and remote (testnet) seamlessly
 - ✅ Easier to maintain: change one variable, all endpoints update
 
-**See Also**: [.env.local.example](../apps/mobile/.env.local.example) — Local dev setup template
+**See Also**: [.env.example](../apps/mobile/.env.example) — Local dev setup template
 
 ---
 
@@ -309,7 +309,7 @@ EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 
 - Store secrets in SSM Parameter Store (CI/CD only)
 - Keep `.env.development` / `.env.production` gitignored
-- Use `.env.local` for local overrides (e.g., localhost URLs)
+- Use `.env` for local overrides (e.g., localhost URLs)
 - Rotate Supabase/WalletConnect keys periodically in SSM
 
 ❌ **DON'T:**
@@ -327,7 +327,7 @@ EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
 - [mobile-env.cjs](../apps/mobile/scripts/mobile-env.cjs) — Env resolution logic
 - [AppAuthProvider.tsx](../apps/mobile/components/auth/AppAuthProvider.tsx) — Auth URL derivation (single-source-of-truth)
 - [.env.development](../apps/mobile/.env.development) — Dev/testnet config
-- [.env.local.example](../apps/mobile/.env.local.example) — Local dev setup template
+- [.env.example](../apps/mobile/.env.example) — Local dev setup template
 - [resolve-ssm-env.sh](../packages/infra/scripts/resolve-ssm-env.sh) — SSM resolver
 - [bootstrap-ssm-parameters.sh](../packages/infra/scripts/bootstrap-ssm-parameters.sh) — SSM seeder
 - [SSM_PARAMETERS.md](../packages/infra/SSM_PARAMETERS.md) — SSM setup guide

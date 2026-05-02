@@ -12,6 +12,9 @@ const i18nPackageRoot = path.join(workspaceRoot, "packages/i18n");
 const i18nEntry = path.join(i18nPackageRoot, "src/index.ts");
 const i18nCatalogsRoot = path.join(i18nPackageRoot, "src/catalogs");
 
+const authPackageRoot = path.join(workspaceRoot, "packages/auth");
+const authEntry = path.join(authPackageRoot, "src/index.ts");
+
 const uiPackageRoot = path.join(workspaceRoot, "packages/ui");
 const uiEntry = path.join(uiPackageRoot, "src/index.ts");
 
@@ -38,6 +41,7 @@ config.resolver = config.resolver || {};
 config.resolver.extraNodeModules = {
   ...(config.resolver.extraNodeModules || {}),
   "@alternun/i18n": i18nPackageRoot,
+  "@alternun/auth": authPackageRoot,
   "@alternun/ui": uiPackageRoot,
   "@alternun/update": updatePackageRoot,
   react: reactPath,
@@ -106,6 +110,9 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   }
   if (moduleName === "@alternun/i18n") {
     return { type: "sourceFile", filePath: i18nEntry };
+  }
+  if (moduleName === "@alternun/auth") {
+    return { type: "sourceFile", filePath: authEntry };
   }
   if (moduleName.startsWith("@alternun/i18n/catalogs/")) {
     return {

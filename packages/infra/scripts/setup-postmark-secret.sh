@@ -62,7 +62,6 @@ first_non_empty() {
 }
 
 load_env_file "$REPO_ROOT/.env"
-load_env_file "$REPO_ROOT/.env.local"
 
 require_expected_account() {
   local expected_account_id=${INFRA_AWS_ACCOUNT_ID:-}

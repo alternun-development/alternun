@@ -775,39 +775,51 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   async getExecutionSession(): Promise<ExecutionSession | null> {
     const browserClient = await this.resolveBrowserClient();
     if (browserClient?.getSession) {
-      const session = await browserClient.getSession();
-      const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
-      if (normalized) {
-        return normalized;
+      try {
+        const session = await browserClient.getSession();
+        const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
+        if (normalized) {
+          return normalized;
+        }
+      } catch {
+        // No Better Auth cookie is expected for legacy email sessions.
       }
     }
 
     if (this.client?.getSession) {
-      const session = await this.client.getSession();
-      const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
-      if (normalized) {
-        return normalized;
+      try {
+        const session = await this.client.getSession();
+        const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
+        if (normalized) {
+          return normalized;
+        }
+      } catch {
+        // Keep probing the configured fallbacks below.
       }
     }
 
     if (this.client?.getUser && this.client.getSessionToken) {
-      const user = await this.client.getUser();
-      const token = await this.client.getSessionToken();
-      if (user) {
-        return {
-          provider: user.provider ?? this.options.defaultProvider ?? 'better-auth',
-          accessToken: token ?? null,
-          refreshToken: null,
-          idToken: null,
-          expiresAt: null,
-          externalIdentity: claimsToExternalIdentity(
-            user.provider ?? this.options.defaultProvider ?? 'better-auth',
-            user.metadata ?? {},
-            user.providerUserId ?? user.id
-          ),
-          linkedAccounts: [],
-          raw: { user },
-        };
+      try {
+        const user = await this.client.getUser();
+        const token = await this.client.getSessionToken();
+        if (user) {
+          return {
+            provider: user.provider ?? this.options.defaultProvider ?? 'better-auth',
+            accessToken: token ?? null,
+            refreshToken: null,
+            idToken: null,
+            expiresAt: null,
+            externalIdentity: claimsToExternalIdentity(
+              user.provider ?? this.options.defaultProvider ?? 'better-auth',
+              user.metadata ?? {},
+              user.providerUserId ?? user.id
+            ),
+            linkedAccounts: [],
+            raw: { user },
+          };
+        }
+      } catch {
+        // Keep probing the configured fallbacks below.
       }
     }
 
@@ -834,16 +846,27 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   async refreshExecutionSession(): Promise<ExecutionSession | null> {
     const browserClient = await this.resolveBrowserClient();
     if (browserClient?.refreshSession) {
-      const session = await browserClient.refreshSession();
-      const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
-      if (normalized) {
-        return normalized;
+      try {
+        const session = await browserClient.refreshSession();
+        const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
+        if (normalized) {
+          return normalized;
+        }
+      } catch {
+        // No Better Auth cookie is expected for legacy email sessions.
       }
     }
 
     if (this.client?.refreshSession) {
-      const session = await this.client.refreshSession();
-      return normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
+      try {
+        const session = await this.client.refreshSession();
+        const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
+        if (normalized) {
+          return normalized;
+        }
+      } catch {
+        // Keep probing the configured fallbacks below.
+      }
     }
 
     if (this.allowLegacySessionFallback) {
@@ -1154,6 +1177,10 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   onAuthStateChange(callback: (user: User | null) => void): () => void {
+    if (this.emailFallbackProvider?.onAuthStateChange) {
+      return this.emailFallbackProvider.onAuthStateChange(callback);
+    }
+
     void this.getUser()
       .then(callback)
       .catch(() => callback(null));

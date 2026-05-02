@@ -109,6 +109,7 @@ export default function AuthResetPasswordScreen(): JSX.Element {
 
   const isDesktop = windowWidth >= 720;
   const isCompact = windowWidth < 560;
+  const isMobile = windowWidth < 400;
   const appOrigin = resolveAuthAppOrigin();
 
   const { next, token, email, error } = useLocalSearchParams<{
@@ -589,6 +590,7 @@ export default function AuthResetPasswordScreen(): JSX.Element {
           contentContainerStyle={[
             styles.scrollContent,
             isCompact && styles.scrollContentCompact,
+            isMobile && styles.scrollContentMobile,
             { minHeight: windowHeight },
           ]}
           keyboardShouldPersistTaps='handled'
@@ -598,6 +600,7 @@ export default function AuthResetPasswordScreen(): JSX.Element {
             style={[
               styles.card,
               isDesktop ? styles.cardDesktop : styles.cardMobile,
+              isMobile && styles.cardMobileTiny,
               { backgroundColor: p.cardBg, borderColor: p.cardBorder },
             ]}
           >
@@ -646,10 +649,11 @@ export default function AuthResetPasswordScreen(): JSX.Element {
                 </View>
               </View>
 
-              <View style={styles.heroSteps}>
+              <View style={[styles.heroSteps, isMobile && styles.heroStepsMobile]}>
                 <View
                   style={[
                     styles.heroStep,
+                    isMobile && styles.heroStepMobile,
                     { borderColor: p.cardBorder, backgroundColor: p.inputBg },
                   ]}
                 >
@@ -661,6 +665,7 @@ export default function AuthResetPasswordScreen(): JSX.Element {
                 <View
                   style={[
                     styles.heroStep,
+                    isMobile && styles.heroStepMobile,
                     { borderColor: p.cardBorder, backgroundColor: p.inputBg },
                   ]}
                 >
@@ -1065,6 +1070,10 @@ const styles = createTypographyStyles({
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
+  scrollContentMobile: {
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
   card: {
     borderRadius: 24,
     borderWidth: 1,
@@ -1078,6 +1087,11 @@ const styles = createTypographyStyles({
   },
   cardMobile: {
     width: '100%',
+  },
+  cardMobileTiny: {
+    borderRadius: 18,
+    padding: 14,
+    gap: 10,
   },
   hero: {
     gap: 14,
@@ -1102,6 +1116,7 @@ const styles = createTypographyStyles({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 14,
+    minWidth: 0,
   },
   heroIconWrap: {
     width: 48,
@@ -1121,6 +1136,7 @@ const styles = createTypographyStyles({
     lineHeight: 32,
     fontWeight: '800',
     fontFamily: 'Sculpin-Bold',
+    minWidth: 0,
   },
   subtitle: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -1132,6 +1148,10 @@ const styles = createTypographyStyles({
     gap: 10,
     flexWrap: 'wrap',
   },
+  heroStepsMobile: {
+    flexDirection: 'column',
+    gap: 8,
+  },
   heroStep: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1142,6 +1162,11 @@ const styles = createTypographyStyles({
     paddingVertical: 10,
     flexGrow: 1,
     minWidth: 180,
+  },
+  heroStepMobile: {
+    minWidth: 0,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   heroStepIndex: {
     fontSize: 13,
