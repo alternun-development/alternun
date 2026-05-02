@@ -60,9 +60,7 @@ function loadDotEnvFile(filePath) {
 
 const repoRoot = findRepoRoot(__dirname);
 loadDotEnvFile(path.join(repoRoot, ".env"));
-loadDotEnvFile(path.join(repoRoot, ".env.local"));
 loadDotEnvFile(path.join(repoRoot, "packages", "auth", ".env"));
-loadDotEnvFile(path.join(repoRoot, "packages", "auth", ".env.local"));
 
 function getArgValue(flagName) {
   const index = process.argv.indexOf(flagName);

@@ -246,7 +246,7 @@ describe('mobile-env', () => {
     });
   });
 
-  it('lets .env.local override .env values', () => {
+  it('keeps .env as the single local env source', () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'alternun-mobile-env-'));
     const envPath = path.join(tempDir, '.env');
     const localPath = path.join(tempDir, '.env.local');
@@ -254,7 +254,7 @@ describe('mobile-env', () => {
     fs.writeFileSync(envPath, 'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase\n');
     fs.writeFileSync(localPath, 'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth\n');
 
-    const loaded = loadDotEnvFile(localPath, loadDotEnvFile(envPath, {}));
-    expect(loaded.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER).toBe('better-auth');
+    const loaded = loadMobileEnv(tempDir);
+    expect(loaded.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER).toBe('supabase');
   });
 });

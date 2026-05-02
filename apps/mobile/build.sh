@@ -70,7 +70,7 @@ resolve_stage_supabase_key() {
     fi
   done
 
-  for env_file in ../../.env ../../.env.local; do
+  for env_file in ../../.env; do
     for candidate in \
       "SUPABASE_PUBLISHABLE_KEY_${stage_suffix}" \
       "EXPO_PUBLIC_SUPABASE_KEY_${stage_suffix}" \
@@ -110,11 +110,11 @@ seed_build_auth_env() {
 }
 
 load_env_vars() {
-  # Mirror Expo's local override order while keeping this script in control.
+  # Keep .env as the single local source of truth while this script controls loading.
   load_env_file .env false
 
   # Load stage-specific environment file if deploying
-  # Priority: .env.development/.env.production → .env.local → shell env
+  # Priority: .env.development/.env.production → shell env
   # SST StaticSite passes EXPO_PUBLIC_STAGE as env var; also check STACK/SST_STAGE
   local detected_stage="${SST_STAGE:-${STACK:-${EXPO_PUBLIC_STAGE:-${EXPO_PUBLIC_ENV:-}}}}"
   if [ -n "$detected_stage" ]; then
@@ -133,22 +133,13 @@ load_env_vars() {
     fi
   fi
 
-  # Local overrides (only in local dev, skip in CI/CD and SST deployments)
-  local is_deployment=false
-  if [ -n "${CODEBUILD_BUILD_ID:-}" ] || [ "${CI:-}" = "true" ] || [ -n "${SST_STAGE:-}" ] || [ -n "${STACK:-}" ]; then
-    is_deployment=true
-  fi
-
-  if [ "$is_deployment" = "false" ]; then
-    load_env_file .env.local true
-  fi
 }
 
 disable_expo_dotenv_if_needed() {
   local should_disable
   should_disable=$(node ./scripts/mobile-env.cjs should-disable-dotenv)
 
-  # build.sh already loaded .env / .env.local above, so Expo should not load them again.
+  # build.sh already loaded .env above, so Expo should not load it again.
   export EXPO_NO_DOTENV=1
 
   if [ "${should_disable}" = "true" ]; then
@@ -288,7 +279,7 @@ EOF
 node ../../scripts/generate-changelog-data.mjs apps/mobile
 
 # In CI/CD (CodeBuild), resolve from SSM Parameter Store instead of .env files
-# Local dev uses .env/.env.local; CI/CD uses SSM for safety (secrets not in git)
+# Local dev uses .env; CI/CD uses SSM for safety (secrets not in git)
 if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   if [ -f "../../packages/infra/scripts/resolve-ssm-env.sh" ]; then
@@ -307,14 +298,6 @@ if [ -n "$detected_stage" ]; then
   # Pull the Supabase publishable key from the runtime environment instead of
   # embedding a literal key in this script so secret scanning stays clean.
   stage_supabase_key=$(resolve_stage_supabase_key "$stage_key_suffix")
-  if [ -z "$stage_supabase_key" ] && [ -f "../../.env.local" ]; then
-    stage_supabase_key=$(
-      grep -E '^(export[[:space:]]+)?(SUPABASE_PUBLISHABLE_KEY|EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)|SUPABASE_(KEY|ANON_KEY))=' ../../.env.local \
-        | head -n 1 \
-        | sed -E 's/^(export[[:space:]]+)?(SUPABASE_PUBLISHABLE_KEY|EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)|SUPABASE_(KEY|ANON_KEY))=//' \
-        | tr -d '\n'
-    )
-  fi
   if [ -z "$stage_supabase_key" ]; then
     echo "ERROR: SUPABASE_PUBLISHABLE_KEY_${stage_key_suffix} is required for mobile stage '${detected_stage}'." >&2
     echo "Set SUPABASE_PUBLISHABLE_KEY_${stage_key_suffix}, EXPO_PUBLIC_SUPABASE_KEY_${stage_key_suffix}, or the legacy EXPO_PUBLIC_SUPABASE_KEY / SUPABASE_KEY aliases before generating .env.production/.env.development." >&2
