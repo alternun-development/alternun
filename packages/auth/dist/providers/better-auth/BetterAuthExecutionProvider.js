@@ -541,33 +541,48 @@ export class BetterAuthExecutionProvider {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
         const browserClient = await this.resolveBrowserClient();
         if (browserClient === null || browserClient === void 0 ? void 0 : browserClient.getSession) {
-            const session = await browserClient.getSession();
-            const normalized = normalizeSession(session, (_a = this.options.defaultProvider) !== null && _a !== void 0 ? _a : 'better-auth');
-            if (normalized) {
-                return normalized;
+            try {
+                const session = await browserClient.getSession();
+                const normalized = normalizeSession(session, (_a = this.options.defaultProvider) !== null && _a !== void 0 ? _a : 'better-auth');
+                if (normalized) {
+                    return normalized;
+                }
+            }
+            catch {
+                // No Better Auth cookie is expected for legacy email sessions.
             }
         }
         if ((_b = this.client) === null || _b === void 0 ? void 0 : _b.getSession) {
-            const session = await this.client.getSession();
-            const normalized = normalizeSession(session, (_c = this.options.defaultProvider) !== null && _c !== void 0 ? _c : 'better-auth');
-            if (normalized) {
-                return normalized;
+            try {
+                const session = await this.client.getSession();
+                const normalized = normalizeSession(session, (_c = this.options.defaultProvider) !== null && _c !== void 0 ? _c : 'better-auth');
+                if (normalized) {
+                    return normalized;
+                }
+            }
+            catch {
+                // Keep probing the configured fallbacks below.
             }
         }
         if (((_d = this.client) === null || _d === void 0 ? void 0 : _d.getUser) && this.client.getSessionToken) {
-            const user = await this.client.getUser();
-            const token = await this.client.getSessionToken();
-            if (user) {
-                return {
-                    provider: (_f = (_e = user.provider) !== null && _e !== void 0 ? _e : this.options.defaultProvider) !== null && _f !== void 0 ? _f : 'better-auth',
-                    accessToken: token !== null && token !== void 0 ? token : null,
-                    refreshToken: null,
-                    idToken: null,
-                    expiresAt: null,
-                    externalIdentity: claimsToExternalIdentity((_h = (_g = user.provider) !== null && _g !== void 0 ? _g : this.options.defaultProvider) !== null && _h !== void 0 ? _h : 'better-auth', (_j = user.metadata) !== null && _j !== void 0 ? _j : {}, (_k = user.providerUserId) !== null && _k !== void 0 ? _k : user.id),
-                    linkedAccounts: [],
-                    raw: { user },
-                };
+            try {
+                const user = await this.client.getUser();
+                const token = await this.client.getSessionToken();
+                if (user) {
+                    return {
+                        provider: (_f = (_e = user.provider) !== null && _e !== void 0 ? _e : this.options.defaultProvider) !== null && _f !== void 0 ? _f : 'better-auth',
+                        accessToken: token !== null && token !== void 0 ? token : null,
+                        refreshToken: null,
+                        idToken: null,
+                        expiresAt: null,
+                        externalIdentity: claimsToExternalIdentity((_h = (_g = user.provider) !== null && _g !== void 0 ? _g : this.options.defaultProvider) !== null && _h !== void 0 ? _h : 'better-auth', (_j = user.metadata) !== null && _j !== void 0 ? _j : {}, (_k = user.providerUserId) !== null && _k !== void 0 ? _k : user.id),
+                        linkedAccounts: [],
+                        raw: { user },
+                    };
+                }
+            }
+            catch {
+                // Keep probing the configured fallbacks below.
             }
         }
         if (this.allowLegacySessionFallback) {
@@ -586,15 +601,28 @@ export class BetterAuthExecutionProvider {
         var _a, _b, _c, _d, _e;
         const browserClient = await this.resolveBrowserClient();
         if (browserClient === null || browserClient === void 0 ? void 0 : browserClient.refreshSession) {
-            const session = await browserClient.refreshSession();
-            const normalized = normalizeSession(session, (_a = this.options.defaultProvider) !== null && _a !== void 0 ? _a : 'better-auth');
-            if (normalized) {
-                return normalized;
+            try {
+                const session = await browserClient.refreshSession();
+                const normalized = normalizeSession(session, (_a = this.options.defaultProvider) !== null && _a !== void 0 ? _a : 'better-auth');
+                if (normalized) {
+                    return normalized;
+                }
+            }
+            catch {
+                // No Better Auth cookie is expected for legacy email sessions.
             }
         }
         if ((_b = this.client) === null || _b === void 0 ? void 0 : _b.refreshSession) {
-            const session = await this.client.refreshSession();
-            return normalizeSession(session, (_c = this.options.defaultProvider) !== null && _c !== void 0 ? _c : 'better-auth');
+            try {
+                const session = await this.client.refreshSession();
+                const normalized = normalizeSession(session, (_c = this.options.defaultProvider) !== null && _c !== void 0 ? _c : 'better-auth');
+                if (normalized) {
+                    return normalized;
+                }
+            }
+            catch {
+                // Keep probing the configured fallbacks below.
+            }
         }
         if (this.allowLegacySessionFallback) {
             const fallbackSession = await this.getFallbackExecutionSession();
@@ -841,6 +869,10 @@ export class BetterAuthExecutionProvider {
         return (_a = session === null || session === void 0 ? void 0 : session.accessToken) !== null && _a !== void 0 ? _a : null;
     }
     onAuthStateChange(callback) {
+        var _a;
+        if ((_a = this.emailFallbackProvider) === null || _a === void 0 ? void 0 : _a.onAuthStateChange) {
+            return this.emailFallbackProvider.onAuthStateChange(callback);
+        }
         void this.getUser()
             .then(callback)
             .catch(() => callback(null));
