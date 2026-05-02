@@ -51,7 +51,7 @@ function loadMobileEnv(
   loadDotEnvFile(path.join(mobileRoot, '.env'), env);
 
   // Load stage-specific environment file if deploying
-  // Priority: .env.development/.env.production → .env.local → shell env
+  // Priority: .env.development/.env.production → shell env
   const stage =
     envVars.SST_STAGE || envVars.STACK || envVars.EXPO_PUBLIC_STAGE || envVars.EXPO_PUBLIC_ENV;
   if (stage) {
@@ -87,10 +87,6 @@ function loadMobileEnv(
     if (stageFile) {
       loadDotEnvFile(path.join(mobileRoot, stageFile), env);
     }
-  }
-
-  if (!options.skipLocalEnv) {
-    loadDotEnvFile(path.join(mobileRoot, '.env.local'), env);
   }
 
   return env;

@@ -334,7 +334,7 @@ A: They'll be logged out (session format changes). Signup via Google takes <1 mi
 A: Yes, add `DISCORD_AUTH_CLIENT_ID`, `DISCORD_AUTH_CLIENT_SECRET` (or GitHub equiv) and the same logic applies. But for testnet, we're only enabling Google.
 
 **Q: How do we test locally?**
-A: Set `EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth` in mobile `.env.local` and run the API locally with Better Auth credentials.
+A: Set `EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth` in mobile `.env` and run the API locally with Better Auth credentials.
 
 **Q: What's the fallback if credentials are missing?**
 A: The API reverts to proxy mode (requires external Better Auth service, or returns 502).

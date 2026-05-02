@@ -75,7 +75,7 @@ if [ -n "$detected_stage" ]; then
 **Files**:
 
 - `apps/mobile/components/auth/AppAuthProvider.tsx` — Refactored `getBetterAuthUrl()` function
-- `apps/mobile/.env.local.example` — NEW: Local dev setup template
+- `apps/mobile/.env.example` — NEW: Local dev setup template
 
 ### Fix 7: Release Patch Stage Pinning and Auth Env Precedence (2026-04-16)
 
@@ -97,7 +97,7 @@ if [ -n "$detected_stage" ]; then
 | `apps/mobile/scripts/mobile-env.cjs`                 | ✓ Stage detection fallbacks                                                                               |
 | `apps/mobile/components/auth/AppAuthProvider.tsx`    | **✓ NEW**: Auth URL single-source-of-truth pattern in `getBetterAuthUrl()`                                |
 | `apps/mobile/.env.development`                       | ✓ Created (from .env.testnet) with testnet config (includes `/auth` suffix in URLs)                       |
-| `apps/mobile/.env.local.example`                     | **✓ NEW**: Local dev setup template with `http://localhost:8082/auth`                                     |
+| `apps/mobile/.env.example`                           | **✓ NEW**: Local dev setup template with `http://localhost:8082/auth`                                     |
 | `apps/mobile/.env.testnet`                           | ✓ DELETED (consolidated into .env.development)                                                            |
 | `packages/infra/scripts/resolve-ssm-env.sh`          | ✓ NEW: SSM Parameter Store resolver                                                                       |
 | `packages/infra/scripts/bootstrap-ssm-parameters.sh` | ✓ NEW: SSM seeder (with stage-specific parameter overrides for `expo-public-authentik-social-login-mode`) |

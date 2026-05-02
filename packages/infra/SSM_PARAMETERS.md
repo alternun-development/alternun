@@ -4,7 +4,7 @@ This guide explains how Expo public environment variables are stored in AWS Syst
 
 ## Overview
 
-- **Local development**: Uses `.env` and `.env.local` files (gitignored, not in repo)
+- **Local development**: Uses `.env` and `.env` files (gitignored, not in repo)
 - **CI/CD (CodeBuild/GitHub Actions)**: Resolves from SSM Parameter Store
 - **Production deployments**: Only SSM, never from `.env`
 
@@ -89,7 +89,7 @@ aws ssm put-parameter \
 ### During Local Development
 
 ```bash
-# build.sh uses .env and .env.local (not SSM)
+# build.sh uses .env and .env (not SSM)
 STACK=dev npm run build
 ```
 
