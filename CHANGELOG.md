@@ -1,3 +1,9 @@
+## [1.0.232](https://github.com/alternun-development/alternun/compare/v1.0.231-dev.0...v1.0.232) (2026-05-02)
+
+### Bug Fixes
+
+- **repo:** test(mobile,repo,auth): build, AuthResetPasswordScreen, ENV_SETUP.QUICK_REFERENCE, ENV_SETUP
+
 ## [1.0.231](https://github.com/alternun-development/alternun/compare/v1.0.230-dev.0...v1.0.231) (2026-04-25)
 
 ### Bug Fixes
