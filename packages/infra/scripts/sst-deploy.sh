@@ -800,7 +800,7 @@ run_sst_deploy() {
   set +e
   (
     cd "$INFRA_DIR"
-    env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT="${allow_replacement}" npx sst deploy --stage "$STACK" --yes
+    env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT="${allow_replacement}" npx sst deploy --stage "$STACK" --yes --print-logs
   ) 2>&1 | tee "$log_file"
   exit_code=${PIPESTATUS[0]}
   set -e
@@ -816,7 +816,7 @@ run_sst_deploy() {
     echo "Retrying deployment with INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT=true"
     (
       cd "$INFRA_DIR"
-      env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT="true" npx sst deploy --stage "$STACK" --yes
+      env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT="true" npx sst deploy --stage "$STACK" --yes --print-logs
     ) 2>&1 | tee -a "$log_file"
     exit_code=${PIPESTATUS[0]}
   fi
