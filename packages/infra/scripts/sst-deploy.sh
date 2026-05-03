@@ -846,6 +846,31 @@ should_attempt_bucket_drift_recovery() {
   return 1
 }
 
+print_recent_sst_logs() {
+  local log_file=${1:-}
+  local sst_log_dir="${INFRA_DIR}/.sst/log"
+
+  if [ -n "$log_file" ] && [ -f "$log_file" ]; then
+    echo "Recent deploy command output (${log_file}):" >&2
+    tail -n 120 "$log_file" >&2 || true
+  fi
+
+  if [ -f "${sst_log_dir}/sst.log" ]; then
+    echo "Recent SST log tail (${sst_log_dir}/sst.log):" >&2
+    tail -n 120 "${sst_log_dir}/sst.log" >&2 || true
+  fi
+
+  if [ -f "${sst_log_dir}/pulumi.log" ]; then
+    echo "Recent SST log tail (${sst_log_dir}/pulumi.log):" >&2
+    tail -n 120 "${sst_log_dir}/pulumi.log" >&2 || true
+  fi
+
+  if [ -f "${sst_log_dir}/pulumi.err.log" ]; then
+    echo "Recent SST log tail (${sst_log_dir}/pulumi.err.log):" >&2
+    tail -n 120 "${sst_log_dir}/pulumi.err.log" >&2 || true
+  fi
+}
+
 gzip_base64_file() {
   local path=$1
   gzip -c "$path" | base64 | tr -d '\n'
@@ -1091,5 +1116,6 @@ if should_attempt_bucket_drift_recovery "$DEPLOY_LOG"; then
 fi
 
 echo "sst deploy failed. See logs above." >&2
+print_recent_sst_logs "$DEPLOY_LOG"
 rm -f "$DEPLOY_LOG"
 exit 1
