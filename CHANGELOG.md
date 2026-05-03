@@ -1,3 +1,13 @@
+## [1.0.236](https://github.com/alternun-development/alternun/compare/v1.0.235-dev.0...v1.0.236) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** fix(repo,infra,scripts): release-and-deploy-testnet, release-deployment-flow, buildspec, release
+
+### Bug Fixes
+
+- **repo,infra,scripts:** release-and-deploy-testnet, release-deployment-flow, buildspec, release ([40060e5](https://github.com/alternun-development/alternun/commit/40060e5ea3b335cccffc48a1d16f4b96f09850e9))
+
 ## [1.0.235](https://github.com/alternun-development/alternun/compare/v1.0.234-dev.0...v1.0.235) (2026-05-03)
 
 ### Bug Fixes
