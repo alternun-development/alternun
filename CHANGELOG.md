@@ -1,3 +1,9 @@
+## [1.0.243](https://github.com/alternun-development/alternun/compare/v1.0.242-dev.0...v1.0.243) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(infra): sst-deploy, sst-deploy-env-bootstrap.test, verify-authentik-runtime, verify-authentik-runtime.test
+
 ## [1.0.242](https://github.com/alternun-development/alternun/compare/v1.0.241-dev.0...v1.0.242) (2026-05-03)
 
 ### Bug Fixes
