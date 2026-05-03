@@ -7,6 +7,7 @@ import test from 'node:test';
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(testDir, '../../..');
 const scriptPath = path.join(repoRoot, 'packages/infra/scripts/sst-deploy.sh');
+const loadEnvPath = path.join(repoRoot, 'packages/infra/scripts/_load-infra-env.sh');
 
 void test('sst-deploy bootstraps backend env before SSM hydration', () => {
   const source = fs.readFileSync(scriptPath, 'utf8');
@@ -28,4 +29,11 @@ void test('sst-deploy bootstraps backend env before SSM hydration', () => {
     source,
     /dashboard-dev\|dashboard-prod\|dashboard-production\|admin-dev\|admin-prod\|admin-production\|backoffice-dev\|backoffice-prod\|backoffice-admin-dev\|backoffice-admin-prod/
   );
+});
+
+void test('infra env loader bridges CodeBuild SST node_modules to the repo root', () => {
+  const source = fs.readFileSync(loadEnvPath, 'utf8');
+
+  assert.match(source, /bridge_codebuild_sst_node_modules\(\)/);
+  assert.match(source, /Bridged CodeBuild SST node_modules cache to repo root node_modules\./);
 });

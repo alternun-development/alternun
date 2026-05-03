@@ -46,6 +46,53 @@ load_env_file() {
   done < "$env_file"
 }
 
+bridge_codebuild_sst_node_modules() {
+  local script_dir infra_dir repo_root sst_dir resolved_sst_dir cache_root bridge_node_modules repo_node_modules
+
+  if [ -z "${CODEBUILD_BUILD_ID:-}" ]; then
+    return 0
+  fi
+
+  script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+  infra_dir=$(cd "$script_dir/.." && pwd)
+  repo_root=$(cd "$infra_dir/../.." && pwd)
+  sst_dir="$infra_dir/.sst"
+  repo_node_modules="$repo_root/node_modules"
+
+  if [ ! -e "$sst_dir" ] || [ ! -d "$repo_node_modules" ]; then
+    return 0
+  fi
+
+  resolved_sst_dir=$(readlink -f "$sst_dir" 2>/dev/null || true)
+  if [ -z "$resolved_sst_dir" ]; then
+    return 0
+  fi
+
+  case "$resolved_sst_dir" in
+    */packages/infra/.sst)
+      cache_root=${resolved_sst_dir%/packages/infra/.sst}
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+
+  bridge_node_modules="${cache_root}/node_modules"
+
+  if [ -L "$bridge_node_modules" ] && [ "$(readlink -f "$bridge_node_modules" 2>/dev/null || true)" = "$(readlink -f "$repo_node_modules" 2>/dev/null || true)" ]; then
+    return 0
+  fi
+
+  if [ -e "$bridge_node_modules" ] && [ ! -L "$bridge_node_modules" ]; then
+    echo "WARN: Skipping SST node_modules bridge because ${bridge_node_modules} already exists and is not a symlink." >&2
+    return 0
+  fi
+
+  mkdir -p "$cache_root"
+  ln -sfn "$repo_node_modules" "$bridge_node_modules"
+  echo "Bridged CodeBuild SST node_modules cache to repo root node_modules."
+}
+
 load_infra_env() {
   local script_dir infra_dir repo_root infra_env_file
   local force_env_credentials require_env_credentials preserve_existing_env
@@ -179,4 +226,6 @@ load_infra_env() {
   export DOMAIN_MOBILE="${INFRA_EXPO_DOMAIN_MOBILE:-${DOMAIN_MOBILE:-}}"
   export PROJECT_PREFIX="${INFRA_PIPELINE_PREFIX:-${PROJECT_PREFIX:-}}"
   export PREFIX="${INFRA_PIPELINE_PREFIX:-${PREFIX:-${PROJECT_PREFIX:-}}}"
+
+  bridge_codebuild_sst_node_modules
 }
