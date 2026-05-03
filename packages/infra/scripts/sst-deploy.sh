@@ -939,7 +939,7 @@ sync_identity_runtime_templates() {
     return 1
   fi
 
-  local instance_id deploy_b64 bootstrap_b64 ec2_compose_b64 rds_compose_b64 ec2_alb_compose_b64 rds_alb_compose_b64 identity_domain identity_ingress_mode identity_tls_mode identity_acme_email identity_route53_zone_id identity_acme_backup_bucket identity_acme_backup_prefix identity_root_domain identity_app_name identity_authentik_image_tag identity_database_mode identity_authentik_secret_name identity_database_credentials_secret_name identity_smtp_credentials_secret_name identity_jwt_signing_secret_name identity_integration_config_secret_name params_json command_id
+  local instance_id deploy_b64 bootstrap_b64 verify_runtime_b64 ec2_compose_b64 rds_compose_b64 ec2_alb_compose_b64 rds_alb_compose_b64 identity_domain identity_ingress_mode identity_tls_mode identity_acme_email identity_route53_zone_id identity_acme_backup_bucket identity_acme_backup_prefix identity_root_domain identity_app_name identity_authentik_image_tag identity_database_mode identity_authentik_secret_name identity_database_credentials_secret_name identity_smtp_credentials_secret_name identity_jwt_signing_secret_name identity_integration_config_secret_name params_json command_id
   instance_id=$(resolve_identity_instance_id)
 
   case "$stage_normalized" in
@@ -987,6 +987,7 @@ sync_identity_runtime_templates() {
 
   deploy_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/deploy-authentik.sh")
   bootstrap_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/bootstrap-authentik-integrations.py")
+  verify_runtime_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/verify-authentik-runtime.sh")
   ec2_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.ec2.yml")
   rds_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.rds.yml")
   ec2_alb_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.ec2.alb.yml")
@@ -1000,17 +1001,18 @@ sync_identity_runtime_templates() {
       --arg c4 "printf '%s' '$deploy_b64' | base64 -d | gzip -d > /opt/alternun/identity/deploy-authentik.sh" \
       --arg c5 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/bootstrap-authentik-integrations.py" \
       --arg c6 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py" \
-      --arg c7 "printf '%s' '$ec2_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.yml" \
-      --arg c8 "printf '%s' '$rds_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.yml" \
-      --arg c9 "printf '%s' '$ec2_alb_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.alb.yml" \
-      --arg c10 "printf '%s' '$rds_alb_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.alb.yml" \
-      --arg c11 'chmod 0755 /opt/alternun/identity/deploy-authentik.sh' \
-      --arg c12 'chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
-      --arg c13 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
-      --arg c14 'timeout 900 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
-      --arg c15 "grep -E 'Authentik integration bootstrap|Supabase auth OIDC synced|TLS certificate ready|Restored ACME state|WARN:' /tmp/alternun-identity-runtime-sync.log || true" \
-      --arg c16 "set -a; . /etc/alternun-identity.env; set +a; docker compose -f /opt/alternun/identity/docker-compose.yml exec -T server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c \"from django.contrib.auth import get_user_model; from authentik.core.models import Application; from authentik.providers.oauth2.models import OAuth2Provider; U=get_user_model(); admin_exists=U.objects.filter(username=\\\"akadmin\\\", is_active=True).exists(); default_app_exists=Application.objects.filter(slug=\\\"alternun-internal\\\").exists(); admin_oidc_app=Application.objects.filter(slug=\\\"alternun-admin\\\").exists(); admin_oidc_provider=OAuth2Provider.objects.filter(name=\\\"Alternun Admin OIDC\\\").exists(); print({\\\"admin_exists\\\": admin_exists, \\\"default_application_exists\\\": default_app_exists, \\\"admin_oidc_application_exists\\\": admin_oidc_app, \\\"admin_oidc_provider_exists\\\": admin_oidc_provider}); raise SystemExit(0 if admin_exists and default_app_exists and admin_oidc_app and admin_oidc_provider else 1)\"'" \
-      '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13,$c14,$c15,$c16]}'
+      --arg c7 "printf '%s' '$verify_runtime_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/verify-authentik-runtime.sh" \
+      --arg c8 "printf '%s' '$ec2_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.yml" \
+      --arg c9 "printf '%s' '$rds_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.yml" \
+      --arg c10 "printf '%s' '$ec2_alb_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.alb.yml" \
+      --arg c11 "printf '%s' '$rds_alb_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.alb.yml" \
+      --arg c12 'chmod 0755 /opt/alternun/identity/deploy-authentik.sh /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
+      --arg c13 'chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
+      --arg c14 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
+      --arg c15 'timeout 900 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
+      --arg c16 "grep -E 'Authentik integration bootstrap|Supabase auth OIDC synced|TLS certificate ready|Restored ACME state|WARN:' /tmp/alternun-identity-runtime-sync.log || true" \
+      --arg c17 'timeout 120 bash /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
+      '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13,$c14,$c15,$c16,$c17]}'
   )
 
   echo "Syncing identity runtime templates to instance ${instance_id}..."
