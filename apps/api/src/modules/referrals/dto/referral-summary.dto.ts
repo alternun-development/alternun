@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ReferralInviteeDto } from './referral-invitee.dto';
 
 export class ReferralSummaryDto {
   @ApiProperty({
@@ -55,4 +56,10 @@ export class ReferralSummaryDto {
     nullable: true,
   })
   referred_by_email!: string | null;
+
+  @ApiProperty({
+    description: 'Users invited by the current account',
+    type: [ReferralInviteeDto],
+  })
+  referred_users!: ReferralInviteeDto[];
 }

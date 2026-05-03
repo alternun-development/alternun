@@ -2,7 +2,7 @@ import { AUTH_WEB_PASSWORD_RESET_ROUTE } from './authPasswordResetFlow';
 import { readWebAuthCallbackPayload } from '../../../../packages/auth/src/runtime/web/callbackPayload';
 
 export const AUTH_WEB_CALLBACK_ROUTE = '/auth/callback';
-export const AUTH_WEB_REFERRAL_ROUTE = '/auth/referral';
+export const AUTH_WEB_REFERRAL_ROUTE = '/auth';
 
 function normalizeCallbackPath(callbackPath: string): string {
   const trimmedPath = callbackPath.trim();

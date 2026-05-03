@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { createTypographyStyles } from '../theme/typography';
 import { ToastMessage } from './types';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 
 interface ToastProps {
   toasts: ToastMessage[];
@@ -61,11 +62,14 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     overflow: 'hidden',
-    shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 8,
+    ...createShadowStyle({
+      color: '#00001e',
+      offsetX: 0,
+      offsetY: 4,
+      opacity: 0.5,
+      radius: 12,
+      elevation: 8,
+    }),
   },
   toastSuccess: {
     backgroundColor: 'rgba(10,10,24,0.95)',

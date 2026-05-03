@@ -1,7 +1,16 @@
 import { GlassCard } from '@alternun/ui';
 import { Copy, Link2, Share2, Users } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Clipboard, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Clipboard,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+} from 'react-native';
 import type { User } from '../auth/AppAuthProvider';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
@@ -16,16 +25,22 @@ interface ReferralSummary {
   referred_by_referral_code: string | null;
   referred_by_name: string | null;
   referred_by_email: string | null;
+  referred_users: Array<{
+    user_id: string;
+    referral_code: string | null;
+    name: string | null;
+    email: string | null;
+    created_at: string;
+  }>;
 }
 
 interface ReferralCardProps {
   user: User | null;
-  client: {
-    getSessionToken: () => Promise<string | null>;
-  };
   isDark: boolean;
   c: ColorPalette;
 }
+
+const REFERRAL_FETCH_TIMEOUT_MS = 12000;
 
 function truncateMiddle(value: string, start = 12, end = 10): string {
   if (value.length <= start + end + 3) {
@@ -35,12 +50,54 @@ function truncateMiddle(value: string, start = 12, end = 10): string {
   return `${value.slice(0, start)}...${value.slice(-end)}`;
 }
 
-export function ReferralCard({ user, client, isDark, c }: ReferralCardProps): React.JSX.Element {
+function getProfileDisplayName(user: User | null): string | null {
+  if (!user) {
+    return null;
+  }
+
+  const metadata = user.metadata && typeof user.metadata === 'object' ? user.metadata : {};
+  const firstName =
+    typeof metadata.firstName === 'string'
+      ? metadata.firstName
+      : typeof metadata.first_name === 'string'
+      ? metadata.first_name
+      : '';
+  const lastName =
+    typeof metadata.lastName === 'string'
+      ? metadata.lastName
+      : typeof metadata.last_name === 'string'
+      ? metadata.last_name
+      : '';
+  const fullNameFromParts = `${firstName} ${lastName}`.trim();
+  const candidates = [
+    typeof (user as User & { name?: unknown }).name === 'string'
+      ? (user as User & { name?: unknown }).name
+      : null,
+    metadata.fullName,
+    metadata.full_name,
+    metadata.displayName,
+    metadata.display_name,
+    metadata.name,
+    fullNameFromParts,
+    typeof user.email === 'string' ? user.email.split('@')[0] : null,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim().length > 0) {
+      return candidate.trim();
+    }
+  }
+
+  return null;
+}
+
+export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
   const [summary, setSummary] = useState<ReferralSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const profileDisplayName = useMemo(() => getProfileDisplayName(user), [user]);
 
   useEffect(() => {
     let isMounted = true;
@@ -53,20 +110,34 @@ export function ReferralCard({ user, client, isDark, c }: ReferralCardProps): Re
       setLoading(true);
       setError(null);
 
+      const abortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      let fetchTimeoutHandle: ReturnType<typeof setTimeout> | null = null;
+
       try {
-        const sessionToken = await client.getSessionToken();
-        if (!sessionToken) {
-          return;
+        const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
+        const referralUrl = new URL(`${apiBaseUrl}/v1/referrals/me`);
+        referralUrl.searchParams.set('user_id', user.id);
+        if (profileDisplayName) {
+          referralUrl.searchParams.set('display_name', profileDisplayName);
         }
 
-        const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
-        const response = await fetch(`${apiBaseUrl}/v1/referrals/me`, {
+        const headers: Record<string, string> = {
+          Accept: 'application/json',
+        };
+
+        const fetchPromise = fetch(referralUrl.toString(), {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${sessionToken}`,
-            Accept: 'application/json',
-          },
+          headers,
+          signal: abortController?.signal,
         });
+        const timeoutPromise = new Promise<Response>((_, reject) => {
+          fetchTimeoutHandle = setTimeout(() => {
+            abortController?.abort();
+            reject(new Error('Timed out while loading referral details'));
+          }, REFERRAL_FETCH_TIMEOUT_MS);
+        });
+
+        const response = await Promise.race([fetchPromise, timeoutPromise]);
 
         if (!response.ok) {
           throw new Error(`Referral summary request failed (${response.status})`);
@@ -81,6 +152,9 @@ export function ReferralCard({ user, client, isDark, c }: ReferralCardProps): Re
           setError(err instanceof Error ? err.message : 'Unable to load referral data');
         }
       } finally {
+        if (fetchTimeoutHandle) {
+          clearTimeout(fetchTimeoutHandle);
+        }
         if (isMounted) {
           setLoading(false);
         }
@@ -92,7 +166,7 @@ export function ReferralCard({ user, client, isDark, c }: ReferralCardProps): Re
     return () => {
       isMounted = false;
     };
-  }, [client, user?.id]);
+  }, [profileDisplayName, user?.id]);
 
   const shareMessage = useMemo(() => {
     if (!summary) {
@@ -126,30 +200,65 @@ export function ReferralCard({ user, client, isDark, c }: ReferralCardProps): Re
     }
 
     try {
+      if (Platform.OS === 'web') {
+        const webNavigator = globalThis.navigator as
+          | {
+              share?: (data: { title?: string; text?: string; url?: string }) => Promise<void>;
+              clipboard?: { writeText?: (value: string) => Promise<void> };
+            }
+          | undefined;
+
+        if (typeof webNavigator?.share === 'function') {
+          await webNavigator.share({
+            title: t('profile.referral.shareTitle', undefined, 'Share your referral link'),
+            text: shareMessage,
+            url: summary.referral_link,
+          });
+          return;
+        }
+
+        if (typeof webNavigator?.clipboard?.writeText === 'function') {
+          await webNavigator.clipboard.writeText(summary.referral_link);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1800);
+          return;
+        }
+      }
+
       await Share.share({
         title: t('profile.referral.shareTitle', undefined, 'Share your referral link'),
         message: shareMessage,
         url: summary.referral_link,
       });
     } catch {
-      // Ignore share-sheet failures; the link can still be copied manually.
+      try {
+        Clipboard.setString(summary.referral_link);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1800);
+      } catch {
+        // Ignore share-sheet failures; the link can still be copied manually.
+      }
     }
   };
 
   const referralCode = summary?.referral_code ?? '';
   const referralLink = summary?.referral_link ?? '';
-  const referrerLabel = summary?.referred_by_name ?? summary?.referred_by_email ?? null;
+  const referrerLabel =
+    summary?.referred_by_name ??
+    summary?.referred_by_email ??
+    summary?.referred_by_referral_code ??
+    null;
   const referralCountValue = error ? '—' : loading ? '—' : summary?.referral_count ?? 0;
   const referralStatusValue = error
     ? '—'
-    : summary?.referred_by_user_id
+    : summary?.referred_by_user_id ?? summary?.referred_by_referral_code
     ? t('shared.labels.yes', undefined, 'Yes')
     : t('shared.labels.no', undefined, 'No');
   const referralCodeValue = error
     ? '—'
     : loading
     ? '...'
-    : referralCode || t('profile.referral.codePending', undefined, 'Loading...');
+    : referralCode ?? t('profile.referral.codePending', undefined, 'Loading...');
 
   return (
     <GlassCard
@@ -217,7 +326,16 @@ export function ReferralCard({ user, client, isDark, c }: ReferralCardProps): Re
           <Text style={[styles.codeLabel, { color: c.muted }]}>
             {t('profile.referral.codeLabel', undefined, 'Your referral code')}
           </Text>
-          <Text style={[styles.codeValue, { color: c.text }]}>{referralCodeValue}</Text>
+          {loading ? (
+            <View style={styles.loadingRow}>
+              <ActivityIndicator size='small' color={c.accent} />
+              <Text style={[styles.loadingText, { color: c.text }]}>
+                {t('profile.referral.loading', undefined, 'Loading referral details...')}
+              </Text>
+            </View>
+          ) : (
+            <Text style={[styles.codeValue, { color: c.text }]}>{referralCodeValue}</Text>
+          )}
         </View>
         <TouchableOpacity
           onPress={() => {
@@ -273,10 +391,27 @@ export function ReferralCard({ user, client, isDark, c }: ReferralCardProps): Re
       </View>
 
       {referralLink ? (
-        <View style={styles.linkRow}>
+        <TouchableOpacity
+          onPress={() => {
+            void handleCopy();
+          }}
+          activeOpacity={0.8}
+          style={[
+            styles.linkRow,
+            {
+              borderColor: c.cardBorder,
+              backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(11,45,49,0.02)',
+            },
+          ]}
+        >
           <Link2 size={14} color={c.muted} strokeWidth={2} />
-          <Text style={[styles.linkText, { color: c.muted }]}>{truncateMiddle(referralLink)}</Text>
-        </View>
+          <Text selectable style={[styles.linkText, { color: c.muted }]}>
+            {truncateMiddle(referralLink)}
+          </Text>
+          <Text style={[styles.linkAction, { color: c.accent }]}>
+            {t('profile.referral.copy', undefined, 'Copy')}
+          </Text>
+        </TouchableOpacity>
       ) : null}
 
       {referrerLabel ? (
@@ -287,6 +422,43 @@ export function ReferralCard({ user, client, isDark, c }: ReferralCardProps): Re
             `Referred by ${referrerLabel}`
           )}
         </Text>
+      ) : null}
+
+      {summary?.referred_users?.length ? (
+        <View style={styles.inviteesSection}>
+          <Text style={[styles.inviteesTitle, { color: c.text }]}>
+            {t('profile.referral.invitedUsers', undefined, 'Invited users')}
+          </Text>
+          <View style={styles.inviteesList}>
+            {summary.referred_users.map((invitee) => {
+              const inviteeLabel =
+                invitee.name ??
+                invitee.email ??
+                t('shared.labels.anonymous', undefined, 'Anonymous');
+              return (
+                <View
+                  key={invitee.user_id}
+                  style={[
+                    styles.inviteeRow,
+                    {
+                      borderColor: c.cardBorder,
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(11,45,49,0.03)',
+                    },
+                  ]}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.inviteeName, { color: c.text }]}>{inviteeLabel}</Text>
+                    <Text style={[styles.inviteeMeta, { color: c.muted }]}>
+                      {invitee.referral_code
+                        ? `${invitee.referral_code} · ${invitee.created_at.slice(0, 10)}`
+                        : invitee.created_at.slice(0, 10)}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </View>
       ) : null}
 
       {error ? (
@@ -361,6 +533,17 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.6,
   },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 24,
+  },
+  loadingText: {
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: -0.1,
+  },
   copyButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -405,16 +588,57 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginTop: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderRadius: 12,
   },
   linkText: {
     flex: 1,
     fontSize: 11,
     fontFamily: 'monospace',
   },
+  linkAction: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
   referrerText: {
     marginTop: 8,
     fontSize: 11,
     fontWeight: '600',
+  },
+  inviteesSection: {
+    marginTop: 12,
+  },
+  inviteesTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  inviteesList: {
+    gap: 8,
+  },
+  inviteeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  inviteeName: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: -0.1,
+  },
+  inviteeMeta: {
+    marginTop: 2,
+    fontSize: 10,
+    fontWeight: '500',
+    fontFamily: 'monospace',
   },
   errorText: {
     marginTop: 8,
