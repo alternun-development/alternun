@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import AuthSignInScreen from '../components/auth/AuthSignInScreen';
 import { useAuth } from '../components/auth/AppAuthProvider';
+import { resolveInitialAuthMode } from '../components/auth/authRouteMode';
 import { resolveAuthReturnTo } from '@alternun/auth';
 import {
   clearPendingReferralData,
@@ -153,7 +154,7 @@ export default function AuthRoute(): React.JSX.Element {
     <AuthSignInScreen
       presentation='modal'
       authReturnTo={redirectHref}
-      initialMode={requestedMode === 'signup' ? 'signup' : 'signin'}
+      initialMode={resolveInitialAuthMode(requestedMode, Boolean(requestedReferralData))}
       initialReferralCode={requestedReferralData?.referral_code ?? null}
       onCancel={() => {
         router.replace(redirectHref as AuthRouteHref);

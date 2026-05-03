@@ -217,7 +217,7 @@ begin
     v_referrer_referral_code,
     v_referrer_user_id,
     v_referrer_referral_code,
-    'https://airs.alternun.co/auth?mode=signup&referralCode=' || v_referrer_referral_code
+    'https://airs.alternun.co/auth?referralCode=' || v_referrer_referral_code
   )
   on conflict (user_id) do update
     set referred_by_username = excluded.referred_by_username,
@@ -342,7 +342,7 @@ select
   resolved.resolved_referred_by_referral_code,
   resolved.resolved_referred_by_user_id,
   resolved.resolved_referred_by_referral_code,
-  'https://airs.alternun.co/auth?mode=signup&referralCode=' || resolved.resolved_referred_by_referral_code
+  'https://airs.alternun.co/auth?referralCode=' || resolved.resolved_referred_by_referral_code
 from tmp_referral_backfill_resolved resolved
 left join public.users referrer
   on referrer.id = resolved.resolved_referred_by_user_id

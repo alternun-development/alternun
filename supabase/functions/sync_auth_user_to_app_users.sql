@@ -1,7 +1,11 @@
--- Syncs Supabase auth.users to public.users and backfills referral attribution
--- once the email is confirmed.
+-- Sync auth.users to public.users and backfill referral attribution once the
+-- email is confirmed.
 -- Called by: trg_auth_users_sync_to_app_users trigger
--- Maps: id, sub, iss, aud, email, email_verified, name, image, picture, phone, phone_verified, confirmation_sent_at, last_sign_in_at
+-- Maps: id, sub, iss, aud, email, email_verified, name, image, picture, phone,
+-- phone_verified, confirmation_sent_at, last_sign_in_at
+--
+-- Keep this file aligned with the referral-aware trigger body in
+-- supabase/migrations/20260503_0001_auth_referral_attribution.sql.
 
 CREATE OR REPLACE FUNCTION public.sync_auth_user_to_app_users()
 RETURNS trigger
@@ -215,7 +219,7 @@ begin
     v_referrer_referral_code,
     v_referrer_user_id,
     v_referrer_referral_code,
-    'https://airs.alternun.co/auth?mode=signup&referralCode=' || v_referrer_referral_code
+    'https://airs.alternun.co/auth?referralCode=' || v_referrer_referral_code
   )
   on conflict (user_id) do update
     set referred_by_username = excluded.referred_by_username,

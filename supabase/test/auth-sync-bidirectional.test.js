@@ -13,7 +13,11 @@ const referralMigrationPath = path.resolve(
   'migrations',
   '20260503_0001_auth_referral_attribution.sql'
 );
-const authSyncFunctionPath = path.resolve('supabase', 'functions', 'sync_auth_user_to_app_users.sql');
+const authSyncFunctionPath = path.resolve(
+  'supabase',
+  'functions',
+  'sync_auth_user_to_app_users.sql'
+);
 const fillTriggerPath = path.resolve(
   'supabase',
   'triggers',
@@ -29,16 +33,31 @@ void test('auth source-of-truth migration keeps the one-way auth mirror', () => 
   const referralMigrationSource = fs.readFileSync(referralMigrationPath, 'utf8');
 
   assert.match(source, /Auth users are the source of truth for signup/i);
-  assert.match(source, /drop trigger if exists trg_public_users_sync_to_auth_users on public\.users;/);
-  assert.match(source, /drop trigger if exists trg_public_users_fill_better_auth_identity on public\.users;/);
-  assert.match(source, /drop trigger if exists trg_public_users_delete_sync_to_auth_users on public\.users;/);
+  assert.match(
+    source,
+    /drop trigger if exists trg_public_users_sync_to_auth_users on public\.users;/
+  );
+  assert.match(
+    source,
+    /drop trigger if exists trg_public_users_fill_better_auth_identity on public\.users;/
+  );
+  assert.match(
+    source,
+    /drop trigger if exists trg_public_users_delete_sync_to_auth_users on public\.users;/
+  );
   assert.match(source, /insert into public\.users \(/);
-  assert.match(source, /not exists \(\s*select 1\s*from public\.users p\s*where p\.email = a\.email\s*\)/i);
+  assert.match(
+    source,
+    /not exists \(\s*select 1\s*from public\.users p\s*where p\.email = a\.email\s*\)/i
+  );
   assert.match(authSyncFunctionSource, /insert into public\.referrals \(/i);
   assert.match(authSyncFunctionSource, /email_confirmed_at is null/i);
   assert.match(authSyncFunctionSource, /referred_by_user_id/i);
+  assert.match(authSyncFunctionSource, /referral_link\s*=\s*excluded\.referral_link/i);
+  assert.match(authSyncFunctionSource, /https:\/\/airs\.alternun\.co\/auth\?referralCode=/i);
   assert.match(referralMigrationSource, /backfilled immediately so the DB heals on deploy/i);
   assert.match(referralMigrationSource, /insert into public\.referrals \(/i);
+  assert.match(referralMigrationSource, /https:\/\/airs\.alternun\.co\/auth\?referralCode=/i);
 });
 
 void test('legacy public trigger cleanup files only drop reverse sync hooks', () => {
@@ -48,15 +67,36 @@ void test('legacy public trigger cleanup files only drop reverse sync hooks', ()
 
   const authSyncSource = fs.readFileSync(authSyncTriggerPath, 'utf8');
 
-  assert.match(authSyncSource, /drop trigger if exists trg_auth_users_sync_to_app_users on auth\.users;/i);
-  assert.match(authSyncSource, /drop trigger if exists trg_auth_users_create_profile on auth\.users;/i);
+  assert.match(
+    authSyncSource,
+    /drop trigger if exists trg_auth_users_sync_to_app_users on auth\.users;/i
+  );
+  assert.match(
+    authSyncSource,
+    /drop trigger if exists trg_auth_users_create_profile on auth\.users;/i
+  );
   assert.match(fillTriggerSource, /Legacy Better Auth public->auth identity fill disabled/i);
-  assert.match(fillTriggerSource, /drop trigger if exists trg_public_users_fill_better_auth_identity on public\.users;/i);
-  assert.doesNotMatch(fillTriggerSource, /create trigger trg_public_users_fill_better_auth_identity/i);
+  assert.match(
+    fillTriggerSource,
+    /drop trigger if exists trg_public_users_fill_better_auth_identity on public\.users;/i
+  );
+  assert.doesNotMatch(
+    fillTriggerSource,
+    /create trigger trg_public_users_fill_better_auth_identity/i
+  );
   assert.match(publicSyncSource, /Legacy reverse sync disabled/i);
-  assert.match(publicSyncSource, /drop trigger if exists trg_public_users_sync_to_auth_users on public\.users;/i);
+  assert.match(
+    publicSyncSource,
+    /drop trigger if exists trg_public_users_sync_to_auth_users on public\.users;/i
+  );
   assert.doesNotMatch(publicSyncSource, /create trigger trg_public_users_sync_to_auth_users/i);
   assert.match(publicDeleteSource, /Legacy reverse delete sync disabled/i);
-  assert.match(publicDeleteSource, /drop trigger if exists trg_public_users_delete_sync_to_auth_users on public\.users;/i);
-  assert.doesNotMatch(publicDeleteSource, /create trigger trg_public_users_delete_sync_to_auth_users/i);
+  assert.match(
+    publicDeleteSource,
+    /drop trigger if exists trg_public_users_delete_sync_to_auth_users on public\.users;/i
+  );
+  assert.doesNotMatch(
+    publicDeleteSource,
+    /create trigger trg_public_users_delete_sync_to_auth_users/i
+  );
 });
