@@ -419,6 +419,7 @@ phases:
           echo "Skipping sst refresh (INFRA_ENABLE_SST_REFRESH=${INFRA_ENABLE_SST_REFRESH})"
         fi
       - |
+        set -euo pipefail
         echo "Deploying to ${SST_STAGE}..."
         APPROVE=true STACK="${SST_STAGE}" bash "${INFRA_PATH}/scripts/sst-deploy.sh"
         touch .sst-deploy-succeeded
