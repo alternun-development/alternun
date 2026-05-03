@@ -10,6 +10,7 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 import { BlurView as BlurViewRaw } from 'expo-blur';
 import { Image as ExpoImageRaw } from 'expo-image';
 
@@ -489,7 +490,13 @@ export default function TopNav({
                         inputRange: [0, 1],
                         outputRange: [0, 1],
                       }),
-                      shadowOffset: { width: 0, height: 4 },
+                      ...createShadowStyle({
+                        color: '#05100d',
+                        offsetX: 0,
+                        offsetY: 4,
+                        opacity: 0,
+                        radius: 2,
+                      }),
                       shadowOpacity: dropdownAnimated.interpolate({
                         inputRange: [0, 1],
                         outputRange: [0, 0.28],
@@ -498,7 +505,6 @@ export default function TopNav({
                         inputRange: [0, 1],
                         outputRange: [2, 12],
                       }),
-                      shadowColor: '#05100d',
                     }}
                     pointerEvents='none'
                   />

@@ -42,6 +42,8 @@ import SearchFilterBar, { type SearchFilterOption } from '../components/common/S
 import { resolveAppPackageVersion } from '../components/common/Footer.shared';
 import profileStylesEnhanced from '../components/profile/ProfileStyles';
 import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
+import { createShadowStyle } from '../components/theme/deprecatedStylesHelper';
+import { resolveSessionTokenWithRetry } from '../components/auth/sessionToken';
 import {
   AchievementBadge,
   AchievementTooltip,
@@ -362,11 +364,14 @@ function ProfileHeader({
               justifyContent: 'center',
               borderWidth: 3,
               borderColor: heroBg,
-              shadowColor: spec.color,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              elevation: 5,
+              ...createShadowStyle({
+                color: spec.color,
+                offsetX: 0,
+                offsetY: 2,
+                opacity: 0.3,
+                radius: 4,
+                elevation: 5,
+              }),
             }}
           >
             <Text
@@ -1490,7 +1495,10 @@ function PerfilTab({
           return;
         }
 
-        const sessionToken = await client.getSessionToken();
+        const sessionToken = await resolveSessionTokenWithRetry(client, {
+          attempts: 4,
+          retryDelayMs: 250,
+        });
         if (!sessionToken) {
           return;
         }
@@ -1607,7 +1615,7 @@ function PerfilTab({
           title={t('profile.sections.referrals', undefined, 'Referidos')}
           style={{ margin: 12 }}
         >
-          <ReferralCard user={user} client={client} isDark={isDark} c={c} />
+          <ReferralCard user={user} isDark={isDark} c={c} />
         </SectionContainer>
 
         {/* Cuenta */}

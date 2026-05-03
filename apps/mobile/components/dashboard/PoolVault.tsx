@@ -5,6 +5,7 @@ import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { DollarSign, X } from 'lucide-react-native';
 import { ProgressBar, InfoRow } from '@alternun/ui';
 import { PoolPosition } from './types';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 
 interface PoolVaultProps {
   positions: PoolPosition[];
@@ -205,11 +206,14 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(255,255,255,0.08)',
     borderRadius: 16,
     padding: 16,
-    shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 4,
+    ...createShadowStyle({
+      color: '#00001e',
+      offsetX: 0,
+      offsetY: 8,
+      opacity: 0.4,
+      radius: 12,
+      elevation: 4,
+    }),
   },
   positionHeader: {
     flexDirection: 'row',
@@ -324,11 +328,14 @@ const styles = createTypographyStyles({
   },
   claimButtonActive: {
     backgroundColor: '#1ccba1',
-    shadowColor: '#1ccba1',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 4,
+    ...createShadowStyle({
+      color: '#1ccba1',
+      offsetX: 0,
+      offsetY: 0,
+      opacity: 0.4,
+      radius: 8,
+      elevation: 4,
+    }),
   },
   claimButtonDisabled: {
     backgroundColor: 'rgba(255,255,255,0.04)',

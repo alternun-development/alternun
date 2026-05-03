@@ -6,6 +6,7 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import { CreateReferralDto } from './dto/create-referral.dto';
 import { ReferralResponseDto } from './dto/referral-response.dto';
 import { ReferralSummaryDto } from './dto/referral-summary.dto';
@@ -19,6 +20,25 @@ interface ReferralRecord {
   referrer_user_id: string | null;
   referrer_referral_code: string | null;
   referral_link: string | null;
+  created_at: string;
+}
+
+interface CurrentUserReferralRecord {
+  user_id: string;
+  referred_by_user_id: string | null;
+  referred_by_referral_code: string | null;
+  invitation_code: string | null;
+  referrer_user_id: string | null;
+  referrer_referral_code: string | null;
+  referral_link: string | null;
+  created_at: string;
+}
+
+interface ReferralInviteeRecord {
+  user_id: string;
+  referral_code: string | null;
+  email: string | null;
+  name: string | null;
   created_at: string;
 }
 
@@ -93,21 +113,34 @@ function buildReferralLink(
   requestedOrigin?: string | null
 ): string {
   const baseUrl = resolveReferralShareBaseUrl(env, requestedOrigin);
-  return `${baseUrl}/auth/referral?code=${encodeURIComponent(referralCode)}`;
+  return `${baseUrl}/auth?mode=signup&referralCode=${encodeURIComponent(referralCode)}`;
 }
 
-function parseCountHeader(contentRange: string | null): number {
-  if (!contentRange) {
-    return 0;
-  }
+function generateReferralCodeFromUser(
+  user: UserRecord,
+  requestedDisplayName?: string | null
+): string {
+  const rawSlugSource =
+    trimRuntimeValue(requestedDisplayName) ||
+    trimRuntimeValue(user.name) ||
+    trimRuntimeValue(user.email)?.split('@')[0] ||
+    'user';
+  const slug = rawSlugSource
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 24);
+  const normalizedSlug = slug.length > 0 ? slug : 'user';
+  const suffix = createHash('md5').update(user.id).digest('hex').slice(0, 6);
+  return `${normalizedSlug}-${suffix}`;
+}
 
-  const match = contentRange.match(/\/(\d+|\*)$/);
-  if (!match || match[1] === '*') {
-    return 0;
-  }
+function normalizeInviteeIds(ids: string[]): string[] {
+  return Array.from(new Set(ids.map((value) => trimRuntimeValue(value)).filter(Boolean)));
+}
 
-  const count = Number(match[1]);
-  return Number.isFinite(count) ? count : 0;
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function supabaseSelectOne<T>(
@@ -147,16 +180,17 @@ async function supabaseSelectOne<T>(
   return rows[0] ?? null;
 }
 
-async function supabaseSelectCount(
+async function supabaseSelectMany<T>(
   path: string,
   query: Record<string, string>,
+  select: string,
   env: NodeJS.ProcessEnv = process.env
-): Promise<number> {
+): Promise<T[]> {
   const url = new URL(`/rest/v1/${path}`, 'https://placeholder.local');
   for (const [key, value] of Object.entries(query)) {
     url.searchParams.set(key, value);
   }
-  url.searchParams.set('select', 'id');
+  url.searchParams.set('select', select);
 
   const cfg = resolveSupabaseConfig(env);
   if (!cfg) {
@@ -169,18 +203,18 @@ async function supabaseSelectCount(
       apikey: cfg.key,
       Authorization: `Bearer ${cfg.key}`,
       Accept: 'application/json',
-      Prefer: 'count=exact',
     },
   });
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
     throw new InternalServerErrorException(
-      `Failed to count ${path}: ${response.status} ${text}`.trim()
+      `Failed to read ${path}: ${response.status} ${text}`.trim()
     );
   }
 
-  return parseCountHeader(response.headers.get('content-range'));
+  const rows = (await response.json().catch(() => [])) as T[];
+  return Array.isArray(rows) ? rows : [];
 }
 
 async function supabaseUpdateOne<T>(
@@ -269,7 +303,7 @@ export class ReferralsService {
       throw new ServiceUnavailableException('Supabase referrals integration is not configured');
     }
 
-    const currentUser = await this.getUserById(userId);
+    const currentUser = await this.getUserByIdWithRetry(userId);
     if (!currentUser) {
       throw new NotFoundException(`User ${userId} not found`);
     }
@@ -329,7 +363,11 @@ export class ReferralsService {
     return this.toResponse(record);
   }
 
-  async getMe(userId: string, requestedOrigin?: string | null): Promise<ReferralSummaryDto> {
+  async getMe(
+    userId: string,
+    requestedOrigin?: string | null,
+    requestedDisplayName?: string | null
+  ): Promise<ReferralSummaryDto> {
     const cfg = resolveSupabaseConfig();
     if (!cfg) {
       this.logger.warn(
@@ -339,34 +377,129 @@ export class ReferralsService {
     }
 
     const user = await this.getUserById(userId);
+    const currentUser: UserRecord = user ?? {
+      id: userId,
+      referral_code: null,
+      referred_by_user_id: null,
+      referred_by_referral_code: null,
+      email: null,
+      name: null,
+    };
     if (!user) {
-      throw new NotFoundException(`User ${userId} not found`);
+      this.logger.warn(`User ${userId} not found in users table; synthesizing referral summary.`);
     }
 
-    const referralCount = await supabaseSelectCount('referrals', {
-      referrer_user_id: `eq.${userId}`,
-    });
+    const currentReferralRecord = await supabaseSelectOne<CurrentUserReferralRecord>(
+      'referrals',
+      {
+        user_id: `eq.${userId}`,
+      },
+      'user_id,referred_by_user_id,referred_by_referral_code,invitation_code,referrer_user_id,referrer_referral_code,referral_link,created_at'
+    );
+
+    const referralRows = await supabaseSelectMany<ReferralRecord>(
+      'referrals',
+      {
+        referrer_user_id: `eq.${userId}`,
+        order: 'created_at.desc',
+      },
+      'id,user_id,created_at,referrer_user_id,referrer_referral_code,referral_link'
+    );
+    const referralCount = referralRows.length;
+    const inviteeIds = normalizeInviteeIds(referralRows.map((row) => row.user_id));
+    const inviteeRows = inviteeIds.length
+      ? await supabaseSelectMany<ReferralInviteeRecord>(
+          'users',
+          {
+            id: `in.(${inviteeIds.join(',')})`,
+          },
+          'user_id:id,referral_code,email,name,created_at'
+        )
+      : [];
+    const inviteeMap = new Map(inviteeRows.map((row) => [row.user_id, row]));
 
     let referrer: UserRecord | null = null;
-    if (user.referred_by_user_id) {
-      referrer = await this.getUserById(user.referred_by_user_id);
+    if (currentUser.referred_by_user_id) {
+      referrer = await this.getUserById(currentUser.referred_by_user_id);
     }
 
-    const referralCode = user.referral_code;
+    const resolvedReferredByUserId =
+      currentUser.referred_by_user_id ?? currentReferralRecord?.referrer_user_id ?? null;
+    const resolvedReferredByReferralCode =
+      currentUser.referred_by_referral_code ??
+      currentReferralRecord?.referrer_referral_code ??
+      currentReferralRecord?.invitation_code ??
+      null;
+
+    if (!referrer && resolvedReferredByUserId) {
+      referrer = await this.getUserById(resolvedReferredByUserId);
+    }
+
+    if (!referrer && currentUser.referred_by_referral_code) {
+      referrer = await this.getUserByReferralCode(currentUser.referred_by_referral_code);
+    }
+
+    if (!referrer && resolvedReferredByReferralCode) {
+      referrer = await this.getUserByReferralCode(resolvedReferredByReferralCode);
+    }
+
+    if (referrer && (!currentUser.referred_by_user_id || !currentUser.referred_by_referral_code)) {
+      await supabaseUpdateOne<UserRecord>(
+        'users',
+        { id: `eq.${userId}` },
+        {
+          referred_by_user_id: currentUser.referred_by_user_id ?? referrer.id,
+          referred_by_referral_code:
+            currentUser.referred_by_referral_code ??
+            referrer.referral_code ??
+            resolvedReferredByReferralCode,
+        }
+      ).catch((error) => {
+        this.logger.warn(
+          `Failed to backfill referred-by fields for user ${userId}: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
+      });
+    }
+
+    const referralCode = currentUser.referral_code;
+    const resolvedReferralCode =
+      referralCode ?? generateReferralCodeFromUser(currentUser, requestedDisplayName);
     if (!referralCode) {
-      this.logger.warn(`User ${userId} has no referral code`);
-      throw new InternalServerErrorException('Referral code missing for user');
+      this.logger.warn(`User ${userId} has no referral code; backfilling ${resolvedReferralCode}`);
+      await supabaseUpdateOne<UserRecord>(
+        'users',
+        { id: `eq.${userId}` },
+        { referral_code: resolvedReferralCode }
+      ).catch((error) => {
+        this.logger.warn(
+          `Failed to backfill referral code for user ${userId}: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
+      });
     }
 
     return {
-      user_id: user.id,
-      referral_code: referralCode,
-      referral_link: buildReferralLink(referralCode, process.env, requestedOrigin),
+      user_id: currentUser.id,
+      referral_code: resolvedReferralCode,
+      referral_link: buildReferralLink(resolvedReferralCode, process.env, requestedOrigin),
       referral_count: referralCount,
-      referred_by_user_id: user.referred_by_user_id,
-      referred_by_referral_code: user.referred_by_referral_code,
+      referred_by_user_id: resolvedReferredByUserId ?? referrer?.id ?? null,
+      referred_by_referral_code: resolvedReferredByReferralCode ?? referrer?.referral_code ?? null,
       referred_by_name: referrer?.name ?? null,
       referred_by_email: referrer?.email ?? null,
+      referred_users: referralRows.map((record) => {
+        const invitee = inviteeMap.get(record.user_id);
+        return {
+          user_id: record.user_id,
+          referral_code: invitee?.referral_code ?? null,
+          name: invitee?.name ?? null,
+          email: invitee?.email ?? null,
+          created_at: record.created_at,
+        };
+      }),
     };
   }
 
@@ -376,6 +509,23 @@ export class ReferralsService {
       { id: `eq.${userId}` },
       'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name'
     );
+  }
+
+  private async getUserByIdWithRetry(userId: string, attempts = 6): Promise<UserRecord | null> {
+    let delayMs = 250;
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      const user = await this.getUserById(userId);
+      if (user) {
+        return user;
+      }
+
+      if (attempt < attempts) {
+        await sleep(delayMs);
+        delayMs = Math.min(delayMs * 2, 4000);
+      }
+    }
+
+    return null;
   }
 
   private async getUserByReferralCode(referralCode: string): Promise<UserRecord | null> {
