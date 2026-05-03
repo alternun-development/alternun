@@ -12,7 +12,10 @@ import {
   writePendingReferralData,
   type PendingReferralData,
 } from '../components/auth/referralStorage';
-import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
+import {
+  buildReferralPersistenceKey,
+  savePendingReferralData,
+} from '../components/auth/referralPersistence';
 
 function readSearchParam(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) return value[0] ?? null;
@@ -41,39 +44,6 @@ function buildPendingReferralData(
   };
 }
 
-async function savePendingReferralData(
-  userId: string,
-  referralData: PendingReferralData
-): Promise<void> {
-  const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
-  const attempts = 6;
-  let delayMs = 250;
-
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    const response = await fetch(`${apiBaseUrl}/v1/referrals`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        ...referralData,
-      }),
-    }).catch(() => null);
-
-    if (response?.ok) {
-      return;
-    }
-
-    if (attempt < attempts) {
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-      delayMs = Math.min(delayMs * 2, 4000);
-    }
-  }
-
-  throw new Error('Failed to persist pending referral data');
-}
-
 type AuthRouteHref = Parameters<ReturnType<typeof useRouter>['replace']>[0];
 
 export default function AuthRoute(): React.JSX.Element {
@@ -88,9 +58,11 @@ export default function AuthRoute(): React.JSX.Element {
     username?: string | string[];
     email?: string | string[];
   }>();
-  const { user, loading, client } = useAuth();
+  const { user, loading } = useAuth();
   const isNavigationReady = Boolean(rootNavigationState?.key);
   const hasInjectedReferralRef = useRef(false);
+  const pendingReferralPersistenceKeyRef = useRef<string | null>(null);
+  const redirectKeyRef = useRef<string | null>(null);
 
   const requestedNext = readSearchParam(next);
   const safeNext = requestedNext === '/auth/referral' ? '/' : requestedNext ?? '/';
@@ -125,22 +97,33 @@ export default function AuthRoute(): React.JSX.Element {
     if (hasPendingReferralData()) {
       const pendingReferral = readPendingReferralData();
       if (pendingReferral) {
+        const persistenceKey = buildReferralPersistenceKey(user.id, pendingReferral);
+        if (pendingReferralPersistenceKeyRef.current === persistenceKey) {
+          return;
+        }
+
+        pendingReferralPersistenceKeyRef.current = persistenceKey;
         void savePendingReferralData(user.id, pendingReferral)
           .then(() => {
             clearPendingReferralData();
+            router.replace(redirectHref as AuthRouteHref);
           })
           .catch(() => {
             // Keep the referral in session storage so the next auth pass can retry.
-          })
-          .finally(() => {
-            router.replace(redirectHref as AuthRouteHref);
+            pendingReferralPersistenceKeyRef.current = null;
           });
         return;
       }
     }
 
+    const redirectKey = `${user.id}:${JSON.stringify(redirectHref)}`;
+    if (redirectKeyRef.current === redirectKey) {
+      return;
+    }
+
+    redirectKeyRef.current = redirectKey;
     router.replace(redirectHref as AuthRouteHref);
-  }, [client, isNavigationReady, loading, redirectHref, router, user]);
+  }, [isNavigationReady, loading, redirectHref, router, user]);
 
   if (loading || !isNavigationReady || user) {
     return (

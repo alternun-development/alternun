@@ -9,6 +9,13 @@ export class ReferralSummaryDto {
   })
   user_id!: string;
 
+  @ApiPropertyOptional({
+    description: 'Timestamp when the current user account was created',
+    type: String,
+    nullable: true,
+  })
+  user_created_at!: string | null;
+
   @ApiProperty({
     description: 'Current user referral code',
     type: String,

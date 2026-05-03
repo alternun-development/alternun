@@ -563,6 +563,8 @@
         "referralCount": "Invited members",
         "wasReferred": "Referral on file",
         "referredBy": "Referred by {{name}}",
+        "referredByLabel": "Who referred you",
+        "referredByHelper": "This is the referral source recorded on your account.",
         "codePending": "Loading...",
         "error": "Unable to load referral details right now."
       },

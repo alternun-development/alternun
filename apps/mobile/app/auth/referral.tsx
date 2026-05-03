@@ -32,15 +32,15 @@ export default function ReferralRoute(): React.JSX.Element {
     const pendingReferralData = {
       referred_by_username: readSearchParam(username),
       referred_by_email: readSearchParam(email),
-      referral_code: resolvedReferralCode || null,
-      invitation_code: resolvedReferralCode || null,
+      referral_code: resolvedReferralCode.length > 0 ? resolvedReferralCode : null,
+      invitation_code: resolvedReferralCode.length > 0 ? resolvedReferralCode : null,
     };
+    const hasReferralInput =
+      Boolean(resolvedReferralCode) ||
+      Boolean(pendingReferralData.referred_by_username) ||
+      Boolean(pendingReferralData.referred_by_email);
 
-    if (
-      resolvedReferralCode ??
-      pendingReferralData.referred_by_username ??
-      pendingReferralData.referred_by_email
-    ) {
+    if (hasReferralInput) {
       writePendingReferralData(pendingReferralData);
     }
 
@@ -48,7 +48,7 @@ export default function ReferralRoute(): React.JSX.Element {
       pathname: '/auth',
       params: {
         next: readSearchParam(next) === '/auth/referral' ? '/' : readSearchParam(next) ?? '/',
-        referralCode: resolvedReferralCode ?? undefined,
+        referralCode: resolvedReferralCode.length > 0 ? resolvedReferralCode : undefined,
         username: readSearchParam(username) ?? undefined,
         email: readSearchParam(email) ?? undefined,
       },

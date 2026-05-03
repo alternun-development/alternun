@@ -1,5 +1,5 @@
 import { GlassCard } from '@alternun/ui';
-import { Copy, Link2, Share2, Users } from 'lucide-react-native';
+import { Copy, Link2, Share2, UserRoundCheck, Users } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -248,12 +248,8 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
     summary?.referred_by_email ??
     summary?.referred_by_referral_code ??
     null;
+  const hasReferrer = Boolean(referrerLabel);
   const referralCountValue = error ? '—' : loading ? '—' : summary?.referral_count ?? 0;
-  const referralStatusValue = error
-    ? '—'
-    : summary?.referred_by_user_id ?? summary?.referred_by_referral_code
-    ? t('shared.labels.yes', undefined, 'Yes')
-    : t('shared.labels.no', undefined, 'No');
   const referralCodeValue = error
     ? '—'
     : loading
@@ -367,6 +363,43 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
         </TouchableOpacity>
       </View>
 
+      {hasReferrer ? (
+        <View
+          style={[
+            styles.referrerCard,
+            {
+              borderColor: `${c.accent}26`,
+              backgroundColor: isDark ? 'rgba(28,203,161,0.08)' : 'rgba(28,203,161,0.1)',
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.referrerIcon,
+              {
+                backgroundColor: `${c.accent}18`,
+                borderColor: `${c.accent}30`,
+              },
+            ]}
+          >
+            <UserRoundCheck size={15} color={c.accent} strokeWidth={2.2} />
+          </View>
+          <View style={styles.referrerCopy}>
+            <Text style={[styles.referrerLabel, { color: c.muted }]}>
+              {t('profile.referral.referredByLabel', undefined, 'Who referred you')}
+            </Text>
+            <Text style={[styles.referrerName, { color: c.text }]}>{referrerLabel}</Text>
+            <Text style={[styles.referrerHelper, { color: c.muted }]}>
+              {t(
+                'profile.referral.referredByHelper',
+                undefined,
+                'This is the referral source recorded on your account.'
+              )}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: c.text }]}>{referralCountValue}</Text>
@@ -374,20 +407,26 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
             {t('profile.referral.referralCount', undefined, 'Invited members')}
           </Text>
         </View>
-        <View
-          style={[
-            styles.statDivider,
-            {
-              backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.08)',
-            },
-          ]}
-        />
-        <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: c.text }]}>{referralStatusValue}</Text>
-          <Text style={[styles.statLabel, { color: c.muted }]}>
-            {t('profile.referral.wasReferred', undefined, 'Referral on file')}
-          </Text>
-        </View>
+        {hasReferrer ? (
+          <>
+            <View
+              style={[
+                styles.statDivider,
+                {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.08)',
+                },
+              ]}
+            />
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: c.text }]}>
+                {t('shared.labels.yes', undefined, 'Yes')}
+              </Text>
+              <Text style={[styles.statLabel, { color: c.muted }]}>
+                {t('profile.referral.wasReferred', undefined, 'Referral on file')}
+              </Text>
+            </View>
+          </>
+        ) : null}
       </View>
 
       {referralLink ? (
@@ -412,16 +451,6 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
             {t('profile.referral.copy', undefined, 'Copy')}
           </Text>
         </TouchableOpacity>
-      ) : null}
-
-      {referrerLabel ? (
-        <Text style={[styles.referrerText, { color: c.muted }]}>
-          {t(
-            'profile.referral.referredBy',
-            { name: referrerLabel },
-            `Referred by ${referrerLabel}`
-          )}
-        </Text>
       ) : null}
 
       {summary?.referred_users?.length ? (
@@ -602,9 +631,43 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
   },
-  referrerText: {
-    marginTop: 8,
-    fontSize: 11,
+  referrerCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    borderWidth: 1,
+    borderRadius: 14,
+  },
+  referrerIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  referrerCopy: {
+    flex: 1,
+  },
+  referrerLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  referrerName: {
+    marginTop: 3,
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  referrerHelper: {
+    marginTop: 3,
+    fontSize: 10,
+    lineHeight: 14,
     fontWeight: '600',
   },
   inviteesSection: {

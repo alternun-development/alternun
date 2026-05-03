@@ -40,6 +40,11 @@ interface ReferralInviteeRecord {
   created_at: string;
 }
 
+interface AttributedInviteeRecord extends ReferralInviteeRecord {
+  referred_by_user_id: string | null;
+  referred_by_referral_code: string | null;
+}
+
 interface UserRecord {
   id: string;
   referral_code: string | null;
@@ -47,6 +52,7 @@ interface UserRecord {
   referred_by_referral_code: string | null;
   email: string | null;
   name: string | null;
+  created_at: string | null;
 }
 
 interface SupabaseConfig {
@@ -61,7 +67,7 @@ function trimRuntimeValue(value: string | null | undefined): string {
 function resolveSupabaseConfig(env: NodeJS.ProcessEnv = process.env): SupabaseConfig | null {
   const url = trimRuntimeValue(env.SUPABASE_URL ?? env.EXPO_PUBLIC_SUPABASE_URL);
   const key = trimRuntimeValue(
-    env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_ANON_KEY ?? env.EXPO_PUBLIC_SUPABASE_KEY
+    env.SUPABASE_SERVICE_ROLE_KEY ?? env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY
   );
 
   if (!url || !key) {
@@ -148,6 +154,16 @@ function generateReferralCodeFromUser(
 
 function normalizeInviteeIds(ids: string[]): string[] {
   return Array.from(new Set(ids.map((value) => trimRuntimeValue(value)).filter(Boolean)));
+}
+
+function upsertReferralRecordByInvitee(
+  records: Map<string, ReferralRecord>,
+  record: ReferralRecord
+): void {
+  const existing = records.get(record.user_id);
+  if (!existing || record.created_at > existing.created_at) {
+    records.set(record.user_id, record);
+  }
 }
 
 async function sleep(ms: number): Promise<void> {
@@ -395,6 +411,7 @@ export class ReferralsService {
       referred_by_referral_code: null,
       email: null,
       name: null,
+      created_at: null,
     };
     if (!user) {
       this.logger.warn(`User ${userId} not found in users table; synthesizing referral summary.`);
@@ -407,27 +424,6 @@ export class ReferralsService {
       },
       'user_id,invitation_code,referrer_user_id,referrer_referral_code,referral_link,created_at'
     );
-
-    const referralRows = await supabaseSelectMany<ReferralRecord>(
-      'referrals',
-      {
-        referrer_user_id: `eq.${userId}`,
-        order: 'created_at.desc',
-      },
-      'id,user_id,created_at,referrer_user_id,referrer_referral_code,referral_link'
-    );
-    const referralCount = referralRows.length;
-    const inviteeIds = normalizeInviteeIds(referralRows.map((row) => row.user_id));
-    const inviteeRows = inviteeIds.length
-      ? await supabaseSelectMany<ReferralInviteeRecord>(
-          'users',
-          {
-            id: `in.(${inviteeIds.join(',')})`,
-          },
-          'user_id:id,referral_code,email,name,created_at'
-        )
-      : [];
-    const inviteeMap = new Map(inviteeRows.map((row) => [row.user_id, row]));
 
     let referrer: UserRecord | null = null;
     if (currentUser.referred_by_user_id) {
@@ -477,6 +473,83 @@ export class ReferralsService {
     const referralCode = currentUser.referral_code;
     const resolvedReferralCode =
       referralCode ?? generateReferralCodeFromUser(currentUser, requestedDisplayName);
+
+    const referralRowsById = await supabaseSelectMany<ReferralRecord>(
+      'referrals',
+      {
+        referrer_user_id: `eq.${userId}`,
+        order: 'created_at.desc',
+      },
+      'id,user_id,created_at,referrer_user_id,referrer_referral_code,referral_link'
+    );
+    const referralRowsByCode = resolvedReferralCode
+      ? await supabaseSelectMany<ReferralRecord>(
+          'referrals',
+          {
+            referrer_referral_code: `eq.${resolvedReferralCode}`,
+            order: 'created_at.desc',
+          },
+          'id,user_id,created_at,referrer_user_id,referrer_referral_code,referral_link'
+        )
+      : [];
+    const referralRecordMap = new Map<string, ReferralRecord>();
+    for (const record of [...referralRowsById, ...referralRowsByCode]) {
+      upsertReferralRecordByInvitee(referralRecordMap, record);
+    }
+
+    const attributedInviteeRows = await supabaseSelectMany<AttributedInviteeRecord>(
+      'users',
+      resolvedReferralCode
+        ? {
+            or: `(referred_by_user_id.eq.${userId},referred_by_referral_code.eq.${resolvedReferralCode})`,
+            order: 'created_at.desc',
+          }
+        : {
+            referred_by_user_id: `eq.${userId}`,
+            order: 'created_at.desc',
+          },
+      'user_id:id,referral_code,email,name,created_at,referred_by_user_id,referred_by_referral_code'
+    );
+    const inviteeMap = new Map<string, ReferralInviteeRecord>();
+    for (const row of attributedInviteeRows) {
+      inviteeMap.set(row.user_id, row);
+    }
+
+    const missingInviteeIds = normalizeInviteeIds(
+      Array.from(referralRecordMap.keys()).filter((inviteeId) => !inviteeMap.has(inviteeId))
+    );
+    const referralInviteeRows = missingInviteeIds.length
+      ? await supabaseSelectMany<ReferralInviteeRecord>(
+          'users',
+          {
+            id: `in.(${missingInviteeIds.join(',')})`,
+          },
+          'user_id:id,referral_code,email,name,created_at'
+        )
+      : [];
+    for (const row of referralInviteeRows) {
+      inviteeMap.set(row.user_id, row);
+    }
+
+    const referredUserIds = normalizeInviteeIds([
+      ...Array.from(referralRecordMap.keys()),
+      ...Array.from(inviteeMap.keys()),
+    ]).filter((inviteeId) => inviteeId !== userId);
+    const referredUsers = referredUserIds
+      .map((inviteeId) => {
+        const invitee = inviteeMap.get(inviteeId);
+        const referralRecord = referralRecordMap.get(inviteeId);
+        return {
+          user_id: inviteeId,
+          referral_code: invitee?.referral_code ?? null,
+          name: invitee?.name ?? null,
+          email: invitee?.email ?? null,
+          created_at:
+            referralRecord?.created_at ?? invitee?.created_at ?? new Date(0).toISOString(),
+        };
+      })
+      .sort((left, right) => right.created_at.localeCompare(left.created_at));
+
     if (!referralCode) {
       this.logger.warn(`User ${userId} has no referral code; backfilling ${resolvedReferralCode}`);
       await supabaseUpdateOne<UserRecord>(
@@ -494,23 +567,15 @@ export class ReferralsService {
 
     return {
       user_id: currentUser.id,
+      user_created_at: currentUser.created_at,
       referral_code: resolvedReferralCode,
       referral_link: buildReferralLink(resolvedReferralCode, process.env, requestedOrigin),
-      referral_count: referralCount,
+      referral_count: referredUsers.length,
       referred_by_user_id: resolvedReferredByUserId ?? referrer?.id ?? null,
       referred_by_referral_code: resolvedReferredByReferralCode ?? referrer?.referral_code ?? null,
       referred_by_name: referrer?.name ?? null,
       referred_by_email: referrer?.email ?? null,
-      referred_users: referralRows.map((record) => {
-        const invitee = inviteeMap.get(record.user_id);
-        return {
-          user_id: record.user_id,
-          referral_code: invitee?.referral_code ?? null,
-          name: invitee?.name ?? null,
-          email: invitee?.email ?? null,
-          created_at: record.created_at,
-        };
-      }),
+      referred_users: referredUsers,
     };
   }
 
@@ -518,7 +583,7 @@ export class ReferralsService {
     return supabaseSelectOne<UserRecord>(
       'users',
       { id: `eq.${userId}` },
-      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name'
+      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name,created_at'
     );
   }
 
@@ -544,7 +609,7 @@ export class ReferralsService {
     const exactMatch = await supabaseSelectOne<UserRecord>(
       'users',
       { referral_code: `eq.${normalizedReferralCode}` },
-      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name'
+      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name,created_at'
     );
 
     if (exactMatch) {
@@ -559,7 +624,7 @@ export class ReferralsService {
     const slugCandidates = await supabaseSelectMany<UserRecord>(
       'users',
       { referral_code: `ilike.${slug}-%` },
-      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name'
+      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name,created_at'
     );
     const slugPattern = new RegExp(`^${escapeRegExp(slug)}-[a-z0-9]{6}$`, 'i');
     const matches = slugCandidates.filter(
