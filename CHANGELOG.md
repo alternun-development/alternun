@@ -1,3 +1,9 @@
+## [1.0.247](https://github.com/alternun-development/alternun/compare/v1.0.246-dev.0...v1.0.247) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,i18n): referral-summary.dto, referrals.service, referrals.service.test, auth
+
 ## [1.0.246](https://github.com/alternun-development/alternun/compare/v1.0.245-dev.0...v1.0.246) (2026-05-03)
 
 ### Bug Fixes
