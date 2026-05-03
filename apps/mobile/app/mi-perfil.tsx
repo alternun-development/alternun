@@ -71,6 +71,14 @@ const WalletIcon = Wallet as React.FC<LucideProps>;
 
 type UserMetadata = Record<string, unknown>;
 
+interface AccountReferralSummary {
+  user_created_at?: string | null;
+  referred_by_user_id?: string | null;
+  referred_by_referral_code?: string | null;
+  referred_by_name?: string | null;
+  referred_by_email?: string | null;
+}
+
 const TOP_USERS = [
   { rank: 1, name: 'María González', score: '98.420', medal: '🥇', color: '#d4b96a' },
   { rank: 2, name: 'Carlos Mendoza', score: '87.650', medal: '🥈', color: '#a8b8cc' },
@@ -94,6 +102,70 @@ const RANKING_FILTERS: SearchFilterOption[] = [
 function getMetadata(user: User | null): UserMetadata {
   if (!user?.metadata || typeof user.metadata !== 'object') return {};
   return user.metadata as UserMetadata;
+}
+
+function normalizeDateCandidate(value: unknown): string | null {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const milliseconds = value > 10_000_000_000 ? value : value * 1000;
+    return new Date(milliseconds).toISOString();
+  }
+
+  return null;
+}
+
+function resolveAccountCreatedAt(
+  user: User | null,
+  referralSummary: AccountReferralSummary | null
+): string | null {
+  if (!user) return null;
+
+  const metadata = getMetadata(user);
+  const userRecord = user as User & Record<string, unknown>;
+  const candidates = [
+    referralSummary?.user_created_at,
+    userRecord.createdAt,
+    userRecord.created_at,
+    metadata.createdAt,
+    metadata.created_at,
+    metadata.created,
+    metadata.registeredAt,
+    metadata.registered_at,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeDateCandidate(candidate);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return null;
+}
+
+function formatAccountCreatedAt(value: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return date.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function getAccountReferrerLabel(summary: AccountReferralSummary | null): string | null {
+  return (
+    summary?.referred_by_name ??
+    summary?.referred_by_email ??
+    summary?.referred_by_referral_code ??
+    null
+  );
 }
 
 function getProfileInfo(user: User | null): { displayName: string; email?: string } {
@@ -733,13 +805,69 @@ function AccountInfoModal({
   c: ColorPalette;
   onClose: () => void;
 }): React.JSX.Element | null {
-  if (!visible || !user) return null;
-
   const [copiedId, setCopiedId] = useState(false);
-  const createdAt = user.createdAt
-    ? new Date(user.createdAt as string).toLocaleDateString('es-ES')
-    : 'N/A';
+  const [referralSummary, setReferralSummary] = useState<AccountReferralSummary | null>(null);
+  const [referralSummaryLoading, setReferralSummaryLoading] = useState(false);
   const profile = useMemo(() => getProfileInfo(user), [user]);
+  const createdAt =
+    formatAccountCreatedAt(resolveAccountCreatedAt(user, referralSummary)) ??
+    (referralSummaryLoading ? 'Cargando...' : 'N/A');
+  const referrerLabel = getAccountReferrerLabel(referralSummary);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchReferralSummary = async (): Promise<void> => {
+      if (!visible || !user?.id) {
+        setReferralSummary(null);
+        setReferralSummaryLoading(false);
+        return;
+      }
+
+      setReferralSummaryLoading(true);
+
+      try {
+        const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
+        const referralUrl = new URL(`${apiBaseUrl}/v1/referrals/me`);
+        referralUrl.searchParams.set('user_id', user.id);
+        if (profile.displayName) {
+          referralUrl.searchParams.set('display_name', profile.displayName);
+        }
+
+        const response = await fetch(referralUrl.toString(), {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Referral summary request failed (${response.status})`);
+        }
+
+        const summary = (await response.json()) as AccountReferralSummary;
+        if (isMounted) {
+          setReferralSummary(summary);
+        }
+      } catch {
+        if (isMounted) {
+          setReferralSummary(null);
+        }
+      } finally {
+        if (isMounted) {
+          setReferralSummaryLoading(false);
+        }
+      }
+    };
+
+    void fetchReferralSummary();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [profile.displayName, user?.id, visible]);
+
+  if (!visible || !user) return null;
 
   const handleCopyId = (): void => {
     if (user.id) {
@@ -962,6 +1090,52 @@ function AccountInfoModal({
               </Text>
             </View>
           </View>
+
+          {/* Referred By */}
+          {referrerLabel ? (
+            <View style={{ marginBottom: 18 }}>
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '600',
+                  color: c.muted,
+                  marginBottom: 8,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                }}
+              >
+                Referido por
+              </Text>
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderColor: `${c.accent}44`,
+                  borderRadius: 10,
+                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                  backgroundColor: `${c.accent}12`,
+                }}
+              >
+                <Text style={{ fontSize: 14, color: c.text, fontWeight: '700' }}>
+                  {referrerLabel}
+                </Text>
+                {referralSummary?.referred_by_referral_code &&
+                referralSummary.referred_by_referral_code !== referrerLabel ? (
+                  <Text
+                    style={{
+                      marginTop: 4,
+                      fontSize: 12,
+                      color: c.muted,
+                      fontFamily: 'monospace',
+                      fontWeight: '500',
+                    }}
+                  >
+                    {referralSummary.referred_by_referral_code}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+          ) : null}
 
           {/* Verified Badge */}
           <View
@@ -1602,7 +1776,7 @@ function PerfilTab({
                     label={selectedAchievement?.label || ''}
                     color={selectedAchievement?.color || ''}
                     isDark={isDark}
-                    c={c}
+                    _c={c}
                   />
                 </View>
               </TouchableOpacity>

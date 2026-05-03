@@ -128,6 +128,7 @@ test('ReferralsService.create resolves a referral code and stores attribution', 
             referred_by_referral_code: 'edward-ref123',
             email: 'new@example.com',
             name: 'New User',
+            created_at: '2026-04-20T00:00:00Z',
           },
         ]),
         createJsonResponse([
@@ -331,9 +332,21 @@ test('ReferralsService.getMe returns the canonical share link and referral count
             referred_by_referral_code: 'edward-ref123',
             email: 'new@example.com',
             name: 'New User',
+            created_at: '2026-04-20T00:00:00Z',
           },
         ]),
         createJsonResponse([]),
+        createJsonResponse([
+          {
+            id: 'referrer-1',
+            referral_code: 'edward-ref123',
+            referred_by_user_id: null,
+            referred_by_referral_code: null,
+            email: 'referrer@example.com',
+            name: 'Referrer One',
+            created_at: '2026-04-19T00:00:00Z',
+          },
+        ]),
         createJsonResponse([
           {
             id: 'referral-1',
@@ -360,6 +373,7 @@ test('ReferralsService.getMe returns the canonical share link and referral count
             referral_link: 'https://testnet.airs.alternun.co/auth?referralCode=new-user-123abc',
           },
         ]),
+        createJsonResponse([]),
         createJsonResponse([
           {
             user_id: 'invitee-1',
@@ -367,6 +381,8 @@ test('ReferralsService.getMe returns the canonical share link and referral count
             email: 'invitee1@example.com',
             name: 'Invitee One',
             created_at: '2026-04-25T00:00:00Z',
+            referred_by_user_id: 'user-123',
+            referred_by_referral_code: 'new-user-123abc',
           },
           {
             user_id: 'invitee-2',
@@ -374,6 +390,8 @@ test('ReferralsService.getMe returns the canonical share link and referral count
             email: 'invitee2@example.com',
             name: 'Invitee Two',
             created_at: '2026-04-26T00:00:00Z',
+            referred_by_user_id: 'user-123',
+            referred_by_referral_code: 'new-user-123abc',
           },
           {
             user_id: 'invitee-3',
@@ -381,16 +399,8 @@ test('ReferralsService.getMe returns the canonical share link and referral count
             email: 'invitee3@example.com',
             name: 'Invitee Three',
             created_at: '2026-04-27T00:00:00Z',
-          },
-        ]),
-        createJsonResponse([
-          {
-            id: 'referrer-1',
-            referral_code: 'edward-ref123',
-            referred_by_user_id: null,
-            referred_by_referral_code: null,
-            email: 'referrer@example.com',
-            name: 'Referrer One',
+            referred_by_user_id: 'user-123',
+            referred_by_referral_code: 'new-user-123abc',
           },
         ]),
       ],
@@ -401,6 +411,7 @@ test('ReferralsService.getMe returns the canonical share link and referral count
     const summary = await service.getMe('user-123', 'https://testnet.airs.alternun.co');
 
     assert.equal(summary.user_id, 'user-123');
+    assert.equal(summary.user_created_at, '2026-04-20T00:00:00Z');
     assert.equal(summary.referral_code, 'new-user-123abc');
     assert.equal(
       summary.referral_link,
@@ -413,16 +424,89 @@ test('ReferralsService.getMe returns the canonical share link and referral count
     assert.equal(summary.referred_by_email, 'referrer@example.com');
     assert.equal(summary.referred_users.length, 3);
     assert.deepEqual(summary.referred_users[0], {
-      user_id: 'invitee-1',
-      referral_code: 'invitee-1-code',
-      name: 'Invitee One',
-      email: 'invitee1@example.com',
-      created_at: '2026-04-25T00:00:00Z',
+      user_id: 'invitee-3',
+      referral_code: 'invitee-3-code',
+      name: 'Invitee Three',
+      email: 'invitee3@example.com',
+      created_at: '2026-04-27T00:00:00Z',
     });
+    assert.equal(calls.length, 6);
+    assert.match(calls[2].url, /\/rest\/v1\/users\?id=eq\.referrer-1/);
+    assert.match(calls[3].url, /\/rest\/v1\/referrals\?referrer_user_id=eq\.user-123/);
+    assert.match(calls[4].url, /\/rest\/v1\/referrals\?referrer_referral_code=eq\.new-user-123abc/);
+    assert.match(calls[5].url, /\/rest\/v1\/users\?or=/);
+  } finally {
+    global.fetch = originalFetch;
+    process.env = originalEnv;
+  }
+});
+
+test('ReferralsService.getMe counts users attributed by referred_by fields even without referral rows', async () => {
+  const originalEnv = { ...process.env };
+  const originalFetch = global.fetch;
+  const calls = [];
+
+  try {
+    process.env.SUPABASE_URL = 'https://supabase.example';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+    process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
+
+    global.fetch = createFetchQueue(
+      [
+        createJsonResponse([
+          {
+            id: 'edward-user',
+            referral_code: 'edward-539f1d',
+            referred_by_user_id: null,
+            referred_by_referral_code: null,
+            email: 'edward@alternun.co',
+            name: 'edward',
+            created_at: '2026-05-03T17:44:56.905674Z',
+          },
+        ]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+        createJsonResponse([
+          {
+            user_id: 'edward-user',
+            referral_code: 'edward-539f1d',
+            email: 'edward@alternun.co',
+            name: 'edward',
+            created_at: '2026-05-03T17:44:56.905674Z',
+            referred_by_user_id: 'edward-user',
+            referred_by_referral_code: 'edward-539f1d',
+          },
+          {
+            user_id: 'admin-user',
+            referral_code: 'admin-85d11f',
+            email: 'admin@alternun.co',
+            name: 'admin',
+            created_at: '2026-05-03T18:31:08.503623Z',
+            referred_by_user_id: 'edward-user',
+            referred_by_referral_code: 'edward-539f1d',
+          },
+        ]),
+      ],
+      calls
+    );
+
+    const service = new ReferralsService();
+    const summary = await service.getMe('edward-user', 'https://testnet.airs.alternun.co');
+
+    assert.equal(summary.referral_code, 'edward-539f1d');
+    assert.equal(summary.referral_count, 1);
+    assert.deepEqual(summary.referred_users, [
+      {
+        user_id: 'admin-user',
+        referral_code: 'admin-85d11f',
+        name: 'admin',
+        email: 'admin@alternun.co',
+        created_at: '2026-05-03T18:31:08.503623Z',
+      },
+    ]);
     assert.equal(calls.length, 5);
-    assert.match(calls[2].url, /\/rest\/v1\/referrals\?referrer_user_id=eq\.user-123/);
-    assert.match(calls[3].url, /\/rest\/v1\/users\?id=in\.%28invitee-1%2Cinvitee-2%2Cinvitee-3%29/);
-    assert.match(calls[3].url, /select=user_id%3Aid/);
+    assert.match(calls[4].url, /\/rest\/v1\/users\?or=/);
   } finally {
     global.fetch = originalFetch;
     process.env = originalEnv;
@@ -465,6 +549,8 @@ test('ReferralsService.getMe backfills a missing referral code instead of failin
             referral_link: `https://testnet.airs.alternun.co/auth?referralCode=${expectedReferralCode}`,
           },
         ]),
+        createJsonResponse([]),
+        createJsonResponse([]),
         createJsonResponse([
           {
             user_id: 'invitee-1',
@@ -496,9 +582,9 @@ test('ReferralsService.getMe backfills a missing referral code instead of failin
       summary.referral_link,
       `https://testnet.airs.alternun.co/auth?referralCode=${expectedReferralCode}`
     );
-    assert.equal(calls.length, 5);
-    assert.match(calls[4].url, /\/rest\/v1\/users\?id=eq\.user-123/);
-    assert.deepEqual(JSON.parse(calls[4].init.body), {
+    assert.equal(calls.length, 7);
+    assert.match(calls[6].url, /\/rest\/v1\/users\?id=eq\.user-123/);
+    assert.deepEqual(JSON.parse(calls[6].init.body), {
       referral_code: expectedReferralCode,
     });
   } finally {
@@ -526,6 +612,8 @@ test('ReferralsService.getMe synthesizes a referral summary when the user row is
         createJsonResponse([]),
         createJsonResponse([]),
         createJsonResponse([]),
+        createJsonResponse([]),
+        createJsonResponse([]),
       ],
       calls
     );
@@ -537,7 +625,7 @@ test('ReferralsService.getMe synthesizes a referral summary when the user row is
     assert.equal(summary.referral_code, expectedReferralCode);
     assert.equal(summary.referral_count, 0);
     assert.equal(summary.referred_users.length, 0);
-    assert.equal(calls.length, 4);
+    assert.equal(calls.length, 6);
   } finally {
     global.fetch = originalFetch;
     process.env = originalEnv;
@@ -559,6 +647,8 @@ test('ReferralsService.getMe uses the provided display name when generating a re
 
     global.fetch = createFetchQueue(
       [
+        createJsonResponse([]),
+        createJsonResponse([]),
         createJsonResponse([]),
         createJsonResponse([]),
         createJsonResponse([]),
@@ -608,7 +698,6 @@ test('ReferralsService.getMe resolves the referrer from referred_by_referral_cod
           },
         ]),
         createJsonResponse([]),
-        createJsonResponse([]),
         createJsonResponse([
           {
             id: 'referrer-1',
@@ -619,6 +708,9 @@ test('ReferralsService.getMe resolves the referrer from referred_by_referral_cod
             name: 'Referrer One',
           },
         ]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+        createJsonResponse([]),
         createJsonResponse([
           {
             id: 'user-123',
@@ -640,9 +732,9 @@ test('ReferralsService.getMe resolves the referrer from referred_by_referral_cod
     assert.equal(summary.referred_by_referral_code, 'edward-ref123');
     assert.equal(summary.referred_by_name, 'Referrer One');
     assert.equal(summary.referred_by_email, 'referrer@example.com');
-    assert.equal(calls.length, 5);
-    assert.match(calls[3].url, /\/rest\/v1\/users\?referral_code=eq\.edward-ref123/);
-    assert.match(calls[4].url, /\/rest\/v1\/users\?id=eq\.user-123/);
+    assert.equal(calls.length, 7);
+    assert.match(calls[2].url, /\/rest\/v1\/users\?referral_code=eq\.edward-ref123/);
+    assert.match(calls[3].url, /\/rest\/v1\/users\?id=eq\.user-123/);
   } finally {
     global.fetch = originalFetch;
     process.env = originalEnv;
@@ -683,7 +775,6 @@ test('ReferralsService.getMe backfills referred_by fields from the current refer
             created_at: '2026-04-25T00:00:00Z',
           },
         ]),
-        createJsonResponse([]),
         createJsonResponse([
           {
             id: 'referrer-1',
@@ -694,6 +785,9 @@ test('ReferralsService.getMe backfills referred_by fields from the current refer
             name: 'Referrer One',
           },
         ]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+        createJsonResponse([]),
         createJsonResponse([
           {
             id: 'user-123',
@@ -715,11 +809,11 @@ test('ReferralsService.getMe backfills referred_by fields from the current refer
     assert.equal(summary.referred_by_referral_code, 'edward-ref123');
     assert.equal(summary.referred_by_name, 'Referrer One');
     assert.equal(summary.referred_by_email, 'referrer@example.com');
-    assert.equal(calls.length, 5);
+    assert.equal(calls.length, 7);
     assert.match(calls[1].url, /\/rest\/v1\/referrals\?user_id=eq\.user-123/);
-    assert.match(calls[3].url, /\/rest\/v1\/users\?id=eq\.referrer-1/);
-    assert.match(calls[4].url, /\/rest\/v1\/users\?id=eq\.user-123/);
-    assert.deepEqual(JSON.parse(calls[4].init.body), {
+    assert.match(calls[2].url, /\/rest\/v1\/users\?id=eq\.referrer-1/);
+    assert.match(calls[3].url, /\/rest\/v1\/users\?id=eq\.user-123/);
+    assert.deepEqual(JSON.parse(calls[3].init.body), {
       referred_by_user_id: 'referrer-1',
       referred_by_referral_code: 'edward-ref123',
     });

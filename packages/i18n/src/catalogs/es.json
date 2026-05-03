@@ -563,6 +563,8 @@
         "referralCount": "Miembros invitados",
         "wasReferred": "Referencia registrada",
         "referredBy": "Referido por {{name}}",
+        "referredByLabel": "Quien te refirio",
+        "referredByHelper": "Esta es la fuente de referido registrada en tu cuenta.",
         "codePending": "Cargando...",
         "error": "No pudimos cargar los detalles de referido ahora mismo."
       },
