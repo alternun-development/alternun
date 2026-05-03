@@ -1,3 +1,9 @@
+## [1.0.240](https://github.com/alternun-development/alternun/compare/v1.0.239-dev.0...v1.0.240) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(infra): sst-deploy, sst-log-diagnostics.test
+
 ## [1.0.239](https://github.com/alternun-development/alternun/compare/v1.0.238-dev.0...v1.0.239) (2026-05-03)
 
 ### Bug Fixes
