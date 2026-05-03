@@ -83,6 +83,19 @@ function normalizeReferralCode(value: string | null | undefined): string | null 
   return trimmed.toLowerCase();
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function resolveReferralCodeSlug(value: string | null | undefined): string | null {
+  const code = normalizeReferralCode(value);
+  if (!code || !/^[a-z0-9]+(?:-[a-z0-9]+)*-[a-z0-9]{6}$/.test(code)) {
+    return null;
+  }
+
+  return code.replace(/-[a-z0-9]{6}$/, '');
+}
+
 function resolveReferralInput(dto: CreateReferralDto): string | null {
   return normalizeReferralCode(dto.referral_code ?? dto.invitation_code ?? null);
 }
@@ -527,11 +540,33 @@ export class ReferralsService {
   }
 
   private async getUserByReferralCode(referralCode: string): Promise<UserRecord | null> {
-    return supabaseSelectOne<UserRecord>(
+    const normalizedReferralCode = normalizeReferralCode(referralCode) ?? '';
+    const exactMatch = await supabaseSelectOne<UserRecord>(
       'users',
-      { referral_code: `eq.${normalizeReferralCode(referralCode) ?? ''}` },
+      { referral_code: `eq.${normalizedReferralCode}` },
       'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name'
     );
+
+    if (exactMatch) {
+      return exactMatch;
+    }
+
+    const slug = resolveReferralCodeSlug(normalizedReferralCode);
+    if (!slug) {
+      return null;
+    }
+
+    const slugCandidates = await supabaseSelectMany<UserRecord>(
+      'users',
+      { referral_code: `ilike.${slug}-%` },
+      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name'
+    );
+    const slugPattern = new RegExp(`^${escapeRegExp(slug)}-[a-z0-9]{6}$`, 'i');
+    const matches = slugCandidates.filter(
+      (candidate) => candidate.referral_code && slugPattern.test(candidate.referral_code)
+    );
+
+    return matches.length === 1 ? matches[0] ?? null : null;
   }
 
   private toResponse(record: ReferralRecord): ReferralResponseDto {
