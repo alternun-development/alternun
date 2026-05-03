@@ -153,9 +153,7 @@ export default function AuthRoute(): React.JSX.Element {
     <AuthSignInScreen
       presentation='modal'
       authReturnTo={redirectHref}
-      initialMode={
-        requestedMode === 'signup' || Boolean(requestedReferralData) ? 'signup' : 'signin'
-      }
+      initialMode={requestedMode === 'signup' ? 'signup' : 'signin'}
       initialReferralCode={requestedReferralData?.referral_code ?? null}
       onCancel={() => {
         router.replace(redirectHref as AuthRouteHref);
