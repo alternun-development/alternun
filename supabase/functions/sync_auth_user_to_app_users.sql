@@ -4,8 +4,68 @@
 -- Maps: id, sub, iss, aud, email, email_verified, name, image, picture, phone,
 -- phone_verified, confirmation_sent_at, last_sign_in_at
 --
--- Keep this file aligned with the referral-aware trigger body in
--- supabase/migrations/20260503_0001_auth_referral_attribution.sql.
+-- Keep this file aligned with the latest referral-aware trigger migration.
+
+CREATE OR REPLACE FUNCTION public.resolve_referrer_from_referral_input(
+  p_referral_code text DEFAULT NULL,
+  p_referred_by_email text DEFAULT NULL,
+  p_referred_by_username text DEFAULT NULL,
+  p_exclude_user_id text DEFAULT NULL
+)
+RETURNS TABLE(id text, referral_code text, email text, name text)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+  with normalized as (
+    select
+      nullif(lower(btrim(coalesce(p_referral_code, ''))), '') as referral_code,
+      nullif(lower(btrim(coalesce(p_referred_by_email, ''))), '') as referred_by_email,
+      nullif(lower(btrim(coalesce(p_referred_by_username, ''))), '') as referred_by_username,
+      case
+        when lower(btrim(coalesce(p_referral_code, ''))) ~ '^[a-z0-9]+(?:-[a-z0-9]+)*-[a-z0-9]{6}$'
+          then regexp_replace(lower(btrim(coalesce(p_referral_code, ''))), '-[a-z0-9]{6}$', '')
+        else null
+      end as referral_slug,
+      nullif(btrim(coalesce(p_exclude_user_id, '')), '') as exclude_user_id
+  ),
+  candidates as (
+    select u.id, u.referral_code, u.email, u.name, 1 as priority
+    from public.users u, normalized n
+    where n.referral_code is not null
+      and lower(u.referral_code) = n.referral_code
+      and (n.exclude_user_id is null or u.id <> n.exclude_user_id)
+
+    union all
+
+    select u.id, u.referral_code, u.email, u.name, 2 as priority
+    from public.users u, normalized n
+    where n.referral_slug is not null
+      and lower(u.referral_code) ~ ('^' || n.referral_slug || '-[a-z0-9]{6}$')
+      and (n.exclude_user_id is null or u.id <> n.exclude_user_id)
+
+    union all
+
+    select u.id, u.referral_code, u.email, u.name, 3 as priority
+    from public.users u, normalized n
+    where n.referred_by_email is not null
+      and lower(u.email) = n.referred_by_email
+      and (n.exclude_user_id is null or u.id <> n.exclude_user_id)
+
+    union all
+
+    select u.id, u.referral_code, u.email, u.name, 4 as priority
+    from public.users u, normalized n
+    where n.referred_by_username is not null
+      and lower(u.name) = n.referred_by_username
+      and (n.exclude_user_id is null or u.id <> n.exclude_user_id)
+  )
+  select candidates.id, candidates.referral_code, candidates.email, candidates.name
+  from candidates
+  order by priority
+  limit 1;
+$$;
 
 CREATE OR REPLACE FUNCTION public.sync_auth_user_to_app_users()
 RETURNS trigger
@@ -146,43 +206,16 @@ begin
     end if;
   end if;
 
-  if v_referrer_user_id is null and v_metadata_referral_code is not null then
-    select *
-    into v_referrer
-    from public.users
-    where lower(referral_code) = v_metadata_referral_code
+  if v_referrer_user_id is null then
+    select ref.id, ref.referral_code, ref.email, ref.name
+    into v_referrer_user_id, v_referrer_referral_code, v_referrer.email, v_referrer.name
+    from public.resolve_referrer_from_referral_input(
+      v_metadata_referral_code,
+      v_metadata_referred_by_email,
+      v_metadata_referred_by_username,
+      new.id::text
+    ) ref
     limit 1;
-
-    if found then
-      v_referrer_user_id := v_referrer.id;
-      v_referrer_referral_code := v_referrer.referral_code;
-    end if;
-  end if;
-
-  if v_referrer_user_id is null and v_metadata_referred_by_email is not null then
-    select *
-    into v_referrer
-    from public.users
-    where lower(email) = lower(v_metadata_referred_by_email)
-    limit 1;
-
-    if found then
-      v_referrer_user_id := v_referrer.id;
-      v_referrer_referral_code := v_referrer.referral_code;
-    end if;
-  end if;
-
-  if v_referrer_user_id is null and v_metadata_referred_by_username is not null then
-    select *
-    into v_referrer
-    from public.users
-    where lower(name) = lower(v_metadata_referred_by_username)
-    limit 1;
-
-    if found then
-      v_referrer_user_id := v_referrer.id;
-      v_referrer_referral_code := v_referrer.referral_code;
-    end if;
   end if;
 
   if v_referrer_user_id is null then
