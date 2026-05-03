@@ -1,3 +1,9 @@
+## [1.0.241](https://github.com/alternun-development/alternun/compare/v1.0.240-dev.0...v1.0.241) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(infra): \_load-infra-env, sst-deploy-env-bootstrap.test
+
 ## [1.0.240](https://github.com/alternun-development/alternun/compare/v1.0.239-dev.0...v1.0.240) (2026-05-03)
 
 ### Bug Fixes
