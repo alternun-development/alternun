@@ -1,3 +1,13 @@
+## [1.0.249](https://github.com/alternun-development/alternun/compare/v1.0.248-dev.0...v1.0.249) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** fix(repo,api,mobile): .env, manifest
+
+### Bug Fixes
+
+- **repo,api,mobile:** .env, manifest ([316bb24](https://github.com/alternun-development/alternun/commit/316bb2441aca369f898687177b7aa85028da0769))
+
 ## [1.0.248](https://github.com/alternun-development/alternun/compare/v1.0.247-dev.0...v1.0.248) (2026-05-03)
 
 ### Bug Fixes
