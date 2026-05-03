@@ -173,6 +173,87 @@ test('ReferralsService.create resolves a referral code and stores attribution', 
   }
 });
 
+test('ReferralsService.create recovers a stale slug-suffix referral code', async () => {
+  const originalEnv = { ...process.env };
+  const originalFetch = global.fetch;
+  const calls = [];
+
+  try {
+    process.env.SUPABASE_URL = 'https://supabase.example';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+    process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
+
+    global.fetch = createFetchQueue(
+      [
+        createJsonResponse([
+          {
+            id: 'user-123',
+            referral_code: 'new-user-123abc',
+            referred_by_user_id: null,
+            referred_by_referral_code: null,
+            email: 'new@example.com',
+            name: 'New User',
+          },
+        ]),
+        createJsonResponse([]),
+        createJsonResponse([
+          {
+            id: 'referrer-1',
+            referral_code: 'edward-539f1d',
+            referred_by_user_id: null,
+            referred_by_referral_code: null,
+            email: 'edward@alternun.co',
+            name: 'edward',
+          },
+        ]),
+        createJsonResponse([
+          {
+            id: 'user-123',
+            referral_code: 'new-user-123abc',
+            referred_by_user_id: 'referrer-1',
+            referred_by_referral_code: 'edward-539f1d',
+            email: 'new@example.com',
+            name: 'New User',
+          },
+        ]),
+        createJsonResponse([
+          {
+            id: 'user-123',
+            user_id: 'user-123',
+            referred_by_username: null,
+            referred_by_email: null,
+            invitation_code: 'edward-539f1d',
+            referrer_user_id: 'referrer-1',
+            referrer_referral_code: 'edward-539f1d',
+            referral_link: 'https://testnet.airs.alternun.co/auth?referralCode=edward-539f1d',
+            created_at: '2026-05-03T00:00:00Z',
+          },
+        ]),
+      ],
+      calls
+    );
+
+    const service = new ReferralsService();
+    const response = await service.create('user-123', {
+      referral_code: 'edward-5d64df',
+    });
+
+    assert.equal(response.referrer_user_id, 'referrer-1');
+    assert.equal(response.referrer_referral_code, 'edward-539f1d');
+    assert.equal(response.invitation_code, 'edward-539f1d');
+    assert.equal(calls.length, 5);
+    assert.match(calls[1].url, /\/rest\/v1\/users\?referral_code=eq\.edward-5d64df/);
+    assert.match(calls[2].url, /\/rest\/v1\/users\?referral_code=ilike\.edward-%/);
+    assert.deepEqual(JSON.parse(calls[3].init.body), {
+      referred_by_user_id: 'referrer-1',
+      referred_by_referral_code: 'edward-539f1d',
+    });
+  } finally {
+    global.fetch = originalFetch;
+    process.env = originalEnv;
+  }
+});
+
 test('ReferralsService.create rejects self referrals', async () => {
   const originalEnv = { ...process.env };
   const originalFetch = global.fetch;
