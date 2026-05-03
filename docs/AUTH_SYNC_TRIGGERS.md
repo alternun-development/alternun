@@ -9,6 +9,10 @@ When users sign up or update their profile in Supabase auth (`auth.users`), trig
 - `public.users` - application mirror of `auth.users`
 - `public.user_profiles` - user profile information
 
+Referral attribution is also carried forward during the auth mirror update so
+confirmed users keep `referred_by_user_id` and `referred_by_referral_code` in
+`public.users`, and `public.referrals` is kept in sync for the same user.
+
 The current dev setup also includes a one-time backfill migration for older
 `auth.users` rows that were created before the mirror triggers stabilized.
 
@@ -79,7 +83,7 @@ public.users ───────────────→ public.user_profil
 
 If you modify the trigger functions:
 
-1. Edit them in the migration file: `supabase/migrations/20260422_0013_auth_users_source_of_truth.sql`
+1. Edit them in the migration file: `supabase/migrations/20260503_0001_auth_referral_attribution.sql`
 2. Create a new migration with `ALTER OR REPLACE FUNCTION` or `DROP TRIGGER IF EXISTS` + recreate
 3. Run `pnpm run db:migrate` to apply
 
