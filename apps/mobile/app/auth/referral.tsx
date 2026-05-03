@@ -48,7 +48,6 @@ export default function ReferralRoute(): React.JSX.Element {
       pathname: '/auth',
       params: {
         next: readSearchParam(next) === '/auth/referral' ? '/' : readSearchParam(next) ?? '/',
-        mode: 'signup',
         referralCode: resolvedReferralCode ?? undefined,
         username: readSearchParam(username) ?? undefined,
         email: readSearchParam(email) ?? undefined,

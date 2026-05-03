@@ -184,9 +184,7 @@ export default function AuthSignInScreen({
   const shouldForceAuthentikSocialLogin = authentikSocialLoginMode === 'authentik';
   const shouldShowAuthentikSocialButtons =
     shouldUseAuthentikSocialLogin && (shouldForceAuthentikSocialLogin || authentikConfigured);
-  const [mode, setMode] = useState<AuthMode>(
-    initialMode === 'signup' || initialReferralCode?.trim().length ? 'signup' : 'signin'
-  );
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -357,7 +355,6 @@ export default function AuthSignInScreen({
       return;
     }
 
-    setMode('signup');
     setReferralCode(initialReferralCode.trim().toLowerCase());
     setNotice(
       t(
@@ -922,7 +919,6 @@ export default function AuthSignInScreen({
     setPasswordMismatch(false);
     setShowPassword(false);
     setShowConfirmPassword(false);
-    setReferralCode('');
     setPasswordValidationError(null);
     setConfirmationCode('');
     setConfirmationCodeRequired(false);

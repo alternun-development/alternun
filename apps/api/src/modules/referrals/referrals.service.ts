@@ -111,7 +111,7 @@ function buildReferralLink(
   requestedOrigin?: string | null
 ): string {
   const baseUrl = resolveReferralShareBaseUrl(env, requestedOrigin);
-  return `${baseUrl}/auth?mode=signup&referralCode=${encodeURIComponent(referralCode)}`;
+  return `${baseUrl}/auth?referralCode=${encodeURIComponent(referralCode)}`;
 }
 
 function generateReferralCodeFromUser(
