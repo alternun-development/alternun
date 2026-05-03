@@ -1,3 +1,9 @@
+## [1.0.246](https://github.com/alternun-development/alternun/compare/v1.0.245-dev.0...v1.0.246) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(api,repo): referrals.service, referrals.service.test, sync_auth_user_to_app_users, auth-sync-bidirectional.test
+
 ## [1.0.245](https://github.com/alternun-development/alternun/compare/v1.0.244-dev.0...v1.0.245) (2026-05-03)
 
 ### Bug Fixes
