@@ -119,7 +119,16 @@ interface SignUpResult {
 }
 
 interface EmailAuthCapableClient {
-  signUpWithEmail?: (email: string, password: string, locale?: string) => Promise<SignUpResult>;
+  signUpWithEmail?: (
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: {
+      referralCode?: string | null;
+      referredByUsername?: string | null;
+      referredByEmail?: string | null;
+    } | null
+  ) => Promise<SignUpResult>;
   resendEmailConfirmation?: (email: string) => Promise<void>;
   verifyEmailConfirmationCode?: (email: string, code: string) => Promise<void>;
 }
@@ -640,7 +649,14 @@ export default function AuthSignInScreen({
       const result = await client.signUpWithEmail(
         normalizedEmail,
         passwordDraftRef.current,
-        locale
+        locale,
+        pendingReferralData
+          ? {
+              referralCode: pendingReferralData.referral_code,
+              referredByUsername: pendingReferralData.referred_by_username,
+              referredByEmail: pendingReferralData.referred_by_email,
+            }
+          : null
       );
 
       if (result.error && typeof result.error === 'string') {

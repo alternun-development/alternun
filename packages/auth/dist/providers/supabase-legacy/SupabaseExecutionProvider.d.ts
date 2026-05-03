@@ -3,6 +3,7 @@ import type {
   AuthExecutionResult,
   AuthExecutionSignInOptions,
   AuthExecutionSignUpInput,
+  AuthExecutionSignUpReferralInput,
   AuthLinkProviderInput,
   AuthUnlinkProviderInput,
   ExecutionSession,
@@ -12,7 +13,12 @@ import type {
 import type { AuthExecutionProvider } from '../../core/contracts';
 export interface LegacyExecutionClientLike extends AuthClient {
   signInWithEmail(email: string, password: string): Promise<User>;
-  signUpWithEmail?(email: string, password: string, locale?: string): Promise<unknown>;
+  signUpWithEmail?(
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: AuthExecutionSignUpReferralInput | null
+  ): Promise<unknown>;
   resendEmailConfirmation?(email: string): Promise<void>;
   verifyEmailConfirmationCode?(email: string, code: string): Promise<void>;
   setOidcUser?(user: User | null): void;
@@ -34,7 +40,12 @@ export declare class SupabaseExecutionProvider implements AuthExecutionProvider 
   linkProvider(input: AuthLinkProviderInput): Promise<LinkedAuthAccount | null>;
   unlinkProvider(input: AuthUnlinkProviderInput): Promise<void>;
   signInWithEmail(email: string, password: string): Promise<User>;
-  signUpWithEmail(email: string, password: string, locale?: string): Promise<unknown>;
+  signUpWithEmail(
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: AuthExecutionSignUpReferralInput | null
+  ): Promise<unknown>;
   resendEmailConfirmation(email: string): Promise<void>;
   verifyEmailConfirmationCode(email: string, code: string): Promise<void>;
   requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void>;

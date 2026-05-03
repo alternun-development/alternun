@@ -3,6 +3,7 @@ import type {
   AuthExecutionResult,
   AuthExecutionSignInOptions,
   AuthExecutionSignUpInput,
+  AuthExecutionSignUpReferralInput,
   AuthLinkProviderInput,
   AuthUnlinkProviderInput,
   ExecutionSession,
@@ -105,7 +106,12 @@ export declare class BetterAuthExecutionProvider implements AuthExecutionProvide
   linkProvider(input: AuthLinkProviderInput): Promise<LinkedAuthAccount | null>;
   unlinkProvider(input: AuthUnlinkProviderInput): Promise<void>;
   signInWithEmail(email: string, password: string): Promise<User>;
-  signUpWithEmail(email: string, password: string, locale?: string): Promise<AuthExecutionResult>;
+  signUpWithEmail(
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: AuthExecutionSignUpReferralInput | null
+  ): Promise<AuthExecutionResult>;
   resendEmailConfirmation(email: string): Promise<void>;
   verifyEmailConfirmationCode(email: string, code: string): Promise<void>;
   requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void>;
