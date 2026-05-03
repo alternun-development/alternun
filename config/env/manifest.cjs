@@ -380,6 +380,14 @@ const variables = {
       api: 'SUPABASE_ANON_KEY',
     },
   },
+  SUPABASE_SERVICE_ROLE_KEY: {
+    description: 'Supabase service role key for backend operations',
+    secret: true,
+    required: true,
+    targets: {
+      api: 'SUPABASE_SERVICE_ROLE_KEY',
+    },
+  },
   AUTHENTIK_WEBHOOK_SECRET: {
     description: 'Authentik webhook secret',
     secret: true,
