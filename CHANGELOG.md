@@ -1,3 +1,13 @@
+## [1.0.235](https://github.com/alternun-development/alternun/compare/v1.0.234-dev.0...v1.0.235) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** fix(api): referrals.service
+
+### Bug Fixes
+
+- **api:** referrals.service ([ac5aff2](https://github.com/alternun-development/alternun/commit/ac5aff2bd582c759cc630af1a3d22f2ea2e920dd))
+
 ## [1.0.234](https://github.com/alternun-development/alternun/compare/v1.0.233-dev.0...v1.0.234) (2026-05-03)
 
 ### Bug Fixes
