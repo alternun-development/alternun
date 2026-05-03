@@ -3,6 +3,7 @@ import type {
   AuthExecutionResult,
   AuthExecutionSignInOptions,
   AuthExecutionSignUpInput,
+  AuthExecutionSignUpReferralInput,
   AuthLinkProviderInput,
   AuthUnlinkProviderInput,
   ExecutionSession,
@@ -637,7 +638,8 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       return (await this.emailFallbackProvider.signUpWithEmail(
         input.email,
         input.password,
-        input.locale
+        input.locale,
+        input.referral ?? null
       )) as AuthExecutionResult;
     }
 
@@ -686,6 +688,13 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         callbackURL: undefined,
         locale: input.locale,
         metadata: input.metadata,
+        ...(input.referral?.referralCode ? { referral_code: input.referral.referralCode } : {}),
+        ...(input.referral?.referredByUsername
+          ? { referred_by_username: input.referral.referredByUsername }
+          : {}),
+        ...(input.referral?.referredByEmail
+          ? { referred_by_email: input.referral.referredByEmail }
+          : {}),
       } as Parameters<NonNullable<NonNullable<BetterAuthBrowserClientLike['signUp']>['email']>>[0];
       const result = await browserClient.signUp.email(signUpOptions);
 
@@ -727,6 +736,13 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         locale: input.locale,
         callbackURL: undefined,
         metadata: input.metadata,
+        ...(input.referral?.referralCode ? { referral_code: input.referral.referralCode } : {}),
+        ...(input.referral?.referredByUsername
+          ? { referred_by_username: input.referral.referredByUsername }
+          : {}),
+        ...(input.referral?.referredByEmail
+          ? { referred_by_email: input.referral.referredByEmail }
+          : {}),
       }
     );
 
@@ -1012,17 +1028,19 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   async signUpWithEmail(
     email: string,
     password: string,
-    locale?: string
+    locale?: string,
+    referral?: AuthExecutionSignUpReferralInput | null
   ): Promise<AuthExecutionResult> {
     if (this.emailFallbackProvider) {
       return (await this.emailFallbackProvider.signUpWithEmail(
         email,
         password,
-        locale
+        locale,
+        referral ?? null
       )) as AuthExecutionResult;
     }
 
-    return this.signUp({ email, password, locale });
+    return this.signUp({ email, password, locale, referral });
   }
 
   async resendEmailConfirmation(email: string): Promise<void> {

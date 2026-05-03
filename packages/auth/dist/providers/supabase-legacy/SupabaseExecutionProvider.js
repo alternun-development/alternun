@@ -143,15 +143,15 @@ export class SupabaseExecutionProvider {
         };
     }
     async signUp(input) {
-        var _a;
+        var _a, _b;
         if (!this.client.signUpWithEmail) {
             throw new AlternunProviderError('Supabase execution provider does not support sign-up.');
         }
-        const outcome = await this.client.signUpWithEmail(input.email, input.password, input.locale);
+        const outcome = await this.client.signUpWithEmail(input.email, input.password, input.locale, (_a = input.referral) !== null && _a !== void 0 ? _a : null);
         const session = await this.getExecutionSession();
         return {
             session,
-            externalIdentity: (_a = session === null || session === void 0 ? void 0 : session.externalIdentity) !== null && _a !== void 0 ? _a : null,
+            externalIdentity: (_b = session === null || session === void 0 ? void 0 : session.externalIdentity) !== null && _b !== void 0 ? _b : null,
             needsEmailVerification: typeof outcome === 'object' && outcome !== null && 'needsEmailVerification' in outcome
                 ? Boolean(outcome.needsEmailVerification)
                 : !session,
@@ -225,11 +225,11 @@ export class SupabaseExecutionProvider {
     signInWithEmail(email, password) {
         return this.client.signInWithEmail(email, password);
     }
-    signUpWithEmail(email, password, locale) {
+    signUpWithEmail(email, password, locale, referral) {
         if (!this.client.signUpWithEmail) {
             throw new AlternunProviderError('Supabase execution provider does not support sign-up.');
         }
-        return this.client.signUpWithEmail(email, password, locale);
+        return this.client.signUpWithEmail(email, password, locale, referral);
     }
     async resendEmailConfirmation(email) {
         if (!this.client.resendEmailConfirmation) {

@@ -192,6 +192,40 @@ test('AlternunAuthFacade preserves email sign-up flags', async () => {
   assert.equal(result.confirmationEmailSent, false,);
 },);
 
+test('AlternunAuthFacade forwards referral details during email sign-up', async () => {
+  let observedReferral = null;
+
+  const { facade, } = createFacade({
+    executionProvider: {
+      signUpWithEmail: async (email, password, locale, referral) => {
+        observedReferral = { email, password, locale, referral };
+        return {
+          needsEmailVerification: false,
+          emailAlreadyRegistered: false,
+          confirmationEmailSent: false,
+        };
+      },
+    },
+  },);
+
+  await facade.signUpWithEmail('ada@example.com', 'password123', 'en', {
+    referralCode: 'edward-5d64df',
+    referredByUsername: 'edward',
+    referredByEmail: 'edward@alternun.io',
+  },);
+
+  assert.deepEqual(observedReferral, {
+    email: 'ada@example.com',
+    password: 'password123',
+    locale: 'en',
+    referral: {
+      referralCode: 'edward-5d64df',
+      referredByUsername: 'edward',
+      referredByEmail: 'edward@alternun.io',
+    },
+  },);
+},);
+
 test('AlternunAuthFacade delegates email confirmation resend to the execution provider when available', async () => {
   let executionResendCalls = 0;
   let emailResendCalls = 0;

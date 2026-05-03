@@ -564,7 +564,7 @@ export class AlternunMobileAuthClient {
             });
         }
     }
-    async signUpWithEmail(email, password, locale) {
+    async signUpWithEmail(email, password, locale, referral) {
         let normalizedEmail;
         let validatedPassword;
         try {
@@ -597,6 +597,11 @@ export class AlternunMobileAuthClient {
                 password: validatedPassword,
                 name: normalizedEmail.split('@')[0],
                 ...(emailTemplateLocale ? { locale: emailTemplateLocale } : {}),
+                ...((referral === null || referral === void 0 ? void 0 : referral.referralCode) ? { referral_code: referral.referralCode } : {}),
+                ...((referral === null || referral === void 0 ? void 0 : referral.referredByUsername)
+                    ? { referred_by_username: referral.referredByUsername }
+                    : {}),
+                ...((referral === null || referral === void 0 ? void 0 : referral.referredByEmail) ? { referred_by_email: referral.referredByEmail } : {}),
             }),
         });
         let data;

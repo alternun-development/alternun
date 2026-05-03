@@ -59,6 +59,12 @@ export interface EmailSignUpResult {
   confirmationEmailSent: boolean;
 }
 
+export interface EmailSignUpReferralInput {
+  referralCode?: string | null;
+  referredByUsername?: string | null;
+  referredByEmail?: string | null;
+}
+
 interface WalletMetadataEntry {
   provider: WalletProvider;
   address: string;
@@ -807,7 +813,8 @@ export class AlternunMobileAuthClient implements AuthClient {
   async signUpWithEmail(
     email: string,
     password: string,
-    locale?: string
+    locale?: string,
+    referral?: EmailSignUpReferralInput | null
   ): Promise<EmailSignUpResult> {
     let normalizedEmail: string;
     let validatedPassword: string;
@@ -850,6 +857,11 @@ export class AlternunMobileAuthClient implements AuthClient {
         password: validatedPassword,
         name: normalizedEmail.split('@')[0],
         ...(emailTemplateLocale ? { locale: emailTemplateLocale } : {}),
+        ...(referral?.referralCode ? { referral_code: referral.referralCode } : {}),
+        ...(referral?.referredByUsername
+          ? { referred_by_username: referral.referredByUsername }
+          : {}),
+        ...(referral?.referredByEmail ? { referred_by_email: referral.referredByEmail } : {}),
       }),
     });
 

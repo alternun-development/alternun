@@ -98,6 +98,12 @@ export interface AuthExecutionSignUpInput {
   name?: string;
   locale?: string;
   metadata?: Record<string, unknown>;
+  referral?: AuthExecutionSignUpReferralInput | null;
+}
+export interface AuthExecutionSignUpReferralInput {
+  referralCode?: string | null;
+  referredByUsername?: string | null;
+  referredByEmail?: string | null;
 }
 export interface AuthExecutionResult {
   session: ExecutionSession | null;

@@ -8,6 +8,7 @@ import type {
 import type {
   AlternunSession,
   AuthExecutionResult,
+  AuthExecutionSignUpReferralInput,
   ExecutionSession,
   IssuerSession,
 } from '../core/types';
@@ -15,7 +16,12 @@ import type { CreateAuthFacadeInput } from '../core/contracts';
 export interface AlternunAuthFacadeCompat extends AuthClient {
   signInWithGoogle(redirectTo?: string): Promise<void>;
   signInWithDiscord(redirectTo?: string): Promise<void>;
-  signUpWithEmail(email: string, password: string, locale?: string): Promise<AuthExecutionResult>;
+  signUpWithEmail(
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: AuthExecutionSignUpReferralInput | null
+  ): Promise<AuthExecutionResult>;
   resendEmailConfirmation(email: string): Promise<void>;
   verifyEmailConfirmationCode(email: string, code: string): Promise<void>;
   requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void>;
@@ -63,7 +69,12 @@ export declare class AlternunAuthFacade implements AlternunAuthFacadeCompat {
   signInWithGoogle(redirectTo?: string): Promise<void>;
   signInWithDiscord(redirectTo?: string): Promise<void>;
   signIn(options: SignInOptions): Promise<void>;
-  signUpWithEmail(email: string, password: string, locale?: string): Promise<AuthExecutionResult>;
+  signUpWithEmail(
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: AuthExecutionSignUpReferralInput | null
+  ): Promise<AuthExecutionResult>;
   resendEmailConfirmation(email: string): Promise<void>;
   verifyEmailConfirmationCode(email: string, code: string): Promise<void>;
   requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void>;
