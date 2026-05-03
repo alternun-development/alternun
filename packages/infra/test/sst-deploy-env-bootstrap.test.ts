@@ -31,9 +31,10 @@ void test('sst-deploy bootstraps backend env before SSM hydration', () => {
   );
 });
 
-void test('infra env loader bridges CodeBuild SST node_modules to the repo root', () => {
+void test('infra env loader bridges CodeBuild SST node_modules to the infra package graph', () => {
   const source = fs.readFileSync(loadEnvPath, 'utf8');
 
   assert.match(source, /bridge_codebuild_sst_node_modules\(\)/);
-  assert.match(source, /Bridged CodeBuild SST node_modules cache to repo root node_modules\./);
+  assert.match(source, /source_node_modules="\$repo_root\/packages\/infra\/node_modules"/);
+  assert.match(source, /Bridged CodeBuild SST node_modules cache to repo package node_modules\./);
 });

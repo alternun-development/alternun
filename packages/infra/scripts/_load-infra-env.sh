@@ -47,7 +47,8 @@ load_env_file() {
 }
 
 bridge_codebuild_sst_node_modules() {
-  local script_dir infra_dir repo_root sst_dir resolved_sst_dir cache_root bridge_node_modules repo_node_modules
+  local script_dir infra_dir repo_root sst_dir resolved_sst_dir cache_root source_node_modules
+  local bridge_targets target
 
   if [ -z "${CODEBUILD_BUILD_ID:-}" ]; then
     return 0
@@ -57,9 +58,15 @@ bridge_codebuild_sst_node_modules() {
   infra_dir=$(cd "$script_dir/.." && pwd)
   repo_root=$(cd "$infra_dir/../.." && pwd)
   sst_dir="$infra_dir/.sst"
-  repo_node_modules="$repo_root/node_modules"
+  if [ -d "$repo_root/packages/infra/node_modules" ]; then
+    source_node_modules="$repo_root/packages/infra/node_modules"
+  elif [ -d "$repo_root/node_modules" ]; then
+    source_node_modules="$repo_root/node_modules"
+  else
+    return 0
+  fi
 
-  if [ ! -e "$sst_dir" ] || [ ! -d "$repo_node_modules" ]; then
+  if [ ! -e "$sst_dir" ]; then
     return 0
   fi
 
@@ -77,20 +84,31 @@ bridge_codebuild_sst_node_modules() {
       ;;
   esac
 
-  bridge_node_modules="${cache_root}/node_modules"
+  bridge_targets=$(printf '%s\n' \
+    "${cache_root}/node_modules" \
+    "${cache_root}/packages/infra/node_modules" \
+    "${cache_root}/packages/infra/.sst/node_modules" \
+    "${cache_root}/packages/infra/.sst/platform/node_modules")
 
-  if [ -L "$bridge_node_modules" ] && [ "$(readlink -f "$bridge_node_modules" 2>/dev/null || true)" = "$(readlink -f "$repo_node_modules" 2>/dev/null || true)" ]; then
-    return 0
-  fi
+  while IFS= read -r target; do
+    [ -n "$target" ] || continue
 
-  if [ -e "$bridge_node_modules" ] && [ ! -L "$bridge_node_modules" ]; then
-    echo "WARN: Skipping SST node_modules bridge because ${bridge_node_modules} already exists and is not a symlink." >&2
-    return 0
-  fi
+    if [ -L "$target" ] && [ "$(readlink -f "$target" 2>/dev/null || true)" = "$(readlink -f "$source_node_modules" 2>/dev/null || true)" ]; then
+      continue
+    fi
 
-  mkdir -p "$cache_root"
-  ln -sfn "$repo_node_modules" "$bridge_node_modules"
-  echo "Bridged CodeBuild SST node_modules cache to repo root node_modules."
+    if [ -e "$target" ] && [ ! -L "$target" ]; then
+      echo "WARN: Skipping SST node_modules bridge because ${target} already exists and is not a symlink." >&2
+      continue
+    fi
+
+    mkdir -p "$(dirname "$target")"
+    ln -sfn "$source_node_modules" "$target"
+  done <<EOF
+$bridge_targets
+EOF
+
+  echo "Bridged CodeBuild SST node_modules cache to repo package node_modules."
 }
 
 load_infra_env() {
