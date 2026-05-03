@@ -1,3 +1,9 @@
+## [1.0.239](https://github.com/alternun-development/alternun/compare/v1.0.238-dev.0...v1.0.239) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile): referrals.service, referrals.controller.test, referrals.service.test, auth
+
 ## [1.0.238](https://github.com/alternun-development/alternun/compare/v1.0.237-dev.0...v1.0.238) (2026-05-03)
 
 ### Bug Fixes
