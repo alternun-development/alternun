@@ -30,6 +30,25 @@ is_truthy() {
   esac
 }
 
+print_sst_diagnostics() {
+  local log_dir="${INFRA_DIR}/.sst/log"
+
+  if [ -f "${log_dir}/sst.log" ]; then
+    echo "Recent SST log tail (${log_dir}/sst.log):" >&2
+    tail -n 80 "${log_dir}/sst.log" >&2 || true
+  fi
+
+  if [ -f "${log_dir}/pulumi.log" ]; then
+    echo "Recent SST log tail (${log_dir}/pulumi.log):" >&2
+    tail -n 80 "${log_dir}/pulumi.log" >&2 || true
+  fi
+
+  if [ -f "${log_dir}/pulumi.err.log" ]; then
+    echo "Recent SST log tail (${log_dir}/pulumi.err.log):" >&2
+    tail -n 80 "${log_dir}/pulumi.err.log" >&2 || true
+  fi
+}
+
 SUPABASE_URL=${EXPO_PUBLIC_SUPABASE_URL:-}
 SUPABASE_KEY=${EXPO_PUBLIC_SUPABASE_KEY:-${EXPO_PUBLIC_SUPABASE_ANON_KEY:-}}
 WALLETCONNECT_PROJECT_ID=${EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID:-}
@@ -46,16 +65,32 @@ fi
 set_secret_if_present() {
   local key=$1
   local value=$2
+  local tmp_log exit_code
 
   if [ -z "$value" ]; then
     return 0
   fi
 
   echo "Setting SST secret: ${key} (stage=${STAGE})"
+  tmp_log=$(mktemp)
+  set +e
   (
     cd "$INFRA_DIR"
     npx --yes sst secret set "$key" "$value" --stage "$STAGE"
-  )
+  ) >"$tmp_log" 2>&1
+  exit_code=$?
+  set -e
+
+  if [ "$exit_code" -ne 0 ]; then
+    echo "ERROR: Failed to set SST secret ${key} (stage=${STAGE})." >&2
+    cat "$tmp_log" >&2
+    print_sst_diagnostics
+    rm -f "$tmp_log"
+    return "$exit_code"
+  fi
+
+  cat "$tmp_log"
+  rm -f "$tmp_log"
 }
 
 set_secret_if_present "ExpoPublicSupabaseUrl" "$SUPABASE_URL"
