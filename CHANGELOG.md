@@ -1,3 +1,9 @@
+## [1.0.234](https://github.com/alternun-development/alternun/compare/v1.0.233-dev.0...v1.0.234) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,auth): signup.service.test, AuthSignInScreen, types, AlternunAuthFacade
+
 ## [1.0.233](https://github.com/alternun-development/alternun/compare/v1.0.232-dev.0...v1.0.233) (2026-05-03)
 
 ### Bug Fixes
