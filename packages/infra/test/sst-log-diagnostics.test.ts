@@ -19,4 +19,5 @@ void test('sst helpers print log tails when secret sync or deploy fails', () => 
   assert.match(sstDeploySource, /print_recent_sst_logs\(\)/);
   assert.match(sstDeploySource, /Recent SST log tail/);
   assert.match(sstDeploySource, /tail -n 120 "\$log_file"/);
+  assert.match(sstDeploySource, /sst deploy --stage "\$STACK" --yes --print-logs/);
 });
