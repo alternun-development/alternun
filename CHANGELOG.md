@@ -1,3 +1,9 @@
+## [1.0.233](https://github.com/alternun-development/alternun/compare/v1.0.232-dev.0...v1.0.233) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,auth): auth-exchange.module, signup-request.dto, signup.service, signup.types
+
 ## [1.0.232](https://github.com/alternun-development/alternun/compare/v1.0.231-dev.0...v1.0.232) (2026-05-02)
 
 ### Bug Fixes
