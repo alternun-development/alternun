@@ -50,6 +50,8 @@ Notes:
   By default, uncommitted tracked changes are automatically staged and committed
   with a generated conventional-commit message before the release starts.
   New untracked source files are also staged unless they look like build artefacts.
+  On the normal development release path, pnpm release:patch also deploys the
+  live testnet API via ./scripts/deploy-testnet-api.sh --no-prompt.
   Use --allow-dirty to skip this and proceed with a dirty tree (no auto-commit).
 `);
 }
@@ -547,6 +549,11 @@ function pushRelease({ remote, dryRun, targetBranch }) {
   console.log(`Pushed ${branchToPush} with release tags.`);
 }
 
+function deployTestnetApi({ dryRun }) {
+  console.log('Deploying testnet API via ./scripts/deploy-testnet-api.sh --no-prompt');
+  run('bash', ['scripts/deploy-testnet-api.sh', '--no-prompt'], { dryRun });
+}
+
 function buildCompareUrl(remoteUrl, base, head) {
   const normalized = remoteUrl.replace(/\.git$/, '');
 
@@ -915,6 +922,10 @@ function main() {
       dryRun: options.dryRun,
       targetBranch: options.targetBranch,
     });
+  }
+
+  if (!options.promote && target === 'patch' && releaseBranch === 'develop' && directPushEnabled) {
+    deployTestnetApi({ dryRun: options.dryRun });
   }
 
   if (options.promote) {

@@ -9,7 +9,7 @@ For production promotion, see `docs/release-promotion-process.md`.
 The release/version flow and the live testnet deploy flow are separate:
 
 ```text
-pnpm release:patch -> version/tag update -> branch-based AWS pipelines or explicit stage-aware deploys
+pnpm release:patch -> version/tag update -> automatic testnet API deploy via dashboard-dev
 ```
 
 Current live testnet ownership:
@@ -40,7 +40,9 @@ On `develop`, the tag/version metadata stays on the development manifest. `pnpm 
 
 ### 2. Deploy to Live Testnet
 
-For the live testnet API/auth runtime:
+`pnpm release:patch` now runs the live testnet API/auth deploy automatically through `dashboard-dev`.
+
+For manual recovery or one-off redeploys:
 
 ```bash
 pnpm infra:deploy:dashboard-dev
@@ -53,7 +55,7 @@ pnpm infra:deploy:dev
 pnpm infra:deploy:dashboard-dev
 ```
 
-The disabled `.github/workflows/release-deploy.yml` file is reference-only. The active deploy path is the stage-aware AWS pipeline or an explicit `dashboard-dev` deploy.
+The disabled `.github/workflows/release-deploy.yml` file is reference-only. The active deploy path is the stage-aware AWS pipeline or the `dashboard-dev` deploy wrapper.
 
 ### 3. Verify
 
@@ -117,7 +119,7 @@ APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 
 ## Summary
 
-- `release:patch` manages versioning
+- `release:patch` manages versioning and deploys the live testnet API
 - `dashboard-dev` is the single correct live testnet API/admin stack
 - `dev` is the testnet bundle stack
 - `identity-dev` is the testnet identity stack
