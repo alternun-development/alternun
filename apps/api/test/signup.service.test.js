@@ -6,6 +6,7 @@ const { resolveSignupProviderName } = require('../src/modules/auth-exchange/serv
 
 test('SignupService calls Supabase signup with a derived name', async () => {
   let observedBody = null;
+  let observedReferral = null;
   const originalEnv = { ...process.env };
 
   try {
@@ -28,12 +29,19 @@ test('SignupService calls Supabase signup with a derived name', async () => {
           },
         };
       },
+    }, async () => false, {
+      create: async (userId, dto) => {
+        observedReferral = { userId, dto };
+      },
     });
 
     const result = await service.signUp({
       email: 'ada@example.com',
       password: 'Password123!',
       locale: 'en',
+      referral_code: 'edward-5d64df',
+      referred_by_username: 'edward',
+      referred_by_email: 'edward@alternun.io',
     });
 
     assert.deepEqual(observedBody, {
@@ -42,6 +50,17 @@ test('SignupService calls Supabase signup with a derived name', async () => {
       password: 'Password123!',
       callbackURL: 'https://airs.alternun.co/auth/callback',
       locale: 'en',
+      referral_code: 'edward-5d64df',
+      referred_by_username: 'edward',
+      referred_by_email: 'edward@alternun.io',
+    });
+    assert.deepEqual(observedReferral, {
+      userId: 'user-123',
+      dto: {
+        referral_code: 'edward-5d64df',
+        referred_by_username: 'edward',
+        referred_by_email: 'edward@alternun.io',
+      },
     });
     assert.deepEqual(result, {
       needsEmailVerification: true,

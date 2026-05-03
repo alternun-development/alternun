@@ -519,6 +519,7 @@ test('BetterAuthExecutionProvider uses the Supabase fallback for email flows whe
   let betterAuthSignUpCalls = 0;
   let observedBetterAuthSignUpOptions = null;
   let fallbackUser = null;
+  let observedFallbackSignUpArgs = null;
   const fallbackCalls = {
     signInWithEmail: 0,
     signUpWithEmail: 0,
@@ -578,8 +579,9 @@ test('BetterAuthExecutionProvider uses the Supabase fallback for email flows whe
         };
         return fallbackUser;
       },
-      signUpWithEmail: async () => {
+      signUpWithEmail: async (...args) => {
         fallbackCalls.signUpWithEmail += 1;
+        observedFallbackSignUpArgs = args;
         return {
           needsEmailVerification: false,
           emailAlreadyRegistered: false,
@@ -632,12 +634,26 @@ test('BetterAuthExecutionProvider uses the Supabase fallback for email flows whe
   assert.equal(betterAuthSignInCalls, 0);
   assert.equal(fallbackCalls.signInWithEmail, 2);
 
-  const signUpResult = await provider.signUpWithEmail('ada@example.com', 'password123', 'en');
+  const signUpResult = await provider.signUpWithEmail('ada@example.com', 'password123', 'en', {
+    referralCode: 'edward-5d64df',
+    referredByUsername: 'edward',
+    referredByEmail: 'edward@alternun.io',
+  });
   assert.equal(betterAuthSignUpCalls, 0);
   assert.equal(observedBetterAuthSignUpOptions, null);
   assert.equal(signUpResult.needsEmailVerification, false);
   assert.equal(signUpResult.confirmationEmailSent, false);
   assert.equal(fallbackCalls.signUpWithEmail, 1);
+  assert.deepEqual(observedFallbackSignUpArgs, [
+    'ada@example.com',
+    'password123',
+    'en',
+    {
+      referralCode: 'edward-5d64df',
+      referredByUsername: 'edward',
+      referredByEmail: 'edward@alternun.io',
+    },
+  ]);
 
   await provider.resendEmailConfirmation('ada@example.com');
   await provider.verifyEmailConfirmationCode('ada@example.com', '123456');
@@ -811,7 +827,11 @@ test('BetterAuthExecutionProvider derives a sign-up name for the Better Auth HTT
     },
   });
 
-  const result = await provider.signUpWithEmail('ada@example.com', 'password123', 'en');
+  const result = await provider.signUpWithEmail('ada@example.com', 'password123', 'en', {
+    referralCode: 'edward-5d64df',
+    referredByUsername: 'edward',
+    referredByEmail: 'edward@alternun.io',
+  });
 
   assert.equal(observedUrl, 'https://api.example.com/auth/sign-up/email');
   assert.deepEqual(observedBody, {
@@ -819,6 +839,9 @@ test('BetterAuthExecutionProvider derives a sign-up name for the Better Auth HTT
     password: 'password123',
     name: 'ada',
     locale: 'en',
+    referral_code: 'edward-5d64df',
+    referred_by_username: 'edward',
+    referred_by_email: 'edward@alternun.io',
   });
   assert.equal(result.session, null);
   assert.equal(result.externalIdentity?.provider, 'email');

@@ -30,6 +30,11 @@ export interface EmailSignUpResult {
   emailAlreadyRegistered: boolean;
   confirmationEmailSent: boolean;
 }
+export interface EmailSignUpReferralInput {
+  referralCode?: string | null;
+  referredByUsername?: string | null;
+  referredByEmail?: string | null;
+}
 export declare function isWalletProvider(provider?: string): provider is WalletProvider;
 export declare class AlternunMobileAuthClient implements AuthClient {
   runtime: AuthRuntime;
@@ -68,7 +73,12 @@ export declare class AlternunMobileAuthClient implements AuthClient {
   signInWithGoogle(redirectTo?: string): Promise<void>;
   signInWithDiscord(redirectTo?: string): Promise<void>;
   private signInWithSocialProvider;
-  signUpWithEmail(email: string, password: string, locale?: string): Promise<EmailSignUpResult>;
+  signUpWithEmail(
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: EmailSignUpReferralInput | null
+  ): Promise<EmailSignUpResult>;
   resendEmailConfirmation(email: string): Promise<void>;
   verifyEmailConfirmationCode(email: string, code: string): Promise<void>;
   signOut(): Promise<void>;

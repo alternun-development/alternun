@@ -358,10 +358,10 @@ export class AlternunAuthFacade {
             throw toAlternunAuthError(error);
         }
     }
-    async signUpWithEmail(email, password, locale) {
+    async signUpWithEmail(email, password, locale, referral) {
         var _a, _b, _c, _d;
         if (this.executionProvider.signUpWithEmail) {
-            const outcome = await this.executionProvider.signUpWithEmail(email, password, locale);
+            const outcome = await this.executionProvider.signUpWithEmail(email, password, locale, referral);
             const outcomeRecord = outcome;
             const result = isEmailAuthResult(outcome)
                 ? {
@@ -399,6 +399,7 @@ export class AlternunAuthFacade {
             email,
             password,
             locale,
+            referral,
         });
         if ((_a = result.session) === null || _a === void 0 ? void 0 : _a.externalIdentity) {
             this.currentExecutionSession = result.session;
