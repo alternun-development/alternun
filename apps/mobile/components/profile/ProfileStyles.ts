@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 export const profileStylesEnhanced = (isDark: boolean) => {
@@ -66,11 +67,14 @@ export const profileStylesEnhanced = (isDark: boolean) => {
       backgroundColor: colors.cardBg,
       borderColor: colors.cardBorder,
       alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.15,
-      shadowRadius: 16,
-      elevation: 5,
+      ...createShadowStyle({
+        color: '#000',
+        offsetX: 0,
+        offsetY: 8,
+        opacity: 0.15,
+        radius: 16,
+        elevation: 5,
+      }),
     },
     avatarWrap: {
       width: 80,
@@ -131,11 +135,14 @@ export const profileStylesEnhanced = (isDark: boolean) => {
       borderWidth: 1,
       backgroundColor: colors.cardBg,
       borderColor: colors.cardBorder,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.08,
-      shadowRadius: 12,
-      elevation: 3,
+      ...createShadowStyle({
+        color: '#000',
+        offsetX: 0,
+        offsetY: 4,
+        opacity: 0.08,
+        radius: 12,
+        elevation: 3,
+      }),
     },
     infoTitle: {
       fontFamily: ANEK_EXPANDED_FAMILY,

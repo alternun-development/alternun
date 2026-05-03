@@ -6,6 +6,7 @@ import { Plus, ArrowUpFromLine, Flame, ArrowRightLeft, X } from 'lucide-react-na
 import { StatusPill } from '@alternun/ui';
 import SearchFilterBar, { type SearchFilterOption } from '../common/SearchFilterBar';
 import { ImpactToken, TokenState } from './types';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 
 interface TokenPortfolioProps {
   tokens: ImpactToken[];
@@ -327,11 +328,14 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(255,255,255,0.08)',
     borderRadius: 16,
     padding: 14,
-    shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 4,
+    ...createShadowStyle({
+      color: '#00001e',
+      offsetX: 0,
+      offsetY: 8,
+      opacity: 0.4,
+      radius: 12,
+      elevation: 4,
+    }),
   },
   tokenHeader: {
     flexDirection: 'row',

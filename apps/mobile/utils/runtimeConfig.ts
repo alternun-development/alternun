@@ -20,6 +20,14 @@ function isLoopbackHostname(hostname: string): boolean {
   );
 }
 
+function isLoopbackApiUrl(value: string): boolean {
+  try {
+    return isLoopbackHostname(new URL(value).hostname);
+  } catch {
+    return false;
+  }
+}
+
 function deriveApiUrlFromOrigin(origin: string): string {
   try {
     const url = new URL(origin);
@@ -49,17 +57,26 @@ export function resolveMobileApiBaseUrl(
 ): string {
   const configuredApiUrl =
     trimRuntimeValue(explicitApiUrl) ?? trimRuntimeValue(process.env.EXPO_PUBLIC_API_URL);
-  if (configuredApiUrl) {
-    return configuredApiUrl;
-  }
-
   const runtimeOrigin =
     trimRuntimeValue(explicitOrigin) ??
     trimRuntimeValue(process.env.EXPO_PUBLIC_ORIGIN) ??
-    trimRuntimeValue(typeof window !== 'undefined' ? window.location.origin : undefined);
+    trimRuntimeValue(typeof window !== 'undefined' ? window.location?.origin : undefined);
 
   if (runtimeOrigin) {
-    return deriveApiUrlFromOrigin(runtimeOrigin);
+    const derivedApiUrl = deriveApiUrlFromOrigin(runtimeOrigin);
+    if (configuredApiUrl && isLoopbackHostname(new URL(runtimeOrigin).hostname)) {
+      return isLoopbackApiUrl(configuredApiUrl) ? configuredApiUrl : derivedApiUrl;
+    }
+
+    if (configuredApiUrl) {
+      return configuredApiUrl;
+    }
+
+    return derivedApiUrl;
+  }
+
+  if (configuredApiUrl) {
+    return configuredApiUrl;
   }
 
   return DEFAULT_TESTNET_API_URL;

@@ -20,6 +20,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 import { createTypographyStyles } from '../theme/typography';
 import { ANEK_EXPANDED_FAMILY, SCULPIN_FONT_FAMILY } from '../theme/fonts';
 import { Image as ExpoImage } from 'expo-image';
@@ -91,11 +92,14 @@ function HeroGlassButton({
           backgroundColor: hovered ? pillBgColorHover : pillBgColor,
           borderColor: hovered ? pillBorderColorHover : pillBorderColor,
           transform: [{ scale: pressed ? 0.98 : hovered ? 1.02 : 1 }],
-          shadowColor: '#000',
-          shadowOpacity: hovered ? 0.25 : 0.15,
-          shadowOffset: { width: 0, height: hovered ? 12 : 8 },
-          shadowRadius: hovered ? 24 : 16,
-          elevation: hovered ? 8 : 6,
+          ...createShadowStyle({
+            color: '#000',
+            offsetX: 0,
+            offsetY: hovered ? 12 : 8,
+            opacity: hovered ? 0.25 : 0.15,
+            radius: hovered ? 24 : 16,
+            elevation: hovered ? 8 : 6,
+          }),
         } as StyleProp<ViewStyle>)
       }
     >
@@ -1530,11 +1534,14 @@ const styles = createTypographyStyles({
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 6,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 4,
+      opacity: 0.18,
+      radius: 12,
+      elevation: 6,
+    }),
   },
   headerNavMobileAvatarCircle: {
     width: 42,
@@ -1552,11 +1559,14 @@ const styles = createTypographyStyles({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 2,
+      opacity: 0.12,
+      radius: 8,
+      elevation: 4,
+    }),
   },
   headerNavMobileDropdown: {
     position: 'absolute',
@@ -1566,11 +1576,14 @@ const styles = createTypographyStyles({
     borderRadius: 20,
     borderWidth: 1,
     paddingVertical: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 12,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 12,
+      opacity: 0.3,
+      radius: 20,
+      elevation: 12,
+    }),
   },
   headerNavMobileItem: {
     paddingHorizontal: 18,
@@ -1633,11 +1646,14 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     padding: 12,
     zIndex: 100,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 10,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 8,
+      opacity: 0.2,
+      radius: 16,
+      elevation: 10,
+    }),
   },
 
   // ── Logged-out: pill nav container ────────────────────────────────────────
@@ -1648,11 +1664,14 @@ const styles = createTypographyStyles({
     borderRadius: 999,
     borderWidth: 2,
     overflow: 'visible',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
-    elevation: 6,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 10,
+      opacity: 0.18,
+      radius: 18,
+      elevation: 6,
+    }),
   },
   headerNavPillBlur: {
     ...StyleSheet.absoluteFill,
@@ -1729,11 +1748,14 @@ const styles = createTypographyStyles({
     justifyContent: 'center',
     borderRadius: 21,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.14,
-    shadowRadius: 12,
-    elevation: 5,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 6,
+      opacity: 0.14,
+      radius: 12,
+      elevation: 5,
+    }),
   },
   headerNavSettingsButtonTint: {
     ...StyleSheet.absoluteFill,
@@ -1747,11 +1769,14 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     padding: 12,
     gap: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.22,
-    shadowRadius: 18,
-    elevation: 14,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 14,
+      opacity: 0.22,
+      radius: 18,
+      elevation: 14,
+    }),
     zIndex: 60,
   },
 

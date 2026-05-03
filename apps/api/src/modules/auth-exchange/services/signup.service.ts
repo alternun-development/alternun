@@ -14,6 +14,7 @@ import {
 import { createSignupProvider } from './signup/signup.provider.factory';
 import { sendSignupWelcomeEmail } from '../signup-welcome.email';
 import type { SignupProvider, SignupResult } from './signup/signup.types';
+import { ReferralsService } from '../../referrals/referrals.service';
 
 type AuthUserLookup = (email: string) => Promise<boolean>;
 
@@ -25,7 +26,9 @@ export class SignupService {
     @Optional()
     private readonly authApi?: SignupProvider,
     @Optional()
-    private readonly authUserLookup: AuthUserLookup = hasUnverifiedAuthUserByEmail
+    private readonly authUserLookup: AuthUserLookup = hasUnverifiedAuthUserByEmail,
+    @Optional()
+    private readonly referralsService?: ReferralsService
   ) {}
 
   private resolveProvider(): SignupProvider {
@@ -70,6 +73,11 @@ export class SignupService {
           password,
           callbackURL,
           ...(locale ? { locale } : {}),
+          ...(request.referral_code ? { referral_code: request.referral_code } : {}),
+          ...(request.referred_by_username
+            ? { referred_by_username: request.referred_by_username }
+            : {}),
+          ...(request.referred_by_email ? { referred_by_email: request.referred_by_email } : {}),
         },
       });
 
@@ -85,6 +93,21 @@ export class SignupService {
 
       // Send signup welcome email asynchronously
       if (response.user) {
+        if (this.referralsService) {
+          await this.referralsService
+            .create(response.user.id, {
+              referral_code: request.referral_code,
+              referred_by_username: request.referred_by_username,
+              referred_by_email: request.referred_by_email,
+            })
+            .catch((err) => {
+              this.logger.warn('Failed to persist referral at signup time', {
+                email,
+                error: err instanceof Error ? err.message : String(err),
+              });
+            });
+        }
+
         this.sendSignupWelcomeEmailAsync(email, name, locale).catch((err) => {
           this.logger.warn('Failed to send signup welcome email', {
             email,

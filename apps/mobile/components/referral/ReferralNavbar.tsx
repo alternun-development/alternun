@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 
 interface ReferralNavbarProps {
   user?: { id: string; email?: string } | null;
@@ -295,11 +296,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     minWidth: 180,
     zIndex: 1000,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 10,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 4,
+      opacity: 0.3,
+      radius: 8,
+      elevation: 10,
+    }),
   },
   avatarDropdown: {
     right: 0,

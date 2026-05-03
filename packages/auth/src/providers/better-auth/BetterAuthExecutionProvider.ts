@@ -844,49 +844,7 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async refreshExecutionSession(): Promise<ExecutionSession | null> {
-    const browserClient = await this.resolveBrowserClient();
-    if (browserClient?.refreshSession) {
-      try {
-        const session = await browserClient.refreshSession();
-        const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
-        if (normalized) {
-          return normalized;
-        }
-      } catch {
-        // No Better Auth cookie is expected for legacy email sessions.
-      }
-    }
-
-    if (this.client?.refreshSession) {
-      try {
-        const session = await this.client.refreshSession();
-        const normalized = normalizeSession(session, this.options.defaultProvider ?? 'better-auth');
-        if (normalized) {
-          return normalized;
-        }
-      } catch {
-        // Keep probing the configured fallbacks below.
-      }
-    }
-
-    if (this.allowLegacySessionFallback) {
-      const fallbackSession = await this.getFallbackExecutionSession();
-      if (fallbackSession) {
-        return fallbackSession;
-      }
-    }
-
-    if (!this.options.baseUrl) {
-      return this.getExecutionSession();
-    }
-
-    const response = await callJson(
-      this.fetchFn,
-      this.requireBaseUrl(),
-      this.options.refreshPath ?? '/auth/session/refresh',
-      {}
-    );
-    return normalizeSession(response, this.options.defaultProvider ?? 'better-auth');
+    return this.getExecutionSession();
   }
 
   async linkProvider(input: AuthLinkProviderInput): Promise<LinkedAuthAccount | null> {
@@ -1172,6 +1130,13 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async getSessionToken(): Promise<string | null> {
+    if (this.allowLegacySessionFallback) {
+      const fallbackSession = await this.getFallbackExecutionSession();
+      if (fallbackSession?.accessToken) {
+        return fallbackSession.accessToken;
+      }
+    }
+
     const session = await this.getExecutionSession();
     return session?.accessToken ?? null;
   }

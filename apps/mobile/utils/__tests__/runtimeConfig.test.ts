@@ -39,4 +39,12 @@ describe('resolveMobileApiBaseUrl', () => {
       'http://localhost:8082'
     );
   });
+
+  it('prefers a loopback origin over a stale non-local api url', () => {
+    process.env.EXPO_PUBLIC_API_URL = 'https://testnet.api.alternun.co';
+
+    expect(resolveMobileApiBaseUrl(undefined, 'http://localhost:8081')).toBe(
+      'http://localhost:8082'
+    );
+  });
 });

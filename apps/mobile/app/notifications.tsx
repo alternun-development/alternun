@@ -8,6 +8,7 @@ import {
   View,
   Modal,
 } from 'react-native';
+import { createShadowStyle } from '../components/theme/deprecatedStylesHelper';
 import {
   Bell,
   ArrowLeft,
@@ -538,11 +539,14 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     borderRadius: 16,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 4,
+      opacity: 0.15,
+      radius: 8,
+      elevation: 5,
+    }),
   },
   modalIconContainer: {
     marginBottom: 16,

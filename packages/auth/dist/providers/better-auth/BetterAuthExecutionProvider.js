@@ -598,43 +598,7 @@ export class BetterAuthExecutionProvider {
         return normalizeSession(response, (_m = this.options.defaultProvider) !== null && _m !== void 0 ? _m : 'better-auth');
     }
     async refreshExecutionSession() {
-        var _a, _b, _c, _d, _e;
-        const browserClient = await this.resolveBrowserClient();
-        if (browserClient === null || browserClient === void 0 ? void 0 : browserClient.refreshSession) {
-            try {
-                const session = await browserClient.refreshSession();
-                const normalized = normalizeSession(session, (_a = this.options.defaultProvider) !== null && _a !== void 0 ? _a : 'better-auth');
-                if (normalized) {
-                    return normalized;
-                }
-            }
-            catch {
-                // No Better Auth cookie is expected for legacy email sessions.
-            }
-        }
-        if ((_b = this.client) === null || _b === void 0 ? void 0 : _b.refreshSession) {
-            try {
-                const session = await this.client.refreshSession();
-                const normalized = normalizeSession(session, (_c = this.options.defaultProvider) !== null && _c !== void 0 ? _c : 'better-auth');
-                if (normalized) {
-                    return normalized;
-                }
-            }
-            catch {
-                // Keep probing the configured fallbacks below.
-            }
-        }
-        if (this.allowLegacySessionFallback) {
-            const fallbackSession = await this.getFallbackExecutionSession();
-            if (fallbackSession) {
-                return fallbackSession;
-            }
-        }
-        if (!this.options.baseUrl) {
-            return this.getExecutionSession();
-        }
-        const response = await callJson(this.fetchFn, this.requireBaseUrl(), (_d = this.options.refreshPath) !== null && _d !== void 0 ? _d : '/auth/session/refresh', {});
-        return normalizeSession(response, (_e = this.options.defaultProvider) !== null && _e !== void 0 ? _e : 'better-auth');
+        return this.getExecutionSession();
     }
     async linkProvider(input) {
         var _a, _b, _c, _d, _e;
@@ -865,6 +829,12 @@ export class BetterAuthExecutionProvider {
     }
     async getSessionToken() {
         var _a;
+        if (this.allowLegacySessionFallback) {
+            const fallbackSession = await this.getFallbackExecutionSession();
+            if (fallbackSession === null || fallbackSession === void 0 ? void 0 : fallbackSession.accessToken) {
+                return fallbackSession.accessToken;
+            }
+        }
         const session = await this.getExecutionSession();
         return (_a = session === null || session === void 0 ? void 0 : session.accessToken) !== null && _a !== void 0 ? _a : null;
     }

@@ -40,6 +40,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 import { getLocaleLabel } from '@alternun/i18n';
 import { ToastSystem, type ToastItem } from '@alternun/ui';
 import { useRouter } from 'expo-router';
@@ -127,6 +128,8 @@ export interface AuthSignInScreenProps {
   onCancel?: () => void;
   presentation?: 'screen' | 'modal';
   authReturnTo?: string;
+  initialMode?: AuthMode;
+  initialReferralCode?: string | null;
 }
 
 function isEmailAuthCapable(client: unknown): client is EmailAuthCapableClient {
@@ -151,6 +154,8 @@ export default function AuthSignInScreen({
   onCancel,
   presentation = 'screen',
   authReturnTo,
+  initialMode = 'signin',
+  initialReferralCode = null,
 }: AuthSignInScreenProps): JSX.Element {
   const { signInWithEmail, signIn, loading, error, client } = useAuth();
   const { t, locale } = useAppTranslation('mobile');
@@ -170,7 +175,9 @@ export default function AuthSignInScreen({
   const shouldForceAuthentikSocialLogin = authentikSocialLoginMode === 'authentik';
   const shouldShowAuthentikSocialButtons =
     shouldUseAuthentikSocialLogin && (shouldForceAuthentikSocialLogin || authentikConfigured);
-  const [mode, setMode] = useState<AuthMode>('signin');
+  const [mode, setMode] = useState<AuthMode>(
+    initialMode === 'signup' || initialReferralCode?.trim().length ? 'signup' : 'signin'
+  );
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -186,7 +193,9 @@ export default function AuthSignInScreen({
   const [authStep, setAuthStep] = useState<AuthStep>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [referralCode, setReferralCode] = useState(() => readPendingReferralCode() ?? '');
+  const [referralCode, setReferralCode] = useState(
+    () => initialReferralCode?.trim() ?? readPendingReferralCode() ?? ''
+  );
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [invalidEmail, setInvalidEmail] = useState(false);
   const [passwordMismatch, setPasswordMismatch] = useState(false);
@@ -333,6 +342,22 @@ export default function AuthSignInScreen({
 
     return (): void => clearTimeout(timeout);
   }, [resendCooldown]);
+
+  useEffect(() => {
+    if (!initialReferralCode?.trim()) {
+      return;
+    }
+
+    setMode('signup');
+    setReferralCode(initialReferralCode.trim().toLowerCase());
+    setNotice(
+      t(
+        'authModal.notices.referralCodeDetected',
+        undefined,
+        `Referral code detected: ${initialReferralCode.trim()}`
+      )
+    );
+  }, [initialReferralCode, t]);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -2043,11 +2068,14 @@ const styles = createTypographyStyles({
     width: '100%',
     maxWidth: 520,
     paddingTop: 24,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.4,
-    shadowRadius: 24,
-    elevation: 8,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 10,
+      opacity: 0.4,
+      radius: 24,
+      elevation: 8,
+    }),
   },
   cardModalCompact: {
     maxWidth: '100%',
@@ -2149,11 +2177,14 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     backgroundColor: '#07071a',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.7,
-    shadowRadius: 16,
-    elevation: 24,
+    ...createShadowStyle({
+      color: '#000000',
+      offsetX: 0,
+      offsetY: 8,
+      opacity: 0.7,
+      radius: 16,
+      elevation: 24,
+    }),
   },
   settingsDropdownCompact: {
     position: 'absolute',

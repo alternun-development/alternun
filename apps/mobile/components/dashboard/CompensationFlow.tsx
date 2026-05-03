@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Modal } from 'react-native';
 import { createTypographyStyles } from '../theme/typography';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 import { Leaf, ChevronDown, CreditCard, Check, X } from 'lucide-react-native';
 import { Project } from './types';
 
@@ -285,11 +286,14 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(28,203,161,0.18)',
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 14,
-    elevation: 5,
+    ...createShadowStyle({
+      color: '#00001e',
+      offsetX: 0,
+      offsetY: 8,
+      opacity: 0.5,
+      radius: 14,
+      elevation: 5,
+    }),
   },
   cardHeader: {
     flexDirection: 'row',
@@ -341,10 +345,13 @@ const styles = createTypographyStyles({
   },
   stepDotActive: {
     backgroundColor: '#1ccba1',
-    shadowColor: '#1ccba1',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
+    ...createShadowStyle({
+      color: '#1ccba1',
+      offsetX: 0,
+      offsetY: 0,
+      opacity: 0.5,
+      radius: 6,
+    }),
   },
   stepDotInactive: {
     backgroundColor: 'rgba(255,255,255,0.06)',
@@ -579,11 +586,14 @@ const styles = createTypographyStyles({
     backgroundColor: '#1ccba1',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#1ccba1',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 14,
-    elevation: 6,
+    ...createShadowStyle({
+      color: '#1ccba1',
+      offsetX: 0,
+      offsetY: 0,
+      opacity: 0.5,
+      radius: 14,
+      elevation: 6,
+    }),
   },
   successTitle: {
     fontFamily: ANEK_EXPANDED_FAMILY,
