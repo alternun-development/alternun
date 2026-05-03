@@ -1,4 +1,5 @@
--- Syncs Supabase auth.users to public.users
+-- Syncs Supabase auth.users to public.users and backfills referral attribution
+-- once the email is confirmed.
 -- Called by: trg_auth_users_sync_to_app_users trigger
 -- Maps: id, sub, iss, aud, email, email_verified, name, image, picture, phone, phone_verified, confirmation_sent_at, last_sign_in_at
 
@@ -8,12 +9,19 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path TO 'public'
 AS $function$
+declare
+  v_user public.users%rowtype;
+  v_referrer public.users%rowtype;
+  v_metadata_referral_code text;
+  v_metadata_referred_by_username text;
+  v_metadata_referred_by_email text;
+  v_referrer_user_id text;
+  v_referrer_referral_code text;
 begin
   if pg_trigger_depth() > 1 then
     return new;
   end if;
 
-  -- Skip anonymous users
   if new.is_anonymous then
     return new;
   end if;
@@ -65,7 +73,157 @@ begin
         phone_verified = excluded.phone_verified,
         confirmation_sent_at = excluded.confirmation_sent_at,
         last_sign_in_at = excluded.last_sign_in_at,
-        updated_at     = timezone('utc', now());
+        updated_at     = timezone('utc', now())
+  returning * into v_user;
+
+  if new.email_confirmed_at is null then
+    return new;
+  end if;
+
+  v_metadata_referred_by_username := nullif(
+    btrim(
+      coalesce(
+        new.raw_user_meta_data->>'referred_by_username',
+        new.raw_user_meta_data->>'referrer_username',
+        ''
+      )
+    ),
+    ''
+  );
+  v_metadata_referred_by_email := nullif(
+    btrim(
+      coalesce(
+        new.raw_user_meta_data->>'referred_by_email',
+        new.raw_user_meta_data->>'referrer_email',
+        ''
+      )
+    ),
+    ''
+  );
+  v_metadata_referral_code := nullif(
+    lower(
+      btrim(
+        coalesce(
+          new.raw_user_meta_data->>'referral_code',
+          new.raw_user_meta_data->>'referralCode',
+          new.raw_user_meta_data->>'invitation_code',
+          new.raw_user_meta_data->>'referred_by_referral_code',
+          ''
+        )
+      )
+    ),
+    ''
+  );
+
+  v_referrer_user_id := nullif(btrim(v_user.referred_by_user_id), '');
+  v_referrer_referral_code := nullif(lower(btrim(v_user.referred_by_referral_code)), '');
+
+  if v_referrer_user_id is not null and v_referrer_referral_code is null then
+    select *
+    into v_referrer
+    from public.users
+    where id = v_referrer_user_id
+    limit 1;
+
+    if found then
+      v_referrer_referral_code := v_referrer.referral_code;
+    end if;
+  end if;
+
+  if v_referrer_user_id is null and v_referrer_referral_code is not null then
+    select *
+    into v_referrer
+    from public.users
+    where lower(referral_code) = v_referrer_referral_code
+    limit 1;
+
+    if found then
+      v_referrer_user_id := v_referrer.id;
+    end if;
+  end if;
+
+  if v_referrer_user_id is null and v_metadata_referral_code is not null then
+    select *
+    into v_referrer
+    from public.users
+    where lower(referral_code) = v_metadata_referral_code
+    limit 1;
+
+    if found then
+      v_referrer_user_id := v_referrer.id;
+      v_referrer_referral_code := v_referrer.referral_code;
+    end if;
+  end if;
+
+  if v_referrer_user_id is null and v_metadata_referred_by_email is not null then
+    select *
+    into v_referrer
+    from public.users
+    where lower(email) = lower(v_metadata_referred_by_email)
+    limit 1;
+
+    if found then
+      v_referrer_user_id := v_referrer.id;
+      v_referrer_referral_code := v_referrer.referral_code;
+    end if;
+  end if;
+
+  if v_referrer_user_id is null and v_metadata_referred_by_username is not null then
+    select *
+    into v_referrer
+    from public.users
+    where lower(name) = lower(v_metadata_referred_by_username)
+    limit 1;
+
+    if found then
+      v_referrer_user_id := v_referrer.id;
+      v_referrer_referral_code := v_referrer.referral_code;
+    end if;
+  end if;
+
+  if v_referrer_user_id is null then
+    return new;
+  end if;
+
+  if v_referrer_user_id = new.id::text then
+    return new;
+  end if;
+
+  update public.users
+  set referred_by_user_id = coalesce(referred_by_user_id, v_referrer_user_id),
+      referred_by_referral_code = coalesce(referred_by_referral_code, v_referrer_referral_code),
+      updated_at = timezone('utc', now())
+  where id = new.id::text
+    and (
+      referred_by_user_id is null
+      or referred_by_referral_code is null
+    );
+
+  insert into public.referrals (
+    user_id,
+    referred_by_username,
+    referred_by_email,
+    invitation_code,
+    referrer_user_id,
+    referrer_referral_code,
+    referral_link
+  )
+  values (
+    new.id::text,
+    coalesce(v_metadata_referred_by_username, v_referrer.name),
+    coalesce(v_metadata_referred_by_email, v_referrer.email),
+    v_referrer_referral_code,
+    v_referrer_user_id,
+    v_referrer_referral_code,
+    'https://airs.alternun.co/auth?mode=signup&referralCode=' || v_referrer_referral_code
+  )
+  on conflict (user_id) do update
+    set referred_by_username = excluded.referred_by_username,
+        referred_by_email = excluded.referred_by_email,
+        invitation_code = excluded.invitation_code,
+        referrer_user_id = excluded.referrer_user_id,
+        referrer_referral_code = excluded.referrer_referral_code,
+        referral_link = excluded.referral_link;
 
   return new;
 end;
