@@ -25,8 +25,6 @@ interface ReferralRecord {
 
 interface CurrentUserReferralRecord {
   user_id: string;
-  referred_by_user_id: string | null;
-  referred_by_referral_code: string | null;
   invitation_code: string | null;
   referrer_user_id: string | null;
   referrer_referral_code: string | null;
@@ -394,7 +392,7 @@ export class ReferralsService {
       {
         user_id: `eq.${userId}`,
       },
-      'user_id,referred_by_user_id,referred_by_referral_code,invitation_code,referrer_user_id,referrer_referral_code,referral_link,created_at'
+      'user_id,invitation_code,referrer_user_id,referrer_referral_code,referral_link,created_at'
     );
 
     const referralRows = await supabaseSelectMany<ReferralRecord>(
