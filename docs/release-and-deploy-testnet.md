@@ -2,12 +2,12 @@
 
 ## Overview
 
-`pnpm release:patch` updates the version metadata. Deploying the live testnet API/auth runtime is a separate step and must target `dashboard-dev`.
+`pnpm release:patch` updates the version metadata and now deploys the live testnet API/auth runtime automatically through `dashboard-dev`.
 
-## Why Two Steps?
+## Why This Changed?
 
-- `pnpm release:patch` updates versioning and creates the release commit/tag
-- `STACK=dashboard-dev deploy` updates the live testnet API/admin runtime
+- `pnpm release:patch` updates versioning, creates the release commit/tag, and deploys the live testnet API/admin runtime
+- `STACK=dashboard-dev` remains the owning deploy target under the hood
 
 Important:
 
@@ -22,22 +22,10 @@ Important:
 pnpm release:patch
 ```
 
-This updates the branch release manifest, rebuilds packages, and creates the release commit/tag.
+This updates the branch release manifest, rebuilds packages, creates the release commit/tag,
+and deploys the live testnet API/admin runtime through `dashboard-dev`.
 
-### Step 2: Deploy the Live Testnet API/Admin Runtime
-
-```bash
-./scripts/deploy-testnet-api.sh
-```
-
-Or manually:
-
-```bash
-source scripts/setup-aws-account.sh
-APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
-```
-
-### Step 3: Verify
+### Step 2: Verify
 
 ```bash
 curl https://testnet.api.alternun.co/health | jq '.version'
@@ -61,7 +49,7 @@ Cause: wrong stack target
 ## One-Command Release
 
 ```bash
-pnpm release:patch && ./scripts/deploy-testnet-api.sh --no-prompt
+pnpm release:patch
 ```
 
-This releases and then deploys the live testnet API/auth runtime through `dashboard-dev`.
+The release command already runs the `./scripts/deploy-testnet-api.sh --no-prompt` flow.
