@@ -139,8 +139,7 @@ test('ReferralsService.create resolves a referral code and stores attribution', 
             invitation_code: 'edward-ref123',
             referrer_user_id: 'referrer-1',
             referrer_referral_code: 'edward-ref123',
-            referral_link:
-              'https://testnet.airs.alternun.co/auth?mode=signup&referralCode=edward-ref123',
+            referral_link: 'https://testnet.airs.alternun.co/auth?referralCode=edward-ref123',
             created_at: '2026-04-25T00:00:00Z',
           },
         ]),
@@ -161,7 +160,7 @@ test('ReferralsService.create resolves a referral code and stores attribution', 
     assert.equal(response.invitation_code, 'edward-ref123');
     assert.equal(
       response.referral_link,
-      'https://testnet.airs.alternun.co/auth?mode=signup&referralCode=edward-ref123'
+      'https://testnet.airs.alternun.co/auth?referralCode=edward-ref123'
     );
     assert.equal(calls.length, 4);
     assert.match(calls[0].url, /\/rest\/v1\/users\?id=eq\.user-123/);
@@ -261,8 +260,7 @@ test('ReferralsService.getMe returns the canonical share link and referral count
             created_at: '2026-04-25T00:00:00Z',
             referrer_user_id: 'user-123',
             referrer_referral_code: 'new-user-123abc',
-            referral_link:
-              'https://testnet.airs.alternun.co/auth?mode=signup&referralCode=new-user-123abc',
+            referral_link: 'https://testnet.airs.alternun.co/auth?referralCode=new-user-123abc',
           },
           {
             id: 'referral-2',
@@ -270,8 +268,7 @@ test('ReferralsService.getMe returns the canonical share link and referral count
             created_at: '2026-04-26T00:00:00Z',
             referrer_user_id: 'user-123',
             referrer_referral_code: 'new-user-123abc',
-            referral_link:
-              'https://testnet.airs.alternun.co/auth?mode=signup&referralCode=new-user-123abc',
+            referral_link: 'https://testnet.airs.alternun.co/auth?referralCode=new-user-123abc',
           },
           {
             id: 'referral-3',
@@ -279,8 +276,7 @@ test('ReferralsService.getMe returns the canonical share link and referral count
             created_at: '2026-04-27T00:00:00Z',
             referrer_user_id: 'user-123',
             referrer_referral_code: 'new-user-123abc',
-            referral_link:
-              'https://testnet.airs.alternun.co/auth?mode=signup&referralCode=new-user-123abc',
+            referral_link: 'https://testnet.airs.alternun.co/auth?referralCode=new-user-123abc',
           },
         ]),
         createJsonResponse([
@@ -327,7 +323,7 @@ test('ReferralsService.getMe returns the canonical share link and referral count
     assert.equal(summary.referral_code, 'new-user-123abc');
     assert.equal(
       summary.referral_link,
-      'https://testnet.airs.alternun.co/auth?mode=signup&referralCode=new-user-123abc'
+      'https://testnet.airs.alternun.co/auth?referralCode=new-user-123abc'
     );
     assert.equal(summary.referral_count, 3);
     assert.equal(summary.referred_by_user_id, 'referrer-1');
@@ -385,7 +381,7 @@ test('ReferralsService.getMe backfills a missing referral code instead of failin
             created_at: '2026-04-25T00:00:00Z',
             referrer_user_id: 'user-123',
             referrer_referral_code: expectedReferralCode,
-            referral_link: `https://testnet.airs.alternun.co/auth?mode=signup&referralCode=${expectedReferralCode}`,
+            referral_link: `https://testnet.airs.alternun.co/auth?referralCode=${expectedReferralCode}`,
           },
         ]),
         createJsonResponse([
@@ -417,7 +413,7 @@ test('ReferralsService.getMe backfills a missing referral code instead of failin
     assert.equal(summary.referral_code, expectedReferralCode);
     assert.equal(
       summary.referral_link,
-      `https://testnet.airs.alternun.co/auth?mode=signup&referralCode=${expectedReferralCode}`
+      `https://testnet.airs.alternun.co/auth?referralCode=${expectedReferralCode}`
     );
     assert.equal(calls.length, 5);
     assert.match(calls[4].url, /\/rest\/v1\/users\?id=eq\.user-123/);
@@ -444,7 +440,12 @@ test('ReferralsService.getMe synthesizes a referral summary when the user row is
     const expectedReferralCode = `user-${expectedSuffix}`;
 
     global.fetch = createFetchQueue(
-      [createJsonResponse([]), createJsonResponse([]), createJsonResponse([]), createJsonResponse([])],
+      [
+        createJsonResponse([]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+      ],
       calls
     );
 
@@ -476,7 +477,12 @@ test('ReferralsService.getMe uses the provided display name when generating a re
     const expectedReferralCode = `edward-calderon-${expectedSuffix}`;
 
     global.fetch = createFetchQueue(
-      [createJsonResponse([]), createJsonResponse([]), createJsonResponse([]), createJsonResponse([])],
+      [
+        createJsonResponse([]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+      ],
       calls
     );
 
@@ -490,7 +496,7 @@ test('ReferralsService.getMe uses the provided display name when generating a re
     assert.equal(summary.referral_code, expectedReferralCode);
     assert.equal(
       summary.referral_link,
-      `https://testnet.airs.alternun.co/auth?mode=signup&referralCode=${expectedReferralCode}`
+      `https://testnet.airs.alternun.co/auth?referralCode=${expectedReferralCode}`
     );
   } finally {
     global.fetch = originalFetch;
@@ -592,8 +598,7 @@ test('ReferralsService.getMe backfills referred_by fields from the current refer
             invitation_code: 'edward-ref123',
             referrer_user_id: 'referrer-1',
             referrer_referral_code: 'edward-ref123',
-            referral_link:
-              'https://testnet.airs.alternun.co/auth?mode=signup&referralCode=edward-ref123',
+            referral_link: 'https://testnet.airs.alternun.co/auth?referralCode=edward-ref123',
             created_at: '2026-04-25T00:00:00Z',
           },
         ]),

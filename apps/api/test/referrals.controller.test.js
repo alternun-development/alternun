@@ -55,7 +55,7 @@ test('ReferralsController.getMe resolves the authenticated user from bearer toke
         return Promise.resolve({
           user_id: userId,
           referral_code: 'ada-123abc',
-          referral_link: `${requestedOrigin}/auth?mode=signup&referralCode=ada-123abc`,
+          referral_link: `${requestedOrigin}/auth?referralCode=ada-123abc`,
           referral_count: 0,
           referred_by_user_id: null,
           referred_by_referral_code: null,
@@ -104,7 +104,7 @@ test('ReferralsController.getMe resolves email users from a Supabase bearer toke
         return Promise.resolve({
           user_id: userId,
           referral_code: 'ada-123abc',
-          referral_link: `${requestedOrigin}/auth?mode=signup&referralCode=ada-123abc`,
+          referral_link: `${requestedOrigin}/auth?referralCode=ada-123abc`,
           referral_count: 0,
           referred_by_user_id: null,
           referred_by_referral_code: null,
@@ -141,7 +141,7 @@ test('ReferralsController.getMe falls back to a user_id query parameter when no 
         return Promise.resolve({
           user_id: userId,
           referral_code: 'ada-123abc',
-          referral_link: `${requestedOrigin}/auth?mode=signup&referralCode=ada-123abc`,
+          referral_link: `${requestedOrigin}/auth?referralCode=ada-123abc`,
           referral_count: 0,
           referred_by_user_id: null,
           referred_by_referral_code: null,
@@ -176,7 +176,7 @@ test('ReferralsController.getMe forwards a display_name query parameter to the r
         return Promise.resolve({
           user_id: userId,
           referral_code: 'edward-123abc',
-          referral_link: `${requestedOrigin}/auth?mode=signup&referralCode=edward-123abc`,
+          referral_link: `${requestedOrigin}/auth?referralCode=edward-123abc`,
           referral_count: 0,
           referred_by_user_id: null,
           referred_by_referral_code: null,
@@ -217,7 +217,7 @@ test('ReferralsController.create falls back to a user_id body field when no bear
           invitation_code: dto.referral_code ?? null,
           referrer_user_id: null,
           referrer_referral_code: dto.referral_code ?? null,
-          referral_link: `${makeRequest().headers.origin}/auth?mode=signup&referralCode=${
+          referral_link: `${makeRequest().headers.origin}/auth?referralCode=${
             dto.referral_code ?? ''
           }`,
           created_at: '2026-04-25T00:00:00Z',
