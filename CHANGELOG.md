@@ -1,3 +1,10 @@
+## [1.0.245](https://github.com/alternun-development/alternun/compare/v1.0.244-dev.0...v1.0.245) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.244-dev.0
+- **repo:** test(mobile,repo): auth, AUTH_SYNC_TRIGGERS, sync_auth_user_to_app_users, 20260503_0001_auth_referral_attribution
+
 ## [1.0.244](https://github.com/alternun-development/alternun/compare/v1.0.243-dev.0...v1.0.244) (2026-05-03)
 
 ### Bug Fixes
