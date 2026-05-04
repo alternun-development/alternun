@@ -15,7 +15,8 @@ import {
 interface NavItem {
   key: string;
   label: string;
-  icon: React.FC<{ size?: number; strokeWidth?: number; className?: string }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  icon: React.ComponentType<any>;
   badge?: number;
 }
 
