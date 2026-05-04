@@ -81,6 +81,7 @@ declare
   v_metadata_referred_by_email text;
   v_referrer_user_id text;
   v_referrer_referral_code text;
+  v_referral_confirmed_at timestamptz;
 begin
   if pg_trigger_depth() > 1 then
     return new;
@@ -226,6 +227,11 @@ begin
     return new;
   end if;
 
+  v_referral_confirmed_at := case
+    when new.email_confirmed_at is not null then timezone('utc', now())
+    else null
+  end;
+
   update public.users
   set referred_by_user_id = coalesce(referred_by_user_id, v_referrer_user_id),
       referred_by_referral_code = coalesce(referred_by_referral_code, v_referrer_referral_code),
@@ -243,7 +249,8 @@ begin
     invitation_code,
     referrer_user_id,
     referrer_referral_code,
-    referral_link
+    referral_link,
+    confirmed_at
   )
   values (
     new.id::text,
@@ -252,7 +259,8 @@ begin
     v_referrer_referral_code,
     v_referrer_user_id,
     v_referrer_referral_code,
-    'https://airs.alternun.co/auth?referralCode=' || v_referrer_referral_code
+    'https://airs.alternun.co/auth?referralCode=' || v_referrer_referral_code,
+    v_referral_confirmed_at
   )
   on conflict (user_id) do update
     set referred_by_username = excluded.referred_by_username,
@@ -260,7 +268,8 @@ begin
         invitation_code = excluded.invitation_code,
         referrer_user_id = excluded.referrer_user_id,
         referrer_referral_code = excluded.referrer_referral_code,
-        referral_link = excluded.referral_link;
+        referral_link = excluded.referral_link,
+        confirmed_at = coalesce(confirmed_at, excluded.confirmed_at);
 
   return new;
 end;

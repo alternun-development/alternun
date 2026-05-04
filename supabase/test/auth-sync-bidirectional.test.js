@@ -18,6 +18,11 @@ const referralSlugFallbackMigrationPath = path.resolve(
   'migrations',
   '20260503_0002_referral_slug_fallback_attribution.sql'
 );
+const referralConfirmationMigrationPath = path.resolve(
+  'supabase',
+  'migrations',
+  '20260504_0001_referral_confirmation_tracking.sql'
+);
 const authSyncFunctionPath = path.resolve(
   'supabase',
   'functions',
@@ -38,6 +43,10 @@ void test('auth source-of-truth migration keeps the one-way auth mirror', () => 
   const referralMigrationSource = fs.readFileSync(referralMigrationPath, 'utf8');
   const referralSlugFallbackMigrationSource = fs.readFileSync(
     referralSlugFallbackMigrationPath,
+    'utf8'
+  );
+  const referralConfirmationMigrationSource = fs.readFileSync(
+    referralConfirmationMigrationPath,
     'utf8'
   );
 
@@ -63,6 +72,7 @@ void test('auth source-of-truth migration keeps the one-way auth mirror', () => 
   assert.match(authSyncFunctionSource, /email_confirmed_at is null/i);
   assert.match(authSyncFunctionSource, /referred_by_user_id/i);
   assert.match(authSyncFunctionSource, /referral_link\s*=\s*excluded\.referral_link/i);
+  assert.match(authSyncFunctionSource, /confirmed_at/i);
   assert.match(authSyncFunctionSource, /https:\/\/airs\.alternun\.co\/auth\?referralCode=/i);
   assert.match(authSyncFunctionSource, /resolve_referrer_from_referral_input/i);
   assert.match(referralMigrationSource, /backfilled immediately so the DB heals on deploy/i);
@@ -74,6 +84,9 @@ void test('auth source-of-truth migration keeps the one-way auth mirror', () => 
     referralSlugFallbackMigrationSource,
     /join lateral public\.resolve_referrer_from_referral_input/i
   );
+  assert.match(referralConfirmationMigrationSource, /confirmed_at/i);
+  assert.match(referralConfirmationMigrationSource, /coalesce\(confirmed_at,\s*excluded\.confirmed_at\)/i);
+  assert.match(referralConfirmationMigrationSource, /referrals_referrer_user_confirmed_idx/i);
 });
 
 void test('legacy public trigger cleanup files only drop reverse sync hooks', () => {
