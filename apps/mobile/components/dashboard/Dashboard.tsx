@@ -28,6 +28,7 @@ import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { useNotifications } from '../notifications/NotificationsContext';
 import { ToastSystem, type ToastItem, type ToastType } from '@alternun/ui';
 import { useBackToTop } from '../../hooks/useBackToTop';
+import { USE_V2_NAV } from '../navigation/featureFlags';
 import { BackToTopButton } from '../common/BackToTopButton';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import type { AirsDashboardSnapshot } from './types';
@@ -591,14 +592,16 @@ export default function Dashboard({
             </View>
           </ScrollView>
 
-          <View
-            style={styles.stickyBottom}
-            onLayout={(event) => {
-              setFooterHeight(event.nativeEvent.layout.height);
-            }}
-          >
-            <AppInfoFooter containerStyle={{ marginTop: 0 }} />
-          </View>
+          {!(isMobile && USE_V2_NAV) && (
+            <View
+              style={styles.stickyBottom}
+              onLayout={(event) => {
+                setFooterHeight(event.nativeEvent.layout.height);
+              }}
+            >
+              <AppInfoFooter containerStyle={{ marginTop: 0 }} />
+            </View>
+          )}
 
           <BackToTopButton
             visible={showBackToTop}

@@ -20,6 +20,7 @@ interface ReferralRecord {
   referrer_user_id: string | null;
   referrer_referral_code: string | null;
   referral_link: string | null;
+  confirmed_at: string | null;
   created_at: string;
 }
 
@@ -29,6 +30,7 @@ interface CurrentUserReferralRecord {
   referrer_user_id: string | null;
   referrer_referral_code: string | null;
   referral_link: string | null;
+  confirmed_at: string | null;
   created_at: string;
 }
 
@@ -37,6 +39,7 @@ interface ReferralInviteeRecord {
   referral_code: string | null;
   email: string | null;
   name: string | null;
+  email_verified: boolean | null;
   created_at: string;
 }
 
@@ -50,6 +53,7 @@ interface UserRecord {
   referral_code: string | null;
   referred_by_user_id: string | null;
   referred_by_referral_code: string | null;
+  email_verified: boolean | null;
   email: string | null;
   name: string | null;
   created_at: string | null;
@@ -163,6 +167,32 @@ function upsertReferralRecordByInvitee(
   const existing = records.get(record.user_id);
   if (!existing || record.created_at > existing.created_at) {
     records.set(record.user_id, record);
+  }
+}
+
+function isConfirmedReferral(
+  referralRecord: ReferralRecord | undefined,
+  invitee: ReferralInviteeRecord | undefined
+): boolean {
+  return Boolean(referralRecord?.confirmed_at ?? invitee?.email_verified);
+}
+
+async function swallowOptionalQuery<T>(
+  logger: Logger,
+  label: string,
+  task: Promise<T>,
+  fallback: T,
+  userId: string
+): Promise<T> {
+  try {
+    return await task;
+  } catch (error) {
+    logger.warn(
+      `Failed to load ${label} for user ${userId}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+    return fallback;
   }
 }
 
@@ -338,6 +368,7 @@ export class ReferralsService {
     const referralCode = resolveReferralInput(dto);
     const referredByUsername = trimRuntimeValue(dto.referred_by_username) || null;
     const referredByEmail = trimRuntimeValue(dto.referred_by_email) || null;
+    const confirmedAt = currentUser.email_verified ? new Date().toISOString() : null;
 
     let resolvedReferrerUserId = currentUser.referred_by_user_id;
     let resolvedReferrerReferralCode = currentUser.referred_by_referral_code;
@@ -381,6 +412,7 @@ export class ReferralsService {
       referral_link: resolvedReferrerReferralCode
         ? buildReferralLink(resolvedReferrerReferralCode, process.env)
         : null,
+      confirmed_at: confirmedAt,
     });
 
     if (!record) {
@@ -409,6 +441,7 @@ export class ReferralsService {
       referral_code: null,
       referred_by_user_id: null,
       referred_by_referral_code: null,
+      email_verified: null,
       email: null,
       name: null,
       created_at: null,
@@ -417,17 +450,29 @@ export class ReferralsService {
       this.logger.warn(`User ${userId} not found in users table; synthesizing referral summary.`);
     }
 
-    const currentReferralRecord = await supabaseSelectOne<CurrentUserReferralRecord>(
-      'referrals',
-      {
-        user_id: `eq.${userId}`,
-      },
-      'user_id,invitation_code,referrer_user_id,referrer_referral_code,referral_link,created_at'
+    const currentReferralRecord = await swallowOptionalQuery(
+      this.logger,
+      'current referral record',
+      supabaseSelectOne<CurrentUserReferralRecord>(
+        'referrals',
+        {
+          user_id: `eq.${userId}`,
+        },
+        'user_id,invitation_code,referrer_user_id,referrer_referral_code,referral_link,confirmed_at,created_at'
+      ),
+      null,
+      userId
     );
 
     let referrer: UserRecord | null = null;
     if (currentUser.referred_by_user_id) {
-      referrer = await this.getUserById(currentUser.referred_by_user_id);
+      referrer = await swallowOptionalQuery(
+        this.logger,
+        'referrer user',
+        this.getUserById(currentUser.referred_by_user_id),
+        null,
+        userId
+      );
     }
 
     const resolvedReferredByUserId =
@@ -439,15 +484,33 @@ export class ReferralsService {
       null;
 
     if (!referrer && resolvedReferredByUserId) {
-      referrer = await this.getUserById(resolvedReferredByUserId);
+      referrer = await swallowOptionalQuery(
+        this.logger,
+        'resolved referrer by user id',
+        this.getUserById(resolvedReferredByUserId),
+        null,
+        userId
+      );
     }
 
     if (!referrer && currentUser.referred_by_referral_code) {
-      referrer = await this.getUserByReferralCode(currentUser.referred_by_referral_code);
+      referrer = await swallowOptionalQuery(
+        this.logger,
+        'resolved referrer by referral code',
+        this.getUserByReferralCode(currentUser.referred_by_referral_code),
+        null,
+        userId
+      );
     }
 
     if (!referrer && resolvedReferredByReferralCode) {
-      referrer = await this.getUserByReferralCode(resolvedReferredByReferralCode);
+      referrer = await swallowOptionalQuery(
+        this.logger,
+        'resolved referral code fallback',
+        this.getUserByReferralCode(resolvedReferredByReferralCode),
+        null,
+        userId
+      );
     }
 
     if (referrer && (!currentUser.referred_by_user_id || !currentUser.referred_by_referral_code)) {
@@ -470,26 +533,38 @@ export class ReferralsService {
       });
     }
 
-    const referralCode = currentUser.referral_code;
+    const referralCode = normalizeReferralCode(currentUser.referral_code);
     const resolvedReferralCode =
       referralCode ?? generateReferralCodeFromUser(currentUser, requestedDisplayName);
 
-    const referralRowsById = await supabaseSelectMany<ReferralRecord>(
-      'referrals',
-      {
-        referrer_user_id: `eq.${userId}`,
-        order: 'created_at.desc',
-      },
-      'id,user_id,created_at,referrer_user_id,referrer_referral_code,referral_link'
+    const referralRowsById = await swallowOptionalQuery(
+      this.logger,
+      'referrals by referrer user id',
+      supabaseSelectMany<ReferralRecord>(
+        'referrals',
+        {
+          referrer_user_id: `eq.${userId}`,
+          order: 'created_at.desc',
+        },
+        'id,user_id,created_at,referrer_user_id,referrer_referral_code,referral_link,confirmed_at'
+      ),
+      [],
+      userId
     );
     const referralRowsByCode = resolvedReferralCode
-      ? await supabaseSelectMany<ReferralRecord>(
-          'referrals',
-          {
-            referrer_referral_code: `eq.${resolvedReferralCode}`,
-            order: 'created_at.desc',
-          },
-          'id,user_id,created_at,referrer_user_id,referrer_referral_code,referral_link'
+      ? await swallowOptionalQuery(
+          this.logger,
+          'referrals by referral code',
+          supabaseSelectMany<ReferralRecord>(
+            'referrals',
+            {
+              referrer_referral_code: `eq.${resolvedReferralCode}`,
+              order: 'created_at.desc',
+            },
+            'id,user_id,created_at,referrer_user_id,referrer_referral_code,referral_link,confirmed_at'
+          ),
+          [],
+          userId
         )
       : [];
     const referralRecordMap = new Map<string, ReferralRecord>();
@@ -497,18 +572,24 @@ export class ReferralsService {
       upsertReferralRecordByInvitee(referralRecordMap, record);
     }
 
-    const attributedInviteeRows = await supabaseSelectMany<AttributedInviteeRecord>(
-      'users',
-      resolvedReferralCode
-        ? {
-            or: `(referred_by_user_id.eq.${userId},referred_by_referral_code.eq.${resolvedReferralCode})`,
-            order: 'created_at.desc',
-          }
-        : {
-            referred_by_user_id: `eq.${userId}`,
-            order: 'created_at.desc',
-          },
-      'user_id:id,referral_code,email,name,created_at,referred_by_user_id,referred_by_referral_code'
+    const attributedInviteeRows = await swallowOptionalQuery(
+      this.logger,
+      'attributed invitee rows',
+      supabaseSelectMany<AttributedInviteeRecord>(
+        'users',
+        resolvedReferralCode
+          ? {
+              or: `(referred_by_user_id.eq.${userId},referred_by_referral_code.eq.${resolvedReferralCode})`,
+              order: 'created_at.desc',
+            }
+          : {
+              referred_by_user_id: `eq.${userId}`,
+              order: 'created_at.desc',
+            },
+        'user_id:id,referral_code,email,email_verified,name,created_at,referred_by_user_id,referred_by_referral_code'
+      ),
+      [],
+      userId
     );
     const inviteeMap = new Map<string, ReferralInviteeRecord>();
     for (const row of attributedInviteeRows) {
@@ -519,12 +600,18 @@ export class ReferralsService {
       Array.from(referralRecordMap.keys()).filter((inviteeId) => !inviteeMap.has(inviteeId))
     );
     const referralInviteeRows = missingInviteeIds.length
-      ? await supabaseSelectMany<ReferralInviteeRecord>(
-          'users',
-          {
-            id: `in.(${missingInviteeIds.join(',')})`,
-          },
-          'user_id:id,referral_code,email,name,created_at'
+      ? await swallowOptionalQuery(
+          this.logger,
+          'missing invitee rows',
+          supabaseSelectMany<ReferralInviteeRecord>(
+            'users',
+            {
+              id: `in.(${missingInviteeIds.join(',')})`,
+            },
+            'user_id:id,referral_code,email,email_verified,name,created_at'
+          ),
+          [],
+          userId
         )
       : [];
     for (const row of referralInviteeRows) {
@@ -534,7 +621,11 @@ export class ReferralsService {
     const referredUserIds = normalizeInviteeIds([
       ...Array.from(referralRecordMap.keys()),
       ...Array.from(inviteeMap.keys()),
-    ]).filter((inviteeId) => inviteeId !== userId);
+    ])
+      .filter((inviteeId) => inviteeId !== userId)
+      .filter((inviteeId) =>
+        isConfirmedReferral(referralRecordMap.get(inviteeId), inviteeMap.get(inviteeId))
+      );
     const referredUsers = referredUserIds
       .map((inviteeId) => {
         const invitee = inviteeMap.get(inviteeId);
@@ -583,7 +674,7 @@ export class ReferralsService {
     return supabaseSelectOne<UserRecord>(
       'users',
       { id: `eq.${userId}` },
-      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name,created_at'
+      'id,referral_code,referred_by_user_id,referred_by_referral_code,email_verified,email,name,created_at'
     );
   }
 
@@ -609,7 +700,7 @@ export class ReferralsService {
     const exactMatch = await supabaseSelectOne<UserRecord>(
       'users',
       { referral_code: `eq.${normalizedReferralCode}` },
-      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name,created_at'
+      'id,referral_code,referred_by_user_id,referred_by_referral_code,email_verified,email,name,created_at'
     );
 
     if (exactMatch) {
@@ -624,7 +715,7 @@ export class ReferralsService {
     const slugCandidates = await supabaseSelectMany<UserRecord>(
       'users',
       { referral_code: `ilike.${slug}-%` },
-      'id,referral_code,referred_by_user_id,referred_by_referral_code,email,name,created_at'
+      'id,referral_code,referred_by_user_id,referred_by_referral_code,email_verified,email,name,created_at'
     );
     const slugPattern = new RegExp(`^${escapeRegExp(slug)}-[a-z0-9]{6}$`, 'i');
     const matches = slugCandidates.filter(

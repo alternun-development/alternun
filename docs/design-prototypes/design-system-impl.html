@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Alternun Airs · Implementation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"/>
+<link rel="stylesheet" href="tokens.css"/>
+<style>
+  /* Page layout */
+  html, body {
+    background: var(--bg-screen);
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    padding: 40px 24px;
+    background:
+      radial-gradient(1200px 600px at 20% 0%, rgba(30,230,181,0.06), transparent 60%),
+      radial-gradient(1000px 500px at 80% 100%, rgba(13,148,136,0.05), transparent 60%),
+      var(--bg-screen);
+    font-family: var(--ff-sans);
+    color: var(--text-primary);
+  }
+
+  .page-header {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+  }
+
+  .page-header h1 {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--p-teal), var(--p-teal-light) 60%, var(--p-teal));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 0 0 8px;
+  }
+
+  .page-header .sub {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 640px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .section-title {
+    max-width: 1200px;
+    margin: 48px auto 24px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+
+  .frames-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  .frame-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .frame-label {
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  .frame-label .title {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+
+  .frame-label .desc {
+    display: block;
+    font-size: 12px;
+    color: var(--text-faint);
+    font-family: var(--ff-mono);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Alternun Airs · Design System</h1>
+  <p class="sub">
+    Mobile-first design system with cohesive token architecture, mobile dock navigation,
+    and desktop sidebar—all faithful to the Airs brand colors, typography, and spacing.
+  </p>
+</div>
+
+<div class="section-title">Mobile Dashboard · Dark Mode</div>
+<div class="frames-grid">
+  <div class="frame-container">
+    <div id="mobile-dark"></div>
+    <div class="frame-label">
+      <span class="title">Mobile Dashboard</span>
+      <span class="desc">390 × 820 · iOS</span>
+    </div>
+  </div>
+  <div class="frame-container">
+    <div id="mobile-light"></div>
+    <div class="frame-label">
+      <span class="title">Mobile Dashboard</span>
+      <span class="desc">390 × 820 · iOS Light</span>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">Mobile Profile · Tier Journey</div>
+<div class="frames-grid">
+  <div class="frame-container">
+    <div id="profile-dark"></div>
+    <div class="frame-label">
+      <span class="title">Profile Screen</span>
+      <span class="desc">390 × 820 · iOS</span>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">Desktop Dashboard · Sidebar Navigation</div>
+<div id="desktop-dark" style="max-width: 1400px; margin: 0 auto;"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="dashboard.jsx"></script>
+<script type="text/babel" src="profile.jsx"></script>
+<script type="text/babel" src="desktop.jsx"></script>
+
+<script type="text/babel">
+function mount(el, Component, isDark) {
+  const scale = 0.82;
+  const W = 390, H = 820;
+  const root = ReactDOM.createRoot(el);
+  root.render(
+    <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: W, height: H }}>
+      <IOSDevice width={W} height={H} dark={isDark}>
+        <Component isDark={isDark} />
+      </IOSDevice>
+    </div>
+  );
+  el.style.width = (W * scale) + 'px';
+  el.style.height = (H * scale) + 'px';
+}
+
+mount(document.getElementById('mobile-dark'), DashboardScreen, true);
+mount(document.getElementById('mobile-light'), DashboardScreen, false);
+mount(document.getElementById('profile-dark'), ProfileScreen, true);
+
+// Desktop
+const desktopEl = document.getElementById('desktop-dark');
+const scale = 0.75;
+const W = 1440, H = 900;
+const root = ReactDOM.createRoot(desktopEl);
+root.render(
+  <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: W, height: H + 84 }}>
+    <ChromeWindow width={W} height={H + 84} url="app.alternun.com/dashboard"
+      tabs={[{ title: 'Dashboard' }, { title: 'Docs' }]} activeIndex={0}>
+      <div style={{ width: W, height: H }}>
+        <DesktopDashboard isDark={true} />
+      </div>
+    </ChromeWindow>
+  </div>
+);
+desktopEl.style.width = (W * scale) + 'px';
+desktopEl.style.height = ((H + 84) * scale) + 'px';
+desktopEl.style.margin = '0 auto';
+</script>
+</body>
+</html>

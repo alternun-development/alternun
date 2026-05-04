@@ -198,6 +198,7 @@ The current flow is:
 - the canonical share target is `/auth/referral?code=<REFERRAL_CODE>`
 - `/auth/referral` accepts `code`, `ref`, and `referralCode` query params and persists the referral after sign-in
 - the API stores the resolved relationship on `public.users.referred_by_user_id` and the referral event in `public.referrals`
+- confirmed referral counts are derived from confirmed referral rows, so the counter only advances once the invitee is actually verified
 
 Important rules:
 

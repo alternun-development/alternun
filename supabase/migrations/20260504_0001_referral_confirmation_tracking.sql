@@ -1,78 +1,18 @@
--- Sync auth.users to public.users and backfill referral attribution once the
--- email is confirmed.
--- Called by: trg_auth_users_sync_to_app_users trigger
--- Maps: id, sub, iss, aud, email, email_verified, name, image, picture, phone,
--- phone_verified, confirmation_sent_at, last_sign_in_at
---
--- Keep this file aligned with the latest referral-aware trigger migration.
+-- Track confirmed referrals at the database layer so the counter only moves
+-- when the invitee has actually been confirmed.
 
-CREATE OR REPLACE FUNCTION public.resolve_referrer_from_referral_input(
-  p_referral_code text DEFAULT NULL,
-  p_referred_by_email text DEFAULT NULL,
-  p_referred_by_username text DEFAULT NULL,
-  p_exclude_user_id text DEFAULT NULL
-)
-RETURNS TABLE(id text, referral_code text, email text, name text)
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-  with normalized as (
-    select
-      nullif(lower(btrim(coalesce(p_referral_code, ''))), '') as referral_code,
-      nullif(lower(btrim(coalesce(p_referred_by_email, ''))), '') as referred_by_email,
-      nullif(lower(btrim(coalesce(p_referred_by_username, ''))), '') as referred_by_username,
-      case
-        when lower(btrim(coalesce(p_referral_code, ''))) ~ '^[a-z0-9]+(?:-[a-z0-9]+)*-[a-z0-9]{6}$'
-          then regexp_replace(lower(btrim(coalesce(p_referral_code, ''))), '-[a-z0-9]{6}$', '')
-        else null
-      end as referral_slug,
-      nullif(btrim(coalesce(p_exclude_user_id, '')), '') as exclude_user_id
-  ),
-  candidates as (
-    select u.id, u.referral_code, u.email, u.name, 1 as priority
-    from public.users u, normalized n
-    where n.referral_code is not null
-      and lower(u.referral_code) = n.referral_code
-      and (n.exclude_user_id is null or u.id <> n.exclude_user_id)
+alter table public.referrals
+  add column if not exists confirmed_at timestamp with time zone;
 
-    union all
+create index if not exists referrals_referrer_user_confirmed_idx
+  on public.referrals (referrer_user_id, confirmed_at desc);
 
-    select u.id, u.referral_code, u.email, u.name, 2 as priority
-    from public.users u, normalized n
-    where n.referral_slug is not null
-      and lower(u.referral_code) ~ ('^' || n.referral_slug || '-[a-z0-9]{6}$')
-      and (n.exclude_user_id is null or u.id <> n.exclude_user_id)
-
-    union all
-
-    select u.id, u.referral_code, u.email, u.name, 3 as priority
-    from public.users u, normalized n
-    where n.referred_by_email is not null
-      and lower(u.email) = n.referred_by_email
-      and (n.exclude_user_id is null or u.id <> n.exclude_user_id)
-
-    union all
-
-    select u.id, u.referral_code, u.email, u.name, 4 as priority
-    from public.users u, normalized n
-    where n.referred_by_username is not null
-      and lower(u.name) = n.referred_by_username
-      and (n.exclude_user_id is null or u.id <> n.exclude_user_id)
-  )
-  select candidates.id, candidates.referral_code, candidates.email, candidates.name
-  from candidates
-  order by priority
-  limit 1;
-$$;
-
-CREATE OR REPLACE FUNCTION public.sync_auth_user_to_app_users()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $function$
+create or replace function public.sync_auth_user_to_app_users()
+returns trigger
+language plpgsql
+security definer
+set search_path to 'public'
+as $function$
 declare
   v_user public.users%rowtype;
   v_referrer public.users%rowtype;
@@ -227,10 +167,7 @@ begin
     return new;
   end if;
 
-  v_referral_confirmed_at := case
-    when new.email_confirmed_at is not null then timezone('utc', now())
-    else null
-  end;
+  v_referral_confirmed_at := timezone('utc', now());
 
   update public.users
   set referred_by_user_id = coalesce(referred_by_user_id, v_referrer_user_id),
@@ -274,3 +211,10 @@ begin
   return new;
 end;
 $function$;
+
+update public.referrals referral_record
+set confirmed_at = coalesce(referral_record.confirmed_at, timezone('utc', now()))
+from public.users confirmed_user
+where confirmed_user.id = referral_record.user_id
+  and confirmed_user.email_verified is true
+  and referral_record.confirmed_at is null;
