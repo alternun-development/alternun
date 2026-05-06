@@ -1,3 +1,9 @@
+## [1.0.251](https://github.com/alternun-development/alternun/compare/v1.0.250-dev.0...v1.0.251) (2026-05-06)
+
+### Bug Fixes
+
+- **repo:** test(infra): deploy-authentik, deploy-authentik-runtime-hotfix.test
+
 ## [1.0.250](https://github.com/alternun-development/alternun/compare/v1.0.249-dev.0...v1.0.250) (2026-05-06)
 
 ### Bug Fixes
