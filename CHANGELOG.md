@@ -1,3 +1,15 @@
+## [1.0.250](https://github.com/alternun-development/alternun/compare/v1.0.249-dev.0...v1.0.250) (2026-05-06)
+
+### Bug Fixes
+
+- **repo:** test(api,web): referrals.service, referrals.service.test, Sidebar
+- **repo:** fix(web): Sidebar
+- **repo:** test(repo,api,docs): .env, referrals.service, referrals.service.test, authentication-and-session-flow
+
+### Bug Fixes
+
+- **web:** Sidebar ([4181dad](https://github.com/alternun-development/alternun/commit/4181dad95bde9d898dda1bfd781f68e269fba7e2))
+
 ## [1.0.249](https://github.com/alternun-development/alternun/compare/v1.0.248-dev.0...v1.0.249) (2026-05-03)
 
 ### Bug Fixes
