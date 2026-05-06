@@ -68,7 +68,27 @@ function trimRuntimeValue(value: string | null | undefined): string {
   return (value ?? '').trim();
 }
 
-function resolveSupabaseConfig(env: NodeJS.ProcessEnv = process.env): SupabaseConfig | null {
+function resolveSupabaseReadConfig(env: NodeJS.ProcessEnv = process.env): SupabaseConfig | null {
+  const url = trimRuntimeValue(env.SUPABASE_URL ?? env.EXPO_PUBLIC_SUPABASE_URL);
+  const key = trimRuntimeValue(
+    env.SUPABASE_SERVICE_ROLE_KEY ??
+      env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY ??
+      env.SUPABASE_ANON_KEY ??
+      env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
+      env.EXPO_PUBLIC_SUPABASE_KEY
+  );
+
+  if (!url || !key) {
+    return null;
+  }
+
+  return {
+    url: url.replace(/\/+$/, ''),
+    key,
+  };
+}
+
+function resolveSupabaseWriteConfig(env: NodeJS.ProcessEnv = process.env): SupabaseConfig | null {
   const url = trimRuntimeValue(env.SUPABASE_URL ?? env.EXPO_PUBLIC_SUPABASE_URL);
   const key = trimRuntimeValue(
     env.SUPABASE_SERVICE_ROLE_KEY ?? env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY
@@ -79,7 +99,7 @@ function resolveSupabaseConfig(env: NodeJS.ProcessEnv = process.env): SupabaseCo
   }
 
   return {
-    url: url.replace(/\/$/, ''),
+    url: url.replace(/\/+$/, ''),
     key,
   };
 }
@@ -212,7 +232,7 @@ async function supabaseSelectOne<T>(
   }
   url.searchParams.set('select', select);
 
-  const cfg = resolveSupabaseConfig(env);
+  const cfg = resolveSupabaseReadConfig(env);
   if (!cfg) {
     throw new ServiceUnavailableException('Supabase referrals integration is not configured');
   }
@@ -249,7 +269,7 @@ async function supabaseSelectMany<T>(
   }
   url.searchParams.set('select', select);
 
-  const cfg = resolveSupabaseConfig(env);
+  const cfg = resolveSupabaseReadConfig(env);
   if (!cfg) {
     throw new ServiceUnavailableException('Supabase referrals integration is not configured');
   }
@@ -285,7 +305,7 @@ async function supabaseUpdateOne<T>(
     url.searchParams.set(key, value);
   }
 
-  const cfg = resolveSupabaseConfig(env);
+  const cfg = resolveSupabaseWriteConfig(env);
   if (!cfg) {
     throw new ServiceUnavailableException('Supabase referrals integration is not configured');
   }
@@ -319,7 +339,7 @@ async function supabaseUpsertOne<T>(
   body: Record<string, unknown>,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<T | null> {
-  const cfg = resolveSupabaseConfig(env);
+  const cfg = resolveSupabaseWriteConfig(env);
   if (!cfg) {
     throw new ServiceUnavailableException('Supabase referrals integration is not configured');
   }
@@ -352,7 +372,7 @@ export class ReferralsService {
   private readonly logger = new Logger(ReferralsService.name);
 
   async create(userId: string, dto: CreateReferralDto): Promise<ReferralResponseDto> {
-    const cfg = resolveSupabaseConfig();
+    const cfg = resolveSupabaseWriteConfig();
     if (!cfg) {
       this.logger.warn(
         'Supabase referrals integration is not configured; refusing referral creation.'
@@ -427,14 +447,6 @@ export class ReferralsService {
     requestedOrigin?: string | null,
     requestedDisplayName?: string | null
   ): Promise<ReferralSummaryDto> {
-    const cfg = resolveSupabaseConfig();
-    if (!cfg) {
-      this.logger.warn(
-        'Supabase referrals integration is not configured; refusing referral lookup.'
-      );
-      throw new ServiceUnavailableException('Supabase referrals integration is not configured');
-    }
-
     const user = await this.getUserById(userId);
     const currentUser: UserRecord = user ?? {
       id: userId,

@@ -525,6 +525,59 @@ test('ReferralsService.getMe returns the canonical share link and referral count
   }
 });
 
+test('ReferralsService.getMe works with only the anon Supabase key configured', async () => {
+  const originalEnv = { ...process.env };
+  const originalFetch = global.fetch;
+  const calls = [];
+
+  try {
+    process.env.SUPABASE_URL = 'https://supabase.example';
+    process.env.SUPABASE_ANON_KEY = 'anon-key';
+    process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY;
+
+    const expectedSuffix = createHash('md5').update('user-123').digest('hex').slice(0, 6);
+    const expectedReferralCode = `new-user-${expectedSuffix}`;
+
+    global.fetch = createFetchQueue(
+      [
+        createJsonResponse([
+          {
+            id: 'user-123',
+            referral_code: null,
+            referred_by_user_id: null,
+            referred_by_referral_code: null,
+            email: 'new@example.com',
+            name: 'New User',
+          },
+        ]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+      ],
+      calls
+    );
+
+    const service = new ReferralsService();
+    const summary = await service.getMe('user-123', 'https://testnet.airs.alternun.co');
+
+    assert.equal(summary.user_id, 'user-123');
+    assert.equal(summary.referral_code, expectedReferralCode);
+    assert.equal(
+      summary.referral_link,
+      `https://testnet.airs.alternun.co/auth?referralCode=${expectedReferralCode}`
+    );
+    assert.equal(summary.referral_count, 0);
+    assert.equal(calls.length, 5);
+    assert.equal(calls[0].init.headers.Authorization, 'Bearer anon-key');
+  } finally {
+    global.fetch = originalFetch;
+    process.env = originalEnv;
+  }
+});
+
 test('ReferralsService.getMe counts users attributed by referred_by fields even without referral rows', async () => {
   const originalEnv = { ...process.env };
   const originalFetch = global.fetch;
