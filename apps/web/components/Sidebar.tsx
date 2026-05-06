@@ -10,13 +10,13 @@ import {
   Pin,
   PinOff,
   ChevronRight,
+  type LucideIcon,
 } from 'lucide-react';
 
 interface NavItem {
   key: string;
   label: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  icon: React.ComponentType<any>;
+  icon: LucideIcon;
   badge?: number;
 }
 
