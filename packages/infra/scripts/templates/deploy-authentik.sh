@@ -6,6 +6,15 @@ AUTHENTIK_DATABASE_MODE="${AUTHENTIK_DATABASE_MODE:-rds}"
 ALTERNUN_IDENTITY_TLS_MODE="${ALTERNUN_IDENTITY_TLS_MODE:-acme-route53-dns-01}"
 ALTERNUN_IDENTITY_INGRESS_MODE="${ALTERNUN_IDENTITY_INGRESS_MODE:-instance}"
 
+if command -v docker-compose >/dev/null 2>&1; then
+  compose_cmd=(docker-compose)
+elif docker compose version >/dev/null 2>&1; then
+  compose_cmd=(docker compose)
+else
+  echo "Docker Compose is unavailable on the identity host." >&2
+  exit 1
+fi
+
 TOKEN="$(curl -fsS -X PUT 'http://169.254.169.254/latest/api/token' -H 'X-aws-ec2-metadata-token-ttl-seconds: 21600')"
 INSTANCE_IDENTITY="$(curl -fsS -H "X-aws-ec2-metadata-token: ${TOKEN}" 'http://169.254.169.254/latest/dynamic/instance-identity/document')"
 AWS_REGION="$(printf '%s' "${INSTANCE_IDENTITY}" | jq -r '.region')"
@@ -229,11 +238,11 @@ fi
 chmod 0600 "${ENV_FILE}"
 chown root:root "${ENV_FILE}"
 
-docker compose -f /opt/alternun/identity/docker-compose.yml pull
-docker compose -f /opt/alternun/identity/docker-compose.yml up -d --remove-orphans
+"${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml pull
+"${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml up -d --remove-orphans
 
 apply_authentik_source_stage_hotfix() {
-  docker compose -f /opt/alternun/identity/docker-compose.yml exec -u root -T \
+  "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -u root -T \
     server /ak-root/.venv/bin/python - <<'PY'
 from pathlib import Path
 
@@ -266,11 +275,11 @@ if needle not in text:
 path.write_text(text.replace(needle, replacement, 1))
 print('Applied Authentik source-stage hotfix.')
 PY
-  docker compose -f /opt/alternun/identity/docker-compose.yml restart server >/dev/null
+  "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml restart server >/dev/null
 }
 
 traefik_container_id() {
-  docker compose -f /opt/alternun/identity/docker-compose.yml ps -q traefik 2>/dev/null || true
+  "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml ps -q traefik 2>/dev/null || true
 }
 
 acme_backup_enabled() {
@@ -401,7 +410,7 @@ restore_last_known_good_acme_state() {
   cp "${LAST_KNOWN_GOOD_ACME_FILE}" "${ACME_FILE}"
   chown root:root "${ACME_FILE}"
   chmod 600 "${ACME_FILE}"
-  docker compose -f /opt/alternun/identity/docker-compose.yml restart traefik
+  "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml restart traefik
 }
 
 reset_corrupt_acme_state() {
@@ -411,7 +420,7 @@ reset_corrupt_acme_state() {
   cp "${ACME_FILE}" "${backup_file}" || true
   install -m 600 /dev/null "${ACME_FILE}"
   chown root:root "${ACME_FILE}"
-  docker compose -f /opt/alternun/identity/docker-compose.yml restart traefik
+  "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml restart traefik
 }
 
 ensure_traefik_certificate() {
@@ -474,7 +483,7 @@ wait_for_authentik_django() {
   local attempt=1
 
   while [ "${attempt}" -le "${max_attempts}" ]; do
-    if docker compose -f /opt/alternun/identity/docker-compose.yml exec -T \
+    if "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T \
       server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c "print(\"ok\")"' \
       >/dev/null 2>&1; then
       return 0
@@ -491,7 +500,7 @@ run_authentik_migrations() {
   local attempt=1
 
   while [ "${attempt}" -le "${max_attempts}" ]; do
-    if docker compose -f /opt/alternun/identity/docker-compose.yml exec -T \
+    if "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T \
       server sh -lc '/ak-root/.venv/bin/python /manage.py migrate --noinput'; then
       return 0
     fi
@@ -524,7 +533,7 @@ if ! wait_for_authentik_django; then
 fi
 
 BOOTSTRAP_STDERR_FILE="$(mktemp)"
-if ! BOOTSTRAP_RESULTS="$(docker compose -f /opt/alternun/identity/docker-compose.yml exec -T \
+if ! BOOTSTRAP_RESULTS="$("${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T \
   -e ALTERNUN_BOOTSTRAP_ADMIN_USERNAME="${BOOTSTRAP_ADMIN_USERNAME}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_EMAIL="${BOOTSTRAP_ADMIN_EMAIL}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_NAME="${BOOTSTRAP_ADMIN_NAME}" \
