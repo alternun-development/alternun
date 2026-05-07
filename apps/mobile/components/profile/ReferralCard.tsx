@@ -212,7 +212,6 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
           await webNavigator.share({
             title: t('profile.referral.shareTitle', undefined, 'Share your referral link'),
             text: shareMessage,
-            url: summary.referral_link,
           });
           return;
         }
@@ -228,7 +227,6 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
       await Share.share({
         title: t('profile.referral.shareTitle', undefined, 'Share your referral link'),
         message: shareMessage,
-        url: summary.referral_link,
       });
     } catch {
       try {
