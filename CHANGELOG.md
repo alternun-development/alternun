@@ -1,3 +1,13 @@
+## [1.0.252](https://github.com/alternun-development/alternun/compare/v1.0.251-dev.0...v1.0.252) (2026-05-07)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): ReferralCard
+
+### Bug Fixes
+
+- **mobile:** ReferralCard ([c3f0784](https://github.com/alternun-development/alternun/commit/c3f078439d6d10ea5437f7db19599accccedc802))
+
 ## [1.0.251](https://github.com/alternun-development/alternun/compare/v1.0.250-dev.0...v1.0.251) (2026-05-06)
 
 ### Bug Fixes
