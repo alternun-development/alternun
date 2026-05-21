@@ -69,7 +69,7 @@ Open: **http://localhost:8081**
 
 - ✅ Email/password form
 - ✅ Google button
-- ❌ NO Discord button
+- ✅ Discord button if your repo-root `.env` includes Discord OAuth creds
 - ❌ NO CORS errors
 
 ---
@@ -97,6 +97,10 @@ Created from `.env.example`. Overrides `.env.development` for local development.
 EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
 # Rest inherits from .env.development
 ```
+
+The local API dev server also reads the repo-root `.env` first so shared Better
+Auth social credentials like `GOOGLE_AUTH_CLIENT_ID` and
+`GOOGLE_AUTH_CLIENT_SECRET` are available during local testing.
 
 **Why separate files?**
 
