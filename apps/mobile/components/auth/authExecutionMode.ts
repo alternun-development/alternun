@@ -1,21 +1,36 @@
-import { resolveAuthRuntimeConfig } from '../../../../packages/auth/src/runtime/config';
+import {
+  getProcessEnv,
+  resolveAuthRuntimeConfig,
+} from '../../../../packages/auth/src/runtime/config';
 
-export function isBetterAuthExecutionEnabled(
-  env: Record<string, string | undefined> = process.env
-): boolean {
-  return resolveAuthRuntimeConfig(env).executionProvider === 'better-auth';
+function resolveRuntimeEnv(
+  env?: Record<string, string | undefined>
+): Record<string, string | undefined> {
+  return env ?? getProcessEnv();
+}
+
+function resolveRuntimeAuthExecutionProvider(
+  env?: Record<string, string | undefined>
+): 'better-auth' | 'supabase' {
+  return resolveAuthRuntimeConfig(resolveRuntimeEnv(env)).executionProvider;
+}
+
+export function isBetterAuthExecutionEnabled(env?: Record<string, string | undefined>): boolean {
+  return resolveRuntimeAuthExecutionProvider(env) === 'better-auth';
 }
 
 export type PrimaryOAuthProviderName = 'google' | 'keycloak';
 
 export function resolvePrimaryOAuthProvider(
-  env: Record<string, string | undefined> = process.env
+  env?: Record<string, string | undefined>
 ): PrimaryOAuthProviderName {
-  if (isBetterAuthExecutionEnabled(env)) {
+  const runtimeEnv = resolveRuntimeEnv(env);
+
+  if (isBetterAuthExecutionEnabled(runtimeEnv)) {
     return 'google';
   }
 
-  const value = env.EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER?.trim().toLowerCase();
+  const value = runtimeEnv.EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER?.trim().toLowerCase();
   if (value === 'keycloak') {
     return 'keycloak';
   }
@@ -23,9 +38,7 @@ export function resolvePrimaryOAuthProvider(
   return 'google';
 }
 
-export function isSocialAuthEnabled(
-  env: Record<string, string | undefined> = process.env
-): boolean {
+export function isSocialAuthEnabled(env?: Record<string, string | undefined>): boolean {
   // Better Auth execution is the real switch for the social buttons.
   // A stale feature flag should not hide the testnet flow.
   return isBetterAuthExecutionEnabled(env);
