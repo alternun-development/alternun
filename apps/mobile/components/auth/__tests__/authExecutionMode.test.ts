@@ -98,12 +98,6 @@ describe('authExecutionMode', () => {
     expect(resolvePrimaryOAuthProvider()).toBe('google');
   });
 
-  it('still allows the legacy keycloak alias outside Better Auth mode', () => {
-    process.env.EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER = 'keycloak';
-
-    expect(resolvePrimaryOAuthProvider()).toBe('keycloak');
-  });
-
   it('enables social auth whenever Better Auth execution is active', () => {
     process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER = 'better-auth';
     process.env.EXPO_PUBLIC_ENABLE_SOCIAL_AUTH = 'false';
@@ -116,5 +110,23 @@ describe('authExecutionMode', () => {
     process.env.EXPO_PUBLIC_ENABLE_SOCIAL_AUTH = 'true';
 
     expect(isSocialAuthEnabled()).toBe(false);
+  });
+
+  it('still allows the legacy keycloak alias outside Better Auth mode', () => {
+    expect(
+      resolvePrimaryOAuthProvider({
+        AUTH_EXECUTION_PROVIDER: 'supabase',
+        EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER: 'keycloak',
+      })
+    ).toBe('keycloak');
+  });
+
+  it('prefers better-auth over a stale social flag in an explicit env object', () => {
+    expect(
+      isSocialAuthEnabled({
+        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+        EXPO_PUBLIC_ENABLE_SOCIAL_AUTH: 'false',
+      })
+    ).toBe(true);
   });
 });
