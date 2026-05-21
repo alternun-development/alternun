@@ -317,7 +317,7 @@ EXPO_PUBLIC_AUTHENTIK_ISSUER=https://testnet.sso.alternun.co/application/o/alter
 EXPO_PUBLIC_AUTHENTIK_CLIENT_ID=alternun-mobile
 EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=supabase
-EXPO_PUBLIC_ENABLE_SOCIAL_AUTH=false
+EXPO_PUBLIC_ENABLE_SOCIAL_AUTH=true
 EXPO_PUBLIC_SUPABASE_URL=https://aznfyazjndfniwsocdka.supabase.co
 EXPO_PUBLIC_SUPABASE_KEY=${stage_supabase_key}
 EXPO_PUBLIC_RELEASE_UPDATE_MODE=on
@@ -363,7 +363,7 @@ local_stage="${SST_STAGE:-${STACK:-${EXPO_PUBLIC_STAGE:-${EXPO_PUBLIC_ENV:-}}}}"
 case "${local_stage}" in
   dev|api-dev|dashboard-dev|admin-dev|backend-dev|identity-dev|mobile|*testnet*|*development*|*preview*)
     export EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
-    export EXPO_PUBLIC_ENABLE_SOCIAL_AUTH=false
+    export EXPO_PUBLIC_ENABLE_SOCIAL_AUTH=true
     ;;
   *)
     if [ -z "${EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE:-}" ]; then
