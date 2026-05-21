@@ -51,7 +51,7 @@ import ShaderBackground from './ShaderBackground';
 import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
-import { resolvePrimaryOAuthProvider } from './authExecutionMode';
+import { isSocialAuthEnabled, resolvePrimaryOAuthProvider } from './authExecutionMode';
 import { shouldForceFreshAuthentikSocialSession } from './authentikWebSessionPolicy';
 import {
   readPendingAuthentikOAuthProvider,
@@ -79,7 +79,6 @@ import {
   readPendingReferralCode,
   writePendingReferralData,
 } from './referralStorage';
-import { isSocialAuthEnabled, resolvePrimaryOAuthProvider } from './authExecutionMode';
 const RESEND_COOLDOWN_SECONDS = 45;
 const SOCIAL_REDIRECT_TIMEOUT_MS = 15000; // 15 seconds
 
