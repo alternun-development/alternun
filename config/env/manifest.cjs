@@ -198,7 +198,7 @@ const variables = {
   },
   EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: {
     description: 'Auth execution provider selector',
-    example: 'supabase',
+    example: 'better-auth',
     required: true,
     targets: {
       mobile: 'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER',
@@ -208,7 +208,7 @@ const variables = {
   },
   AUTH_EXECUTION_PROVIDER: {
     description: 'Runtime auth execution provider',
-    example: 'supabase',
+    example: 'better-auth',
     required: true,
     targets: {
       mobile: 'AUTH_EXECUTION_PROVIDER',
@@ -242,7 +242,7 @@ const variables = {
   },
   EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: {
     description: 'Authentik social-login mode',
-    example: 'supabase',
+    example: 'authentik',
     required: true,
     targets: {
       mobile: 'EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE',

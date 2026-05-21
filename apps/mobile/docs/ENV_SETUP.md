@@ -249,7 +249,7 @@ STACK=production pnpm run infra:deploy:production
 1. `build.sh` sets `STACK=production`
 2. `.env` loads → localhost URLs
 3. `.env.production` loads → **overrides** with `https://api.alternun.co`
-4. Auth provider changes to `supabase`
+4. Auth provider changes to `better-auth`
 5. App uses production API
 6. Deployed to `https://airs.alternun.co` or main domain
 
@@ -265,7 +265,7 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 
 1. Standard `.env` loads
 2. `.env` overrides with custom values
-3. App uses custom backend and Supabase auth for local testing
+3. App uses custom backend and Better Auth social flow for local testing
 
 ## Key Environment Variables
 
@@ -273,7 +273,7 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 
 | Variable                                  | Testnet                                         | Production                              | Purpose                      |
 | ----------------------------------------- | ----------------------------------------------- | --------------------------------------- | ---------------------------- |
-| `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER`     | `better-auth`                                   | `supabase`                              | Which auth service to use    |
+| `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER`     | `better-auth`                                   | `better-auth`                           | Which auth service to use    |
 | `EXPO_PUBLIC_BETTER_AUTH_URL`             | `https://testnet.api.alternun.co/auth`          | `https://api.alternun.co/auth`          | Better-auth service endpoint |
 | `EXPO_PUBLIC_AUTH_EXCHANGE_URL`           | `https://testnet.api.alternun.co/auth/exchange` | `https://api.alternun.co/auth/exchange` | Token exchange endpoint      |
 | `EXPO_PUBLIC_AUTHENTIK_ISSUER`            | `https://testnet.sso.alternun.co/...`           | `https://sso.alternun.co/...`           | Authentik OIDC issuer        |
