@@ -38,6 +38,7 @@ import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { BackToTopButton } from '../common/BackToTopButton';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import AirsIntroSettingsMenu from './AirsIntroSettingsMenu';
+import { resolveHeroWordmarkSource } from './heroWordmarkSource';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { HeroVideoNative } from './HeroVideoNative';
 
@@ -50,9 +51,6 @@ const TOP_PAUSE_SCROLL_Y = 6;
 const HERO_VIDEO_MOBILE = require('../../assets/videos/landing.mp4');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const HERO_VIDEO_DESKTOP = require('../../assets/videos/landing-backup.mp4');
-const AIRS_LOGO_LIGHT = require('../../assets/SVGs/AIRS-logo-light.svg');
-const AIRS_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg');
-const AIRS_LOGO_BLACK_DARK = require('../../assets/SVGs/AIRS-logo-black-dark.svg');
 
 type HeroGlassButtonProps = {
   label: string;
@@ -449,11 +447,7 @@ const AirsIntroExperience = forwardRef<
           mutedButtonBorder: 'rgba(15,23,42,0.16)',
         };
 
-    const heroWordmarkSource = isDark
-      ? logoAtTop
-        ? AIRS_LOGO_BLACK_DARK
-        : AIRS_LOGO_DARK
-      : AIRS_LOGO_LIGHT;
+    const heroWordmarkSource = resolveHeroWordmarkSource(isDark, logoAtTop);
     const heroCopyTop = isMobile
       ? Math.min(heroHeight * 0.29, 240)
       : Math.min(heroHeight * 0.34, 330);
