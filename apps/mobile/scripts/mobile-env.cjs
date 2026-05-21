@@ -253,6 +253,10 @@ function resolveMobileBuildAuthEnv(env = process.env, options = {}) {
     ...options,
     skipLocalEnv: shouldUseInfraEnvFallback(env),
   });
+  const stage = String(
+    env.SST_STAGE || env.STACK || env.EXPO_PUBLIC_STAGE || env.EXPO_PUBLIC_ENV || ''
+  ).trim().toLowerCase();
+  const isProductionStage = stage.includes('prod') || stage.includes('production');
   const executionProvider = publicEnv.executionProvider || publicEnv.publicExecutionProvider || '';
   const publicExecutionProvider =
     publicEnv.publicExecutionProvider || publicEnv.executionProvider || '';
@@ -264,7 +268,7 @@ function resolveMobileBuildAuthEnv(env = process.env, options = {}) {
     : publicEnv.authentikSocialLoginMode || '';
   const authentikIssuer = publicEnv.authentikIssuer || '';
   const authentikClientId = publicEnv.authentikClientId || '';
-  const enableSocialAuth = deployStage ? 'false' : publicEnv.enableSocialAuth || '';
+  const enableSocialAuth = deployStage ? (isProductionStage ? 'false' : 'true') : publicEnv.enableSocialAuth || '';
 
   const buildEnv = {
     AUTH_EXECUTION_PROVIDER: executionProvider,

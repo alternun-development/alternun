@@ -221,14 +221,14 @@ describe('mobile-env', () => {
     });
   });
 
-  it('forces social auth off for deploy-style builds even when the shell enables it', () => {
+  it('enables social auth for non-production deploy-style builds even when the shell disables it', () => {
     const mobileRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'alternun-mobile-root-'));
 
     expect(
       resolveMobileBuildAuthEnv(
         {
           STACK: 'dev',
-          EXPO_PUBLIC_ENABLE_SOCIAL_AUTH: 'true',
+          EXPO_PUBLIC_ENABLE_SOCIAL_AUTH: 'false',
         },
         {
           mobileRoot,
@@ -236,6 +236,31 @@ describe('mobile-env', () => {
             EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
             EXPO_PUBLIC_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
             EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://testnet.api.alternun.co/auth/exchange',
+            EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
+          },
+        }
+      )
+    ).toMatchObject({
+      EXPO_PUBLIC_ENABLE_SOCIAL_AUTH: 'true',
+      EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
+    });
+  });
+
+  it('keeps social auth off for production deploy-style builds', () => {
+    const mobileRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'alternun-mobile-root-'));
+
+    expect(
+      resolveMobileBuildAuthEnv(
+        {
+          STACK: 'prod',
+          EXPO_PUBLIC_ENABLE_SOCIAL_AUTH: 'true',
+        },
+        {
+          mobileRoot,
+          infraEnv: {
+            EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+            EXPO_PUBLIC_BETTER_AUTH_URL: 'https://api.alternun.co',
+            EXPO_PUBLIC_AUTH_EXCHANGE_URL: 'https://api.alternun.co/auth/exchange',
             EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: 'authentik',
           },
         }
