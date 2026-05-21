@@ -79,6 +79,7 @@ import {
   readPendingReferralCode,
   writePendingReferralData,
 } from './referralStorage';
+import { isSocialAuthEnabled, resolvePrimaryOAuthProvider } from './authExecutionMode';
 const RESEND_COOLDOWN_SECONDS = 45;
 const SOCIAL_REDIRECT_TIMEOUT_MS = 15000; // 15 seconds
 
@@ -153,10 +154,6 @@ function createDefaultRequiredFieldState(): RequiredFieldState {
     password: false,
     confirmPassword: false,
   };
-}
-
-function isSocialAuthEnabled(): boolean {
-  return process.env.EXPO_PUBLIC_ENABLE_SOCIAL_AUTH === 'true';
 }
 
 export default function AuthSignInScreen({
