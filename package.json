@@ -1,11 +1,12 @@
 {
   "name": "alternun",
-  "version": "1.0.252",
+  "version": "1.0.253",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "dev:all": "concurrently -k --names api,admin,mobile,docs --prefix-colors blue,green,magenta,cyan \"pnpm --filter @alternun/api run dev\" \"pnpm --filter @alternun/admin run dev:local\" \"pnpm --filter @alternun/mobile run web:local:app\" \"pnpm --filter alternun-docs run dev:local\"",
+    "dev:all": "node scripts/dev-all.mjs",
+    "dev:all:video": "node scripts/dev-all.mjs --video-studio",
     "admin": "pnpm --filter @alternun/admin dev",
     "mobile": "pnpm --filter ./apps/mobile start",
     "lint": "turbo run lint",
