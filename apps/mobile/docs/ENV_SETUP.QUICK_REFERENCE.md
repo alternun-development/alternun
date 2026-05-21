@@ -22,8 +22,8 @@ apps/mobile/
 | File               | When Used                     | Key URLs                  | Auth Provider |
 | ------------------ | ----------------------------- | ------------------------- | ------------- |
 | `.env`             | Local dev                     | `localhost:8082`          | `better-auth` |
-| `.env.development` | `STACK=dev` deployment        | `testnet.api.alternun.co` | `supabase`    |
-| `.env.production`  | `STACK=production` deployment | `api.alternun.co`         | `supabase`    |
+| `.env.development` | `STACK=dev` deployment        | `testnet.api.alternun.co` | `better-auth` |
+| `.env.production`  | `STACK=production` deployment | `api.alternun.co`         | `better-auth` |
 
 ## Load Order
 
@@ -78,7 +78,7 @@ STACK=production pnpm run deploy:production
 ```bash
 cat > apps/mobile/.env << EOF
 EXPO_PUBLIC_API_URL=https://custom-backend.example.com
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 EOF
 ```
 
@@ -120,12 +120,13 @@ Update check interval: 300 seconds
 2. Try hard refresh or clear browser cache
 3. Check if new bundle was uploaded (check build output for "Exported: dist")
 
-### "Want to test production auth flow locally"
+### "Want to test Better Auth social flow locally"
 
 1. Create `.env`:
 
 ```bash
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase
+EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
+EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik
 ```
 
 2. Rebuild and test

@@ -251,10 +251,10 @@ describe('mobile-env', () => {
     const envPath = path.join(tempDir, '.env');
     const localPath = path.join(tempDir, '.env.local');
 
-    fs.writeFileSync(envPath, 'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase\n');
-    fs.writeFileSync(localPath, 'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth\n');
+    fs.writeFileSync(envPath, 'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth\n');
+    fs.writeFileSync(localPath, 'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=supabase\n');
 
     const loaded = loadMobileEnv(tempDir);
-    expect(loaded.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER).toBe('supabase');
+    expect(loaded.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER).toBe('better-auth');
   });
 });
