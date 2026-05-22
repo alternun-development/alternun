@@ -184,7 +184,9 @@ function isProxyAutoEnableStage(baseURL: string): boolean {
   try {
     const url = new URL(baseURL);
     const hostname = url.hostname.toLowerCase();
-    return hostname.includes('testnet.') || hostname.includes('preview.');
+    // Keep OAuth proxy fallback limited to preview deployments.
+    // Testnet and production should use their own direct callback URLs.
+    return hostname.includes('preview.');
   } catch {
     return false;
   }
