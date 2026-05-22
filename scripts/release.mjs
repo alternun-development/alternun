@@ -488,6 +488,7 @@ function buildReleaseArtifacts(dryRun, env, buildStage, versionBranch) {
   // stage-specific env instead of drifting back to infra defaults.
   const buildEnv = {
     ...env,
+    NODE_ENV: 'production',
     STACK: env.STACK ?? buildStage,
     SST_STAGE: env.SST_STAGE ?? buildStage,
     EXPO_PUBLIC_STAGE: env.EXPO_PUBLIC_STAGE ?? buildStage,
@@ -495,7 +496,15 @@ function buildReleaseArtifacts(dryRun, env, buildStage, versionBranch) {
     ALTERNUN_VERSION_BRANCH: versionBranch,
   };
 
-  run('pnpm', ['exec', 'turbo', 'run', 'build', '--force'], {
+  // Build the workspace without `@alternun/web` first. The web build performs a
+  // second-stage Next export and has proven sensitive to the full concurrent
+  // turbo graph, so we run it after the rest of the workspace settles.
+  run('pnpm', ['exec', 'turbo', 'run', 'build', '--force', '--filter=!@alternun/web'], {
+    dryRun,
+    env: buildEnv,
+  });
+
+  run('pnpm', ['--filter', '@alternun/web', 'build'], {
     dryRun,
     env: buildEnv,
   });
