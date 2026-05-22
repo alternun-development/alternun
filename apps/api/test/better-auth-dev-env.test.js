@@ -81,6 +81,18 @@ test('resolveBetterAuthDevConfig parses optional OAuth proxy settings', () => {
   assert.equal(config.oauthProxy.maxAge, 45);
 });
 
+test('resolveBetterAuthDevConfig auto-enables OAuth proxy for testnet Better Auth deployments', () => {
+  const config = resolveBetterAuthDevConfig({
+    AUTH_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
+    AUTHENTIK_JWT_SIGNING_KEY: 'issuer-signing-key',
+  });
+
+  assert.equal(config.oauthProxy.enabled, true);
+  assert.equal(config.oauthProxy.currentURL, 'https://testnet.airs.alternun.co');
+  assert.equal(config.oauthProxy.productionURL, 'https://airs.alternun.co');
+  assert.equal(config.oauthProxy.secret, config.secret);
+});
+
 test('loadEnvFile parses a dedicated Better Auth env file', () => {
   const tempDir = mkdtempSync(join(tmpdir(), 'alternun-better-auth-env-'));
   const envPath = join(tempDir, '.env.better-auth');
