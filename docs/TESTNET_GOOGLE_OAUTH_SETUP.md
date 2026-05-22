@@ -380,9 +380,9 @@ pnpm infra:deploy:dashboard-dev
 
 **Fix**:
 
-- Better Auth now sets cookies with `Domain: .alternun.co` (the parent domain)
-- This allows both subdomains to read the same session cookie
-- **Verify**: Reload page, check DevTools Cookies, confirm domain is `.alternun.co`
+- Better Auth now sets cookies with the stage-scoped parent domain, for example `Domain: .testnet.alternun.co`
+- This keeps testnet cookies isolated from production while still allowing the `testnet.api` and `testnet.airs` subdomains to share the same session cookie
+- **Verify**: Reload page, check DevTools Cookies, confirm domain is `.testnet.alternun.co`
 
 ### Discord button missing on testnet
 
