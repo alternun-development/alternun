@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+export NODE_ENV=production
+
 wait_for_update_dist() {
   local dist_entry="../../packages/update/dist/index.js"
   local attempts=0
