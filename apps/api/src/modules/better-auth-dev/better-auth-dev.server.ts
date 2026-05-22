@@ -36,6 +36,27 @@ function buildOAuthProxyPlugin(
   });
 }
 
+function deriveCrossSubDomainCookieDomain(baseURL: string): string | undefined {
+  try {
+    const url = new URL(baseURL);
+    const hostnameParts = url.hostname.split('.');
+    const apiIndex = hostnameParts.indexOf('api');
+
+    if (apiIndex < 0) {
+      return undefined;
+    }
+
+    const scopedHostname = hostnameParts.filter((part) => part !== 'api').join('.');
+    if (!scopedHostname || scopedHostname === url.hostname) {
+      return undefined;
+    }
+
+    return `.${scopedHostname}`;
+  } catch {
+    return undefined;
+  }
+}
+
 function normalizeString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
@@ -90,18 +111,10 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
   const hasGoogleProvider = Boolean(config.googleClientId && config.googleClientSecret);
   const hasDiscordProvider = Boolean(config.discordClientId && config.discordClientSecret);
 
-  // Derive parent domain for cross-subdomain cookies (e.g., ".alternun.co" from "api.alternun.co")
-  let cookieDomain: string | undefined;
-  try {
-    const url = new URL(config.baseURL);
-    const parts = url.hostname.split('.');
-    if (parts.length > 2) {
-      // For "api.alternun.co" → ".alternun.co"; for "api.example.co.uk" → ".example.co.uk"
-      cookieDomain = `.${parts.slice(-2).join('.')}`;
-    }
-  } catch {
-    // Fall back to undefined (browser will handle it)
-  }
+  // Keep cross-subdomain cookies inside the current stage boundary.
+  // For example, "testnet.api.alternun.co" becomes ".testnet.alternun.co",
+  // while production "api.alternun.co" still becomes ".alternun.co".
+  const cookieDomain = deriveCrossSubDomainCookieDomain(config.baseURL);
 
   const socialProviders = {
     ...(hasGoogleProvider
