@@ -81,14 +81,26 @@ test('resolveBetterAuthDevConfig parses optional OAuth proxy settings', () => {
   assert.equal(config.oauthProxy.maxAge, 45);
 });
 
-test('resolveBetterAuthDevConfig auto-enables OAuth proxy for testnet Better Auth deployments', () => {
+test('resolveBetterAuthDevConfig keeps testnet Better Auth deployments on the direct callback flow', () => {
   const config = resolveBetterAuthDevConfig({
     AUTH_BETTER_AUTH_URL: 'https://testnet.api.alternun.co',
     AUTHENTIK_JWT_SIGNING_KEY: 'issuer-signing-key',
   });
 
+  assert.equal(config.oauthProxy.enabled, false);
+  assert.equal(config.oauthProxy.currentURL, undefined);
+  assert.equal(config.oauthProxy.productionURL, undefined);
+  assert.equal(config.oauthProxy.secret, undefined);
+});
+
+test('resolveBetterAuthDevConfig auto-enables OAuth proxy for preview Better Auth deployments', () => {
+  const config = resolveBetterAuthDevConfig({
+    AUTH_BETTER_AUTH_URL: 'https://preview.api.alternun.co',
+    AUTHENTIK_JWT_SIGNING_KEY: 'issuer-signing-key',
+  });
+
   assert.equal(config.oauthProxy.enabled, true);
-  assert.equal(config.oauthProxy.currentURL, 'https://testnet.airs.alternun.co');
+  assert.equal(config.oauthProxy.currentURL, 'https://preview.airs.alternun.co');
   assert.equal(config.oauthProxy.productionURL, 'https://airs.alternun.co');
   assert.equal(config.oauthProxy.secret, config.secret);
 });

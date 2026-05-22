@@ -109,8 +109,9 @@ APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 
 - confirm `POST /auth/sign-in/social` returns the Better Auth state cookie
 - confirm the callback URL is `https://testnet.airs.alternun.co/auth/callback`
-- if the error is `state_mismatch`, confirm the testnet Better Auth runtime is using the OAuth proxy fallback for the `https://testnet.api.alternun.co` origin
-- do not use `testflight.alternun.io` as the Better Auth callback URL unless the runtime explicitly trusts it
+- confirm Google is registering `https://testnet.api.alternun.co/auth/callback/google` for testnet and `https://api.alternun.co/auth/callback/google` for production
+- if Google sends you to `https://airs.alternun.co/auth/callback/google`, the runtime is still in OAuth proxy mode and must be redeployed with the proxy disabled
+- do not register `https://airs.alternun.co/auth/callback/google` for the separated testnet flow unless you intentionally want proxy-based routing
 
 ### Someone used `api-dev`
 
