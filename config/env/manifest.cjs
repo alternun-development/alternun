@@ -73,6 +73,7 @@ const variables = {
   },
   DISCORD_PUBLIC_KEY: {
     description: 'Discord application public key',
+    example: 'discord-public-key-placeholder',
   },
   DISCORD_AUTH_CLIENT_SECRET: {
     description: 'Discord OAuth client secret',
