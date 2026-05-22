@@ -61,6 +61,34 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', async () =>
   }
 });
 
+test('createBetterAuthDevAuth scopes cross-subdomain cookies to the active stage', async () => {
+  const originalEnv = { ...process.env };
+
+  try {
+    process.env.DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:5432/postgres';
+
+    const auth = createBetterAuthDevAuth({
+      port: 8082,
+      host: '127.0.0.1',
+      baseURL: 'https://testnet.api.alternun.co',
+      secret: 'example-better-auth-secret',
+      trustedOrigins: ['https://testnet.airs.alternun.co'],
+      googleClientId: 'example-google-client',
+      googleClientSecret: 'example-google-secret',
+      discordClientId: 'example-discord-client',
+      discordClientSecret: 'example-discord-secret',
+      oauthProxy: {
+        enabled: false,
+      },
+    });
+
+    assert.equal(auth.options.advanced.crossSubDomainCookies.enabled, true);
+    assert.equal(auth.options.advanced.crossSubDomainCookies.domain, '.testnet.alternun.co');
+  } finally {
+    process.env = originalEnv;
+  }
+});
+
 test('createBetterAuthDevAuth accepts backend database env fallback', () => {
   const originalEnv = { ...process.env };
 
