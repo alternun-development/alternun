@@ -15,18 +15,21 @@ export function normalizeBetterAuthRequestBody(pathname: string, body: unknown):
 
   const callbackURL = readTrimmedString(body.callbackURL);
   const redirectUri = readTrimmedString(body.redirectUri);
+  const errorCallbackURL = readTrimmedString(body.errorCallbackURL);
+  const newUserCallbackURL = readTrimmedString(body.newUserCallbackURL);
 
-  if (!redirectUri || callbackURL) {
+  if (!callbackURL && !redirectUri) {
     return body;
   }
 
-  const errorCallbackURL = readTrimmedString(body.errorCallbackURL) ?? redirectUri;
-  const newUserCallbackURL = readTrimmedString(body.newUserCallbackURL) ?? redirectUri;
+  const resolvedCallbackURL = callbackURL ?? redirectUri;
+  const resolvedErrorCallbackURL = errorCallbackURL ?? resolvedCallbackURL;
+  const resolvedNewUserCallbackURL = newUserCallbackURL ?? resolvedCallbackURL;
 
   return {
     ...body,
-    callbackURL: redirectUri,
-    errorCallbackURL,
-    newUserCallbackURL,
+    callbackURL: resolvedCallbackURL,
+    errorCallbackURL: resolvedErrorCallbackURL,
+    newUserCallbackURL: resolvedNewUserCallbackURL,
   };
 }

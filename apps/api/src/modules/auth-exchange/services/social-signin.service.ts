@@ -2,6 +2,7 @@ import { Injectable, Optional } from '@nestjs/common';
 import { SocialSignInRequestDto } from '../dto/social-signin-request.dto';
 import { resolveBetterAuthDevConfig } from '../../better-auth-dev/better-auth-dev.config';
 import { createBetterAuthDevAuth } from '../../better-auth-dev/better-auth-dev.server';
+import { normalizeBetterAuthRequestBody } from '../../../common/bootstrap/better-auth-request-body';
 
 interface BetterAuthSocialSignInBody {
   provider: string;
@@ -87,18 +88,19 @@ export class SocialSignInService {
       firstNonEmptyTrimmed([request.newUserCallbackURL, callbackURL]) ?? undefined;
     const authRuntime = this.authRuntime ?? resolveBetterAuthSocialSignInAuth();
     const baseURL = resolveBetterAuthDevConfig(process.env).baseURL;
+    const normalizedBody = normalizeBetterAuthRequestBody('/auth/sign-in/social', {
+      provider: normalizedProvider,
+      callbackURL,
+      errorCallbackURL,
+      newUserCallbackURL,
+    });
     const response = await authRuntime.handler(
       new Request(new URL('/auth/sign-in/social', baseURL), {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
         },
-        body: JSON.stringify({
-          provider: normalizedProvider,
-          callbackURL,
-          errorCallbackURL,
-          newUserCallbackURL,
-        } satisfies BetterAuthSocialSignInBody),
+        body: JSON.stringify(normalizedBody as BetterAuthSocialSignInBody),
       })
     );
 

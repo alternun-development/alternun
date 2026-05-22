@@ -168,6 +168,58 @@ test('proxyBetterAuthRequest maps legacy redirectUri payloads to Better Auth cal
   });
 });
 
+test('proxyBetterAuthRequest fills missing error and new-user callback URLs from callbackURL', async () => {
+  let observedBody = null;
+
+  const fetchFn = async (_url, init) => {
+    observedBody = JSON.parse(init.body);
+
+    return {
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: {
+        entries() {
+          return [['content-type', 'application/json']][Symbol.iterator]();
+        },
+        get() {
+          return null;
+        },
+      },
+      async arrayBuffer() {
+        return Buffer.from(JSON.stringify({ ok: true }), 'utf8');
+      },
+    };
+  };
+
+  const request = {
+    method: 'POST',
+    raw: {
+      url: '/auth/sign-in/social',
+    },
+    headers: {
+      origin: 'http://localhost:8081',
+      'content-type': 'application/json',
+      host: 'localhost:8082',
+    },
+    body: {
+      provider: 'google',
+      callbackURL: 'https://testnet.airs.alternun.co/auth/callback',
+    },
+  };
+
+  const reply = createReply();
+  const handled = await proxyBetterAuthRequest(request, reply, 'http://127.0.0.1:8084', fetchFn);
+
+  assert.equal(handled, true);
+  assert.deepEqual(observedBody, {
+    provider: 'google',
+    callbackURL: 'https://testnet.airs.alternun.co/auth/callback',
+    errorCallbackURL: 'https://testnet.airs.alternun.co/auth/callback',
+    newUserCallbackURL: 'https://testnet.airs.alternun.co/auth/callback',
+  });
+});
+
 test('proxyBetterAuthRequest answers OPTIONS preflight locally', async () => {
   let fetchCalled = false;
 
