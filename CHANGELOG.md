@@ -1,3 +1,39 @@
+## [1.0.256](https://example.com/home/ed/Documents/Alternun/alternun/compare/v1.0.252-dev.0...v1.0.256) (2026-05-22)
+
+### Bug Fixes
+
+- **repo:** fix(admin,api,docs): app, build, release, version.development
+- **repo:** fix(web): build
+- **repo:** fix(web): next-env.d, _document
+- **repo:** fix(web): StaticErrorPage
+- **repo:** fix(web): pages
+
+
+
+### Bug Fixes
+
+* **admin,api,docs:** app, build, release, version.development ([b83bede](https://example.com/home/ed/Documents/Alternun/alternun/commits/b83bede16e3780c2aba5e59cc77d3bc62eb6a16b))
+* **api:** auto-enable testnet oauth proxy ([ded9c52](https://example.com/home/ed/Documents/Alternun/alternun/commits/ded9c5263f32205578a444cc694fb3d6cdb996ec))
+* **auth:** keep Better Auth callback errors on the auth route ([e37c86a](https://example.com/home/ed/Documents/Alternun/alternun/commits/e37c86a6bb71b663e8772593bc291d4b9592c4f2))
+* **auth:** keep testnet on direct callback flow ([627df60](https://example.com/home/ed/Documents/Alternun/alternun/commits/627df60029a88fbd094db82567d25180521560bd))
+* **auth:** restore local Better Auth social flow ([9523f61](https://example.com/home/ed/Documents/Alternun/alternun/commits/9523f61f0d1475c190f6117bc8206bb9af656422))
+* **auth:** scope better auth cookies to stage domains ([e72ca87](https://example.com/home/ed/Documents/Alternun/alternun/commits/e72ca8718219c771f86911af8bb22edff7ddc4cc))
+* **infra:** derive testnet api URLs from api host ([576e1c9](https://example.com/home/ed/Documents/Alternun/alternun/commits/576e1c949afd57b42165e8d2d2de09b044ac24ee))
+* **mobile:** enable testnet social auth ([716a256](https://example.com/home/ed/Documents/Alternun/alternun/commits/716a256e52207501b38d091daceb71810cce4eaa))
+* **mobile:** keep hero wordmark consistent in dark mode ([9d11df0](https://example.com/home/ed/Documents/Alternun/alternun/commits/9d11df01a997413f9fbf8e1dcb234cb08366cf8c))
+* **mobile:** remove duplicate auth import ([5ef31cf](https://example.com/home/ed/Documents/Alternun/alternun/commits/5ef31cf172a36bbb01ee4b8b289da1901f9a6afd))
+* **mobile:** restore testnet social auth ([549f134](https://example.com/home/ed/Documents/Alternun/alternun/commits/549f1340918104181336482edb752383f1c5eedf))
+* **mobile:** restore testnet social auth ([6b4f4f9](https://example.com/home/ed/Documents/Alternun/alternun/commits/6b4f4f9ae3fc4e9fde5372616c4c52a941baa531))
+* **secrets:** remove discord public key from env example ([07f4247](https://example.com/home/ed/Documents/Alternun/alternun/commits/07f4247e1bf505fb25475ba5acdc7188cbe57a42))
+* **web:** build ([419d276](https://example.com/home/ed/Documents/Alternun/alternun/commits/419d276e3a4b098a5e3e473b3e468ca1911d7963))
+* **web:** next-env.d, _document ([91b1e3b](https://example.com/home/ed/Documents/Alternun/alternun/commits/91b1e3bdb9d6c4268981eab520d329b43b46fee7))
+* **web:** pages ([48285a1](https://example.com/home/ed/Documents/Alternun/alternun/commits/48285a1a7de966d170265d305d78c649a8758f59))
+* **web:** StaticErrorPage ([ad17b7d](https://example.com/home/ed/Documents/Alternun/alternun/commits/ad17b7df7b5f263edfc69cebbef30aa155704c17))
+
+
+
+
+
 ## [1.0.252](https://github.com/alternun-development/alternun/compare/v1.0.251-dev.0...v1.0.252) (2026-05-07)
 
 ### Bug Fixes
