@@ -10,13 +10,12 @@ import {
   Pin,
   PinOff,
   ChevronRight,
-  type LucideIcon,
 } from 'lucide-react';
 
 interface NavItem {
   key: string;
   label: string;
-  icon: LucideIcon;
+  icon: React.ElementType;
   badge?: number;
 }
 
@@ -42,7 +41,7 @@ export default function Sidebar({
   activeKey = 'dashboard',
   onNavigate,
   defaultPinned = false,
-}: SidebarProps) {
+}: SidebarProps): React.JSX.Element {
   const [pinned, setPinned] = useState(defaultPinned);
   const [hovered, setHovered] = useState(false);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -194,7 +193,7 @@ function SidebarItem({
   isActive: boolean;
   expanded: boolean;
   onPress: () => void;
-}) {
+}): React.JSX.Element {
   const IconComponent = item.icon;
 
   return (
