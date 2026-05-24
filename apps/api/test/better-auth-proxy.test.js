@@ -220,6 +220,54 @@ test('proxyBetterAuthRequest fills missing error and new-user callback URLs from
   });
 });
 
+test('proxyBetterAuthRequest rewrites auth error redirects to the app callback route', async () => {
+  const fetchFn = async () => ({
+    ok: true,
+    status: 302,
+    statusText: 'Found',
+    headers: {
+      entries() {
+        return [
+          ['location', '/?error=state_mismatch'],
+          ['content-type', 'application/octet-stream'],
+        ][Symbol.iterator]();
+      },
+      getSetCookie() {
+        return [];
+      },
+      get(name) {
+        return name.toLowerCase() === 'location' ? '/?error=state_mismatch' : null;
+      },
+    },
+    async arrayBuffer() {
+      return Buffer.alloc(0);
+    },
+  });
+
+  const request = {
+    method: 'GET',
+    raw: {
+      url: '/auth/error?error=state_mismatch',
+    },
+    headers: {
+      origin: 'https://testnet.airs.alternun.co',
+      'content-type': 'application/json',
+      host: 'testnet.api.alternun.co',
+      'x-forwarded-host': 'testnet.api.alternun.co',
+      'x-forwarded-proto': 'https',
+    },
+  };
+
+  const reply = createReply();
+  const handled = await proxyBetterAuthRequest(request, reply, 'https://testnet.api.alternun.co', fetchFn);
+
+  assert.equal(handled, true);
+  assert.equal(
+    reply.headers.location,
+    'https://testnet.airs.alternun.co/auth/callback?error=state_mismatch'
+  );
+});
+
 test('proxyBetterAuthRequest answers OPTIONS preflight locally', async () => {
   let fetchCalled = false;
 
