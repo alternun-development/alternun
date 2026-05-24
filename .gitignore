@@ -41,3 +41,5 @@ apps/admin/src/sst-env.d.ts
 tmp/
 __pycache__/
 apps/admin/src/bones/
+
+packages/video-studio/build
