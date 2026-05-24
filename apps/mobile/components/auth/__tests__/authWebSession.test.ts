@@ -14,6 +14,32 @@ const { describe, expect, it } = globalThis as unknown as {
 };
 
 describe('restoreBetterAuthSession', () => {
+  it('retries until the Better Auth session token becomes available', async () => {
+    let refreshCalls = 0;
+    let tokenCalls = 0;
+
+    const restored = await restoreBetterAuthSession(
+      {
+        refreshExecutionSession: () => {
+          refreshCalls += 1;
+          return Promise.resolve(undefined);
+        },
+        getSessionToken: () => {
+          tokenCalls += 1;
+          return Promise.resolve(tokenCalls === 1 ? null : 'session-token');
+        },
+      },
+      {
+        retries: 2,
+        retryDelayMs: 0,
+      }
+    );
+
+    expect(restored).toBe(true);
+    expect(refreshCalls).toBe(2);
+    expect(tokenCalls).toBe(2);
+  });
+
   it('retries until the canonical Alternun session is available', async () => {
     let refreshCalls = 0;
     let alternunCalls = 0;
