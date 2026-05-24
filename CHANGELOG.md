@@ -1,3 +1,9 @@
+## [1.0.267](https://github.com/alternun-development/alternun/compare/v1.0.266-dev.0...v1.0.267) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(auth): BetterAuthExecutionProvider, provider-contracts.test
+
 ## [1.0.266](https://github.com/alternun-development/alternun/compare/v1.0.265-dev.0...v1.0.266) (2026-05-24)
 
 ### Bug Fixes
