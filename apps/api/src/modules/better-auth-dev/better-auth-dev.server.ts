@@ -57,6 +57,54 @@ function deriveCrossSubDomainCookieDomain(baseURL: string): string | undefined {
   }
 }
 
+function isLoopbackHostname(hostname: string): boolean {
+  const normalized = hostname.trim().toLowerCase();
+  return (
+    normalized === 'localhost' ||
+    normalized === '127.0.0.1' ||
+    normalized === '::1' ||
+    normalized === '0.0.0.0'
+  );
+}
+
+function deriveAppOriginFromBaseURL(baseURL: string): string | undefined {
+  try {
+    const url = new URL(baseURL);
+
+    if (isLoopbackHostname(url.hostname)) {
+      const port = Number(url.port || '0');
+      if (Number.isFinite(port) && port > 0) {
+        url.port = String(Math.max(port - 1, 1));
+      } else {
+        url.port = '8081';
+      }
+
+      return url.origin;
+    }
+
+    const hostnameParts = url.hostname.split('.');
+    const apiIndex = hostnameParts.indexOf('api');
+    if (apiIndex < 0) {
+      return undefined;
+    }
+
+    hostnameParts[apiIndex] = 'airs';
+    url.hostname = hostnameParts.join('.');
+    return url.origin;
+  } catch {
+    return undefined;
+  }
+}
+
+function deriveBetterAuthErrorUrl(baseURL: string): string | undefined {
+  const appOrigin = deriveAppOriginFromBaseURL(baseURL);
+  if (!appOrigin) {
+    return undefined;
+  }
+
+  return `${appOrigin}/auth/callback`;
+}
+
 function normalizeString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
@@ -163,6 +211,7 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
     config.oauthProxy.currentURL,
     config.oauthProxy.productionURL,
   ]);
+  const errorURL = deriveBetterAuthErrorUrl(config.baseURL);
 
   const isProduction = process.env.NODE_ENV === 'production';
   const db = getDatabase();
@@ -176,6 +225,7 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
     baseURL: config.baseURL,
     basePath: '/auth',
     secret: config.secret,
+    ...(errorURL ? { errorURL } : {}),
     trustedOrigins,
     database: createDrizzleAdapter(db, {
       provider: 'pg',
