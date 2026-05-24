@@ -22,7 +22,7 @@ You need:
   - Must have testnet callback URL registered
 - **AWS Secrets Manager** access in the Alternun account (12....16)
 - **GitHub repository** access to update workflow secrets
-- **Deployed testnet infrastructure** (api.testnet.alternun.co running)
+- **Deployed testnet infrastructure** (`testnet.api.alternun.co` running)
 
 ---
 
@@ -376,13 +376,13 @@ pnpm infra:deploy:dashboard-dev
 
 ### Session cookie not set or lost
 
-**Cause**: Cookie domain mismatch between `airs.alternun.co` (frontend) and `api.alternun.co` (API).
+**Cause**: Cookie domain mismatch between `testnet.airs.alternun.co` (frontend) and `testnet.api.alternun.co` (API).
 
 **Fix**:
 
-- Better Auth now sets cookies with the stage-scoped parent domain, for example `Domain: .testnet.alternun.co`
-- This keeps testnet cookies isolated from production while still allowing the `testnet.api` and `testnet.airs` subdomains to share the same session cookie
-- **Verify**: Reload page, check DevTools Cookies, confirm domain is `.testnet.alternun.co`
+- Better Auth now sets cookies on the parent domain, for example `Domain: .alternun.co`
+- This allows the `testnet.api` and `testnet.airs` subdomains to share the same session cookie
+- **Verify**: Reload page, check DevTools Cookies, confirm domain is `.alternun.co`
 
 ### Discord button missing on testnet
 

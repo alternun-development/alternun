@@ -41,6 +41,7 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', async () =>
     assert.equal(typeof auth.options.emailVerification.sendVerificationEmail, 'function');
     assert.equal(auth.options.advanced.database.generateId, 'uuid');
     assert.equal(auth.options.account.skipStateCookieCheck, true);
+    assert.equal(auth.options.advanced.crossSubDomainCookies, undefined);
     assert.equal(auth.options.account.accountLinking.trustedProviders.includes('discord'), true);
     assert.equal(Boolean(auth.options.socialProviders.discord), true);
     assert.equal(auth.options.socialProviders.google.redirectURI, undefined);
@@ -61,7 +62,7 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', async () =>
   }
 });
 
-test('createBetterAuthDevAuth scopes cross-subdomain cookies to the active stage', async () => {
+test('createBetterAuthDevAuth scopes cross-subdomain cookies to the parent domain', async () => {
   const originalEnv = { ...process.env };
 
   try {
@@ -83,7 +84,7 @@ test('createBetterAuthDevAuth scopes cross-subdomain cookies to the active stage
     });
 
     assert.equal(auth.options.advanced.crossSubDomainCookies.enabled, true);
-    assert.equal(auth.options.advanced.crossSubDomainCookies.domain, '.testnet.alternun.co');
+    assert.equal(auth.options.advanced.crossSubDomainCookies.domain, '.alternun.co');
   } finally {
     process.env = originalEnv;
   }
