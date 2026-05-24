@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { normalizeBetterAuthRequestBody } from './better-auth-request-body';
 import { applyBetterAuthCorsHeaders } from './better-auth-cors';
+import { rewriteBetterAuthErrorRedirect } from './better-auth-error-redirect';
 
 const BETTER_AUTH_PUBLIC_PREFIX = '/auth';
 const BETTER_AUTH_EXCHANGE_PATH = '/auth/exchange';
@@ -107,7 +108,9 @@ export function buildBetterAuthProxyTargetUrl(requestUrl: string, targetBaseUrl:
 async function copyProxyResponse(
   reply: FastifyReply,
   response: Response,
-  requestHeaders: BetterAuthRequestHeaders
+  requestHeaders: BetterAuthRequestHeaders,
+  requestPath: string,
+  fallbackBaseUrl: string
 ): Promise<void> {
   void reply.code(response.status);
 
@@ -119,10 +122,22 @@ async function copyProxyResponse(
     void reply.header('set-cookie', setCookies);
   }
 
+  const rewrittenLocation = rewriteBetterAuthErrorRedirect(
+    response.headers.get?.('location') ?? null,
+    requestPath,
+    requestHeaders,
+    fallbackBaseUrl
+  );
+
   const responseHeaderEntries = Array.from(response.headers.entries());
   for (const [name, value] of responseHeaderEntries) {
     const normalizedName = name.toLowerCase();
     if (normalizedName === 'set-cookie' || HOP_BY_HOP_HEADERS.has(normalizedName)) {
+      continue;
+    }
+
+    if (normalizedName === 'location' && rewrittenLocation) {
+      void reply.header(name, rewrittenLocation);
       continue;
     }
 
@@ -200,7 +215,13 @@ export async function proxyBetterAuthRequest(
     return true;
   }
 
-  await copyProxyResponse(reply, upstream, request.headers as BetterAuthRequestHeaders);
+  await copyProxyResponse(
+    reply,
+    upstream,
+    request.headers as BetterAuthRequestHeaders,
+    incomingUrl.pathname,
+    targetBaseUrl
+  );
   return true;
 }
 

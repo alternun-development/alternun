@@ -212,6 +212,38 @@ test('handleBetterAuthRuntimeRequest maps legacy redirectUri payloads to Better 
   });
 });
 
+test('handleBetterAuthRuntimeRequest rewrites auth error redirects to the app callback route', async () => {
+  const request = {
+    method: 'GET',
+    raw: {
+      url: '/auth/error?error=state_mismatch',
+    },
+    headers: {
+      origin: 'https://testnet.airs.alternun.co',
+      'x-forwarded-host': 'testnet.api.alternun.co',
+      'x-forwarded-proto': 'https',
+    },
+  };
+
+  const reply = createReply();
+  const handled = await handleBetterAuthRuntimeRequest(request, reply, {
+    baseUrl: 'https://testnet.api.alternun.co',
+    authHandler: async () =>
+      new Response(null, {
+        status: 302,
+        headers: {
+          location: '/?error=state_mismatch',
+        },
+      }),
+  });
+
+  assert.equal(handled, true);
+  assert.equal(
+    reply.headers.location,
+    'https://testnet.airs.alternun.co/auth/callback?error=state_mismatch'
+  );
+});
+
 test('handleBetterAuthRuntimeRequest answers OPTIONS preflight locally', async () => {
   let called = false;
   const reply = createReply();
