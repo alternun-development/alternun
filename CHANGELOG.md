@@ -1,3 +1,9 @@
+## [1.0.260](https://github.com/alternun-development/alternun/compare/v1.0.259-dev.0...v1.0.260) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(api): better-auth-proxy, better-auth-runtime, better-auth-proxy.test, better-auth-runtime.test
+
 ## [1.0.259](https://github.com/alternun-development/alternun/compare/v1.0.258-dev.0...v1.0.259) (2026-05-24)
 
 ### Bug Fixes
