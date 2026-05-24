@@ -1,6 +1,6 @@
 {
   "name": "alternun",
-  "version": "1.0.263",
+  "version": "1.0.264",
   "private": true,
   "scripts": {
     "build": "turbo run build",
