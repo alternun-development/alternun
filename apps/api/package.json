@@ -14,6 +14,7 @@
   "dependencies": {
     "@alternun/email-templates": "workspace:*",
     "@aws-sdk/client-secrets-manager": "^3.940.0",
+    "@better-auth/drizzle-adapter": "1.6.5",
     "@fastify/aws-lambda": "^5.1.4",
     "@fastify/swagger": "^9.5.0",
     "@fastify/swagger-ui": "^5.2.1",
