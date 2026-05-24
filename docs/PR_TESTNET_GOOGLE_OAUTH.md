@@ -33,7 +33,7 @@ On testnet, the API was in **proxy mode** because:
 
 #### 1. `apps/api/src/modules/better-auth-dev/better-auth-dev.server.ts`
 
-- **Add cross-subdomain cookie support**: Derive parent domain (`.alternun.co`) from baseURL to allow `aris.*` and `api.*` subdomains to share session cookies
+- **Add cross-subdomain cookie support**: Derive parent domain (`.alternun.co`) from baseURL to allow `airs.*` and `api.*` subdomains to share session cookies
 - **Enable OAuth token encryption**: `encryptOAuthTokens: true` for secure storage of Google refresh tokens
 - **Enable account linking**: Prevent duplicate accounts if user signs up with email then Google (or vice versa)
 - **Secure cookies in production**: Switch from hardcoded `useSecureCookies: false` to `isProduction ? true : false`
@@ -172,7 +172,7 @@ Full verification checklist in `docs/TESTNET_GOOGLE_OAUTH_SETUP.md` → **Step 5
 
 - [ ] `testnet.airs.alternun.co/auth` shows email/Google/Discord buttons
 - [ ] Click "Sign in with Google" → redirects to Google login (not Authentik)
-- [ ] After Google login → session cookie set with the stage-scoped domain, e.g. `Domain=.testnet.alternun.co`
+- [ ] After Google login → session cookie set with the parent domain, e.g. `Domain=.alternun.co`
 - [ ] After login → user created in Supabase with `provider: "google"`
 - [ ] Authenticated API calls work (e.g., `/v1/users/me`)
 - [ ] Production (`airs.alternun.co`) still shows Discord button (still on Authentik)
@@ -241,7 +241,7 @@ testnet.airs.alternun.co/auth
     └─ /auth/callback/google
         ↓ (directly)
         → Calls Better Auth's Google handler
-        → Sets session cookie (Domain=.testnet.alternun.co)
+        → Sets session cookie (Domain=.alternun.co)
         → Returns user to testnet.airs.alternun.co
 ```
 

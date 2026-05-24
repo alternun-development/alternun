@@ -1,5 +1,6 @@
 import { createServer, type Server } from 'node:http';
 import { randomUUID } from 'node:crypto';
+import { isIP } from 'node:net';
 import { betterAuth } from 'better-auth';
 import { toNodeHandler } from 'better-auth/node';
 import { oAuthProxy } from 'better-auth/plugins/oauth-proxy';
@@ -39,19 +40,18 @@ function buildOAuthProxyPlugin(
 function deriveCrossSubDomainCookieDomain(baseURL: string): string | undefined {
   try {
     const url = new URL(baseURL);
+    if (isIP(url.hostname)) {
+      return undefined;
+    }
+
     const hostnameParts = url.hostname.split('.');
-    const apiIndex = hostnameParts.indexOf('api');
-
-    if (apiIndex < 0) {
+    if (hostnameParts.length <= 2) {
       return undefined;
     }
 
-    const scopedHostname = hostnameParts.filter((part) => part !== 'api').join('.');
-    if (!scopedHostname || scopedHostname === url.hostname) {
-      return undefined;
-    }
-
-    return `.${scopedHostname}`;
+    // Use the parent domain for the current Alternun host layout so
+    // `testnet.api.*` and `testnet.airs.*` can share the same session cookie.
+    return `.${hostnameParts.slice(-2).join('.')}`;
   } catch {
     return undefined;
   }
@@ -106,14 +106,35 @@ function getBetterAuthDevDatabase(): BetterAuthDevDatabase {
   return getDatabase() as unknown as BetterAuthDevDatabase;
 }
 
+type BetterAuthDatabaseAdapterConfig = {
+  provider: 'pg';
+  schema: typeof betterAuthSchema;
+};
+
+type BetterAuthVerificationEmailUser = {
+  email: string;
+  name?: string | null;
+};
+
+type BetterAuthVerificationEmailRequest = {
+  headers?: {
+    get(name: string): string | null;
+  };
+};
+
+type BetterAuthVerificationEmailArgs = {
+  user: BetterAuthVerificationEmailUser;
+  url: string;
+  token: string;
+};
+
 export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
   const oauthProxyPlugin = buildOAuthProxyPlugin(config.oauthProxy);
   const hasGoogleProvider = Boolean(config.googleClientId && config.googleClientSecret);
   const hasDiscordProvider = Boolean(config.discordClientId && config.discordClientSecret);
 
-  // Keep cross-subdomain cookies inside the current stage boundary.
-  // For example, "testnet.api.alternun.co" becomes ".testnet.alternun.co",
-  // while production "api.alternun.co" still becomes ".alternun.co".
+  // Keep cross-subdomain cookies on the shared parent domain so
+  // `testnet.api.*` and `testnet.airs.*` can share the Better Auth session.
   const cookieDomain = deriveCrossSubDomainCookieDomain(config.baseURL);
 
   const socialProviders = {
@@ -145,6 +166,10 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
 
   const isProduction = process.env.NODE_ENV === 'production';
   const db = getDatabase();
+  const createDrizzleAdapter = drizzleAdapter as unknown as (
+    database: typeof db,
+    options: BetterAuthDatabaseAdapterConfig
+  ) => unknown;
 
   return betterAuth({
     appName: 'Alternun Dev Better Auth',
@@ -152,7 +177,7 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
     basePath: '/auth',
     secret: config.secret,
     trustedOrigins,
-    database: drizzleAdapter(db, {
+    database: createDrizzleAdapter(db, {
       provider: 'pg',
       schema: betterAuthSchema,
     }),
@@ -166,14 +191,17 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
     emailVerification: {
       sendOnSignUp: true,
       sendOnSignIn: true,
-      async sendVerificationEmail({ user, url, token }, request) {
+      async sendVerificationEmail(
+        { user, url, token }: BetterAuthVerificationEmailArgs,
+        request?: BetterAuthVerificationEmailRequest
+      ) {
         await sendAuthVerificationEmail(
           {
             to: user.email,
             displayName: user.name,
             confirmationUrl: url,
             token,
-            locale: request?.headers.get('accept-language') ?? undefined,
+            locale: request?.headers?.get('accept-language') ?? undefined,
           },
           process.env
         );
