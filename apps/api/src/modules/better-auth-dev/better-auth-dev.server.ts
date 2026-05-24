@@ -4,7 +4,7 @@ import { isIP } from 'node:net';
 import { betterAuth } from 'better-auth';
 import { toNodeHandler } from 'better-auth/node';
 import { oAuthProxy } from 'better-auth/plugins/oauth-proxy';
-import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import type { BetterAuthDevConfig, BetterAuthDevOAuthProxyConfig } from './better-auth-dev.config';
 import { getDatabase } from '../../common/database/connection';
 import * as betterAuthSchema from '../../common/database/better-auth.schema';
