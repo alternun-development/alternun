@@ -288,20 +288,26 @@ async function callJson(
   baseUrl: string,
   path: string,
   body: unknown,
-  apiKey?: string
+  apiKey?: string,
+  method: 'GET' | 'POST' = 'POST'
 ): Promise<unknown> {
   const url = buildUrlWithBasePath(baseUrl, path);
   let response: Response;
+  const requestBody = method === 'GET' || body == null ? undefined : JSON.stringify(body);
+  const headers: Record<string, string> = {
+    ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
+  };
+
+  if (requestBody !== undefined) {
+    headers['content-type'] = 'application/json';
+  }
 
   try {
     response = await fetchFn(url, {
-      method: 'POST',
+      method,
       credentials: 'include',
-      headers: {
-        'content-type': 'application/json',
-        ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
-      },
-      body: JSON.stringify(body),
+      headers,
+      body: requestBody,
     });
   } catch (error) {
     const message =
@@ -853,8 +859,10 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     const response = await callJson(
       this.fetchFn,
       this.requireBaseUrl(),
-      this.options.sessionPath ?? '/auth/session',
-      {}
+      this.options.sessionPath ?? '/auth/get-session',
+      undefined,
+      undefined,
+      'GET'
     );
     return normalizeSession(response, this.options.defaultProvider ?? 'better-auth');
   }

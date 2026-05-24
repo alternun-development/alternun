@@ -153,18 +153,22 @@ function deriveSignUpName(email, providedName) {
     }
     return email.trim();
 }
-async function callJson(fetchFn, baseUrl, path, body, apiKey) {
+async function callJson(fetchFn, baseUrl, path, body, apiKey, method = 'POST') {
     const url = buildUrlWithBasePath(baseUrl, path);
     let response;
+    const requestBody = method === 'GET' || body == null ? undefined : JSON.stringify(body);
+    const headers = {
+        ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
+    };
+    if (requestBody !== undefined) {
+        headers['content-type'] = 'application/json';
+    }
     try {
         response = await fetchFn(url, {
-            method: 'POST',
+            method,
             credentials: 'include',
-            headers: {
-                'content-type': 'application/json',
-                ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
-            },
-            body: JSON.stringify(body),
+            headers,
+            body: requestBody,
         });
     }
     catch (error) {
@@ -608,7 +612,7 @@ export class BetterAuthExecutionProvider {
         if (!this.options.baseUrl) {
             return null;
         }
-        const response = await callJson(this.fetchFn, this.requireBaseUrl(), (_l = this.options.sessionPath) !== null && _l !== void 0 ? _l : '/auth/session', {});
+        const response = await callJson(this.fetchFn, this.requireBaseUrl(), (_l = this.options.sessionPath) !== null && _l !== void 0 ? _l : '/auth/get-session', undefined, undefined, 'GET');
         return normalizeSession(response, (_m = this.options.defaultProvider) !== null && _m !== void 0 ? _m : 'better-auth');
     }
     async refreshExecutionSession() {

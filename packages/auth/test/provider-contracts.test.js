@@ -169,6 +169,72 @@ test('BetterAuthExecutionProvider refreshExecutionSession uses getSession instea
   assert.equal(refreshSessionCalls, 0);
 });
 
+test('BetterAuthExecutionProvider uses GET /auth/get-session for HTTP session lookup', async () => {
+  let observedUrl = null;
+  let observedMethod = null;
+  let observedBody = null;
+
+  const provider = new BetterAuthExecutionProvider({
+    baseUrl: 'https://api.example.com',
+    fetchFn: async (url, init) => {
+      observedUrl = String(url);
+      observedMethod = init?.method ?? null;
+      observedBody = init?.body ?? null;
+
+      return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        async json() {
+          return {
+            session: {
+              id: 'session-token-123',
+              token: 'session-token-123',
+              refreshToken: 'refresh-token-123',
+              expiresAt: new Date(Date.now() + 60_000).toISOString(),
+              userId: 'better-auth-user-123',
+            },
+            user: {
+              id: 'better-auth-user-123',
+              email: 'ada@example.com',
+              name: 'Ada Lovelace',
+              image: 'https://example.com/avatar.png',
+              emailVerified: true,
+            },
+          };
+        },
+        async text() {
+          return JSON.stringify({
+            session: {
+              id: 'session-token-123',
+              token: 'session-token-123',
+              refreshToken: 'refresh-token-123',
+              expiresAt: new Date(Date.now() + 60_000).toISOString(),
+              userId: 'better-auth-user-123',
+            },
+            user: {
+              id: 'better-auth-user-123',
+              email: 'ada@example.com',
+              name: 'Ada Lovelace',
+              image: 'https://example.com/avatar.png',
+              emailVerified: true,
+            },
+          });
+        },
+      };
+    },
+  });
+
+  const session = await provider.getExecutionSession();
+
+  assert.equal(observedUrl, 'https://api.example.com/auth/get-session');
+  assert.equal(observedMethod, 'GET');
+  assert.equal(observedBody, null);
+  assert.equal(session?.accessToken, 'session-token-123');
+  assert.equal(session?.externalIdentity?.providerUserId, 'better-auth-user-123');
+});
+
 test('BetterAuthExecutionProvider falls back to email session when Better Auth cookie lookup fails', async () => {
   const provider = new BetterAuthExecutionProvider({
     allowLegacySessionFallback: true,
