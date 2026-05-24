@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRS Studio - Compositions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            color: #fff; font-family: system-ui;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #00d9ff; margin-bottom: 30px; font-size: 28px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .card:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: rgba(0, 217, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        .card h2 { color: #00d9ff; margin-bottom: 10px; }
+        .card p { color: #a0a0a0; font-size: 14px; line-height: 1.6; }
+        .badge {
+            display: inline-block;
+            background: rgba(0, 217, 255, 0.2);
+            color: #00d9ff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Available Compositions</h1>
+        <div class="grid" id="compositionsGrid"></div>
+    </div>
+
+    <script>
+        const compositions = [
+            {
+                id: 'AirsDemo',
+                name: '🎥 AIRS Product Demo',
+                description: 'Main product showcase with 7 cinematic scenes',
+                scenes: 7,
+                duration: '3:00',
+                resolution: '1440×810'
+            },
+            {
+                id: 'SceneRecorder',
+                name: '🎞️ Scene Recorder',
+                description: 'Individual scene recording and editing tool',
+                status: 'Coming Soon',
+                resolution: '1440×810'
+            },
+            {
+                id: 'VideoEditor',
+                name: '✏️ Video Editor',
+                description: 'Professional video composition editor',
+                status: 'Coming Soon',
+                resolution: 'Custom'
+            },
+            {
+                id: 'Templates',
+                name: '📚 Templates',
+                description: 'Pre-built composition templates',
+                status: 'Coming Soon',
+                templates: '10+'
+            }
+        ];
+
+        const grid = document.getElementById('compositionsGrid');
+        compositions.forEach(comp => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <h2>${comp.name}</h2>
+                <p>${comp.description}</p>
+                ${comp.scenes ? `<div class="badge">🎬 ${comp.scenes} Scenes</div>` : ''}
+                ${comp.duration ? `<div class="badge">⏱️ ${comp.duration}</div>` : ''}
+                ${comp.resolution ? `<div class="badge">📺 ${comp.resolution}</div>` : ''}
+                ${comp.status ? `<div class="badge" style="background: rgba(255,100,100,0.2); color: #ff6464;">${comp.status}</div>` : ''}
+                ${comp.templates ? `<div class="badge">📚 ${comp.templates}</div>` : ''}
+            `;
+            card.onclick = () => {
+                if (comp.status) {
+                    alert(`${comp.name} - ${comp.status}`);
+                } else {
+                    window.location.href = `../../../?composition=${comp.id}`;
+                }
+            };
+            grid.appendChild(card);
+        });
+    </script>
+</body>
+</html>

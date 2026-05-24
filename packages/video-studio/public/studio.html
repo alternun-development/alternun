@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRS Studio - Recording Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            color: #ffffff;
+            font-family: system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+        }
+
+        #root {
+            width: 100%;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        // Detect Remotion port dynamically
+        async function detectRemotionPort() {
+            for (let port = 3001; port <= 3010; port++) {
+                try {
+                    const res = await fetch(`http://localhost:${port}/health`, { method: 'HEAD', mode: 'no-cors' });
+                    if (res.ok || res.status === 404) {
+                        document.getElementById('remotionLink').href = `http://localhost:${port}`;
+                        return;
+                    }
+                } catch (e) {
+                    // Port not responding
+                }
+            }
+            // Fallback if detection fails
+            document.getElementById('remotionLink').href = 'http://localhost:3004';
+        }
+        detectRemotionPort();
+
+        // Inline StudioDashboard component for immediate rendering
+        const html = `
+<div style="min-height: 100vh; background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%); color: #fff; font-family: system-ui, -apple-system, sans-serif; padding: 20px;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h1 style="margin: 0 0 8px 0; color: #00d9ff; font-size: 32px;">🎬 AIRS Studio</h1>
+                <p style="margin: 0; color: #a0a0a0; font-size: 14px;">Professional video production & recording management</p>
+            </div>
+            <a id="remotionLink" href="#" target="_blank" style="padding: 10px 16px; background: #00d9ff; color: #000; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 12px; cursor: pointer;">🎨 Open Remotion Studio</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px;">
+            <!-- Sidebar -->
+            <div style="background: rgba(0, 217, 255, 0.05); border: 1px solid rgba(0, 217, 255, 0.2); border-radius: 8px; padding: 20px; height: fit-content;">
+                <h3 style="margin: 0 0 16px 0; color: #00d9ff; font-size: 14px;">📁 PROJECTS</h3>
+
+                <div style="margin-bottom: 16px;">
+                    <input type="text" id="projectName" placeholder="New project..." style="width: 100%; padding: 8px; background: #0f0f1e; border: 1px solid rgba(0, 217, 255, 0.2); border-radius: 4px; color: #fff; margin-bottom: 8px; font-size: 12px; box-sizing: border-box;">
+                    <button onclick="createProject()" style="width: 100%; padding: 8px; background: #00d9ff; color: #000; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px;">+ New Project</button>
+                </div>
+
+                <div id="projectsList" style="max-height: 400px; overflow-y: auto; font-size: 12px;">
+                    <p style="font-size: 12px; color: #666; margin: 0;">No projects yet</p>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div id="mainContent">
+                <div style="background: rgba(0, 217, 255, 0.05); border: 1px dashed rgba(0, 217, 255, 0.3); border-radius: 8px; padding: 40px; text-align: center; color: #a0a0a0;">
+                    <p style="margin: 0; font-size: 16px;">👈 Create or select a project to begin recording</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        `;
+
+        document.getElementById('root').innerHTML = html;
+
+        let projects = JSON.parse(localStorage.getItem('video_projects') || '[]');
+        let currentProject = null;
+
+        function renderProjects() {
+            const list = document.getElementById('projectsList');
+            if (projects.length === 0) {
+                list.innerHTML = '<p style="font-size: 12px; color: #666; margin: 0;">No projects yet</p>';
+                return;
+            }
+
+            list.innerHTML = projects.map(p => `
+                <div style="padding: 10px; background: ${currentProject?.id === p.id ? 'rgba(0, 217, 255, 0.2)' : 'transparent'}; border: 1px solid rgba(0, 217, 255, 0.1); border-radius: 4px; margin-bottom: 8px; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; align-items: center;" onclick="selectProject('${p.id}')">
+                    <span>${p.name}</span>
+                    <button onclick="deleteProject(event, '${p.id}')" style="background: transparent; border: none; color: #ff4444; cursor: pointer; font-size: 12px;">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function createProject() {
+            const name = document.getElementById('projectName').value.trim();
+            if (!name) return;
+
+            const project = {
+                id: 'proj-' + Date.now(),
+                name: name,
+                createdAt: Date.now(),
+                composition: 'AirsDemo'
+            };
+
+            projects.push(project);
+            localStorage.setItem('video_projects', JSON.stringify(projects));
+            document.getElementById('projectName').value = '';
+            selectProject(project.id);
+            renderProjects();
+        }
+
+        function selectProject(id) {
+            currentProject = projects.find(p => p.id === id);
+            renderProjectContent();
+            renderProjects();
+        }
+
+        function deleteProject(e, id) {
+            e.stopPropagation();
+            projects = projects.filter(p => p.id !== id);
+            localStorage.setItem('video_projects', JSON.stringify(projects));
+            if (currentProject?.id === id) currentProject = null;
+            renderProjectContent();
+            renderProjects();
+        }
+
+        function renderProjectContent() {
+            const content = document.getElementById('mainContent');
+            if (!currentProject) {
+                content.innerHTML = '<div style="background: rgba(0, 217, 255, 0.05); border: 1px dashed rgba(0, 217, 255, 0.3); border-radius: 8px; padding: 40px; text-align: center; color: #a0a0a0;"><p style="margin: 0; font-size: 16px;">👈 Create or select a project to begin recording</p></div>';
+                return;
+            }
+
+            let recordings = JSON.parse(localStorage.getItem('video_recordings_' + currentProject.id) || '[]');
+            let isRecording = false;
+
+            content.innerHTML = `
+                <div style="display: grid; gap: 20px;">
+                    <div style="background: rgba(0, 217, 255, 0.05); border: 1px solid rgba(0, 217, 255, 0.2); border-radius: 8px; padding: 20px;">
+                        <h2 style="margin: 0 0 12px 0; color: #00d9ff;">${currentProject.name}</h2>
+                        <p style="margin: 0; font-size: 12px; color: #a0a0a0;">Composition: ${currentProject.composition}<br>Created: ${new Date(currentProject.createdAt).toLocaleString()}</p>
+                    </div>
+
+                    <div style="padding: 20px; background: rgba(0, 217, 255, 0.05); border: 1px solid rgba(0, 217, 255, 0.2); border-radius: 8px; color: #fff; font-family: system-ui, -apple-system, sans-serif;">
+                        <h3 style="margin: 0 0 16px 0; color: #00d9ff;">📹 Studio Recorder</h3>
+                        <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+                            <button id="startBtn" onclick="startRecording()" style="padding: 8px 16px; background: #ff4444; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600;">⏺ Start Recording</button>
+                            <button id="stopBtn" onclick="stopRecording()" disabled style="padding: 8px 16px; background: #666; color: #fff; border: none; border-radius: 4px; cursor: not-allowed; font-size: 14px; font-weight: 600;">⏹ Stop Recording</button>
+                            <button onclick="clearRecordings()" style="padding: 8px 16px; background: #666; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">🗑 Clear</button>
+                        </div>
+                        <div id="recordingsList" style="max-height: 200px; overflow-y: auto; font-size: 12px; line-height: 1.6;">
+                            ${recordings.length === 0 ? '<p style="color: #666;">No recordings yet</p>' : recordings.map(r => `
+                                <div style="padding: 8px; background: rgba(0, 217, 255, 0.05); border: 1px solid rgba(0, 217, 255, 0.1); border-radius: 4px; margin-bottom: 4px;">
+                                    <strong>${r.name}</strong><br>⏱ ${r.duration.toFixed(1)}s | 📊 ${r.frameCount} frames
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(0, 217, 255, 0.05); border: 1px solid rgba(0, 217, 255, 0.2); border-radius: 8px; padding: 20px;">
+                        <h3 style="margin: 0 0 12px 0; color: #00d9ff;">📺 Video Information</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px;">
+                            <div><strong>Resolution:</strong> 1440×810 (16:9)</div>
+                            <div><strong>FPS:</strong> 30</div>
+                            <div><strong>Duration:</strong> 180 seconds (3 min)</div>
+                            <div><strong>Total Frames:</strong> 5400</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        let startTime = 0;
+        function startRecording() {
+            startTime = Date.now();
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('startBtn').style.background = '#666';
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('stopBtn').style.background = '#ff4444';
+        }
+
+        function stopRecording() {
+            if (!currentProject || startTime === 0) return;
+
+            const duration = (Date.now() - startTime) / 1000;
+            const recording = {
+                id: 'rec-' + Date.now(),
+                name: `${currentProject.name}-${new Date().toLocaleTimeString()}`,
+                duration: duration,
+                frameCount: Math.round(duration * 30)
+            };
+
+            let recordings = JSON.parse(localStorage.getItem('video_recordings_' + currentProject.id) || '[]');
+            recordings.push(recording);
+            localStorage.setItem('video_recordings_' + currentProject.id, JSON.stringify(recordings));
+
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtn').style.background = '#ff4444';
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('stopBtn').style.background = '#666';
+            startTime = 0;
+
+            renderProjectContent();
+        }
+
+        function clearRecordings() {
+            if (!currentProject) return;
+            localStorage.removeItem('video_recordings_' + currentProject.id);
+            renderProjectContent();
+        }
+
+        renderProjects();
+    </script>
+</body>
+</html>
