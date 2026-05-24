@@ -1,3 +1,9 @@
+## [1.0.265](https://github.com/alternun-development/alternun/compare/v1.0.264-dev.0...v1.0.265) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(mobile): callback, AppAuthProvider, authWebSession.test, betterAuthSessionRestore
+
 ## [1.0.264](https://github.com/alternun-development/alternun/compare/v1.0.263-dev.0...v1.0.264) (2026-05-24)
 
 ### Bug Fixes
