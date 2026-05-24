@@ -1,3 +1,9 @@
+## [1.0.258](https://github.com/alternun-development/alternun/compare/v1.0.257-dev.0...v1.0.258) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(mobile): AppAuthProvider, runtimeConfig.test, runtimeConfig
+
 ## [1.0.257](https://github.com/alternun-development/alternun/compare/v1.0.256-dev.0...v1.0.257) (2026-05-24)
 
 ### Bug Fixes
