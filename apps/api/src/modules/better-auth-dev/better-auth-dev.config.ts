@@ -184,9 +184,10 @@ function isProxyAutoEnableStage(baseURL: string): boolean {
   try {
     const url = new URL(baseURL);
     const hostname = url.hostname.toLowerCase();
-    // Keep OAuth proxy fallback limited to preview deployments.
-    // Testnet and production should use their own direct callback URLs.
-    return hostname.includes('preview.');
+    // Enable the OAuth proxy on preview and testnet-style deployments so the
+    // callback can round-trip through the browser origin without depending on
+    // a direct cross-subdomain Better Auth callback.
+    return hostname.includes('preview.') || hostname.includes('testnet.');
   } catch {
     return false;
   }
