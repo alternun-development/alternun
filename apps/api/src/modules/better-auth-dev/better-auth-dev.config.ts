@@ -184,10 +184,10 @@ function isProxyAutoEnableStage(baseURL: string): boolean {
   try {
     const url = new URL(baseURL);
     const hostname = url.hostname.toLowerCase();
-    // Enable the OAuth proxy on preview and testnet-style deployments so the
-    // callback can round-trip through the browser origin without depending on
-    // a direct cross-subdomain Better Auth callback.
-    return hostname.includes('preview.') || hostname.includes('testnet.');
+    // Preview deployments can opt into the proxy path, but testnet keeps the
+    // canonical direct Better Auth origin on the API host to avoid rewriting
+    // the Google callback onto the app domain.
+    return hostname.includes('preview.');
   } catch {
     return false;
   }
