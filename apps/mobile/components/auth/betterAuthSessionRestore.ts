@@ -4,6 +4,8 @@ export interface BetterAuthSessionLike {
 
 export interface BetterAuthSessionRestoreClient {
   refreshExecutionSession?: () => Promise<unknown>;
+  getSessionToken?: () => Promise<string | null>;
+  getUser?: () => Promise<unknown>;
   getAlternunSession?: () => Promise<BetterAuthSessionLike | null>;
 }
 
@@ -18,6 +20,37 @@ function delay(ms: number): Promise<void> {
   });
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function extractSessionToken(value: unknown): string | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const raw = value as Record<string, unknown>;
+  const nested = raw.data;
+  const session = nested && typeof nested === 'object' ? (nested as Record<string, unknown>) : null;
+
+  const tokenCandidates = [
+    raw.issuerAccessToken,
+    raw.accessToken,
+    raw.token,
+    session?.issuerAccessToken,
+    session?.accessToken,
+    session?.token,
+  ];
+
+  for (const candidate of tokenCandidates) {
+    if (isNonEmptyString(candidate)) {
+      return candidate.trim();
+    }
+  }
+
+  return null;
+}
+
 export async function restoreBetterAuthSession(
   client: BetterAuthSessionRestoreClient,
   options: BetterAuthSessionRestoreOptions = {}
@@ -27,7 +60,24 @@ export async function restoreBetterAuthSession(
 
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     if (typeof client.refreshExecutionSession === 'function') {
-      await client.refreshExecutionSession().catch(() => undefined);
+      const refreshedSession = await client.refreshExecutionSession().catch(() => null);
+      if (extractSessionToken(refreshedSession)) {
+        return true;
+      }
+    }
+
+    if (typeof client.getSessionToken === 'function') {
+      const sessionToken = await client.getSessionToken().catch(() => null);
+      if (isNonEmptyString(sessionToken)) {
+        return true;
+      }
+    }
+
+    if (typeof client.getUser === 'function') {
+      const user = await client.getUser().catch(() => null);
+      if (user) {
+        return true;
+      }
     }
 
     const session =
@@ -35,7 +85,7 @@ export async function restoreBetterAuthSession(
         ? await client.getAlternunSession().catch(() => null)
         : null;
 
-    if (session?.issuerAccessToken) {
+    if (extractSessionToken(session)) {
       return true;
     }
 
