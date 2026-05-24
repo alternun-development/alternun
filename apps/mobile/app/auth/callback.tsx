@@ -26,6 +26,10 @@ import {
   stripAuthCallbackTokensFromUrl,
   type CallbackCapableAuthClient,
 } from '../../components/auth/authWebSession';
+import {
+  restoreBetterAuthSession,
+  type BetterAuthSessionRestoreClient,
+} from '../../components/auth/betterAuthSessionRestore';
 import { ToastSystem, type ToastItem } from '@alternun/ui';
 
 const INITIAL_CALLBACK_SEARCH = typeof window !== 'undefined' ? window.location.search : '';
@@ -175,12 +179,22 @@ export default function AuthCallbackRoute(): React.JSX.Element {
         return;
       }
 
-      void Promise.resolve(
-        typeof callbackClient.getUser === 'function' ? callbackClient.getUser() : null
-      )
-        .catch(() => undefined)
-        .then(() => {
+      void restoreBetterAuthSession(callbackClient as BetterAuthSessionRestoreClient, {
+        retries: 3,
+        retryDelayMs: 250,
+      })
+        .then((restored) => {
+          if (!restored) {
+            setErrorMessage(t('authCallback.errors.finalizeFailed'));
+            return;
+          }
+
           finishRedirect();
+        })
+        .catch((error: unknown) => {
+          setErrorMessage(
+            error instanceof Error ? error.message : t('authCallback.errors.finalizeFailed')
+          );
         });
       return;
     }
