@@ -360,15 +360,15 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
     account: {
       storeAccountCookie: true,
       encryptOAuthTokens: true,
-      // Use the encrypted cookie strategy for OAuth state in dev/testnet so the
-      // callback does not depend on a verification row surviving the round trip.
-      storeStateStrategy: 'cookie',
+      storeStateStrategy: 'database',
       accountLinking: {
         enabled: true,
         trustedProviders: ['google', ...(hasDiscordProvider ? ['discord'] : []), 'email-password'],
         allowDifferentEmails: false,
       },
-      skipStateCookieCheck: config.oauthProxy.enabled,
+      // The database-backed state row is authoritative; skipping the extra
+      // cookie echo check avoids cross-origin browser cookie loss on testnet.
+      skipStateCookieCheck: true,
     },
     session: {
       expiresIn: 60 * 60 * 24 * 7, // 7 days

@@ -39,7 +39,7 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', async () =>
     assert.equal(auth.options.emailVerification.sendOnSignUp, true);
     assert.equal(auth.options.emailVerification.sendOnSignIn, true);
     assert.equal(typeof auth.options.emailVerification.sendVerificationEmail, 'function');
-    assert.equal(auth.options.account.storeStateStrategy, 'cookie');
+    assert.equal(auth.options.account.storeStateStrategy, 'database');
     assert.equal(auth.options.errorURL, 'http://127.0.0.1:8081/auth/callback');
     assert.equal(auth.options.advanced.database.generateId, 'uuid');
     assert.equal(auth.options.account.skipStateCookieCheck, true);
@@ -87,7 +87,7 @@ test('createBetterAuthDevAuth scopes cross-subdomain cookies to the parent domai
 
     assert.equal(auth.options.advanced.crossSubDomainCookies.enabled, true);
     assert.equal(auth.options.advanced.crossSubDomainCookies.domain, '.alternun.co');
-    assert.equal(auth.options.account.storeStateStrategy, 'cookie');
+    assert.equal(auth.options.account.storeStateStrategy, 'database');
     assert.equal(auth.options.errorURL, 'https://testnet.airs.alternun.co/auth/callback');
   } finally {
     process.env = originalEnv;
@@ -127,7 +127,7 @@ test('createBetterAuthDevAuth accepts backend database env fallback', () => {
     assert.equal(auth.options.emailVerification.sendOnSignUp, true);
     assert.equal(auth.options.emailAndPassword.autoSignIn, false);
     assert.equal(auth.options.emailVerification.sendOnSignIn, true);
-    assert.equal(auth.options.account.storeStateStrategy, 'cookie');
+    assert.equal(auth.options.account.storeStateStrategy, 'database');
     assert.equal(auth.options.advanced.database.generateId, 'uuid');
   } finally {
     process.env = originalEnv;
