@@ -87,6 +87,7 @@ test('createBetterAuthDevAuth scopes cross-subdomain cookies to the parent domai
 
     assert.equal(auth.options.advanced.crossSubDomainCookies.enabled, true);
     assert.equal(auth.options.advanced.crossSubDomainCookies.domain, '.alternun.co');
+    assert.equal(auth.options.account.storeStateStrategy, 'cookie');
     assert.equal(auth.options.errorURL, 'https://testnet.airs.alternun.co/auth/callback');
   } finally {
     process.env = originalEnv;
