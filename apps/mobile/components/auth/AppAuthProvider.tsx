@@ -11,13 +11,13 @@ import {
   oidcSessionToUser,
   type CallbackCapableAuthClient,
 } from './authWebSession';
+import {
+  restoreBetterAuthSession,
+  type BetterAuthSessionRestoreClient,
+} from './betterAuthSessionRestore';
 import { shouldClearOidcSessionOnAuthStateChange } from './authSessionBridge';
 import { isBetterAuthExecutionEnabled } from './authExecutionMode';
 import { resolveMobileBetterAuthBaseUrl } from '../../utils/runtimeConfig';
-
-type RefreshableAuthClient = {
-  getUser(): Promise<import('@alternun/auth').User | null>;
-};
 
 function getAllowMockWalletFallback(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH === 'true';
@@ -77,18 +77,12 @@ function AuthSessionBridge(): null {
 
     if (isBetterAuthExecution) {
       clearOidcSession();
-      // For Better Auth, read the current session twice because the browser session
-      // can still be rehydrating when the profile page mounts after a reload.
       const restoreSession = async () => {
-        const refreshableClient = client as RefreshableAuthClient;
         try {
-          const firstUser = await refreshableClient.getUser();
-          if (firstUser) {
-            return;
-          }
-
-          await new Promise((resolve) => setTimeout(resolve, 300));
-          await refreshableClient.getUser();
+          await restoreBetterAuthSession(client as BetterAuthSessionRestoreClient, {
+            retries: 2,
+            retryDelayMs: 300,
+          });
         } catch {
           // Silently fail - user will see landing and can sign in
         }
