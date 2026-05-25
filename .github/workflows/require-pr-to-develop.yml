@@ -4,6 +4,9 @@ on:
   push:
     branches: [develop]
 
+permissions:
+  contents: read
+
 jobs:
   check-direct-push:
     runs-on: ubuntu-latest
