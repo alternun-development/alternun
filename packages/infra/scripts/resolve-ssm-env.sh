@@ -182,18 +182,42 @@ prime_ssm_param_cache() {
 get_ssm_param() {
   local key=$1
   local param_name=$(build_param_name "$key" "${2:-${APP_NAME}}" "${3:-${SSM_STAGE}}")
+  local fallback_stage normalized_fallback_stage fallback_param_name
+  local ssm_value
 
   if [ -n "${SSM_PARAM_CACHE[$key]+x}" ]; then
     printf '%s\n' "${SSM_PARAM_CACHE[$key]}"
     return 0
   fi
 
-  aws ssm get-parameter \
+  ssm_value=$(aws ssm get-parameter \
     --name "$param_name" \
     --with-decryption \
     --region "$REGION" \
     --query 'Parameter.Value' \
-    --output text 2>/dev/null || echo ""
+    --output text 2>/dev/null || true)
+  if [ -n "$ssm_value" ] && [ "$ssm_value" != "None" ]; then
+    printf '%s\n' "$ssm_value"
+    return 0
+  fi
+
+  fallback_stage=$(printf '%s' "${STAGE:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+  normalized_fallback_stage=$(printf '%s' "${3:-${SSM_STAGE}}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+  if [ -n "$fallback_stage" ] && [ "$fallback_stage" != "$normalized_fallback_stage" ]; then
+    fallback_param_name=$(build_param_name "$key" "${2:-${APP_NAME}}" "$fallback_stage")
+    ssm_value=$(aws ssm get-parameter \
+      --name "$fallback_param_name" \
+      --with-decryption \
+      --region "$REGION" \
+      --query 'Parameter.Value' \
+      --output text 2>/dev/null || true)
+    if [ -n "$ssm_value" ] && [ "$ssm_value" != "None" ]; then
+      printf '%s\n' "$ssm_value"
+      return 0
+    fi
+  fi
+
+  printf '%s\n' ""
 }
 
 # Resolve with priority: shell env -> SSM -> default

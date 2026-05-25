@@ -16,6 +16,7 @@ fi
 source scripts/setup-aws-account.sh
 
 SECRET_NAME=$(resolve_backend_database_secret_name)
+SSM_STAGE=$(resolve_backend_database_ssm_stage)
 SSM_KEY=$(resolve_backend_database_ssm_key)
 DATABASE_URL_VALUE=$(extract_database_url)
 
@@ -26,7 +27,7 @@ fi
 
 echo "Writing backend database secret for stage '${STACK:-${SST_STAGE:-dev}}'"
 echo "  Secrets Manager: ${SECRET_NAME}"
-echo "  SSM parameter:   /${INFRA_APP_NAME:-alternun-infra}/${STACK:-${SST_STAGE:-dev}}/${SSM_KEY}"
+echo "  SSM parameter:   /${INFRA_APP_NAME:-alternun-infra}/${SSM_STAGE}/${SSM_KEY}"
 
 if aws secretsmanager describe-secret --secret-id "$SECRET_NAME" --region "${AWS_REGION:-us-east-1}" >/dev/null 2>&1; then
   aws secretsmanager put-secret-value \
@@ -41,7 +42,7 @@ else
 fi
 
 aws ssm put-parameter \
-  --name "/${INFRA_APP_NAME:-alternun-infra}/${STACK:-${SST_STAGE:-dev}}/${SSM_KEY}" \
+  --name "/${INFRA_APP_NAME:-alternun-infra}/${SSM_STAGE}/${SSM_KEY}" \
   --type SecureString \
   --value "$DATABASE_URL_VALUE" \
   --overwrite \

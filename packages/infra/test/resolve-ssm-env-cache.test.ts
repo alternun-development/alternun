@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
-const helperPath = path.resolve('scripts/resolve-ssm-env.sh');
+const testDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(testDir, '../../..');
+const helperPath = path.join(repoRoot, 'packages/infra/scripts/resolve-ssm-env.sh');
 
 void test('resolve-ssm-env rejects cached backend-aligned stages missing the backend db url', () => {
   const source = fs.readFileSync(helperPath, 'utf8');
@@ -16,6 +19,14 @@ void test('resolve-ssm-env rejects cached backend-aligned stages missing the bac
   assert.match(source, /printf '%s\\n' 'production'/);
   assert.match(source, /stage_requires_backend_database_url\(\)/);
   assert.match(source, /dashboard\*\|api\*\|backend\*/);
+  assert.match(
+    source,
+    /fallback_stage=\$\(printf '%s' "\$\{STAGE:-\}" \| tr '\[:upper:\]' '\[:lower:\]' \| tr '_' '-'\)/
+  );
+  assert.match(
+    source,
+    /if \[ -n "\$fallback_stage" \] && \[ "\$fallback_stage" != "\$normalized_fallback_stage" \]; then/
+  );
   assert.match(
     source,
     /Cached SSM env for stage '\$\{STAGE\}' is missing INFRA_BACKEND_API_DATABASE_URL; refreshing from SSM\./
