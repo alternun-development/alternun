@@ -16,4 +16,9 @@ void test('release patch stays wired to the release script and auto deploys test
   assert.match(releaseSource, /deploy-testnet-api\.sh/);
   assert.match(releaseSource, /--no-prompt/);
   assert.match(releaseSource, /pnpm release:patch/);
+  assert.match(releaseSource, /function resolveGitHubRepoSlug/);
+  assert.match(releaseSource, /gh api repos\/\$\{repoSlug\}\/pulls/);
+  assert.match(releaseSource, /gh api PATCH failed/);
+  assert.doesNotMatch(releaseSource, /gh pr edit/);
+  assert.doesNotMatch(releaseSource, /gh pr create/);
 });
