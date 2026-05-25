@@ -555,9 +555,16 @@ function resolveDevelopmentReleaseVersion(target, currentVersion) {
   throw new Error(`Unsupported development release target: ${target}`);
 }
 
-function createReleaseCommit(version, dryRun, branchName = getCurrentBranch()) {
+function createReleaseCommit(
+  version,
+  dryRun,
+  branchName = getCurrentBranch(),
+  allowEmpty = false
+) {
   stageReleaseFiles(dryRun, branchName);
-  run('git', ['commit', '-m', `chore: release v${version}`], { dryRun });
+  run('git', ['commit', ...(allowEmpty ? ['--allow-empty'] : []), '-m', `chore: release v${version}`], {
+    dryRun,
+  });
 }
 
 function createReleaseTag(version, dryRun) {
@@ -1039,7 +1046,7 @@ function main() {
     }
 
     if (shouldPrepareRelease && options.createCommit) {
-      createReleaseCommit(version, options.dryRun, releaseBranch);
+      createReleaseCommit(version, options.dryRun, releaseBranch, options.promote);
     }
   } catch (error) {
     if (!options.dryRun) {
