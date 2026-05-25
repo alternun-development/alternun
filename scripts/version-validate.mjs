@@ -11,12 +11,17 @@ const {
   validateWorkspacePackageVersions,
   validateSupplementalVersionFiles,
 } = require('./versioning/version-files.cjs');
+const { checkRootReadme } = require('./readme-maintenance.cjs');
 
 const branch = getCurrentBranch();
 const expectedVersion = readRootVersion(branch);
 const branchValidation = validateBranchVersionFiles(expectedVersion, branch);
 const workspaceValidation = validateWorkspacePackageVersions(expectedVersion);
 const supplementalValidation = validateSupplementalVersionFiles(expectedVersion);
+const readmeValidation = checkRootReadme({
+  branch,
+  version: expectedVersion,
+});
 const branchRule = resolveBranchRule(branch);
 const productionMirrorValidation =
   branchRule.resolvedConfig?.environment === 'production'
@@ -27,6 +32,7 @@ const issues = [
   ...branchValidation.issues,
   ...workspaceValidation.issues,
   ...supplementalValidation.issues,
+  ...readmeValidation.issues,
   ...productionMirrorValidation.issues,
 ];
 
@@ -38,4 +44,6 @@ if (issues.length > 0) {
   process.exit(1);
 }
 
-console.log(`✅ Version files are in sync with ${expectedVersion} on ${branch || 'detached HEAD'}`);
+console.log(
+  `✅ Version files and README are in sync with ${expectedVersion} on ${branch || 'detached HEAD'}`
+);
