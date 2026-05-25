@@ -24,11 +24,13 @@ void test('backend database secret helper resolves the stage-scoped names', () =
   assert.match(helperSource, /dashboard-prod\|dashboard-production/);
   assert.match(helperSource, /alternun\/api\/infra-backend-api-database-url-dev/);
   assert.match(helperSource, /alternun\/api\/infra-backend-api-database-url-prod/);
+  assert.match(helperSource, /resolve_backend_database_ssm_stage/);
   assert.match(helperSource, /resolve_backend_database_secret_name/);
   assert.match(helperSource, /resolve_backend_database_ssm_key/);
 
   assert.match(bootstrapSource, /source scripts\/backend-database-secret\.sh/);
   assert.match(bootstrapSource, /resolve_backend_database_secret_name/);
+  assert.match(bootstrapSource, /resolve_backend_database_ssm_stage/);
   assert.match(bootstrapSource, /resolve_backend_database_ssm_key/);
   assert.match(bootstrapSource, /put-secret-value/);
   assert.match(bootstrapSource, /put-parameter/);

@@ -92,16 +92,17 @@ jobs:
       - name: Run i18n tests
         run: pnpm --filter @alternun/i18n test
 
-      - name: Run mobile critical tests
-        run: CI=1 pnpm --filter @alternun/mobile exec jest --runInBand --watchAll=false
+      - name: Run mobile coverage tests
+        run: CI=1 pnpm --filter @alternun/mobile run test:coverage
 
       - name: Upload coverage to Codecov
-        if: hashFiles('**/coverage/lcov.info') != ''
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
-          file: ./coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: apps/mobile/coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
+          fail_ci_if_error: true
 
   security:
     name: Security Audit
