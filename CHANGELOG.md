@@ -1,3 +1,13 @@
+## [1.0.270](https://github.com/alternun-development/alternun/compare/v1.0.269...v1.0.270) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** fix(api,i18n,repo): th, pnpm-lock
+
+### Bug Fixes
+
+- **api,i18n,repo:** th, pnpm-lock ([29ae79f](https://github.com/alternun-development/alternun/commit/29ae79fd7ab7faaf3085cb7769299d310b7d3280))
+
 ## [1.0.269](https://github.com/alternun-development/alternun/compare/v1.0.269-dev.0...v1.0.269) (2026-05-25)
 
 ### Bug Fixes
