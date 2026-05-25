@@ -31,6 +31,23 @@ resolve_backend_database_secret_name() {
   printf '%s\n' "$secret_name"
 }
 
+resolve_backend_database_ssm_stage() {
+  local stage_name
+  stage_name=$(normalize_stage "${STACK:-${SST_STAGE:-dev}}")
+
+  case "$stage_name" in
+    prod|api-prod|production|*production*|dashboard-prod|dashboard-production)
+      printf '%s\n' 'prod'
+      ;;
+    dev|api-dev|dashboard-dev|*testnet*|*development*)
+      printf '%s\n' 'dev'
+      ;;
+    *)
+      printf '%s\n' "$stage_name"
+      ;;
+  esac
+}
+
 resolve_backend_database_ssm_key() {
   local stage_name ssm_key
   stage_name=$(normalize_stage "${STACK:-${SST_STAGE:-dev}}")
