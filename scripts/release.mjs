@@ -17,6 +17,7 @@ const {
   restoreFileContents,
   stripVersionSuffix,
 } = require('./versioning/version-files.cjs');
+const { checkRootReadme } = require('./readme-maintenance.cjs');
 
 const VALID_BUMPS = new Set(['patch', 'minor', 'major']);
 const BUILD_TARGET = 'build';
@@ -384,7 +385,26 @@ function validateRootDocumentation() {
   if ((result.status ?? 1) !== 0) {
     throw new Error(
       'Root documentation structure validation failed. ' +
-        'Move non-critical .md files to docs/ before releasing.'
+      'Move non-critical .md files to docs/ before releasing.'
+    );
+  }
+}
+
+function validateRootReadme(branchName) {
+  const expectedVersion = readRootVersion(branchName);
+  const validation = checkRootReadme({
+    branch: branchName,
+    version: expectedVersion,
+  });
+
+  if (!validation.valid) {
+    console.error('❌ Root README validation failed:');
+    for (const issue of validation.issues) {
+      console.error(`  - ${issue}`);
+    }
+
+    throw new Error(
+      'Root README validation failed. Update the version line, latest changes block, and support email before releasing.'
     );
   }
 }
@@ -535,9 +555,23 @@ function resolveDevelopmentReleaseVersion(target, currentVersion) {
   throw new Error(`Unsupported development release target: ${target}`);
 }
 
-function createReleaseCommit(version, dryRun, branchName = getCurrentBranch()) {
+function createReleaseCommit(
+  version,
+  dryRun,
+  branchName = getCurrentBranch(),
+  allowEmpty = false
+) {
   stageReleaseFiles(dryRun, branchName);
-  run('git', ['commit', '-m', `chore: release v${version}`], { dryRun });
+  const commitEnv = allowEmpty ? { ...process.env, ALTERNUN_RELEASE_COMMIT: 'true' } : process.env;
+
+  run(
+    'git',
+    ['commit', ...(allowEmpty ? ['--allow-empty'] : []), '-m', `chore: release v${version}`],
+    {
+      dryRun,
+      env: commitEnv,
+    }
+  );
 }
 
 function createReleaseTag(version, dryRun) {
@@ -1003,6 +1037,7 @@ function main() {
   validateRootDocumentation();
 
   const currentBranch = getCurrentBranch();
+  validateRootReadme(currentBranch);
   const productionBranch = resolveProductionBranch();
   const releaseBranch = options.promote ? productionBranch : currentBranch;
   const releaseBuildStage = resolveReleaseBuildStage(releaseBranch);
@@ -1018,7 +1053,7 @@ function main() {
     }
 
     if (shouldPrepareRelease && options.createCommit) {
-      createReleaseCommit(version, options.dryRun, releaseBranch);
+      createReleaseCommit(version, options.dryRun, releaseBranch, options.promote);
     }
   } catch (error) {
     if (!options.dryRun) {
