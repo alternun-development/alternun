@@ -106,13 +106,26 @@ Workspace package versions stay on the semantic base version; the branch-aware b
 ```bash
 pnpm version:validate     # validate version sync across monorepo
 pnpm version:sync         # sync versions across workspace
+pnpm readme:check         # validate the root README version, latest changes, and support email
+pnpm readme:update        # sync the root README from the current changelog and release version
 pnpm release              # build release on current branch
 pnpm release patch        # branch-aware release bump, regenerate changelog, stage-aware build, tag, push
-pnpm release -- --promote # promote current release to production without a new semantic bump
+pnpm release:promote      # promote current release to production without a new semantic bump
 pnpm version:check-secrets # scan staged files for secrets
 ```
 
-Current version: **1.0.183**
+The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
+
+Current version: **1.0.275**
+
+## 📋 Latest Changes (v1.0.275)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.275-dev.0
+- **repo:** fix(infra): preserve in-use ACM certs
+
+For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
 ## Security
 
@@ -139,7 +152,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT
 - [GitHub Issues](https://github.com/alternun-development/alternun/issues)
 - [GitHub Discussions](https://github.com/alternun-development/alternun/discussions)
 - [Discord](https://discord.gg/DQmQbzcbER)
-- support@alternun.io
+- support@alternun.co
 
 ## License
 

@@ -20,6 +20,10 @@
     {
       "name": "alternun-mobile-app-version-sync",
       "path": "./scripts/versioning/mobile-app-version-extension.cjs"
+    },
+    {
+      "name": "alternun-root-readme-maintenance",
+      "path": "./scripts/versioning/readme-maintenance-extension.cjs"
     }
   ],
   "extensionConfig": {
