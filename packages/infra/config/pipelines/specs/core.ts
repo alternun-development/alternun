@@ -33,10 +33,8 @@ function buildAuthentikIssuerForStage(stage: PipelineStage, env: NodeJS.ProcessE
 }
 
 function buildApiUrlForStage(stage: PipelineStage, env: NodeJS.ProcessEnv): string {
-  const stageUrls = buildStageUrls(
-    env.INFRA_EXPO_SUBDOMAIN ?? 'airs',
-    env.INFRA_ROOT_DOMAIN ?? 'alternun.co'
-  );
+  // Backend/API stacks live on api.*; the AIRS surface lives on airs.*.
+  const stageUrls = buildStageUrls('api', env.INFRA_ROOT_DOMAIN ?? 'alternun.co');
   const stageUrl = stageUrls[stage];
   const explicitApiUrl = env.EXPO_PUBLIC_API_URL?.trim();
 

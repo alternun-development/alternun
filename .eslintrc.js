@@ -1,3 +1,4 @@
+/* eslint-disable */
 module.exports = {
   root: true,
   env: {
@@ -119,5 +120,6 @@ module.exports = {
     'coverage/',
     '.turbo/',
     'apps/web/**',
+    'packages/video-studio/src.bak/**',
   ],
 };

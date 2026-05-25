@@ -1,9 +1,11 @@
 import { createServer, type Server } from 'node:http';
 import { randomUUID } from 'node:crypto';
+import { isIP } from 'node:net';
 import { betterAuth } from 'better-auth';
 import { toNodeHandler } from 'better-auth/node';
+import { sql } from 'drizzle-orm';
 import { oAuthProxy } from 'better-auth/plugins/oauth-proxy';
-import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import type { BetterAuthDevConfig, BetterAuthDevOAuthProxyConfig } from './better-auth-dev.config';
 import { getDatabase } from '../../common/database/connection';
 import * as betterAuthSchema from '../../common/database/better-auth.schema';
@@ -36,6 +38,74 @@ function buildOAuthProxyPlugin(
   });
 }
 
+function deriveCrossSubDomainCookieDomain(baseURL: string): string | undefined {
+  try {
+    const url = new URL(baseURL);
+    if (isIP(url.hostname)) {
+      return undefined;
+    }
+
+    const hostnameParts = url.hostname.split('.');
+    if (hostnameParts.length <= 2) {
+      return undefined;
+    }
+
+    // Use the parent domain for the current Alternun host layout so
+    // `testnet.api.*` and `testnet.airs.*` can share the same session cookie.
+    return `.${hostnameParts.slice(-2).join('.')}`;
+  } catch {
+    return undefined;
+  }
+}
+
+function isLoopbackHostname(hostname: string): boolean {
+  const normalized = hostname.trim().toLowerCase();
+  return (
+    normalized === 'localhost' ||
+    normalized === '127.0.0.1' ||
+    normalized === '::1' ||
+    normalized === '0.0.0.0'
+  );
+}
+
+function deriveAppOriginFromBaseURL(baseURL: string): string | undefined {
+  try {
+    const url = new URL(baseURL);
+
+    if (isLoopbackHostname(url.hostname)) {
+      const port = Number(url.port || '0');
+      if (Number.isFinite(port) && port > 0) {
+        url.port = String(Math.max(port - 1, 1));
+      } else {
+        url.port = '8081';
+      }
+
+      return url.origin;
+    }
+
+    const hostnameParts = url.hostname.split('.');
+    const apiIndex = hostnameParts.indexOf('api');
+    if (apiIndex < 0) {
+      return undefined;
+    }
+
+    hostnameParts[apiIndex] = 'airs';
+    url.hostname = hostnameParts.join('.');
+    return url.origin;
+  } catch {
+    return undefined;
+  }
+}
+
+function deriveBetterAuthErrorUrl(baseURL: string): string | undefined {
+  const appOrigin = deriveAppOriginFromBaseURL(baseURL);
+  if (!appOrigin) {
+    return undefined;
+  }
+
+  return `${appOrigin}/auth/callback`;
+}
+
 function normalizeString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
@@ -56,26 +126,103 @@ function fillBetterAuthUserIdentity(user: Record<string, unknown>): Record<strin
   };
 }
 
-export function createBetterAuthDevAuth(
-  config: BetterAuthDevConfig
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any {
+type BetterAuthExecuteClient = {
+  execute(query: unknown): Promise<unknown>;
+};
+
+type BetterAuthWelcomeEmailRecord = {
+  email: string | null;
+  name: string | null;
+  locale: string | null;
+  welcomeEmailSent: boolean;
+};
+
+function isTruthyDatabaseValue(value: unknown): boolean {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    return value !== 0;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    return ['1', 'true', 't', 'yes', 'y', 'on'].includes(normalized);
+  }
+
+  return false;
+}
+
+export async function fetchBetterAuthWelcomeEmailRecord(
+  db: BetterAuthExecuteClient,
+  userId: string
+): Promise<BetterAuthWelcomeEmailRecord | null> {
+  const result = await db.execute(sql`
+    select email, name, locale, welcome_email_sent
+    from public.users
+    where id = ${userId}
+    limit 1
+  `);
+  const rows = (result as { rows?: Array<Record<string, unknown>> }).rows ?? [];
+  const row = rows[0];
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    email: typeof row.email === 'string' ? row.email : null,
+    name: typeof row.name === 'string' ? row.name : null,
+    locale: typeof row.locale === 'string' ? row.locale : null,
+    welcomeEmailSent: isTruthyDatabaseValue(row.welcome_email_sent),
+  };
+}
+
+export async function markBetterAuthWelcomeEmailSent(
+  db: BetterAuthExecuteClient,
+  userId: string
+): Promise<void> {
+  await db.execute(sql`
+    update public.users
+    set
+      welcome_email_sent = true,
+      welcome_email_sent_at = now(),
+      updated_at = now()
+    where id = ${userId}
+  `);
+}
+
+type BetterAuthDatabaseAdapterConfig = {
+  provider: 'pg';
+  schema: typeof betterAuthSchema;
+};
+
+type BetterAuthVerificationEmailUser = {
+  email: string;
+  name?: string | null;
+};
+
+type BetterAuthVerificationEmailRequest = {
+  headers?: {
+    get(name: string): string | null;
+  };
+};
+
+type BetterAuthVerificationEmailArgs = {
+  user: BetterAuthVerificationEmailUser;
+  url: string;
+  token: string;
+};
+
+export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
   const oauthProxyPlugin = buildOAuthProxyPlugin(config.oauthProxy);
   const hasGoogleProvider = Boolean(config.googleClientId && config.googleClientSecret);
   const hasDiscordProvider = Boolean(config.discordClientId && config.discordClientSecret);
 
-  // Derive parent domain for cross-subdomain cookies (e.g., ".alternun.co" from "api.alternun.co")
-  let cookieDomain: string | undefined;
-  try {
-    const url = new URL(config.baseURL);
-    const parts = url.hostname.split('.');
-    if (parts.length > 2) {
-      // For "api.alternun.co" → ".alternun.co"; for "api.example.co.uk" → ".example.co.uk"
-      cookieDomain = `.${parts.slice(-2).join('.')}`;
-    }
-  } catch {
-    // Fall back to undefined (browser will handle it)
-  }
+  // Keep cross-subdomain cookies on the shared parent domain so
+  // `testnet.api.*` and `testnet.airs.*` can share the Better Auth session.
+  const cookieDomain = deriveCrossSubDomainCookieDomain(config.baseURL);
 
   const socialProviders = {
     ...(hasGoogleProvider
@@ -103,19 +250,24 @@ export function createBetterAuthDevAuth(
     config.oauthProxy.currentURL,
     config.oauthProxy.productionURL,
   ]);
+  const errorURL = deriveBetterAuthErrorUrl(config.baseURL);
 
   const isProduction = process.env.NODE_ENV === 'production';
   const db = getDatabase();
+  const dbClient = db as BetterAuthExecuteClient;
+  const createDrizzleAdapter = drizzleAdapter as unknown as (
+    database: typeof db,
+    options: BetterAuthDatabaseAdapterConfig
+  ) => unknown;
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   return betterAuth({
     appName: 'Alternun Dev Better Auth',
     baseURL: config.baseURL,
     basePath: '/auth',
     secret: config.secret,
+    ...(errorURL ? { errorURL } : {}),
     trustedOrigins,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    database: drizzleAdapter(db, {
+    database: createDrizzleAdapter(db, {
       provider: 'pg',
       schema: betterAuthSchema,
     }),
@@ -129,14 +281,17 @@ export function createBetterAuthDevAuth(
     emailVerification: {
       sendOnSignUp: true,
       sendOnSignIn: true,
-      async sendVerificationEmail({ user, url, token }, request) {
+      async sendVerificationEmail(
+        { user, url, token }: BetterAuthVerificationEmailArgs,
+        request?: BetterAuthVerificationEmailRequest
+      ) {
         await sendAuthVerificationEmail(
           {
             to: user.email,
             displayName: user.name,
             confirmationUrl: url,
             token,
-            locale: request?.headers.get('accept-language') ?? undefined,
+            locale: request?.headers?.get('accept-language') ?? undefined,
           },
           process.env
         );
@@ -150,18 +305,58 @@ export function createBetterAuthDevAuth(
               data: fillBetterAuthUserIdentity(user),
             });
           },
+          after: async (user: Record<string, unknown>) => {
+            // Send AIRS welcome email after user creation
+            const { sendAirsWelcomeEmail } = await import('../auth-exchange/airs-welcome.email');
+            const userId = user?.id;
+            const locale = user?.locale;
+            const email = user?.email;
+            const name = user?.name;
+
+            if (email && typeof email === 'string') {
+              try {
+                await sendAirsWelcomeEmail({
+                  to: email,
+                  displayName: typeof name === 'string' ? name : undefined,
+                  locale: typeof locale === 'string' ? locale : undefined,
+                  bonusAirs: 10,
+                });
+
+                // Mark welcome email as sent in database
+                if (userId && typeof userId === 'string') {
+                  try {
+                    await markBetterAuthWelcomeEmailSent(dbClient, userId);
+                  } catch (dbError) {
+                    console.error('Failed to mark welcome email as sent:', dbError);
+                  }
+                }
+              } catch (error) {
+                console.error('Failed to send AIRS welcome email:', error);
+              }
+            }
+          },
         },
       },
     },
     account: {
       storeAccountCookie: true,
       encryptOAuthTokens: true,
+      storeStateStrategy: 'database',
       accountLinking: {
         enabled: true,
         trustedProviders: ['google', ...(hasDiscordProvider ? ['discord'] : []), 'email-password'],
         allowDifferentEmails: false,
       },
-      skipStateCookieCheck: config.oauthProxy.enabled,
+      // The database-backed state row is authoritative; skipping the extra
+      // cookie echo check avoids cross-origin browser cookie loss on testnet.
+      skipStateCookieCheck: true,
+    },
+    session: {
+      expiresIn: 60 * 60 * 24 * 7, // 7 days
+      updateAge: 60 * 60 * 24, // Update session every 24 hours
+      cookieCache: {
+        enabled: true,
+      },
     },
     advanced: {
       useSecureCookies: isProduction,
@@ -187,9 +382,7 @@ export function createBetterAuthDevAuth(
 }
 
 export function createBetterAuthDevServer(config: BetterAuthDevConfig): Server {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const auth = createBetterAuthDevAuth(config);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
   const authHandler = toNodeHandler(auth.handler);
 
   return createServer((req, res) => {

@@ -4,7 +4,9 @@ import {
   resolveBetterAuthDevConfig,
 } from '../../modules/better-auth-dev/better-auth-dev.config';
 import { createBetterAuthDevAuth } from '../../modules/better-auth-dev/better-auth-dev.server';
+import { normalizeBetterAuthRequestBody } from './better-auth-request-body';
 import { applyBetterAuthCorsHeaders } from './better-auth-cors';
+import { rewriteBetterAuthErrorRedirect } from './better-auth-error-redirect';
 import { shouldProxyBetterAuthPath } from './better-auth-proxy';
 
 const HOP_BY_HOP_HEADERS = new Set([
@@ -125,19 +127,35 @@ function buildRuntimeRequestUrl(
 async function copyRuntimeResponse(
   reply: FastifyReply,
   response: Response,
-  requestHeaders: BetterAuthRequestHeaders
+  requestHeaders: BetterAuthRequestHeaders,
+  requestPath: string,
+  baseUrl: string
 ): Promise<void> {
   void reply.code(response.status);
 
   const responseHeaders = response.headers as ResponseHeadersWithCookies;
-  const setCookies = responseHeaders.getSetCookie?.();
+  const setCookies =
+    responseHeaders.getSetCookie?.() ??
+    (response.headers.get('set-cookie') ? [response.headers.get('set-cookie') as string] : []);
   if (setCookies?.length) {
     void reply.header('set-cookie', setCookies);
   }
 
+  const rewrittenLocation = rewriteBetterAuthErrorRedirect(
+    response.headers.get?.('location') ?? null,
+    requestPath,
+    requestHeaders,
+    baseUrl
+  );
+
   for (const [name, value] of response.headers.entries()) {
     const normalizedName = (name as string).toLowerCase();
     if (normalizedName === 'set-cookie' || HOP_BY_HOP_HEADERS.has(normalizedName)) {
+      continue;
+    }
+
+    if (normalizedName === 'location' && rewrittenLocation) {
+      void reply.header(name as string, rewrittenLocation);
       continue;
     }
 
@@ -239,8 +257,9 @@ export async function handleBetterAuthRuntimeRequest(
   }
 
   const method = request.method.toUpperCase();
+  const normalizedRequestBody = normalizeBetterAuthRequestBody(requestPath, request.body);
   const requestBody =
-    method === 'GET' || method === 'HEAD' ? undefined : serializeRequestBody(request.body);
+    method === 'GET' || method === 'HEAD' ? undefined : serializeRequestBody(normalizedRequestBody);
   const runtimeRequest = new Request(
     buildRuntimeRequestUrl(requestUrl, requestHeaders, options.baseUrl),
     {
@@ -266,7 +285,13 @@ export async function handleBetterAuthRuntimeRequest(
     return true;
   }
 
-  await copyRuntimeResponse(reply, response, request.headers as BetterAuthRequestHeaders);
+  await copyRuntimeResponse(
+    reply,
+    response,
+    request.headers as BetterAuthRequestHeaders,
+    requestPath,
+    options.baseUrl
+  );
   return true;
 }
 

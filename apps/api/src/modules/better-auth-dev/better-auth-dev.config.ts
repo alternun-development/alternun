@@ -180,20 +180,45 @@ function deriveTrustedAppOrigin(value: string | undefined): string | null {
   }
 }
 
-function resolveOAuthProxyConfig(env: NodeJS.ProcessEnv): BetterAuthDevOAuthProxyConfig {
+function isProxyAutoEnableStage(baseURL: string): boolean {
+  try {
+    const url = new URL(baseURL);
+    const hostname = url.hostname.toLowerCase();
+    // Preview deployments can opt into the proxy path, but testnet keeps the
+    // canonical direct Better Auth origin on the API host to avoid rewriting
+    // the Google callback onto the app domain.
+    return hostname.includes('preview.');
+  } catch {
+    return false;
+  }
+}
+
+function resolveOAuthProxyConfig(
+  env: NodeJS.ProcessEnv,
+  baseURL: string,
+  fallbackSecret: string
+): BetterAuthDevOAuthProxyConfig {
   const currentURL = env.BETTER_AUTH_OAUTH_PROXY_CURRENT_URL?.trim() ?? '';
   const productionURL = env.BETTER_AUTH_OAUTH_PROXY_PRODUCTION_URL?.trim() ?? '';
   const secret = env.BETTER_AUTH_OAUTH_PROXY_SECRET?.trim() ?? '';
   const maxAge = Number(env.BETTER_AUTH_OAUTH_PROXY_MAX_AGE?.trim() ?? 60);
+  const autoEnable = isProxyAutoEnableStage(baseURL);
+  const derivedCurrentURL = autoEnable ? deriveTrustedAppOrigin(baseURL) ?? '' : '';
+  const derivedProductionURL = autoEnable ? 'https://airs.alternun.co' : '';
+  const derivedSecret = autoEnable ? fallbackSecret : '';
+  const resolvedCurrentURL = currentURL || derivedCurrentURL;
+  const resolvedProductionURL = productionURL || derivedProductionURL;
+  const resolvedSecret = secret || derivedSecret;
   const enabled =
     parseBoolean(env.BETTER_AUTH_OAUTH_PROXY_ENABLED, false) ||
-    Boolean(currentURL || productionURL || secret);
+    Boolean(resolvedCurrentURL || resolvedProductionURL || resolvedSecret) ||
+    autoEnable;
 
   return {
     enabled,
-    ...(currentURL ? { currentURL } : {}),
-    ...(productionURL ? { productionURL } : {}),
-    ...(secret ? { secret } : {}),
+    ...(resolvedCurrentURL ? { currentURL: resolvedCurrentURL } : {}),
+    ...(resolvedProductionURL ? { productionURL: resolvedProductionURL } : {}),
+    ...(resolvedSecret ? { secret: resolvedSecret } : {}),
     ...(Number.isFinite(maxAge) && maxAge > 0 ? { maxAge } : {}),
   };
 }
@@ -243,6 +268,6 @@ export function resolveBetterAuthDevConfig(
     googleClientSecret,
     discordClientId,
     discordClientSecret,
-    oauthProxy: resolveOAuthProxyConfig(env),
+    oauthProxy: resolveOAuthProxyConfig(env, baseURL, secret),
   };
 }

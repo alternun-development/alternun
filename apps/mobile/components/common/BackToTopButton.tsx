@@ -3,6 +3,7 @@ import { TouchableOpacity, View, useWindowDimensions, type ViewStyle } from 'rea
 import Animated from 'react-native-reanimated';
 import { ChevronsUp, type LucideProps } from 'lucide-react-native';
 import { createTypographyStyles } from '../theme/typography';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 
 const BackIcon = ChevronsUp as React.FC<LucideProps>;
 const AnimatedView = Animated.View as unknown as React.FC<
@@ -89,11 +90,14 @@ const styles = createTypographyStyles({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 999,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 6,
+      opacity: 0.4,
+      radius: 16,
+      elevation: 8,
+    }),
   },
   backToTopMobile: {
     right: 14,

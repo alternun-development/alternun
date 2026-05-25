@@ -5,12 +5,6 @@ const targets = {
     exampleFile: '.env.example',
     description: 'Shared mobile runtime env',
   },
-  mobileLocal: {
-    path: 'apps/mobile',
-    envFile: '.env.local',
-    exampleFile: '.env.local.example',
-    description: 'Local mobile overrides',
-  },
   mobileDev: {
     path: 'apps/mobile',
     envFile: '.env.development',
@@ -79,6 +73,7 @@ const variables = {
   },
   DISCORD_PUBLIC_KEY: {
     description: 'Discord application public key',
+    example: 'discord-public-key-placeholder',
   },
   DISCORD_AUTH_CLIENT_SECRET: {
     description: 'Discord OAuth client secret',
@@ -134,7 +129,6 @@ const variables = {
     required: true,
     targets: {
       mobile: 'EXPO_PUBLIC_API_URL',
-      mobileLocal: 'EXPO_PUBLIC_API_URL',
       mobileDev: 'EXPO_PUBLIC_API_URL',
       api: 'EXPO_PUBLIC_API_URL',
     },
@@ -145,7 +139,6 @@ const variables = {
     required: true,
     targets: {
       mobile: 'EXPO_PUBLIC_SUPABASE_URL',
-      mobileLocal: 'EXPO_PUBLIC_SUPABASE_URL',
       mobileDev: 'EXPO_PUBLIC_SUPABASE_URL',
       api: 'SUPABASE_URL',
     },
@@ -156,7 +149,6 @@ const variables = {
     required: true,
     targets: {
       mobile: 'EXPO_PUBLIC_SUPABASE_KEY',
-      mobileLocal: 'EXPO_PUBLIC_SUPABASE_KEY',
       mobileDev: 'EXPO_PUBLIC_SUPABASE_KEY',
       api: 'SUPABASE_ANON_KEY',
     },
@@ -166,7 +158,6 @@ const variables = {
     required: true,
     targets: {
       mobile: 'EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID',
-      mobileLocal: 'EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID',
       mobileDev: 'EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID',
       api: 'EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID',
     },
@@ -176,7 +167,6 @@ const variables = {
     example: 'google',
     targets: {
       mobile: 'EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER',
-      mobileLocal: 'EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER',
       mobileDev: 'EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER',
       api: 'EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER',
     },
@@ -186,7 +176,6 @@ const variables = {
     example: 'false',
     targets: {
       mobile: 'EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH',
-      mobileLocal: 'EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH',
       mobileDev: 'EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH',
       api: 'EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH',
     },
@@ -196,29 +185,34 @@ const variables = {
     example: 'false',
     targets: {
       mobile: 'EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH',
-      mobileLocal: 'EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH',
       mobileDev: 'EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH',
       api: 'EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH',
     },
   },
+  EXPO_PUBLIC_ENABLE_SOCIAL_AUTH: {
+    description: 'Enable social auth buttons in the mobile auth screen',
+    example: 'true',
+    targets: {
+      mobile: 'EXPO_PUBLIC_ENABLE_SOCIAL_AUTH',
+      mobileDev: 'EXPO_PUBLIC_ENABLE_SOCIAL_AUTH',
+    },
+  },
   EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: {
     description: 'Auth execution provider selector',
-    example: 'supabase',
+    example: 'better-auth',
     required: true,
     targets: {
       mobile: 'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER',
-      mobileLocal: 'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER',
       mobileDev: 'EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER',
       api: 'AUTH_EXECUTION_PROVIDER',
     },
   },
   AUTH_EXECUTION_PROVIDER: {
     description: 'Runtime auth execution provider',
-    example: 'supabase',
+    example: 'better-auth',
     required: true,
     targets: {
       mobile: 'AUTH_EXECUTION_PROVIDER',
-      mobileLocal: 'AUTH_EXECUTION_PROVIDER',
       mobileDev: 'AUTH_EXECUTION_PROVIDER',
       api: 'AUTH_EXECUTION_PROVIDER',
     },
@@ -236,7 +230,6 @@ const variables = {
     required: true,
     targets: {
       mobile: 'EXPO_PUBLIC_RELEASE_UPDATE_MODE',
-      mobileLocal: 'EXPO_PUBLIC_RELEASE_UPDATE_MODE',
       mobileDev: 'EXPO_PUBLIC_RELEASE_UPDATE_MODE',
       api: 'EXPO_PUBLIC_RELEASE_UPDATE_MODE',
     },
@@ -250,11 +243,10 @@ const variables = {
   },
   EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE: {
     description: 'Authentik social-login mode',
-    example: 'supabase',
+    example: 'authentik',
     required: true,
     targets: {
       mobile: 'EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE',
-      mobileLocal: 'EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE',
       mobileDev: 'EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE',
       api: 'EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE',
     },
@@ -264,7 +256,6 @@ const variables = {
     example: 'http://localhost:8082/auth',
     targets: {
       mobile: 'EXPO_PUBLIC_BETTER_AUTH_URL',
-      mobileLocal: 'EXPO_PUBLIC_BETTER_AUTH_URL',
       mobileDev: 'EXPO_PUBLIC_BETTER_AUTH_URL',
       api: 'BETTER_AUTH_URL',
     },
@@ -274,7 +265,6 @@ const variables = {
     example: 'http://localhost:8082/auth',
     targets: {
       mobile: 'AUTH_BETTER_AUTH_URL',
-      mobileLocal: 'AUTH_BETTER_AUTH_URL',
       mobileDev: 'AUTH_BETTER_AUTH_URL',
       api: 'AUTH_BETTER_AUTH_URL',
     },
@@ -284,7 +274,6 @@ const variables = {
     example: 'http://localhost:8082/auth/exchange',
     targets: {
       mobile: 'EXPO_PUBLIC_AUTH_EXCHANGE_URL',
-      mobileLocal: 'EXPO_PUBLIC_AUTH_EXCHANGE_URL',
       mobileDev: 'EXPO_PUBLIC_AUTH_EXCHANGE_URL',
       api: 'EXPO_PUBLIC_AUTH_EXCHANGE_URL',
     },
@@ -294,7 +283,6 @@ const variables = {
     example: 'http://localhost:8082/auth/exchange',
     targets: {
       mobile: 'AUTH_EXCHANGE_URL',
-      mobileLocal: 'AUTH_EXCHANGE_URL',
       mobileDev: 'AUTH_EXCHANGE_URL',
       api: 'AUTH_EXCHANGE_URL',
     },
@@ -305,7 +293,6 @@ const variables = {
     required: true,
     targets: {
       mobile: 'EXPO_PUBLIC_AUTHENTIK_ISSUER',
-      mobileLocal: 'EXPO_PUBLIC_AUTHENTIK_ISSUER',
       mobileDev: 'EXPO_PUBLIC_AUTHENTIK_ISSUER',
       api: 'AUTHENTIK_ISSUER',
     },
@@ -316,7 +303,6 @@ const variables = {
     required: true,
     targets: {
       mobile: 'EXPO_PUBLIC_AUTHENTIK_CLIENT_ID',
-      mobileLocal: 'EXPO_PUBLIC_AUTHENTIK_CLIENT_ID',
       mobileDev: 'EXPO_PUBLIC_AUTHENTIK_CLIENT_ID',
       api: 'AUTHENTIK_CLIENT_ID',
     },
@@ -325,7 +311,6 @@ const variables = {
     description: 'Authentik redirect URI',
     targets: {
       mobile: 'EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI',
-      mobileLocal: 'EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI',
       mobileDev: 'EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI',
     },
   },
@@ -334,7 +319,6 @@ const variables = {
     example: 'source',
     targets: {
       mobile: 'EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE',
-      mobileLocal: 'EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE',
       mobileDev: 'EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE',
       api: 'EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE',
     },
@@ -343,7 +327,6 @@ const variables = {
     description: 'Custom Authentik provider flow slugs',
     targets: {
       mobile: 'EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS',
-      mobileLocal: 'EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS',
       mobileDev: 'EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS',
     },
   },
@@ -352,7 +335,6 @@ const variables = {
     example: 'false',
     targets: {
       mobile: 'EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS',
-      mobileLocal: 'EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS',
       mobileDev: 'EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS',
     },
   },
@@ -360,7 +342,6 @@ const variables = {
     description: 'Override English landing video URL',
     targets: {
       mobile: 'EXPO_PUBLIC_AIRS_VIDEO_EN_URL',
-      mobileLocal: 'EXPO_PUBLIC_AIRS_VIDEO_EN_URL',
       mobileDev: 'EXPO_PUBLIC_AIRS_VIDEO_EN_URL',
     },
   },
@@ -368,7 +349,6 @@ const variables = {
     description: 'Override Spanish landing video URL',
     targets: {
       mobile: 'EXPO_PUBLIC_AIRS_VIDEO_ES_URL',
-      mobileLocal: 'EXPO_PUBLIC_AIRS_VIDEO_ES_URL',
       mobileDev: 'EXPO_PUBLIC_AIRS_VIDEO_ES_URL',
     },
   },
@@ -377,7 +357,6 @@ const variables = {
     example: '60000',
     targets: {
       mobile: 'EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS',
-      mobileLocal: 'EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS',
       mobileDev: 'EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS',
     },
   },
@@ -400,6 +379,14 @@ const variables = {
     secret: true,
     targets: {
       api: 'SUPABASE_ANON_KEY',
+    },
+  },
+  SUPABASE_SERVICE_ROLE_KEY: {
+    description: 'Supabase service role key for backend operations',
+    secret: true,
+    required: true,
+    targets: {
+      api: 'SUPABASE_SERVICE_ROLE_KEY',
     },
   },
   AUTHENTIK_WEBHOOK_SECRET: {
@@ -458,7 +445,7 @@ const variables = {
 };
 
 module.exports = {
-  sources: ['.env', '.env.local'],
+  sources: ['.env'],
   rootExampleFile: '.env.example',
   variables,
   targets,

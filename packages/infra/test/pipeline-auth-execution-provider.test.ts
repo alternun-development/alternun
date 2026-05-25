@@ -32,6 +32,10 @@ void test('dev pipeline spec injects Better Auth API-origin URLs', () => {
     /function buildAuthentikIssuerForStage\(stage: PipelineStage, env: NodeJS\.ProcessEnv\)/
   );
   assert.match(source, /function buildBetterAuthEnvForStage\(/);
+  assert.match(
+    source,
+    /buildStageUrls\(\s*'api'\s*,\s*env\.INFRA_ROOT_DOMAIN \?\? 'alternun\.co'\s*\)/
+  );
   assert.match(source, /const explicitApiUrl = env\.EXPO_PUBLIC_API_URL\?\.trim\(\);/);
   assert.match(source, /candidate\.host\.toLowerCase\(\) === expected\.host\.toLowerCase\(\)/);
   assert.match(source, /AUTH_BETTER_AUTH_URL: betterAuthUrl/);

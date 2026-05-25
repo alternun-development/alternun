@@ -24,6 +24,36 @@ const HOP_BY_HOP_HEADERS = new Set([
 type LambdaResponseHeaders = Record<string, string>;
 type LambdaResponseHeaderEntries = Array<readonly [string, unknown]>;
 
+export function normalizeLambdaRequestHeaders(
+  event: APIGatewayProxyEventV2
+): Record<string, string> {
+  const headers = event.headers ?? {};
+  const requestHeaders: Record<string, string> = {
+    host: headers.host ?? 'testnet.api.alternun.co',
+    ...headers,
+  };
+  const headerCookie = headers.cookie ?? headers.Cookie;
+  const eventCookie = event.cookies
+    ?.map((cookie) => cookie.trim())
+    .filter((cookie) => cookie.length > 0)
+    .join('; ');
+  const mergedCookie = [headerCookie, eventCookie]
+    .map((cookie) => cookie?.trim())
+    .filter((cookie): cookie is string => Boolean(cookie))
+    .join('; ');
+
+  if (mergedCookie) {
+    requestHeaders.cookie = mergedCookie;
+    delete requestHeaders.Cookie;
+  }
+
+  // Remove content-length header as Fastify will recalculate it.
+  delete requestHeaders['content-length'];
+  delete requestHeaders['Content-Length'];
+
+  return requestHeaders;
+}
+
 function getLambdaResponseHeaderEntries(
   responseHeaders: LightMyRequestResponse['headers']
 ): LambdaResponseHeaderEntries {
@@ -158,7 +188,6 @@ export async function handler(
       FastifyInjectOptions['method']
     >;
     let path = event.rawPath ?? event.requestContext?.http?.path ?? '/';
-    const headers = event.headers ?? {};
 
     path = normalizeLambdaRequestPath(path);
 
@@ -171,13 +200,7 @@ export async function handler(
         : event.body
       : undefined;
 
-    const requestHeaders: Record<string, string> = {
-      host: headers.host ?? 'testnet.api.alternun.co',
-      ...headers,
-    };
-
-    // Remove content-length header as Fastify will recalculate it
-    delete requestHeaders['content-length'];
+    const requestHeaders = normalizeLambdaRequestHeaders(event);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const response = (await fastify.inject({

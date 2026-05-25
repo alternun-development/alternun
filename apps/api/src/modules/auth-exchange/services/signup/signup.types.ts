@@ -4,6 +4,9 @@ export interface SignupEmailBody {
   password: string;
   callbackURL?: string;
   locale?: string;
+  referral_code?: string;
+  referred_by_username?: string | null;
+  referred_by_email?: string | null;
 }
 
 export interface SignupUserRecord {

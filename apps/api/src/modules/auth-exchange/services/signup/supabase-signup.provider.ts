@@ -30,6 +30,13 @@ export function createSupabaseSignupProvider(fetchFn: typeof fetch = fetch): Sig
             name: input.body.name,
             full_name: input.body.name,
             ...(input.body.locale ? { locale: input.body.locale } : {}),
+            ...(input.body.referral_code ? { referral_code: input.body.referral_code } : {}),
+            ...(input.body.referred_by_username
+              ? { referred_by_username: input.body.referred_by_username }
+              : {}),
+            ...(input.body.referred_by_email
+              ? { referred_by_email: input.body.referred_by_email }
+              : {}),
           },
           redirect_to: input.body.callbackURL,
         }),

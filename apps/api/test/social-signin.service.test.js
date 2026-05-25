@@ -11,12 +11,21 @@ test('SocialSignInService requests the Better Auth social sign-in URL and maps r
   };
 
   const service = new SocialSignInService({
-    signInSocial: async (input) => {
-      observed.body = input.body;
-      return {
-        redirect: true,
-        url: 'https://accounts.google.com/o/oauth2/v2/auth?client_id=test',
-      };
+    handler: async (request) => {
+      observed.body = await request.clone().json();
+      return new Response(
+        JSON.stringify({
+          redirect: true,
+          url: 'https://accounts.google.com/o/oauth2/v2/auth?client_id=test',
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+            'set-cookie': 'better-auth-oauth-state=state-token; Path=/; HttpOnly',
+          },
+        }
+      );
     },
   });
 
@@ -35,6 +44,7 @@ test('SocialSignInService requests the Better Auth social sign-in URL and maps r
     provider: 'google',
     redirect: true,
     url: 'https://accounts.google.com/o/oauth2/v2/auth?client_id=test',
+    setCookies: ['better-auth-oauth-state=state-token; Path=/; HttpOnly'],
   });
 });
 
@@ -44,12 +54,21 @@ test('SocialSignInService keeps explicit callback URLs when provided', async () 
   };
 
   const service = new SocialSignInService({
-    signInSocial: async (input) => {
-      observed.body = input.body;
-      return {
-        redirect: true,
-        url: 'https://accounts.google.com/o/oauth2/v2/auth?client_id=test',
-      };
+    handler: async (request) => {
+      observed.body = await request.clone().json();
+      return new Response(
+        JSON.stringify({
+          redirect: true,
+          url: 'https://accounts.google.com/o/oauth2/v2/auth?client_id=test',
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+            'set-cookie': 'better-auth-oauth-state=state-token; Path=/; HttpOnly',
+          },
+        }
+      );
     },
   });
 
@@ -66,5 +85,42 @@ test('SocialSignInService keeps explicit callback URLs when provided', async () 
     callbackURL: 'https://app.example.com/auth/callback',
     errorCallbackURL: 'https://app.example.com/auth/error',
     newUserCallbackURL: 'https://app.example.com/auth/new-user',
+  });
+});
+
+test('SocialSignInService fills missing error and new-user callback URLs from callbackURL', async () => {
+  const observed = {
+    body: null,
+  };
+
+  const service = new SocialSignInService({
+    handler: async (request) => {
+      observed.body = await request.clone().json();
+      return new Response(
+        JSON.stringify({
+          redirect: true,
+          url: 'https://accounts.google.com/o/oauth2/v2/auth?client_id=test',
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+            'set-cookie': 'better-auth-oauth-state=state-token; Path=/; HttpOnly',
+          },
+        }
+      );
+    },
+  });
+
+  await service.signIn({
+    provider: 'google',
+    callbackURL: 'https://app.example.com/auth/callback',
+  });
+
+  assert.deepEqual(observed.body, {
+    provider: 'google',
+    callbackURL: 'https://app.example.com/auth/callback',
+    errorCallbackURL: 'https://app.example.com/auth/callback',
+    newUserCallbackURL: 'https://app.example.com/auth/callback',
   });
 });

@@ -10,6 +10,7 @@ export class AlternunAuthFacade {
     constructor(options) {
         this.options = options;
         this.currentUser = null;
+        this.hasResolvedAuthState = false;
         this.currentCompatUser = null;
         this.currentExecutionSession = null;
         this.currentIssuerSession = null;
@@ -62,6 +63,7 @@ export class AlternunAuthFacade {
     }
     emit(user) {
         this.currentUser = user;
+        this.hasResolvedAuthState = true;
         for (const listener of this.listeners) {
             listener(user);
         }
@@ -237,6 +239,9 @@ export class AlternunAuthFacade {
         return null;
     }
     async getUser() {
+        if (this.hasResolvedAuthState) {
+            return this.currentUser;
+        }
         return this.refreshState('getUser', { allowExchange: true });
     }
     async signInWithEmail(email, password) {
@@ -353,10 +358,10 @@ export class AlternunAuthFacade {
             throw toAlternunAuthError(error);
         }
     }
-    async signUpWithEmail(email, password, locale) {
+    async signUpWithEmail(email, password, locale, referral) {
         var _a, _b, _c, _d;
         if (this.executionProvider.signUpWithEmail) {
-            const outcome = await this.executionProvider.signUpWithEmail(email, password, locale);
+            const outcome = await this.executionProvider.signUpWithEmail(email, password, locale, referral);
             const outcomeRecord = outcome;
             const result = isEmailAuthResult(outcome)
                 ? {
@@ -394,6 +399,7 @@ export class AlternunAuthFacade {
             email,
             password,
             locale,
+            referral,
         });
         if ((_a = result.session) === null || _a === void 0 ? void 0 : _a.externalIdentity) {
             this.currentExecutionSession = result.session;
@@ -527,6 +533,7 @@ export class AlternunAuthFacade {
     }
     async refreshExecutionSession() {
         this.currentExecutionSession = await this.executionProvider.refreshExecutionSession();
+        this.hasResolvedAuthState = false;
         await this.refreshState('refreshExecutionSession', { allowExchange: true });
         return this.currentExecutionSession;
     }
@@ -538,6 +545,7 @@ export class AlternunAuthFacade {
     }
     async refreshIssuerSession() {
         this.currentIssuerSession = await this.issuerProvider.refreshIssuerSession();
+        this.hasResolvedAuthState = false;
         await this.refreshState('refreshIssuerSession', { allowExchange: true });
         return this.currentIssuerSession;
     }
@@ -545,6 +553,7 @@ export class AlternunAuthFacade {
         await this.issuerProvider.logoutIssuerSession(options);
         this.currentIssuerSession = null;
         this.currentAlternunSession = null;
+        this.hasResolvedAuthState = false;
         await this.refreshState('logoutIssuerSession', { allowExchange: false });
     }
     async getAlternunSession() {
