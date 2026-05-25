@@ -25,7 +25,10 @@ void test('destructive infra cleanup stays opt-in across deploy scripts, env def
     sstDeploySource,
     /if ! require_destructive_cleanup_allowed "CloudFront alias cleanup"; then\n\s+return 0\n\s+fi/
   );
-  assert.match(
+  assert.match(sstDeploySource, /npx sst state remove --stage "\$STACK" "\$target"/);
+  assert.match(sstDeploySource, /CdnSslCertificate/);
+  assert.match(sstDeploySource, /CdnSslValidation/);
+  assert.doesNotMatch(
     sstDeploySource,
     /if ! require_destructive_cleanup_allowed "SST state removal for \$\{target\}"; then\n\s+return 0\n\s+fi/
   );
@@ -56,7 +59,11 @@ void test('destructive infra cleanup stays opt-in across deploy scripts, env def
 
   assert.match(
     readmeSource,
-    /live cleanup of CloudFront aliases, Route53 records, ACM validation CNAMEs, and legacy SST state is blocked unless `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true`/
+    /legacy SST state for managed certificate migrations is pruned automatically when explicit cert ARNs are present/
+  );
+  assert.match(
+    readmeSource,
+    /live cleanup of CloudFront aliases, Route53 records, and ACM validation CNAMEs is blocked unless `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true`/
   );
   assert.match(readmeSource, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS/);
   assert.match(readmeSource, /INFRA_ENABLE_ALIAS_CLEANUP/);
