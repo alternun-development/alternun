@@ -1,3 +1,10 @@
+## [1.0.270](https://github.com/alternun-development/alternun/compare/v1.0.270-dev.0...v1.0.270) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.270-dev.0
+- **repo:** fix(api,i18n,repo): th, pnpm-lock
+
 ## [1.0.270](https://github.com/alternun-development/alternun/compare/v1.0.269...v1.0.270) (2026-05-25)
 
 ### Bug Fixes
