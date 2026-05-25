@@ -562,9 +562,16 @@ function createReleaseCommit(
   allowEmpty = false
 ) {
   stageReleaseFiles(dryRun, branchName);
-  run('git', ['commit', ...(allowEmpty ? ['--allow-empty'] : []), '-m', `chore: release v${version}`], {
-    dryRun,
-  });
+  const commitEnv = allowEmpty ? { ...process.env, ALTERNUN_RELEASE_COMMIT: 'true' } : process.env;
+
+  run(
+    'git',
+    ['commit', ...(allowEmpty ? ['--allow-empty'] : []), '-m', `chore: release v${version}`],
+    {
+      dryRun,
+      env: commitEnv,
+    }
+  );
 }
 
 function createReleaseTag(version, dryRun) {
