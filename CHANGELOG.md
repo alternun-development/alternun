@@ -1,3 +1,13 @@
+## [1.0.275](https://github.com/alternun-development/alternun/compare/v1.0.274...v1.0.275) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** fix(infra): preserve in-use ACM certs
+
+### Bug Fixes
+
+- **infra:** preserve in-use ACM certs ([4db3ffb](https://github.com/alternun-development/alternun/commit/4db3ffb1ba44b1d02d16ad469bb41b569083f434))
+
 ## [1.0.274](https://github.com/alternun-development/alternun/compare/v1.0.274-dev.0...v1.0.274) (2026-05-25)
 
 ### Bug Fixes
