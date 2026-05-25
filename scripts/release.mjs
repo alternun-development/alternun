@@ -579,28 +579,56 @@ function buildCompareUrl(remoteUrl, base, head) {
   return null;
 }
 
-function findOpenPullRequest({ remote, base, head, dryRun }) {
+function resolveGitHubRepoSlug(remoteUrl) {
+  const normalized = remoteUrl.replace(/\.git$/, '');
+
+  if (normalized.startsWith('git@github.com:')) {
+    return normalized.slice('git@github.com:'.length);
+  }
+
+  if (normalized.startsWith('https://github.com/')) {
+    return normalized.slice('https://github.com/'.length);
+  }
+
+  if (normalized.startsWith('ssh://git@github.com/')) {
+    return normalized.slice('ssh://git@github.com/'.length);
+  }
+
+  return null;
+}
+
+function runGhApi(args, { dryRun = false } = {}) {
+  const rendered = ['gh', 'api', ...args].join(' ');
+
+  if (dryRun) {
+    console.log(`[dry-run] ${rendered}`);
+    return { status: 0, stdout: '', stderr: '' };
+  }
+
+  return spawnSync('gh', ['api', ...args], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    stdio: 'pipe',
+  });
+}
+
+function findOpenPullRequest({ repoSlug, base, head, dryRun }) {
   if (dryRun) {
     return null;
   }
 
-  const probe = spawnSync('gh', ['--version'], {
-    cwd: REPO_ROOT,
-    stdio: 'ignore',
-  });
-
-  if (probe.status !== 0) {
-    return null;
-  }
-
-  const result = spawnSync(
-    'gh',
-    ['pr', 'list', '--base', base, '--head', head, '--state', 'open', '--json', 'number,url'],
-    {
-      cwd: REPO_ROOT,
-      encoding: 'utf8',
-      stdio: 'pipe',
-    }
+  const result = runGhApi(
+    [`repos/${repoSlug}/pulls`].concat([
+      '--method',
+      'GET',
+      '--raw-field',
+      'state=open',
+      '--raw-field',
+      `base=${base}`,
+      '--raw-field',
+      'per_page=100',
+    ]),
+    { dryRun }
   );
 
   if ((result.status ?? 1) !== 0) {
@@ -613,14 +641,21 @@ function findOpenPullRequest({ remote, base, head, dryRun }) {
       return null;
     }
 
-    const first = parsed[0];
+    const first = parsed.find(
+      (pullRequest) =>
+        pullRequest &&
+        typeof pullRequest.number === 'number' &&
+        pullRequest.head?.ref === head &&
+        pullRequest.head?.repo?.full_name === repoSlug
+    );
+
     if (!first || typeof first.number !== 'number') {
       return null;
     }
 
     return {
       number: first.number,
-      url: typeof first.url === 'string' ? first.url : null,
+      url: typeof first.html_url === 'string' ? first.html_url : null,
     };
   } catch {
     return null;
@@ -630,6 +665,7 @@ function findOpenPullRequest({ remote, base, head, dryRun }) {
 function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
   const remoteUrl = run('git', ['remote', 'get-url', remote], { capture: true }).stdout.trim();
   const compareUrl = buildCompareUrl(remoteUrl, base, head);
+  const repoSlug = resolveGitHubRepoSlug(remoteUrl);
   const title = `chore: release v${version}`;
   const body = [
     `Release promotion for v${version}.`,
@@ -639,19 +675,26 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
   ].join('\n');
 
   if (dryRun) {
-    console.log(`[dry-run] gh pr list --base ${base} --head ${head} --state open --json number,url`);
-    console.log(`[dry-run] gh pr edit <number> --title \"${title}\" --body <release body>`);
-    console.log(`[dry-run] gh pr create --base ${base} --head ${head} --title \"${title}\"`);
+    if (repoSlug) {
+      console.log(
+        `[dry-run] gh api repos/${repoSlug}/pulls -f state=open -f base=${base} -f per_page=100`
+      );
+      console.log(
+        `[dry-run] gh api repos/${repoSlug}/pulls/<number> -X PATCH --raw-field title="${title}" --raw-field body=<release body>`
+      );
+      console.log(
+        `[dry-run] gh api repos/${repoSlug}/pulls -X POST -f base=${base} -f head=${head} --raw-field title="${title}" --raw-field body=<release body>`
+      );
+    }
     if (compareUrl) {
       console.log(`[dry-run] PR URL: ${compareUrl}`);
     }
     return;
   }
 
-  const existingPullRequest = findOpenPullRequest({ remote, base, head, dryRun });
-  if (!existingPullRequest && compareUrl) {
-    // no-op, keep compareUrl available for fallback logging
-  }
+  const existingPullRequest = repoSlug
+    ? findOpenPullRequest({ repoSlug, base, head, dryRun })
+    : null;
 
   const probe = spawnSync('gh', ['--version'], {
     cwd: REPO_ROOT,
@@ -668,33 +711,44 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
     return;
   }
 
+  if (!repoSlug) {
+    if (compareUrl) {
+      console.warn(`Could not derive the GitHub repository slug. Create the PR manually: ${compareUrl}`);
+      return;
+    }
+
+    console.warn('Could not derive the GitHub repository slug. Create the release PR manually.');
+    return;
+  }
+
   if (existingPullRequest) {
-    const result = spawnSync(
-      'gh',
+    const result = runGhApi(
       [
-        'pr',
-        'edit',
-        String(existingPullRequest.number),
-        '--title',
-        title,
-        '--body',
-        body,
+        `repos/${repoSlug}/pulls/${existingPullRequest.number}`,
+        '--method',
+        'PATCH',
+        '--raw-field',
+        `title=${title}`,
+        '--raw-field',
+        `body=${body}`,
       ],
-      {
-        cwd: REPO_ROOT,
-        encoding: 'utf8',
-        stdio: 'pipe',
-      }
+      { dryRun }
     );
 
     if ((result.status ?? 1) === 0) {
       const output = result.stdout.trim();
       if (output.length > 0) {
-        console.log(output);
+        try {
+          const parsed = JSON.parse(output);
+          const url = typeof parsed?.html_url === 'string' ? parsed.html_url : null;
+          if (url) {
+            console.log(url);
+          }
+        } catch {
+          console.log(output);
+        }
       }
-      console.log(
-        `Updated existing pull request #${existingPullRequest.number} for ${base} <- ${head}.`
-      );
+      console.log(`Updated existing pull request #${existingPullRequest.number} for ${base} <- ${head}.`);
       return;
     }
 
@@ -703,31 +757,83 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
     }
 
     console.warn(
-      `gh pr edit failed for #${existingPullRequest.number}; falling back to a new PR if needed.`
+      `gh api PATCH failed for #${existingPullRequest.number}; falling back to a new PR if needed.`
     );
   }
 
-  const result = spawnSync(
-    'gh',
-    ['pr', 'create', '--base', base, '--head', head, '--title', title, '--body', body],
-    {
-      cwd: REPO_ROOT,
-      encoding: 'utf8',
-      stdio: 'pipe',
-    }
+  const result = runGhApi(
+    [
+      `repos/${repoSlug}/pulls`,
+      '--method',
+      'POST',
+      '--raw-field',
+      `base=${base}`,
+      '--raw-field',
+      `head=${head}`,
+      '--raw-field',
+      `title=${title}`,
+      '--raw-field',
+      `body=${body}`,
+    ],
+    { dryRun }
   );
 
   if ((result.status ?? 1) === 0) {
     const output = result.stdout.trim();
     if (output.length > 0) {
-      console.log(output);
+      try {
+        const parsed = JSON.parse(output);
+        const url = typeof parsed?.html_url === 'string' ? parsed.html_url : null;
+        if (url) {
+          console.log(url);
+        }
+      } catch {
+        console.log(output);
+      }
     }
     console.log(`Created pull request for ${base} <- ${head}.`);
     return;
   }
 
+  const rediscoveredPullRequest = findOpenPullRequest({ repoSlug, base, head, dryRun });
+  if (rediscoveredPullRequest) {
+    const retry = runGhApi(
+      [
+        `repos/${repoSlug}/pulls/${rediscoveredPullRequest.number}`,
+        '--method',
+        'PATCH',
+        '--raw-field',
+        `title=${title}`,
+        '--raw-field',
+        `body=${body}`,
+      ],
+      { dryRun }
+    );
+
+    if ((retry.status ?? 1) === 0) {
+      const output = retry.stdout.trim();
+      if (output.length > 0) {
+        try {
+          const parsed = JSON.parse(output);
+          const url = typeof parsed?.html_url === 'string' ? parsed.html_url : null;
+          if (url) {
+            console.log(url);
+          }
+        } catch {
+          console.log(output);
+        }
+      }
+      console.log(`Updated existing pull request #${rediscoveredPullRequest.number} for ${base} <- ${head}.`);
+      return;
+    }
+
+    if (retry.stderr) {
+      process.stderr.write(retry.stderr);
+    }
+  }
+
   if (compareUrl) {
-    console.warn(`gh pr create failed. Create the PR manually: ${compareUrl}`);
+    console.warn(`gh api failed. Create the PR manually: ${compareUrl}`);
     return;
   }
 
@@ -735,7 +841,7 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
     process.stderr.write(result.stderr);
   }
 
-  console.warn('gh pr create failed. Create the release PR manually.');
+  console.warn('gh api failed. Create the release PR manually.');
 }
 
 function promoteRelease({ version, remote, dryRun, productionBranch }) {
