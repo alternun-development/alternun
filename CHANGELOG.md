@@ -1,3 +1,33 @@
+## [1.0.275](https://github.com/alternun-development/alternun/compare/v1.0.275-dev.0...v1.0.275) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.275-dev.0
+- **repo:** fix(infra): preserve in-use ACM certs
+
+## [1.0.275](https://github.com/alternun-development/alternun/compare/v1.0.274...v1.0.275) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** fix(infra): preserve in-use ACM certs
+
+### Bug Fixes
+
+- **infra:** preserve in-use ACM certs ([4db3ffb](https://github.com/alternun-development/alternun/commit/4db3ffb1ba44b1d02d16ad469bb41b569083f434))
+
+## [1.0.274](https://github.com/alternun-development/alternun/compare/v1.0.274-dev.0...v1.0.274) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.274-dev.0
+- **repo:** test(infra): deploy-authentik, verify-authentik-runtime, deploy-authentik-runtime-hotfix.test, verify-authentik-runtime.test
+
+## [1.0.274](https://github.com/alternun-development/alternun/compare/v1.0.273...v1.0.274) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** test(infra): deploy-authentik, verify-authentik-runtime, deploy-authentik-runtime-hotfix.test, verify-authentik-runtime.test
+
 ## [1.0.273](https://github.com/alternun-development/alternun/compare/v1.0.273-dev.0...v1.0.273) (2026-05-25)
 
 ### Bug Fixes

@@ -14,6 +14,10 @@ const templatePath = path.join(
 void test('identity runtime verification script uses compose from a dedicated file', () => {
   const template = fs.readFileSync(templatePath, 'utf8');
 
+  assert.match(template, /wait_for_identity_runtime_prereqs\(\) \{/);
+  assert.match(template, /waiting for \/etc\/alternun-identity\.env/);
+  assert.match(template, /waiting for Docker Compose/);
+  assert.match(template, /docker info >/);
   assert.match(template, /\. \/etc\/alternun-identity\.env/);
   assert.match(template, /if command -v docker-compose >/);
   assert.match(template, /elif docker compose version >/);
