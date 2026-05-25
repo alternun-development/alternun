@@ -1,3 +1,9 @@
+## [1.0.272](https://github.com/alternun-development/alternun/compare/v1.0.271...v1.0.272) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** test(api,email): referrals.service, referrals.service.test, airs-welcome, signup-welcome
+
 ## [1.0.271](https://github.com/alternun-development/alternun/compare/v1.0.271-dev.0...v1.0.271) (2026-05-25)
 
 ### Bug Fixes
