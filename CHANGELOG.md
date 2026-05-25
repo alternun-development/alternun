@@ -1,3 +1,426 @@
+## [1.0.273](https://github.com/alternun-development/alternun/compare/v1.0.273-dev.0...v1.0.273) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.273-dev.0
+- **repo:** test(api): better-auth-dev.server, better-auth-dev-server.test
+
+## [1.0.273](https://github.com/alternun-development/alternun/compare/v1.0.272-dev.0...v1.0.273) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** test(api): better-auth-dev.server, better-auth-dev-server.test
+
+## [1.0.272](https://github.com/alternun-development/alternun/compare/v1.0.271...v1.0.272) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** test(api,email): referrals.service, referrals.service.test, airs-welcome, signup-welcome
+
+## [1.0.271](https://github.com/alternun-development/alternun/compare/v1.0.271-dev.0...v1.0.271) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.271-dev.0
+- **repo:** chore(repo): deploy, require-pr-to-develop, test-deploy
+
+## [1.0.271](https://github.com/alternun-development/alternun/compare/v1.0.270...v1.0.271) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** chore(repo): deploy, require-pr-to-develop, test-deploy
+
+## [1.0.270](https://github.com/alternun-development/alternun/compare/v1.0.270-dev.0...v1.0.270) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.270-dev.0
+- **repo:** fix(api,i18n,repo): th, pnpm-lock
+
+## [1.0.270](https://github.com/alternun-development/alternun/compare/v1.0.269...v1.0.270) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** fix(api,i18n,repo): th, pnpm-lock
+
+### Bug Fixes
+
+- **api,i18n,repo:** th, pnpm-lock ([29ae79f](https://github.com/alternun-development/alternun/commit/29ae79fd7ab7faaf3085cb7769299d310b7d3280))
+
+## [1.0.269](https://github.com/alternun-development/alternun/compare/v1.0.269-dev.0...v1.0.269) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.269-dev.0
+- **repo:** test(api): better-auth-dev.server, better-auth-dev-server.test
+
+## [1.0.269](https://github.com/alternun-development/alternun/compare/v1.0.268-dev.0...v1.0.269) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** test(api): better-auth-dev.server, better-auth-dev-server.test
+
+## [1.0.268](https://github.com/alternun-development/alternun/compare/v1.0.267-dev.0...v1.0.268) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(api): lambda, lambda-response-normalization.test
+
+## [1.0.267](https://github.com/alternun-development/alternun/compare/v1.0.266-dev.0...v1.0.267) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(auth): BetterAuthExecutionProvider, provider-contracts.test
+
+## [1.0.266](https://github.com/alternun-development/alternun/compare/v1.0.265-dev.0...v1.0.266) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(mobile): authWebSession.test, betterAuthSessionRestore
+
+## [1.0.265](https://github.com/alternun-development/alternun/compare/v1.0.264-dev.0...v1.0.265) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(mobile): callback, AppAuthProvider, authWebSession.test, betterAuthSessionRestore
+
+## [1.0.264](https://github.com/alternun-development/alternun/compare/v1.0.263-dev.0...v1.0.264) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(api): better-auth-dev.server, better-auth-dev-server.test
+
+## [1.0.263](https://github.com/alternun-development/alternun/compare/v1.0.262-dev.0...v1.0.263) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(api): better-auth-dev.config, better-auth-dev-env.test
+
+## [1.0.262](https://github.com/alternun-development/alternun/compare/v1.0.261-dev.0...v1.0.262) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(api): better-auth-dev.config, better-auth-dev-env.test, better-auth-dev-server.test
+
+## [1.0.261](https://github.com/alternun-development/alternun/compare/v1.0.260-dev.0...v1.0.261) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(api): better-auth-dev.server, better-auth-dev-server.test
+
+## [1.0.260](https://github.com/alternun-development/alternun/compare/v1.0.259-dev.0...v1.0.260) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(api): better-auth-proxy, better-auth-runtime, better-auth-proxy.test, better-auth-runtime.test
+
+## [1.0.259](https://github.com/alternun-development/alternun/compare/v1.0.258-dev.0...v1.0.259) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(api): better-auth-dev.server, better-auth-dev-server.test
+
+## [1.0.258](https://github.com/alternun-development/alternun/compare/v1.0.257-dev.0...v1.0.258) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** test(mobile): AppAuthProvider, runtimeConfig.test, runtimeConfig
+
+## [1.0.257](https://github.com/alternun-development/alternun/compare/v1.0.256-dev.0...v1.0.257) (2026-05-24)
+
+### Bug Fixes
+
+- **repo:** fix(repo,web): .gitignore, Sidebar, ReleaseUpdateBanner, pnpm-lock
+- **repo:** fix(api,repo): better-auth-dev.server, pnpm-lock
+- **repo:** test(api,repo): better-auth-dev.server, better-auth-dev-server.test, PR_TESTNET_GOOGLE_OAUTH, TESTNET_GOOGLE_OAUTH_SETUP
+- **repo:** chore(video-studio): restore stashed studio workspace
+
+### Bug Fixes
+
+- **api,repo:** better-auth-dev.server, pnpm-lock ([034691b](https://github.com/alternun-development/alternun/commit/034691b254fd32fb0ecb547a1e51296a0e401f1f))
+- **repo,web:** .gitignore, Sidebar, ReleaseUpdateBanner, pnpm-lock ([31bffb4](https://github.com/alternun-development/alternun/commit/31bffb47a0f629b6f1336e663e5f6548f599a4e5))
+
+## [1.0.256](https://example.com/home/ed/Documents/Alternun/alternun/compare/v1.0.252-dev.0...v1.0.256) (2026-05-22)
+
+### Bug Fixes
+
+- **repo:** fix(admin,api,docs): app, build, release, version.development
+- **repo:** fix(web): build
+- **repo:** fix(web): next-env.d, \_document
+- **repo:** fix(web): StaticErrorPage
+- **repo:** fix(web): pages
+
+### Bug Fixes
+
+- **admin,api,docs:** app, build, release, version.development ([b83bede](https://example.com/home/ed/Documents/Alternun/alternun/commits/b83bede16e3780c2aba5e59cc77d3bc62eb6a16b))
+- **api:** auto-enable testnet oauth proxy ([ded9c52](https://example.com/home/ed/Documents/Alternun/alternun/commits/ded9c5263f32205578a444cc694fb3d6cdb996ec))
+- **auth:** keep Better Auth callback errors on the auth route ([e37c86a](https://example.com/home/ed/Documents/Alternun/alternun/commits/e37c86a6bb71b663e8772593bc291d4b9592c4f2))
+- **auth:** keep testnet on direct callback flow ([627df60](https://example.com/home/ed/Documents/Alternun/alternun/commits/627df60029a88fbd094db82567d25180521560bd))
+- **auth:** restore local Better Auth social flow ([9523f61](https://example.com/home/ed/Documents/Alternun/alternun/commits/9523f61f0d1475c190f6117bc8206bb9af656422))
+- **auth:** scope better auth cookies to stage domains ([e72ca87](https://example.com/home/ed/Documents/Alternun/alternun/commits/e72ca8718219c771f86911af8bb22edff7ddc4cc))
+- **infra:** derive testnet api URLs from api host ([576e1c9](https://example.com/home/ed/Documents/Alternun/alternun/commits/576e1c949afd57b42165e8d2d2de09b044ac24ee))
+- **mobile:** enable testnet social auth ([716a256](https://example.com/home/ed/Documents/Alternun/alternun/commits/716a256e52207501b38d091daceb71810cce4eaa))
+- **mobile:** keep hero wordmark consistent in dark mode ([9d11df0](https://example.com/home/ed/Documents/Alternun/alternun/commits/9d11df01a997413f9fbf8e1dcb234cb08366cf8c))
+- **mobile:** remove duplicate auth import ([5ef31cf](https://example.com/home/ed/Documents/Alternun/alternun/commits/5ef31cf172a36bbb01ee4b8b289da1901f9a6afd))
+- **mobile:** restore testnet social auth ([549f134](https://example.com/home/ed/Documents/Alternun/alternun/commits/549f1340918104181336482edb752383f1c5eedf))
+- **mobile:** restore testnet social auth ([6b4f4f9](https://example.com/home/ed/Documents/Alternun/alternun/commits/6b4f4f9ae3fc4e9fde5372616c4c52a941baa531))
+- **secrets:** remove discord public key from env example ([07f4247](https://example.com/home/ed/Documents/Alternun/alternun/commits/07f4247e1bf505fb25475ba5acdc7188cbe57a42))
+- **web:** build ([419d276](https://example.com/home/ed/Documents/Alternun/alternun/commits/419d276e3a4b098a5e3e473b3e468ca1911d7963))
+- **web:** next-env.d, \_document ([91b1e3b](https://example.com/home/ed/Documents/Alternun/alternun/commits/91b1e3bdb9d6c4268981eab520d329b43b46fee7))
+- **web:** pages ([48285a1](https://example.com/home/ed/Documents/Alternun/alternun/commits/48285a1a7de966d170265d305d78c649a8758f59))
+- **web:** StaticErrorPage ([ad17b7d](https://example.com/home/ed/Documents/Alternun/alternun/commits/ad17b7df7b5f263edfc69cebbef30aa155704c17))
+
+## [1.0.252](https://github.com/alternun-development/alternun/compare/v1.0.251-dev.0...v1.0.252) (2026-05-07)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): ReferralCard
+
+### Bug Fixes
+
+- **mobile:** ReferralCard ([c3f0784](https://github.com/alternun-development/alternun/commit/c3f078439d6d10ea5437f7db19599accccedc802))
+
+## [1.0.251](https://github.com/alternun-development/alternun/compare/v1.0.250-dev.0...v1.0.251) (2026-05-06)
+
+### Bug Fixes
+
+- **repo:** test(infra): deploy-authentik, deploy-authentik-runtime-hotfix.test
+
+## [1.0.250](https://github.com/alternun-development/alternun/compare/v1.0.249-dev.0...v1.0.250) (2026-05-06)
+
+### Bug Fixes
+
+- **repo:** test(api,web): referrals.service, referrals.service.test, Sidebar
+- **repo:** fix(web): Sidebar
+- **repo:** test(repo,api,docs): .env, referrals.service, referrals.service.test, authentication-and-session-flow
+
+### Bug Fixes
+
+- **web:** Sidebar ([4181dad](https://github.com/alternun-development/alternun/commit/4181dad95bde9d898dda1bfd781f68e269fba7e2))
+
+## [1.0.249](https://github.com/alternun-development/alternun/compare/v1.0.248-dev.0...v1.0.249) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** fix(repo,api,mobile): .env, manifest
+
+### Bug Fixes
+
+- **repo,api,mobile:** .env, manifest ([316bb24](https://github.com/alternun-development/alternun/commit/316bb2441aca369f898687177b7aa85028da0769))
+
+## [1.0.248](https://github.com/alternun-development/alternun/compare/v1.0.247-dev.0...v1.0.248) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.247-dev.0
+- **repo:** test(api,mobile,i18n): referral-summary.dto, referrals.service, referrals.service.test, auth
+
+## [1.0.247](https://github.com/alternun-development/alternun/compare/v1.0.246-dev.0...v1.0.247) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,i18n): referral-summary.dto, referrals.service, referrals.service.test, auth
+
+## [1.0.246](https://github.com/alternun-development/alternun/compare/v1.0.245-dev.0...v1.0.246) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(api,repo): referrals.service, referrals.service.test, sync_auth_user_to_app_users, auth-sync-bidirectional.test
+
+## [1.0.245](https://github.com/alternun-development/alternun/compare/v1.0.244-dev.0...v1.0.245) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.244-dev.0
+- **repo:** test(mobile,repo): auth, AUTH_SYNC_TRIGGERS, sync_auth_user_to_app_users, 20260503_0001_auth_referral_attribution
+
+## [1.0.244](https://github.com/alternun-development/alternun/compare/v1.0.243-dev.0...v1.0.244) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(mobile,repo): auth, AUTH_SYNC_TRIGGERS, sync_auth_user_to_app_users, 20260503_0001_auth_referral_attribution
+
+## [1.0.243](https://github.com/alternun-development/alternun/compare/v1.0.242-dev.0...v1.0.243) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(infra): sst-deploy, sst-deploy-env-bootstrap.test, verify-authentik-runtime, verify-authentik-runtime.test
+
+## [1.0.242](https://github.com/alternun-development/alternun/compare/v1.0.241-dev.0...v1.0.242) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(infra): \_load-infra-env, sst-deploy-env-bootstrap.test
+
+## [1.0.241](https://github.com/alternun-development/alternun/compare/v1.0.240-dev.0...v1.0.241) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(infra): \_load-infra-env, sst-deploy-env-bootstrap.test
+
+## [1.0.240](https://github.com/alternun-development/alternun/compare/v1.0.239-dev.0...v1.0.240) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(infra): sst-deploy, sst-log-diagnostics.test
+
+## [1.0.239](https://github.com/alternun-development/alternun/compare/v1.0.238-dev.0...v1.0.239) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile): referrals.service, referrals.controller.test, referrals.service.test, auth
+
+## [1.0.238](https://github.com/alternun-development/alternun/compare/v1.0.237-dev.0...v1.0.238) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(infra): ensure-secrets, sst-deploy, sst-log-diagnostics.test
+
+## [1.0.237](https://github.com/alternun-development/alternun/compare/v1.0.236-dev.0...v1.0.237) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(repo): sync_auth_user_to_app_users, auth-sync-bidirectional.test, 20260503_0001_auth_referral_attribution
+
+## [1.0.236](https://github.com/alternun-development/alternun/compare/v1.0.235-dev.0...v1.0.236) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** fix(repo,infra,scripts): release-and-deploy-testnet, release-deployment-flow, buildspec, release
+
+### Bug Fixes
+
+- **repo,infra,scripts:** release-and-deploy-testnet, release-deployment-flow, buildspec, release ([40060e5](https://github.com/alternun-development/alternun/commit/40060e5ea3b335cccffc48a1d16f4b96f09850e9))
+
+## [1.0.235](https://github.com/alternun-development/alternun/compare/v1.0.234-dev.0...v1.0.235) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** fix(api): referrals.service
+
+### Bug Fixes
+
+- **api:** referrals.service ([ac5aff2](https://github.com/alternun-development/alternun/commit/ac5aff2bd582c759cc630af1a3d22f2ea2e920dd))
+
+## [1.0.234](https://github.com/alternun-development/alternun/compare/v1.0.233-dev.0...v1.0.234) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,auth): signup.service.test, AuthSignInScreen, types, AlternunAuthFacade
+
+## [1.0.233](https://github.com/alternun-development/alternun/compare/v1.0.232-dev.0...v1.0.233) (2026-05-03)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,auth): auth-exchange.module, signup-request.dto, signup.service, signup.types
+
+## [1.0.232](https://github.com/alternun-development/alternun/compare/v1.0.231-dev.0...v1.0.232) (2026-05-02)
+
+### Bug Fixes
+
+- **repo:** test(mobile,repo,auth): build, AuthResetPasswordScreen, ENV_SETUP.QUICK_REFERENCE, ENV_SETUP
+
+## [1.0.231](https://github.com/alternun-development/alternun/compare/v1.0.230-dev.0...v1.0.231) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** fix(docs,web): build
+- **repo:** fix(api): better-auth-signup.provider, better-auth-dev.server
+- **repo:** test(repo,api,docs): .env, airs-welcome.email, better-auth-dev.server, create-referral.dto
+
+### Bug Fixes
+
+- **api:** better-auth-signup.provider, better-auth-dev.server ([b736031](https://github.com/alternun-development/alternun/commit/b73603115a3d115d30a57ddabad2805e36510785))
+- **docs,web:** build ([68d781d](https://github.com/alternun-development/alternun/commit/68d781dcda0c107e45234822633a5749eaf6ce21))
+
+## [1.0.230](https://github.com/alternun-development/alternun/compare/v1.0.229-dev.0...v1.0.230) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** test(repo,api,mobile): .eslintrc, airs.repository, airs.service, airs-registration-bonus.controller
+- **repo:** fix(dashboard): correct welcome bonus endpoint URL and cleanup unused state
+- **repo:** fix(auth): simplify to rely on Better Auth HTTP-only cookies only
+- **repo:** debug(auth): add console logging for session restoration flow
+- **repo:** fix(auth): simplify session token sync to prevent infinite refresh loops
+
+### Bug Fixes
+
+- **auth:** persist Better Auth email login sessions in localStorage ([e2df28d](https://github.com/alternun-development/alternun/commit/e2df28d178f4f03691719f3f08af725504ca4b1c))
+- **auth:** simplify session token sync to prevent infinite refresh loops ([9f56833](https://github.com/alternun-development/alternun/commit/9f56833b53f8a082ef18b86c2b93aa3fb71fe417))
+- **auth:** simplify to rely on Better Auth HTTP-only cookies only ([2608047](https://github.com/alternun-development/alternun/commit/2608047a38c25d224c5dfbb0ed15cd639b494276))
+- **dashboard:** correct welcome bonus endpoint URL and cleanup unused state ([d6167f6](https://github.com/alternun-development/alternun/commit/d6167f631ce220424a1a791b2870b978027ccfe9))
+
+## [1.0.229](https://github.com/alternun-development/alternun/compare/v1.0.228-dev.0...v1.0.229) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** test(repo,docs,mobile): release-deploy, authentication-and-session-flow, infrastructure-and-delivery, ActivityFeed
+
+## [1.0.228](https://github.com/alternun-development/alternun/compare/v1.0.227-dev.0...v1.0.228) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,auth): better-auth-proxy, better-auth-runtime, auth-exchange.controller, better-auth-proxy.test
+- **repo:** fix(profile): remove duplicate Animated import
+- **repo:** feat(profile): add animated floating circles to profile hero background
+- **repo:** fix(profile): remove unsupported boxShadow causing square artifact in tier badge
+
+### Bug Fixes
+
+- **profile:** remove duplicate Animated import ([9177ee4](https://github.com/alternun-development/alternun/commit/9177ee4b9fc0524694caa67711ec05185aa4290d))
+- **profile:** remove unsupported boxShadow causing square artifact in tier badge ([f4d9bdb](https://github.com/alternun-development/alternun/commit/f4d9bdb14043e1db0e58b786ec4b089e37a7893b))
+
+### Features
+
+- **profile:** add animated floating circles to profile hero background ([dcd6aa1](https://github.com/alternun-development/alternun/commit/dcd6aa18d4955cc79d1c0da4ce646d07f6c4d9e5))
+
+## [1.0.227](https://github.com/alternun-development/alternun/compare/v1.0.226-dev.0...v1.0.227) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** feat: add comprehensive database migration system with environment detection
+- **repo:** fix(achievements): fix RPC function column names and SQL syntax
+- **repo:** fix(achievements): handle array responses from get_user_achievements RPC
+- **repo:** feat(achievements): expand to 16 total achievements
+- **repo:** feat(achievements): implement user achievement tracking system
+
+### Bug Fixes
+
+- **achievements:** fix RPC function column names and SQL syntax ([2d0abc6](https://github.com/alternun-development/alternun/commit/2d0abc6e7dc9b3ba8e6d4cf1d1660ef186f99b8e))
+- **achievements:** handle array responses from get_user_achievements RPC ([e23373e](https://github.com/alternun-development/alternun/commit/e23373eeb587e1a980c1cd3ff692a0c0ce89b97e))
+- **airs,mobile:** award registration bonus after email verification ([b71450e](https://github.com/alternun-development/alternun/commit/b71450e561fdf4729c6f41b13beda739c6c89475))
+- **mobile:** add textAlign center to confirmation button text ([37956c1](https://github.com/alternun-development/alternun/commit/37956c17af81f40259178394f7eb77f6c3b27726))
+- **mobile:** improve email confirmation button styling and interactions ([b2a0f5b](https://github.com/alternun-development/alternun/commit/b2a0f5ba3283c86b419781899283881dccad44f3))
+- **mobile:** refresh user state after email verification ([b36b25b](https://github.com/alternun-development/alternun/commit/b36b25b9827e9058416f9c8082b9dbb66822c29d))
+- **mobile:** refresh user state periodically for email verification ([cb6388c](https://github.com/alternun-development/alternun/commit/cb6388cbb28afed13db89009143262a8738f26a2))
+- **mobile:** remove redundant error box from email confirmation section only ([771727f](https://github.com/alternun-development/alternun/commit/771727ffe1ea33156bc3e4e42083cc357023d7c0))
+- **mobile:** use width 100% for confirmation button to ensure full stretch ([7f6eadb](https://github.com/alternun-development/alternun/commit/7f6eadb1b475622ecdc0b61e7af6f9453ee96018))
+- **mobile:** wrap button content in View for proper style application ([d78aa75](https://github.com/alternun-development/alternun/commit/d78aa75e1e4ca5d243f1f0d32ca74c588ea3ff62))
+
+### Features
+
+- **achievements:** expand to 16 total achievements ([6b42e82](https://github.com/alternun-development/alternun/commit/6b42e820cd661b65f373df82ce761430e3384c30))
+- **achievements:** implement user achievement tracking system ([7316fd5](https://github.com/alternun-development/alternun/commit/7316fd5c4f69fc75775f0f547f66cfcd119caa3b))
+- add comprehensive database migration system with environment detection ([43a2847](https://github.com/alternun-development/alternun/commit/43a2847c04e4e21edf6f328478f3893a7d2f0316))
+
+## [1.0.226](https://github.com/alternun-development/alternun/compare/v1.0.225-dev.0...v1.0.226) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,auth): auth-exchange.controller, signup.service, social-signin.service, signup-welcome.email
+
+## [1.0.225](https://github.com/alternun-development/alternun/compare/v1.0.224...v1.0.225) (2026-04-25)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,auth): AirsIntroExperience, AlternunMobileAuthClient
+- **repo:** updates
+- **repo:** updates
+
+### Bug Fixes
+
+- **mobile,auth:** AirsIntroExperience, AlternunMobileAuthClient ([8060d38](https://github.com/alternun-development/alternun/commit/8060d382f63957e1f7978c5cfe079ce490fa02ef))
+
 ## [1.0.224](https://github.com/alternun-development/alternun/compare/v1.0.224-dev.0...v1.0.224) (2026-04-24)
 
 ### Bug Fixes

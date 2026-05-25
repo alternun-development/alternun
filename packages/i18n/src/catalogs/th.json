@@ -31,8 +31,9 @@
         "usernamePlaceholder": "เช่น @john_doe",
         "referredByEmail": "อ้างอิงจากอีเมล (ตัวเลือก)",
         "emailPlaceholder": "เช่น friend@example.com",
-        "invitationCode": "รหัสเชิญ (ตัวเลือก)",
-        "codePlaceholder": "เช่น INVITE123",
+        "invitationCode": "รหัสแนะนำ (ตัวเลือก)",
+        "codePlaceholder": "เช่น edward-44ft34",
+        "detected": "ตรวจพบรหัสแนะนำ: {{code}}",
         "submit": "ดำเนินการต่อ",
         "submitStandalone": "ดำเนินการต่อไปยังลงชื่อเข้า",
         "skip": "ข้าม",
@@ -86,6 +87,7 @@
       "divider": {
         "or": "หรือ"
       },
+      "underMaintenance": "อยู่ระหว่างการบำรุงรักษา",
       "errors": {
         "accountExistsSignInOrResend": "มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว เข้าสู่ระบบหรือส่งอีเมลยืนยันอีกครั้งด้านล่าง",
         "authenticationFailed": "การยืนยันตัวตนล้มเหลว กรุณาลองใหม่อีกครั้ง",
@@ -103,6 +105,11 @@
       "footer": {
         "alreadyHaveAccount": "มีบัญชีอยู่แล้ว? เข้าสู่ระบบ",
         "dontHaveAccount": "ยังไม่มีบัญชี? สมัครใช้งาน"
+      },
+      "referral": {
+        "prompt": "มีรหัสแนะนำไหม?",
+        "helper": "เพิ่มรหัสก่อนสร้างบัญชี เราจะเก็บไว้ใช้ตอนสมัครใช้งาน",
+        "placeholder": "เช่น edward-44ft34"
       },
       "modes": {
         "signIn": "เข้าสู่ระบบ",
@@ -149,7 +156,131 @@
       }
     },
     "dashboard": {
-      "backToTop": "ด้านบน"
+      "backToTop": "ด้านบน",
+      "hero": {
+        "hint": "Sign in from the top-right profile menu to activate actions."
+      },
+      "notifications": {
+        "welcomeBonus": {
+          "title": "Welcome!",
+          "message": "You received 10 Airs as a welcome bonus. Start your sustainable journey!"
+        },
+        "signInRequired": {
+          "title": "Sign In Required",
+          "message": "Sign in first to connect a wallet."
+        },
+        "walletConnected": {
+          "title": "Wallet Connected",
+          "message": "Wallet authentication completed."
+        },
+        "walletConnectionFailed": {
+          "title": "Wallet Connection Failed",
+          "message": "{{error}}"
+        },
+        "signOutFailed": {
+          "title": "Sign Out Failed",
+          "message": "{{error}}"
+        }
+      },
+      "welcomeBonusModal": {
+        "title": "Welcome to Airs By Alternun!",
+        "subtitle": "You've received your welcome bonus",
+        "description": "As a new member, we're giving you 10 Airs to kick start your sustainable journey. Use them to explore projects and make a real environmental impact.",
+        "amount": "10 AIRS",
+        "claimButton": "Claim Bonus",
+        "claimingButton": "Claiming...",
+        "alreadyClaimed": "Bonus Already Claimed",
+        "alreadyClaimedMessage": "You've already claimed your welcome bonus.",
+        "successTitle": "Bonus Claimed!",
+        "successMessage": "Your 10 Airs are now in your account. Start earning more by participating in sustainable activities!"
+      },
+      "activityFeed": {
+        "title": "Recent Activity",
+        "subtitle": {
+          "global": "Real-time platform activity",
+          "user": "How you've accumulated your Airs By Alternun."
+        },
+        "tabs": {
+          "global": "Global Activity",
+          "user": "My Activity"
+        },
+        "search": "Search activity or source...",
+        "tableHeaders": {
+          "action": "Action",
+          "source": "Source",
+          "airs": "Airs",
+          "date": "Date"
+        },
+        "empty": "No activity found for this search.",
+        "now": "Now",
+        "activityTypes": {
+          "compensation": "Environmental Compensation",
+          "purchase": "Compensation Purchase",
+          "profile": "Profile Completed",
+          "account": "Account Created",
+          "reward": "Referral Reward",
+          "certificate": "Certificate Issued",
+          "verification": "Verification Completed",
+          "wallet": "Wallet Connected"
+        },
+        "typeLabels": {
+          "compensation": "Compensation",
+          "purchase": "Purchase",
+          "profile": "Profile",
+          "account": "Account",
+          "reward": "Reward",
+          "certificate": "Certificate"
+        },
+        "filters": {
+          "all": "All",
+          "compensation": "Compensation",
+          "purchase": "Purchase",
+          "profile": "Profile",
+          "account": "Account",
+          "reward": "Reward"
+        }
+      },
+      "heroPanel": {
+        "subtitle": "Your regenerative score is:",
+        "statusLabel": "Status {{tier}}",
+        "progressTo": "Progress to {{nextTier}}",
+        "progressHint": "You need {{remaining}} more Airs to reach {{nextTier}} and unlock exclusive benefits",
+        "maxTierReached": "You've reached the maximum {{tier}} level",
+        "statusInfo": "Status information",
+        "updatedAt": "Updated:",
+        "validUntil": "Valid until:",
+        "reloadButton": "Reload score",
+        "statusInfoButton": "Status information"
+      },
+      "summaryCards": {
+        "position": {
+          "title": "Your Position",
+          "subtitle": "Among Airs By Alternun members",
+          "global": "Global",
+          "colombia": "Colombia",
+          "medellin": "Medellín",
+          "rankingNote": "Ranking based on accumulated Airs"
+        },
+        "rbi": {
+          "title": "RBI Projection",
+          "subtitle": "Estimated income for next cycle",
+          "estimatedPool": "Estimated RBI Pool:",
+          "eligibleUsers": "Eligible Users:",
+          "airsScore": "Your Airs Score:",
+          "whatIsRbi": "What is RBI?",
+          "explanation": "Regenerative Basic Income is a periodic income distributed among Alternun users who contribute to the ecosystem.\\n\\nIt doesn't depend on how much money you have, but on your participation, commitment, and impact, measured through your AIRS score.\\n\\nEach time Alternun facilitates a compensation, a sale from the compensation pool, or an economic activity within the platform, part of that value goes directly to the RBI fund.",
+          "fullDocumentation": "Full Documentation"
+        },
+        "atn": {
+          "title": "My ATN",
+          "subtitle": "Your regenerative tokens",
+          "availableLabel": "Available ATN",
+          "availableDesc": "Ready to use",
+          "stackingLabel": "ATN in stacking",
+          "stackingDesc": "Participating in projects",
+          "totalLabel": "Total ATN"
+        }
+      }
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. สงวนลิขสิทธิ์ทั้งหมด.",
@@ -359,7 +490,8 @@
       },
       "showIntroAgain": "ไม่ต้องแสดงบทนำอีก",
       "subtitle": "จัดการการตั้งค่าหน้าตาและตัวควบคุมระดับบัญชี",
-      "title": "การตั้งค่า"
+      "title": "การตั้งค่า",
+      "showWelcomeBonusModal": "Show Welcome Bonus"
     },
     "walletModal": {
       "disclaimer": "เมื่อเชื่อมต่อ แสดงว่าคุณยอมรับข้อกำหนดการให้บริการและนโยบายความเป็นส่วนตัวของเรา",
@@ -378,6 +510,7 @@
       "sections": {
         "achievements": "ความสำเร็จ",
         "account": "บัญชี",
+        "referrals": "การแนะนำ",
         "preferences": "ค่าปรับแต่ง"
       },
       "header": {
@@ -417,6 +550,22 @@
         "recruiter": "ผู้สรรหา",
         "partner": "พาร์ตเนอร์",
         "platinum": "แพลตตินัม"
+      },
+      "referral": {
+        "title": "รหัสแนะนำของคุณ",
+        "subtitle": "แชร์รหัสของคุณเพื่อเชิญสมาชิกใหม่",
+        "codeLabel": "รหัสแนะนำ",
+        "copy": "คัดลอก",
+        "copied": "คัดลอกแล้ว",
+        "shareTitle": "แชร์ลิงก์แนะนำของคุณ",
+        "shareMessage": "เข้าร่วม Airs By Alternun ด้วยรหัส {{code}}: {{link}}",
+        "referralCount": "สมาชิกที่เชิญ",
+        "wasReferred": "มีการแนะนำในระบบ",
+        "referredBy": "ถูกแนะนำโดย {{name}}",
+        "referredByLabel": "ใครแนะนำคุณ",
+        "referredByHelper": "นี่คือแหล่งที่มาของการแนะนำที่บันทึกไว้ในบัญชีของคุณ",
+        "codePending": "กำลังโหลด...",
+        "error": "ไม่สามารถโหลดรายละเอียดการแนะนำได้ในขณะนี้"
       },
       "footer": "Alternun Airs · v{{version}}"
     }

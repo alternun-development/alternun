@@ -11,6 +11,7 @@ import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { useNotifications } from '../notifications/NotificationsContext';
 import { useBackToTop } from '../../hooks/useBackToTop';
 import { BackToTopButton } from './BackToTopButton';
+import { USE_V2_NAV } from '../navigation/featureFlags';
 
 // ── ScrollView Context for back-to-top button ──────────────────────────────────
 
@@ -187,14 +188,16 @@ export default function ScreenShell({
             {children}
           </View>
 
-          <View
-            style={styles.footerStack}
-            onLayout={(event) => {
-              setFooterHeight(event.nativeEvent.layout.height);
-            }}
-          >
-            <AppInfoFooter containerStyle={{ marginTop: 0 }} />
-          </View>
+          {!(isMobile && USE_V2_NAV) && (
+            <View
+              style={styles.footerStack}
+              onLayout={(event) => {
+                setFooterHeight(event.nativeEvent.layout.height);
+              }}
+            >
+              <AppInfoFooter containerStyle={{ marginTop: 0 }} />
+            </View>
+          )}
 
           {/* Back-to-top button floats above the footer without shifting it upward. */}
           <BackToTopButton

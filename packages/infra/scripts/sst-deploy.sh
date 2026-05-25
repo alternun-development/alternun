@@ -61,11 +61,11 @@ canonicalize_backend_stack_stage() {
   normalized=$(echo "${1:-}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 
   case "$normalized" in
-    api|backend|backend-dev|backend-api|backend-api-dev)
-      printf '%s\n' 'api-dev'
+    api|api-dev|backend|backend-dev|backend-api|backend-api-dev)
+      printf '%s\n' 'dashboard-dev'
       ;;
     api-prod|api-production|backend-prod|backend-production|backend-api-prod|backend-api-production)
-      printf '%s\n' 'api-prod'
+      printf '%s\n' 'dashboard-prod'
       ;;
     *)
       printf '%s\n' "$normalized"
@@ -96,13 +96,13 @@ if [ "$stage_normalized" = "identity-dev" ] || \
 fi
 
 case "$stage_normalized" in
-  api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod|dashboard-dev|dashboard-prod|dashboard-production)
+  dashboard-dev|dashboard-prod|dashboard-production)
     is_backend_api_stage=true
     ;;
 esac
 
 case "$stage_normalized" in
-  identity-dev|identity-prod|identity-production|auth-dev|auth-prod|authentik-dev|authentik-prod|api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod|admin-dev|admin-prod|admin-production|backoffice-dev|backoffice-prod|backoffice-admin-dev|backoffice-admin-prod|dashboard-dev|dashboard-prod|dashboard-production)
+  identity-dev|identity-prod|identity-production|auth-dev|auth-prod|authentik-dev|authentik-prod|admin-dev|admin-prod|admin-production|backoffice-dev|backoffice-prod|backoffice-admin-dev|backoffice-admin-prod|dashboard-dev|dashboard-prod|dashboard-production)
     is_dedicated_non_expo_stage=true
     ;;
 esac
@@ -117,7 +117,7 @@ if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "false" ] && \
     case "${INFRA_AUTO_FORCE_EXPO_SITE:-true}" in
       0 | false | FALSE | no | NO | off | OFF)
         echo "ERROR: INFRA_ENABLE_EXPO_SITE=false is only allowed on dedicated non-Expo stack stages." >&2
-        echo "ERROR: Use STACK=identity-dev, STACK=identity-prod, STACK=api-dev, STACK=api-prod, STACK=admin-dev, STACK=admin-prod, STACK=dashboard-dev, or STACK=dashboard-prod." >&2
+        echo "ERROR: Use STACK=identity-dev, STACK=identity-prod, STACK=admin-dev, STACK=admin-prod, STACK=dashboard-dev, or STACK=dashboard-prod." >&2
         echo "ERROR: Set INFRA_AUTO_FORCE_EXPO_SITE=true to auto-correct this." >&2
         exit 1
         ;;
@@ -189,9 +189,6 @@ enforce_dedicated_stack_component_flags() {
       ;;
     admin-dev|admin-prod|admin-production|backoffice-dev|backoffice-prod|backoffice-admin-dev|backoffice-admin-prod)
       enforce_component_enabled_for_stack "INFRA_ENABLE_ADMIN_SITE" "$STACK" "admin site"
-      ;;
-    api-dev|api-prod|api-production|backend-dev|backend-prod|backend-api-dev|backend-api-prod)
-      enforce_component_enabled_for_stack "INFRA_ENABLE_BACKEND_API" "$STACK" "backend API"
       ;;
   esac
 }
@@ -803,7 +800,7 @@ run_sst_deploy() {
   set +e
   (
     cd "$INFRA_DIR"
-    env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT="${allow_replacement}" npx sst deploy --stage "$STACK" --yes
+    env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT="${allow_replacement}" npx sst deploy --stage "$STACK" --yes --print-logs
   ) 2>&1 | tee "$log_file"
   exit_code=${PIPESTATUS[0]}
   set -e
@@ -819,7 +816,7 @@ run_sst_deploy() {
     echo "Retrying deployment with INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT=true"
     (
       cd "$INFRA_DIR"
-      env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT="true" npx sst deploy --stage "$STACK" --yes
+      env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT="true" npx sst deploy --stage "$STACK" --yes --print-logs
     ) 2>&1 | tee -a "$log_file"
     exit_code=${PIPESTATUS[0]}
   fi
@@ -847,6 +844,31 @@ should_attempt_bucket_drift_recovery() {
   fi
 
   return 1
+}
+
+print_recent_sst_logs() {
+  local log_file=${1:-}
+  local sst_log_dir="${INFRA_DIR}/.sst/log"
+
+  if [ -n "$log_file" ] && [ -f "$log_file" ]; then
+    echo "Recent deploy command output (${log_file}):" >&2
+    tail -n 120 "$log_file" >&2 || true
+  fi
+
+  if [ -f "${sst_log_dir}/sst.log" ]; then
+    echo "Recent SST log tail (${sst_log_dir}/sst.log):" >&2
+    tail -n 120 "${sst_log_dir}/sst.log" >&2 || true
+  fi
+
+  if [ -f "${sst_log_dir}/pulumi.log" ]; then
+    echo "Recent SST log tail (${sst_log_dir}/pulumi.log):" >&2
+    tail -n 120 "${sst_log_dir}/pulumi.log" >&2 || true
+  fi
+
+  if [ -f "${sst_log_dir}/pulumi.err.log" ]; then
+    echo "Recent SST log tail (${sst_log_dir}/pulumi.err.log):" >&2
+    tail -n 120 "${sst_log_dir}/pulumi.err.log" >&2 || true
+  fi
 }
 
 gzip_base64_file() {
@@ -917,7 +939,7 @@ sync_identity_runtime_templates() {
     return 1
   fi
 
-  local instance_id deploy_b64 bootstrap_b64 ec2_compose_b64 rds_compose_b64 ec2_alb_compose_b64 rds_alb_compose_b64 identity_domain identity_ingress_mode identity_tls_mode identity_acme_email identity_route53_zone_id identity_acme_backup_bucket identity_acme_backup_prefix identity_root_domain identity_app_name identity_authentik_image_tag identity_database_mode identity_authentik_secret_name identity_database_credentials_secret_name identity_smtp_credentials_secret_name identity_jwt_signing_secret_name identity_integration_config_secret_name params_json command_id
+  local instance_id deploy_b64 bootstrap_b64 verify_runtime_b64 ec2_compose_b64 rds_compose_b64 ec2_alb_compose_b64 rds_alb_compose_b64 identity_domain identity_ingress_mode identity_tls_mode identity_acme_email identity_route53_zone_id identity_acme_backup_bucket identity_acme_backup_prefix identity_root_domain identity_app_name identity_authentik_image_tag identity_database_mode identity_authentik_secret_name identity_database_credentials_secret_name identity_smtp_credentials_secret_name identity_jwt_signing_secret_name identity_integration_config_secret_name params_json command_id
   instance_id=$(resolve_identity_instance_id)
 
   case "$stage_normalized" in
@@ -965,6 +987,7 @@ sync_identity_runtime_templates() {
 
   deploy_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/deploy-authentik.sh")
   bootstrap_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/bootstrap-authentik-integrations.py")
+  verify_runtime_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/verify-authentik-runtime.sh")
   ec2_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.ec2.yml")
   rds_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.rds.yml")
   ec2_alb_compose_b64=$(gzip_base64_file "$INFRA_DIR/scripts/templates/docker-compose.ec2.alb.yml")
@@ -978,17 +1001,18 @@ sync_identity_runtime_templates() {
       --arg c4 "printf '%s' '$deploy_b64' | base64 -d | gzip -d > /opt/alternun/identity/deploy-authentik.sh" \
       --arg c5 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/bootstrap-authentik-integrations.py" \
       --arg c6 "printf '%s' '$bootstrap_b64' | base64 -d | gzip -d > /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py" \
-      --arg c7 "printf '%s' '$ec2_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.yml" \
-      --arg c8 "printf '%s' '$rds_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.yml" \
-      --arg c9 "printf '%s' '$ec2_alb_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.alb.yml" \
-      --arg c10 "printf '%s' '$rds_alb_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.alb.yml" \
-      --arg c11 'chmod 0755 /opt/alternun/identity/deploy-authentik.sh' \
-      --arg c12 'chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
-      --arg c13 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
-      --arg c14 'timeout 900 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
-      --arg c15 "grep -E 'Authentik integration bootstrap|Supabase auth OIDC synced|TLS certificate ready|Restored ACME state|WARN:' /tmp/alternun-identity-runtime-sync.log || true" \
-      --arg c16 "set -a; . /etc/alternun-identity.env; set +a; docker compose -f /opt/alternun/identity/docker-compose.yml exec -T server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c \"from django.contrib.auth import get_user_model; from authentik.core.models import Application; from authentik.providers.oauth2.models import OAuth2Provider; U=get_user_model(); admin_exists=U.objects.filter(username=\\\"akadmin\\\", is_active=True).exists(); default_app_exists=Application.objects.filter(slug=\\\"alternun-internal\\\").exists(); admin_oidc_app=Application.objects.filter(slug=\\\"alternun-admin\\\").exists(); admin_oidc_provider=OAuth2Provider.objects.filter(name=\\\"Alternun Admin OIDC\\\").exists(); print({\\\"admin_exists\\\": admin_exists, \\\"default_application_exists\\\": default_app_exists, \\\"admin_oidc_application_exists\\\": admin_oidc_app, \\\"admin_oidc_provider_exists\\\": admin_oidc_provider}); raise SystemExit(0 if admin_exists and default_app_exists and admin_oidc_app and admin_oidc_provider else 1)\"'" \
-      '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13,$c14,$c15,$c16]}'
+      --arg c7 "printf '%s' '$verify_runtime_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/verify-authentik-runtime.sh" \
+      --arg c8 "printf '%s' '$ec2_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.yml" \
+      --arg c9 "printf '%s' '$rds_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.yml" \
+      --arg c10 "printf '%s' '$ec2_alb_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.ec2.alb.yml" \
+      --arg c11 "printf '%s' '$rds_alb_compose_b64' | base64 -d | gzip -d > /opt/alternun/identity/templates/docker-compose.rds.alb.yml" \
+      --arg c12 'chmod 0755 /opt/alternun/identity/deploy-authentik.sh /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
+      --arg c13 'chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
+      --arg c14 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
+      --arg c15 'timeout 900 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
+      --arg c16 "grep -E 'Authentik integration bootstrap|Supabase auth OIDC synced|TLS certificate ready|Restored ACME state|WARN:' /tmp/alternun-identity-runtime-sync.log || true" \
+      --arg c17 'timeout 120 bash /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
+      '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13,$c14,$c15,$c16,$c17]}'
   )
 
   echo "Syncing identity runtime templates to instance ${instance_id}..."
@@ -1094,5 +1118,6 @@ if should_attempt_bucket_drift_recovery "$DEPLOY_LOG"; then
 fi
 
 echo "sst deploy failed. See logs above." >&2
+print_recent_sst_logs "$DEPLOY_LOG"
 rm -f "$DEPLOY_LOG"
 exit 1

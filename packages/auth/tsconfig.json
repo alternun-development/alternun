@@ -12,6 +12,6 @@
     "skipLibCheck": true,
     "types": ["react", "node"]
   },
-  "include": ["src"],
+  "include": ["src", "test/**/*.js"],
   "exclude": ["node_modules", "dist"]
 }

@@ -51,15 +51,15 @@ All pipelines are **SST-managed** in AWS CodePipeline and automatically trigger 
 ```
 git push develop (alternun-development/alternun)
     ↓
-AWS CodePipeline (alternun-dev-pipeline)
+AWS CodePipeline (alternun-dev-pipeline / alternun-dash-dev-pipeline / alternun-auth-dev-pipeline)
     ↓
-CodeBuild (alternun-dev-build)
+CodeBuild
     ↓
-buildspec.yml execution
+stage-aware deploy execution
     ↓
-SST Deploy (STACK=dev)
+SST Deploy (STACK=dev / STACK=dashboard-dev / STACK=identity-dev)
     ↓
-testnet.airs.alternun.co updated
+testnet surfaces updated by their owning stacks
 ```
 
 ## AWS Account Enforcement
@@ -88,7 +88,7 @@ The following scripts enforce the Alternun account:
 
 - ❌ Use `aws` commands without running `bash scripts/setup-aws-account.sh` first
 - ❌ Use default AWS credentials (~/.aws/credentials)
-- ❌ Deploy with `STACK=api-dev` (use only SST-managed stacks)
+- ❌ Deploy with retired backend aliases such as `STACK=api-dev` or `STACK=backend-dev`
 - ❌ Manually update `lstech-*` pipelines (they're in the wrong account)
 
 ## How to Trigger Deployments
@@ -99,7 +99,8 @@ The following scripts enforce the Alternun account:
 # Push to develop branch
 git push origin develop
 
-# Pipeline alternun-dev-pipeline will automatically trigger
+# Pipelines alternun-dev-pipeline, alternun-dash-dev-pipeline,
+# and alternun-auth-dev-pipeline own the live testnet surfaces
 # Monitor at: AWS CodePipeline console
 ```
 

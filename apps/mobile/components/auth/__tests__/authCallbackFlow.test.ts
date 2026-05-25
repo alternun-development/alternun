@@ -42,6 +42,15 @@ describe('authCallbackFlow', () => {
     );
   });
 
+  it('routes invite callback payloads to the auth modal', () => {
+    expect(
+      buildWebAuthCallbackRedirectPath(
+        '?next=%2Fdashboard',
+        '#access_token=token-1&refresh_token=token-2&type=invite'
+      )
+    ).toBe('/auth?next=%2Fdashboard#access_token=token-1&refresh_token=token-2&type=invite');
+  });
+
   it('maps signup and recovery callback types to the matching success copy variant', () => {
     expect(resolveAuthCallbackSuccessVariant('signup')).toBe('signup');
     expect(resolveAuthCallbackSuccessVariant('recovery')).toBe('recovery');

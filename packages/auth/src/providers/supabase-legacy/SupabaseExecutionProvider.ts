@@ -3,6 +3,7 @@ import type {
   AuthExecutionResult,
   AuthExecutionSignInOptions,
   AuthExecutionSignUpInput,
+  AuthExecutionSignUpReferralInput,
   AuthLinkProviderInput,
   AuthUnlinkProviderInput,
   ExecutionSession,
@@ -15,7 +16,12 @@ import { AlternunProviderError } from '../../core/errors';
 
 export interface LegacyExecutionClientLike extends AuthClient {
   signInWithEmail(email: string, password: string): Promise<User>;
-  signUpWithEmail?(email: string, password: string, locale?: string): Promise<unknown>;
+  signUpWithEmail?(
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: AuthExecutionSignUpReferralInput | null
+  ): Promise<unknown>;
   resendEmailConfirmation?(email: string): Promise<void>;
   verifyEmailConfirmationCode?(email: string, code: string): Promise<void>;
   setOidcUser?(user: User | null): void;
@@ -208,7 +214,12 @@ export class SupabaseExecutionProvider implements AuthExecutionProvider {
       throw new AlternunProviderError('Supabase execution provider does not support sign-up.');
     }
 
-    const outcome = await this.client.signUpWithEmail(input.email, input.password, input.locale);
+    const outcome = await this.client.signUpWithEmail(
+      input.email,
+      input.password,
+      input.locale,
+      input.referral ?? null
+    );
     const session = await this.getExecutionSession();
     return {
       session,
@@ -303,12 +314,17 @@ export class SupabaseExecutionProvider implements AuthExecutionProvider {
     return this.client.signInWithEmail(email, password);
   }
 
-  signUpWithEmail(email: string, password: string, locale?: string): Promise<unknown> {
+  signUpWithEmail(
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: AuthExecutionSignUpReferralInput | null
+  ): Promise<unknown> {
     if (!this.client.signUpWithEmail) {
       throw new AlternunProviderError('Supabase execution provider does not support sign-up.');
     }
 
-    return this.client.signUpWithEmail(email, password, locale);
+    return this.client.signUpWithEmail(email, password, locale, referral);
   }
 
   async resendEmailConfirmation(email: string): Promise<void> {

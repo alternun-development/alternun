@@ -519,11 +519,15 @@ export class AlternunMobileAuthClient {
         try {
             const response = await fetch(`${baseUrl}/auth/sign-in/social`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     provider,
+                    callbackURL: redirectTo,
+                    errorCallbackURL: redirectTo,
+                    newUserCallbackURL: redirectTo,
                     redirectUri: redirectTo,
                 }),
             });
@@ -560,7 +564,7 @@ export class AlternunMobileAuthClient {
             });
         }
     }
-    async signUpWithEmail(email, password, locale) {
+    async signUpWithEmail(email, password, locale, referral) {
         let normalizedEmail;
         let validatedPassword;
         try {
@@ -584,6 +588,7 @@ export class AlternunMobileAuthClient {
         baseUrl = baseUrl || 'http://localhost:8082';
         const response = await fetch(`${baseUrl}/auth/sign-up/email`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -592,6 +597,11 @@ export class AlternunMobileAuthClient {
                 password: validatedPassword,
                 name: normalizedEmail.split('@')[0],
                 ...(emailTemplateLocale ? { locale: emailTemplateLocale } : {}),
+                ...((referral === null || referral === void 0 ? void 0 : referral.referralCode) ? { referral_code: referral.referralCode } : {}),
+                ...((referral === null || referral === void 0 ? void 0 : referral.referredByUsername)
+                    ? { referred_by_username: referral.referredByUsername }
+                    : {}),
+                ...((referral === null || referral === void 0 ? void 0 : referral.referredByEmail) ? { referred_by_email: referral.referredByEmail } : {}),
             }),
         });
         let data;

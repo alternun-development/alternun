@@ -1,9 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {
-  BetterAuthExecutionProvider,
-  SupabaseExecutionProvider,
-} from '../dist/index.js';
+import { BetterAuthExecutionProvider, SupabaseExecutionProvider } from '../dist/index.js';
 
 test('BetterAuthExecutionProvider normalizes social sign-in results', async () => {
   const provider = new BetterAuthExecutionProvider({
@@ -74,6 +71,250 @@ test('BetterAuthExecutionProvider normalizes nested Better Auth session payloads
   assert.equal(session?.refreshToken, 'refresh-token-123');
   assert.equal(session?.externalIdentity?.providerUserId, 'better-auth-user-123');
   assert.equal(session?.externalIdentity?.avatarUrl, 'https://example.com/avatar.png');
+});
+
+test('BetterAuthExecutionProvider forwards email fallback auth-state updates', async () => {
+  let fallbackCallback = null;
+
+  const provider = new BetterAuthExecutionProvider({
+    allowLegacySessionFallback: true,
+    emailFallbackClient: {
+      runtime: 'web',
+      signIn: async () => {},
+      signInWithEmail: async () => ({
+        id: 'email-user-123',
+        email: 'ada@example.com',
+        provider: 'email',
+        providerUserId: 'email-user-123',
+        metadata: {
+          provider: 'email',
+          providerUserId: 'email-user-123',
+        },
+      }),
+      signOut: async () => {},
+      getUser: async () => null,
+      getSessionToken: async () => 'email-session-token',
+      onAuthStateChange: (callback) => {
+        fallbackCallback = callback;
+        return () => {};
+      },
+      capabilities: () => ({ runtime: 'web', supportedFlows: ['redirect'] }),
+    },
+  });
+
+  const observedUsers = [];
+  const unsubscribe = provider.onAuthStateChange((user) => {
+    observedUsers.push(user?.email ?? null);
+  });
+
+  assert.equal(typeof fallbackCallback, 'function');
+  assert.deepEqual(observedUsers, []);
+
+  fallbackCallback?.({
+    id: 'email-user-123',
+    email: 'ada@example.com',
+    provider: 'email',
+    providerUserId: 'email-user-123',
+    metadata: {
+      provider: 'email',
+      providerUserId: 'email-user-123',
+    },
+  });
+
+  assert.deepEqual(observedUsers, ['ada@example.com']);
+
+  unsubscribe();
+});
+
+test('BetterAuthExecutionProvider refreshExecutionSession uses getSession instead of refreshSession', async () => {
+  let getSessionCalls = 0;
+  let refreshSessionCalls = 0;
+
+  const provider = new BetterAuthExecutionProvider({
+    browserClient: {
+      getSession: async () => {
+        getSessionCalls += 1;
+        return {
+          data: {
+            user: {
+              id: 'better-auth-user-123',
+              email: 'ada@example.com',
+              name: 'Ada Lovelace',
+              image: 'https://example.com/avatar.png',
+              emailVerified: true,
+            },
+            session: {
+              id: 'session-token-123',
+              token: 'session-token-123',
+              refreshToken: 'refresh-token-123',
+              expiresAt: new Date(Date.now() + 60_000).toISOString(),
+              userId: 'better-auth-user-123',
+            },
+          },
+        };
+      },
+      refreshSession: async () => {
+        refreshSessionCalls += 1;
+        throw new Error('refreshSession should not be called');
+      },
+    },
+  });
+
+  const session = await provider.refreshExecutionSession();
+
+  assert.equal(session?.provider, 'better-auth');
+  assert.equal(session?.accessToken, 'session-token-123');
+  assert.equal(session?.externalIdentity?.providerUserId, 'better-auth-user-123');
+  assert.equal(getSessionCalls, 1);
+  assert.equal(refreshSessionCalls, 0);
+});
+
+test('BetterAuthExecutionProvider uses GET /auth/get-session for HTTP session lookup', async () => {
+  let observedUrl = null;
+  let observedMethod = null;
+  let observedBody = null;
+
+  const provider = new BetterAuthExecutionProvider({
+    baseUrl: 'https://api.example.com',
+    fetchFn: async (url, init) => {
+      observedUrl = String(url);
+      observedMethod = init?.method ?? null;
+      observedBody = init?.body ?? null;
+
+      return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        async json() {
+          return {
+            session: {
+              id: 'session-token-123',
+              token: 'session-token-123',
+              refreshToken: 'refresh-token-123',
+              expiresAt: new Date(Date.now() + 60_000).toISOString(),
+              userId: 'better-auth-user-123',
+            },
+            user: {
+              id: 'better-auth-user-123',
+              email: 'ada@example.com',
+              name: 'Ada Lovelace',
+              image: 'https://example.com/avatar.png',
+              emailVerified: true,
+            },
+          };
+        },
+        async text() {
+          return JSON.stringify({
+            session: {
+              id: 'session-token-123',
+              token: 'session-token-123',
+              refreshToken: 'refresh-token-123',
+              expiresAt: new Date(Date.now() + 60_000).toISOString(),
+              userId: 'better-auth-user-123',
+            },
+            user: {
+              id: 'better-auth-user-123',
+              email: 'ada@example.com',
+              name: 'Ada Lovelace',
+              image: 'https://example.com/avatar.png',
+              emailVerified: true,
+            },
+          });
+        },
+      };
+    },
+  });
+
+  const session = await provider.getExecutionSession();
+
+  assert.equal(observedUrl, 'https://api.example.com/auth/get-session');
+  assert.equal(observedMethod, 'GET');
+  assert.equal(observedBody, null);
+  assert.equal(session?.accessToken, 'session-token-123');
+  assert.equal(session?.externalIdentity?.providerUserId, 'better-auth-user-123');
+});
+
+test('BetterAuthExecutionProvider falls back to email session when Better Auth cookie lookup fails', async () => {
+  const provider = new BetterAuthExecutionProvider({
+    allowLegacySessionFallback: true,
+    browserClient: {
+      getSession: async () => {
+        throw new Error('No Better Auth session cookie');
+      },
+    },
+    emailFallbackClient: {
+      runtime: 'web',
+      signIn: async () => {},
+      signInWithEmail: async () => ({
+        id: 'email-user-123',
+        email: 'ada@example.com',
+        provider: 'email',
+        providerUserId: 'email-user-123',
+        metadata: {
+          provider: 'email',
+          providerUserId: 'email-user-123',
+        },
+      }),
+      signOut: async () => {},
+      getUser: async () => ({
+        id: 'email-user-123',
+        email: 'ada@example.com',
+        provider: 'email',
+        providerUserId: 'email-user-123',
+        metadata: {
+          provider: 'email',
+          providerUserId: 'email-user-123',
+        },
+      }),
+      getSessionToken: async () => 'email-session-token',
+      onAuthStateChange: () => () => {},
+      capabilities: () => ({ runtime: 'web', supportedFlows: ['redirect'] }),
+    },
+  });
+
+  const session = await provider.getExecutionSession();
+
+  assert.equal(session?.provider, 'email');
+  assert.equal(session?.accessToken, 'email-session-token');
+  assert.equal(session?.externalIdentity?.providerUserId, 'email-user-123');
+});
+
+test('BetterAuthExecutionProvider gets the email session token from the legacy fallback first', async () => {
+  let browserSessionCalls = 0;
+
+  const provider = new BetterAuthExecutionProvider({
+    allowLegacySessionFallback: true,
+    browserClient: {
+      getSession: async () => {
+        browserSessionCalls += 1;
+        throw new Error('Better Auth should not be probed for legacy email token lookup');
+      },
+    },
+    emailFallbackClient: {
+      runtime: 'web',
+      signIn: async () => {},
+      signOut: async () => {},
+      getUser: async () => ({
+        id: 'email-user-123',
+        email: 'ada@example.com',
+        provider: 'email',
+        providerUserId: 'email-user-123',
+        metadata: {
+          provider: 'email',
+          providerUserId: 'email-user-123',
+        },
+      }),
+      getSessionToken: async () => 'legacy-email-token',
+      onAuthStateChange: () => () => {},
+      capabilities: () => ({ runtime: 'web', supportedFlows: ['redirect'] }),
+    },
+  });
+
+  const token = await provider.getSessionToken();
+
+  assert.equal(token, 'legacy-email-token');
+  assert.equal(browserSessionCalls, 0);
 });
 
 test('BetterAuthExecutionProvider prefers the Better Auth browser client for social login', async () => {
@@ -344,6 +585,7 @@ test('BetterAuthExecutionProvider uses the Supabase fallback for email flows whe
   let betterAuthSignUpCalls = 0;
   let observedBetterAuthSignUpOptions = null;
   let fallbackUser = null;
+  let observedFallbackSignUpArgs = null;
   const fallbackCalls = {
     signInWithEmail: 0,
     signUpWithEmail: 0,
@@ -403,8 +645,9 @@ test('BetterAuthExecutionProvider uses the Supabase fallback for email flows whe
         };
         return fallbackUser;
       },
-      signUpWithEmail: async () => {
+      signUpWithEmail: async (...args) => {
         fallbackCalls.signUpWithEmail += 1;
+        observedFallbackSignUpArgs = args;
         return {
           needsEmailVerification: false,
           emailAlreadyRegistered: false,
@@ -457,12 +700,26 @@ test('BetterAuthExecutionProvider uses the Supabase fallback for email flows whe
   assert.equal(betterAuthSignInCalls, 0);
   assert.equal(fallbackCalls.signInWithEmail, 2);
 
-  const signUpResult = await provider.signUpWithEmail('ada@example.com', 'password123', 'en');
+  const signUpResult = await provider.signUpWithEmail('ada@example.com', 'password123', 'en', {
+    referralCode: 'edward-5d64df',
+    referredByUsername: 'edward',
+    referredByEmail: 'edward@alternun.io',
+  });
   assert.equal(betterAuthSignUpCalls, 0);
   assert.equal(observedBetterAuthSignUpOptions, null);
   assert.equal(signUpResult.needsEmailVerification, false);
   assert.equal(signUpResult.confirmationEmailSent, false);
   assert.equal(fallbackCalls.signUpWithEmail, 1);
+  assert.deepEqual(observedFallbackSignUpArgs, [
+    'ada@example.com',
+    'password123',
+    'en',
+    {
+      referralCode: 'edward-5d64df',
+      referredByUsername: 'edward',
+      referredByEmail: 'edward@alternun.io',
+    },
+  ]);
 
   await provider.resendEmailConfirmation('ada@example.com');
   await provider.verifyEmailConfirmationCode('ada@example.com', '123456');
@@ -478,8 +735,8 @@ test('BetterAuthExecutionProvider uses the Supabase fallback for email flows whe
     email: 'ada@example.com',
     options: {
       redirectTo: 'https://app.example.com/auth/reset-password',
-      },
-    });
+    },
+  });
 });
 
 test('BetterAuthExecutionProvider normalizes Better Auth email sign-in responses from HTTP', async () => {
@@ -636,7 +893,11 @@ test('BetterAuthExecutionProvider derives a sign-up name for the Better Auth HTT
     },
   });
 
-  const result = await provider.signUpWithEmail('ada@example.com', 'password123', 'en');
+  const result = await provider.signUpWithEmail('ada@example.com', 'password123', 'en', {
+    referralCode: 'edward-5d64df',
+    referredByUsername: 'edward',
+    referredByEmail: 'edward@alternun.io',
+  });
 
   assert.equal(observedUrl, 'https://api.example.com/auth/sign-up/email');
   assert.deepEqual(observedBody, {
@@ -644,6 +905,9 @@ test('BetterAuthExecutionProvider derives a sign-up name for the Better Auth HTT
     password: 'password123',
     name: 'ada',
     locale: 'en',
+    referral_code: 'edward-5d64df',
+    referred_by_username: 'edward',
+    referred_by_email: 'edward@alternun.io',
   });
   assert.equal(result.session, null);
   assert.equal(result.externalIdentity?.provider, 'email');

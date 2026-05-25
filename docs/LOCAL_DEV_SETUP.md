@@ -46,10 +46,10 @@ This guide covers setting up the AIRS mobile app (Expo web) for local developmen
 cd apps/mobile
 
 # Copy the local dev template
-cp .env.local.example .env.local
+cp .env.example .env
 
-# Edit .env.local if needed (defaults are correct for localhost:8082)
-cat .env.local
+# Edit .env if needed (defaults are correct for localhost:8082)
+cat .env
 ```
 
 ### 2. **Start the local web stack**
@@ -69,7 +69,7 @@ Open: **http://localhost:8081**
 
 - ✅ Email/password form
 - ✅ Google button
-- ❌ NO Discord button
+- ✅ Discord button if your repo-root `.env` includes Discord OAuth creds
 - ❌ NO CORS errors
 
 ---
@@ -89,20 +89,24 @@ EXPO_PUBLIC_SUPABASE_URL=https://rjebeugdvwbjpaktrrbx.supabase.co
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik  # Shows Discord
 ```
 
-### `.env.local` (gitignored, for local dev)
+### `.env` (gitignored, for local dev)
 
-Created from `.env.local.example`. Overrides `.env.development` for local development.
+Created from `.env.example`. Overrides `.env.development` for local development.
 
 ```bash
 EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
 # Rest inherits from .env.development
 ```
 
+The local API dev server also reads the repo-root `.env` first so shared Better
+Auth social credentials like `GOOGLE_AUTH_CLIENT_ID` and
+`GOOGLE_AUTH_CLIENT_SECRET` are available during local testing.
+
 **Why separate files?**
 
-- `.env.development`: Testnet config (committed in CI/CD via SSM)
-- `.env.local`: Local overrides (developer preference, never committed)
-- `.env`: Base config (shared defaults, committed)
+- `.env`: Local development source of truth (developer preference, never committed)
+- `.env.development`: Testnet config (generated from env sync / SSM)
+- `.env.production`: Production config (generated from env sync / SSM)
 
 ---
 
@@ -144,16 +148,16 @@ const baseAuthUrl = process.env.EXPO_PUBLIC_BETTER_AUTH_URL;
    cd apps/mobile
    npm run web:local
    ```
-2. Check `.env.local` exists:
+2. Check `.env` exists:
    ```bash
-   ls apps/mobile/.env.local
+   ls apps/mobile/.env
    ```
 3. Verify `EXPO_PUBLIC_BETTER_AUTH_URL` includes `/auth`:
    ```bash
-   grep BETTER_AUTH apps/mobile/.env.local
+   grep BETTER_AUTH apps/mobile/.env
    # Should output: EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
    ```
-4. Restart the dev server after changing `.env.local`
+4. Restart the dev server after changing `.env`
 
 ### **Still Showing Discord Button**
 
@@ -161,7 +165,7 @@ const baseAuthUrl = process.env.EXPO_PUBLIC_BETTER_AUTH_URL;
 
 **Solution**:
 
-- For local dev: Ensure `.env.local` has `EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth`
+- For local dev: Ensure `.env` has `EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth`
 - For testnet: Wait for deployment or check CloudFront cache (hard refresh)
 
 ### **API Server Errors**
@@ -242,7 +246,7 @@ Use `pnpm release patch` only when you need a versioned release; it is not the p
 
 ## Files
 
-- [.env.local.example](../../apps/mobile/.env.local.example) — Copy this to `.env.local`
+- [.env.example](../../apps/mobile/.env.example) — Copy this to `.env`
 - [.env.development](../../apps/mobile/.env.development) — Testnet config
 - [AppAuthProvider.tsx](../../apps/mobile/components/auth/AppAuthProvider.tsx) — URL derivation logic
 - [ENVIRONMENT_SETUP_SUMMARY.md](./ENVIRONMENT_SETUP_SUMMARY.md) — Detailed reference

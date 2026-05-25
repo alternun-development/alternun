@@ -11,21 +11,20 @@ The mobile app uses a **stage-aware environment system** that automatically load
 ### Environment Files (All Gitignored)
 
 ```
-.env                    # Shared defaults + localhost fallback for local dev
+.env                    # Local development source of truth
 .env.development        # Testnet deployment stage overrides (generated)
 .env.production          # Production deployment stage overrides
-.env.local              # Personal developer overrides (highest priority)
 ```
 
 All `.env*` files are in `.gitignore` to prevent accidentally committing sensitive values.
 
 ## File Purpose and Content
 
-### `.env` (Shared Defaults)
+### `.env` (Local Development)
 
-Located: `apps/mobile/.env` (in repo, gitignored)
+Located: `apps/mobile/.env` (locally created, gitignored)
 
-Contains deployment-agnostic values and fallback URLs:
+Contains local development values and fallback URLs:
 
 - Supabase fallback configuration (stage-specific deployments override this)
 - WalletConnect project ID
@@ -42,19 +41,6 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth
 ...
 ```
-
-### `.env` (Local Development Base)
-
-Located: `apps/mobile/.env` (tracked in repo)
-
-Shared defaults for local development:
-
-- Better Auth-backed social login for Google and Discord
-- Supabase-backed email/password fallback for local signup/sign-in
-- Auth exchange URLs for local identity handoff
-- Shared web3 settings
-
-Used when developing locally without setting `STACK` variable.
 
 ### `.env.development` (Testnet Deployment)
 
@@ -107,35 +93,12 @@ EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS=300000  # 300 seconds (5 min)
 - **Discord:** visible through Authentik social login
 - **Update check:** 300-second interval (less frequent for stability)
 
-### `.env.local` (Personal Developer Overrides)
-
-Located: `apps/mobile/.env.local` (locally created, gitignored)
-
-**Purpose:** Personal developer machine overrides
-
-Highest priority environment file - allows individual developers to override any value without affecting others. Use for:
-
-- Pointing to a custom local API
-- Testing specific feature flags
-- Overriding auth provider for testing
-
-Example:
-
-```bash
-# Point to custom local backend
-EXPO_PUBLIC_API_URL=http://localhost:3000
-
-# Test production auth flow locally
-EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
-```
-
-## Environment Variable Precedence (Highest to Lowest)
+## Environment Variable Precedence
 
 The build system loads environment files in this order, with **later files overriding earlier ones**:
 
-1. **`.env`** (shared defaults) — loaded first
+1. **`.env`** (local development source of truth) — loaded first
 2. **`.env.development` or `.env.production`** (stage-specific, generated) — overrides `.env` when `STACK` is set
-3. **`.env.local`** (personal) — highest priority, overrides everything
 
 ### Example
 
@@ -168,14 +131,12 @@ The process happens in `apps/mobile/build.sh`:
       └─> Calls: node ./scripts/mobile-env.cjs build-auth-env
           ├─> Loads .env
           ├─> Loads .env.development/.env.production (if STACK set)
-          ├─> Loads .env.local
           └─> Exports resolved auth environment variables
 
    c) load_env_vars()
       └─> Loads .env files into shell environment
           ├─> load_env_file .env
-          ├─> load_env_file .env.development/.env.production (with override=true)
-          └─> load_env_file .env.local (with override=true)
+          └─> load_env_file .env.development/.env.production (with override=true)
 
    d) pnpm --filter @alternun/auth build
    e) pnpm --filter @alternun/update build
@@ -239,7 +200,7 @@ load_env_file(file_path, allow_override)
 - Won't override variables already set by SST or shell
 - Ensures deployment-provided values take precedence
 
-**Allow override = true** (for `.env.development`, `.env.local`):
+**Allow override = true** (for `.env.development`, `.env`):
 
 - Can override `.env` values
 - Allows stage-specific and personal customizations
@@ -258,7 +219,7 @@ pnpm run build:web
 
 1. `.env` loads → `EXPO_PUBLIC_BETTER_AUTH_URL=http://localhost:8082/auth`
 2. No stage file loaded (STACK not set)
-3. `.env.local` loads if it exists
+3. `.env` loads if it exists
 4. App uses localhost for auth
 
 ### Testnet Deployment
@@ -288,14 +249,14 @@ STACK=production pnpm run infra:deploy:production
 1. `build.sh` sets `STACK=production`
 2. `.env` loads → localhost URLs
 3. `.env.production` loads → **overrides** with `https://api.alternun.co`
-4. Auth provider changes to `supabase`
+4. Auth provider changes to `better-auth`
 5. App uses production API
 6. Deployed to `https://airs.alternun.co` or main domain
 
 ### Personal Developer Testing
 
 ```bash
-# Create .env.local for personal testing
+# Create .env for personal testing
 EXPO_PUBLIC_API_URL=http://my-custom-backend:3000
 EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 ```
@@ -303,8 +264,8 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 **Result:**
 
 1. Standard `.env` loads
-2. `.env.local` overrides with custom values
-3. App uses custom backend and Supabase auth for local testing
+2. `.env` overrides with custom values
+3. App uses custom backend and Better Auth social flow for local testing
 
 ## Key Environment Variables
 
@@ -312,7 +273,7 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 
 | Variable                                  | Testnet                                         | Production                              | Purpose                      |
 | ----------------------------------------- | ----------------------------------------------- | --------------------------------------- | ---------------------------- |
-| `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER`     | `better-auth`                                   | `supabase`                              | Which auth service to use    |
+| `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER`     | `better-auth`                                   | `better-auth`                           | Which auth service to use    |
 | `EXPO_PUBLIC_BETTER_AUTH_URL`             | `https://testnet.api.alternun.co/auth`          | `https://api.alternun.co/auth`          | Better-auth service endpoint |
 | `EXPO_PUBLIC_AUTH_EXCHANGE_URL`           | `https://testnet.api.alternun.co/auth/exchange` | `https://api.alternun.co/auth/exchange` | Token exchange endpoint      |
 | `EXPO_PUBLIC_AUTHENTIK_ISSUER`            | `https://testnet.sso.alternun.co/...`           | `https://sso.alternun.co/...`           | Authentik OIDC issuer        |
@@ -340,7 +301,7 @@ EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth
 
 1. Clone repo
 2. Run `pnpm install`
-3. (Optional) Create `.env.local` if you want explicit local config
+3. (Optional) Create `.env` if you want explicit local config
 
 ### Local Development
 
@@ -356,8 +317,8 @@ No environment configuration needed - localhost is default.
 ### Testing Testnet Flow Locally
 
 ```bash
-# Create .env.local
-echo "EXPO_PUBLIC_API_URL=https://testnet.api.alternun.co" > .env.local
+# Create .env
+echo "EXPO_PUBLIC_API_URL=https://testnet.api.alternun.co" > .env
 
 # Build and test
 STACK=dev pnpm run build:web
@@ -371,7 +332,7 @@ STACK=dev pnpm run build:web
 
 **For production only:** Generate `.env.production` from the mobile build pipeline
 
-**For personal testing:** Edit `.env.local`
+**For personal testing:** Edit `.env`
 
 ## Troubleshooting
 

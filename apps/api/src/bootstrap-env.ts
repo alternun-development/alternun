@@ -14,11 +14,7 @@ function parseEnvValue(rawValue: string): string {
   return trimmed;
 }
 
-export function loadLocalApiEnv(envFilePath = resolve(process.cwd(), '.env')): void {
-  if (process.env.NODE_ENV === 'production') {
-    return;
-  }
-
+function loadEnvFile(envFilePath: string): void {
   if (!existsSync(envFilePath)) {
     return;
   }
@@ -50,6 +46,25 @@ export function loadLocalApiEnv(envFilePath = resolve(process.cwd(), '.env')): v
 
     process.env[key] = parseEnvValue(rawValue);
   }
+}
+
+export function loadLocalApiEnv(envFilePath = resolve(process.cwd(), '.env')): void {
+  if (process.env.NODE_ENV === 'production') {
+    return;
+  }
+
+  const defaultEnvFilePath = resolve(process.cwd(), '.env');
+  const repoRootEnvFilePath = resolve(process.cwd(), '..', '..', '.env');
+
+  if (envFilePath === defaultEnvFilePath && existsSync(repoRootEnvFilePath)) {
+    loadEnvFile(repoRootEnvFilePath);
+  }
+
+  if (!existsSync(envFilePath)) {
+    return;
+  }
+
+  loadEnvFile(envFilePath);
 }
 
 loadLocalApiEnv();

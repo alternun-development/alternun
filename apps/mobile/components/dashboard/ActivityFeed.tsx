@@ -22,6 +22,7 @@ import {
 } from 'lucide-react-native';
 import SearchFilterBar, { type SearchFilterOption } from '../common/SearchFilterBar';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { useAppTranslation } from '../i18n/useAppTranslation';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const CartIcon = ShoppingCart as React.FC<LucideProps>;
@@ -52,7 +53,7 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
   {
     id: '1',
     type: 'compensation',
-    action: 'Compensación ambiental',
+    action: '',
     source: 'Servientrega',
     airs: 120,
     date: 'Ene 15 / 2026',
@@ -60,114 +61,33 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
   {
     id: '2',
     type: 'purchase',
-    action: 'Compra de compensación',
+    action: '',
     source: 'Servientrega',
     airs: 80,
     date: 'Ene 15 / 2026',
   },
-  {
-    id: '3',
-    type: 'profile',
-    action: 'Perfil completado',
-    source: 'Servientrega',
-    airs: 5,
-    date: 'Ene 15 / 2026',
-  },
+  { id: '3', type: 'profile', action: '', source: 'Servientrega', airs: 5, date: 'Ene 15 / 2026' },
   {
     id: '4',
     type: 'compensation',
-    action: 'Compensación ambiental',
+    action: '',
     source: 'Servientrega',
     airs: 120,
     date: 'Ene 15 / 2026',
   },
-  {
-    id: '5',
-    type: 'account',
-    action: 'Crear cuenta',
-    source: 'Servientrega',
-    airs: 10,
-    date: 'Ene 14 / 2026',
-  },
-  {
-    id: '6',
-    type: 'reward',
-    action: 'Recompensa de referido',
-    source: 'Alternun',
-    airs: 25,
-    date: 'Ene 13 / 2026',
-  },
-  {
-    id: '7',
-    type: 'compensation',
-    action: 'Compensación ambiental',
-    source: 'DHL',
-    airs: 120,
-    date: 'Ene 12 / 2026',
-  },
-  {
-    id: '8',
-    type: 'certificate',
-    action: 'Certificado emitido',
-    source: 'Alternun',
-    airs: 50,
-    date: 'Ene 11 / 2026',
-  },
-  {
-    id: '9',
-    type: 'purchase',
-    action: 'Compra de compensación',
-    source: 'FedEx',
-    airs: 80,
-    date: 'Ene 10 / 2026',
-  },
-  {
-    id: '10',
-    type: 'profile',
-    action: 'Verificación completada',
-    source: 'Alternun',
-    airs: 15,
-    date: 'Ene 9 / 2026',
-  },
-  {
-    id: '11',
-    type: 'compensation',
-    action: 'Compensación ambiental',
-    source: 'Rappi',
-    airs: 120,
-    date: 'Ene 8 / 2026',
-  },
-  {
-    id: '12',
-    type: 'account',
-    action: 'Wallet conectada',
-    source: 'Alternun',
-    airs: 20,
-    date: 'Ene 7 / 2026',
-  },
+  { id: '5', type: 'account', action: '', source: 'Servientrega', airs: 10, date: 'Ene 14 / 2026' },
+  { id: '6', type: 'reward', action: '', source: 'Alternun', airs: 25, date: 'Ene 13 / 2026' },
+  { id: '7', type: 'compensation', action: '', source: 'DHL', airs: 120, date: 'Ene 12 / 2026' },
+  { id: '8', type: 'certificate', action: '', source: 'Alternun', airs: 50, date: 'Ene 11 / 2026' },
+  { id: '9', type: 'purchase', action: '', source: 'FedEx', airs: 80, date: 'Ene 10 / 2026' },
+  { id: '10', type: 'profile', action: '', source: 'Alternun', airs: 15, date: 'Ene 9 / 2026' },
+  { id: '11', type: 'compensation', action: '', source: 'Rappi', airs: 120, date: 'Ene 8 / 2026' },
+  { id: '12', type: 'account', action: '', source: 'Alternun', airs: 20, date: 'Ene 7 / 2026' },
 ];
 
 const PAGE_SIZE = 5;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const TYPE_LABELS: Record<ActivityType, string> = {
-  compensation: 'Compensación',
-  purchase: 'Compra',
-  profile: 'Perfil',
-  account: 'Cuenta',
-  reward: 'Recompensa',
-  certificate: 'Certificado',
-};
-
-const FILTERS: SearchFilterOption[] = [
-  { key: 'all', label: 'Todos', icon: AllIcon },
-  { key: 'compensation', label: 'Compensación', icon: LeafIcon },
-  { key: 'purchase', label: 'Compra', icon: CartIcon },
-  { key: 'profile', label: 'Perfil', icon: UserCheckIcon },
-  { key: 'account', label: 'Cuenta', icon: UserPlusIcon },
-  { key: 'reward', label: 'Recompensa', icon: GiftIcon },
-];
 
 function getIcon(type: ActivityType, color: string): React.ReactNode {
   const props = { size: 16, color };
@@ -196,7 +116,18 @@ interface RowProps {
   animValue: Animated.Value;
 }
 
-function ActivityRow({ item, isDark, isLast, animValue }: RowProps) {
+interface ActivityRowProps extends Omit<RowProps, 'item'> {
+  item: ActivityItem;
+  actionLabel: string;
+}
+
+function ActivityRow({
+  item,
+  isDark,
+  isLast,
+  animValue,
+  actionLabel,
+}: ActivityRowProps): React.JSX.Element {
   const accent = isDark ? '#1EE6B5' : '#0d9488';
   const textColor = isDark ? '#e8fff6' : '#0b2d31';
   const mutedColor = isDark ? 'rgba(232,255,246,0.55)' : 'rgba(11,45,49,0.55)';
@@ -226,7 +157,7 @@ function ActivityRow({ item, isDark, isLast, animValue }: RowProps) {
           {getIcon(item.type, accent)}
         </View>
         <Text style={[styles.rowActionText, { color: textColor }]} numberOfLines={1}>
-          {item.action}
+          {actionLabel}
         </Text>
       </View>
       {/* Source */}
@@ -245,14 +176,16 @@ interface ActivityFeedProps {
   isDark: boolean;
 }
 
-export default function ActivityFeed({ isDark }: ActivityFeedProps) {
+export default function ActivityFeed({ isDark }: ActivityFeedProps): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<ActivityType | 'all'>('all');
   const [page, setPage] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
+  const [viewMode, setViewMode] = useState<'global' | 'user'>('user');
   const rowAnims = useRef<Map<string, Animated.Value>>(new Map());
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const t = useAppTranslation();
 
   const accent = isDark ? '#1EE6B5' : '#0d9488';
   const bg = isDark ? '#050f0c' : '#f0fdf9';
@@ -262,13 +195,48 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
   const mutedColor = isDark ? 'rgba(232,255,246,0.55)' : 'rgba(11,45,49,0.55)';
   const headerBg = isDark ? 'rgba(30,230,181,0.06)' : 'rgba(13,148,136,0.06)';
 
+  const getActivityActionText = (type: ActivityType): string => {
+    switch (type) {
+      case 'compensation':
+        return t.t('dashboard.activityFeed.activityTypes.compensation');
+      case 'purchase':
+        return t.t('dashboard.activityFeed.activityTypes.purchase');
+      case 'profile':
+        return t.t('dashboard.activityFeed.activityTypes.profile');
+      case 'account':
+        return t.t('dashboard.activityFeed.activityTypes.account');
+      case 'reward':
+        return t.t('dashboard.activityFeed.activityTypes.reward');
+      case 'certificate':
+        return t.t('dashboard.activityFeed.activityTypes.certificate');
+    }
+  };
+
+  const FILTERS: SearchFilterOption[] = [
+    { key: 'all', label: t.t('dashboard.activityFeed.filters.all'), icon: AllIcon },
+    {
+      key: 'compensation',
+      label: t.t('dashboard.activityFeed.filters.compensation'),
+      icon: LeafIcon,
+    },
+    { key: 'purchase', label: t.t('dashboard.activityFeed.filters.purchase'), icon: CartIcon },
+    { key: 'profile', label: t.t('dashboard.activityFeed.filters.profile'), icon: UserCheckIcon },
+    { key: 'account', label: t.t('dashboard.activityFeed.filters.account'), icon: UserPlusIcon },
+    { key: 'reward', label: t.t('dashboard.activityFeed.filters.reward'), icon: GiftIcon },
+  ];
+
   // Filtered + searched list
   const filtered = activities.filter((a) => {
     const matchesFilter = activeFilter === 'all' || a.type === activeFilter;
     const q = search.toLowerCase();
     const matchesSearch =
       !q || a.action.toLowerCase().includes(q) || a.source.toLowerCase().includes(q);
-    return matchesFilter && matchesSearch;
+
+    // Filter by view mode
+    const isUserActivity = a.source === 'Alternun';
+    const matchesViewMode = viewMode === 'global' ? !isUserActivity : isUserActivity;
+
+    return matchesFilter && matchesSearch && matchesViewMode;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -295,16 +263,16 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
   }, [page, activeFilter, search, animateRow, pageItems]);
 
   // Simulated real-time polling
-  useEffect(() => {
+  useEffect((): (() => void) => {
     let idCounter = MOCK_ACTIVITIES.length + 1;
     pollRef.current = setInterval(() => {
       const newItem: ActivityItem = {
         id: String(idCounter++),
         type: 'compensation',
-        action: 'Compensación ambiental',
+        action: '',
         source: 'Live update',
         airs: 120,
-        date: 'Ahora',
+        date: t.t('dashboard.activityFeed.now'),
       };
       setActivities((prev) => [newItem, ...prev]);
     }, 30000); // every 30s simulate a new event
@@ -312,9 +280,9 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
-  }, []);
+  }, [t]);
 
-  const handleRefresh = () => {
+  const handleRefresh = (): void => {
     setIsRefreshing(true);
     setTimeout(() => setIsRefreshing(false), 800);
   };
@@ -324,10 +292,18 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
       {/* Section header */}
       <View style={styles.sectionHeader}>
         <View>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>Actividad reciente</Text>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>
+            {t.t('dashboard.activityFeed.title')}
+          </Text>
           <Text style={[styles.sectionSubtitle, { color: mutedColor }]}>
-            Así has acumulado tus <Text style={{ fontWeight: '700', color: textColor }}>Airs</Text>{' '}
-            By Alternun.
+            {viewMode === 'global' ? (
+              t.t('dashboard.activityFeed.subtitle.global')
+            ) : (
+              <>
+                {t.t('dashboard.activityFeed.subtitle.user').split(' ')[0]}{' '}
+                <Text style={{ fontWeight: '700', color: textColor }}>Airs</Text> By Alternun.
+              </>
+            )}
           </Text>
         </View>
         <TouchableOpacity onPress={handleRefresh} activeOpacity={0.7} style={styles.refreshBtn}>
@@ -342,13 +318,67 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
         </TouchableOpacity>
       </View>
 
+      {/* View mode tabs */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            setViewMode('global');
+            setPage(0);
+          }}
+          style={[
+            styles.tab,
+            viewMode === 'global' && {
+              borderBottomWidth: 2,
+              borderBottomColor: accent,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.tabLabel,
+              {
+                color: viewMode === 'global' ? textColor : mutedColor,
+                fontWeight: viewMode === 'global' ? '600' : '400',
+              },
+            ]}
+          >
+            {t.t('dashboard.activityFeed.tabs.global')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setViewMode('user');
+            setPage(0);
+          }}
+          style={[
+            styles.tab,
+            viewMode === 'user' && {
+              borderBottomWidth: 2,
+              borderBottomColor: accent,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.tabLabel,
+              {
+                color: viewMode === 'user' ? textColor : mutedColor,
+                fontWeight: viewMode === 'user' ? '600' : '400',
+              },
+            ]}
+          >
+            {t.t('dashboard.activityFeed.tabs.user')}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <SearchFilterBar
         value={search}
         onChangeText={(value) => {
           setSearch(value);
           setPage(0);
         }}
-        placeholder='Buscar actividad o fuente...'
+        placeholder={t.t('dashboard.activityFeed.search')}
         filters={FILTERS}
         activeFilter={activeFilter}
         onChangeFilter={(filterKey) => {
@@ -361,10 +391,18 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
       <View style={[styles.table, { backgroundColor: cardBg, borderColor: cardBorder }]}>
         {/* Table header */}
         <View style={[styles.tableHeader, { backgroundColor: headerBg }]}>
-          <Text style={[styles.thAction, { color: accent }]}>Acción</Text>
-          <Text style={[styles.thCell, { color: accent }]}>Fuente</Text>
-          <Text style={[styles.thCell, { color: accent }]}>Airs</Text>
-          <Text style={[styles.thCell, { color: accent }]}>Fecha</Text>
+          <Text style={[styles.thAction, { color: accent }]}>
+            {t.t('dashboard.activityFeed.tableHeaders.action')}
+          </Text>
+          <Text style={[styles.thCell, { color: accent }]}>
+            {t.t('dashboard.activityFeed.tableHeaders.source')}
+          </Text>
+          <Text style={[styles.thCell, { color: accent }]}>
+            {t.t('dashboard.activityFeed.tableHeaders.airs')}
+          </Text>
+          <Text style={[styles.thCell, { color: accent }]}>
+            {t.t('dashboard.activityFeed.tableHeaders.date')}
+          </Text>
         </View>
 
         {/* Rows */}
@@ -375,7 +413,7 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
         ) : pageItems.length === 0 ? (
           <View style={styles.emptyBox}>
             <Text style={[styles.emptyText, { color: mutedColor }]}>
-              Sin actividad para esta búsqueda.
+              {t.t('dashboard.activityFeed.empty')}
             </Text>
           </View>
         ) : (
@@ -390,6 +428,7 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
                 isDark={isDark}
                 isLast={idx === pageItems.length - 1}
                 animValue={rowAnims.current.get(item.id) as Animated.Value}
+                actionLabel={getActivityActionText(item.type)}
               />
             );
           })
@@ -434,7 +473,6 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps) {
 
 // ─── Type export (for external use) ──────────────────────────────────────────
 export type { ActivityType, ActivityItem };
-export { TYPE_LABELS };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
@@ -590,5 +628,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     minWidth: 40,
     textAlign: 'center',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    gap: 24,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
+  },
+  tab: {
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabLabel: {
+    fontSize: 14,
+    fontFamily: ANEK_EXPANDED_FAMILY,
   },
 });

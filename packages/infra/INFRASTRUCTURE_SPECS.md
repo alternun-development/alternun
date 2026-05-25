@@ -105,9 +105,9 @@ Defined in:
 Deployment modes:
 
 - combined dashboard stacks: `dashboard-dev`, `dashboard-prod`
-- dedicated manual escape-hatch stacks: `api-dev`, `api-prod`
+- retired backend aliases: `api-dev`, `api-prod`, `backend-*`
 
-Legacy `backend-*` stack aliases are normalized to the canonical `api-*` names by the deploy wrapper so the backend lambda and API Gateway stay scoped to one naming family.
+Legacy backend aliases now normalize to the dashboard stacks in local tooling. They must not be deployed as standalone stages because the live API/admin surfaces are owned by `dashboard-dev` / `dashboard-prod`.
 
 Resources created:
 

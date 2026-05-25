@@ -1,5 +1,6 @@
-import { Body, Controller, HttpCode, Post, VERSION_NEUTRAL } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Res, VERSION_NEUTRAL } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { FastifyReply } from 'fastify';
 import { AuthExchangeRequestDto } from './dto/auth-exchange-request.dto';
 import { AuthExchangeResponseDto } from './dto/auth-exchange-response.dto';
 import { SignInRequestDto } from './dto/signin-request.dto';
@@ -64,15 +65,18 @@ export class AuthExchangeController {
     return this.signInService.signIn(body);
   }
 
-  @Post('sign-in/social')
+  @Post('sign-in/social-url')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Initiate social sign-in flow with provider',
+    summary: 'Compatibility endpoint that returns a social sign-in URL',
   })
   @ApiOkResponse({
     description: 'Social sign-in URL and provider info.',
   })
-  async socialSignIn(@Body() body?: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async socialSignIn(
+    @Body() body?: Record<string, unknown>,
+    @Res({ passthrough: true }) reply?: FastifyReply
+  ): Promise<Record<string, unknown>> {
     if (!body?.provider) {
       return {
         error:
@@ -80,6 +84,16 @@ export class AuthExchangeController {
         url: '',
       };
     }
-    return this.socialSignInService.signIn(body as unknown as SocialSignInRequestDto);
+    const result = await this.socialSignInService.signIn(body as unknown as SocialSignInRequestDto);
+
+    if (result.setCookies?.length) {
+      void reply?.header('set-cookie', result.setCookies);
+    }
+
+    return {
+      provider: result.provider,
+      redirect: result.redirect,
+      url: result.url,
+    };
   }
 }

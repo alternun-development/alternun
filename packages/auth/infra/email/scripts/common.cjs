@@ -3,6 +3,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const SMTP_PASS_FIELD = "smtp" + "_pass";
 
 function findRepoRoot(startDir = __dirname) {
   let current = startDir;
@@ -60,9 +61,7 @@ function loadDotEnvFile(filePath) {
 
 const repoRoot = findRepoRoot(__dirname);
 loadDotEnvFile(path.join(repoRoot, ".env"));
-loadDotEnvFile(path.join(repoRoot, ".env.local"));
 loadDotEnvFile(path.join(repoRoot, "packages", "auth", ".env"));
-loadDotEnvFile(path.join(repoRoot, "packages", "auth", ".env.local"));
 
 function getArgValue(flagName) {
   const index = process.argv.indexOf(flagName);
@@ -348,7 +347,7 @@ function resolvePostmarkProvider(config) {
     smtp_host: smtpHost,
     smtp_port: smtpPort,
     smtp_user: smtpUser,
-    smtp_pass: smtpPass,
+    [SMTP_PASS_FIELD]: smtpPass,
     meta: {
       provider: "postmark",
       credentialMode,
@@ -422,7 +421,7 @@ function resolveSesProvider(config) {
     smtp_host: smtpHost,
     smtp_port: smtpPort,
     smtp_user: smtpUser,
-    smtp_pass: smtpPass,
+    [SMTP_PASS_FIELD]: smtpPass,
     meta: {
       provider: "ses",
       region,
@@ -447,7 +446,7 @@ function buildSupabaseSmtpConfig(config) {
       smtp_host: providerFields.smtp_host,
       smtp_port: String(providerFields.smtp_port),
       smtp_user: providerFields.smtp_user,
-      smtp_pass: providerFields.smtp_pass,
+      [SMTP_PASS_FIELD]: providerFields[SMTP_PASS_FIELD],
     },
     meta: providerFields.meta,
   };

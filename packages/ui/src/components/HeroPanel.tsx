@@ -17,7 +17,15 @@
  */
 
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Animated,
+  Easing,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { RotateCcw, Info, type LucideProps } from 'lucide-react-native';
 import { palette } from '../tokens/colors';
 import { fontSize, radius, spacing } from '../tokens/spacing';
@@ -95,6 +103,19 @@ export function resolveTier(score: number): AirsTier {
   return 'bronze';
 }
 
+function resolveTierSpec(tier: AirsTier): TierSpec {
+  switch (tier) {
+    case 'bronze':
+      return TIERS.bronze;
+    case 'silver':
+      return TIERS.silver;
+    case 'gold':
+      return TIERS.gold;
+    case 'platinum':
+      return TIERS.platinum;
+  }
+}
+
 function fmtScore(n: number): string {
   return n.toLocaleString();
 }
@@ -102,7 +123,7 @@ function fmtScore(n: number): string {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export interface HeroPanelProps {
-  /** Shown as "Hola, {firstName}" — only the first word is used. */
+  /** Shown as "{{greetingPrefix}} {firstName}" — only the first word is used. */
   displayName?: string;
   /** Total Airs earned. Pass `null` while loading. */
   score: number | null;
@@ -120,10 +141,32 @@ export interface HeroPanelProps {
    */
   brandMark?: React.ReactNode;
   isDark?: boolean;
-  /** When false, ambient orb animations are skipped and orbs render statically. Default: true. */
-  animateOrbs?: boolean;
   /** Validity end date for status tier (ISO string). Shows in info tooltip. */
   tierValidUntil?: string;
+  /** Greeting prefix (e.g., "Hola," or "Hello,"). Defaults to "Hola,". */
+  greetingPrefix?: string;
+  /** Subtitle text. Defaults to "Tu puntuación regenerativa es:". */
+  subtitle?: string;
+  /** Status label template with {{tier}} placeholder. Defaults to "Status {{tier}}". */
+  statusLabel?: string;
+  /** Motion level from the host app. "full" enables floating decorations. */
+  motionLevel?: 'full' | 'low' | 'off';
+  /** Progress text template with {{nextTier}} placeholder. Defaults to "Progreso a {{nextTier}} —". */
+  progressLabel?: string;
+  /** Progress hint template with {{remaining}} and {{nextTier}} placeholders. */
+  progressHint?: string;
+  /** Max tier reached message template with {{tier}} placeholder. */
+  maxTierMessage?: string;
+  /** Reload button accessibility label. */
+  reloadButtonLabel?: string;
+  /** Status info button accessibility label. */
+  statusInfoButtonLabel?: string;
+  /** Tooltip title. Defaults to "Información de estado". */
+  tooltipTitle?: string;
+  /** "Updated" label in tooltip. */
+  tooltipUpdatedLabel?: string;
+  /** "Valid until" label in tooltip. */
+  tooltipValidUntilLabel?: string;
 }
 
 export function HeroPanel({
@@ -135,12 +178,23 @@ export function HeroPanel({
   updatedAt: _updatedAt,
   brandMark,
   isDark = true,
-  animateOrbs = true,
+  motionLevel = 'full',
   tierValidUntil,
+  greetingPrefix = 'Hola,',
+  subtitle = 'Tu puntuación regenerativa es:',
+  statusLabel = 'Status {{tier}}',
+  progressLabel = 'Progreso a {{nextTier}} —',
+  progressHint,
+  maxTierMessage,
+  reloadButtonLabel = 'Recargar puntuación',
+  statusInfoButtonLabel = 'Información del estado',
+  tooltipTitle = 'Información de estado',
+  tooltipUpdatedLabel = 'Actualizado:',
+  tooltipValidUntilLabel = 'Válido hasta:',
 }: HeroPanelProps): React.JSX.Element {
   const safeScore = score ?? 0;
   const tier = previewMode || score == null ? 'bronze' : resolveTier(safeScore);
-  const tierSpec = TIERS[tier];
+  const tierSpec = resolveTierSpec(tier);
 
   // Compute last updated time: use provided updatedAt or fallback to now (initial load)
   const lastUpdatedAt = _updatedAt ?? new Date().toISOString();
@@ -160,46 +214,116 @@ export function HeroPanel({
   const greetingColor = '#CBAB35';
   const textPrimary = '#ffffff';
   const textMuted = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.75)';
-  const orbA = isDark ? 'rgba(28,203,161,0.11)' : 'rgba(11,130,120,0.08)';
-  const orbB = isDark ? 'rgba(11,90,95,0.20)' : 'rgba(11,90,95,0.10)';
   const divider = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.10)';
   const accentColor = isDark ? palette.teal : palette.tealDark;
-
-  // ─── Orb float animations ─────────────────────────────────────────────────
+  const reloadIconColor = '#ffffff';
+  const infoIconColor = '#ffffff';
+  const tooltipTitleColor = '#ffffff';
+  const tooltipBackgroundColor = isDark ? 'rgba(5,15,12,0.95)' : 'rgba(5,15,12,0.92)';
+  const tooltipBorderColor = isDark ? 'rgba(30,230,181,0.16)' : 'rgba(30,230,181,0.22)';
+  const { width: viewportWidth } = useWindowDimensions();
+  const compactTooltip = viewportWidth < 420;
+  const tooltipWidth = compactTooltip
+    ? Math.min(Math.max(Math.round(viewportWidth * 0.58), 180), 220)
+    : 280;
+  const motionFull = motionLevel === 'full';
   const orbTR = useRef(new Animated.Value(0)).current;
   const orbBL = useRef(new Animated.Value(0)).current;
+  const orbTL = useRef(new Animated.Value(0)).current;
+  const orbBR = useRef(new Animated.Value(0)).current;
+  const orbMidLeft = useRef(new Animated.Value(0)).current;
+  const orbMidRight = useRef(new Animated.Value(0)).current;
   const reloadRotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (!animateOrbs) return;
+    const orbValues = [orbTR, orbBL, orbTL, orbBR, orbMidLeft, orbMidRight];
+    orbValues.forEach((value) => {
+      value.stopAnimation();
+      value.setValue(0);
+    });
 
-    const makeFloat = (val: Animated.Value, duration: number): Animated.CompositeAnimation =>
+    if (!motionFull) return;
+
+    const makeFloat = (value: Animated.Value, duration: number): Animated.CompositeAnimation =>
       Animated.loop(
         Animated.sequence([
-          Animated.timing(val, {
+          Animated.timing(value, {
             toValue: 1,
             duration,
             easing: Easing.inOut(Easing.sin),
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
-          Animated.timing(val, {
+          Animated.timing(value, {
             toValue: 0,
             duration,
             easing: Easing.inOut(Easing.sin),
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
         ])
       );
 
-    const a1 = makeFloat(orbTR, 5800);
-    const a2 = makeFloat(orbBL, 7200);
-    a1.start();
-    a2.start();
+    const animations = [
+      makeFloat(orbTR, 6400),
+      makeFloat(orbBL, 7600),
+      makeFloat(orbTL, 5400),
+      makeFloat(orbBR, 7000),
+      makeFloat(orbMidLeft, 5600),
+      makeFloat(orbMidRight, 5900),
+    ];
+
+    animations.forEach((animation) => animation.start());
     return () => {
-      a1.stop();
-      a2.stop();
+      animations.forEach((animation) => animation.stop());
     };
-  }, [orbTR, orbBL, animateOrbs]);
+  }, [motionFull, orbBL, orbBR, orbMidLeft, orbMidRight, orbTL, orbTR]);
+
+  const orbTRStyle = {
+    transform: [
+      { translateX: orbTR.interpolate({ inputRange: [0, 1], outputRange: [0, -18] }) },
+      { translateY: orbTR.interpolate({ inputRange: [0, 1], outputRange: [0, 14] }) },
+      { scale: orbTR.interpolate({ inputRange: [0, 1], outputRange: [1, 1.05] }) },
+    ],
+  };
+
+  const orbBLStyle = {
+    transform: [
+      { translateX: orbBL.interpolate({ inputRange: [0, 1], outputRange: [0, 16] }) },
+      { translateY: orbBL.interpolate({ inputRange: [0, 1], outputRange: [0, -16] }) },
+      { scale: orbBL.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] }) },
+    ],
+  };
+
+  const orbTLStyle = {
+    transform: [
+      { translateX: orbTL.interpolate({ inputRange: [0, 1], outputRange: [0, 10] }) },
+      { translateY: orbTL.interpolate({ inputRange: [0, 1], outputRange: [0, 8] }) },
+      { scale: orbTL.interpolate({ inputRange: [0, 1], outputRange: [1, 1.03] }) },
+    ],
+  };
+
+  const orbBRStyle = {
+    transform: [
+      { translateX: orbBR.interpolate({ inputRange: [0, 1], outputRange: [0, -10] }) },
+      { translateY: orbBR.interpolate({ inputRange: [0, 1], outputRange: [0, -12] }) },
+      { scale: orbBR.interpolate({ inputRange: [0, 1], outputRange: [1, 1.03] }) },
+    ],
+  };
+
+  const orbMidLeftStyle = {
+    transform: [
+      { translateX: orbMidLeft.interpolate({ inputRange: [0, 1], outputRange: [0, 12] }) },
+      { translateY: orbMidLeft.interpolate({ inputRange: [0, 1], outputRange: [0, -8] }) },
+      { scale: orbMidLeft.interpolate({ inputRange: [0, 1], outputRange: [1, 1.025] }) },
+    ],
+  };
+
+  const orbMidRightStyle = {
+    transform: [
+      { translateX: orbMidRight.interpolate({ inputRange: [0, 1], outputRange: [0, -12] }) },
+      { translateY: orbMidRight.interpolate({ inputRange: [0, 1], outputRange: [0, 10] }) },
+      { scale: orbMidRight.interpolate({ inputRange: [0, 1], outputRange: [1, 1.025] }) },
+    ],
+  };
 
   // Reload button spin animation
   useEffect(() => {
@@ -219,20 +343,6 @@ export function HeroPanel({
     spin.start();
     return () => spin.stop();
   }, [isLoading, reloadRotation]);
-
-  const orbTRStyle = {
-    transform: [
-      { translateX: orbTR.interpolate({ inputRange: [0, 1], outputRange: [0, -22] }) },
-      { translateY: orbTR.interpolate({ inputRange: [0, 1], outputRange: [0, 18] }) },
-    ],
-  };
-
-  const orbBLStyle = {
-    transform: [
-      { translateX: orbBL.interpolate({ inputRange: [0, 1], outputRange: [0, 18] }) },
-      { translateY: orbBL.interpolate({ inputRange: [0, 1], outputRange: [0, -16] }) },
-    ],
-  };
 
   const reloadRotateStyle = {
     transform: [
@@ -314,17 +424,17 @@ export function HeroPanel({
 
   const statusTooltipContent = (
     <View style={styles.tooltipContent}>
-      <Text style={[styles.tooltipLabel, { color: accentColor }]}>Información de estado</Text>
+      <Text style={[styles.tooltipLabel, { color: tooltipTitleColor }]}>{tooltipTitle}</Text>
       <View style={styles.tooltipDivider} />
       <View style={styles.tooltipLine}>
-        <Text style={[styles.tooltipKey, { color: textMuted }]}>Actualizado:</Text>
+        <Text style={[styles.tooltipKey, { color: textMuted }]}>{tooltipUpdatedLabel}</Text>
         <Text style={[styles.tooltipValue, { color: textPrimary }]}>
           {formatDateWithTime(lastUpdatedAt)}
         </Text>
       </View>
       {tierValidUntil && (
         <View style={styles.tooltipLine}>
-          <Text style={[styles.tooltipKey, { color: textMuted }]}>Válido hasta:</Text>
+          <Text style={[styles.tooltipKey, { color: textMuted }]}>{tooltipValidUntilLabel}</Text>
           <Text style={[styles.tooltipValue, { color: textPrimary }]}>
             {formatDate(tierValidUntil)}
           </Text>
@@ -336,14 +446,72 @@ export function HeroPanel({
   return (
     <ThemeProvider mode={isDark ? 'dark' : 'light'}>
       <View style={[styles.container]}>
-        {/* Decorative ambient orbs — top-right + bottom-left */}
+        {/* Decorative ambient orbs */}
         <Animated.View
           pointerEvents='none'
-          style={[styles.orbTR, { backgroundColor: orbA }, orbTRStyle]}
+          style={[
+            styles.orbTopRight,
+            {
+              backgroundColor: isDark ? 'rgba(11,90,95,0.20)' : 'rgba(11,90,95,0.12)',
+              shadowColor: isDark ? 'rgba(11,90,95,0.18)' : 'rgba(11,90,95,0.12)',
+            },
+            orbTRStyle,
+          ]}
         />
         <Animated.View
           pointerEvents='none'
-          style={[styles.orbBL, { backgroundColor: orbB }, orbBLStyle]}
+          style={[
+            styles.orbBottomLeft,
+            {
+              backgroundColor: isDark ? 'rgba(30,230,181,0.14)' : 'rgba(30,230,181,0.10)',
+              shadowColor: isDark ? 'rgba(30,230,181,0.16)' : 'rgba(30,230,181,0.12)',
+            },
+            orbBLStyle,
+          ]}
+        />
+        <Animated.View
+          pointerEvents='none'
+          style={[
+            styles.orbTopLeft,
+            {
+              backgroundColor: isDark ? 'rgba(30,230,181,0.10)' : 'rgba(30,230,181,0.08)',
+              shadowColor: isDark ? 'rgba(30,230,181,0.16)' : 'rgba(30,230,181,0.10)',
+            },
+            orbTLStyle,
+          ]}
+        />
+        <Animated.View
+          pointerEvents='none'
+          style={[
+            styles.orbBottomRight,
+            {
+              backgroundColor: isDark ? 'rgba(11,90,95,0.10)' : 'rgba(11,90,95,0.08)',
+              shadowColor: isDark ? 'rgba(11,90,95,0.12)' : 'rgba(11,90,95,0.08)',
+            },
+            orbBRStyle,
+          ]}
+        />
+        <Animated.View
+          pointerEvents='none'
+          style={[
+            styles.orbMidLeft,
+            {
+              backgroundColor: isDark ? 'rgba(30,230,181,0.09)' : 'rgba(30,230,181,0.06)',
+              shadowColor: isDark ? 'rgba(30,230,181,0.14)' : 'rgba(30,230,181,0.08)',
+            },
+            orbMidLeftStyle,
+          ]}
+        />
+        <Animated.View
+          pointerEvents='none'
+          style={[
+            styles.orbMidRight,
+            {
+              backgroundColor: isDark ? 'rgba(11,90,95,0.08)' : 'rgba(11,90,95,0.06)',
+              shadowColor: isDark ? 'rgba(11,90,95,0.10)' : 'rgba(11,90,95,0.06)',
+            },
+            orbMidRightStyle,
+          ]}
         />
 
         {/* Reload button (top-right) — shown when onReload is provided */}
@@ -353,20 +521,22 @@ export function HeroPanel({
             onPress={onReload}
             disabled={isLoading}
             accessibilityRole='button'
-            accessibilityLabel='Recargar puntuación'
+            accessibilityLabel={reloadButtonLabel}
           >
             <Animated.View style={reloadRotateStyle}>
-              <ReloadIcon size={16} color={accentColor} strokeWidth={2.5} />
+              <ReloadIcon size={16} color={reloadIconColor} strokeWidth={2.5} />
             </Animated.View>
           </TouchableOpacity>
         )}
 
         {/* Greeting */}
         {firstName ? (
-          <Text style={[styles.greeting, { color: greetingColor }]}>{`Hola, ${firstName}`}</Text>
+          <Text
+            style={[styles.greeting, { color: greetingColor }]}
+          >{`${greetingPrefix} ${firstName}`}</Text>
         ) : null}
 
-        <Text style={[styles.subtitle, { color: textMuted }]}>Tu puntuación regenerativa es:</Text>
+        <Text style={[styles.subtitle, { color: textMuted }]}>{subtitle}</Text>
 
         {/* Score row */}
         <View style={styles.scoreRow}>
@@ -393,7 +563,7 @@ export function HeroPanel({
               <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
                 <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
                 <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
-                  {`Status ${tierSpec.label.toUpperCase()}`}
+                  {statusLabel.replace('{{tier}}', tierSpec.label.toUpperCase())}
                 </Text>
               </View>
               <View style={styles.iconButtonWrapper}>
@@ -407,15 +577,19 @@ export function HeroPanel({
                     if (showStatusTooltip) toggleStatusTooltip();
                   }}
                   accessibilityRole='button'
-                  accessibilityLabel='Información del estado'
+                  accessibilityLabel={statusInfoButtonLabel}
                 >
-                  <InfoIcon size={16} color={accentColor} strokeWidth={2} />
+                  <InfoIcon size={16} color={infoIconColor} strokeWidth={2} />
                 </TouchableOpacity>
                 {showStatusTooltip && (
                   <Animated.View
                     style={[
                       styles.tooltipOverlay,
                       {
+                        left: compactTooltip ? undefined : 30,
+                        right: compactTooltip ? 0 : undefined,
+                        minWidth: tooltipWidth,
+                        maxWidth: tooltipWidth,
                         opacity: tooltipOpacity,
                         transform: [{ translateY: tooltipTranslateY }],
                       },
@@ -425,8 +599,11 @@ export function HeroPanel({
                       style={[
                         styles.statusTooltip,
                         {
-                          backgroundColor: isDark ? 'rgba(5,15,12,0.95)' : 'rgba(255,255,255,0.98)',
-                          shadowColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.12)',
+                          backgroundColor: tooltipBackgroundColor,
+                          borderColor: tooltipBorderColor,
+                          minWidth: tooltipWidth,
+                          width: tooltipWidth,
+                          shadowColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.20)',
                         },
                       ]}
                     >
@@ -469,7 +646,7 @@ export function HeroPanel({
                 <View style={styles.progressLabelRow}>
                   <View style={styles.progressLeftGroup}>
                     <Text style={[styles.progressLeft, { color: textPrimary }]} numberOfLines={1}>
-                      {`Progreso a ${progressNextLabel} —`}
+                      {progressLabel.replace('{{nextTier}}', progressNextLabel)}
                     </Text>
                     <Text
                       style={[styles.progressPercent, { color: textPrimary }]}
@@ -489,20 +666,22 @@ export function HeroPanel({
                   style={styles.progressBar}
                   showPercentage={false}
                 />
-                <Text style={[styles.progressHint, { color: textMuted }]}>
-                  {`Te faltan ${fmtScore(
-                    progressMax - safeScore
-                  )} Airs para alcanzar ${progressNextLabel} y desbloquear beneficios exclusivos`}
-                </Text>
+                {progressHint && (
+                  <Text style={[styles.progressHint, { color: textMuted }]}>
+                    {progressHint
+                      .replace('{{remaining}}', fmtScore(progressMax - safeScore))
+                      .replace('{{nextTier}}', progressNextLabel)}
+                  </Text>
+                )}
               </>
             )}
           </View>
         )}
 
         {/* Platinum — max tier */}
-        {tierSpec.max == null && !previewMode && score != null && (
+        {tierSpec.max == null && !previewMode && score != null && maxTierMessage && (
           <Text style={[styles.progressHint, { color: tierSpec.color }]}>
-            Has alcanzado el nivel máximo Platinum
+            {maxTierMessage.replace('{{tier}}', tierSpec.label)}
           </Text>
         )}
       </View>
@@ -540,31 +719,91 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(30,230,181,0.16)',
   },
 
-  /* Ambient orbs — top-right + bottom-left (mirrored vs footer) */
-  orbTR: {
+  /* Decorative top orbs */
+  orbTopLeft: {
     position: 'absolute',
-    width: 320,
-    height: 320,
-    borderRadius: 160,
-    top: -120,
-    right: -100,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    top: 4,
+    left: 8,
+    shadowColor: 'rgba(30,230,181,0.20)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 36,
   },
-  orbBL: {
+  orbTopRight: {
     position: 'absolute',
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    bottom: -80,
-    left: -70,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    top: -54,
+    right: -48,
+    shadowColor: 'rgba(11,90,95,0.18)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 88,
+  },
+
+  /* Decorative bottom orbs */
+  orbBottomLeft: {
+    position: 'absolute',
+    width: 224,
+    height: 224,
+    borderRadius: 112,
+    bottom: -58,
+    left: -52,
+    shadowColor: 'rgba(30,230,181,0.15)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 84,
+  },
+  orbBottomRight: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    bottom: 16,
+    right: 18,
+    shadowColor: 'rgba(11,90,95,0.14)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 24,
+  },
+
+  /* Decorative mid orbs */
+  orbMidLeft: {
+    position: 'absolute',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    top: '42%',
+    left: 14,
+    shadowColor: 'rgba(30,230,181,0.12)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+  },
+  orbMidRight: {
+    position: 'absolute',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    top: '38%',
+    right: 18,
+    shadowColor: 'rgba(11,90,95,0.13)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 24,
   },
 
   /* Text */
   greeting: {
     fontSize: fontSize['4xl'],
-    fontWeight: '700',
-    letterSpacing: -0.5,
+    fontWeight: '400',
+    letterSpacing: 0,
     marginBottom: spacing[1],
-    fontFamily: 'Sculpin-Bold',
+    fontFamily: 'AnekLatin-Expanded',
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
@@ -638,11 +877,11 @@ const styles = StyleSheet.create({
     top: 0,
     left: 30,
     zIndex: 1000,
-    minWidth: 240,
+    minWidth: 0,
     maxWidth: 340,
   },
   statusTooltip: {
-    minWidth: 220,
+    minWidth: 0,
     maxWidth: 320,
     paddingHorizontal: spacing[4],
     paddingVertical: spacing[3],

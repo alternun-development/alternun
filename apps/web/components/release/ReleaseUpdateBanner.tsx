@@ -1,9 +1,9 @@
 'use client';
 
-import { ReleaseUpdateToast, ThemeProvider as UiThemeProvider } from '@alternun/ui';
 import { useReleaseUpdate } from '@alternun/update';
 import { useMemo } from 'react';
 import { useTheme } from '@/hooks/useTheme';
+import ReleaseUpdateToast from './ReleaseUpdateToast';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: currentVersion } = require('../../package.json') as { version: string };
@@ -28,17 +28,16 @@ export default function ReleaseUpdateBanner() {
   }
 
   return (
-    <UiThemeProvider mode={resolvedTheme}>
-      <ReleaseUpdateToast
-        eyebrow='Update available'
-        title={title}
-        message='Reload to pick up the latest changes and assets.'
-        laterLabel='Later'
-        reloadLabel='Reload'
-        bottomOffset={16}
-        onLater={state.dismiss}
-        onReload={state.reload}
-      />
-    </UiThemeProvider>
+    <ReleaseUpdateToast
+      eyebrow='Update available'
+      title={title}
+      message='Reload to pick up the latest changes and assets.'
+      laterLabel='Later'
+      reloadLabel='Reload'
+      bottomOffset={16}
+      theme={resolvedTheme}
+      onLater={state.dismiss}
+      onReload={state.reload}
+    />
   );
 }

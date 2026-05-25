@@ -18,6 +18,7 @@ import {
 } from 'lucide-react-native';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { useAppTranslation } from '../i18n/useAppTranslation';
 
 const GlobeIcon = Globe as React.FC<LucideProps>;
 const CoinsIcon = Coins as React.FC<LucideProps>;
@@ -199,11 +200,13 @@ function PositionCard({
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
 }): React.JSX.Element {
+  const t = useAppTranslation();
+
   return (
     <SummaryCard p={p} compact={compact}>
       <CardTitle
-        label='Tu posición'
-        sub='Entre miembros de Airs By Alternun'
+        label={t.t('dashboard.summaryCards.position.title')}
+        sub={t.t('dashboard.summaryCards.position.subtitle')}
         p={p}
         compact={compact}
       />
@@ -211,21 +214,21 @@ function PositionCard({
       <View style={[styles.positionList, compact && styles.positionListCompact]}>
         <PositionRow
           icon={<GlobeIcon size={18} color={p.accent} />}
-          label='Global'
+          label={t.t('dashboard.summaryCards.position.global')}
           value='#1.284'
           p={p}
           compact={compact}
         />
         <PositionRow
           icon={<Text style={styles.flagEmoji}>🇨🇴</Text>}
-          label='Colombia'
+          label={t.t('dashboard.summaryCards.position.colombia')}
           value='#132'
           p={p}
           compact={compact}
         />
         <PositionRow
           icon={<MapPinnedIcon size={18} color={p.iconColor} />}
-          label='Medellín'
+          label={t.t('dashboard.summaryCards.position.medellin')}
           value='#18'
           p={p}
           compact={compact}
@@ -246,7 +249,7 @@ function PositionCard({
             { color: p.muted },
           ]}
         >
-          Ranking basado en Airs acumulados
+          {t.t('dashboard.summaryCards.position.rankingNote')}
         </Text>
       </View>
     </SummaryCard>
@@ -262,6 +265,7 @@ function RBICard({
 }): React.JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
   const { language } = useAppPreferences();
+  const t = useAppTranslation();
 
   const getDocumentationUrl = (): string => {
     const baseUrl = 'https://alternun-development.github.io';
@@ -274,8 +278,8 @@ function RBICard({
   return (
     <SummaryCard p={p} compact={compact}>
       <CardTitle
-        label='Proyección RBI'
-        sub='Ingreso estimado próximo ciclo'
+        label={t.t('dashboard.summaryCards.rbi.title')}
+        sub={t.t('dashboard.summaryCards.rbi.subtitle')}
         p={p}
         compact={compact}
       />
@@ -300,7 +304,7 @@ function RBICard({
       <View style={[styles.statList, compact && styles.statListCompact]}>
         <View style={styles.statRow}>
           <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
-            Pool RBI estimado:
+            {t.t('dashboard.summaryCards.rbi.estimatedPool')}
           </Text>
           <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
             Coming soon
@@ -308,7 +312,7 @@ function RBICard({
         </View>
         <View style={styles.statRow}>
           <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
-            Usuarios elegibles:
+            {t.t('dashboard.summaryCards.rbi.eligibleUsers')}
           </Text>
           <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
             Coming soon
@@ -316,7 +320,7 @@ function RBICard({
         </View>
         <View style={styles.statRow}>
           <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
-            Tu puntaje Airs:
+            {t.t('dashboard.summaryCards.rbi.airsScore')}
           </Text>
           <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
             Coming soon
@@ -342,7 +346,7 @@ function RBICard({
                 { color: p.accent },
               ]}
             >
-              ¿Qué es el RBI?
+              {t.t('dashboard.summaryCards.rbi.whatIsRbi')}
             </Text>
             <ChevronRight
               size={16}
@@ -365,13 +369,7 @@ function RBICard({
                 { color: p.copy },
               ]}
             >
-              El Regenerative Basic Income es un ingreso periódico que se distribuye entre los
-              usuarios de Alternun que contribuyen al ecosistema.{'\n\n'}
-              No depende de cuánto dinero tengas, sino de tu participación, tu compromiso y tu
-              impacto, medidos a través de tu puntaje AIRS.{'\n\n'}
-              Cada vez que Alternun facilita una compensación, una venta desde el compensation pool
-              o una actividad económica dentro de la plataforma, una parte de ese valor se destina
-              directamente al fondo del RBI.
+              {t.t('dashboard.summaryCards.rbi.explanation')}
             </Text>
           </View>
 
@@ -395,7 +393,7 @@ function RBICard({
                   { color: p.accent },
                 ]}
               >
-                Documentación completa
+                {t.t('dashboard.summaryCards.rbi.fullDocumentation')}
               </Text>
               <ChevronRight size={14} color={p.accent} />
             </View>
@@ -418,17 +416,23 @@ function ATNCard({
   onNavigate?: (key: string) => void;
 }): React.JSX.Element {
   const useDenseLayout = compact || dense;
+  const t = useAppTranslation();
 
   return (
     <SummaryCard p={p} compact={compact}>
-      <CardTitle label='Mis ATN' sub='Tus tokens regenerativos' p={p} compact={compact} />
+      <CardTitle
+        label={t.t('dashboard.summaryCards.atn.title')}
+        sub={t.t('dashboard.summaryCards.atn.subtitle')}
+        p={p}
+        compact={compact}
+      />
 
       <View style={[styles.tokenRow, compact && styles.tokenRowCompact]}>
         <View style={styles.tokenLabelBlock}>
           <Text
             style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
           >
-            ATN disponibles
+            {t.t('dashboard.summaryCards.atn.availableLabel')}
           </Text>
           <Text
             style={[
@@ -437,7 +441,7 @@ function ATNCard({
               { color: p.muted },
             ]}
           >
-            Listos para usar
+            {t.t('dashboard.summaryCards.atn.availableDesc')}
           </Text>
         </View>
         <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
@@ -450,7 +454,7 @@ function ATNCard({
           <Text
             style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
           >
-            ATN en stacking
+            {t.t('dashboard.summaryCards.atn.stackingLabel')}
           </Text>
           <Text
             style={[
@@ -459,7 +463,7 @@ function ATNCard({
               { color: p.muted },
             ]}
           >
-            Participando en proyectos
+            {t.t('dashboard.summaryCards.atn.stackingDesc')}
           </Text>
         </View>
         <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
@@ -469,7 +473,7 @@ function ATNCard({
 
       <View style={[styles.totalRow, compact && styles.totalRowCompact]}>
         <Text style={[styles.totalLabel, compact && styles.totalLabelCompact, { color: p.title }]}>
-          Total ATN
+          {t.t('dashboard.summaryCards.atn.totalLabel')}
         </Text>
         <View style={styles.totalValueWrap}>
           <TrendingUpIcon size={16} color={p.accent} />

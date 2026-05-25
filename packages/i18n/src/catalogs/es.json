@@ -31,8 +31,9 @@
         "usernamePlaceholder": "p.ej., @juan_pérez",
         "referredByEmail": "Referido por correo (opcional)",
         "emailPlaceholder": "p.ej., amigo@ejemplo.com",
-        "invitationCode": "Codigo de invitacion (opcional)",
-        "codePlaceholder": "p.ej., INVITA123",
+        "invitationCode": "Codigo de referido (opcional)",
+        "codePlaceholder": "p.ej., edward-44ft34",
+        "detected": "Codigo de referido detectado: {{code}}",
         "submit": "Continuar",
         "submitStandalone": "Continuar a Iniciar Sesion",
         "skip": "Saltar",
@@ -86,6 +87,7 @@
       "divider": {
         "or": "o"
       },
+      "underMaintenance": "En mantenimiento",
       "errors": {
         "accountExistsSignInOrResend": "Ya existe una cuenta con este correo. Inicia sesion o reenvia la confirmacion abajo.",
         "authenticationFailed": "La autenticacion fallo. Intentalo de nuevo.",
@@ -103,6 +105,11 @@
       "footer": {
         "alreadyHaveAccount": "Ya tienes una cuenta? Inicia sesion",
         "dontHaveAccount": "No tienes una cuenta? Crea una"
+      },
+      "referral": {
+        "prompt": "Tienes un codigo de referido?",
+        "helper": "Agregalo antes de crear la cuenta. Lo conservaremos para el registro.",
+        "placeholder": "p.ej., edward-44ft34"
       },
       "modes": {
         "signIn": "Iniciar sesion",
@@ -149,7 +156,131 @@
       }
     },
     "dashboard": {
-      "backToTop": "Inicio"
+      "backToTop": "Inicio",
+      "hero": {
+        "hint": "Inicia sesión desde el menú de perfil en la esquina superior derecha para activar acciones."
+      },
+      "notifications": {
+        "welcomeBonus": {
+          "title": "¡Bienvenido!",
+          "message": "Has recibido 10 Airs como bono de bienvenida. ¡Comienza tu jornada sustentable!"
+        },
+        "signInRequired": {
+          "title": "Iniciar sesión requerido",
+          "message": "Inicia sesión primero para conectar una billetera."
+        },
+        "walletConnected": {
+          "title": "Billetera conectada",
+          "message": "La autenticación de la billetera se completó."
+        },
+        "walletConnectionFailed": {
+          "title": "Error al conectar billetera",
+          "message": "{{error}}"
+        },
+        "signOutFailed": {
+          "title": "Error al cerrar sesión",
+          "message": "{{error}}"
+        }
+      },
+      "welcomeBonusModal": {
+        "title": "¡Bienvenido a Airs By Alternun!",
+        "subtitle": "Has recibido tu bono de bienvenida",
+        "description": "Como nuevo miembro, te estamos dando 10 Airs para iniciar tu jornada sustentable. Úsalos para explorar proyectos e impactar el medio ambiente.",
+        "amount": "10 AIRS",
+        "claimButton": "Reclamar Bono",
+        "claimingButton": "Reclamando...",
+        "alreadyClaimed": "Bono Ya Reclamado",
+        "alreadyClaimedMessage": "Ya has reclamado tu bono de bienvenida.",
+        "successTitle": "¡Bono Reclamado!",
+        "successMessage": "Tus 10 Airs están ahora en tu cuenta. ¡Comienza a ganar más participando en actividades sustentables!"
+      },
+      "activityFeed": {
+        "title": "Actividad reciente",
+        "subtitle": {
+          "global": "Actividad de la plataforma en tiempo real",
+          "user": "Así has acumulado tus Airs By Alternun."
+        },
+        "tabs": {
+          "global": "Actividad Global",
+          "user": "Mi Actividad"
+        },
+        "search": "Buscar actividad o fuente...",
+        "tableHeaders": {
+          "action": "Acción",
+          "source": "Fuente",
+          "airs": "Airs",
+          "date": "Fecha"
+        },
+        "empty": "Sin actividad para esta búsqueda.",
+        "now": "Ahora",
+        "activityTypes": {
+          "compensation": "Compensación ambiental",
+          "purchase": "Compra de compensación",
+          "profile": "Perfil completado",
+          "account": "Crear cuenta",
+          "reward": "Recompensa de referido",
+          "certificate": "Certificado emitido",
+          "verification": "Verificación completada",
+          "wallet": "Wallet conectada"
+        },
+        "typeLabels": {
+          "compensation": "Compensación",
+          "purchase": "Compra",
+          "profile": "Perfil",
+          "account": "Cuenta",
+          "reward": "Recompensa",
+          "certificate": "Certificado"
+        },
+        "filters": {
+          "all": "Todos",
+          "compensation": "Compensación",
+          "purchase": "Compra",
+          "profile": "Perfil",
+          "account": "Cuenta",
+          "reward": "Recompensa"
+        }
+      },
+      "heroPanel": {
+        "subtitle": "Tu puntuación regenerativa es:",
+        "statusLabel": "Status {{tier}}",
+        "progressTo": "Progreso a {{nextTier}}",
+        "progressHint": "Te faltan {{remaining}} Airs para alcanzar {{nextTier}} y desbloquear beneficios exclusivos",
+        "maxTierReached": "Has alcanzado el nivel máximo {{tier}}",
+        "statusInfo": "Información de estado",
+        "updatedAt": "Actualizado:",
+        "validUntil": "Válido hasta:",
+        "reloadButton": "Recargar puntuación",
+        "statusInfoButton": "Información del estado"
+      },
+      "summaryCards": {
+        "position": {
+          "title": "Tu posición",
+          "subtitle": "Entre miembros de Airs By Alternun",
+          "global": "Global",
+          "colombia": "Colombia",
+          "medellin": "Medellín",
+          "rankingNote": "Ranking basado en Airs acumulados"
+        },
+        "rbi": {
+          "title": "Proyección RBI",
+          "subtitle": "Ingreso estimado próximo ciclo",
+          "estimatedPool": "Pool RBI estimado:",
+          "eligibleUsers": "Usuarios elegibles:",
+          "airsScore": "Tu puntaje Airs:",
+          "whatIsRbi": "¿Qué es el RBI?",
+          "explanation": "El Regenerative Basic Income es un ingreso periódico que se distribuye entre los usuarios de Alternun que contribuyen al ecosistema.\\n\\nNo depende de cuánto dinero tengas, sino de tu participación, tu compromiso y tu impacto, medidos a través de tu puntaje AIRS.\\n\\nCada vez que Alternun facilita una compensación, una venta desde el compensation pool o una actividad económica dentro de la plataforma, una parte de ese valor se destina directamente al fondo del RBI.",
+          "fullDocumentation": "Documentación completa"
+        },
+        "atn": {
+          "title": "Mis ATN",
+          "subtitle": "Tus tokens regenerativos",
+          "availableLabel": "ATN disponibles",
+          "availableDesc": "Listos para usar",
+          "stackingLabel": "ATN en stacking",
+          "stackingDesc": "Participando en proyectos",
+          "totalLabel": "Total ATN"
+        }
+      }
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. Todos los derechos reservados.",
@@ -358,6 +489,8 @@
         "onboarding": "Introduccion"
       },
       "showIntroAgain": "No mostrar la introduccion otra vez",
+      "showWelcomeBonusModal": "Mostrar bono de bienvenida",
+      "localPreferenceHelp": "Se almacena localmente en este dispositivo",
       "subtitle": "Administra las preferencias de interfaz y los controles de cuenta.",
       "title": "Configuracion"
     },
@@ -378,6 +511,7 @@
       "sections": {
         "achievements": "Logros",
         "account": "Cuenta",
+        "referrals": "Referidos",
         "preferences": "Preferencias"
       },
       "header": {
@@ -417,6 +551,22 @@
         "recruiter": "Recluta",
         "partner": "Socio",
         "platinum": "Platinum"
+      },
+      "referral": {
+        "title": "Tu codigo de referido",
+        "subtitle": "Comparte tu codigo para invitar nuevos miembros.",
+        "codeLabel": "Codigo de referido",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "shareTitle": "Comparte tu enlace de referido",
+        "shareMessage": "Únete a Airs By Alternun con el codigo {{code}}: {{link}}",
+        "referralCount": "Miembros invitados",
+        "wasReferred": "Referencia registrada",
+        "referredBy": "Referido por {{name}}",
+        "referredByLabel": "Quien te refirio",
+        "referredByHelper": "Esta es la fuente de referido registrada en tu cuenta.",
+        "codePending": "Cargando...",
+        "error": "No pudimos cargar los detalles de referido ahora mismo."
       },
       "footer": "Alternun Airs · v{{version}}"
     }

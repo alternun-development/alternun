@@ -88,7 +88,7 @@ If popup auth is added later, it should be implemented as a separate explicit AP
 
 ## Deployment Note
 
-On the current testnet rollout, the user-facing bundle is deployed from `dev`, the live API/auth runtime is owned by `dashboard-dev`, and Authentik lives in `identity-dev`. `api-dev` is a backend-only escape hatch, not the owning stack for `testnet.api.alternun.co`.
+On the current testnet rollout, the user-facing bundle is deployed from `dev`, the live API/auth runtime is owned by `dashboard-dev`, and Authentik lives in `identity-dev`. Former backend-only aliases such as `api-dev` and `backend-*` are retired and must not be used for `testnet.api.alternun.co`.
 
 ## Shared Package Contract
 
@@ -185,6 +185,26 @@ It is responsible for:
 This is intentionally cleaner than embedding callback handling inside `AppAuthProvider` or the sign-in screen.
 
 `AppAuthProvider` now handles session restoration and sign-out cleanup, while `/auth/callback` handles browser callback finalization.
+
+## Referral Flow
+
+Referral sharing is part of the auth surface, not a separate marketing path.
+
+The current flow is:
+
+- the mobile profile screen reads `GET /v1/referrals/me` to show the current user's referral code and share link
+- referral codes are canonical lowercase slugs in the form `username-xxxxxx`
+- the auth modal exposes a `Have a referral code?` prompt during signup and sends users to `/auth/referral` when they want to enter one
+- the canonical share target is `/auth/referral?code=<REFERRAL_CODE>`
+- `/auth/referral` accepts `code`, `ref`, and `referralCode` query params and persists the referral after sign-in
+- the API stores the resolved relationship on `public.users.referred_by_user_id` and the referral event in `public.referrals`
+- confirmed referral counts are derived from confirmed referral rows, so the counter only advances once the invitee is actually verified
+
+Important rules:
+
+- the referral code is the source of truth, not the optional freeform username/email hints
+- the signup/referral page should keep the detected code through auth redirects
+- the profile screen should always copy/share the canonical link returned by the API, not reconstruct a local variant
 
 ## Entry Modes
 

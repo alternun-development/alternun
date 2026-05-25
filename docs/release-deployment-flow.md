@@ -1,20 +1,28 @@
 # Complete Release and Deployment Flow
 
-This document explains the entire release and deployment process from `pnpm release:patch` through testnet update.
+This document explains the current release and deployment path from `pnpm release:patch` through testnet update.
 
 For production promotion, see `docs/release-promotion-process.md`.
 
 ## Overview
 
-The release flow is **now fully automated**:
+The release/version flow and the live testnet deploy flow are separate:
 
+```text
+pnpm release:patch -> version/tag update -> automatic testnet API deploy via dashboard-dev
 ```
-pnpm release:patch  →  git tag created  →  GitHub Actions  →  Build  →  Deploy to testnet
-```
+
+Current live testnet ownership:
+
+- `dev` owns the Expo bundle at `testnet.airs.alternun.co`
+- `dashboard-dev` owns the live API/admin runtime at `testnet.api.alternun.co` and `testnet.admin.alternun.co`
+- `identity-dev` owns Authentik at `testnet.sso.alternun.co`
+
+Retired stage names such as `api-dev` and `backend-*` must not be used for live testnet API deploys.
 
 ## Step-by-Step Flow
 
-### 1. Local Release (Developer)
+### 1. Local Release
 
 ```bash
 pnpm release:patch
@@ -23,188 +31,97 @@ pnpm release:patch
 
 This command:
 
-- `pnpm release` / `pnpm release:build` increments the current development build number
-- `pnpm release:patch` bumps the semantic patch version and resets the build number to `0`
-- `pnpm release:minor` / `pnpm release:major` bump the semantic version and reset the build number to `0`
-- Updates the structured release manifest for the current branch
-- Rebuilds all packages with the new version
-- Updates `CHANGELOG.md`
-- Creates a release commit (e.g., "chore: release v1.0.164")
-- Creates an annotated git tag (e.g., "v1.0.164")
-- Pushes commit and tag to remote
+- updates the current branch release manifest
+- bumps the semantic version for patch/minor/major releases
+- rebuilds packages with the new version
+- creates the release commit and tag
 
-If the release fails before the commit step, the version files are restored so the working tree does not keep a half-applied release version.
+On `develop`, the tag/version metadata stays on the development manifest. `pnpm release:patch:promote` handles the production promotion flow.
 
-On `develop`, the release stays on the development manifest and produces a `-dev` tag. `pnpm release:patch:promote` uses the production branch context instead, writes `package.json` plus `version.production.json`, and creates the stable production tag.
-Workspace package versions remain on the semantic base release version; only the branch manifests carry the `-dev` or production build marker.
+### 2. Deploy to Live Testnet
 
-**Result:** Git tag `v1.0.164` is created and pushed to GitHub
+`pnpm release:patch` now runs the live testnet API/auth deploy automatically through `dashboard-dev`.
 
-### 2. GitHub Actions Trigger
-
-The `.github/workflows/release-deploy.yml` workflow automatically triggers when a tag matching `v*.*.*` is pushed.
-
-**Trigger condition:** `push.tags: ['v*.*.*']`
-
-### 3. Automated Pipeline
-
-The workflow runs in the AWS CodeBuild environment and:
-
-#### 3.1 Install dependencies
+For manual recovery or one-off redeploys:
 
 ```bash
-pnpm install
+pnpm infra:deploy:dashboard-dev
 ```
 
-#### 3.2 Build all packages
+For testnet bundle changes that must stay aligned with the API/auth runtime:
 
 ```bash
-pnpm build
+pnpm infra:deploy:dev
+pnpm infra:deploy:dashboard-dev
 ```
 
-This builds:
+The disabled `.github/workflows/release-deploy.yml` file is reference-only. The active deploy path is the stage-aware AWS pipeline or the `dashboard-dev` deploy wrapper.
 
-- Frontend apps (web, mobile, docs, admin)
-- Backend API with **version injection** via esbuild:
-  - Extracts version from the current branch version source, or the promoted production branch when `--promote` is used
-  - Passes to esbuild: `--define:__VERSION__="<current branch version>"`
-  - Injects into `dist-lambda/lambda.js`
+### 3. Verify
 
-#### 3.3 Deploy to testnet
-
-```bash
-cd packages/infra
-INFRA_ENABLE_BACKEND_API=true npx sst deploy --stage api-dev --continue
-```
-
-**Critical environment variable:** `INFRA_ENABLE_BACKEND_API=true`
-
-- Without this, the API Lambda won't deploy
-- Without this, the SST stack thinks the API is disabled and may refuse to deploy
-
-#### 3.4 Verify deployment
+Verify the live API:
 
 ```bash
 curl https://testnet.api.alternun.co/health | jq '.version'
 ```
 
-Should return the new version (e.g., `"1.0.164"`)
-
-**Note:** Lambda warm-up may take 10-30 seconds. If version doesn't match immediately:
-
-- Workflow retries after 30 seconds
-- You can manually check later if needed
-
-## Why INFRA_ENABLE_BACKEND_API=true is Required
-
-The SST stack has multiple deployment modes:
-
-| STACK value     | Deploys              | Notes                                       |
-| --------------- | -------------------- | ------------------------------------------- |
-| `api-dev`       | API Lambda code      | ✓ Only with `INFRA_ENABLE_BACKEND_API=true` |
-| `testnet`       | Infrastructure only  | ✗ Does NOT deploy Lambda code               |
-| `dashboard-dev` | Infrastructure + API | ✓ Includes backend API resources            |
-
-**Without the flag:** The deployment creates/updates infrastructure but skips the API Lambda code update.
-
-## Complete Release Checklist
-
-✓ Code is committed and staged
-✓ `pnpm release:patch` bumps version
-✓ Git commit created: "chore: release v1.0.164"
-✓ Git tag created: "v1.0.164"
-✓ Tag pushed to GitHub
-✓ GitHub Actions workflow triggers
-✓ All packages built with new version
-✓ API Lambda built with `APP_VERSION = "1.0.164"` injected
-✓ SST deploys with `INFRA_ENABLE_BACKEND_API=true`
-✓ testnet health endpoint returns new version
-✓ All apps updated on testnet
-
-## Version Injection Details
-
-The API version is injected at **build time** via esbuild:
-
-1. **build.sh** extracts version from the branch-aware release source:
-
-   ```bash
-   VERSION=$(node -e "const { readRootVersion, resolveVersionContextBranch } = require('../../scripts/versioning/version-files.cjs'); process.stdout.write(readRootVersion(resolveVersionContextBranch()));")
-   ```
-
-2. **esbuild** receives the version:
-
-   ```bash
-   esbuild ... --define:__VERSION__="1.0.164" ...
-   ```
-
-3. **app-metadata.ts** declares it:
-
-   ```typescript
-   declare const __VERSION__: string;
-   export const APP_VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : '1.0.0';
-   ```
-
-4. **Compiled output** becomes:
-
-   ```javascript
-   exports2.APP_VERSION = true ? '1.0.164' : '1.0.0';
-   ```
-
-5. **health.controller.ts** returns it:
-   ```typescript
-   version: APP_VERSION; // Returns "1.0.164"
-   ```
-
-## Manual Deployment (if needed)
-
-If the automated pipeline fails or you need to deploy manually:
+Verify the live social sign-in bootstrap:
 
 ```bash
-# Rebuild the API with the current branch version
-pnpm build --filter @alternun/api
+curl -k -i -X POST https://testnet.api.alternun.co/auth/sign-in/social \
+  -H 'content-type: application/json' \
+  --data '{"provider":"google","callbackURL":"https://testnet.airs.alternun.co/auth/callback","errorCallbackURL":"https://testnet.airs.alternun.co/auth/callback","newUserCallbackURL":"https://testnet.airs.alternun.co/auth/callback"}'
+```
 
-# Deploy to testnet with backend API enabled
+Expected result:
+
+- `200` response
+- Google redirect URL in the payload
+- `Set-Cookie: __Secure-better-auth.state=...`
+
+## Stack Guide
+
+| `STACK value`   | Purpose                        | Notes                                       |
+| --------------- | ------------------------------ | ------------------------------------------- |
+| `dashboard-dev` | Live testnet API/admin runtime | Correct owner for `testnet.api.alternun.co` |
+| `dev`           | Testnet Expo bundle            | User-facing AIRS web bundle                 |
+| `identity-dev`  | Testnet Authentik              | Identity runtime                            |
+| `api-dev`       | Retired                        | Stale stage path; do not use                |
+
+## Manual Deploy
+
+If you need to deploy manually:
+
+```bash
 source scripts/setup-aws-account.sh
-cd packages/infra
-APPROVE=true INFRA_ENABLE_BACKEND_API=true npx sst deploy --stage api-dev
-
-# Verify
-curl https://testnet.api.alternun.co/health | jq '.version'
+APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 ```
 
 ## Troubleshooting
 
-### Workflow didn't trigger
+### Version did not change on testnet
 
-- Check that a tag matching `v*.*.*` was pushed
-- Verify in GitHub: Settings → Actions → All workflows → "Release and Deploy to Testnet"
+- verify that `dashboard-dev` was the deploy target
+- wait 30-60 seconds for Lambda/API Gateway propagation
+- re-check `https://testnet.api.alternun.co/health`
 
-### Version didn't update on testnet
+### Social login still fails
 
-- **Problem:** Lambda instances still serving old code
-- **Solution:** Wait 30-60 seconds, Lambda instances recycle automatically
-- **Alternative:** Manually invoke or check CloudWatch logs
+- confirm `POST /auth/sign-in/social` returns the Better Auth state cookie
+- confirm the callback URL is `https://testnet.airs.alternun.co/auth/callback`
+- confirm Google is registering `https://testnet.api.alternun.co/auth/callback/google` for testnet and `https://api.alternun.co/auth/callback/google` for production
+- if Google sends you to `https://airs.alternun.co/auth/callback/google`, the runtime is still in OAuth proxy mode and must be redeployed with the proxy disabled
+- do not register `https://airs.alternun.co/auth/callback/google` for the separated testnet flow unless you intentionally want proxy-based routing
 
-### Deployment failed
+### Someone used `api-dev`
 
-- Check GitHub Actions logs for the specific error
-- Common issue: Missing `INFRA_ENABLE_BACKEND_API=true` flag
-- Review `.github/workflows/release-deploy.yml`
-
-### "Backend API is disabled"
-
-- The SST deployment is running, but API Lambda wasn't deployed
-- **Fix:** Ensure workflow has `INFRA_ENABLE_BACKEND_API: 'true'`
-- This is already configured in the workflow
+- `api-dev` is retired
+- use `dashboard-dev` instead
+- if stale resources reappear, remove the stale stage and re-deploy `dashboard-dev`
 
 ## Summary
 
-The **complete flow is now automated**:
-
-- Release patch creates a version tag
-- GitHub Actions detects the tag
-- Pipeline builds, tests, and deploys to testnet
-- Everything is updated: API, version display, all app code
-- No manual intervention needed
-
-The key enabler is the `INFRA_ENABLE_BACKEND_API=true` flag in the workflow, which ensures the API Lambda code is deployed alongside the infrastructure.
+- `release:patch` manages versioning and deploys the live testnet API
+- `dashboard-dev` is the single correct live testnet API/admin stack
+- `dev` is the testnet bundle stack
+- `identity-dev` is the testnet identity stack
