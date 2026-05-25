@@ -1,6 +1,47 @@
 #!/bin/bash
 set -euo pipefail
 
+wait_for_identity_runtime_prereqs() {
+  local runtime_env_file='/etc/alternun-identity.env'
+  local compose_cmd_ready=0
+  local wait_started_at="$SECONDS"
+  local wait_timeout_seconds=600
+  local wait_reason='waiting for identity runtime prerequisites'
+
+  while true; do
+    if [ ! -f "${runtime_env_file}" ]; then
+      wait_reason='waiting for /etc/alternun-identity.env'
+    elif command -v docker-compose >/dev/null 2>&1; then
+      if docker info >/dev/null 2>&1; then
+        compose_cmd_ready=1
+      else
+        wait_reason='waiting for Docker daemon'
+      fi
+    elif command -v docker >/dev/null 2>&1; then
+      if docker compose version >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+        compose_cmd_ready=1
+      else
+        wait_reason='waiting for Docker Compose'
+      fi
+    else
+      wait_reason='waiting for Docker CLI'
+    fi
+
+    if [ "${compose_cmd_ready}" -eq 1 ]; then
+      return 0
+    fi
+
+    if (( SECONDS - wait_started_at >= wait_timeout_seconds )); then
+      echo "Timed out ${wait_reason} on the identity host." >&2
+      exit 1
+    fi
+
+    sleep 5
+  done
+}
+
+wait_for_identity_runtime_prereqs
+# shellcheck source=/etc/alternun-identity.env
 source /etc/alternun-identity.env
 AUTHENTIK_DATABASE_MODE="${AUTHENTIK_DATABASE_MODE:-rds}"
 ALTERNUN_IDENTITY_TLS_MODE="${ALTERNUN_IDENTITY_TLS_MODE:-acme-route53-dns-01}"
