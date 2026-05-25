@@ -82,6 +82,7 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', async () =>
     assert.equal(auth.options.advanced.database.generateId, 'uuid');
     assert.equal(auth.options.account.skipStateCookieCheck, true);
     assert.equal(auth.options.advanced.crossSubDomainCookies, undefined);
+    assert.equal(auth.options.databaseHooks.session?.create?.after, undefined);
     assert.equal(auth.options.account.accountLinking.trustedProviders.includes('discord'), true);
     assert.equal(Boolean(auth.options.socialProviders.discord), true);
     assert.equal(auth.options.socialProviders.google.redirectURI, undefined);
