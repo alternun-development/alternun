@@ -1,3 +1,10 @@
+## [1.0.271](https://github.com/alternun-development/alternun/compare/v1.0.271-dev.0...v1.0.271) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.271-dev.0
+- **repo:** chore(repo): deploy, require-pr-to-develop, test-deploy
+
 ## [1.0.271](https://github.com/alternun-development/alternun/compare/v1.0.270...v1.0.271) (2026-05-25)
 
 ### Bug Fixes
