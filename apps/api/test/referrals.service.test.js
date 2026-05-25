@@ -41,6 +41,10 @@ function createFetchQueue(responses, calls) {
   };
 }
 
+function createReferralSuffix(userId) {
+  return createHash('sha256').update(userId).digest('hex').slice(0, 6);
+}
+
 test('ReferralsService can be constructed without Supabase env', () => {
   const originalEnv = { ...process.env };
 
@@ -95,7 +99,7 @@ test('ReferralsService.create resolves a referral code and stores attribution', 
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
     process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
 
-    const expectedSuffix = createHash('md5').update('user-123').digest('hex').slice(0, 6);
+    const expectedSuffix = createReferralSuffix('user-123');
     const expectedReferralCode = `new-user-${expectedSuffix}`;
 
     global.fetch = createFetchQueue(
@@ -343,7 +347,7 @@ test('ReferralsService.create rejects self referrals', async () => {
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
     process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
 
-    const expectedSuffix = createHash('md5').update('user-123').digest('hex').slice(0, 6);
+    const expectedSuffix = createReferralSuffix('user-123');
     const expectedReferralCode = `new-user-${expectedSuffix}`;
 
     global.fetch = createFetchQueue(
@@ -397,7 +401,7 @@ test('ReferralsService.getMe returns the canonical share link and referral count
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
     process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
 
-    const expectedSuffix = createHash('md5').update('user-123').digest('hex').slice(0, 6);
+    const expectedSuffix = createReferralSuffix('user-123');
     const expectedReferralCode = `new-user-${expectedSuffix}`;
 
     global.fetch = createFetchQueue(
@@ -537,7 +541,7 @@ test('ReferralsService.getMe works with only the anon Supabase key configured', 
     delete process.env.SUPABASE_SERVICE_ROLE_KEY;
     delete process.env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY;
 
-    const expectedSuffix = createHash('md5').update('user-123').digest('hex').slice(0, 6);
+    const expectedSuffix = createReferralSuffix('user-123');
     const expectedReferralCode = `new-user-${expectedSuffix}`;
 
     global.fetch = createFetchQueue(
@@ -661,7 +665,7 @@ test('ReferralsService.getMe backfills a missing referral code instead of failin
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
     process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
 
-    const expectedSuffix = createHash('md5').update('user-123').digest('hex').slice(0, 6);
+    const expectedSuffix = createReferralSuffix('user-123');
     const expectedReferralCode = `new-user-${expectedSuffix}`;
 
     global.fetch = createFetchQueue(
@@ -741,7 +745,7 @@ test('ReferralsService.getMe synthesizes a referral summary when the user row is
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
     process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
 
-    const expectedSuffix = createHash('md5').update('user-123').digest('hex').slice(0, 6);
+    const expectedSuffix = createReferralSuffix('user-123');
     const expectedReferralCode = `user-${expectedSuffix}`;
 
     global.fetch = createFetchQueue(
@@ -780,7 +784,7 @@ test('ReferralsService.getMe tolerates optional referral lookup failures for mis
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
     process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
 
-    const expectedSuffix = createHash('md5').update('user-123').digest('hex').slice(0, 6);
+    const expectedSuffix = createReferralSuffix('user-123');
     const expectedReferralCode = `user-${expectedSuffix}`;
 
     global.fetch = createFetchQueue(
@@ -819,7 +823,7 @@ test('ReferralsService.getMe uses the provided display name when generating a re
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
     process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
 
-    const expectedSuffix = createHash('md5').update('user-123').digest('hex').slice(0, 6);
+    const expectedSuffix = createReferralSuffix('user-123');
     const expectedReferralCode = `edward-calderon-${expectedSuffix}`;
 
     global.fetch = createFetchQueue(
