@@ -3,7 +3,45 @@ const test = require('node:test');
 
 const {
   createBetterAuthDevAuth,
+  fetchBetterAuthWelcomeEmailRecord,
+  markBetterAuthWelcomeEmailSent,
 } = require('../src/modules/better-auth-dev/better-auth-dev.server.ts');
+
+test('welcome email helpers use execute-based database access', async () => {
+  const calls = [];
+  const db = {
+    async execute(query) {
+      calls.push(query);
+
+      if (calls.length === 1) {
+        return {
+          rows: [
+            {
+              email: 'edward@example.com',
+              name: 'Edward',
+              locale: 'es-MX',
+              welcome_email_sent: 'true',
+            },
+          ],
+        };
+      }
+
+      return { rows: [] };
+    },
+  };
+
+  const record = await fetchBetterAuthWelcomeEmailRecord(db, 'user-123');
+  assert.deepEqual(record, {
+    email: 'edward@example.com',
+    name: 'Edward',
+    locale: 'es-MX',
+    welcomeEmailSent: true,
+  });
+
+  await markBetterAuthWelcomeEmailSent(db, 'user-123');
+
+  assert.equal(calls.length, 2);
+});
 
 test('createBetterAuthDevAuth includes oauth proxy when configured', async () => {
   const originalEnv = { ...process.env };
