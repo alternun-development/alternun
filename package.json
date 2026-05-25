@@ -36,6 +36,8 @@
     "version:validate:raw": "versioning validate",
     "version:sync": "node scripts/version-sync.mjs",
     "version:sync:raw": "versioning sync",
+    "readme:update": "node scripts/readme-sync.mjs",
+    "readme:check": "node scripts/check-readme.mjs",
     "version:bump": "versioning bump",
     "version:changelog": "versioning changelog && node scripts/changelog-auto-fill.mjs",
     "version:cleanup": "versioning cleanup",

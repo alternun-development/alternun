@@ -17,6 +17,7 @@ const {
   restoreFileContents,
   stripVersionSuffix,
 } = require('./versioning/version-files.cjs');
+const { checkRootReadme } = require('./readme-maintenance.cjs');
 
 const VALID_BUMPS = new Set(['patch', 'minor', 'major']);
 const BUILD_TARGET = 'build';
@@ -384,7 +385,26 @@ function validateRootDocumentation() {
   if ((result.status ?? 1) !== 0) {
     throw new Error(
       'Root documentation structure validation failed. ' +
-        'Move non-critical .md files to docs/ before releasing.'
+      'Move non-critical .md files to docs/ before releasing.'
+    );
+  }
+}
+
+function validateRootReadme(branchName) {
+  const expectedVersion = readRootVersion(branchName);
+  const validation = checkRootReadme({
+    branch: branchName,
+    version: expectedVersion,
+  });
+
+  if (!validation.valid) {
+    console.error('❌ Root README validation failed:');
+    for (const issue of validation.issues) {
+      console.error(`  - ${issue}`);
+    }
+
+    throw new Error(
+      'Root README validation failed. Update the version line, latest changes block, and support email before releasing.'
     );
   }
 }
@@ -1003,6 +1023,7 @@ function main() {
   validateRootDocumentation();
 
   const currentBranch = getCurrentBranch();
+  validateRootReadme(currentBranch);
   const productionBranch = resolveProductionBranch();
   const releaseBranch = options.promote ? productionBranch : currentBranch;
   const releaseBuildStage = resolveReleaseBuildStage(releaseBranch);
