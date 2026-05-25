@@ -337,39 +337,6 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
           },
         },
       },
-      session: {
-        create: {
-          after: async (session: Record<string, unknown>) => {
-            try {
-              const userId = session?.userId;
-              if (!userId || typeof userId !== 'string') return;
-
-              const userRecord = await fetchBetterAuthWelcomeEmailRecord(dbClient, userId);
-              if (!userRecord || userRecord.welcomeEmailSent) return;
-
-              const email = userRecord.email ?? undefined;
-              if (!email) return;
-
-              const { sendAirsWelcomeEmail } = await import('../auth-exchange/airs-welcome.email');
-              try {
-                await sendAirsWelcomeEmail({
-                  to: email,
-                  displayName: userRecord.name ?? undefined,
-                  locale: userRecord.locale ?? undefined,
-                  bonusAirs: 10,
-                });
-
-                // Mark as sent
-                await markBetterAuthWelcomeEmailSent(dbClient, userId);
-              } catch (emailError) {
-                console.error('Failed to send welcome email on login:', emailError);
-              }
-            } catch (error) {
-              console.error('Error checking welcome email status at login:', error);
-            }
-          },
-        },
-      },
     },
     account: {
       storeAccountCookie: true,
