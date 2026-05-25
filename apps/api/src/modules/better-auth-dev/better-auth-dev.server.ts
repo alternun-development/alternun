@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { isIP } from 'node:net';
 import { betterAuth } from 'better-auth';
 import { toNodeHandler } from 'better-auth/node';
+import { sql } from 'drizzle-orm';
 import { oAuthProxy } from 'better-auth/plugins/oauth-proxy';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import type { BetterAuthDevConfig, BetterAuthDevOAuthProxyConfig } from './better-auth-dev.config';
@@ -125,33 +126,71 @@ function fillBetterAuthUserIdentity(user: Record<string, unknown>): Record<strin
   };
 }
 
-type BetterAuthDevDatabase = {
-  updateTable(tableName: string): {
-    set(values: Record<string, unknown>): {
-      where(
-        column: string,
-        operator: string,
-        value: string
-      ): {
-        execute(): Promise<unknown>;
-      };
-    };
-  };
-  selectFrom(tableName: string): {
-    selectAll(): {
-      where(
-        column: string,
-        operator: string,
-        value: string
-      ): {
-        executeTakeFirst(): Promise<Record<string, unknown> | undefined>;
-      };
-    };
-  };
+type BetterAuthExecuteClient = {
+  execute(query: unknown): Promise<unknown>;
 };
 
-function getBetterAuthDevDatabase(): BetterAuthDevDatabase {
-  return getDatabase() as unknown as BetterAuthDevDatabase;
+type BetterAuthWelcomeEmailRecord = {
+  email: string | null;
+  name: string | null;
+  locale: string | null;
+  welcomeEmailSent: boolean;
+};
+
+function isTruthyDatabaseValue(value: unknown): boolean {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    return value !== 0;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    return ['1', 'true', 't', 'yes', 'y', 'on'].includes(normalized);
+  }
+
+  return false;
+}
+
+export async function fetchBetterAuthWelcomeEmailRecord(
+  db: BetterAuthExecuteClient,
+  userId: string
+): Promise<BetterAuthWelcomeEmailRecord | null> {
+  const result = await db.execute(sql`
+    select email, name, locale, welcome_email_sent
+    from public.users
+    where id = ${userId}
+    limit 1
+  `);
+  const rows = (result as { rows?: Array<Record<string, unknown>> }).rows ?? [];
+  const row = rows[0];
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    email: typeof row.email === 'string' ? row.email : null,
+    name: typeof row.name === 'string' ? row.name : null,
+    locale: typeof row.locale === 'string' ? row.locale : null,
+    welcomeEmailSent: isTruthyDatabaseValue(row.welcome_email_sent),
+  };
+}
+
+export async function markBetterAuthWelcomeEmailSent(
+  db: BetterAuthExecuteClient,
+  userId: string
+): Promise<void> {
+  await db.execute(sql`
+    update public.users
+    set
+      welcome_email_sent = true,
+      welcome_email_sent_at = now(),
+      updated_at = now()
+    where id = ${userId}
+  `);
 }
 
 type BetterAuthDatabaseAdapterConfig = {
@@ -215,6 +254,7 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
 
   const isProduction = process.env.NODE_ENV === 'production';
   const db = getDatabase();
+  const dbClient = db as BetterAuthExecuteClient;
   const createDrizzleAdapter = drizzleAdapter as unknown as (
     database: typeof db,
     options: BetterAuthDatabaseAdapterConfig
@@ -284,16 +324,8 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
 
                 // Mark welcome email as sent in database
                 if (userId && typeof userId === 'string') {
-                  const dbAny = getBetterAuthDevDatabase();
                   try {
-                    await dbAny
-                      .updateTable('public.users' as never)
-                      .set({
-                        welcome_email_sent: true,
-                        welcome_email_sent_at: new Date(),
-                      } as never)
-                      .where('id' as never, '=' as never, userId as never)
-                      .execute();
+                    await markBetterAuthWelcomeEmailSent(dbClient, userId);
                   } catch (dbError) {
                     console.error('Failed to mark welcome email as sent:', dbError);
                   }
@@ -312,41 +344,23 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
               const userId = session?.userId;
               if (!userId || typeof userId !== 'string') return;
 
-              const db = getBetterAuthDevDatabase();
-              const user = await db
-                .selectFrom('public.users' as never)
-                .selectAll()
-                .where('id' as never, '=' as never, userId as never)
-                .executeTakeFirst();
+              const userRecord = await fetchBetterAuthWelcomeEmailRecord(dbClient, userId);
+              if (!userRecord || userRecord.welcomeEmailSent) return;
 
-              const userRecord = user;
-              if (!userRecord) return;
-
-              const welcomeEmailSent = userRecord.welcome_email_sent as boolean | undefined;
-              if (welcomeEmailSent === true) return;
-
-              const email = userRecord.email as string | undefined;
+              const email = userRecord.email ?? undefined;
               if (!email) return;
 
               const { sendAirsWelcomeEmail } = await import('../auth-exchange/airs-welcome.email');
               try {
                 await sendAirsWelcomeEmail({
                   to: email,
-                  displayName: typeof userRecord.name === 'string' ? userRecord.name : undefined,
-                  locale: typeof userRecord.locale === 'string' ? userRecord.locale : undefined,
+                  displayName: userRecord.name ?? undefined,
+                  locale: userRecord.locale ?? undefined,
                   bonusAirs: 10,
                 });
 
                 // Mark as sent
-                const dbAny = getBetterAuthDevDatabase();
-                await dbAny
-                  .updateTable('public.users' as never)
-                  .set({
-                    welcome_email_sent: true,
-                    welcome_email_sent_at: new Date(),
-                  } as never)
-                  .where('id' as never, '=' as never, userId as never)
-                  .execute();
+                await markBetterAuthWelcomeEmailSent(dbClient, userId);
               } catch (emailError) {
                 console.error('Failed to send welcome email on login:', emailError);
               }
