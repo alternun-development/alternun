@@ -68,6 +68,14 @@ function trimRuntimeValue(value: string | null | undefined): string {
   return (value ?? '').trim();
 }
 
+function stripTrailingSlashes(value: string): string {
+  let result = value;
+  while (result.endsWith('/')) {
+    result = result.slice(0, -1);
+  }
+  return result;
+}
+
 function resolveSupabaseReadConfig(env: NodeJS.ProcessEnv = process.env): SupabaseConfig | null {
   const url = trimRuntimeValue(env.SUPABASE_URL ?? env.EXPO_PUBLIC_SUPABASE_URL);
   const key = trimRuntimeValue(
@@ -142,7 +150,7 @@ function resolveReferralShareBaseUrl(
 
   const requestOrigin = trimRuntimeValue(requestedOrigin);
   if (requestOrigin) {
-    return requestOrigin.replace(/\/+$/, '');
+    return stripTrailingSlashes(requestOrigin);
   }
 
   return 'https://airs.alternun.co';
@@ -166,13 +174,28 @@ function generateReferralCodeFromUser(
     trimRuntimeValue(user.name) ||
     trimRuntimeValue(user.email)?.split('@')[0] ||
     'user';
-  const slug = rawSlugSource
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 24);
-  const normalizedSlug = slug.length > 0 ? slug : 'user';
-  const suffix = createHash('md5').update(user.id).digest('hex').slice(0, 6);
+  let slug = '';
+
+  for (const char of rawSlugSource.toLowerCase()) {
+    if ((char >= 'a' && char <= 'z') || (char >= '0' && char <= '9')) {
+      if (slug.length >= 24) {
+        break;
+      }
+      slug += char;
+      continue;
+    }
+
+    if (slug.length > 0 && !slug.endsWith('-') && slug.length < 24) {
+      slug += '-';
+    }
+  }
+
+  while (slug.endsWith('-')) {
+    slug = slug.slice(0, -1);
+  }
+
+  const normalizedSlug = slug.slice(0, 24) || 'user';
+  const suffix = createHash('sha256').update(user.id).digest('hex').slice(0, 6);
   return `${normalizedSlug}-${suffix}`;
 }
 
