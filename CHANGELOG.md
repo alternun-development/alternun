@@ -1,3 +1,9 @@
+## [1.0.269](https://github.com/alternun-development/alternun/compare/v1.0.268-dev.0...v1.0.269) (2026-05-25)
+
+### Bug Fixes
+
+- **repo:** test(api): better-auth-dev.server, better-auth-dev-server.test
+
 ## [1.0.268](https://github.com/alternun-development/alternun/compare/v1.0.267-dev.0...v1.0.268) (2026-05-24)
 
 ### Bug Fixes
