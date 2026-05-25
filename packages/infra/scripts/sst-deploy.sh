@@ -388,10 +388,6 @@ remove_state_resource() {
     return 0
   fi
 
-  if ! require_destructive_cleanup_allowed "SST state removal for ${target}"; then
-    return 0
-  fi
-
   echo "Pruning legacy managed certificate state for ${target}..."
 
   local remove_output
@@ -417,29 +413,57 @@ remove_state_resource() {
 prune_legacy_managed_certificate_state() {
   local prefixes=()
 
+  # `sst state remove` only removes the named resource, not its child resources.
+  # When a site/redirect migrates from SST-managed TLS to an explicit ACM ARN,
+  # we need to prune the certificate component plus its certificate/validation
+  # children so the next deploy stops trying to delete the in-use cert.
   if [ -n "${INFRA_EXPO_CERT_ARN_PRODUCTION:-}" ] && [ "$STACK" = "production" ]; then
-    prefixes+=("expo-web-${STACK}CdnSsl")
+    prefixes+=(
+      "expo-web-${STACK}CdnSsl"
+      "expo-web-${STACK}CdnSslCertificate"
+      "expo-web-${STACK}CdnSslValidation"
+    )
   fi
 
   if [ -n "${INFRA_EXPO_CERT_ARN_DEV:-}" ] && [ "$STACK" = "dev" ]; then
-    prefixes+=("expo-web-${STACK}CdnSsl")
+    prefixes+=(
+      "expo-web-${STACK}CdnSsl"
+      "expo-web-${STACK}CdnSslCertificate"
+      "expo-web-${STACK}CdnSslValidation"
+    )
   fi
 
   if [ -n "${INFRA_EXPO_CERT_ARN_MOBILE:-}" ] && [ "$STACK" = "mobile" ]; then
-    prefixes+=("expo-web-${STACK}CdnSsl")
+    prefixes+=(
+      "expo-web-${STACK}CdnSsl"
+      "expo-web-${STACK}CdnSslCertificate"
+      "expo-web-${STACK}CdnSslValidation"
+    )
   fi
 
   if [ "$STACK" = "dev" ]; then
     if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-false}" && [ -n "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}" ]; then
-      prefixes+=("airs-redir-${STACK}CdnSsl")
+      prefixes+=(
+        "airs-redir-${STACK}CdnSsl"
+        "airs-redir-${STACK}CdnSslCertificate"
+        "airs-redir-${STACK}CdnSslValidation"
+      )
     fi
 
     if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" && [ -n "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}" ]; then
-      prefixes+=("dev-redir-${STACK}CdnSsl")
+      prefixes+=(
+        "dev-redir-${STACK}CdnSsl"
+        "dev-redir-${STACK}CdnSslCertificate"
+        "dev-redir-${STACK}CdnSslValidation"
+      )
     fi
 
     if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}" && [ -n "${INFRA_REDIRECT_ROOT_CERT_ARN:-}" ]; then
-      prefixes+=("root-redir-${STACK}CdnSsl")
+      prefixes+=(
+        "root-redir-${STACK}CdnSsl"
+        "root-redir-${STACK}CdnSslCertificate"
+        "root-redir-${STACK}CdnSslValidation"
+      )
     fi
   fi
 
