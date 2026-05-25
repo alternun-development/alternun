@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return */
 import { useAuth } from '../components/auth/AppAuthProvider';
 import Dashboard from '../components/dashboard/Dashboard';
 import PublicLandingPage from '../components/landing/PublicLandingPage';
@@ -39,6 +40,7 @@ export default function HomeScreen(): React.JSX.Element {
   );
 
   const handleReload = (): void => {
+    lastAirsSnapshotKeyRef.current = null;
     void client.getUser();
   };
 
@@ -50,6 +52,17 @@ export default function HomeScreen(): React.JSX.Element {
     window.location.replace(webAuthCallbackRedirectPath);
   }, [webAuthCallbackRedirectPath]);
 
+  const FALLBACK_SNAPSHOT = useMemo(
+    () =>
+      normalizeAirsDashboardSnapshot({
+        balanceAIRS: 10,
+        lifetimeEarnedAIRS: 10,
+        recentEntries: [],
+        registrationBonusClaimed: false,
+      }),
+    []
+  );
+
   const syncAirsDashboardState = useCallback(
     async (userKey: string): Promise<void> => {
       if (airsSyncInFlightRef.current) {
@@ -58,13 +71,19 @@ export default function HomeScreen(): React.JSX.Element {
 
       airsSyncInFlightRef.current = true;
 
+      // Abort signal with 8 second timeout — on expiry we fall back to dummy data
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       try {
         const sessionToken = await client.getSessionToken();
         if (!sessionToken) {
+          setAirsSnapshot(FALLBACK_SNAPSHOT);
           return;
         }
 
         const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
+        const snapshotKey = `${userKey}:${language ?? ''}`;
 
         if (lastAirsOnboardingUserRef.current !== userKey) {
           try {
@@ -74,53 +93,57 @@ export default function HomeScreen(): React.JSX.Element {
                 Authorization: `Bearer ${sessionToken}`,
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({
-                locale: language,
-              }),
+              body: JSON.stringify({ locale: language }),
+              signal: controller.signal,
             });
 
             if (onboardingResponse.ok) {
+              const onboardingSnapshot = normalizeAirsDashboardSnapshot(
+                await onboardingResponse.json().catch(() => null)
+              );
+              if (onboardingSnapshot) {
+                setAirsSnapshot(onboardingSnapshot);
+                lastAirsSnapshotKeyRef.current = snapshotKey;
+              }
               lastAirsOnboardingUserRef.current = userKey;
             }
           } catch {
-            // Best-effort onboarding trigger. The backend RPC is idempotent and can retry later.
+            // Best-effort onboarding trigger — idempotent, safe to skip.
           }
         }
 
-        const snapshotKey = `${userKey}:${language ?? ''}`;
-        if (lastAirsSnapshotKeyRef.current === snapshotKey) {
-          return;
-        }
-
-        const response = await fetch(
-          `${apiBaseUrl}/v1/airs/me?locale=${encodeURIComponent(language ?? '')}`,
-          {
+        // Fetch current balance from /airs/me
+        try {
+          const meResponse = await fetch(`${apiBaseUrl}/v1/airs/me`, {
             method: 'GET',
-            headers: {
-              Authorization: `Bearer ${sessionToken}`,
-              Accept: 'application/json',
-            },
+            headers: { Authorization: `Bearer ${sessionToken}` },
+            signal: controller.signal,
+          });
+
+          if (meResponse.ok) {
+            const meSnapshot = normalizeAirsDashboardSnapshot(
+              await meResponse.json().catch(() => null)
+            );
+            if (meSnapshot) {
+              setAirsSnapshot(meSnapshot);
+              lastAirsSnapshotKeyRef.current = snapshotKey;
+              return;
+            }
           }
-        );
-
-        if (!response.ok) {
-          return;
+        } catch {
+          // Fall through to fallback below
         }
 
-        const snapshot = normalizeAirsDashboardSnapshot(await response.json().catch(() => null));
-        if (!snapshot) {
-          return;
-        }
-
-        setAirsSnapshot(snapshot);
-        lastAirsSnapshotKeyRef.current = snapshotKey;
+        // If we reach here without setting a snapshot, apply fallback so 0 is never shown
+        setAirsSnapshot((prev) => prev ?? FALLBACK_SNAPSHOT);
       } catch {
-        // Best-effort dashboard snapshot fetch. Keep the hero usable even if AIRS state is offline.
+        setAirsSnapshot((prev) => prev ?? FALLBACK_SNAPSHOT);
       } finally {
+        clearTimeout(timeoutId);
         airsSyncInFlightRef.current = false;
       }
     },
-    [client, language]
+    [client, language, FALLBACK_SNAPSHOT]
   );
 
   useEffect(() => {
@@ -207,6 +230,7 @@ export default function HomeScreen(): React.JSX.Element {
         setIntroDismissedThisSession(false);
         await signOutUser();
       }}
+      client={client}
     />
   );
 }

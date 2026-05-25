@@ -11,9 +11,13 @@ import {
   oidcSessionToUser,
   type CallbackCapableAuthClient,
 } from './authWebSession';
+import {
+  restoreBetterAuthSession,
+  type BetterAuthSessionRestoreClient,
+} from './betterAuthSessionRestore';
 import { shouldClearOidcSessionOnAuthStateChange } from './authSessionBridge';
 import { isBetterAuthExecutionEnabled } from './authExecutionMode';
-import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
+import { resolveMobileBetterAuthBaseUrl } from '../../utils/runtimeConfig';
 
 function getAllowMockWalletFallback(): boolean {
   return process.env.EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH === 'true';
@@ -32,23 +36,30 @@ function getSupabaseKey(): string | undefined {
 }
 
 function getBetterAuthUrl(): string | undefined {
-  // Try environment variable first (should be set by build process)
-  const envUrl = process.env.EXPO_PUBLIC_BETTER_AUTH_URL;
-  if (envUrl?.trim()) {
-    // Env var is already the full auth URL (e.g., http://localhost:8082/auth or https://testnet.api.alternun.co/auth)
-    return envUrl.trim().replace(/\/+$/, '');
+  return resolveMobileBetterAuthBaseUrl();
+}
+
+const SESSION_TOKEN_KEY = 'alternun_session_token';
+
+function getStoredSessionToken(): string | null {
+  if (!window?.localStorage) {
+    return null;
   }
-  // Fallback: derive API base from window.location.origin, then append /auth
-  const origin = typeof window !== 'undefined' ? window.location?.origin : undefined;
-  if (origin) {
-    const apiBase = resolveMobileApiBaseUrl(undefined, origin);
-    // Append /auth if not already present (single source of truth pattern)
-    if (apiBase) {
-      const normalized = apiBase.trim().replace(/\/+$/, '');
-      return normalized.endsWith('/auth') ? normalized : `${normalized}/auth`;
-    }
+  return window.localStorage.getItem(SESSION_TOKEN_KEY);
+}
+
+function storeSessionToken(token: string): void {
+  if (!window?.localStorage) {
+    return;
   }
-  return undefined;
+  window.localStorage.setItem(SESSION_TOKEN_KEY, token);
+}
+
+function clearStoredSessionToken(): void {
+  if (!window?.localStorage) {
+    return;
+  }
+  window.localStorage.removeItem(SESSION_TOKEN_KEY);
 }
 
 function AuthSessionBridge(): null {
@@ -56,14 +67,54 @@ function AuthSessionBridge(): null {
   const hasReceivedAuthStateRef = useRef(false);
   const previousUserRef = useRef<import('@alternun/auth').User | null | undefined>(undefined);
   const isBetterAuthExecution = isBetterAuthExecutionEnabled();
+  const hasAttemptedRestoreRef = useRef(false);
 
-  // Restore stored OIDC session on mount (survives page reload)
+  // Restore session on mount
   useEffect(() => {
     if (Platform.OS !== 'web') return;
+    if (hasAttemptedRestoreRef.current) return;
+    hasAttemptedRestoreRef.current = true;
 
     if (isBetterAuthExecution) {
       clearOidcSession();
+      const restoreSession = async () => {
+        try {
+          await restoreBetterAuthSession(client as BetterAuthSessionRestoreClient, {
+            retries: 2,
+            retryDelayMs: 300,
+          });
+        } catch {
+          // Silently fail - user will see landing and can sign in
+        }
+      };
+      void restoreSession();
       return;
+    }
+
+    // For Supabase, restore from stored token if available
+    const storedToken = getStoredSessionToken();
+    if (storedToken) {
+      console.log('[Session] Token found in localStorage, attempting restore');
+      const restoreSession = async () => {
+        try {
+          const user = await client.getUser();
+          if (user) {
+            console.log('[Session] Restored user:', user.email);
+          } else {
+            console.log('[Session] getUser() returned null, clearing token');
+            clearStoredSessionToken();
+          }
+        } catch (error) {
+          console.log(
+            '[Session] Restore failed:',
+            error instanceof Error ? error.message : String(error)
+          );
+          clearStoredSessionToken();
+        }
+      };
+      void restoreSession();
+    } else {
+      console.log('[Session] No stored token found on mount');
     }
 
     const session = readOidcSession();
@@ -80,16 +131,48 @@ function AuthSessionBridge(): null {
       });
   }, [client, isBetterAuthExecution]);
 
-  // Clear OIDC session and revoke token when user signs out
+  // Clear OIDC session and revoke token when user signs out; sync Better Auth session token on sign in
   useEffect(() => {
     if (Platform.OS !== 'web') return;
 
     if (isBetterAuthExecution) {
       clearOidcSession();
-      return;
+      // Better Auth handles session via HTTP-only cookies automatically
+      return client.onAuthStateChange(() => {
+        // No-op: Better Auth manages session state internally
+      });
     }
 
     return client.onAuthStateChange((user) => {
+      // For Supabase, manage token storage on user signin/signout
+      if (user) {
+        console.log('[Session] User signed in:', user.email);
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          const token = (
+            client as unknown as { getSessionToken?(): Promise<string | null> }
+          ).getSessionToken?.();
+          if (token) {
+            void Promise.resolve(token).then((t) => {
+              if (t) {
+                console.log('[Session] Storing token for persistence');
+                storeSessionToken(t);
+              }
+            });
+          } else {
+            console.log('[Session] No getSessionToken available');
+          }
+        } catch (error) {
+          console.log(
+            '[Session] Error getting token:',
+            error instanceof Error ? error.message : String(error)
+          );
+        }
+      } else {
+        console.log('[Session] User signed out');
+        clearStoredSessionToken();
+      }
+
       const shouldClearOidcSession = shouldClearOidcSessionOnAuthStateChange({
         hasReceivedAuthState: hasReceivedAuthStateRef.current,
         previousUser: previousUserRef.current,

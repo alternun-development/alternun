@@ -31,8 +31,9 @@
         "usernamePlaceholder": "e.g., @john_doe",
         "referredByEmail": "Referred by email (optional)",
         "emailPlaceholder": "e.g., friend@example.com",
-        "invitationCode": "Invitation code (optional)",
-        "codePlaceholder": "e.g., INVITE123",
+        "invitationCode": "Referral code (optional)",
+        "codePlaceholder": "e.g., edward-44ft34",
+        "detected": "Referral code detected: {{code}}",
         "submit": "Continue",
         "submitStandalone": "Continue to Sign In",
         "skip": "Skip",
@@ -86,6 +87,7 @@
       "divider": {
         "or": "or"
       },
+      "underMaintenance": "Under Maintenance",
       "errors": {
         "accountExistsSignInOrResend": "An account with this email already exists. Sign in, or resend the confirmation email below.",
         "authenticationFailed": "Authentication failed. Please try again.",
@@ -103,6 +105,11 @@
       "footer": {
         "alreadyHaveAccount": "Already have an account? Sign In",
         "dontHaveAccount": "Don't have an account? Sign Up"
+      },
+      "referral": {
+        "prompt": "Have a referral code?",
+        "helper": "Add it before you create the account. We will keep it for signup.",
+        "placeholder": "e.g., edward-44ft34"
       },
       "modes": {
         "signIn": "Sign In",
@@ -149,7 +156,131 @@
       }
     },
     "dashboard": {
-      "backToTop": "Top"
+      "backToTop": "Top",
+      "hero": {
+        "hint": "Sign in from the top-right profile menu to activate actions."
+      },
+      "notifications": {
+        "welcomeBonus": {
+          "title": "Welcome!",
+          "message": "You received 10 Airs as a welcome bonus. Start your sustainable journey!"
+        },
+        "signInRequired": {
+          "title": "Sign In Required",
+          "message": "Sign in first to connect a wallet."
+        },
+        "walletConnected": {
+          "title": "Wallet Connected",
+          "message": "Wallet authentication completed."
+        },
+        "walletConnectionFailed": {
+          "title": "Wallet Connection Failed",
+          "message": "{{error}}"
+        },
+        "signOutFailed": {
+          "title": "Sign Out Failed",
+          "message": "{{error}}"
+        }
+      },
+      "welcomeBonusModal": {
+        "title": "Welcome to Airs By Alternun!",
+        "subtitle": "You've received your welcome bonus",
+        "description": "As a new member, we're giving you 10 Airs to kick start your sustainable journey. Use them to explore projects and make a real environmental impact.",
+        "amount": "10 AIRS",
+        "claimButton": "Claim Bonus",
+        "claimingButton": "Claiming...",
+        "alreadyClaimed": "Bonus Already Claimed",
+        "alreadyClaimedMessage": "You've already claimed your welcome bonus.",
+        "successTitle": "Bonus Claimed!",
+        "successMessage": "Your 10 Airs are now in your account. Start earning more by participating in sustainable activities!"
+      },
+      "activityFeed": {
+        "title": "Recent Activity",
+        "subtitle": {
+          "global": "Real-time platform activity",
+          "user": "How you've accumulated your Airs By Alternun."
+        },
+        "tabs": {
+          "global": "Global Activity",
+          "user": "My Activity"
+        },
+        "search": "Search activity or source...",
+        "tableHeaders": {
+          "action": "Action",
+          "source": "Source",
+          "airs": "Airs",
+          "date": "Date"
+        },
+        "empty": "No activity found for this search.",
+        "now": "Now",
+        "activityTypes": {
+          "compensation": "Environmental Compensation",
+          "purchase": "Compensation Purchase",
+          "profile": "Profile Completed",
+          "account": "Account Created",
+          "reward": "Referral Reward",
+          "certificate": "Certificate Issued",
+          "verification": "Verification Completed",
+          "wallet": "Wallet Connected"
+        },
+        "typeLabels": {
+          "compensation": "Compensation",
+          "purchase": "Purchase",
+          "profile": "Profile",
+          "account": "Account",
+          "reward": "Reward",
+          "certificate": "Certificate"
+        },
+        "filters": {
+          "all": "All",
+          "compensation": "Compensation",
+          "purchase": "Purchase",
+          "profile": "Profile",
+          "account": "Account",
+          "reward": "Reward"
+        }
+      },
+      "heroPanel": {
+        "subtitle": "Your regenerative score is:",
+        "statusLabel": "Status {{tier}}",
+        "progressTo": "Progress to {{nextTier}}",
+        "progressHint": "You need {{remaining}} more Airs to reach {{nextTier}} and unlock exclusive benefits",
+        "maxTierReached": "You've reached the maximum {{tier}} level",
+        "statusInfo": "Status information",
+        "updatedAt": "Updated:",
+        "validUntil": "Valid until:",
+        "reloadButton": "Reload score",
+        "statusInfoButton": "Status information"
+      },
+      "summaryCards": {
+        "position": {
+          "title": "Your Position",
+          "subtitle": "Among Airs By Alternun members",
+          "global": "Global",
+          "colombia": "Colombia",
+          "medellin": "Medellín",
+          "rankingNote": "Ranking based on accumulated Airs"
+        },
+        "rbi": {
+          "title": "RBI Projection",
+          "subtitle": "Estimated income for next cycle",
+          "estimatedPool": "Estimated RBI Pool:",
+          "eligibleUsers": "Eligible Users:",
+          "airsScore": "Your Airs Score:",
+          "whatIsRbi": "What is RBI?",
+          "explanation": "Regenerative Basic Income is a periodic income distributed among Alternun users who contribute to the ecosystem.\\n\\nIt doesn't depend on how much money you have, but on your participation, commitment, and impact, measured through your AIRS score.\\n\\nEach time Alternun facilitates a compensation, a sale from the compensation pool, or an economic activity within the platform, part of that value goes directly to the RBI fund.",
+          "fullDocumentation": "Full Documentation"
+        },
+        "atn": {
+          "title": "My ATN",
+          "subtitle": "Your regenerative tokens",
+          "availableLabel": "Available ATN",
+          "availableDesc": "Ready to use",
+          "stackingLabel": "ATN in stacking",
+          "stackingDesc": "Participating in projects",
+          "totalLabel": "Total ATN"
+        }
+      }
     },
     "footer": {
       "copyright": "(c) {{year}} Alternun. All rights reserved.",
@@ -358,6 +489,8 @@
         "onboarding": "Onboarding"
       },
       "showIntroAgain": "Don't Show Intro Again",
+      "showWelcomeBonusModal": "Show Welcome Bonus",
+      "localPreferenceHelp": "Stored locally on this device",
       "subtitle": "Manage interface preferences and account-level controls.",
       "title": "Settings"
     },
@@ -378,6 +511,7 @@
       "sections": {
         "achievements": "Achievements",
         "account": "Account",
+        "referrals": "Referrals",
         "preferences": "Preferences"
       },
       "header": {
@@ -417,6 +551,22 @@
         "recruiter": "Recruiter",
         "partner": "Partner",
         "platinum": "Platinum"
+      },
+      "referral": {
+        "title": "Your referral code",
+        "subtitle": "Share your code to invite new members.",
+        "codeLabel": "Referral code",
+        "copy": "Copy",
+        "copied": "Copied",
+        "shareTitle": "Share your referral link",
+        "shareMessage": "Join me on Airs By Alternun with code {{code}}: {{link}}",
+        "referralCount": "Invited members",
+        "wasReferred": "Referral on file",
+        "referredBy": "Referred by {{name}}",
+        "referredByLabel": "Who referred you",
+        "referredByHelper": "This is the referral source recorded on your account.",
+        "codePending": "Loading...",
+        "error": "Unable to load referral details right now."
       },
       "footer": "Alternun Airs · v{{version}}"
     }

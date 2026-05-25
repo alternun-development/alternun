@@ -16,4 +16,16 @@ export class SignUpRequestDto {
   @IsString()
   @IsOptional()
   locale?: string;
+
+  @IsString()
+  @IsOptional()
+  referral_code?: string;
+
+  @IsString()
+  @IsOptional()
+  referred_by_username?: string;
+
+  @IsString()
+  @IsOptional()
+  referred_by_email?: string;
 }

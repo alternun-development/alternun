@@ -20,6 +20,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 import { createTypographyStyles } from '../theme/typography';
 import { ANEK_EXPANDED_FAMILY, SCULPIN_FONT_FAMILY } from '../theme/fonts';
 import { Image as ExpoImage } from 'expo-image';
@@ -27,7 +28,6 @@ import { BlurView } from 'expo-blur';
 import {
   ChevronDown,
   ChevronRight,
-  ChevronUp,
   LogIn,
   Settings as SettingsIcon,
   User,
@@ -38,6 +38,7 @@ import AnimatedCollapsibleContent from '../common/AnimatedCollapsibleContent';
 import { BackToTopButton } from '../common/BackToTopButton';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import AirsIntroSettingsMenu from './AirsIntroSettingsMenu';
+import { resolveHeroWordmarkSource } from './heroWordmarkSource';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { HeroVideoNative } from './HeroVideoNative';
 
@@ -50,9 +51,6 @@ const TOP_PAUSE_SCROLL_Y = 6;
 const HERO_VIDEO_MOBILE = require('../../assets/videos/landing.mp4');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const HERO_VIDEO_DESKTOP = require('../../assets/videos/landing-backup.mp4');
-const AIRS_LOGO_LIGHT = require('../../assets/SVGs/AIRS-logo-light.svg');
-const AIRS_LOGO_DARK = require('../../assets/SVGs/AIRS-logo-dark.svg');
-const AIRS_LOGO_BLACK_DARK = require('../../assets/SVGs/AIRS-logo-black-dark.svg');
 
 type HeroGlassButtonProps = {
   label: string;
@@ -92,11 +90,14 @@ function HeroGlassButton({
           backgroundColor: hovered ? pillBgColorHover : pillBgColor,
           borderColor: hovered ? pillBorderColorHover : pillBorderColor,
           transform: [{ scale: pressed ? 0.98 : hovered ? 1.02 : 1 }],
-          shadowColor: '#000',
-          shadowOpacity: hovered ? 0.25 : 0.15,
-          shadowOffset: { width: 0, height: hovered ? 12 : 8 },
-          shadowRadius: hovered ? 24 : 16,
-          elevation: hovered ? 8 : 6,
+          ...createShadowStyle({
+            color: '#000',
+            offsetX: 0,
+            offsetY: hovered ? 12 : 8,
+            opacity: hovered ? 0.25 : 0.15,
+            radius: hovered ? 24 : 16,
+            elevation: hovered ? 8 : 6,
+          }),
         } as StyleProp<ViewStyle>)
       }
     >
@@ -227,12 +228,7 @@ const AirsIntroExperience = forwardRef<
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start();
-    }, [
-      headerNavDropdownAnim,
-      headerNavMobileMenuVisible,
-      headerNavSettingsMenuVisible,
-      profileMenuVisible,
-    ]);
+    }, [headerNavMobileMenuVisible, headerNavSettingsMenuVisible, profileMenuVisible]);
 
     const scrollY = useRef(new Animated.Value(0)).current;
     const isMutedRef = useRef(isMuted);
@@ -451,11 +447,7 @@ const AirsIntroExperience = forwardRef<
           mutedButtonBorder: 'rgba(15,23,42,0.16)',
         };
 
-    const heroWordmarkSource = isDark
-      ? logoAtTop
-        ? AIRS_LOGO_BLACK_DARK
-        : AIRS_LOGO_DARK
-      : AIRS_LOGO_LIGHT;
+    const heroWordmarkSource = resolveHeroWordmarkSource(isDark, logoAtTop);
     const heroCopyTop = isMobile
       ? Math.min(heroHeight * 0.29, 240)
       : Math.min(heroHeight * 0.34, 330);
@@ -938,7 +930,10 @@ const AirsIntroExperience = forwardRef<
               <TouchableOpacity
                 style={[
                   styles.headerAvatarTrigger,
-                  { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
+                  {
+                    backgroundColor: isDark ? 'rgba(4,15,30,0.6)' : 'rgba(255,255,255,0.15)',
+                    borderColor: isDark ? 'rgba(28,203,161,0.4)' : 'rgba(15,92,97,0.3)',
+                  },
                 ]}
                 activeOpacity={0.86}
                 onPress={() => setProfileMenuVisible((prev) => !prev)}
@@ -946,11 +941,23 @@ const AirsIntroExperience = forwardRef<
                 <View style={[styles.headerAvatar, { backgroundColor: `${palette.accent}22` }]}>
                   <Text style={[styles.headerAvatarText, { color: palette.accent }]}>U</Text>
                 </View>
-                {profileMenuVisible ? (
-                  <ChevronUp size={14} color={palette.textPrimary} />
-                ) : (
-                  <ChevronDown size={14} color={palette.textPrimary} />
-                )}
+                <View
+                  style={{
+                    position: 'absolute',
+                    bottom: 5,
+                    right: 5,
+                  }}
+                >
+                  {profileMenuVisible ? (
+                    <ChevronDown
+                      size={18}
+                      color={palette.textPrimary}
+                      style={{ transform: [{ rotate: '180deg' }] }}
+                    />
+                  ) : (
+                    <ChevronDown size={18} color={palette.textPrimary} />
+                  )}
+                </View>
               </TouchableOpacity>
             </View>
           ))}
@@ -1025,7 +1032,10 @@ const AirsIntroExperience = forwardRef<
             <TouchableOpacity
               style={[
                 styles.floatingProfileTrigger,
-                { backgroundColor: palette.contentCard, borderColor: palette.contentBorder },
+                {
+                  backgroundColor: isDark ? 'rgba(4,15,30,0.6)' : 'rgba(255,255,255,0.15)',
+                  borderColor: isDark ? 'rgba(28,203,161,0.4)' : 'rgba(15,92,97,0.3)',
+                },
               ]}
               activeOpacity={0.86}
               onPress={() => setProfileMenuVisible((prev) => !prev)}
@@ -1033,7 +1043,23 @@ const AirsIntroExperience = forwardRef<
               <View style={[styles.floatingAvatar, { backgroundColor: `${palette.accent}22` }]}>
                 <Text style={[styles.floatingAvatarText, { color: palette.accent }]}>U</Text>
               </View>
-              <ChevronDown size={14} color={palette.textPrimary} />
+              <View
+                style={{
+                  position: 'absolute',
+                  bottom: 5,
+                  right: 5,
+                }}
+              >
+                {profileMenuVisible ? (
+                  <ChevronDown
+                    size={18}
+                    color={palette.textPrimary}
+                    style={{ transform: [{ rotate: '180deg' }] }}
+                  />
+                ) : (
+                  <ChevronDown size={18} color={palette.textPrimary} />
+                )}
+              </View>
             </TouchableOpacity>
 
             {profileMenuVisible ? (
@@ -1258,24 +1284,24 @@ const styles = createTypographyStyles({
     zIndex: 40,
   },
   floatingProfileTrigger: {
-    borderRadius: 999,
-    minHeight: 42,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    flexDirection: 'row',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
-    gap: 7,
+    justifyContent: 'center',
+    borderWidth: 1,
+    overflow: 'visible',
   },
   floatingAvatar: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
   floatingAvatarText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 11,
+    fontSize: 24,
     fontWeight: '800',
   },
   floatingMenu: {
@@ -1502,11 +1528,14 @@ const styles = createTypographyStyles({
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 6,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 4,
+      opacity: 0.18,
+      radius: 12,
+      elevation: 6,
+    }),
   },
   headerNavMobileAvatarCircle: {
     width: 42,
@@ -1524,11 +1553,14 @@ const styles = createTypographyStyles({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 2,
+      opacity: 0.12,
+      radius: 8,
+      elevation: 4,
+    }),
   },
   headerNavMobileDropdown: {
     position: 'absolute',
@@ -1538,11 +1570,14 @@ const styles = createTypographyStyles({
     borderRadius: 20,
     borderWidth: 1,
     paddingVertical: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 12,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 12,
+      opacity: 0.3,
+      radius: 20,
+      elevation: 12,
+    }),
   },
   headerNavMobileItem: {
     paddingHorizontal: 18,
@@ -1605,11 +1640,14 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     padding: 12,
     zIndex: 100,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 10,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 8,
+      opacity: 0.2,
+      radius: 16,
+      elevation: 10,
+    }),
   },
 
   // ── Logged-out: pill nav container ────────────────────────────────────────
@@ -1620,11 +1658,14 @@ const styles = createTypographyStyles({
     borderRadius: 999,
     borderWidth: 2,
     overflow: 'visible',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
-    elevation: 6,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 10,
+      opacity: 0.18,
+      radius: 18,
+      elevation: 6,
+    }),
   },
   headerNavPillBlur: {
     ...StyleSheet.absoluteFill,
@@ -1701,11 +1742,14 @@ const styles = createTypographyStyles({
     justifyContent: 'center',
     borderRadius: 21,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.14,
-    shadowRadius: 12,
-    elevation: 5,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 6,
+      opacity: 0.14,
+      radius: 12,
+      elevation: 5,
+    }),
   },
   headerNavSettingsButtonTint: {
     ...StyleSheet.absoluteFill,
@@ -1719,11 +1763,14 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     padding: 12,
     gap: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.22,
-    shadowRadius: 18,
-    elevation: 14,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 14,
+      opacity: 0.22,
+      radius: 18,
+      elevation: 14,
+    }),
     zIndex: 60,
   },
 
@@ -1757,25 +1804,24 @@ const styles = createTypographyStyles({
     marginTop: 2,
   },
   headerAvatarTrigger: {
-    flexDirection: 'row',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
     borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    minHeight: 44,
+    overflow: 'visible',
   },
   headerAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerAvatarText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 13,
+    fontSize: 28,
     fontWeight: '700',
   },
   headerDropdownContainer: {

@@ -1,4 +1,8 @@
-import { isBetterAuthExecutionEnabled, resolvePrimaryOAuthProvider, } from '../authExecutionMode';
+import {
+  isBetterAuthExecutionEnabled,
+  isSocialAuthEnabled,
+  resolvePrimaryOAuthProvider,
+} from '../authExecutionMode';
 
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 type TestFn = (name: string, fn: () => void) => void;
@@ -6,7 +10,7 @@ type ExpectFn = (actual: unknown) => {
   toBe: (expected: unknown) => void;
 };
 
-const { describe, expect, it, } = globalThis as unknown as {
+const { describe, expect, it } = globalThis as unknown as {
   describe: TestFn;
   expect: ExpectFn;
   it: TestFn;
@@ -18,6 +22,7 @@ describe('authExecutionMode', () => {
   const originalPublicBetterAuthUrl = process.env.EXPO_PUBLIC_BETTER_AUTH_URL;
   const originalAuthBetterAuthUrl = process.env.AUTH_BETTER_AUTH_URL;
   const originalPrimaryOAuthProvider = process.env.EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER;
+  const originalEnableSocialAuth = process.env.EXPO_PUBLIC_ENABLE_SOCIAL_AUTH;
 
   afterEach(() => {
     if (originalExecutionProvider === undefined) {
@@ -49,34 +54,40 @@ describe('authExecutionMode', () => {
     } else {
       process.env.EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER = originalPrimaryOAuthProvider;
     }
-  },);
+
+    if (originalEnableSocialAuth === undefined) {
+      delete process.env.EXPO_PUBLIC_ENABLE_SOCIAL_AUTH;
+    } else {
+      process.env.EXPO_PUBLIC_ENABLE_SOCIAL_AUTH = originalEnableSocialAuth;
+    }
+  });
 
   it('detects better-auth from the public env alias', () => {
     process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER = 'better-auth';
 
-    expect(isBetterAuthExecutionEnabled(),).toBe(true,);
-  },);
+    expect(isBetterAuthExecutionEnabled()).toBe(true);
+  });
 
   it('detects supabase as the legacy execution path', () => {
     process.env.AUTH_EXECUTION_PROVIDER = 'supabase';
 
-    expect(isBetterAuthExecutionEnabled(),).toBe(false,);
-  },);
+    expect(isBetterAuthExecutionEnabled()).toBe(false);
+  });
 
   it('infers better-auth from the public Better Auth url when the flag is missing', () => {
     delete process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER;
     delete process.env.AUTH_EXECUTION_PROVIDER;
     process.env.EXPO_PUBLIC_BETTER_AUTH_URL = 'https://testnet.api.alternun.co';
 
-    expect(isBetterAuthExecutionEnabled(),).toBe(true,);
-  },);
+    expect(isBetterAuthExecutionEnabled()).toBe(true);
+  });
 
   it('keeps the primary oauth provider on google when better-auth is enabled', () => {
     process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER = 'better-auth';
     process.env.EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER = 'keycloak';
 
-    expect(resolvePrimaryOAuthProvider(),).toBe('google',);
-  },);
+    expect(resolvePrimaryOAuthProvider()).toBe('google');
+  });
 
   it('keeps the primary oauth provider on google when the Better Auth url is configured', () => {
     delete process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER;
@@ -84,12 +95,38 @@ describe('authExecutionMode', () => {
     process.env.EXPO_PUBLIC_BETTER_AUTH_URL = 'https://testnet.api.alternun.co';
     process.env.EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER = 'keycloak';
 
-    expect(resolvePrimaryOAuthProvider(),).toBe('google',);
-  },);
+    expect(resolvePrimaryOAuthProvider()).toBe('google');
+  });
+
+  it('enables social auth whenever Better Auth execution is active', () => {
+    process.env.EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER = 'better-auth';
+    process.env.EXPO_PUBLIC_ENABLE_SOCIAL_AUTH = 'false';
+
+    expect(isSocialAuthEnabled()).toBe(true);
+  });
+
+  it('keeps social auth off when Better Auth execution is not active', () => {
+    process.env.AUTH_EXECUTION_PROVIDER = 'supabase';
+    process.env.EXPO_PUBLIC_ENABLE_SOCIAL_AUTH = 'true';
+
+    expect(isSocialAuthEnabled()).toBe(false);
+  });
 
   it('still allows the legacy keycloak alias outside Better Auth mode', () => {
-    process.env.EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER = 'keycloak';
+    expect(
+      resolvePrimaryOAuthProvider({
+        AUTH_EXECUTION_PROVIDER: 'supabase',
+        EXPO_PUBLIC_PRIMARY_OAUTH_PROVIDER: 'keycloak',
+      })
+    ).toBe('keycloak');
+  });
 
-    expect(resolvePrimaryOAuthProvider(),).toBe('keycloak',);
-  },);
-},);
+  it('prefers better-auth over a stale social flag in an explicit env object', () => {
+    expect(
+      isSocialAuthEnabled({
+        EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER: 'better-auth',
+        EXPO_PUBLIC_ENABLE_SOCIAL_AUTH: 'false',
+      })
+    ).toBe(true);
+  });
+});

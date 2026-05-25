@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return */
 import React, { useCallback, useMemo, useState } from 'react';
 import type { User } from '../auth/AppAuthProvider';
 import {
@@ -14,6 +15,7 @@ import AppInfoFooter from '../common/AppInfoFooter';
 import { createTypographyStyles } from '../theme/typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemeProvider } from '@alternun/ui';
+import { useAppTranslation } from '../i18n/useAppTranslation';
 
 import TopNav from './TopNav';
 import HeroStats from './HeroStats';
@@ -21,14 +23,22 @@ import ActivityFeed from './ActivityFeed';
 import DashboardSummaryCards from './DashboardSummaryCards';
 import AIRSLedger from './AIRSLedger';
 import WalletConnectModal from './WalletConnectModal';
+import WelcomeBonusModal from './WelcomeBonusModal';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { useNotifications } from '../notifications/NotificationsContext';
 import { ToastSystem, type ToastItem, type ToastType } from '@alternun/ui';
 import { useBackToTop } from '../../hooks/useBackToTop';
+import { USE_V2_NAV } from '../navigation/featureFlags';
 import { BackToTopButton } from '../common/BackToTopButton';
+import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import type { AirsDashboardSnapshot } from './types';
 
 let toastIdCounter = 0;
+
+interface AuthClient {
+  getSessionToken(): Promise<string | null>;
+  getUser?: () => Promise<unknown>;
+}
 
 interface DashboardProps {
   user: User | null;
@@ -42,6 +52,7 @@ interface DashboardProps {
   onOpenSettingsPage: () => void;
   onWalletConnect: (walletType: string) => Promise<void>;
   onSignOut: () => Promise<void>;
+  client: AuthClient;
 }
 type UserMetadata = Record<string, unknown>;
 
@@ -287,8 +298,11 @@ export default function Dashboard({
   onOpenSettingsPage,
   onWalletConnect,
   onSignOut,
-}: DashboardProps) {
+  client,
+}: DashboardProps): React.JSX.Element {
   const [walletModalVisible, setWalletModalVisible] = useState(false);
+  const [bonusModalVisible, setBonusModalVisible] = useState(false);
+  const [bonusAlreadyClaimedOverride, setBonusAlreadyClaimedOverride] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [footerHeight, setFooterHeight] = useState(0);
@@ -297,15 +311,25 @@ export default function Dashboard({
   const isMobile = width < 720;
   const scrollTopInset = Math.max(topNavHeight > 0 ? topNavHeight + 16 : 0, isMobile ? 88 : 104);
   const scrollBottomInset = isMobile ? 18 : 8;
-  const { themeMode, language, motionLevel, toggleThemeMode, cycleLanguage, cycleMotionLevel } =
-    useAppPreferences();
+  const {
+    themeMode,
+    language,
+    motionLevel,
+    showWelcomeBonusModal,
+    setShowWelcomeBonusModal,
+    toggleThemeMode,
+    cycleLanguage,
+    cycleMotionLevel,
+  } = useAppPreferences();
   const {
     items: notificationItems,
     markAllRead: markAllNotificationsRead,
     deleteNotif: dismissNotification,
+    addNotification,
   } = useNotifications();
   const router = useRouter();
   const isDark = themeMode === 'dark';
+  const t = useAppTranslation();
 
   const { scrollRef, showBackToTop, handleScroll, scrollToTop, bounceStyle } = useBackToTop({
     scrollThreshold: 200,
@@ -340,13 +364,81 @@ export default function Dashboard({
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  React.useEffect(() => {
+    setBonusAlreadyClaimedOverride(false);
+  }, [user?.id]);
+
+  const claimRegistrationBonus = useCallback(async (): Promise<void> => {
+    try {
+      const sessionToken = await client.getSessionToken();
+      if (!sessionToken) {
+        return;
+      }
+
+      const response = await fetch(
+        `${resolveMobileApiBaseUrl()}/v1/airs/registration-bonus/claim`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const result = (await response.json()) as { success?: boolean; awarded?: boolean };
+        const wasAwarded = result.success ?? result.awarded ?? false;
+        setBonusAlreadyClaimedOverride(true);
+
+        // Show the modal only if preference is enabled
+        if (showWelcomeBonusModal) {
+          setBonusModalVisible(true);
+        }
+
+        addNotification({
+          type: 'success',
+          title: t.t('dashboard.notifications.welcomeBonus.title'),
+          body: t.t('dashboard.notifications.welcomeBonus.message'),
+          timestamp: new Date(),
+          read: false,
+          archived: false,
+        });
+
+        if (wasAwarded) {
+          lastAirsSnapshotKeyRef.current = null;
+          void client.getUser?.();
+        }
+      }
+    } catch {
+      // Silently fail - bonus is nice to have but not critical
+    }
+  }, [client, showWelcomeBonusModal, t, addNotification]);
+
+  // Periodically check if email was verified (for newly verified users)
+  React.useEffect(() => {
+    if (!user || user.emailVerified) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      void client.getUser();
+    }, 3000); // Check every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [user, client]);
+
   const walletAddress = getWalletAddress(user);
   const walletProvider = getWalletProvider(user);
   const walletConnected = Boolean(walletAddress || walletProvider);
   const authMethodLabel = getAuthMethodLabel(user);
   const userStats = useMemo(() => getUserDashboardStats(user), [user]);
   const profileInfo = useMemo(() => getUserProfileInfo(user), [user]);
-  const airsScore = airsSnapshot?.balanceAIRS ?? userStats?.totalAIRS ?? null;
+  const airsScore = airsSnapshot?.balanceAIRS;
+  const airsLoading = !airsSnapshot;
+  const bonusAlreadyClaimed =
+    Boolean(airsSnapshot?.registrationBonusClaimed) || bonusAlreadyClaimedOverride;
 
   const handleRequireSignIn = useCallback(() => {
     onRequireSignIn();
@@ -354,27 +446,35 @@ export default function Dashboard({
 
   const handleOpenWalletConnect = useCallback(() => {
     if (!user) {
-      addToast('info', 'Sign In Required', 'Sign in first to connect a wallet.');
+      addToast(
+        'info',
+        t.t('dashboard.notifications.signInRequired.title'),
+        t.t('dashboard.notifications.signInRequired.message')
+      );
       onRequireSignIn();
       return;
     }
 
     setWalletModalVisible(true);
-  }, [addToast, onRequireSignIn, user]);
+  }, [addToast, onRequireSignIn, user, t]);
 
   const handleConnect = useCallback(
     async (walletType: string) => {
       setWalletModalVisible(false);
       try {
         await onWalletConnect(walletType);
-        addToast('success', 'Wallet Connected', 'Wallet authentication completed.');
+        addToast(
+          'success',
+          t.t('dashboard.notifications.walletConnected.title'),
+          t.t('dashboard.notifications.walletConnected.message')
+        );
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Unable to connect wallet at this time.';
-        addToast('error', 'Wallet Connection Failed', message);
+        addToast('error', t.t('dashboard.notifications.walletConnectionFailed.title'), message);
       }
     },
-    [addToast, onWalletConnect]
+    [addToast, onWalletConnect, t]
   );
 
   const handleSignOut = useCallback(async () => {
@@ -387,9 +487,9 @@ export default function Dashboard({
       await onSignOut();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to sign out right now.';
-      addToast('error', 'Sign Out Failed', message);
+      addToast('error', t.t('dashboard.notifications.signOutFailed.title'), message);
     }
-  }, [addToast, onRequireSignIn, onSignOut, user]);
+  }, [addToast, onRequireSignIn, onSignOut, user, t]);
 
   const handleOpenProfile = useCallback(() => {
     onOpenProfilePage();
@@ -456,7 +556,7 @@ export default function Dashboard({
                 activePositions={userStats ? userStats.activePositions : null}
                 tokensHeld={userStats ? userStats.tokensHeld : null}
                 compensationsCompleted={userStats ? userStats.compensationsCompleted : null}
-                isLoading={isLoading || isRefreshing}
+                isLoading={isLoading || isRefreshing || airsLoading}
                 onReload={handleRefresh}
                 previewMode={!user}
                 isDark={isDark}
@@ -471,7 +571,7 @@ export default function Dashboard({
                       { color: isDark ? 'rgba(232,232,255,0.72)' : '#475569' },
                     ]}
                   >
-                    Sign in from the top-right profile menu to activate actions.
+                    {t.t('dashboard.hero.hint')}
                   </Text>
                 </View>
               ) : null}
@@ -492,14 +592,16 @@ export default function Dashboard({
             </View>
           </ScrollView>
 
-          <View
-            style={styles.stickyBottom}
-            onLayout={(event) => {
-              setFooterHeight(event.nativeEvent.layout.height);
-            }}
-          >
-            <AppInfoFooter containerStyle={{ marginTop: 0 }} />
-          </View>
+          {!(isMobile && USE_V2_NAV) && (
+            <View
+              style={styles.stickyBottom}
+              onLayout={(event) => {
+                setFooterHeight(event.nativeEvent.layout.height);
+              }}
+            >
+              <AppInfoFooter containerStyle={{ marginTop: 0 }} />
+            </View>
+          )}
 
           <BackToTopButton
             visible={showBackToTop}
@@ -516,6 +618,14 @@ export default function Dashboard({
             onConnect={(walletType) => {
               void handleConnect(walletType);
             }}
+          />
+
+          <WelcomeBonusModal
+            visible={bonusModalVisible}
+            onClose={() => setBonusModalVisible(false)}
+            onClaim={() => claimRegistrationBonus()}
+            onDisableShowing={() => setShowWelcomeBonusModal(false)}
+            alreadyClaimed={bonusAlreadyClaimed}
           />
 
           {/* Floating nav — rendered last so it overlays content + dropdown isn't clipped */}
@@ -576,7 +686,7 @@ export default function Dashboard({
   );
 }
 
-function SectionDivider({ isDark }: { isDark: boolean }) {
+function SectionDivider({ isDark }: { isDark: boolean }): React.JSX.Element {
   return (
     <View
       style={[

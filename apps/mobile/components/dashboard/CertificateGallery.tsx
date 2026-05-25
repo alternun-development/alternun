@@ -4,6 +4,7 @@ import { createTypographyStyles } from '../theme/typography';
 import { Award, ExternalLink, X, Share2, Download } from 'lucide-react-native';
 import { SBTCertificate } from './types';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 
 interface CertificateGalleryProps {
   certificates: SBTCertificate[];
@@ -198,11 +199,14 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(28,203,161,0.18)',
     borderRadius: 16,
     padding: 16,
-    shadowColor: '#00001e',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 4,
+    ...createShadowStyle({
+      color: '#00001e',
+      offsetX: 0,
+      offsetY: 8,
+      opacity: 0.4,
+      radius: 12,
+      elevation: 4,
+    }),
     overflow: 'hidden',
   },
   certCardGlow: {

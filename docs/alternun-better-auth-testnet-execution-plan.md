@@ -21,7 +21,7 @@ What is already true:
 - Authentik remains the configured issuer default.
 - Legacy Supabase execution still remains the rollback/legacy path, while the live testnet API/auth runtime now serves Better Auth on `/auth/*`.
 - The issuer provider already prefers `AUTH_EXCHANGE_URL` when it is configured.
-- Current testnet ownership is split across `dev` for the Expo bundle, `dashboard-dev` for the live API/admin runtime, and `identity-dev` for Authentik. `api-dev` is a backend-only escape hatch.
+- Current testnet ownership is split across `dev` for the Expo bundle, `dashboard-dev` for the live API/admin runtime, and `identity-dev` for Authentik. Former backend-only aliases such as `api-dev` and `backend-*` are retired.
 - Issue `#99` is closed; follow-up issue `#100` tracks the remaining validation and migration work.
 
 What is not true yet:
@@ -73,7 +73,7 @@ Provision these before enabling Better Auth on testnet:
 
 Use explicit testnet domains instead of overloading current Authentik domains.
 
-- Better Auth execution service: the live testnet API/auth runtime is owned by `dashboard-dev`; `api-dev` stays a backend-only escape hatch
+- Better Auth execution service: the live testnet API/auth runtime is owned by `dashboard-dev`; retired backend-only aliases must not be used for live deploys
 - Authentik issuer remains under `https://testnet.sso.alternun.co/...`
 - Backend exchange remains under the testnet API domain
 

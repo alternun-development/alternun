@@ -40,6 +40,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 import { getLocaleLabel } from '@alternun/i18n';
 import { ToastSystem, type ToastItem } from '@alternun/ui';
 import { useRouter } from 'expo-router';
@@ -50,7 +51,7 @@ import ShaderBackground from './ShaderBackground';
 import WalletConnectModal from '../dashboard/WalletConnectModal';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAuth } from './AppAuthProvider';
-import { resolvePrimaryOAuthProvider } from './authExecutionMode';
+import { isSocialAuthEnabled, resolvePrimaryOAuthProvider } from './authExecutionMode';
 import { shouldForceFreshAuthentikSocialSession } from './authentikWebSessionPolicy';
 import {
   readPendingAuthentikOAuthProvider,
@@ -73,6 +74,11 @@ import {
   shouldTransitionToEmailConfirmation,
   shouldSurfaceSharedAuthError,
 } from './authSignInFlow';
+import {
+  clearPendingReferralData,
+  readPendingReferralCode,
+  writePendingReferralData,
+} from './referralStorage';
 const RESEND_COOLDOWN_SECONDS = 45;
 const SOCIAL_REDIRECT_TIMEOUT_MS = 15000; // 15 seconds
 
@@ -113,7 +119,16 @@ interface SignUpResult {
 }
 
 interface EmailAuthCapableClient {
-  signUpWithEmail?: (email: string, password: string, locale?: string) => Promise<SignUpResult>;
+  signUpWithEmail?: (
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: {
+      referralCode?: string | null;
+      referredByUsername?: string | null;
+      referredByEmail?: string | null;
+    } | null
+  ) => Promise<SignUpResult>;
   resendEmailConfirmation?: (email: string) => Promise<void>;
   verifyEmailConfirmationCode?: (email: string, code: string) => Promise<void>;
 }
@@ -122,6 +137,8 @@ export interface AuthSignInScreenProps {
   onCancel?: () => void;
   presentation?: 'screen' | 'modal';
   authReturnTo?: string;
+  initialMode?: AuthMode;
+  initialReferralCode?: string | null;
 }
 
 function isEmailAuthCapable(client: unknown): client is EmailAuthCapableClient {
@@ -142,6 +159,8 @@ export default function AuthSignInScreen({
   onCancel,
   presentation = 'screen',
   authReturnTo,
+  initialMode = 'signin',
+  initialReferralCode = null,
 }: AuthSignInScreenProps): JSX.Element {
   const { signInWithEmail, signIn, loading, error, client } = useAuth();
   const { t, locale } = useAppTranslation('mobile');
@@ -161,7 +180,7 @@ export default function AuthSignInScreen({
   const shouldForceAuthentikSocialLogin = authentikSocialLoginMode === 'authentik';
   const shouldShowAuthentikSocialButtons =
     shouldUseAuthentikSocialLogin && (shouldForceAuthentikSocialLogin || authentikConfigured);
-  const [mode, setMode] = useState<AuthMode>('signin');
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -177,6 +196,9 @@ export default function AuthSignInScreen({
   const [authStep, setAuthStep] = useState<AuthStep>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [referralCode, setReferralCode] = useState(
+    () => initialReferralCode?.trim() ?? readPendingReferralCode() ?? ''
+  );
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [invalidEmail, setInvalidEmail] = useState(false);
   const [passwordMismatch, setPasswordMismatch] = useState(false);
@@ -190,6 +212,7 @@ export default function AuthSignInScreen({
   const passwordInputRef = useRef<TextInput>(null);
   const confirmPasswordInputRef = useRef<TextInput>(null);
   const confirmationCodeInputRef = useRef<TextInput>(null);
+  const referralCodeInputRef = useRef<TextInput>(null);
   const emailDraftRef = useRef('');
   const passwordDraftRef = useRef('');
   const confirmPasswordDraftRef = useRef('');
@@ -322,6 +345,21 @@ export default function AuthSignInScreen({
 
     return (): void => clearTimeout(timeout);
   }, [resendCooldown]);
+
+  useEffect(() => {
+    if (!initialReferralCode?.trim()) {
+      return;
+    }
+
+    setReferralCode(initialReferralCode.trim().toLowerCase());
+    setNotice(
+      t(
+        'authModal.notices.referralCodeDetected',
+        undefined,
+        `Referral code detected: ${initialReferralCode.trim()}`
+      )
+    );
+  }, [initialReferralCode, t]);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -583,13 +621,35 @@ export default function AuthSignInScreen({
       return;
     }
 
+    const normalizedReferralCode = referralCode.trim().toLowerCase();
+    const pendingReferralData =
+      normalizedReferralCode.length > 0
+        ? {
+            referred_by_username: null,
+            referred_by_email: null,
+            referral_code: normalizedReferralCode,
+            invitation_code: normalizedReferralCode,
+          }
+        : null;
+
     setSubmitMode('signup');
     setLocalError(null);
     try {
+      if (pendingReferralData) {
+        writePendingReferralData(pendingReferralData);
+      }
+
       const result = await client.signUpWithEmail(
         normalizedEmail,
         passwordDraftRef.current,
-        locale
+        locale,
+        pendingReferralData
+          ? {
+              referralCode: pendingReferralData.referral_code,
+              referredByUsername: pendingReferralData.referred_by_username,
+              referredByEmail: pendingReferralData.referred_by_email,
+            }
+          : null
       );
 
       if (result.error && typeof result.error === 'string') {
@@ -618,6 +678,9 @@ export default function AuthSignInScreen({
           clearRequiredFields();
         } else {
           setLocalError(message);
+          if (pendingReferralData) {
+            clearPendingReferralData();
+          }
         }
         setSubmitMode(null);
         return;
@@ -654,6 +717,10 @@ export default function AuthSignInScreen({
       setNotice(t('authModal.notices.accountCreatedSigningIn'));
       setSubmitMode(null);
     } catch (authError) {
+      if (pendingReferralData) {
+        clearPendingReferralData();
+      }
+
       const message = getAuthErrorMessage(authError, t('authModal.errors.authenticationFailed'));
       const normalizedMessage = message.toLowerCase();
       const isCommonSignupFailure =
@@ -752,6 +819,8 @@ export default function AuthSignInScreen({
       await emailAuthClient.verifyEmailConfirmationCode(normalizedEmail, normalizedCode);
       setConfirmationEmail(normalizedEmail);
       setResendCooldown(0);
+      // Refresh user state to get updated emailVerified flag
+      void client.getUser();
       transitionToSignInForm(normalizedEmail, t('authModal.notices.emailConfirmedSignIn'));
     } catch (authError) {
       const errorMsg = getConfirmationCodeErrorMessage(
@@ -1455,6 +1524,48 @@ export default function AuthSignInScreen({
                   </View>
                 ) : null}
 
+                {mode === 'signup' ? (
+                  <View style={styles.referralPrompt}>
+                    <Text style={[styles.referralPromptTitle, { color: p.textPrimary }]}>
+                      {t('authModal.referral.prompt', undefined, 'Have a referral code?')}
+                    </Text>
+                    <Text style={[styles.referralPromptText, { color: p.textMuted }]}>
+                      {t(
+                        'authModal.referral.helper',
+                        undefined,
+                        'Add it before you create the account. We will keep it for signup.'
+                      )}
+                    </Text>
+                    <View
+                      style={[
+                        styles.inputWrapper,
+                        { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                      ]}
+                    >
+                      <View style={[styles.inputIconWrap, { backgroundColor: 'transparent' }]}>
+                        <KeyRound size={15} color={p.accent} strokeWidth={2.1} />
+                      </View>
+                      <TextInput
+                        ref={referralCodeInputRef}
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        onChangeText={(value) => {
+                          setReferralCode(value);
+                          setLocalError(null);
+                        }}
+                        placeholder={t(
+                          'authModal.referral.placeholder',
+                          undefined,
+                          'e.g., edward-44ft34'
+                        )}
+                        placeholderTextColor={p.textPlaceholder}
+                        style={[styles.input, { color: p.textPrimary }]}
+                        value={referralCode}
+                      />
+                    </View>
+                  </View>
+                ) : null}
+
                 <LoadingButton
                   variant='primary'
                   label={
@@ -1499,30 +1610,88 @@ export default function AuthSignInScreen({
                       <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
                     </View>
 
-                    <LoadingButton
-                      variant='secondary'
-                      label={t('authModal.actions.continueWithGoogle')}
-                      loadingLabel={t('authModal.redirecting.google')}
-                      isLoading={submitMode === 'google'}
-                      disabled={isBusy}
-                      onPress={() => {
-                        void handleGoogleSignIn();
-                      }}
-                      icon={Chrome}
-                    />
-
-                    {shouldShowAuthentikSocialButtons ? (
+                    <View style={{ position: 'relative' }}>
                       <LoadingButton
                         variant='secondary'
-                        label={t('authModal.actions.continueWithDiscord')}
-                        loadingLabel={t('authModal.redirecting.discord')}
-                        isLoading={submitMode === 'discord'}
-                        disabled={isBusy}
+                        label={t('authModal.actions.continueWithGoogle')}
+                        loadingLabel={t('authModal.redirecting.google')}
+                        isLoading={submitMode === 'google'}
+                        disabled={isBusy || !isSocialAuthEnabled()}
                         onPress={() => {
-                          void handleDiscordSignIn();
+                          void handleGoogleSignIn();
                         }}
-                        icon={MessageSquare}
+                        icon={Chrome}
                       />
+                      {!isSocialAuthEnabled() && (
+                        <View
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                            borderRadius: 8,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            backdropFilter: 'blur(2px)',
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: String(p.text),
+                              fontSize: 12,
+                              fontWeight: '600',
+                              textAlign: 'center',
+                            }}
+                          >
+                            {t('authModal.underMaintenance')}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {shouldShowAuthentikSocialButtons ? (
+                      <View style={{ position: 'relative' }}>
+                        <LoadingButton
+                          variant='secondary'
+                          label={t('authModal.actions.continueWithDiscord')}
+                          loadingLabel={t('authModal.redirecting.discord')}
+                          isLoading={submitMode === 'discord'}
+                          disabled={isBusy || !isSocialAuthEnabled()}
+                          onPress={() => {
+                            void handleDiscordSignIn();
+                          }}
+                          icon={MessageSquare}
+                        />
+                        {!isSocialAuthEnabled() && (
+                          <View
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                              borderRadius: 8,
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              backdropFilter: 'blur(2px)',
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: String(p.text),
+                                fontSize: 12,
+                                fontWeight: '600',
+                                textAlign: 'center',
+                              }}
+                            >
+                              {t('authModal.underMaintenance')}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                     ) : null}
 
                     {ENABLE_WEB3_LOGIN && (
@@ -1747,22 +1916,7 @@ export default function AuthSignInScreen({
                   </View>
                 ) : null}
 
-                {effectiveError ? (
-                  <View
-                    style={[
-                      styles.errorBox,
-                      { backgroundColor: p.errorBg, borderColor: p.errorBorder },
-                    ]}
-                  >
-                    <AlertCircle
-                      color={p.errorIcon}
-                      size={18}
-                      strokeWidth={2}
-                      style={{ marginTop: 1, flexShrink: 0 }}
-                    />
-                    <Text style={[styles.errorText, { color: p.errorText }]}>{effectiveError}</Text>
-                  </View>
-                ) : null}
+                {/* Error box removed - notice above already indicates email verification status */}
 
                 <View
                   style={[
@@ -1801,24 +1955,34 @@ export default function AuthSignInScreen({
                   </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity
-                  activeOpacity={0.85}
+                <Pressable
                   onPress={() => {
                     if (!isBusy) {
                       transitionToSignInForm(confirmationEmail ?? '');
                     }
                   }}
-                  style={[
-                    styles.confirmationSecondaryButton,
-                    { borderColor: p.inputBorder, backgroundColor: p.inputBg },
-                  ]}
                 >
-                  <Text
-                    style={[styles.confirmationSecondaryButtonText, { color: p.textSecondary }]}
-                  >
-                    {t('authModal.actions.alreadyConfirmedContinue')}
-                  </Text>
-                </TouchableOpacity>
+                  {({ pressed }) => (
+                    <View
+                      style={[
+                        styles.confirmationSecondaryButton,
+                        {
+                          borderColor: p.accent,
+                          backgroundColor: pressed ? p.accent : 'transparent',
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.confirmationSecondaryButtonText,
+                          { color: pressed ? '#050510' : p.accent },
+                        ]}
+                      >
+                        {t('authModal.actions.alreadyConfirmedContinue')}
+                      </Text>
+                    </View>
+                  )}
+                </Pressable>
 
                 <TouchableOpacity
                   activeOpacity={0.8}
@@ -1912,11 +2076,14 @@ const styles = createTypographyStyles({
     width: '100%',
     maxWidth: 520,
     paddingTop: 24,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.4,
-    shadowRadius: 24,
-    elevation: 8,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 10,
+      opacity: 0.4,
+      radius: 24,
+      elevation: 8,
+    }),
   },
   cardModalCompact: {
     maxWidth: '100%',
@@ -2018,11 +2185,14 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     backgroundColor: '#07071a',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.7,
-    shadowRadius: 16,
-    elevation: 24,
+    ...createShadowStyle({
+      color: '#000000',
+      offsetX: 0,
+      offsetY: 8,
+      opacity: 0.7,
+      radius: 16,
+      elevation: 24,
+    }),
   },
   settingsDropdownCompact: {
     position: 'absolute',
@@ -2144,6 +2314,21 @@ const styles = createTypographyStyles({
   inputGroup: {
     gap: 6,
   },
+  referralPrompt: {
+    gap: 6,
+    marginTop: 2,
+  },
+  referralPromptTitle: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  referralPromptText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 12,
+    lineHeight: 17,
+  },
   inputLabel: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
@@ -2241,18 +2426,20 @@ const styles = createTypographyStyles({
     letterSpacing: 0.2,
   },
   confirmationSecondaryButton: {
-    alignSelf: 'stretch',
-    minHeight: 40,
-    borderRadius: 18,
-    borderWidth: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    borderRadius: 24,
+    borderWidth: 2,
     paddingHorizontal: 18,
+    paddingVertical: 12,
   },
   confirmationSecondaryButtonText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    color: '#cfd1ea',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
   buttonDisabled: {
     opacity: 0.6,

@@ -13,9 +13,7 @@ describe('mobile build script cleanup', () => {
     expect(buildScript).toContain('resolve_stage_supabase_key()');
     expect(buildScript).toContain('read_env_file_value()');
     expect(buildScript).toContain('SUPABASE_PUBLISHABLE_KEY_${stage_suffix}');
-    expect(buildScript).toContain(
-      "grep -E '^(export[[:space:]]+)?(SUPABASE_PUBLISHABLE_KEY|EXPO_PUBLIC_SUPABASE_(KEY|ANON_KEY)|SUPABASE_(KEY|ANON_KEY))=' ../../.env.local"
-    );
+    expect(buildScript).not.toContain('../../.env.local');
     expect(buildScript).toContain(
       'ERROR: SUPABASE_PUBLISHABLE_KEY_${stage_key_suffix} is required for mobile stage'
     );

@@ -30,15 +30,15 @@ pnpm exec supabase db push
 
 #### Option C: During AWS Deployment (From Lambda)
 
-When deploying API to testnet, migrations run automatically:
+When deploying the live testnet API/auth runtime, migrations run automatically:
 
 ```bash
 bash scripts/setup-aws-account.sh
-APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 
 # Then run migrations on deployed Lambda
 aws lambda invoke \
-  --function-name alternun-api-dev \
+  --function-name alternun-infra-dashboard-dev-nestjs-api \
   --payload '{"action":"migrate"}' \
   response.json
 ```
@@ -47,7 +47,7 @@ aws lambda invoke \
 
 ```bash
 bash scripts/setup-aws-account.sh
-APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 ```
 
 ### 3. Verify Auth Works

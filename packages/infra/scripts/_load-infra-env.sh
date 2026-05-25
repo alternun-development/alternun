@@ -46,6 +46,71 @@ load_env_file() {
   done < "$env_file"
 }
 
+bridge_codebuild_sst_node_modules() {
+  local script_dir infra_dir repo_root sst_dir resolved_sst_dir cache_root source_node_modules
+  local bridge_targets target
+
+  if [ -z "${CODEBUILD_BUILD_ID:-}" ]; then
+    return 0
+  fi
+
+  script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+  infra_dir=$(cd "$script_dir/.." && pwd)
+  repo_root=$(cd "$infra_dir/../.." && pwd)
+  sst_dir="$infra_dir/.sst"
+  if [ -d "$repo_root/packages/infra/node_modules" ]; then
+    source_node_modules="$repo_root/packages/infra/node_modules"
+  elif [ -d "$repo_root/node_modules" ]; then
+    source_node_modules="$repo_root/node_modules"
+  else
+    return 0
+  fi
+
+  if [ ! -e "$sst_dir" ]; then
+    return 0
+  fi
+
+  resolved_sst_dir=$(readlink -f "$sst_dir" 2>/dev/null || true)
+  if [ -z "$resolved_sst_dir" ]; then
+    return 0
+  fi
+
+  case "$resolved_sst_dir" in
+    */packages/infra/.sst)
+      cache_root=${resolved_sst_dir%/packages/infra/.sst}
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+
+  bridge_targets=$(printf '%s\n' \
+    "${cache_root}/node_modules" \
+    "${cache_root}/packages/infra/node_modules" \
+    "${cache_root}/packages/infra/.sst/node_modules" \
+    "${cache_root}/packages/infra/.sst/platform/node_modules")
+
+  while IFS= read -r target; do
+    [ -n "$target" ] || continue
+
+    if [ -L "$target" ] && [ "$(readlink -f "$target" 2>/dev/null || true)" = "$(readlink -f "$source_node_modules" 2>/dev/null || true)" ]; then
+      continue
+    fi
+
+    if [ -e "$target" ] && [ ! -L "$target" ]; then
+      echo "WARN: Skipping SST node_modules bridge because ${target} already exists and is not a symlink." >&2
+      continue
+    fi
+
+    mkdir -p "$(dirname "$target")"
+    ln -sfn "$source_node_modules" "$target"
+  done <<EOF
+$bridge_targets
+EOF
+
+  echo "Bridged CodeBuild SST node_modules cache to repo package node_modules."
+}
+
 load_infra_env() {
   local script_dir infra_dir repo_root infra_env_file
   local force_env_credentials require_env_credentials preserve_existing_env
@@ -179,4 +244,6 @@ load_infra_env() {
   export DOMAIN_MOBILE="${INFRA_EXPO_DOMAIN_MOBILE:-${DOMAIN_MOBILE:-}}"
   export PROJECT_PREFIX="${INFRA_PIPELINE_PREFIX:-${PROJECT_PREFIX:-}}"
   export PREFIX="${INFRA_PIPELINE_PREFIX:-${PREFIX:-${PROJECT_PREFIX:-}}}"
+
+  bridge_codebuild_sst_node_modules
 }

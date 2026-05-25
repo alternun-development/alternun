@@ -50,6 +50,7 @@ import {
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { createTypographyStyles } from '../theme/typography';
+import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppPalette } from '../theme/useAppPalette';
 import AirsIntroExperience from '../onboarding/AirsIntroExperience';
@@ -1890,11 +1891,14 @@ const infoModalStyles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.35,
-    shadowRadius: 32,
-    elevation: 20,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 16,
+      opacity: 0.35,
+      radius: 32,
+      elevation: 20,
+    }),
   },
   imageWrap: {
     height: 200,
@@ -1910,7 +1914,7 @@ const infoModalStyles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 80,
-    background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.45))',
+    backgroundImage: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.45))',
   },
   closeButton: {
     position: 'absolute',
@@ -1921,11 +1925,14 @@ const infoModalStyles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 2,
+      opacity: 0.25,
+      radius: 6,
+      elevation: 4,
+    }),
   },
   content: {
     padding: 22,
@@ -2250,11 +2257,14 @@ const styles = createTypographyStyles({
     justifyContent: 'flex-end',
     borderRadius: 22,
     backgroundColor: '#0f172a',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.28,
-    shadowRadius: 18,
-    elevation: 10,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 10,
+      opacity: 0.28,
+      radius: 18,
+      elevation: 10,
+    }),
   },
   projectCardImageScrim: {
     ...StyleSheet.absoluteFill,
@@ -2274,11 +2284,14 @@ const styles = createTypographyStyles({
     borderWidth: 1,
     borderColor: 'rgba(15, 118, 110, 0.16)',
     backgroundColor: 'rgba(255,255,255,0.94)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.14,
-    shadowRadius: 10,
-    elevation: 4,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 4,
+      opacity: 0.14,
+      radius: 10,
+      elevation: 4,
+    }),
   },
   projectCardInfoBadgeText: {
     fontSize: 11,
@@ -2582,11 +2595,14 @@ const styles = createTypographyStyles({
     borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.22,
-    shadowRadius: 14,
-    elevation: 8,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 6,
+      opacity: 0.22,
+      radius: 14,
+      elevation: 8,
+    }),
   },
   placeCardTouchable: {
     width: '100%',

@@ -3,7 +3,45 @@ const test = require('node:test');
 
 const {
   createBetterAuthDevAuth,
+  fetchBetterAuthWelcomeEmailRecord,
+  markBetterAuthWelcomeEmailSent,
 } = require('../src/modules/better-auth-dev/better-auth-dev.server.ts');
+
+test('welcome email helpers use execute-based database access', async () => {
+  const calls = [];
+  const db = {
+    async execute(query) {
+      calls.push(query);
+
+      if (calls.length === 1) {
+        return {
+          rows: [
+            {
+              email: 'edward@example.com',
+              name: 'Edward',
+              locale: 'es-MX',
+              welcome_email_sent: 'true',
+            },
+          ],
+        };
+      }
+
+      return { rows: [] };
+    },
+  };
+
+  const record = await fetchBetterAuthWelcomeEmailRecord(db, 'user-123');
+  assert.deepEqual(record, {
+    email: 'edward@example.com',
+    name: 'Edward',
+    locale: 'es-MX',
+    welcomeEmailSent: true,
+  });
+
+  await markBetterAuthWelcomeEmailSent(db, 'user-123');
+
+  assert.equal(calls.length, 2);
+});
 
 test('createBetterAuthDevAuth includes oauth proxy when configured', async () => {
   const originalEnv = { ...process.env };
@@ -39,8 +77,12 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', async () =>
     assert.equal(auth.options.emailVerification.sendOnSignUp, true);
     assert.equal(auth.options.emailVerification.sendOnSignIn, true);
     assert.equal(typeof auth.options.emailVerification.sendVerificationEmail, 'function');
+    assert.equal(auth.options.account.storeStateStrategy, 'database');
+    assert.equal(auth.options.errorURL, 'http://127.0.0.1:8081/auth/callback');
     assert.equal(auth.options.advanced.database.generateId, 'uuid');
     assert.equal(auth.options.account.skipStateCookieCheck, true);
+    assert.equal(auth.options.advanced.crossSubDomainCookies, undefined);
+    assert.equal(auth.options.databaseHooks.session?.create?.after, undefined);
     assert.equal(auth.options.account.accountLinking.trustedProviders.includes('discord'), true);
     assert.equal(Boolean(auth.options.socialProviders.discord), true);
     assert.equal(auth.options.socialProviders.google.redirectURI, undefined);
@@ -56,6 +98,36 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', async () =>
     assert.equal(hookResult.data.aud, 'authenticated');
     assert.equal(hookResult.data.provider, 'better-auth');
     assert.equal(hookResult.data.picture, 'https://example.com/avatar.png');
+  } finally {
+    process.env = originalEnv;
+  }
+});
+
+test('createBetterAuthDevAuth scopes cross-subdomain cookies to the parent domain', async () => {
+  const originalEnv = { ...process.env };
+
+  try {
+    process.env.DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:5432/postgres';
+
+    const auth = createBetterAuthDevAuth({
+      port: 8082,
+      host: '127.0.0.1',
+      baseURL: 'https://testnet.api.alternun.co',
+      secret: 'example-better-auth-secret',
+      trustedOrigins: ['https://testnet.airs.alternun.co'],
+      googleClientId: 'example-google-client',
+      googleClientSecret: 'example-google-secret',
+      discordClientId: 'example-discord-client',
+      discordClientSecret: 'example-discord-secret',
+      oauthProxy: {
+        enabled: false,
+      },
+    });
+
+    assert.equal(auth.options.advanced.crossSubDomainCookies.enabled, true);
+    assert.equal(auth.options.advanced.crossSubDomainCookies.domain, '.alternun.co');
+    assert.equal(auth.options.account.storeStateStrategy, 'database');
+    assert.equal(auth.options.errorURL, 'https://testnet.airs.alternun.co/auth/callback');
   } finally {
     process.env = originalEnv;
   }
@@ -94,6 +166,7 @@ test('createBetterAuthDevAuth accepts backend database env fallback', () => {
     assert.equal(auth.options.emailVerification.sendOnSignUp, true);
     assert.equal(auth.options.emailAndPassword.autoSignIn, false);
     assert.equal(auth.options.emailVerification.sendOnSignIn, true);
+    assert.equal(auth.options.account.storeStateStrategy, 'database');
     assert.equal(auth.options.advanced.database.generateId, 'uuid');
   } finally {
     process.env = originalEnv;

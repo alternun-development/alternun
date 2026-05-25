@@ -5,6 +5,12 @@ export type AirsLedgerSourceKind =
   | 'profile_completion_bonus'
   | 'correction';
 
+export interface UserAchievement {
+  key: string;
+  unlocked: boolean;
+  unlockedAt: string | null;
+}
+
 export interface AirsDashboardVisitState {
   userId: string;
   email: string | null;
@@ -59,6 +65,7 @@ export interface AirsDashboardSnapshot {
   locale: string | null;
   profileComplete: boolean;
   firstDashboardRecorded: boolean;
+  registrationBonusClaimed: boolean;
   welcomeEmailSentAt: string | null;
   profileBonusAwardedAt: string | null;
   profileCompletedAt: string | null;
@@ -88,7 +95,7 @@ export interface SupabaseRpcConfig {
   key: string;
 }
 
-function firstNonEmptyTrimmed(values: Array<string | undefined | null>,): string | null {
+function firstNonEmptyTrimmed(values: Array<string | undefined | null>): string | null {
   for (const value of values) {
     const trimmed = value?.trim();
     if (trimmed) {
@@ -100,33 +107,33 @@ function firstNonEmptyTrimmed(values: Array<string | undefined | null>,): string
 }
 
 export function resolveAirsSupabaseConfig(
-  env: Record<string, string | undefined> = process.env,
+  env: Record<string, string | undefined> = process.env
 ): SupabaseRpcConfig | null {
   const url = firstNonEmptyTrimmed([
     env.SUPABASE_URL,
     env.EXPO_PUBLIC_SUPABASE_URL,
     env.SUPABASE_URL,
-  ],);
+  ]);
   const key = firstNonEmptyTrimmed([
     env.SUPABASE_SERVICE_ROLE_KEY,
     env.SUPABASE_ANON_KEY,
     env.EXPO_PUBLIC_SUPABASE_KEY,
-  ],);
+  ]);
 
   if (!url || !key) {
     return null;
   }
 
-  return { url, key, };
+  return { url, key };
 }
 
-async function readRpcBody(response: Response,): Promise<Record<string, unknown> | null> {
-  const body = (await response.json().catch(() => null,)) as unknown;
+async function readRpcBody(response: Response): Promise<Record<string, unknown> | null> {
+  const body = (await response.json().catch(() => null)) as unknown;
   if (!body) {
     return null;
   }
 
-  if (Array.isArray(body,)) {
+  if (Array.isArray(body)) {
     const first = body[0] as Record<string, unknown> | undefined;
     return first && typeof first === 'object' ? first : null;
   }
@@ -134,22 +141,33 @@ async function readRpcBody(response: Response,): Promise<Record<string, unknown>
   return typeof body === 'object' ? (body as Record<string, unknown>) : null;
 }
 
-function asText(value: unknown,): string | null {
+async function readRpcArrayBody(response: Response): Promise<Array<Record<string, unknown>>> {
+  const body = (await response.json().catch(() => null)) as unknown;
+  if (!Array.isArray(body)) {
+    return [];
+  }
+
+  return body.filter((entry): entry is Record<string, unknown> =>
+    Boolean(entry && typeof entry === 'object' && !Array.isArray(entry))
+  );
+}
+
+function asText(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
 
-function asBoolean(value: unknown,): boolean {
+function asBoolean(value: unknown): boolean {
   return value === true;
 }
 
-function asNumber(value: unknown,): number {
-  if (typeof value === 'number' && Number.isFinite(value,)) {
+function asNumber(value: unknown): number {
+  if (typeof value === 'number' && Number.isFinite(value)) {
     return value;
   }
 
   if (typeof value === 'string' && value.trim().length > 0) {
-    const parsed = Number(value,);
-    if (Number.isFinite(parsed,)) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
       return parsed;
     }
   }
@@ -157,47 +175,47 @@ function asNumber(value: unknown,): number {
   return 0;
 }
 
-function asRecordArray(value: unknown,): Record<string, unknown>[] {
-  if (!Array.isArray(value,)) {
+function asRecordArray(value: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(value)) {
     return [];
   }
 
-  return value.filter((entry,): entry is Record<string, unknown> => {
-    return Boolean(entry && typeof entry === 'object' && !Array.isArray(entry,),);
-  },);
+  return value.filter((entry): entry is Record<string, unknown> => {
+    return Boolean(entry && typeof entry === 'object' && !Array.isArray(entry));
+  });
 }
 
-function mapDashboardLedgerEntry(entry: Record<string, unknown>,): AirsDashboardLedgerEntry {
+function mapDashboardLedgerEntry(entry: Record<string, unknown>): AirsDashboardLedgerEntry {
   return {
-    id: asText(entry.id,) ?? '',
-    sourceKind: (asText(entry.source_kind,) as AirsLedgerSourceKind) ?? 'correction',
-    sourceRef: asText(entry.source_ref,),
-    idempotencyKey: asText(entry.idempotency_key,),
-    sourceCurrency: asText(entry.source_currency,) ?? 'USD',
-    sourceAmount: entry.source_amount == null ? null : asNumber(entry.source_amount,),
-    airsRate: entry.airs_rate == null ? 5 : asNumber(entry.airs_rate,),
-    airsDelta: asNumber(entry.airs_delta,),
-    notes: asText(entry.notes,),
+    id: asText(entry.id) ?? '',
+    sourceKind: (asText(entry.source_kind) as AirsLedgerSourceKind) ?? 'correction',
+    sourceRef: asText(entry.source_ref),
+    idempotencyKey: asText(entry.idempotency_key),
+    sourceCurrency: asText(entry.source_currency) ?? 'USD',
+    sourceAmount: entry.source_amount == null ? null : asNumber(entry.source_amount),
+    airsRate: entry.airs_rate == null ? 5 : asNumber(entry.airs_rate),
+    airsDelta: asNumber(entry.airs_delta),
+    notes: asText(entry.notes),
     metadata:
       entry.metadata && typeof entry.metadata === 'object'
         ? (entry.metadata as Record<string, unknown>)
         : {},
-    recordedAt: asText(entry.recorded_at,) ?? new Date().toISOString(),
-    createdAt: asText(entry.created_at,) ?? new Date().toISOString(),
+    recordedAt: asText(entry.recorded_at) ?? new Date().toISOString(),
+    createdAt: asText(entry.created_at) ?? new Date().toISOString(),
   };
 }
 
 export async function supabaseRpc<T = Record<string, unknown>>(
   rpcName: string,
   payload: Record<string, unknown>,
-  env: Record<string, string | undefined> = process.env,
+  env: Record<string, string | undefined> = process.env
 ): Promise<T> {
-  const config = resolveAirsSupabaseConfig(env,);
+  const config = resolveAirsSupabaseConfig(env);
   if (!config) {
-    throw new Error(`Supabase is not configured for AIRS RPC ${rpcName}.`,);
+    throw new Error(`Supabase is not configured for AIRS RPC ${rpcName}.`);
   }
 
-  const response = await fetch(`${config.url.replace(/\/$/, '',)}/rest/v1/rpc/${rpcName}`, {
+  const response = await fetch(`${config.url.replace(/\/$/, '')}/rest/v1/rpc/${rpcName}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -205,16 +223,46 @@ export async function supabaseRpc<T = Record<string, unknown>>(
       Authorization: `Bearer ${config.key}`,
       Accept: 'application/json',
     },
-    body: JSON.stringify(payload,),
-  },);
+    body: JSON.stringify(payload),
+  });
 
   if (!response.ok) {
-    const text = await response.text().catch(() => '',);
-    throw new Error(`Supabase RPC ${rpcName} failed [${response.status}]: ${text}`,);
+    const text = await response.text().catch(() => '');
+    throw new Error(`Supabase RPC ${rpcName} failed [${response.status}]: ${text}`);
   }
 
-  const body = await readRpcBody(response,);
+  const body = await readRpcBody(response);
   return (body ?? {}) as T;
+}
+
+export async function supabaseRpcArray<T extends Record<string, unknown> = Record<string, unknown>>(
+  rpcName: string,
+  payload: Record<string, unknown>,
+  env: Record<string, string | undefined> = process.env
+): Promise<T[]> {
+  const config = resolveAirsSupabaseConfig(env);
+  if (!config) {
+    throw new Error(`Supabase is not configured for AIRS RPC ${rpcName}.`);
+  }
+
+  const response = await fetch(`${config.url.replace(/\/$/, '')}/rest/v1/rpc/${rpcName}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: config.key,
+      Authorization: `Bearer ${config.key}`,
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`Supabase RPC ${rpcName} failed [${response.status}]: ${text}`);
+  }
+
+  const body = await readRpcArrayBody(response);
+  return body as T[];
 }
 
 export async function recordAirsDashboardVisit(
@@ -222,7 +270,7 @@ export async function recordAirsDashboardVisit(
     userId: string;
     locale?: string | null;
   },
-  env: Record<string, string | undefined> = process.env,
+  env: Record<string, string | undefined> = process.env
 ): Promise<AirsDashboardVisitState> {
   const body = await supabaseRpc<Record<string, unknown>>(
     'airs_record_dashboard_visit',
@@ -230,23 +278,23 @@ export async function recordAirsDashboardVisit(
       p_user_id: input.userId,
       p_locale: input.locale ?? null,
     },
-    env,
+    env
   );
 
   return {
-    userId: asText(body.user_id,) ?? input.userId,
-    email: asText(body.email,),
-    displayName: asText(body.display_name,),
-    locale: asText(body.locale,),
-    firstDashboardRecorded: asBoolean(body.first_dashboard_recorded,),
-    shouldSendWelcomeEmail: asBoolean(body.should_send_welcome_email,),
-    shouldAwardProfileBonus: asBoolean(body.should_award_profile_bonus,),
-    profileComplete: asBoolean(body.profile_complete,),
-    welcomeEmailSentAt: asText(body.welcome_email_sent_at,),
-    profileBonusAwardedAt: asText(body.profile_bonus_awarded_at,),
-    profileCompletedAt: asText(body.profile_completed_at,),
-    airsBalance: asNumber(body.airs_balance,),
-    airsLifetimeEarned: asNumber(body.airs_lifetime_earned,),
+    userId: asText(body.user_id) ?? input.userId,
+    email: asText(body.email),
+    displayName: asText(body.display_name),
+    locale: asText(body.locale),
+    firstDashboardRecorded: asBoolean(body.first_dashboard_recorded),
+    shouldSendWelcomeEmail: asBoolean(body.should_send_welcome_email),
+    shouldAwardProfileBonus: asBoolean(body.should_award_profile_bonus),
+    profileComplete: asBoolean(body.profile_complete),
+    welcomeEmailSentAt: asText(body.welcome_email_sent_at),
+    profileBonusAwardedAt: asText(body.profile_bonus_awarded_at),
+    profileCompletedAt: asText(body.profile_completed_at),
+    airsBalance: asNumber(body.airs_balance),
+    airsLifetimeEarned: asNumber(body.airs_lifetime_earned),
   };
 }
 
@@ -257,7 +305,7 @@ export async function awardAirsProfileBonus(
     sourceRef?: string | null;
     metadata?: Record<string, unknown>;
   },
-  env: Record<string, string | undefined> = process.env,
+  env: Record<string, string | undefined> = process.env
 ): Promise<AirsProfileBonusResult> {
   const body = await supabaseRpc<Record<string, unknown>>(
     'airs_award_profile_completion_bonus',
@@ -267,22 +315,47 @@ export async function awardAirsProfileBonus(
       p_source_ref: input.sourceRef ?? 'profile-completion-bonus',
       p_metadata: input.metadata ?? {},
     },
-    env,
+    env
   );
 
   return {
-    awarded: asBoolean(body.awarded,),
+    awarded: asBoolean(body.awarded),
     status:
       body.status === 'already_awarded'
         ? 'already_awarded'
         : body.status === 'profile_incomplete'
-          ? 'profile_incomplete'
-          : 'awarded',
-    ledgerEntryId: asText(body.ledger_entry_id,),
-    airsBalance: asNumber(body.airs_balance,),
-    airsLifetimeEarned: asNumber(body.airs_lifetime_earned,),
-    profileBonusAwardedAt: asText(body.profile_bonus_awarded_at,),
-    profileCompletedAt: asText(body.profile_completed_at,),
+        ? 'profile_incomplete'
+        : 'awarded',
+    ledgerEntryId: asText(body.ledger_entry_id),
+    airsBalance: asNumber(body.airs_balance),
+    airsLifetimeEarned: asNumber(body.airs_lifetime_earned),
+    profileBonusAwardedAt: asText(body.profile_bonus_awarded_at),
+    profileCompletedAt: asText(body.profile_completed_at),
+  };
+}
+
+export async function awardAirsRegistrationBonus(
+  input: {
+    userId: string;
+    bonusAmount?: number;
+  },
+  env: Record<string, string | undefined> = process.env
+): Promise<{
+  awarded: boolean;
+  airsBalance: number;
+}> {
+  const body = await supabaseRpc<Record<string, unknown>>(
+    'airs_award_registration_bonus',
+    {
+      p_user_id: input.userId,
+      p_bonus_amount: input.bonusAmount ?? 10,
+    },
+    env
+  );
+
+  return {
+    awarded: asBoolean(body.awarded),
+    airsBalance: asNumber(body.airs_balance),
   };
 }
 
@@ -292,7 +365,7 @@ export async function markAirsWelcomeEmailSent(
     locale?: string | null;
     metadata?: Record<string, unknown>;
   },
-  env: Record<string, string | undefined> = process.env,
+  env: Record<string, string | undefined> = process.env
 ): Promise<AirsWelcomeEmailSentResult> {
   const body = await supabaseRpc<Record<string, unknown>>(
     'airs_mark_welcome_email_sent',
@@ -301,13 +374,13 @@ export async function markAirsWelcomeEmailSent(
       p_locale: input.locale ?? null,
       p_metadata: input.metadata ?? {},
     },
-    env,
+    env
   );
 
   return {
-    marked: asBoolean(body.marked,),
+    marked: asBoolean(body.marked),
     status: body.status === 'already_marked' ? 'already_marked' : 'marked',
-    welcomeEmailSentAt: asText(body.welcome_email_sent_at,),
+    welcomeEmailSentAt: asText(body.welcome_email_sent_at),
   };
 }
 
@@ -317,7 +390,7 @@ export async function getAirsDashboardSnapshot(
     locale?: string | null;
     ledgerLimit?: number;
   },
-  env: Record<string, string | undefined> = process.env,
+  env: Record<string, string | undefined> = process.env
 ): Promise<AirsDashboardSnapshot> {
   const body = await supabaseRpc<Record<string, unknown>>(
     'airs_get_dashboard_snapshot',
@@ -326,22 +399,23 @@ export async function getAirsDashboardSnapshot(
       p_locale: input.locale ?? null,
       p_ledger_limit: input.ledgerLimit ?? 5,
     },
-    env,
+    env
   );
 
   return {
-    userId: asText(body.user_id,) ?? input.userId,
-    email: asText(body.email,),
-    displayName: asText(body.display_name,),
-    locale: asText(body.locale,),
-    profileComplete: asBoolean(body.profile_complete,),
-    firstDashboardRecorded: asBoolean(body.first_dashboard_recorded,),
-    welcomeEmailSentAt: asText(body.welcome_email_sent_at,),
-    profileBonusAwardedAt: asText(body.profile_bonus_awarded_at,),
-    profileCompletedAt: asText(body.profile_completed_at,),
-    airsBalance: asNumber(body.airs_balance,),
-    airsLifetimeEarned: asNumber(body.airs_lifetime_earned,),
-    recentLedgerEntries: asRecordArray(body.recent_ledger_entries,).map(mapDashboardLedgerEntry,),
+    userId: asText(body.user_id) ?? input.userId,
+    email: asText(body.email),
+    displayName: asText(body.display_name),
+    locale: asText(body.locale),
+    profileComplete: asBoolean(body.profile_complete),
+    firstDashboardRecorded: asBoolean(body.first_dashboard_recorded),
+    registrationBonusClaimed: asBoolean(body.registration_bonus_claimed),
+    welcomeEmailSentAt: asText(body.welcome_email_sent_at),
+    profileBonusAwardedAt: asText(body.profile_bonus_awarded_at),
+    profileCompletedAt: asText(body.profile_completed_at),
+    airsBalance: asNumber(body.airs_balance),
+    airsLifetimeEarned: asNumber(body.airs_lifetime_earned),
+    recentLedgerEntries: asRecordArray(body.recent_ledger_entries).map(mapDashboardLedgerEntry),
   };
 }
 
@@ -358,7 +432,7 @@ export async function recordAirsLedgerEntry(
     notes?: string | null;
     metadata?: Record<string, unknown>;
   },
-  env: Record<string, string | undefined> = process.env,
+  env: Record<string, string | undefined> = process.env
 ): Promise<AirsLedgerEntryResult> {
   const body = await supabaseRpc<Record<string, unknown>>(
     'airs_record_ledger_entry',
@@ -374,25 +448,48 @@ export async function recordAirsLedgerEntry(
       p_notes: input.notes ?? null,
       p_metadata: input.metadata ?? {},
     },
-    env,
+    env
   );
 
   return {
-    id: asText(body.id,) ?? '',
-    user_id: asText(body.user_id,) ?? input.userId,
-    source_kind: (asText(body.source_kind,) as AirsLedgerSourceKind) ?? input.sourceKind,
-    source_ref: asText(body.source_ref,),
-    idempotency_key: asText(body.idempotency_key,),
-    source_currency: asText(body.source_currency,) ?? input.sourceCurrency ?? 'USD',
+    id: asText(body.id) ?? '',
+    user_id: asText(body.user_id) ?? input.userId,
+    source_kind: (asText(body.source_kind) as AirsLedgerSourceKind) ?? input.sourceKind,
+    source_ref: asText(body.source_ref),
+    idempotency_key: asText(body.idempotency_key),
+    source_currency: asText(body.source_currency) ?? input.sourceCurrency ?? 'USD',
     source_amount: typeof body.source_amount === 'number' ? body.source_amount : null,
-    airs_rate: asNumber(body.airs_rate,),
-    airs_delta: asNumber(body.airs_delta,),
-    notes: asText(body.notes,),
+    airs_rate: asNumber(body.airs_rate),
+    airs_delta: asNumber(body.airs_delta),
+    notes: asText(body.notes),
     metadata:
       body.metadata && typeof body.metadata === 'object'
         ? (body.metadata as Record<string, unknown>)
         : input.metadata ?? {},
-    recorded_at: asText(body.recorded_at,) ?? new Date().toISOString(),
-    created_at: asText(body.created_at,) ?? new Date().toISOString(),
+    recorded_at: asText(body.recorded_at) ?? new Date().toISOString(),
+    created_at: asText(body.created_at) ?? new Date().toISOString(),
   };
+}
+
+export async function getUserAchievements(
+  input: {
+    userId: string;
+  },
+  env: Record<string, string | undefined> = process.env
+): Promise<UserAchievement[]> {
+  const body = await supabaseRpcArray(
+    'get_user_achievements',
+    {
+      p_user_id: input.userId,
+    },
+    env
+  );
+
+  return body.map(
+    (row): UserAchievement => ({
+      key: asText(row.achievement_key) ?? '',
+      unlocked: row.unlocked === true,
+      unlockedAt: asText(row.unlocked_at),
+    })
+  );
 }

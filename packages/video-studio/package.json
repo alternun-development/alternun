@@ -1,0 +1,47 @@
+{
+  "name": "@alternun/video-studio",
+  "version": "1.0.252",
+  "description": "Remotion Three.js-based video production studio for AIRS",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/server/studio-server.mjs",
+    "dev:studio": "remotion studio",
+    "build": "remotion bundle",
+    "render": "remotion render",
+    "clean": "rm -rf dist .remotion"
+  },
+  "dependencies": {
+    "@react-three/fiber": "9.2.0",
+    "@remotion/cli": "4.0.459",
+    "@remotion/media": "4.0.459",
+    "@remotion/three": "4.0.459",
+    "@remotion/zod-types": "4.0.459",
+    "mediabunny": "1.42.0",
+    "playwright": "^1.45.0",
+    "remotion": "4.0.459",
+    "three": "0.178.0",
+    "zod": "4.3.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@remotion/bundler": "4.0.459",
+    "@remotion/renderer": "4.0.459",
+    "@remotion/eslint-config-flat": "^4.0.0",
+    "@types/cors": "2.8.19",
+    "@types/express": "4.17.25",
+    "@types/node": "^20.11.0",
+    "@types/react": "19.2.7",
+    "@types/three": "0.169.0",
+    "@types/web": "0.0.166",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "eslint": "9.19.0",
+    "express": "^5.2.1",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

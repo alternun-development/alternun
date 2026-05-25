@@ -9,6 +9,7 @@ import type {
 import type {
   AlternunSession,
   AuthExecutionResult,
+  AuthExecutionSignUpReferralInput,
   ExecutionSession,
   IssuerSession,
 } from '../core/types';
@@ -31,7 +32,12 @@ import {
 type ExecutionProviderCompat = AuthExecutionProvider & {
   onAuthStateChange?: (callback: (user: User | null) => void) => () => void;
   signInWithEmail?: (email: string, password: string) => Promise<User>;
-  signUpWithEmail?: (email: string, password: string, locale?: string) => Promise<unknown>;
+  signUpWithEmail?: (
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: AuthExecutionSignUpReferralInput | null
+  ) => Promise<unknown>;
   resendEmailConfirmation?: (email: string) => Promise<void>;
   verifyEmailConfirmationCode?: (email: string, code: string) => Promise<void>;
   requestPasswordResetEmail?: (email: string, redirectTo?: string) => Promise<void>;
@@ -71,7 +77,12 @@ type SupabaseCompatClientLike = {
 export interface AlternunAuthFacadeCompat extends AuthClient {
   signInWithGoogle(redirectTo?: string): Promise<void>;
   signInWithDiscord(redirectTo?: string): Promise<void>;
-  signUpWithEmail(email: string, password: string, locale?: string): Promise<AuthExecutionResult>;
+  signUpWithEmail(
+    email: string,
+    password: string,
+    locale?: string,
+    referral?: AuthExecutionSignUpReferralInput | null
+  ): Promise<AuthExecutionResult>;
   resendEmailConfirmation(email: string): Promise<void>;
   verifyEmailConfirmationCode(email: string, code: string): Promise<void>;
   requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void>;
@@ -90,6 +101,7 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
   runtime: AuthRuntime;
 
   private currentUser: User | null = null;
+  private hasResolvedAuthState = false;
   private currentCompatUser: User | null = null;
   private currentExecutionSession: ExecutionSession | null = null;
   private currentIssuerSession: IssuerSession | null = null;
@@ -159,6 +171,7 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
 
   private emit(user: User | null): void {
     this.currentUser = user;
+    this.hasResolvedAuthState = true;
     for (const listener of this.listeners) {
       listener(user);
     }
@@ -366,6 +379,10 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
   }
 
   async getUser(): Promise<User | null> {
+    if (this.hasResolvedAuthState) {
+      return this.currentUser;
+    }
+
     return this.refreshState('getUser', { allowExchange: true });
   }
 
@@ -503,10 +520,16 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
   async signUpWithEmail(
     email: string,
     password: string,
-    locale?: string
+    locale?: string,
+    referral?: AuthExecutionSignUpReferralInput | null
   ): Promise<AuthExecutionResult> {
     if (this.executionProvider.signUpWithEmail) {
-      const outcome = await this.executionProvider.signUpWithEmail(email, password, locale);
+      const outcome = await this.executionProvider.signUpWithEmail(
+        email,
+        password,
+        locale,
+        referral
+      );
       const outcomeRecord = outcome as Record<string, unknown>;
       const result: AuthExecutionResult = isEmailAuthResult(outcome)
         ? {
@@ -549,6 +572,7 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
       email,
       password,
       locale,
+      referral,
     });
 
     if (result.session?.externalIdentity) {
@@ -701,6 +725,7 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
 
   async refreshExecutionSession(): Promise<ExecutionSession | null> {
     this.currentExecutionSession = await this.executionProvider.refreshExecutionSession();
+    this.hasResolvedAuthState = false;
     await this.refreshState('refreshExecutionSession', { allowExchange: true });
     return this.currentExecutionSession;
   }
@@ -713,6 +738,7 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
 
   async refreshIssuerSession(): Promise<IssuerSession | null> {
     this.currentIssuerSession = await this.issuerProvider.refreshIssuerSession();
+    this.hasResolvedAuthState = false;
     await this.refreshState('refreshIssuerSession', { allowExchange: true });
     return this.currentIssuerSession;
   }
@@ -724,6 +750,7 @@ export class AlternunAuthFacade implements AlternunAuthFacadeCompat {
     await this.issuerProvider.logoutIssuerSession(options);
     this.currentIssuerSession = null;
     this.currentAlternunSession = null;
+    this.hasResolvedAuthState = false;
     await this.refreshState('logoutIssuerSession', { allowExchange: false });
   }
 

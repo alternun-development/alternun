@@ -6,6 +6,7 @@ import {
   BellOff,
   Check,
   ChevronRight,
+  Copy,
   Globe,
   LogOut,
   Moon,
@@ -22,6 +23,8 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Clipboard,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -38,6 +41,17 @@ import { PageTabBar, type TabItem } from '../components/common/PageTabBar';
 import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
 import { resolveAppPackageVersion } from '../components/common/Footer.shared';
 import profileStylesEnhanced from '../components/profile/ProfileStyles';
+import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
+import { createShadowStyle } from '../components/theme/deprecatedStylesHelper';
+import { resolveSessionTokenWithRetry } from '../components/auth/sessionToken';
+import {
+  AchievementBadge,
+  AchievementTooltip,
+  ACHIEVEMENT_CATALOG,
+  type AchievementDef,
+  type ColorPalette,
+} from '../components/profile/AchievementBadge';
+import { ReferralCard } from '../components/profile/ReferralCard';
 
 const AwardIcon = Award as React.FC<LucideProps>;
 const BellIcon = Bell as React.FC<LucideProps>;
@@ -57,14 +71,12 @@ const WalletIcon = Wallet as React.FC<LucideProps>;
 
 type UserMetadata = Record<string, unknown>;
 
-interface ColorPalette {
-  bg: string;
-  cardBg: string;
-  cardBorder: string;
-  border: string;
-  text: string;
-  muted: string;
-  accent: string;
+interface AccountReferralSummary {
+  user_created_at?: string | null;
+  referred_by_user_id?: string | null;
+  referred_by_referral_code?: string | null;
+  referred_by_name?: string | null;
+  referred_by_email?: string | null;
 }
 
 const TOP_USERS = [
@@ -90,6 +102,70 @@ const RANKING_FILTERS: SearchFilterOption[] = [
 function getMetadata(user: User | null): UserMetadata {
   if (!user?.metadata || typeof user.metadata !== 'object') return {};
   return user.metadata as UserMetadata;
+}
+
+function normalizeDateCandidate(value: unknown): string | null {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const milliseconds = value > 10_000_000_000 ? value : value * 1000;
+    return new Date(milliseconds).toISOString();
+  }
+
+  return null;
+}
+
+function resolveAccountCreatedAt(
+  user: User | null,
+  referralSummary: AccountReferralSummary | null
+): string | null {
+  if (!user) return null;
+
+  const metadata = getMetadata(user);
+  const userRecord = user as User & Record<string, unknown>;
+  const candidates = [
+    referralSummary?.user_created_at,
+    userRecord.createdAt,
+    userRecord.created_at,
+    metadata.createdAt,
+    metadata.created_at,
+    metadata.created,
+    metadata.registeredAt,
+    metadata.registered_at,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeDateCandidate(candidate);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return null;
+}
+
+function formatAccountCreatedAt(value: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return date.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function getAccountReferrerLabel(summary: AccountReferralSummary | null): string | null {
+  return (
+    summary?.referred_by_name ??
+    summary?.referred_by_email ??
+    summary?.referred_by_referral_code ??
+    null
+  );
 }
 
 function getProfileInfo(user: User | null): { displayName: string; email?: string } {
@@ -244,12 +320,16 @@ function ProfileHeader({
   email,
   isDark,
   c,
+  floatAnim1,
+  floatAnim2,
 }: {
   displayName: string;
   score: number | null;
   email?: string;
   isDark: boolean;
   c: ColorPalette;
+  floatAnim1?: Animated.Value;
+  floatAnim2?: Animated.Value;
 }): React.JSX.Element {
   const safeScore = score ?? 0;
   const tier = resolveTier(safeScore);
@@ -273,19 +353,74 @@ function ProfileHeader({
         },
       ]}
     >
-      {/* Decorative glow */}
-      <View
-        style={{
-          position: 'absolute',
-          top: -100,
-          right: -80,
-          width: 260,
-          height: 260,
-          borderRadius: 130,
-          backgroundColor: isDark ? 'rgba(30,230,181,0.12)' : 'rgba(13,148,136,0.08)',
-          pointerEvents: 'none',
-        }}
-      />
+      {/* Animated floating circles */}
+      {floatAnim1 && (
+        <View
+          style={{
+            position: 'absolute',
+            top: -120,
+            left: -60,
+            width: 200,
+            height: 200,
+            borderRadius: 100,
+            overflow: 'hidden',
+            pointerEvents: 'none',
+          }}
+        >
+          <Animated.View
+            style={{
+              width: 200,
+              height: 200,
+              borderRadius: 100,
+              backgroundColor: isDark ? 'rgba(30,230,181,0.08)' : 'rgba(13,148,136,0.05)',
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              transform: [
+                {
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                  translateY: floatAnim1.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 30],
+                  }),
+                },
+              ],
+            }}
+          />
+        </View>
+      )}
+
+      {floatAnim2 && (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: -100,
+            left: 20,
+            width: 150,
+            height: 150,
+            borderRadius: 75,
+            overflow: 'hidden',
+            pointerEvents: 'none',
+          }}
+        >
+          <Animated.View
+            style={{
+              width: 150,
+              height: 150,
+              borderRadius: 75,
+              backgroundColor: isDark ? 'rgba(30,230,181,0.06)' : 'rgba(13,148,136,0.04)',
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              transform: [
+                {
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                  translateY: floatAnim2.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -25],
+                  }),
+                },
+              ],
+            }}
+          />
+        </View>
+      )}
 
       {/* Content */}
       <View style={{ alignItems: 'center', zIndex: 1 }}>
@@ -301,7 +436,14 @@ function ProfileHeader({
               justifyContent: 'center',
               borderWidth: 3,
               borderColor: heroBg,
-              boxShadow: `0 0 0 2px ${spec.color}`,
+              ...createShadowStyle({
+                color: spec.color,
+                offsetX: 0,
+                offsetY: 2,
+                opacity: 0.3,
+                radius: 4,
+                elevation: 5,
+              }),
             }}
           >
             <Text
@@ -578,55 +720,6 @@ function TierJourney({
   );
 }
 
-function AchievementBadge({
-  icon,
-  label,
-  color,
-  unlocked = true,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  color: string;
-  unlocked?: boolean;
-}): React.JSX.Element {
-  return (
-    <View
-      style={{
-        alignItems: 'center',
-        gap: 6,
-        opacity: unlocked ? 1 : 0.4,
-      }}
-    >
-      <View
-        style={{
-          width: 56,
-          height: 56,
-          borderRadius: 16,
-          backgroundColor: unlocked ? `${color}2E` : 'rgba(255,255,255,0.04)',
-          borderWidth: 1,
-          borderColor: unlocked ? `${color}66` : 'rgba(255,255,255,0.12)',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {icon}
-      </View>
-      <Text
-        style={{
-          fontSize: 10,
-          fontWeight: '600',
-          color: 'rgba(255,255,255,0.7)',
-          textAlign: 'center',
-          lineHeight: 1.2,
-          maxWidth: 70,
-        }}
-      >
-        {label}
-      </Text>
-    </View>
-  );
-}
-
 function SettingRow({
   icon,
   label,
@@ -696,6 +789,391 @@ function SettingRow({
       )}
       {!hideChevron && <ChevronRightIcon size={16} color={c.muted} strokeWidth={2} />}
     </TouchableOpacity>
+  );
+}
+
+function AccountInfoModal({
+  visible,
+  user,
+  isDark,
+  c,
+  onClose,
+}: {
+  visible: boolean;
+  user: User | null;
+  isDark: boolean;
+  c: ColorPalette;
+  onClose: () => void;
+}): React.JSX.Element | null {
+  const [copiedId, setCopiedId] = useState(false);
+  const [referralSummary, setReferralSummary] = useState<AccountReferralSummary | null>(null);
+  const [referralSummaryLoading, setReferralSummaryLoading] = useState(false);
+  const profile = useMemo(() => getProfileInfo(user), [user]);
+  const createdAt =
+    formatAccountCreatedAt(resolveAccountCreatedAt(user, referralSummary)) ??
+    (referralSummaryLoading ? 'Cargando...' : 'N/A');
+  const referrerLabel = getAccountReferrerLabel(referralSummary);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchReferralSummary = async (): Promise<void> => {
+      if (!visible || !user?.id) {
+        setReferralSummary(null);
+        setReferralSummaryLoading(false);
+        return;
+      }
+
+      setReferralSummaryLoading(true);
+
+      try {
+        const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
+        const referralUrl = new URL(`${apiBaseUrl}/v1/referrals/me`);
+        referralUrl.searchParams.set('user_id', user.id);
+        if (profile.displayName) {
+          referralUrl.searchParams.set('display_name', profile.displayName);
+        }
+
+        const response = await fetch(referralUrl.toString(), {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Referral summary request failed (${response.status})`);
+        }
+
+        const summary = (await response.json()) as AccountReferralSummary;
+        if (isMounted) {
+          setReferralSummary(summary);
+        }
+      } catch {
+        if (isMounted) {
+          setReferralSummary(null);
+        }
+      } finally {
+        if (isMounted) {
+          setReferralSummaryLoading(false);
+        }
+      }
+    };
+
+    void fetchReferralSummary();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [profile.displayName, user?.id, visible]);
+
+  if (!visible || !user) return null;
+
+  const handleCopyId = (): void => {
+    if (user.id) {
+      void Clipboard.setString(user.id);
+      setCopiedId(true);
+      if (Platform.OS === 'android') {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires,@typescript-eslint/no-unsafe-assignment
+        const { ToastAndroid } = require('react-native');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+        ToastAndroid.show('ID copiado al portapapeles', ToastAndroid.SHORT);
+      }
+      setTimeout(() => {
+        setCopiedId(false);
+      }, 2000);
+    }
+  };
+
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.6)',
+        justifyContent: 'flex-end',
+        zIndex: 100,
+      }}
+    >
+      <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
+      <View
+        style={{
+          backgroundColor: isDark ? '#050f0c' : '#f0fdf9',
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
+          paddingHorizontal: 16,
+          paddingTop: 20,
+          paddingBottom: 40,
+          maxHeight: '85%',
+          borderTopWidth: 3,
+          borderTopColor: c.accent,
+        }}
+      >
+        <View
+          style={{
+            width: 40,
+            height: 4,
+            backgroundColor: c.muted,
+            borderRadius: 2,
+            alignSelf: 'center',
+            marginBottom: 16,
+            opacity: 0.4,
+          }}
+        />
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 24,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: '800',
+              color: c.text,
+              letterSpacing: -0.5,
+            }}
+          >
+            Información de Cuenta
+          </Text>
+          <TouchableOpacity onPress={onClose} style={{ padding: 8 }}>
+            <Text style={{ fontSize: 24, color: c.muted, fontWeight: '400' }}>✕</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false} style={{ marginBottom: 16 }}>
+          {/* Account ID */}
+          <View style={{ marginBottom: 18 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: c.muted,
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              ID de Cuenta
+            </Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: c.cardBorder,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: c.text,
+                  fontFamily: 'monospace',
+                  fontWeight: '500',
+                  lineHeight: 1.4,
+                  flex: 1,
+                }}
+              >
+                {user.id || 'N/A'}
+              </Text>
+              <TouchableOpacity onPress={handleCopyId} style={{ padding: 8, marginLeft: 8 }}>
+                {copiedId ? (
+                  <CheckIcon size={18} color={c.accent} strokeWidth={3} />
+                ) : (
+                  <Copy size={18} color={c.accent} strokeWidth={2} />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Email */}
+          <View style={{ marginBottom: 18 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: c.muted,
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              Email
+            </Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: c.cardBorder,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+              }}
+            >
+              <Text
+                style={{ fontSize: 14, color: c.text, fontFamily: 'monospace', fontWeight: '400' }}
+              >
+                {user.email ?? 'N/A'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Display Name */}
+          <View style={{ marginBottom: 18 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: c.muted,
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              Nombre de Usuario
+            </Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: c.cardBorder,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+              }}
+            >
+              <Text style={{ fontSize: 14, color: c.text, fontWeight: '500' }}>
+                {profile.displayName || 'N/A'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Creation Date */}
+          <View style={{ marginBottom: 18 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: c.muted,
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              Fecha de Creación
+            </Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: c.cardBorder,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+              }}
+            >
+              <Text
+                style={{ fontSize: 14, color: c.text, fontFamily: 'monospace', fontWeight: '400' }}
+              >
+                {createdAt}
+              </Text>
+            </View>
+          </View>
+
+          {/* Referred By */}
+          {referrerLabel ? (
+            <View style={{ marginBottom: 18 }}>
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '600',
+                  color: c.muted,
+                  marginBottom: 8,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                }}
+              >
+                Referido por
+              </Text>
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderColor: `${c.accent}44`,
+                  borderRadius: 10,
+                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                  backgroundColor: `${c.accent}12`,
+                }}
+              >
+                <Text style={{ fontSize: 14, color: c.text, fontWeight: '700' }}>
+                  {referrerLabel}
+                </Text>
+                {referralSummary?.referred_by_referral_code &&
+                referralSummary.referred_by_referral_code !== referrerLabel ? (
+                  <Text
+                    style={{
+                      marginTop: 4,
+                      fontSize: 12,
+                      color: c.muted,
+                      fontFamily: 'monospace',
+                      fontWeight: '500',
+                    }}
+                  >
+                    {referralSummary.referred_by_referral_code}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+          ) : null}
+
+          {/* Verified Badge */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              paddingHorizontal: 14,
+              paddingVertical: 12,
+              backgroundColor: `${c.accent}18`,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: `${c.accent}44`,
+              marginTop: 8,
+            }}
+          >
+            <CheckIcon size={18} color={c.accent} strokeWidth={2.5} />
+            <Text style={{ fontSize: 13, fontWeight: '700', color: c.accent }}>Cuenta Activa</Text>
+          </View>
+        </ScrollView>
+
+        <TouchableOpacity
+          onPress={onClose}
+          style={{
+            backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.08)',
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: c.cardBorder,
+          }}
+        >
+          <Text style={{ fontSize: 15, fontWeight: '700', color: c.text, letterSpacing: 0.3 }}>
+            Cerrar
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
@@ -1113,6 +1591,7 @@ function PerfilTab({
   language,
   onCycleLanguage,
   footerLabel,
+  client,
 }: {
   isDark: boolean;
   c: ColorPalette;
@@ -1124,14 +1603,106 @@ function PerfilTab({
   language: string;
   onCycleLanguage: () => void;
   footerLabel: string;
+  client: ReturnType<typeof useAuth>['client'];
 }): React.JSX.Element {
   const profile = useMemo(() => getProfileInfo(user), [user]);
   const walletAddress = useMemo(() => getWalletAddress(user), [user]);
   const walletProvider = useMemo(() => getWalletProvider(user), [user]);
   const walletConnected = Boolean(walletAddress || walletProvider);
   const authMethod = useMemo(() => getAuthMethodLabel(user), [user]);
+  const { t } = useAppTranslation('mobile');
+  const [showAccountInfoModal, setShowAccountInfoModal] = useState(false);
   const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [selectedAchievement, setSelectedAchievement] = useState<{
+    label: string;
+    color: string;
+  } | null>(null);
+  const [achievements, setAchievements] = useState<
+    Array<{ key: string; unlocked: boolean; unlockedAt: string | null }>
+  >([]);
+
+  // Animated circles
+  const { motionLevel } = useAppPreferences();
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const floatAnim1 = useRef(new Animated.Value(0)).current;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const floatAnim2 = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (motionLevel === 'off') {
+      return;
+    }
+
+    const duration = 3000;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const startAnimation = (anim: Animated.Value): void => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      Animated.loop(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        Animated.sequence([
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+          Animated.timing(anim, {
+            toValue: 1,
+            duration,
+            useNativeDriver: true,
+          }),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+          Animated.timing(anim, {
+            toValue: 0,
+            duration,
+            useNativeDriver: true,
+          }),
+        ])
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      ).start();
+    };
+
+    startAnimation(floatAnim1);
+    startAnimation(floatAnim2);
+  }, [floatAnim1, floatAnim2, motionLevel]);
+
+  useEffect(() => {
+    const fetchAchievements = async (): Promise<void> => {
+      try {
+        if (!user?.id) {
+          return;
+        }
+
+        const sessionToken = await resolveSessionTokenWithRetry(client, {
+          attempts: 4,
+          retryDelayMs: 250,
+        });
+        if (!sessionToken) {
+          return;
+        }
+
+        const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
+        const response = await fetch(`${apiBaseUrl}/v1/airs/achievements`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+            Accept: 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = (await response.json()) as Array<{
+            key: string;
+            unlocked: boolean;
+            unlockedAt: string | null;
+          }>;
+          setAchievements(data);
+        } else {
+          console.warn(`Failed to fetch achievements: ${response.status}`, await response.text());
+        }
+      } catch (error) {
+        console.warn('Error fetching achievements:', error);
+      }
+    };
+
+    void fetchAchievements();
+  }, [user?.id, client]);
 
   return (
     <View style={{ flex: 1, position: 'relative' }}>
@@ -1147,6 +1718,8 @@ function PerfilTab({
           email={profile.email}
           isDark={isDark}
           c={c}
+          floatAnim1={floatAnim1}
+          floatAnim2={floatAnim2}
         />
 
         {/* Tier Journey */}
@@ -1160,62 +1733,75 @@ function PerfilTab({
               flexWrap: 'wrap',
               gap: 10,
               padding: 16,
+              position: 'relative',
             }}
           >
-            <AchievementBadge
-              icon={<Wallet size={22} color='#34d399' />}
-              label='Primer Árbol'
-              color='#34d399'
-              unlocked
-            />
-            <AchievementBadge
-              icon={<Trophy size={22} color={c.accent} />}
-              label='10 kg CO₂'
-              color={c.accent}
-              unlocked
-            />
-            <AchievementBadge
-              icon={<Trophy size={22} color='#d4b96a' />}
-              label='1K Airs'
-              color='#d4b96a'
-              unlocked
-            />
-            <AchievementBadge
-              icon={<Award size={22} color='#818cf8' />}
-              label='5K Airs'
-              color='#818cf8'
-              unlocked
-            />
-            <AchievementBadge
-              icon={<CheckIcon size={22} color={c.accent} />}
-              label='KYC Verificado'
-              color={c.accent}
-              unlocked
-            />
-            <AchievementBadge
-              icon={<UserCircle2 size={22} color='#a8b8cc' />}
-              label='Recluta'
-              color='#a8b8cc'
-              unlocked
-            />
-            <AchievementBadge
-              icon={<Wallet size={22} color='#cd7f32' />}
-              label='Socio'
-              color='#cd7f32'
-              unlocked
-            />
-            <AchievementBadge
-              icon={<Trophy size={22} color='#9ba9c4' />}
-              label='Platinum'
-              color='#9ba9c4'
-              unlocked={false}
-            />
+            {Object.entries(ACHIEVEMENT_CATALOG).map(([key, def]) => {
+              const achievement = achievements.find((a) => a.key === key);
+              const isUnlocked = achievement?.unlocked ?? false;
+
+              const achievementDef: AchievementDef = {
+                key,
+                label: def.label,
+                color: def.color,
+                icon: def.icon,
+                unlocked: isUnlocked,
+                unlockedAt: achievement?.unlockedAt ?? null,
+              };
+
+              return (
+                <AchievementBadge
+                  key={key}
+                  def={achievementDef}
+                  onPress={() => setSelectedAchievement({ label: def.label, color: def.color })}
+                />
+              );
+            })}
+
+            {/* Tooltip */}
+            {selectedAchievement && (
+              <TouchableOpacity
+                style={{ position: 'absolute', width: '100%', height: '100%' }}
+                onPress={() => setSelectedAchievement(null)}
+              >
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <AchievementTooltip
+                    visible={Boolean(selectedAchievement)}
+                    label={selectedAchievement?.label || ''}
+                    color={selectedAchievement?.color || ''}
+                    isDark={isDark}
+                    _c={c}
+                  />
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
+        </SectionContainer>
+
+        {/* Referrals */}
+        <SectionContainer
+          title={t('profile.sections.referrals', undefined, 'Referidos')}
+          style={{ margin: 12 }}
+        >
+          <ReferralCard user={user} isDark={isDark} c={c} />
         </SectionContainer>
 
         {/* Cuenta */}
         <SectionContainer title='Cuenta' style={{ margin: 12 }}>
           <GlassCard>
+            <SettingRow
+              icon={UserCircle2}
+              label='Información de Cuenta'
+              value={user?.id ? truncateMiddle(user.id, 10, 6) : 'N/A'}
+              c={c}
+              onPress={() => setShowAccountInfoModal(true)}
+            />
             <SettingRow
               icon={UserCircle2}
               label='Información personal'
@@ -1397,6 +1983,15 @@ function PerfilTab({
         </Text>
       </ScrollView>
 
+      {/* Account Info Modal */}
+      <AccountInfoModal
+        visible={showAccountInfoModal}
+        user={user}
+        isDark={isDark}
+        c={c}
+        onClose={() => setShowAccountInfoModal(false)}
+      />
+
       {/* Personal Info Modal */}
       <PersonalInfoModal
         visible={showPersonalInfoModal}
@@ -1420,7 +2015,7 @@ const TABS: TabItem[] = [
 export default function MiPerfilScreen(): React.JSX.Element {
   const router = useRouter();
   const params = useLocalSearchParams<{ tab?: string }>();
-  const { user, loading, signOutUser } = useAuth();
+  const { user, loading, signOutUser, client } = useAuth();
   const { t } = useAppTranslation('mobile');
   const { themeMode, language, toggleThemeMode, cycleLanguage } = useAppPreferences();
   const isDark = themeMode === 'dark';
@@ -1543,6 +2138,7 @@ export default function MiPerfilScreen(): React.JSX.Element {
                 void cycleLanguage?.();
               }}
               footerLabel={footerLabel}
+              client={client}
             />
           )}
         </Animated.View>

@@ -53,8 +53,8 @@ const MANAGED_PIPELINE_ALIASES: Record<ManagedPipeline, readonly string[]> = {
   production: ['production', 'prod'],
   dev: ['dev'],
   mobile: ['mobile'],
-  // PRIMARY: dashboard-dev | Aliases: All other names below
-  // Creates: alternun-api-dev Lambda, testnet.api.alternun.co domain, admin site, etc.
+  // PRIMARY: dashboard-dev | Legacy admin/api aliases normalize here.
+  // Creates the live testnet API/admin runtime for testnet.api.alternun.co and testnet.admin.alternun.co.
   'dashboard-dev': [
     'dashboard',
     'dashboard-dev', // Alias for dashboard site
@@ -62,12 +62,12 @@ const MANAGED_PIPELINE_ALIASES: Record<ManagedPipeline, readonly string[]> = {
     'dashboardapi-dev', // Alias for dashboard+api combined
     'dashboard-admin',
     'dashboard-admin-dev', // Alias for admin site
-    'api', // Alias for API component
-    'api-dev', // Alias for API component (PRIMARY for API)
-    'backend', // Alias for API component
-    'backend-dev', // Alias for API component
-    'backend-api', // Alias for API component
-    'backend-api-dev', // Alias for API component (do NOT deploy separately!)
+    'api', // Retired API alias; normalize to dashboard-dev
+    'api-dev', // Retired API alias; normalize to dashboard-dev
+    'backend', // Retired API alias; normalize to dashboard-dev
+    'backend-dev', // Retired API alias; normalize to dashboard-dev
+    'backend-api', // Retired API alias; normalize to dashboard-dev
+    'backend-api-dev', // Retired API alias; do not deploy as a standalone stage
   ],
   'dashboard-prod': [
     'dashboard-prod',
@@ -78,10 +78,10 @@ const MANAGED_PIPELINE_ALIASES: Record<ManagedPipeline, readonly string[]> = {
     'admin-production',
     'backoffice-prod',
     'backoffice-admin-prod',
-    'api-prod',
-    'api-production',
-    'backend-prod',
-    'backend-api-prod',
+    'api-prod', // Retired API alias; normalize to dashboard-prod
+    'api-production', // Retired API alias; normalize to dashboard-prod
+    'backend-prod', // Retired API alias; normalize to dashboard-prod
+    'backend-api-prod', // Retired API alias; normalize to dashboard-prod
   ],
   'identity-dev': [
     'identity',

@@ -50,6 +50,8 @@ Notes:
   By default, uncommitted tracked changes are automatically staged and committed
   with a generated conventional-commit message before the release starts.
   New untracked source files are also staged unless they look like build artefacts.
+  On the normal development release path, pnpm release:patch also deploys the
+  live testnet API via ./scripts/deploy-testnet-api.sh --no-prompt.
   Use --allow-dirty to skip this and proceed with a dirty tree (no auto-commit).
 `);
 }
@@ -486,6 +488,7 @@ function buildReleaseArtifacts(dryRun, env, buildStage, versionBranch) {
   // stage-specific env instead of drifting back to infra defaults.
   const buildEnv = {
     ...env,
+    NODE_ENV: 'production',
     STACK: env.STACK ?? buildStage,
     SST_STAGE: env.SST_STAGE ?? buildStage,
     EXPO_PUBLIC_STAGE: env.EXPO_PUBLIC_STAGE ?? buildStage,
@@ -493,7 +496,15 @@ function buildReleaseArtifacts(dryRun, env, buildStage, versionBranch) {
     ALTERNUN_VERSION_BRANCH: versionBranch,
   };
 
-  run('pnpm', ['exec', 'turbo', 'run', 'build', '--force'], {
+  // Build the workspace without `@alternun/web` first. The web build performs a
+  // second-stage Next export and has proven sensitive to the full concurrent
+  // turbo graph, so we run it after the rest of the workspace settles.
+  run('pnpm', ['exec', 'turbo', 'run', 'build', '--force', '--filter=!@alternun/web'], {
+    dryRun,
+    env: buildEnv,
+  });
+
+  run('pnpm', ['--filter', '@alternun/web', 'build'], {
     dryRun,
     env: buildEnv,
   });
@@ -545,6 +556,11 @@ function pushRelease({ remote, dryRun, targetBranch }) {
 
   run('git', ['push', remote, branchToPush, '--follow-tags'], { dryRun });
   console.log(`Pushed ${branchToPush} with release tags.`);
+}
+
+function deployTestnetApi({ dryRun }) {
+  console.log('Deploying testnet API via ./scripts/deploy-testnet-api.sh --no-prompt');
+  run('bash', ['scripts/deploy-testnet-api.sh', '--no-prompt'], { dryRun });
 }
 
 function buildCompareUrl(remoteUrl, base, head) {
@@ -915,6 +931,10 @@ function main() {
       dryRun: options.dryRun,
       targetBranch: options.targetBranch,
     });
+  }
+
+  if (!options.promote && target === 'patch' && releaseBranch === 'develop' && directPushEnabled) {
+    deployTestnetApi({ dryRun: options.dryRun });
   }
 
   if (options.promote) {

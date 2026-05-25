@@ -4,8 +4,10 @@ import { AuthExchangeService } from './auth-exchange.service';
 import { SignInService } from './services/signin.service';
 import { SignupService } from './services/signup.service';
 import { SocialSignInService } from './services/social-signin.service';
+import { ReferralsModule } from '../referrals/referrals.module';
 
 @Module({
+  imports: [ReferralsModule],
   controllers: [AuthExchangeController],
   providers: [AuthExchangeService, SignInService, SignupService, SocialSignInService],
 })

@@ -1,11 +1,12 @@
 {
   "name": "alternun",
-  "version": "1.0.224",
+  "version": "1.0.273",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "dev:all": "concurrently -k --names api,admin,mobile,docs --prefix-colors blue,green,magenta,cyan \"pnpm --filter @alternun/api run dev\" \"pnpm --filter @alternun/admin run dev:local\" \"pnpm --filter @alternun/mobile run web:local:app\" \"pnpm --filter alternun-docs run dev:local\"",
+    "dev:all": "node scripts/dev-all.mjs",
+    "dev:all:video": "node scripts/dev-all.mjs --video-studio",
     "admin": "pnpm --filter @alternun/admin dev",
     "mobile": "pnpm --filter ./apps/mobile start",
     "lint": "turbo run lint",
@@ -17,10 +18,11 @@
     "security:audit": "node scripts/security-audit.mjs",
     "type-check": "turbo run type-check",
     "clean": "turbo run clean",
+    "db:migrate": "bash scripts/db-migrate.sh",
+    "db:migrate:dev": "pnpm --filter @alternun/api run db:migrate",
+    "db:migrate:dry-run": "pnpm --filter @alternun/api run db:migrate -- --dry-run",
     "infra:deploy:dev": "pnpm --filter @alternun/infra run deploy:dev",
     "infra:deploy:production": "pnpm --filter @alternun/infra run deploy:production",
-    "infra:deploy:api-dev": "pnpm --filter @alternun/infra run deploy:api-dev",
-    "infra:deploy:api-prod": "pnpm --filter @alternun/infra run deploy:api-prod",
     "infra:deploy:dashboard-dev": "pnpm --filter @alternun/infra run deploy:dashboard-dev",
     "infra:deploy:dashboard-prod": "pnpm --filter @alternun/infra run deploy:dashboard-prod",
     "infra:deploy:admin-dev": "pnpm --filter @alternun/infra run deploy:admin-dev",
@@ -96,7 +98,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx,d.ts}": [
-      "eslint --fix",
+      "eslint --fix --quiet",
       "prettier --write"
     ],
     "*.{md,json}": [

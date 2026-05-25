@@ -21,3 +21,8 @@ export {
   type AirsWelcomeEmail,
   type AirsWelcomeEmailInput,
 } from './lib/airs-welcome';
+export {
+  renderSignupWelcomeEmail,
+  type SignupWelcomeEmail,
+  type SignupWelcomeEmailInput,
+} from './lib/signup-welcome';
