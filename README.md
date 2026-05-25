@@ -71,6 +71,7 @@ pnpm dev:all        # starts api, admin, mobile, docs concurrently
 pnpm lint           # lint all packages
 pnpm type-check     # TypeScript across monorepo
 pnpm test           # run all tests
+pnpm test:coverage  # run coverage-producing tests for Codecov uploads
 pnpm build          # full production build
 
 # Targeted (prefer before root commands)
@@ -110,11 +111,12 @@ pnpm readme:check         # validate the root README version, latest changes, an
 pnpm readme:update        # sync the root README from the current changelog and release version
 pnpm release              # build release on current branch
 pnpm release patch        # branch-aware release bump, regenerate changelog, stage-aware build, tag, push
-pnpm release:promote      # promote current release to production without a new semantic bump
+pnpm release:patch:promote # promote current release to production without a new semantic bump
 pnpm version:check-secrets # scan staged files for secrets
 ```
 
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
+The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
 Current version: **1.0.275**
 
