@@ -385,7 +385,7 @@ function validateRootDocumentation() {
   if ((result.status ?? 1) !== 0) {
     throw new Error(
       'Root documentation structure validation failed. ' +
-      'Move non-critical .md files to docs/ before releasing.'
+        'Move non-critical .md files to docs/ before releasing.'
     );
   }
 }
@@ -555,12 +555,7 @@ function resolveDevelopmentReleaseVersion(target, currentVersion) {
   throw new Error(`Unsupported development release target: ${target}`);
 }
 
-function createReleaseCommit(
-  version,
-  dryRun,
-  branchName = getCurrentBranch(),
-  allowEmpty = false
-) {
+function createReleaseCommit(version, dryRun, branchName = getCurrentBranch(), allowEmpty = false) {
   stageReleaseFiles(dryRun, branchName);
   const commitEnv = allowEmpty ? { ...process.env, ALTERNUN_RELEASE_COMMIT: 'true' } : process.env;
 
@@ -574,7 +569,25 @@ function createReleaseCommit(
   );
 }
 
+function releaseTagExists(version, dryRun) {
+  if (dryRun) {
+    return false;
+  }
+
+  const result = run('git', ['tag', '--list', `v${version}`], { dryRun, capture: true });
+  return result.stdout
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .includes(`v${version}`);
+}
+
 function createReleaseTag(version, dryRun) {
+  if (releaseTagExists(version, dryRun)) {
+    console.log(`Tag v${version} already exists; skipping tag creation.`);
+    return;
+  }
+
   run('git', ['tag', '-a', `v${version}`, '-m', `Release v${version}`], { dryRun });
 }
 
@@ -747,7 +760,9 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
 
   if (!repoSlug) {
     if (compareUrl) {
-      console.warn(`Could not derive the GitHub repository slug. Create the PR manually: ${compareUrl}`);
+      console.warn(
+        `Could not derive the GitHub repository slug. Create the PR manually: ${compareUrl}`
+      );
       return;
     }
 
@@ -782,7 +797,9 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
           console.log(output);
         }
       }
-      console.log(`Updated existing pull request #${existingPullRequest.number} for ${base} <- ${head}.`);
+      console.log(
+        `Updated existing pull request #${existingPullRequest.number} for ${base} <- ${head}.`
+      );
       return;
     }
 
@@ -857,7 +874,9 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
           console.log(output);
         }
       }
-      console.log(`Updated existing pull request #${rediscoveredPullRequest.number} for ${base} <- ${head}.`);
+      console.log(
+        `Updated existing pull request #${rediscoveredPullRequest.number} for ${base} <- ${head}.`
+      );
       return;
     }
 
@@ -1042,7 +1061,9 @@ function main() {
   const releaseBranch = options.promote ? productionBranch : currentBranch;
   const releaseBuildStage = resolveReleaseBuildStage(releaseBranch);
   const shouldPrepareRelease = Boolean(target) || options.promote;
-  const releaseSnapshot = options.dryRun ? [] : captureFileContents(collectReleaseStatePaths(releaseBranch));
+  const releaseSnapshot = options.dryRun
+    ? []
+    : captureFileContents(collectReleaseStatePaths(releaseBranch));
   let version;
 
   try {

@@ -10,6 +10,7 @@ node_modules
 .turbo/
 **/.turbo/
 **/.next/
+coverage/
 **/*.tsbuildinfo
 apps/admin/dist/
 apps/api/dist/
