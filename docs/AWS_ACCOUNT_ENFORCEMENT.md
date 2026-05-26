@@ -135,7 +135,7 @@ aws sts get-caller-identity
    ```bash
    bash scripts/setup-aws-account.sh
    cd packages/infra
-   APPROVE=true STACK=dev npx sst deploy
+   APPROVE=true STACK=dashboard-dev npx sst deploy
    ```
 
 ### Testnet not updating

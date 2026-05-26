@@ -4,6 +4,8 @@ This document explains the current release and deployment path from `pnpm releas
 
 For production promotion, see `docs/release-promotion-process.md`.
 
+If a release includes schema repair work, preview the backend database queue first with `scripts/sync-db-migrations.sh <stage> --dry-run` and apply only one reviewed migration file at a time.
+
 ## Overview
 
 The release/version flow and the live testnet deploy flow are separate:
@@ -108,10 +110,10 @@ APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 ### Social login still fails
 
 - confirm `POST /auth/sign-in/social` returns the Better Auth state cookie
-- confirm the callback URL is `https://testnet.airs.alternun.co/auth/callback`
+- confirm the browser callback URL is `https://testnet.airs.alternun.co/auth/callback`
 - confirm Google is registering `https://testnet.api.alternun.co/auth/callback/google` for testnet and `https://api.alternun.co/auth/callback/google` for production
-- if Google sends you to `https://airs.alternun.co/auth/callback/google`, the runtime is still in OAuth proxy mode and must be redeployed with the proxy disabled
-- do not register `https://airs.alternun.co/auth/callback/google` for the separated testnet flow unless you intentionally want proxy-based routing
+- if Google sends you to `https://airs.alternun.co/auth/callback/google`, the Google console redirect URI is wrong for the current live contract
+- do not register `https://airs.alternun.co/auth/callback/google` for the separated testnet flow unless you intentionally want a proxy-style callback contract
 
 ### Someone used `api-dev`
 

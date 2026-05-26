@@ -31,7 +31,10 @@ echo "🔐 Loading AWS credentials..."
 source scripts/setup-aws-account.sh
 
 # Detect environment
-if [[ -n "$INFRA_BACKEND_API_DATABASE_URL" ]]; then
+if [[ -n "$MIGRATION_DATABASE_URL" ]]; then
+  DATABASE_URL="$MIGRATION_DATABASE_URL"
+  ENV_SOURCE="MIGRATION_DATABASE_URL"
+elif [[ -n "$INFRA_BACKEND_API_DATABASE_URL" ]]; then
   DATABASE_URL="$INFRA_BACKEND_API_DATABASE_URL"
   ENV_SOURCE="INFRA_BACKEND_API_DATABASE_URL"
 elif [[ -n "$DATABASE_URL_DEV" ]]; then
@@ -69,7 +72,9 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 # Production safety check
-if [[ "$ENVIRONMENT" == "PRODUCTION" ]]; then
+# Allow production dry-runs without approval so operators can preview pending
+# migrations before choosing to apply them.
+if [[ "$ENVIRONMENT" == "PRODUCTION" && -z "$DRY_RUN" ]]; then
   if [[ -z "$FORCE_PROD" ]]; then
     echo "⚠️  PRODUCTION ENVIRONMENT DETECTED!"
     echo ""

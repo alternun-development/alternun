@@ -1,7 +1,25 @@
 -- Better Auth inserts public.users rows directly during social OAuth.
--- Keep the Supabase auth mirror one-way while still satisfying the public.users
--- identity columns required by app queries.
+-- Keep this migration safe across both the historical uuid-based drift and the
+-- current text-based schema so we can heal production without breaking fresh
+-- installs.
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+DROP TRIGGER IF EXISTS trg_public_users_fill_better_auth_identity ON public.users;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'users'
+      AND column_name = 'sub'
+      AND data_type <> 'text'
+  ) THEN
+    EXECUTE 'ALTER TABLE public.users ALTER COLUMN sub TYPE text USING sub::text';
+  END IF;
+END;
+$$;
 
 ALTER TABLE public.users
   ADD COLUMN IF NOT EXISTS sub text,

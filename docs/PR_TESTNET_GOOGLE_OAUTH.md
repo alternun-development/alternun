@@ -4,10 +4,12 @@
 
 Fixes **404 error on `testnet.api.alternun.co/auth/callback/google`** by switching the testnet API from **proxy mode** (forwarding to non-existent external Better Auth) to **embedded mode** (running Better Auth directly in the NestJS Lambda with native Google OAuth provider).
 
+Historical note: the current live Google OAuth contract is documented in the main auth flow docs. This PR summary captures the state at the time it was written.
+
 **Impact**:
 
 - ✅ Testnet now uses Better Auth execution on the API side, with the deployed bundle keeping Discord visible via `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`
-- ✅ Production remains on Authentik (completely unaffected)
+- ✅ Production was not changed by this PR; current live production behavior is documented in the main auth flow docs
 - ✅ Local dev continues to work as-is
 - ✅ Cross-subdomain session cookies work (`airs.*` + `api.*` share same session)
 - ✅ Secure cookies in production, non-secure in dev/test environments

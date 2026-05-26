@@ -131,6 +131,7 @@ export async function initMigrations(): Promise<void> {
   }
 
   const databaseUrl =
+    process.env.MIGRATION_DATABASE_URL ??
     process.env.INFRA_BACKEND_API_DATABASE_URL ??
     process.env.DATABASE_URL_DEV ??
     process.env.DATABASE_URL_DEV_IPV4 ??
@@ -140,7 +141,7 @@ export async function initMigrations(): Promise<void> {
 
   if (!databaseUrl) {
     console.warn(
-      '[migrations] INFRA_BACKEND_API_DATABASE_URL / DATABASE_URL_DEV / DATABASE_URL / SUPABASE_DATABASE_URL not set, skipping'
+      '[migrations] MIGRATION_DATABASE_URL / INFRA_BACKEND_API_DATABASE_URL / DATABASE_URL_DEV / DATABASE_URL / SUPABASE_DATABASE_URL not set, skipping'
     );
     return;
   }
