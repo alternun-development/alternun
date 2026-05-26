@@ -1,59 +1,43 @@
 # Better Auth Supabase Migration
 
+This guide is historical, but the current repo-safe migration path is still the same:
+
+- preview with `scripts/sync-db-migrations.sh <stage> --dry-run`
+- apply one reviewed migration file at a time with `--file`
+- use `--force-prod` for production review/apply runs
+- do not batch-apply the full queue unless you are doing a deliberate recovery
+
 ## Apply Better Auth Tables Migration
 
-### Option 1: Supabase SQL Editor (Recommended)
+### Option 1: Supabase SQL Editor
 
-1. **Open Supabase Dashboard**
-
-   - Go to: https://app.supabase.com
-   - Select your "alternun" project
-
-2. **Open SQL Editor**
-
-   - Click "SQL Editor" in the left sidebar
-   - Click "New query"
-
-3. **Copy and Paste Migration**
-
-   - Copy the contents of `supabase/migrations/20260417_0009_create_better_auth_tables.sql`
-   - Paste into the SQL Editor
-
-4. **Execute**
-
-   - Click "Run" button (or Cmd+Enter)
-   - Wait for "SUCCESS" message
-
-5. **Verify**
-   - Check that these tables exist in the "Tables" section:
-     - `public.users`
-     - `public.accounts`
-     - `public.sessions`
-     - `public.verifications`
+Use the SQL editor only when you are intentionally applying a single reviewed migration manually.
 
 ### Option 2: Supabase CLI
 
 ```bash
-# Requires: supabase CLI installed and linked to your project
 supabase db push --linked
 ```
 
 ### Option 3: During Deployment
 
-Migrations are automatically applied when deploying to testnet via:
+Prefer the stage-aware wrapper:
 
 ```bash
-bash scripts/setup-aws-account.sh && APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
-```
+bash scripts/sync-db-migrations.sh dev --dry-run
+bash scripts/sync-db-migrations.sh production --dry-run
 
----
+bash scripts/sync-db-migrations.sh production \
+  --file supabase/migrations/20260424_0001_better_auth_id_defaults.sql \
+  --force-prod
+```
 
 ## Verification
 
 After migration is applied, the Better Auth tables will persist:
 
-- User accounts
+- user accounts
 - OAuth sessions and tokens
-- Email verification codes
+- email verification codes
 
 Sessions no longer disappear on API restart.

@@ -2,12 +2,12 @@
 
 ## Overview
 
-This document covers the complete setup for enabling native Google OAuth on testnet via **embedded Better Auth**, completely bypassing Authentik for that stage only. Production remains on Authentik.
+This document covers the current Google OAuth setup for testnet and production. Google must redirect to the API-origin callback, and the browser returns to the AIRS callback route on the web origin.
 
 **Key changes**:
 
-- ✅ API now supports both proxy mode (Authentik) and embedded mode (native Google)
-- ✅ Testnet will use embedded mode with `ALTERNUN_TESTNET_MODE=on`
+- ✅ API supports the live Google OAuth callback contract on the API origin
+- ✅ Testnet and production both use the same `/auth/callback/google` provider callback shape
 - ✅ Cross-subdomain cookies enabled for `airs.*` and `api.*` subdomains
 - ✅ Secure cookies in production, non-secure in dev/local
 
@@ -36,6 +36,7 @@ On your Google Cloud Console OAuth 2.0 credentials (testnet client):
 
 ```
 https://testnet.api.alternun.co/auth/callback/google
+https://api.alternun.co/auth/callback/google
 http://localhost:8082/auth/callback/google
 ```
 
@@ -44,6 +45,8 @@ http://localhost:8082/auth/callback/google
 ```
 https://testnet.api.alternun.co
 https://testnet.airs.alternun.co
+https://api.alternun.co
+https://airs.alternun.co
 http://localhost:8081
 http://localhost:8082
 ```
@@ -52,7 +55,7 @@ http://localhost:8082
 
 - Application name: "AIRS (Testnet)"
 - Application logo: (use the same logo as prod)
-- User support email: (your email)
+- User support email: support@alternun.co
 - Developer contact: your email
 - Scopes: `openid profile email` (minimal)
 - Test users: Add your email and any testnet user emails
@@ -271,16 +274,17 @@ Should show:
 - `raw_app_meta_data` contains `{ "provider": "google", ... }` or `{ "provider": "discord", ... }`
 - Email matches your Google account email
 
-#### 6. Test production is still on Authentik
+#### 6. Verify production uses the same callback contract
 
-Verify **airs.alternun.co** (production) still shows Discord button:
+If you share the same Google client with production, confirm the production callback URI is also registered:
 
 ```bash
-# Should still show Discord button
-curl https://airs.alternun.co/auth | grep -i discord
+curl -k -i -X POST https://api.alternun.co/auth/sign-in/social \
+  -H "Content-Type: application/json" \
+  -d '{"provider":"google","callbackURL":"https://airs.alternun.co/auth/callback"}'
 ```
 
-Should return HTML containing a Discord login button (not just email/Google).
+The Google redirect URI must be `https://api.alternun.co/auth/callback/google`.
 
 ---
 
@@ -374,6 +378,17 @@ pnpm infra:deploy:dashboard-dev
    - Frontend should have `EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co`
    - It should call the auth handler with `credentials: 'include'`
 
+### Google returns `/auth/callback?error=internal_server_error`
+
+This usually means the API callback ran but the backend failed while finalizing the session.
+
+Check, in order:
+
+1. API Lambda logs for the failing request
+2. The reviewed migration files were applied one at a time
+3. The current Better Auth repair tables and column defaults are present in the production or testnet database
+4. `GET /auth/get-session` returns with CORS headers from the same stage origin
+
 ### Session cookie not set or lost
 
 **Cause**: Cookie domain mismatch between `testnet.airs.alternun.co` (frontend) and `testnet.api.alternun.co` (API).
@@ -414,19 +429,19 @@ pnpm infra:deploy:dashboard-dev
 ```
 ┌─────────────────────────────────┐
 │  testnet.airs.alternun.co       │ (Frontend: Expo SPA)
-│  https://testnet.airs.abc.co    │
+│  https://testnet.airs.alternun.co│
 └────────────────┬────────────────┘
                  │
-         POST /auth/callback/google
+         GET /auth/callback/google
                  │
                  ▼
 ┌─────────────────────────────────┐
 │  testnet.api.alternun.co        │ (API: NestJS Lambda)
-│  https://testnet.api.abc.co     │
+│  https://testnet.api.alternun.co│
 ├─────────────────────────────────┤
 │  Better Auth (embedded mode)    │
 │  ├─ basePath: /auth             │
-│  ├─ baseURL: api.testnet.abc.co │
+│  ├─ baseURL: testnet.api.alternun.co/auth │
 │  ├─ Google + Discord providers   │ ← GOOGLE_AUTH_CLIENT_ID/SECRET
 │  ├─ Social UI mode: authentik    │
 │  └─ Email/password              │
@@ -436,9 +451,9 @@ pnpm infra:deploy:dashboard-dev
                  │
                  ▼
          ┌─────────────────┐
-         │ Google Accounts │
-         │ (OAuth consent) │
-         └─────────────────┘
+        │ Google Accounts │
+        │ (OAuth consent) │
+        └─────────────────┘
 ```
 
 ---
@@ -454,11 +469,11 @@ pnpm infra:deploy:dashboard-dev
 
 ## Summary
 
-| Stage             | Auth Provider   | Google OAuth  | Discord | Social Login Mode |
-| ----------------- | --------------- | ------------- | ------- | ----------------- |
-| **Production**    | Authentik       | Via Authentik | Yes     | `authentik`       |
-| **Testnet (dev)** | **Better Auth** | **Native**    | **Yes** | `authentik`       |
-| **Local dev**     | Better Auth     | Native        | No      | `supabase`        |
+| Stage             | Auth Provider                 | Google OAuth | Discord | Social Login Mode |
+| ----------------- | ----------------------------- | ------------ | ------- | ----------------- |
+| **Production**    | **Better Auth on API origin** | **Native**   | **Yes** | `authentik`       |
+| **Testnet (dev)** | **Better Auth on API origin** | **Native**   | **Yes** | `authentik`       |
+| **Local dev**     | Better Auth                   | Native       | No      | `supabase`        |
 
 ---
 

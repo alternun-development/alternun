@@ -17,6 +17,7 @@ function detectEnvironment(databaseUrl: string): 'production' | 'development' {
 }
 
 const databaseUrl =
+  process.env.MIGRATION_DATABASE_URL ??
   process.env.INFRA_BACKEND_API_DATABASE_URL ??
   process.env.DATABASE_URL_DEV ??
   process.env.DATABASE_URL_DEV_IPV4 ??
@@ -29,7 +30,7 @@ const dryRun = process.argv.includes('--dry-run');
 
 if (!databaseUrl) {
   console.error(
-    '❌ INFRA_BACKEND_API_DATABASE_URL, DATABASE_URL_DEV, DATABASE_URL_DEV_IPV4, DATABASE_URL_DEV_NOIPV4, DATABASE_URL, or SUPABASE_DATABASE_URL not set'
+    '❌ MIGRATION_DATABASE_URL, INFRA_BACKEND_API_DATABASE_URL, DATABASE_URL_DEV, DATABASE_URL_DEV_IPV4, DATABASE_URL_DEV_NOIPV4, DATABASE_URL, or SUPABASE_DATABASE_URL not set'
   );
   process.exit(1);
 }
@@ -158,9 +159,10 @@ async function applyMigrations(): Promise<void> {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   // Safety check for production
-  if (environment === 'production' && !process.env.APPROVE_PROD_MIGRATION) {
+  if (environment === 'production' && !dryRun && !process.env.APPROVE_PROD_MIGRATION) {
     console.warn(
       '⚠️  PRODUCTION MIGRATION DETECTED!\n' +
+        'To preview without applying changes, run: pnpm db:migrate:dry-run\n' +
         'To confirm, set environment variable: APPROVE_PROD_MIGRATION=true\n' +
         'Example: APPROVE_PROD_MIGRATION=true pnpm db:migrate'
     );

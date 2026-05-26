@@ -52,4 +52,4 @@ Cause: wrong stack target
 pnpm release:patch
 ```
 
-The release command already runs the `./scripts/deploy-testnet-api.sh --no-prompt` flow.
+The release command already hands off to the live testnet API/auth runtime owned by `dashboard-dev`.

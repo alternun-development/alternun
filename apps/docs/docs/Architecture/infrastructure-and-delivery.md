@@ -98,6 +98,13 @@ For the custom API, the infra package provisions:
 - custom domain mapping
 - ACM and DNS validation when needed
 
+Database changes for the live backend are handled separately from stack deploys:
+
+- preview with `scripts/sync-db-migrations.sh <stage> --dry-run`
+- apply exactly one reviewed migration file at a time with `--file`
+- use `--force-prod` for any production migration apply
+- do not batch-apply the full backlog unless you are doing a deliberate recovery run
+
 ### Admin delivery
 
 For the admin console, the infra package provisions:

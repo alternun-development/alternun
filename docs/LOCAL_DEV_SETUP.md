@@ -80,7 +80,7 @@ Open: **http://localhost:8081**
 
 Contains testnet URLs. Used when:
 
-- Deploying with `STACK=dev`
+- Building the testnet bundle with `STACK=dev`
 - Running builds with `EXPO_PUBLIC_STAGE=dev`
 
 ```bash

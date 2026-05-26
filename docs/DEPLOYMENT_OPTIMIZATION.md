@@ -33,7 +33,7 @@ If only API changed, don't rebuild everything:
 pnpm --filter @alternun/api build
 
 # Deploy (skips mobile, docs, admin)
-APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 ```
 
 ### 3. Skip Migrations on Rapid Iteration
@@ -46,10 +46,10 @@ export INFRA_BACKEND_API_MIGRATIONS_ENABLED="false"
 
 source scripts/setup-aws-account.sh
 export INFRA_BACKEND_API_DATABASE_URL=$(aws secretsmanager get-secret-value \
-  --secret-id alternun/api/database-url \
+  --secret-id alternun/api/infra-backend-api-database-url-dev \
   --query SecretString --output text)
 
-APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 ```
 
 ### 4. Use Local Dev Instead of Deploy
@@ -126,7 +126,7 @@ export INFRA_BACKEND_API_MIGRATIONS_ENABLED="false"
 source scripts/setup-aws-account.sh
 export INFRA_BACKEND_API_DATABASE_URL=$(...)
 
-APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
+APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 
 # Time: ~6-8 minutes
 ```
@@ -134,8 +134,11 @@ APPROVE=true STACK=dev packages/infra/scripts/sst-deploy.sh
 ### First Full Deploy (Fresh)
 
 ```bash
-# Clean build with migrations
-pnpm clean && bash scripts/deploy-with-migrations.sh
+# Clean build and review migrations
+pnpm clean && bash scripts/sync-db-migrations.sh dev --dry-run
+
+# Then deploy the owning testnet API/auth runtime
+APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 
 # Time: ~15-20 minutes
 ```
@@ -144,7 +147,9 @@ pnpm clean && bash scripts/deploy-with-migrations.sh
 
 ```bash
 # Full validation with migrations
-bash scripts/deploy-with-migrations.sh
+bash scripts/sync-db-migrations.sh production --dry-run
+# Apply the reviewed migration file before deploy
+APPROVE=true STACK=dashboard-prod packages/infra/scripts/sst-deploy.sh
 
 # Time: ~12-15 minutes
 ```
@@ -168,13 +173,13 @@ pnpm build --verbose | grep -i "cache"
 
 1. Code locally → `pnpm dev` (5 sec)
 2. Test locally → Manual testing (1 min)
-3. When ready → Deploy with `bash scripts/deploy-with-migrations.sh` (12 min)
+3. When ready → Deploy with `pnpm infra:deploy:dashboard-dev` or `dashboard-prod` (12 min)
 
 **Quick Iterations:**
 
 1. Change code
 2. `pnpm --filter @alternun/api build` (30 sec)
-3. Deploy with `MIGRATIONS_ENABLED=false` (6 min)
+3. Deploy with `MIGRATIONS_ENABLED=false` and `STACK=dashboard-dev` (6 min)
 4. Test on testnet
 5. Full deploy when complete (12 min)
 
@@ -196,8 +201,8 @@ pnpm build --verbose | grep -i "cache"
 
 ## Next Steps
 
-- [ ] Run `time bash scripts/deploy-with-migrations.sh` to profile
-- [ ] Try `MIGRATIONS_ENABLED=false` deploy (should be ~7-8 min)
+- [ ] Run `time bash scripts/sync-db-migrations.sh production --dry-run` to profile the migration preview
+- [ ] Try `MIGRATIONS_ENABLED=false` deploy against `dashboard-dev` (should be ~7-8 min)
 - [ ] Use local dev instead of deploy for testing
 - [ ] Add incremental TypeScript compilation
 - [ ] Set up canary deployment strategy
