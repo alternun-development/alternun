@@ -16,15 +16,21 @@ pnpm db:migrate:dry-run
 
 ### Production Database
 
-⚠️ **Production migrations require explicit approval:**
+⚠️ **Production backend migrations require explicit approval:**
 
 ```bash
-# Set environment variable to approve production migration
-APPROVE_PROD_MIGRATION=true pnpm db:migrate:dev
+# Preview the pending production migrations against the backend DATABASE_URL secret
+bash scripts/sync-db-migrations.sh production --dry-run
 
-# Or use the wrapper script with --force-prod
-./scripts/db-migrate.sh --force-prod
+# Apply one migration at a time after reviewing the preview
+bash scripts/sync-db-migrations.sh production --file supabase/migrations/20260424_0002_better_auth_user_identity_defaults.sql --force-prod
 ```
+
+Current production state:
+
+- the live backend database still reports a large historical backlog in `_migrations`
+- the safe repair path starts with the Better Auth fixes in `20260424_0001`, `20260424_0002`, and `20260424_0003`
+- do **not** batch-apply the whole pending queue unless you are intentionally performing a recovery exercise and have reviewed every file
 
 ### Using the Wrapper Script
 
@@ -35,9 +41,44 @@ APPROVE_PROD_MIGRATION=true pnpm db:migrate:dev
 # Dry-run on development
 ./scripts/db-migrate.sh --dry-run
 
-# Force production (after confirming)
-./scripts/db-migrate.sh --force-prod
+# Stage-aware sync wrapper (preferred for dev/testnet/prod promotion)
+bash scripts/sync-db-migrations.sh dev --dry-run
+bash scripts/sync-db-migrations.sh production --file supabase/migrations/20260424_0002_better_auth_user_identity_defaults.sql --force-prod
 ```
+
+## Stage Promotion
+
+The repo migrations are the source of truth. Do not copy schemas directly from
+development to production.
+
+Use the stage-aware wrapper when you need to reconcile a stage database with
+the current `supabase/migrations/` history. It resolves the stage-scoped
+backend `DATABASE_URL` secret and applies migrations one by one:
+
+```bash
+# Dry-run the next migrations for development/testnet
+bash scripts/sync-db-migrations.sh dev --dry-run
+
+# Dry-run the next migrations for production
+bash scripts/sync-db-migrations.sh production --dry-run
+
+# Apply a single production migration after review
+bash scripts/sync-db-migrations.sh production --file supabase/migrations/20260424_0002_better_auth_user_identity_defaults.sql --force-prod
+
+# Legacy full-queue apply path, only when you explicitly want the entire backlog
+bash scripts/sync-db-migrations.sh production --all --force-prod
+```
+
+`pnpm db:migrate` remains available when you already have the correct
+`MIGRATION_DATABASE_URL` or `INFRA_BACKEND_API_DATABASE_URL` in your shell. For
+promotion work, prefer the wrapper above because it resolves the stage-specific
+backend database secret before running the repo migration chain.
+
+If you are repairing the current live auth issue, prefer the one-by-one flow:
+
+1. preview with `bash scripts/sync-db-migrations.sh production --dry-run`
+2. apply only the next safe repair file with `--file`
+3. re-run the preview before touching the next migration
 
 ## How It Works
 
@@ -143,7 +184,7 @@ pnpm db:migrate --dry-run
 
 ### Production Checks
 
-- ❌ Won't run on production without `APPROVE_PROD_MIGRATION=true`
+- ❌ Won't run a production apply without `APPROVE_PROD_MIGRATION=true` or `--force-prod`
 - ✅ Prevents accidental production changes
 - 🔐 Requires explicit opt-in
 

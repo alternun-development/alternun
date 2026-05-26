@@ -87,6 +87,13 @@ flowchart TD
 - การแมป custom domain
 - ACM และการตรวจสอบ DNS เมื่อจำเป็น
 
+Database migrations for the live backend are handled separately from stack deploys:
+
+- preview with `scripts/sync-db-migrations.sh <stage> --dry-run`
+- apply one reviewed file at a time with `--file`
+- use `--force-prod` for production applies
+- do not batch-apply the full backlog unless you are doing a deliberate recovery
+
 ### การส่งมอบแอดมิน
 
 สำหรับคอนโซลแอดมิน แพ็กเกจ infra จะ provision:
