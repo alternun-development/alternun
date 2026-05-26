@@ -1,83 +1,70 @@
 # Deploy Better Auth with Supabase
 
+This is the current stage-aware deployment path for the API/auth runtime.
+Use `dashboard-dev` for testnet and `dashboard-prod` for production.
+
 ## Prerequisites
 
-- Better Auth code deployed to testnet API
-- Supabase project linked
-- DATABASE_URL configured
+- Better Auth code deployed to the owning API stack
+- stage-scoped backend database secret configured
+- current migration reviewed
 
 ## Steps to Complete Deployment
 
-### 1. Apply Database Migration (Choose One)
+### 1. Preview or Apply Migrations
 
-#### Option A: Supabase Dashboard (Fastest)
-
-1. Go to https://app.supabase.com → Your Project
-2. Click **SQL Editor** → **New Query**
-3. Copy & paste contents of `supabase/migrations/20260417_0009_create_better_auth_tables.sql`
-4. Click **Run**
-5. Verify tables created: `users`, `accounts`, `sessions`, `verifications`
-
-#### Option B: Supabase CLI (Requires Linking)
+Prefer the repo migration wrapper instead of manual SQL editor changes:
 
 ```bash
-# Link project to Supabase account
-pnpm exec supabase link --project-ref rjebeugdvwbjpaktrrbx
-
-# Push migrations
-pnpm exec supabase db push
+bash scripts/sync-db-migrations.sh dev --dry-run
+bash scripts/sync-db-migrations.sh production --dry-run
 ```
 
-#### Option C: During AWS Deployment (From Lambda)
-
-When deploying the live testnet API/auth runtime, migrations run automatically:
+To apply one reviewed file:
 
 ```bash
-bash scripts/setup-aws-account.sh
-APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
-
-# Then run migrations on deployed Lambda
-aws lambda invoke \
-  --function-name alternun-infra-dashboard-dev-nestjs-api \
-  --payload '{"action":"migrate"}' \
-  response.json
+bash scripts/sync-db-migrations.sh production \
+  --file supabase/migrations/20260424_0002_better_auth_user_identity_defaults.sql \
+  --force-prod
 ```
 
-### 2. Deploy API to Testnet
+Use `--file` for one migration at a time. Use `--all` only for a deliberate recovery run.
+
+### 2. Deploy the Owning Stack
 
 ```bash
-bash scripts/setup-aws-account.sh
+source scripts/setup-aws-account.sh
 APPROVE=true STACK=dashboard-dev packages/infra/scripts/sst-deploy.sh
 ```
+
+For production, switch to `STACK=dashboard-prod`.
 
 ### 3. Verify Auth Works
 
 ```bash
-# Test sign-in endpoint
-curl -X POST https://testnet.api.alternun.co/auth/sign-in/email \
+curl -k -i -X POST https://testnet.api.alternun.co/auth/sign-in/social \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"password123"}'
+  -d '{"provider":"google","callbackURL":"https://testnet.airs.alternun.co/auth/callback"}'
 
-# Test get-session endpoint
 curl https://testnet.api.alternun.co/auth/get-session
 ```
 
-Sessions should now persist to Supabase database instead of memory.
+Sessions should persist to Supabase instead of memory, and the Google redirect URI should stay on the API origin.
 
 ## Troubleshooting
 
 **Issue: Auth endpoints still return 500 errors**
 
-- Verify migration ran successfully in Supabase dashboard
-- Check that tables exist: `public.users`, `public.accounts`, `public.sessions`, `public.verifications`
-- Confirm DATABASE_URL is set in API environment
+- Verify the reviewed migration file ran successfully
+- Check that the expected tables exist in `public`
+- Confirm `INFRA_BACKEND_API_DATABASE_URL` is set in the Lambda environment from the correct stage secret
 
 **Issue: Migration fails with "table already exists"**
 
-- Tables are already created (idempotent migration handles this with IF NOT EXISTS)
-- Safe to retry
+- The migration may already be applied
+- Re-run `scripts/sync-db-migrations.sh <stage> --dry-run` before applying anything else
 
 **Issue: Can't connect to Supabase**
 
-- Verify DATABASE_URL in `.env` or AWS Secrets
-- Check network connectivity (AWS Lambda has access, local dev may not)
+- Verify the stage-scoped `alternun/api/infra-backend-api-database-url-dev` or `-prod` secret
+- Check network connectivity from the runtime

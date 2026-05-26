@@ -10,7 +10,7 @@ It is intentionally split by runtime and execution layer:
 
 - web uses a browser redirect flow with a dedicated callback route
 - native uses the client runtime directly and stays separate from the web callback contract
-- Better Auth can execute social login when selected by config
+- Better Auth executes social login on the API origin when selected by config
 - Authentik owns the canonical issuer boundary
 - Supabase owns application session persistence, app-user provisioning, data, and authorization for the compatibility path
 
@@ -26,6 +26,7 @@ It owns:
 
 - browser social login execution
 - the browser client flow on the API-origin `/auth` route
+- the Google redirect target on the API-origin `/auth/callback/google` route
 - provider-specific execution tokens before issuer exchange
 
 It does **not** own the canonical AIRS session authority.
@@ -55,7 +56,7 @@ It owns:
 - row-level authorization and app data access
 - email/password auth and wallet auth
 
-For AIRS web social login, Supabase is not the visible identity broker. Authentik is the issuer boundary, and Better Auth can execute the browser sign-in when selected. When `AUTH_EXECUTION_PROVIDER=better-auth`, the browser still ends up with the canonical issuer-backed application session rather than a Better Auth cookie.
+For AIRS web social login, Supabase is not the visible identity broker. Better Auth currently executes the browser sign-in on the API origin when selected, while Authentik remains the issuer boundary for the canonical application session.
 
 ## Runtime Split
 
@@ -70,7 +71,7 @@ Use browser redirects.
 
 Web social login stores the intended destination, starts the selected execution provider, finalizes the callback on `/auth/callback`, then returns to the requested route.
 
-When `AUTH_EXECUTION_PROVIDER=better-auth`, the browser client starts through the API-origin `/auth` route and the final application session is still resolved through the issuer exchange path.
+When `AUTH_EXECUTION_PROVIDER=better-auth`, the browser client starts through the API-origin `/auth` route, Google returns to the API-origin `/auth/callback/google` endpoint, and the browser callback finalizes on `/auth/callback`.
 
 ### Native
 
@@ -124,26 +125,29 @@ The deployed AIRS web flow is:
 sequenceDiagram
   participant User
   participant App as /auth
-  participant Exec as Better Auth
-  participant Issuer as Authentik / auth-exchange
+  participant Api as testnet.api /auth/sign-in/social
+  participant Google as Google Accounts
+  participant ApiCb as /auth/callback/google
   participant Callback as /auth/callback
   participant Provider as AppAuthProvider
   participant Supabase as Supabase
 
   User->>App: Open /auth?next=/dashboard
-  App->>Exec: webRedirectSignIn(provider, redirectTo)
-  Exec->>Exec: Social login / browser execution
-  Exec-->>Callback: Redirect with code/state
-  Callback->>Issuer: Exchange external identity for canonical session
-  Callback->>Supabase: Provision / finalize compatibility session
+  App->>Api: POST /auth/sign-in/social
+  Api-->>Google: redirect_uri = api.origin/auth/callback/google
+  Google-->>ApiCb: Return with code/state
+  ApiCb->>Callback: Hand off browser callback
   Callback->>Provider: setOidcUser(...)
+  Callback->>Supabase: Provision / finalize compatibility session
   Callback-->>User: Redirect to stored next route
 ```
 
 Important implementation rules:
 
 - `/auth` is the sign-in page, not the callback handler
+- `/auth/sign-in/social` starts the browser social-login request on the API origin
 - `/auth/callback` is the browser callback boundary
+- `/auth/callback/google` is the Google redirect target on the API origin
 - callback finalization does not live in a UI button component
 - the intended destination is stored explicitly and restored after success
 - Better Auth execution tokens are not the final app session
@@ -250,11 +254,12 @@ For deployed frontend bundles, do not rely on repo-local env files or that runti
 
 ## Redirect URI Contract
 
-For web, the effective callback target is:
+For web, there are two different callback targets:
 
-- `https://<airs-domain>/auth/callback`
+- browser callback target: `https://<airs-domain>/auth/callback`
+- Google redirect target: `https://<api-domain>/auth/callback/google`
 
-That is now the default derived callback URL when the browser origin is available.
+The browser callback target is the default derived callback URL when the browser origin is available.
 
 If an older env still points at the site root, the shared web resolver prefers the dedicated callback route on the same origin instead of staying on the stale root redirect.
 
@@ -279,8 +284,10 @@ That matters because implicit source-stage flows were creating hard-to-debug loo
 
 ## Current Deployed State
 
-As of April 2026, the intended deployed AIRS web mode is:
+The current deployed AIRS web mode is:
 
+- `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER=better-auth`
+- `EXPO_PUBLIC_BETTER_AUTH_URL` points at the stage API origin `/auth` base
 - `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE=source`
 - `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik`
 - `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS` empty
@@ -290,7 +297,7 @@ As of April 2026, the intended deployed AIRS web mode is:
 - the default internal application tile opens the stage-specific admin dashboard origin unless you override `INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL`
 - the `Alternun Mobile` Authentik application tile uses a stage-specific launch URL that points at the AIRS auth entrypoint, so the user enters the app instead of staying on the Authentik library page
 
-On the Authentik side, the expected direct-source configuration is:
+On the Authentik side, the expected direct-source configuration is still:
 
 - Google `authentication_flow = default-source-authentication`
 - Google `enrollment_flow = default-source-enrollment`
@@ -304,30 +311,31 @@ For deployed AIRS web, custom outer starter flows such as `alternun-google-login
 
 ## Smoothing the Browser Flow
 
-The current architecture reduces Authentik friction by keeping the browser path short:
+The current architecture reduces browser friction by keeping the path short:
 
 - AIRS web starts from `/auth`
-- Authentik uses direct source login by default
-- web forces a fresh Authentik social session whenever social login is still Authentik-managed, so a stale shared SSO session does not apply the wrong user
-- browser callback finalization happens on `/auth/callback`
+- the browser posts to `/auth/sign-in/social`
+- Google returns to `/auth/callback/google` on the API origin
+- the browser callback finalization happens on `/auth/callback`
 - AIRS restores the intended destination after callback completion
-- first-time Google enrollments should auto-fill the username from the upstream Google email instead of stopping on the Authentik username screen
+- first-time Google enrollments should auto-fill the username from the upstream Google email instead of stopping on the username screen
 
 That means the normal web path should be:
 
 1. AIRS `/auth?next=...`
-2. Authentik source login
-3. Google or Discord
-4. Authentik callback
+2. `POST /auth/sign-in/social`
+3. Google Accounts
+4. API-origin `/auth/callback/google`
 5. AIRS `/auth/callback`
 6. final AIRS route
 
-If the browser bounces through additional Authentik flow screens before returning to AIRS, treat that as a regression and inspect the identity bootstrap state first.
+If the browser bounces through additional provider screens or returns to the wrong callback URI, treat that as a regression and inspect the identity bootstrap state first.
 
 ## Known Failure Modes
 
 These are the concrete regressions that have already happened in this repo:
 
+- Google redirect URI registered against the AIRS callback instead of the API-origin `/auth/callback/google`
 - direct-source mode with `default-source-authentication` or `default-source-enrollment` still carrying `UserLoginStage`
 - custom outer source-stage flow enabled in Authentik while the AIRS app bundle is already in direct-source mode
 - AIRS bundle built from stale shared package output rather than current auth package source
@@ -346,7 +354,7 @@ When debugging, verify the live browser bundle and the live Authentik source con
 | `EXPO_PUBLIC_AUTHENTIK_CLIENT_ID`                        | Public OIDC client ID                            | `alternun-mobile`                                                              |
 | `EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI`                     | Optional explicit callback URL                   | usually blank on deployed web; derived as `/auth/callback` from browser origin |
 | `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER`                    | Explicit web execution provider                  | set per deployed stage; `better-auth` on the current testnet rollout           |
-| `EXPO_PUBLIC_BETTER_AUTH_URL`                            | Browser-facing Better Auth base URL              | `https://testnet.api.alternun.co` or `https://api.alternun.co`                 |
+| `EXPO_PUBLIC_BETTER_AUTH_URL`                            | Browser-facing Better Auth base URL              | `https://testnet.api.alternun.co/auth` or `https://api.alternun.co/auth`       |
 | `EXPO_PUBLIC_AUTHENTIK_LOGIN_ENTRY_MODE`                 | `source` or `relay`                              | `source`                                                                       |
 | `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE`                | `authentik`, `hybrid`, or `supabase`             | `authentik`                                                                    |
 | `EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS`              | Optional custom provider-flow JSON               | empty unless explicitly needed                                                 |

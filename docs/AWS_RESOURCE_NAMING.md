@@ -137,7 +137,7 @@ This causes:
 
 2. **Resource Naming**: Use primary name in resource names
 
-   - Lambda: `alternun-api-dev` (not `alternun-infra-dashboard-dev-nestjs-api`)
+   - Lambda: `alternun-infra-dashboard-dev-nestjs-api` is the current live SST-generated name for the `dashboard-dev` API runtime
    - Domain: `testnet.api.alternun.co` (independent of stack name)
 
 3. **Deployment Protocol**:
