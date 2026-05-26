@@ -1,3 +1,14 @@
+## [1.0.276](https://github.com/alternun-development/alternun/compare/v1.0.276-dev.0...v1.0.276) (2026-05-26)
+
+### Bug Fixes
+
+- **repo:** chore(docs): sync root README for v1.0.276
+
+
+
+
+
+
 ## [1.0.276](https://github.com/alternun-development/alternun/compare/v1.0.275...v1.0.276) (2026-05-26)
 
 ### Bug Fixes
