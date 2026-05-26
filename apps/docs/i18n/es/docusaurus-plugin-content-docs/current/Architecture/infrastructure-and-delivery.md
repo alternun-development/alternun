@@ -87,6 +87,13 @@ Para la API personalizada, el paquete de infra aprovisiona:
 - mapeo de dominio personalizado
 - ACM y validación DNS cuando hace falta
 
+Database migrations for the live backend are handled separately from stack deploys:
+
+- preview with `scripts/sync-db-migrations.sh <stage> --dry-run`
+- apply one reviewed file at a time with `--file`
+- use `--force-prod` for production applies
+- do not batch-apply the full backlog unless you are doing a deliberate recovery
+
 ### Entrega del admin
 
 Para la consola admin, el paquete de infra aprovisiona:
