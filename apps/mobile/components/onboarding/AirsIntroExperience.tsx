@@ -1316,15 +1316,17 @@ const styles = createTypographyStyles({
   floatingMenuItem: {
     borderRadius: 10,
     paddingHorizontal: 10,
-    paddingVertical: 10,
+    paddingVertical: 11,
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 42,
     gap: 8,
   },
   floatingMenuText: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 12,
-    fontWeight: '700',
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Medium`,
+    fontSize: 13,
+    lineHeight: 16,
+    letterSpacing: 0.1,
   },
   floatingMenuItemRight: {
     marginLeft: 'auto',
