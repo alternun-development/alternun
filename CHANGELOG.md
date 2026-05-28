@@ -1,13 +1,18 @@
+## [1.0.277](https://github.com/alternun-development/alternun/compare/v1.0.276...v1.0.277) (2026-05-28)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): PublicLandingPage, AirsIntroExperience, AirsIntroSettingsMenu
+
+### Bug Fixes
+
+- **mobile:** PublicLandingPage, AirsIntroExperience, AirsIntroSettingsMenu ([506c787](https://github.com/alternun-development/alternun/commit/506c7874cdbb23a3cae07b60761f842b0c3a410e))
+
 ## [1.0.276](https://github.com/alternun-development/alternun/compare/v1.0.276-dev.0...v1.0.276) (2026-05-26)
 
 ### Bug Fixes
 
 - **repo:** chore(docs): sync root README for v1.0.276
-
-
-
-
-
 
 ## [1.0.276](https://github.com/alternun-development/alternun/compare/v1.0.275...v1.0.276) (2026-05-26)
 
