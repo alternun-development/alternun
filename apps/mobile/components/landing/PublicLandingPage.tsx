@@ -94,13 +94,15 @@ const TOKEN_IMAGES: Record<'airs' | 'rbi' | 'atn', ImageSourcePropType> = {
   atn: require('../../assets/images/benefits/atn.png'),
 };
 
-const MEMBERSHIP_LOGO = require('../../assets/logo.png') as ImageSourcePropType;
-const MEMBERSHIP_LOGO_LIGHT = require('../../assets/AIRS-logo-light.svg') as ImageSourcePropType;
-const MEMBERSHIP_LOGO_DARK = require('../../assets/AIRS-logo-dark.svg') as ImageSourcePropType;
-const MEMBERSHIP_LOGO_LIGHT_REALISTIC =
-  require('../../assets/AIRS-logo-light-realistic.svg') as ImageSourcePropType;
-const MEMBERSHIP_LOGO_DARK_REALISTIC =
-  require('../../assets/AIRS-logo-dark-realistic.svg') as ImageSourcePropType;
+const MEMBERSHIP_LOGOS: ImageSourcePropType[] = [
+  require('../../assets/SVGs/asset-5simbolo-airs.svg') as ImageSourcePropType,
+  require('../../assets/SVGs/asset-6simbolo-airs.svg') as ImageSourcePropType,
+  require('../../assets/SVGs/asset-7simbolo-airs.svg') as ImageSourcePropType,
+  require('../../assets/SVGs/asset-8simbolo-airs.svg') as ImageSourcePropType,
+  require('../../assets/SVGs/asset-9simbolo-airs.svg') as ImageSourcePropType,
+  require('../../assets/SVGs/asset-10simbolo-airs.svg') as ImageSourcePropType,
+  require('../../assets/SVGs/asset-11simbolo-airs.svg') as ImageSourcePropType,
+];
 
 const BENEFIT_IMAGES: Record<'eco' | 'experiencias' | 'premium' | 'cursos', ImageSourcePropType[]> =
   {
@@ -1351,28 +1353,12 @@ function MembresiaSection({
   // Infinite scroll animations for two rows
   const scrollLeft = useSharedValue(0);
   const scrollRight = useSharedValue(0);
-  const membershipLogos = useMemo(
-    () =>
-      isDark
-        ? [
-            MEMBERSHIP_LOGO_LIGHT,
-            MEMBERSHIP_LOGO_LIGHT_REALISTIC,
-            MEMBERSHIP_LOGO,
-            MEMBERSHIP_LOGO_DARK,
-            MEMBERSHIP_LOGO_DARK_REALISTIC,
-          ]
-        : [
-            MEMBERSHIP_LOGO_DARK,
-            MEMBERSHIP_LOGO_DARK_REALISTIC,
-            MEMBERSHIP_LOGO,
-            MEMBERSHIP_LOGO_LIGHT,
-            MEMBERSHIP_LOGO_LIGHT_REALISTIC,
-          ],
-    [isDark]
-  );
+  const membershipLogos = MEMBERSHIP_LOGOS;
   const logoBandWidth = getMembershipLogoBandWidth(membershipLogos.length);
   const marqueeViewportWidth = trackWidth || Math.max(windowWidth - 40, 0);
   const marqueeCopyCount = getMembershipMarqueeRepeatCount(marqueeViewportWidth, logoBandWidth);
+  const titleColor = isDark ? textColor : '#ffffff';
+  const emphasisColor = isDark ? palette.accentBold : '#1ee6b5';
   const leftDuration = scaleMembershipMarqueeDuration(
     logoBandWidth,
     MEMBERSHIP_MARQUEE_BASE_DISTANCE,
@@ -1426,14 +1412,12 @@ function MembresiaSection({
     >
       {/* Header */}
       <View style={styles.membresiaSectionHeader}>
-        <Text style={[styles.sectionTitle, { color: isDark ? textColor : palette.accentBold }]}>
+        <Text style={[styles.sectionTitle, { color: titleColor }]}>
           {t('landing.membresia.sectionTitle')}
         </Text>
         <Text style={[styles.membresiaDescription, { color: descriptionColor }]}>
           <Text>{t('landing.membresia.descriptionPart1')} </Text>
-          <Text
-            style={{ fontWeight: '700', color: isDark ? palette.accentBold : palette.textPrimary }}
-          >
+          <Text style={{ fontWeight: '700', color: emphasisColor }}>
             {t('landing.membresia.descriptionPart2Bold')}
           </Text>
           <Text>{` ${t('landing.membresia.descriptionPart3')} `}</Text>
