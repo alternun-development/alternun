@@ -5,7 +5,7 @@ import { Languages, Moon, Settings as SettingsIcon, Sun } from 'lucide-react-nat
 import { getLocaleLabel } from '@alternun/i18n';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { useAppTranslation } from '../i18n/useAppTranslation';
-import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { SCULPIN_FONT_FAMILY } from '../theme/fonts';
 
 type MenuPalette = {
   mutedButtonBg: string;
@@ -78,15 +78,17 @@ const styles = StyleSheet.create({
   menuItem: {
     borderRadius: 10,
     paddingHorizontal: 10,
-    paddingVertical: 10,
+    paddingVertical: 11,
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 42,
     gap: 8,
   },
   menuText: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 12,
-    fontWeight: '700',
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Medium`,
+    fontSize: 13,
+    lineHeight: 16,
+    letterSpacing: 0.1,
   },
   menuItemRight: {
     marginLeft: 'auto',
@@ -94,8 +96,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   menuValue: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 11,
-    fontWeight: '700',
+    fontFamily: `${SCULPIN_FONT_FAMILY}-Bold`,
+    fontSize: 12,
+    lineHeight: 15,
+    letterSpacing: 0.1,
   },
 });
