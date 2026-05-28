@@ -26,6 +26,8 @@
 html, body {
   height: 100%;
   font-family: var(--font-anek-latin), sans-serif;
+  font-stretch: 115%;
+  font-variation-settings: 'wdth' 115;
   background: var(--navy);
   color: #fff;
   overflow-x: hidden;
