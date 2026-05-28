@@ -1,3 +1,14 @@
+## [1.0.277](https://github.com/alternun-development/alternun/compare/v1.0.277-dev.0...v1.0.277) (2026-05-28)
+
+### Bug Fixes
+
+- **repo:** chore(docs): sync root README for v1.0.277
+
+
+
+
+
+
 ## [1.0.277](https://github.com/alternun-development/alternun/compare/v1.0.276...v1.0.277) (2026-05-28)
 
 ### Bug Fixes
