@@ -1,13 +1,20 @@
+## [1.0.278](https://github.com/alternun-development/alternun/compare/v1.0.277...v1.0.278) (2026-06-03)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n): Dashboard, PublicLandingPage, en, es
+- **repo:** fix(web): widen Anek Latin globally
+
+### Bug Fixes
+
+- **mobile,i18n:** Dashboard, PublicLandingPage, en, es ([97c0daf](https://github.com/alternun-development/alternun/commit/97c0daf151c921b62d4493710ff6a0af5bd40780))
+- **web:** widen Anek Latin globally ([93dd87f](https://github.com/alternun-development/alternun/commit/93dd87f62cec443f7ac87440d832b7aefa1e7f87))
+
 ## [1.0.277](https://github.com/alternun-development/alternun/compare/v1.0.277-dev.0...v1.0.277) (2026-05-28)
 
 ### Bug Fixes
 
 - **repo:** chore(docs): sync root README for v1.0.277
-
-
-
-
-
 
 ## [1.0.277](https://github.com/alternun-development/alternun/compare/v1.0.276...v1.0.277) (2026-05-28)
 
