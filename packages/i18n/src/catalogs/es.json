@@ -402,7 +402,14 @@
         "descriptionPart1": "No necesitas pagar cuotas mensuales ni renovaciones.",
         "descriptionPart2Bold": "Al compensar tu primera huella, eres miembro vitalicio.",
         "descriptionPart3": "Desde ese momento, empiezas a acumular Airs y a recibir tu RBI mensual.",
-        "descriptionPart4": "Tu membresía nunca expira y tus beneficios solo crecen con el tiempo."
+        "descriptionPart4": "Tu membresía nunca expira y tus beneficios solo crecen con el tiempo.",
+        "descriptionLine1": "No necesitas pagar cuotas mensuales ni renovaciones.",
+        "descriptionLine2Bold": "Al compensar tu primera huella, eres miembro vitalicio.",
+        "descriptionLine3Prefix": "Desde ese momento, empiezas a acumular ",
+        "descriptionLine3BrandBold": "Airs By Alternun",
+        "descriptionLine3Mid": " y a recibir tu ",
+        "descriptionLine3TokenBold": "RBI",
+        "descriptionLine3Suffix": " mensual. Tu membresía nunca expira y tus beneficios solo crecen con el tiempo."
       },
       "beneficios": {
         "atnUnit": "Airs / USD",
