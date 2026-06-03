@@ -21,7 +21,6 @@ import TopNav from './TopNav';
 import HeroStats from './HeroStats';
 import ActivityFeed from './ActivityFeed';
 import DashboardSummaryCards from './DashboardSummaryCards';
-import AIRSLedger from './AIRSLedger';
 import WalletConnectModal from './WalletConnectModal';
 import WelcomeBonusModal from './WelcomeBonusModal';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -574,15 +573,6 @@ export default function Dashboard({
                     {t.t('dashboard.hero.hint')}
                   </Text>
                 </View>
-              ) : null}
-
-              {airsSnapshot ? (
-                <AIRSLedger
-                  balance={airsSnapshot.balanceAIRS}
-                  lifetimeEarned={airsSnapshot.lifetimeEarnedAIRS}
-                  entries={airsSnapshot.recentEntries}
-                  isDark={isDark}
-                />
               ) : null}
 
               {/* ── Recent Activity + Summary Cards ─────────────────────── */}
