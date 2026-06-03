@@ -1412,18 +1412,23 @@ function MembresiaSection({
     >
       {/* Header */}
       <View style={styles.membresiaSectionHeader}>
-        <Text style={[styles.sectionTitle, { color: titleColor }]}>
+        <Text style={[styles.membresiaTitle, { color: titleColor }]}>
           {t('landing.membresia.sectionTitle')}
         </Text>
         <Text style={[styles.membresiaDescription, { color: descriptionColor }]}>
-          <Text>{t('landing.membresia.descriptionPart1')} </Text>
-          <Text style={{ fontWeight: '700', color: emphasisColor }}>
-            {t('landing.membresia.descriptionPart2Bold')}
+          <Text>{t('landing.membresia.descriptionLine1')} </Text>
+          <Text style={[styles.membresiaDescriptionEmphasis, { color: emphasisColor }]}>
+            {t('landing.membresia.descriptionLine2Bold')}
           </Text>
-          <Text>{` ${t('landing.membresia.descriptionPart3')} `}</Text>
-        </Text>
-        <Text style={[styles.membresiaDescription, { color: descriptionColor }]}>
-          {t('landing.membresia.descriptionPart4')}
+          <Text>{` ${t('landing.membresia.descriptionLine3Prefix')}`}</Text>
+          <Text style={[styles.membresiaDescriptionEmphasis, { color: descriptionColor }]}>
+            {t('landing.membresia.descriptionLine3BrandBold')}
+          </Text>
+          <Text>{t('landing.membresia.descriptionLine3Mid')}</Text>
+          <Text style={[styles.membresiaDescriptionEmphasis, { color: descriptionColor }]}>
+            {t('landing.membresia.descriptionLine3TokenBold')}
+          </Text>
+          <Text>{t('landing.membresia.descriptionLine3Suffix')}</Text>
         </Text>
       </View>
 
@@ -2187,6 +2192,16 @@ const styles = createTypographyStyles({
     fontFamily: 'Sculpin-Bold',
   },
 
+  membresiaTitle: {
+    fontFamily: 'Sculpin-Bold',
+    fontSize: 34,
+    fontWeight: '700',
+    lineHeight: 40,
+    textAlign: 'center',
+    letterSpacing: -0.25,
+    maxWidth: 920,
+  },
+
   // ── El Proyecto ─────────────────────────────────────────────────────────────
   elProyectoHeader: {
     alignItems: 'center',
@@ -2201,9 +2216,10 @@ const styles = createTypographyStyles({
     maxWidth: 1140,
     textAlign: 'center',
     fontWeight: '400',
-    fontFamily: 'Sculpin-Regular',
+    fontFamily: ANEK_EXPANDED_FAMILY,
   },
   elProyectoDescriptionAccent: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontWeight: '800',
   },
   projectCardsContainer: {
@@ -2321,6 +2337,7 @@ const styles = createTypographyStyles({
     textAlign: 'center',
   },
   projectCardBodyLead: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontWeight: '800',
   },
 
@@ -2351,15 +2368,21 @@ const styles = createTypographyStyles({
   },
   membresiaSectionHeader: {
     alignItems: 'center',
-    gap: 16,
+    gap: 18,
   },
   membresiaDescription: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 14,
+    fontSize: 17,
     fontWeight: '400',
     textAlign: 'center',
-    lineHeight: 22,
-    maxWidth: 560,
+    lineHeight: 26,
+    maxWidth: 840,
+  },
+  membresiaDescriptionEmphasis: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 17,
+    fontWeight: '700',
+    lineHeight: 26,
   },
   membresiaScrollContainer: {
     gap: 20,
