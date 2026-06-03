@@ -1,3 +1,14 @@
+## [1.0.278](https://github.com/alternun-development/alternun/compare/v1.0.278-dev.0...v1.0.278) (2026-06-03)
+
+### Bug Fixes
+
+- **repo:** docs: sync README for v1.0.278
+
+
+
+
+
+
 ## [1.0.278](https://github.com/alternun-development/alternun/compare/v1.0.277...v1.0.278) (2026-06-03)
 
 ### Bug Fixes
