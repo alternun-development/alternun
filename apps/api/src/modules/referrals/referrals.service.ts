@@ -64,6 +64,20 @@ interface SupabaseConfig {
   key: string;
 }
 
+const USER_SELECT_WITH_REFERRAL_CODE =
+  'id,referral_code,referred_by_user_id,referred_by_referral_code,email_verified,email,name,created_at';
+const USER_SELECT_WITHOUT_REFERRAL_CODE = 'id,email_verified,email,name,created_at';
+const REFERRAL_INVITEE_SELECT_WITH_REFERRAL_CODE =
+  'user_id:id,referral_code,email,email_verified,name,created_at,referred_by_user_id,referred_by_referral_code';
+const REFERRAL_INVITEE_SELECT_WITHOUT_REFERRAL_CODE =
+  'user_id:id,email,email_verified,name,created_at';
+const REFERRAL_SELECT_WITH_REFERRAL_CODE =
+  'user_id:id,referral_code,email,email_verified,name,created_at';
+const REFERRAL_SELECT_WITHOUT_REFERRAL_CODE = 'user_id:id,email,email_verified,name,created_at';
+const CURRENT_REFERRAL_SELECT_WITH_REFERRAL_COLUMNS =
+  'user_id,invitation_code,referrer_user_id,referrer_referral_code,referral_link,confirmed_at,created_at';
+const CURRENT_REFERRAL_SELECT_WITHOUT_REFERRAL_COLUMNS = 'user_id,invitation_code,created_at';
+
 function trimRuntimeValue(value: string | null | undefined): string {
   return (value ?? '').trim();
 }
@@ -138,6 +152,19 @@ function resolveReferralInput(dto: CreateReferralDto): string | null {
   return normalizeReferralCode(dto.referral_code ?? dto.invitation_code ?? null);
 }
 
+function isMissingReferralSchemaError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes('42703') &&
+    (message.includes('column users.referral_code does not exist') ||
+      message.includes('column users.referred_by_user_id does not exist') ||
+      message.includes('column users.referred_by_referral_code does not exist') ||
+      message.includes('column referrals.referrer_user_id does not exist') ||
+      message.includes('column referrals.referrer_referral_code does not exist') ||
+      message.includes('column referrals.referral_link does not exist'))
+  );
+}
+
 function resolveReferralShareBaseUrl(
   env: NodeJS.ProcessEnv,
   requestedOrigin?: string | null
@@ -166,7 +193,7 @@ function buildReferralLink(
 }
 
 function generateReferralCodeFromUser(
-  user: UserRecord,
+  user: Pick<UserRecord, 'id' | 'name' | 'email'>,
   requestedDisplayName?: string | null
 ): string {
   const rawSlugSource =
@@ -197,6 +224,19 @@ function generateReferralCodeFromUser(
   const normalizedSlug = slug.slice(0, 24) || 'user';
   const suffix = createHash('sha256').update(user.id).digest('hex').slice(0, 6);
   return `${normalizedSlug}-${suffix}`;
+}
+
+function normalizeUserRecord(record: Pick<UserRecord, 'id'> & Partial<UserRecord>): UserRecord {
+  return {
+    id: record.id,
+    referral_code: record.referral_code ?? null,
+    referred_by_user_id: record.referred_by_user_id ?? null,
+    referred_by_referral_code: record.referred_by_referral_code ?? null,
+    email_verified: record.email_verified ?? null,
+    email: record.email ?? null,
+    name: record.name ?? null,
+    created_at: record.created_at ?? null,
+  };
 }
 
 function normalizeInviteeIds(ids: string[]): string[] {
@@ -280,6 +320,24 @@ async function supabaseSelectOne<T>(
   return rows[0] ?? null;
 }
 
+async function supabaseSelectOneWithFallback<T>(
+  path: string,
+  query: Record<string, string>,
+  select: string,
+  fallbackSelect: string,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<T | null> {
+  try {
+    return await supabaseSelectOne<T>(path, query, select, env);
+  } catch (error) {
+    if (!fallbackSelect || fallbackSelect === select || !isMissingReferralSchemaError(error)) {
+      throw error;
+    }
+
+    return supabaseSelectOne<T>(path, query, fallbackSelect, env);
+  }
+}
+
 async function supabaseSelectMany<T>(
   path: string,
   query: Record<string, string>,
@@ -315,6 +373,24 @@ async function supabaseSelectMany<T>(
 
   const rows = (await response.json().catch(() => [])) as T[];
   return Array.isArray(rows) ? rows : [];
+}
+
+async function supabaseSelectManyWithFallback<T>(
+  path: string,
+  query: Record<string, string>,
+  select: string,
+  fallbackSelect: string,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<T[]> {
+  try {
+    return await supabaseSelectMany<T>(path, query, select, env);
+  } catch (error) {
+    if (!fallbackSelect || fallbackSelect === select || !isMissingReferralSchemaError(error)) {
+      throw error;
+    }
+
+    return supabaseSelectMany<T>(path, query, fallbackSelect, env);
+  }
 }
 
 async function supabaseUpdateOne<T>(
@@ -470,7 +546,7 @@ export class ReferralsService {
     requestedOrigin?: string | null,
     requestedDisplayName?: string | null
   ): Promise<ReferralSummaryDto> {
-    const user = await this.getUserById(userId);
+    const { user, usesLegacyReferralSchema } = await this.getUserByIdWithSchema(userId);
     const currentUser: UserRecord = user ?? {
       id: userId,
       referral_code: null,
@@ -493,7 +569,9 @@ export class ReferralsService {
         {
           user_id: `eq.${userId}`,
         },
-        'user_id,invitation_code,referrer_user_id,referrer_referral_code,referral_link,confirmed_at,created_at'
+        usesLegacyReferralSchema
+          ? CURRENT_REFERRAL_SELECT_WITHOUT_REFERRAL_COLUMNS
+          : CURRENT_REFERRAL_SELECT_WITH_REFERRAL_COLUMNS
       ),
       null,
       userId
@@ -568,64 +646,72 @@ export class ReferralsService {
       });
     }
 
-    const referralCode = normalizeReferralCode(currentUser.referral_code);
+    const referralCode = normalizeReferralCode(
+      currentUser.referral_code ?? currentReferralRecord?.invitation_code
+    );
     const resolvedReferralCode =
       referralCode ?? generateReferralCodeFromUser(currentUser, requestedDisplayName);
 
-    const referralRowsById = await swallowOptionalQuery(
-      this.logger,
-      'referrals by referrer user id',
-      supabaseSelectMany<ReferralRecord>(
-        'referrals',
-        {
-          referrer_user_id: `eq.${userId}`,
-          order: 'created_at.desc',
-        },
-        'id,user_id,created_at,referrer_user_id,referrer_referral_code,referral_link,confirmed_at'
-      ),
-      [],
-      userId
-    );
-    const referralRowsByCode = resolvedReferralCode
-      ? await swallowOptionalQuery(
+    const referralRowsById = usesLegacyReferralSchema
+      ? []
+      : await swallowOptionalQuery(
           this.logger,
-          'referrals by referral code',
+          'referrals by referrer user id',
           supabaseSelectMany<ReferralRecord>(
             'referrals',
             {
-              referrer_referral_code: `eq.${resolvedReferralCode}`,
+              referrer_user_id: `eq.${userId}`,
               order: 'created_at.desc',
             },
             'id,user_id,created_at,referrer_user_id,referrer_referral_code,referral_link,confirmed_at'
           ),
           [],
           userId
-        )
-      : [];
+        );
+    const referralRowsByCode =
+      usesLegacyReferralSchema || !resolvedReferralCode
+        ? []
+        : await swallowOptionalQuery(
+            this.logger,
+            'referrals by referral code',
+            supabaseSelectMany<ReferralRecord>(
+              'referrals',
+              {
+                referrer_referral_code: `eq.${resolvedReferralCode}`,
+                order: 'created_at.desc',
+              },
+              'id,user_id,created_at,referrer_user_id,referrer_referral_code,referral_link,confirmed_at'
+            ),
+            [],
+            userId
+          );
     const referralRecordMap = new Map<string, ReferralRecord>();
     for (const record of [...referralRowsById, ...referralRowsByCode]) {
       upsertReferralRecordByInvitee(referralRecordMap, record);
     }
 
-    const attributedInviteeRows = await swallowOptionalQuery(
-      this.logger,
-      'attributed invitee rows',
-      supabaseSelectMany<AttributedInviteeRecord>(
-        'users',
-        resolvedReferralCode
-          ? {
-              or: `(referred_by_user_id.eq.${userId},referred_by_referral_code.eq.${resolvedReferralCode})`,
-              order: 'created_at.desc',
-            }
-          : {
-              referred_by_user_id: `eq.${userId}`,
-              order: 'created_at.desc',
-            },
-        'user_id:id,referral_code,email,email_verified,name,created_at,referred_by_user_id,referred_by_referral_code'
-      ),
-      [],
-      userId
-    );
+    const attributedInviteeRows = usesLegacyReferralSchema
+      ? []
+      : await swallowOptionalQuery(
+          this.logger,
+          'attributed invitee rows',
+          supabaseSelectManyWithFallback<AttributedInviteeRecord>(
+            'users',
+            resolvedReferralCode
+              ? {
+                  or: `(referred_by_user_id.eq.${userId},referred_by_referral_code.eq.${resolvedReferralCode})`,
+                  order: 'created_at.desc',
+                }
+              : {
+                  referred_by_user_id: `eq.${userId}`,
+                  order: 'created_at.desc',
+                },
+            REFERRAL_INVITEE_SELECT_WITH_REFERRAL_CODE,
+            REFERRAL_INVITEE_SELECT_WITHOUT_REFERRAL_CODE
+          ),
+          [],
+          userId
+        );
     const inviteeMap = new Map<string, ReferralInviteeRecord>();
     for (const row of attributedInviteeRows) {
       inviteeMap.set(row.user_id, row);
@@ -638,12 +724,13 @@ export class ReferralsService {
       ? await swallowOptionalQuery(
           this.logger,
           'missing invitee rows',
-          supabaseSelectMany<ReferralInviteeRecord>(
+          supabaseSelectManyWithFallback<ReferralInviteeRecord>(
             'users',
             {
               id: `in.(${missingInviteeIds.join(',')})`,
             },
-            'user_id:id,referral_code,email,email_verified,name,created_at'
+            REFERRAL_SELECT_WITH_REFERRAL_CODE,
+            REFERRAL_SELECT_WITHOUT_REFERRAL_CODE
           ),
           [],
           userId
@@ -706,11 +793,28 @@ export class ReferralsService {
   }
 
   private async getUserById(userId: string): Promise<UserRecord | null> {
-    return supabaseSelectOne<UserRecord>(
+    return (await this.getUserByIdWithSchema(userId)).user;
+  }
+
+  private async getUserByIdWithSchema(userId: string): Promise<{
+    user: UserRecord | null;
+    usesLegacyReferralSchema: boolean;
+  }> {
+    const user = await supabaseSelectOneWithFallback<UserRecord>(
       'users',
       { id: `eq.${userId}` },
-      'id,referral_code,referred_by_user_id,referred_by_referral_code,email_verified,email,name,created_at'
+      USER_SELECT_WITH_REFERRAL_CODE,
+      USER_SELECT_WITHOUT_REFERRAL_CODE
     );
+
+    if (!user) {
+      return { user: null, usesLegacyReferralSchema: false };
+    }
+
+    return {
+      user: normalizeUserRecord(user),
+      usesLegacyReferralSchema: user.referral_code === undefined,
+    };
   }
 
   private async getUserByIdWithRetry(userId: string, attempts = 6): Promise<UserRecord | null> {
@@ -732,32 +836,40 @@ export class ReferralsService {
 
   private async getUserByReferralCode(referralCode: string): Promise<UserRecord | null> {
     const normalizedReferralCode = normalizeReferralCode(referralCode) ?? '';
-    const exactMatch = await supabaseSelectOne<UserRecord>(
-      'users',
-      { referral_code: `eq.${normalizedReferralCode}` },
-      'id,referral_code,referred_by_user_id,referred_by_referral_code,email_verified,email,name,created_at'
-    );
+    try {
+      const exactMatch = await supabaseSelectOne<UserRecord>(
+        'users',
+        { referral_code: `eq.${normalizedReferralCode}` },
+        USER_SELECT_WITH_REFERRAL_CODE
+      );
 
-    if (exactMatch) {
-      return exactMatch;
+      if (exactMatch) {
+        return normalizeUserRecord(exactMatch);
+      }
+
+      const slug = resolveReferralCodeSlug(normalizedReferralCode);
+      if (!slug) {
+        return null;
+      }
+
+      const slugCandidates = await supabaseSelectMany<UserRecord>(
+        'users',
+        { referral_code: `ilike.${slug}-%` },
+        USER_SELECT_WITH_REFERRAL_CODE
+      );
+      const slugPattern = new RegExp(`^${escapeRegExp(slug)}-[a-z0-9]{6}$`, 'i');
+      const matches = slugCandidates.filter(
+        (candidate) => candidate.referral_code && slugPattern.test(candidate.referral_code)
+      );
+
+      return matches.length === 1 ? normalizeUserRecord(matches[0]) : null;
+    } catch (error) {
+      if (isMissingReferralSchemaError(error)) {
+        return null;
+      }
+
+      throw error;
     }
-
-    const slug = resolveReferralCodeSlug(normalizedReferralCode);
-    if (!slug) {
-      return null;
-    }
-
-    const slugCandidates = await supabaseSelectMany<UserRecord>(
-      'users',
-      { referral_code: `ilike.${slug}-%` },
-      'id,referral_code,referred_by_user_id,referred_by_referral_code,email_verified,email,name,created_at'
-    );
-    const slugPattern = new RegExp(`^${escapeRegExp(slug)}-[a-z0-9]{6}$`, 'i');
-    const matches = slugCandidates.filter(
-      (candidate) => candidate.referral_code && slugPattern.test(candidate.referral_code)
-    );
-
-    return matches.length === 1 ? matches[0] ?? null : null;
   }
 
   private toResponse(record: ReferralRecord): ReferralResponseDto {

@@ -8,6 +8,8 @@
       "light": "สว่าง",
       "settings": "การตั้งค่า",
       "signIn": "เข้าสู่ระบบ",
+      "guest": "ผู้เยี่ยมชม",
+      "anonymous": "ไม่ระบุชื่อ",
       "theme": "ธีม",
       "yes": "ใช่",
       "no": "ไม่"
@@ -158,127 +160,127 @@
     "dashboard": {
       "backToTop": "ด้านบน",
       "hero": {
-        "hint": "Sign in from the top-right profile menu to activate actions."
+        "hint": "ลงชื่อเข้าใช้จากเมนูโปรไฟล์มุมขวาบนเพื่อเปิดใช้งานการทำงานต่าง ๆ"
       },
       "notifications": {
         "welcomeBonus": {
-          "title": "Welcome!",
-          "message": "You received 10 Airs as a welcome bonus. Start your sustainable journey!"
+          "title": "ยินดีต้อนรับ!",
+          "message": "คุณได้รับ 10 Airs เป็นโบนัสต้อนรับ เริ่มต้นเส้นทางความยั่งยืนของคุณได้เลย!"
         },
         "signInRequired": {
-          "title": "Sign In Required",
-          "message": "Sign in first to connect a wallet."
+          "title": "ต้องลงชื่อเข้าใช้",
+          "message": "โปรดลงชื่อเข้าใช้ก่อนเพื่อเชื่อมต่อวอลเล็ต"
         },
         "walletConnected": {
-          "title": "Wallet Connected",
-          "message": "Wallet authentication completed."
+          "title": "เชื่อมต่อวอลเล็ตแล้ว",
+          "message": "การยืนยันตัวตนด้วยวอลเล็ตเสร็จสมบูรณ์"
         },
         "walletConnectionFailed": {
-          "title": "Wallet Connection Failed",
+          "title": "การเชื่อมต่อวอลเล็ตล้มเหลว",
           "message": "{{error}}"
         },
         "signOutFailed": {
-          "title": "Sign Out Failed",
+          "title": "ออกจากระบบล้มเหลว",
           "message": "{{error}}"
         }
       },
       "welcomeBonusModal": {
-        "title": "Welcome to Airs By Alternun!",
-        "subtitle": "You've received your welcome bonus",
-        "description": "As a new member, we're giving you 10 Airs to kick start your sustainable journey. Use them to explore projects and make a real environmental impact.",
+        "title": "ยินดีต้อนรับสู่ Airs By Alternun!",
+        "subtitle": "คุณได้รับโบนัสต้อนรับแล้ว",
+        "description": "ในฐานะสมาชิกใหม่ เรามอบ 10 Airs ให้คุณเพื่อเริ่มต้นเส้นทางความยั่งยืน ใช้เพื่อสำรวจโครงการและสร้างผลกระทบต่อสิ่งแวดล้อมอย่างแท้จริง",
         "amount": "10 AIRS",
-        "claimButton": "Claim Bonus",
-        "claimingButton": "Claiming...",
-        "alreadyClaimed": "Bonus Already Claimed",
-        "alreadyClaimedMessage": "You've already claimed your welcome bonus.",
-        "successTitle": "Bonus Claimed!",
-        "successMessage": "Your 10 Airs are now in your account. Start earning more by participating in sustainable activities!"
+        "claimButton": "รับโบนัส",
+        "claimingButton": "กำลังรับ...",
+        "alreadyClaimed": "รับโบนัสแล้ว",
+        "alreadyClaimedMessage": "คุณได้รับโบนัสต้อนรับไปแล้ว",
+        "successTitle": "รับโบนัสแล้ว!",
+        "successMessage": "10 Airs ของคุณอยู่ในบัญชีแล้ว เริ่มสะสมเพิ่มเติมได้โดยเข้าร่วมกิจกรรมที่ยั่งยืน"
       },
       "activityFeed": {
-        "title": "Recent Activity",
+        "title": "กิจกรรมล่าสุด",
         "subtitle": {
-          "global": "Real-time platform activity",
-          "user": "How you've accumulated your Airs By Alternun."
+          "global": "กิจกรรมของแพลตฟอร์มแบบเรียลไทม์",
+          "user": "วิธีที่คุณสะสม Airs By Alternun"
         },
         "tabs": {
-          "global": "Global Activity",
-          "user": "My Activity"
+          "global": "กิจกรรมทั่วโลก",
+          "user": "กิจกรรมของฉัน"
         },
-        "search": "Search activity or source...",
+        "search": "ค้นหากิจกรรมหรือแหล่งที่มา...",
         "tableHeaders": {
-          "action": "Action",
-          "source": "Source",
+          "action": "การกระทำ",
+          "source": "แหล่งที่มา",
           "airs": "Airs",
-          "date": "Date"
+          "date": "วันที่"
         },
-        "empty": "No activity found for this search.",
-        "now": "Now",
+        "empty": "ไม่พบกิจกรรมสำหรับการค้นหานี้",
+        "now": "ตอนนี้",
         "activityTypes": {
-          "compensation": "Environmental Compensation",
-          "purchase": "Compensation Purchase",
-          "profile": "Profile Completed",
-          "account": "Account Created",
-          "reward": "Referral Reward",
-          "certificate": "Certificate Issued",
-          "verification": "Verification Completed",
-          "wallet": "Wallet Connected"
+          "compensation": "การชดเชยผลกระทบต่อสิ่งแวดล้อม",
+          "purchase": "การซื้อการชดเชย",
+          "profile": "กรอกโปรไฟล์เสร็จสมบูรณ์",
+          "account": "สร้างบัญชีแล้ว",
+          "reward": "รางวัลจากการแนะนำ",
+          "certificate": "ออกใบรับรองแล้ว",
+          "verification": "การยืนยันเสร็จสมบูรณ์",
+          "wallet": "เชื่อมต่อวอลเล็ตแล้ว"
         },
         "typeLabels": {
-          "compensation": "Compensation",
-          "purchase": "Purchase",
-          "profile": "Profile",
-          "account": "Account",
-          "reward": "Reward",
-          "certificate": "Certificate"
+          "compensation": "การชดเชย",
+          "purchase": "การซื้อ",
+          "profile": "โปรไฟล์",
+          "account": "บัญชี",
+          "reward": "รางวัล",
+          "certificate": "ใบรับรอง"
         },
         "filters": {
-          "all": "All",
-          "compensation": "Compensation",
-          "purchase": "Purchase",
-          "profile": "Profile",
-          "account": "Account",
-          "reward": "Reward"
+          "all": "ทั้งหมด",
+          "compensation": "การชดเชย",
+          "purchase": "การซื้อ",
+          "profile": "โปรไฟล์",
+          "account": "บัญชี",
+          "reward": "รางวัล"
         }
       },
       "heroPanel": {
-        "subtitle": "Your regenerative score is:",
-        "statusLabel": "Status {{tier}}",
-        "progressTo": "Progress to {{nextTier}}",
-        "progressHint": "You need {{remaining}} more Airs to reach {{nextTier}} and unlock exclusive benefits",
-        "maxTierReached": "You've reached the maximum {{tier}} level",
-        "statusInfo": "Status information",
-        "updatedAt": "Updated:",
-        "validUntil": "Valid until:",
-        "reloadButton": "Reload score",
-        "statusInfoButton": "Status information"
+        "subtitle": "คะแนนเชิงฟื้นฟูของคุณคือ:",
+        "statusLabel": "สถานะ {{tier}}",
+        "progressTo": "ความคืบหน้าสู่ {{nextTier}}",
+        "progressHint": "คุณต้องการ Airs เพิ่มอีก {{remaining}} เพื่อไปถึง {{nextTier}} และปลดล็อกสิทธิประโยชน์พิเศษ",
+        "maxTierReached": "คุณถึงระดับสูงสุด {{tier}} แล้ว",
+        "statusInfo": "ข้อมูลสถานะ",
+        "updatedAt": "อัปเดตเมื่อ:",
+        "validUntil": "ใช้ได้ถึง:",
+        "reloadButton": "โหลดคะแนนใหม่",
+        "statusInfoButton": "ข้อมูลสถานะ"
       },
       "summaryCards": {
         "position": {
-          "title": "Your Position",
-          "subtitle": "Among Airs By Alternun members",
-          "global": "Global",
-          "colombia": "Colombia",
-          "medellin": "Medellín",
-          "rankingNote": "Ranking based on accumulated Airs"
+          "title": "อันดับของคุณ",
+          "subtitle": "ในกลุ่มสมาชิก Airs By Alternun",
+          "global": "ทั่วโลก",
+          "colombia": "โคลอมเบีย",
+          "medellin": "เมเดยิน",
+          "rankingNote": "จัดอันดับตาม Airs ที่สะสม"
         },
         "rbi": {
-          "title": "RBI Projection",
-          "subtitle": "Estimated income for next cycle",
-          "estimatedPool": "Estimated RBI Pool:",
-          "eligibleUsers": "Eligible Users:",
-          "airsScore": "Your Airs Score:",
-          "whatIsRbi": "What is RBI?",
-          "explanation": "Regenerative Basic Income is a periodic income distributed among Alternun users who contribute to the ecosystem.\\n\\nIt doesn't depend on how much money you have, but on your participation, commitment, and impact, measured through your AIRS score.\\n\\nEach time Alternun facilitates a compensation, a sale from the compensation pool, or an economic activity within the platform, part of that value goes directly to the RBI fund.",
-          "fullDocumentation": "Full Documentation"
+          "title": "ประมาณการ RBI",
+          "subtitle": "รายได้โดยประมาณสำหรับรอบถัดไป",
+          "estimatedPool": "กองทุน RBI โดยประมาณ:",
+          "eligibleUsers": "ผู้ใช้ที่มีสิทธิ์:",
+          "airsScore": "คะแนน Airs ของคุณ:",
+          "whatIsRbi": "RBI คืออะไร?",
+          "explanation": "รายได้พื้นฐานเชิงฟื้นฟู (Regenerative Basic Income) คือรายได้ตามรอบที่แจกจ่ายให้กับผู้ใช้ Alternun ที่มีส่วนร่วมในระบบนิเวศ.\n\nมันไม่ได้ขึ้นอยู่กับว่าคุณมีเงินเท่าไร แต่ขึ้นอยู่กับการมีส่วนร่วม ความมุ่งมั่น และผลกระทบของคุณ ซึ่งวัดผ่านคะแนน AIRS ของคุณ.\n\nทุกครั้งที่ Alternun อำนวยความสะดวกในการชดเชย การขายจากพูลการชดเชย หรือกิจกรรมทางเศรษฐกิจภายในแพลตฟอร์ม มูลค่าบางส่วนจะถูกส่งตรงไปยังกองทุน RBI",
+          "fullDocumentation": "เอกสารฉบับเต็ม"
         },
         "atn": {
-          "title": "My ATN",
-          "subtitle": "Your regenerative tokens",
-          "availableLabel": "Available ATN",
-          "availableDesc": "Ready to use",
-          "stackingLabel": "ATN in stacking",
-          "stackingDesc": "Participating in projects",
-          "totalLabel": "Total ATN"
+          "title": "ATN ของฉัน",
+          "subtitle": "โทเค็นเชิงฟื้นฟูของคุณ",
+          "availableLabel": "ATN ที่มีอยู่",
+          "availableDesc": "พร้อมใช้งาน",
+          "stackingLabel": "ATN ที่กำลังสเตก",
+          "stackingDesc": "กำลังมีส่วนร่วมในโครงการ",
+          "totalLabel": "ATN รวม"
         }
       }
     },
@@ -326,12 +328,12 @@
         "scrollToInteract": "เลื่อนเพื่อโต้ตอบ"
       },
       "info": {
-        "scoreLine": "Alternun Impact & Reputation Score",
+        "scoreLine": "คะแนนผลกระทบและชื่อเสียงของ Alternun",
         "summaryLine": "พื้นที่เดียวสำหรับผลกระทบที่ตรวจสอบได้ วงจรการชดเชย และโมดูลที่เชื่อมกับวอลเล็ต"
       },
       "media": {
         "subtitle": "โปรแกรมความภักดีที่ชัดเจนที่สุดสำหรับคนอย่างคุณที่ปกป้องโลก",
-        "title": "Alternun Impact & Reputation Score"
+        "title": "คะแนนผลกระทบและชื่อเสียงของ Alternun"
       },
       "nav": {
         "benefits": "ประโยชน์",
@@ -402,7 +404,14 @@
         "descriptionPart1": "ไม่มีค่าธรรมเนียมรายเดือนหรือการต่ออายุที่จำเป็น",
         "descriptionPart2Bold": "เมื่อคุณชดเชยก๊าซคาร์บอนของคุณครั้งแรก คุณจะกลายเป็นสมาชิกตลอดชีวิต",
         "descriptionPart3": "ตั้งแต่ขณะนั้นเป็นต้นไป คุณจะเริ่มสะสม Airs และรับ RBI ของคุณรายเดือน",
-        "descriptionPart4": "สมาชิกของคุณจะไม่มีวันหมดอายุและสิทธิประโยชน์ของคุณจะเพิ่มขึ้นเรื่อย ๆ"
+        "descriptionPart4": "สมาชิกของคุณจะไม่มีวันหมดอายุและสิทธิประโยชน์ของคุณจะเพิ่มขึ้นเรื่อย ๆ",
+        "descriptionLine1": "ไม่มีค่าธรรมเนียมรายเดือนหรือการต่ออายุที่จำเป็น",
+        "descriptionLine2Bold": "เมื่อคุณชดเชยก๊าซคาร์บอนของคุณครั้งแรก คุณจะกลายเป็นสมาชิกตลอดชีวิต",
+        "descriptionLine3Prefix": "ตั้งแต่วินาทีนั้นเป็นต้นไป คุณจะเริ่มสะสม ",
+        "descriptionLine3BrandBold": "Airs By Alternun",
+        "descriptionLine3Mid": " และรับ ",
+        "descriptionLine3TokenBold": "RBI",
+        "descriptionLine3Suffix": " ของคุณรายเดือน การเป็นสมาชิกของคุณจะไม่มีวันหมดอายุและสิทธิประโยชน์ของคุณจะเพิ่มขึ้นเรื่อย ๆ"
       },
       "video": {
         "loadingIntro": "กำลังโหลดวิดีโอแนะนำ Airs",
@@ -435,9 +444,9 @@
             "infoBody": "การมีส่วนร่วมในโครงการที่ตรวจสอบแล้วจะได้รับ Airs ในอัตราแปรผันตามผลกระทบ ความโปร่งใส และจำนวนที่สนับสนุน"
           },
           "marketplace": {
-            "description": "Access a marketplace of regenerative products and services.",
-            "meta": "Marketplace",
-            "title": "Marketplace"
+            "description": "เข้าถึงมาร์เก็ตเพลสของผลิตภัณฑ์และบริการเชิงฟื้นฟู",
+            "meta": "มาร์เก็ตเพลส",
+            "title": "มาร์เก็ตเพลส"
           },
           "premium": {
             "tag1": "CO2",
@@ -460,9 +469,9 @@
             "infoBody": "บัตร Airs เชื่อมโยงการใช้จ่ายและผลกระทบของคุณกับคะแนน เพื่อให้กิจกรรมที่เข้าเกณฑ์สะสม Airs ได้เร็วขึ้น"
           },
           "services": {
-            "description": "Verified services that contribute to positive impact.",
-            "meta": "Services",
-            "title": "Services"
+            "description": "บริการที่ผ่านการตรวจสอบซึ่งช่วยสร้างผลกระทบเชิงบวก",
+            "meta": "บริการ",
+            "title": "บริการ"
           }
         },
         "cta": "ดูเส้นทางการสะสม",
@@ -491,7 +500,7 @@
       "showIntroAgain": "ไม่ต้องแสดงบทนำอีก",
       "subtitle": "จัดการการตั้งค่าหน้าตาและตัวควบคุมระดับบัญชี",
       "title": "การตั้งค่า",
-      "showWelcomeBonusModal": "Show Welcome Bonus"
+      "showWelcomeBonusModal": "แสดงโบนัสต้อนรับ"
     },
     "walletModal": {
       "disclaimer": "เมื่อเชื่อมต่อ แสดงว่าคุณยอมรับข้อกำหนดการให้บริการและนโยบายความเป็นส่วนตัวของเรา",
@@ -507,6 +516,67 @@
       }
     },
     "profile": {
+      "screenTitle": "โปรไฟล์ของฉัน",
+      "signInPrompt": "เข้าสู่ระบบเพื่อดูโปรไฟล์ของคุณ",
+      "tabs": {
+        "ranking": "อันดับ",
+        "wallet": "วอลเล็ต",
+        "profile": "โปรไฟล์"
+      },
+      "tierLabels": {
+        "bronze": "บรอนซ์",
+        "silver": "เงิน",
+        "gold": "ทอง",
+        "platinum": "แพลทินัม"
+      },
+      "stats": {
+        "airs": "AIRS",
+        "projects": "โครงการ",
+        "co2": "CO₂"
+      },
+      "ranking": {
+        "myPosition": "ตำแหน่งของฉัน",
+        "topImpactors": "ผู้สร้างผลกระทบสูงสุด",
+        "searchPlaceholder": "ค้นหาบุคคล...",
+        "filters": {
+          "all": "ทั้งหมด",
+          "podium": "โพเดียม",
+          "others": "อื่นๆ"
+        }
+      },
+      "wallet": {
+        "connectTitle": "เชื่อมต่อวอลเล็ตของคุณ",
+        "connectSubtitle": "เชื่อมต่อวอลเล็ตเพื่อจัดการโทเค็น ATN ของคุณ",
+        "connectButton": "เชื่อมต่อวอลเล็ต",
+        "supportedNetworks": "เครือข่ายที่รองรับ",
+        "notConnected": "ยังไม่ได้เชื่อมต่อ"
+      },
+      "accessMethods": {
+        "current": "ปัจจุบัน: {{method}}",
+        "labels": {
+          "wallet": "วอลเล็ต",
+          "email": "อีเมล",
+          "session": "เซสชัน",
+          "google": "Google",
+          "discord": "Discord",
+          "provider": "ผู้ให้บริการ: {{provider}}"
+        }
+      },
+      "accountStatus": {
+        "verified": "ได้รับการยืนยัน"
+      },
+      "accountInfoModal": {
+        "title": "ข้อมูลบัญชี",
+        "accountId": "รหัสบัญชี",
+        "email": "อีเมล",
+        "username": "ชื่อผู้ใช้",
+        "createdAt": "วันที่สร้าง",
+        "referredBy": "แนะนำโดย",
+        "activeAccount": "บัญชีที่ใช้งานอยู่",
+        "copiedToast": "คัดลอกรหัสแล้ว",
+        "loading": "กำลังโหลด...",
+        "na": "N/A"
+      },
       "sections": {
         "achievements": "ความสำเร็จ",
         "account": "บัญชี",
@@ -539,7 +609,25 @@
         "firstName": "ชื่อจริง",
         "lastName": "นามสกุล",
         "email": "อีเมล",
+        "saveChanges": "บันทึกการเปลี่ยนแปลง",
+        "cancel": "ยกเลิก",
         "close": "ปิด"
+      },
+      "achievementBadges": {
+        "account_confirmed": "ยืนยันบัญชีแล้ว",
+        "first_10_airs": "10 AIRS",
+        "first_100_airs": "100 AIRS",
+        "first_regenerative_action": "การกระทำสีเขียว",
+        "five_regenerative_actions": "5 การกระทำ",
+        "first_commerce_action": "พันธมิตรธุรกิจ",
+        "profile_complete": "โปรไฟล์สมบูรณ์",
+        "bio_added": "ประวัติ",
+        "avatar_uploaded": "อวาตาร์",
+        "wallet_connected": "เชื่อมต่อวอลเล็ตแล้ว",
+        "seven_day_streak": "7 วัน",
+        "referral_invited": "เชิญเพื่อน",
+        "fifty_airs": "50 AIRS",
+        "ambassador": "ทูต"
       },
       "achievements": {
         "firstTree": "ต้นไม้แรก",
@@ -549,7 +637,7 @@
         "kycVerified": "ได้รับการยืนยัน KYC",
         "recruiter": "ผู้สรรหา",
         "partner": "พาร์ตเนอร์",
-        "platinum": "แพลตตินัม"
+        "platinum": "แพลทินัม"
       },
       "referral": {
         "title": "รหัสแนะนำของคุณ",
