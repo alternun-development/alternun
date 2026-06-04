@@ -8,6 +8,8 @@
       "light": "Claro",
       "settings": "Configuracion",
       "signIn": "Iniciar sesion",
+      "guest": "Invitado",
+      "anonymous": "Anónimo",
       "theme": "Tema",
       "yes": "Si",
       "no": "No"
@@ -242,7 +244,7 @@
       },
       "heroPanel": {
         "subtitle": "Tu puntuación regenerativa es:",
-        "statusLabel": "Status {{tier}}",
+        "statusLabel": "Estado {{tier}}",
         "progressTo": "Progreso a {{nextTier}}",
         "progressHint": "Te faltan {{remaining}} Airs para alcanzar {{nextTier}} y desbloquear beneficios exclusivos",
         "maxTierReached": "Has alcanzado el nivel máximo {{tier}}",
@@ -278,7 +280,7 @@
           "availableDesc": "Listos para usar",
           "stackingLabel": "ATN en stacking",
           "stackingDesc": "Participando en proyectos",
-          "totalLabel": "Total ATN"
+          "totalLabel": "ATN total"
         }
       }
     },
@@ -326,12 +328,12 @@
         "scrollToInteract": "Desplazate para interactuar"
       },
       "info": {
-        "scoreLine": "Alternun Impact & Reputation Score",
+        "scoreLine": "Puntuación de impacto y reputación de Alternun",
         "summaryLine": "Una sola superficie para impacto verificado, ciclo de compensacion y modulos vinculados a la wallet."
       },
       "media": {
         "subtitle": "El programa de lealtad definitivo para quienes como tu protegen el planeta.",
-        "title": "Alternun Impact & Reputation Score"
+        "title": "Puntuación de impacto y reputación de Alternun"
       },
       "nav": {
         "benefits": "Beneficios",
@@ -402,7 +404,14 @@
         "descriptionPart1": "No necesitas pagar cuotas mensuales ni renovaciones.",
         "descriptionPart2Bold": "Al compensar tu primera huella, eres miembro vitalicio.",
         "descriptionPart3": "Desde ese momento, empiezas a acumular Airs y a recibir tu RBI mensual.",
-        "descriptionPart4": "Tu membresía nunca expira y tus beneficios solo crecen con el tiempo."
+        "descriptionPart4": "Tu membresía nunca expira y tus beneficios solo crecen con el tiempo.",
+        "descriptionLine1": "No necesitas pagar cuotas mensuales ni renovaciones.",
+        "descriptionLine2Bold": "Al compensar tu primera huella, eres miembro vitalicio.",
+        "descriptionLine3Prefix": "Desde ese momento, empiezas a acumular ",
+        "descriptionLine3BrandBold": "Airs By Alternun",
+        "descriptionLine3Mid": " y a recibir tu ",
+        "descriptionLine3TokenBold": "RBI",
+        "descriptionLine3Suffix": " mensual. Tu membresía nunca expira y tus beneficios solo crecen con el tiempo."
       },
       "beneficios": {
         "atnUnit": "Airs / USD",
@@ -428,9 +437,9 @@
             "infoBody": "Los aportes a proyectos validados generan Airs con tasas variables según el impacto, la trazabilidad y el monto comprometido."
           },
           "marketplace": {
-            "description": "Accede a un marketplace de productos y servicios regenerativos.",
-            "meta": "Marketplace",
-            "title": "Marketplace"
+            "description": "Accede a un mercado de productos y servicios regenerativos.",
+            "meta": "Mercado",
+            "title": "Mercado"
           },
           "premium": {
             "tag1": "CO2",
@@ -482,7 +491,7 @@
     },
     "settingsScreen": {
       "currentLanguage": "Idioma actual",
-      "localPreferenceHelp": "Guardado localmente en las preferencias del navegador o la app.",
+      "localPreferenceHelp": "Se almacena localmente en este dispositivo",
       "sections": {
         "appearance": "Apariencia",
         "language": "Idioma",
@@ -490,7 +499,6 @@
       },
       "showIntroAgain": "No mostrar la introduccion otra vez",
       "showWelcomeBonusModal": "Mostrar bono de bienvenida",
-      "localPreferenceHelp": "Se almacena localmente en este dispositivo",
       "subtitle": "Administra las preferencias de interfaz y los controles de cuenta.",
       "title": "Configuracion"
     },
@@ -508,6 +516,67 @@
       }
     },
     "profile": {
+      "screenTitle": "Mi perfil",
+      "signInPrompt": "Inicia sesión para ver tu perfil",
+      "tabs": {
+        "ranking": "Clasificación",
+        "wallet": "Billetera",
+        "profile": "Perfil"
+      },
+      "tierLabels": {
+        "bronze": "Bronce",
+        "silver": "Plata",
+        "gold": "Oro",
+        "platinum": "Platino"
+      },
+      "stats": {
+        "airs": "AIRS",
+        "projects": "Proyectos",
+        "co2": "CO₂"
+      },
+      "ranking": {
+        "myPosition": "Mi posición",
+        "topImpactors": "Principales impactadores",
+        "searchPlaceholder": "Buscar persona...",
+        "filters": {
+          "all": "Todos",
+          "podium": "Podio",
+          "others": "Resto"
+        }
+      },
+      "wallet": {
+        "connectTitle": "Conecta tu billetera",
+        "connectSubtitle": "Vincula tu billetera para gestionar tus tokens ATN",
+        "connectButton": "Conectar billetera",
+        "supportedNetworks": "Redes compatibles",
+        "notConnected": "No conectada"
+      },
+      "accessMethods": {
+        "current": "Actual: {{method}}",
+        "labels": {
+          "wallet": "Billetera",
+          "email": "Correo electrónico",
+          "session": "Sesión",
+          "google": "Google",
+          "discord": "Discord",
+          "provider": "Proveedor: {{provider}}"
+        }
+      },
+      "accountStatus": {
+        "verified": "Verificado"
+      },
+      "accountInfoModal": {
+        "title": "Información de cuenta",
+        "accountId": "ID de cuenta",
+        "email": "Correo electrónico",
+        "username": "Nombre de usuario",
+        "createdAt": "Fecha de creación",
+        "referredBy": "Referido por",
+        "activeAccount": "Cuenta activa",
+        "copiedToast": "ID copiado al portapapeles",
+        "loading": "Cargando...",
+        "na": "N/A"
+      },
       "sections": {
         "achievements": "Logros",
         "account": "Cuenta",
@@ -521,7 +590,7 @@
       "tierJourney": "Trayecto de Tier",
       "accountRows": {
         "personalInfo": "Información personal",
-        "wallet": "Wallet",
+        "wallet": "Billetera",
         "accessMethod": "Método de acceso",
         "notifications": "Notificaciones"
       },
@@ -539,18 +608,36 @@
         "title": "Información Personal",
         "firstName": "Nombre",
         "lastName": "Apellido",
-        "email": "Email",
+        "email": "Correo electrónico",
+        "saveChanges": "Guardar cambios",
+        "cancel": "Cancelar",
         "close": "Cerrar"
+      },
+      "achievementBadges": {
+        "account_confirmed": "Cuenta verificada",
+        "first_10_airs": "10 AIRS",
+        "first_100_airs": "100 AIRS",
+        "first_regenerative_action": "Acción verde",
+        "five_regenerative_actions": "5 acciones",
+        "first_commerce_action": "Aliado comercial",
+        "profile_complete": "Perfil completo",
+        "bio_added": "Biografía",
+        "avatar_uploaded": "Avatar",
+        "wallet_connected": "Billetera conectada",
+        "seven_day_streak": "7 días",
+        "referral_invited": "Invita amigos",
+        "fifty_airs": "50 AIRS",
+        "ambassador": "Embajador"
       },
       "achievements": {
         "firstTree": "Primer Árbol",
         "co2Badge": "10 kg CO₂",
-        "airs1k": "1K Airs",
-        "airs5k": "5K Airs",
+        "airs1k": "1 mil Airs",
+        "airs5k": "5 mil Airs",
         "kycVerified": "KYC Verificado",
         "recruiter": "Recluta",
         "partner": "Socio",
-        "platinum": "Platinum"
+        "platinum": "Platino"
       },
       "referral": {
         "title": "Tu codigo de referido",
