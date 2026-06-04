@@ -3,7 +3,6 @@ import { Copy, Link2, Share2, UserRoundCheck, Users } from 'lucide-react-native'
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Clipboard,
   Share,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
   View,
   Platform,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import type { User } from '../auth/AppAuthProvider';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
@@ -101,6 +101,8 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
 
   useEffect(() => {
     let isMounted = true;
+    let fetchTimeoutHandle: ReturnType<typeof setTimeout> | null = null;
+    const abortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
 
     const fetchReferralSummary = async (): Promise<void> => {
       if (!user?.id) {
@@ -109,9 +111,6 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
 
       setLoading(true);
       setError(null);
-
-      const abortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      let fetchTimeoutHandle: ReturnType<typeof setTimeout> | null = null;
 
       try {
         const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
@@ -165,6 +164,10 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
 
     return () => {
       isMounted = false;
+      if (fetchTimeoutHandle) {
+        clearTimeout(fetchTimeoutHandle);
+      }
+      abortController?.abort();
     };
   }, [profileDisplayName, user?.id]);
 

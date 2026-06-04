@@ -8,6 +8,8 @@
       "light": "Light",
       "settings": "Settings",
       "signIn": "Sign In",
+      "guest": "Guest",
+      "anonymous": "Anonymous",
       "theme": "Theme",
       "yes": "Yes",
       "no": "No"
@@ -515,6 +517,67 @@
       }
     },
     "profile": {
+      "screenTitle": "My Profile",
+      "signInPrompt": "Sign in to view your profile",
+      "tabs": {
+        "ranking": "Ranking",
+        "wallet": "Wallet",
+        "profile": "Profile"
+      },
+      "tierLabels": {
+        "bronze": "Bronze",
+        "silver": "Silver",
+        "gold": "Gold",
+        "platinum": "Platinum"
+      },
+      "stats": {
+        "airs": "AIRS",
+        "projects": "Projects",
+        "co2": "CO₂"
+      },
+      "ranking": {
+        "myPosition": "My Position",
+        "topImpactors": "Top Impactors",
+        "searchPlaceholder": "Search person...",
+        "filters": {
+          "all": "All",
+          "podium": "Podium",
+          "others": "Others"
+        }
+      },
+      "wallet": {
+        "connectTitle": "Connect your wallet",
+        "connectSubtitle": "Link your wallet to manage your ATN tokens",
+        "connectButton": "Connect Wallet",
+        "supportedNetworks": "Supported Networks",
+        "notConnected": "Not connected"
+      },
+      "accessMethods": {
+        "current": "Current: {{method}}",
+        "labels": {
+          "wallet": "Wallet",
+          "email": "Email",
+          "session": "Session",
+          "google": "Google",
+          "discord": "Discord",
+          "provider": "Provider: {{provider}}"
+        }
+      },
+      "accountStatus": {
+        "verified": "Verified"
+      },
+      "accountInfoModal": {
+        "title": "Account Information",
+        "accountId": "Account ID",
+        "email": "Email",
+        "username": "Username",
+        "createdAt": "Creation Date",
+        "referredBy": "Referred by",
+        "activeAccount": "Active account",
+        "copiedToast": "ID copied to clipboard",
+        "loading": "Loading...",
+        "na": "N/A"
+      },
       "sections": {
         "achievements": "Achievements",
         "account": "Account",
@@ -547,7 +610,25 @@
         "firstName": "First name",
         "lastName": "Last name",
         "email": "Email",
+        "saveChanges": "Save Changes",
+        "cancel": "Cancel",
         "close": "Close"
+      },
+      "achievementBadges": {
+        "account_confirmed": "Account Verified",
+        "first_10_airs": "10 AIRS",
+        "first_100_airs": "100 AIRS",
+        "first_regenerative_action": "Green Action",
+        "five_regenerative_actions": "5 Actions",
+        "first_commerce_action": "Business Ally",
+        "profile_complete": "Complete Profile",
+        "bio_added": "Bio",
+        "avatar_uploaded": "Avatar",
+        "wallet_connected": "Wallet Connected",
+        "seven_day_streak": "7 Days",
+        "referral_invited": "Invite Friends",
+        "fifty_airs": "50 AIRS",
+        "ambassador": "Ambassador"
       },
       "achievements": {
         "firstTree": "First Tree",
