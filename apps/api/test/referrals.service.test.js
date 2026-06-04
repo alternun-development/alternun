@@ -735,6 +735,77 @@ test('ReferralsService.getMe backfills a missing referral code instead of failin
   }
 });
 
+test('ReferralsService.getMe falls back when the prod users.referral_code column is missing', async () => {
+  const originalEnv = { ...process.env };
+  const originalFetch = global.fetch;
+  const calls = [];
+
+  try {
+    process.env.SUPABASE_URL = 'https://supabase.example';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+    process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
+
+    const expectedSuffix = createReferralSuffix('user-123');
+    const expectedReferralCode = `new-user-${expectedSuffix}`;
+
+    global.fetch = createFetchQueue(
+      [
+        createJsonResponse(
+          {
+            code: '42703',
+            message: 'column users.referral_code does not exist',
+          },
+          { status: 400 }
+        ),
+        createJsonResponse([
+          {
+            id: 'user-123',
+            email_verified: null,
+            email: 'new@example.com',
+            name: 'New User',
+            created_at: '2026-04-20T00:00:00Z',
+          },
+        ]),
+        createJsonResponse([]),
+        createJsonResponse([]),
+      ],
+      calls
+    );
+
+    const service = new ReferralsService();
+    const summary = await service.getMe('user-123', 'https://testnet.airs.alternun.co');
+
+    assert.equal(summary.user_id, 'user-123');
+    assert.equal(summary.user_created_at, '2026-04-20T00:00:00Z');
+    assert.equal(summary.referral_code, expectedReferralCode);
+    assert.equal(
+      summary.referral_link,
+      `https://testnet.airs.alternun.co/auth?referralCode=${expectedReferralCode}`
+    );
+    assert.equal(summary.referral_count, 0);
+    assert.equal(summary.referred_by_user_id, null);
+    assert.equal(summary.referred_by_referral_code, null);
+    assert.equal(summary.referred_users.length, 0);
+    assert.equal(calls.length, 4);
+    assert.match(calls[0].url, /\/rest\/v1\/users\?id=eq\.user-123/);
+    assert.match(
+      calls[1].url,
+      /\/rest\/v1\/users\?id=eq\.user-123&select=id%2Cemail_verified%2Cemail%2Cname%2Ccreated_at/
+    );
+    assert.match(
+      calls[2].url,
+      /\/rest\/v1\/referrals\?user_id=eq\.user-123&select=user_id%2Cinvitation_code%2Ccreated_at/
+    );
+    assert.match(calls[3].url, /\/rest\/v1\/users\?id=eq\.user-123/);
+    assert.deepEqual(JSON.parse(calls[3].init.body), {
+      referral_code: expectedReferralCode,
+    });
+  } finally {
+    global.fetch = originalFetch;
+    process.env = originalEnv;
+  }
+});
+
 test('ReferralsService.getMe synthesizes a referral summary when the user row is missing', async () => {
   const originalEnv = { ...process.env };
   const originalFetch = global.fetch;

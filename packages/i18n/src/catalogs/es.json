@@ -242,7 +242,7 @@
       },
       "heroPanel": {
         "subtitle": "Tu puntuación regenerativa es:",
-        "statusLabel": "Status {{tier}}",
+        "statusLabel": "Estado {{tier}}",
         "progressTo": "Progreso a {{nextTier}}",
         "progressHint": "Te faltan {{remaining}} Airs para alcanzar {{nextTier}} y desbloquear beneficios exclusivos",
         "maxTierReached": "Has alcanzado el nivel máximo {{tier}}",
@@ -278,7 +278,7 @@
           "availableDesc": "Listos para usar",
           "stackingLabel": "ATN en stacking",
           "stackingDesc": "Participando en proyectos",
-          "totalLabel": "Total ATN"
+          "totalLabel": "ATN total"
         }
       }
     },
@@ -326,12 +326,12 @@
         "scrollToInteract": "Desplazate para interactuar"
       },
       "info": {
-        "scoreLine": "Alternun Impact & Reputation Score",
+        "scoreLine": "Puntuación de impacto y reputación de Alternun",
         "summaryLine": "Una sola superficie para impacto verificado, ciclo de compensacion y modulos vinculados a la wallet."
       },
       "media": {
         "subtitle": "El programa de lealtad definitivo para quienes como tu protegen el planeta.",
-        "title": "Alternun Impact & Reputation Score"
+        "title": "Puntuación de impacto y reputación de Alternun"
       },
       "nav": {
         "benefits": "Beneficios",
@@ -435,9 +435,9 @@
             "infoBody": "Los aportes a proyectos validados generan Airs con tasas variables según el impacto, la trazabilidad y el monto comprometido."
           },
           "marketplace": {
-            "description": "Accede a un marketplace de productos y servicios regenerativos.",
-            "meta": "Marketplace",
-            "title": "Marketplace"
+            "description": "Accede a un mercado de productos y servicios regenerativos.",
+            "meta": "Mercado",
+            "title": "Mercado"
           },
           "premium": {
             "tag1": "CO2",
@@ -489,7 +489,7 @@
     },
     "settingsScreen": {
       "currentLanguage": "Idioma actual",
-      "localPreferenceHelp": "Guardado localmente en las preferencias del navegador o la app.",
+      "localPreferenceHelp": "Se almacena localmente en este dispositivo",
       "sections": {
         "appearance": "Apariencia",
         "language": "Idioma",
@@ -497,7 +497,6 @@
       },
       "showIntroAgain": "No mostrar la introduccion otra vez",
       "showWelcomeBonusModal": "Mostrar bono de bienvenida",
-      "localPreferenceHelp": "Se almacena localmente en este dispositivo",
       "subtitle": "Administra las preferencias de interfaz y los controles de cuenta.",
       "title": "Configuracion"
     },
@@ -528,7 +527,7 @@
       "tierJourney": "Trayecto de Tier",
       "accountRows": {
         "personalInfo": "Información personal",
-        "wallet": "Wallet",
+        "wallet": "Billetera",
         "accessMethod": "Método de acceso",
         "notifications": "Notificaciones"
       },
@@ -546,18 +545,18 @@
         "title": "Información Personal",
         "firstName": "Nombre",
         "lastName": "Apellido",
-        "email": "Email",
+        "email": "Correo electrónico",
         "close": "Cerrar"
       },
       "achievements": {
         "firstTree": "Primer Árbol",
         "co2Badge": "10 kg CO₂",
-        "airs1k": "1K Airs",
-        "airs5k": "5K Airs",
+        "airs1k": "1 mil Airs",
+        "airs5k": "5 mil Airs",
         "kycVerified": "KYC Verificado",
         "recruiter": "Recluta",
         "partner": "Socio",
-        "platinum": "Platinum"
+        "platinum": "Platino"
       },
       "referral": {
         "title": "Tu codigo de referido",
