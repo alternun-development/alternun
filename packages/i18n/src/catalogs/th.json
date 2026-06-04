@@ -8,6 +8,8 @@
       "light": "สว่าง",
       "settings": "การตั้งค่า",
       "signIn": "เข้าสู่ระบบ",
+      "guest": "ผู้เยี่ยมชม",
+      "anonymous": "ไม่ระบุชื่อ",
       "theme": "ธีม",
       "yes": "ใช่",
       "no": "ไม่"
@@ -514,6 +516,67 @@
       }
     },
     "profile": {
+      "screenTitle": "โปรไฟล์ของฉัน",
+      "signInPrompt": "เข้าสู่ระบบเพื่อดูโปรไฟล์ของคุณ",
+      "tabs": {
+        "ranking": "อันดับ",
+        "wallet": "วอลเล็ต",
+        "profile": "โปรไฟล์"
+      },
+      "tierLabels": {
+        "bronze": "บรอนซ์",
+        "silver": "เงิน",
+        "gold": "ทอง",
+        "platinum": "แพลทินัม"
+      },
+      "stats": {
+        "airs": "AIRS",
+        "projects": "โครงการ",
+        "co2": "CO₂"
+      },
+      "ranking": {
+        "myPosition": "ตำแหน่งของฉัน",
+        "topImpactors": "ผู้สร้างผลกระทบสูงสุด",
+        "searchPlaceholder": "ค้นหาบุคคล...",
+        "filters": {
+          "all": "ทั้งหมด",
+          "podium": "โพเดียม",
+          "others": "อื่นๆ"
+        }
+      },
+      "wallet": {
+        "connectTitle": "เชื่อมต่อวอลเล็ตของคุณ",
+        "connectSubtitle": "เชื่อมต่อวอลเล็ตเพื่อจัดการโทเค็น ATN ของคุณ",
+        "connectButton": "เชื่อมต่อวอลเล็ต",
+        "supportedNetworks": "เครือข่ายที่รองรับ",
+        "notConnected": "ยังไม่ได้เชื่อมต่อ"
+      },
+      "accessMethods": {
+        "current": "ปัจจุบัน: {{method}}",
+        "labels": {
+          "wallet": "วอลเล็ต",
+          "email": "อีเมล",
+          "session": "เซสชัน",
+          "google": "Google",
+          "discord": "Discord",
+          "provider": "ผู้ให้บริการ: {{provider}}"
+        }
+      },
+      "accountStatus": {
+        "verified": "ได้รับการยืนยัน"
+      },
+      "accountInfoModal": {
+        "title": "ข้อมูลบัญชี",
+        "accountId": "รหัสบัญชี",
+        "email": "อีเมล",
+        "username": "ชื่อผู้ใช้",
+        "createdAt": "วันที่สร้าง",
+        "referredBy": "แนะนำโดย",
+        "activeAccount": "บัญชีที่ใช้งานอยู่",
+        "copiedToast": "คัดลอกรหัสแล้ว",
+        "loading": "กำลังโหลด...",
+        "na": "N/A"
+      },
       "sections": {
         "achievements": "ความสำเร็จ",
         "account": "บัญชี",
@@ -546,7 +609,25 @@
         "firstName": "ชื่อจริง",
         "lastName": "นามสกุล",
         "email": "อีเมล",
+        "saveChanges": "บันทึกการเปลี่ยนแปลง",
+        "cancel": "ยกเลิก",
         "close": "ปิด"
+      },
+      "achievementBadges": {
+        "account_confirmed": "ยืนยันบัญชีแล้ว",
+        "first_10_airs": "10 AIRS",
+        "first_100_airs": "100 AIRS",
+        "first_regenerative_action": "การกระทำสีเขียว",
+        "five_regenerative_actions": "5 การกระทำ",
+        "first_commerce_action": "พันธมิตรธุรกิจ",
+        "profile_complete": "โปรไฟล์สมบูรณ์",
+        "bio_added": "ประวัติ",
+        "avatar_uploaded": "อวาตาร์",
+        "wallet_connected": "เชื่อมต่อวอลเล็ตแล้ว",
+        "seven_day_streak": "7 วัน",
+        "referral_invited": "เชิญเพื่อน",
+        "fifty_airs": "50 AIRS",
+        "ambassador": "ทูต"
       },
       "achievements": {
         "firstTree": "ต้นไม้แรก",

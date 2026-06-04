@@ -23,14 +23,16 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
-  Clipboard,
   Platform,
+  ToastAndroid,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import { getLocaleLabel } from '@alternun/i18n';
 import { GlassCard, SectionContainer, resolveTier } from '@alternun/ui';
 import type { TierSpec } from '@alternun/ui';
 import { useAuth } from '../components/auth/AppAuthProvider';
@@ -80,11 +82,11 @@ interface AccountReferralSummary {
 }
 
 const TOP_USERS = [
-  { rank: 1, name: 'María González', score: '98.420', medal: '🥇', color: '#d4b96a' },
-  { rank: 2, name: 'Carlos Mendoza', score: '87.650', medal: '🥈', color: '#a8b8cc' },
-  { rank: 3, name: 'Ana Ruiz', score: '76.330', medal: '🥉', color: '#cd7f32' },
-  { rank: 4, name: 'Pablo Torres', score: '64.110', medal: null, color: null },
-  { rank: 5, name: 'Lucía Vargas', score: '58.900', medal: null, color: null },
+  { rank: 1, name: 'María González', score: 98_420, medal: '🥇', color: '#d4b96a' },
+  { rank: 2, name: 'Carlos Mendoza', score: 87_650, medal: '🥈', color: '#a8b8cc' },
+  { rank: 3, name: 'Ana Ruiz', score: 76_330, medal: '🥉', color: '#cd7f32' },
+  { rank: 4, name: 'Pablo Torres', score: 64_110, medal: null, color: null },
+  { rank: 5, name: 'Lucía Vargas', score: 58_900, medal: null, color: null },
 ];
 
 const NETWORKS = [
@@ -93,11 +95,19 @@ const NETWORKS = [
   { name: 'Celo', color: '#35d07f' },
 ];
 
-const RANKING_FILTERS: SearchFilterOption[] = [
-  { key: 'all', label: 'Todos' },
-  { key: 'podium', label: 'Podio' },
-  { key: 'others', label: 'Resto' },
-];
+type TierLabelMap = {
+  bronze: string;
+  silver: string;
+  gold: string;
+  platinum: string;
+};
+
+type AuthMethodDescriptor =
+  | { kind: 'guest' }
+  | { kind: 'wallet' }
+  | { kind: 'email' }
+  | { kind: 'session' }
+  | { kind: 'provider'; provider: string };
 
 function getMetadata(user: User | null): UserMetadata {
   if (!user?.metadata || typeof user.metadata !== 'object') return {};
@@ -147,12 +157,12 @@ function resolveAccountCreatedAt(
   return null;
 }
 
-function formatAccountCreatedAt(value: string | null): string | null {
+function formatAccountCreatedAt(value: string | null, locale: string): string | null {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
 
-  return date.toLocaleDateString('es-ES', {
+  return date.toLocaleDateString(locale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -169,7 +179,7 @@ function getAccountReferrerLabel(summary: AccountReferralSummary | null): string
 }
 
 function getProfileInfo(user: User | null): { displayName: string; email?: string } {
-  if (!user) return { displayName: 'Guest' };
+  if (!user) return { displayName: '' };
   const metadata = getMetadata(user);
   const firstName =
     typeof metadata.firstName === 'string'
@@ -199,7 +209,14 @@ function getProfileInfo(user: User | null): { displayName: string; email?: strin
     typeof user.email === 'string' && user.email.includes('@')
       ? user.email.split('@')[0]
       : undefined;
-  return { displayName: validName?.trim() ?? emailLocalPart ?? 'Account', email: user.email };
+  const fallbackDisplayName =
+    emailLocalPart ??
+    (typeof user.providerUserId === 'string' && user.providerUserId.trim().length > 0
+      ? truncateMiddle(user.providerUserId, 6, 4)
+      : typeof user.id === 'string' && user.id.trim().length > 0
+      ? truncateMiddle(user.id, 6, 4)
+      : '');
+  return { displayName: validName?.trim() ?? fallbackDisplayName, email: user.email };
 }
 
 function getWalletAddress(user: User | null): string {
@@ -240,12 +257,29 @@ function getWalletProvider(user: User | null): string | null {
   return null;
 }
 
-function getAuthMethodLabel(user: User | null): string {
-  if (!user) return 'guest';
-  if (user.provider && !user.provider.startsWith('wallet:')) return `auth: ${user.provider}`;
-  if (user.provider && user.provider.startsWith('wallet:')) return 'auth: wallet';
-  if (user.email) return 'auth: email';
-  return 'auth: session';
+function normalizeProviderName(provider: string): string {
+  return provider
+    .replace(/^(wallet|auth|oauth):/i, '')
+    .trim()
+    .toLowerCase();
+}
+
+function getAuthMethodDescriptor(user: User | null): AuthMethodDescriptor {
+  if (!user) return { kind: 'guest' };
+
+  const provider = typeof user.provider === 'string' ? user.provider.trim() : '';
+  if (provider.startsWith('wallet:')) return { kind: 'wallet' };
+
+  const normalizedProvider = normalizeProviderName(provider);
+  if (normalizedProvider === 'google' || normalizedProvider === 'discord') {
+    return { kind: 'provider', provider: normalizedProvider };
+  }
+
+  if (normalizedProvider === 'email') return { kind: 'email' };
+  if (normalizedProvider === 'session') return { kind: 'session' };
+  if (normalizedProvider.length > 0) return { kind: 'provider', provider: normalizedProvider };
+  if (user.email) return { kind: 'email' };
+  return { kind: 'session' };
 }
 
 function toInitials(name: string): string {
@@ -266,42 +300,42 @@ function getInitials(name: string): string {
   return `${parts[0].slice(0, 1)}${parts[1].slice(0, 1)}`.toUpperCase();
 }
 
-function resolveTierSpec(tier: ReturnType<typeof resolveTier>): TierSpec {
+function resolveTierSpec(tier: ReturnType<typeof resolveTier>, labels: TierLabelMap): TierSpec {
   switch (tier) {
     case 'bronze':
       return {
-        label: 'Bronze',
+        label: labels.bronze,
         color: '#cd7f32',
         trackColor: 'rgba(205,127,50,0.28)',
         min: 0,
         max: 1_000,
         next: 'silver',
-        nextLabel: 'Silver',
+        nextLabel: labels.silver,
       };
     case 'silver':
       return {
-        label: 'Silver',
+        label: labels.silver,
         color: '#a8b8cc',
         trackColor: 'rgba(168,184,204,0.28)',
         min: 1_000,
         max: 5_000,
         next: 'gold',
-        nextLabel: 'Gold',
+        nextLabel: labels.gold,
       };
     case 'gold':
       return {
-        label: 'Gold',
+        label: labels.gold,
         color: '#d4b96a',
         trackColor: 'rgba(212,185,106,0.28)',
         min: 5_000,
         max: 20_000,
         next: 'platinum',
-        nextLabel: 'Platinum',
+        nextLabel: labels.platinum,
       };
     case 'platinum':
     default:
       return {
-        label: 'Platinum',
+        label: labels.platinum,
         color: '#9ba9c4',
         trackColor: 'rgba(155,169,196,0.28)',
         min: 20_000,
@@ -331,9 +365,21 @@ function ProfileHeader({
   floatAnim1?: Animated.Value;
   floatAnim2?: Animated.Value;
 }): React.JSX.Element {
+  const { t, locale } = useAppTranslation('mobile');
   const safeScore = score ?? 0;
   const tier = resolveTier(safeScore);
-  const spec = resolveTierSpec(tier);
+  const tierLabels = {
+    bronze: t('profile.tierLabels.bronze', undefined, 'Bronze'),
+    silver: t('profile.tierLabels.silver', undefined, 'Silver'),
+    gold: t('profile.tierLabels.gold', undefined, 'Gold'),
+    platinum: t('profile.tierLabels.platinum', undefined, 'Platinum'),
+  };
+  const spec = resolveTierSpec(tier, tierLabels);
+  const profileStats = {
+    airs: t('profile.stats.airs', undefined, 'AIRS'),
+    projects: t('profile.stats.projects', undefined, 'Projects'),
+    co2: t('profile.stats.co2', undefined, 'CO₂'),
+  };
   const heroBg = isDark ? '#050f0c' : '#eaf8f3';
 
   return (
@@ -514,11 +560,11 @@ function ProfileHeader({
 
         {/* Stats row */}
         <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
-          <Stat label='Airs' value={safeScore.toLocaleString('es-ES')} c={c} />
+          <Stat label={profileStats.airs} value={safeScore.toLocaleString(locale)} c={c} />
           <Divider c={c} />
-          <Stat label='Proyectos' value='0' c={c} />
+          <Stat label={profileStats.projects} value='0' c={c} />
           <Divider c={c} />
-          <Stat label='CO₂' value='0 t' c={c} />
+          <Stat label={profileStats.co2} value='0 t' c={c} />
         </View>
       </View>
     </View>
@@ -585,14 +631,35 @@ function TierJourney({
   isDark: boolean;
   c: ColorPalette;
 }): React.JSX.Element {
+  const { t } = useAppTranslation('mobile');
   const safeScore = score ?? 0;
   const tiers = [
-    { id: 'bronze' as const, label: 'Bronze', threshold: 0, color: '#cd7f32' },
-    { id: 'silver' as const, label: 'Silver', threshold: 1000, color: '#a8b8cc' },
-    { id: 'gold' as const, label: 'Gold', threshold: 5000, color: '#d4b96a' },
-    { id: 'platinum' as const, label: 'Platinum', threshold: 20000, color: '#9ba9c4' },
+    {
+      id: 'bronze' as const,
+      label: t('profile.tierLabels.bronze', undefined, 'Bronze'),
+      threshold: 0,
+      color: '#cd7f32',
+    },
+    {
+      id: 'silver' as const,
+      label: t('profile.tierLabels.silver', undefined, 'Silver'),
+      threshold: 1000,
+      color: '#a8b8cc',
+    },
+    {
+      id: 'gold' as const,
+      label: t('profile.tierLabels.gold', undefined, 'Gold'),
+      threshold: 5000,
+      color: '#d4b96a',
+    },
+    {
+      id: 'platinum' as const,
+      label: t('profile.tierLabels.platinum', undefined, 'Platinum'),
+      threshold: 20000,
+      color: '#9ba9c4',
+    },
   ];
-  const currentIdx = tiers.findIndex((t) => t.id === resolveTier(safeScore));
+  const currentIdx = tiers.findIndex((tierItem) => tierItem.id === resolveTier(safeScore));
 
   return (
     <GlassCard
@@ -611,7 +678,7 @@ function TierJourney({
           marginBottom: 14,
         }}
       >
-        Trayecto de Tier
+        {t('profile.tierJourney', undefined, 'Tier Journey')}
       </Text>
 
       <View style={{ position: 'relative', height: 120 }}>
@@ -805,13 +872,16 @@ function AccountInfoModal({
   c: ColorPalette;
   onClose: () => void;
 }): React.JSX.Element | null {
+  const { t, locale } = useAppTranslation('mobile');
   const [copiedId, setCopiedId] = useState(false);
   const [referralSummary, setReferralSummary] = useState<AccountReferralSummary | null>(null);
   const [referralSummaryLoading, setReferralSummaryLoading] = useState(false);
   const profile = useMemo(() => getProfileInfo(user), [user]);
   const createdAt =
-    formatAccountCreatedAt(resolveAccountCreatedAt(user, referralSummary)) ??
-    (referralSummaryLoading ? 'Cargando...' : 'N/A');
+    formatAccountCreatedAt(resolveAccountCreatedAt(user, referralSummary), locale) ??
+    (referralSummaryLoading
+      ? t('profile.accountInfoModal.loading', undefined, 'Loading...')
+      : t('profile.accountInfoModal.na', undefined, 'N/A'));
   const referrerLabel = getAccountReferrerLabel(referralSummary);
 
   useEffect(() => {
@@ -874,10 +944,10 @@ function AccountInfoModal({
       void Clipboard.setString(user.id);
       setCopiedId(true);
       if (Platform.OS === 'android') {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires,@typescript-eslint/no-unsafe-assignment
-        const { ToastAndroid } = require('react-native');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-        ToastAndroid.show('ID copiado al portapapeles', ToastAndroid.SHORT);
+        ToastAndroid.show(
+          t('profile.accountInfoModal.copiedToast', undefined, 'ID copied to clipboard'),
+          ToastAndroid.SHORT
+        );
       }
       setTimeout(() => {
         setCopiedId(false);
@@ -940,7 +1010,7 @@ function AccountInfoModal({
               letterSpacing: -0.5,
             }}
           >
-            Información de Cuenta
+            {t('profile.accountInfoModal.title', undefined, 'Account Information')}
           </Text>
           <TouchableOpacity onPress={onClose} style={{ padding: 8 }}>
             <Text style={{ fontSize: 24, color: c.muted, fontWeight: '400' }}>✕</Text>
@@ -960,7 +1030,7 @@ function AccountInfoModal({
                 letterSpacing: 0.5,
               }}
             >
-              ID de Cuenta
+              {t('profile.accountInfoModal.accountId', undefined, 'Account ID')}
             </Text>
             <View
               style={{
@@ -985,7 +1055,7 @@ function AccountInfoModal({
                   flex: 1,
                 }}
               >
-                {user.id || 'N/A'}
+                {user.id || t('profile.accountInfoModal.na', undefined, 'N/A')}
               </Text>
               <TouchableOpacity onPress={handleCopyId} style={{ padding: 8, marginLeft: 8 }}>
                 {copiedId ? (
@@ -1009,7 +1079,7 @@ function AccountInfoModal({
                 letterSpacing: 0.5,
               }}
             >
-              Email
+              {t('profile.accountInfoModal.email', undefined, 'Email')}
             </Text>
             <View
               style={{
@@ -1024,7 +1094,7 @@ function AccountInfoModal({
               <Text
                 style={{ fontSize: 14, color: c.text, fontFamily: 'monospace', fontWeight: '400' }}
               >
-                {user.email ?? 'N/A'}
+                {user.email ?? t('profile.accountInfoModal.na', undefined, 'N/A')}
               </Text>
             </View>
           </View>
@@ -1041,7 +1111,7 @@ function AccountInfoModal({
                 letterSpacing: 0.5,
               }}
             >
-              Nombre de Usuario
+              {t('profile.accountInfoModal.username', undefined, 'Username')}
             </Text>
             <View
               style={{
@@ -1054,7 +1124,7 @@ function AccountInfoModal({
               }}
             >
               <Text style={{ fontSize: 14, color: c.text, fontWeight: '500' }}>
-                {profile.displayName || 'N/A'}
+                {profile.displayName || t('profile.accountInfoModal.na', undefined, 'N/A')}
               </Text>
             </View>
           </View>
@@ -1071,7 +1141,7 @@ function AccountInfoModal({
                 letterSpacing: 0.5,
               }}
             >
-              Fecha de Creación
+              {t('profile.accountInfoModal.createdAt', undefined, 'Creation Date')}
             </Text>
             <View
               style={{
@@ -1104,7 +1174,7 @@ function AccountInfoModal({
                   letterSpacing: 0.5,
                 }}
               >
-                Referido por
+                {t('profile.accountInfoModal.referredBy', undefined, 'Referred by')}
               </Text>
               <View
                 style={{
@@ -1153,7 +1223,9 @@ function AccountInfoModal({
             }}
           >
             <CheckIcon size={18} color={c.accent} strokeWidth={2.5} />
-            <Text style={{ fontSize: 13, fontWeight: '700', color: c.accent }}>Cuenta Activa</Text>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: c.accent }}>
+              {t('profile.accountInfoModal.activeAccount', undefined, 'Active account')}
+            </Text>
           </View>
         </ScrollView>
 
@@ -1169,7 +1241,7 @@ function AccountInfoModal({
           }}
         >
           <Text style={{ fontSize: 15, fontWeight: '700', color: c.text, letterSpacing: 0.3 }}>
-            Cerrar
+            {t('profile.modal.close', undefined, 'Close')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -1190,6 +1262,7 @@ function PersonalInfoModal({
   c: ColorPalette;
   onClose: () => void;
 }): React.JSX.Element | null {
+  const { t } = useAppTranslation('mobile');
   const profile = useMemo(() => getProfileInfo(user), [user]);
   const metadata = useMemo(() => getMetadata(user), [user]);
   const [firstName] = useState<string>(
@@ -1279,7 +1352,7 @@ function PersonalInfoModal({
               letterSpacing: -0.5,
             }}
           >
-            Información Personal
+            {t('profile.modal.title', undefined, 'Personal Information')}
           </Text>
           <TouchableOpacity onPress={onClose} style={{ padding: 8 }}>
             <Text style={{ fontSize: 24, color: c.muted, fontWeight: '400' }}>✕</Text>
@@ -1299,7 +1372,7 @@ function PersonalInfoModal({
                 letterSpacing: 0.5,
               }}
             >
-              Nombre
+              {t('profile.modal.firstName', undefined, 'First name')}
             </Text>
             <View
               style={{
@@ -1329,7 +1402,7 @@ function PersonalInfoModal({
                 letterSpacing: 0.5,
               }}
             >
-              Apellido
+              {t('profile.modal.lastName', undefined, 'Last name')}
             </Text>
             <View
               style={{
@@ -1359,7 +1432,7 @@ function PersonalInfoModal({
                 letterSpacing: 0.5,
               }}
             >
-              Email
+              {t('profile.modal.email', undefined, 'Email')}
             </Text>
             <View
               style={{
@@ -1396,7 +1469,7 @@ function PersonalInfoModal({
           >
             <CheckIcon size={18} color={c.accent} strokeWidth={2.5} />
             <Text style={{ fontSize: 13, fontWeight: '700', color: c.accent }}>
-              Información Verificada
+              {t('profile.accountStatus.verified', undefined, 'Verified')}
             </Text>
           </View>
         </ScrollView>
@@ -1423,7 +1496,7 @@ function PersonalInfoModal({
               <Text
                 style={{ fontSize: 15, fontWeight: '700', color: '#050510', letterSpacing: 0.3 }}
               >
-                Guardar Cambios
+                {t('profile.modal.saveChanges', undefined, 'Save Changes')}
               </Text>
             )}
           </TouchableOpacity>
@@ -1439,7 +1512,7 @@ function PersonalInfoModal({
             }}
           >
             <Text style={{ fontSize: 15, fontWeight: '700', color: c.text, letterSpacing: 0.3 }}>
-              Cancelar
+              {t('profile.modal.cancel', undefined, 'Cancel')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -1451,9 +1524,16 @@ function PersonalInfoModal({
 // ─── Tab components ──────────────────────────────────────────────────────────
 
 function RankingTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.JSX.Element {
+  const { t, locale } = useAppTranslation('mobile');
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const enhancedStyles = profileStylesEnhanced(isDark);
+  const myPositionScore = 12_088;
+  const rankingFilters: SearchFilterOption[] = [
+    { key: 'all', label: t('profile.ranking.filters.all', undefined, 'All') },
+    { key: 'podium', label: t('profile.ranking.filters.podium', undefined, 'Podium') },
+    { key: 'others', label: t('profile.ranking.filters.others', undefined, 'Others') },
+  ];
 
   const filteredUsers = useMemo(() => {
     const normalizedQuery = search.trim().toLowerCase();
@@ -1475,7 +1555,9 @@ function RankingTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.
       <GlassCard variant='teal' style={rankingStyles.myPositionCard}>
         <View style={rankingStyles.myPosHeader}>
           <AwardIcon size={20} color={c.accent} />
-          <Text style={[rankingStyles.myPosLabel, { color: c.accent }]}>Mi Posición</Text>
+          <Text style={[rankingStyles.myPosLabel, { color: c.accent }]}>
+            {t('profile.ranking.myPosition', undefined, 'My Position')}
+          </Text>
         </View>
         <View style={rankingStyles.myPosBody}>
           <View style={rankingStyles.myPosRankWrap}>
@@ -1483,17 +1565,21 @@ function RankingTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.
             <Text style={[rankingStyles.myPosRank, { color: c.text }]}>47</Text>
           </View>
           <View>
-            <Text style={[rankingStyles.myPosScore, { color: c.text }]}>12.088</Text>
-            <Text style={[rankingStyles.myPosScoreLabel, { color: c.muted }]}>AIRS</Text>
+            <Text style={[rankingStyles.myPosScore, { color: c.text }]}>
+              {myPositionScore.toLocaleString(locale)}
+            </Text>
+            <Text style={[rankingStyles.myPosScoreLabel, { color: c.muted }]}>
+              {t('profile.stats.airs', undefined, 'AIRS')}
+            </Text>
           </View>
         </View>
       </GlassCard>
-      <SectionContainer title='Top Impactores'>
+      <SectionContainer title={t('profile.ranking.topImpactors', undefined, 'Top Impactors')}>
         <SearchFilterBar
           value={search}
           onChangeText={setSearch}
-          placeholder='Buscar persona...'
-          filters={RANKING_FILTERS}
+          placeholder={t('profile.ranking.searchPlaceholder', undefined, 'Search person...')}
+          filters={rankingFilters}
           activeFilter={activeFilter}
           onChangeFilter={setActiveFilter}
         />
@@ -1530,7 +1616,9 @@ function RankingTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.
                   <Text style={[rankingStyles.userName, { color: c.text }]}>{user.name}</Text>
                   {user.medal ? <Text style={rankingStyles.medal}>{user.medal}</Text> : null}
                 </View>
-                <Text style={[rankingStyles.userScore, { color: c.muted }]}>{user.score} AIRS</Text>
+                <Text style={[rankingStyles.userScore, { color: c.muted }]}>
+                  {user.score.toLocaleString(locale)} {t('profile.stats.airs', undefined, 'AIRS')}
+                </Text>
               </View>
               {user.rank <= 3 ? <TrophyIcon size={16} color={user.color ?? c.accent} /> : null}
             </View>
@@ -1542,6 +1630,7 @@ function RankingTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.
 }
 
 function WalletTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.JSX.Element {
+  const { t } = useAppTranslation('mobile');
   const enhancedStyles = profileStylesEnhanced(isDark);
   return (
     <ScrollView
@@ -1552,9 +1641,15 @@ function WalletTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.J
         <View style={[walletStyles.walletIconWrap, { backgroundColor: `${c.accent}14` }]}>
           <WalletIcon size={48} color={c.accent} />
         </View>
-        <Text style={[walletStyles.connectTitle, { color: c.text }]}>Conecta tu Wallet</Text>
+        <Text style={[walletStyles.connectTitle, { color: c.text }]}>
+          {t('profile.wallet.connectTitle', undefined, 'Connect your wallet')}
+        </Text>
         <Text style={[walletStyles.connectSub, { color: c.muted }]}>
-          Vincula tu billetera para gestionar tus ATN tokens
+          {t(
+            'profile.wallet.connectSubtitle',
+            undefined,
+            'Link your wallet to manage your ATN tokens'
+          )}
         </Text>
         <TouchableOpacity
           style={[
@@ -1563,10 +1658,14 @@ function WalletTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.J
           ]}
           activeOpacity={0.7}
         >
-          <Text style={[walletStyles.connectBtnText, { color: c.accent }]}>Conectar Wallet</Text>
+          <Text style={[walletStyles.connectBtnText, { color: c.accent }]}>
+            {t('profile.wallet.connectButton', undefined, 'Connect Wallet')}
+          </Text>
         </TouchableOpacity>
       </GlassCard>
-      <SectionContainer title='Redes Soportadas'>
+      <SectionContainer
+        title={t('profile.wallet.supportedNetworks', undefined, 'Supported Networks')}
+      >
         <View style={walletStyles.networkRow}>
           {NETWORKS.map((network) => (
             <View key={network.name} style={walletStyles.networkPill}>
@@ -1609,8 +1708,34 @@ function PerfilTab({
   const walletAddress = useMemo(() => getWalletAddress(user), [user]);
   const walletProvider = useMemo(() => getWalletProvider(user), [user]);
   const walletConnected = Boolean(walletAddress || walletProvider);
-  const authMethod = useMemo(() => getAuthMethodLabel(user), [user]);
   const { t } = useAppTranslation('mobile');
+  const authMethodDescriptor = useMemo(() => getAuthMethodDescriptor(user), [user]);
+  const authMethod = useMemo(() => {
+    switch (authMethodDescriptor.kind) {
+      case 'guest':
+        return t('shared.labels.guest', undefined, 'Guest');
+      case 'wallet':
+        return t('profile.accessMethods.labels.wallet', undefined, 'Wallet');
+      case 'email':
+        return t('profile.accessMethods.labels.email', undefined, 'Email');
+      case 'session':
+        return t('profile.accessMethods.labels.session', undefined, 'Session');
+      case 'provider':
+        if (authMethodDescriptor.provider === 'google') {
+          return t('profile.accessMethods.labels.google', undefined, 'Google');
+        }
+        if (authMethodDescriptor.provider === 'discord') {
+          return t('profile.accessMethods.labels.discord', undefined, 'Discord');
+        }
+        return t(
+          'profile.accessMethods.labels.provider',
+          { provider: authMethodDescriptor.provider },
+          authMethodDescriptor.provider
+        );
+      default:
+        return t('profile.accessMethods.labels.session', undefined, 'Session');
+    }
+  }, [authMethodDescriptor, t]);
   const [showAccountInfoModal, setShowAccountInfoModal] = useState(false);
   const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -1704,6 +1829,20 @@ function PerfilTab({
     void fetchAchievements();
   }, [user?.id, client]);
 
+  const accountIdLabel = t('profile.accountInfoModal.accountId', undefined, 'Account ID');
+  const naLabel = t('profile.accountInfoModal.na', undefined, 'N/A');
+  const verifiedLabel = t('profile.accountStatus.verified', undefined, 'Verified');
+  const walletNotConnectedLabel = t('profile.wallet.notConnected', undefined, 'Not connected');
+  const themeLabel = isDark
+    ? t('shared.labels.dark', undefined, 'Dark')
+    : t('shared.labels.light', undefined, 'Light');
+  const languageLabel = getLocaleLabel(language, language);
+  const currentAuthLabel = t(
+    'profile.accessMethods.current',
+    { method: authMethod },
+    'Current: {{method}}'
+  );
+
   return (
     <View style={{ flex: 1, position: 'relative' }}>
       <ScrollView
@@ -1726,7 +1865,10 @@ function PerfilTab({
         <TierJourney score={0} isDark={isDark} c={c} />
 
         {/* Achievements */}
-        <SectionContainer title='Logros' style={{ margin: 12 }}>
+        <SectionContainer
+          title={t('profile.sections.achievements', undefined, 'Achievements')}
+          style={{ margin: 12 }}
+        >
           <View
             style={{
               flexDirection: 'row',
@@ -1739,10 +1881,11 @@ function PerfilTab({
             {Object.entries(ACHIEVEMENT_CATALOG).map(([key, def]) => {
               const achievement = achievements.find((a) => a.key === key);
               const isUnlocked = achievement?.unlocked ?? false;
+              const achievementLabel = t(`profile.achievementBadges.${key}`, undefined, def.label);
 
               const achievementDef: AchievementDef = {
                 key,
-                label: def.label,
+                label: achievementLabel,
                 color: def.color,
                 icon: def.icon,
                 unlocked: isUnlocked,
@@ -1753,7 +1896,9 @@ function PerfilTab({
                 <AchievementBadge
                   key={key}
                   def={achievementDef}
-                  onPress={() => setSelectedAchievement({ label: def.label, color: def.color })}
+                  onPress={() =>
+                    setSelectedAchievement({ label: achievementLabel, color: def.color })
+                  }
                 />
               );
             })}
@@ -1793,26 +1938,29 @@ function PerfilTab({
         </SectionContainer>
 
         {/* Cuenta */}
-        <SectionContainer title='Cuenta' style={{ margin: 12 }}>
+        <SectionContainer
+          title={t('profile.sections.account', undefined, 'Account')}
+          style={{ margin: 12 }}
+        >
           <GlassCard>
             <SettingRow
               icon={UserCircle2}
-              label='Información de Cuenta'
-              value={user?.id ? truncateMiddle(user.id, 10, 6) : 'N/A'}
+              label={accountIdLabel}
+              value={user?.id ? truncateMiddle(user.id, 10, 6) : naLabel}
               c={c}
               onPress={() => setShowAccountInfoModal(true)}
             />
             <SettingRow
               icon={UserCircle2}
-              label='Información personal'
-              value='Verificado'
+              label={t('profile.accountRows.personalInfo', undefined, 'Personal information')}
+              value={verifiedLabel}
               c={c}
               onPress={() => setShowPersonalInfoModal(true)}
             />
             <SettingRow
               icon={Wallet}
-              label='Wallet'
-              value={walletConnected ? truncateMiddle(walletAddress) : 'No conectada'}
+              label={t('profile.accountRows.wallet', undefined, 'Wallet')}
+              value={walletConnected ? truncateMiddle(walletAddress) : walletNotConnectedLabel}
               c={c}
               onPress={() => {
                 if (!walletConnected) {
@@ -1822,14 +1970,18 @@ function PerfilTab({
             />
             <SettingRow
               icon={Shield}
-              label='Método de acceso'
+              label={t('profile.accountRows.accessMethod', undefined, 'Access method')}
               value={authMethod}
               c={c}
               hideChevron
               onPress={() => {
                 Alert.alert(
-                  'Métodos de acceso',
-                  `Actual: ${authMethod}\n\nMétodos disponibles:\n• Email\n• Google\n• Discord`
+                  t('profile.accessMethodsAlert.title', undefined, 'Access Methods'),
+                  `${currentAuthLabel}\n\n${t(
+                    'profile.accessMethodsAlert.available',
+                    undefined,
+                    'Available methods:\n• Email\n• Google\n• Discord'
+                  )}`
                 );
               }}
             />
@@ -1870,7 +2022,7 @@ function PerfilTab({
                   color: notificationsEnabled ? c.text : c.muted,
                 }}
               >
-                Notificaciones
+                {t('profile.accountRows.notifications', undefined, 'Notifications')}
               </Text>
               <View
                 style={{
@@ -1904,25 +2056,28 @@ function PerfilTab({
         </SectionContainer>
 
         {/* Preferencias */}
-        <SectionContainer title='Preferencias' style={{ margin: 12 }}>
+        <SectionContainer
+          title={t('profile.sections.preferences', undefined, 'Preferences')}
+          style={{ margin: 12 }}
+        >
           <GlassCard>
             <SettingRow
               icon={MoonIcon}
-              label='Tema'
-              value={isDark ? 'Oscuro' : 'Claro'}
+              label={t('profile.preferenceRows.theme', undefined, 'Theme')}
+              value={themeLabel}
               c={c}
               onPress={onToggleTheme}
             />
             <SettingRow
               icon={GlobeIcon}
-              label='Idioma'
-              value={language === 'es' ? 'Español' : language === 'en' ? 'English' : 'ไทย'}
+              label={t('profile.preferenceRows.language', undefined, 'Language')}
+              value={languageLabel}
               c={c}
               onPress={onCycleLanguage}
             />
             <SettingRow
               icon={SettingsIcon}
-              label='Configuración'
+              label={t('profile.preferenceRows.settings', undefined, 'Settings')}
               onPress={() => router.push('/settings')}
               c={c}
             />
@@ -1963,7 +2118,7 @@ function PerfilTab({
                   color: '#ff3b30',
                 }}
               >
-                Cerrar sesión
+                {t('profile.preferenceRows.signOut', undefined, 'Sign out')}
               </Text>
             </TouchableOpacity>
           </GlassCard>
@@ -2006,12 +2161,6 @@ function PerfilTab({
 
 // ─── Main page ───────────────────────────────────────────────────────────────
 
-const TABS: TabItem[] = [
-  { key: 'ranking', label: 'Ranking', icon: TrophyIcon },
-  { key: 'wallet', label: 'Wallet', icon: WalletIcon },
-  { key: 'perfil', label: 'Profile', icon: UserCircle2Icon },
-];
-
 export default function MiPerfilScreen(): React.JSX.Element {
   const router = useRouter();
   const params = useLocalSearchParams<{ tab?: string }>();
@@ -2021,18 +2170,30 @@ export default function MiPerfilScreen(): React.JSX.Element {
   const isDark = themeMode === 'dark';
   const appVersion = resolveAppPackageVersion().version;
   const footerLabel = t('profile.footer', { version: appVersion });
+  const tabs = useMemo<TabItem[]>(
+    () => [
+      { key: 'ranking', label: t('profile.tabs.ranking', undefined, 'Ranking'), icon: TrophyIcon },
+      { key: 'wallet', label: t('profile.tabs.wallet', undefined, 'Wallet'), icon: WalletIcon },
+      {
+        key: 'perfil',
+        label: t('profile.tabs.profile', undefined, 'Profile'),
+        icon: UserCircle2Icon,
+      },
+    ],
+    [t]
+  );
   const initialTab =
-    typeof params.tab === 'string' && TABS.some((t) => t.key === params.tab)
+    typeof params.tab === 'string' && tabs.some((tab) => tab.key === params.tab)
       ? params.tab
       : 'perfil';
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
-    if (typeof params.tab === 'string' && TABS.some((t) => t.key === params.tab)) {
+    if (typeof params.tab === 'string' && tabs.some((tab) => tab.key === params.tab)) {
       setActiveTab(params.tab);
     }
-  }, [params.tab]);
+  }, [params.tab, tabs]);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
@@ -2082,7 +2243,7 @@ export default function MiPerfilScreen(): React.JSX.Element {
         <GlassCard style={{ alignItems: 'center' }}>
           <UserCircle2Icon size={48} color={c.muted} />
           <Text style={[styles.signInPrompt, { color: c.text }]}>
-            Inicia sesión para ver tu perfil
+            {t('profile.signInPrompt', undefined, 'Sign in to view your profile')}
           </Text>
           <TouchableOpacity
             style={[
@@ -2091,7 +2252,9 @@ export default function MiPerfilScreen(): React.JSX.Element {
             ]}
             onPress={() => router.push('/auth?next=/mi-perfil')}
           >
-            <Text style={[styles.signInBtnText, { color: c.accent }]}>Open Sign In</Text>
+            <Text style={[styles.signInBtnText, { color: c.accent }]}>
+              {t('shared.labels.signIn', undefined, 'Sign In')}
+            </Text>
           </TouchableOpacity>
         </GlassCard>
       </View>
@@ -2104,10 +2267,12 @@ export default function MiPerfilScreen(): React.JSX.Element {
         <View style={styles.headerBar}>
           <View style={styles.titleWithIcon}>
             <ShieldCheckIcon size={24} color={c.accent} strokeWidth={1.8} />
-            <Text style={[styles.pageTitle, { color: c.text }]}>My Profile</Text>
+            <Text style={[styles.pageTitle, { color: c.text }]}>
+              {t('profile.screenTitle', undefined, 'My Profile')}
+            </Text>
           </View>
           <PageTabBar
-            tabs={TABS}
+            tabs={tabs}
             activeTab={activeTab}
             onChangeTab={setActiveTab}
             isDark={isDark}

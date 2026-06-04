@@ -8,6 +8,8 @@
       "light": "Claro",
       "settings": "Configuracion",
       "signIn": "Iniciar sesion",
+      "guest": "Invitado",
+      "anonymous": "Anónimo",
       "theme": "Tema",
       "yes": "Si",
       "no": "No"
@@ -514,6 +516,67 @@
       }
     },
     "profile": {
+      "screenTitle": "Mi perfil",
+      "signInPrompt": "Inicia sesión para ver tu perfil",
+      "tabs": {
+        "ranking": "Clasificación",
+        "wallet": "Billetera",
+        "profile": "Perfil"
+      },
+      "tierLabels": {
+        "bronze": "Bronce",
+        "silver": "Plata",
+        "gold": "Oro",
+        "platinum": "Platino"
+      },
+      "stats": {
+        "airs": "AIRS",
+        "projects": "Proyectos",
+        "co2": "CO₂"
+      },
+      "ranking": {
+        "myPosition": "Mi posición",
+        "topImpactors": "Principales impactadores",
+        "searchPlaceholder": "Buscar persona...",
+        "filters": {
+          "all": "Todos",
+          "podium": "Podio",
+          "others": "Resto"
+        }
+      },
+      "wallet": {
+        "connectTitle": "Conecta tu billetera",
+        "connectSubtitle": "Vincula tu billetera para gestionar tus tokens ATN",
+        "connectButton": "Conectar billetera",
+        "supportedNetworks": "Redes compatibles",
+        "notConnected": "No conectada"
+      },
+      "accessMethods": {
+        "current": "Actual: {{method}}",
+        "labels": {
+          "wallet": "Billetera",
+          "email": "Correo electrónico",
+          "session": "Sesión",
+          "google": "Google",
+          "discord": "Discord",
+          "provider": "Proveedor: {{provider}}"
+        }
+      },
+      "accountStatus": {
+        "verified": "Verificado"
+      },
+      "accountInfoModal": {
+        "title": "Información de cuenta",
+        "accountId": "ID de cuenta",
+        "email": "Correo electrónico",
+        "username": "Nombre de usuario",
+        "createdAt": "Fecha de creación",
+        "referredBy": "Referido por",
+        "activeAccount": "Cuenta activa",
+        "copiedToast": "ID copiado al portapapeles",
+        "loading": "Cargando...",
+        "na": "N/A"
+      },
       "sections": {
         "achievements": "Logros",
         "account": "Cuenta",
@@ -546,7 +609,25 @@
         "firstName": "Nombre",
         "lastName": "Apellido",
         "email": "Correo electrónico",
+        "saveChanges": "Guardar cambios",
+        "cancel": "Cancelar",
         "close": "Cerrar"
+      },
+      "achievementBadges": {
+        "account_confirmed": "Cuenta verificada",
+        "first_10_airs": "10 AIRS",
+        "first_100_airs": "100 AIRS",
+        "first_regenerative_action": "Acción verde",
+        "five_regenerative_actions": "5 acciones",
+        "first_commerce_action": "Aliado comercial",
+        "profile_complete": "Perfil completo",
+        "bio_added": "Biografía",
+        "avatar_uploaded": "Avatar",
+        "wallet_connected": "Billetera conectada",
+        "seven_day_streak": "7 días",
+        "referral_invited": "Invita amigos",
+        "fifty_airs": "50 AIRS",
+        "ambassador": "Embajador"
       },
       "achievements": {
         "firstTree": "Primer Árbol",
