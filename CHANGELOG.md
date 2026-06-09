@@ -1,13 +1,22 @@
+## [1.0.279](https://github.com/alternun-development/alternun/compare/v1.0.278...v1.0.279) (2026-06-09)
+
+### Bug Fixes
+
+- **repo:** fix(mobile,i18n): PublicLandingPage, AirsIntroExperience, en, es
+- **repo:** fix(mobile,i18n): normalize profile translations and clipboard handling
+- **repo:** fix(api,i18n): legacy referral fallback and locale sync
+
+### Bug Fixes
+
+- **api,i18n:** legacy referral fallback and locale sync ([c20183a](https://github.com/alternun-development/alternun/commit/c20183ab52b772216b04504e9a92b2a36fdf3ee2))
+- **mobile,i18n:** normalize profile translations and clipboard handling ([7b594ce](https://github.com/alternun-development/alternun/commit/7b594ce42939598cb857619da445c200a55bbf2f))
+- **mobile,i18n:** PublicLandingPage, AirsIntroExperience, en, es ([9938e26](https://github.com/alternun-development/alternun/commit/9938e26e53cbb7ea1d81d8dd60ef164cd9364a8a))
+
 ## [1.0.278](https://github.com/alternun-development/alternun/compare/v1.0.278-dev.0...v1.0.278) (2026-06-03)
 
 ### Bug Fixes
 
 - **repo:** docs: sync README for v1.0.278
-
-
-
-
-
 
 ## [1.0.278](https://github.com/alternun-development/alternun/compare/v1.0.277...v1.0.278) (2026-06-03)
 
