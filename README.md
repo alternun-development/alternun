@@ -118,15 +118,14 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.0.279**
+Current version: **1.0.280**
 
-## 📋 Latest Changes (v1.0.279)
+## 📋 Latest Changes (v1.0.280)
 
 ### Bug Fixes
 
-- **api,i18n:** legacy referral fallback and locale sync ([c20183a](https://github.com/alternun-development/alternun/commit/c20183ab52b772216b04504e9a92b2a36fdf3ee2))
-- **mobile,i18n:** normalize profile translations and clipboard handling ([7b594ce](https://github.com/alternun-development/alternun/commit/7b594ce42939598cb857619da445c200a55bbf2f))
-- **mobile,i18n:** PublicLandingPage, AirsIntroExperience, en, es ([9938e26](https://github.com/alternun-development/alternun/commit/9938e26e53cbb7ea1d81d8dd60ef164cd9364a8a))
+- **deps:** bump shell-quote to 1.8.4 ([512e913](https://github.com/alternun-development/alternun/commit/512e913df973c3591eb5255775b4d55fff61b229))
+- **mobile:** AirsIntroExperience ([9302a25](https://github.com/alternun-development/alternun/commit/9302a255f5e92a3ec10d68ad55733443b539db98))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
