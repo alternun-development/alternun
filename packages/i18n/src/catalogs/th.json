@@ -325,6 +325,7 @@
       },
       "hero": {
         "presentedBy": "Alternun นำเสนอ",
+        "scrollCue": "เลื่อน",
         "scrollToInteract": "เลื่อนเพื่อโต้ตอบ"
       },
       "info": {

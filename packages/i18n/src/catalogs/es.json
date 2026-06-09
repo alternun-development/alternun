@@ -325,6 +325,7 @@
       },
       "hero": {
         "presentedBy": "Alternun presenta",
+        "scrollCue": "Desliza",
         "scrollToInteract": "Desplazate para interactuar"
       },
       "info": {
