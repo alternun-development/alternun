@@ -325,6 +325,7 @@
       },
       "hero": {
         "presentedBy": "Alternun Presents",
+        "scrollCue": "Scroll",
         "scrollToInteract": "Scroll to interact"
       },
       "info": {

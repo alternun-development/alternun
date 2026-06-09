@@ -1,6 +1,6 @@
 {
   "name": "alternun",
-  "version": "1.0.278",
+  "version": "1.0.279",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -89,6 +89,7 @@
       "fast-xml-parser": "4.5.4",
       "handlebars": "4.7.9",
       "protobufjs": "7.5.5",
+      "shell-quote": "1.8.4",
       "simple-git": "3.32.3",
       "webpack": "5.105.2"
     }
