@@ -567,12 +567,14 @@ const AirsIntroExperience = forwardRef<
 
     const heroWordmarkSource = resolveHeroWordmarkSource(isDark, logoAtTop);
     const heroCopyTop = isMobile
-      ? Math.min(heroHeight * 0.29, 240)
+      ? Math.min(heroHeight * 0.22, 194)
       : Math.min(heroHeight * 0.34, 330);
     const heroCopyMaxWidth = isMobile
-      ? Math.min(screenWidth - 48, 620)
+      ? Math.min(screenWidth - 40, 620)
       : Math.min(screenWidth * 0.82, 1080);
-    const heroHeadlineSize = Math.min(Math.max(screenWidth * 0.05, 34), 68);
+    const heroHeadlineSize = isMobile
+      ? Math.min(Math.max(screenWidth * 0.043, 30), 66)
+      : Math.min(Math.max(screenWidth * 0.05, 34), 68);
     const heroHeadlineLineHeight = heroHeadlineSize * 1.04;
     const heroKickerSize = isMobile
       ? Math.min(Math.max(screenWidth * 0.036, 20), 32)
@@ -1309,6 +1311,7 @@ const AirsIntroExperience = forwardRef<
                 pointerEvents='box-none'
                 style={[
                   styles.heroCopyOverlay,
+                  isMobile && styles.heroCopyOverlayCompact,
                   {
                     top: heroCopyTop,
                     opacity: mediaTagOpacity,
@@ -1341,7 +1344,13 @@ const AirsIntroExperience = forwardRef<
                 >
                   {t('landing.media.subtitle')}
                 </Text>
-                <View style={[styles.heroCopyActions, isMobile && styles.heroCopyActionsStacked]}>
+                <View
+                  style={[
+                    styles.heroCopyActions,
+                    isMobile && styles.heroCopyActionsStacked,
+                    { marginTop: isMobile ? 18 : 24 },
+                  ]}
+                >
                   <HeroGlassButton
                     onPress={() => onHeroNavigate?.('como-funciona')}
                     label={t('landing.nav.howItWorks')}
@@ -1359,6 +1368,25 @@ const AirsIntroExperience = forwardRef<
                     borderWidth={heroButtonBorderWidth}
                   />
                 </View>
+                {isMobile && showHeroScrollCue ? (
+                  <Animated.View
+                    pointerEvents='box-none'
+                    style={[
+                      styles.heroScrollCueInline,
+                      {
+                        opacity: footerOpacity,
+                        transform: [{ translateY: footerTranslateY }],
+                      },
+                    ]}
+                  >
+                    <HeroScrollCue
+                      label={t('landing.hero.scrollCue')}
+                      onPress={handleScrollCuePress}
+                      isDark={isDark}
+                      isMobile={isMobile}
+                    />
+                  </Animated.View>
+                ) : null}
               </Animated.View>
             ) : null}
           </View>
@@ -1386,14 +1414,14 @@ const AirsIntroExperience = forwardRef<
           <LandingFooter />
         </Animated.ScrollView>
 
-        {showHeroScrollCue ? (
+        {!isMobile && showHeroScrollCue ? (
           <Animated.View
             pointerEvents='box-none'
             style={[
               styles.heroScrollCueOverlay,
               {
                 opacity: footerOpacity,
-                bottom: isMobile ? 48 : isCompactDesktop ? 40 : 44,
+                bottom: isCompactDesktop ? 40 : 44,
                 transform: [{ translateY: footerTranslateY }],
               },
             ]}
@@ -1995,6 +2023,11 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     paddingHorizontal: 8,
   },
+  heroCopyOverlayCompact: {
+    left: 20,
+    right: 20,
+    paddingHorizontal: 0,
+  },
   heroCopyKicker: {
     fontFamily: `${SCULPIN_FONT_FAMILY}-Regular`,
     letterSpacing: 0.08,
@@ -2022,8 +2055,14 @@ const styles = createTypographyStyles({
   },
   heroCopyActionsStacked: {
     flexDirection: 'column',
-    gap: 14,
+    gap: 12,
     width: '100%',
+  },
+  heroScrollCueInline: {
+    marginTop: 18,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   heroGlassButton: {
     minHeight: 78,
