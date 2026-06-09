@@ -1,13 +1,31 @@
+## [1.0.280](https://github.com/alternun-development/alternun/compare/v1.0.280-dev.0...v1.0.280) (2026-06-09)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.280
+
+
+
+
+
+
+## [1.0.280](https://github.com/alternun-development/alternun/compare/v1.0.279...v1.0.280) (2026-06-09)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): AirsIntroExperience
+- **repo:** fix(deps): bump shell-quote to 1.8.4
+
+### Bug Fixes
+
+- **deps:** bump shell-quote to 1.8.4 ([512e913](https://github.com/alternun-development/alternun/commit/512e913df973c3591eb5255775b4d55fff61b229))
+- **mobile:** AirsIntroExperience ([9302a25](https://github.com/alternun-development/alternun/commit/9302a255f5e92a3ec10d68ad55733443b539db98))
+
 ## [1.0.279](https://github.com/alternun-development/alternun/compare/v1.0.279-dev.0...v1.0.279) (2026-06-09)
 
 ### Bug Fixes
 
 - **repo:** docs: sync README for v1.0.279
-
-
-
-
-
 
 ## [1.0.279](https://github.com/alternun-development/alternun/compare/v1.0.278...v1.0.279) (2026-06-09)
 
