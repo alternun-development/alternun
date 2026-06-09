@@ -28,9 +28,11 @@ import { BlurView } from 'expo-blur';
 import {
   ChevronDown,
   ChevronRight,
+  ChevronsUp,
   LogIn,
   Settings as SettingsIcon,
   User,
+  type LucideProps,
 } from 'lucide-react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import LandingFooter from '../common/LandingFooter';
@@ -43,7 +45,7 @@ import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { HeroVideoNative } from './HeroVideoNative';
 
 const HERO_EXPANSION_RANGE = 420;
-const HERO_SOLID_SWAP_SCROLL = 180;
+const HERO_SOLID_SWAP_SCROLL = 240;
 const AUTO_UNMUTE_SCROLL_Y = 88;
 const TOP_PAUSE_SCROLL_Y = 6;
 
@@ -59,6 +61,13 @@ type HeroGlassButtonProps = {
   fontSize: number;
   isDark: boolean;
   borderWidth: number;
+};
+
+type HeroScrollCueProps = {
+  label: string;
+  onPress?: () => void;
+  isDark: boolean;
+  isMobile: boolean;
 };
 
 function HeroGlassButton({
@@ -147,17 +156,110 @@ function HeroGlassButton({
   );
 }
 
+function HeroScrollCue({
+  label,
+  onPress,
+  isDark,
+  isMobile,
+}: HeroScrollCueProps): React.ReactElement {
+  const bounceAnim = useRef(new Animated.Value(0)).current;
+  const ScrollCueIcon = ChevronsUp as React.FC<LucideProps>;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounceAnim, {
+          toValue: 1,
+          duration: 900,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(bounceAnim, {
+          toValue: 0,
+          duration: 900,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    animation.start();
+    return (): void => {
+      animation.stop();
+    };
+  }, [bounceAnim]);
+
+  const iconTranslateY = bounceAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 4, 0],
+  });
+  const cueOuterBg = isDark ? 'rgba(28,203,161,0.12)' : 'rgba(15,23,42,0.08)';
+  const cueOuterBorder = isDark ? 'rgba(28,203,161,0.35)' : 'rgba(28,203,161,0.25)';
+  const cueInnerBg = isDark ? 'rgba(28,203,161,0.22)' : 'rgba(28,203,161,0.14)';
+  const cueIconColor = isDark ? '#1ee6b5' : '#0d9488';
+  const cueWidth = isMobile ? 62 : 72;
+  const cueHeight = isMobile ? 42 : 48;
+
+  return (
+    <Pressable
+      accessibilityRole='button'
+      accessibilityLabel={label}
+      accessibilityHint='Scrolls to the first section below the hero'
+      hitSlop={24}
+      onPress={onPress}
+      style={({ hovered, pressed }) =>
+        ({
+          ...styles.scrollCuePressable,
+          width: cueWidth,
+          height: cueHeight,
+          backgroundColor: cueOuterBg,
+          borderColor: cueOuterBorder,
+          padding: 4,
+          transform: [{ scale: pressed ? 0.97 : hovered ? 1.02 : 1 }],
+          ...createShadowStyle({
+            color: '#000',
+            offsetX: 0,
+            offsetY: hovered ? 10 : 6,
+            opacity: hovered ? 0.32 : 0.2,
+            radius: hovered ? 20 : 14,
+            elevation: hovered ? 10 : 7,
+          }),
+        } as ViewStyle)
+      }
+    >
+      <View
+        style={[
+          styles.scrollCueInner,
+          {
+            width: isMobile ? 34 : 36,
+            height: isMobile ? 34 : 36,
+            backgroundColor: cueInnerBg,
+          },
+        ]}
+      >
+        <Animated.View
+          style={{ transform: [{ translateY: iconTranslateY }, { rotate: '180deg' }] }}
+        >
+          <ScrollCueIcon size={isMobile ? 16 : 18} color={cueIconColor} strokeWidth={2.5} />
+        </Animated.View>
+      </View>
+    </Pressable>
+  );
+}
+
 interface AirsIntroExperienceProps {
   onContinueToDashboard: (dontShowAgain: boolean) => void;
   onSignIn: () => void;
   onOpenSettings?: () => void;
-  extraSections?: React.ReactNode;
+  renderExtraSections?: (
+    heroTransitionProgress: Animated.AnimatedInterpolation<number>
+  ) => React.ReactNode;
   headerNavLinks?: Array<{ id: string; label: string; isActive: boolean; onPress: () => void }>;
   accentColor?: string;
   isDark?: boolean;
   showCta?: boolean;
   onActiveSectionChange?: (sectionId: string) => void;
-  sectionOffsets?: Record<string, number>;
+  sectionOffsets?: Map<string, number>;
   heroHeight?: number;
   onHeroNavigate?: (sectionId: string) => void;
 }
@@ -171,7 +273,7 @@ const AirsIntroExperience = forwardRef<
       onContinueToDashboard: _onContinueToDashboard,
       onSignIn,
       onOpenSettings: _onOpenSettings,
-      extraSections,
+      renderExtraSections,
       headerNavLinks,
       accentColor: accentColorProp,
       isDark: isDarkProp,
@@ -185,21 +287,6 @@ const AirsIntroExperience = forwardRef<
   ) => {
     const scrollRef = useRef<Animated.ScrollView>(null);
 
-    // Expose scroll method via ref
-    useImperativeHandle(
-      ref,
-      (): { scrollToSection: (offset: number) => void } => ({
-        scrollToSection: (offset: number): void => {
-          if (scrollRef.current?.scrollTo) {
-            scrollRef.current.scrollTo({ y: Math.max(0, offset - 60), animated: true });
-          } else if (scrollRef.current?.getNode?.()?.scrollTo) {
-            scrollRef.current.getNode().scrollTo({ y: Math.max(0, offset - 60), animated: true });
-          }
-        },
-      }),
-      []
-    );
-
     const { themeMode } = useAppPreferences();
     const { t } = useAppTranslation('mobile');
     const isDark = isDarkProp ?? themeMode === 'dark';
@@ -211,10 +298,17 @@ const AirsIntroExperience = forwardRef<
     const [hasAutoUnmuted, setHasAutoUnmuted] = useState(false);
     const [hasScrollActivatedPlayback, setHasScrollActivatedPlayback] = useState(false);
     const [showBackToTop, setShowBackToTop] = useState(false);
+    const [showHeroScrollCue, setShowHeroScrollCue] = useState(true);
     const [logoAtTop, setLogoAtTop] = useState(true);
     const { width: screenWidth, height: screenHeight } = useWindowDimensions();
     const isMobile = screenWidth < 720;
     const heroVideoSource = isMobile ? HERO_VIDEO_MOBILE : HERO_VIDEO_DESKTOP;
+    const heroHeight = heroHeightProp ?? Math.max(screenHeight * 1.05, 740);
+    const isDesktopView = screenWidth >= 720;
+    const isCompactDesktop = isDesktopView && screenWidth < 1280;
+    const firstSectionOverlap = isMobile ? 240 : isCompactDesktop ? 248 : 272;
+    const extraSectionsBaseOffset = heroHeight - firstSectionOverlap;
+    const sectionScrollRevealOffset = isMobile ? 28 : isCompactDesktop ? 32 : 36;
     const [headerNavMobileMenuVisible, setHeaderNavMobileMenuVisible] = useState(false);
     const headerNavDropdownAnim = useRef(new Animated.Value(0)).current;
 
@@ -228,7 +322,12 @@ const AirsIntroExperience = forwardRef<
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start();
-    }, [headerNavMobileMenuVisible, headerNavSettingsMenuVisible, profileMenuVisible]);
+    }, [
+      headerNavDropdownAnim,
+      headerNavMobileMenuVisible,
+      headerNavSettingsMenuVisible,
+      profileMenuVisible,
+    ]);
 
     const scrollY = useRef(new Animated.Value(0)).current;
     const isMutedRef = useRef(isMuted);
@@ -236,6 +335,7 @@ const AirsIntroExperience = forwardRef<
     const hasAutoUnmutedRef = useRef(hasAutoUnmuted);
     const hasScrollActivatedPlaybackRef = useRef(hasScrollActivatedPlayback);
     const isInTopZoneRef = useRef(true);
+    const isHeroScrollCueVisibleRef = useRef(true);
 
     useEffect(() => {
       setIsMuted(true);
@@ -289,14 +389,24 @@ const AirsIntroExperience = forwardRef<
         syncTopZoneState(value);
         setShowBackToTop(value > 400);
         setLogoAtTop(value <= 50);
+        const shouldShowHeroScrollCue = value < HERO_EXPANSION_RANGE * 0.65;
+        if (isHeroScrollCueVisibleRef.current !== shouldShowHeroScrollCue) {
+          isHeroScrollCueVisibleRef.current = shouldShowHeroScrollCue;
+          setShowHeroScrollCue(shouldShowHeroScrollCue);
+        }
 
         // Track active section based on scroll position
-        if (onActiveSectionChange && sectionOffsets && heroHeightProp) {
+        if (onActiveSectionChange && sectionOffsets) {
           let activeSectionId = 'inicio';
-          const entries = Object.entries(sectionOffsets);
+          const entries = Array.from(sectionOffsets.entries()).map(
+            ([sectionId, sectionOffset]): [string, number] => [
+              sectionId,
+              sectionOffset <= 0 ? 0 : extraSectionsBaseOffset + sectionOffset,
+            ]
+          );
           const foundEntry = [...entries]
             .reverse()
-            .find(([, sectionOffset]) => value >= sectionOffset - 60);
+            .find(([, sectionOffset]) => value >= sectionOffset - sectionScrollRevealOffset);
 
           if (foundEntry) {
             [activeSectionId] = foundEntry;
@@ -312,9 +422,10 @@ const AirsIntroExperience = forwardRef<
       maybeAutoUnmuteFromScroll,
       scrollY,
       syncTopZoneState,
+      extraSectionsBaseOffset,
       onActiveSectionChange,
+      sectionScrollRevealOffset,
       sectionOffsets,
-      heroHeightProp,
     ]);
 
     const handleScroll = useMemo(
@@ -332,9 +443,6 @@ const AirsIntroExperience = forwardRef<
       [maybeAutoUnmuteFromScroll, scrollY, syncTopZoneState]
     );
 
-    const heroHeight = Math.max(screenHeight * 1.05, 740);
-    const isDesktopView = screenWidth >= 720;
-    const isCompactDesktop = isDesktopView && screenWidth < 1280;
     const heroSideInset = isMobile ? 24 : isCompactDesktop ? 56 : 48;
     const heroWordmarkHeight = isDesktopView
       ? Math.min(
@@ -379,16 +487,26 @@ const AirsIntroExperience = forwardRef<
       outputRange: [0, 1],
       extrapolate: 'clamp',
     });
-    const firstSectionOverlap = isMobile ? 116 : isCompactDesktop ? 148 : 180;
-    const firstSectionEntranceDrop = isMobile ? 52 : isCompactDesktop ? 72 : 92;
+    const extraSectionsTopPadding = isMobile ? 56 : isCompactDesktop ? 72 : 84;
+    const firstSectionEntranceDrop = isMobile ? 8 : isCompactDesktop ? 12 : 16;
+    const heroTransitionProgress = scrollY.interpolate({
+      inputRange: [0, heroHeight * 0.08, heroHeight * 0.2],
+      outputRange: [0, 0.42, 1],
+      extrapolate: 'clamp',
+    });
     const extraSectionsOpacity = scrollY.interpolate({
-      inputRange: [0, heroHeight * 0.1, heroHeight * 0.28],
-      outputRange: [0.72, 0.94, 1],
+      inputRange: [0, heroHeight * 0.08, heroHeight * 0.2],
+      outputRange: [0, 0.66, 1],
       extrapolate: 'clamp',
     });
     const extraSectionsTranslateY = scrollY.interpolate({
-      inputRange: [0, heroHeight * 0.12, heroHeight * 0.34],
-      outputRange: [firstSectionEntranceDrop, 10, 0],
+      inputRange: [0, heroHeight * 0.06, heroHeight * 0.18],
+      outputRange: [firstSectionEntranceDrop, 6, 0],
+      extrapolate: 'clamp',
+    });
+    const extraSectionsScale = scrollY.interpolate({
+      inputRange: [0, heroHeight * 0.18],
+      outputRange: [0.992, 1],
       extrapolate: 'clamp',
     });
     const bgScale = scrollY.interpolate({
@@ -463,8 +581,6 @@ const AirsIntroExperience = forwardRef<
     const heroButtonWidth = isMobile ? '100%' : Math.min(screenWidth * 0.28, 360);
     const heroButtonFontSize = Math.min(Math.max(screenWidth * 0.023, 18), 24);
     const heroButtonBorderWidth = isDesktopView ? 1.35 : 1;
-    const heroFooterTextColor = isDark ? 'rgba(248,251,255,0.96)' : '#020617';
-    const heroFooterShadowColor = isDark ? 'rgba(0,0,0,0.28)' : 'transparent';
     const headerNavDropdownAnimatedStyle = useMemo(
       () => ({
         opacity: headerNavDropdownAnim,
@@ -502,6 +618,49 @@ const AirsIntroExperience = forwardRef<
     const blurTint = isDark ? 'dark' : 'light';
     const blurHeaderGradientId = React.useId().replace(/[:]/g, '');
     const headerBarGlassColor = isDark ? '#050510' : '#f6f8fc';
+    const resolveSectionScrollTarget = useCallback(
+      (offset: number): number => {
+        if (offset <= 0) {
+          return 0;
+        }
+
+        return Math.max(extraSectionsBaseOffset + offset - sectionScrollRevealOffset, 0);
+      },
+      [extraSectionsBaseOffset, sectionScrollRevealOffset]
+    );
+
+    useImperativeHandle(
+      ref,
+      (): { scrollToSection: (offset: number) => void } => ({
+        scrollToSection: (offset: number): void => {
+          const targetY = resolveSectionScrollTarget(offset);
+          if (scrollRef.current?.scrollTo) {
+            scrollRef.current.scrollTo({ y: targetY, animated: true });
+          } else if (scrollRef.current?.getNode?.()?.scrollTo) {
+            scrollRef.current.getNode().scrollTo({ y: targetY, animated: true });
+          }
+        },
+      }),
+      [resolveSectionScrollTarget]
+    );
+
+    const handleScrollCuePress = useCallback((): void => {
+      const firstSectionOffset = sectionOffsets?.get('el-proyecto') ?? extraSectionsTopPadding;
+      const targetY = resolveSectionScrollTarget(
+        Math.max(firstSectionOffset, extraSectionsTopPadding)
+      );
+      if (scrollRef.current?.scrollTo) {
+        scrollRef.current.scrollTo({ y: targetY, animated: true });
+      } else if (scrollRef.current?.getNode?.()?.scrollTo) {
+        scrollRef.current.getNode().scrollTo({ y: targetY, animated: true });
+      }
+      onActiveSectionChange?.('el-proyecto');
+    }, [
+      extraSectionsTopPadding,
+      onActiveSectionChange,
+      resolveSectionScrollTarget,
+      sectionOffsets,
+    ]);
 
     return (
       <View style={[styles.page, { backgroundColor: palette.pageBg }]}>
@@ -1134,12 +1293,16 @@ const AirsIntroExperience = forwardRef<
               <HeroVideoNative videoSource={heroVideoSource} />
             </Animated.View>
             <Animated.View
+              pointerEvents='none'
               style={[
                 styles.heroSolidFadeLayer,
                 { backgroundColor: palette.pageBg, opacity: heroSolidFadeOpacity },
               ]}
             />
-            <Animated.View style={[styles.heroShade, { opacity: shadeOpacity }]} />
+            <Animated.View
+              pointerEvents='none'
+              style={[styles.heroShade, { opacity: shadeOpacity }]}
+            />
 
             {showCta ? (
               <Animated.View
@@ -1198,53 +1361,51 @@ const AirsIntroExperience = forwardRef<
                 </View>
               </Animated.View>
             ) : null}
-
-            <Animated.View
-              style={[
-                styles.heroFooter,
-                { opacity: footerOpacity, transform: [{ translateY: footerTranslateY }] },
-              ]}
-            >
-              <View style={styles.heroMetaLeftBlock}>
-                <Text
-                  numberOfLines={1}
-                  ellipsizeMode='tail'
-                  style={[
-                    styles.heroMetaLeft,
-                    { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor },
-                  ]}
-                >
-                  {t('landing.hero.presentedBy')}
-                </Text>
-              </View>
-              <Text
-                style={[
-                  styles.heroMetaRight,
-                  { color: heroFooterTextColor, textShadowColor: heroFooterShadowColor },
-                ]}
-              >
-                {t('landing.hero.scrollToInteract')}
-              </Text>
-            </Animated.View>
           </View>
 
-          {extraSections ? (
+          {renderExtraSections ? (
             <Animated.View
+              pointerEvents='box-none'
               style={[
                 styles.extraSectionsTransition,
                 {
                   marginTop: -firstSectionOverlap,
+                  paddingTop: extraSectionsTopPadding,
                   opacity: extraSectionsOpacity,
-                  transform: [{ translateY: extraSectionsTranslateY }],
+                  transform: [
+                    { translateY: extraSectionsTranslateY },
+                    { scale: extraSectionsScale },
+                  ],
                 },
               ]}
             >
-              {extraSections}
+              {renderExtraSections(heroTransitionProgress)}
             </Animated.View>
           ) : null}
 
           <LandingFooter />
         </Animated.ScrollView>
+
+        {showHeroScrollCue ? (
+          <Animated.View
+            pointerEvents='box-none'
+            style={[
+              styles.heroScrollCueOverlay,
+              {
+                opacity: footerOpacity,
+                bottom: isMobile ? 48 : isCompactDesktop ? 40 : 44,
+                transform: [{ translateY: footerTranslateY }],
+              },
+            ]}
+          >
+            <HeroScrollCue
+              label={t('landing.hero.scrollCue')}
+              onPress={handleScrollCuePress}
+              isDark={isDark}
+              isMobile={isMobile}
+            />
+          </Animated.View>
+        ) : null}
 
         {/* Back to top button */}
         <BackToTopButton
@@ -1345,6 +1506,8 @@ const styles = createTypographyStyles({
     paddingBottom: 34,
   },
   heroSection: {
+    position: 'relative',
+    zIndex: 3,
     overflow: 'hidden',
     justifyContent: 'flex-end',
   },
@@ -1413,41 +1576,33 @@ const styles = createTypographyStyles({
     justifyContent: 'center',
     zIndex: 2,
   },
-  heroFooter: {
+  heroScrollCueOverlay: {
     position: 'absolute',
-    left: 24,
-    right: 24,
+    left: 0,
+    right: 0,
     bottom: 26,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 3,
+    zIndex: 90,
+    elevation: 90,
+  },
+  scrollCuePressable: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  scrollCueInner: {
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   extraSectionsTransition: {
     position: 'relative',
-    zIndex: 2,
-  },
-  heroMetaLeftBlock: {
-    gap: 2,
-    flexShrink: 1,
-    paddingRight: 10,
-  },
-  heroMetaLeft: {
-    fontFamily: `${SCULPIN_FONT_FAMILY}-Medium`,
-    color: 'rgba(248,251,255,0.96)',
-    fontSize: 17,
-    letterSpacing: 0.2,
-    textShadowColor: 'rgba(0,0,0,0.28)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-  },
-  heroMetaRight: {
-    fontFamily: `${SCULPIN_FONT_FAMILY}-Medium`,
-    color: 'rgba(248,251,255,0.98)',
-    fontSize: 15,
-    textShadowColor: 'rgba(0,0,0,0.28)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    // The first section intentionally overlaps the hero. Keep it above the
+    // hero so its heading is not masked during the scroll handoff.
+    zIndex: 4,
   },
   mediaTagTitleOverlay: {
     position: 'absolute',

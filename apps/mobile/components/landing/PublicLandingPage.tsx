@@ -193,69 +193,73 @@ export default function PublicLandingPage({
     label: t(NAV_ITEM_LABEL_KEYS[idx]),
   }));
 
-  const extraSections = (
-    <>
-      {/* El Proyecto */}
-      <View
-        onLayout={(e) => {
-          sectionOffsetsRef.current.set('el-proyecto', e.nativeEvent.layout.y);
-        }}
-      >
-        <ElProyectoSection
-          isDark={isDark}
-          accentColor={accentColor}
-          textColor={textColor}
-          cardBg={cardBg}
-          cardBorder={cardBorder}
-          isMobile={isMobile}
-        />
-      </View>
+  const renderExtraSections = useCallback(
+    (heroTransitionProgress: Animated.AnimatedInterpolation<number>) => (
+      <>
+        {/* El Proyecto */}
+        <View
+          onLayout={(e) => {
+            sectionOffsetsRef.current.set('el-proyecto', e.nativeEvent.layout.y);
+          }}
+        >
+          <ElProyectoSection
+            isDark={isDark}
+            accentColor={accentColor}
+            textColor={textColor}
+            cardBg={cardBg}
+            cardBorder={cardBorder}
+            isMobile={isMobile}
+            introProgress={heroTransitionProgress}
+          />
+        </View>
 
-      {/* Cómo funciona */}
-      <View
-        onLayout={(e) => {
-          sectionOffsetsRef.current.set('como-funciona', e.nativeEvent.layout.y);
-        }}
-      >
-        <ComoFuncionaSection
-          isDark={isDark}
-          accentColor={accentColor}
-          textColor={textColor}
-          isMobile={isMobile}
-        />
-      </View>
+        {/* Cómo funciona */}
+        <View
+          onLayout={(e) => {
+            sectionOffsetsRef.current.set('como-funciona', e.nativeEvent.layout.y);
+          }}
+        >
+          <ComoFuncionaSection
+            isDark={isDark}
+            accentColor={accentColor}
+            textColor={textColor}
+            isMobile={isMobile}
+          />
+        </View>
 
-      {/* Membresía vitalicia */}
-      <View
-        onLayout={(e) => {
-          sectionOffsetsRef.current.set('membresia', e.nativeEvent.layout.y);
-        }}
-      >
-        <MembresiaSection
-          isDark={isDark}
-          accentColor={accentColor}
-          textColor={textColor}
-          isMobile={isMobile}
-        />
-      </View>
+        {/* Membresía vitalicia */}
+        <View
+          onLayout={(e) => {
+            sectionOffsetsRef.current.set('membresia', e.nativeEvent.layout.y);
+          }}
+        >
+          <MembresiaSection
+            isDark={isDark}
+            accentColor={accentColor}
+            textColor={textColor}
+            isMobile={isMobile}
+          />
+        </View>
 
-      {/* Beneficios */}
-      <View
-        onLayout={(e) => {
-          sectionOffsetsRef.current.set('beneficios', e.nativeEvent.layout.y);
-        }}
-      >
-        <BeneficiosSection
-          isDark={isDark}
-          accentColor={accentColor}
-          textColor={textColor}
-          cardBg={cardBg}
-          cardBorder={cardBorder}
-          isMobile={isMobile}
-          onSignIn={onSignIn}
-        />
-      </View>
-    </>
+        {/* Beneficios */}
+        <View
+          onLayout={(e) => {
+            sectionOffsetsRef.current.set('beneficios', e.nativeEvent.layout.y);
+          }}
+        >
+          <BeneficiosSection
+            isDark={isDark}
+            accentColor={accentColor}
+            textColor={textColor}
+            cardBg={cardBg}
+            cardBorder={cardBorder}
+            isMobile={isMobile}
+            onSignIn={onSignIn}
+          />
+        </View>
+      </>
+    ),
+    [accentColor, cardBg, cardBorder, isDark, isMobile, onSignIn, textColor]
   );
 
   return (
@@ -263,7 +267,7 @@ export default function PublicLandingPage({
       onSignIn={onSignIn}
       onContinueToDashboard={onContinueToDashboard}
       onOpenSettings={onOpenSettings}
-      extraSections={extraSections}
+      renderExtraSections={renderExtraSections}
       navItems={navItems}
       sectionOffsetsRef={sectionOffsetsRef}
       activeSection={activeSection}
@@ -279,7 +283,9 @@ interface PublicLandingPageWrapperProps {
   onSignIn: () => void;
   onContinueToDashboard?: (dontShowAgain: boolean) => void;
   onOpenSettings?: () => void;
-  extraSections: React.ReactNode;
+  renderExtraSections: (
+    heroTransitionProgress: Animated.AnimatedInterpolation<number>
+  ) => React.ReactNode;
   navItems: Array<{ id: string; label: string }>;
   sectionOffsetsRef: React.MutableRefObject<Map<string, number>>;
   activeSection: string;
@@ -297,7 +303,7 @@ function PublicLandingPageWrapper({
   onSignIn,
   onContinueToDashboard,
   onOpenSettings,
-  extraSections,
+  renderExtraSections,
   navItems,
   sectionOffsetsRef,
   activeSection,
@@ -317,7 +323,7 @@ function PublicLandingPageWrapper({
     [onSignIn]
   );
   const { height: screenHeight } = useWindowDimensions();
-  const heroHeight = Math.max(screenHeight * 1.05, 740);
+  const heroHeight = Math.max(screenHeight, 740);
 
   const handleNavPress = useCallback(
     (sectionId: string): void => {
@@ -415,7 +421,7 @@ function PublicLandingPageWrapper({
         onContinueToDashboard={onContinueToDashboard ?? handleContinueToDashboard}
         onSignIn={onSignIn}
         onOpenSettings={onOpenSettings}
-        extraSections={extraSections}
+        renderExtraSections={renderExtraSections}
         headerNavLinks={headerNavLinks}
         accentColor={accentColor}
         isDark={isDark}
@@ -438,6 +444,7 @@ interface SectionProps {
   cardBorder?: string;
   onSignIn?: () => void;
   isMobile: boolean;
+  introProgress?: Animated.AnimatedInterpolation<number>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -543,6 +550,7 @@ function ElProyectoSection({
   cardBg: _cardBg,
   cardBorder: _cardBorder,
   isMobile,
+  introProgress,
 }: SectionProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
 
@@ -590,6 +598,49 @@ function ElProyectoSection({
     },
   ];
   const moreInfoLabel = t('landing.elProyecto.moreInfo', undefined, 'More info');
+  const introHeaderStyle = introProgress
+    ? {
+        opacity: introProgress.interpolate({
+          inputRange: [0, 0.42, 1],
+          outputRange: [0.08, 0.56, 1],
+          extrapolate: 'clamp',
+        }),
+        transform: [
+          {
+            translateY: introProgress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [42, 0],
+              extrapolate: 'clamp',
+            }),
+          },
+          {
+            scale: introProgress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0.965, 1],
+              extrapolate: 'clamp',
+            }),
+          },
+        ],
+      }
+    : undefined;
+  const introCardsStyle = introProgress
+    ? {
+        opacity: introProgress.interpolate({
+          inputRange: [0.08, 0.6, 1],
+          outputRange: [0, 0.5, 1],
+          extrapolate: 'clamp',
+        }),
+        transform: [
+          {
+            translateY: introProgress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [64, 0],
+              extrapolate: 'clamp',
+            }),
+          },
+        ],
+      }
+    : undefined;
 
   return (
     <Animated.View
@@ -602,7 +653,7 @@ function ElProyectoSection({
         },
       ]}
     >
-      <View style={styles.elProyectoHeader}>
+      <Animated.View style={[styles.elProyectoHeader, introHeaderStyle]}>
         <Text
           style={[
             styles.sectionTitle,
@@ -632,26 +683,30 @@ function ElProyectoSection({
           </Text>
           <Text>{t('landing.elProyecto.sectionDescriptionPart2')}</Text>
         </Text>
-      </View>
+      </Animated.View>
 
-      <View style={[styles.projectCardsContainer, isMobile && styles.projectCardsContainerMobile]}>
-        {tokens.map((token) => (
-          <TokenCard
-            key={token.key}
-            imageSource={token.imageSource}
-            contentPosition={token.contentPosition}
-            imageZoom={token.imageZoom}
-            logo={token.logo}
-            title={token.title}
-            subtitle={token.subtitle}
-            overview={token.overview}
-            accentColor={accentColor}
-            isDark={isDark}
-            isMobile={isMobile}
-            moreInfoLabel={moreInfoLabel}
-          />
-        ))}
-      </View>
+      <Animated.View style={introCardsStyle}>
+        <View
+          style={[styles.projectCardsContainer, isMobile && styles.projectCardsContainerMobile]}
+        >
+          {tokens.map((token) => (
+            <TokenCard
+              key={token.key}
+              imageSource={token.imageSource}
+              contentPosition={token.contentPosition}
+              imageZoom={token.imageZoom}
+              logo={token.logo}
+              title={token.title}
+              subtitle={token.subtitle}
+              overview={token.overview}
+              accentColor={accentColor}
+              isDark={isDark}
+              isMobile={isMobile}
+              moreInfoLabel={moreInfoLabel}
+            />
+          ))}
+        </View>
+      </Animated.View>
     </Animated.View>
   );
 }
