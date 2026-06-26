@@ -283,6 +283,35 @@ async function sleep(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function awardReferralBonus(
+  referrerUserId: string,
+  referredUserId: string,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<void> {
+  const cfg = resolveSupabaseWriteConfig(env);
+  if (!cfg) return;
+
+  const response = await fetch(`${cfg.url}/rest/v1/rpc/airs_award_referral_bonus`, {
+    method: 'POST',
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      p_referrer_user_id: referrerUserId,
+      p_referred_user_id: referredUserId,
+      p_bonus_amount: 25,
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`airs_award_referral_bonus failed [${response.status}]: ${text}`);
+  }
+}
+
 async function supabaseSelectOne<T>(
   path: string,
   query: Record<string, string>,
@@ -536,6 +565,17 @@ export class ReferralsService {
 
     if (!record) {
       throw new InternalServerErrorException('Failed to persist referral record');
+    }
+
+    // Award AIRS to the referrer when the referral is confirmed (email verified)
+    if (confirmedAt && resolvedReferrerUserId) {
+      awardReferralBonus(resolvedReferrerUserId, userId).catch((error: unknown) => {
+        this.logger.warn(
+          `Failed to award referral bonus to ${resolvedReferrerUserId} for ${userId}: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
+      });
     }
 
     return this.toResponse(record);

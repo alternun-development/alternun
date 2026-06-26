@@ -12,7 +12,7 @@ import { AirsRegistrationBonusService } from '../services/airs-registration-bonu
 @ApiTags('airs')
 @Controller({
   path: 'airs/registration-bonus',
-  version: VERSION_NEUTRAL,
+  version: [VERSION_NEUTRAL, '1'],
 })
 export class AirsRegistrationBonusController {
   constructor(private readonly bonusService: AirsRegistrationBonusService) {}

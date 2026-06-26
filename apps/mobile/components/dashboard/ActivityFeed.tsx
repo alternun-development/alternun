@@ -23,6 +23,7 @@ import {
 import SearchFilterBar, { type SearchFilterOption } from '../common/SearchFilterBar';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
+import type { AIRSEntry } from './types';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const CartIcon = ShoppingCart as React.FC<LucideProps>;
@@ -47,47 +48,49 @@ interface ActivityItem {
   date: string;
 }
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-const MOCK_ACTIVITIES: ActivityItem[] = [
-  {
-    id: '1',
-    type: 'compensation',
-    action: '',
-    source: 'Servientrega',
-    airs: 120,
-    date: 'Ene 15 / 2026',
-  },
-  {
-    id: '2',
-    type: 'purchase',
-    action: '',
-    source: 'Servientrega',
-    airs: 80,
-    date: 'Ene 15 / 2026',
-  },
-  { id: '3', type: 'profile', action: '', source: 'Servientrega', airs: 5, date: 'Ene 15 / 2026' },
-  {
-    id: '4',
-    type: 'compensation',
-    action: '',
-    source: 'Servientrega',
-    airs: 120,
-    date: 'Ene 15 / 2026',
-  },
-  { id: '5', type: 'account', action: '', source: 'Servientrega', airs: 10, date: 'Ene 14 / 2026' },
-  { id: '6', type: 'reward', action: '', source: 'Alternun', airs: 25, date: 'Ene 13 / 2026' },
-  { id: '7', type: 'compensation', action: '', source: 'DHL', airs: 120, date: 'Ene 12 / 2026' },
-  { id: '8', type: 'certificate', action: '', source: 'Alternun', airs: 50, date: 'Ene 11 / 2026' },
-  { id: '9', type: 'purchase', action: '', source: 'FedEx', airs: 80, date: 'Ene 10 / 2026' },
-  { id: '10', type: 'profile', action: '', source: 'Alternun', airs: 15, date: 'Ene 9 / 2026' },
-  { id: '11', type: 'compensation', action: '', source: 'Rappi', airs: 120, date: 'Ene 8 / 2026' },
-  { id: '12', type: 'account', action: '', source: 'Alternun', airs: 20, date: 'Ene 7 / 2026' },
-];
-
-const PAGE_SIZE = 5;
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function mapSourceKindToType(referenceType: AIRSEntry['referenceType']): ActivityType {
+  switch (referenceType) {
+    case 'allied_commerce':
+      return 'purchase';
+    case 'validated_regenerative_action':
+      return 'compensation';
+    case 'compensation':
+      return 'compensation';
+    case 'profile_completion_bonus':
+      return 'reward';
+    case 'referral_bonus' as AIRSEntry['referenceType']:
+      return 'account';
+    case 'correction':
+      return 'profile';
+    default:
+      return 'profile';
+  }
+}
+
+function formatEntryDate(timestamp: Date): string {
+  try {
+    return timestamp.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return '';
+  }
+}
+
+function airsEntryToActivityItem(entry: AIRSEntry): ActivityItem {
+  return {
+    id: entry.id,
+    type: mapSourceKindToType(entry.referenceType),
+    action: entry.reason ?? '',
+    source: entry.reference ?? entry.referenceType,
+    airs: Math.abs(entry.amountAIRS),
+    date: formatEntryDate(entry.timestamp),
+  };
+}
 
 function getIcon(type: ActivityType, color: string): React.ReactNode {
   const props = { size: 16, color };
@@ -109,15 +112,11 @@ function getIcon(type: ActivityType, color: string): React.ReactNode {
 
 // ─── Row ──────────────────────────────────────────────────────────────────────
 
-interface RowProps {
+interface ActivityRowProps {
   item: ActivityItem;
   isDark: boolean;
   isLast: boolean;
   animValue: Animated.Value;
-}
-
-interface ActivityRowProps extends Omit<RowProps, 'item'> {
-  item: ActivityItem;
   actionLabel: string;
 }
 
@@ -146,7 +145,6 @@ function ActivityRow({
         },
       ]}
     >
-      {/* Action */}
       <View style={styles.rowAction}>
         <View
           style={[
@@ -160,11 +158,10 @@ function ActivityRow({
           {actionLabel}
         </Text>
       </View>
-      {/* Source */}
-      <Text style={[styles.rowSource, { color: mutedColor }]}>{item.source}</Text>
-      {/* Airs */}
+      <Text style={[styles.rowSource, { color: mutedColor }]} numberOfLines={1}>
+        {item.source}
+      </Text>
       <Text style={[styles.rowAirs, { color: accent }]}>+{item.airs}</Text>
-      {/* Date */}
       <Text style={[styles.rowDate, { color: mutedColor }]}>{item.date}</Text>
     </Animated.View>
   );
@@ -172,19 +169,23 @@ function ActivityRow({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+const PAGE_SIZE = 5;
+
 interface ActivityFeedProps {
   isDark: boolean;
+  entries?: AIRSEntry[];
+  isLoading?: boolean;
 }
 
-export default function ActivityFeed({ isDark }: ActivityFeedProps): React.JSX.Element {
+export default function ActivityFeed({
+  isDark,
+  entries = [],
+  isLoading = false,
+}: ActivityFeedProps): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<ActivityType | 'all'>('all');
   const [page, setPage] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
-  const [viewMode, setViewMode] = useState<'global' | 'user'>('user');
   const rowAnims = useRef<Map<string, Animated.Value>>(new Map());
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const t = useAppTranslation();
 
   const accent = isDark ? '#1EE6B5' : '#0d9488';
@@ -194,6 +195,8 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps): React.JSX.E
   const textColor = isDark ? '#e8fff6' : '#0b2d31';
   const mutedColor = isDark ? 'rgba(232,255,246,0.55)' : 'rgba(11,45,49,0.55)';
   const headerBg = isDark ? 'rgba(30,230,181,0.06)' : 'rgba(13,148,136,0.06)';
+
+  const activities: ActivityItem[] = entries.map(airsEntryToActivityItem);
 
   const getActivityActionText = (type: ActivityType): string => {
     switch (type) {
@@ -225,24 +228,17 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps): React.JSX.E
     { key: 'reward', label: t.t('dashboard.activityFeed.filters.reward'), icon: GiftIcon },
   ];
 
-  // Filtered + searched list
   const filtered = activities.filter((a) => {
     const matchesFilter = activeFilter === 'all' || a.type === activeFilter;
     const q = search.toLowerCase();
     const matchesSearch =
       !q || a.action.toLowerCase().includes(q) || a.source.toLowerCase().includes(q);
-
-    // Filter by view mode
-    const isUserActivity = a.source === 'Alternun';
-    const matchesViewMode = viewMode === 'global' ? !isUserActivity : isUserActivity;
-
-    return matchesFilter && matchesSearch && matchesViewMode;
+    return matchesFilter && matchesSearch;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageItems = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
-  // Animate new rows
   const animateRow = useCallback((id: string): void => {
     if (!rowAnims.current.has(id)) {
       rowAnims.current.set(id, new Animated.Value(0));
@@ -262,114 +258,29 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps): React.JSX.E
     pageItems.forEach((item) => animateRow(item.id));
   }, [page, activeFilter, search, animateRow, pageItems]);
 
-  // Simulated real-time polling
-  useEffect((): (() => void) => {
-    let idCounter = MOCK_ACTIVITIES.length + 1;
-    pollRef.current = setInterval(() => {
-      const newItem: ActivityItem = {
-        id: String(idCounter++),
-        type: 'compensation',
-        action: '',
-        source: 'Live update',
-        airs: 120,
-        date: t.t('dashboard.activityFeed.now'),
-      };
-      setActivities((prev) => [newItem, ...prev]);
-    }, 30000); // every 30s simulate a new event
-
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, [t]);
-
-  const handleRefresh = (): void => {
-    setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 800);
-  };
+  // Reset page when entries change
+  useEffect(() => {
+    setPage(0);
+  }, [entries]);
 
   return (
     <View style={[styles.container, { backgroundColor: bg }]}>
-      {/* Section header */}
       <View style={styles.sectionHeader}>
         <View>
           <Text style={[styles.sectionTitle, { color: textColor }]}>
             {t.t('dashboard.activityFeed.title')}
           </Text>
           <Text style={[styles.sectionSubtitle, { color: mutedColor }]}>
-            {viewMode === 'global' ? (
-              t.t('dashboard.activityFeed.subtitle.global')
-            ) : (
-              <>
-                {t.t('dashboard.activityFeed.subtitle.user').split(' ')[0]}{' '}
-                <Text style={{ fontWeight: '700', color: textColor }}>Airs</Text> By Alternun.
-              </>
-            )}
+            <>
+              {t.t('dashboard.activityFeed.subtitle.user').split(' ')[0]}{' '}
+              <Text style={{ fontWeight: '700', color: textColor }}>Airs</Text> By Alternun.
+            </>
           </Text>
         </View>
-        <TouchableOpacity onPress={handleRefresh} activeOpacity={0.7} style={styles.refreshBtn}>
-          {isRefreshing ? (
-            <ActivityIndicator size='small' color={accent} />
-          ) : (
-            <View style={[styles.liveIndicator, { borderColor: accent }]}>
-              <View style={[styles.liveDot, { backgroundColor: accent }]} />
-              <Text style={[styles.liveText, { color: accent }]}>Live</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      {/* View mode tabs */}
-      <View style={styles.tabsContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            setViewMode('global');
-            setPage(0);
-          }}
-          style={[
-            styles.tab,
-            viewMode === 'global' && {
-              borderBottomWidth: 2,
-              borderBottomColor: accent,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.tabLabel,
-              {
-                color: viewMode === 'global' ? textColor : mutedColor,
-                fontWeight: viewMode === 'global' ? '600' : '400',
-              },
-            ]}
-          >
-            {t.t('dashboard.activityFeed.tabs.global')}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            setViewMode('user');
-            setPage(0);
-          }}
-          style={[
-            styles.tab,
-            viewMode === 'user' && {
-              borderBottomWidth: 2,
-              borderBottomColor: accent,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.tabLabel,
-              {
-                color: viewMode === 'user' ? textColor : mutedColor,
-                fontWeight: viewMode === 'user' ? '600' : '400',
-              },
-            ]}
-          >
-            {t.t('dashboard.activityFeed.tabs.user')}
-          </Text>
-        </TouchableOpacity>
+        <View style={[styles.liveIndicator, { borderColor: accent }]}>
+          <View style={[styles.liveDot, { backgroundColor: accent }]} />
+          <Text style={[styles.liveText, { color: accent }]}>Live</Text>
+        </View>
       </View>
 
       <SearchFilterBar
@@ -387,9 +298,7 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps): React.JSX.E
         }}
       />
 
-      {/* Table */}
       <View style={[styles.table, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-        {/* Table header */}
         <View style={[styles.tableHeader, { backgroundColor: headerBg }]}>
           <Text style={[styles.thAction, { color: accent }]}>
             {t.t('dashboard.activityFeed.tableHeaders.action')}
@@ -405,15 +314,16 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps): React.JSX.E
           </Text>
         </View>
 
-        {/* Rows */}
-        {isRefreshing ? (
+        {isLoading ? (
           <View style={styles.loadingBox}>
             <ActivityIndicator color={accent} />
           </View>
         ) : pageItems.length === 0 ? (
           <View style={styles.emptyBox}>
             <Text style={[styles.emptyText, { color: mutedColor }]}>
-              {t.t('dashboard.activityFeed.empty')}
+              {entries.length === 0
+                ? t.t('dashboard.activityFeed.empty')
+                : t.t('dashboard.activityFeed.empty')}
             </Text>
           </View>
         ) : (
@@ -435,46 +345,44 @@ export default function ActivityFeed({ isDark }: ActivityFeedProps): React.JSX.E
         )}
       </View>
 
-      {/* Pagination */}
-      <View style={styles.pagination}>
-        <Text style={[styles.pageInfo, { color: mutedColor }]}>
-          {`${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, filtered.length)} de ${
-            filtered.length
-          }`}
-        </Text>
-        <View style={styles.pageButtons}>
-          <TouchableOpacity
-            onPress={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-            activeOpacity={0.7}
-            style={[styles.pageBtn, { borderColor: cardBorder, opacity: page === 0 ? 0.35 : 1 }]}
-          >
-            <PrevIcon size={15} color={textColor} />
-          </TouchableOpacity>
-          <Text style={[styles.pageNum, { color: accent }]}>
-            {page + 1} / {totalPages}
+      {filtered.length > PAGE_SIZE && (
+        <View style={styles.pagination}>
+          <Text style={[styles.pageInfo, { color: mutedColor }]}>
+            {`${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, filtered.length)} de ${
+              filtered.length
+            }`}
           </Text>
-          <TouchableOpacity
-            onPress={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={page >= totalPages - 1}
-            activeOpacity={0.7}
-            style={[
-              styles.pageBtn,
-              { borderColor: cardBorder, opacity: page >= totalPages - 1 ? 0.35 : 1 },
-            ]}
-          >
-            <NextIcon size={15} color={textColor} />
-          </TouchableOpacity>
+          <View style={styles.pageButtons}>
+            <TouchableOpacity
+              onPress={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              activeOpacity={0.7}
+              style={[styles.pageBtn, { borderColor: cardBorder, opacity: page === 0 ? 0.35 : 1 }]}
+            >
+              <PrevIcon size={15} color={textColor} />
+            </TouchableOpacity>
+            <Text style={[styles.pageNum, { color: accent }]}>
+              {page + 1} / {totalPages}
+            </Text>
+            <TouchableOpacity
+              onPress={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              activeOpacity={0.7}
+              style={[
+                styles.pageBtn,
+                { borderColor: cardBorder, opacity: page >= totalPages - 1 ? 0.35 : 1 },
+              ]}
+            >
+              <NextIcon size={15} color={textColor} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 }
 
-// ─── Type export (for external use) ──────────────────────────────────────────
 export type { ActivityType, ActivityItem };
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
@@ -501,9 +409,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 2,
   },
-  refreshBtn: {
-    paddingTop: 4,
-  },
   liveIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -512,6 +417,7 @@ const styles = StyleSheet.create({
     borderRadius: 99,
     paddingHorizontal: 10,
     paddingVertical: 4,
+    marginTop: 4,
   },
   liveDot: {
     width: 6,
@@ -628,21 +534,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     minWidth: 40,
     textAlign: 'center',
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    gap: 24,
-    marginBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
-  },
-  tab: {
-    paddingBottom: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tabLabel: {
-    fontSize: 14,
-    fontFamily: ANEK_EXPANDED_FAMILY,
   },
 });

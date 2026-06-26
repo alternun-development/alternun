@@ -20,6 +20,7 @@ import { useAppTranslation } from '../i18n/useAppTranslation';
 import TopNav from './TopNav';
 import HeroStats from './HeroStats';
 import ActivityFeed from './ActivityFeed';
+import AIRSLeaderboard from './AIRSLeaderboard';
 import DashboardSummaryCards from './DashboardSummaryCards';
 import WalletConnectModal from './WalletConnectModal';
 import WelcomeBonusModal from './WelcomeBonusModal';
@@ -577,8 +578,19 @@ export default function Dashboard({
 
               {/* ── Recent Activity + Summary Cards ─────────────────────── */}
               <SectionDivider isDark={isDark} />
-              <ActivityFeed isDark={isDark} />
-              <DashboardSummaryCards isDark={isDark} onNavigate={handleNavigate} />
+              <ActivityFeed
+                isDark={isDark}
+                entries={airsSnapshot?.recentEntries ?? []}
+                isLoading={isLoading || airsLoading}
+              />
+              <SectionDivider isDark={isDark} />
+              <AIRSLeaderboard isDark={isDark} client={client} signedIn={Boolean(user)} />
+              <DashboardSummaryCards
+                isDark={isDark}
+                onNavigate={handleNavigate}
+                client={client}
+                signedIn={Boolean(user)}
+              />
             </View>
           </ScrollView>
 

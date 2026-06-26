@@ -3,7 +3,22 @@ export type AirsLedgerSourceKind =
   | 'validated_regenerative_action'
   | 'compensation'
   | 'profile_completion_bonus'
-  | 'correction';
+  | 'correction'
+  | 'referral_bonus';
+
+export interface AirsLeaderboardEntry {
+  rank: number;
+  userId: string;
+  displayName: string;
+  airsBalance: number;
+  airsLifetimeEarned: number;
+  isMe: boolean;
+}
+
+export interface AirsLeaderboardResult {
+  entries: AirsLeaderboardEntry[];
+  requestingUserEntry: AirsLeaderboardEntry | null;
+}
 
 export interface UserAchievement {
   key: string;
@@ -492,4 +507,90 @@ export async function getUserAchievements(
       unlockedAt: asText(row.unlocked_at),
     })
   );
+}
+
+export interface AirsUserPositions {
+  globalRank: number | null;
+  countryRank: number | null;
+  cityRank: number | null;
+  globalTotal: number;
+  countryTotal: number | null;
+  cityTotal: number | null;
+  country: string | null;
+  city: string | null;
+  airsBalance: number;
+}
+
+export async function getAirsUserPositions(
+  input: { userId: string },
+  env: Record<string, string | undefined> = process.env
+): Promise<AirsUserPositions> {
+  const rows = await supabaseRpcArray('airs_get_user_positions', { p_user_id: input.userId }, env);
+
+  const row = rows[0] ?? {};
+  return {
+    globalRank: row.global_rank != null ? asNumber(row.global_rank) : null,
+    countryRank: row.country_rank != null ? asNumber(row.country_rank) : null,
+    cityRank: row.city_rank != null ? asNumber(row.city_rank) : null,
+    globalTotal: asNumber(row.global_total),
+    countryTotal: row.country_total != null ? asNumber(row.country_total) : null,
+    cityTotal: row.city_total != null ? asNumber(row.city_total) : null,
+    country: asText(row.country),
+    city: asText(row.city),
+    airsBalance: asNumber(row.airs_balance),
+  };
+}
+
+export async function updateAirsUserProfile(
+  input: { userId: string; name?: string | null; country?: string | null; city?: string | null },
+  env: Record<string, string | undefined> = process.env
+): Promise<{ userId: string; name: string | null; country: string | null; city: string | null }> {
+  const rows = await supabaseRpcArray(
+    'airs_update_user_profile',
+    {
+      p_user_id: input.userId,
+      p_name: input.name ?? null,
+      p_country: input.country ?? null,
+      p_city: input.city ?? null,
+    },
+    env
+  );
+
+  const row = rows[0] ?? {};
+  return {
+    userId: asText(row.user_id) ?? input.userId,
+    name: asText(row.name),
+    country: asText(row.country),
+    city: asText(row.city),
+  };
+}
+
+export async function getAirsLeaderboard(
+  input: {
+    requestingUserId: string;
+    limit?: number;
+  },
+  env: Record<string, string | undefined> = process.env
+): Promise<AirsLeaderboardResult> {
+  const rows = await supabaseRpcArray(
+    'airs_get_leaderboard',
+    {
+      p_requesting_user_id: input.requestingUserId,
+      p_limit: input.limit ?? 20,
+    },
+    env
+  );
+
+  const entries: AirsLeaderboardEntry[] = rows.map((row) => ({
+    rank: asNumber(row.rank),
+    userId: asText(row.user_id) ?? '',
+    displayName: asText(row.display_name) ?? 'User',
+    airsBalance: asNumber(row.airs_balance),
+    airsLifetimeEarned: asNumber(row.airs_lifetime_earned),
+    isMe: row.is_me === true,
+  }));
+
+  const requestingUserEntry = entries.find((e) => e.isMe) ?? null;
+
+  return { entries, requestingUserEntry };
 }
