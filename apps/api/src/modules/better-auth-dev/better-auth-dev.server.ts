@@ -5,6 +5,7 @@ import { betterAuth } from 'better-auth';
 import { toNodeHandler } from 'better-auth/node';
 import { sql } from 'drizzle-orm';
 import { oAuthProxy } from 'better-auth/plugins/oauth-proxy';
+import { bearer } from 'better-auth/plugins/bearer';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import type { BetterAuthDevConfig, BetterAuthDevOAuthProxyConfig } from './better-auth-dev.config';
 import { getDatabase } from '../../common/database/connection';
@@ -271,7 +272,7 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
       provider: 'pg',
       schema: betterAuthSchema,
     }),
-    plugins: oauthProxyPlugin ? [oauthProxyPlugin] : [],
+    plugins: [...(oauthProxyPlugin ? [oauthProxyPlugin] : []), bearer()],
     socialProviders,
     emailAndPassword: {
       enabled: true,

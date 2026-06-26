@@ -25,7 +25,8 @@ export interface AIRSEntry {
     | 'validated_regenerative_action'
     | 'compensation'
     | 'profile_completion_bonus'
-    | 'correction';
+    | 'correction'
+    | 'referral_bonus';
   amountAIRS: number;
   timestamp: Date;
   reference: string;
