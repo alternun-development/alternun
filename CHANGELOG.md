@@ -1,13 +1,18 @@
+## [1.0.281](https://github.com/alternun-development/alternun/compare/v1.0.280...v1.0.281) (2026-06-26)
+
+### Bug Fixes
+
+- **repo:** fix(api,mobile,i18n): airs.controller, airs.repository, airs.service, airs-registration-bonus.controller
+
+### Bug Fixes
+
+- **api,mobile,i18n:** airs.controller, airs.repository, airs.service, airs-registration-bonus.controller ([de57a36](https://github.com/alternun-development/alternun/commit/de57a3663b0b48af17a8611b1fab43f77bad3051))
+
 ## [1.0.280](https://github.com/alternun-development/alternun/compare/v1.0.280-dev.0...v1.0.280) (2026-06-09)
 
 ### Bug Fixes
 
 - **repo:** docs: sync root README for v1.0.280
-
-
-
-
-
 
 ## [1.0.280](https://github.com/alternun-development/alternun/compare/v1.0.279...v1.0.280) (2026-06-09)
 
