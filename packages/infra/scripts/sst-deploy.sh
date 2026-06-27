@@ -1033,7 +1033,7 @@ sync_identity_runtime_templates() {
       --arg c12 'chmod 0755 /opt/alternun/identity/deploy-authentik.sh /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
       --arg c13 'chmod 0644 /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py' \
       --arg c14 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
-      --arg c15 'timeout 1500 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
+      --arg c15 'timeout 1800 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
       --arg c16 "grep -E 'Authentik integration bootstrap|Supabase auth OIDC synced|TLS certificate ready|Restored ACME state|WARN:' /tmp/alternun-identity-runtime-sync.log || true" \
       --arg c17 'timeout 120 bash /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
       '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13,$c14,$c15,$c16,$c17]}'
@@ -1078,7 +1078,7 @@ sync_identity_runtime_templates() {
     return 1
   fi
 
-  local sync_status="" poll_attempt=1 max_poll_attempts=180 invocation_json
+  local sync_status="" poll_attempt=1 max_poll_attempts=420 invocation_json
   while [ "$poll_attempt" -le "$max_poll_attempts" ]; do
     invocation_json=$(
       aws ssm get-command-invocation \
