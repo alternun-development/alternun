@@ -1,13 +1,18 @@
+## [1.0.285](https://github.com/alternun-development/alternun/compare/v1.0.284...v1.0.285) (2026-06-27)
+
+### Bug Fixes
+
+- **repo:** fix(infra): prevent docker exec hangs in identity runtime sync
+
+### Bug Fixes
+
+- **infra:** prevent docker exec hangs in identity runtime sync ([7242b0d](https://github.com/alternun-development/alternun/commit/7242b0db9194f076826051d2908c381ff3934ab2))
+
 ## [1.0.284](https://github.com/alternun-development/alternun/compare/v1.0.284-dev.0...v1.0.284) (2026-06-27)
 
 ### Bug Fixes
 
 - **repo:** docs: sync root README for v1.0.284
-
-
-
-
-
 
 ## [1.0.284](https://github.com/alternun-development/alternun/compare/v1.0.283-dev.1...v1.0.284) (2026-06-27)
 
