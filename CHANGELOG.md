@@ -1,3 +1,14 @@
+## [1.0.288](https://github.com/alternun-development/alternun/compare/v1.0.286...v1.0.288) (2026-06-27)
+
+### Bug Fixes
+
+- **repo:** chore(repo,admin,api): CHANGELOG, README, app, version.development
+- **repo:** fix(infra): sst-deploy
+
+### Bug Fixes
+
+- **infra:** sst-deploy ([721170d](https://github.com/alternun-development/alternun/commit/721170d578c2411d4242a778e76a1380fd6ad7d6))
+
 ## [1.0.287](https://github.com/alternun-development/alternun/compare/v1.0.286...v1.0.287) (2026-06-27)
 
 ### Bug Fixes
