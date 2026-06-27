@@ -1,13 +1,29 @@
+## [1.0.286](https://github.com/alternun-development/alternun/compare/v1.0.286-dev.0...v1.0.286) (2026-06-27)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.286
+
+
+
+
+
+
+## [1.0.286](https://github.com/alternun-development/alternun/compare/v1.0.285...v1.0.286) (2026-06-27)
+
+### Bug Fixes
+
+- **repo:** fix(infra): add --kill-after to exec timeouts and extend SSM poll budget
+
+### Bug Fixes
+
+- **infra:** add --kill-after to exec timeouts and extend SSM poll budget ([770d364](https://github.com/alternun-development/alternun/commit/770d3640df495f85c06ccd22947b06cb98722c72))
+
 ## [1.0.285](https://github.com/alternun-development/alternun/compare/v1.0.285-dev.0...v1.0.285) (2026-06-27)
 
 ### Bug Fixes
 
 - **repo:** docs: sync root README for v1.0.285
-
-
-
-
-
 
 ## [1.0.285](https://github.com/alternun-development/alternun/compare/v1.0.284...v1.0.285) (2026-06-27)
 
