@@ -528,9 +528,11 @@ wait_for_authentik_django() {
   local attempt=1
 
   while [ "${attempt}" -le "${max_attempts}" ]; do
-    if timeout --kill-after=3 15 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T \
-      server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c "print(\"ok\")"' \
-      >/dev/null 2>&1; then
+    # Use the container's internal IP to hit Authentik's HTTP health endpoint from the host.
+    # This avoids spawning a full Python/Django process (manage.py shell takes >15s on t3.small).
+    local server_ip
+    server_ip=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' identity-server-1 2>/dev/null | awk '{print $1}')
+    if [ -n "$server_ip" ] && curl -sf --connect-timeout 3 --max-time 8 "http://${server_ip}:9000/-/health/live/" >/dev/null 2>&1; then
       return 0
     fi
     sleep 10
