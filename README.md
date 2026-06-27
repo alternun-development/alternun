@@ -118,13 +118,16 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.0.283**
+Current version: **1.0.284**
 
-## 📋 Latest Changes (v1.0.283)
+## 📋 Latest Changes (v1.0.284)
 
 ### Bug Fixes
 
-- **repo:** docs: sync root README for v1.0.283
+- **api:** fix AIRS 500s — Supabase JWT verification and resolveGetSessionUrl empty-string handling
+- **mobile:** collapsible referral code input on auth signup screen
+- **mobile:** country and city pickers with IP geolocation auto-detect in profile
+- **mobile:** dark mode fix for help modal in auth view
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
