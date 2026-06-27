@@ -274,17 +274,13 @@ export class AirsService {
 
       // Fallback: resolve via Better Auth session (works in dev without signing key)
       const appUserId = await this.resolveUserIdFromBetterAuthSession(token);
-      const betterAuthUrl = (
-        process.env.AUTH_BETTER_AUTH_URL ??
-        process.env.BETTER_AUTH_URL ??
-        'http://localhost:8082/auth'
-      ).replace(/\/+$/, '');
+      const getSessionUrl = this.resolveGetSessionUrl();
 
       // Attempt to get email/name from session for onboarding quality
       let email: string | null = null;
       let displayName: string | null = null;
       try {
-        const res = await fetch(`${betterAuthUrl}/get-session`, {
+        const res = await fetch(getSessionUrl, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = (await res.json()) as { user?: { email?: string; name?: string } } | null;
@@ -346,14 +342,21 @@ export class AirsService {
     return trimmed.startsWith('Bearer ') ? trimmed.slice('Bearer '.length).trim() : trimmed;
   }
 
-  private async resolveUserIdFromBetterAuthSession(token: string): Promise<string> {
-    const baseUrl = (
+  private resolveGetSessionUrl(): string {
+    const raw = (
       process.env.AUTH_BETTER_AUTH_URL ??
       process.env.BETTER_AUTH_URL ??
       'http://localhost:8082/auth'
     ).replace(/\/+$/, '');
+    // Some environments omit the /auth segment (e.g. testnet sets the API origin only).
+    const withAuth = raw.endsWith('/auth') ? raw : `${raw}/auth`;
+    return `${withAuth}/get-session`;
+  }
 
-    const res = await fetch(`${baseUrl}/get-session`, {
+  private async resolveUserIdFromBetterAuthSession(token: string): Promise<string> {
+    const url = this.resolveGetSessionUrl();
+
+    const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

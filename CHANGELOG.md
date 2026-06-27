@@ -1,3 +1,25 @@
+## [1.0.282](https://github.com/alternun-development/alternun/compare/v1.0.282-dev.0...v1.0.282) (2026-06-27)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.282
+
+
+
+
+
+
+## [1.0.282](https://github.com/alternun-development/alternun/compare/v1.0.281...v1.0.282) (2026-06-27)
+
+### Bug Fixes
+
+- **repo:** fix(api): airs.service
+- **repo:** docs: document v1.0.281 AIRS leaderboard, positions, and API fixes
+
+### Bug Fixes
+
+- **api:** airs.service ([45148be](https://github.com/alternun-development/alternun/commit/45148be37c8192f1a420f8abdb018c0f1ac5f814))
+
 ## [1.0.281](https://github.com/alternun-development/alternun/compare/v1.0.280...v1.0.281) (2026-06-27)
 
 ### Features
