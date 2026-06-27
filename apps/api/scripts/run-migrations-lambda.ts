@@ -17,7 +17,17 @@ interface Migration {
   path: string;
 }
 
-const skippedMigrationVersions = new Set(['20260417_0009', '20260417_0010']);
+// 0009/0010: Better Auth table setup superseded by later schema.
+// 0011: DROP TABLE users CASCADE — would destroy production user data.
+// 0418_0001: Creates users with TEXT id, conflicts with prod UUID schema.
+// 0418_0002: DROP TABLE users CASCADE — would destroy production user data.
+const skippedMigrationVersions = new Set([
+  '20260417_0009',
+  '20260417_0010',
+  '20260417_0011',
+  '20260418_0001',
+  '20260418_0002',
+]);
 
 function createPoolConfig(databaseUrl: string): ConstructorParameters<typeof Pool>[0] {
   const searchPathOptions = '-c search_path=public';

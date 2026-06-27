@@ -9,6 +9,7 @@ import {
   Copy,
   Globe,
   LogOut,
+  MapPin,
   Moon,
   Settings,
   Shield,
@@ -28,10 +29,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { COUNTRIES, countryFlag, type Country } from '../utils/countries';
+import { detectLocationFromIP } from '../utils/geolocation';
+import { CountryPickerModal } from '../components/profile/CountryPickerModal';
+import { CityPickerModal } from '../components/profile/CityPickerModal';
 import * as Clipboard from 'expo-clipboard';
 import { getLocaleLabel } from '@alternun/i18n';
 import { GlassCard, SectionContainer, resolveTier } from '@alternun/ui';
@@ -63,6 +67,7 @@ const CheckIcon = Check as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
 const GlobeIcon = Globe as React.FC<LucideProps>;
 const LogOutIcon = LogOut as React.FC<LucideProps>;
+const MapPinIcon = MapPin as React.FC<LucideProps>;
 const MoonIcon = Moon as React.FC<LucideProps>;
 const SettingsIcon = Settings as React.FC<LucideProps>;
 const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
@@ -160,6 +165,17 @@ function formatAccountCreatedAt(value: string | null, locale: string): string | 
     month: 'short',
     day: 'numeric',
   });
+}
+
+function resolveProfileLocation(user: User | null): string | null {
+  if (!user) return null;
+  const metadata = getMetadata(user);
+  const country = typeof metadata.country === 'string' ? metadata.country.trim() : '';
+  const city = typeof metadata.city === 'string' ? metadata.city.trim() : '';
+  if (city && country) return `${city}, ${country}`;
+  if (city) return city;
+  if (country) return country;
+  return null;
 }
 
 function getAccountReferrerLabel(summary: AccountReferralSummary | null): string | null {
@@ -345,6 +361,7 @@ function ProfileHeader({
   displayName,
   score,
   email,
+  location,
   isDark,
   c,
   floatAnim1,
@@ -353,6 +370,7 @@ function ProfileHeader({
   displayName: string;
   score: number | null;
   email?: string;
+  location?: string | null;
   isDark: boolean;
   c: ColorPalette;
   floatAnim1?: Animated.Value;
@@ -544,12 +562,31 @@ function ProfileHeader({
               fontSize: 12,
               color: c.muted,
               fontFamily: 'monospace',
-              marginBottom: 18,
+              marginBottom: location ? 6 : 18,
             }}
           >
             {email}
           </Text>
         )}
+
+        {/* Location chip */}
+        {location ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              marginBottom: 18,
+              backgroundColor: isDark ? 'rgba(30,230,181,0.08)' : 'rgba(13,148,136,0.08)',
+              borderRadius: 20,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+            }}
+          >
+            <MapPinIcon size={11} color={c.accent} strokeWidth={2.2} />
+            <Text style={{ fontSize: 12, color: c.accent, fontWeight: '600' }}>{location}</Text>
+          </View>
+        ) : null}
 
         {/* Stats row */}
         <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
@@ -1279,6 +1316,27 @@ function PersonalInfoModal({
   );
   const [city, setCity] = useState<string>(typeof metadata.city === 'string' ? metadata.city : '');
   const [isSaving, setIsSaving] = useState(false);
+  const [countryPickerVisible, setCountryPickerVisible] = useState(false);
+  const [cityPickerVisible, setCityPickerVisible] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
+
+  // Auto-detect location from IP when both fields are empty
+  useEffect(() => {
+    if (country || city) return;
+    let cancelled = false;
+    setDetectingLocation(true);
+    void detectLocationFromIP().then((geo) => {
+      if (cancelled) return;
+      setDetectingLocation(false);
+      if (geo) {
+        setCountry(geo.countryName);
+        setCity(geo.city);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSave = async (): Promise<void> => {
     setIsSaving(true);
@@ -1465,25 +1523,34 @@ function PersonalInfoModal({
             </View>
           </View>
 
-          {/* Country */}
+          {/* Country picker */}
           <View style={{ marginBottom: 18 }}>
-            <Text
+            <View
               style={{
-                fontSize: 12,
-                fontWeight: '600',
-                color: c.muted,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 marginBottom: 8,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
               }}
             >
-              {t('profile.modal.country', undefined, 'Country')}
-            </Text>
-            <TextInput
-              value={country}
-              onChangeText={setCountry}
-              placeholder={t('profile.modal.countryPlaceholder', undefined, 'e.g. Colombia')}
-              placeholderTextColor={c.muted}
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '600',
+                  color: c.muted,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                }}
+              >
+                {t('profile.modal.country', undefined, 'Country')}
+              </Text>
+              {detectingLocation && (
+                <Text style={{ fontSize: 11, color: c.accent }}>Detecting…</Text>
+              )}
+            </View>
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={() => setCountryPickerVisible(true)}
               style={{
                 borderWidth: 1,
                 borderColor: c.cardBorder,
@@ -1491,45 +1558,116 @@ function PersonalInfoModal({
                 paddingHorizontal: 14,
                 paddingVertical: 12,
                 backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
-                fontSize: 15,
-                color: c.text,
-                fontWeight: '500',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}
-            />
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                {country ? (
+                  <Text style={{ fontSize: 20 }}>
+                    {countryFlag(
+                      COUNTRIES.find((ct) => ct.name.toLowerCase() === country.toLowerCase())
+                        ?.code ?? ''
+                    )}
+                  </Text>
+                ) : (
+                  <GlobeIcon size={18} color={c.muted} strokeWidth={1.8} />
+                )}
+                <Text
+                  style={{
+                    fontSize: 15,
+                    color: country ? c.text : c.muted,
+                    fontWeight: country ? '500' : '400',
+                  }}
+                >
+                  {country || t('profile.modal.countryPlaceholder', undefined, 'Select country')}
+                </Text>
+              </View>
+              <ChevronRightIcon size={16} color={c.muted} strokeWidth={2} />
+            </TouchableOpacity>
           </View>
 
-          {/* City */}
-          <View style={{ marginBottom: 18 }}>
-            <Text
-              style={{
-                fontSize: 12,
-                fontWeight: '600',
-                color: c.muted,
-                marginBottom: 8,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-              }}
-            >
-              {t('profile.modal.city', undefined, 'City')}
-            </Text>
-            <TextInput
-              value={city}
-              onChangeText={setCity}
-              placeholder={t('profile.modal.cityPlaceholder', undefined, 'e.g. Medellín')}
-              placeholderTextColor={c.muted}
-              style={{
-                borderWidth: 1,
-                borderColor: c.cardBorder,
-                borderRadius: 10,
-                paddingHorizontal: 14,
-                paddingVertical: 12,
-                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
-                fontSize: 15,
-                color: c.text,
-                fontWeight: '500',
-              }}
-            />
-          </View>
+          {/* City picker */}
+          {(() => {
+            const countryCode =
+              COUNTRIES.find((ct) => ct.name.toLowerCase() === country.toLowerCase())?.code ?? '';
+            return (
+              <View style={{ marginBottom: 18 }}>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: '600',
+                    color: c.muted,
+                    marginBottom: 8,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {t('profile.modal.city', undefined, 'City')}
+                </Text>
+                <TouchableOpacity
+                  activeOpacity={country ? 0.75 : 1}
+                  onPress={() => {
+                    if (country) setCityPickerVisible(true);
+                  }}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: c.cardBorder,
+                    borderRadius: 10,
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    opacity: country ? 1 : 0.5,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      color: city ? c.text : c.muted,
+                      fontWeight: city ? '500' : '400',
+                      flex: 1,
+                    }}
+                  >
+                    {city ||
+                      (country
+                        ? t('profile.modal.cityPlaceholder', undefined, 'Select city')
+                        : t(
+                            'profile.modal.citySelectCountryFirst',
+                            undefined,
+                            'Select a country first'
+                          ))}
+                  </Text>
+                  {country ? <ChevronRightIcon size={16} color={c.muted} strokeWidth={2} /> : null}
+                </TouchableOpacity>
+
+                <CityPickerModal
+                  visible={cityPickerVisible}
+                  isDark={isDark}
+                  c={c}
+                  countryCode={countryCode}
+                  countryName={country}
+                  onClose={() => setCityPickerVisible(false)}
+                  onSelect={(selected) => setCity(selected)}
+                />
+              </View>
+            );
+          })()}
+
+          {/* Country picker modal */}
+          <CountryPickerModal
+            visible={countryPickerVisible}
+            isDark={isDark}
+            c={c}
+            onClose={() => setCountryPickerVisible(false)}
+            onSelect={(selected: Country) => {
+              setCountry(selected.name);
+              setCity('');
+            }}
+          />
 
           {/* Status Badge */}
           <View
@@ -2026,6 +2164,7 @@ function PerfilTab({
           displayName={profile.displayName}
           score={0}
           email={profile.email}
+          location={resolveProfileLocation(user)}
           isDark={isDark}
           c={c}
           floatAnim1={floatAnim1}

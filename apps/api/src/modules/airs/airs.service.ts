@@ -272,22 +272,38 @@ export class AirsService {
         }
       }
 
-      // Fallback: resolve via Better Auth session (works in dev without signing key)
+      // Fallback 1: verify as Supabase JWT (production path when AUTH_EXECUTION_PROVIDER=supabase)
+      const supabaseUserId = await this.resolveUserIdFromSupabaseJwt(token);
+      if (supabaseUserId) {
+        return {
+          appUserId: supabaseUserId,
+          principalId: supabaseUserId,
+          email: null,
+          displayName: null,
+          issuer: 'supabase',
+          tokenUse: 'access',
+          emailVerified: false,
+        };
+      }
+
+      // Fallback 2: resolve via Better Auth session (dev path)
       const appUserId = await this.resolveUserIdFromBetterAuthSession(token);
       const getSessionUrl = this.resolveGetSessionUrl();
 
       // Attempt to get email/name from session for onboarding quality
       let email: string | null = null;
       let displayName: string | null = null;
-      try {
-        const res = await fetch(getSessionUrl, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = (await res.json()) as { user?: { email?: string; name?: string } } | null;
-        email = data?.user?.email ?? null;
-        displayName = data?.user?.name ?? null;
-      } catch {
-        // non-fatal
+      if (getSessionUrl) {
+        try {
+          const res = await fetch(getSessionUrl, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = (await res.json()) as { user?: { email?: string; name?: string } } | null;
+          email = data?.user?.email ?? null;
+          displayName = data?.user?.name ?? null;
+        } catch {
+          // non-fatal
+        }
       }
 
       return {
@@ -342,28 +358,53 @@ export class AirsService {
     return trimmed.startsWith('Bearer ') ? trimmed.slice('Bearer '.length).trim() : trimmed;
   }
 
-  private resolveGetSessionUrl(): string {
-    const raw = (
-      process.env.AUTH_BETTER_AUTH_URL ??
-      process.env.BETTER_AUTH_URL ??
-      'http://localhost:8082/auth'
-    ).replace(/\/+$/, '');
+  private resolveGetSessionUrl(): string | null {
+    const candidates = [process.env.AUTH_BETTER_AUTH_URL, process.env.BETTER_AUTH_URL];
+    const raw = (candidates.find((v) => v?.trim()) ?? '').trim().replace(/\/+$/, '');
+    if (!raw) return null;
     // Some environments omit the /auth segment (e.g. testnet sets the API origin only).
     const withAuth = raw.endsWith('/auth') ? raw : `${raw}/auth`;
     return `${withAuth}/get-session`;
   }
 
+  private async resolveUserIdFromSupabaseJwt(token: string): Promise<string | null> {
+    const supabaseUrl = (
+      process.env.SUPABASE_URL ??
+      process.env.EXPO_PUBLIC_SUPABASE_URL ??
+      ''
+    ).trim();
+    const serviceRoleKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
+    if (!supabaseUrl || !serviceRoleKey) return null;
+
+    try {
+      const res = await fetch(`${supabaseUrl}/auth/v1/user`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          apikey: serviceRoleKey,
+        },
+      });
+      if (!res.ok) return null;
+      const data = (await res.json().catch(() => null)) as { id?: string } | null;
+      return typeof data?.id === 'string' ? data.id : null;
+    } catch {
+      return null;
+    }
+  }
+
   private async resolveUserIdFromBetterAuthSession(token: string): Promise<string> {
     const url = this.resolveGetSessionUrl();
+    if (!url) throw new UnauthorizedException('Invalid or expired session token');
 
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    const data = (await res.json()) as { user?: { id?: string } } | null;
-    const userId = typeof data?.user?.id === 'string' ? data.user.id : '';
-    if (!userId) throw new UnauthorizedException('Invalid or expired session token');
-    return userId;
+    try {
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      const data = (await res.json().catch(() => null)) as { user?: { id?: string } } | null;
+      const userId = typeof data?.user?.id === 'string' ? data.user.id : '';
+      if (!userId) throw new UnauthorizedException('Invalid or expired session token');
+      return userId;
+    } catch (error) {
+      if (error instanceof UnauthorizedException) throw error;
+      throw new UnauthorizedException('Invalid or expired session token');
+    }
   }
 
   private async resolveUserId(token: string): Promise<string> {
@@ -387,7 +428,11 @@ export class AirsService {
       }
     }
 
-    // Fallback: verify via Better Auth /get-session (works in dev without signing key)
+    // Fallback 1: verify as Supabase JWT (production path when AUTH_EXECUTION_PROVIDER=supabase)
+    const supabaseUserId = await this.resolveUserIdFromSupabaseJwt(normalized);
+    if (supabaseUserId) return supabaseUserId;
+
+    // Fallback 2: verify via Better Auth /get-session (dev path)
     return this.resolveUserIdFromBetterAuthSession(normalized);
   }
 
