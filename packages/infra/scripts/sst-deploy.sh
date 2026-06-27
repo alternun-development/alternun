@@ -1109,6 +1109,9 @@ sync_identity_runtime_templates() {
 
   sync_status=$(printf '%s' "$invocation_json" | jq -r '.Status')
   if [ "$sync_status" != "Success" ]; then
+    if [ "$(printf '%s' "$invocation_json" | jq -r '.StatusDetails // ""')" = "Undeliverable" ]; then
+      IDENTITY_INSTANCE_UNDELIVERABLE=1
+    fi
     echo "$invocation_json"
     echo "ERROR: Identity runtime sync failed." >&2
     return 1
@@ -1119,11 +1122,30 @@ sync_identity_runtime_templates() {
 }
 
 DEPLOY_LOG=$(mktemp)
+IDENTITY_INSTANCE_UNDELIVERABLE=0
 echo "Running sst deploy"
 if run_sst_deploy "$DEPLOY_LOG"; then
-  sync_identity_runtime_templates
+  if sync_identity_runtime_templates; then
+    rm -f "$DEPLOY_LOG"
+    exit 0
+  fi
+  if [ "${IDENTITY_INSTANCE_UNDELIVERABLE:-0}" = "1" ]; then
+    echo "Identity instance unreachable (Undeliverable). Running sst refresh to reconcile instance state..."
+    (
+      cd "$INFRA_DIR"
+      env SST_TELEMETRY_DISABLED=1 npx sst refresh --stage "$STACK"
+    )
+    echo "Retrying sst deploy after instance drift refresh..."
+    IDENTITY_INSTANCE_UNDELIVERABLE=0
+    if run_sst_deploy "$DEPLOY_LOG"; then
+      sync_identity_runtime_templates
+      rm -f "$DEPLOY_LOG"
+      exit 0
+    fi
+  fi
+  echo "sst deploy succeeded but identity sync failed." >&2
   rm -f "$DEPLOY_LOG"
-  exit 0
+  exit 1
 fi
 
 if should_attempt_bucket_drift_recovery "$DEPLOY_LOG"; then
