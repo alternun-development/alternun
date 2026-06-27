@@ -311,12 +311,16 @@ replacement = '''        response = plan.to_redirect(self.request, token.flow)
 '''
 
 if needle not in text:
-    raise SystemExit('Expected source-stage finalizer pattern not found in stage.py')
+    print('WARN: source-stage hotfix needle not found in stage.py — skipping patch (Authentik version may have changed).')
+    raise SystemExit(0)
 
 path.write_text(text.replace(needle, replacement, 1))
 print('Applied Authentik source-stage hotfix.')
 PY
-  "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml restart server >/dev/null
+  local py_exit=$?
+  if [ "${py_exit}" -eq 0 ]; then
+    "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml restart server >/dev/null
+  fi
 }
 
 traefik_container_id() {
@@ -564,8 +568,7 @@ if ! run_authentik_migrations; then
 fi
 
 if ! apply_authentik_source_stage_hotfix; then
-  echo "ERROR: Authentik source-stage runtime hotfix could not be applied."
-  exit 1
+  echo "WARN: Authentik source-stage runtime hotfix could not be applied; Authentik will run unpatched."
 fi
 
 if ! wait_for_authentik_django; then
