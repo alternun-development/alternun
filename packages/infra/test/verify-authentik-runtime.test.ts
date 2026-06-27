@@ -25,6 +25,6 @@ void test('identity runtime verification script uses compose from a dedicated fi
   assert.match(template, /Application\.objects\.filter\(slug="alternun-admin"\)\.exists\(\)/);
   assert.match(
     template,
-    /printf '%s\\n' "\$verify_shell" \| "\$\{compose_cmd\[@\]\}" -f \/opt\/alternun\/identity\/docker-compose\.yml exec -T server \/ak-root\/\.venv\/bin\/python \/manage\.py shell/
+    /printf '%s\\n' "\$verify_shell" \| timeout \d+ "\$\{compose_cmd\[@\]\}" -f \/opt\/alternun\/identity\/docker-compose\.yml exec -T server \/ak-root\/\.venv\/bin\/python \/manage\.py shell/
   );
 });
