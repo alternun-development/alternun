@@ -283,7 +283,7 @@ chown root:root "${ENV_FILE}"
 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml up -d --remove-orphans
 
 apply_authentik_source_stage_hotfix() {
-  timeout 60 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -u root -T \
+  timeout --kill-after=3 60 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -u root -T \
     server /ak-root/.venv/bin/python - <<'PY'
 from pathlib import Path
 
@@ -524,16 +524,16 @@ else
 fi
 
 wait_for_authentik_django() {
-  local max_attempts=48
+  local max_attempts=60
   local attempt=1
 
   while [ "${attempt}" -le "${max_attempts}" ]; do
-    if timeout 15 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T \
+    if timeout --kill-after=3 15 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T \
       server sh -lc '/ak-root/.venv/bin/python /manage.py shell -c "print(\"ok\")"' \
       >/dev/null 2>&1; then
       return 0
     fi
-    sleep 5
+    sleep 10
     attempt=$((attempt + 1))
   done
 
@@ -545,7 +545,7 @@ run_authentik_migrations() {
   local attempt=1
 
   while [ "${attempt}" -le "${max_attempts}" ]; do
-    if timeout 120 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T \
+    if timeout --kill-after=5 120 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T \
       server sh -lc '/ak-root/.venv/bin/python /manage.py migrate --noinput'; then
       return 0
     fi
@@ -577,7 +577,7 @@ if ! wait_for_authentik_django; then
 fi
 
 BOOTSTRAP_STDERR_FILE="$(mktemp)"
-if ! BOOTSTRAP_RESULTS="$(timeout 300 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T \
+if ! BOOTSTRAP_RESULTS="$(timeout --kill-after=10 300 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T \
   -e ALTERNUN_BOOTSTRAP_ADMIN_USERNAME="${BOOTSTRAP_ADMIN_USERNAME}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_EMAIL="${BOOTSTRAP_ADMIN_EMAIL}" \
   -e ALTERNUN_BOOTSTRAP_ADMIN_NAME="${BOOTSTRAP_ADMIN_NAME}" \
