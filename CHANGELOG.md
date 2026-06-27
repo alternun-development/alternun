@@ -1,13 +1,18 @@
+## [1.0.283](https://github.com/alternun-development/alternun/compare/v1.0.282...v1.0.283) (2026-06-27)
+
+### Bug Fixes
+
+- **repo:** fix(infra): degrade source-stage hotfix gracefully when pattern not found
+
+### Bug Fixes
+
+- **infra:** degrade source-stage hotfix gracefully when pattern not found ([8c9cd2e](https://github.com/alternun-development/alternun/commit/8c9cd2e020af91ff673bc635da26282716d7f2b3))
+
 ## [1.0.282](https://github.com/alternun-development/alternun/compare/v1.0.282-dev.0...v1.0.282) (2026-06-27)
 
 ### Bug Fixes
 
 - **repo:** docs: sync root README for v1.0.282
-
-
-
-
-
 
 ## [1.0.282](https://github.com/alternun-development/alternun/compare/v1.0.281...v1.0.282) (2026-06-27)
 
