@@ -1,14 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { renderAirsWelcomeEmail } from '@alternun/email-templates';
 import { verifyIssuerJwt } from '../auth-exchange/auth-exchange-jwt';
 import {
   awardAirsRegistrationBonus,
   awardAirsProfileBonus,
   getAirsDashboardSnapshot,
+  getAirsLeaderboard,
+  getAirsUserPositions,
   getUserAchievements,
   markAirsWelcomeEmailSent,
   recordAirsDashboardVisit,
+  updateAirsUserProfile,
+  type AirsLeaderboardResult,
+  type AirsUserPositions,
   type UserAchievement,
 } from './airs.repository';
 import { sendAirsWelcomeEmail } from './airs.email';
@@ -234,35 +239,76 @@ export async function processAirsDashboardSnapshot(
 export class AirsService {
   private readonly logger = new Logger(AirsService.name);
 
+  private buildVerifySessionToken(): (token: string) => Promise<AirsSessionClaims> {
+    return async (token: string): Promise<AirsSessionClaims> => {
+      const signingKey = (
+        process.env.AUTHENTIK_JWT_SIGNING_KEY ??
+        process.env.AUTHENTIK_JWT_SIGNING_SECRET ??
+        process.env.AUTH_SESSION_SIGNING_KEY ??
+        ''
+      ).trim();
+
+      if (signingKey) {
+        try {
+          const verified = verifyIssuerJwt(token, signingKey);
+          const appUserId =
+            typeof verified.claims.app_user_id === 'string' ? verified.claims.app_user_id : '';
+          if (appUserId) {
+            return {
+              appUserId,
+              principalId: verified.claims.principal_id,
+              email: verified.claims.email,
+              displayName:
+                typeof verified.claims.email === 'string' && verified.claims.email.includes('@')
+                  ? verified.claims.email.split('@')[0]
+                  : null,
+              issuer: verified.claims.iss,
+              tokenUse: verified.claims.token_use,
+              emailVerified: verified.claims.email_verified,
+            };
+          }
+        } catch {
+          // fall through to Better Auth session lookup
+        }
+      }
+
+      // Fallback: resolve via Better Auth session (works in dev without signing key)
+      const appUserId = await this.resolveUserIdFromBetterAuthSession(token);
+      const betterAuthUrl = (
+        process.env.AUTH_BETTER_AUTH_URL ??
+        process.env.BETTER_AUTH_URL ??
+        'http://localhost:8082/auth'
+      ).replace(/\/+$/, '');
+
+      // Attempt to get email/name from session for onboarding quality
+      let email: string | null = null;
+      let displayName: string | null = null;
+      try {
+        const res = await fetch(`${betterAuthUrl}/get-session`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = (await res.json()) as { user?: { email?: string; name?: string } } | null;
+        email = data?.user?.email ?? null;
+        displayName = data?.user?.name ?? null;
+      } catch {
+        // non-fatal
+      }
+
+      return {
+        appUserId,
+        principalId: appUserId,
+        email,
+        displayName,
+        issuer: 'better-auth',
+        tokenUse: 'access',
+        emailVerified: true,
+      };
+    };
+  }
+
   async onboard(input: AirsOnboardingInput): Promise<AirsOnboardingResult> {
     return processAirsOnboarding(input, {
-      verifySessionToken: (token: string) => {
-        const signingKey =
-          process.env.AUTHENTIK_JWT_SIGNING_KEY ??
-          process.env.AUTHENTIK_JWT_SIGNING_SECRET ??
-          process.env.AUTH_SESSION_SIGNING_KEY ??
-          '';
-
-        if (!signingKey.trim()) {
-          throw new Error('AUTHENTIK_JWT_SIGNING_KEY is required for AIRS onboarding.');
-        }
-
-        const verified = verifyIssuerJwt(token, signingKey);
-
-        return Promise.resolve({
-          appUserId:
-            typeof verified.claims.app_user_id === 'string' ? verified.claims.app_user_id : '',
-          principalId: verified.claims.principal_id,
-          email: verified.claims.email,
-          displayName:
-            typeof verified.claims.email === 'string' && verified.claims.email.includes('@')
-              ? verified.claims.email.split('@')[0]
-              : null,
-          issuer: verified.claims.iss,
-          tokenUse: verified.claims.token_use,
-          emailVerified: verified.claims.email_verified,
-        } as AirsSessionClaims);
-      },
+      verifySessionToken: this.buildVerifySessionToken(),
       recordDashboardVisit: recordAirsDashboardVisit,
       awardRegistrationBonus: awardAirsRegistrationBonus,
       awardProfileBonus: awardAirsProfileBonus,
@@ -283,33 +329,7 @@ export class AirsService {
     input: AirsDashboardSnapshotInput
   ): Promise<Awaited<ReturnType<typeof getAirsDashboardSnapshot>>> {
     return processAirsDashboardSnapshot(input, {
-      verifySessionToken: (token: string): Promise<AirsSessionClaims> => {
-        const signingKey =
-          process.env.AUTHENTIK_JWT_SIGNING_KEY ??
-          process.env.AUTHENTIK_JWT_SIGNING_SECRET ??
-          process.env.AUTH_SESSION_SIGNING_KEY ??
-          '';
-
-        if (!signingKey.trim()) {
-          throw new Error('AUTHENTIK_JWT_SIGNING_KEY is required for AIRS snapshot reads.');
-        }
-
-        const verified = verifyIssuerJwt(token, signingKey);
-
-        return Promise.resolve({
-          appUserId:
-            typeof verified.claims.app_user_id === 'string' ? verified.claims.app_user_id : '',
-          principalId: verified.claims.principal_id,
-          email: verified.claims.email,
-          displayName:
-            typeof verified.claims.email === 'string' && verified.claims.email.includes('@')
-              ? verified.claims.email.split('@')[0]
-              : null,
-          issuer: verified.claims.iss,
-          tokenUse: verified.claims.token_use,
-          emailVerified: verified.claims.email_verified,
-        });
-      },
+      verifySessionToken: this.buildVerifySessionToken(),
       getDashboardSnapshot: getAirsDashboardSnapshot,
       env: process.env,
       ledgerLimit: 5,
@@ -321,31 +341,90 @@ export class AirsService {
     });
   }
 
-  async achievements(token: string): Promise<UserAchievement[]> {
-    const signingKey =
+  private normalizeToken(token: string): string {
+    const trimmed = token.trim();
+    return trimmed.startsWith('Bearer ') ? trimmed.slice('Bearer '.length).trim() : trimmed;
+  }
+
+  private async resolveUserIdFromBetterAuthSession(token: string): Promise<string> {
+    const baseUrl = (
+      process.env.AUTH_BETTER_AUTH_URL ??
+      process.env.BETTER_AUTH_URL ??
+      'http://localhost:8082/auth'
+    ).replace(/\/+$/, '');
+
+    const res = await fetch(`${baseUrl}/get-session`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = (await res.json()) as { user?: { id?: string } } | null;
+    const userId = typeof data?.user?.id === 'string' ? data.user.id : '';
+    if (!userId) throw new UnauthorizedException('Invalid or expired session token');
+    return userId;
+  }
+
+  private async resolveUserId(token: string): Promise<string> {
+    const normalized = this.normalizeToken(token);
+
+    const signingKey = (
       process.env.AUTHENTIK_JWT_SIGNING_KEY ??
       process.env.AUTHENTIK_JWT_SIGNING_SECRET ??
       process.env.AUTH_SESSION_SIGNING_KEY ??
-      '';
+      ''
+    ).trim();
 
-    if (!signingKey.trim()) {
-      throw new Error('AUTHENTIK_JWT_SIGNING_KEY is required for AIRS achievements.');
+    if (signingKey) {
+      try {
+        const verified = verifyIssuerJwt(normalized, signingKey);
+        const userId =
+          typeof verified.claims.app_user_id === 'string' ? verified.claims.app_user_id : '';
+        if (userId) return userId;
+      } catch {
+        // fall through to Better Auth session lookup
+      }
     }
 
-    const verified = verifyIssuerJwt(
-      token.trim().startsWith('Bearer ')
-        ? token.trim().slice('Bearer '.length).trim()
-        : token.trim(),
-      signingKey
+    // Fallback: verify via Better Auth /get-session (works in dev without signing key)
+    return this.resolveUserIdFromBetterAuthSession(normalized);
+  }
+
+  async myPosition(token: string): Promise<AirsUserPositions> {
+    const userId = await this.resolveUserId(token);
+    return getAirsUserPositions({ userId }, process.env).catch((error: unknown) => {
+      this.logger.error(
+        `AIRS positions fetch failed: ${error instanceof Error ? error.message : String(error)}`
+      );
+      throw error;
+    });
+  }
+
+  async updateProfile(
+    token: string,
+    data: { name?: string | null; country?: string | null; city?: string | null }
+  ): Promise<{ userId: string; name: string | null; country: string | null; city: string | null }> {
+    const userId = await this.resolveUserId(token);
+    return updateAirsUserProfile({ userId, ...data }, process.env).catch((error: unknown) => {
+      this.logger.error(
+        `AIRS profile update failed: ${error instanceof Error ? error.message : String(error)}`
+      );
+      throw error;
+    });
+  }
+
+  async leaderboard(token: string, limit?: number): Promise<AirsLeaderboardResult> {
+    const userId = await this.resolveUserId(token);
+    return getAirsLeaderboard({ requestingUserId: userId, limit: limit ?? 20 }, process.env).catch(
+      (error: unknown) => {
+        this.logger.error(
+          `AIRS leaderboard fetch failed: ${error instanceof Error ? error.message : String(error)}`
+        );
+        throw error;
+      }
     );
+  }
 
-    const userId =
-      typeof verified.claims.app_user_id === 'string' ? verified.claims.app_user_id : '';
-
-    if (!userId) {
-      throw new Error('Invalid or missing user ID in token');
-    }
-
+  async achievements(token: string): Promise<UserAchievement[]> {
+    const userId = await this.resolveUserId(token);
     return getUserAchievements({ userId }, process.env).catch((error: unknown) => {
       this.logger.error(
         `AIRS achievements fetch failed: ${error instanceof Error ? error.message : String(error)}`

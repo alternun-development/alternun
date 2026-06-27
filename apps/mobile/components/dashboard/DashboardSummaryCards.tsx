@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Linking,
   StyleSheet,
   Text,
@@ -7,6 +8,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import {
   ChevronRight,
   Coins,
@@ -26,9 +28,23 @@ const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
 const MapPinnedIcon = MapPinned as React.FC<LucideProps>;
 
+interface AuthClient {
+  getSessionToken(): Promise<string | null>;
+}
+
+interface UserPositions {
+  globalRank: number | null;
+  countryRank: number | null;
+  cityRank: number | null;
+  country: string | null;
+  city: string | null;
+}
+
 interface DashboardSummaryCardsProps {
   isDark: boolean;
   onNavigate?: (key: string) => void;
+  client?: AuthClient | null;
+  signedIn?: boolean;
 }
 
 function getPalette(isDark: boolean): {
@@ -196,11 +212,59 @@ function PositionRow({
 function PositionCard({
   p,
   compact = false,
+  client,
+  signedIn,
 }: {
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
+  client?: AuthClient | null;
+  signedIn?: boolean;
 }): React.JSX.Element {
   const t = useAppTranslation();
+  const [positions, setPositions] = useState<UserPositions | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!signedIn || !client) return;
+    let cancelled = false;
+    void (async () => {
+      setLoading(true);
+      try {
+        const token = await client.getSessionToken();
+        if (!token || cancelled) return;
+        const res = await fetch(`${resolveMobileApiBaseUrl()}/v1/airs/my-position`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as {
+          globalRank?: number | null;
+          countryRank?: number | null;
+          cityRank?: number | null;
+          country?: string | null;
+          city?: string | null;
+        };
+        if (!cancelled) {
+          setPositions({
+            globalRank: data.globalRank ?? null,
+            countryRank: data.countryRank ?? null,
+            cityRank: data.cityRank ?? null,
+            country: data.country ?? null,
+            city: data.city ?? null,
+          });
+        }
+      } catch {
+        // non-fatal
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn, client]);
+
+  const fmtRank = (rank: number | null | undefined): string =>
+    rank != null ? `#${rank.toLocaleString()}` : '—';
 
   return (
     <SummaryCard p={p} compact={compact}>
@@ -211,29 +275,35 @@ function PositionCard({
         compact={compact}
       />
 
-      <View style={[styles.positionList, compact && styles.positionListCompact]}>
-        <PositionRow
-          icon={<GlobeIcon size={18} color={p.accent} />}
-          label={t.t('dashboard.summaryCards.position.global')}
-          value='#1.284'
-          p={p}
-          compact={compact}
-        />
-        <PositionRow
-          icon={<Text style={styles.flagEmoji}>🇨🇴</Text>}
-          label={t.t('dashboard.summaryCards.position.colombia')}
-          value='#132'
-          p={p}
-          compact={compact}
-        />
-        <PositionRow
-          icon={<MapPinnedIcon size={18} color={p.iconColor} />}
-          label={t.t('dashboard.summaryCards.position.medellin')}
-          value='#18'
-          p={p}
-          compact={compact}
-        />
-      </View>
+      {loading ? (
+        <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+          <ActivityIndicator size='small' color={p.accent} />
+        </View>
+      ) : (
+        <View style={[styles.positionList, compact && styles.positionListCompact]}>
+          <PositionRow
+            icon={<GlobeIcon size={18} color={p.accent} />}
+            label={t.t('dashboard.summaryCards.position.global')}
+            value={fmtRank(positions?.globalRank)}
+            p={p}
+            compact={compact}
+          />
+          <PositionRow
+            icon={<Text style={styles.flagEmoji}>🌍</Text>}
+            label={positions?.country ?? t.t('dashboard.summaryCards.position.country')}
+            value={fmtRank(positions?.countryRank)}
+            p={p}
+            compact={compact}
+          />
+          <PositionRow
+            icon={<MapPinnedIcon size={18} color={p.iconColor} />}
+            label={positions?.city ?? t.t('dashboard.summaryCards.position.city')}
+            value={fmtRank(positions?.cityRank)}
+            p={p}
+            compact={compact}
+          />
+        </View>
+      )}
 
       <View
         style={[
@@ -553,6 +623,8 @@ function ATNCard({
 export default function DashboardSummaryCards({
   isDark,
   onNavigate,
+  client,
+  signedIn,
 }: DashboardSummaryCardsProps): React.JSX.Element {
   const p = getPalette(isDark);
   const { width } = useWindowDimensions();
@@ -570,7 +642,7 @@ export default function DashboardSummaryCards({
         ]}
       >
         <View style={styles.cardSlot}>
-          <PositionCard p={p} compact={isCompactMobile} />
+          <PositionCard p={p} compact={isCompactMobile} client={client} signedIn={signedIn} />
         </View>
         <View style={styles.cardSlot}>
           <RBICard p={p} compact={isCompactMobile} />

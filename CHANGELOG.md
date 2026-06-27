@@ -1,13 +1,34 @@
+## [1.0.281](https://github.com/alternun-development/alternun/compare/v1.0.280...v1.0.281) (2026-06-27)
+
+### Features
+
+- **mobile:** AIRS leaderboard component with real data from `/v1/airs/leaderboard`, showing full usernames, gold/silver/bronze rank badges, and "TÚ" highlight for the current user
+- **mobile:** Position card in dashboard now fetches live global, country, and city ranks from `/v1/airs/my-position`
+- **mobile:** `PersonalInfoModal` now includes editable country and city fields with save wired to `PATCH /v1/airs/profile`
+
+### Bug Fixes
+
+- **api:** Fixed all `/v1/airs/*` routes returning 404 — NestJS `VERSION_NEUTRAL` does not match Fastify URI-versioned paths; added explicit `version: [VERSION_NEUTRAL, '1']` to both AIRS controllers
+- **api:** Fixed `POST /v1/airs/onboarding`, `GET /v1/airs/me`, `GET /v1/airs/my-position` returning 500 — PostgREST `PGRST203` ambiguity between text and UUID overloads of five AIRS RPCs; dropped UUID overloads and made text overloads self-contained
+- **api:** Added Better Auth `bearer()` plugin so `/auth/get-session` accepts `Authorization: Bearer <token>` headers without a JWT signing key in dev
+- **api:** AIRS service now falls back from JWT verification to Better Auth session lookup when `AUTHENTIK_JWT_SIGNING_KEY` is absent, returning 401 instead of 500 on invalid tokens
+- **mobile:** `PositionCard` was reading `data.global_rank` (snake_case) but the API returns camelCase (`globalRank`, `countryRank`, `cityRank`) — fixed field names so ranks display correctly
+- **i18n:** Added missing `country`, `city`, `countryPlaceholder`, `cityPlaceholder` keys to `mobile.profile.modal` and `mobile.dashboard.summaryCards.position` in en/es/th catalogs
+
+### Database Migrations
+
+- `20260626_0001` — AIRS leaderboard RPC (`airs_get_leaderboard`) and referral bonus support
+- `20260626_0002` — `country`/`city` columns on `public.users`; `airs_get_user_positions` and `airs_update_user_profile` RPCs
+- `20260626_0003` — Leaderboard shows full display names (privacy masking removed; preserved in comments for future opt-in)
+- `20260626_0004` — Dropped UUID overloads of 5 AIRS RPCs to resolve PostgREST `PGRST203` ambiguity; self-contained text overloads
+- `20260626_0005` — Fixed `user_id` variable ambiguity in `airs_record_dashboard_visit` via `#variable_conflict use_column`
+- `20260626_0006` — Backfilled Colombia / Medellín as default `country`/`city` for all existing users; set as column defaults for new signups
+
 ## [1.0.280](https://github.com/alternun-development/alternun/compare/v1.0.280-dev.0...v1.0.280) (2026-06-09)
 
 ### Bug Fixes
 
 - **repo:** docs: sync root README for v1.0.280
-
-
-
-
-
 
 ## [1.0.280](https://github.com/alternun-development/alternun/compare/v1.0.279...v1.0.280) (2026-06-09)
 

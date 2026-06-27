@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { createTypographyStyles } from '../theme/typography';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
-import { ShoppingCart, Leaf, Flame, DollarSign, Gift, Copy, Check } from 'lucide-react-native';
+import {
+  ShoppingCart,
+  Leaf,
+  Flame,
+  DollarSign,
+  Gift,
+  Copy,
+  Check,
+  Users,
+} from 'lucide-react-native';
 import { AIRSEntry } from './types';
 
 interface AIRSLedgerProps {
@@ -37,6 +46,7 @@ const REFERENCE_TYPE_ICONS: Record<AIRSEntry['referenceType'], React.ElementType
   compensation: Flame,
   profile_completion_bonus: Gift,
   correction: DollarSign,
+  referral_bonus: Users,
 };
 
 const REFERENCE_TYPE_LABELS: Record<AIRSEntry['referenceType'], string> = {
@@ -45,6 +55,7 @@ const REFERENCE_TYPE_LABELS: Record<AIRSEntry['referenceType'], string> = {
   compensation: 'Compensación',
   profile_completion_bonus: 'Bono de perfil',
   correction: 'Corrección',
+  referral_bonus: 'Bono de referido',
 };
 
 const REFERENCE_TYPE_COLORS: Record<AIRSEntry['referenceType'], string> = {
@@ -53,6 +64,7 @@ const REFERENCE_TYPE_COLORS: Record<AIRSEntry['referenceType'], string> = {
   compensation: '#f59e0b',
   profile_completion_bonus: '#818cf8',
   correction: '#f87171',
+  referral_bonus: '#a78bfa',
 };
 
 function getPalette(isDark: boolean): Palette {
