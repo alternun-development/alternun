@@ -261,7 +261,9 @@
           "global": "Global",
           "colombia": "Colombia",
           "medellin": "Medellín",
-          "rankingNote": "Ranking based on accumulated Airs"
+          "rankingNote": "Ranking based on accumulated Airs",
+          "country": "Country",
+          "city": "City"
         },
         "rbi": {
           "title": "RBI Projection",
@@ -492,7 +494,7 @@
     },
     "settingsScreen": {
       "currentLanguage": "Current Language",
-      "localPreferenceHelp": "Stored locally in your browser/app preferences.",
+      "localPreferenceHelp": "Stored locally on this device",
       "sections": {
         "appearance": "Appearance",
         "language": "Language",
@@ -500,7 +502,6 @@
       },
       "showIntroAgain": "Don't Show Intro Again",
       "showWelcomeBonusModal": "Show Welcome Bonus",
-      "localPreferenceHelp": "Stored locally on this device",
       "subtitle": "Manage interface preferences and account-level controls.",
       "title": "Settings"
     },
@@ -613,7 +614,11 @@
         "email": "Email",
         "saveChanges": "Save Changes",
         "cancel": "Cancel",
-        "close": "Close"
+        "close": "Close",
+        "country": "Country",
+        "city": "City",
+        "countryPlaceholder": "e.g. Colombia",
+        "cityPlaceholder": "e.g. Medellín"
       },
       "achievementBadges": {
         "account_confirmed": "Account Verified",

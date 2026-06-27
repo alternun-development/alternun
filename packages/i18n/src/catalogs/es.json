@@ -261,7 +261,9 @@
           "global": "Global",
           "colombia": "Colombia",
           "medellin": "Medellín",
-          "rankingNote": "Ranking basado en Airs acumulados"
+          "rankingNote": "Ranking basado en Airs acumulados",
+          "country": "País",
+          "city": "Ciudad"
         },
         "rbi": {
           "title": "Proyección RBI",
@@ -612,7 +614,11 @@
         "email": "Correo electrónico",
         "saveChanges": "Guardar cambios",
         "cancel": "Cancelar",
-        "close": "Cerrar"
+        "close": "Cerrar",
+        "country": "País",
+        "city": "Ciudad",
+        "countryPlaceholder": "ej. Colombia",
+        "cityPlaceholder": "ej. Medellín"
       },
       "achievementBadges": {
         "account_confirmed": "Cuenta verificada",

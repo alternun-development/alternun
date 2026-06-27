@@ -28,6 +28,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -80,14 +81,6 @@ interface AccountReferralSummary {
   referred_by_name?: string | null;
   referred_by_email?: string | null;
 }
-
-const TOP_USERS = [
-  { rank: 1, name: 'María González', score: 98_420, medal: '🥇', color: '#d4b96a' },
-  { rank: 2, name: 'Carlos Mendoza', score: 87_650, medal: '🥈', color: '#a8b8cc' },
-  { rank: 3, name: 'Ana Ruiz', score: 76_330, medal: '🥉', color: '#cd7f32' },
-  { rank: 4, name: 'Pablo Torres', score: 64_110, medal: null, color: null },
-  { rank: 5, name: 'Lucía Vargas', score: 58_900, medal: null, color: null },
-];
 
 const NETWORKS = [
   { name: 'Polygon', color: '#8247e5' },
@@ -1263,6 +1256,7 @@ function PersonalInfoModal({
   onClose: () => void;
 }): React.JSX.Element | null {
   const { t } = useAppTranslation('mobile');
+  const { client } = useAuth();
   const profile = useMemo(() => getProfileInfo(user), [user]);
   const metadata = useMemo(() => getMetadata(user), [user]);
   const [firstName] = useState<string>(
@@ -1280,13 +1274,32 @@ function PersonalInfoModal({
       : ''
   );
   const email = profile.email ?? '';
+  const [country, setCountry] = useState<string>(
+    typeof metadata.country === 'string' ? metadata.country : ''
+  );
+  const [city, setCity] = useState<string>(typeof metadata.city === 'string' ? metadata.city : '');
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async (): Promise<void> => {
     setIsSaving(true);
     try {
-      // TODO: Implement API call to save user information
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const token = await resolveSessionTokenWithRetry(client, { maxAttempts: 3 });
+      if (token) {
+        const baseUrl = resolveMobileApiBaseUrl();
+        await fetch(`${baseUrl}/v1/airs/profile`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            country: country.trim() || null,
+            city: city.trim() || null,
+          }),
+        });
+      }
+    } catch {
+      // non-fatal — close anyway
     } finally {
       setIsSaving(false);
       onClose();
@@ -1452,6 +1465,72 @@ function PersonalInfoModal({
             </View>
           </View>
 
+          {/* Country */}
+          <View style={{ marginBottom: 18 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: c.muted,
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              {t('profile.modal.country', undefined, 'Country')}
+            </Text>
+            <TextInput
+              value={country}
+              onChangeText={setCountry}
+              placeholder={t('profile.modal.countryPlaceholder', undefined, 'e.g. Colombia')}
+              placeholderTextColor={c.muted}
+              style={{
+                borderWidth: 1,
+                borderColor: c.cardBorder,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+                fontSize: 15,
+                color: c.text,
+                fontWeight: '500',
+              }}
+            />
+          </View>
+
+          {/* City */}
+          <View style={{ marginBottom: 18 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: c.muted,
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              {t('profile.modal.city', undefined, 'City')}
+            </Text>
+            <TextInput
+              value={city}
+              onChangeText={setCity}
+              placeholder={t('profile.modal.cityPlaceholder', undefined, 'e.g. Medellín')}
+              placeholderTextColor={c.muted}
+              style={{
+                borderWidth: 1,
+                borderColor: c.cardBorder,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+                fontSize: 15,
+                color: c.text,
+                fontWeight: '500',
+              }}
+            />
+          </View>
+
           {/* Status Badge */}
           <View
             style={{
@@ -1523,29 +1602,99 @@ function PersonalInfoModal({
 
 // ─── Tab components ──────────────────────────────────────────────────────────
 
+interface LeaderboardRow {
+  rank: number;
+  name: string;
+  score: number;
+  medal: string | null;
+  color: string | null;
+  isMe: boolean;
+}
+
+const MEDAL_DATA: Record<number, { medal: string; color: string }> = {
+  1: { medal: '🥇', color: '#d4b96a' },
+  2: { medal: '🥈', color: '#a8b8cc' },
+  3: { medal: '🥉', color: '#cd7f32' },
+};
+
 function RankingTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.JSX.Element {
   const { t, locale } = useAppTranslation('mobile');
+  const { client, user } = useAuth();
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [rows, setRows] = useState<LeaderboardRow[]>([]);
+  const [myEntry, setMyEntry] = useState<LeaderboardRow | null>(null);
+  const [loadingBoard, setLoadingBoard] = useState(false);
   const enhancedStyles = profileStylesEnhanced(isDark);
-  const myPositionScore = 12_088;
   const rankingFilters: SearchFilterOption[] = [
     { key: 'all', label: t('profile.ranking.filters.all', undefined, 'All') },
     { key: 'podium', label: t('profile.ranking.filters.podium', undefined, 'Podium') },
     { key: 'others', label: t('profile.ranking.filters.others', undefined, 'Others') },
   ];
 
+  useEffect(() => {
+    if (!user || !client) return;
+    let cancelled = false;
+    void (async () => {
+      setLoadingBoard(true);
+      try {
+        const token = await client.getSessionToken();
+        if (!token || cancelled) return;
+        const res = await fetch(`${resolveMobileApiBaseUrl()}/v1/airs/leaderboard?limit=20`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as {
+          entries?: { rank: number; displayName: string; airsBalance: number; isMe: boolean }[];
+          requestingUserEntry?: {
+            rank: number;
+            displayName: string;
+            airsBalance: number;
+            isMe: boolean;
+          } | null;
+        };
+        if (cancelled) return;
+        const toRow = (e: {
+          rank: number;
+          displayName: string;
+          airsBalance: number;
+          isMe: boolean;
+        }): LeaderboardRow => ({
+          rank: e.rank,
+          name: e.displayName,
+          score: e.airsBalance,
+          medal: MEDAL_DATA[e.rank]?.medal ?? null,
+          color: MEDAL_DATA[e.rank]?.color ?? null,
+          isMe: e.isMe,
+        });
+        const allRows = (data.entries ?? []).map(toRow);
+        setRows(allRows);
+        const me =
+          allRows.find((r) => r.isMe) ??
+          (data.requestingUserEntry ? toRow(data.requestingUserEntry) : null);
+        setMyEntry(me);
+      } catch {
+        // non-fatal
+      } finally {
+        if (!cancelled) setLoadingBoard(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, client]);
+
   const filteredUsers = useMemo(() => {
     const normalizedQuery = search.trim().toLowerCase();
-    return TOP_USERS.filter((user) => {
+    return rows.filter((row) => {
       const matchesFilter =
         activeFilter === 'all' ||
-        (activeFilter === 'podium' && user.rank <= 3) ||
-        (activeFilter === 'others' && user.rank > 3);
-      const matchesSearch = !normalizedQuery || user.name.toLowerCase().includes(normalizedQuery);
+        (activeFilter === 'podium' && row.rank <= 3) ||
+        (activeFilter === 'others' && row.rank > 3);
+      const matchesSearch = !normalizedQuery || row.name.toLowerCase().includes(normalizedQuery);
       return matchesFilter && matchesSearch;
     });
-  }, [activeFilter, search]);
+  }, [activeFilter, search, rows]);
 
   return (
     <ScrollView
@@ -1559,20 +1708,26 @@ function RankingTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.
             {t('profile.ranking.myPosition', undefined, 'My Position')}
           </Text>
         </View>
-        <View style={rankingStyles.myPosBody}>
-          <View style={rankingStyles.myPosRankWrap}>
-            <Text style={[rankingStyles.myPosRankHash, { color: c.muted }]}>#</Text>
-            <Text style={[rankingStyles.myPosRank, { color: c.text }]}>47</Text>
+        {loadingBoard ? (
+          <ActivityIndicator size='small' color={c.accent} style={{ marginVertical: 8 }} />
+        ) : (
+          <View style={rankingStyles.myPosBody}>
+            <View style={rankingStyles.myPosRankWrap}>
+              <Text style={[rankingStyles.myPosRankHash, { color: c.muted }]}>#</Text>
+              <Text style={[rankingStyles.myPosRank, { color: c.text }]}>
+                {myEntry?.rank ?? '—'}
+              </Text>
+            </View>
+            <View>
+              <Text style={[rankingStyles.myPosScore, { color: c.text }]}>
+                {(myEntry?.score ?? 0).toLocaleString(locale)}
+              </Text>
+              <Text style={[rankingStyles.myPosScoreLabel, { color: c.muted }]}>
+                {t('profile.stats.airs', undefined, 'AIRS')}
+              </Text>
+            </View>
           </View>
-          <View>
-            <Text style={[rankingStyles.myPosScore, { color: c.text }]}>
-              {myPositionScore.toLocaleString(locale)}
-            </Text>
-            <Text style={[rankingStyles.myPosScoreLabel, { color: c.muted }]}>
-              {t('profile.stats.airs', undefined, 'AIRS')}
-            </Text>
-          </View>
-        </View>
+        )}
       </GlassCard>
       <SectionContainer title={t('profile.ranking.topImpactors', undefined, 'Top Impactors')}>
         <SearchFilterBar
@@ -1584,45 +1739,61 @@ function RankingTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.
           onChangeFilter={setActiveFilter}
         />
         <GlassCard style={rankingStyles.listCard}>
-          {filteredUsers.map((user, idx) => (
-            <View
-              key={user.rank}
-              style={[
-                rankingStyles.row,
-                idx < filteredUsers.length - 1 && {
-                  borderBottomWidth: 1,
-                  borderBottomColor: c.border,
-                },
-              ]}
-            >
-              <Text style={[rankingStyles.rankNum, { color: user.color ?? c.muted }]}>
-                {user.rank}
-              </Text>
+          {loadingBoard ? (
+            <ActivityIndicator size='small' color={c.accent} style={{ margin: 20 }} />
+          ) : filteredUsers.length === 0 ? (
+            <Text style={{ color: c.muted, textAlign: 'center', padding: 20, fontSize: 14 }}>
+              {t('profile.ranking.noResults', undefined, 'No results')}
+            </Text>
+          ) : (
+            filteredUsers.map((row, idx) => (
               <View
+                key={row.rank}
                 style={[
-                  rankingStyles.avatarCircle,
-                  {
-                    backgroundColor: user.color ? `${user.color}22` : 'rgba(255,255,255,0.08)',
-                    borderColor: user.color ? `${user.color}44` : 'rgba(255,255,255,0.12)',
+                  rankingStyles.row,
+                  row.isMe && { backgroundColor: `${c.accent}14` },
+                  idx < filteredUsers.length - 1 && {
+                    borderBottomWidth: 1,
+                    borderBottomColor: c.border,
                   },
                 ]}
               >
-                <Text style={[rankingStyles.avatarText, { color: user.color ?? c.muted }]}>
-                  {getInitials(user.name)}
+                <Text style={[rankingStyles.rankNum, { color: row.color ?? c.muted }]}>
+                  {row.rank}
                 </Text>
-              </View>
-              <View style={rankingStyles.rowBody}>
-                <View style={rankingStyles.nameRow}>
-                  <Text style={[rankingStyles.userName, { color: c.text }]}>{user.name}</Text>
-                  {user.medal ? <Text style={rankingStyles.medal}>{user.medal}</Text> : null}
+                <View
+                  style={[
+                    rankingStyles.avatarCircle,
+                    {
+                      backgroundColor: row.color ? `${row.color}22` : 'rgba(255,255,255,0.08)',
+                      borderColor: row.color ? `${row.color}44` : 'rgba(255,255,255,0.12)',
+                    },
+                  ]}
+                >
+                  <Text style={[rankingStyles.avatarText, { color: row.color ?? c.muted }]}>
+                    {getInitials(row.name)}
+                  </Text>
                 </View>
-                <Text style={[rankingStyles.userScore, { color: c.muted }]}>
-                  {user.score.toLocaleString(locale)} {t('profile.stats.airs', undefined, 'AIRS')}
-                </Text>
+                <View style={rankingStyles.rowBody}>
+                  <View style={rankingStyles.nameRow}>
+                    <Text style={[rankingStyles.userName, { color: c.text }]}>{row.name}</Text>
+                    {row.medal ? <Text style={rankingStyles.medal}>{row.medal}</Text> : null}
+                    {row.isMe ? (
+                      <Text
+                        style={{ fontSize: 10, fontWeight: '700', color: c.accent, marginLeft: 4 }}
+                      >
+                        TÚ
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Text style={[rankingStyles.userScore, { color: c.muted }]}>
+                    {row.score.toLocaleString(locale)} {t('profile.stats.airs', undefined, 'AIRS')}
+                  </Text>
+                </View>
+                {row.rank <= 3 ? <TrophyIcon size={16} color={row.color ?? c.accent} /> : null}
               </View>
-              {user.rank <= 3 ? <TrophyIcon size={16} color={user.color ?? c.accent} /> : null}
-            </View>
-          ))}
+            ))
+          )}
         </GlassCard>
       </SectionContainer>
     </ScrollView>
