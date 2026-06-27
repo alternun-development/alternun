@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Chrome,
   AtSign,
+  ChevronDown,
   Eye,
   EyeOff,
   Languages,
@@ -198,6 +199,9 @@ export default function AuthSignInScreen({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [referralCode, setReferralCode] = useState(
     () => initialReferralCode?.trim() ?? readPendingReferralCode() ?? ''
+  );
+  const [showReferralInput, setShowReferralInput] = useState(() =>
+    Boolean(initialReferralCode?.trim() ?? readPendingReferralCode())
   );
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [invalidEmail, setInvalidEmail] = useState(false);
@@ -1526,43 +1530,61 @@ export default function AuthSignInScreen({
 
                 {mode === 'signup' ? (
                   <View style={styles.referralPrompt}>
-                    <Text style={[styles.referralPromptTitle, { color: p.textPrimary }]}>
-                      {t('authModal.referral.prompt', undefined, 'Have a referral code?')}
-                    </Text>
-                    <Text style={[styles.referralPromptText, { color: p.textMuted }]}>
-                      {t(
-                        'authModal.referral.helper',
-                        undefined,
-                        'Add it before you create the account. We will keep it for signup.'
-                      )}
-                    </Text>
-                    <View
-                      style={[
-                        styles.inputWrapper,
-                        { backgroundColor: p.inputBg, borderColor: p.inputBorder },
-                      ]}
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                        setShowReferralInput((v) => !v);
+                      }}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
                     >
-                      <View style={[styles.inputIconWrap, { backgroundColor: 'transparent' }]}>
-                        <KeyRound size={15} color={p.accent} strokeWidth={2.1} />
-                      </View>
-                      <TextInput
-                        ref={referralCodeInputRef}
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        onChangeText={(value) => {
-                          setReferralCode(value);
-                          setLocalError(null);
+                      <Text style={[styles.referralPromptTitle, { color: p.accent }]}>
+                        {t('authModal.referral.prompt', undefined, 'Have a referral code?')}
+                      </Text>
+                      <ChevronDown
+                        size={16}
+                        color={p.accent}
+                        strokeWidth={2.2}
+                        style={{
+                          transform: [{ rotate: showReferralInput ? '180deg' : '0deg' }],
                         }}
-                        placeholder={t(
-                          'authModal.referral.placeholder',
-                          undefined,
-                          'e.g., edward-44ft34'
-                        )}
-                        placeholderTextColor={p.textPlaceholder}
-                        style={[styles.input, { color: p.textPrimary }]}
-                        value={referralCode}
                       />
-                    </View>
+                    </TouchableOpacity>
+
+                    {showReferralInput ? (
+                      <View
+                        style={[
+                          styles.inputWrapper,
+                          { backgroundColor: p.inputBg, borderColor: p.inputBorder, marginTop: 6 },
+                        ]}
+                      >
+                        <View style={[styles.inputIconWrap, { backgroundColor: 'transparent' }]}>
+                          <KeyRound size={15} color={p.accent} strokeWidth={2.1} />
+                        </View>
+                        <TextInput
+                          ref={referralCodeInputRef}
+                          autoCapitalize='none'
+                          autoCorrect={false}
+                          autoFocus
+                          onChangeText={(value) => {
+                            setReferralCode(value);
+                            setLocalError(null);
+                          }}
+                          placeholder={t(
+                            'authModal.referral.placeholder',
+                            undefined,
+                            'e.g., edward-44ft34'
+                          )}
+                          placeholderTextColor={p.textPlaceholder}
+                          style={[styles.input, { color: p.textPrimary }]}
+                          value={referralCode}
+                        />
+                      </View>
+                    ) : null}
                   </View>
                 ) : null}
 
