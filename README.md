@@ -124,7 +124,7 @@ Current version: **1.0.283**
 
 ### Bug Fixes
 
-- **infra:** degrade source-stage hotfix gracefully when pattern not found ([8c9cd2e](https://github.com/alternun-development/alternun/commit/8c9cd2e020af91ff673bc635da26282716d7f2b3))
+- **repo:** docs: sync root README for v1.0.283
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
