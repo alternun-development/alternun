@@ -79,7 +79,9 @@ function SupportButton({ supportEmail, palette }: SupportButtonProps): React.JSX
     setShowChatOptions(false);
   };
 
-  const isDark = palette.title === '#effff9'; // Check if dark theme based on title color
+  const dialogBg = palette.shellBg ?? '#ffffff';
+  const backdropBg = palette.overlayBg ?? 'rgba(0,0,0,0.5)';
+  const borderCol = palette.borderColor ?? 'rgba(0,0,0,0.1)';
 
   return (
     <>
@@ -109,12 +111,7 @@ function SupportButton({ supportEmail, palette }: SupportButtonProps): React.JSX
         <View style={styles.modalOverlay}>
           {/* Backdrop */}
           <Pressable
-            style={[
-              styles.backdrop,
-              {
-                backgroundColor: isDark ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0.38)',
-              },
-            ]}
+            style={[styles.backdrop, { backgroundColor: backdropBg }]}
             onPress={() => setDialogOpen(false)}
           />
 
@@ -123,13 +120,13 @@ function SupportButton({ supportEmail, palette }: SupportButtonProps): React.JSX
             style={[
               styles.dialogBox,
               {
-                backgroundColor: isDark ? '#0d0d1f' : '#ffffff',
-                borderColor: palette.muted,
+                backgroundColor: dialogBg,
+                borderColor: borderCol,
               },
             ]}
           >
             {/* Header */}
-            <View style={styles.dialogHeader}>
+            <View style={[styles.dialogHeader, { borderBottomColor: borderCol }]}>
               <Text style={[styles.dialogTitle, { color: palette.title }]}>How can we help?</Text>
               <TouchableOpacity onPress={() => setDialogOpen(false)} style={styles.closeButton}>
                 <Text style={[styles.closeButtonText, { color: palette.muted }]}>✕</Text>
@@ -334,7 +331,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
   },
   dialogTitle: {
     fontFamily: ANEK_EXPANDED_FAMILY,

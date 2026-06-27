@@ -25,7 +25,17 @@ const databaseUrl =
   process.env.DATABASE_URL ??
   process.env.SUPABASE_DATABASE_URL;
 
-const skippedMigrationVersions = new Set(['20260417_0009', '20260417_0010']);
+// 0009/0010: Better Auth table setup superseded by later schema.
+// 0011: DROP TABLE users CASCADE — would destroy production user data.
+// 0418_0001: Creates users with TEXT id, conflicts with prod UUID schema (no-op via IF NOT EXISTS but misleading).
+// 0418_0002: DROP TABLE users CASCADE — would destroy production user data.
+const skippedMigrationVersions = new Set([
+  '20260417_0009',
+  '20260417_0010',
+  '20260417_0011',
+  '20260418_0001',
+  '20260418_0002',
+]);
 const dryRun = process.argv.includes('--dry-run');
 
 if (!databaseUrl) {
