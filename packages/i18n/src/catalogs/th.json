@@ -261,7 +261,9 @@
           "global": "ทั่วโลก",
           "colombia": "โคลอมเบีย",
           "medellin": "เมเดยิน",
-          "rankingNote": "จัดอันดับตาม Airs ที่สะสม"
+          "rankingNote": "จัดอันดับตาม Airs ที่สะสม",
+          "country": "ประเทศ",
+          "city": "เมือง"
         },
         "rbi": {
           "title": "ประมาณการ RBI",
@@ -612,7 +614,11 @@
         "email": "อีเมล",
         "saveChanges": "บันทึกการเปลี่ยนแปลง",
         "cancel": "ยกเลิก",
-        "close": "ปิด"
+        "close": "ปิด",
+        "country": "ประเทศ",
+        "city": "เมือง",
+        "countryPlaceholder": "เช่น โคลอมเบีย",
+        "cityPlaceholder": "เช่น เมเดยิน"
       },
       "achievementBadges": {
         "account_confirmed": "ยืนยันบัญชีแล้ว",
