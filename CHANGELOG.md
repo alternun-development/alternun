@@ -1,3 +1,14 @@
+## [1.0.289](https://github.com/alternun-development/alternun/compare/v1.0.287-dev.0...v1.0.289) (2026-06-27)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.288
+- **repo:** fix(identity): replace manage.py shell readiness check with HTTP health endpoint
+
+### Bug Fixes
+
+- **identity:** replace manage.py shell readiness check with HTTP health endpoint ([7dbea82](https://github.com/alternun-development/alternun/commit/7dbea824443ba73ff9dbc37ed83e1c427039b96b))
+
 ## [1.0.288](https://github.com/alternun-development/alternun/compare/v1.0.286...v1.0.288) (2026-06-27)
 
 ### Bug Fixes
