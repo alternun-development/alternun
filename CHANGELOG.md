@@ -1,3 +1,13 @@
+## [1.0.284](https://github.com/alternun-development/alternun/compare/v1.0.283-dev.1...v1.0.284) (2026-06-27)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.0.283-dev.1
+- **repo:** fix: AIRS auth 500s, collapsible referral, country/city pickers, dark mode help modal
+- **repo:** chore: release v1.0.283
+- **repo:** chore: release v1.0.283
+- **repo:** chore: release v1.0.283
+
 ## [1.0.283](https://github.com/alternun-development/alternun/compare/v1.0.283-dev.0...v1.0.283) (2026-06-27)
 
 ### Bug Fixes
