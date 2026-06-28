@@ -124,7 +124,7 @@ Current version: **1.0.289**
 
 ### Bug Fixes
 
-- **identity:** replace manage.py shell readiness check with HTTP health endpoint ([7dbea82](https://github.com/alternun-development/alternun/commit/7dbea824443ba73ff9dbc37ed83e1c427039b96b))
+- **repo:** docs: sync root README for v1.0.289
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
