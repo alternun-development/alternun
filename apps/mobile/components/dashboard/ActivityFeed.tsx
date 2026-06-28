@@ -182,6 +182,7 @@ export default function ActivityFeed({
   entries = [],
   isLoading = false,
 }: ActivityFeedProps): React.JSX.Element {
+  const [scope, setScope] = useState<'personal' | 'network'>('personal');
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<ActivityType | 'all'>('all');
   const [page, setPage] = useState(0);
@@ -195,6 +196,8 @@ export default function ActivityFeed({
   const textColor = isDark ? '#e8fff6' : '#0b2d31';
   const mutedColor = isDark ? 'rgba(232,255,246,0.55)' : 'rgba(11,45,49,0.55)';
   const headerBg = isDark ? 'rgba(30,230,181,0.06)' : 'rgba(13,148,136,0.06)';
+  const pillActiveBg = isDark ? 'rgba(30,230,181,0.15)' : 'rgba(13,148,136,0.12)';
+  const pillInactiveBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,90,95,0.06)';
 
   const activities: ActivityItem[] = entries.map(airsEntryToActivityItem);
 
@@ -263,24 +266,65 @@ export default function ActivityFeed({
     setPage(0);
   }, [entries]);
 
+  const subtitleKey =
+    scope === 'network'
+      ? 'dashboard.activityFeed.subtitle.global'
+      : 'dashboard.activityFeed.subtitle.user';
+  const subtitleRaw = t.t(subtitleKey);
+  const [subtitleBefore, subtitleAfter] = subtitleRaw.includes('Airs')
+    ? subtitleRaw.split('Airs')
+    : [subtitleRaw, ''];
+
+  const SCOPE_FILTERS: { key: 'personal' | 'network'; label: string }[] = [
+    { key: 'personal', label: t.t('dashboard.activityFeed.tabs.user') },
+    { key: 'network', label: t.t('dashboard.activityFeed.tabs.global') },
+  ];
+
   return (
     <View style={[styles.container, { backgroundColor: bg }]}>
       <View style={styles.sectionHeader}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={[styles.sectionTitle, { color: textColor }]}>
             {t.t('dashboard.activityFeed.title')}
           </Text>
           <Text style={[styles.sectionSubtitle, { color: mutedColor }]}>
-            <>
-              {t.t('dashboard.activityFeed.subtitle.user').split(' ')[0]}{' '}
-              <Text style={{ fontWeight: '700', color: textColor }}>Airs</Text> By Alternun.
-            </>
+            {subtitleBefore}
+            <Text style={{ fontWeight: '700', color: textColor }}>Airs</Text>
+            {subtitleAfter}
           </Text>
         </View>
         <View style={[styles.liveIndicator, { borderColor: accent }]}>
           <View style={[styles.liveDot, { backgroundColor: accent }]} />
           <Text style={[styles.liveText, { color: accent }]}>Live</Text>
         </View>
+      </View>
+
+      {/* Scope pills */}
+      <View style={styles.scopeRow}>
+        {SCOPE_FILTERS.map((f) => {
+          const active = scope === f.key;
+          return (
+            <TouchableOpacity
+              key={f.key}
+              onPress={() => {
+                setScope(f.key);
+                setPage(0);
+              }}
+              activeOpacity={0.7}
+              style={[
+                styles.scopePill,
+                {
+                  backgroundColor: active ? pillActiveBg : pillInactiveBg,
+                  borderColor: active ? accent : 'transparent',
+                },
+              ]}
+            >
+              <Text style={[styles.scopePillText, { color: active ? accent : mutedColor }]}>
+                {f.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       <SearchFilterBar
@@ -314,7 +358,13 @@ export default function ActivityFeed({
           </Text>
         </View>
 
-        {isLoading ? (
+        {scope === 'network' ? (
+          <View style={styles.emptyBox}>
+            <Text style={[styles.emptyText, { color: mutedColor }]}>
+              Actividad global de la red — próximamente
+            </Text>
+          </View>
+        ) : isLoading ? (
           <View style={styles.loadingBox}>
             <ActivityIndicator color={accent} />
           </View>
@@ -396,7 +446,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 14,
+    marginBottom: 10,
+  },
+  scopeRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  scopePill: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  scopePillText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   sectionTitle: {
     fontSize: 22,

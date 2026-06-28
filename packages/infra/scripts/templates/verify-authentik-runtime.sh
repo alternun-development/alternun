@@ -83,4 +83,4 @@ raise SystemExit(0 if admin_exists and default_app_exists and admin_oidc_app and
 PYEOF
 )
 
-printf '%s\n' "$verify_shell" | timeout --kill-after=5 120 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T server /ak-root/.venv/bin/python /manage.py shell
+printf '%s\n' "$verify_shell" | timeout --kill-after=10 290 "${compose_cmd[@]}" -f /opt/alternun/identity/docker-compose.yml exec -T server /ak-root/.venv/bin/python /manage.py shell
