@@ -118,13 +118,18 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.0.289**
+Current version: **1.0.290**
 
-## 📋 Latest Changes (v1.0.289)
+## 📋 Latest Changes (v1.0.290)
 
 ### Bug Fixes
 
 - **repo:** docs: sync root README for v1.0.289
+- **repo:** fix(identity): wait for SSM agent online before dispatching runtime sync
+
+### Bug Fixes
+
+- **identity:** wait for SSM agent online before dispatching runtime sync ([848da7d](https://github.com/alternun-development/alternun/commit/848da7d74dec52ce8fe774e126550f7c7d27006c))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
