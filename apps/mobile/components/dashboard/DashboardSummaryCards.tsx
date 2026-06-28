@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   Linking,
   StyleSheet,
   Text,
@@ -8,42 +7,18 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
-import {
-  ChevronRight,
-  Coins,
-  Globe,
-  MapPinned,
-  TrendingUp,
-  Wallet,
-  type LucideProps,
-} from 'lucide-react-native';
-import { useAppPreferences } from '../settings/AppPreferencesProvider';
+import { ChevronRight, Coins, TrendingUp, Wallet, type LucideProps } from 'lucide-react-native';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 
-const GlobeIcon = Globe as React.FC<LucideProps>;
 const CoinsIcon = Coins as React.FC<LucideProps>;
 const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
-const MapPinnedIcon = MapPinned as React.FC<LucideProps>;
-
-interface AuthClient {
-  getSessionToken(): Promise<string | null>;
-}
-
-interface UserPositions {
-  globalRank: number | null;
-  countryRank: number | null;
-  cityRank: number | null;
-  country: string | null;
-  city: string | null;
-}
 
 interface DashboardSummaryCardsProps {
   isDark: boolean;
   onNavigate?: (key: string) => void;
-  client?: AuthClient | null;
+  client?: unknown;
   signedIn?: boolean;
 }
 
@@ -171,161 +146,6 @@ function Divider({
   );
 }
 
-function PositionRow({
-  icon,
-  label,
-  value,
-  p,
-  compact = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  p: ReturnType<typeof getPalette>;
-  compact?: boolean;
-}): React.JSX.Element {
-  return (
-    <View style={[styles.positionRow, compact && styles.positionRowCompact]}>
-      <View
-        style={[
-          styles.positionIcon,
-          compact && styles.positionIconCompact,
-          { backgroundColor: p.iconBg },
-        ]}
-      >
-        {icon}
-      </View>
-      <Text
-        style={[styles.positionLabel, compact && styles.positionLabelCompact, { color: p.title }]}
-      >
-        {label}
-      </Text>
-      <Text
-        style={[styles.positionValue, compact && styles.positionValueCompact, { color: p.title }]}
-      >
-        {value}
-      </Text>
-    </View>
-  );
-}
-
-function PositionCard({
-  p,
-  compact = false,
-  client,
-  signedIn,
-}: {
-  p: ReturnType<typeof getPalette>;
-  compact?: boolean;
-  client?: AuthClient | null;
-  signedIn?: boolean;
-}): React.JSX.Element {
-  const t = useAppTranslation();
-  const [positions, setPositions] = useState<UserPositions | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!signedIn || !client) return;
-    let cancelled = false;
-    void (async () => {
-      setLoading(true);
-      try {
-        const token = await client.getSessionToken();
-        if (!token || cancelled) return;
-        const res = await fetch(`${resolveMobileApiBaseUrl()}/v1/airs/my-position`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok || cancelled) return;
-        const data = (await res.json()) as {
-          globalRank?: number | null;
-          countryRank?: number | null;
-          cityRank?: number | null;
-          country?: string | null;
-          city?: string | null;
-        };
-        if (!cancelled) {
-          setPositions({
-            globalRank: data.globalRank ?? null,
-            countryRank: data.countryRank ?? null,
-            cityRank: data.cityRank ?? null,
-            country: data.country ?? null,
-            city: data.city ?? null,
-          });
-        }
-      } catch {
-        // non-fatal
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [signedIn, client]);
-
-  const fmtRank = (rank: number | null | undefined): string =>
-    rank != null ? `#${rank.toLocaleString()}` : '—';
-
-  return (
-    <SummaryCard p={p} compact={compact}>
-      <CardTitle
-        label={t.t('dashboard.summaryCards.position.title')}
-        sub={t.t('dashboard.summaryCards.position.subtitle')}
-        p={p}
-        compact={compact}
-      />
-
-      {loading ? (
-        <View style={{ paddingVertical: 16, alignItems: 'center' }}>
-          <ActivityIndicator size='small' color={p.accent} />
-        </View>
-      ) : (
-        <View style={[styles.positionList, compact && styles.positionListCompact]}>
-          <PositionRow
-            icon={<GlobeIcon size={18} color={p.accent} />}
-            label={t.t('dashboard.summaryCards.position.global')}
-            value={fmtRank(positions?.globalRank)}
-            p={p}
-            compact={compact}
-          />
-          <PositionRow
-            icon={<Text style={styles.flagEmoji}>🌍</Text>}
-            label={positions?.country ?? t.t('dashboard.summaryCards.position.country')}
-            value={fmtRank(positions?.countryRank)}
-            p={p}
-            compact={compact}
-          />
-          <PositionRow
-            icon={<MapPinnedIcon size={18} color={p.iconColor} />}
-            label={positions?.city ?? t.t('dashboard.summaryCards.position.city')}
-            value={fmtRank(positions?.cityRank)}
-            p={p}
-            compact={compact}
-          />
-        </View>
-      )}
-
-      <View
-        style={[
-          styles.positionFooter,
-          compact && styles.positionFooterCompact,
-          { borderTopColor: p.line },
-        ]}
-      >
-        <Text
-          style={[
-            styles.positionFootnote,
-            compact && styles.positionFootnoteCompact,
-            { color: p.muted },
-          ]}
-        >
-          {t.t('dashboard.summaryCards.position.rankingNote')}
-        </Text>
-      </View>
-    </SummaryCard>
-  );
-}
-
 function RBICard({
   p,
   compact = false,
@@ -334,15 +154,13 @@ function RBICard({
   compact?: boolean;
 }): React.JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { language } = useAppPreferences();
   const t = useAppTranslation();
 
   const getDocumentationUrl = (): string => {
-    const baseUrl = 'https://alternun-development.github.io';
-    const pathEn = '/docs/tutorial-basics/rbi-regenerative-basic-income';
-    const pathOther = `/${language}/docs/tutorial-basics/rbi-regenerative-basic-income`;
+    const baseUrl = 'https://docs.alternun.io';
+    const path = '/docs/tutorial-basics/airs-tu-huella-regenerativa';
 
-    return language === 'en' ? `${baseUrl}${pathEn}` : `${baseUrl}${pathOther}`;
+    return `${baseUrl}${path}`;
   };
 
   return (
@@ -623,12 +441,10 @@ function ATNCard({
 export default function DashboardSummaryCards({
   isDark,
   onNavigate,
-  client,
-  signedIn,
 }: DashboardSummaryCardsProps): React.JSX.Element {
   const p = getPalette(isDark);
   const { width } = useWindowDimensions();
-  const isMobile = width < 920;
+  const isMobile = width < 720;
   const isCompactMobile = width < 520;
   const isDenseAtnCard = width < 720;
 
@@ -641,9 +457,6 @@ export default function DashboardSummaryCards({
           isCompactMobile && styles.gridCompact,
         ]}
       >
-        <View style={styles.cardSlot}>
-          <PositionCard p={p} compact={isCompactMobile} client={client} signedIn={signedIn} />
-        </View>
         <View style={styles.cardSlot}>
           <RBICard p={p} compact={isCompactMobile} />
         </View>
@@ -734,77 +547,6 @@ const styles = StyleSheet.create({
   },
   dividerCompact: {
     marginVertical: 10,
-  },
-
-  positionList: {
-    gap: 18,
-    paddingBottom: 18,
-  },
-  positionListCompact: {
-    gap: 14,
-    paddingBottom: 14,
-  },
-  positionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  positionRowCompact: {
-    gap: 10,
-  },
-  positionIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  positionIconCompact: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  flagEmoji: {
-    fontSize: 18,
-  },
-  positionLabel: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  positionLabelCompact: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 16,
-  },
-  positionValue: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 24,
-    fontWeight: '900',
-    letterSpacing: -0.8,
-  },
-  positionValueCompact: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 21,
-    letterSpacing: -0.6,
-  },
-  positionFooter: {
-    marginTop: 'auto',
-    borderTopWidth: 1,
-    paddingTop: 12,
-    alignItems: 'center',
-  },
-  positionFooterCompact: {
-    paddingTop: 10,
-  },
-  positionFootnote: {
-    fontSize: 11,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  positionFootnoteCompact: {
-    fontSize: 10,
   },
 
   rbiHero: {
