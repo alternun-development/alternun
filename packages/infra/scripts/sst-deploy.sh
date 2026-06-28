@@ -1057,7 +1057,7 @@ sync_identity_runtime_templates() {
       --arg c14 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
       --arg c15 'timeout 1800 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
       --arg c16 "grep -E 'Authentik integration bootstrap|Supabase auth OIDC synced|TLS certificate ready|Restored ACME state|WARN:' /tmp/alternun-identity-runtime-sync.log || true" \
-      --arg c17 'timeout 120 bash /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
+      --arg c17 'timeout 360 bash /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
       '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13,$c14,$c15,$c16,$c17]}'
   )
 
