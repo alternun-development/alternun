@@ -1,3 +1,14 @@
+## [1.0.291](https://github.com/alternun-development/alternun/compare/v1.0.290-dev.0...v1.0.291) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.290
+- **repo:** fix(identity): fix container IP lookup and increase verify script timeout
+
+### Bug Fixes
+
+- **identity:** fix container IP lookup and increase verify script timeout ([c15e458](https://github.com/alternun-development/alternun/commit/c15e458597d7a70857687518c9f1e7909203b14b))
+
 ## [1.0.290](https://github.com/alternun-development/alternun/compare/v1.0.289...v1.0.290) (2026-06-28)
 
 ### Bug Fixes
