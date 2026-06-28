@@ -1,13 +1,19 @@
+## [1.0.290](https://github.com/alternun-development/alternun/compare/v1.0.289...v1.0.290) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.289
+- **repo:** fix(identity): wait for SSM agent online before dispatching runtime sync
+
+### Bug Fixes
+
+- **identity:** wait for SSM agent online before dispatching runtime sync ([848da7d](https://github.com/alternun-development/alternun/commit/848da7d74dec52ce8fe774e126550f7c7d27006c))
+
 ## [1.0.289](https://github.com/alternun-development/alternun/compare/v1.0.289-dev.0...v1.0.289) (2026-06-27)
 
 ### Bug Fixes
 
 - **repo:** docs: sync root README for v1.0.289
-
-
-
-
-
 
 ## [1.0.289](https://github.com/alternun-development/alternun/compare/v1.0.287-dev.0...v1.0.289) (2026-06-27)
 
