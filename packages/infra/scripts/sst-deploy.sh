@@ -966,6 +966,28 @@ sync_identity_runtime_templates() {
   local instance_id deploy_b64 bootstrap_b64 verify_runtime_b64 ec2_compose_b64 rds_compose_b64 ec2_alb_compose_b64 rds_alb_compose_b64 identity_domain identity_ingress_mode identity_tls_mode identity_acme_email identity_route53_zone_id identity_acme_backup_bucket identity_acme_backup_prefix identity_root_domain identity_app_name identity_authentik_image_tag identity_database_mode identity_authentik_secret_name identity_database_credentials_secret_name identity_smtp_credentials_secret_name identity_jwt_signing_secret_name identity_integration_config_secret_name params_json command_id
   instance_id=$(resolve_identity_instance_id)
 
+  # Wait for the SSM agent to register and be reachable before sending commands.
+  # The agent can be transiently offline during boot, OOM recovery, or after a fresh
+  # instance launch — dispatching before it's Online yields Undeliverable.
+  local ssm_wait_attempt=1 ssm_wait_max=60 ssm_ping
+  while [ "$ssm_wait_attempt" -le "$ssm_wait_max" ]; do
+    ssm_ping=$(aws ssm describe-instance-information \
+      --filters "Key=InstanceIds,Values=${instance_id}" \
+      --query 'InstanceInformationList[0].PingStatus' \
+      --output text 2>/dev/null || echo "")
+    if [ "$ssm_ping" = "Online" ]; then
+      break
+    fi
+    echo "Waiting for SSM agent on ${instance_id} (status: ${ssm_ping:-unknown}, attempt ${ssm_wait_attempt}/${ssm_wait_max})..." >&2
+    sleep 10
+    ssm_wait_attempt=$((ssm_wait_attempt + 1))
+  done
+  if [ "$ssm_ping" != "Online" ]; then
+    echo "ERROR: SSM agent on ${instance_id} did not come online after $((ssm_wait_max * 10))s." >&2
+    IDENTITY_INSTANCE_UNDELIVERABLE=1
+    return 1
+  fi
+
   case "$stage_normalized" in
     identity-prod|identity-production|auth-prod|authentik-prod)
       identity_domain="${INFRA_IDENTITY_DOMAIN_PRODUCTION:-sso.${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-alternun.co}}}"
@@ -1035,7 +1057,7 @@ sync_identity_runtime_templates() {
       --arg c14 'chown ec2-user:ec2-user /opt/alternun/identity/templates/docker-compose.ec2.yml /opt/alternun/identity/templates/docker-compose.rds.yml /opt/alternun/identity/templates/docker-compose.ec2.alb.yml /opt/alternun/identity/templates/docker-compose.rds.alb.yml /opt/alternun/identity/templates/bootstrap-authentik-integrations.py /opt/alternun/identity/authentik/custom-templates/alternun-bootstrap-integrations.py /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
       --arg c15 'timeout 1800 bash /opt/alternun/identity/deploy-authentik.sh > /tmp/alternun-identity-runtime-sync.log 2>&1 || { cat /tmp/alternun-identity-runtime-sync.log; exit 1; }' \
       --arg c16 "grep -E 'Authentik integration bootstrap|Supabase auth OIDC synced|TLS certificate ready|Restored ACME state|WARN:' /tmp/alternun-identity-runtime-sync.log || true" \
-      --arg c17 'timeout 120 bash /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
+      --arg c17 'timeout 360 bash /opt/alternun/identity/templates/verify-authentik-runtime.sh' \
       '{commands:[$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13,$c14,$c15,$c16,$c17]}'
   )
 
