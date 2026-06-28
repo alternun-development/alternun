@@ -1,3 +1,11 @@
+## [1.0.292](https://github.com/alternun-development/alternun/compare/v1.0.291-dev.0...v1.0.292) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** chore(repo): README
+- **repo:** 🌐 feat(dashboard): add scope filter to activity feed and fix subtitle translations
+- **repo:** ✨ feat(dashboard): merge leaderboard with position card and add scope filter
+
 ## [1.0.291](https://github.com/alternun-development/alternun/compare/v1.0.290-dev.0...v1.0.291) (2026-06-28)
 
 ### Bug Fixes
