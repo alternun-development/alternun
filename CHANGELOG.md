@@ -1,13 +1,20 @@
+## [1.0.293](https://github.com/alternun-development/alternun/compare/v1.0.292...v1.0.293) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** fix(airs): fix null app_user_id in JWTs and backfill prod airs_balance
+- **repo:** chore: release v1.0.288
+- **repo:** docs: sync root README for v1.0.288
+
+### Bug Fixes
+
+- **airs:** fix null app_user_id in JWTs and backfill prod airs_balance ([c319be6](https://github.com/alternun-development/alternun/commit/c319be6bc6a6d8774a9967a0790b1d899f71d62b))
+
 ## [1.0.292](https://github.com/alternun-development/alternun/compare/v1.0.292-dev.0...v1.0.292) (2026-06-28)
 
 ### Bug Fixes
 
 - **repo:** docs: sync root README for v1.0.292
-
-
-
-
-
 
 ## [1.0.292](https://github.com/alternun-development/alternun/compare/v1.0.291-dev.0...v1.0.292) (2026-06-28)
 
