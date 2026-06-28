@@ -48,7 +48,7 @@ void test('sst-deploy syncs identity runtime verification through a dedicated sc
   );
   assert.match(
     source,
-    /timeout 120 bash \/opt\/alternun\/identity\/templates\/verify-authentik-runtime\.sh/
+    /timeout 360 bash \/opt\/alternun\/identity\/templates\/verify-authentik-runtime\.sh/
   );
   assert.match(
     source,

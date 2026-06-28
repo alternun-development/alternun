@@ -1,13 +1,60 @@
-## [1.0.288](https://github.com/alternun-development/alternun/compare/v1.0.287-dev.0...v1.0.288) (2026-06-27)
+## [1.0.292](https://github.com/alternun-development/alternun/compare/v1.0.292-dev.0...v1.0.292) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.292
+
+
+
+
+
+
+## [1.0.292](https://github.com/alternun-development/alternun/compare/v1.0.291-dev.0...v1.0.292) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** chore(repo): README
+- **repo:** 🌐 feat(dashboard): add scope filter to activity feed and fix subtitle translations
+- **repo:** ✨ feat(dashboard): merge leaderboard with position card and add scope filter
+
+## [1.0.291](https://github.com/alternun-development/alternun/compare/v1.0.290-dev.0...v1.0.291) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.290
+- **repo:** fix(identity): fix container IP lookup and increase verify script timeout
+
+### Bug Fixes
+
+- **identity:** fix container IP lookup and increase verify script timeout ([c15e458](https://github.com/alternun-development/alternun/commit/c15e458597d7a70857687518c9f1e7909203b14b))
+
+## [1.0.290](https://github.com/alternun-development/alternun/compare/v1.0.289...v1.0.290) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.289
+- **repo:** fix(identity): wait for SSM agent online before dispatching runtime sync
+
+### Bug Fixes
+
+- **identity:** wait for SSM agent online before dispatching runtime sync ([848da7d](https://github.com/alternun-development/alternun/commit/848da7d74dec52ce8fe774e126550f7c7d27006c))
+
+## [1.0.289](https://github.com/alternun-development/alternun/compare/v1.0.289-dev.0...v1.0.289) (2026-06-27)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.289
+
+## [1.0.289](https://github.com/alternun-development/alternun/compare/v1.0.287-dev.0...v1.0.289) (2026-06-27)
 
 ### Bug Fixes
 
 - **repo:** docs: sync root README for v1.0.288
+- **repo:** fix(identity): replace manage.py shell readiness check with HTTP health endpoint
 
+### Bug Fixes
 
-
-
-
+- **identity:** replace manage.py shell readiness check with HTTP health endpoint ([7dbea82](https://github.com/alternun-development/alternun/commit/7dbea824443ba73ff9dbc37ed83e1c427039b96b))
 
 ## [1.0.288](https://github.com/alternun-development/alternun/compare/v1.0.286...v1.0.288) (2026-06-27)
 

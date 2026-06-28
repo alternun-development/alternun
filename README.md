@@ -118,18 +118,15 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.0.288**
+Current version: **1.0.292**
 
-## 📋 Latest Changes (v1.0.288)
+## 📋 Latest Changes (v1.0.292)
 
-### Bug Fixes
+### Features
 
-- **repo:** chore(repo,admin,api): CHANGELOG, README, app, version.development
-- **repo:** fix(infra): sst-deploy
-
-### Bug Fixes
-
-- **infra:** sst-deploy ([721170d](https://github.com/alternun-development/alternun/commit/721170d578c2411d4242a778e76a1380fd6ad7d6))
+- **dashboard:** merge leaderboard with position card and add Global/País/Ciudad scope filter
+- **dashboard:** add Mi Actividad / Actividad Global scope filter to activity feed
+- **dashboard:** fix activity feed subtitle translations and RBI docs URL
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
