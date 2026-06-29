@@ -188,6 +188,14 @@ function normalizeSession(input: unknown, fallbackProvider: string): ExecutionSe
     normalizeMaybeDate(sessionPayload?.expires_at) ??
     null;
 
+  if (!sessionPayload && !userPayload && !identityCandidate && !accessTokenCandidate) {
+    // Better Auth's getSession() resolves to `{ data: null, error: null }` when there is
+    // no active Better Auth cookie session (e.g. a Supabase-only password account). Without
+    // this check that shape is mistaken for a real (empty) session, which short-circuits
+    // getExecutionSession() before it ever reaches the Supabase legacy fallback.
+    return null;
+  }
+
   return {
     provider:
       typeof payload.provider === 'string'

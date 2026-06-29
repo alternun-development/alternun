@@ -18,6 +18,7 @@ export interface AirsLeaderboardEntry {
 export interface AirsLeaderboardResult {
   entries: AirsLeaderboardEntry[];
   requestingUserEntry: AirsLeaderboardEntry | null;
+  totalEligibleUsers: number;
 }
 
 export interface UserAchievement {
@@ -572,14 +573,17 @@ export async function getAirsLeaderboard(
   },
   env: Record<string, string | undefined> = process.env
 ): Promise<AirsLeaderboardResult> {
-  const rows = await supabaseRpcArray(
-    'airs_get_leaderboard',
-    {
-      p_requesting_user_id: input.requestingUserId,
-      p_limit: input.limit ?? 20,
-    },
-    env
-  );
+  const [rows, totalEligibleUsers] = await Promise.all([
+    supabaseRpcArray(
+      'airs_get_leaderboard',
+      {
+        p_requesting_user_id: input.requestingUserId,
+        p_limit: input.limit ?? 20,
+      },
+      env
+    ),
+    getAirsEligibleUsersCount(env),
+  ]);
 
   const entries: AirsLeaderboardEntry[] = rows.map((row) => ({
     rank: asNumber(row.rank),
@@ -592,5 +596,12 @@ export async function getAirsLeaderboard(
 
   const requestingUserEntry = entries.find((e) => e.isMe) ?? null;
 
-  return { entries, requestingUserEntry };
+  return { entries, requestingUserEntry, totalEligibleUsers };
+}
+
+export async function getAirsEligibleUsersCount(
+  env: Record<string, string | undefined> = process.env
+): Promise<number> {
+  const rows = await supabaseRpcArray('airs_get_eligible_users_count', {}, env);
+  return asNumber(rows[0]?.count);
 }
