@@ -590,6 +590,7 @@ export default function Dashboard({
                 onNavigate={handleNavigate}
                 client={client}
                 signedIn={Boolean(user)}
+                airsBalance={airsSnapshot?.balanceAIRS}
               />
             </View>
           </ScrollView>

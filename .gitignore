@@ -1,5 +1,8 @@
 node_modules
 
+# Editor-local settings
+.vscode/
+
 # Environment files
 .env
 .env.*
