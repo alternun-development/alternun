@@ -13,6 +13,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { ChevronDown, ChevronUp, type LucideProps } from 'lucide-react-native';
 import { PolicyDrawerContent } from '../auth/AuthFooter';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import Animated, {
@@ -47,6 +48,9 @@ import {
 } from './Footer.shared';
 import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 
+const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
+const ChevronUpIcon = ChevronUp as React.FC<LucideProps>;
+
 interface AppInfoFooterProps {
   containerStyle?: StyleProp<ViewStyle>;
 }
@@ -62,10 +66,12 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
 
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const handlePrivacyOpen = useCallback(() => setPrivacyOpen(true), []);
   const handlePrivacyClose = useCallback(() => setPrivacyOpen(false), []);
   const handleTermsOpen = useCallback(() => setTermsOpen(true), []);
   const handleTermsClose = useCallback(() => setTermsOpen(false), []);
+  const handleToggleExpanded = useCallback(() => setExpanded((prev) => !prev), []);
   const primaryLinkPressHandlers = {
     privacy: handlePrivacyOpen,
     terms: handleTermsOpen,
@@ -209,7 +215,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
             ]}
           />
 
-          {/* Desktop layout */}
+          {/* Desktop layout — always visible, minimal */}
           {!isMobile && (
             <View style={styles.desktopLayout}>
               <View style={styles.brandBlock}>
@@ -237,7 +243,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
                 </View>
               </View>
 
-              <View style={styles.socialBlock}>
+              <View style={styles.desktopRightGroup}>
                 <View style={styles.socialRow}>
                   {SOCIAL_LINKS.map((link) => (
                     <SocialPill
@@ -250,6 +256,19 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
                     />
                   ))}
                 </View>
+
+                <Pressable
+                  onPress={handleToggleExpanded}
+                  accessibilityRole='button'
+                  accessibilityLabel={expanded ? t('footer.less') : t('footer.more')}
+                  style={[styles.expandHandle, { borderColor: palette.shellBorder }]}
+                >
+                  {expanded ? (
+                    <ChevronUpIcon size={14} color={palette.accent} />
+                  ) : (
+                    <ChevronDownIcon size={14} color={palette.accent} />
+                  )}
+                </Pressable>
               </View>
             </View>
           )}
@@ -257,24 +276,41 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
           {/* Mobile layout — minimal single line */}
           {isMobile && (
             <View style={styles.mobileLayoutSingleLine}>
-              <View style={styles.mobileLinkRow}>
-                {primaryLinks.map((link, index) => (
-                  <React.Fragment key={link.labelKey}>
-                    <FooterTextLink
-                      label={t(link.labelKey, undefined, link.fallbackLabel)}
-                      url={link.url}
-                      onPress={resolvePrimaryLinkPressHandler(link, primaryLinkPressHandlers)}
-                      textColor={palette.title}
-                      hoverColor={palette.accent}
-                      compact
-                      align='center'
-                      singleLine
-                    />
-                    {index < primaryLinks.length - 1 && (
-                      <Text style={[styles.mobileLinkSeparator, { color: palette.muted }]}>•</Text>
-                    )}
-                  </React.Fragment>
-                ))}
+              <View style={styles.mobileTopRow}>
+                <View style={styles.mobileLinkRow}>
+                  {primaryLinks.map((link, index) => (
+                    <React.Fragment key={link.labelKey}>
+                      <FooterTextLink
+                        label={t(link.labelKey, undefined, link.fallbackLabel)}
+                        url={link.url}
+                        onPress={resolvePrimaryLinkPressHandler(link, primaryLinkPressHandlers)}
+                        textColor={palette.title}
+                        hoverColor={palette.accent}
+                        compact
+                        align='center'
+                        singleLine
+                      />
+                      {index < primaryLinks.length - 1 && (
+                        <Text style={[styles.mobileLinkSeparator, { color: palette.muted }]}>
+                          •
+                        </Text>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </View>
+
+                <Pressable
+                  onPress={handleToggleExpanded}
+                  accessibilityRole='button'
+                  accessibilityLabel={expanded ? t('footer.less') : t('footer.more')}
+                  style={[styles.expandHandleMobile, { borderColor: palette.shellBorder }]}
+                >
+                  {expanded ? (
+                    <ChevronUpIcon size={13} color={palette.accent} />
+                  ) : (
+                    <ChevronDownIcon size={13} color={palette.accent} />
+                  )}
+                </Pressable>
               </View>
 
               <View style={styles.mobileSocialRowCompact}>
@@ -294,29 +330,35 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
             </View>
           )}
 
-          {/* Bottom bar — centered layout */}
-          <View
-            style={[
-              styles.bottomBar,
-              {
-                backgroundColor: palette.bottomBar,
-                marginTop: isMobile ? 6 : 10,
-              },
-            ]}
-          >
-            <View style={styles.bottomCenterSection}>
-              <FooterCopyright color={palette.title} />
-              <View style={styles.bottomControlsRow}>
-                <ChangelogDrawer
-                  changelog={changelogContent}
-                  githubUrl={GITHUB_REPO_URL}
-                  pageSize={3}
-                  triggerLabel={`v${versionMetadata.version}`}
-                />
-                <SupportButton supportEmail='support@alternun.co' palette={palette} />
+          {/* Expanded section — copyright, version, support */}
+          {expanded && (
+            <View
+              style={[
+                styles.bottomBar,
+                {
+                  backgroundColor: palette.bottomBar,
+                  marginTop: isMobile ? 6 : 10,
+                },
+              ]}
+            >
+              <View
+                style={[styles.bottomCenterSection, isMobile && styles.bottomCenterSectionMobile]}
+              >
+                <View style={styles.copyrightWrap}>
+                  <FooterCopyright color={palette.title} />
+                </View>
+                <View style={styles.bottomControlsRow}>
+                  <ChangelogDrawer
+                    changelog={changelogContent}
+                    githubUrl={GITHUB_REPO_URL}
+                    pageSize={3}
+                    triggerLabel={`v${versionMetadata.version}`}
+                  />
+                  <SupportButton supportEmail='support@alternun.co' palette={palette} />
+                </View>
               </View>
             </View>
-          </View>
+          )}
         </View>
       </View>
 
@@ -503,11 +545,13 @@ const styles = createTypographyStyles({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
     gap: 14,
   },
   brandBlock: {
     gap: 0,
     minWidth: 148,
+    flexShrink: 0,
   },
   brandHeader: {
     flexDirection: 'row',
@@ -542,14 +586,33 @@ const styles = createTypographyStyles({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  socialBlock: {
-    alignItems: 'flex-end',
-    marginLeft: 'auto',
+  desktopRightGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexShrink: 0,
   },
   socialRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
+  },
+  expandHandle: {
+    width: 28,
+    height: 22,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  expandHandleMobile: {
+    width: 24,
+    height: 20,
+    borderRadius: 7,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
 
   /* Mobile */
@@ -557,6 +620,9 @@ const styles = createTypographyStyles({
     gap: 8,
   },
   mobileLayoutSingleLine: {
+    gap: 6,
+  },
+  mobileTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -584,11 +650,10 @@ const styles = createTypographyStyles({
   },
   mobileSocialRowCompact: {
     flexDirection: 'row',
-    flexWrap: 'nowrap',
-    gap: 3,
-    justifyContent: 'flex-end',
+    flexWrap: 'wrap',
+    gap: 6,
+    justifyContent: 'center',
     alignItems: 'center',
-    flexShrink: 0,
   },
   /* Bottom bar */
   bottomBar: {
@@ -626,11 +691,21 @@ const styles = createTypographyStyles({
   bottomCenterSection: {
     flex: 1,
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 6,
+    gap: 8,
+  },
+  bottomCenterSectionMobile: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  copyrightWrap: {
+    flexShrink: 1,
+    minWidth: 0,
   },
   bottomControlsRow: {
+    flexShrink: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
