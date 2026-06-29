@@ -272,7 +272,7 @@
           "eligibleUsers": "Usuarios elegibles:",
           "airsScore": "Tu puntaje Airs:",
           "whatIsRbi": "¿Qué es el RBI?",
-          "explanation": "El Regenerative Basic Income es un ingreso periódico que se distribuye entre los usuarios de Alternun que contribuyen al ecosistema.\\n\\nNo depende de cuánto dinero tengas, sino de tu participación, tu compromiso y tu impacto, medidos a través de tu puntaje AIRS.\\n\\nCada vez que Alternun facilita una compensación, una venta desde el compensation pool o una actividad económica dentro de la plataforma, una parte de ese valor se destina directamente al fondo del RBI.",
+          "explanation": "El Regenerative Basic Income es un ingreso periódico que se distribuye entre los usuarios de Alternun que contribuyen al ecosistema.\n\nNo depende de cuánto dinero tengas, sino de tu participación, tu compromiso y tu impacto, medidos a través de tu puntaje AIRS.\n\nCada vez que Alternun facilita una compensación, una venta desde el compensation pool o una actividad económica dentro de la plataforma, una parte de ese valor se destina directamente al fondo del RBI.",
           "fullDocumentation": "Documentación completa"
         },
         "atn": {
@@ -298,7 +298,9 @@
         "terms": "Términos",
         "support": "Soporte"
       },
-      "tagline": "“Una manera diferente de hacer las cosas” · Alternun.io"
+      "tagline": "“Una manera diferente de hacer las cosas” · Alternun.io",
+      "more": "Más",
+      "less": "Menos"
     },
     "releaseUpdate": {
       "eyebrow": "Nueva versión disponible",

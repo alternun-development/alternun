@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Linking,
   StyleSheet,
   Text,
@@ -7,19 +8,34 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { ChevronRight, Coins, TrendingUp, Wallet, type LucideProps } from 'lucide-react-native';
+import {
+  ChevronDown,
+  ChevronRight,
+  Coins,
+  TrendingUp,
+  Wallet,
+  type LucideProps,
+} from 'lucide-react-native';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
+import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 
 const CoinsIcon = Coins as React.FC<LucideProps>;
 const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
+const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
+const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
+
+interface AuthClient {
+  getSessionToken(): Promise<string | null>;
+}
 
 interface DashboardSummaryCardsProps {
   isDark: boolean;
   onNavigate?: (key: string) => void;
-  client?: unknown;
+  client?: AuthClient;
   signedIn?: boolean;
+  airsBalance?: number | null;
 }
 
 function getPalette(isDark: boolean): {
@@ -89,10 +105,12 @@ function SummaryCard({
   children,
   p,
   compact = false,
+  minHeight,
 }: {
   children: React.ReactNode;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
+  minHeight?: number;
 }): React.JSX.Element {
   return (
     <View
@@ -104,6 +122,7 @@ function SummaryCard({
           borderColor: p.cardBorder,
           boxShadow: compact ? `0px 10px 22px ${p.cardShadow}` : `0px 14px 32px ${p.cardShadow}`,
         },
+        typeof minHeight === 'number' && { minHeight },
       ]}
     >
       {children}
@@ -146,12 +165,44 @@ function Divider({
   );
 }
 
-function RBICard({
+function StatValue({
+  value,
+  loading,
   p,
   compact = false,
 }: {
+  value?: number | null;
+  loading?: boolean;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
+}): React.JSX.Element {
+  if (loading) {
+    return <ActivityIndicator size='small' color={p.accent} />;
+  }
+
+  return (
+    <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
+      {typeof value === 'number' ? value.toLocaleString() : 'Coming soon'}
+    </Text>
+  );
+}
+
+function RBICard({
+  p,
+  compact = false,
+  eligibleUsers,
+  eligibleUsersLoading = false,
+  airsScore,
+  airsScoreLoading = false,
+  minHeight,
+}: {
+  p: ReturnType<typeof getPalette>;
+  compact?: boolean;
+  eligibleUsers?: number | null;
+  eligibleUsersLoading?: boolean;
+  airsScore?: number | null;
+  airsScoreLoading?: boolean;
+  minHeight?: number;
 }): React.JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
   const t = useAppTranslation();
@@ -164,7 +215,7 @@ function RBICard({
   };
 
   return (
-    <SummaryCard p={p} compact={compact}>
+    <SummaryCard p={p} compact={compact} minHeight={minHeight}>
       <CardTitle
         label={t.t('dashboard.summaryCards.rbi.title')}
         sub={t.t('dashboard.summaryCards.rbi.subtitle')}
@@ -202,17 +253,13 @@ function RBICard({
           <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
             {t.t('dashboard.summaryCards.rbi.eligibleUsers')}
           </Text>
-          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
-            Coming soon
-          </Text>
+          <StatValue value={eligibleUsers} loading={eligibleUsersLoading} p={p} compact={compact} />
         </View>
         <View style={styles.statRow}>
           <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
             {t.t('dashboard.summaryCards.rbi.airsScore')}
           </Text>
-          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
-            Coming soon
-          </Text>
+          <StatValue value={airsScore} loading={airsScoreLoading} p={p} compact={compact} />
         </View>
       </View>
 
@@ -236,13 +283,11 @@ function RBICard({
             >
               {t.t('dashboard.summaryCards.rbi.whatIsRbi')}
             </Text>
-            <ChevronRight
-              size={16}
-              color={p.accent}
-              style={{
-                transform: [{ rotate: isExpanded ? '90deg' : '0deg' }],
-              }}
-            />
+            {isExpanded ? (
+              <ChevronDownIcon size={16} color={p.accent} />
+            ) : (
+              <ChevronRightIcon size={16} color={p.accent} />
+            )}
           </View>
         </View>
       </TouchableOpacity>
@@ -283,7 +328,7 @@ function RBICard({
               >
                 {t.t('dashboard.summaryCards.rbi.fullDocumentation')}
               </Text>
-              <ChevronRight size={14} color={p.accent} />
+              <ChevronRightIcon size={14} color={p.accent} />
             </View>
           </TouchableOpacity>
         </>
@@ -297,17 +342,19 @@ function ATNCard({
   compact = false,
   dense = false,
   onNavigate,
+  minHeight,
 }: {
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
   dense?: boolean;
   onNavigate?: (key: string) => void;
+  minHeight?: number;
 }): React.JSX.Element {
   const useDenseLayout = compact || dense;
   const t = useAppTranslation();
 
   return (
-    <SummaryCard p={p} compact={compact}>
+    <SummaryCard p={p} compact={compact} minHeight={minHeight}>
       <CardTitle
         label={t.t('dashboard.summaryCards.atn.title')}
         sub={t.t('dashboard.summaryCards.atn.subtitle')}
@@ -382,7 +429,7 @@ function ATNCard({
           styles.walletPanel,
           useDenseLayout && styles.walletPanelDense,
           compact && styles.walletPanelCompact,
-          { backgroundColor: p.panelBg, borderColor: p.panelBorder },
+          { backgroundColor: p.accentSoft, borderColor: p.accent },
         ]}
       >
         <View style={[styles.walletPanelTop, useDenseLayout && styles.walletPanelTopDense]}>
@@ -390,7 +437,7 @@ function ATNCard({
             style={[
               styles.walletPanelLabel,
               compact && styles.walletPanelLabelCompact,
-              { color: p.title },
+              { color: p.accent },
             ]}
           >
             Wallet principal
@@ -417,23 +464,32 @@ function ATNCard({
         >
           0xA8f9...Wq77E4c2
         </Text>
-        <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet')} activeOpacity={0.7}>
+      </View>
+
+      <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet')} activeOpacity={0.7}>
+        <View
+          style={[
+            styles.rbiDocLink,
+            compact && styles.rbiDocLinkCompact,
+            { backgroundColor: p.accentSoft, borderColor: p.accent },
+          ]}
+        >
           <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense]}>
-            <WalletIcon size={15} color={p.title} />
+            <WalletIcon size={15} color={p.accent} />
             <Text
               style={[
                 styles.walletLinkText,
                 useDenseLayout && styles.walletLinkTextDense,
                 compact && styles.walletLinkTextCompact,
-                { color: p.title },
+                { color: p.accent },
               ]}
             >
               Gestionar wallet
             </Text>
-            <ChevronRight size={14} color={p.title} />
           </View>
-        </TouchableOpacity>
-      </View>
+          <ChevronRightIcon size={14} color={p.accent} />
+        </View>
+      </TouchableOpacity>
     </SummaryCard>
   );
 }
@@ -441,12 +497,59 @@ function ATNCard({
 export default function DashboardSummaryCards({
   isDark,
   onNavigate,
+  client,
+  signedIn,
+  airsBalance,
 }: DashboardSummaryCardsProps): React.JSX.Element {
   const p = getPalette(isDark);
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
   const isCompactMobile = width < 520;
   const isDenseAtnCard = width < 720;
+  const desktopMinHeight = isMobile ? undefined : 480;
+  const [eligibleUsers, setEligibleUsers] = useState<number | null>(null);
+  const [eligibleUsersLoading, setEligibleUsersLoading] = useState(false);
+  const airsScoreLoading = Boolean(signedIn) && typeof airsBalance !== 'number';
+
+  useEffect(() => {
+    if (!signedIn || !client) {
+      return;
+    }
+
+    let cancelled = false;
+    setEligibleUsersLoading(true);
+
+    const fetchEligibleUsers = async (): Promise<void> => {
+      try {
+        const token = await client.getSessionToken();
+        if (!token) {
+          return;
+        }
+        const res = await fetch(`${resolveMobileApiBaseUrl()}/v1/airs/leaderboard?limit=1`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          return;
+        }
+        const data = (await res.json()) as { totalEligibleUsers?: number };
+        if (!cancelled && typeof data.totalEligibleUsers === 'number') {
+          setEligibleUsers(data.totalEligibleUsers);
+        }
+      } catch {
+        // Leave eligibleUsers as null; the card falls back to "Coming soon".
+      } finally {
+        if (!cancelled) {
+          setEligibleUsersLoading(false);
+        }
+      }
+    };
+
+    void fetchEligibleUsers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn, client]);
 
   return (
     <View style={[styles.root, isCompactMobile && styles.rootCompact]}>
@@ -458,10 +561,24 @@ export default function DashboardSummaryCards({
         ]}
       >
         <View style={styles.cardSlot}>
-          <RBICard p={p} compact={isCompactMobile} />
+          <RBICard
+            p={p}
+            compact={isCompactMobile}
+            eligibleUsers={eligibleUsers}
+            eligibleUsersLoading={eligibleUsersLoading}
+            airsScore={airsBalance}
+            airsScoreLoading={airsScoreLoading}
+            minHeight={desktopMinHeight}
+          />
         </View>
         <View style={styles.cardSlot}>
-          <ATNCard p={p} compact={isCompactMobile} dense={isDenseAtnCard} onNavigate={onNavigate} />
+          <ATNCard
+            p={p}
+            compact={isCompactMobile}
+            dense={isDenseAtnCard}
+            onNavigate={onNavigate}
+            minHeight={desktopMinHeight}
+          />
         </View>
       </View>
     </View>
@@ -490,7 +607,7 @@ const styles = StyleSheet.create({
   },
   gridDesktop: {
     flexDirection: 'row',
-    alignItems: 'stretch',
+    alignItems: 'flex-start',
   },
   cardSlot: {
     flex: 1,
