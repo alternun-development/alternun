@@ -4,6 +4,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -168,7 +169,10 @@ export default function WalletManageModal({
   };
 
   const renderList = (): React.JSX.Element => (
-    <>
+    // Wrap in View (not Fragment) so it's one flex child — fragments whose children become
+    // direct siblings of the closeArea Pressable in the flex-1 container can cause
+    // unexpected space distribution, pushing content to the bottom.
+    <View style={styles.listContent}>
       <Text style={[styles.title, { color: textColor }]}>
         {t('wallet.manage.title', undefined, 'Your wallets')}
       </Text>
@@ -188,7 +192,7 @@ export default function WalletManageModal({
       {loading ? (
         <ActivityIndicator size='large' color={accent} style={{ marginTop: 32 }} />
       ) : (
-        <View style={styles.list}>
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.accountsScroll}>
           {accounts.map((account) => (
             <View key={account.id} style={[styles.row, { backgroundColor: cardBg }]}>
               <View style={styles.rowInfo}>
@@ -237,7 +241,7 @@ export default function WalletManageModal({
               </View>
             </View>
           ))}
-        </View>
+        </ScrollView>
       )}
 
       <TouchableOpacity
@@ -250,7 +254,7 @@ export default function WalletManageModal({
           {t('wallet.manage.add', undefined, 'Add wallet')}
         </Text>
       </TouchableOpacity>
-    </>
+    </View>
   );
 
   const renderAddMenu = (): React.JSX.Element => (
@@ -456,6 +460,10 @@ export default function WalletManageModal({
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 64, paddingHorizontal: 24 },
+  // listContent wraps renderList so it's ONE flex child (not a fragment's children),
+  // preventing the container from distributing space unpredictably.
+  listContent: { flex: 1 },
+  accountsScroll: { flexGrow: 0 }, // don't let the scroll view expand to fill remaining space
   closeArea: { alignSelf: 'flex-end', padding: 8 },
   closeText: { fontFamily: ANEK_EXPANDED_FAMILY, fontSize: 14, fontWeight: '600' },
   header: {
