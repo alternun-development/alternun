@@ -1,3 +1,14 @@
+# [1.1.0](https://github.com/alternun-development/alternun/compare/v1.0.296...v1.1.0) (2026-06-30)
+
+### Bug Fixes
+
+- **mobile:** smooth AIRS ranking transitions ([70b510a](https://github.com/alternun-development/alternun/commit/70b510a3d32db4dc65062079ae710d09557f2ee6))
+- stack dashboard summary cards on mobile ([e447ed1](https://github.com/alternun-development/alternun/commit/e447ed1070e00f774553f061acfeb15ddecb394c))
+
+### Features
+
+- **wallet:** non-custodial multi-chain wallet (EVM/Bitcoin/Solana) for web ([4561159](https://github.com/alternun-development/alternun/commit/45611598ac9e6d3582d587c31dfcbbdcc6265b37))
+
 ## [1.1.0](https://github.com/alternun-development/alternun/compare/v1.0.296...v1.1.0) (2026-06-30)
 
 ### Features
