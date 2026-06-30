@@ -19,7 +19,11 @@ export function bytesToBase64(bytes: Uint8Array): string {
 }
 
 export function base64ToBytes(base64: string): Uint8Array {
-  const cleaned = base64.replace(/=+$/, '');
+  // Trim trailing padding without regex to avoid a polynomial-ReDoS risk on strings
+  // with many consecutive '=' characters (CodeQL js/polynomial-redos, alert #61).
+  let end = base64.length;
+  while (end > 0 && base64[end - 1] === '=') end--;
+  const cleaned = base64.slice(0, end);
   const bytes: number[] = [];
   let buffer = 0;
   let bits = 0;
