@@ -1,12 +1,12 @@
 # Re-entry Status
 
 Schema: 1.1
-Version: 1.0.42
-Phase: staging
+Version: 1.0.294
+Phase: building
 
-Next micro-step: Verify deployment and update documentation
+Next micro-step: Tasks 03-05 complete (build-validated, i18n done, WalletTab redesigned). Next: task 06 (wallet home/send/receive — needs task 07 RPC provider decision), task 08 remaining (IP throttling), task 09 (QA plan).
 
-Milestone: —
+Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
 
 ## Notes

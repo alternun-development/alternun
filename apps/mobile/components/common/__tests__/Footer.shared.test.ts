@@ -5,11 +5,11 @@ jest.mock('expo-image', (): { __esModule: boolean; Image: () => null } => ({
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const developmentManifest = require('../../../../../version.development.json') as {
+const developmentManifest = require('../../../version.development.json') as {
   version: string;
 };
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const productionManifest = require('../../../../../version.production.json') as {
+const productionManifest = require('../../../version.production.json') as {
   version: string;
 };
 import { resolveAppPackageVersion, resolveVersionMetadata } from '../Footer.shared';
