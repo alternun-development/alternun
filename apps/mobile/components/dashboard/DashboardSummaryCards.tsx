@@ -19,6 +19,8 @@ import {
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
+import { listWalletAccounts, type WalletAccountRecord } from '../wallet/walletApiClient';
+import { resolveWalletSummaryState } from './walletSummary';
 
 const CoinsIcon = Coins as React.FC<LucideProps>;
 const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
@@ -176,13 +178,17 @@ function StatValue({
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
 }): React.JSX.Element {
+  const t = useAppTranslation();
+
   if (loading) {
     return <ActivityIndicator size='small' color={p.accent} />;
   }
 
   return (
     <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
-      {typeof value === 'number' ? value.toLocaleString() : 'Coming soon'}
+      {typeof value === 'number'
+        ? value.toLocaleString()
+        : t.t('dashboard.summaryCards.comingSoon')}
     </Text>
   );
 }
@@ -206,6 +212,7 @@ function RBICard({
 }): React.JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
   const t = useAppTranslation();
+  const comingSoonLabel = t.t('dashboard.summaryCards.comingSoon');
 
   const getDocumentationUrl = (): string => {
     const baseUrl = 'https://docs.alternun.io';
@@ -225,7 +232,7 @@ function RBICard({
 
       <View style={[styles.rbiHero, compact && styles.rbiHeroCompact]}>
         <Text style={[styles.rbiValue, compact && styles.rbiValueCompact, { color: p.accent }]}>
-          Coming soon
+          {comingSoonLabel}
         </Text>
         <View
           style={[
@@ -246,7 +253,7 @@ function RBICard({
             {t.t('dashboard.summaryCards.rbi.estimatedPool')}
           </Text>
           <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
-            Coming soon
+            {comingSoonLabel}
           </Text>
         </View>
         <View style={styles.statRow}>
@@ -337,21 +344,38 @@ function RBICard({
   );
 }
 
+function truncateMiddle(value: string, start = 8, end = 6): string {
+  if (value.length <= start + end + 3) {
+    return value;
+  }
+
+  return `${value.slice(0, start)}...${value.slice(-end)}`;
+}
+
 function ATNCard({
   p,
   compact = false,
   dense = false,
   onNavigate,
+  walletAccount,
   minHeight,
 }: {
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
   dense?: boolean;
   onNavigate?: (key: string) => void;
+  walletAccount?: WalletAccountRecord | null;
   minHeight?: number;
 }): React.JSX.Element {
   const useDenseLayout = compact || dense;
   const t = useAppTranslation();
+  const comingSoonLabel = t.t('dashboard.summaryCards.comingSoon');
+  const primaryWalletLabel = t.t('dashboard.summaryCards.atn.primaryWalletLabel');
+  const primaryWalletMeta = t.t('dashboard.summaryCards.atn.primaryWalletMeta');
+  const walletSummaryState = resolveWalletSummaryState(walletAccount ?? null);
+  const walletAddress = walletSummaryState.address
+    ? truncateMiddle(walletSummaryState.address)
+    : null;
 
   return (
     <SummaryCard p={p} compact={compact} minHeight={minHeight}>
@@ -380,7 +404,7 @@ function ATNCard({
           </Text>
         </View>
         <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
-          Coming soon
+          {comingSoonLabel}
         </Text>
       </View>
       <Divider p={p} compact={compact} />
@@ -402,7 +426,7 @@ function ATNCard({
           </Text>
         </View>
         <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
-          Coming soon
+          {comingSoonLabel}
         </Text>
       </View>
 
@@ -419,7 +443,7 @@ function ATNCard({
               { color: p.accentStrong },
             ]}
           >
-            Coming soon
+            {comingSoonLabel}
           </Text>
         </View>
       </View>
@@ -440,7 +464,7 @@ function ATNCard({
               { color: p.accent },
             ]}
           >
-            Wallet principal
+            {primaryWalletLabel}
           </Text>
           <Text
             style={[
@@ -450,7 +474,7 @@ function ATNCard({
               { color: p.muted },
             ]}
           >
-            Interna
+            {primaryWalletMeta}
           </Text>
         </View>
         <Text
@@ -462,7 +486,9 @@ function ATNCard({
             { color: p.copy },
           ]}
         >
-          0xA8f9...Wq77E4c2
+          {walletSummaryState.mode === 'ready' && walletAddress
+            ? walletAddress
+            : t.t('wallet.noWalletAccount', undefined, 'No wallet data yet')}
         </Text>
 
         <View style={[styles.walletLinkDivider, { backgroundColor: p.accent, opacity: 0.18 }]} />
@@ -481,7 +507,9 @@ function ATNCard({
                   { color: p.accent },
                 ]}
               >
-                Gestionar wallet
+                {walletSummaryState.mode === 'ready'
+                  ? t.t('wallet.manageWallet', undefined, 'Manage wallet')
+                  : t.t('wallet.createButton', undefined, 'Create Alternun wallet')}
               </Text>
             </View>
             <ChevronRightIcon size={14} color={p.accent} />
@@ -507,6 +535,7 @@ export default function DashboardSummaryCards({
   const desktopMinHeight = isMobile ? undefined : 480;
   const [eligibleUsers, setEligibleUsers] = useState<number | null>(null);
   const [eligibleUsersLoading, setEligibleUsersLoading] = useState(false);
+  const [walletAccount, setWalletAccount] = useState<WalletAccountRecord | null>(null);
   const airsScoreLoading = Boolean(signedIn) && typeof airsBalance !== 'number';
 
   useEffect(() => {
@@ -549,6 +578,38 @@ export default function DashboardSummaryCards({
     };
   }, [signedIn, client]);
 
+  useEffect(() => {
+    if (!signedIn || !client) {
+      setWalletAccount(null);
+      return;
+    }
+
+    let cancelled = false;
+    setWalletAccount(null);
+
+    const fetchWalletAccount = async (): Promise<void> => {
+      try {
+        const { accounts } = await listWalletAccounts(client);
+        if (cancelled) {
+          return;
+        }
+
+        const primary = accounts.find((account) => account.isPrimary) ?? accounts[0] ?? null;
+        setWalletAccount(primary);
+      } catch {
+        if (!cancelled) {
+          setWalletAccount(null);
+        }
+      }
+    };
+
+    void fetchWalletAccount();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client, signedIn]);
+
   return (
     <View style={[styles.root, isCompactMobile && styles.rootCompact]}>
       <View
@@ -575,6 +636,7 @@ export default function DashboardSummaryCards({
             compact={isCompactMobile}
             dense={isDenseAtnCard}
             onNavigate={onNavigate}
+            walletAccount={walletAccount}
             minHeight={desktopMinHeight}
           />
         </View>
