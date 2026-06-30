@@ -1,14 +1,27 @@
+## [1.0.296](https://github.com/alternun-development/alternun/compare/v1.0.296-dev.0...v1.0.296) (2026-06-30)
+
+### Bug Fixes
+
+- **repo:** chore(repo): sync README and version mirror for v1.0.296
+
+
+
+
+
+
+## [1.0.296](https://github.com/alternun-development/alternun/compare/v1.0.295...v1.0.296) (2026-06-30)
+
+### Bug Fixes
+
+- **repo:** test(repo,mobile,i18n): 10-airs-prod-migrations-and-wallet-empty-state, README, DashboardSummaryCards, walletSummary.test
+- **repo:** chore: sync reentry status post-promote v1.0.295
+
 ## [1.0.295](https://github.com/alternun-development/alternun/compare/v1.0.295-dev.0...v1.0.295) (2026-06-30)
 
 ### Bug Fixes
 
 - **repo:** docs: fix README current version line to 1.0.295
 - **repo:** docs: sync root README for v1.0.295
-
-
-
-
-
 
 ## [1.0.295](https://github.com/alternun-development/alternun/compare/v1.0.294...v1.0.295) (2026-06-30)
 
