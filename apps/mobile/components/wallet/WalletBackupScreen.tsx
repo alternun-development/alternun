@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,7 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Eye, EyeOff, type LucideProps } from 'lucide-react-native';
+import { Check, Eye, type LucideProps } from 'lucide-react-native';
 import * as Sharing from 'expo-sharing';
 import { File, Paths } from 'expo-file-system';
 import { exportMnemonicKeystore } from '@alternun/wallet';
@@ -17,7 +17,7 @@ import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 
 const EyeIcon = Eye as React.FC<LucideProps>;
-const EyeOffIcon = EyeOff as React.FC<LucideProps>;
+const CheckIcon = Check as React.FC<LucideProps>;
 
 interface WalletBackupScreenProps {
   visible: boolean;
@@ -26,14 +26,37 @@ interface WalletBackupScreenProps {
   mnemonic: string;
   pin: string;
   onDone: () => void;
+  /** Skip straight to the export step (used when re-exporting an existing wallet, where PIN
+   * re-entry already re-authenticates the user — the word-verification step exists to confirm a
+   * *brand-new* backup was actually written down, not needed again here). Defaults to the full
+   * reveal -> verify -> export onboarding flow. */
+  initialStep?: Step;
 }
+
+const VERIFICATION_WORD_COUNT = 3;
 
 function pickVerificationIndices(wordCount: number): number[] {
   const indices = new Set<number>();
-  while (indices.size < Math.min(2, wordCount)) {
+  while (indices.size < Math.min(VERIFICATION_WORD_COUNT, wordCount)) {
     indices.add(Math.floor(Math.random() * wordCount));
   }
   return Array.from(indices).sort((a, b) => a - b);
+}
+
+// expo-file-system's File/Paths class API (v19) has no web implementation — `validatePath()` is
+// declared in its types but only backed natively (iOS/Android); calling it on web throws
+// "this.validatePath is not a function". Browsers don't need a filesystem write + share-sheet
+// round trip anyway — a direct Blob download covers the same "save this file" goal natively.
+function downloadFileOnWeb(filename: string, content: string, mimeType: string): void {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 type Step = 'reveal' | 'verify' | 'export';
@@ -45,14 +68,36 @@ export default function WalletBackupScreen({
   mnemonic,
   pin,
   onDone,
+  initialStep,
 }: WalletBackupScreenProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
-  const [step, setStep] = useState<Step>('reveal');
+  const [step, setStep] = useState<Step>(initialStep ?? 'reveal');
   const [revealed, setRevealed] = useState(false);
   const [verifyInputs, setVerifyInputs] = useState<Record<number, string>>({});
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [confirmPlaintext, setConfirmPlaintext] = useState(false);
+  const [acknowledgedSafety, setAcknowledgedSafety] = useState(false);
+  // Shown inline rather than via Alert.alert, which is a no-op on web (react-native-web's
+  // Alert.alert renders nothing — export failures there were invisible to the user).
+  const [exportNotice, setExportNotice] = useState<{ message: string; isError: boolean } | null>(
+    null
+  );
+
+  // Re-initialize whenever this screen is (re-)opened — it's a long-lived component instance
+  // toggled via `visible`, not remounted, so without this a second open (e.g. re-export from the
+  // wallet tab after already completing the creation flow once) would resume on stale state.
+  useEffect(() => {
+    if (visible) {
+      setStep(initialStep ?? 'reveal');
+      setRevealed(false);
+      setVerifyInputs({});
+      setVerifyError(null);
+      setConfirmPlaintext(false);
+      setAcknowledgedSafety(false);
+      setExportNotice(null);
+    }
+  }, [visible]);
 
   const words = useMemo(() => mnemonic.trim().split(/\s+/), [mnemonic]);
   const verificationIndices = useMemo(() => pickVerificationIndices(words.length), [words.length]);
@@ -85,32 +130,44 @@ export default function WalletBackupScreen({
 
   const handleExportKeystore = async (): Promise<void> => {
     setExporting(true);
+    setExportNotice(null);
     try {
       const keystore = await exportMnemonicKeystore(pin, mnemonic);
-      const file = new File(Paths.cache, 'alternun-wallet-backup.json');
-      file.write(JSON.stringify(keystore, null, 2));
+      const content = JSON.stringify(keystore, null, 2);
 
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(file.uri, { mimeType: 'application/json' });
+      if (Platform.OS === 'web') {
+        downloadFileOnWeb('alternun-wallet-backup.json', content, 'application/json');
       } else {
-        Alert.alert(
-          t('wallet.backup.shareUnavailableTitle', undefined, 'Sharing unavailable'),
-          t(
-            'wallet.backup.shareUnavailableBody',
-            undefined,
-            'This device cannot share files. Your wallet is still safely stored on this device.'
-          )
-        );
+        const file = new File(Paths.cache, 'alternun-wallet-backup.json');
+        file.write(content);
+
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(file.uri, { mimeType: 'application/json' });
+        } else {
+          setExportNotice({
+            message: t(
+              'wallet.backup.shareUnavailableBody',
+              undefined,
+              'This device cannot share files. Your wallet is still safely stored on this device.'
+            ),
+            isError: false,
+          });
+        }
       }
-    } catch {
-      Alert.alert(
-        t('wallet.backup.exportErrorTitle', undefined, 'Export failed'),
-        t(
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[WalletBackupScreen] export keystore failed:',
+        error instanceof Error ? error.message : error
+      );
+      setExportNotice({
+        message: t(
           'wallet.backup.exportErrorBody',
           undefined,
           'Could not create the backup file. Please try again.'
-        )
-      );
+        ),
+        isError: true,
+      });
     } finally {
       setExporting(false);
     }
@@ -119,22 +176,32 @@ export default function WalletBackupScreen({
   const handleExportPlaintext = async (): Promise<void> => {
     if (!confirmPlaintext) return;
     setExporting(true);
+    setExportNotice(null);
     try {
-      const file = new File(Paths.cache, 'alternun-wallet-recovery-phrase.txt');
-      file.write(mnemonic);
+      if (Platform.OS === 'web') {
+        downloadFileOnWeb('alternun-wallet-recovery-phrase.txt', mnemonic, 'text/plain');
+      } else {
+        const file = new File(Paths.cache, 'alternun-wallet-recovery-phrase.txt');
+        file.write(mnemonic);
 
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(file.uri, { mimeType: 'text/plain' });
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(file.uri, { mimeType: 'text/plain' });
+        }
       }
-    } catch {
-      Alert.alert(
-        t('wallet.backup.exportErrorTitle', undefined, 'Export failed'),
-        t(
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[WalletBackupScreen] export plaintext failed:',
+        error instanceof Error ? error.message : error
+      );
+      setExportNotice({
+        message: t(
           'wallet.backup.exportErrorBody',
           undefined,
           'Could not create the backup file. Please try again.'
-        )
-      );
+        ),
+        isError: true,
+      });
     } finally {
       setExporting(false);
     }
@@ -180,9 +247,50 @@ export default function WalletBackupScreen({
                       </View>
                     ))}
                   </View>
+
+                  <View style={[styles.disclaimerBox, { backgroundColor: cardBg }]}>
+                    <Text style={[styles.disclaimerText, { color: errorColor }]}>
+                      {t(
+                        'wallet.backup.disclaimer',
+                        undefined,
+                        'Write this down on paper and store it somewhere safe and offline. Do not take a screenshot, do not save it in a notes app, email, or cloud storage. Anyone with these words can take your funds. If you lose them, Alternun cannot recover your wallet — they are gone for good.'
+                      )}
+                    </Text>
+                  </View>
+
                   <Pressable
-                    style={[styles.primaryButton, { backgroundColor: accent }]}
+                    style={[styles.checkboxRow]}
+                    onPress={() => setAcknowledgedSafety((prev) => !prev)}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        {
+                          borderColor: accent,
+                          backgroundColor: acknowledgedSafety ? accent : 'transparent',
+                        },
+                      ]}
+                    >
+                      {acknowledgedSafety ? (
+                        <CheckIcon size={14} color='#fff' strokeWidth={3} />
+                      ) : null}
+                    </View>
+                    <Text style={[styles.checkboxLabel, { color: mutedColor }]}>
+                      {t(
+                        'wallet.backup.safetyAcknowledge',
+                        undefined,
+                        "I've written down my recovery phrase on paper and stored it somewhere safe. I understand Alternun cannot recover it for me."
+                      )}
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={[
+                      styles.primaryButton,
+                      { backgroundColor: accent, opacity: acknowledgedSafety ? 1 : 0.4 },
+                    ]}
                     onPress={() => setStep('verify')}
+                    disabled={!acknowledgedSafety}
                   >
                     <Text style={styles.primaryButtonText}>
                       {t('wallet.backup.savedIt', undefined, "I've saved it")}
@@ -202,7 +310,7 @@ export default function WalletBackupScreen({
                 {t(
                   'wallet.backup.verifySubtitle',
                   undefined,
-                  'Enter the requested words from your phrase.'
+                  'We picked these at random to make sure you actually wrote down your phrase correctly — enter them exactly as shown.'
                 )}
               </Text>
 
@@ -215,6 +323,12 @@ export default function WalletBackupScreen({
                     style={[styles.verifyInput, { color: titleColor, backgroundColor: cardBg }]}
                     autoCapitalize='none'
                     autoCorrect={false}
+                    spellCheck={false}
+                    // See WalletRestoreFlow.tsx's mnemonic input comment — react-native-web
+                    // defaults autoComplete to 'on', which would let browsers offer to
+                    // save/autofill individual recovery-phrase words.
+                    autoComplete='off'
+                    textContentType='none'
                     value={verifyInputs[index] ?? ''}
                     onChangeText={(text) => setVerifyInputs((prev) => ({ ...prev, [index]: text }))}
                   />
@@ -233,6 +347,12 @@ export default function WalletBackupScreen({
                   {t('shared.actions.continue', undefined, 'Continue')}
                 </Text>
               </Pressable>
+
+              <Pressable style={styles.backLink} onPress={() => setStep('reveal')}>
+                <Text style={[styles.backLinkText, { color: accent }]}>
+                  {t('wallet.backup.viewPhraseAgain', undefined, 'View phrase again')}
+                </Text>
+              </Pressable>
             </>
           )}
 
@@ -248,6 +368,17 @@ export default function WalletBackupScreen({
                   'This export is your only backup — there is no copy on our servers.'
                 )}
               </Text>
+
+              {exportNotice ? (
+                <Text
+                  style={[
+                    styles.subtitle,
+                    { color: exportNotice.isError ? errorColor : mutedColor },
+                  ]}
+                >
+                  {exportNotice.message}
+                </Text>
+              ) : null}
 
               <Pressable
                 style={[styles.primaryButton, { backgroundColor: accent }]}
@@ -272,7 +403,7 @@ export default function WalletBackupScreen({
                     },
                   ]}
                 >
-                  {confirmPlaintext ? <EyeOffIcon size={12} color='#fff' /> : null}
+                  {confirmPlaintext ? <CheckIcon size={14} color='#fff' strokeWidth={3} /> : null}
                 </View>
                 <Text style={[styles.checkboxLabel, { color: mutedColor }]}>
                   {t(
@@ -368,6 +499,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
+  disclaimerBox: {
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 4,
+  },
+  disclaimerText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '600',
+  },
   primaryButton: {
     borderRadius: 16,
     paddingVertical: 16,
@@ -438,6 +580,15 @@ const styles = StyleSheet.create({
   finishButtonText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
+    fontWeight: '700',
+  },
+  backLink: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  backLinkText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 13,
     fontWeight: '700',
   },
 });

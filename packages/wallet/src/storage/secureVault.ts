@@ -1,6 +1,20 @@
 /* eslint-disable security/detect-object-injection */
+import { base64ToBytes, bytesToBase64 } from './base64';
 
-const PBKDF2_ITERATIONS = 210_000;
+// PIN_DIGEST_ITERATIONS must stay in sync with apps/api/src/modules/wallet/wallet-pin.ts's
+// server-side mirror (createPinDigest/verifyPin) — changing it requires a coordinated server
+// change, since the server only verifies against this fixed iteration count.
+const PIN_DIGEST_ITERATIONS = 210_000;
+// VAULT_PBKDF2_ITERATIONS protects the locally-stored encrypted mnemonic specifically — this one
+// is *not* shared with the server and can be raised independently. 600_000 matches OWASP's current
+// (2023) PBKDF2-SHA256 recommendation. This matters more on web than native: a stolen
+// `localStorage` vault blob (e.g. via XSS) can be brute-forced fully offline with no rate limit at
+// all (unlike the server-verified PIN digest, which is lockout-protected) — measured empirically
+// at ~17 minutes single-threaded to exhaust all 10,000 4-digit PINs at 210k iterations; raising to
+// 600k roughly triples that cost. Stored per-payload (not just bumped in place) so existing vaults
+// encrypted at the old iteration count still decrypt correctly — see `iterations` on
+// StoredVaultPayload and its `?? PIN_DIGEST_ITERATIONS` fallback in decryptPayload.
+const VAULT_PBKDF2_ITERATIONS = 600_000;
 const PBKDF2_HASH = 'SHA-256';
 const KEY_LENGTH_BYTES = 32;
 
@@ -11,6 +25,10 @@ type StoredVaultPayload = {
   ciphertext: string;
   iv: string;
   salt: string;
+  /** PBKDF2 iteration count used for this specific payload. Absent on payloads written before
+   * this field existed — treat as PIN_DIGEST_ITERATIONS (210_000, the original hardcoded value)
+   * for those. */
+  iterations?: number;
 };
 
 export type VaultRecord = {
@@ -24,8 +42,47 @@ export type SecureStoreAdapter = {
   deleteItemAsync: (key: string) => Promise<void>;
 };
 
+function createLocalStorageAdapter(): SecureStoreAdapter {
+  return {
+    getItemAsync(key) {
+      return Promise.resolve(
+        typeof localStorage === 'undefined' ? null : localStorage.getItem(key)
+      );
+    },
+    setItemAsync(key, value) {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(key, value);
+      }
+      return Promise.resolve();
+    },
+    deleteItemAsync(key) {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem(key);
+      }
+      return Promise.resolve();
+    },
+  };
+}
+
 async function resolveSecureStore(): Promise<SecureStoreAdapter> {
   const secureStore = await import('expo-secure-store');
+
+  // expo-secure-store's public setItemAsync/getItemAsync/deleteItemAsync are always real JS
+  // functions on every platform — they just delegate to a native module
+  // (setValueWithKeyAsync/getValueWithKeyAsync/...) that doesn't exist on web (the web build of
+  // that native module is a no-op `{}`, since there's no Keychain/Keystore equivalent there).
+  // So checking `typeof secureStore.setItemAsync === 'function'` never detects the web case — it
+  // throws "ExpoSecureStore.default.setValueWithKeyAsync is not a function" only once actually
+  // called. isAvailableAsync() checks the underlying native module directly
+  // (`!!ExpoSecureStore.getValueWithKeyAsync`), which is the correct check.
+  const available = await secureStore.isAvailableAsync().catch(() => false);
+  if (!available) {
+    // The payload reaching this adapter is already PBKDF2+AES-GCM encrypted (see encryptPayload
+    // above), so localStorage is an acceptable fallback for the web target — it never stores the
+    // raw mnemonic.
+    return createLocalStorageAdapter();
+  }
+
   return {
     getItemAsync: secureStore.getItemAsync,
     setItemAsync: secureStore.setItemAsync,
@@ -42,11 +99,11 @@ function getCrypto(): Crypto {
 }
 
 function encodeBase64(data: Uint8Array): string {
-  return Buffer.from(data).toString('base64');
+  return bytesToBase64(data);
 }
 
 function decodeBase64(data: string): Uint8Array {
-  return new Uint8Array(Buffer.from(data, 'base64'));
+  return base64ToBytes(data);
 }
 
 function concatBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
@@ -60,7 +117,8 @@ async function deriveAesKey(
   pin: string,
   salt: Uint8Array,
   usage: KeyUsage[],
-  extractable = false
+  extractable = false,
+  iterations: number = PIN_DIGEST_ITERATIONS
 ): Promise<CryptoKey> {
   const cryptoApi = getCrypto();
   const pinBytes = new TextEncoder().encode(pin);
@@ -71,7 +129,7 @@ async function deriveAesKey(
     {
       name: 'PBKDF2',
       salt: salt as BufferSource,
-      iterations: PBKDF2_ITERATIONS,
+      iterations,
       hash: PBKDF2_HASH,
     },
     baseKey,
@@ -88,7 +146,7 @@ async function encryptPayload(payload: VaultRecord, pin: string): Promise<Stored
   const cryptoApi = getCrypto();
   const iv = cryptoApi.getRandomValues(new Uint8Array(12));
   const salt = cryptoApi.getRandomValues(new Uint8Array(16));
-  const key = await deriveAesKey(pin, salt, ['encrypt']);
+  const key = await deriveAesKey(pin, salt, ['encrypt'], false, VAULT_PBKDF2_ITERATIONS);
 
   const plaintext = new TextEncoder().encode(JSON.stringify(payload));
   const encrypted = await cryptoApi.subtle.encrypt(
@@ -105,6 +163,7 @@ async function encryptPayload(payload: VaultRecord, pin: string): Promise<Stored
     ciphertext: encodeBase64(new Uint8Array(encrypted)),
     iv: encodeBase64(iv),
     salt: encodeBase64(salt),
+    iterations: VAULT_PBKDF2_ITERATIONS,
   };
 }
 
@@ -113,7 +172,8 @@ async function decryptPayload(
   pin: string
 ): Promise<VaultRecord | null> {
   try {
-    const key = await deriveAesKey(pin, decodeBase64(payload.salt), ['decrypt']);
+    const iterations = payload.iterations ?? PIN_DIGEST_ITERATIONS;
+    const key = await deriveAesKey(pin, decodeBase64(payload.salt), ['decrypt'], false, iterations);
     const decrypted = await getCrypto().subtle.decrypt(
       {
         name: 'AES-GCM',
