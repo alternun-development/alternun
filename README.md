@@ -118,13 +118,14 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.0**
+Current version: **1.0.296**
 
-## 📋 Latest Changes (v1.1.0)
+## 📋 Latest Changes (v1.0.296)
 
-### Features
+### Bug Fixes
 
-- **wallet:** Non-custodial multi-chain wallet (EVM/Bitcoin/Solana) — PIN-encrypted local key storage, wallet creation with mandatory backup verification, restore from recovery phrase, send/receive/activity, and multi-wallet management for web
+- **repo:** test(repo,mobile,i18n): 10-airs-prod-migrations-and-wallet-empty-state, README, DashboardSummaryCards, walletSummary.test
+- **repo:** chore: sync reentry status post-promote v1.0.295
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
