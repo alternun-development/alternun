@@ -33,7 +33,7 @@ function parseHardenedPath(path: string): number[] {
   return path
     .split('/')
     .slice(1)
-    .map((segment) => parseInt(segment.replace("'", ''), 10) + HARDENED_OFFSET);
+    .map((segment) => parseInt(segment.replace(/'/g, ''), 10) + HARDENED_OFFSET);
 }
 
 export function derivePath(path: string, seed: Uint8Array): HdNode {
