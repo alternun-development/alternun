@@ -255,6 +255,7 @@
         "statusInfoButton": "Status information"
       },
       "summaryCards": {
+        "comingSoon": "Coming soon",
         "position": {
           "title": "Your Position",
           "subtitle": "Among Airs By Alternun members",
@@ -282,7 +283,9 @@
           "availableDesc": "Ready to use",
           "stackingLabel": "ATN in stacking",
           "stackingDesc": "Participating in projects",
-          "totalLabel": "Total ATN"
+          "totalLabel": "Total ATN",
+          "primaryWalletLabel": "Primary wallet",
+          "primaryWalletMeta": "Internal"
         }
       }
     },

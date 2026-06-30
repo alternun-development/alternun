@@ -255,6 +255,7 @@
         "statusInfoButton": "Información del estado"
       },
       "summaryCards": {
+        "comingSoon": "Próximamente",
         "position": {
           "title": "Tu posición",
           "subtitle": "Entre miembros de Airs By Alternun",
@@ -282,7 +283,9 @@
           "availableDesc": "Listos para usar",
           "stackingLabel": "ATN en stacking",
           "stackingDesc": "Participando en proyectos",
-          "totalLabel": "ATN total"
+          "totalLabel": "ATN total",
+          "primaryWalletLabel": "Wallet principal",
+          "primaryWalletMeta": "Interna"
         }
       }
     },
