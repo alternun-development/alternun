@@ -1,13 +1,16 @@
-# [1.1.0](https://github.com/alternun-development/alternun/compare/v1.0.296...v1.1.0) (2026-06-30)
-
-### Bug Fixes
-
-- **mobile:** smooth AIRS ranking transitions ([70b510a](https://github.com/alternun-development/alternun/commit/70b510a3d32db4dc65062079ae710d09557f2ee6))
-- stack dashboard summary cards on mobile ([e447ed1](https://github.com/alternun-development/alternun/commit/e447ed1070e00f774553f061acfeb15ddecb394c))
+## [1.1.0](https://github.com/alternun-development/alternun/compare/v1.0.296...v1.1.0) (2026-06-30)
 
 ### Features
 
-- **wallet:** non-custodial multi-chain wallet (EVM/Bitcoin/Solana) for web ([4561159](https://github.com/alternun-development/alternun/commit/45611598ac9e6d3582d587c31dfcbbdcc6265b37))
+- **wallet:** Non-custodial multi-chain wallet (EVM/Bitcoin/Solana) for web — PIN-encrypted local key storage with PBKDF2 600k iterations, wallet creation with mandatory backup disclaimer and randomized word verification, restore from recovery phrase, send (with per-chain address validation and a fee-review step), receive, activity feed, multi-wallet management with selectable default account, and export (encrypted keystore or plaintext phrase). Server-side: full NestJS wallet module with IP throttling, per-user PIN lockout backoff, stage-aware mainnet/testnet RPC selection, RLS policies via app_user_id JWT claim.
+
+### Bug Fixes
+
+- **wallet:** Bitcoin addresses were always derived as mainnet (bc1...) regardless of deploy stage, causing BTC balances to silently disappear from the UI (testnet Esplora returned 400 for mainnet-format addresses)
+- **wallet:** react-native-web's Alert.alert is a documented no-op — replaced all wallet error paths with visible inline error UI
+- **wallet:** expo-secure-store web availability required isAvailableAsync(), not a typeof check on the wrapper function
+- **wallet:** mi-perfil.tsx tab-sync useEffect had tabs in its dependency array, causing the active tab to snap back to the ?tab= URL param on every render
+- **wallet:** Buffer-free crypto throughout packages/wallet (bip39→@scure/bip39, ed25519-hd-key→slip10Ed25519.ts, secureVault base64/hex helpers)
 
 ## [1.0.296](https://github.com/alternun-development/alternun/compare/v1.0.296-dev.0...v1.0.296) (2026-06-30)
 
