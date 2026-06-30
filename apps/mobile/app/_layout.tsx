@@ -1,3 +1,11 @@
+// Must run before anything else: Hermes has neither crypto.getRandomValues nor crypto.subtle
+// (SubtleCrypto) natively. @alternun/wallet's BIP-39 generation, PIN vault (PBKDF2/AES-GCM), and
+// keystore export (scrypt/AES-CTR) all require both. react-native-quick-crypto's install() patches
+// global.crypto with a native (Nitro Modules / JSI) implementation.
+// On web, metro.config.js redirects this import to shims/react-native-quick-crypto.web.js (a no-op),
+// so the call here is safe on all platforms — no Platform.OS guard needed.
+import { install as installQuickCrypto } from 'react-native-quick-crypto';
+installQuickCrypto();
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { AppAuthProvider } from '../components/auth/AppAuthProvider';
 import {

@@ -4,7 +4,7 @@
 
 > Managed by `@edcalderon/versioning` reentry-status-extension.
 > Canonical roadmap file: .versioning/ROADMAP.md
-> Active milestone: —
+> Active milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 >
 > Everything outside this block is user-editable.
 
@@ -16,12 +16,10 @@
 
 ## Now (1–2 weeks)
 
-- [now-01] Example: Ship X
+- [wallet-system] Alternun Wallet System (non-custodial, multi-chain EVM/Solana/Bitcoin) — spec & tasks in .agents/active-tasks/alternun-wallet-system/ (00-SPEC.md)
 
 ## Next (4–8 weeks)
 
-- [next-01] Example: Improve Y
+- [wallet-rollout] Wallet rollout: full feature flag removal after security review + manual QA matrix (see .agents/active-tasks/alternun-wallet-system/09-testing-qa-plan.md)
 
 ## Later
-
-- [later-01] Example: Explore Z

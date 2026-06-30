@@ -7,3 +7,7 @@ npm run version:check-secrets
 
 # Guard against empty changelog entries on tagged releases
 npm run changelog:check
+
+# Ensure REENTRY.md is in sync with reentry.status.json.
+# Skip with: git push --no-validate-reentry  OR  SKIP_REENTRY_VALIDATION=true git push
+bash scripts/validate-reentry-status.sh "$@"
