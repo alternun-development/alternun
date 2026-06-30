@@ -255,6 +255,7 @@
         "statusInfoButton": "ข้อมูลสถานะ"
       },
       "summaryCards": {
+        "comingSoon": "เร็วๆ นี้",
         "position": {
           "title": "อันดับของคุณ",
           "subtitle": "ในกลุ่มสมาชิก Airs By Alternun",
@@ -282,7 +283,9 @@
           "availableDesc": "พร้อมใช้งาน",
           "stackingLabel": "ATN ที่กำลังสเตก",
           "stackingDesc": "กำลังมีส่วนร่วมในโครงการ",
-          "totalLabel": "ATN รวม"
+          "totalLabel": "ATN รวม",
+          "primaryWalletLabel": "วอลเล็ตหลัก",
+          "primaryWalletMeta": "ภายใน"
         }
       }
     },

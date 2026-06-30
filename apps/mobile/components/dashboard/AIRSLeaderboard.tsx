@@ -1,8 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  Easing,
+  Platform,
+  Text,
+  TouchableOpacity,
+  UIManager,
+  View,
+} from 'react-native';
 import { createTypographyStyles } from '../theme/typography';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
+import { type RankScope, changeLeaderboardScope } from './leaderboardTransitions';
 
 interface LeaderboardEntry {
   rank: number;
@@ -36,7 +46,11 @@ interface AIRSLeaderboardProps {
   signedIn: boolean;
 }
 
-type RankScope = 'global' | 'country' | 'city';
+const FILTERS: { key: RankScope; label: string }[] = [
+  { key: 'global', label: 'Global' },
+  { key: 'country', label: 'País' },
+  { key: 'city', label: 'Ciudad' },
+];
 
 function RankBadge({ rank, isDark }: { rank: number; isDark: boolean }): React.JSX.Element {
   const accent = isDark ? '#1EE6B5' : '#0d9488';
@@ -60,6 +74,7 @@ export default function AIRSLeaderboard({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scope, setScope] = useState<RankScope>('global');
+  const contentTransition = React.useRef(new Animated.Value(1)).current;
 
   const accent = isDark ? '#1EE6B5' : '#0d9488';
   const bg = isDark ? '#050f0c' : '#f0fdf9';
@@ -71,6 +86,12 @@ export default function AIRSLeaderboard({
   const meBorder = isDark ? 'rgba(30,230,181,0.20)' : 'rgba(13,148,136,0.18)';
   const pillActiveBg = isDark ? 'rgba(30,230,181,0.15)' : 'rgba(13,148,136,0.12)';
   const pillInactiveBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,90,95,0.06)';
+
+  useEffect(() => {
+    if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
 
   const fetchData = useCallback(async (): Promise<void> => {
     if (!signedIn) return;
@@ -122,6 +143,18 @@ export default function AIRSLeaderboard({
   }, [client, signedIn]);
 
   useEffect(() => {
+    contentTransition.stopAnimation(() => {
+      contentTransition.setValue(0.96);
+      Animated.timing(contentTransition, {
+        toValue: 1,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [contentTransition, scope]);
+
+  useEffect(() => {
     void fetchData();
   }, [fetchData]);
 
@@ -143,11 +176,12 @@ export default function AIRSLeaderboard({
       ? positions?.countryRank
       : positions?.cityRank;
 
-  const FILTERS: { key: RankScope; label: string }[] = [
-    { key: 'global', label: 'Global' },
-    { key: 'country', label: 'País' },
-    { key: 'city', label: 'Ciudad' },
-  ];
+  const handleScopeChange = useCallback(
+    (nextScope: RankScope) => {
+      changeLeaderboardScope(nextScope, scope, setScope);
+    },
+    [scope]
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: bg }]}>
@@ -172,8 +206,9 @@ export default function AIRSLeaderboard({
           return (
             <TouchableOpacity
               key={f.key}
-              onPress={() => setScope(f.key)}
+              onPress={() => handleScopeChange(f.key)}
               activeOpacity={0.7}
+              testID={`airs-scope-${f.key}`}
               style={[
                 styles.filterPill,
                 {
@@ -190,137 +225,154 @@ export default function AIRSLeaderboard({
         })}
       </View>
 
-      {!signedIn ? (
-        <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-          <View style={styles.emptyBox}>
-            <Text style={[styles.emptyText, { color: mutedColor }]}>
-              Inicia sesión para ver el ranking de AIRS
-            </Text>
-          </View>
-        </View>
-      ) : isLoading ? (
-        <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-          <View style={styles.loadingBox}>
-            <ActivityIndicator color={accent} />
-          </View>
-        </View>
-      ) : error ? (
-        <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-          <View style={styles.emptyBox}>
-            <Text style={[styles.emptyText, { color: mutedColor }]}>{error}</Text>
-          </View>
-        </View>
-      ) : scope === 'global' ? (
-        topEntries.length === 0 ? (
+      <Animated.View
+        style={[
+          styles.contentTransition,
+          {
+            opacity: contentTransition,
+            transform: [
+              {
+                translateY: contentTransition.interpolate({
+                  inputRange: [0.96, 1],
+                  outputRange: [8, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        {!signedIn ? (
           <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
             <View style={styles.emptyBox}>
               <Text style={[styles.emptyText, { color: mutedColor }]}>
-                Aún no hay usuarios con AIRS acumulados.
+                Inicia sesión para ver el ranking de AIRS
               </Text>
             </View>
           </View>
-        ) : (
+        ) : isLoading ? (
           <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-            <View style={[styles.tableHeader, { backgroundColor: `${accent}0F` }]}>
-              <Text style={[styles.thRank, { color: accent }]}>#</Text>
-              <Text style={[styles.thName, { color: accent }]}>Usuario</Text>
-              <Text style={[styles.thBalance, { color: accent }]}>AIRS</Text>
+            <View style={styles.loadingBox}>
+              <ActivityIndicator color={accent} />
             </View>
-
-            {topEntries.map((entry, idx) => {
-              const isLast = idx === topEntries.length - 1 && !myRankOutsideTop;
-              const divColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-              return (
-                <View
-                  key={entry.userId}
-                  style={[
-                    styles.row,
-                    entry.isMe && { backgroundColor: meBg },
-                    !isLast && { borderBottomWidth: 1, borderBottomColor: divColor },
-                  ]}
-                >
-                  <View style={styles.rankCell}>
-                    <RankBadge rank={entry.rank} isDark={isDark} />
-                  </View>
-                  <View style={styles.nameCell}>
-                    <Text
-                      style={[styles.nameText, { color: entry.isMe ? accent : textColor }]}
-                      numberOfLines={1}
-                    >
-                      {entry.displayName}
-                    </Text>
-                    {entry.isMe && <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>}
-                  </View>
-                  <Text style={[styles.balanceText, { color: entry.isMe ? accent : textColor }]}>
-                    {entry.airsBalance.toLocaleString('es-ES', { maximumFractionDigits: 0 })}
-                  </Text>
-                </View>
-              );
-            })}
-
-            {myRankOutsideTop && myEntry && (
-              <>
-                <View style={[styles.separatorRow, { borderColor: `${accent}30` }]}>
-                  <Text style={[styles.separatorText, { color: mutedColor }]}>· · ·</Text>
-                </View>
-                <View
-                  style={[
-                    styles.row,
-                    { backgroundColor: meBg, borderWidth: 1, borderColor: meBorder },
-                  ]}
-                >
-                  <View style={styles.rankCell}>
-                    <RankBadge rank={myEntry.rank} isDark={isDark} />
-                  </View>
-                  <View style={styles.nameCell}>
-                    <Text style={[styles.nameText, { color: accent }]} numberOfLines={1}>
-                      {myEntry.displayName}
-                    </Text>
-                    <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>
-                  </View>
-                  <Text style={[styles.balanceText, { color: accent }]}>
-                    {myEntry.airsBalance.toLocaleString('es-ES', { maximumFractionDigits: 0 })}
-                  </Text>
-                </View>
-              </>
-            )}
-
-            {/* My position footer */}
-            {positions?.globalRank != null && (
-              <View style={[styles.positionFooter, { borderTopColor: cardBorder }]}>
-                <Text style={[styles.positionFooterText, { color: mutedColor }]}>
-                  Tu posición global:{' '}
-                  <Text style={{ color: accent, fontWeight: '800' }}>
-                    #{positions.globalRank.toLocaleString()}
-                  </Text>
+          </View>
+        ) : error ? (
+          <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+            <View style={styles.emptyBox}>
+              <Text style={[styles.emptyText, { color: mutedColor }]}>{error}</Text>
+            </View>
+          </View>
+        ) : scope === 'global' ? (
+          topEntries.length === 0 ? (
+            <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+              <View style={styles.emptyBox}>
+                <Text style={[styles.emptyText, { color: mutedColor }]}>
+                  Aún no hay usuarios con AIRS acumulados.
                 </Text>
               </View>
-            )}
-          </View>
-        )
-      ) : (
-        /* Country / City scope */
-        <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-          {myPositionForScope != null ? (
-            <View style={[styles.row, { backgroundColor: meBg, borderRadius: 10, margin: 8 }]}>
-              <View style={styles.rankCell}>
-                <RankBadge rank={myPositionForScope} isDark={isDark} />
-              </View>
-              <View style={styles.nameCell}>
-                <Text style={[styles.nameText, { color: accent }]} numberOfLines={1}>
-                  {myEntry?.displayName ?? 'Tú'}
-                </Text>
-                <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>
-              </View>
             </View>
-          ) : null}
-          <View style={styles.emptyBox}>
-            <Text style={[styles.emptyText, { color: mutedColor }]}>
-              Ranking por {scope === 'country' ? 'país' : 'ciudad'} próximamente
-            </Text>
+          ) : (
+            <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+              <View style={[styles.tableHeader, { backgroundColor: `${accent}0F` }]}>
+                <Text style={[styles.thRank, { color: accent }]}>#</Text>
+                <Text style={[styles.thName, { color: accent }]}>Usuario</Text>
+                <Text style={[styles.thBalance, { color: accent }]}>AIRS</Text>
+              </View>
+
+              {topEntries.map((entry, idx) => {
+                const isLast = idx === topEntries.length - 1 && !myRankOutsideTop;
+                const divColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                return (
+                  <View
+                    key={entry.userId}
+                    style={[
+                      styles.row,
+                      entry.isMe && { backgroundColor: meBg },
+                      !isLast && { borderBottomWidth: 1, borderBottomColor: divColor },
+                    ]}
+                  >
+                    <View style={styles.rankCell}>
+                      <RankBadge rank={entry.rank} isDark={isDark} />
+                    </View>
+                    <View style={styles.nameCell}>
+                      <Text
+                        style={[styles.nameText, { color: entry.isMe ? accent : textColor }]}
+                        numberOfLines={1}
+                      >
+                        {entry.displayName}
+                      </Text>
+                      {entry.isMe && <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>}
+                    </View>
+                    <Text style={[styles.balanceText, { color: entry.isMe ? accent : textColor }]}>
+                      {entry.airsBalance.toLocaleString('es-ES', { maximumFractionDigits: 0 })}
+                    </Text>
+                  </View>
+                );
+              })}
+
+              {myRankOutsideTop && myEntry && (
+                <>
+                  <View style={[styles.separatorRow, { borderColor: `${accent}30` }]}>
+                    <Text style={[styles.separatorText, { color: mutedColor }]}>· · ·</Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.row,
+                      { backgroundColor: meBg, borderWidth: 1, borderColor: meBorder },
+                    ]}
+                  >
+                    <View style={styles.rankCell}>
+                      <RankBadge rank={myEntry.rank} isDark={isDark} />
+                    </View>
+                    <View style={styles.nameCell}>
+                      <Text style={[styles.nameText, { color: accent }]} numberOfLines={1}>
+                        {myEntry.displayName}
+                      </Text>
+                      <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>
+                    </View>
+                    <Text style={[styles.balanceText, { color: accent }]}>
+                      {myEntry.airsBalance.toLocaleString('es-ES', { maximumFractionDigits: 0 })}
+                    </Text>
+                  </View>
+                </>
+              )}
+
+              {/* My position footer */}
+              {positions?.globalRank != null && (
+                <View style={[styles.positionFooter, { borderTopColor: cardBorder }]}>
+                  <Text style={[styles.positionFooterText, { color: mutedColor }]}>
+                    Tu posición global:{' '}
+                    <Text style={{ color: accent, fontWeight: '800' }}>
+                      #{positions.globalRank.toLocaleString()}
+                    </Text>
+                  </Text>
+                </View>
+              )}
+            </View>
+          )
+        ) : (
+          /* Country / City scope */
+          <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+            {myPositionForScope != null ? (
+              <View style={[styles.row, { backgroundColor: meBg, borderRadius: 10, margin: 8 }]}>
+                <View style={styles.rankCell}>
+                  <RankBadge rank={myPositionForScope} isDark={isDark} />
+                </View>
+                <View style={styles.nameCell}>
+                  <Text style={[styles.nameText, { color: accent }]} numberOfLines={1}>
+                    {myEntry?.displayName ?? 'Tú'}
+                  </Text>
+                  <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>
+                </View>
+              </View>
+            ) : null}
+            <View style={styles.emptyBox}>
+              <Text style={[styles.emptyText, { color: mutedColor }]}>
+                Ranking por {scope === 'country' ? 'país' : 'ciudad'} próximamente
+              </Text>
+            </View>
           </View>
-        </View>
-      )}
+        )}
+      </Animated.View>
     </View>
   );
 }
@@ -368,6 +420,9 @@ const styles = createTypographyStyles({
     flexDirection: 'row',
     gap: 8,
     marginBottom: 12,
+  },
+  contentTransition: {
+    alignSelf: 'stretch',
   },
   filterPill: {
     paddingHorizontal: 14,
