@@ -118,7 +118,7 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.0.294**
+Current version: **1.0.295**
 
 ## 📋 Latest Changes (v1.0.295)
 
