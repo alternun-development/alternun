@@ -1,3 +1,14 @@
+## [1.0.296](https://github.com/alternun-development/alternun/compare/v1.0.296-dev.0...v1.0.296) (2026-06-30)
+
+### Bug Fixes
+
+- **repo:** chore(repo): sync README and version mirror for v1.0.296
+
+
+
+
+
+
 ## [1.0.296](https://github.com/alternun-development/alternun/compare/v1.0.295...v1.0.296) (2026-06-30)
 
 ### Bug Fixes
