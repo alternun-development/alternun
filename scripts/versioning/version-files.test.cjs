@@ -17,6 +17,7 @@ const {
   resolveVersionContextBranch,
   restoreFileContents,
   syncBranchVersionManifests,
+  syncMobileVersionMirrors,
   validateBranchVersionFiles,
   validateSupplementalVersionFiles,
   validateProductionVersionMirror,
@@ -126,6 +127,33 @@ test('supplemental version mirror accepts dev and promoted semantic versions', (
     });
   } finally {
     fs.writeFileSync(mobileAppJsonPath, originalContents);
+  }
+});
+
+test('mobile version mirrors stay aligned with the root manifests', () => {
+  const developmentMirrorPath = path.join(__dirname, '..', '..', 'apps', 'mobile', 'version.development.json');
+  const productionMirrorPath = path.join(__dirname, '..', '..', 'apps', 'mobile', 'version.production.json');
+  const snapshot = captureFileContents([
+    'apps/mobile/version.development.json',
+    'apps/mobile/version.production.json',
+  ]);
+
+  try {
+    syncMobileVersionMirrors();
+
+    const developmentMirror = JSON.parse(fs.readFileSync(developmentMirrorPath, 'utf8'));
+    const productionMirror = JSON.parse(fs.readFileSync(productionMirrorPath, 'utf8'));
+    const developmentRoot = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '..', '..', 'version.development.json'), 'utf8')
+    );
+    const productionRoot = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '..', '..', 'version.production.json'), 'utf8')
+    );
+
+    assert.equal(developmentMirror.version, developmentRoot.version);
+    assert.equal(productionMirror.version, productionRoot.version);
+  } finally {
+    restoreFileContents(snapshot);
   }
 });
 

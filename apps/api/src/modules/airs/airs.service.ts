@@ -2,6 +2,7 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { renderAirsWelcomeEmail } from '@alternun/email-templates';
 import { verifyIssuerJwt } from '../auth-exchange/auth-exchange-jwt';
+import { resolveUserId } from '../../common/auth/resolve-user-id';
 import {
   awardAirsRegistrationBonus,
   awardAirsProfileBonus,
@@ -353,11 +354,6 @@ export class AirsService {
     });
   }
 
-  private normalizeToken(token: string): string {
-    const trimmed = token.trim();
-    return trimmed.startsWith('Bearer ') ? trimmed.slice('Bearer '.length).trim() : trimmed;
-  }
-
   private resolveGetSessionUrl(): string | null {
     const candidates = [process.env.AUTH_BETTER_AUTH_URL, process.env.BETTER_AUTH_URL];
     const raw = (candidates.find((v) => v?.trim()) ?? '').trim().replace(/\/+$/, '');
@@ -407,37 +403,8 @@ export class AirsService {
     }
   }
 
-  private async resolveUserId(token: string): Promise<string> {
-    const normalized = this.normalizeToken(token);
-
-    const signingKey = (
-      process.env.AUTHENTIK_JWT_SIGNING_KEY ??
-      process.env.AUTHENTIK_JWT_SIGNING_SECRET ??
-      process.env.AUTH_SESSION_SIGNING_KEY ??
-      ''
-    ).trim();
-
-    if (signingKey) {
-      try {
-        const verified = verifyIssuerJwt(normalized, signingKey);
-        const userId =
-          typeof verified.claims.app_user_id === 'string' ? verified.claims.app_user_id : '';
-        if (userId) return userId;
-      } catch {
-        // fall through to Better Auth session lookup
-      }
-    }
-
-    // Fallback 1: verify as Supabase JWT (production path when AUTH_EXECUTION_PROVIDER=supabase)
-    const supabaseUserId = await this.resolveUserIdFromSupabaseJwt(normalized);
-    if (supabaseUserId) return supabaseUserId;
-
-    // Fallback 2: verify via Better Auth /get-session (dev path)
-    return this.resolveUserIdFromBetterAuthSession(normalized);
-  }
-
   async myPosition(token: string): Promise<AirsUserPositions> {
-    const userId = await this.resolveUserId(token);
+    const userId = await resolveUserId(token);
     return getAirsUserPositions({ userId }, process.env).catch((error: unknown) => {
       this.logger.error(
         `AIRS positions fetch failed: ${error instanceof Error ? error.message : String(error)}`
@@ -450,7 +417,7 @@ export class AirsService {
     token: string,
     data: { name?: string | null; country?: string | null; city?: string | null }
   ): Promise<{ userId: string; name: string | null; country: string | null; city: string | null }> {
-    const userId = await this.resolveUserId(token);
+    const userId = await resolveUserId(token);
     return updateAirsUserProfile({ userId, ...data }, process.env).catch((error: unknown) => {
       this.logger.error(
         `AIRS profile update failed: ${error instanceof Error ? error.message : String(error)}`
@@ -460,7 +427,7 @@ export class AirsService {
   }
 
   async leaderboard(token: string, limit?: number): Promise<AirsLeaderboardResult> {
-    const userId = await this.resolveUserId(token);
+    const userId = await resolveUserId(token);
     return getAirsLeaderboard({ requestingUserId: userId, limit: limit ?? 20 }, process.env).catch(
       (error: unknown) => {
         this.logger.error(
@@ -472,7 +439,7 @@ export class AirsService {
   }
 
   async achievements(token: string): Promise<UserAchievement[]> {
-    const userId = await this.resolveUserId(token);
+    const userId = await resolveUserId(token);
     return getUserAchievements({ userId }, process.env).catch((error: unknown) => {
       this.logger.error(
         `AIRS achievements fetch failed: ${error instanceof Error ? error.message : String(error)}`

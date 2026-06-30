@@ -13,6 +13,7 @@ const {
   readRootVersion,
   resolveBranchRule,
   setRootVersion,
+  syncMobileVersionMirrors,
   syncBranchVersionManifests,
   syncSupplementalVersionFiles,
   syncWorkspacePackageVersions,
@@ -118,6 +119,7 @@ try {
   syncBranchVersionManifests(resolvedVersion, syncBranch);
   const packageFiles = syncWorkspacePackageVersions(resolvedVersion);
   const touchedFiles = syncSupplementalVersionFiles(resolvedVersion);
+  const mirrorFiles = syncMobileVersionMirrors();
   const notes = [];
 
   if (packageFiles.length > 0) {
@@ -126,6 +128,10 @@ try {
 
   if (touchedFiles.length > 0) {
     notes.push(`supplemental files: ${touchedFiles.join(', ')}`);
+  }
+
+  if (mirrorFiles.length > 0) {
+    notes.push(`mobile version mirrors: ${mirrorFiles.join(', ')}`);
   }
 
   if (notes.length > 0) {

@@ -13,9 +13,18 @@ const {
   clearMnemonic,
   createPinDigest,
   verifyPin,
+  exportMnemonicKeystore,
+  importMnemonicKeystore,
 } = require('../dist');
 
 const TEST_MNEMONIC = 'test test test test test test test test test test test junk';
+
+// Canonical all-zero-entropy BIP-39 test mnemonic, used across the ecosystem (MetaMask docs,
+// ethers.js fixtures, Hardhat/Ganache, etc). The EVM address below at m/44'/60'/0'/0/0 is a
+// widely independently-published reference value for this exact mnemonic+path combination —
+// a true known-answer test, not just a regression snapshot of this package's own output.
+const CANONICAL_TEST_MNEMONIC =
+  'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
 
 function createMemorySecureStore() {
   const memory = new Map();
@@ -54,6 +63,23 @@ test('chain derivation returns expected account 0 addresses', () => {
   assert.equal(solana.address, 'oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96');
 });
 
+test('EVM derivation matches the widely-published known-answer value for the canonical test mnemonic', () => {
+  const evm = deriveEvmAccount(CANONICAL_TEST_MNEMONIC, 0);
+  assert.equal(evm.path, `m/44'/60'/0'/0/0`);
+  assert.equal(evm.address, '0x9858EfFD232B4033E47d90003D41EC34EcaEda94');
+});
+
+test('Bitcoin/Solana derivation is stable for the canonical test mnemonic (regression, not an externally-published vector)', () => {
+  const bitcoin = deriveBitcoinAccount(CANONICAL_TEST_MNEMONIC, 0);
+  const solana = deriveSolanaAccount(CANONICAL_TEST_MNEMONIC, 0);
+
+  assert.equal(bitcoin.path, `m/44'/0'/0'/0/0`);
+  assert.equal(bitcoin.address, 'bc1qmxrw6qdh5g3ztfcwm0et5l8mvws4eva24kmp8m');
+
+  assert.equal(solana.path, `m/44'/501'/0'/0'`);
+  assert.equal(solana.address, 'HAgk14JpMQLgt6rVgv7cBQFJWFto5Dqxi472uT3DKpqk');
+});
+
 test('bundle derivation includes all chains at selected index', () => {
   const bundle = deriveWalletBundle(TEST_MNEMONIC, 1);
 
@@ -84,4 +110,35 @@ test('PIN digest verification succeeds for valid PIN and fails for invalid PIN',
 
   assert.equal(await verifyPin('135790', digest.salt, digest.hash), true);
   assert.equal(await verifyPin('135791', digest.salt, digest.hash), false);
+});
+
+test('keystore export/import round-trips the mnemonic with the correct PIN', async () => {
+  const keystore = await exportMnemonicKeystore('445566', TEST_MNEMONIC);
+
+  assert.equal(keystore.alternunKeystoreVersion, 1);
+  assert.equal(keystore.crypto.cipher, 'aes-128-ctr');
+  assert.equal(keystore.crypto.kdf, 'scrypt');
+
+  const recovered = await importMnemonicKeystore('445566', keystore);
+  assert.equal(recovered, TEST_MNEMONIC);
+});
+
+test('keystore import rejects the wrong PIN', async () => {
+  const keystore = await exportMnemonicKeystore('445566', TEST_MNEMONIC);
+  const result = await importMnemonicKeystore('000000', keystore);
+  assert.equal(result, null);
+});
+
+test('keystore import rejects a tampered ciphertext', async () => {
+  const keystore = await exportMnemonicKeystore('445566', TEST_MNEMONIC);
+  const tampered = {
+    ...keystore,
+    crypto: {
+      ...keystore.crypto,
+      ciphertext: keystore.crypto.ciphertext.replace(/^./, keystore.crypto.ciphertext[0] === '0' ? '1' : '0'),
+    },
+  };
+
+  const result = await importMnemonicKeystore('445566', tampered);
+  assert.equal(result, null);
 });

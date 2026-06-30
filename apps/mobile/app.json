@@ -2,7 +2,7 @@
   "expo": {
     "name": "test-tempo",
     "slug": "test-tempo",
-    "version": "1.0.294",
+    "version": "1.0.295",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -55,7 +55,8 @@
             "deploymentTarget": "15.1"
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

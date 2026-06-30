@@ -1,13 +1,26 @@
+## [1.0.295](https://github.com/alternun-development/alternun/compare/v1.0.295-dev.0...v1.0.295) (2026-06-30)
+
+### Bug Fixes
+
+- **repo:** docs: fix README current version line to 1.0.295
+- **repo:** docs: sync root README for v1.0.295
+
+
+
+
+
+
+## [1.0.295](https://github.com/alternun-development/alternun/compare/v1.0.294...v1.0.295) (2026-06-30)
+
+### Bug Fixes
+
+- **repo:** test(repo,api,mobile): pre-push, REENTRY, ROADMAP, reentry.status
+
 ## [1.0.294](https://github.com/alternun-development/alternun/compare/v1.0.294-dev.0...v1.0.294) (2026-06-29)
 
 ### Bug Fixes
 
 - **repo:** docs: sync root README for v1.0.294
-
-
-
-
-
 
 ## [1.0.294](https://github.com/alternun-development/alternun/compare/v1.0.293...v1.0.294) (2026-06-29)
 

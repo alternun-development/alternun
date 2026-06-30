@@ -4,3 +4,4 @@ export * from './crypto/evmDerive';
 export * from './crypto/bitcoinDerive';
 export * from './crypto/solanaDerive';
 export * from './storage/secureVault';
+export * from './storage/keystoreExport';
