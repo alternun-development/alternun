@@ -464,32 +464,30 @@ function ATNCard({
         >
           0xA8f9...Wq77E4c2
         </Text>
-      </View>
 
-      <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet')} activeOpacity={0.7}>
-        <View
-          style={[
-            styles.rbiDocLink,
-            compact && styles.rbiDocLinkCompact,
-            { backgroundColor: p.accentSoft, borderColor: p.accent },
-          ]}
-        >
+        <View style={[styles.walletLinkDivider, { backgroundColor: p.accent, opacity: 0.18 }]} />
+
+        <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet')} activeOpacity={0.7}>
           <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense]}>
-            <WalletIcon size={15} color={p.accent} />
-            <Text
-              style={[
-                styles.walletLinkText,
-                useDenseLayout && styles.walletLinkTextDense,
-                compact && styles.walletLinkTextCompact,
-                { color: p.accent },
-              ]}
-            >
-              Gestionar wallet
-            </Text>
+            <View style={styles.walletLinkLabelGroup}>
+              <WalletIcon size={15} color={p.accent} />
+              <Text
+                numberOfLines={1}
+                ellipsizeMode='tail'
+                style={[
+                  styles.walletLinkText,
+                  useDenseLayout && styles.walletLinkTextDense,
+                  compact && styles.walletLinkTextCompact,
+                  { color: p.accent },
+                ]}
+              >
+                Gestionar wallet
+              </Text>
+            </View>
+            <ChevronRightIcon size={14} color={p.accent} />
           </View>
-          <ChevronRightIcon size={14} color={p.accent} />
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     </SummaryCard>
   );
 }
@@ -1049,22 +1047,36 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 17,
   },
+  walletLinkDivider: {
+    height: 1,
+    width: '100%',
+    borderRadius: 1,
+  },
   walletLinkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'space-between',
+    gap: 8,
+    width: '100%',
     minWidth: 0,
-    flexShrink: 1,
-    flexWrap: 'wrap',
   },
   walletLinkRowDense: {
-    flexWrap: 'wrap',
     alignItems: 'center',
+  },
+  walletLinkLabelGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+    minWidth: 0,
+    flexShrink: 1,
   },
   walletLinkText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '800',
+    flexShrink: 1,
+    minWidth: 0,
   },
   walletLinkTextDense: {
     fontFamily: ANEK_EXPANDED_FAMILY,

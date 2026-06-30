@@ -319,4 +319,31 @@ pnpm release          # fails if non-critical .md at root
 
 ---
 
+---
+
+## 9. Reentry & Roadmap Sync
+
+**Keep `.versioning/REENTRY.md` and `.versioning/ROADMAP.md` in sync with actual progress.**
+
+After completing any non-trivial task or when switching context:
+
+1. Run `pnpm exec versioning reentry set --next "<what comes next>"` to update the next micro-step.
+2. Update `.agents/active-tasks/*/README.md` task statuses (todo → in-progress → done).
+3. Run `pnpm exec versioning reentry sync` to regenerate REENTRY.md and the ROADMAP.md managed block.
+
+A Husky pre-push guard enforces that REENTRY.md is not stale on pushes to `develop` or `master`.
+Use `--no-validate-reentry` on commits/pushes when changes are trivial (typos, config tweaks) and
+a reentry update would be noisy.
+
+### When to update
+
+| Event                                 | Update reentry?                          |
+| ------------------------------------- | ---------------------------------------- |
+| Task completed (code + tests passing) | Yes — set `--next` to the following task |
+| Task blocked or abandoned             | Yes — note the blocker                   |
+| Pure typo / formatting fix            | No — use `--no-validate-reentry`         |
+| Config or dependency bump only        | No — use `--no-validate-reentry`         |
+
+---
+
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

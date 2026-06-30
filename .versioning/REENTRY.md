@@ -1,12 +1,12 @@
 # Re-entry Status
 
 Schema: 1.1
-Version: 1.0.42
-Phase: staging
+Version: 1.0.294
+Phase: building
 
-Next micro-step: Verify deployment and update documentation
+Next micro-step: v1.0.295 released, PR #148 open for master. Reentry guard working. Next: PR approval + merge, then task 07 (RPC provider decision) to unblock task 06.
 
-Milestone: —
+Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
 
 ## Notes

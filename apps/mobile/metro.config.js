@@ -21,6 +21,17 @@ const uiEntry = path.join(uiPackageRoot, "src/index.ts");
 const updatePackageRoot = path.join(workspaceRoot, "packages/update");
 const updateEntry = path.join(updatePackageRoot, "src/index.ts");
 
+const walletPackageRoot = path.join(workspaceRoot, "packages/wallet");
+const walletEntry = path.join(walletPackageRoot, "src/index.ts");
+
+// On web, react-native-quick-crypto has no web implementation (Nitro/TurboModule only).
+// Redirect it to a no-op shim so install() is safe to call on all platforms — web already
+// has native crypto.subtle. shims/react-native-quick-crypto.web.js just exports { install: () => {} }.
+const reactNativeQuickCryptoShim = path.join(
+  __dirname,
+  "shims/react-native-quick-crypto.web.js",
+);
+
 config.watchFolders = Array.from(
   new Set([...(config.watchFolders || []), workspaceRoot]),
 );
@@ -44,6 +55,7 @@ config.resolver.extraNodeModules = {
   "@alternun/auth": authPackageRoot,
   "@alternun/ui": uiPackageRoot,
   "@alternun/update": updatePackageRoot,
+  "@alternun/wallet": walletPackageRoot,
   react: reactPath,
   "react-dom": reactDomPath,
   "react-native": reactNativePath,
@@ -99,11 +111,18 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       platform,
     );
   }
+  // Redirect react-native-quick-crypto to a no-op shim on web (no Nitro/TurboModules there).
+  if (moduleName === "react-native-quick-crypto" && platform === "web") {
+    return { type: "sourceFile", filePath: reactNativeQuickCryptoShim };
+  }
   if (moduleName === "@alternun/ui") {
     return { type: "sourceFile", filePath: uiEntry };
   }
   if (moduleName === "@alternun/update") {
     return { type: "sourceFile", filePath: updateEntry };
+  }
+  if (moduleName === "@alternun/wallet") {
+    return { type: "sourceFile", filePath: walletEntry };
   }
   if (moduleName === "expo-asset") {
     return { type: "sourceFile", filePath: expoAssetEntry };

@@ -520,6 +520,55 @@
         }
       }
     },
+    "wallet": {
+      "pin": {
+        "setup": {
+          "createTitle": "Crea tu PIN de wallet",
+          "confirmTitle": "Confirma tu PIN",
+          "explainer": "Este PIN de 4 dígitos cifra tu wallet solo en este dispositivo. Alternun nunca lo ve y no puede recuperarlo si lo olvidas y pierdes tu frase de respaldo.",
+          "mismatch": "Los PINs no coinciden. Inténtalo de nuevo."
+        },
+        "unlock": {
+          "title": "Ingresa tu PIN",
+          "incorrect": "PIN incorrecto. Inténtalo de nuevo.",
+          "error": "Algo salió mal. Por favor intenta de nuevo.",
+          "locked": "Demasiados intentos. Inténtalo en"
+        }
+      },
+      "backup": {
+        "revealTitle": "Respalda tu frase de recuperación",
+        "revealSubtitle": "Esta es tu única opción de recuperación. Anótala y guárdala bien — Alternun no tiene una copia.",
+        "tapToReveal": "Toca para revelar",
+        "savedIt": "Ya la guardé",
+        "verifyTitle": "Confirma tu respaldo",
+        "verifySubtitle": "Ingresa las palabras solicitadas para confirmar que guardaste la frase.",
+        "wordNumber": "Palabra",
+        "verifyError": "No coincide. Revisa tu respaldo e inténtalo de nuevo.",
+        "exportTitle": "Guarda un archivo de respaldo (opcional)",
+        "exportSubtitle": "Este es tu único respaldo — no hay copia en los servidores de Alternun.",
+        "exportKeystore": "Exportar archivo de respaldo cifrado",
+        "exportPlaintext": "Exportar frase de recuperación en texto plano",
+        "plaintextWarning": "Entiendo que esto expone mis fondos si este archivo es robado",
+        "shareUnavailableTitle": "Compartir no disponible",
+        "shareUnavailableBody": "Este dispositivo no puede compartir archivos. Tu wallet sigue almacenada de forma segura en el dispositivo.",
+        "exportErrorTitle": "Error al exportar",
+        "exportErrorBody": "No se pudo crear el archivo de respaldo. Inténtalo de nuevo."
+      },
+      "creation": {
+        "generating": "Creando tu wallet…",
+        "registering": "Finalizando…",
+        "generationErrorTitle": "No se pudo crear la wallet",
+        "registerErrorTitle": "Casi listo",
+        "registerErrorBody": "Tu wallet fue creada en este dispositivo, pero no pudimos terminar el registro. Revisa tu conexión — puedes reintentar desde la pantalla de billetera."
+      }
+    },
+    "shared": {
+      "actions": {
+        "cancel": "Cancelar",
+        "continue": "Continuar",
+        "done": "Listo"
+      }
+    },
     "profile": {
       "screenTitle": "Mi perfil",
       "signInPrompt": "Inicia sesión para ver tu perfil",
@@ -552,9 +601,27 @@
       "wallet": {
         "connectTitle": "Conecta tu billetera",
         "connectSubtitle": "Vincula tu billetera para gestionar tus tokens ATN",
-        "connectButton": "Conectar billetera",
+        "connectButton": "Conectar billetera externa",
         "supportedNetworks": "Redes compatibles",
-        "notConnected": "No conectada"
+        "notConnected": "No conectada",
+        "createTitle": "Crea tu wallet Alternun",
+        "createSubtitle": "Tu llave multichain — Ethereum, Bitcoin y Solana en un solo lugar.",
+        "createButton": "Crear wallet Alternun",
+        "createFeature1": "Sin custodia: solo tú tienes las llaves",
+        "createFeature2": "Multichain: EVM, Bitcoin y Solana",
+        "createFeature3": "Cifrada con tu PIN, respaldada por ti",
+        "createDisclaimer": "Alternun nunca ve tu llave privada ni tu PIN. Si pierdes tu dispositivo sin un respaldo, los fondos no son recuperables.",
+        "localWalletTitle": "Tu wallet Alternun",
+        "localWalletSubtitle": "Activa en 3 redes",
+        "evmAddress": "Ethereum / EVM",
+        "bitcoinAddress": "Bitcoin",
+        "solanaAddress": "Solana",
+        "copyAddress": "Copiar dirección",
+        "addressCopied": "Dirección copiada",
+        "exportBackup": "Exportar respaldo",
+        "exportWarning": "Esta es tu única opción de recuperación si pierdes tu dispositivo.",
+        "manageWallet": "Gestionar wallet",
+        "noWalletAccount": "Sin datos de wallet aún"
       },
       "accessMethods": {
         "current": "Actual: {{method}}",
