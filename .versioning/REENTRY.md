@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Tasks 03-05 complete (build-validated, i18n done, WalletTab redesigned). Next: task 06 (wallet home/send/receive — needs task 07 RPC provider decision), task 08 remaining (IP throttling), task 09 (QA plan).
+Next micro-step: v1.0.295 released, PR #148 open for master. Reentry guard working. Next: PR approval + merge, then task 07 (RPC provider decision) to unblock task 06.
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
