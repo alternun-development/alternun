@@ -13,7 +13,7 @@ export function deriveSolanaAccount(mnemonic: string, accountIndex = 0): SolanaD
   const path = `m/44'/501'/${accountIndex}'/0'`;
   const seed = Buffer.from(mnemonicToSeed(mnemonic));
   const { key } = derivePath(path, seed.toString('hex'));
-  const keypair = Keypair.fromSeed(key);
+  const keypair = Keypair.fromSeed(Uint8Array.from(key));
 
   return {
     address: keypair.publicKey.toBase58(),

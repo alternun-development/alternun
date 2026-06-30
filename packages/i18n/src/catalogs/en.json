@@ -520,6 +520,55 @@
         }
       }
     },
+    "wallet": {
+      "pin": {
+        "setup": {
+          "createTitle": "Create your wallet PIN",
+          "confirmTitle": "Confirm your PIN",
+          "explainer": "This 4-digit PIN encrypts your wallet on this device only. Alternun never sees it and cannot recover it if you forget it and lose your backup phrase.",
+          "mismatch": "PINs didn't match. Try again."
+        },
+        "unlock": {
+          "title": "Enter your PIN",
+          "incorrect": "Incorrect PIN. Try again.",
+          "error": "Something went wrong. Please try again.",
+          "locked": "Too many attempts. Try again in"
+        }
+      },
+      "backup": {
+        "revealTitle": "Back up your recovery phrase",
+        "revealSubtitle": "This is your only recovery option. Write it down and keep it safe — Alternun does not have a copy.",
+        "tapToReveal": "Tap to reveal",
+        "savedIt": "I've saved it",
+        "verifyTitle": "Confirm your backup",
+        "verifySubtitle": "Enter the requested words to confirm you saved the phrase.",
+        "wordNumber": "Word",
+        "verifyError": "That doesn't match. Check your backup and try again.",
+        "exportTitle": "Save a backup file (optional)",
+        "exportSubtitle": "This is your only backup — there is no copy on Alternun's servers.",
+        "exportKeystore": "Export encrypted backup file",
+        "exportPlaintext": "Export plain text recovery phrase",
+        "plaintextWarning": "I understand this exposes my funds if this file is stolen",
+        "shareUnavailableTitle": "Sharing unavailable",
+        "shareUnavailableBody": "This device cannot share files. Your wallet is still safely stored on this device.",
+        "exportErrorTitle": "Export failed",
+        "exportErrorBody": "Could not create the backup file. Please try again."
+      },
+      "creation": {
+        "generating": "Creating your wallet…",
+        "registering": "Finishing up…",
+        "generationErrorTitle": "Could not create wallet",
+        "registerErrorTitle": "Almost done",
+        "registerErrorBody": "Your wallet was created on this device, but we could not finish registering it. Please check your connection — you can retry from the wallet screen."
+      }
+    },
+    "shared": {
+      "actions": {
+        "cancel": "Cancel",
+        "continue": "Continue",
+        "done": "Done"
+      }
+    },
     "profile": {
       "screenTitle": "My Profile",
       "signInPrompt": "Sign in to view your profile",
@@ -552,9 +601,27 @@
       "wallet": {
         "connectTitle": "Connect your wallet",
         "connectSubtitle": "Link your wallet to manage your ATN tokens",
-        "connectButton": "Connect Wallet",
+        "connectButton": "Connect external wallet",
         "supportedNetworks": "Supported Networks",
-        "notConnected": "Not connected"
+        "notConnected": "Not connected",
+        "createTitle": "Create your Alternun wallet",
+        "createSubtitle": "Your multichain key — Ethereum, Bitcoin and Solana in one place.",
+        "createButton": "Create Alternun wallet",
+        "createFeature1": "Non-custodial: only you hold the keys",
+        "createFeature2": "Multi-chain: EVM, Bitcoin and Solana",
+        "createFeature3": "Encrypted with your PIN, backed up by you",
+        "createDisclaimer": "Alternun never sees your private key or PIN. If you lose your device without a backup, funds are unrecoverable.",
+        "localWalletTitle": "Your Alternun wallet",
+        "localWalletSubtitle": "Active across 3 chains",
+        "evmAddress": "Ethereum / EVM",
+        "bitcoinAddress": "Bitcoin",
+        "solanaAddress": "Solana",
+        "copyAddress": "Copy address",
+        "addressCopied": "Address copied",
+        "exportBackup": "Export backup",
+        "exportWarning": "This is your only recovery option if you lose your device.",
+        "manageWallet": "Manage wallet",
+        "noWalletAccount": "No wallet data yet"
       },
       "accessMethods": {
         "current": "Current: {{method}}",

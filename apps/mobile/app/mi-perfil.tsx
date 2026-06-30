@@ -43,6 +43,12 @@ import type { TierSpec } from '@alternun/ui';
 import { useAuth } from '../components/auth/AppAuthProvider';
 import { useAppTranslation } from '../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import WalletCreationFlow from '../components/wallet/WalletCreationFlow';
+import {
+  listWalletAccounts,
+  type AuthClient,
+  type WalletAccountRecord,
+} from '../components/wallet/walletApiClient';
 import ScreenShell from '../components/common/ScreenShell';
 import { PageTabBar, type TabItem } from '../components/common/PageTabBar';
 import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
@@ -73,6 +79,7 @@ const SettingsIcon = Settings as React.FC<LucideProps>;
 const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
 const TrophyIcon = Trophy as React.FC<LucideProps>;
 const UserCircle2Icon = UserCircle2 as React.FC<LucideProps>;
+const CopyIcon = Copy as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
 
 // ─── Data & Helpers ──────────────────────────────────────────────────────────
@@ -1938,52 +1945,246 @@ function RankingTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.
   );
 }
 
-function WalletTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.JSX.Element {
+function WalletAddressRow({
+  label,
+  address,
+  dotColor,
+  accentColor,
+  mutedColor,
+  textColor,
+  copiedLabel,
+}: {
+  label: string;
+  address: string | null;
+  dotColor: string;
+  accentColor: string;
+  mutedColor: string;
+  textColor: string;
+  copiedLabel: string;
+}): React.JSX.Element | null {
+  const [copied, setCopied] = useState(false);
+  if (!address) return null;
+  const handleCopy = (): void => {
+    void Clipboard.setStringAsync(address).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+  return (
+    <View style={walletStyles.addressRow}>
+      <View style={[walletStyles.addressDot, { backgroundColor: dotColor }]} />
+      <View style={walletStyles.addressInfo}>
+        <Text style={[walletStyles.addressLabel, { color: mutedColor }]}>{label}</Text>
+        <Text style={[walletStyles.addressValue, { color: textColor }]}>
+          {truncateMiddle(address, 8, 6)}
+        </Text>
+      </View>
+      <TouchableOpacity onPress={handleCopy} activeOpacity={0.7} style={walletStyles.copyBtn}>
+        <CopyIcon size={15} color={copied ? accentColor : mutedColor} />
+        {copied && (
+          <Text style={[walletStyles.copiedText, { color: accentColor }]}>{copiedLabel}</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function WalletTab({
+  isDark,
+  c,
+  client,
+}: {
+  isDark: boolean;
+  c: ColorPalette;
+  client: AuthClient;
+}): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
   const enhancedStyles = profileStylesEnhanced(isDark);
+  const [creationVisible, setCreationVisible] = useState(false);
+  const [localAccount, setLocalAccount] = useState<WalletAccountRecord | null>(null);
+
+  useEffect(() => {
+    void listWalletAccounts(client)
+      .then(({ accounts }) => {
+        const primary = accounts.find((a) => a.isPrimary) ?? accounts[0] ?? null;
+        setLocalAccount(primary);
+      })
+      .catch(() => {
+        // No local wallet yet, or not reachable — fall through to the "create" state below.
+      });
+  }, [client]);
+
+  const CHAIN_FEATURES = [
+    t('profile.wallet.createFeature1', undefined, 'Non-custodial: only you hold the keys'),
+    t('profile.wallet.createFeature2', undefined, 'Multi-chain: EVM, Bitcoin and Solana'),
+    t('profile.wallet.createFeature3', undefined, 'Encrypted with your PIN, backed up by you'),
+  ];
+
   return (
     <ScrollView
       contentContainerStyle={[enhancedStyles.content, { paddingBottom: 100 }]}
       showsVerticalScrollIndicator={false}
     >
-      <GlassCard style={walletStyles.connectCard}>
-        <View style={[walletStyles.walletIconWrap, { backgroundColor: `${c.accent}14` }]}>
-          <WalletIcon size={48} color={c.accent} />
-        </View>
-        <Text style={[walletStyles.connectTitle, { color: c.text }]}>
-          {t('profile.wallet.connectTitle', undefined, 'Connect your wallet')}
-        </Text>
-        <Text style={[walletStyles.connectSub, { color: c.muted }]}>
-          {t(
-            'profile.wallet.connectSubtitle',
-            undefined,
-            'Link your wallet to manage your ATN tokens'
-          )}
-        </Text>
-        <TouchableOpacity
-          style={[
-            walletStyles.connectBtn,
-            { backgroundColor: `${c.accent}18`, borderColor: `${c.accent}44` },
-          ]}
-          activeOpacity={0.7}
-        >
-          <Text style={[walletStyles.connectBtnText, { color: c.accent }]}>
-            {t('profile.wallet.connectButton', undefined, 'Connect Wallet')}
-          </Text>
-        </TouchableOpacity>
-      </GlassCard>
-      <SectionContainer
-        title={t('profile.wallet.supportedNetworks', undefined, 'Supported Networks')}
-      >
-        <View style={walletStyles.networkRow}>
-          {NETWORKS.map((network) => (
-            <View key={network.name} style={walletStyles.networkPill}>
-              <View style={[walletStyles.networkDot, { backgroundColor: network.color }]} />
-              <Text style={[walletStyles.networkName, { color: c.text }]}>{network.name}</Text>
+      {localAccount ? (
+        /* ── Wallet exists state ─────────────────────── */
+        <>
+          <GlassCard style={walletStyles.walletCard}>
+            <View style={walletStyles.walletCardHeader}>
+              <View style={[walletStyles.walletIconSmall, { backgroundColor: `${c.accent}18` }]}>
+                <WalletIcon size={22} color={c.accent} />
+              </View>
+              <View style={walletStyles.walletCardHeaderText}>
+                <Text style={[walletStyles.walletCardTitle, { color: c.text }]}>
+                  {t('profile.wallet.localWalletTitle', undefined, 'Your Alternun wallet')}
+                </Text>
+                <Text style={[walletStyles.walletCardSubtitle, { color: c.muted }]}>
+                  {t('profile.wallet.localWalletSubtitle', undefined, 'Active across 3 chains')}
+                </Text>
+              </View>
+              <View style={[walletStyles.activeBadge, { backgroundColor: `${c.accent}18` }]}>
+                <View style={[walletStyles.activeDot, { backgroundColor: c.accent }]} />
+                <Text style={[walletStyles.activeBadgeText, { color: c.accent }]}>Active</Text>
+              </View>
             </View>
-          ))}
-        </View>
-      </SectionContainer>
+
+            <View style={[walletStyles.addressSection, { borderColor: `${c.accent}20` }]}>
+              <WalletAddressRow
+                label={t('profile.wallet.evmAddress', undefined, 'Ethereum / EVM')}
+                address={localAccount.evmAddress}
+                dotColor='#627EEA'
+                accentColor={c.accent}
+                mutedColor={c.muted}
+                textColor={c.text}
+                copiedLabel={t('profile.wallet.addressCopied', undefined, 'Copied')}
+              />
+              <View style={[walletStyles.addressDivider, { backgroundColor: `${c.accent}12` }]} />
+              <WalletAddressRow
+                label={t('profile.wallet.bitcoinAddress', undefined, 'Bitcoin')}
+                address={localAccount.bitcoinAddress}
+                dotColor='#F7931A'
+                accentColor={c.accent}
+                mutedColor={c.muted}
+                textColor={c.text}
+                copiedLabel={t('profile.wallet.addressCopied', undefined, 'Copied')}
+              />
+              <View style={[walletStyles.addressDivider, { backgroundColor: `${c.accent}12` }]} />
+              <WalletAddressRow
+                label={t('profile.wallet.solanaAddress', undefined, 'Solana')}
+                address={localAccount.solanaAddress}
+                dotColor='#9945FF'
+                accentColor={c.accent}
+                mutedColor={c.muted}
+                textColor={c.text}
+                copiedLabel={t('profile.wallet.addressCopied', undefined, 'Copied')}
+              />
+            </View>
+
+            <View style={walletStyles.walletActions}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={[
+                  walletStyles.actionBtn,
+                  { backgroundColor: `${c.accent}14`, borderColor: `${c.accent}30` },
+                ]}
+              >
+                <Text style={[walletStyles.actionBtnText, { color: c.accent }]}>
+                  {t('profile.wallet.exportBackup', undefined, 'Export backup')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[walletStyles.exportWarning, { color: c.muted }]}>
+              {t(
+                'profile.wallet.exportWarning',
+                undefined,
+                'This is your only recovery option if you lose your device.'
+              )}
+            </Text>
+          </GlassCard>
+        </>
+      ) : (
+        /* ── No wallet / create state ────────────────── */
+        <>
+          <GlassCard style={walletStyles.createCard}>
+            <View style={[walletStyles.walletIconWrap, { backgroundColor: `${c.accent}14` }]}>
+              <WalletIcon size={40} color={c.accent} />
+            </View>
+
+            <Text style={[walletStyles.createTitle, { color: c.text }]}>
+              {t('profile.wallet.createTitle', undefined, 'Create your Alternun wallet')}
+            </Text>
+            <Text style={[walletStyles.createSubtitle, { color: c.muted }]}>
+              {t(
+                'profile.wallet.createSubtitle',
+                undefined,
+                'Your multichain key — Ethereum, Bitcoin and Solana in one place.'
+              )}
+            </Text>
+
+            <View style={walletStyles.featureList}>
+              {CHAIN_FEATURES.map((feature, i) => (
+                <View key={i} style={walletStyles.featureRow}>
+                  <View style={[walletStyles.featureDot, { backgroundColor: c.accent }]} />
+                  <Text style={[walletStyles.featureText, { color: c.text }]}>{feature}</Text>
+                </View>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={[walletStyles.primaryBtn, { backgroundColor: c.accent }]}
+              activeOpacity={0.8}
+              onPress={() => setCreationVisible(true)}
+            >
+              <WalletIcon size={16} color='#fff' />
+              <Text style={walletStyles.primaryBtnText}>
+                {t('profile.wallet.createButton', undefined, 'Create Alternun wallet')}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[walletStyles.secondaryBtn, { borderColor: `${c.accent}44` }]}
+              activeOpacity={0.7}
+            >
+              <Text style={[walletStyles.secondaryBtnText, { color: c.accent }]}>
+                {t('profile.wallet.connectButton', undefined, 'Connect external wallet')}
+              </Text>
+            </TouchableOpacity>
+
+            <Text style={[walletStyles.disclaimer, { color: c.muted }]}>
+              {t(
+                'profile.wallet.createDisclaimer',
+                undefined,
+                'Alternun never sees your private key or PIN. If you lose your device without a backup, funds are unrecoverable.'
+              )}
+            </Text>
+          </GlassCard>
+
+          <SectionContainer
+            title={t('profile.wallet.supportedNetworks', undefined, 'Supported Networks')}
+          >
+            <View style={walletStyles.networkRow}>
+              {NETWORKS.map((network) => (
+                <View key={network.name} style={walletStyles.networkPill}>
+                  <View style={[walletStyles.networkDot, { backgroundColor: network.color }]} />
+                  <Text style={[walletStyles.networkName, { color: c.text }]}>{network.name}</Text>
+                </View>
+              ))}
+            </View>
+          </SectionContainer>
+        </>
+      )}
+
+      <WalletCreationFlow
+        visible={creationVisible}
+        isDark={isDark}
+        accent={c.accent}
+        client={client}
+        onCancel={() => setCreationVisible(false)}
+        onComplete={(account) => {
+          setCreationVisible(false);
+          setLocalAccount(account);
+        }}
+      />
     </ScrollView>
   );
 }
@@ -2594,7 +2795,7 @@ export default function MiPerfilScreen(): React.JSX.Element {
           style={[styles.tabContent, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
         >
           {activeTab === 'ranking' && <RankingTab isDark={isDark} c={c} />}
-          {activeTab === 'wallet' && <WalletTab isDark={isDark} c={c} />}
+          {activeTab === 'wallet' && <WalletTab isDark={isDark} c={c} client={client} />}
           {activeTab === 'perfil' && (
             <PerfilTab
               isDark={isDark}
@@ -2680,26 +2881,122 @@ const rankingStyles = StyleSheet.create({
 
 const walletStyles = StyleSheet.create({
   content: { flexGrow: 1, paddingHorizontal: 16, gap: 0 },
-  connectCard: { padding: 28, alignItems: 'center', marginBottom: 16 },
+
+  /* ── Create wallet state ── */
+  createCard: { padding: 24, alignItems: 'center', marginBottom: 16, gap: 0 },
   walletIconWrap: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 14,
+  },
+  createTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: 6,
+    letterSpacing: -0.3,
+  },
+  createSubtitle: { fontSize: 14, textAlign: 'center', marginBottom: 20, lineHeight: 20 },
+  featureList: { alignSelf: 'stretch', gap: 10, marginBottom: 24 },
+  featureRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  featureDot: { width: 6, height: 6, borderRadius: 3, marginTop: 6 },
+  featureText: { fontSize: 13, flex: 1, lineHeight: 20 },
+  primaryBtn: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  secondaryBtn: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
     marginBottom: 16,
   },
-  connectTitle: { fontSize: 18, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
-  connectSub: { fontSize: 14, textAlign: 'center', marginBottom: 16 },
-  connectBtn: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8, borderWidth: 1 },
-  connectBtnText: { fontWeight: '600', fontSize: 14 },
-  networkRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
+  secondaryBtnText: { fontWeight: '600', fontSize: 14 },
+  disclaimer: { fontSize: 12, textAlign: 'center', lineHeight: 17, opacity: 0.7 },
+
+  /* ── Existing wallet state ── */
+  walletCard: { padding: 20, marginBottom: 16 },
+  walletCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  walletIconSmall: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  walletCardHeaderText: { flex: 1 },
+  walletCardTitle: { fontSize: 16, fontWeight: '700', marginBottom: 2 },
+  walletCardSubtitle: { fontSize: 12 },
+  activeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  activeDot: { width: 6, height: 6, borderRadius: 3 },
+  activeBadgeText: { fontSize: 11, fontWeight: '700' },
+  addressSection: {
+    borderWidth: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 14,
+  },
+  addressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  addressDot: { width: 8, height: 8, borderRadius: 4, flexShrink: 0 },
+  addressInfo: { flex: 1, minWidth: 0 },
+  addressLabel: { fontSize: 11, fontWeight: '600', marginBottom: 2 },
+  addressValue: { fontSize: 13, fontWeight: '500' },
+  addressDivider: { height: 1, marginHorizontal: 14 },
+  copyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: 4 },
+  copiedText: { fontSize: 11, fontWeight: '600' },
+  walletActions: { flexDirection: 'row', gap: 10, marginBottom: 12 },
+  actionBtn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  actionBtnText: { fontSize: 13, fontWeight: '700' },
+  exportWarning: { fontSize: 11, textAlign: 'center', lineHeight: 16, opacity: 0.7 },
+
+  /* ── Networks ── */
+  networkRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   networkPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    gap: 7,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.04)',
     borderWidth: 1,
