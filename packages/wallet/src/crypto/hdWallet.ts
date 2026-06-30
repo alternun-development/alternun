@@ -9,11 +9,15 @@ export type DerivedWalletBundle = {
   solana: ReturnType<typeof deriveSolanaAccount>;
 };
 
-export function deriveWalletBundle(mnemonic: string, accountIndex = 0): DerivedWalletBundle {
+export function deriveWalletBundle(
+  mnemonic: string,
+  accountIndex = 0,
+  bitcoinNetwork: 'mainnet' | 'testnet' = 'testnet'
+): DerivedWalletBundle {
   return {
     accountIndex,
     evm: deriveEvmAccount(mnemonic, accountIndex),
-    bitcoin: deriveBitcoinAccount(mnemonic, accountIndex),
+    bitcoin: deriveBitcoinAccount(mnemonic, accountIndex, bitcoinNetwork),
     solana: deriveSolanaAccount(mnemonic, accountIndex),
   };
 }

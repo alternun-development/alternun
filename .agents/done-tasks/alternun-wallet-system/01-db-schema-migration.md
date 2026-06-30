@@ -37,3 +37,23 @@ See `00-SPEC.md` §4 for full rationale. This task is pure SQL + supabase migrat
 - [x] `pin_failed_attempts` defaults to `0`, `pin_locked_until` defaults to `null` — verified via
       `information_schema.columns`.
 - [x] No existing migration modified — purely additive (`supabase/migrations/20260629_0002_wallet_encrypted_seeds.sql`).
+
+## 2026-06-30 fix: wrong FK target, real wallet creation was failing in production
+
+The original `20260417_0008` migration's FK (`user_id references auth.users(id)`) and the RLS test above (done
+against real `auth.users` rows) both missed that the app's actual users live in `public.users`, which is
+_intentionally_ not linked to `auth.users` (own UUID/text ID space — see `20260319_0003`'s header comment).
+`resolveUserId()` (the primary Authentik/JWT auth path) returns a `public.users.id`, so every real wallet
+creation attempt hit a foreign key violation — silently caught client-side, making it look like the UI was
+broken rather than the DB constraint. New migration `20260630_0001_fix_wallet_tables_user_fk.sql`:
+
+- Repoints `wallet_accounts`/`wallet_preferences`/`wallet_sessions`/`wallet_encrypted_seeds`'s `user_id` FK to
+  `public.users(id)`.
+- Also had to convert `user_id` from `uuid` to `text` — live dev schema has `public.users.id` as `text` (not the
+  `uuid` originally declared in `20260319_0003`; superseded by an undocumented schema change). Values are still
+  UUID-formatted strings, so this was a safe, lossless cast; all 4 tables were empty in dev (the bug above meant
+  nothing had ever successfully been written).
+- Dropped the `auth.uid() = user_id` RLS policies (no longer meaningful against a `public.users` FK target; the
+  API already enforces ownership at the application layer and connects via the service-role key, which bypasses
+  RLS anyway). RLS stays enabled with no policy, as a default-deny safety net.
+- Applied to dev and smoke-tested with a real `public.users` row (insert + delete succeeded).
