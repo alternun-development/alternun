@@ -28,7 +28,8 @@ bash scripts/sync-db-migrations.sh production --file supabase/migrations/2026042
 
 Current production state:
 
-- the live backend database still reports a large historical backlog in `_migrations`
+- the live backend database is now up to date with the repo migration history; the June 29 AIRS eligible-user count
+  and wallet schema migrations were applied after previewing the production queue one migration at a time
 - the safe repair path starts with the Better Auth fixes in `20260424_0001`, `20260424_0002`, and `20260424_0003`
 - do **not** batch-apply the whole pending queue unless you are intentionally performing a recovery exercise and have reviewed every file
 
