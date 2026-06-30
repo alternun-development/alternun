@@ -19,6 +19,7 @@ phase-1 scaffold). Product decision: device-only recovery, no server-side seed b
 | 07  | [Multi-chain RPC integration](./07-multichain-rpc-integration.md)                                    | 02                | todo                                                                        |
 | 08  | [Rate limiting & security hardening](./08-rate-limiting-security-hardening.md)                       | 02                | **lockout done in 02**, throttling/audit remaining                          |
 | 09  | [Testing & QA plan](./09-testing-qa-plan.md)                                                         | — (cross-cutting) | todo                                                                        |
+| 10  | [AIRS prod migrations + wallet empty state](./10-airs-prod-migrations-and-wallet-empty-state.md)     | 02, 05            | implemented-pending-live-verification                                       |
 | 99  | [Future: server-side backup upgrade](./99-future-server-backup-upgrade.md) (archived, not scheduled) | —                 | archived                                                                    |
 
 ## Suggested parallelization
