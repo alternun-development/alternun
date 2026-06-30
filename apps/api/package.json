@@ -9,7 +9,7 @@
     "db:migrate": "node -r ts-node/register/transpile-only ./scripts/apply-migrations.ts",
     "db:migrate:compiled": "node ./dist/scripts/apply-migrations.js",
     "type-check": "tsc --noEmit",
-    "test": "node -r ts-node/register/transpile-only --test test/*.test.js test/*.test.ts"
+    "test": "node --experimental-test-module-mocks -r ts-node/register/transpile-only --test test/*.test.js test/*.test.ts"
   },
   "dependencies": {
     "@alternun/email-templates": "workspace:*",
@@ -22,6 +22,7 @@
     "@nestjs/core": "^10.4.22",
     "@nestjs/platform-fastify": "11.0.0",
     "@nestjs/swagger": "^8.1.1",
+    "@nestjs/throttler": "^6.4.0",
     "@supabase/supabase-js": "^2.98.0",
     "better-auth": "^1.6.3",
     "class-transformer": "^0.5.1",

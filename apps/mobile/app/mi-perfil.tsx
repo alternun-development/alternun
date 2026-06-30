@@ -44,11 +44,23 @@ import { useAuth } from '../components/auth/AppAuthProvider';
 import { useAppTranslation } from '../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import WalletCreationFlow from '../components/wallet/WalletCreationFlow';
+import WalletRestoreFlow from '../components/wallet/WalletRestoreFlow';
+import WalletManageModal from '../components/wallet/WalletManageModal';
 import {
+  getWalletBalances,
   listWalletAccounts,
+  verifyWalletPin,
   type AuthClient,
   type WalletAccountRecord,
+  type WalletBalance,
 } from '../components/wallet/walletApiClient';
+import { CHAIN_META, formatChainAmount } from '../components/wallet/chainMeta';
+import WalletReceiveModal from '../components/wallet/WalletReceiveModal';
+import WalletSendModal from '../components/wallet/WalletSendModal';
+import WalletActivityModal from '../components/wallet/WalletActivityModal';
+import WalletBackupScreen from '../components/wallet/WalletBackupScreen';
+import PinUnlockScreen from '../components/wallet/PinUnlockScreen';
+import { unlockMnemonic } from '@alternun/wallet';
 import ScreenShell from '../components/common/ScreenShell';
 import { PageTabBar, type TabItem } from '../components/common/PageTabBar';
 import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
@@ -2001,18 +2013,80 @@ function WalletTab({
   const { t } = useAppTranslation('mobile');
   const enhancedStyles = profileStylesEnhanced(isDark);
   const [creationVisible, setCreationVisible] = useState(false);
+  const [restoreVisible, setRestoreVisible] = useState(false);
   const [localAccount, setLocalAccount] = useState<WalletAccountRecord | null>(null);
+  // Starts true so the first render never shows the "create wallet" empty state before we've
+  // actually checked whether one already exists — that's the flash the loader below prevents.
+  const [isLoadingAccount, setIsLoadingAccount] = useState(true);
+  const [balances, setBalances] = useState<WalletBalance[]>([]);
+  const [receiveVisible, setReceiveVisible] = useState(false);
+  const [sendVisible, setSendVisible] = useState(false);
+  const [activityVisible, setActivityVisible] = useState(false);
+  const [exportPinVisible, setExportPinVisible] = useState(false);
+  const [exportBackupVisible, setExportBackupVisible] = useState(false);
+  const [unlockedExport, setUnlockedExport] = useState<{ mnemonic: string; pin: string } | null>(
+    null
+  );
+  const [manageVisible, setManageVisible] = useState(false);
+  const loadingFade = useRef(new Animated.Value(0)).current;
+  const contentFade = useRef(new Animated.Value(0)).current;
+
+  const refreshBalances = (): void => {
+    void getWalletBalances(client)
+      .then(({ balances: next }) => setBalances(next))
+      .catch(() => {
+        // Balance lookups are best-effort — keep showing the last known values on failure.
+      });
+  };
+
+  const handleExportPinSubmit = async (
+    pin: string
+  ): Promise<{ verified: boolean; lockedUntil?: string }> => {
+    const result = await verifyWalletPin(client, pin);
+    if (result.verified) {
+      const mnemonic = await unlockMnemonic(pin);
+      if (mnemonic) {
+        setUnlockedExport({ mnemonic, pin });
+      } else {
+        // PIN matched the server-side digest but couldn't decrypt the local vault — most likely
+        // this is a different device than the one the wallet was created on (the vault is
+        // device-local, never synced). Surface this distinctly from "wrong PIN".
+        return { verified: false };
+      }
+    }
+    return result;
+  };
 
   useEffect(() => {
+    Animated.timing(loadingFade, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+
     void listWalletAccounts(client)
       .then(({ accounts }) => {
         const primary = accounts.find((a) => a.isPrimary) ?? accounts[0] ?? null;
         setLocalAccount(primary);
+        if (primary) {
+          refreshBalances();
+        }
       })
       .catch(() => {
         // No local wallet yet, or not reachable — fall through to the "create" state below.
-      });
+      })
+      .finally(() => setIsLoadingAccount(false));
   }, [client]);
+
+  useEffect(() => {
+    if (!isLoadingAccount) {
+      Animated.timing(contentFade, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isLoadingAccount]);
 
   const CHAIN_FEATURES = [
     t('profile.wallet.createFeature1', undefined, 'Non-custodial: only you hold the keys'),
@@ -2020,171 +2094,364 @@ function WalletTab({
     t('profile.wallet.createFeature3', undefined, 'Encrypted with your PIN, backed up by you'),
   ];
 
+  if (isLoadingAccount) {
+    return (
+      <Animated.View style={{ opacity: loadingFade }}>
+        <GlassCard style={walletStyles.walletCard}>
+          <View style={walletStyles.walletCardHeader}>
+            <View style={[walletStyles.walletIconSmall, { backgroundColor: `${c.accent}18` }]}>
+              <ActivityIndicator size='small' color={c.accent} />
+            </View>
+            <View style={walletStyles.walletCardHeaderText}>
+              <Text style={[walletStyles.walletCardTitle, { color: c.text }]}>
+                {t('profile.wallet.loadingTitle', undefined, 'Loading your wallet…')}
+              </Text>
+              <Text style={[walletStyles.walletCardSubtitle, { color: c.muted }]}>
+                {t(
+                  'profile.wallet.loadingSubtitle',
+                  undefined,
+                  'Checking for an existing wallet on this account'
+                )}
+              </Text>
+            </View>
+          </View>
+          <View style={[walletStyles.addressSection, { borderColor: `${c.accent}20` }]}>
+            {[0, 1, 2].map((i) => (
+              <View key={i} style={walletStyles.balanceRow}>
+                <View style={[walletStyles.skeletonDot, { backgroundColor: `${c.accent}20` }]} />
+                <View style={[walletStyles.skeletonBar, { backgroundColor: `${c.accent}14` }]} />
+              </View>
+            ))}
+          </View>
+        </GlassCard>
+      </Animated.View>
+    );
+  }
+
   return (
     <ScrollView
       contentContainerStyle={[enhancedStyles.content, { paddingBottom: 100 }]}
       showsVerticalScrollIndicator={false}
     >
-      {localAccount ? (
-        /* ── Wallet exists state ─────────────────────── */
-        <>
-          <GlassCard style={walletStyles.walletCard}>
-            <View style={walletStyles.walletCardHeader}>
-              <View style={[walletStyles.walletIconSmall, { backgroundColor: `${c.accent}18` }]}>
-                <WalletIcon size={22} color={c.accent} />
+      <Animated.View style={{ opacity: contentFade }}>
+        {localAccount ? (
+          /* ── Wallet exists state ─────────────────────── */
+          <>
+            <GlassCard style={walletStyles.walletCard}>
+              <View style={walletStyles.walletCardHeader}>
+                <View style={[walletStyles.walletIconSmall, { backgroundColor: `${c.accent}18` }]}>
+                  <WalletIcon size={22} color={c.accent} />
+                </View>
+                <View style={walletStyles.walletCardHeaderText}>
+                  <Text style={[walletStyles.walletCardTitle, { color: c.text }]}>
+                    {t('profile.wallet.localWalletTitle', undefined, 'Your Alternun wallet')}
+                  </Text>
+                  <Text style={[walletStyles.walletCardSubtitle, { color: c.muted }]}>
+                    {t('profile.wallet.localWalletSubtitle', undefined, 'Active across 3 chains')}
+                  </Text>
+                </View>
+                <View style={[walletStyles.activeBadge, { backgroundColor: `${c.accent}18` }]}>
+                  <View style={[walletStyles.activeDot, { backgroundColor: c.accent }]} />
+                  <Text style={[walletStyles.activeBadgeText, { color: c.accent }]}>Active</Text>
+                </View>
               </View>
-              <View style={walletStyles.walletCardHeaderText}>
-                <Text style={[walletStyles.walletCardTitle, { color: c.text }]}>
-                  {t('profile.wallet.localWalletTitle', undefined, 'Your Alternun wallet')}
-                </Text>
-                <Text style={[walletStyles.walletCardSubtitle, { color: c.muted }]}>
-                  {t('profile.wallet.localWalletSubtitle', undefined, 'Active across 3 chains')}
-                </Text>
-              </View>
-              <View style={[walletStyles.activeBadge, { backgroundColor: `${c.accent}18` }]}>
-                <View style={[walletStyles.activeDot, { backgroundColor: c.accent }]} />
-                <Text style={[walletStyles.activeBadgeText, { color: c.accent }]}>Active</Text>
-              </View>
-            </View>
 
-            <View style={[walletStyles.addressSection, { borderColor: `${c.accent}20` }]}>
-              <WalletAddressRow
-                label={t('profile.wallet.evmAddress', undefined, 'Ethereum / EVM')}
-                address={localAccount.evmAddress}
-                dotColor='#627EEA'
-                accentColor={c.accent}
-                mutedColor={c.muted}
-                textColor={c.text}
-                copiedLabel={t('profile.wallet.addressCopied', undefined, 'Copied')}
-              />
-              <View style={[walletStyles.addressDivider, { backgroundColor: `${c.accent}12` }]} />
-              <WalletAddressRow
-                label={t('profile.wallet.bitcoinAddress', undefined, 'Bitcoin')}
-                address={localAccount.bitcoinAddress}
-                dotColor='#F7931A'
-                accentColor={c.accent}
-                mutedColor={c.muted}
-                textColor={c.text}
-                copiedLabel={t('profile.wallet.addressCopied', undefined, 'Copied')}
-              />
-              <View style={[walletStyles.addressDivider, { backgroundColor: `${c.accent}12` }]} />
-              <WalletAddressRow
-                label={t('profile.wallet.solanaAddress', undefined, 'Solana')}
-                address={localAccount.solanaAddress}
-                dotColor='#9945FF'
-                accentColor={c.accent}
-                mutedColor={c.muted}
-                textColor={c.text}
-                copiedLabel={t('profile.wallet.addressCopied', undefined, 'Copied')}
-              />
-            </View>
+              {balances.length > 0 && (
+                <View style={[walletStyles.addressSection, { borderColor: `${c.accent}20` }]}>
+                  {balances.map((balance) => (
+                    <View key={balance.chain} style={walletStyles.balanceRow}>
+                      <View
+                        style={[
+                          walletStyles.addressDot,
+                          { backgroundColor: CHAIN_META[balance.chain].dotColor },
+                        ]}
+                      />
+                      <Text style={[walletStyles.balanceLabel, { color: c.muted }]}>
+                        {CHAIN_META[balance.chain].label}
+                      </Text>
+                      <Text style={[walletStyles.balanceValue, { color: c.text }]}>
+                        {formatChainAmount(balance.amount, balance.chain)}{' '}
+                        {CHAIN_META[balance.chain].unit}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
 
-            <View style={walletStyles.walletActions}>
+              <View style={walletStyles.walletActions}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={[
+                    walletStyles.actionBtn,
+                    { backgroundColor: `${c.accent}14`, borderColor: `${c.accent}30` },
+                  ]}
+                  onPress={() => setReceiveVisible(true)}
+                >
+                  <Text style={[walletStyles.actionBtnText, { color: c.accent }]}>
+                    {t('wallet.receive.title', undefined, 'Receive')}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={[
+                    walletStyles.actionBtn,
+                    { backgroundColor: `${c.accent}14`, borderColor: `${c.accent}30` },
+                  ]}
+                  onPress={() => setSendVisible(true)}
+                >
+                  <Text style={[walletStyles.actionBtnText, { color: c.accent }]}>
+                    {t('wallet.send.title', undefined, 'Send')}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={[
+                    walletStyles.actionBtn,
+                    { backgroundColor: `${c.accent}14`, borderColor: `${c.accent}30` },
+                  ]}
+                  onPress={() => setActivityVisible(true)}
+                >
+                  <Text style={[walletStyles.actionBtnText, { color: c.accent }]}>
+                    {t('wallet.activity.title', undefined, 'Activity')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={[walletStyles.addressSection, { borderColor: `${c.accent}20` }]}>
+                <WalletAddressRow
+                  label={t('profile.wallet.evmAddress', undefined, 'Ethereum / EVM')}
+                  address={localAccount.evmAddress}
+                  dotColor='#627EEA'
+                  accentColor={c.accent}
+                  mutedColor={c.muted}
+                  textColor={c.text}
+                  copiedLabel={t('profile.wallet.addressCopied', undefined, 'Copied')}
+                />
+                <View style={[walletStyles.addressDivider, { backgroundColor: `${c.accent}12` }]} />
+                <WalletAddressRow
+                  label={t('profile.wallet.bitcoinAddress', undefined, 'Bitcoin')}
+                  address={localAccount.bitcoinAddress}
+                  dotColor='#F7931A'
+                  accentColor={c.accent}
+                  mutedColor={c.muted}
+                  textColor={c.text}
+                  copiedLabel={t('profile.wallet.addressCopied', undefined, 'Copied')}
+                />
+                <View style={[walletStyles.addressDivider, { backgroundColor: `${c.accent}12` }]} />
+                <WalletAddressRow
+                  label={t('profile.wallet.solanaAddress', undefined, 'Solana')}
+                  address={localAccount.solanaAddress}
+                  dotColor='#9945FF'
+                  accentColor={c.accent}
+                  mutedColor={c.muted}
+                  textColor={c.text}
+                  copiedLabel={t('profile.wallet.addressCopied', undefined, 'Copied')}
+                />
+              </View>
+
+              <View style={walletStyles.walletActions}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={[
+                    walletStyles.actionBtn,
+                    { backgroundColor: `${c.accent}14`, borderColor: `${c.accent}30` },
+                  ]}
+                  onPress={() => setExportPinVisible(true)}
+                >
+                  <Text style={[walletStyles.actionBtnText, { color: c.accent }]}>
+                    {t('profile.wallet.exportBackup', undefined, 'Export backup')}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={[
+                    walletStyles.actionBtn,
+                    { backgroundColor: `${c.accent}14`, borderColor: `${c.accent}30` },
+                  ]}
+                  onPress={() => setManageVisible(true)}
+                >
+                  <Text style={[walletStyles.actionBtnText, { color: c.accent }]}>
+                    {t('profile.wallet.manageWallets', undefined, 'Manage wallets')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={[walletStyles.exportWarning, { color: c.muted }]}>
+                {t(
+                  'profile.wallet.exportWarning',
+                  undefined,
+                  'This is your only recovery option if you lose your device.'
+                )}
+              </Text>
+            </GlassCard>
+          </>
+        ) : (
+          /* ── No wallet / create state ────────────────── */
+          <>
+            <GlassCard style={walletStyles.createCard}>
+              <View style={[walletStyles.walletIconWrap, { backgroundColor: `${c.accent}14` }]}>
+                <WalletIcon size={40} color={c.accent} />
+              </View>
+
+              <Text style={[walletStyles.createTitle, { color: c.text }]}>
+                {t('profile.wallet.createTitle', undefined, 'Create your Alternun wallet')}
+              </Text>
+              <Text style={[walletStyles.createSubtitle, { color: c.muted }]}>
+                {t(
+                  'profile.wallet.createSubtitle',
+                  undefined,
+                  'Your multichain key — Ethereum, Bitcoin and Solana in one place.'
+                )}
+              </Text>
+
+              <View style={walletStyles.featureList}>
+                {CHAIN_FEATURES.map((feature, i) => (
+                  <View key={i} style={walletStyles.featureRow}>
+                    <View style={[walletStyles.featureDot, { backgroundColor: c.accent }]} />
+                    <Text style={[walletStyles.featureText, { color: c.text }]}>{feature}</Text>
+                  </View>
+                ))}
+              </View>
+
               <TouchableOpacity
-                activeOpacity={0.7}
-                style={[
-                  walletStyles.actionBtn,
-                  { backgroundColor: `${c.accent}14`, borderColor: `${c.accent}30` },
-                ]}
+                style={[walletStyles.primaryBtn, { backgroundColor: c.accent }]}
+                activeOpacity={0.8}
+                onPress={() => setCreationVisible(true)}
               >
-                <Text style={[walletStyles.actionBtnText, { color: c.accent }]}>
-                  {t('profile.wallet.exportBackup', undefined, 'Export backup')}
+                <WalletIcon size={16} color='#fff' />
+                <Text style={walletStyles.primaryBtnText}>
+                  {t('profile.wallet.createButton', undefined, 'Create Alternun wallet')}
                 </Text>
               </TouchableOpacity>
-            </View>
 
-            <Text style={[walletStyles.exportWarning, { color: c.muted }]}>
-              {t(
-                'profile.wallet.exportWarning',
-                undefined,
-                'This is your only recovery option if you lose your device.'
-              )}
-            </Text>
-          </GlassCard>
-        </>
-      ) : (
-        /* ── No wallet / create state ────────────────── */
-        <>
-          <GlassCard style={walletStyles.createCard}>
-            <View style={[walletStyles.walletIconWrap, { backgroundColor: `${c.accent}14` }]}>
-              <WalletIcon size={40} color={c.accent} />
-            </View>
+              <TouchableOpacity
+                style={[walletStyles.secondaryBtn, { borderColor: `${c.accent}44` }]}
+                activeOpacity={0.7}
+                onPress={() => setRestoreVisible(true)}
+              >
+                <Text style={[walletStyles.secondaryBtnText, { color: c.accent }]}>
+                  {t('profile.wallet.restoreButton', undefined, 'Restore from recovery phrase')}
+                </Text>
+              </TouchableOpacity>
 
-            <Text style={[walletStyles.createTitle, { color: c.text }]}>
-              {t('profile.wallet.createTitle', undefined, 'Create your Alternun wallet')}
-            </Text>
-            <Text style={[walletStyles.createSubtitle, { color: c.muted }]}>
-              {t(
-                'profile.wallet.createSubtitle',
-                undefined,
-                'Your multichain key — Ethereum, Bitcoin and Solana in one place.'
-              )}
-            </Text>
-
-            <View style={walletStyles.featureList}>
-              {CHAIN_FEATURES.map((feature, i) => (
-                <View key={i} style={walletStyles.featureRow}>
-                  <View style={[walletStyles.featureDot, { backgroundColor: c.accent }]} />
-                  <Text style={[walletStyles.featureText, { color: c.text }]}>{feature}</Text>
-                </View>
-              ))}
-            </View>
-
-            <TouchableOpacity
-              style={[walletStyles.primaryBtn, { backgroundColor: c.accent }]}
-              activeOpacity={0.8}
-              onPress={() => setCreationVisible(true)}
-            >
-              <WalletIcon size={16} color='#fff' />
-              <Text style={walletStyles.primaryBtnText}>
-                {t('profile.wallet.createButton', undefined, 'Create Alternun wallet')}
+              <Text style={[walletStyles.disclaimer, { color: c.muted }]}>
+                {t(
+                  'profile.wallet.createDisclaimer',
+                  undefined,
+                  'Alternun never sees your private key or PIN. If you lose your device without a backup, funds are unrecoverable.'
+                )}
               </Text>
-            </TouchableOpacity>
+            </GlassCard>
 
-            <TouchableOpacity
-              style={[walletStyles.secondaryBtn, { borderColor: `${c.accent}44` }]}
-              activeOpacity={0.7}
+            <SectionContainer
+              title={t('profile.wallet.supportedNetworks', undefined, 'Supported Networks')}
             >
-              <Text style={[walletStyles.secondaryBtnText, { color: c.accent }]}>
-                {t('profile.wallet.connectButton', undefined, 'Connect external wallet')}
-              </Text>
-            </TouchableOpacity>
+              <View style={walletStyles.networkRow}>
+                {NETWORKS.map((network) => (
+                  <View key={network.name} style={walletStyles.networkPill}>
+                    <View style={[walletStyles.networkDot, { backgroundColor: network.color }]} />
+                    <Text style={[walletStyles.networkName, { color: c.text }]}>
+                      {network.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </SectionContainer>
+          </>
+        )}
 
-            <Text style={[walletStyles.disclaimer, { color: c.muted }]}>
-              {t(
-                'profile.wallet.createDisclaimer',
-                undefined,
-                'Alternun never sees your private key or PIN. If you lose your device without a backup, funds are unrecoverable.'
-              )}
-            </Text>
-          </GlassCard>
+        <WalletCreationFlow
+          visible={creationVisible}
+          isDark={isDark}
+          accent={c.accent}
+          client={client}
+          onCancel={() => setCreationVisible(false)}
+          onComplete={(account) => {
+            setCreationVisible(false);
+            setLocalAccount(account);
+            refreshBalances();
+          }}
+        />
 
-          <SectionContainer
-            title={t('profile.wallet.supportedNetworks', undefined, 'Supported Networks')}
-          >
-            <View style={walletStyles.networkRow}>
-              {NETWORKS.map((network) => (
-                <View key={network.name} style={walletStyles.networkPill}>
-                  <View style={[walletStyles.networkDot, { backgroundColor: network.color }]} />
-                  <Text style={[walletStyles.networkName, { color: c.text }]}>{network.name}</Text>
-                </View>
-              ))}
-            </View>
-          </SectionContainer>
-        </>
-      )}
+        <WalletRestoreFlow
+          visible={restoreVisible}
+          isDark={isDark}
+          accent={c.accent}
+          client={client}
+          onCancel={() => setRestoreVisible(false)}
+          onComplete={(account) => {
+            setRestoreVisible(false);
+            setLocalAccount(account);
+            refreshBalances();
+          }}
+        />
 
-      <WalletCreationFlow
-        visible={creationVisible}
-        isDark={isDark}
-        accent={c.accent}
-        client={client}
-        onCancel={() => setCreationVisible(false)}
-        onComplete={(account) => {
-          setCreationVisible(false);
-          setLocalAccount(account);
-        }}
-      />
+        {localAccount && (
+          <>
+            <WalletReceiveModal
+              visible={receiveVisible}
+              isDark={isDark}
+              accent={c.accent}
+              account={localAccount}
+              onClose={() => setReceiveVisible(false)}
+            />
+            <WalletSendModal
+              visible={sendVisible}
+              isDark={isDark}
+              accent={c.accent}
+              client={client}
+              account={localAccount}
+              onClose={() => setSendVisible(false)}
+              onSent={refreshBalances}
+            />
+            <WalletActivityModal
+              visible={activityVisible}
+              isDark={isDark}
+              accent={c.accent}
+              client={client}
+              onClose={() => setActivityVisible(false)}
+            />
+            <PinUnlockScreen
+              visible={exportPinVisible}
+              isDark={isDark}
+              accent={c.accent}
+              title={t('wallet.pin.unlock.exportTitle', undefined, 'Enter your PIN to export')}
+              onSubmit={handleExportPinSubmit}
+              onUnlocked={() => {
+                setExportPinVisible(false);
+                setExportBackupVisible(true);
+              }}
+              onCancel={() => setExportPinVisible(false)}
+            />
+            {unlockedExport && (
+              <WalletBackupScreen
+                visible={exportBackupVisible}
+                isDark={isDark}
+                accent={c.accent}
+                mnemonic={unlockedExport.mnemonic}
+                pin={unlockedExport.pin}
+                initialStep='export'
+                onDone={() => {
+                  setExportBackupVisible(false);
+                  setUnlockedExport(null);
+                }}
+              />
+            )}
+            <WalletManageModal
+              visible={manageVisible}
+              isDark={isDark}
+              accent={c.accent}
+              client={client}
+              onClose={() => setManageVisible(false)}
+              onPrimaryChanged={(accounts) => {
+                const newPrimary = accounts.find((a) => a.isPrimary) ?? accounts[0] ?? null;
+                setLocalAccount(newPrimary);
+                refreshBalances();
+              }}
+            />
+          </>
+        )}
+      </Animated.View>
     </ScrollView>
   );
 }
@@ -2700,11 +2967,25 @@ export default function MiPerfilScreen(): React.JSX.Element {
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [signingOut, setSigningOut] = useState(false);
 
+  // Sync FROM the URL only when the `tab` query param itself actually changes (e.g. navigating
+  // here via a link with a different ?tab=) — not on every render. `tabs` must NOT be a dependency
+  // here: it's re-created every render (useAppTranslation's `t` is a fresh function reference each
+  // render, so the `tabs` useMemo never stabilizes), which previously made this effect re-run on
+  // every render and forcibly reset activeTab back to the stale URL param — the exact "switching
+  // tabs snaps back instantly" bug. `tab.key` membership is checked inline instead of via `tabs`.
+  const tabKeys = useMemo(() => tabs.map((tab) => tab.key), [tabs]);
   useEffect(() => {
-    if (typeof params.tab === 'string' && tabs.some((tab) => tab.key === params.tab)) {
+    if (typeof params.tab === 'string' && tabKeys.includes(params.tab)) {
       setActiveTab(params.tab);
     }
-  }, [params.tab, tabs]);
+  }, [params.tab]);
+
+  // Sync TO the URL when the user switches tabs via the UI, so the `tab` query param never goes
+  // stale — without this, the param above would still be wrong on the next mount/deep-link.
+  const handleChangeTab = (key: string): void => {
+    setActiveTab(key);
+    router.setParams({ tab: key });
+  };
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
@@ -2785,7 +3066,7 @@ export default function MiPerfilScreen(): React.JSX.Element {
           <PageTabBar
             tabs={tabs}
             activeTab={activeTab}
-            onChangeTab={setActiveTab}
+            onChangeTab={handleChangeTab}
             isDark={isDark}
             accent={c.accent}
             muted={c.muted}
@@ -2833,6 +3114,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 8,
+    // The tab tooltip below needs to render above tabContent's card, but tabContent has its own
+    // transform (translateY), which creates a separate stacking context that otherwise paints on
+    // top regardless of the tooltip's own zIndex (a descendant's zIndex can't lift its ancestor
+    // above a later sibling subtree). Elevating headerBar itself fixes that.
+    position: 'relative',
+    zIndex: 20,
   },
   titleWithIcon: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   pageTitle: { fontSize: 20, fontWeight: '700', fontFamily: 'Sculpin-Bold' },
@@ -2975,6 +3262,17 @@ const walletStyles = StyleSheet.create({
   addressLabel: { fontSize: 11, fontWeight: '600', marginBottom: 2 },
   addressValue: { fontSize: 13, fontWeight: '500' },
   addressDivider: { height: 1, marginHorizontal: 14 },
+  balanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  balanceLabel: { flex: 1, fontSize: 12, fontWeight: '600' },
+  balanceValue: { fontSize: 13, fontWeight: '700' },
+  skeletonDot: { width: 8, height: 8, borderRadius: 4, flexShrink: 0 },
+  skeletonBar: { flex: 1, height: 12, borderRadius: 6 },
   copyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: 4 },
   copiedText: { fontSize: 11, fontWeight: '600' },
   walletActions: { flexDirection: 'row', gap: 10, marginBottom: 12 },

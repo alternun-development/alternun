@@ -3,5 +3,7 @@ export * from './crypto/hdWallet';
 export * from './crypto/evmDerive';
 export * from './crypto/bitcoinDerive';
 export * from './crypto/solanaDerive';
+export * from './crypto/sign';
+export * from './crypto/validateAddress';
 export * from './storage/secureVault';
 export * from './storage/keystoreExport';
