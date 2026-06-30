@@ -27,6 +27,7 @@ const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
+const SUMMARY_CARDS_STACK_BREAKPOINT = 720;
 
 interface AuthClient {
   getSessionToken(): Promise<string | null>;
@@ -38,6 +39,20 @@ interface DashboardSummaryCardsProps {
   client?: AuthClient;
   signedIn?: boolean;
   airsBalance?: number | null;
+}
+
+export function getDashboardSummaryCardsLayout(width: number): {
+  isMobile: boolean;
+  isCompactMobile: boolean;
+  isDenseAtnCard: boolean;
+} {
+  const isMobile = width < SUMMARY_CARDS_STACK_BREAKPOINT;
+
+  return {
+    isMobile,
+    isCompactMobile: isMobile,
+    isDenseAtnCard: isMobile,
+  };
 }
 
 function getPalette(isDark: boolean): {
@@ -119,6 +134,7 @@ function SummaryCard({
       style={[
         styles.card,
         compact && styles.cardCompact,
+        typeof minHeight === 'number' ? { flex: 1 } : { flex: 0 },
         {
           backgroundColor: p.cardBg,
           borderColor: p.cardBorder,
@@ -529,9 +545,7 @@ export default function DashboardSummaryCards({
 }: DashboardSummaryCardsProps): React.JSX.Element {
   const p = getPalette(isDark);
   const { width } = useWindowDimensions();
-  const isMobile = width < 720;
-  const isCompactMobile = width < 520;
-  const isDenseAtnCard = width < 720;
+  const { isMobile, isCompactMobile, isDenseAtnCard } = getDashboardSummaryCardsLayout(width);
   const desktopMinHeight = isMobile ? undefined : 480;
   const [eligibleUsers, setEligibleUsers] = useState<number | null>(null);
   const [eligibleUsersLoading, setEligibleUsersLoading] = useState(false);
@@ -619,7 +633,7 @@ export default function DashboardSummaryCards({
           isCompactMobile && styles.gridCompact,
         ]}
       >
-        <View style={styles.cardSlot}>
+        <View style={[styles.cardSlot, isMobile && styles.cardSlotMobile]}>
           <RBICard
             p={p}
             compact={isCompactMobile}
@@ -630,7 +644,7 @@ export default function DashboardSummaryCards({
             minHeight={desktopMinHeight}
           />
         </View>
-        <View style={styles.cardSlot}>
+        <View style={[styles.cardSlot, isMobile && styles.cardSlotMobile]}>
           <ATNCard
             p={p}
             compact={isCompactMobile}
@@ -664,6 +678,8 @@ const styles = StyleSheet.create({
   },
   gridMobile: {
     flexDirection: 'column',
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
   },
   gridDesktop: {
     flexDirection: 'row',
@@ -673,6 +689,13 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
+  cardSlotMobile: {
+    flex: 0,
+    flexGrow: 0,
+    flexShrink: 0,
+    alignSelf: 'stretch',
+    width: '100%',
+  },
   card: {
     flex: 1,
     minHeight: 100,
@@ -681,6 +704,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingTop: 18,
     paddingBottom: 16,
+    alignSelf: 'stretch',
+    width: '100%',
   },
   cardCompact: {
     borderRadius: 20,
