@@ -613,10 +613,39 @@
       "manage": {
         "title": "Tus wallets",
         "subtitle": "La wallet predeterminada se usa para saldos, enviar/recibir y pagos de recompensas.",
+        "add": "Agregar",
+        "addTitle": "Agregar una wallet",
         "default": "Predeterminada",
-        "setDefault": "Establecer como predeterminada",
+        "setDefault": "Establecer predeterminada",
         "alternunLabel": "Wallet de Alternun",
-        "externalLabel": "Wallet externa"
+        "externalLabel": "Wallet externa",
+        "createNew": "Crear una nueva wallet",
+        "createNewDesc": "Genera una nueva frase de recuperación y establece un PIN",
+        "importPhrase": "Importar desde frase de recuperación",
+        "importPhraseDesc": "Ingresa tu frase de respaldo de 12 a 24 palabras",
+        "importKeystore": "Importar archivo de respaldo cifrado",
+        "importKeystoreDesc": "Pega el contenido de tu archivo .json exportado",
+        "connectMetaMask": "Conectar MetaMask",
+        "connectMetaMaskDesc": "Vincula tu dirección MetaMask existente mediante prueba de firma",
+        "deleteTitle": "Eliminar wallet",
+        "deleteWarning": "Asegúrate de tener respaldada tu frase de recuperación antes de eliminar esta wallet. Esta acción no se puede deshacer.",
+        "deletePrimaryWarning": "Esta es tu wallet predeterminada. Eliminarla promoverá automáticamente otra cuenta. Asegúrate de tener tu frase de respaldo antes de continuar.",
+        "deleteOnlyWarning": "No puedes eliminar tu única wallet. Crea o restaura otra wallet primero.",
+        "deleteConfirm": "Eliminar esta wallet",
+        "connectingExternal": "Conectando a MetaMask…",
+        "signPrompt": "Aprueba la solicitud de firma en tu wallet"
+      },
+      "import": {
+        "title": "Importar archivo de respaldo",
+        "subtitle": "Pega el contenido de tu archivo .json exportado, luego ingresa el PIN que usaste al exportarlo.",
+        "placeholder": "{ \"alternunKeystoreVersion\": 1, ... }",
+        "invalidJson": "No se pudo analizar el JSON — revisa si hay errores de formato.",
+        "invalidKeystore": "Esto no parece un archivo de respaldo de wallet de Alternun.",
+        "pinTitle": "Ingresa tu PIN de exportación",
+        "pinSubtitle": "Este es el PIN que ingresaste cuando exportaste este archivo, no tu PIN actual.",
+        "wrongPin": "PIN incorrecto — este es el PIN que usaste cuando exportaste el respaldo.",
+        "restoring": "Importando tu wallet…",
+        "failedTitle": "Error al importar"
       }
     },
     "shared": {
