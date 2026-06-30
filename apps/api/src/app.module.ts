@@ -7,6 +7,7 @@ import { DecapModule } from './modules/decap/decap.module';
 import { HealthModule } from './modules/health/health.module';
 import { LegalModule } from './modules/legal/legal.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
+import { WalletModule } from './modules/wallet/wallet.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ReferralsModule } from './modules/referrals/referrals.module';
     ActivityModule,
     LegalModule,
     ReferralsModule,
+    WalletModule,
   ],
 })
 export class AppModule {}

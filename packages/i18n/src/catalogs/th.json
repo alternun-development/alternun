@@ -520,6 +520,55 @@
         }
       }
     },
+    "wallet": {
+      "pin": {
+        "setup": {
+          "createTitle": "สร้าง PIN วอลเล็ตของคุณ",
+          "confirmTitle": "ยืนยัน PIN ของคุณ",
+          "explainer": "PIN 4 หลักนี้เข้ารหัสวอลเล็ตของคุณบนอุปกรณ์นี้เท่านั้น Alternun ไม่เคยเห็น PIN และไม่สามารถกู้คืนได้หากคุณลืมและสูญเสียวลีสำรอง",
+          "mismatch": "PIN ไม่ตรงกัน ลองอีกครั้ง"
+        },
+        "unlock": {
+          "title": "ป้อน PIN ของคุณ",
+          "incorrect": "PIN ไม่ถูกต้อง ลองอีกครั้ง",
+          "error": "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
+          "locked": "พยายามมากเกินไป ลองอีกครั้งใน"
+        }
+      },
+      "backup": {
+        "revealTitle": "สำรองวลีการกู้คืนของคุณ",
+        "revealSubtitle": "นี่คือตัวเลือกการกู้คืนเดียวของคุณ จดไว้และเก็บให้ปลอดภัย — Alternun ไม่มีสำเนา",
+        "tapToReveal": "แตะเพื่อดู",
+        "savedIt": "บันทึกแล้ว",
+        "verifyTitle": "ยืนยันการสำรองข้อมูล",
+        "verifySubtitle": "ป้อนคำที่ขอเพื่อยืนยันว่าคุณบันทึกวลีแล้ว",
+        "wordNumber": "คำที่",
+        "verifyError": "ไม่ตรงกัน ตรวจสอบการสำรองข้อมูลและลองอีกครั้ง",
+        "exportTitle": "บันทึกไฟล์สำรอง (ไม่บังคับ)",
+        "exportSubtitle": "นี่คือข้อมูลสำรองเดียวของคุณ — ไม่มีสำเนาบนเซิร์ฟเวอร์ของ Alternun",
+        "exportKeystore": "ส่งออกไฟล์สำรองที่เข้ารหัส",
+        "exportPlaintext": "ส่งออกวลีการกู้คืนแบบข้อความธรรมดา",
+        "plaintextWarning": "ฉันเข้าใจว่าสิ่งนี้เปิดเผยสินทรัพย์หากไฟล์ถูกขโมย",
+        "shareUnavailableTitle": "ไม่สามารถแชร์ได้",
+        "shareUnavailableBody": "อุปกรณ์นี้ไม่สามารถแชร์ไฟล์ได้ วอลเล็ตของคุณยังคงเก็บไว้อย่างปลอดภัยบนอุปกรณ์",
+        "exportErrorTitle": "ส่งออกล้มเหลว",
+        "exportErrorBody": "ไม่สามารถสร้างไฟล์สำรองได้ กรุณาลองอีกครั้ง"
+      },
+      "creation": {
+        "generating": "กำลังสร้างวอลเล็ต…",
+        "registering": "กำลังดำเนินการ…",
+        "generationErrorTitle": "ไม่สามารถสร้างวอลเล็ตได้",
+        "registerErrorTitle": "เกือบเสร็จแล้ว",
+        "registerErrorBody": "วอลเล็ตถูกสร้างบนอุปกรณ์นี้แล้ว แต่ไม่สามารถลงทะเบียนให้เสร็จสมบูรณ์ได้ กรุณาตรวจสอบการเชื่อมต่อ — คุณสามารถลองใหม่จากหน้าจอวอลเล็ต"
+      }
+    },
+    "shared": {
+      "actions": {
+        "cancel": "ยกเลิก",
+        "continue": "ดำเนินการต่อ",
+        "done": "เสร็จสิ้น"
+      }
+    },
     "profile": {
       "screenTitle": "โปรไฟล์ของฉัน",
       "signInPrompt": "เข้าสู่ระบบเพื่อดูโปรไฟล์ของคุณ",
@@ -552,9 +601,27 @@
       "wallet": {
         "connectTitle": "เชื่อมต่อวอลเล็ตของคุณ",
         "connectSubtitle": "เชื่อมต่อวอลเล็ตเพื่อจัดการโทเค็น ATN ของคุณ",
-        "connectButton": "เชื่อมต่อวอลเล็ต",
+        "connectButton": "เชื่อมต่อวอลเล็ตภายนอก",
         "supportedNetworks": "เครือข่ายที่รองรับ",
-        "notConnected": "ยังไม่ได้เชื่อมต่อ"
+        "notConnected": "ยังไม่ได้เชื่อมต่อ",
+        "createTitle": "สร้างวอลเล็ต Alternun ของคุณ",
+        "createSubtitle": "กุญแจ multichain ของคุณ — Ethereum, Bitcoin และ Solana ในที่เดียว",
+        "createButton": "สร้างวอลเล็ต Alternun",
+        "createFeature1": "ไม่มีผู้ดูแล: มีเพียงคุณที่ถือกุญแจ",
+        "createFeature2": "Multichain: EVM, Bitcoin และ Solana",
+        "createFeature3": "เข้ารหัสด้วย PIN ของคุณ สำรองข้อมูลโดยคุณ",
+        "createDisclaimer": "Alternun ไม่เคยเห็นคีย์ส่วนตัวหรือ PIN ของคุณ หากคุณสูญเสียอุปกรณ์โดยไม่มีการสำรองข้อมูล สินทรัพย์จะไม่สามารถกู้คืนได้",
+        "localWalletTitle": "วอลเล็ต Alternun ของคุณ",
+        "localWalletSubtitle": "ใช้งานได้บน 3 เครือข่าย",
+        "evmAddress": "Ethereum / EVM",
+        "bitcoinAddress": "Bitcoin",
+        "solanaAddress": "Solana",
+        "copyAddress": "คัดลอกที่อยู่",
+        "addressCopied": "คัดลอกที่อยู่แล้ว",
+        "exportBackup": "ส่งออกข้อมูลสำรอง",
+        "exportWarning": "นี่คือตัวเลือกการกู้คืนเดียวหากคุณสูญเสียอุปกรณ์",
+        "manageWallet": "จัดการวอลเล็ต",
+        "noWalletAccount": "ยังไม่มีข้อมูลวอลเล็ต"
       },
       "accessMethods": {
         "current": "ปัจจุบัน: {{method}}",
