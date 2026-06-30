@@ -46,6 +46,7 @@ import { useAppPreferences } from '../components/settings/AppPreferencesProvider
 import WalletCreationFlow from '../components/wallet/WalletCreationFlow';
 import WalletRestoreFlow from '../components/wallet/WalletRestoreFlow';
 import WalletManageModal from '../components/wallet/WalletManageModal';
+import WalletImportKeystoreFlow from '../components/wallet/WalletImportKeystoreFlow';
 import {
   getWalletBalances,
   listWalletAccounts,
@@ -2014,6 +2015,7 @@ function WalletTab({
   const enhancedStyles = profileStylesEnhanced(isDark);
   const [creationVisible, setCreationVisible] = useState(false);
   const [restoreVisible, setRestoreVisible] = useState(false);
+  const [importKeystoreVisible, setImportKeystoreVisible] = useState(false);
   const [localAccount, setLocalAccount] = useState<WalletAccountRecord | null>(null);
   // Starts true so the first render never shows the "create wallet" empty state before we've
   // actually checked whether one already exists — that's the flash the loader below prevents.
@@ -2386,6 +2388,19 @@ function WalletTab({
           }}
         />
 
+        <WalletImportKeystoreFlow
+          visible={importKeystoreVisible}
+          isDark={isDark}
+          accent={c.accent}
+          client={client}
+          onCancel={() => setImportKeystoreVisible(false)}
+          onComplete={(account) => {
+            setImportKeystoreVisible(false);
+            setLocalAccount(account);
+            refreshBalances();
+          }}
+        />
+
         {localAccount && (
           <>
             <WalletReceiveModal
@@ -2447,6 +2462,18 @@ function WalletTab({
                 const newPrimary = accounts.find((a) => a.isPrimary) ?? accounts[0] ?? null;
                 setLocalAccount(newPrimary);
                 refreshBalances();
+              }}
+              onAddWallet={() => {
+                setManageVisible(false);
+                setCreationVisible(true);
+              }}
+              onRestoreWallet={() => {
+                setManageVisible(false);
+                setRestoreVisible(true);
+              }}
+              onImportKeystore={() => {
+                setManageVisible(false);
+                setImportKeystoreVisible(true);
               }}
             />
           </>

@@ -179,3 +179,29 @@ export async function broadcastWalletTransaction(
     body: JSON.stringify({ chain, signedTransaction }),
   });
 }
+
+export async function deleteWalletAccount(
+  client: AuthClient,
+  accountId: string
+): Promise<{ accounts: WalletAccountRecord[] }> {
+  return request(client, `/accounts/${encodeURIComponent(accountId)}`, { method: 'DELETE' });
+}
+
+export async function generateExternalChallenge(
+  client: AuthClient
+): Promise<{ challenge: string; nonce: string }> {
+  return request(client, '/accounts/external/challenge', { method: 'POST' });
+}
+
+export async function verifyAndLinkExternalWallet(
+  client: AuthClient,
+  address: string,
+  nonce: string,
+  signature: string,
+  label?: string
+): Promise<{ account: WalletAccountRecord }> {
+  return request(client, '/accounts/external/verify', {
+    method: 'POST',
+    body: JSON.stringify({ address, nonce, signature, label }),
+  });
+}
