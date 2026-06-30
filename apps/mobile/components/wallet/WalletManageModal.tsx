@@ -460,10 +460,9 @@ export default function WalletManageModal({
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 64, paddingHorizontal: 24 },
-  // listContent wraps renderList so it's ONE flex child (not a fragment's children),
-  // preventing the container from distributing space unpredictably.
-  listContent: { flex: 1 },
-  accountsScroll: { flexGrow: 0 }, // don't let the scroll view expand to fill remaining space
+  // listContent wraps renderList so it's ONE flex child (not a fragment's children).
+  listContent: { flexShrink: 1 },
+  accountsScroll: { flexGrow: 0 },
   closeArea: { alignSelf: 'flex-end', padding: 8 },
   closeText: { fontFamily: ANEK_EXPANDED_FAMILY, fontSize: 14, fontWeight: '600' },
   header: {
@@ -473,7 +472,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   backBtn: { padding: 4, marginRight: 8 },
-  title: { fontFamily: ANEK_EXPANDED_FAMILY, fontSize: 20, fontWeight: '800', flex: 1 },
+  title: { fontFamily: ANEK_EXPANDED_FAMILY, fontSize: 20, fontWeight: '800', marginBottom: 6 },
   subtitle: { fontFamily: ANEK_EXPANDED_FAMILY, fontSize: 13, lineHeight: 18, marginBottom: 20 },
   addBtn: {
     flexDirection: 'row',
