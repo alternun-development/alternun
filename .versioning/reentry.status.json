@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-06-30T01:01:38.108Z",
+  "lastUpdated": "2026-06-30T01:12:34.765Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Tasks 03-05 complete (build-validated, i18n done, WalletTab redesigned). Next: task 06 (wallet home/send/receive — needs task 07 RPC provider decision), task 08 remaining (IP throttling), task 09 (QA plan).",
+      "description": "v1.0.295 released, PR #148 open for master. Reentry guard working. Next: PR approval + merge, then task 07 (RPC provider decision) to unblock task 06.",
       "id": "next",
       "priority": 1
     }
