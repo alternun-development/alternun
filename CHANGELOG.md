@@ -1,3 +1,15 @@
+## [1.0.295](https://github.com/alternun-development/alternun/compare/v1.0.295-dev.0...v1.0.295) (2026-06-30)
+
+### Bug Fixes
+
+- **repo:** docs: fix README current version line to 1.0.295
+- **repo:** docs: sync root README for v1.0.295
+
+
+
+
+
+
 ## [1.0.295](https://github.com/alternun-development/alternun/compare/v1.0.294...v1.0.295) (2026-06-30)
 
 ### Bug Fixes
