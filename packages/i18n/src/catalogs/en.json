@@ -613,10 +613,39 @@
       "manage": {
         "title": "Your wallets",
         "subtitle": "The default wallet is used for balances, send/receive, and reward payouts.",
+        "add": "Add",
+        "addTitle": "Add a wallet",
         "default": "Default",
-        "setDefault": "Set as default",
+        "setDefault": "Set default",
         "alternunLabel": "Alternun wallet",
-        "externalLabel": "External wallet"
+        "externalLabel": "External wallet",
+        "createNew": "Create a new wallet",
+        "createNewDesc": "Generate a brand-new recovery phrase and set a PIN",
+        "importPhrase": "Import from recovery phrase",
+        "importPhraseDesc": "Enter your 12-24 word backup phrase",
+        "importKeystore": "Import encrypted backup file",
+        "importKeystoreDesc": "Paste the contents of your exported .json keystore file",
+        "connectMetaMask": "Connect MetaMask",
+        "connectMetaMaskDesc": "Link your existing MetaMask address via signature proof",
+        "deleteTitle": "Remove wallet",
+        "deleteWarning": "Make sure you have backed up the recovery phrase for this wallet before removing it. This action cannot be undone.",
+        "deletePrimaryWarning": "This is your default wallet. Removing it will auto-promote another account. Make sure you have your backup phrase before proceeding.",
+        "deleteOnlyWarning": "You cannot remove your only wallet. Create or restore another wallet first.",
+        "deleteConfirm": "Remove this wallet",
+        "connectingExternal": "Connecting to MetaMask…",
+        "signPrompt": "Approve the signature request in your wallet"
+      },
+      "import": {
+        "title": "Import backup file",
+        "subtitle": "Paste the contents of your exported .json backup file, then enter the PIN you used when you exported it.",
+        "placeholder": "{ \"alternunKeystoreVersion\": 1, ... }",
+        "invalidJson": "Could not parse the JSON — check for formatting errors.",
+        "invalidKeystore": "This does not look like an Alternun wallet backup file.",
+        "pinTitle": "Enter your export PIN",
+        "pinSubtitle": "This is the PIN you entered when you exported this backup file, not your current wallet PIN.",
+        "wrongPin": "Incorrect PIN — this is the PIN you used when you exported the backup file.",
+        "restoring": "Importing your wallet…",
+        "failedTitle": "Import failed"
       }
     },
     "shared": {

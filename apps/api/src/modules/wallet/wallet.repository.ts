@@ -304,6 +304,20 @@ export async function setPrimaryWalletAccount(
   );
 }
 
+export async function deleteWalletAccount(
+  userId: string,
+  accountId: string,
+  env: Record<string, string | undefined> = process.env
+): Promise<void> {
+  await restRequest(
+    `wallet_accounts?id=eq.${encodeURIComponent(accountId)}&user_id=eq.${encodeURIComponent(
+      userId
+    )}`,
+    { method: 'DELETE' },
+    env
+  );
+}
+
 export async function createWalletSession(
   userId: string,
   walletAccountId: string,

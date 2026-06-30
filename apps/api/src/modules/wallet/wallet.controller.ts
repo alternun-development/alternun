@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Headers,
   HttpCode,
@@ -21,6 +22,7 @@ import type { NetworkParams } from './chains/chain-adapter';
 import {
   WalletAddAccountRequestDto,
   WalletBroadcastRequestDto,
+  WalletExternalVerifyRequestDto,
   WalletRestoreRequestDto,
   WalletSetupRequestDto,
   WalletVerifyPinRequestDto,
@@ -116,6 +118,63 @@ export class WalletController {
     @Param('id') accountId: string
   ): Promise<{ accounts: WalletAccountRecord[] }> {
     return this.walletService.setPrimaryAccount(this.requireToken(authorization), accountId);
+  }
+
+  @Delete('accounts/:id')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'Delete / unlink a wallet account. The primary account auto-promotes to the next account ' +
+      'if deleted. Blocked when only one account remains.',
+  })
+  @ApiOkResponse({ description: 'Updated wallet accounts after deletion.' })
+  async deleteAccount(
+    @Headers('authorization') authorization: string | undefined,
+    @Param('id') accountId: string
+  ): Promise<{ accounts: WalletAccountRecord[] }> {
+    return this.walletService.deleteAccount(this.requireToken(authorization), accountId);
+  }
+
+  @Post('accounts/external/challenge')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @Throttle(SENSITIVE_THROTTLE)
+  @ApiOperation({
+    summary:
+      'Generate a one-time challenge message the user must sign with their external wallet (e.g. ' +
+      'MetaMask) to prove ownership of an EVM address. The challenge expires in 2 minutes.',
+  })
+  @ApiOkResponse({ description: 'Challenge message + nonce.' })
+  async generateExternalChallenge(
+    @Headers('authorization') authorization: string | undefined
+  ): Promise<{ challenge: string; nonce: string }> {
+    return this.walletService.generateExternalChallenge(this.requireToken(authorization));
+  }
+
+  @Post('accounts/external/verify')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @Throttle(SENSITIVE_THROTTLE)
+  @ApiOperation({
+    summary:
+      'Verify the signed challenge from the external wallet (EIP-191 personal_sign) and link the ' +
+      'address as a new wallet account if the signature is valid.',
+  })
+  @ApiOkResponse({ description: 'Newly linked external wallet account.' })
+  async verifyAndLinkExternalWallet(
+    @Headers('authorization') authorization: string | undefined,
+    @Body() body: WalletExternalVerifyRequestDto
+  ): Promise<{ account: WalletAccountRecord }> {
+    return this.walletService.verifyAndLinkExternalWallet(
+      this.requireToken(authorization),
+      body as {
+        address: `0x${string}`;
+        nonce: string;
+        signature: `0x${string}`;
+        label?: string;
+      }
+    );
   }
 
   @Get('accounts')

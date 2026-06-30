@@ -102,3 +102,18 @@ export class WalletNetworkParamsQueryDto {
   @IsIn(['evm', 'bitcoin', 'solana'])
   chain!: 'evm' | 'bitcoin' | 'solana';
 }
+
+export class WalletExternalVerifyRequestDto {
+  @IsString()
+  address!: `0x${string}`;
+
+  @IsString()
+  nonce!: string;
+
+  @IsString()
+  signature!: `0x${string}`;
+
+  @IsOptional()
+  @IsString()
+  label?: string;
+}

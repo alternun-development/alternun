@@ -10,6 +10,7 @@ import { resolveUserId } from '../../common/auth/resolve-user-id';
 import {
   createWalletPreferences,
   createWalletSession,
+  deleteWalletAccount,
   getWalletPreferences,
   insertWalletAccount,
   listWalletAccounts,
@@ -21,6 +22,7 @@ import {
   type WalletAccountRecord,
 } from './wallet.repository';
 import { generateSessionKey, verifyPinDigest } from './wallet-pin';
+import { verifyMessage } from 'viem';
 import type {
   WalletActivityResponseDto,
   WalletAddAccountRequestDto,
@@ -174,6 +176,110 @@ export class WalletService {
   async listAccounts(token: string): Promise<{ accounts: WalletAccountRecord[] }> {
     const userId = await resolveUserId(token);
     return { accounts: await listWalletAccounts(userId) };
+  }
+
+  async deleteAccount(
+    token: string,
+    accountId: string
+  ): Promise<{ accounts: WalletAccountRecord[] }> {
+    const userId = await resolveUserId(token);
+    const accounts = await listWalletAccounts(userId);
+    if (!accounts.some((a) => a.id === accountId)) {
+      throw new ForbiddenException('That wallet account does not belong to this user.');
+    }
+    if (accounts.length === 1) {
+      throw new BadRequestException(
+        'Cannot delete the only wallet account — restore or create another account first.'
+      );
+    }
+    const isDeleted = accounts.find((a) => a.id === accountId);
+    await deleteWalletAccount(userId, accountId, process.env);
+
+    // If we just deleted the primary, auto-promote the first remaining account.
+    if (isDeleted?.isPrimary) {
+      const remaining = await listWalletAccounts(userId);
+      const newPrimary = remaining[0];
+      if (newPrimary && !newPrimary.isPrimary) {
+        await setPrimaryWalletAccount(userId, newPrimary.id, process.env);
+      }
+    }
+
+    return { accounts: await listWalletAccounts(userId) };
+  }
+
+  // ── External wallet linking (SEC-07) ─────────────────────────────────────────
+  // Challenge/sign/verify flow: server issues a one-time nonce → client signs it
+  // with their external wallet → server recovers the signer from the signature and
+  // confirms it matches the claimed address before registering the account.
+  //
+  // Challenges are stored in-memory with a 2-minute TTL. This is intentional:
+  // the challenge/sign/verify flow is synchronous (same session), Lambda doesn't
+  // share memory across concurrent invocations, and distributing nonces via DB or
+  // Redis for a 2-minute window adds complexity disproportionate to the risk.
+  // Each challenge is single-use (deleted after verification or expiry).
+
+  private readonly challenges = new Map<string, { userId: string; expiresAt: number }>();
+
+  async generateExternalChallenge(token: string): Promise<{ challenge: string; nonce: string }> {
+    const userId = await resolveUserId(token);
+    const nonce = generateSessionKey();
+    this.challenges.set(nonce, { userId, expiresAt: Date.now() + 2 * 60_000 });
+    const now = Date.now();
+    // Explicit forEach avoids TypeScript's for-of type inference dropping Map generic parameter
+    this.challenges.forEach((v, k) => {
+      if (v.expiresAt < now) this.challenges.delete(k);
+    });
+    const challenge = `Sign this message to link your wallet to your Alternun account.\n\nNonce: ${nonce}`;
+    return { challenge, nonce };
+  }
+
+  async verifyAndLinkExternalWallet(
+    token: string,
+    body: { address: `0x${string}`; nonce: string; signature: `0x${string}`; label?: string }
+  ): Promise<{ account: WalletAccountRecord }> {
+    const userId = await resolveUserId(token);
+
+    const challenge = this.challenges.get(body.nonce);
+    if (!challenge || challenge.userId !== userId || challenge.expiresAt < Date.now()) {
+      this.challenges.delete(body.nonce);
+      throw new UnauthorizedException('Challenge not found or expired. Please request a new one.');
+    }
+    this.challenges.delete(body.nonce); // single-use
+
+    const message = `Sign this message to link your wallet to your Alternun account.\n\nNonce: ${body.nonce}`;
+    let valid: boolean;
+    try {
+      valid = await verifyMessage({ address: body.address, message, signature: body.signature });
+    } catch {
+      valid = false;
+    }
+    if (!valid) {
+      throw new UnauthorizedException(
+        'Signature verification failed — the signature does not match the claimed address.'
+      );
+    }
+
+    // Check for duplicate address (same address already linked to this user)
+    const existing = await listWalletAccounts(userId);
+    if (existing.some((a) => a.evmAddress?.toLowerCase() === body.address.toLowerCase())) {
+      throw new ConflictException('This address is already linked to your account.');
+    }
+
+    const account = await insertWalletAccount(
+      userId,
+      {
+        derivationIndex: 0, // not meaningful for external; placeholder required by schema
+        evmAddress: body.address,
+        bitcoinAddress: '',
+        solanaAddress: '',
+        walletType: 'external',
+        label: body.label?.trim() ?? undefined,
+        isPrimary: existing.length === 0, // first wallet becomes primary automatically
+      },
+      process.env
+    );
+
+    return { account };
   }
 
   async verifyPin(token: string, pin: string): Promise<WalletVerifyPinResponseDto> {
