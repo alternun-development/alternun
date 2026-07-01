@@ -193,54 +193,82 @@ export default function WalletManageModal({
         <ActivityIndicator size='large' color={accent} style={{ marginTop: 32 }} />
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} style={styles.accountsScroll}>
-          {accounts.map((account) => (
-            <View key={account.id} style={[styles.row, { backgroundColor: cardBg }]}>
-              <View style={styles.rowInfo}>
-                <Text style={[styles.rowTitle, { color: textColor }]}>
-                  {account.label?.trim() ??
-                    (account.walletType === 'external'
-                      ? t('wallet.manage.externalLabel', undefined, 'External wallet')
-                      : t('wallet.manage.alternunLabel', undefined, 'Alternun wallet'))}
-                </Text>
-                <Text style={[styles.rowAddress, { color: mutedColor }]}>
-                  {truncateMiddle(account.evmAddress ?? account.solanaAddress ?? '')}
-                </Text>
-              </View>
-
-              <View style={styles.rowActions}>
-                {account.isPrimary ? (
-                  <View style={[styles.defaultBadge, { backgroundColor: `${accent}18` }]}>
-                    <Check size={14} color={accent} strokeWidth={3} />
-                    <Text style={[styles.defaultBadgeText, { color: accent }]}>
-                      {t('wallet.manage.default', undefined, 'Default')}
+          {accounts.map((account) => {
+            const name =
+              account.label?.trim() ??
+              (account.walletType === 'external'
+                ? t('wallet.manage.externalLabel', undefined, 'External wallet')
+                : t('wallet.manage.alternunLabel', undefined, 'Alternun wallet'));
+            const isHd = account.walletType !== 'external';
+            const typeColor = isHd ? accent : '#f59e0b';
+            return (
+              <View key={account.id} style={[styles.card, { backgroundColor: cardBg }]}>
+                {/* Top row: name + type badge */}
+                <View style={styles.cardHeader}>
+                  <Text style={[styles.cardName, { color: textColor }]} numberOfLines={1}>
+                    {name}
+                  </Text>
+                  <View
+                    style={[
+                      styles.typeBadge,
+                      { backgroundColor: `${typeColor}18`, borderColor: `${typeColor}44` },
+                    ]}
+                  >
+                    <Text style={[styles.typeBadgeText, { color: typeColor }]}>
+                      {isHd ? 'HD Wallet' : 'External'}
                     </Text>
                   </View>
-                ) : (
-                  <TouchableOpacity
-                    style={[styles.setDefaultBtn, { borderColor: `${accent}44` }]}
-                    activeOpacity={0.7}
-                    disabled={switchingId === account.id}
-                    onPress={() => handleSetPrimary(account.id)}
-                  >
-                    {switchingId === account.id ? (
-                      <ActivityIndicator size='small' color={accent} />
-                    ) : (
-                      <Text style={[styles.setDefaultBtnText, { color: accent }]}>
-                        {t('wallet.manage.setDefault', undefined, 'Set default')}
+                </View>
+
+                {/* Address row */}
+                {account.evmAddress ? (
+                  <Text style={[styles.cardAddress, { color: mutedColor }]}>
+                    EVM: {truncateMiddle(account.evmAddress)}
+                  </Text>
+                ) : null}
+                {isHd && account.solanaAddress ? (
+                  <Text style={[styles.cardAddress, { color: mutedColor }]}>
+                    SOL: {truncateMiddle(account.solanaAddress)}
+                  </Text>
+                ) : null}
+
+                {/* Actions row */}
+                <View style={styles.cardActions}>
+                  {account.isPrimary ? (
+                    <View style={[styles.defaultBadge, { backgroundColor: `${accent}18` }]}>
+                      <Check size={13} color={accent} strokeWidth={3} />
+                      <Text style={[styles.defaultBadgeText, { color: accent }]}>
+                        {t('wallet.manage.default', undefined, 'Default')}
                       </Text>
-                    )}
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={[styles.setDefaultBtn, { borderColor: `${accent}44` }]}
+                      activeOpacity={0.7}
+                      disabled={switchingId === account.id}
+                      onPress={() => handleSetPrimary(account.id)}
+                    >
+                      {switchingId === account.id ? (
+                        <ActivityIndicator size='small' color={accent} />
+                      ) : (
+                        <Text style={[styles.setDefaultBtnText, { color: accent }]}>
+                          {t('wallet.manage.setDefault', undefined, 'Set default')}
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                  <View style={styles.cardActionsSpacer} />
+                  <TouchableOpacity
+                    style={styles.deleteBtn}
+                    activeOpacity={0.7}
+                    onPress={() => handleDeletePress(account)}
+                  >
+                    <Trash size={16} color={errorColor} />
                   </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  style={styles.deleteBtn}
-                  activeOpacity={0.7}
-                  onPress={() => handleDeletePress(account)}
-                >
-                  <Trash size={16} color={errorColor} />
-                </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </ScrollView>
       )}
 
@@ -487,11 +515,32 @@ const styles = StyleSheet.create({
   },
   addBtnText: { fontFamily: ANEK_EXPANDED_FAMILY, fontSize: 14, fontWeight: '700' },
   list: { gap: 10 },
+  // Legacy row (still used by confirmDelete view)
   row: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, padding: 14, gap: 10 },
   rowInfo: { flex: 1, gap: 2 },
   rowTitle: { fontFamily: ANEK_EXPANDED_FAMILY, fontSize: 14, fontWeight: '700' },
   rowAddress: { fontFamily: ANEK_EXPANDED_FAMILY, fontSize: 12 },
   rowActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  // New card design
+  card: { borderRadius: 16, padding: 16, gap: 6, marginBottom: 10 },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  cardName: { fontFamily: ANEK_EXPANDED_FAMILY, fontSize: 15, fontWeight: '700', flex: 1 },
+  typeBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, borderWidth: 1 },
+  typeBadgeText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  cardAddress: { fontFamily: ANEK_EXPANDED_FAMILY, fontSize: 11, lineHeight: 16 },
+  cardActions: { flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 8 },
+  cardActionsSpacer: { flex: 1 },
   defaultBadge: {
     flexDirection: 'row',
     alignItems: 'center',

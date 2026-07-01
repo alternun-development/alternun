@@ -609,7 +609,18 @@
         "pinTitle": "Enter your wallet PIN",
         "deriving": "Deriving account…",
         "failed": "Could not add account",
-        "unlockFailed": "Could not unlock your wallet on this device."
+        "unlockFailed": "Could not unlock your wallet on this device.",
+        "noVaultTitle": "Recovery phrase not on this device",
+        "noVaultDesc": "Your encrypted wallet backup is not stored in this browser or device session. Use 'Restore from recovery phrase' to re-link your existing phrase, then you can add more accounts.",
+        "noVaultAction": "Go back and restore first"
+      },
+      "changePin": {
+        "title": "Change wallet PIN",
+        "currentPin": "Enter your current PIN",
+        "saving": "Updating PIN…",
+        "done": "PIN updated successfully",
+        "doneDesc": "Your wallet is now encrypted with your new PIN. Remember it — Alternun cannot recover it.",
+        "failed": "PIN change failed"
       },
       "restore": {
         "title": "Restore your wallet",
@@ -720,6 +731,7 @@
         "copyAddress": "Copy address",
         "addressCopied": "Address copied",
         "exportBackup": "Export backup",
+        "changePin": "Change PIN",
         "exportWarning": "This is your only recovery option if you lose your device.",
         "manageWallet": "Manage wallet",
         "manageWallets": "Manage wallets",

@@ -48,6 +48,7 @@ import WalletAddAccountFlow from '../components/wallet/WalletAddAccountFlow';
 import WalletRestoreFlow from '../components/wallet/WalletRestoreFlow';
 import WalletManageModal from '../components/wallet/WalletManageModal';
 import WalletImportKeystoreFlow from '../components/wallet/WalletImportKeystoreFlow';
+import WalletChangePinFlow from '../components/wallet/WalletChangePinFlow';
 import {
   getWalletBalances,
   listWalletAccounts,
@@ -2022,6 +2023,7 @@ function WalletTab({
   const [addAccountVisible, setAddAccountVisible] = useState(false);
   const [restoreVisible, setRestoreVisible] = useState(false);
   const [importKeystoreVisible, setImportKeystoreVisible] = useState(false);
+  const [changePinVisible, setChangePinVisible] = useState(false);
   const [localAccount, setLocalAccount] = useState<WalletAccountRecord | null>(null);
   const [allAccounts, setAllAccounts] = useState<WalletAccountRecord[]>([]);
   // Starts true so the first render never shows the "create wallet" empty state before we've
@@ -2325,6 +2327,18 @@ function WalletTab({
                     walletStyles.actionBtn,
                     { backgroundColor: `${c.accent}14`, borderColor: `${c.accent}30` },
                   ]}
+                  onPress={() => setChangePinVisible(true)}
+                >
+                  <Text style={[walletStyles.actionBtnText, { color: c.accent }]}>
+                    {t('profile.wallet.changePin', undefined, 'Change PIN')}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={[
+                    walletStyles.actionBtn,
+                    { backgroundColor: `${c.accent}14`, borderColor: `${c.accent}30` },
+                  ]}
                   onPress={() => setManageVisible(true)}
                 >
                   <Text style={[walletStyles.actionBtnText, { color: c.accent }]}>
@@ -2469,6 +2483,16 @@ function WalletTab({
           }}
         />
 
+        <WalletChangePinFlow
+          visible={changePinVisible}
+          isDark={isDark}
+          accent={c.accent}
+          client={client}
+          primaryAccount={localAccount}
+          onCancel={() => setChangePinVisible(false)}
+          onComplete={() => setChangePinVisible(false)}
+        />
+
         {localAccount && (
           <>
             <WalletReceiveModal
@@ -2534,12 +2558,14 @@ function WalletTab({
               }}
               onAddWallet={() => {
                 setManageVisible(false);
-                // Route to the right flow based on whether the user has an existing HD wallet.
-                // setupWallet (WalletCreationFlow) is for first-wallet-only — it rejects with
-                // ConflictException if a wallet already exists.
-                // addAccount (WalletAddAccountFlow) derives the next HD account from the
-                // existing mnemonic — no new phrase generated or stored.
-                if (localAccount) {
+                // Route based on whether the user already has a LOCAL (airs_hd) wallet:
+                //   - airs_hd exists → derive next HD account from same mnemonic (WalletAddAccountFlow)
+                //   - only external wallets (MetaMask) OR no wallet at all → create fresh (WalletCreationFlow)
+                //     Note: WalletCreationFlow handles ConflictException only if wallet_preferences
+                //     has has_local_wallet=true AND the user has no DB account row — in that edge case
+                //     it will call setupWallet which may fail; user should use WalletRestoreFlow instead.
+                const hasHdWallet = allAccounts.some((a) => a.walletType !== 'external');
+                if (hasHdWallet) {
                   setAddAccountVisible(true);
                 } else {
                   setCreationVisible(true);
