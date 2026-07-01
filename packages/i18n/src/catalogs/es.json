@@ -609,7 +609,10 @@
         "pinTitle": "Ingresa tu PIN de wallet",
         "deriving": "Derivando cuenta…",
         "failed": "No se pudo agregar la cuenta",
-        "unlockFailed": "No pudimos desbloquear tu wallet en este dispositivo."
+        "unlockFailed": "No pudimos desbloquear tu wallet en este dispositivo.",
+        "noVaultTitle": "Frase de recuperación no disponible en este dispositivo",
+        "noVaultDesc": "Tu respaldo cifrado no está almacenado en esta sesión del navegador o dispositivo. Usa 'Restaurar con frase de recuperación' para volver a vincular tu frase existente y luego podrás agregar más cuentas.",
+        "noVaultAction": "Volver y restaurar primero"
       },
       "restore": {
         "title": "Restaura tu wallet",
@@ -655,6 +658,14 @@
         "wrongPin": "PIN incorrecto — este es el PIN que usaste cuando exportaste el respaldo.",
         "restoring": "Importando tu wallet…",
         "failedTitle": "Error al importar"
+      },
+      "changePin": {
+        "title": "Cambiar PIN de billetera",
+        "currentPin": "Ingresa tu PIN actual",
+        "saving": "Actualizando PIN…",
+        "done": "PIN actualizado correctamente",
+        "doneDesc": "Tu billetera ahora está cifrada con tu nuevo PIN. Recuérdalo — Alternun no puede recuperarlo.",
+        "failed": "Error al cambiar el PIN"
       }
     },
     "shared": {
@@ -723,7 +734,8 @@
         "exportWarning": "Esta es tu única opción de recuperación si pierdes tu dispositivo.",
         "manageWallet": "Gestionar wallet",
         "manageWallets": "Gestionar wallets",
-        "noWalletAccount": "Sin datos de wallet aún"
+        "noWalletAccount": "Sin datos de wallet aún",
+        "changePin": "Cambiar PIN"
       },
       "accessMethods": {
         "current": "Actual: {{method}}",

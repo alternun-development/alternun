@@ -303,6 +303,11 @@ export class WalletService {
       if (failedAttempts >= LOCKOUT_THRESHOLD) {
         const backoffMinutes = resolveBackoffMinutes(failedAttempts - LOCKOUT_THRESHOLD);
         lockedUntil = new Date(Date.now() + backoffMinutes * 60_000).toISOString();
+        // SEC-06: Emit a structured log so CloudWatch Metric Filters or any log-based
+        // alerting can detect lockout spikes across users (credential-stuffing indicator).
+        this.logger.warn(
+          `[WALLET SECURITY] PIN locked: userId=${userId} attempts=${failedAttempts} lockoutMinutes=${backoffMinutes} lockedUntil=${lockedUntil}`
+        );
       }
 
       await recordPinFailure(userId, lockedUntil, failedAttempts);
