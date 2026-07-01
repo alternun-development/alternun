@@ -1,13 +1,11 @@
 # Project Roadmap – Untitled
 
 <!-- roadmap:managed:start -->
-
 > Managed by `@edcalderon/versioning` reentry-status-extension.
 > Canonical roadmap file: .versioning/ROADMAP.md
 > Active milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
->
+> 
 > Everything outside this block is user-editable.
-
 <!-- roadmap:managed:end -->
 
 ## North Star
