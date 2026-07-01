@@ -3161,27 +3161,8 @@ export default function MiPerfilScreen(): React.JSX.Element {
   if (loading) return <ActivityIndicator size='large' color={c.accent} style={{ flex: 1 }} />;
 
   if (!user) {
-    return (
-      <View style={[styles.center, { backgroundColor: c.bg }]}>
-        <GlassCard style={{ alignItems: 'center' }}>
-          <UserCircle2Icon size={48} color={c.muted} />
-          <Text style={[styles.signInPrompt, { color: c.text }]}>
-            {t('profile.signInPrompt', undefined, 'Sign in to view your profile')}
-          </Text>
-          <TouchableOpacity
-            style={[
-              styles.signInBtn,
-              { backgroundColor: `${c.accent}18`, borderColor: `${c.accent}44` },
-            ]}
-            onPress={() => router.push('/auth?next=/mi-perfil')}
-          >
-            <Text style={[styles.signInBtnText, { color: c.accent }]}>
-              {t('shared.labels.signIn', undefined, 'Sign In')}
-            </Text>
-          </TouchableOpacity>
-        </GlassCard>
-      </View>
-    );
+    router.replace('/');
+    return null;
   }
 
   return (
