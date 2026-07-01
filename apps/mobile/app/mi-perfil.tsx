@@ -3194,14 +3194,16 @@ export default function MiPerfilScreen(): React.JSX.Element {
               {t('profile.screenTitle', undefined, 'My Profile')}
             </Text>
           </View>
-          <PageTabBar
-            tabs={tabs}
-            activeTab={activeTab}
-            onChangeTab={handleChangeTab}
-            isDark={isDark}
-            accent={c.accent}
-            muted={c.muted}
-          />
+          <View style={styles.tabRow}>
+            <PageTabBar
+              tabs={tabs}
+              activeTab={activeTab}
+              onChangeTab={handleChangeTab}
+              isDark={isDark}
+              accent={c.accent}
+              muted={c.muted}
+            />
+          </View>
         </View>
         <Animated.View
           style={[styles.tabContent, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
@@ -3240,11 +3242,11 @@ export default function MiPerfilScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   headerBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    alignItems: 'stretch',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingTop: 12,
+    paddingBottom: 4,
     // The tab tooltip below needs to render above tabContent's card, but tabContent has its own
     // transform (translateY), which creates a separate stacking context that otherwise paints on
     // top regardless of the tooltip's own zIndex (a descendant's zIndex can't lift its ancestor
@@ -3252,7 +3254,8 @@ const styles = StyleSheet.create({
     position: 'relative',
     zIndex: 20,
   },
-  titleWithIcon: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  titleWithIcon: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  tabRow: { marginHorizontal: -16 },
   pageTitle: { fontSize: 20, fontWeight: '700', fontFamily: 'Sculpin-Bold' },
   tabContent: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 },
