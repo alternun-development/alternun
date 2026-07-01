@@ -8,7 +8,7 @@ export type EvmDerivedAccount = {
 };
 
 export function deriveEvmAccount(mnemonic: string, accountIndex = 0): EvmDerivedAccount {
-  const path = `m/44'/60'/0'/0/${accountIndex}`;
+  const path = `m/44'/60'/0'/0/${accountIndex}` as const;
   const account = mnemonicToAccount(mnemonic, { path });
   return {
     address: account.address,

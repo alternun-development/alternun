@@ -8,43 +8,51 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import {
+  ChevronDown,
   ChevronRight,
   Coins,
-  Globe,
-  MapPinned,
   TrendingUp,
   Wallet,
   type LucideProps,
 } from 'lucide-react-native';
-import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
+import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
+import { listWalletAccounts, type WalletAccountRecord } from '../wallet/walletApiClient';
+import { resolveWalletSummaryState } from './walletSummary';
 
-const GlobeIcon = Globe as React.FC<LucideProps>;
 const CoinsIcon = Coins as React.FC<LucideProps>;
 const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
-const MapPinnedIcon = MapPinned as React.FC<LucideProps>;
+const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
+const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
+const SUMMARY_CARDS_STACK_BREAKPOINT = 720;
 
 interface AuthClient {
   getSessionToken(): Promise<string | null>;
 }
 
-interface UserPositions {
-  globalRank: number | null;
-  countryRank: number | null;
-  cityRank: number | null;
-  country: string | null;
-  city: string | null;
-}
-
 interface DashboardSummaryCardsProps {
   isDark: boolean;
   onNavigate?: (key: string) => void;
-  client?: AuthClient | null;
+  client?: AuthClient;
   signedIn?: boolean;
+  airsBalance?: number | null;
+}
+
+export function getDashboardSummaryCardsLayout(width: number): {
+  isMobile: boolean;
+  isCompactMobile: boolean;
+  isDenseAtnCard: boolean;
+} {
+  const isMobile = width < SUMMARY_CARDS_STACK_BREAKPOINT;
+
+  return {
+    isMobile,
+    isCompactMobile: isMobile,
+    isDenseAtnCard: isMobile,
+  };
 }
 
 function getPalette(isDark: boolean): {
@@ -114,21 +122,25 @@ function SummaryCard({
   children,
   p,
   compact = false,
+  minHeight,
 }: {
   children: React.ReactNode;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
+  minHeight?: number;
 }): React.JSX.Element {
   return (
     <View
       style={[
         styles.card,
         compact && styles.cardCompact,
+        typeof minHeight === 'number' ? { flex: 1 } : { flex: 0 },
         {
           backgroundColor: p.cardBg,
           borderColor: p.cardBorder,
           boxShadow: compact ? `0px 10px 22px ${p.cardShadow}` : `0px 14px 32px ${p.cardShadow}`,
         },
+        typeof minHeight === 'number' && { minHeight },
       ]}
     >
       {children}
@@ -171,182 +183,62 @@ function Divider({
   );
 }
 
-function PositionRow({
-  icon,
-  label,
+function StatValue({
   value,
+  loading,
   p,
   compact = false,
 }: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
+  value?: number | null;
+  loading?: boolean;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
-}): React.JSX.Element {
-  return (
-    <View style={[styles.positionRow, compact && styles.positionRowCompact]}>
-      <View
-        style={[
-          styles.positionIcon,
-          compact && styles.positionIconCompact,
-          { backgroundColor: p.iconBg },
-        ]}
-      >
-        {icon}
-      </View>
-      <Text
-        style={[styles.positionLabel, compact && styles.positionLabelCompact, { color: p.title }]}
-      >
-        {label}
-      </Text>
-      <Text
-        style={[styles.positionValue, compact && styles.positionValueCompact, { color: p.title }]}
-      >
-        {value}
-      </Text>
-    </View>
-  );
-}
-
-function PositionCard({
-  p,
-  compact = false,
-  client,
-  signedIn,
-}: {
-  p: ReturnType<typeof getPalette>;
-  compact?: boolean;
-  client?: AuthClient | null;
-  signedIn?: boolean;
 }): React.JSX.Element {
   const t = useAppTranslation();
-  const [positions, setPositions] = useState<UserPositions | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!signedIn || !client) return;
-    let cancelled = false;
-    void (async () => {
-      setLoading(true);
-      try {
-        const token = await client.getSessionToken();
-        if (!token || cancelled) return;
-        const res = await fetch(`${resolveMobileApiBaseUrl()}/v1/airs/my-position`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok || cancelled) return;
-        const data = (await res.json()) as {
-          globalRank?: number | null;
-          countryRank?: number | null;
-          cityRank?: number | null;
-          country?: string | null;
-          city?: string | null;
-        };
-        if (!cancelled) {
-          setPositions({
-            globalRank: data.globalRank ?? null,
-            countryRank: data.countryRank ?? null,
-            cityRank: data.cityRank ?? null,
-            country: data.country ?? null,
-            city: data.city ?? null,
-          });
-        }
-      } catch {
-        // non-fatal
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [signedIn, client]);
-
-  const fmtRank = (rank: number | null | undefined): string =>
-    rank != null ? `#${rank.toLocaleString()}` : '—';
+  if (loading) {
+    return <ActivityIndicator size='small' color={p.accent} />;
+  }
 
   return (
-    <SummaryCard p={p} compact={compact}>
-      <CardTitle
-        label={t.t('dashboard.summaryCards.position.title')}
-        sub={t.t('dashboard.summaryCards.position.subtitle')}
-        p={p}
-        compact={compact}
-      />
-
-      {loading ? (
-        <View style={{ paddingVertical: 16, alignItems: 'center' }}>
-          <ActivityIndicator size='small' color={p.accent} />
-        </View>
-      ) : (
-        <View style={[styles.positionList, compact && styles.positionListCompact]}>
-          <PositionRow
-            icon={<GlobeIcon size={18} color={p.accent} />}
-            label={t.t('dashboard.summaryCards.position.global')}
-            value={fmtRank(positions?.globalRank)}
-            p={p}
-            compact={compact}
-          />
-          <PositionRow
-            icon={<Text style={styles.flagEmoji}>🌍</Text>}
-            label={positions?.country ?? t.t('dashboard.summaryCards.position.country')}
-            value={fmtRank(positions?.countryRank)}
-            p={p}
-            compact={compact}
-          />
-          <PositionRow
-            icon={<MapPinnedIcon size={18} color={p.iconColor} />}
-            label={positions?.city ?? t.t('dashboard.summaryCards.position.city')}
-            value={fmtRank(positions?.cityRank)}
-            p={p}
-            compact={compact}
-          />
-        </View>
-      )}
-
-      <View
-        style={[
-          styles.positionFooter,
-          compact && styles.positionFooterCompact,
-          { borderTopColor: p.line },
-        ]}
-      >
-        <Text
-          style={[
-            styles.positionFootnote,
-            compact && styles.positionFootnoteCompact,
-            { color: p.muted },
-          ]}
-        >
-          {t.t('dashboard.summaryCards.position.rankingNote')}
-        </Text>
-      </View>
-    </SummaryCard>
+    <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
+      {typeof value === 'number'
+        ? value.toLocaleString()
+        : t.t('dashboard.summaryCards.comingSoon')}
+    </Text>
   );
 }
 
 function RBICard({
   p,
   compact = false,
+  eligibleUsers,
+  eligibleUsersLoading = false,
+  airsScore,
+  airsScoreLoading = false,
+  minHeight,
 }: {
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
+  eligibleUsers?: number | null;
+  eligibleUsersLoading?: boolean;
+  airsScore?: number | null;
+  airsScoreLoading?: boolean;
+  minHeight?: number;
 }): React.JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { language } = useAppPreferences();
   const t = useAppTranslation();
+  const comingSoonLabel = t.t('dashboard.summaryCards.comingSoon');
 
   const getDocumentationUrl = (): string => {
-    const baseUrl = 'https://alternun-development.github.io';
-    const pathEn = '/docs/tutorial-basics/rbi-regenerative-basic-income';
-    const pathOther = `/${language}/docs/tutorial-basics/rbi-regenerative-basic-income`;
+    const baseUrl = 'https://docs.alternun.io';
+    const path = '/docs/tutorial-basics/airs-tu-huella-regenerativa';
 
-    return language === 'en' ? `${baseUrl}${pathEn}` : `${baseUrl}${pathOther}`;
+    return `${baseUrl}${path}`;
   };
 
   return (
-    <SummaryCard p={p} compact={compact}>
+    <SummaryCard p={p} compact={compact} minHeight={minHeight}>
       <CardTitle
         label={t.t('dashboard.summaryCards.rbi.title')}
         sub={t.t('dashboard.summaryCards.rbi.subtitle')}
@@ -356,7 +248,7 @@ function RBICard({
 
       <View style={[styles.rbiHero, compact && styles.rbiHeroCompact]}>
         <Text style={[styles.rbiValue, compact && styles.rbiValueCompact, { color: p.accent }]}>
-          Coming soon
+          {comingSoonLabel}
         </Text>
         <View
           style={[
@@ -377,24 +269,20 @@ function RBICard({
             {t.t('dashboard.summaryCards.rbi.estimatedPool')}
           </Text>
           <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
-            Coming soon
+            {comingSoonLabel}
           </Text>
         </View>
         <View style={styles.statRow}>
           <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
             {t.t('dashboard.summaryCards.rbi.eligibleUsers')}
           </Text>
-          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
-            Coming soon
-          </Text>
+          <StatValue value={eligibleUsers} loading={eligibleUsersLoading} p={p} compact={compact} />
         </View>
         <View style={styles.statRow}>
           <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
             {t.t('dashboard.summaryCards.rbi.airsScore')}
           </Text>
-          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
-            Coming soon
-          </Text>
+          <StatValue value={airsScore} loading={airsScoreLoading} p={p} compact={compact} />
         </View>
       </View>
 
@@ -418,13 +306,11 @@ function RBICard({
             >
               {t.t('dashboard.summaryCards.rbi.whatIsRbi')}
             </Text>
-            <ChevronRight
-              size={16}
-              color={p.accent}
-              style={{
-                transform: [{ rotate: isExpanded ? '90deg' : '0deg' }],
-              }}
-            />
+            {isExpanded ? (
+              <ChevronDownIcon size={16} color={p.accent} />
+            ) : (
+              <ChevronRightIcon size={16} color={p.accent} />
+            )}
           </View>
         </View>
       </TouchableOpacity>
@@ -465,7 +351,7 @@ function RBICard({
               >
                 {t.t('dashboard.summaryCards.rbi.fullDocumentation')}
               </Text>
-              <ChevronRight size={14} color={p.accent} />
+              <ChevronRightIcon size={14} color={p.accent} />
             </View>
           </TouchableOpacity>
         </>
@@ -474,22 +360,41 @@ function RBICard({
   );
 }
 
+function truncateMiddle(value: string, start = 8, end = 6): string {
+  if (value.length <= start + end + 3) {
+    return value;
+  }
+
+  return `${value.slice(0, start)}...${value.slice(-end)}`;
+}
+
 function ATNCard({
   p,
   compact = false,
   dense = false,
   onNavigate,
+  walletAccount,
+  minHeight,
 }: {
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
   dense?: boolean;
   onNavigate?: (key: string) => void;
+  walletAccount?: WalletAccountRecord | null;
+  minHeight?: number;
 }): React.JSX.Element {
   const useDenseLayout = compact || dense;
   const t = useAppTranslation();
+  const comingSoonLabel = t.t('dashboard.summaryCards.comingSoon');
+  const primaryWalletLabel = t.t('dashboard.summaryCards.atn.primaryWalletLabel');
+  const primaryWalletMeta = t.t('dashboard.summaryCards.atn.primaryWalletMeta');
+  const walletSummaryState = resolveWalletSummaryState(walletAccount ?? null);
+  const walletAddress = walletSummaryState.address
+    ? truncateMiddle(walletSummaryState.address)
+    : null;
 
   return (
-    <SummaryCard p={p} compact={compact}>
+    <SummaryCard p={p} compact={compact} minHeight={minHeight}>
       <CardTitle
         label={t.t('dashboard.summaryCards.atn.title')}
         sub={t.t('dashboard.summaryCards.atn.subtitle')}
@@ -515,7 +420,7 @@ function ATNCard({
           </Text>
         </View>
         <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
-          Coming soon
+          {comingSoonLabel}
         </Text>
       </View>
       <Divider p={p} compact={compact} />
@@ -537,7 +442,7 @@ function ATNCard({
           </Text>
         </View>
         <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
-          Coming soon
+          {comingSoonLabel}
         </Text>
       </View>
 
@@ -554,7 +459,7 @@ function ATNCard({
               { color: p.accentStrong },
             ]}
           >
-            Coming soon
+            {comingSoonLabel}
           </Text>
         </View>
       </View>
@@ -564,7 +469,7 @@ function ATNCard({
           styles.walletPanel,
           useDenseLayout && styles.walletPanelDense,
           compact && styles.walletPanelCompact,
-          { backgroundColor: p.panelBg, borderColor: p.panelBorder },
+          { backgroundColor: p.accentSoft, borderColor: p.accent },
         ]}
       >
         <View style={[styles.walletPanelTop, useDenseLayout && styles.walletPanelTopDense]}>
@@ -572,10 +477,10 @@ function ATNCard({
             style={[
               styles.walletPanelLabel,
               compact && styles.walletPanelLabelCompact,
-              { color: p.title },
+              { color: p.accent },
             ]}
           >
-            Wallet principal
+            {primaryWalletLabel}
           </Text>
           <Text
             style={[
@@ -585,7 +490,7 @@ function ATNCard({
               { color: p.muted },
             ]}
           >
-            Interna
+            {primaryWalletMeta}
           </Text>
         </View>
         <Text
@@ -597,22 +502,33 @@ function ATNCard({
             { color: p.copy },
           ]}
         >
-          0xA8f9...Wq77E4c2
+          {walletSummaryState.mode === 'ready' && walletAddress
+            ? walletAddress
+            : t.t('wallet.noWalletAccount', undefined, 'No wallet data yet')}
         </Text>
+
+        <View style={[styles.walletLinkDivider, { backgroundColor: p.accent, opacity: 0.18 }]} />
+
         <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet')} activeOpacity={0.7}>
           <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense]}>
-            <WalletIcon size={15} color={p.title} />
-            <Text
-              style={[
-                styles.walletLinkText,
-                useDenseLayout && styles.walletLinkTextDense,
-                compact && styles.walletLinkTextCompact,
-                { color: p.title },
-              ]}
-            >
-              Gestionar wallet
-            </Text>
-            <ChevronRight size={14} color={p.title} />
+            <View style={styles.walletLinkLabelGroup}>
+              <WalletIcon size={15} color={p.accent} />
+              <Text
+                numberOfLines={1}
+                ellipsizeMode='tail'
+                style={[
+                  styles.walletLinkText,
+                  useDenseLayout && styles.walletLinkTextDense,
+                  compact && styles.walletLinkTextCompact,
+                  { color: p.accent },
+                ]}
+              >
+                {walletSummaryState.mode === 'ready'
+                  ? t.t('wallet.manageWallet', undefined, 'Manage wallet')
+                  : t.t('wallet.createButton', undefined, 'Create Alternun wallet')}
+              </Text>
+            </View>
+            <ChevronRightIcon size={14} color={p.accent} />
           </View>
         </TouchableOpacity>
       </View>
@@ -625,12 +541,88 @@ export default function DashboardSummaryCards({
   onNavigate,
   client,
   signedIn,
+  airsBalance,
 }: DashboardSummaryCardsProps): React.JSX.Element {
   const p = getPalette(isDark);
   const { width } = useWindowDimensions();
-  const isMobile = width < 920;
-  const isCompactMobile = width < 520;
-  const isDenseAtnCard = width < 720;
+  const { isMobile, isCompactMobile, isDenseAtnCard } = getDashboardSummaryCardsLayout(width);
+  const desktopMinHeight = isMobile ? undefined : 480;
+  const [eligibleUsers, setEligibleUsers] = useState<number | null>(null);
+  const [eligibleUsersLoading, setEligibleUsersLoading] = useState(false);
+  const [walletAccount, setWalletAccount] = useState<WalletAccountRecord | null>(null);
+  const airsScoreLoading = Boolean(signedIn) && typeof airsBalance !== 'number';
+
+  useEffect(() => {
+    if (!signedIn || !client) {
+      return;
+    }
+
+    let cancelled = false;
+    setEligibleUsersLoading(true);
+
+    const fetchEligibleUsers = async (): Promise<void> => {
+      try {
+        const token = await client.getSessionToken();
+        if (!token) {
+          return;
+        }
+        const res = await fetch(`${resolveMobileApiBaseUrl()}/v1/airs/leaderboard?limit=1`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          return;
+        }
+        const data = (await res.json()) as { totalEligibleUsers?: number };
+        if (!cancelled && typeof data.totalEligibleUsers === 'number') {
+          setEligibleUsers(data.totalEligibleUsers);
+        }
+      } catch {
+        // Leave eligibleUsers as null; the card falls back to "Coming soon".
+      } finally {
+        if (!cancelled) {
+          setEligibleUsersLoading(false);
+        }
+      }
+    };
+
+    void fetchEligibleUsers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn, client]);
+
+  useEffect(() => {
+    if (!signedIn || !client) {
+      setWalletAccount(null);
+      return;
+    }
+
+    let cancelled = false;
+    setWalletAccount(null);
+
+    const fetchWalletAccount = async (): Promise<void> => {
+      try {
+        const { accounts } = await listWalletAccounts(client);
+        if (cancelled) {
+          return;
+        }
+
+        const primary = accounts.find((account) => account.isPrimary) ?? accounts[0] ?? null;
+        setWalletAccount(primary);
+      } catch {
+        if (!cancelled) {
+          setWalletAccount(null);
+        }
+      }
+    };
+
+    void fetchWalletAccount();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client, signedIn]);
 
   return (
     <View style={[styles.root, isCompactMobile && styles.rootCompact]}>
@@ -641,14 +633,26 @@ export default function DashboardSummaryCards({
           isCompactMobile && styles.gridCompact,
         ]}
       >
-        <View style={styles.cardSlot}>
-          <PositionCard p={p} compact={isCompactMobile} client={client} signedIn={signedIn} />
+        <View style={[styles.cardSlot, isMobile && styles.cardSlotMobile]}>
+          <RBICard
+            p={p}
+            compact={isCompactMobile}
+            eligibleUsers={eligibleUsers}
+            eligibleUsersLoading={eligibleUsersLoading}
+            airsScore={airsBalance}
+            airsScoreLoading={airsScoreLoading}
+            minHeight={desktopMinHeight}
+          />
         </View>
-        <View style={styles.cardSlot}>
-          <RBICard p={p} compact={isCompactMobile} />
-        </View>
-        <View style={styles.cardSlot}>
-          <ATNCard p={p} compact={isCompactMobile} dense={isDenseAtnCard} onNavigate={onNavigate} />
+        <View style={[styles.cardSlot, isMobile && styles.cardSlotMobile]}>
+          <ATNCard
+            p={p}
+            compact={isCompactMobile}
+            dense={isDenseAtnCard}
+            onNavigate={onNavigate}
+            walletAccount={walletAccount}
+            minHeight={desktopMinHeight}
+          />
         </View>
       </View>
     </View>
@@ -674,14 +678,26 @@ const styles = StyleSheet.create({
   },
   gridMobile: {
     flexDirection: 'column',
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
+    overflow: 'visible',
   },
   gridDesktop: {
     flexDirection: 'row',
-    alignItems: 'stretch',
+    alignItems: 'flex-start',
   },
   cardSlot: {
     flex: 1,
     minWidth: 0,
+  },
+  cardSlotMobile: {
+    flex: 0,
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: 'auto',
+    alignSelf: 'stretch',
+    width: '100%',
+    overflow: 'visible',
   },
   card: {
     flex: 1,
@@ -691,6 +707,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingTop: 18,
     paddingBottom: 16,
+    alignSelf: 'stretch',
+    width: '100%',
   },
   cardCompact: {
     borderRadius: 20,
@@ -734,77 +752,6 @@ const styles = StyleSheet.create({
   },
   dividerCompact: {
     marginVertical: 10,
-  },
-
-  positionList: {
-    gap: 18,
-    paddingBottom: 18,
-  },
-  positionListCompact: {
-    gap: 14,
-    paddingBottom: 14,
-  },
-  positionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  positionRowCompact: {
-    gap: 10,
-  },
-  positionIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  positionIconCompact: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  flagEmoji: {
-    fontSize: 18,
-  },
-  positionLabel: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  positionLabelCompact: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 16,
-  },
-  positionValue: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 24,
-    fontWeight: '900',
-    letterSpacing: -0.8,
-  },
-  positionValueCompact: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 21,
-    letterSpacing: -0.6,
-  },
-  positionFooter: {
-    marginTop: 'auto',
-    borderTopWidth: 1,
-    paddingTop: 12,
-    alignItems: 'center',
-  },
-  positionFooterCompact: {
-    paddingTop: 10,
-  },
-  positionFootnote: {
-    fontSize: 11,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  positionFootnoteCompact: {
-    fontSize: 10,
   },
 
   rbiHero: {
@@ -1190,22 +1137,36 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 17,
   },
+  walletLinkDivider: {
+    height: 1,
+    width: '100%',
+    borderRadius: 1,
+  },
   walletLinkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'space-between',
+    gap: 8,
+    width: '100%',
     minWidth: 0,
-    flexShrink: 1,
-    flexWrap: 'wrap',
   },
   walletLinkRowDense: {
-    flexWrap: 'wrap',
     alignItems: 'center',
+  },
+  walletLinkLabelGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+    minWidth: 0,
+    flexShrink: 1,
   },
   walletLinkText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '800',
+    flexShrink: 1,
+    minWidth: 0,
   },
   walletLinkTextDense: {
     fontFamily: ANEK_EXPANDED_FAMILY,

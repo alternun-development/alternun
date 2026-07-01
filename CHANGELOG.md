@@ -1,13 +1,146 @@
-## [1.0.288](https://github.com/alternun-development/alternun/compare/v1.0.287-dev.0...v1.0.288) (2026-06-27)
+# [1.1.0](https://github.com/alternun-development/alternun/compare/v1.1.0-dev.0...v1.1.0) (2026-06-30)
+
+
+
+
+
+# [1.1.0](https://github.com/alternun-development/alternun/compare/v1.0.296...v1.1.0) (2026-06-30)
+
+### Bug Fixes
+
+- **mobile:** smooth AIRS ranking transitions ([70b510a](https://github.com/alternun-development/alternun/commit/70b510a3d32db4dc65062079ae710d09557f2ee6))
+- stack dashboard summary cards on mobile ([e447ed1](https://github.com/alternun-development/alternun/commit/e447ed1070e00f774553f061acfeb15ddecb394c))
+
+### Features
+
+- **wallet:** non-custodial multi-chain wallet (EVM/Bitcoin/Solana) for web ([4561159](https://github.com/alternun-development/alternun/commit/45611598ac9e6d3582d587c31dfcbbdcc6265b37))
+
+## [1.1.0](https://github.com/alternun-development/alternun/compare/v1.0.296...v1.1.0) (2026-06-30)
+
+### Features
+
+- **wallet:** Non-custodial multi-chain wallet (EVM/Bitcoin/Solana) for web — PIN-encrypted local key storage with PBKDF2 600k iterations, wallet creation with mandatory backup disclaimer and randomized word verification, restore from recovery phrase, send (with per-chain address validation and a fee-review step), receive, activity feed, multi-wallet management with selectable default account, and export (encrypted keystore or plaintext phrase). Server-side: full NestJS wallet module with IP throttling, per-user PIN lockout backoff, stage-aware mainnet/testnet RPC selection, RLS policies via app_user_id JWT claim.
+
+### Bug Fixes
+
+- **wallet:** Bitcoin addresses were always derived as mainnet (bc1...) regardless of deploy stage, causing BTC balances to silently disappear from the UI (testnet Esplora returned 400 for mainnet-format addresses)
+- **wallet:** react-native-web's Alert.alert is a documented no-op — replaced all wallet error paths with visible inline error UI
+- **wallet:** expo-secure-store web availability required isAvailableAsync(), not a typeof check on the wrapper function
+- **wallet:** mi-perfil.tsx tab-sync useEffect had tabs in its dependency array, causing the active tab to snap back to the ?tab= URL param on every render
+- **wallet:** Buffer-free crypto throughout packages/wallet (bip39→@scure/bip39, ed25519-hd-key→slip10Ed25519.ts, secureVault base64/hex helpers)
+
+## [1.0.296](https://github.com/alternun-development/alternun/compare/v1.0.296-dev.0...v1.0.296) (2026-06-30)
+
+### Bug Fixes
+
+- **repo:** chore(repo): sync README and version mirror for v1.0.296
+
+## [1.0.296](https://github.com/alternun-development/alternun/compare/v1.0.295...v1.0.296) (2026-06-30)
+
+### Bug Fixes
+
+- **repo:** test(repo,mobile,i18n): 10-airs-prod-migrations-and-wallet-empty-state, README, DashboardSummaryCards, walletSummary.test
+- **repo:** chore: sync reentry status post-promote v1.0.295
+
+## [1.0.295](https://github.com/alternun-development/alternun/compare/v1.0.295-dev.0...v1.0.295) (2026-06-30)
+
+### Bug Fixes
+
+- **repo:** docs: fix README current version line to 1.0.295
+- **repo:** docs: sync root README for v1.0.295
+
+## [1.0.295](https://github.com/alternun-development/alternun/compare/v1.0.294...v1.0.295) (2026-06-30)
+
+### Bug Fixes
+
+- **repo:** test(repo,api,mobile): pre-push, REENTRY, ROADMAP, reentry.status
+
+## [1.0.294](https://github.com/alternun-development/alternun/compare/v1.0.294-dev.0...v1.0.294) (2026-06-29)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.294
+
+## [1.0.294](https://github.com/alternun-development/alternun/compare/v1.0.293...v1.0.294) (2026-06-29)
+
+### Bug Fixes
+
+- **repo:** fix(repo,api,mobile): .gitignore, airs.repository, AppInfoFooter, Dashboard
+
+### Bug Fixes
+
+- **repo,api,mobile:** .gitignore, airs.repository, AppInfoFooter, Dashboard ([7836867](https://github.com/alternun-development/alternun/commit/7836867037b7b0b3f306621d3952418dfda4a500))
+
+## [1.0.293](https://github.com/alternun-development/alternun/compare/v1.0.293-dev.0...v1.0.293) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.293
+
+## [1.0.293](https://github.com/alternun-development/alternun/compare/v1.0.292...v1.0.293) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** fix(airs): fix null app_user_id in JWTs and backfill prod airs_balance
+- **repo:** chore: release v1.0.288
+- **repo:** docs: sync root README for v1.0.288
+
+### Bug Fixes
+
+- **airs:** fix null app_user_id in JWTs and backfill prod airs_balance ([c319be6](https://github.com/alternun-development/alternun/commit/c319be6bc6a6d8774a9967a0790b1d899f71d62b))
+
+## [1.0.292](https://github.com/alternun-development/alternun/compare/v1.0.292-dev.0...v1.0.292) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.292
+
+## [1.0.292](https://github.com/alternun-development/alternun/compare/v1.0.291-dev.0...v1.0.292) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** chore(repo): README
+- **repo:** 🌐 feat(dashboard): add scope filter to activity feed and fix subtitle translations
+- **repo:** ✨ feat(dashboard): merge leaderboard with position card and add scope filter
+
+## [1.0.291](https://github.com/alternun-development/alternun/compare/v1.0.290-dev.0...v1.0.291) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.290
+- **repo:** fix(identity): fix container IP lookup and increase verify script timeout
+
+### Bug Fixes
+
+- **identity:** fix container IP lookup and increase verify script timeout ([c15e458](https://github.com/alternun-development/alternun/commit/c15e458597d7a70857687518c9f1e7909203b14b))
+
+## [1.0.290](https://github.com/alternun-development/alternun/compare/v1.0.289...v1.0.290) (2026-06-28)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.289
+- **repo:** fix(identity): wait for SSM agent online before dispatching runtime sync
+
+### Bug Fixes
+
+- **identity:** wait for SSM agent online before dispatching runtime sync ([848da7d](https://github.com/alternun-development/alternun/commit/848da7d74dec52ce8fe774e126550f7c7d27006c))
+
+## [1.0.289](https://github.com/alternun-development/alternun/compare/v1.0.289-dev.0...v1.0.289) (2026-06-27)
+
+### Bug Fixes
+
+- **repo:** docs: sync root README for v1.0.289
+
+## [1.0.289](https://github.com/alternun-development/alternun/compare/v1.0.287-dev.0...v1.0.289) (2026-06-27)
 
 ### Bug Fixes
 
 - **repo:** docs: sync root README for v1.0.288
+- **repo:** fix(identity): replace manage.py shell readiness check with HTTP health endpoint
 
+### Bug Fixes
 
-
-
-
+- **identity:** replace manage.py shell readiness check with HTTP health endpoint ([7dbea82](https://github.com/alternun-development/alternun/commit/7dbea824443ba73ff9dbc37ed83e1c427039b96b))
 
 ## [1.0.288](https://github.com/alternun-development/alternun/compare/v1.0.286...v1.0.288) (2026-06-27)
 

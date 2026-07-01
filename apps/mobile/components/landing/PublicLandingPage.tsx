@@ -3,7 +3,6 @@ import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   Animated,
   LayoutAnimation,
@@ -16,6 +15,7 @@ import {
   type ImageSourcePropType,
 } from 'react-native';
 import { Image as ExpoImage, type ImageContentPosition } from 'expo-image';
+import ProgressiveImage from '../common/ProgressiveImage';
 import Animated_Reanimated, {
   cancelAnimation,
   Easing,
@@ -1699,7 +1699,11 @@ function PlaceCard({
       >
         {/* Image carousel */}
         <View style={styles.placeCardImageWrap}>
-          <Image source={currentImage} style={styles.placeCardImage} resizeMode='cover' />
+          <ProgressiveImage
+            source={currentImage}
+            style={styles.placeCardImage}
+            contentFit='cover'
+          />
 
           {/* Overlay controls — visible only when user interacts */}
           {overlayVisible && (
@@ -1874,7 +1878,7 @@ function BenefitInfoModal({
         <View style={[infoModalStyles.card, { backgroundColor: bg, borderColor: border }]}>
           {/* Hero image with close button overlay */}
           <View style={infoModalStyles.imageWrap}>
-            <Image source={image} style={infoModalStyles.heroImage} resizeMode='cover' />
+            <ProgressiveImage source={image} style={infoModalStyles.heroImage} contentFit='cover' />
             {/* Gradient-like dark overlay at bottom of image */}
             <View style={infoModalStyles.imageGradient} />
             {/* Close button floating top-right */}

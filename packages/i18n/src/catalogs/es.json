@@ -200,7 +200,7 @@
         "title": "Actividad reciente",
         "subtitle": {
           "global": "Actividad de la plataforma en tiempo real",
-          "user": "Así has acumulado tus Airs By Alternun."
+          "user": "Así se mueve Airs By Alternun"
         },
         "tabs": {
           "global": "Actividad Global",
@@ -255,6 +255,7 @@
         "statusInfoButton": "Información del estado"
       },
       "summaryCards": {
+        "comingSoon": "Próximamente",
         "position": {
           "title": "Tu posición",
           "subtitle": "Entre miembros de Airs By Alternun",
@@ -272,7 +273,7 @@
           "eligibleUsers": "Usuarios elegibles:",
           "airsScore": "Tu puntaje Airs:",
           "whatIsRbi": "¿Qué es el RBI?",
-          "explanation": "El Regenerative Basic Income es un ingreso periódico que se distribuye entre los usuarios de Alternun que contribuyen al ecosistema.\\n\\nNo depende de cuánto dinero tengas, sino de tu participación, tu compromiso y tu impacto, medidos a través de tu puntaje AIRS.\\n\\nCada vez que Alternun facilita una compensación, una venta desde el compensation pool o una actividad económica dentro de la plataforma, una parte de ese valor se destina directamente al fondo del RBI.",
+          "explanation": "El Regenerative Basic Income es un ingreso periódico que se distribuye entre los usuarios de Alternun que contribuyen al ecosistema.\n\nNo depende de cuánto dinero tengas, sino de tu participación, tu compromiso y tu impacto, medidos a través de tu puntaje AIRS.\n\nCada vez que Alternun facilita una compensación, una venta desde el compensation pool o una actividad económica dentro de la plataforma, una parte de ese valor se destina directamente al fondo del RBI.",
           "fullDocumentation": "Documentación completa"
         },
         "atn": {
@@ -282,7 +283,9 @@
           "availableDesc": "Listos para usar",
           "stackingLabel": "ATN en stacking",
           "stackingDesc": "Participando en proyectos",
-          "totalLabel": "ATN total"
+          "totalLabel": "ATN total",
+          "primaryWalletLabel": "Wallet principal",
+          "primaryWalletMeta": "Interna"
         }
       }
     },
@@ -298,7 +301,9 @@
         "terms": "Términos",
         "support": "Soporte"
       },
-      "tagline": "“Una manera diferente de hacer las cosas” · Alternun.io"
+      "tagline": "“Una manera diferente de hacer las cosas” · Alternun.io",
+      "more": "Más",
+      "less": "Menos"
     },
     "releaseUpdate": {
       "eyebrow": "Nueva versión disponible",
@@ -518,6 +523,161 @@
         }
       }
     },
+    "wallet": {
+      "pin": {
+        "setup": {
+          "createTitle": "Crea tu PIN de wallet",
+          "confirmTitle": "Confirma tu PIN",
+          "explainer": "Este PIN de 4 dígitos cifra tu wallet solo en este dispositivo. Alternun nunca lo ve y no puede recuperarlo si lo olvidas y pierdes tu frase de respaldo.",
+          "mismatch": "Los PINs no coinciden. Inténtalo de nuevo."
+        },
+        "unlock": {
+          "title": "Ingresa tu PIN",
+          "exportTitle": "Ingresa tu PIN para exportar",
+          "incorrect": "PIN incorrecto. Inténtalo de nuevo.",
+          "error": "Algo salió mal. Por favor intenta de nuevo.",
+          "locked": "Demasiados intentos. Inténtalo en"
+        }
+      },
+      "backup": {
+        "revealTitle": "Respalda tu frase de recuperación",
+        "revealSubtitle": "Esta es tu única opción de recuperación. Anótala y guárdala bien — Alternun no tiene una copia.",
+        "tapToReveal": "Toca para revelar",
+        "disclaimer": "Anótala en papel y guárdala en un lugar seguro y sin conexión. No tomes una captura de pantalla, no la guardes en notas, correo o almacenamiento en la nube. Cualquiera con estas palabras puede tomar tus fondos. Si las pierdes, Alternun no puede recuperar tu wallet — se pierden para siempre.",
+        "safetyAcknowledge": "Anoté mi frase de recuperación en papel y la guardé en un lugar seguro. Entiendo que Alternun no puede recuperarla por mí.",
+        "savedIt": "Ya la guardé",
+        "verifyTitle": "Confirma tu respaldo",
+        "verifySubtitle": "Elegimos estas al azar para asegurarnos de que realmente anotaste bien tu frase — ingrésalas exactamente como se muestran.",
+        "wordNumber": "Palabra",
+        "verifyError": "No coincide. Revisa tu respaldo e inténtalo de nuevo.",
+        "viewPhraseAgain": "Ver la frase de nuevo",
+        "exportTitle": "Guarda un archivo de respaldo (opcional)",
+        "exportSubtitle": "Este es tu único respaldo — no hay copia en los servidores de Alternun.",
+        "exportKeystore": "Exportar archivo de respaldo cifrado",
+        "exportPlaintext": "Exportar frase de recuperación en texto plano",
+        "plaintextWarning": "Entiendo que esto expone mis fondos si este archivo es robado",
+        "shareUnavailableTitle": "Compartir no disponible",
+        "shareUnavailableBody": "Este dispositivo no puede compartir archivos. Tu wallet sigue almacenada de forma segura en el dispositivo.",
+        "exportErrorTitle": "Error al exportar",
+        "exportErrorBody": "No se pudo crear el archivo de respaldo. Inténtalo de nuevo."
+      },
+      "creation": {
+        "generating": "Creando tu wallet…",
+        "registering": "Finalizando…",
+        "generationErrorTitle": "No se pudo crear la wallet",
+        "registerErrorTitle": "Casi listo",
+        "registerErrorBody": "Tu wallet fue creada en este dispositivo, pero no pudimos terminar el registro. Revisa tu conexión — puedes reintentar desde la pantalla de billetera."
+      },
+      "receive": {
+        "title": "Recibir",
+        "copyAddress": "Copiar dirección",
+        "warning": "Solo envía activos de {{network}} a esta dirección."
+      },
+      "send": {
+        "title": "Enviar",
+        "recipientLabel": "Dirección del destinatario",
+        "recipientPlaceholder": "Pega la dirección",
+        "amountLabel": "Monto ({{unit}})",
+        "errorRecipient": "Ingresa una dirección de destinatario.",
+        "errorAmount": "Ingresa un monto válido.",
+        "errorInvalidAddress": "Esa no parece una dirección {{unit}} válida.",
+        "errorLocalUnlock": "No pudimos desbloquear tu wallet en este dispositivo.",
+        "pinTitle": "Confirma con tu PIN",
+        "sending": "Enviando…",
+        "success": "Transacción enviada",
+        "failed": "No se pudo enviar la transacción",
+        "retry": "Intentar de nuevo",
+        "reviewAsset": "Activo",
+        "reviewRecipient": "Para",
+        "reviewAmount": "Monto",
+        "reviewFee": "Comisión de red estimada",
+        "feeNegligible": "Insignificante (pagada en SOL)",
+        "confirmAndSend": "Confirmar y enviar"
+      },
+      "activity": {
+        "title": "Actividad",
+        "empty": "Aún no hay actividad reciente.",
+        "received": "Recibido",
+        "sent": "Enviado",
+        "self": "Transferencia propia",
+        "pending": "Pendiente"
+      },
+      "addAccount": {
+        "title": "Agregar cuenta",
+        "subtitle": "Esto agregará la Cuenta #{{index}} derivada de tu frase de recuperación existente — no se necesita una nueva frase.",
+        "note": "Tu frase de recuperación y PIN existentes te dan acceso a todas las cuentas.",
+        "pinTitle": "Ingresa tu PIN de wallet",
+        "deriving": "Derivando cuenta…",
+        "failed": "No se pudo agregar la cuenta",
+        "unlockFailed": "No pudimos desbloquear tu wallet en este dispositivo.",
+        "noVaultTitle": "Frase de recuperación no disponible en este dispositivo",
+        "noVaultDesc": "Tu respaldo cifrado no está almacenado en esta sesión del navegador o dispositivo. Usa 'Restaurar con frase de recuperación' para volver a vincular tu frase existente y luego podrás agregar más cuentas.",
+        "noVaultAction": "Volver y restaurar primero"
+      },
+      "restore": {
+        "title": "Restaura tu wallet",
+        "subtitle": "Ingresa tu frase de recuperación de 12 a 24 palabras, exactamente como la anotaste.",
+        "placeholder": "palabra1 palabra2 palabra3 ...",
+        "invalidMnemonic": "Eso no parece una frase de recuperación válida de 12 a 24 palabras. Revisa errores de tipeo o espacios extra.",
+        "restoring": "Restaurando tu wallet…",
+        "failedTitle": "No se pudo restaurar la wallet"
+      },
+      "manage": {
+        "title": "Tus wallets",
+        "subtitle": "La wallet predeterminada se usa para saldos, enviar/recibir y pagos de recompensas.",
+        "add": "Agregar",
+        "addTitle": "Agregar una wallet",
+        "default": "Predeterminada",
+        "setDefault": "Establecer predeterminada",
+        "alternunLabel": "Wallet de Alternun",
+        "externalLabel": "Wallet externa",
+        "createNew": "Crear una nueva wallet",
+        "createNewDesc": "Genera una nueva frase de recuperación y establece un PIN",
+        "importPhrase": "Importar desde frase de recuperación",
+        "importPhraseDesc": "Ingresa tu frase de respaldo de 12 a 24 palabras",
+        "importKeystore": "Importar archivo de respaldo cifrado",
+        "importKeystoreDesc": "Pega el contenido de tu archivo .json exportado",
+        "connectMetaMask": "Conectar MetaMask",
+        "connectMetaMaskDesc": "Vincula tu dirección MetaMask existente mediante prueba de firma",
+        "deleteTitle": "Eliminar wallet",
+        "deleteWarning": "Asegúrate de tener respaldada tu frase de recuperación antes de eliminar esta wallet. Esta acción no se puede deshacer.",
+        "deletePrimaryWarning": "Esta es tu wallet predeterminada. Eliminarla promoverá automáticamente otra cuenta. Asegúrate de tener tu frase de respaldo antes de continuar.",
+        "deleteOnlyWarning": "No puedes eliminar tu única wallet. Crea o restaura otra wallet primero.",
+        "deleteConfirm": "Eliminar esta wallet",
+        "connectingExternal": "Conectando a MetaMask…",
+        "signPrompt": "Aprueba la solicitud de firma en tu wallet"
+      },
+      "import": {
+        "title": "Importar archivo de respaldo",
+        "subtitle": "Pega el contenido de tu archivo .json exportado, luego ingresa el PIN que usaste al exportarlo.",
+        "placeholder": "{ \"alternunKeystoreVersion\": 1, ... }",
+        "invalidJson": "No se pudo analizar el JSON — revisa si hay errores de formato.",
+        "invalidKeystore": "Esto no parece un archivo de respaldo de wallet de Alternun.",
+        "pinTitle": "Ingresa tu PIN de exportación",
+        "pinSubtitle": "Este es el PIN que ingresaste cuando exportaste este archivo, no tu PIN actual.",
+        "wrongPin": "PIN incorrecto — este es el PIN que usaste cuando exportaste el respaldo.",
+        "restoring": "Importando tu wallet…",
+        "failedTitle": "Error al importar"
+      },
+      "changePin": {
+        "title": "Cambiar PIN de billetera",
+        "currentPin": "Ingresa tu PIN actual",
+        "saving": "Actualizando PIN…",
+        "done": "PIN actualizado correctamente",
+        "doneDesc": "Tu billetera ahora está cifrada con tu nuevo PIN. Recuérdalo — Alternun no puede recuperarlo.",
+        "failed": "Error al cambiar el PIN"
+      }
+    },
+    "shared": {
+      "actions": {
+        "cancel": "Cancelar",
+        "continue": "Continuar",
+        "done": "Listo"
+      },
+      "testnetBanner": {
+        "label": "Testnet — sin fondos reales"
+      }
+    },
     "profile": {
       "screenTitle": "Mi perfil",
       "signInPrompt": "Inicia sesión para ver tu perfil",
@@ -550,9 +710,32 @@
       "wallet": {
         "connectTitle": "Conecta tu billetera",
         "connectSubtitle": "Vincula tu billetera para gestionar tus tokens ATN",
-        "connectButton": "Conectar billetera",
+        "connectButton": "Conectar billetera externa",
+        "restoreButton": "Restaurar desde frase de recuperación",
         "supportedNetworks": "Redes compatibles",
-        "notConnected": "No conectada"
+        "notConnected": "No conectada",
+        "createTitle": "Crea tu wallet Alternun",
+        "createSubtitle": "Tu llave multichain — Ethereum, Bitcoin y Solana en un solo lugar.",
+        "createButton": "Crear wallet Alternun",
+        "createFeature1": "Sin custodia: solo tú tienes las llaves",
+        "createFeature2": "Multichain: EVM, Bitcoin y Solana",
+        "createFeature3": "Cifrada con tu PIN, respaldada por ti",
+        "createDisclaimer": "Alternun nunca ve tu llave privada ni tu PIN. Si pierdes tu dispositivo sin un respaldo, los fondos no son recuperables.",
+        "loadingTitle": "Cargando tu wallet…",
+        "loadingSubtitle": "Buscando una wallet existente en esta cuenta",
+        "localWalletTitle": "Tu wallet Alternun",
+        "localWalletSubtitle": "Activa en 3 redes",
+        "evmAddress": "Ethereum / EVM",
+        "bitcoinAddress": "Bitcoin",
+        "solanaAddress": "Solana",
+        "copyAddress": "Copiar dirección",
+        "addressCopied": "Dirección copiada",
+        "exportBackup": "Exportar respaldo",
+        "exportWarning": "Esta es tu única opción de recuperación si pierdes tu dispositivo.",
+        "manageWallet": "Gestionar wallet",
+        "manageWallets": "Gestionar wallets",
+        "noWalletAccount": "Sin datos de wallet aún",
+        "changePin": "Cambiar PIN"
       },
       "accessMethods": {
         "current": "Actual: {{method}}",

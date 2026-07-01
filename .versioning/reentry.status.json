@@ -1,32 +1,29 @@
 {
   "blockers": [],
   "context": {
-    "command": "versioning bump",
+    "command": "versioning reentry update",
     "gitInfo": {
       "author": "edcalderon",
       "branch": "develop",
-      "commit": "6d7a484",
-      "timestamp": "2026-04-09T21:03:48-05:00"
+      "commit": "bed71db",
+      "timestamp": "2026-06-29T15:19:21-05:00"
     },
-    "options": {
-      "commit": true,
-      "config": "versioning.config.json",
-      "tag": true
-    },
-    "trigger": "postVersion",
+    "trigger": "auto",
     "versioningInfo": {
-      "newVersion": "1.0.42",
-      "versionType": "patch"
+      "newVersion": "1.0.294"
     }
   },
-  "currentPhase": "staging",
+  "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-04-10T02:03:51.319Z",
-  "milestone": null,
+  "lastUpdated": "2026-07-01T00:43:07.023Z",
+  "milestone": {
+    "id": "wallet-system",
+    "title": "Alternun Wallet System (non-custodial, multi-chain)"
+  },
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Verify deployment and update documentation",
+      "description": "Three fixes: (1) MetaMask POST body empty fixed — Content-Type only when body present; (2) Export backup PIN false positive fixed — unlockMnemonicWithDiagnosis distinguishes wrong-PIN vs no-vault with accurate error; (3) Global ProgressiveImage blur-load component wrapping expo-image with blurhash + cross-dissolve transition + memory-disk cache.",
       "id": "next",
       "priority": 1
     }
@@ -38,11 +35,11 @@
     "lastSuccessfulSync": "1970-01-01T00:00:00.000Z",
     "lastSyncAttempt": "1970-01-01T00:00:00.000Z"
   },
-  "updatedBy": "unknown",
-  "version": "1.0.42",
+  "updatedBy": "edcalderon",
+  "version": "1.0.294",
   "versioning": {
-    "currentVersion": "1.0.42",
-    "previousVersion": "1.0.40",
+    "currentVersion": "1.0.294",
+    "previousVersion": "1.0.42",
     "versionType": "patch"
   }
 }

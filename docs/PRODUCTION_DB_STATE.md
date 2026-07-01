@@ -1,6 +1,6 @@
 # Production Database State
 
-Last updated: 2026-06-27
+Last updated: 2026-06-29
 
 ## Overview
 
@@ -23,9 +23,9 @@ Migrations are tracked in the `public._migrations` table:
 
 ---
 
-## Applied Migrations (as of 2026-06-27)
+## Applied Migrations (as of 2026-06-29)
 
-All 50 migration files in `supabase/migrations/` are now recorded in `_migrations`.
+All 52 migration files in `supabase/migrations/` are now recorded in `_migrations`.
 
 | Version       | Name                                      | Status                       | Notes                                                                                                                                                  |
 | ------------- | ----------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -80,6 +80,8 @@ All 50 migration files in `supabase/migrations/` are now recorded in `_migration
 | 20260626_0005 | fix_dashboard_visit_user_id_ambiguity     | ✅ applied                   | Fixed `airs_record_dashboard_visit` variable conflict                                                                                                  |
 | 20260626_0006 | default_country_city_colombia_medellin    | ✅ applied                   | Default country/city backfill                                                                                                                          |
 | 20260627_0001 | mark_incompatible_migrations_as_applied   | ✅ applied                   | Marker migration recording the 6 skipped/partial migrations above                                                                                      |
+| 20260629_0001 | airs_eligible_users_count                 | ✅ applied                   | Added `airs_get_eligible_users_count()` RPC                                                                                                            |
+| 20260629_0002 | wallet_encrypted_seeds                    | ✅ applied                   | Added wallet seed/encryption tables + PIN lockout columns (device-only recovery task uses the wallet tables, the seed table remains deferred)          |
 
 ---
 
@@ -133,6 +135,7 @@ ALTER TABLE public.users ADD CONSTRAINT users_sub_iss_uq UNIQUE USING INDEX user
 | `airs_get_user_positions`             | `(p_user_id text)`                                                              | ✅ live |
 | `airs_update_user_profile`            | `(p_user_id text, p_name text, p_country text, p_city text)`                    | ✅ live |
 | `airs_award_referral_bonus`           | `(p_referrer_user_id text, p_referred_user_id text, p_bonus_amount numeric)`    | ✅ live |
+| `airs_get_eligible_users_count`       | `()`                                                                            | ✅ live |
 
 ---
 

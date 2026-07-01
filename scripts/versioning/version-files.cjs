@@ -27,6 +27,19 @@ const SUPPLEMENTAL_VERSION_FILES = [
   },
 ];
 
+const MOBILE_VERSION_MIRRORS = [
+  {
+    label: 'apps/mobile/version.development.json',
+    sourcePath: VERSION_MANIFEST_PATHS.development,
+    relativePath: 'apps/mobile/version.development.json',
+  },
+  {
+    label: 'apps/mobile/version.production.json',
+    sourcePath: VERSION_MANIFEST_PATHS.production,
+    relativePath: 'apps/mobile/version.production.json',
+  },
+];
+
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
@@ -769,10 +782,37 @@ function syncSupplementalVersionFiles(version) {
 
   for (const entry of SUPPLEMENTAL_VERSION_FILES) {
     const absolutePath = path.join(REPO_ROOT, entry.relativePath);
-    const json = readJson(absolutePath);
+    const json = fs.existsSync(absolutePath) ? readJson(absolutePath) : {};
     entry.write(json, version);
     writeJson(absolutePath, json);
     touchedFiles.push(entry.relativePath);
+  }
+
+  return touchedFiles;
+}
+
+function syncMobileVersionMirrors() {
+  const touchedFiles = [];
+
+  for (const entry of MOBILE_VERSION_MIRRORS) {
+    const sourceAbsolutePath = path.join(REPO_ROOT, entry.sourcePath);
+    const targetAbsolutePath = path.join(REPO_ROOT, entry.relativePath);
+    const sourceVersion = readVersionField(sourceAbsolutePath);
+
+    if (typeof sourceVersion !== 'string' || sourceVersion.length === 0) {
+      throw new Error(`Unable to read a valid version from ${entry.sourcePath}.`);
+    }
+
+    const nextContents = `${JSON.stringify({ version: sourceVersion }, null, 2)}\n`;
+    const currentContents = fs.existsSync(targetAbsolutePath)
+      ? fs.readFileSync(targetAbsolutePath, 'utf8')
+      : null;
+
+    if (currentContents !== nextContents) {
+      fs.mkdirSync(path.dirname(targetAbsolutePath), { recursive: true });
+      fs.writeFileSync(targetAbsolutePath, nextContents, 'utf8');
+      touchedFiles.push(entry.relativePath);
+    }
   }
 
   return touchedFiles;
@@ -1074,6 +1114,7 @@ module.exports = {
   resolveBranchRule,
   resolveBranchVersionFile,
   syncBranchVersionManifests,
+  syncMobileVersionMirrors,
   syncSupplementalVersionFiles,
   syncWorkspacePackageVersions,
   validateBranchVersionFiles,

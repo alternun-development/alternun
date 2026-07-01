@@ -118,18 +118,21 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.0.288**
+Current version: **1.1.0**
 
-## 📋 Latest Changes (v1.0.288)
+## 📋 Latest Changes (v1.1.0)
+
+### Features
+
+- **wallet:** Non-custodial multi-chain wallet (EVM/Bitcoin/Solana) for web — PIN-encrypted local key storage with PBKDF2 600k iterations, wallet creation with mandatory backup disclaimer and randomized word verification, restore from recovery phrase, send (with per-chain address validation and a fee-review step), receive, activity feed, multi-wallet management with selectable default account, and export (encrypted keystore or plaintext phrase). Server-side: full NestJS wallet module with IP throttling, per-user PIN lockout backoff, stage-aware mainnet/testnet RPC selection, RLS policies via app_user_id JWT claim.
 
 ### Bug Fixes
 
-- **repo:** chore(repo,admin,api): CHANGELOG, README, app, version.development
-- **repo:** fix(infra): sst-deploy
-
-### Bug Fixes
-
-- **infra:** sst-deploy ([721170d](https://github.com/alternun-development/alternun/commit/721170d578c2411d4242a778e76a1380fd6ad7d6))
+- **wallet:** Bitcoin addresses were always derived as mainnet (bc1...) regardless of deploy stage, causing BTC balances to silently disappear from the UI (testnet Esplora returned 400 for mainnet-format addresses)
+- **wallet:** react-native-web's Alert.alert is a documented no-op — replaced all wallet error paths with visible inline error UI
+- **wallet:** expo-secure-store web availability required isAvailableAsync(), not a typeof check on the wrapper function
+- **wallet:** mi-perfil.tsx tab-sync useEffect had tabs in its dependency array, causing the active tab to snap back to the ?tab= URL param on every render
+- **wallet:** Buffer-free crypto throughout packages/wallet (bip39→@scure/bip39, ed25519-hd-key→slip10Ed25519.ts, secureVault base64/hex helpers)
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

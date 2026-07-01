@@ -1,6 +1,6 @@
 {
   "name": "@alternun/api",
-  "version": "1.0.288",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "dev": "nodemon --watch src --ext ts --signal SIGTERM --exec \"node -r ts-node/register/transpile-only src/main.ts\"",
@@ -9,7 +9,7 @@
     "db:migrate": "node -r ts-node/register/transpile-only ./scripts/apply-migrations.ts",
     "db:migrate:compiled": "node ./dist/scripts/apply-migrations.js",
     "type-check": "tsc --noEmit",
-    "test": "node -r ts-node/register/transpile-only --test test/*.test.js test/*.test.ts"
+    "test": "node --experimental-test-module-mocks -r ts-node/register/transpile-only --test test/*.test.js test/*.test.ts"
   },
   "dependencies": {
     "@alternun/email-templates": "workspace:*",
@@ -22,6 +22,7 @@
     "@nestjs/core": "^10.4.22",
     "@nestjs/platform-fastify": "11.0.0",
     "@nestjs/swagger": "^8.1.1",
+    "@nestjs/throttler": "^6.4.0",
     "@supabase/supabase-js": "^2.98.0",
     "better-auth": "^1.6.3",
     "class-transformer": "^0.5.1",
@@ -32,7 +33,8 @@
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "sanitize-html": "^2.17.4"
+    "sanitize-html": "^2.17.4",
+    "viem": "^2.21.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.147",

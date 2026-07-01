@@ -319,4 +319,69 @@ pnpm release          # fails if non-critical .md at root
 
 ---
 
+---
+
+## 9. Reentry & Roadmap Sync
+
+**Keep `.versioning/REENTRY.md` and `.versioning/ROADMAP.md` in sync with actual progress.**
+
+After completing any non-trivial task or when switching context:
+
+1. Run `pnpm exec versioning reentry set --next "<what comes next>"` to update the next micro-step.
+2. Update `.agents/active-tasks/*/README.md` task statuses (todo → in-progress → done).
+3. Run `pnpm exec versioning reentry sync` to regenerate REENTRY.md and the ROADMAP.md managed block.
+
+A Husky pre-push guard enforces that REENTRY.md is not stale on pushes to `develop` or `master`.
+Use `--no-validate-reentry` on commits/pushes when changes are trivial (typos, config tweaks) and
+a reentry update would be noisy.
+
+### When to update
+
+| Event                                 | Update reentry?                          |
+| ------------------------------------- | ---------------------------------------- |
+| Task completed (code + tests passing) | Yes — set `--next` to the following task |
+| Task blocked or abandoned             | Yes — note the blocker                   |
+| Pure typo / formatting fix            | No — use `--no-validate-reentry`         |
+| Config or dependency bump only        | No — use `--no-validate-reentry`         |
+
+---
+
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+---
+
+## 10. Task Archival — `.agents/` folder discipline
+
+`.agents/` has three distinct folders, each organized by feature subfolder (e.g. `alternun-wallet-system/`):
+
+| Folder           | Purpose                                | When to use                                   |
+| ---------------- | -------------------------------------- | --------------------------------------------- |
+| `active-tasks/`  | Tasks in progress or not yet started   | Default home for new tasks                    |
+| `pending-tasks/` | Security findings, debt, deferred work | Items that surface but aren't actively worked |
+| `done-tasks/`    | Completed, verified, archived          | After a task is done and verified             |
+
+### When a task is complete
+
+**Move, do not copy.** The original file is the authoritative record — creating a new summary loses history.
+
+```bash
+# Move from active or pending to done (script handles subfolder creation):
+bash scripts/archive-task.sh active-tasks/alternun-wallet-system/01-db-schema-migration.md
+bash scripts/archive-task.sh pending-tasks/alternun-wallet-system/SEC-02-RLS-policy.md
+
+# Then update the READMEs in both source and destination folders.
+# Then run:
+pnpm exec versioning reentry sync
+```
+
+### Subfolder per feature
+
+Always place tasks in a per-feature subfolder inside each of the three folders:
+
+- ✅ `active-tasks/alternun-wallet-system/06-mobile-home.md`
+- ❌ `active-tasks/06-mobile-home.md` (flat, no feature subfolder)
+
+### File naming in done-tasks
+
+Keep the original filename as-is — do NOT rename files when moving to `done-tasks/`. The filename is its own
+identity; renaming breaks cross-references and git history.

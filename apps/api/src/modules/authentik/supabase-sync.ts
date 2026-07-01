@@ -117,11 +117,13 @@ export async function upsertOidcUserViaSupabase(
     );
   }
 
-  const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  const raw = (await response.json().catch(() => ({}))) as unknown;
+  // PostgREST wraps composite-returning functions in an array by default.
+  const body = (Array.isArray(raw) ? raw[0] : raw) as Record<string, unknown> | undefined;
   const appUserId =
-    typeof body.id === 'string'
+    typeof body?.id === 'string'
       ? body.id
-      : typeof body.appUserId === 'string'
+      : typeof body?.appUserId === 'string'
       ? body.appUserId
       : null;
 

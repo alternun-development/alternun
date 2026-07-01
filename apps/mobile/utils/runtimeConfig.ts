@@ -121,6 +121,14 @@ export function resolveMobileApiBaseUrl(
   return DEFAULT_TESTNET_API_URL;
 }
 
+export function isTestnetRuntime(
+  explicitApiUrl?: string | null,
+  explicitOrigin?: string | null
+): boolean {
+  const apiUrl = resolveMobileApiBaseUrl(explicitApiUrl, explicitOrigin).toLowerCase();
+  return apiUrl.includes('testnet') || isLoopbackApiUrl(apiUrl);
+}
+
 export function resolveMobileBetterAuthBaseUrl(
   explicitAuthUrl?: string | null,
   explicitOrigin?: string | null
