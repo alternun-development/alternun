@@ -495,6 +495,11 @@ export function deployBackendApiInfrastructure(
             : args.env.SUPABASE_SERVICE_ROLE_KEY
             ? { SUPABASE_SERVICE_ROLE_KEY: args.env.SUPABASE_SERVICE_ROLE_KEY }
             : {}),
+          ...(args.env.INFRA_BACKEND_API_IPAPI_ACCESS
+            ? { IPAPI_ACCESS: args.env.INFRA_BACKEND_API_IPAPI_ACCESS }
+            : args.env.IPAPI_ACCESS
+            ? { IPAPI_ACCESS: args.env.IPAPI_ACCESS }
+            : {}),
           AUTHENTIK_SMTP_SECRET_ARN: smtpSecretArn,
           AIRS_SMTP_SECRET_ARN: smtpSecretArn,
           ...(args.env.INFRA_BACKEND_API_AUTH_EMAIL_FROM
