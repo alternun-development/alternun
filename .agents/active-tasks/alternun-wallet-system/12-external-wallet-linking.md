@@ -2,9 +2,29 @@
 name: wallet-external-linking
 title: Link an externally-owned wallet (MetaMask etc.) with signature-verified ownership proof
 priority: medium
-status: todo
+status: evm-done-walletconnect-remaining
 depends_on: [wallet-multi-wallet-restore-default-account]
 ---
+
+## 2026-07-01: EVM/MetaMask path implemented
+
+**Done:**
+
+- `POST /v1/wallet/accounts/external/challenge` — one-time nonce (2min TTL, in-memory)
+- `POST /v1/wallet/accounts/external/verify` — EIP-191 `personal_sign` signature recovery via
+  `viem.verifyMessage`; address ownership proven before inserting `wallet_accounts` row
+- `WalletManageModal` "Connect MetaMask" button: connects via `walletBridge.ts`'s existing
+  EIP-1193 provider (web only), signs challenge, registers as `walletType: 'external'`
+- `addAccount` endpoint continues to block `walletType: 'external'` unless going through the
+  verified challenge/verify path — prevents unverified address claims
+
+**Still remaining:**
+
+- WalletConnect (native mobile devices without MetaMask in browser) — `@walletconnect/ethereum-provider`
+  is lazy-imported in `walletBridge.ts` but needs `EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID` env var
+  and real testing against a native build
+- Phantom / Solana external linking — needs ed25519 `signMessage` equivalent
+- Challenge expiry handling in multi-Lambda environments (current in-memory Map is per-container)
 
 # Task 12 — External wallet linking
 

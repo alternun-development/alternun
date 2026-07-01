@@ -2,7 +2,7 @@
 name: wallet-testing-qa-plan
 title: Cross-cutting test plan — unit, integration, security, manual QA matrix
 priority: high
-status: in-progress
+status: in-progress — web verified, native deferred
 depends_on: []
 ---
 
@@ -105,6 +105,12 @@ on native — every native row depends on this. Not blocking for web.
 | Restore wallet while a different wallet is already active on this device                       | iOS + Android | Confirm actual behavior matches intent — task 11 only wires the empty-state restore entry point, not a "replace existing" path          |
 | Create a second wallet account, open "Manage wallets", switch default                          | iOS + Android | Balances/addresses shown on the wallet tab immediately reflect the new default account                                                  |
 | Export backup → PIN prompt → reveal/export screen                                              | iOS + Android | Correct PIN unlocks and shows the export step directly (no re-verify-words step)                                                        |
+
+| Change PIN → verify old PIN no longer works, new PIN works for export/send | Web | Old PIN rejected server-side (lockout tracking reset); new PIN unlocks vault correctly |
+| Delete Alternun wallet, keep only MetaMask → click Add → should offer Create/Restore not Add-Account | Web | Routes to WalletCreationFlow not WalletAddAccountFlow (no vault crash) |
+| WalletManageModal card shows correct type badge (HD Wallet vs External) | Web | HD accounts show teal badge, MetaMask shows amber badge |
+| MetaMask connect → sign challenge → verify → appears in wallet list | Web | Account registered with walletType=external; can be set as default |
+| Export backup: wrong PIN → shows "Incorrect PIN", correct PIN → shows export | Web | No false positives; vault-missing case shows "not on this device" not "Incorrect PIN" |
 
 ## Acceptance criteria for the feature as a whole
 

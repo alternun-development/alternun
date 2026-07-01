@@ -24,6 +24,8 @@
 | [13-web-security-review.md](./13-web-security-review.md)                                                 | Web security audit — PBKDF2/autofill/logging/RLS done; SEC-01 + /security-review in pending-tasks | active-tasks  |
 | [06-mobile-wallet-home-send-receive.md](./06-mobile-wallet-home-send-receive.md)                         | Wallet home/send/receive/activity — address validation + fee-review step completed                | active-tasks  |
 
+| [14-post-v1.1.0-wallet-improvements.md](./14-post-v1.1.0-wallet-improvements.md) | Multi-wallet mgmt, PIN change, MetaMask (EVM), vault fixes, BTC routing, CodeQL | active-tasks |
+
 ## Still in active-tasks (real remaining work or blocked)
 
 | File                            | Why not archived yet                                           |

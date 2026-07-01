@@ -7,7 +7,7 @@ started from the "Mi perfil → Billetera" screen. Full design rationale lives i
 phase-1 scaffold). Product decision: device-only recovery, no server-side seed backup, no AWS KMS needed. See
 `00-SPEC.md`'s revision note for the full diff from rev. 1.
 
-**Archived tasks (moved to `done-tasks/alternun-wallet-system/`):** 01, 02, 03, 04, 05, 06, 07, 08, 10, 11, 13, 99, SEC-02, SEC-04, TECH-01
+**Archived tasks (moved to `done-tasks/alternun-wallet-system/`):** 01, 02, 03, 04, 05, 06, 07, 08, 10, 11, 13, 14, 99, SEC-02, SEC-04, TECH-01
 
 | #   | Task                                                                                 | Depends on        | Status                                                               |
 | --- | ------------------------------------------------------------------------------------ | ----------------- | -------------------------------------------------------------------- |
