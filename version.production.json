@@ -1,22 +1,22 @@
 {
-  "version": "1.1.1",
+  "version": "1.1.2",
   "build": 38,
-  "lastUpdated": "2026-07-01T02:14:33.015Z",
+  "lastUpdated": "2026-07-01T14:48:25.365Z",
   "environment": "production",
   "lastDeployment": {
     "id": "production-38",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "build": 38,
-    "date": "2026-07-01T02:14:33.015Z",
-    "message": "Release 1.1.1"
+    "date": "2026-07-01T14:48:25.365Z",
+    "message": "Release 1.1.2"
   },
   "deploymentHistory": [
     {
       "id": "production-38",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "build": 38,
-      "date": "2026-07-01T02:14:33.015Z",
-      "message": "Release 1.1.1"
+      "date": "2026-07-01T14:48:25.365Z",
+      "message": "Release 1.1.2"
     },
     {
       "id": "production-37",

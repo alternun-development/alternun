@@ -1,3 +1,43 @@
+## [1.1.2](https://github.com/alternun-development/alternun/compare/v1.1.0...v1.1.2) (2026-07-01)
+
+### Bug Fixes
+
+- **repo:** chore: sync development version to 1.1.1-dev.0 after production release
+- **repo:** chore: sync README and version.production for v1.1.1
+- **repo:** chore: release v1.1.1
+- **repo:** fix(ui): move profile tab pills below title, fix ATN/RBI card overlap on small screens
+- **repo:** fix(ui): move profile tab pills below title, fix ATN/RBI card overlap on small screens
+
+### Bug Fixes
+
+- **ui:** move profile tab pills below title, fix ATN/RBI card overlap on small screens ([d4e28a6](https://github.com/alternun-development/alternun/commit/d4e28a6d77907fb461d1c7ad5243f1dfdd719fe8))
+- **wallet:** card UI + routing fix + vault detection + PIN change flow ([e74c06d](https://github.com/alternun-development/alternun/commit/e74c06d4ccce6db0523461836da3e4fc6e9984ae))
+- **wallet:** eliminate layout gap in manage wallets screen ([9db2fbc](https://github.com/alternun-development/alternun/commit/9db2fbc2ecdc4a75b1bc6b5f6961c72fb069db6d))
+- **wallet:** MetaMask body error, PIN false-positive, progressive image loading ([671cc4e](https://github.com/alternun-development/alternun/commit/671cc4e9d5e81aa55c98687d6ccfed8fe802c6a7))
+- **wallet:** remove flex:1 from title style causing layout gap ([9311109](https://github.com/alternun-development/alternun/commit/931110979d07c9f1ae0d909746a8cfdeed0b3795))
+- **wallet:** resolve 2 high-severity CodeQL alerts in packages/wallet ([5c6aaeb](https://github.com/alternun-development/alternun/commit/5c6aaeb234086c49f4c4a9b12a7fe898fc0b9fdc)), closes [#62](https://github.com/alternun-development/alternun/issues/62) [#61](https://github.com/alternun-development/alternun/issues/61)
+
+### Features
+
+- **i18n:** add missing wallet.changePin and addAccount.noVault translations to es/th ([630036c](https://github.com/alternun-development/alternun/commit/630036c790bc5e7233ff8348b04bdb1180bd73ea))
+- **wallet:** full wallet management — add/delete/import + MetaMask linking + layout fix ([592f737](https://github.com/alternun-development/alternun/commit/592f737ac3234efcc1f4e83ad0cf2f57c3f4a95f))
+
+## [1.1.2](https://github.com/alternun-development/alternun/compare/v1.1.0...v1.1.2) (2026-07-01)
+
+### Bug Fixes
+
+- **ui:** move profile tab pills below title, fix ATN/RBI card overlap on small screens ([d4e28a6](https://github.com/alternun-development/alternun/commit/d4e28a6d77907fb461d1c7ad5243f1dfdd719fe8))
+- **wallet:** card UI + routing fix + vault detection + PIN change flow ([e74c06d](https://github.com/alternun-development/alternun/commit/e74c06d4ccce6db0523461836da3e4fc6e9984ae))
+- **wallet:** eliminate layout gap in manage wallets screen ([9db2fbc](https://github.com/alternun-development/alternun/commit/9db2fbc2ecdc4a75b1bc6b5f6961c72fb069db6d))
+- **wallet:** MetaMask body error, PIN false-positive, progressive image loading ([671cc4e](https://github.com/alternun-development/alternun/commit/671cc4e9d5e81aa55c98687d6ccfed8fe802c6a7))
+- **wallet:** remove flex:1 from title style causing layout gap ([9311109](https://github.com/alternun-development/alternun/commit/931110979d07c9f1ae0d909746a8cfdeed0b3795))
+- **wallet:** resolve 2 high-severity CodeQL alerts in packages/wallet ([5c6aaeb](https://github.com/alternun-development/alternun/commit/5c6aaeb234086c49f4c4a9b12a7fe898fc0b9fdc)), closes [#62](https://github.com/alternun-development/alternun/issues/62) [#61](https://github.com/alternun-development/alternun/issues/61)
+
+### Features
+
+- **i18n:** add missing wallet.changePin and addAccount.noVault translations to es/th ([630036c](https://github.com/alternun-development/alternun/commit/630036c790bc5e7233ff8348b04bdb1180bd73ea))
+- **wallet:** full wallet management — add/delete/import + MetaMask linking + layout fix ([592f737](https://github.com/alternun-development/alternun/commit/592f737ac3234efcc1f4e83ad0cf2f57c3f4a95f))
+
 ## [1.1.1](https://github.com/alternun-development/alternun/compare/v1.1.0...v1.1.1) (2026-07-01)
 
 ### Bug Fixes
