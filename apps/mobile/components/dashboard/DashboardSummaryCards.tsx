@@ -680,6 +680,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'stretch',
     justifyContent: 'flex-start',
+    overflow: 'visible',
   },
   gridDesktop: {
     flexDirection: 'row',
@@ -693,8 +694,10 @@ const styles = StyleSheet.create({
     flex: 0,
     flexGrow: 0,
     flexShrink: 0,
+    flexBasis: 'auto',
     alignSelf: 'stretch',
     width: '100%',
+    overflow: 'visible',
   },
   card: {
     flex: 1,
