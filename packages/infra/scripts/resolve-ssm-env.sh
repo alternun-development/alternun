@@ -43,9 +43,10 @@ declare -a CACHE_EXPORT_VARS=(
   DATABASE_URL
 )
 
-# CI shells can inherit stale auth values from the CodeBuild project.
-# Clear the stage contract vars so SSM/default stage resolution wins.
-if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
+# CI shells and approved local deploys (APPROVE=true) can carry stale local-dev
+# auth values (e.g. localhost:8082 from .env). Clear the stage contract vars so
+# SSM/default stage resolution wins — the deployed stage URL is authoritative.
+if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ] || [ "${APPROVE:-}" = "true" ]; then
   unset \
     EXPO_PUBLIC_API_URL \
     EXPO_PUBLIC_SUPABASE_URL \
@@ -54,6 +55,7 @@ if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
     INFRA_BACKEND_API_SUPABASE_URL \
     INFRA_BACKEND_API_SUPABASE_ANON_KEY \
     INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY \
+    INFRA_BACKEND_API_IPAPI_ACCESS \
     AUTH_EXECUTION_PROVIDER \
     EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER \
     DATABASE_URL \
@@ -403,6 +405,7 @@ main() {
   export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_URL" "expo-public-supabase-url" "" "${SSM_SHARED_STAGE}"
   export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_ANON_KEY" "expo-public-supabase-key" "" "${SSM_SHARED_STAGE}"
   export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY" "supabase-service-role-key" "" "${SSM_SHARED_STAGE}"
+  export_env_from_ssm "INFRA_BACKEND_API_IPAPI_ACCESS" "ipapi-key" "" "${SSM_SHARED_STAGE}"
   export_env_from_ssm "EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID" "expo-public-walletconnect-project-id" "" "${SSM_SHARED_STAGE}"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_ISSUER" "expo-public-authentik-issuer" "" "${SSM_SHARED_STAGE}"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_CLIENT_ID" "expo-public-authentik-client-id" "" "${SSM_SHARED_STAGE}"
