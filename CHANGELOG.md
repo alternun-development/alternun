@@ -1,3 +1,28 @@
+## [1.1.3](https://github.com/alternun-development/alternun/compare/v1.1.3-dev.0...v1.1.3) (2026-07-01)
+
+### Bug Fixes
+
+- **repo:** chore: sync README and version files to v1.1.3 --no-validate-reentry
+
+
+
+
+
+
+## [1.1.3](https://github.com/alternun-development/alternun/compare/v1.1.2...v1.1.3) (2026-07-01)
+
+### Bug Fixes
+
+- **repo:** fix(db): force-drop stale AIRS uuid overloads causing PGRST203 ambiguity
+- **repo:** chore: set develop to 1.1.2-dev.0 after production release --no-validate-reentry
+- **repo:** chore: sync roadmap --no-validate-reentry
+- **repo:** chore: sync version files for v1.1.2 --no-validate-reentry
+- **repo:** docs(agents): add geo-service pending task — self-hosted MaxMind GeoLite2 to replace ipapi.co
+
+### Bug Fixes
+
+- **db:** force-drop stale AIRS uuid overloads causing PGRST203 ambiguity ([6c81fd5](https://github.com/alternun-development/alternun/commit/6c81fd592b14ec229a4827014e324723b4fbf381))
+
 ## [1.1.2](https://github.com/alternun-development/alternun/compare/v1.1.0...v1.1.2) (2026-07-01)
 
 ### Bug Fixes
