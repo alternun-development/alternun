@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import { afterEach, describe, expect, it } from '@jest/globals';
-import { resolveMobileApiBaseUrl, resolveMobileBetterAuthBaseUrl } from '../runtimeConfig';
+import {
+  resolveMobileApiBaseUrl,
+  resolveMobileBetterAuthBaseUrl,
+  isTestnetRuntime,
+} from '../runtimeConfig';
 
 describe('resolveMobileApiBaseUrl', () => {
   const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -85,5 +89,19 @@ describe('resolveMobileApiBaseUrl', () => {
     expect(resolveMobileBetterAuthBaseUrl(undefined, 'https://testnet.airs.alternun.co')).toBe(
       'https://testnet.api.alternun.co'
     );
+  });
+});
+
+describe('isTestnetRuntime', () => {
+  it('returns true for a testnet URL', () => {
+    expect(isTestnetRuntime('https://testnet.api.alternun.co')).toBe(true);
+  });
+
+  it('returns true for a loopback API URL', () => {
+    expect(isTestnetRuntime('http://localhost:8082')).toBe(true);
+  });
+
+  it('returns false for a mainnet URL', () => {
+    expect(isTestnetRuntime('https://api.alternun.co')).toBe(false);
   });
 });

@@ -1,4 +1,5 @@
 import { scryptAsync } from '@noble/hashes/scrypt';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { keccak256 } from 'viem';
 
 // Alternun's own encrypted backup envelope, modeled on the Ethereum "V3" keystore structure
@@ -45,11 +46,11 @@ function getCrypto(): Crypto {
 }
 
 function toHex(bytes: Uint8Array): string {
-  return Buffer.from(bytes).toString('hex');
+  return bytesToHex(bytes);
 }
 
 function fromHex(hex: string): Uint8Array {
-  return new Uint8Array(Buffer.from(hex, 'hex'));
+  return hexToBytes(hex);
 }
 
 async function deriveScryptKey(pin: string, salt: Uint8Array): Promise<Uint8Array> {

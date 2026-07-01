@@ -347,3 +347,41 @@ a reentry update would be noisy.
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+---
+
+## 10. Task Archival — `.agents/` folder discipline
+
+`.agents/` has three distinct folders, each organized by feature subfolder (e.g. `alternun-wallet-system/`):
+
+| Folder           | Purpose                                | When to use                                   |
+| ---------------- | -------------------------------------- | --------------------------------------------- |
+| `active-tasks/`  | Tasks in progress or not yet started   | Default home for new tasks                    |
+| `pending-tasks/` | Security findings, debt, deferred work | Items that surface but aren't actively worked |
+| `done-tasks/`    | Completed, verified, archived          | After a task is done and verified             |
+
+### When a task is complete
+
+**Move, do not copy.** The original file is the authoritative record — creating a new summary loses history.
+
+```bash
+# Move from active or pending to done (script handles subfolder creation):
+bash scripts/archive-task.sh active-tasks/alternun-wallet-system/01-db-schema-migration.md
+bash scripts/archive-task.sh pending-tasks/alternun-wallet-system/SEC-02-RLS-policy.md
+
+# Then update the READMEs in both source and destination folders.
+# Then run:
+pnpm exec versioning reentry sync
+```
+
+### Subfolder per feature
+
+Always place tasks in a per-feature subfolder inside each of the three folders:
+
+- ✅ `active-tasks/alternun-wallet-system/06-mobile-home.md`
+- ❌ `active-tasks/06-mobile-home.md` (flat, no feature subfolder)
+
+### File naming in done-tasks
+
+Keep the original filename as-is — do NOT rename files when moving to `done-tasks/`. The filename is its own
+identity; renaming breaks cross-references and git history.
