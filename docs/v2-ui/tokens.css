@@ -1,0 +1,179 @@
+/* ─── Alternun Airs · Design System v2 ───────────────────────────────────── */
+/* Source of truth: packages/ui/src/tokens/* + theme/themes.ts from monorepo  */
+/* Augmented with elevation, motion, surface ladder, hero-forest scale       */
+
+:root {
+  /* ── Brand palette (invariant) ── */
+  --p-teal: #1EE6B5;
+  --p-teal-dark: #0d9488;
+  --p-teal-light: #5bf6d0;
+
+  --p-gold: #d4b96a;
+  --p-gold-light: #f0d896;
+  --p-bronze: #cd7f32;
+  --p-silver: #a8b8cc;
+  --p-platinum: #9ba9c4;
+
+  --p-error: #f87171;
+  --p-success: #34d399;
+  --p-warning: #f59e0b;
+  --p-info: #818cf8;
+
+  --p-hero-forest-dark: #050f0c;
+  --p-hero-forest-light: #eaf8f3;
+
+  /* ── Spacing (4-pt grid) ── */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-7: 28px; --s-8: 32px; --s-10: 40px; --s-12: 48px;
+
+  /* ── Radius ── */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px;
+  --r-2xl: 24px; --r-3xl: 32px; --r-full: 9999px;
+
+  /* ── Type scale ── */
+  --f-xs: 11px; --f-sm: 12px; --f-base: 14px; --f-md: 15px;
+  --f-lg: 17px; --f-xl: 20px; --f-2xl: 24px; --f-3xl: 28px;
+  --f-4xl: 36px; --f-5xl: 48px;
+
+  /* ── Font families ── */
+  --ff-sans: 'Anek Latin', -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  --ff-mono: 'Space Mono', 'SF Mono', ui-monospace, monospace;
+
+  /* ── Font weights (Anek Latin variable) ── */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-heavy: 800;
+
+  /* ── Motion ── */
+  --dur-fast: 160ms;
+  --dur-base: 220ms;
+  --dur-slow: 360ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Dark (default on mobile) ── */
+:root, .theme-dark {
+  --bg-screen: #050510;
+  --bg-section: #0a0a18;
+  --bg-card: rgba(13,13,31,0.96);
+  --bg-elevated: rgba(23,23,44,0.98);
+  --bg-hero: var(--p-hero-forest-dark);
+  --bg-inset: rgba(255,255,255,0.04);
+
+  --border-card: rgba(255,255,255,0.08);
+  --border-hairline: rgba(255,255,255,0.06);
+  --border-accent: rgba(30,230,181,0.32);
+  --border-input: rgba(255,255,255,0.12);
+  --border-input-focus: rgba(30,230,181,0.5);
+
+  --text-primary: #e8e8ff;
+  --text-secondary: rgba(232,232,255,0.75);
+  --text-muted: rgba(232,232,255,0.55);
+  --text-faint: rgba(232,232,255,0.35);
+  --text-inverse: #050510;
+
+  --accent: var(--p-teal);
+  --accent-muted: rgba(30,230,181,0.16);
+  --accent-text: #050510;
+
+  --divider: rgba(255,255,255,0.10);
+  --overlay: rgba(5,5,16,0.82);
+
+  --nav-bg: rgba(5,5,16,0.95);
+  --nav-border: rgba(255,255,255,0.06);
+
+  /* Elevation */
+  --e0: 0 0 0 1px rgba(255,255,255,0.06);
+  --e1: 0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
+  --e2: 0 8px 24px -4px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+  --e3: 0 24px 60px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.10);
+  --e-glow: 0 0 0 1px rgba(30,230,181,0.3), 0 0 32px rgba(30,230,181,0.25);
+
+  /* Semantic */
+  --error-bg: rgba(248,113,113,0.1);
+  --error-border: rgba(248,113,113,0.35);
+  --error-text: #fca5a5;
+  --notice-bg: rgba(30,230,181,0.1);
+  --notice-border: rgba(30,230,181,0.32);
+  --notice-text: #66e6c5;
+
+  /* Skeleton */
+  --skel-base: rgba(255,255,255,0.06);
+  --skel-hi: rgba(255,255,255,0.13);
+}
+
+/* ── Light ── */
+.theme-light {
+  --bg-screen: #f1f5f9;
+  --bg-section: #e8eef5;
+  --bg-card: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-hero: var(--p-hero-forest-light);
+  --bg-inset: rgba(15,23,42,0.03);
+
+  --border-card: rgba(15,23,42,0.10);
+  --border-hairline: rgba(15,23,42,0.06);
+  --border-accent: rgba(13,148,136,0.28);
+  --border-input: rgba(15,23,42,0.14);
+  --border-input-focus: rgba(13,148,136,0.5);
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --text-inverse: #ffffff;
+
+  --accent: var(--p-teal-dark);
+  --accent-muted: rgba(13,148,136,0.12);
+  --accent-text: #ffffff;
+
+  --divider: rgba(15,23,42,0.10);
+  --overlay: rgba(241,245,249,0.88);
+
+  --nav-bg: rgba(255,255,255,0.92);
+  --nav-border: rgba(15,23,42,0.10);
+
+  --e0: 0 0 0 1px rgba(15,23,42,0.06);
+  --e1: 0 1px 2px rgba(15,23,42,0.06), 0 0 0 1px rgba(15,23,42,0.06);
+  --e2: 0 8px 24px -6px rgba(15,23,42,0.12), 0 0 0 1px rgba(15,23,42,0.08);
+  --e3: 0 24px 60px -16px rgba(15,23,42,0.18), 0 0 0 1px rgba(15,23,42,0.10);
+  --e-glow: 0 0 0 1px rgba(13,148,136,0.3), 0 0 32px rgba(13,148,136,0.2);
+
+  --error-bg: rgba(239,68,68,0.08);
+  --error-border: rgba(239,68,68,0.3);
+  --error-text: #dc2626;
+  --notice-bg: rgba(13,148,136,0.08);
+  --notice-border: rgba(13,148,136,0.28);
+  --notice-text: #0f766e;
+
+  --skel-base: rgba(15,23,42,0.08);
+  --skel-hi: rgba(15,23,42,0.15);
+}
+
+/* ── Global reset ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: var(--ff-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #0b0b14;
+  color: var(--text-primary);
+  font-feature-settings: 'ss01', 'cv01';
+  letter-spacing: -0.01em;
+}
+
+button { font-family: inherit; border: 0; background: 0; cursor: pointer; color: inherit; }
+input, select, textarea { font-family: inherit; }
+
+.mono { font-family: var(--ff-mono); letter-spacing: 0; font-feature-settings: 'tnum'; }
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* Scrollbar for preview */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.35); border-radius: 999px; }
+::-webkit-scrollbar-track { background: transparent; }

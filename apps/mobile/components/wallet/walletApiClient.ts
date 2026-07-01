@@ -50,10 +50,13 @@ async function requireToken(client: AuthClient): Promise<string> {
 
 async function request<T>(client: AuthClient, path: string, init?: RequestInit): Promise<T> {
   const token = await requireToken(client);
+  // Only set Content-Type when there's a body — Fastify rejects POST requests with
+  // Content-Type: application/json but no body ("Body cannot be empty...").
+  const hasBody = init?.body !== undefined;
   const res = await fetch(`${resolveMobileApiBaseUrl()}/v1/wallet${path}`, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
       Authorization: `Bearer ${token}`,
       ...init?.headers,
     },

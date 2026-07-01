@@ -602,6 +602,15 @@
         "self": "Transferencia propia",
         "pending": "Pendiente"
       },
+      "addAccount": {
+        "title": "Agregar cuenta",
+        "subtitle": "Esto agregará la Cuenta #{{index}} derivada de tu frase de recuperación existente — no se necesita una nueva frase.",
+        "note": "Tu frase de recuperación y PIN existentes te dan acceso a todas las cuentas.",
+        "pinTitle": "Ingresa tu PIN de wallet",
+        "deriving": "Derivando cuenta…",
+        "failed": "No se pudo agregar la cuenta",
+        "unlockFailed": "No pudimos desbloquear tu wallet en este dispositivo."
+      },
       "restore": {
         "title": "Restaura tu wallet",
         "subtitle": "Ingresa tu frase de recuperación de 12 a 24 palabras, exactamente como la anotaste.",

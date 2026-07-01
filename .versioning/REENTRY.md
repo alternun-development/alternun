@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Fixed mi-perfil.tsx tab-switching bug: ?tab= URL sync effect had 'tabs' in its deps array, but tabs is recreated every render (useAppTranslation's t() isn't memoized) — caused the active tab to snap back to the URL param on every re-render. Fixed by depending only on params.tab, and added router.setParams() to keep the URL in sync when switching tabs via UI. Affects all profile tabs (ranking/wallet/perfil), not wallet-specific. Ready for 1.1.0 release.
+Next micro-step: Three fixes: (1) MetaMask POST body empty fixed — Content-Type only when body present; (2) Export backup PIN false positive fixed — unlockMnemonicWithDiagnosis distinguishes wrong-PIN vs no-vault with accurate error; (3) Global ProgressiveImage blur-load component wrapping expo-image with blurhash + cross-dissolve transition + memory-disk cache.
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md

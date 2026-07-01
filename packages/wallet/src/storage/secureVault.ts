@@ -228,6 +228,35 @@ export async function unlockMnemonic(
   return record?.mnemonic ?? null;
 }
 
+/** True if an encrypted vault exists on this device (regardless of PIN correctness). */
+export async function vaultExists(adapter?: SecureStoreAdapter): Promise<boolean> {
+  const secureStore = adapter ?? (await resolveSecureStore());
+  const payload = await secureStore.getItemAsync(VAULT_KEY);
+  return payload !== null && payload !== '';
+}
+
+/** Detailed unlock result so callers can distinguish "wrong PIN" from "no vault on device". */
+export type UnlockResult =
+  | { ok: true; mnemonic: string }
+  | { ok: false; reason: 'wrong_pin' | 'no_vault' };
+
+export async function unlockMnemonicWithDiagnosis(
+  pin: string,
+  adapter?: SecureStoreAdapter
+): Promise<UnlockResult> {
+  const secureStore = adapter ?? (await resolveSecureStore());
+  const encodedPayload = await secureStore.getItemAsync(VAULT_KEY);
+  if (!encodedPayload) {
+    return { ok: false, reason: 'no_vault' };
+  }
+  const payload = JSON.parse(encodedPayload) as StoredVaultPayload;
+  const record = await decryptPayload(payload, pin);
+  if (!record?.mnemonic) {
+    return { ok: false, reason: 'wrong_pin' };
+  }
+  return { ok: true, mnemonic: record.mnemonic };
+}
+
 export async function clearMnemonic(adapter?: SecureStoreAdapter): Promise<void> {
   const secureStore = adapter ?? (await resolveSecureStore());
   await secureStore.deleteItemAsync(VAULT_KEY);
