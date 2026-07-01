@@ -43,9 +43,10 @@ declare -a CACHE_EXPORT_VARS=(
   DATABASE_URL
 )
 
-# CI shells can inherit stale auth values from the CodeBuild project.
-# Clear the stage contract vars so SSM/default stage resolution wins.
-if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ]; then
+# CI shells and approved local deploys (APPROVE=true) can carry stale local-dev
+# auth values (e.g. localhost:8082 from .env). Clear the stage contract vars so
+# SSM/default stage resolution wins — the deployed stage URL is authoritative.
+if [ "${CODEBUILD_BUILD_ID:-}" != "" ] || [ "${CI:-}" = "true" ] || [ "${APPROVE:-}" = "true" ]; then
   unset \
     EXPO_PUBLIC_API_URL \
     EXPO_PUBLIC_SUPABASE_URL \
