@@ -1,7 +1,23 @@
+## 2026-07-01 update: EVM/MetaMask path is now implemented
+
+The challenge/sign/verify flow for EVM (MetaMask) is complete:
+
+- `walletBridge.ts` + `WalletManageModal` Connect MetaMask button
+- Server endpoints: `/accounts/external/challenge` + `/accounts/external/verify`
+- Signature verified via `viem.verifyMessage` before any DB row is written
+
+**Remaining scope for this ticket (rename to `SEC-07b`):**
+
+- WalletConnect (`@walletconnect/ethereum-provider` lazy-imported in walletBridge.ts,
+  needs `EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID` + native build testing)
+- Phantom/Solana external linking (ed25519 signMessage flow, different from EVM personal_sign)
+
+---
+
 # SEC-07 — External wallet linking requires signature-verified ownership proof
 
-**Priority:** 🟡 MEDIUM — feature is not exposed yet; the stub button exists but does nothing  
-**Status:** Designed (task 12 in `active-tasks/`), not implemented  
+**Priority:** 🟡 MEDIUM — EVM/MetaMask done; WalletConnect native mobile remains  
+**Status:** EVM portion DONE (2026-07-01) — WalletConnect native pending  
 **See also:** `active-tasks/alternun-wallet-system/12-external-wallet-linking.md` for the full spec
 
 ---
