@@ -44,6 +44,7 @@ import { useAuth } from '../components/auth/AppAuthProvider';
 import { useAppTranslation } from '../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import WalletCreationFlow from '../components/wallet/WalletCreationFlow';
+import WalletAddAccountFlow from '../components/wallet/WalletAddAccountFlow';
 import WalletRestoreFlow from '../components/wallet/WalletRestoreFlow';
 import WalletManageModal from '../components/wallet/WalletManageModal';
 import WalletImportKeystoreFlow from '../components/wallet/WalletImportKeystoreFlow';
@@ -55,19 +56,23 @@ import {
   type WalletAccountRecord,
   type WalletBalance,
 } from '../components/wallet/walletApiClient';
-import { CHAIN_META, formatChainAmount } from '../components/wallet/chainMeta';
+import {
+  CHAIN_META,
+  formatChainAmount,
+  getChainNetworkLabel,
+} from '../components/wallet/chainMeta';
 import WalletReceiveModal from '../components/wallet/WalletReceiveModal';
 import WalletSendModal from '../components/wallet/WalletSendModal';
 import WalletActivityModal from '../components/wallet/WalletActivityModal';
 import WalletBackupScreen from '../components/wallet/WalletBackupScreen';
 import PinUnlockScreen from '../components/wallet/PinUnlockScreen';
-import { unlockMnemonic } from '@alternun/wallet';
+import { unlockMnemonicWithDiagnosis } from '@alternun/wallet';
 import ScreenShell from '../components/common/ScreenShell';
 import { PageTabBar, type TabItem } from '../components/common/PageTabBar';
 import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
 import { resolveAppPackageVersion } from '../components/common/Footer.shared';
 import profileStylesEnhanced from '../components/profile/ProfileStyles';
-import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
+import { isTestnetRuntime, resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
 import { createShadowStyle } from '../components/theme/deprecatedStylesHelper';
 import { resolveSessionTokenWithRetry } from '../components/auth/sessionToken';
 import {
@@ -2014,9 +2019,11 @@ function WalletTab({
   const { t } = useAppTranslation('mobile');
   const enhancedStyles = profileStylesEnhanced(isDark);
   const [creationVisible, setCreationVisible] = useState(false);
+  const [addAccountVisible, setAddAccountVisible] = useState(false);
   const [restoreVisible, setRestoreVisible] = useState(false);
   const [importKeystoreVisible, setImportKeystoreVisible] = useState(false);
   const [localAccount, setLocalAccount] = useState<WalletAccountRecord | null>(null);
+  const [allAccounts, setAllAccounts] = useState<WalletAccountRecord[]>([]);
   // Starts true so the first render never shows the "create wallet" empty state before we've
   // actually checked whether one already exists — that's the flash the loader below prevents.
   const [isLoadingAccount, setIsLoadingAccount] = useState(true);
@@ -2044,19 +2051,35 @@ function WalletTab({
   const handleExportPinSubmit = async (
     pin: string
   ): Promise<{ verified: boolean; lockedUntil?: string }> => {
-    const result = await verifyWalletPin(client, pin);
-    if (result.verified) {
-      const mnemonic = await unlockMnemonic(pin);
-      if (mnemonic) {
-        setUnlockedExport({ mnemonic, pin });
+    // Step 1: check local vault BEFORE calling the server — avoids a round-trip and
+    // gives a better error if the vault just isn't on this device at all.
+    const unlock = await unlockMnemonicWithDiagnosis(pin);
+
+    if (unlock.ok) {
+      // Local decryption succeeded; also verify against server (rate-limit gate) and
+      // confirm the PIN hasn't drifted server-side.
+      const result = await verifyWalletPin(client, pin);
+      if (result.verified) {
+        setUnlockedExport({ mnemonic: unlock.mnemonic, pin });
       } else {
-        // PIN matched the server-side digest but couldn't decrypt the local vault — most likely
-        // this is a different device than the one the wallet was created on (the vault is
-        // device-local, never synced). Surface this distinctly from "wrong PIN".
-        return { verified: false };
+        // Server rejected the PIN even though local decryption worked — PIN digests
+        // are out of sync (shouldn't normally happen, but handle gracefully).
+        return result;
       }
+      return { verified: true };
     }
-    return result;
+
+    if (unlock.reason === 'no_vault') {
+      // Vault doesn't exist on this device (e.g. first-time on a new browser/device).
+      // Don't call verifyWalletPin — there's nothing to export. Surface a clear message
+      // instead of "Incorrect PIN" which would be completely misleading.
+      throw new Error(
+        'Your wallet is not stored on this device. Restore it first using your recovery phrase.'
+      );
+    }
+
+    // Local decrypt failed → PIN is genuinely wrong. Now confirm with server for lockout tracking.
+    return verifyWalletPin(client, pin);
   };
 
   useEffect(() => {
@@ -2068,6 +2091,7 @@ function WalletTab({
 
     void listWalletAccounts(client)
       .then(({ accounts }) => {
+        setAllAccounts(accounts);
         const primary = accounts.find((a) => a.isPrimary) ?? accounts[0] ?? null;
         setLocalAccount(primary);
         if (primary) {
@@ -2148,9 +2172,30 @@ function WalletTab({
                   <Text style={[walletStyles.walletCardTitle, { color: c.text }]}>
                     {t('profile.wallet.localWalletTitle', undefined, 'Your Alternun wallet')}
                   </Text>
-                  <Text style={[walletStyles.walletCardSubtitle, { color: c.muted }]}>
-                    {t('profile.wallet.localWalletSubtitle', undefined, 'Active across 3 chains')}
-                  </Text>
+                  <View style={walletStyles.networkRow}>
+                    <Text style={[walletStyles.walletCardSubtitle, { color: c.muted }]}>
+                      {t('profile.wallet.localWalletSubtitle', undefined, 'Active across 3 chains')}
+                    </Text>
+                    <View
+                      style={[
+                        walletStyles.networkBadge,
+                        {
+                          backgroundColor: isTestnetRuntime()
+                            ? 'rgba(245,158,11,0.15)'
+                            : 'rgba(16,185,129,0.15)',
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          walletStyles.networkBadgeText,
+                          { color: isTestnetRuntime() ? '#f59e0b' : '#10b981' },
+                        ]}
+                      >
+                        {isTestnetRuntime() ? 'Testnet' : 'Mainnet'}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
                 <View style={[walletStyles.activeBadge, { backgroundColor: `${c.accent}18` }]}>
                   <View style={[walletStyles.activeDot, { backgroundColor: c.accent }]} />
@@ -2168,9 +2213,19 @@ function WalletTab({
                           { backgroundColor: CHAIN_META[balance.chain].dotColor },
                         ]}
                       />
-                      <Text style={[walletStyles.balanceLabel, { color: c.muted }]}>
-                        {CHAIN_META[balance.chain].label}
-                      </Text>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[walletStyles.balanceLabel, { color: c.muted }]}>
+                          {CHAIN_META[balance.chain].label}
+                        </Text>
+                        <Text
+                          style={[
+                            walletStyles.balanceNetworkLabel,
+                            { color: isTestnetRuntime() ? '#f59e0b' : c.muted },
+                          ]}
+                        >
+                          {getChainNetworkLabel(balance.chain, isTestnetRuntime())}
+                        </Text>
+                      </View>
                       <Text style={[walletStyles.balanceValue, { color: c.text }]}>
                         {formatChainAmount(balance.amount, balance.chain)}{' '}
                         {CHAIN_META[balance.chain].unit}
@@ -2348,7 +2403,7 @@ function WalletTab({
             <SectionContainer
               title={t('profile.wallet.supportedNetworks', undefined, 'Supported Networks')}
             >
-              <View style={walletStyles.networkRow}>
+              <View style={walletStyles.networkPillRow}>
                 {NETWORKS.map((network) => (
                   <View key={network.name} style={walletStyles.networkPill}>
                     <View style={[walletStyles.networkDot, { backgroundColor: network.color }]} />
@@ -2368,9 +2423,22 @@ function WalletTab({
           accent={c.accent}
           client={client}
           onCancel={() => setCreationVisible(false)}
-          onComplete={(account) => {
+          onComplete={(newAccount) => {
             setCreationVisible(false);
-            setLocalAccount(account);
+            setLocalAccount(newAccount);
+            refreshBalances();
+          }}
+        />
+
+        <WalletAddAccountFlow
+          visible={addAccountVisible}
+          isDark={isDark}
+          accent={c.accent}
+          client={client}
+          existingAccounts={allAccounts}
+          onCancel={() => setAddAccountVisible(false)}
+          onComplete={(_account) => {
+            setAddAccountVisible(false);
             refreshBalances();
           }}
         />
@@ -2381,9 +2449,9 @@ function WalletTab({
           accent={c.accent}
           client={client}
           onCancel={() => setRestoreVisible(false)}
-          onComplete={(account) => {
+          onComplete={(newAccount) => {
             setRestoreVisible(false);
-            setLocalAccount(account);
+            setLocalAccount(newAccount);
             refreshBalances();
           }}
         />
@@ -2394,9 +2462,9 @@ function WalletTab({
           accent={c.accent}
           client={client}
           onCancel={() => setImportKeystoreVisible(false)}
-          onComplete={(account) => {
+          onComplete={(newAccount) => {
             setImportKeystoreVisible(false);
-            setLocalAccount(account);
+            setLocalAccount(newAccount);
             refreshBalances();
           }}
         />
@@ -2459,13 +2527,23 @@ function WalletTab({
               client={client}
               onClose={() => setManageVisible(false)}
               onPrimaryChanged={(accounts) => {
+                setAllAccounts(accounts);
                 const newPrimary = accounts.find((a) => a.isPrimary) ?? accounts[0] ?? null;
                 setLocalAccount(newPrimary);
                 refreshBalances();
               }}
               onAddWallet={() => {
                 setManageVisible(false);
-                setCreationVisible(true);
+                // Route to the right flow based on whether the user has an existing HD wallet.
+                // setupWallet (WalletCreationFlow) is for first-wallet-only — it rejects with
+                // ConflictException if a wallet already exists.
+                // addAccount (WalletAddAccountFlow) derives the next HD account from the
+                // existing mnemonic — no new phrase generated or stored.
+                if (localAccount) {
+                  setAddAccountVisible(true);
+                } else {
+                  setCreationVisible(true);
+                }
               }}
               onRestoreWallet={() => {
                 setManageVisible(false);
@@ -3296,8 +3374,17 @@ const walletStyles = StyleSheet.create({
     paddingVertical: 10,
     gap: 10,
   },
-  balanceLabel: { flex: 1, fontSize: 12, fontWeight: '600' },
+  balanceLabel: { fontSize: 12, fontWeight: '600' },
+  balanceNetworkLabel: { fontSize: 10, fontWeight: '600', marginTop: 1 },
   balanceValue: { fontSize: 13, fontWeight: '700' },
+  networkRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  networkBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 },
+  networkBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
   skeletonDot: { width: 8, height: 8, borderRadius: 4, flexShrink: 0 },
   skeletonBar: { flex: 1, height: 12, borderRadius: 6 },
   copyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: 4 },
@@ -3314,8 +3401,8 @@ const walletStyles = StyleSheet.create({
   actionBtnText: { fontSize: 13, fontWeight: '700' },
   exportWarning: { fontSize: 11, textAlign: 'center', lineHeight: 16, opacity: 0.7 },
 
-  /* ── Networks ── */
-  networkRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
+  /* ── Networks (supported networks pill list) ── */
+  networkPillRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   networkPill: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -602,6 +602,15 @@
         "self": "Self transfer",
         "pending": "Pending"
       },
+      "addAccount": {
+        "title": "Add account",
+        "subtitle": "This will add Account #{{index}} derived from your existing recovery phrase — no new backup phrase is needed.",
+        "note": "Your existing recovery phrase and PIN give you access to all accounts.",
+        "pinTitle": "Enter your wallet PIN",
+        "deriving": "Deriving account…",
+        "failed": "Could not add account",
+        "unlockFailed": "Could not unlock your wallet on this device."
+      },
       "restore": {
         "title": "Restore your wallet",
         "subtitle": "Enter your 12-24 word recovery phrase, exactly as you wrote it down.",

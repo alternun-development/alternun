@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Alternun Airs · Profile + Desktop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"/>
+<link rel="stylesheet" href="tokens.css"/>
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  html, body { background: #0a0b14; min-height: 100%; }
+  body {
+    padding: 40px 24px 80px;
+    background:
+      radial-gradient(1200px 600px at 20% 0%, rgba(30,230,181,0.06), transparent 60%),
+      radial-gradient(1000px 500px at 80% 100%, rgba(13,148,136,0.05), transparent 60%),
+      #0a0b14;
+    font-family: 'Anek Latin', sans-serif;
+  }
+  .page-header {
+    max-width: 1760px; margin: 0 auto 32px; color: #e8e8ff;
+  }
+  .page-header h1 {
+    font-size: 38px; font-weight: 800; letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #1EE6B5, #5bf6d0 60%, #1EE6B5);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: 6px;
+  }
+  .page-header .sub { color: rgba(232,232,255,0.62); font-size: 14px; max-width: 720px; line-height: 1.5; }
+  .page-header .meta { margin-top: 12px; font-family: 'Space Mono'; font-size: 11px; color: rgba(232,232,255,0.42); letter-spacing: 0.04em; }
+
+  .section-title {
+    max-width: 1760px; margin: 32px auto 16px;
+    display: flex; align-items: baseline; gap: 12px;
+    color: #e8e8ff; font-size: 20px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  .section-title .tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #1EE6B5; padding: 3px 8px; border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(30,230,181,0.3); background: rgba(30,230,181,0.08);
+  }
+  .section-title .hint { color: rgba(232,232,255,0.5); font-size: 12px; font-weight: 500; margin-left: auto; font-family: 'Space Mono', monospace; letter-spacing: 0.04em; }
+
+  .frames-row {
+    max-width: 1760px; margin: 0 auto; display: flex; gap: 40px;
+    justify-content: center; flex-wrap: wrap; align-items: flex-start;
+  }
+  .frame-label {
+    text-align: center; margin-top: 14px;
+    color: rgba(232,232,255,0.72);
+  }
+  .frame-label .big { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #e8e8ff; }
+  .frame-label .small { font-size: 11px; color: rgba(232,232,255,0.5); margin-top: 2px; font-family: 'Space Mono'; letter-spacing: 0.04em; }
+
+  .desktop-wrap { max-width: 1760px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; align-items: center; }
+
+  .controls {
+    position: fixed; bottom: 16px; right: 16px; z-index: 100;
+    display: flex; gap: 8px;
+    background: rgba(13,13,31,0.88); backdrop-filter: blur(20px);
+    padding: 8px; border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), 0 20px 40px rgba(0,0,0,0.4);
+  }
+  .controls button {
+    height: 36px; padding: 0 14px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; color: rgba(232,232,255,0.72);
+    font-family: inherit; cursor: pointer; background: transparent; border: 0;
+  }
+  .controls button.active { background: #1EE6B5; color: #050510; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Profile &amp; Desktop · Alternun Airs v2</h1>
+  <div class="sub">Mobile profile view (tier journey, achievements, settings) plus a desktop dashboard layout with sidebar nav, topbar search, hero score panel, projects table, activity feed, and donut distribution. Same tokens, same components — different density.</div>
+  <div class="meta">v2.1 · ios · desktop · dark · light</div>
+</div>
+
+<div class="section-title">
+  <span>Mobile Profile</span><span class="tag">iOS · 390 × 820</span>
+  <span class="hint">TopNavBar → ProfileHeader → TierJourney → Achievements → Settings → BottomTab</span>
+</div>
+<div class="frames-row">
+  <div>
+    <div id="profile-dark" data-screen-label="01 Profile Dark"></div>
+    <div class="frame-label"><div class="big">Profile · Dark</div><div class="small">hero-forest surface</div></div>
+  </div>
+  <div>
+    <div id="profile-light" data-screen-label="02 Profile Light"></div>
+    <div class="frame-label"><div class="big">Profile · Light</div><div class="small">daylight mode</div></div>
+  </div>
+</div>
+
+<div class="section-title">
+  <span>Desktop Dashboard</span><span class="tag">1440 × 900</span>
+  <span class="hint">Sidebar + Topbar + Hero + Stats + Projects table + Activity + Distribution</span>
+</div>
+<div class="desktop-wrap">
+  <div>
+    <div id="desktop-dark" data-screen-label="03 Desktop Dark"></div>
+    <div class="frame-label"><div class="big">Desktop · Dark</div><div class="small">default production theme</div></div>
+  </div>
+  <div>
+    <div id="desktop-light" data-screen-label="04 Desktop Light"></div>
+    <div class="frame-label"><div class="big">Desktop · Light</div><div class="small">daylight mode</div></div>
+  </div>
+</div>
+
+<div class="controls">
+  <a href="Alternun Airs DS v2.html" style="text-decoration:none"><button>← Mobile DS</button></a>
+  <button class="active">Profile + Desktop</button>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="dashboard.jsx"></script>
+<script type="text/babel" src="profile.jsx"></script>
+<script type="text/babel" src="desktop.jsx"></script>
+
+<script type="text/babel">
+/* Mount profile — scaled iOS frames */
+function mountMobile(el, Screen, isDark) {
+  const scale = 0.82, W = 390, H = 820;
+  const r = ReactDOM.createRoot(el);
+  r.render(
+    <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: W, height: H }}>
+      <IOSDevice width={W} height={H} dark={isDark}>
+        <Screen isDark={isDark}/>
+      </IOSDevice>
+    </div>
+  );
+  el.style.width = (W * scale) + 'px';
+  el.style.height = (H * scale) + 'px';
+}
+mountMobile(document.getElementById('profile-dark'), ProfileScreen, true);
+mountMobile(document.getElementById('profile-light'), ProfileScreen, false);
+
+/* Mount desktop inside a Chrome window, scaled to fit */
+function mountDesktop(el, isDark) {
+  const W = 1440, H = 900;
+  const availableWidth = Math.min(window.innerWidth - 80, 1720);
+  const scale = Math.min(1, availableWidth / W);
+  const r = ReactDOM.createRoot(el);
+  r.render(
+    <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: W, height: H + 84 }}>
+      <ChromeWindow width={W} height={H + 84} url="app.alternun.com/dashboard"
+        tabs={[{ title: 'Airs · Dashboard' }, { title: 'Docs' }]} activeIndex={0}>
+        <div style={{ width: W, height: H }}>
+          <DesktopDashboard isDark={isDark}/>
+        </div>
+      </ChromeWindow>
+    </div>
+  );
+  el.style.width = (W * scale) + 'px';
+  el.style.height = ((H + 84) * scale) + 'px';
+}
+mountDesktop(document.getElementById('desktop-dark'), true);
+mountDesktop(document.getElementById('desktop-light'), false);
+
+window.addEventListener('resize', () => {
+  mountDesktop(document.getElementById('desktop-dark'), true);
+  mountDesktop(document.getElementById('desktop-light'), false);
+});
+</script>
+</body>
+</html>

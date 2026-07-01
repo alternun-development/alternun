@@ -1,0 +1,582 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Alternun Airs · Design System v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"/>
+<link rel="stylesheet" href="tokens.css"/>
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+  @keyframes float-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  html, body { background: #0a0b14; min-height: 100%; }
+  body {
+    padding: 48px 24px 80px;
+    background: radial-gradient(1200px 600px at 20% 0%, rgba(30,230,181,0.06), transparent 60%),
+                radial-gradient(1000px 500px at 80% 100%, rgba(13,148,136,0.05), transparent 60%),
+                #0a0b14;
+  }
+  .page-header {
+    max-width: 1400px; margin: 0 auto 40px; color: #e8e8ff;
+  }
+  .page-header h1 {
+    font-family: 'Anek Latin', system-ui, sans-serif;
+    font-size: 42px; font-weight: 800; letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #1EE6B5, #5bf6d0 60%, #1EE6B5);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: 8px;
+  }
+  .page-header .sub {
+    font-family: 'Anek Latin', system-ui, sans-serif;
+    color: rgba(232,232,255,0.62); font-size: 15px; max-width: 640px; line-height: 1.5;
+  }
+  .page-header .meta {
+    margin-top: 14px; font-family: 'Space Mono', monospace;
+    font-size: 11px; color: rgba(232,232,255,0.45); letter-spacing: 0.04em;
+  }
+
+  .frames-row {
+    max-width: 1400px; margin: 0 auto; display: flex; gap: 48px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .frame-label {
+    text-align: center; margin-top: 16px;
+    font-family: 'Anek Latin', sans-serif; color: rgba(232,232,255,0.72);
+  }
+  .frame-label .big {
+    font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: #e8e8ff;
+  }
+  .frame-label .small {
+    font-size: 12px; color: rgba(232,232,255,0.5); margin-top: 2px;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+
+  /* Design system tokens section */
+  .ds-section {
+    max-width: 1400px; margin: 80px auto 0; color: #e8e8ff;
+    font-family: 'Anek Latin', sans-serif;
+  }
+  .ds-section h2 {
+    font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px;
+  }
+  .ds-section .hint { color: rgba(232,232,255,0.55); font-size: 14px; margin-bottom: 24px; }
+
+  .ds-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .ds-card {
+    background: rgba(13,13,31,0.72); backdrop-filter: blur(12px);
+    border-radius: 20px; padding: 20px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  .ds-card h3 {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.12em; color: rgba(232,232,255,0.55); margin-bottom: 14px;
+  }
+  .swatch-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .swatch {
+    display: flex; align-items: center; gap: 10px; padding: 8px;
+    background: rgba(255,255,255,0.03); border-radius: 10px;
+  }
+  .swatch .chip {
+    width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+  }
+  .swatch .meta {
+    min-width: 0; flex: 1;
+  }
+  .swatch .meta .name { font-size: 11px; font-weight: 600; color: #e8e8ff; letter-spacing: -0.01em; }
+  .swatch .meta .hex { font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(232,232,255,0.5); }
+
+  .scale-row {
+    display: flex; flex-direction: column; gap: 6px;
+    font-family: 'Space Mono', monospace; font-size: 11px; color: rgba(232,232,255,0.7);
+  }
+  .scale-item {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .scale-item .tok { min-width: 60px; color: rgba(232,232,255,0.55); }
+  .scale-item .bar { height: 10px; background: var(--p-teal); border-radius: 3px; }
+  .scale-item .px { margin-left: auto; color: rgba(232,232,255,0.4); }
+
+  .radius-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  }
+  .radius-item {
+    aspect-ratio: 1; background: rgba(30,230,181,0.12);
+    box-shadow: inset 0 0 0 1px rgba(30,230,181,0.32);
+    display: grid; place-items: end center;
+    padding: 6px; color: rgba(232,232,255,0.7);
+    font-family: 'Space Mono', monospace; font-size: 9px;
+  }
+
+  .type-row {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .type-row .sample { color: #e8e8ff; letter-spacing: -0.01em; line-height: 1; }
+  .type-row .lbl {
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    color: rgba(232,232,255,0.45); margin-top: 4px;
+  }
+
+  .controls {
+    position: fixed; bottom: 16px; right: 16px; z-index: 100;
+    display: flex; gap: 8px;
+    background: rgba(13,13,31,0.88); backdrop-filter: blur(20px);
+    padding: 8px; border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), 0 20px 40px rgba(0,0,0,0.4);
+  }
+  .controls button {
+    height: 36px; padding: 0 14px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; color: rgba(232,232,255,0.72);
+    font-family: 'Anek Latin', sans-serif; cursor: pointer;
+    transition: all 180ms ease;
+  }
+  .controls button.active {
+    background: var(--p-teal); color: #050510;
+  }
+
+  /* Tweaks panel */
+  #tweaks-panel {
+    position: fixed; top: 16px; right: 16px; width: 280px;
+    background: rgba(13,13,31,0.95); backdrop-filter: blur(20px);
+    border-radius: 18px; padding: 16px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px rgba(0,0,0,0.5);
+    color: #e8e8ff; font-family: 'Anek Latin', sans-serif;
+    display: none; z-index: 101;
+  }
+  #tweaks-panel.open { display: block; }
+  #tweaks-panel h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(232,232,255,0.55); margin-bottom: 12px; }
+  #tweaks-panel .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 13px; gap: 8px; }
+  #tweaks-panel .row > .label { color: rgba(232,232,255,0.85); flex: 1; }
+  #tweaks-panel input[type="range"] { width: 110px; }
+  #tweaks-panel select, #tweaks-panel input[type="color"] { background: rgba(255,255,255,0.06); color: #e8e8ff; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 4px 8px; font-family: inherit; font-size: 12px; }
+
+  @media (max-width: 900px) {
+    .frames-row { gap: 32px; }
+    .page-header h1 { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Alternun Airs · Design System v2</h1>
+  <div class="sub">Mobile-first upgrade of <span class="mono">@alternun/ui</span>. Faithful to the real token set (teal&nbsp;<span class="mono">#1EE6B5</span> / <span class="mono">#0d9488</span>, tier colors, Anek&nbsp;Latin + Space&nbsp;Mono, 4-pt spacing, tier system). Adds a hero-forest surface tier matching the landing page, an elevation ladder, and a motion scale — then ships both modes side-by-side in a full dashboard prototype.</div>
+  <div class="meta">v2.0 · dark · light · ios · a11y-aa</div>
+</div>
+
+<div class="frames-row">
+  <div>
+    <div id="dev-dark" data-screen-label="01 Dashboard Dark"></div>
+    <div class="frame-label">
+      <div class="big">Dashboard · Dark</div>
+      <div class="small">surface #050510 · accent #1EE6B5</div>
+    </div>
+  </div>
+  <div>
+    <div id="dev-light" data-screen-label="02 Dashboard Light"></div>
+    <div class="frame-label">
+      <div class="big">Dashboard · Light</div>
+      <div class="small">surface #f1f5f9 · accent #0d9488</div>
+    </div>
+  </div>
+</div>
+
+<!-- Design system reference -->
+<div class="ds-section" data-screen-label="03 Token Reference">
+  <h2>Tokens</h2>
+  <div class="hint">Canonical values from <span class="mono">packages/ui/src/tokens</span>, extended with elevation &amp; motion.</div>
+  <div class="ds-grid">
+    <!-- Colors -->
+    <div class="ds-card">
+      <h3>Brand</h3>
+      <div class="swatch-row">
+        <div class="swatch"><div class="chip" style="background:#1EE6B5"></div><div class="meta"><div class="name">teal</div><div class="hex">#1EE6B5</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#0d9488"></div><div class="meta"><div class="name">tealDark</div><div class="hex">#0d9488</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#5bf6d0"></div><div class="meta"><div class="name">tealLight</div><div class="hex">#5bf6d0</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#050f0c"></div><div class="meta"><div class="name">heroForest</div><div class="hex">#050f0c</div></div></div>
+      </div>
+    </div>
+    <div class="ds-card">
+      <h3>Tiers</h3>
+      <div class="swatch-row">
+        <div class="swatch"><div class="chip" style="background:#cd7f32"></div><div class="meta"><div class="name">Bronze</div><div class="hex">0 – 999</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#a8b8cc"></div><div class="meta"><div class="name">Silver</div><div class="hex">1K – 5K</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#d4b96a"></div><div class="meta"><div class="name">Gold</div><div class="hex">5K – 20K</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#9ba9c4"></div><div class="meta"><div class="name">Platinum</div><div class="hex">20K+</div></div></div>
+      </div>
+    </div>
+    <div class="ds-card">
+      <h3>Semantic</h3>
+      <div class="swatch-row">
+        <div class="swatch"><div class="chip" style="background:#34d399"></div><div class="meta"><div class="name">success</div><div class="hex">#34d399</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#f87171"></div><div class="meta"><div class="name">error</div><div class="hex">#f87171</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#f59e0b"></div><div class="meta"><div class="name">warning</div><div class="hex">#f59e0b</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#818cf8"></div><div class="meta"><div class="name">info</div><div class="hex">#818cf8</div></div></div>
+      </div>
+    </div>
+
+    <!-- Type -->
+    <div class="ds-card">
+      <h3>Type Scale · Anek Latin</h3>
+      <div class="type-row">
+        <div><div class="sample" style="font-size:48px;font-weight:800">48 / 5xl</div><div class="lbl">hero score · tabular</div></div>
+        <div><div class="sample" style="font-size:36px;font-weight:800">36 / 4xl</div><div class="lbl">greeting</div></div>
+        <div><div class="sample" style="font-size:24px;font-weight:700">24 / 2xl</div><div class="lbl">headings</div></div>
+        <div><div class="sample" style="font-size:17px;font-weight:600">17 / lg · section header</div></div>
+        <div><div class="sample" style="font-size:14px;font-weight:500;color:rgba(232,232,255,0.75)">14 / base body</div></div>
+        <div><div class="sample" style="font-size:12px;font-weight:600;color:rgba(232,232,255,0.55);letter-spacing:0.06em;text-transform:uppercase">12 / sm · PILL</div></div>
+      </div>
+    </div>
+
+    <!-- Spacing -->
+    <div class="ds-card">
+      <h3>Spacing · 4-pt grid</h3>
+      <div class="scale-row">
+        <div class="scale-item"><span class="tok">s-1</span><div class="bar" style="width:4px"></div><span class="px">4</span></div>
+        <div class="scale-item"><span class="tok">s-2</span><div class="bar" style="width:8px"></div><span class="px">8</span></div>
+        <div class="scale-item"><span class="tok">s-3</span><div class="bar" style="width:12px"></div><span class="px">12</span></div>
+        <div class="scale-item"><span class="tok">s-4</span><div class="bar" style="width:16px"></div><span class="px">16</span></div>
+        <div class="scale-item"><span class="tok">s-6</span><div class="bar" style="width:24px"></div><span class="px">24</span></div>
+        <div class="scale-item"><span class="tok">s-8</span><div class="bar" style="width:32px"></div><span class="px">32</span></div>
+        <div class="scale-item"><span class="tok">s-12</span><div class="bar" style="width:48px"></div><span class="px">48</span></div>
+      </div>
+    </div>
+
+    <!-- Radius -->
+    <div class="ds-card">
+      <h3>Radius</h3>
+      <div class="radius-grid">
+        <div class="radius-item" style="border-radius:8px">8</div>
+        <div class="radius-item" style="border-radius:12px">12</div>
+        <div class="radius-item" style="border-radius:16px">16</div>
+        <div class="radius-item" style="border-radius:20px">20</div>
+        <div class="radius-item" style="border-radius:24px">24</div>
+        <div class="radius-item" style="border-radius:32px">32</div>
+        <div class="radius-item" style="border-radius:999px">full</div>
+      </div>
+    </div>
+
+    <!-- Elevation -->
+    <div class="ds-card">
+      <h3>Elevation · new in v2</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+        <div style="aspect-ratio:1;background:#0d0d1f;border-radius:12px;box-shadow:0 0 0 1px rgba(255,255,255,0.06);display:grid;place-items:center;font-family:'Space Mono';font-size:10px;color:rgba(232,232,255,0.6)">e0</div>
+        <div style="aspect-ratio:1;background:#0d0d1f;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,0.4),0 0 0 1px rgba(255,255,255,0.06);display:grid;place-items:center;font-family:'Space Mono';font-size:10px;color:rgba(232,232,255,0.6)">e1</div>
+        <div style="aspect-ratio:1;background:#0d0d1f;border-radius:12px;box-shadow:0 8px 24px -4px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.08);display:grid;place-items:center;font-family:'Space Mono';font-size:10px;color:rgba(232,232,255,0.6)">e2</div>
+        <div style="aspect-ratio:1;background:#0d0d1f;border-radius:12px;box-shadow:0 24px 60px -12px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.1);display:grid;place-items:center;font-family:'Space Mono';font-size:10px;color:rgba(232,232,255,0.6)">e3</div>
+      </div>
+    </div>
+
+    <!-- Motion -->
+    <div class="ds-card">
+      <h3>Motion · new in v2</h3>
+      <div class="scale-row">
+        <div class="scale-item"><span class="tok">fast</span><span class="px">160ms · out</span></div>
+        <div class="scale-item"><span class="tok">base</span><span class="px">220ms · out</span></div>
+        <div class="scale-item"><span class="tok">slow</span><span class="px">360ms · in-out</span></div>
+        <div class="scale-item"><span class="tok" style="color:rgba(232,232,255,0.7)">ease-out</span><span class="px">cubic(.22, 1, .36, 1)</span></div>
+        <div class="scale-item"><span class="tok" style="color:rgba(232,232,255,0.7)">ease-spring</span><span class="px">cubic(.34, 1.56, .64, 1)</span></div>
+      </div>
+    </div>
+
+    <!-- Surface ladder -->
+    <div class="ds-card">
+      <h3>Surface Ladder · new in v2</h3>
+      <div style="display:flex;flex-direction:column;gap:6px;font-family:'Space Mono';font-size:11px">
+        <div style="background:#050510;padding:10px;border-radius:10px;color:#e8e8ff">screen · #050510</div>
+        <div style="background:#0a0a18;padding:10px;border-radius:10px;color:#e8e8ff">section · #0a0a18</div>
+        <div style="background:#0d0d1f;padding:10px;border-radius:10px;color:#e8e8ff;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08)">card · rgba(13,13,31,0.96)</div>
+        <div style="background:#17172c;padding:10px;border-radius:10px;color:#e8e8ff">elevated · #17172c</div>
+        <div style="background:#050f0c;padding:10px;border-radius:10px;color:#e8e8ff;box-shadow:inset 0 0 0 1px rgba(30,230,181,0.18)">hero-forest · #050f0c</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <button id="btn-sync" class="active">Sync modes</button>
+  <button id="btn-tweak">Tweaks</button>
+</div>
+
+<div id="tweaks-panel">
+  <h3>Tweaks</h3>
+  <div class="row"><span class="label">Mode pairing</span>
+    <select id="tw-mode">
+      <option value="dual">Dual (dark + light)</option>
+      <option value="dark">Both dark</option>
+      <option value="light">Both light</option>
+    </select>
+  </div>
+  <div class="row"><span class="label">Accent hue shift</span>
+    <input id="tw-hue" type="range" min="-30" max="30" value="0"/>
+  </div>
+  <div class="row"><span class="label">Radius scale</span>
+    <input id="tw-radius" type="range" min="0.6" max="1.5" step="0.05" value="1"/>
+  </div>
+  <div class="row"><span class="label">Score value</span>
+    <input id="tw-score" type="range" min="400" max="24000" step="100" value="12480"/>
+  </div>
+</div>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="dashboard.jsx"></script>
+
+<script type="text/babel">
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "modePairing": "dual",
+  "hueShift": 0,
+  "radiusScale": 1,
+  "scoreValue": 12480
+}/*EDITMODE-END*/;
+
+function FramePair({ pairing, score }) {
+  const leftDark = pairing === 'dual' || pairing === 'dark';
+  const rightDark = pairing === 'dark';
+
+  // Scaled iOS frame to fit nicely side-by-side
+  const scale = 0.82;
+  const W = 390, H = 820;
+
+  const wrap = (child) => (
+    <div style={{
+      width: W * scale, height: H * scale,
+      display: 'grid', placeItems: 'center', overflow: 'hidden',
+    }}>
+      <div style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
+        <IOSDevice width={W} height={H} dark={child.isDark}>
+          <DashboardScreenWithScore isDark={child.isDark} score={score}/>
+        </IOSDevice>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <div style={{ gridArea: 'a' }}>{wrap({ isDark: leftDark })}</div>
+      <div style={{ gridArea: 'b' }}>{wrap({ isDark: rightDark })}</div>
+    </>
+  );
+}
+
+function DashboardScreenWithScore({ isDark, score }) {
+  // A version of DashboardScreen that takes score via prop.
+  return (
+    <div className={isDark ? 'theme-dark' : 'theme-light'} style={{
+      width: '100%', height: '100%',
+      background: 'var(--bg-screen)', color: 'var(--text-primary)',
+      display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      fontFamily: 'var(--ff-sans)',
+    }}>
+      <div style={{ paddingTop: 50 }} />
+      <TopNavBar isDark={isDark} />
+
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 70 }}>
+        <div style={{ padding: '14px 14px 0' }}>
+          <HeroPanel displayName="José Santiago" score={score} isDark={isDark} />
+        </div>
+        <div style={{ padding: '16px 14px 0', display: 'flex', gap: 10 }}>
+          <QuickAction icon={<Ic.arrowUp size={16}/>} label="Depositar" />
+          <QuickAction icon={<Ic.arrowRight size={16}/>} label="Transferir" color="#818cf8"/>
+          <QuickAction icon={<Ic.leaf size={16}/>} label="Retirar" color="#d4b96a"/>
+          <QuickAction icon={<Ic.mountain size={16}/>} label="Proyectos" color="#34d399"/>
+        </div>
+
+        <SectionHeader label="Resumen" action="Ver más" />
+        <div style={{ padding: '0 14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <StatCard label="Airs ganados" value={score.toLocaleString('es-ES')} delta="+340" deltaPositive icon={<Ic.trend/>}/>
+          <StatCard label="Proyectos" value="7" delta="+2" deltaPositive icon={<Ic.leaf/>} accentColor="#34d399"/>
+          <StatCard label="Balance" value="12,088" delta="-120" deltaPositive={false} icon={<Ic.wallet/>} accentColor="#d4b96a"/>
+          <StatCard label="CO₂ comp." value="3.4 t" delta="+0.2" deltaPositive icon={<Ic.mountain/>} accentColor="#818cf8"/>
+        </div>
+
+        <SectionHeader label="Beneficios tier" action="Ver" />
+        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '0 14px 4px' }}>
+          <BenefitCard tag="EXCLUSIVO" tagColor="#d4b96a" title="Café Sierra Nevada" subtitle="30% dto. · GOLD" />
+          <BenefitCard tag="LIMITADO" tagColor="#34d399" title="Eco-lodge Minca" subtitle="2 noches" />
+          <BenefitCard tag="NUEVO" tagColor="#818cf8" title="Kit reforestación" subtitle="10 árboles" />
+        </div>
+
+        <SectionHeader label="Actividad" action="Ver todo" />
+        <div style={{ margin: '0 14px', background: 'var(--bg-card)', borderRadius: 'var(--r-2xl)', boxShadow: 'var(--e1)', overflow: 'hidden' }}>
+          <LedgerRow icon={<Ic.leaf size={14}/>} iconColor="#34d399"
+            title="Reforestación S. Nevada" subtitle="Hace 2 horas" amount="+340 Airs" />
+          <LedgerRow icon={<Ic.mountain size={14}/>} iconColor="var(--accent)"
+            title="Compensación CO₂" subtitle="Ayer · 0.2 t" amount="+120 Airs" />
+          <LedgerRow icon={<Ic.wallet size={14}/>} iconColor="#d4b96a"
+            title="Canje · Café Sierra" subtitle="12 FEB" amount="-80 Airs" amountPositive={false} last />
+        </div>
+
+        <div style={{ padding: '20px 14px 4px', display: 'flex', gap: 10 }}>
+          <Button title="Detalle" variant="secondary" fullWidth />
+          <Button title="Compensar" variant="primary" fullWidth icon={<Ic.leaf size={14}/>}/>
+        </div>
+      </div>
+
+      <BottomTabBar active="home" />
+    </div>
+  );
+}
+
+/* Mount into the two target slots */
+function App() {
+  const [tweaks, setTweaks] = React.useState(TWEAKS);
+
+  // wire tweaks UI
+  React.useEffect(() => {
+    const mode = document.getElementById('tw-mode');
+    const hue = document.getElementById('tw-hue');
+    const rad = document.getElementById('tw-radius');
+    const sc = document.getElementById('tw-score');
+    mode.value = tweaks.modePairing; hue.value = tweaks.hueShift;
+    rad.value = tweaks.radiusScale; sc.value = tweaks.scoreValue;
+    const upd = (k, v) => setTweaks(t => ({ ...t, [k]: v }));
+    mode.onchange = e => upd('modePairing', e.target.value);
+    hue.oninput = e => upd('hueShift', +e.target.value);
+    rad.oninput = e => upd('radiusScale', +e.target.value);
+    sc.oninput = e => upd('scoreValue', +e.target.value);
+  }, []);
+
+  // apply hue shift + radius scale globally
+  React.useEffect(() => {
+    const r = document.documentElement;
+    const baseTeal = { h: 164, s: 82, l: 50 };
+    const h = baseTeal.h + tweaks.hueShift;
+    r.style.setProperty('--p-teal', `hsl(${h} 82% 51%)`);
+    r.style.setProperty('--p-teal-dark', `hsl(${h} 82% 33%)`);
+    r.style.setProperty('--p-teal-light', `hsl(${h} 95% 67%)`);
+    const k = tweaks.radiusScale;
+    r.style.setProperty('--r-sm', `${Math.round(8*k)}px`);
+    r.style.setProperty('--r-md', `${Math.round(12*k)}px`);
+    r.style.setProperty('--r-lg', `${Math.round(16*k)}px`);
+    r.style.setProperty('--r-xl', `${Math.round(20*k)}px`);
+    r.style.setProperty('--r-2xl', `${Math.round(24*k)}px`);
+    r.style.setProperty('--r-3xl', `${Math.round(32*k)}px`);
+  }, [tweaks]);
+
+  return (
+    <div style={{ display: 'contents' }}>
+      <div style={{ display: 'none' }}>
+        <FramePair pairing={tweaks.modePairing} score={tweaks.scoreValue} />
+      </div>
+    </div>
+  );
+}
+
+// Instead of single App, mount two independent frames into their slots
+function mount(el, isDark, score) {
+  const root = ReactDOM.createRoot(el);
+  root.render(
+    <div style={{ transform: 'scale(0.82)', transformOrigin: 'top left',
+                  width: 390, height: 820 }}>
+      <IOSDevice width={390} height={820} dark={isDark}>
+        <DashboardScreenWithScore isDark={isDark} score={12480} />
+      </IOSDevice>
+    </div>
+  );
+  el.style.width = (390 * 0.82) + 'px';
+  el.style.height = (820 * 0.82) + 'px';
+  return root;
+}
+
+const dark = document.getElementById('dev-dark');
+const light = document.getElementById('dev-light');
+let rootD, rootL;
+function render(t) {
+  [dark, light].forEach(el => { el.innerHTML = ''; });
+  const leftDark = t.modePairing === 'dual' || t.modePairing === 'dark';
+  const rightDark = t.modePairing === 'dark';
+  mountWith(dark, leftDark, t.scoreValue);
+  mountWith(light, rightDark, t.scoreValue);
+}
+function mountWith(el, isDark, score) {
+  const r = ReactDOM.createRoot(el);
+  const scale = 0.82;
+  r.render(
+    <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left',
+                  width: 390, height: 820 }}>
+      <IOSDevice width={390} height={820} dark={isDark}>
+        <DashboardScreenWithScore isDark={isDark} score={score} />
+      </IOSDevice>
+    </div>
+  );
+  el.style.width = (390 * scale) + 'px';
+  el.style.height = (820 * scale) + 'px';
+}
+
+render(TWEAKS);
+
+// Apply token overrides on change
+function applyTokens(t) {
+  const r = document.documentElement;
+  const h = 164 + (t.hueShift || 0);
+  r.style.setProperty('--p-teal', `hsl(${h} 82% 51%)`);
+  r.style.setProperty('--p-teal-dark', `hsl(${h} 82% 33%)`);
+  r.style.setProperty('--p-teal-light', `hsl(${h} 95% 67%)`);
+  const k = t.radiusScale || 1;
+  r.style.setProperty('--r-sm', `${Math.round(8*k)}px`);
+  r.style.setProperty('--r-md', `${Math.round(12*k)}px`);
+  r.style.setProperty('--r-lg', `${Math.round(16*k)}px`);
+  r.style.setProperty('--r-xl', `${Math.round(20*k)}px`);
+  r.style.setProperty('--r-2xl', `${Math.round(24*k)}px`);
+  r.style.setProperty('--r-3xl', `${Math.round(32*k)}px`);
+}
+applyTokens(TWEAKS);
+
+// Controls wiring
+const btnSync = document.getElementById('btn-sync');
+const btnTweak = document.getElementById('btn-tweak');
+const panel = document.getElementById('tweaks-panel');
+
+function refresh() { render(TWEAKS); applyTokens(TWEAKS); }
+
+document.getElementById('tw-mode').onchange = e => { TWEAKS.modePairing = e.target.value; refresh(); };
+document.getElementById('tw-hue').oninput = e => { TWEAKS.hueShift = +e.target.value; refresh(); };
+document.getElementById('tw-radius').oninput = e => { TWEAKS.radiusScale = +e.target.value; refresh(); };
+document.getElementById('tw-score').oninput = e => { TWEAKS.scoreValue = +e.target.value; refresh(); };
+
+document.getElementById('tw-mode').value = TWEAKS.modePairing;
+document.getElementById('tw-hue').value = TWEAKS.hueShift;
+document.getElementById('tw-radius').value = TWEAKS.radiusScale;
+document.getElementById('tw-score').value = TWEAKS.scoreValue;
+
+btnTweak.onclick = () => {
+  panel.classList.toggle('open');
+  btnTweak.classList.toggle('active');
+};
+
+// Edit-mode protocol
+window.addEventListener('message', e => {
+  if (e.data?.type === '__activate_edit_mode') panel.classList.add('open');
+  if (e.data?.type === '__deactivate_edit_mode') panel.classList.remove('open');
+});
+window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+</script>
+</body>
+</html>
