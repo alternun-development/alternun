@@ -385,3 +385,65 @@ Always place tasks in a per-feature subfolder inside each of the three folders:
 
 Keep the original filename as-is — do NOT rename files when moving to `done-tasks/`. The filename is its own
 identity; renaming breaks cross-references and git history.
+
+---
+
+## 11. Release Flow — develop → master (no release branches)
+
+**All production releases go directly from `develop` to `master` via a single PR. Never create `release/v*` branches.**
+
+### The canonical flow
+
+```
+develop  ──── (work, commits) ────► PR #N ──► master ──► CI deploys to prod
+                                    ▲
+                    pnpm release patch (run on master after merging develop)
+```
+
+#### Step-by-step
+
+1. **Merge develop → master** via a PR (not a release branch):
+
+   ```bash
+   git checkout master && git pull origin master
+   git merge origin/develop --no-ff -m "chore: merge develop for vX.Y.Z"
+   ```
+
+2. **Run the production release** on master:
+
+   ```bash
+   pnpm release patch   # or minor / major
+   ```
+
+   This bumps all package.json versions, updates CHANGELOG, builds, creates the git tag, and pushes.
+
+3. **Open the PR from a temp branch if master is protected** (only if direct push fails):
+
+   ```bash
+   git checkout -b promote/vX.Y.Z
+   git push origin promote/vX.Y.Z --follow-tags
+   gh pr create --base master --head promote/vX.Y.Z --title "chore: release vX.Y.Z"
+   # Merge via GitHub UI, then delete the branch immediately
+   ```
+
+   Delete `promote/vX.Y.Z` as soon as the PR merges — it must not persist.
+
+4. **Sync master back to develop**:
+   ```bash
+   git checkout develop
+   git merge origin/master --no-ff -m "chore: merge master vX.Y.Z into develop"
+   git push
+   ```
+
+### What NOT to do
+
+- ❌ Never create persistent `release/vX.Y.Z` branches — they litter the repo
+- ❌ Never release a patch from `develop` (`pnpm release patch` on develop creates dev builds, not production)
+- ❌ Never leave a promote branch after the PR merges — delete it immediately
+
+### Guards (enforced automatically)
+
+- `pnpm release` on `develop` → creates dev releases only (e.g. `1.1.2-dev.0`)
+- `pnpm release patch` on `master` → creates production patch releases (e.g. `1.1.2`)
+- Pre-push hook validates: AWS account, version sync, secrets scan, changelog entry, reentry status
+- If push to master is rejected (branch protection): use a `promote/vX.Y.Z` branch, merge via PR, delete immediately
