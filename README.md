@@ -118,21 +118,24 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.0**
+Current version: **1.1.1**
 
-## 📋 Latest Changes (v1.1.0)
-
-### Features
-
-- **wallet:** Non-custodial multi-chain wallet (EVM/Bitcoin/Solana) for web — PIN-encrypted local key storage with PBKDF2 600k iterations, wallet creation with mandatory backup disclaimer and randomized word verification, restore from recovery phrase, send (with per-chain address validation and a fee-review step), receive, activity feed, multi-wallet management with selectable default account, and export (encrypted keystore or plaintext phrase). Server-side: full NestJS wallet module with IP throttling, per-user PIN lockout backoff, stage-aware mainnet/testnet RPC selection, RLS policies via app_user_id JWT claim.
+## 📋 Latest Changes (v1.1.1)
 
 ### Bug Fixes
 
-- **wallet:** Bitcoin addresses were always derived as mainnet (bc1...) regardless of deploy stage, causing BTC balances to silently disappear from the UI (testnet Esplora returned 400 for mainnet-format addresses)
-- **wallet:** react-native-web's Alert.alert is a documented no-op — replaced all wallet error paths with visible inline error UI
-- **wallet:** expo-secure-store web availability required isAvailableAsync(), not a typeof check on the wrapper function
-- **wallet:** mi-perfil.tsx tab-sync useEffect had tabs in its dependency array, causing the active tab to snap back to the ?tab= URL param on every render
-- **wallet:** Buffer-free crypto throughout packages/wallet (bip39→@scure/bip39, ed25519-hd-key→slip10Ed25519.ts, secureVault base64/hex helpers)
+* **ui:** move profile tab pills below title, fix ATN/RBI card overlap on small screens ([f849d3e](https://github.com/alternun-development/alternun/commit/f849d3e99dc227e4dd5022bac2cd514b5a044bfd))
+* **wallet:** card UI + routing fix + vault detection + PIN change flow ([e74c06d](https://github.com/alternun-development/alternun/commit/e74c06d4ccce6db0523461836da3e4fc6e9984ae))
+* **wallet:** eliminate layout gap in manage wallets screen ([9db2fbc](https://github.com/alternun-development/alternun/commit/9db2fbc2ecdc4a75b1bc6b5f6961c72fb069db6d))
+* **wallet:** MetaMask body error, PIN false-positive, progressive image loading ([671cc4e](https://github.com/alternun-development/alternun/commit/671cc4e9d5e81aa55c98687d6ccfed8fe802c6a7))
+* **wallet:** remove flex:1 from title style causing layout gap ([9311109](https://github.com/alternun-development/alternun/commit/931110979d07c9f1ae0d909746a8cfdeed0b3795))
+* **wallet:** resolve 2 high-severity CodeQL alerts in packages/wallet ([5c6aaeb](https://github.com/alternun-development/alternun/commit/5c6aaeb234086c49f4c4a9b12a7fe898fc0b9fdc)), closes [#62](https://github.com/alternun-development/alternun/issues/62) [#61](https://github.com/alternun-development/alternun/issues/61)
+
+
+### Features
+
+* **i18n:** add missing wallet.changePin and addAccount.noVault translations to es/th ([630036c](https://github.com/alternun-development/alternun/commit/630036c790bc5e7233ff8348b04bdb1180bd73ea))
+* **wallet:** full wallet management — add/delete/import + MetaMask linking + layout fix ([592f737](https://github.com/alternun-development/alternun/commit/592f737ac3234efcc1f4e83ad0cf2f57c3f4a95f))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
