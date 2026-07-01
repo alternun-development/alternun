@@ -1,3 +1,30 @@
+## [1.1.3](https://github.com/alternun-development/alternun/compare/v1.1.2...v1.1.3) (2026-07-01)
+
+### Bug Fixes
+
+- **repo:** docs: bump README version to 1.1.2 --no-validate-reentry
+- **repo:** feat(geo): server-side IP geolocation proxy via ipapi.co
+- **repo:** fix(auth+ui): fix testnet pointing to production APIs + sign-out redirect
+- **repo:** docs(claude): document canonical develop→master release flow (§11)
+
+### Bug Fixes
+
+- **auth+ui:** fix testnet pointing to production APIs + sign-out redirect ([03ddc95](https://github.com/alternun-development/alternun/commit/03ddc9546771249804739a766da395ca762619ac))
+
+### Features
+
+- **geo:** server-side IP geolocation proxy via ipapi.co ([c0c45b6](https://github.com/alternun-development/alternun/commit/c0c45b6334f83812e85ca62d10264f51780cefd2))
+
+## [1.1.3](https://github.com/alternun-development/alternun/compare/v1.1.2...v1.1.3) (2026-07-01)
+
+### Bug Fixes
+
+- **auth+ui:** fix testnet pointing to production APIs + sign-out redirect ([03ddc95](https://github.com/alternun-development/alternun/commit/03ddc9546771249804739a766da395ca762619ac))
+
+### Features
+
+- **geo:** server-side IP geolocation proxy via ipapi.co ([c0c45b6](https://github.com/alternun-development/alternun/commit/c0c45b6334f83812e85ca62d10264f51780cefd2))
+
 ## [1.1.2](https://github.com/alternun-development/alternun/compare/v1.1.0...v1.1.2) (2026-07-01)
 
 ### Bug Fixes
