@@ -16,6 +16,8 @@ Migrate the app from its current layout (flat Stack navigation, no persistent ch
 
 The two views share the same routes and data — only the chrome differs. The migration must be done behind the existing `USE_V2_NAV` flag so both old and new UI can coexist during development and be toggled without a release.
 
+**Hard requirement: V1 must remain fully functional at all times.** Every phase of the migration must leave the `USE_V2_NAV = false` path working correctly. At any point during development it must be possible to ship V1 to production by flipping one constant.
+
 ---
 
 ## Design System Reference (docs/v2-ui/)
@@ -65,6 +67,56 @@ HeroPanel, StatCard, ProgressBar, FilterPill, StatusPill, Button/ActionButton, I
 ---
 
 ## Tasks
+
+### PHASE −1 — V1/V2 Isolation & Easy Rollback
+
+This phase must be completed **before any V2 code is written**. It ensures V1 and V2 layouts are cleanly separated so either can be shipped independently at any time.
+
+**Task P-1-01: Harden the `USE_V2_NAV` feature flag**  
+Files: `apps/mobile/components/navigation/featureFlags.ts`, `app/_layout.tsx`, `app/_layout.web.tsx`
+
+The flag currently exists but is a compile-time constant. Upgrade it:
+
+1. **Runtime override via `AppPreferences`** — store `uiVersion: 'v1' | 'v2'` in `AppPreferencesProvider`. Defaults to `'v1'` (production-safe). `USE_V2_NAV` becomes `preferences.uiVersion === 'v2'`.
+2. **Dev menu toggle** — in `settings.tsx`, add a "UI Version" row (dev-only, hidden in production builds via `__DEV__`) that switches between v1 and v2 instantly with `AsyncStorage` persistence.
+3. **URL query override (web only)** — `?ui=v2` or `?ui=v1` in the browser URL immediately overrides the stored preference for that session. Useful for QA screenshots and stakeholder demos without a settings screen.
+4. **Env var override** — `EXPO_PUBLIC_UI_VERSION=v2` sets the default on build time (CI/staging can pin v2 for integration testing while production stays on v1).
+
+Priority: env var → URL query → stored preference → default (`v1`).
+
+Verify:
+
+- Switching from v1 → v2 and back does not require an app restart
+- All auth and wallet flows work identically in both modes
+- Production build ships with v1 unless `EXPO_PUBLIC_UI_VERSION=v2` is explicitly set
+
+**Task P-1-02: Segregate V1 layout files into `layouts/v1/`**  
+Move (do not delete) current layout components into a versioned folder so they are never accidentally modified during v2 work:
+
+```
+apps/mobile/components/layouts/
+  v1/
+    AppInfoFooter.tsx         ← move from components/common/
+    TopNav.tsx                ← extract current per-screen top nav patterns
+    ScreenWrapper.tsx         ← current screen padding/safe-area wrapper
+  v2/                         ← empty for now, filled in Phase 0+
+```
+
+Update all imports. No behavioural change — this is purely a file organisation step.  
+Verify: `pnpm tsc --noEmit` passes after the move.
+
+**Task P-1-03: Add V1/V2 smoke tests**  
+File: `apps/mobile/app/__tests__/layout-versions.test.ts`
+
+Write two render tests:
+
+1. Render `RootApp` with `uiVersion = 'v1'` — assert dock is absent, `AppInfoFooter` is present
+2. Render `RootApp` with `uiVersion = 'v2'` — assert dock is present, `AppInfoFooter` is absent
+
+These tests serve as regression guards: if a V2 change accidentally breaks V1, the first test catches it immediately.  
+Verify: both tests pass before any V2 component work begins.
+
+---
 
 ### PHASE 0 — Design Token Foundation
 
@@ -259,4 +311,8 @@ Verify: all routes still work, no orphaned imports.
 - [ ] Wallet flows: all wallet modals/screens unaffected by layout refactor
 - [ ] Tests: new v2 components have render tests in `__tests__/`
 - [ ] i18n: all new strings added to en/es/th catalogs
-- [ ] Feature flag: `USE_V2_NAV` can be toggled to revert to v1 during any phase
+- [ ] V1/V2 isolation: `USE_V2_NAV = false` path fully works after every commit; V1 can be shipped to production at any point
+- [ ] Runtime toggle: switching UI version in Settings (dev) takes effect without app restart
+- [ ] URL override: `?ui=v2` forces V2 in browser for QA/demos; `?ui=v1` forces V1
+- [ ] Env var: `EXPO_PUBLIC_UI_VERSION=v2` sets default at build time; production default stays `v1`
+- [ ] Regression tests: `layout-versions.test.ts` passes for both v1 and v2 render paths
