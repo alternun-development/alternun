@@ -11,7 +11,7 @@
  * That's intentional: setup() is first-wallet-only and correctly rejects with
  * ConflictException when a wallet already exists.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -21,7 +21,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { deriveWalletBundle, unlockMnemonicWithDiagnosis } from '@alternun/wallet';
+import { deriveWalletBundle, unlockMnemonicWithDiagnosis, vaultExists } from '@alternun/wallet';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import PinPad from './PinPad';
@@ -44,7 +44,7 @@ interface WalletAddAccountFlowProps {
   onComplete: (account: WalletAccountRecord) => void;
 }
 
-type Step = 'intro' | 'pin' | 'deriving' | 'failed';
+type Step = 'intro' | 'no_vault' | 'pin' | 'deriving' | 'failed';
 
 export default function WalletAddAccountFlow({
   visible,
@@ -65,9 +65,25 @@ export default function WalletAddAccountFlow({
   const mutedColor = isDark ? 'rgba(232,232,255,0.6)' : 'rgba(15,23,42,0.55)';
   const errorColor = isDark ? '#ff8a8a' : '#c0392b';
 
-  // Next derivation index = max existing + 1 (gaps are fine for display purposes)
+  // Next derivation index = max existing HD account index + 1
   const nextIndex =
-    existingAccounts.reduce((max, a) => Math.max(max, a.derivationIndex ?? 0), -1) + 1;
+    existingAccounts
+      .filter((a) => a.walletType !== 'external')
+      .reduce((max, a) => Math.max(max, a.derivationIndex ?? 0), -1) + 1;
+
+  // Check vault exists when the flow opens — avoids sending the user to the PIN screen
+  // only to discover the vault isn't here, which shows a confusing "not on device" error.
+  useEffect(() => {
+    if (!visible) {
+      setStep('intro');
+      setPin('');
+      setError(null);
+      return;
+    }
+    void vaultExists().then((exists) => {
+      if (!exists) setStep('no_vault');
+    });
+  }, [visible]);
 
   const reset = (): void => {
     setStep('intro');
@@ -185,6 +201,32 @@ export default function WalletAddAccountFlow({
               </Text>
             </TouchableOpacity>
           </>
+        )}
+
+        {step === 'no_vault' && (
+          <View style={styles.centered}>
+            <Text style={[styles.pinTitle, { color: textColor, textAlign: 'center' }]}>
+              {t('wallet.addAccount.noVaultTitle', undefined, 'Recovery phrase not on this device')}
+            </Text>
+            <Text
+              style={[styles.subtitle, { color: mutedColor, textAlign: 'center', marginTop: 8 }]}
+            >
+              {t(
+                'wallet.addAccount.noVaultDesc',
+                undefined,
+                'Your encrypted wallet backup is not stored in this browser or device session. Use "Restore from recovery phrase" to re-link your existing phrase, then you can add more accounts.'
+              )}
+            </Text>
+            <TouchableOpacity
+              style={[styles.primaryBtn, { backgroundColor: accent, marginTop: 24 }]}
+              activeOpacity={0.8}
+              onPress={handleClose}
+            >
+              <Text style={styles.primaryBtnText}>
+                {t('wallet.addAccount.noVaultAction', undefined, 'Go back and restore first')}
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {step === 'pin' && (
