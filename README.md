@@ -118,26 +118,13 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.2**
+Current version: **1.1.3**
 
-## 📋 Latest Changes (v1.1.2)
+## 📋 Latest Changes (v1.1.3)
 
 ### Bug Fixes
 
-* **auth+ui:** fix testnet pointing to production APIs + sign-out redirect ([03ddc95](https://github.com/alternun-development/alternun/commit/03ddc9546771249804739a766da395ca762619ac))
-* **ui:** move profile tab pills below title, fix ATN/RBI card overlap on small screens ([d4e28a6](https://github.com/alternun-development/alternun/commit/d4e28a6d77907fb461d1c7ad5243f1dfdd719fe8))
-* **wallet:** card UI + routing fix + vault detection + PIN change flow ([e74c06d](https://github.com/alternun-development/alternun/commit/e74c06d4ccce6db0523461836da3e4fc6e9984ae))
-* **wallet:** eliminate layout gap in manage wallets screen ([9db2fbc](https://github.com/alternun-development/alternun/commit/9db2fbc2ecdc4a75b1bc6b5f6961c72fb069db6d))
-* **wallet:** MetaMask body error, PIN false-positive, progressive image loading ([671cc4e](https://github.com/alternun-development/alternun/commit/671cc4e9d5e81aa55c98687d6ccfed8fe802c6a7))
-* **wallet:** remove flex:1 from title style causing layout gap ([9311109](https://github.com/alternun-development/alternun/commit/931110979d07c9f1ae0d909746a8cfdeed0b3795))
-* **wallet:** resolve 2 high-severity CodeQL alerts in packages/wallet ([5c6aaeb](https://github.com/alternun-development/alternun/commit/5c6aaeb234086c49f4c4a9b12a7fe898fc0b9fdc)), closes [#62](https://github.com/alternun-development/alternun/issues/62) [#61](https://github.com/alternun-development/alternun/issues/61)
-
-
-### Features
-
-* **geo:** server-side IP geolocation proxy via ipapi.co ([c0c45b6](https://github.com/alternun-development/alternun/commit/c0c45b6334f83812e85ca62d10264f51780cefd2))
-* **i18n:** add missing wallet.changePin and addAccount.noVault translations to es/th ([630036c](https://github.com/alternun-development/alternun/commit/630036c790bc5e7233ff8348b04bdb1180bd73ea))
-* **wallet:** full wallet management — add/delete/import + MetaMask linking + layout fix ([592f737](https://github.com/alternun-development/alternun/commit/592f737ac3234efcc1f4e83ad0cf2f57c3f4a95f))
+- **db:** force-drop stale AIRS uuid overloads causing PGRST203 ambiguity ([6c81fd5](https://github.com/alternun-development/alternun/commit/6c81fd592b14ec229a4827014e324723b4fbf381))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
