@@ -118,13 +118,14 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.1**
+Current version: **1.1.2**
 
-## 📋 Latest Changes (v1.1.1)
+## 📋 Latest Changes (v1.1.2)
 
 ### Bug Fixes
 
-* **ui:** move profile tab pills below title, fix ATN/RBI card overlap on small screens ([f849d3e](https://github.com/alternun-development/alternun/commit/f849d3e99dc227e4dd5022bac2cd514b5a044bfd))
+* **auth+ui:** fix testnet pointing to production APIs + sign-out redirect ([03ddc95](https://github.com/alternun-development/alternun/commit/03ddc9546771249804739a766da395ca762619ac))
+* **ui:** move profile tab pills below title, fix ATN/RBI card overlap on small screens ([d4e28a6](https://github.com/alternun-development/alternun/commit/d4e28a6d77907fb461d1c7ad5243f1dfdd719fe8))
 * **wallet:** card UI + routing fix + vault detection + PIN change flow ([e74c06d](https://github.com/alternun-development/alternun/commit/e74c06d4ccce6db0523461836da3e4fc6e9984ae))
 * **wallet:** eliminate layout gap in manage wallets screen ([9db2fbc](https://github.com/alternun-development/alternun/commit/9db2fbc2ecdc4a75b1bc6b5f6961c72fb069db6d))
 * **wallet:** MetaMask body error, PIN false-positive, progressive image loading ([671cc4e](https://github.com/alternun-development/alternun/commit/671cc4e9d5e81aa55c98687d6ccfed8fe802c6a7))
@@ -134,6 +135,7 @@ Current version: **1.1.1**
 
 ### Features
 
+* **geo:** server-side IP geolocation proxy via ipapi.co ([c0c45b6](https://github.com/alternun-development/alternun/commit/c0c45b6334f83812e85ca62d10264f51780cefd2))
 * **i18n:** add missing wallet.changePin and addAccount.noVault translations to es/th ([630036c](https://github.com/alternun-development/alternun/commit/630036c790bc5e7233ff8348b04bdb1180bd73ea))
 * **wallet:** full wallet management — add/delete/import + MetaMask linking + layout fix ([592f737](https://github.com/alternun-development/alternun/commit/592f737ac3234efcc1f4e83ad0cf2f57c3f4a95f))
 
