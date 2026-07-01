@@ -78,3 +78,75 @@ in this runtime.'` on a real device. A JS-only `getRandomValues` polyfill (`reac
       WebCrypto — this does **not** prove the RN/Hermes + quick-crypto path works identically, see above).
 - [ ] `/security-review` **not yet run** — do this before task 04/05 build the PIN UI on top of this package. Not
       blocking continued implementation of tasks 04+ in this pass, but must happen before any real-user exposure.
+
+## 2026-06-30 update: full Buffer-free audit (real bug, found via live browser repro)
+
+Wallet creation was looping back to the PIN screen on web because `generateMnemonic()` (`bip39`) and
+`deriveSolanaAccount()` (`ed25519-hd-key`) both call Node's `Buffer` internally with no browser fallback — confirmed
+by actually running the flow in a headless Chromium browser (not just code review), which is how this got caught
+(`tsc`/Metro bundling both succeed silently; only a real execution throws).
+
+- Replaced `bip39` with `@scure/bip39` (same audited family already used for Bitcoin derivation) — identical output,
+  verified via existing regression tests, zero Buffer usage.
+- Replaced `ed25519-hd-key` with a from-scratch SLIP-0010 ed25519 derivation (`src/crypto/slip10Ed25519.ts`) using
+  `@noble/hashes`'s HMAC-SHA512 — byte-identical to the original library's output (verified against the existing
+  known-answer/regression test vectors), and this also dropped a whole secondary dependency chain
+  (`create-hmac`→`cipher-base`→Node's `stream` module) that doesn't belong in a browser bundle.
+- Replaced the remaining `Buffer.from(...).toString('hex'/'base64')` calls in `secureVault.ts` and
+  `keystoreExport.ts` with `@noble/hashes`'s `bytesToHex`/`hexToBytes` and a small hand-written base64 codec.
+- `packages/wallet/src` now has zero references to the `Buffer` global — verified by grep and by running the full
+  flow (generate → derive → store → unlock → export/import keystore → sign EVM/Solana tx) in a real headless
+  browser with `typeof Buffer === 'undefined'`.
+
+## 2026-06-30 update: `expo-secure-store` web-availability detection was also wrong
+
+After the Buffer fixes, wallet creation still failed with `ExpoSecureStore.default.setValueWithKeyAsync is not a
+function`. Root cause: `expo-secure-store`'s public `setItemAsync`/`getItemAsync`/`deleteItemAsync` are real JS
+functions on _every_ platform — they always exist and always pass a naive `typeof fn === 'function'` check. They
+internally delegate to a native module (`setValueWithKeyAsync` etc.) that's a no-op `{}` on web, so the failure
+only surfaces when actually called, not when checked. Fixed `secureVault.ts`'s `resolveSecureStore()` to use
+`expo-secure-store`'s own `isAvailableAsync()` (which correctly checks `!!ExpoSecureStore.getValueWithKeyAsync` on
+the underlying native module) instead of a `typeof` check on the wrapper. Verified against the real
+`expo-secure-store` package (not a stub) in a real headless browser: `isAvailableAsync()` correctly returns
+`false` on web, the `localStorage` fallback engages, and the full store/unlock round-trip succeeds.
+
+This was only diagnosable because `Alert.alert` (used to surface the original error) is a documented no-op on
+react-native-web (`static alert() {}` — confirmed in `react-native-web`'s source) — every wallet-flow error before
+this fix was invisible to the user. Replaced all `Alert.alert` calls in the wallet creation/backup flow
+(`WalletCreationFlow.tsx`, `PinSetupScreen.tsx`, `WalletBackupScreen.tsx`) with inline, visible error text, plus a
+retryable `registerFailed` stage so a server-registration failure no longer discards the already-generated,
+already-backed-up wallet.
+
+## 2026-06-30 update: Bitcoin addresses were always derived as mainnet, regardless of stage (real bug, user-reported)
+
+User report: "BTC balance is missing in UI" — the wallet card showed ETH and SOL rows but no BTC row at all (not
+a zero balance, the row was absent entirely).
+
+**Root cause**: `bitcoinDerive.ts`'s `deriveBitcoinAccount` called `p2wpkh(child.publicKey)` with no network
+argument, which defaults to **mainnet** (`bc1...` addresses) unconditionally — independent of deploy stage. But
+the server's chain adapters (`apps/api/.../chains/bitcoin-adapter.ts`) are stage-aware, querying testnet Esplora
+in dev (`testnet.airs.alternun.co`) and mainnet Esplora in production. Every wallet ever created in dev got a
+mainnet-format `bc1...` address while the server queried `https://blockstream.info/testnet/api/address/bc1...` —
+confirmed this returns `400 Bad Request` (testnet Esplora rejects mainnet-prefixed addresses). `WalletService.balances()`
+wraps each chain lookup in `Promise.allSettled` and silently drops rejected entries — so the failure never
+surfaced as an error, just a missing row.
+
+**Fix**:
+
+- `deriveBitcoinAccount(mnemonic, accountIndex, network: 'mainnet' | 'testnet' = 'testnet')` — network now
+  explicit, defaulting to testnet (fail-safe for a dev/testnet-branded app, matching the existing
+  `DEFAULT_TESTNET_*` pattern in `evm-adapter.ts`/`solana-adapter.ts`/`bitcoin-adapter.ts`).
+- `deriveWalletBundle` threads the network parameter through.
+- `WalletCreationFlow.tsx` and `WalletRestoreFlow.tsx` now pass `isTestnetRuntime() ? 'testnet' : 'mainnet'`
+  explicitly (same detection already used in `WalletSendModal.tsx`'s Bitcoin signing path).
+- Tests updated: existing KATs (`bc1...` known-answer values) now pass `'mainnet'` explicitly; new tests confirm
+  the testnet default (`tb1...`) and that bundle derivation correctly passes through an explicit network. 19/19
+  passing.
+
+**Existing affected data**: found and fixed the one dev-DB row with a mainnet address. Since the witness program
+(pubkey hash) is identical between mainnet/testnet bech32 encodings of the same key — only the human-readable
+prefix differs — the existing `bc1q82npg8aymnlnhr9kwhrhpa4pmczvepeas8w3gh` was decoded and re-encoded as
+`tb1q82npg8aymnlnhr9kwhrhpa4pmczvepea6p4zny` **without needing the original mnemonic** (this is a pure bech32
+re-encoding, not a new key derivation — verified by round-tripping decode→encode→decode and comparing payloads).
+Confirmed live: the corrected address returns a valid (empty) balance from testnet Esplora; the original address
+returns `400`.
