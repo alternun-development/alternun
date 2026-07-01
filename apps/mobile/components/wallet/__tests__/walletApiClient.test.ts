@@ -4,7 +4,13 @@ import {
   WalletApiError,
   listWalletAccounts,
   setupWallet,
+  addWalletAccount,
+  restoreWallet,
   verifyWalletPin,
+  getWalletBalances,
+  getWalletActivity,
+  getWalletNetworkParams,
+  broadcastWalletTransaction,
   deleteWalletAccount,
   generateExternalChallenge,
   verifyAndLinkExternalWallet,
@@ -158,5 +164,91 @@ describe('request internals via exported functions', () => {
     const { url, options } = lastFetchCall();
     expect(url).toContain('/accounts/acc-99/primary');
     expect(options.method).toBe('PATCH');
+  });
+
+  it('addWalletAccount POSTs account payload', async () => {
+    const account = {
+      id: 'a2',
+      walletType: 'airs_hd' as const,
+      derivationIndex: 1,
+      evmAddress: '0x2',
+      bitcoinAddress: 'tb1q',
+      solanaAddress: 'sol2',
+      isPrimary: false,
+      label: null,
+    };
+    mockFetch(200, { account });
+    await addWalletAccount(mockClient, {
+      derivationIndex: 1,
+      evmAddress: '0x2',
+      bitcoinAddress: 'tb1q',
+      solanaAddress: 'sol2',
+    });
+    const { url, options } = lastFetchCall();
+    expect(url).toContain('/accounts');
+    expect(options.method).toBe('POST');
+    expect(JSON.parse(options.body as string)).toMatchObject({ account: { derivationIndex: 1 } });
+  });
+
+  it('restoreWallet POSTs to /restore', async () => {
+    const account = {
+      id: 'a3',
+      walletType: 'airs_hd' as const,
+      derivationIndex: 0,
+      evmAddress: '0x3',
+      bitcoinAddress: 'tb1q',
+      solanaAddress: 'sol3',
+      isPrimary: true,
+      label: null,
+    };
+    mockFetch(200, { account });
+    await restoreWallet(mockClient, {
+      pinSalt: 'salt',
+      pinHash: 'hash',
+      account: {
+        derivationIndex: 0,
+        evmAddress: '0x3',
+        bitcoinAddress: 'tb1q',
+        solanaAddress: 'sol3',
+      },
+    });
+    const { url, options } = lastFetchCall();
+    expect(url).toContain('/restore');
+    expect(options.method).toBe('POST');
+  });
+
+  it('getWalletBalances GETs /balances', async () => {
+    mockFetch(200, { balances: [] });
+    await getWalletBalances(mockClient);
+    const { url, options } = lastFetchCall();
+    expect(url).toContain('/balances');
+    expect(options.method).toBe('GET');
+  });
+
+  it('getWalletActivity GETs /activity', async () => {
+    mockFetch(200, { activity: [] });
+    await getWalletActivity(mockClient);
+    const { url, options } = lastFetchCall();
+    expect(url).toContain('/activity');
+    expect(options.method).toBe('GET');
+  });
+
+  it('getWalletNetworkParams GETs /network-params with chain query', async () => {
+    mockFetch(200, { chain: 'evm', nonce: 1, gasPriceWei: '1000', chainId: 11155111 });
+    await getWalletNetworkParams(mockClient, 'evm');
+    const { url } = lastFetchCall();
+    expect(url).toContain('/network-params?chain=evm');
+  });
+
+  it('broadcastWalletTransaction POSTs to /broadcast', async () => {
+    mockFetch(200, { txHash: '0xabc' });
+    await broadcastWalletTransaction(mockClient, 'evm', '0xsignedtx');
+    const { url, options } = lastFetchCall();
+    expect(url).toContain('/broadcast');
+    expect(options.method).toBe('POST');
+    expect(JSON.parse(options.body as string)).toMatchObject({
+      chain: 'evm',
+      signedTransaction: '0xsignedtx',
+    });
   });
 });
