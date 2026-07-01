@@ -83,10 +83,14 @@ export default function PinUnlockScreen({
         } else {
           setError(t('wallet.pin.unlock.incorrect', undefined, 'Incorrect PIN. Try again.'));
         }
-      } catch {
+      } catch (thrown: unknown) {
         setValue('');
+        // Use the thrown Error's message when available — it may contain a specific,
+        // user-facing explanation (e.g. "wallet not stored on this device").
+        const thrownMessage = thrown instanceof Error && thrown.message ? thrown.message : null;
         setError(
-          t('wallet.pin.unlock.error', undefined, 'Something went wrong. Please try again.')
+          thrownMessage ??
+            t('wallet.pin.unlock.error', undefined, 'Something went wrong. Please try again.')
         );
       } finally {
         setSubmitting(false);

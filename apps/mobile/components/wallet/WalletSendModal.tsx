@@ -13,7 +13,7 @@ import {
   signBitcoinTransaction,
   signEvmTransaction,
   signSolanaTransaction,
-  unlockMnemonic,
+  unlockMnemonicWithDiagnosis,
 } from '@alternun/wallet';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
@@ -171,18 +171,21 @@ export default function WalletSendModal({
         return;
       }
 
-      const mnemonic = await unlockMnemonic(confirmedPin);
-      if (!mnemonic) {
+      const unlock = await unlockMnemonicWithDiagnosis(confirmedPin);
+      if (!unlock.ok) {
         setErrorMessage(
-          t(
-            'wallet.send.errorLocalUnlock',
-            undefined,
-            'Could not unlock your wallet on this device.'
-          )
+          unlock.reason === 'no_vault'
+            ? 'Your wallet is not stored on this device. Restore it first using your recovery phrase.'
+            : t(
+                'wallet.send.errorLocalUnlock',
+                undefined,
+                'Incorrect PIN — local decryption failed.'
+              )
         );
         setStep('error');
         return;
       }
+      const mnemonic = unlock.mnemonic;
 
       // Re-fetch rather than reuse the review snapshot — EVM nonce/Bitcoin UTXOs/Solana blockhash
       // can go stale between review and PIN confirm (user reads the review screen for a while).

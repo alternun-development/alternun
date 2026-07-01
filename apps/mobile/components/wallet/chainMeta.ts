@@ -3,12 +3,44 @@ import type { WalletChain } from './walletApiClient';
 
 export const CHAIN_META: Record<
   WalletChain,
-  { label: string; dotColor: string; unit: string; decimals: number }
+  {
+    label: string;
+    dotColor: string;
+    unit: string;
+    decimals: number;
+    testnetLabel: string;
+    mainnetLabel: string;
+  }
 > = {
-  evm: { label: 'Ethereum / EVM', dotColor: '#627EEA', unit: 'ETH', decimals: 18 },
-  bitcoin: { label: 'Bitcoin', dotColor: '#F7931A', unit: 'BTC', decimals: 8 },
-  solana: { label: 'Solana', dotColor: '#9945FF', unit: 'SOL', decimals: 9 },
+  evm: {
+    label: 'Ethereum / EVM',
+    dotColor: '#627EEA',
+    unit: 'ETH',
+    decimals: 18,
+    testnetLabel: 'Sepolia',
+    mainnetLabel: 'Ethereum',
+  },
+  bitcoin: {
+    label: 'Bitcoin',
+    dotColor: '#F7931A',
+    unit: 'BTC',
+    decimals: 8,
+    testnetLabel: 'BTC Testnet',
+    mainnetLabel: 'Bitcoin',
+  },
+  solana: {
+    label: 'Solana',
+    dotColor: '#9945FF',
+    unit: 'SOL',
+    decimals: 9,
+    testnetLabel: 'Devnet',
+    mainnetLabel: 'Mainnet Beta',
+  },
 };
+
+export function getChainNetworkLabel(chain: WalletChain, isTestnet: boolean): string {
+  return isTestnet ? CHAIN_META[chain].testnetLabel : CHAIN_META[chain].mainnetLabel;
+}
 
 export const CHAIN_ORDER: WalletChain[] = ['evm', 'bitcoin', 'solana'];
 
