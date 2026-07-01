@@ -21,6 +21,7 @@ import { useCallback } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import 'react-native-reanimated';
 import ReleaseUpdateBanner from '../components/release/ReleaseUpdateBanner.native';
+import TestnetBanner from '../components/common/TestnetBanner';
 import { appFonts, installAppFontDefaults } from '../components/theme/fonts';
 import { BottomDock, DOCK_HEIGHT, type DockTab } from '../components/navigation/BottomDock';
 import { USE_V2_NAV } from '../components/navigation/featureFlags';
@@ -85,6 +86,7 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
       <AppAuthProvider>
         <ThemeProvider value={navigationTheme}>
           <View style={styles.appShell} onLayout={handleLayout}>
+            <TestnetBanner />
             {/* stackContainer flexes to fill remaining space above the dock */}
             <View style={styles.stackContainer}>
               <Stack screenOptions={{ headerShown: false, header: () => null }}>

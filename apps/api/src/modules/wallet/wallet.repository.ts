@@ -4,12 +4,16 @@
 // enforced here at the application layer by always filtering on the userId resolved from the
 // bearer token — never trust a userId supplied directly by the client in a request body.
 
+export type WalletAccountType = 'airs_hd' | 'external';
+
 export interface WalletAccountInput {
   derivationIndex: number;
   evmAddress: string;
   bitcoinAddress: string;
   solanaAddress: string;
   isPrimary?: boolean;
+  walletType?: WalletAccountType;
+  label?: string;
 }
 
 export interface WalletAccountRecord {
@@ -19,6 +23,8 @@ export interface WalletAccountRecord {
   bitcoinAddress: string | null;
   solanaAddress: string | null;
   isPrimary: boolean;
+  walletType: WalletAccountType;
+  label: string | null;
 }
 
 export interface WalletPreferencesRecord {
@@ -102,6 +108,8 @@ function mapAccountRow(row: Record<string, unknown>): WalletAccountRecord {
     bitcoinAddress: typeof row.bitcoin_address === 'string' ? row.bitcoin_address : null,
     solanaAddress: typeof row.solana_address === 'string' ? row.solana_address : null,
     isPrimary: row.is_primary === true,
+    walletType: row.wallet_type === 'external' ? 'external' : 'airs_hd',
+    label: typeof row.label === 'string' ? row.label : null,
   };
 }
 
@@ -183,7 +191,8 @@ export async function insertWalletAccount(
       method: 'POST',
       body: JSON.stringify({
         user_id: userId,
-        wallet_type: 'airs_hd',
+        wallet_type: input.walletType ?? 'airs_hd',
+        label: input.label ?? null,
         derivation_index: input.derivationIndex,
         evm_address: input.evmAddress,
         bitcoin_address: input.bitcoinAddress,
@@ -208,6 +217,105 @@ export async function listWalletAccounts(
   );
 
   return rows.map(mapAccountRow);
+}
+
+// Restore (device-change recovery): the user is already authenticated via their session token —
+// that's the actual identity proof, the wallet PIN is a separate, secondary local-decryption
+// secret. So restoring on a new device is allowed to overwrite the PIN digest and primary
+// account addresses for an already-authenticated user, rather than rejecting because
+// `has_local_wallet` is already true (unlike createWalletPreferences, used only for first-ever
+// setup).
+export async function upsertWalletPreferences(
+  input: { userId: string; pinSalt: string; pinHash: string },
+  env: Record<string, string | undefined> = process.env
+): Promise<WalletPreferencesRecord> {
+  const existing = await getWalletPreferences(input.userId, env);
+
+  if (!existing) {
+    return createWalletPreferences(input, env);
+  }
+
+  const rows = await restRequest<Record<string, unknown>[]>(
+    `wallet_preferences?user_id=eq.${encodeURIComponent(input.userId)}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({
+        pin_salt: input.pinSalt,
+        pin_hash: input.pinHash,
+        has_local_wallet: true,
+        pin_failed_attempts: 0,
+        pin_locked_until: null,
+      }),
+    },
+    env
+  );
+
+  return mapPreferencesRow(rows[0] ?? {});
+}
+
+export async function upsertPrimaryWalletAccount(
+  userId: string,
+  input: WalletAccountInput,
+  env: Record<string, string | undefined> = process.env
+): Promise<WalletAccountRecord> {
+  const accounts = await listWalletAccounts(userId, env);
+  const existingPrimary = accounts.find((a) => a.isPrimary);
+
+  if (!existingPrimary) {
+    return insertWalletAccount(userId, { ...input, isPrimary: true }, env);
+  }
+
+  const rows = await restRequest<Record<string, unknown>[]>(
+    `wallet_accounts?id=eq.${encodeURIComponent(existingPrimary.id)}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({
+        derivation_index: input.derivationIndex,
+        evm_address: input.evmAddress,
+        bitcoin_address: input.bitcoinAddress,
+        solana_address: input.solanaAddress,
+      }),
+    },
+    env
+  );
+
+  return mapAccountRow(rows[0] ?? {});
+}
+
+export async function setPrimaryWalletAccount(
+  userId: string,
+  accountId: string,
+  env: Record<string, string | undefined> = process.env
+): Promise<void> {
+  // Unset the current primary first — the partial unique index on (user_id) where is_primary is
+  // true only allows one true value at a time, so setting the new row to true before unsetting
+  // the old one would conflict.
+  await restRequest(
+    `wallet_accounts?user_id=eq.${encodeURIComponent(userId)}&is_primary=eq.true`,
+    { method: 'PATCH', body: JSON.stringify({ is_primary: false }) },
+    env
+  );
+  await restRequest(
+    `wallet_accounts?id=eq.${encodeURIComponent(accountId)}&user_id=eq.${encodeURIComponent(
+      userId
+    )}`,
+    { method: 'PATCH', body: JSON.stringify({ is_primary: true }) },
+    env
+  );
+}
+
+export async function deleteWalletAccount(
+  userId: string,
+  accountId: string,
+  env: Record<string, string | undefined> = process.env
+): Promise<void> {
+  await restRequest(
+    `wallet_accounts?id=eq.${encodeURIComponent(accountId)}&user_id=eq.${encodeURIComponent(
+      userId
+    )}`,
+    { method: 'DELETE' },
+    env
+  );
 }
 
 export async function createWalletSession(

@@ -7,20 +7,17 @@ started from the "Mi perfil → Billetera" screen. Full design rationale lives i
 phase-1 scaffold). Product decision: device-only recovery, no server-side seed backup, no AWS KMS needed. See
 `00-SPEC.md`'s revision note for the full diff from rev. 1.
 
-| #   | Task                                                                                                 | Depends on        | Status                                                                      |
-| --- | ---------------------------------------------------------------------------------------------------- | ----------------- | --------------------------------------------------------------------------- |
-| 00  | [SPEC](./00-SPEC.md) — architecture, crypto design, data model, API surface, UI flow                 | —                 | rev. 2                                                                      |
-| 01  | [DB schema migration](./01-db-schema-migration.md)                                                   | —                 | **done**                                                                    |
-| 02  | [Server wallet module API](./02-server-wallet-module-api.md)                                         | 01                | **implemented** (balances/activity/broadcast deferred to 07)                |
-| 03  | [Finish `packages/wallet`](./03-crypto-key-derivation-module.md)                                     | —                 | **build-validated** (3 runtime bugs caught+fixed: WASM/Buffer/quick-crypto) |
-| 04  | [Mobile PIN setup/unlock flow](./04-mobile-pin-setup-flow.md)                                        | 02, 03            | **implemented + i18n complete**                                             |
-| 05  | [Mobile wallet creation/backup/export flow](./05-mobile-wallet-creation-backup-flow.md)              | 03, 04            | **implemented + WalletTab UI redesigned**                                   |
-| 06  | [Mobile wallet home/send/receive](./06-mobile-wallet-home-send-receive.md)                           | 02, 03, 05        | todo — needs task 07's RPC provider decision first                          |
-| 07  | [Multi-chain RPC integration](./07-multichain-rpc-integration.md)                                    | 02                | todo                                                                        |
-| 08  | [Rate limiting & security hardening](./08-rate-limiting-security-hardening.md)                       | 02                | **lockout done in 02**, throttling/audit remaining                          |
-| 09  | [Testing & QA plan](./09-testing-qa-plan.md)                                                         | — (cross-cutting) | todo                                                                        |
-| 10  | [AIRS prod migrations + wallet empty state](./10-airs-prod-migrations-and-wallet-empty-state.md)     | 02, 05            | implemented-pending-live-verification                                       |
-| 99  | [Future: server-side backup upgrade](./99-future-server-backup-upgrade.md) (archived, not scheduled) | —                 | archived                                                                    |
+**Archived tasks (moved to `done-tasks/alternun-wallet-system/`):** 01, 02, 03, 04, 05, 06, 07, 08, 10, 11, 13, 14, 99, SEC-02, SEC-04, TECH-01
+
+| #   | Task                                                                                 | Depends on        | Status                                                               |
+| --- | ------------------------------------------------------------------------------------ | ----------------- | -------------------------------------------------------------------- |
+| 00  | [SPEC](./00-SPEC.md) — architecture, crypto design, data model, API surface, UI flow | —                 | rev. 2 (reference doc)                                               |
+| 09  | [Testing & QA plan](./09-testing-qa-plan.md)                                         | — (cross-cutting) | **in-progress** — most integration verified; real-device QA deferred |
+| 12  | [External wallet linking (signature-verified)](./12-external-wallet-linking.md)      | 11                | todo — WalletConnect + ownership proof (deferred past 1.1.0)         |
+
+**2026-06-30: web is the current development priority, native is deferred.** Native-device QA (the blocking item
+in `09-testing-qa-plan.md`'s manual QA matrix) is not required to keep making progress — task 13 (web security
+review) takes its place as the current security-focused priority.
 
 ## Suggested parallelization
 

@@ -10,6 +10,9 @@ interface PinSetupScreenProps {
   accent: string;
   onCancel: () => void;
   onConfirmed: (pin: string) => void;
+  /** Error from a failed creation/registration attempt (not a PIN mismatch) — shown inline since
+   * react-native-web's Alert.alert is a no-op on web (renders nothing). */
+  externalError?: string | null;
 }
 
 type Step = 'create' | 'confirm';
@@ -20,6 +23,7 @@ export default function PinSetupScreen({
   accent,
   onCancel,
   onConfirmed,
+  externalError,
 }: PinSetupScreenProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
   const [step, setStep] = useState<Step>('create');
@@ -99,6 +103,8 @@ export default function PinSetupScreen({
             <Text style={[styles.mismatch, { color: errorColor }]}>
               {t('wallet.pin.setup.mismatch', undefined, "PINs didn't match. Try again.")}
             </Text>
+          ) : externalError ? (
+            <Text style={[styles.mismatch, { color: errorColor }]}>{externalError}</Text>
           ) : null}
 
           <View style={styles.padWrap}>

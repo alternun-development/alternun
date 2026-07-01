@@ -533,6 +533,7 @@
         },
         "unlock": {
           "title": "Enter your PIN",
+          "exportTitle": "Enter your PIN to export",
           "incorrect": "Incorrect PIN. Try again.",
           "error": "Something went wrong. Please try again.",
           "locked": "Too many attempts. Try again in"
@@ -542,11 +543,14 @@
         "revealTitle": "Back up your recovery phrase",
         "revealSubtitle": "This is your only recovery option. Write it down and keep it safe — Alternun does not have a copy.",
         "tapToReveal": "Tap to reveal",
+        "disclaimer": "Write this down on paper and store it somewhere safe and offline. Do not take a screenshot, do not save it in a notes app, email, or cloud storage. Anyone with these words can take your funds. If you lose them, Alternun cannot recover your wallet — they are gone for good.",
+        "safetyAcknowledge": "I've written down my recovery phrase on paper and stored it somewhere safe. I understand Alternun cannot recover it for me.",
         "savedIt": "I've saved it",
         "verifyTitle": "Confirm your backup",
-        "verifySubtitle": "Enter the requested words to confirm you saved the phrase.",
+        "verifySubtitle": "We picked these at random to make sure you actually wrote down your phrase correctly — enter them exactly as shown.",
         "wordNumber": "Word",
         "verifyError": "That doesn't match. Check your backup and try again.",
+        "viewPhraseAgain": "View phrase again",
         "exportTitle": "Save a backup file (optional)",
         "exportSubtitle": "This is your only backup — there is no copy on Alternun's servers.",
         "exportKeystore": "Export encrypted backup file",
@@ -563,6 +567,105 @@
         "generationErrorTitle": "Could not create wallet",
         "registerErrorTitle": "Almost done",
         "registerErrorBody": "Your wallet was created on this device, but we could not finish registering it. Please check your connection — you can retry from the wallet screen."
+      },
+      "receive": {
+        "title": "Receive",
+        "copyAddress": "Copy address",
+        "warning": "Only send {{network}} assets to this address."
+      },
+      "send": {
+        "title": "Send",
+        "recipientLabel": "Recipient address",
+        "recipientPlaceholder": "Paste address",
+        "amountLabel": "Amount ({{unit}})",
+        "errorRecipient": "Enter a recipient address.",
+        "errorAmount": "Enter a valid amount.",
+        "errorInvalidAddress": "That doesn't look like a valid {{unit}} address.",
+        "errorLocalUnlock": "Could not unlock your wallet on this device.",
+        "pinTitle": "Confirm with your PIN",
+        "sending": "Sending…",
+        "success": "Transaction sent",
+        "failed": "Could not send transaction",
+        "retry": "Try again",
+        "reviewAsset": "Asset",
+        "reviewRecipient": "To",
+        "reviewAmount": "Amount",
+        "reviewFee": "Estimated network fee",
+        "feeNegligible": "Negligible (paid in SOL)",
+        "confirmAndSend": "Confirm & Send"
+      },
+      "activity": {
+        "title": "Activity",
+        "empty": "No recent activity yet.",
+        "received": "Received",
+        "sent": "Sent",
+        "self": "Self transfer",
+        "pending": "Pending"
+      },
+      "addAccount": {
+        "title": "Add account",
+        "subtitle": "This will add Account #{{index}} derived from your existing recovery phrase — no new backup phrase is needed.",
+        "note": "Your existing recovery phrase and PIN give you access to all accounts.",
+        "pinTitle": "Enter your wallet PIN",
+        "deriving": "Deriving account…",
+        "failed": "Could not add account",
+        "unlockFailed": "Could not unlock your wallet on this device.",
+        "noVaultTitle": "Recovery phrase not on this device",
+        "noVaultDesc": "Your encrypted wallet backup is not stored in this browser or device session. Use 'Restore from recovery phrase' to re-link your existing phrase, then you can add more accounts.",
+        "noVaultAction": "Go back and restore first"
+      },
+      "changePin": {
+        "title": "Change wallet PIN",
+        "currentPin": "Enter your current PIN",
+        "saving": "Updating PIN…",
+        "done": "PIN updated successfully",
+        "doneDesc": "Your wallet is now encrypted with your new PIN. Remember it — Alternun cannot recover it.",
+        "failed": "PIN change failed"
+      },
+      "restore": {
+        "title": "Restore your wallet",
+        "subtitle": "Enter your 12-24 word recovery phrase, exactly as you wrote it down.",
+        "placeholder": "word1 word2 word3 ...",
+        "invalidMnemonic": "That doesn't look like a valid 12-24 word recovery phrase. Check for typos or extra spaces.",
+        "restoring": "Restoring your wallet…",
+        "failedTitle": "Could not restore wallet"
+      },
+      "manage": {
+        "title": "Your wallets",
+        "subtitle": "The default wallet is used for balances, send/receive, and reward payouts.",
+        "add": "Add",
+        "addTitle": "Add a wallet",
+        "default": "Default",
+        "setDefault": "Set default",
+        "alternunLabel": "Alternun wallet",
+        "externalLabel": "External wallet",
+        "createNew": "Create a new wallet",
+        "createNewDesc": "Generate a brand-new recovery phrase and set a PIN",
+        "importPhrase": "Import from recovery phrase",
+        "importPhraseDesc": "Enter your 12-24 word backup phrase",
+        "importKeystore": "Import encrypted backup file",
+        "importKeystoreDesc": "Paste the contents of your exported .json keystore file",
+        "connectMetaMask": "Connect MetaMask",
+        "connectMetaMaskDesc": "Link your existing MetaMask address via signature proof",
+        "deleteTitle": "Remove wallet",
+        "deleteWarning": "Make sure you have backed up the recovery phrase for this wallet before removing it. This action cannot be undone.",
+        "deletePrimaryWarning": "This is your default wallet. Removing it will auto-promote another account. Make sure you have your backup phrase before proceeding.",
+        "deleteOnlyWarning": "You cannot remove your only wallet. Create or restore another wallet first.",
+        "deleteConfirm": "Remove this wallet",
+        "connectingExternal": "Connecting to MetaMask…",
+        "signPrompt": "Approve the signature request in your wallet"
+      },
+      "import": {
+        "title": "Import backup file",
+        "subtitle": "Paste the contents of your exported .json backup file, then enter the PIN you used when you exported it.",
+        "placeholder": "{ \"alternunKeystoreVersion\": 1, ... }",
+        "invalidJson": "Could not parse the JSON — check for formatting errors.",
+        "invalidKeystore": "This does not look like an Alternun wallet backup file.",
+        "pinTitle": "Enter your export PIN",
+        "pinSubtitle": "This is the PIN you entered when you exported this backup file, not your current wallet PIN.",
+        "wrongPin": "Incorrect PIN — this is the PIN you used when you exported the backup file.",
+        "restoring": "Importing your wallet…",
+        "failedTitle": "Import failed"
       }
     },
     "shared": {
@@ -570,6 +673,9 @@
         "cancel": "Cancel",
         "continue": "Continue",
         "done": "Done"
+      },
+      "testnetBanner": {
+        "label": "Testnet — no real funds"
       }
     },
     "profile": {
@@ -605,6 +711,7 @@
         "connectTitle": "Connect your wallet",
         "connectSubtitle": "Link your wallet to manage your ATN tokens",
         "connectButton": "Connect external wallet",
+        "restoreButton": "Restore from recovery phrase",
         "supportedNetworks": "Supported Networks",
         "notConnected": "Not connected",
         "createTitle": "Create your Alternun wallet",
@@ -614,6 +721,8 @@
         "createFeature2": "Multi-chain: EVM, Bitcoin and Solana",
         "createFeature3": "Encrypted with your PIN, backed up by you",
         "createDisclaimer": "Alternun never sees your private key or PIN. If you lose your device without a backup, funds are unrecoverable.",
+        "loadingTitle": "Loading your wallet…",
+        "loadingSubtitle": "Checking for an existing wallet on this account",
         "localWalletTitle": "Your Alternun wallet",
         "localWalletSubtitle": "Active across 3 chains",
         "evmAddress": "Ethereum / EVM",
@@ -622,8 +731,10 @@
         "copyAddress": "Copy address",
         "addressCopied": "Address copied",
         "exportBackup": "Export backup",
+        "changePin": "Change PIN",
         "exportWarning": "This is your only recovery option if you lose your device.",
         "manageWallet": "Manage wallet",
+        "manageWallets": "Manage wallets",
         "noWalletAccount": "No wallet data yet"
       },
       "accessMethods": {

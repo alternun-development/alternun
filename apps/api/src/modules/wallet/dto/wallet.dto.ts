@@ -18,6 +18,14 @@ export class WalletAccountDto {
   @IsOptional()
   @IsBoolean()
   isPrimary?: boolean;
+
+  @IsOptional()
+  @IsIn(['airs_hd', 'external'])
+  walletType?: 'airs_hd' | 'external';
+
+  @IsOptional()
+  @IsString()
+  label?: string;
 }
 
 export class WalletSetupRequestDto {
@@ -33,6 +41,21 @@ export class WalletSetupRequestDto {
 }
 
 export class WalletAddAccountRequestDto {
+  @ValidateNested()
+  @Type(() => WalletAccountDto)
+  account!: WalletAccountDto;
+}
+
+// Device-change recovery: re-derives the same addresses from the user's already-backed-up
+// mnemonic on a new device, then overwrites the server's PIN digest + primary account record to
+// match (the user's session token is the actual identity proof here, not the PIN).
+export class WalletRestoreRequestDto {
+  @IsString()
+  pinSalt!: string;
+
+  @IsString()
+  pinHash!: string;
+
   @ValidateNested()
   @Type(() => WalletAccountDto)
   account!: WalletAccountDto;
@@ -57,4 +80,40 @@ export class WalletBroadcastRequestDto {
 
   @IsString()
   signedTransaction!: string;
+}
+
+export interface WalletBalancesResponseDto {
+  balances: Array<{ chain: 'evm' | 'bitcoin' | 'solana'; amount: string; unit: string }>;
+}
+
+export interface WalletActivityResponseDto {
+  activity: Array<{
+    chain: 'evm' | 'bitcoin' | 'solana';
+    hash: string;
+    direction: 'in' | 'out' | 'self';
+    amount: string;
+    counterparty: string | null;
+    timestamp: string | null;
+    confirmed: boolean;
+  }>;
+}
+
+export class WalletNetworkParamsQueryDto {
+  @IsIn(['evm', 'bitcoin', 'solana'])
+  chain!: 'evm' | 'bitcoin' | 'solana';
+}
+
+export class WalletExternalVerifyRequestDto {
+  @IsString()
+  address!: `0x${string}`;
+
+  @IsString()
+  nonce!: string;
+
+  @IsString()
+  signature!: `0x${string}`;
+
+  @IsOptional()
+  @IsString()
+  label?: string;
 }
