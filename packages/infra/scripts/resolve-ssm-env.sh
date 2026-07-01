@@ -350,7 +350,7 @@ main() {
     return 0
   fi
 
-  local -a ssm_param_names=(database-url)
+  local -a ssm_param_names=(database-url supabase-service-role-key)
 
   # Auth provider config (stage-specific)
   # Dedicated pipeline stages (dashboard-dev, backend-dev, api-dev, identity-dev) must map to
@@ -402,6 +402,7 @@ main() {
   export_env_from_ssm "EXPO_PUBLIC_SUPABASE_KEY" "expo-public-supabase-key" "" "${SSM_SHARED_STAGE}"
   export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_URL" "expo-public-supabase-url" "" "${SSM_SHARED_STAGE}"
   export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_ANON_KEY" "expo-public-supabase-key" "" "${SSM_SHARED_STAGE}"
+  export_env_from_ssm "INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY" "supabase-service-role-key" "" "${SSM_SHARED_STAGE}"
   export_env_from_ssm "EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID" "expo-public-walletconnect-project-id" "" "${SSM_SHARED_STAGE}"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_ISSUER" "expo-public-authentik-issuer" "" "${SSM_SHARED_STAGE}"
   export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_CLIENT_ID" "expo-public-authentik-client-id" "" "${SSM_SHARED_STAGE}"
