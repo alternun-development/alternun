@@ -390,7 +390,9 @@ identity; renaming breaks cross-references and git history.
 
 ## 11. Release Flow — develop → master (no release branches)
 
-**All production releases go directly from `develop` to `master` via a single PR. Never create `release/v*` branches.**
+**All production releases go directly from `develop` to `master` via a single PR. Never create `release/v*` or `promote/v*` branches.**
+
+> **Hard guard:** `.husky/pre-push` blocks any push to a branch matching `release/*`, `release-*`, or `promote/*` with an error message. This is enforced automatically — you cannot bypass it without editing the hook.
 
 ### The canonical flow
 
@@ -417,16 +419,14 @@ develop  ──── (work, commits) ────► PR #N ──► master ─
 
    This bumps all package.json versions, updates CHANGELOG, builds, creates the git tag, and pushes.
 
-3. **Open the PR from a temp branch if master is protected** (only if direct push fails):
+3. **If master push is blocked by branch protection**, push the release tag only and open the PR from `develop`:
 
    ```bash
-   git checkout -b promote/vX.Y.Z
-   git push origin promote/vX.Y.Z --follow-tags
-   gh pr create --base master --head promote/vX.Y.Z --title "chore: release vX.Y.Z"
-   # Merge via GitHub UI, then delete the branch immediately
+   git push origin v1.1.3  # push only the tag
+   gh pr create --base master --head develop --title "chore: release vX.Y.Z"
    ```
 
-   Delete `promote/vX.Y.Z` as soon as the PR merges — it must not persist.
+   **Do NOT create a separate branch.** `develop` is already the release candidate.
 
 4. **Sync master back to develop**:
    ```bash
@@ -437,13 +437,13 @@ develop  ──── (work, commits) ────► PR #N ──► master ─
 
 ### What NOT to do
 
-- ❌ Never create persistent `release/vX.Y.Z` branches — they litter the repo
-- ❌ Never release a patch from `develop` (`pnpm release patch` on develop creates dev builds, not production)
-- ❌ Never leave a promote branch after the PR merges — delete it immediately
+- ❌ Never create `release/vX.Y.Z` or `promote/vX.Y.Z` branches — the pre-push hook blocks this
+- ❌ Never release a patch from `develop` (`pnpm release patch` on develop creates dev builds)
+- ❌ Never open a PR from a release or promote branch — always PR from `develop`
 
 ### Guards (enforced automatically)
 
+- **`.husky/pre-push`**: blocks any push to `release/*`, `release-*`, `promote/*` branches with a clear error
 - `pnpm release` on `develop` → creates dev releases only (e.g. `1.1.2-dev.0`)
 - `pnpm release patch` on `master` → creates production patch releases (e.g. `1.1.2`)
-- Pre-push hook validates: AWS account, version sync, secrets scan, changelog entry, reentry status
-- If push to master is rejected (branch protection): use a `promote/vX.Y.Z` branch, merge via PR, delete immediately
+- Pre-push hook also validates: AWS account, version sync, secrets scan, changelog entry, reentry status
