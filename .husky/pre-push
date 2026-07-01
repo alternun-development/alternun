@@ -1,6 +1,24 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Block release/* and promote/* branch pushes.
+# Per CLAUDE.md §11: all production releases go develop→master via direct PR.
+# No intermediate release or promote branches — they litter the repo and are
+# never cleaned up. Use develop directly.
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+case "$current_branch" in
+  release/*|release-*|promote/*)
+    echo ""
+    echo "❌  PUSH BLOCKED: branch '${current_branch}' is a release/promote branch."
+    echo ""
+    echo "    Per CLAUDE.md §11, production releases go directly develop → master."
+    echo "    Open a PR from 'develop' to 'master' instead."
+    echo "    Never create release/* or promote/* branches — delete this one."
+    echo ""
+    exit 1
+    ;;
+esac
+
 # Check versioning before push
 npm run version:validate
 npm run version:check-secrets
