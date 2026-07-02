@@ -843,6 +843,18 @@ export default function AuthSignInScreen({
     setSubmitMode(provider);
     const attemptId = startSocialRedirectWatchdog(provider);
 
+    if (mode === 'signup') {
+      const normalizedReferralCode = referralCode.trim().toLowerCase();
+      if (normalizedReferralCode.length > 0) {
+        writePendingReferralData({
+          referred_by_username: null,
+          referred_by_email: null,
+          referral_code: normalizedReferralCode,
+          invitation_code: normalizedReferralCode,
+        });
+      }
+    }
+
     try {
       await startSocialSignIn({
         client,
@@ -1612,37 +1624,80 @@ export default function AuthSignInScreen({
                 />
 
                 {mode === 'signin' ? (
-                  <>
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      disabled={isBusy}
-                      onPress={handleForgotPassword}
-                      style={[styles.linkButton, styles.forgotPasswordLink]}
-                    >
-                      <Text style={[styles.linkButtonText, { color: p.accent }]}>
-                        {t('authModal.actions.forgotPassword', undefined, 'Forgot password?')}
-                      </Text>
-                    </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    disabled={isBusy}
+                    onPress={handleForgotPassword}
+                    style={[styles.linkButton, styles.forgotPasswordLink]}
+                  >
+                    <Text style={[styles.linkButtonText, { color: p.accent }]}>
+                      {t('authModal.actions.forgotPassword', undefined, 'Forgot password?')}
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
 
-                    <View style={styles.dividerRow}>
-                      <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
-                      <Text style={[styles.dividerText, { color: p.textMuted }]}>
-                        {t('authModal.divider.or')}
-                      </Text>
-                      <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
-                    </View>
+                <>
+                  <View style={styles.dividerRow}>
+                    <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
+                    <Text style={[styles.dividerText, { color: p.textMuted }]}>
+                      {t('authModal.divider.or')}
+                    </Text>
+                    <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
+                  </View>
 
+                  <View style={{ position: 'relative' }}>
+                    <LoadingButton
+                      variant='secondary'
+                      label={t('authModal.actions.continueWithGoogle')}
+                      loadingLabel={t('authModal.redirecting.google')}
+                      isLoading={submitMode === 'google'}
+                      disabled={isBusy || !isSocialAuthEnabled()}
+                      onPress={() => {
+                        void handleGoogleSignIn();
+                      }}
+                      icon={Chrome}
+                    />
+                    {!isSocialAuthEnabled() && (
+                      <View
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                          borderRadius: 8,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          backdropFilter: 'blur(2px)',
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: String(p.text),
+                            fontSize: 12,
+                            fontWeight: '600',
+                            textAlign: 'center',
+                          }}
+                        >
+                          {t('authModal.underMaintenance')}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {shouldShowAuthentikSocialButtons ? (
                     <View style={{ position: 'relative' }}>
                       <LoadingButton
                         variant='secondary'
-                        label={t('authModal.actions.continueWithGoogle')}
-                        loadingLabel={t('authModal.redirecting.google')}
-                        isLoading={submitMode === 'google'}
+                        label={t('authModal.actions.continueWithDiscord')}
+                        loadingLabel={t('authModal.redirecting.discord')}
+                        isLoading={submitMode === 'discord'}
                         disabled={isBusy || !isSocialAuthEnabled()}
                         onPress={() => {
-                          void handleGoogleSignIn();
+                          void handleDiscordSignIn();
                         }}
-                        icon={Chrome}
+                        icon={MessageSquare}
                       />
                       {!isSocialAuthEnabled() && (
                         <View
@@ -1672,77 +1727,32 @@ export default function AuthSignInScreen({
                         </View>
                       )}
                     </View>
+                  ) : null}
 
-                    {shouldShowAuthentikSocialButtons ? (
-                      <View style={{ position: 'relative' }}>
-                        <LoadingButton
-                          variant='secondary'
-                          label={t('authModal.actions.continueWithDiscord')}
-                          loadingLabel={t('authModal.redirecting.discord')}
-                          isLoading={submitMode === 'discord'}
-                          disabled={isBusy || !isSocialAuthEnabled()}
-                          onPress={() => {
-                            void handleDiscordSignIn();
-                          }}
-                          icon={MessageSquare}
-                        />
-                        {!isSocialAuthEnabled() && (
-                          <View
-                            style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                              borderRadius: 8,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              backdropFilter: 'blur(2px)',
-                            }}
-                          >
-                            <Text
-                              style={{
-                                color: String(p.text),
-                                fontSize: 12,
-                                fontWeight: '600',
-                                textAlign: 'center',
-                              }}
-                            >
-                              {t('authModal.underMaintenance')}
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                    ) : null}
-
-                    {ENABLE_WEB3_LOGIN && (
-                      <TouchableOpacity
-                        activeOpacity={0.85}
-                        disabled={isBusy}
-                        onPress={() => setWalletModalVisible(true)}
-                        style={[
-                          styles.secondaryButton,
-                          { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
-                          isBusy && styles.buttonDisabled,
-                        ]}
-                      >
-                        {submitMode === 'wallet' ? (
-                          <ActivityIndicator color={p.secondaryBtnText} size='small' />
-                        ) : (
-                          <>
-                            <Wallet size={16} color={p.secondaryBtnText} />
-                            <Text
-                              style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}
-                            >
-                              {t('authModal.actions.connectWallet')}
-                            </Text>
-                          </>
-                        )}
-                      </TouchableOpacity>
-                    )}
-                  </>
-                ) : null}
+                  {mode === 'signin' && ENABLE_WEB3_LOGIN && (
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      disabled={isBusy}
+                      onPress={() => setWalletModalVisible(true)}
+                      style={[
+                        styles.secondaryButton,
+                        { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
+                        isBusy && styles.buttonDisabled,
+                      ]}
+                    >
+                      {submitMode === 'wallet' ? (
+                        <ActivityIndicator color={p.secondaryBtnText} size='small' />
+                      ) : (
+                        <>
+                          <Wallet size={16} color={p.secondaryBtnText} />
+                          <Text style={[styles.secondaryButtonText, { color: p.secondaryBtnText }]}>
+                            {t('authModal.actions.connectWallet')}
+                          </Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </>
 
                 {notice ? (
                   <View
