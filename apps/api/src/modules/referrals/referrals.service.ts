@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -524,25 +523,25 @@ export class ReferralsService {
     if (!resolvedReferrerUserId && referralCode) {
       const referrer = await this.getUserByReferralCode(referralCode);
       if (!referrer) {
-        throw new BadRequestException(`Referral code ${referralCode} is invalid`);
+        this.logger.warn(
+          `Referral code ${referralCode} not found; skipping attribution for user ${userId}`
+        );
+      } else if (referrer.id === userId) {
+        this.logger.warn(`Self-referral attempt ignored for user ${userId}`);
+      } else {
+        const updatedUser = await supabaseUpdateOne<UserRecord>(
+          'users',
+          { id: `eq.${userId}` },
+          {
+            referred_by_user_id: referrer.id,
+            referred_by_referral_code: referrer.referral_code ?? referralCode,
+          }
+        );
+
+        resolvedReferrerUserId = updatedUser?.referred_by_user_id ?? referrer.id;
+        resolvedReferrerReferralCode =
+          updatedUser?.referred_by_referral_code ?? referrer.referral_code ?? referralCode;
       }
-
-      if (referrer.id === userId) {
-        throw new BadRequestException('Self-referrals are not allowed');
-      }
-
-      const updatedUser = await supabaseUpdateOne<UserRecord>(
-        'users',
-        { id: `eq.${userId}` },
-        {
-          referred_by_user_id: referrer.id,
-          referred_by_referral_code: referrer.referral_code ?? referralCode,
-        }
-      );
-
-      resolvedReferrerUserId = updatedUser?.referred_by_user_id ?? referrer.id;
-      resolvedReferrerReferralCode =
-        updatedUser?.referred_by_referral_code ?? referrer.referral_code ?? referralCode;
     }
 
     if (resolvedReferrerUserId && !resolvedReferrerReferralCode) {
