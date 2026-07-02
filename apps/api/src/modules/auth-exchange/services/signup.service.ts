@@ -162,7 +162,7 @@ export class SignupService {
 
       throw new HttpException(
         `PROVIDER_ERROR: ${message}`,
-        status >= 500 ? HttpStatus.BAD_GATEWAY : HttpStatus.UNAUTHORIZED
+        (status ?? 0) >= 500 ? HttpStatus.BAD_GATEWAY : HttpStatus.UNAUTHORIZED
       );
     }
   }
