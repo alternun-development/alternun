@@ -8,8 +8,10 @@ import {
 import { Image as ExpoImage } from 'expo-image';
 import {
   AlertCircle,
+  ArrowLeft,
   Chrome,
   AtSign,
+  ChevronDown,
   Eye,
   EyeOff,
   Languages,
@@ -74,11 +76,7 @@ import {
   shouldTransitionToEmailConfirmation,
   shouldSurfaceSharedAuthError,
 } from './authSignInFlow';
-import {
-  clearPendingReferralData,
-  readPendingReferralCode,
-  writePendingReferralData,
-} from './referralStorage';
+import { clearPendingReferralData, writePendingReferralData } from './referralStorage';
 const RESEND_COOLDOWN_SECONDS = 45;
 const SOCIAL_REDIRECT_TIMEOUT_MS = 15000; // 15 seconds
 
@@ -196,8 +194,9 @@ export default function AuthSignInScreen({
   const [authStep, setAuthStep] = useState<AuthStep>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [referralCode, setReferralCode] = useState(
-    () => initialReferralCode?.trim() ?? readPendingReferralCode() ?? ''
+  const [referralCode, setReferralCode] = useState(() => initialReferralCode?.trim() ?? '');
+  const [showReferralInput, setShowReferralInput] = useState(() =>
+    Boolean(initialReferralCode?.trim())
   );
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [invalidEmail, setInvalidEmail] = useState(false);
@@ -922,6 +921,8 @@ export default function AuthSignInScreen({
     setMode(nextMode);
     if (nextMode === 'signup') {
       setSignupMethod(null);
+      setShowReferralInput(false);
+      setReferralCode('');
     }
     emailDraftRef.current = '';
     passwordDraftRef.current = '';
@@ -1240,10 +1241,18 @@ export default function AuthSignInScreen({
                       ]}
                     >
                       <AtSign size={18} color={p.accent} strokeWidth={2.1} />
-                      <Text style={[styles.signupMethodButtonText, { color: String(p.text) }]}>
+                      <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
                         {t('authModal.actions.signUpWithEmail', undefined, 'Sign up with email')}
                       </Text>
                     </TouchableOpacity>
+
+                    <View style={styles.dividerRow}>
+                      <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
+                      <Text style={[styles.dividerText, { color: p.textMuted }]}>
+                        {t('authModal.divider.or')}
+                      </Text>
+                      <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
+                    </View>
 
                     <TouchableOpacity
                       activeOpacity={0.85}
@@ -1258,7 +1267,7 @@ export default function AuthSignInScreen({
                       ]}
                     >
                       <Chrome size={18} color={p.accent} strokeWidth={2.1} />
-                      <Text style={[styles.signupMethodButtonText, { color: String(p.text) }]}>
+                      <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
                         {t(
                           'authModal.actions.signUpWithSocial',
                           undefined,
@@ -1269,45 +1278,81 @@ export default function AuthSignInScreen({
                   </View>
                 ) : null}
 
-                {/* ── SIGNUP: referral code — always visible ── */}
+                {/* ── SIGNUP: referral code — title always visible, input toggles ── */}
                 {mode === 'signup' ? (
                   <View style={styles.referralPrompt}>
-                    <Text style={[styles.referralPromptTitle, { color: p.accent }]}>
-                      {t('authModal.referral.prompt', undefined, 'Have a referral code?')}
-                    </Text>
-                    <View
-                      style={[
-                        styles.inputWrapper,
-                        { backgroundColor: p.inputBg, borderColor: p.inputBorder, marginTop: 6 },
-                      ]}
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      disabled={isBusy}
+                      onPress={() => {
+                        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                        setShowReferralInput((v) => !v);
+                      }}
+                      style={styles.referralPromptToggle}
                     >
-                      <View style={[styles.inputIconWrap, { backgroundColor: 'transparent' }]}>
-                        <KeyRound size={15} color={p.accent} strokeWidth={2.1} />
-                      </View>
-                      <TextInput
-                        ref={referralCodeInputRef}
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        onChangeText={(value) => {
-                          setReferralCode(value);
-                          setLocalError(null);
+                      <KeyRound size={13} color={p.accent} strokeWidth={2.1} />
+                      <Text style={[styles.referralPromptTitle, { color: p.accent }]}>
+                        {t('authModal.referral.prompt', undefined, 'Have a referral code?')}
+                      </Text>
+                      <ChevronDown
+                        size={14}
+                        color={p.accent}
+                        strokeWidth={2.2}
+                        style={{
+                          transform: [{ rotate: showReferralInput ? '180deg' : '0deg' }],
                         }}
-                        placeholder={t(
-                          'authModal.referral.placeholder',
-                          undefined,
-                          'e.g., edward-44ft34'
-                        )}
-                        placeholderTextColor={p.textPlaceholder}
-                        style={[styles.input, { color: p.textPrimary }]}
-                        value={referralCode}
                       />
-                    </View>
+                    </TouchableOpacity>
+                    {showReferralInput ? (
+                      <View
+                        style={[
+                          styles.inputWrapper,
+                          { backgroundColor: p.inputBg, borderColor: p.inputBorder, marginTop: 6 },
+                        ]}
+                      >
+                        <View style={[styles.inputIconWrap, { backgroundColor: 'transparent' }]}>
+                          <KeyRound size={15} color={p.accent} strokeWidth={2.1} />
+                        </View>
+                        <TextInput
+                          ref={referralCodeInputRef}
+                          autoCapitalize='none'
+                          autoCorrect={false}
+                          autoFocus
+                          onChangeText={(value) => {
+                            setReferralCode(value);
+                            setLocalError(null);
+                          }}
+                          placeholder={t(
+                            'authModal.referral.placeholder',
+                            undefined,
+                            'e.g., edward-44ft34'
+                          )}
+                          placeholderTextColor={p.textPlaceholder}
+                          style={[styles.input, { color: p.textPrimary }]}
+                          value={referralCode}
+                        />
+                      </View>
+                    ) : null}
                   </View>
                 ) : null}
 
                 {/* ── SIGNUP email path: email + password + confirm + submit ── */}
                 {mode === 'signup' && signupMethod === 'email' ? (
                   <>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      disabled={isBusy}
+                      onPress={() => {
+                        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                        setSignupMethod(null);
+                      }}
+                      style={styles.signupBackLink}
+                    >
+                      <ArrowLeft size={13} color={p.textMuted} strokeWidth={2.2} />
+                      <Text style={[styles.signupBackLinkText, { color: p.textMuted }]}>
+                        {t('authModal.actions.backToSignupOptions', undefined, 'Other methods')}
+                      </Text>
+                    </TouchableOpacity>
                     <View style={styles.inputGroup}>
                       <Animated.Text
                         style={[
@@ -1637,6 +1682,20 @@ export default function AuthSignInScreen({
                 {/* ── SIGNUP social path: Google + Discord ── */}
                 {mode === 'signup' && signupMethod === 'social' ? (
                   <>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      disabled={isBusy}
+                      onPress={() => {
+                        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                        setSignupMethod(null);
+                      }}
+                      style={styles.signupBackLink}
+                    >
+                      <ArrowLeft size={13} color={p.textMuted} strokeWidth={2.2} />
+                      <Text style={[styles.signupBackLinkText, { color: p.textMuted }]}>
+                        {t('authModal.actions.backToSignupOptions', undefined, 'Other methods')}
+                      </Text>
+                    </TouchableOpacity>
                     <View style={{ position: 'relative' }}>
                       <LoadingButton
                         variant='secondary'
@@ -2626,6 +2685,22 @@ const styles = createTypographyStyles({
   referralPrompt: {
     gap: 6,
     marginTop: 2,
+  },
+  referralPromptToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  signupBackLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+  },
+  signupBackLinkText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   referralPromptTitle: {
     fontFamily: ANEK_EXPANDED_FAMILY,
