@@ -36,12 +36,12 @@ function createSessionStorage(): Storage {
 }
 
 describe('referralStorage', () => {
-  const sessionStorage = createSessionStorage();
+  const localStorage = createSessionStorage();
 
   beforeEach(() => {
-    sessionStorage.clear();
-    (globalThis as typeof globalThis & { window?: { sessionStorage: Storage } }).window = {
-      sessionStorage,
+    localStorage.clear();
+    (globalThis as unknown as { window: { localStorage: Storage } }).window = {
+      localStorage,
     };
   });
 
@@ -70,7 +70,7 @@ describe('referralStorage', () => {
   });
 
   it('prefers referral_code and falls back to invitation_code', () => {
-    window.sessionStorage.setItem(
+    window.localStorage.setItem(
       'pendingReferralData',
       JSON.stringify({
         referral_code: null,

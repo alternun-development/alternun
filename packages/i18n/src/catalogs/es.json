@@ -74,9 +74,16 @@
         "continueWithEmail": "Continuar con correo",
         "continueWithGoogle": "Continuar con Google",
         "continueWithDiscord": "Continuar con Discord",
+        "signUpWithGoogle": "Regístrate con Google",
+        "signUpWithDiscord": "Regístrate con Discord",
+        "signInWithGoogle": "Inicia sesión con Google",
+        "signInWithDiscord": "Inicia sesión con Discord",
         "createAccount": "Crear cuenta",
         "verifyConfirmationCode": "Verificar codigo de confirmacion",
-        "useAnotherEmail": "Usar otro correo"
+        "useAnotherEmail": "Usar otro correo",
+        "signUpWithEmail": "Registrarse con correo",
+        "signUpWithSocial": "Regístrate con redes sociales",
+        "backToSignupOptions": "Volver, regístrate con otro método"
       },
       "confirmation": {
         "checkEmail": "Revisa tu correo",
