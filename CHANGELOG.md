@@ -1,3 +1,14 @@
+## [1.1.5](https://github.com/alternun-development/alternun/compare/v1.1.5-dev.0...v1.1.5) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** chore: sync README and mobile version to v1.1.5-dev.0 --no-validate-reentry
+
+
+
+
+
+
 ## [1.1.5](https://github.com/alternun-development/alternun/compare/v1.1.3-dev.0...v1.1.5) (2026-07-03)
 
 ### Bug Fixes
