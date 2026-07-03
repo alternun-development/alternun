@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { Linking, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Linking,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {
   HelpCircle,
   MessageCircle,
@@ -9,19 +18,12 @@ import {
   ArrowLeft,
 } from 'lucide-react-native';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import type { SupportDialogPalette } from './supportDialogPalette';
 
 export interface SupportButtonProps {
   supportEmail: string;
   compact?: boolean;
-  palette: {
-    title: string;
-    muted: string;
-    accent: string;
-    text: string;
-    shellBg?: string;
-    overlayBg?: string;
-    borderColor?: string;
-  };
+  palette: SupportDialogPalette;
 }
 
 function SupportButton({
@@ -112,7 +114,9 @@ function SupportButton({
         visible={dialogOpen}
         transparent
         animationType='fade'
+        statusBarTranslucent
         onRequestClose={() => setDialogOpen(false)}
+        accessibilityViewIsModal
       >
         <View style={styles.modalOverlay}>
           {/* Backdrop */}
@@ -130,175 +134,185 @@ function SupportButton({
                 borderColor: borderCol,
               },
             ]}
+            testID='support-dialog'
           >
             {/* Header */}
             <View style={[styles.dialogHeader, { borderBottomColor: borderCol }]}>
-              <Text style={[styles.dialogTitle, { color: palette.title }]}>How can we help?</Text>
+              <Text numberOfLines={2} style={[styles.dialogTitle, { color: palette.title }]}>
+                How can we help?
+              </Text>
               <TouchableOpacity onPress={() => setDialogOpen(false)} style={styles.closeButton}>
                 <Text style={[styles.closeButtonText, { color: palette.muted }]}>✕</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Options - conditional rendering */}
-            {!showChatOptions ? (
-              <View style={styles.optionsContainer}>
-                {/* Chat option */}
-                <TouchableOpacity
-                  onPress={handleOpenChatOptions}
-                  activeOpacity={0.7}
-                  style={[
-                    styles.optionButton,
-                    {
-                      borderColor: palette.accent,
-                      backgroundColor: `${palette.accent}08`,
-                    },
-                  ]}
-                >
-                  <View style={styles.optionIconWrapper}>
-                    <MessageCircle size={20} color={palette.accent} strokeWidth={1.8} />
-                  </View>
-                  <View style={styles.optionContent}>
-                    <Text style={[styles.optionTitle, { color: palette.title }]}>Chat with us</Text>
-                    <Text style={[styles.optionDescription, { color: palette.muted }]}>
-                      Start a conversation with our support team
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+            <ScrollView
+              contentContainerStyle={styles.optionsContainer}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
+              {!showChatOptions ? (
+                <>
+                  {/* Chat option */}
+                  <TouchableOpacity
+                    onPress={handleOpenChatOptions}
+                    activeOpacity={0.7}
+                    style={[
+                      styles.optionButton,
+                      {
+                        borderColor: palette.accent,
+                        backgroundColor: `${palette.accent}08`,
+                      },
+                    ]}
+                  >
+                    <View style={styles.optionIconWrapper}>
+                      <MessageCircle size={20} color={palette.accent} strokeWidth={1.8} />
+                    </View>
+                    <View style={styles.optionContent}>
+                      <Text style={[styles.optionTitle, { color: palette.title }]}>
+                        Chat with us
+                      </Text>
+                      <Text style={[styles.optionDescription, { color: palette.muted }]}>
+                        Start a conversation with our support team
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
 
-                {/* Email option */}
-                <TouchableOpacity
-                  onPress={handleSendEmail}
-                  activeOpacity={0.7}
-                  style={[
-                    styles.optionButton,
-                    {
-                      borderColor: palette.accent,
-                      backgroundColor: `${palette.accent}08`,
-                    },
-                  ]}
-                >
-                  <View style={styles.optionIconWrapper}>
-                    <Mail size={20} color={palette.accent} strokeWidth={1.8} />
-                  </View>
-                  <View style={styles.optionContent}>
-                    <Text style={[styles.optionTitle, { color: palette.title }]}>
-                      Send an email
-                    </Text>
-                    <Text style={[styles.optionDescription, { color: palette.muted }]}>
-                      {supportEmail}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.optionsContainer}>
-                {/* Back button header for chat options */}
-                <TouchableOpacity onPress={handleBack} style={styles.backButtonRow}>
-                  <ArrowLeft size={16} color={palette.accent} strokeWidth={2} />
-                  <Text style={[styles.backButtonText, { color: palette.accent }]}>Back</Text>
-                </TouchableOpacity>
+                  {/* Email option */}
+                  <TouchableOpacity
+                    onPress={handleSendEmail}
+                    activeOpacity={0.7}
+                    style={[
+                      styles.optionButton,
+                      {
+                        borderColor: palette.accent,
+                        backgroundColor: `${palette.accent}08`,
+                      },
+                    ]}
+                  >
+                    <View style={styles.optionIconWrapper}>
+                      <Mail size={20} color={palette.accent} strokeWidth={1.8} />
+                    </View>
+                    <View style={styles.optionContent}>
+                      <Text style={[styles.optionTitle, { color: palette.title }]}>
+                        Send an email
+                      </Text>
+                      <Text style={[styles.optionDescription, { color: palette.muted }]}>
+                        {supportEmail}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  {/* Back button header for chat options */}
+                  <TouchableOpacity onPress={handleBack} style={styles.backButtonRow}>
+                    <ArrowLeft size={16} color={palette.accent} strokeWidth={2} />
+                    <Text style={[styles.backButtonText, { color: palette.accent }]}>Back</Text>
+                  </TouchableOpacity>
 
-                {/* Telegram option */}
-                <TouchableOpacity
-                  onPress={handleTelegram}
-                  activeOpacity={0.7}
-                  style={[
-                    styles.optionButton,
-                    {
-                      borderColor: palette.accent,
-                      backgroundColor: `${palette.accent}08`,
-                    },
-                  ]}
-                >
-                  <View style={styles.optionIconWrapper}>
-                    <MessageSquare size={20} color={palette.accent} strokeWidth={1.8} />
-                  </View>
-                  <View style={styles.optionContent}>
-                    <Text style={[styles.optionTitle, { color: palette.title }]}>
-                      Join Telegram
-                    </Text>
-                    <Text style={[styles.optionDescription, { color: palette.muted }]}>
-                      Chat with our community
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                  {/* Telegram option */}
+                  <TouchableOpacity
+                    onPress={handleTelegram}
+                    activeOpacity={0.7}
+                    style={[
+                      styles.optionButton,
+                      {
+                        borderColor: palette.accent,
+                        backgroundColor: `${palette.accent}08`,
+                      },
+                    ]}
+                  >
+                    <View style={styles.optionIconWrapper}>
+                      <MessageSquare size={20} color={palette.accent} strokeWidth={1.8} />
+                    </View>
+                    <View style={styles.optionContent}>
+                      <Text style={[styles.optionTitle, { color: palette.title }]}>
+                        Join Telegram
+                      </Text>
+                      <Text style={[styles.optionDescription, { color: palette.muted }]}>
+                        Chat with our community
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
 
-                {/* WhatsApp Message option */}
-                <TouchableOpacity
-                  onPress={handleWhatsAppMessage}
-                  activeOpacity={0.7}
-                  style={[
-                    styles.optionButton,
-                    {
-                      borderColor: palette.accent,
-                      backgroundColor: `${palette.accent}08`,
-                    },
-                  ]}
-                >
-                  <View style={styles.optionIconWrapper}>
-                    <MessageCircle size={20} color={palette.accent} strokeWidth={1.8} />
-                  </View>
-                  <View style={styles.optionContent}>
-                    <Text style={[styles.optionTitle, { color: palette.title }]}>
-                      Send WhatsApp message
-                    </Text>
-                    <Text style={[styles.optionDescription, { color: palette.muted }]}>
-                      Message us directly
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                  {/* WhatsApp Message option */}
+                  <TouchableOpacity
+                    onPress={handleWhatsAppMessage}
+                    activeOpacity={0.7}
+                    style={[
+                      styles.optionButton,
+                      {
+                        borderColor: palette.accent,
+                        backgroundColor: `${palette.accent}08`,
+                      },
+                    ]}
+                  >
+                    <View style={styles.optionIconWrapper}>
+                      <MessageCircle size={20} color={palette.accent} strokeWidth={1.8} />
+                    </View>
+                    <View style={styles.optionContent}>
+                      <Text style={[styles.optionTitle, { color: palette.title }]}>
+                        Send WhatsApp message
+                      </Text>
+                      <Text style={[styles.optionDescription, { color: palette.muted }]}>
+                        Message us directly
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
 
-                {/* WhatsApp Group option */}
-                <TouchableOpacity
-                  onPress={handleWhatsAppGroup}
-                  activeOpacity={0.7}
-                  style={[
-                    styles.optionButton,
-                    {
-                      borderColor: palette.accent,
-                      backgroundColor: `${palette.accent}08`,
-                    },
-                  ]}
-                >
-                  <View style={styles.optionIconWrapper}>
-                    <MessageCircle size={20} color={palette.accent} strokeWidth={1.8} />
-                  </View>
-                  <View style={styles.optionContent}>
-                    <Text style={[styles.optionTitle, { color: palette.title }]}>
-                      Join WhatsApp group
-                    </Text>
-                    <Text style={[styles.optionDescription, { color: palette.muted }]}>
-                      Connect with our community
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                  {/* WhatsApp Group option */}
+                  <TouchableOpacity
+                    onPress={handleWhatsAppGroup}
+                    activeOpacity={0.7}
+                    style={[
+                      styles.optionButton,
+                      {
+                        borderColor: palette.accent,
+                        backgroundColor: `${palette.accent}08`,
+                      },
+                    ]}
+                  >
+                    <View style={styles.optionIconWrapper}>
+                      <MessageCircle size={20} color={palette.accent} strokeWidth={1.8} />
+                    </View>
+                    <View style={styles.optionContent}>
+                      <Text style={[styles.optionTitle, { color: palette.title }]}>
+                        Join WhatsApp group
+                      </Text>
+                      <Text style={[styles.optionDescription, { color: palette.muted }]}>
+                        Connect with our community
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
 
-                {/* Live Chat option */}
-                <TouchableOpacity
-                  onPress={handleLiveChat}
-                  activeOpacity={0.7}
-                  style={[
-                    styles.optionButton,
-                    {
-                      borderColor: palette.accent,
-                      backgroundColor: `${palette.accent}08`,
-                    },
-                  ]}
-                >
-                  <View style={styles.optionIconWrapper}>
-                    <Phone size={20} color={palette.accent} strokeWidth={1.8} />
-                  </View>
-                  <View style={styles.optionContent}>
-                    <Text style={[styles.optionTitle, { color: palette.title }]}>
-                      Start live chat
-                    </Text>
-                    <Text style={[styles.optionDescription, { color: palette.muted }]}>
-                      Chat with support agent
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-            )}
+                  {/* Live Chat option */}
+                  <TouchableOpacity
+                    onPress={handleLiveChat}
+                    activeOpacity={0.7}
+                    style={[
+                      styles.optionButton,
+                      {
+                        borderColor: palette.accent,
+                        backgroundColor: `${palette.accent}08`,
+                      },
+                    ]}
+                  >
+                    <View style={styles.optionIconWrapper}>
+                      <Phone size={20} color={palette.accent} strokeWidth={1.8} />
+                    </View>
+                    <View style={styles.optionContent}>
+                      <Text style={[styles.optionTitle, { color: palette.title }]}>
+                        Start live chat
+                      </Text>
+                      <Text style={[styles.optionDescription, { color: palette.muted }]}>
+                        Chat with support agent
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </>
+              )}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -331,8 +345,9 @@ const styles = StyleSheet.create({
   dialogBox: {
     borderRadius: 16,
     borderWidth: 1,
-    width: '85%',
-    maxWidth: 380,
+    width: '92%',
+    maxWidth: 420,
+    maxHeight: '82%',
     overflow: 'hidden',
   },
   dialogHeader: {
@@ -348,6 +363,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 0.1,
+    flexShrink: 1,
+    minWidth: 0,
   },
   closeButton: {
     width: 28,
@@ -363,6 +380,7 @@ const styles = StyleSheet.create({
   optionsContainer: {
     padding: 16,
     gap: 12,
+    paddingBottom: 18,
   },
   optionButton: {
     flexDirection: 'row',
@@ -371,6 +389,8 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: 'flex-start',
     gap: 12,
+    width: '100%',
+    minWidth: 0,
   },
   optionIconWrapper: {
     width: 40,
@@ -383,17 +403,22 @@ const styles = StyleSheet.create({
   optionContent: {
     flex: 1,
     gap: 4,
+    minWidth: 0,
   },
   optionTitle: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.2,
+    flexShrink: 1,
+    minWidth: 0,
   },
   optionDescription: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 16,
+    flexShrink: 1,
+    minWidth: 0,
   },
   backButtonRow: {
     flexDirection: 'row',
@@ -402,6 +427,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 4,
     marginBottom: 8,
+    minWidth: 0,
   },
   backButtonText: {
     fontFamily: ANEK_EXPANDED_FAMILY,

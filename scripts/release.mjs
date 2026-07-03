@@ -812,7 +812,7 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
     if (compareUrl) {
       console.log(`[dry-run] PR URL: ${compareUrl}`);
     }
-    return;
+    return { created: false, dryRun: true, url: compareUrl };
   }
 
   const existingPullRequest = repoSlug
@@ -825,25 +825,19 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
   });
 
   if (probe.status !== 0) {
-    if (compareUrl) {
-      console.warn(`gh is not available. Create the PR manually: ${compareUrl}`);
-      return;
-    }
-
-    console.warn('gh is not available. Create the release PR manually.');
-    return;
+    throw new Error(
+      compareUrl
+        ? `gh is not available. Release promotion cannot open or update the PR automatically: ${compareUrl}`
+        : 'gh is not available. Release promotion cannot open or update the PR automatically.'
+    );
   }
 
   if (!repoSlug) {
-    if (compareUrl) {
-      console.warn(
-        `Could not derive the GitHub repository slug. Create the PR manually: ${compareUrl}`
-      );
-      return;
-    }
-
-    console.warn('Could not derive the GitHub repository slug. Create the release PR manually.');
-    return;
+    throw new Error(
+      compareUrl
+        ? `Could not derive the GitHub repository slug. Release promotion cannot open or update the PR automatically: ${compareUrl}`
+        : 'Could not derive the GitHub repository slug. Release promotion cannot open or update the PR automatically.'
+    );
   }
 
   if (existingPullRequest) {
@@ -862,10 +856,11 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
 
     if ((result.status ?? 1) === 0) {
       const output = result.stdout.trim();
+      let url = existingPullRequest.url;
       if (output.length > 0) {
         try {
           const parsed = JSON.parse(output);
-          const url = typeof parsed?.html_url === 'string' ? parsed.html_url : null;
+          url = typeof parsed?.html_url === 'string' ? parsed.html_url : url;
           if (url) {
             console.log(url);
           }
@@ -876,7 +871,11 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
       console.log(
         `Updated existing pull request #${existingPullRequest.number} for ${base} <- ${head}.`
       );
-      return;
+      return {
+        created: false,
+        number: existingPullRequest.number,
+        url,
+      };
     }
 
     if (result.stderr) {
@@ -907,10 +906,11 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
 
   if ((result.status ?? 1) === 0) {
     const output = result.stdout.trim();
+    let url = null;
     if (output.length > 0) {
       try {
         const parsed = JSON.parse(output);
-        const url = typeof parsed?.html_url === 'string' ? parsed.html_url : null;
+        url = typeof parsed?.html_url === 'string' ? parsed.html_url : null;
         if (url) {
           console.log(url);
         }
@@ -919,7 +919,7 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
       }
     }
     console.log(`Created pull request for ${base} <- ${head}.`);
-    return;
+    return { created: true, url };
   }
 
   const rediscoveredPullRequest = findOpenPullRequest({ repoSlug, base, head, dryRun });
@@ -939,10 +939,11 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
 
     if ((retry.status ?? 1) === 0) {
       const output = retry.stdout.trim();
+      let url = rediscoveredPullRequest.url;
       if (output.length > 0) {
         try {
           const parsed = JSON.parse(output);
-          const url = typeof parsed?.html_url === 'string' ? parsed.html_url : null;
+          url = typeof parsed?.html_url === 'string' ? parsed.html_url : url;
           if (url) {
             console.log(url);
           }
@@ -953,7 +954,7 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
       console.log(
         `Updated existing pull request #${rediscoveredPullRequest.number} for ${base} <- ${head}.`
       );
-      return;
+      return { created: false, number: rediscoveredPullRequest.number, url };
     }
 
     if (retry.stderr) {
@@ -961,16 +962,15 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
     }
   }
 
-  if (compareUrl) {
-    console.warn(`gh api failed. Create the PR manually: ${compareUrl}`);
-    return;
-  }
-
   if (result.stderr) {
     process.stderr.write(result.stderr);
   }
 
-  console.warn('gh api failed. Create the release PR manually.');
+  throw new Error(
+    compareUrl
+      ? `gh api failed to open or update the PR automatically: ${compareUrl}`
+      : 'gh api failed to open or update the PR automatically.'
+  );
 }
 
 function promoteRelease({ version, remote, dryRun, productionBranch }) {
