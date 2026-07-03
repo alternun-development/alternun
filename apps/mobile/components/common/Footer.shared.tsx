@@ -90,7 +90,7 @@ function resolveRuntimeHostname(): string | null {
 
 function isDevelopmentRuntime(hostname: string | null): boolean {
   if (!hostname) {
-    return true;
+    return false;
   }
 
   return (

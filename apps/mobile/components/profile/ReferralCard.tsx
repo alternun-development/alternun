@@ -1,14 +1,23 @@
 import { GlassCard } from '@alternun/ui';
-import { Copy, Link2, Share2, UserRoundCheck, Users } from 'lucide-react-native';
+import {
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Link2,
+  Share2,
+  UserRoundCheck,
+  Users,
+} from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  LayoutAnimation,
+  Platform,
   Share,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Platform,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import type { User } from '../auth/AppAuthProvider';
@@ -41,6 +50,7 @@ interface ReferralCardProps {
 }
 
 const REFERRAL_FETCH_TIMEOUT_MS = 12000;
+const INVITEES_PAGE_SIZE = 5;
 
 function truncateMiddle(value: string, start = 12, end = 10): string {
   if (value.length <= start + end + 3) {
@@ -97,6 +107,8 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inviteesOpen, setInviteesOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(INVITEES_PAGE_SIZE);
   const profileDisplayName = useMemo(() => getProfileDisplayName(user), [user]);
 
   useEffect(() => {
@@ -472,38 +484,115 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
 
       {summary?.referred_users?.length ? (
         <View style={styles.inviteesSection}>
-          <Text style={[styles.inviteesTitle, { color: c.text }]}>
-            {t('profile.referral.invitedUsers', undefined, 'Invited users')}
-          </Text>
-          <View style={styles.inviteesList}>
-            {summary.referred_users.map((invitee) => {
-              const inviteeLabel =
-                invitee.name ??
-                invitee.email ??
-                t('shared.labels.anonymous', undefined, 'Anonymous');
-              return (
-                <View
-                  key={invitee.user_id}
+          <TouchableOpacity
+            activeOpacity={0.75}
+            onPress={() => {
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+              setInviteesOpen((v) => !v);
+              setVisibleCount(INVITEES_PAGE_SIZE);
+            }}
+            style={[
+              styles.inviteesHeader,
+              {
+                borderColor: inviteesOpen ? `${c.accent}26` : c.cardBorder,
+                backgroundColor: inviteesOpen
+                  ? isDark
+                    ? 'rgba(28,203,161,0.06)'
+                    : 'rgba(28,203,161,0.07)'
+                  : isDark
+                  ? 'rgba(255,255,255,0.03)'
+                  : 'rgba(11,45,49,0.03)',
+              },
+            ]}
+          >
+            <Text style={[styles.inviteesTitle, { color: inviteesOpen ? c.accent : c.text }]}>
+              {t('profile.referral.invitedUsers', undefined, 'Invited users')}
+              {` (${summary.referred_users.length})`}
+            </Text>
+            {inviteesOpen ? (
+              <ChevronUp size={14} color={c.accent} strokeWidth={2.5} />
+            ) : (
+              <ChevronDown size={14} color={c.muted} strokeWidth={2.5} />
+            )}
+          </TouchableOpacity>
+
+          {inviteesOpen ? (
+            <View style={styles.inviteesList}>
+              {summary.referred_users.slice(0, visibleCount).map((invitee) => {
+                const inviteeLabel =
+                  invitee.name ??
+                  invitee.email ??
+                  t('shared.labels.anonymous', undefined, 'Anonymous');
+                return (
+                  <View
+                    key={invitee.user_id}
+                    style={[
+                      styles.inviteeRow,
+                      {
+                        borderColor: c.cardBorder,
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(11,45,49,0.03)',
+                      },
+                    ]}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.inviteeName, { color: c.text }]}>{inviteeLabel}</Text>
+                      <Text style={[styles.inviteeMeta, { color: c.muted }]}>
+                        {invitee.referral_code
+                          ? `${invitee.referral_code} · ${invitee.created_at.slice(0, 10)}`
+                          : invitee.created_at.slice(0, 10)}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+
+              {visibleCount < summary.referred_users.length ? (
+                <TouchableOpacity
+                  activeOpacity={0.75}
+                  onPress={() => {
+                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                    setVisibleCount((n) => n + INVITEES_PAGE_SIZE);
+                  }}
                   style={[
-                    styles.inviteeRow,
-                    {
-                      borderColor: c.cardBorder,
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(11,45,49,0.03)',
-                    },
+                    styles.paginationBtn,
+                    { borderColor: `${c.accent}26`, backgroundColor: `${c.accent}0a` },
                   ]}
                 >
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.inviteeName, { color: c.text }]}>{inviteeLabel}</Text>
-                    <Text style={[styles.inviteeMeta, { color: c.muted }]}>
-                      {invitee.referral_code
-                        ? `${invitee.referral_code} · ${invitee.created_at.slice(0, 10)}`
-                        : invitee.created_at.slice(0, 10)}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
+                  <Text style={[styles.paginationText, { color: c.accent }]}>
+                    {t(
+                      'profile.referral.showMore',
+                      {
+                        count: Math.min(
+                          INVITEES_PAGE_SIZE,
+                          summary.referred_users.length - visibleCount
+                        ),
+                      },
+                      `Show ${Math.min(
+                        INVITEES_PAGE_SIZE,
+                        summary.referred_users.length - visibleCount
+                      )} more`
+                    )}
+                  </Text>
+                </TouchableOpacity>
+              ) : visibleCount > INVITEES_PAGE_SIZE ? (
+                <TouchableOpacity
+                  activeOpacity={0.75}
+                  onPress={() => {
+                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                    setVisibleCount(INVITEES_PAGE_SIZE);
+                  }}
+                  style={[
+                    styles.paginationBtn,
+                    { borderColor: c.cardBorder, backgroundColor: 'transparent' },
+                  ]}
+                >
+                  <Text style={[styles.paginationText, { color: c.muted }]}>
+                    {t('profile.referral.showLess', undefined, 'Show less')}
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          ) : null}
         </View>
       ) : null}
 
@@ -689,13 +778,22 @@ const styles = StyleSheet.create({
   },
   inviteesSection: {
     marginTop: 12,
+    gap: 8,
+  },
+  inviteesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   inviteesTitle: {
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 8,
   },
   inviteesList: {
     gap: 8,
@@ -719,6 +817,17 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '500',
     fontFamily: 'monospace',
+  },
+  paginationBtn: {
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 9,
+  },
+  paginationText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
   errorText: {
     marginTop: 8,

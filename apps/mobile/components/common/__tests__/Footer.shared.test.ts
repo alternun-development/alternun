@@ -39,6 +39,18 @@ describe('Footer.shared version metadata', () => {
     expect(versionMetadata.source).toBe('version.production.json');
   });
 
+  it('resolves the production manifest when EXPO_PUBLIC_ORIGIN is unset (SSR/static build)', () => {
+    delete process.env.EXPO_PUBLIC_ORIGIN;
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', { value: { origin: '' }, writable: true });
+
+    const versionMetadata = resolveVersionMetadata();
+
+    Object.defineProperty(window, 'location', { value: originalLocation, writable: true });
+    expect(versionMetadata.version).toBe(productionManifest.version);
+    expect(versionMetadata.source).toBe('version.production.json');
+  });
+
   it('resolves the branch release version for the footer badge', () => {
     process.env.EXPO_PUBLIC_ORIGIN = 'https://testnet.airs.alternun.co';
 

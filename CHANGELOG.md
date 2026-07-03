@@ -1,13 +1,82 @@
-## [1.1.3](https://github.com/alternun-development/alternun/compare/v1.1.3-dev.0...v1.1.3) (2026-07-01)
+## [1.1.5](https://github.com/alternun-development/alternun/compare/v1.1.5-dev.0...v1.1.5) (2026-07-03)
 
 ### Bug Fixes
 
-- **repo:** chore: sync README and version files to v1.1.3 --no-validate-reentry
+- **repo:** chore: sync README and mobile version to v1.1.5-dev.0 --no-validate-reentry
 
 
 
 
 
+
+## [1.1.5](https://github.com/alternun-development/alternun/compare/v1.1.3-dev.0...v1.1.5) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): production version display and auth form spacing
+- **repo:** chore: sync root version.production.json to v1.1.4 --no-validate-reentry
+- **repo:** chore: sync version files and CHANGELOG to v1.1.4-dev.0 after production release --no-validate-reentry
+- **repo:** chore(repo,mobile): README, version.production
+- **repo:** chore: sync mobile production version to 1.1.3 --no-validate-reentry
+
+### Bug Fixes
+
+- **api:** guard null status before comparison in signup error handler ([dbf4fce](https://github.com/alternun-development/alternun/commit/dbf4fcee817dd359515c7373bab13bcbd4b806b8))
+- **api:** listen on 0.0.0.0 to resolve localhost CORS null-status errors ([29b7628](https://github.com/alternun-development/alternun/commit/29b7628bbc18379ea151f79071499e8402ecaf8f))
+- **auth:** referral code hidden by default, back button, fix sessionStorage pre-fill ([08242f5](https://github.com/alternun-development/alternun/commit/08242f5bfa65ea711f1b5f90d93321d430f2ab74))
+- **auth:** resolve signup 500 error and add social login to signup flow ([b2da482](https://github.com/alternun-development/alternun/commit/b2da482843163d843b6e0895aa1017356d7bdf61))
+- **mobile:** production version display and auth form spacing ([55d0bf6](https://github.com/alternun-development/alternun/commit/55d0bf6971de93be1d6fd79952ed0fc227eba85e))
+- **referrals:** allow user_id in POST body and always show referred-by in profile card ([4dc5f7b](https://github.com/alternun-development/alternun/commit/4dc5f7b76378f17fb10160dcdb77f47ff1d9c333))
+- **referrals:** skip attribution on invalid/self referral code instead of 400 ([f3aaa41](https://github.com/alternun-development/alternun/commit/f3aaa41babe904c8d2357eda64822ed89defa27d))
+
+### Features
+
+- **auth:** improve signup UI and fix referral flow for social logins ([1e65f92](https://github.com/alternun-development/alternun/commit/1e65f92f94d35850a3db87b9941dcf2673209491))
+- **auth:** refactor signup flow into two-path selection UI ([9712b44](https://github.com/alternun-development/alternun/commit/9712b442b0c2542cb12b1caecd37c5728b64f9a7))
+
+## [1.1.4](https://github.com/alternun-development/alternun/compare/v1.1.3-dev.0...v1.1.4) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** chore: sync mobile production version to 1.1.3 --no-validate-reentry
+- **repo:** feat(auth): improve signup UI and fix referral flow for social logins
+- **repo:** fix(auth): referral code hidden by default, back button, fix sessionStorage pre-fill
+- **repo:** feat(auth): refactor signup flow into two-path selection UI
+- **repo:** fix(referrals): skip attribution on invalid/self referral code instead of 400
+
+### Bug Fixes
+
+- **api:** guard null status before comparison in signup error handler ([dbf4fce](https://github.com/alternun-development/alternun/commit/dbf4fcee817dd359515c7373bab13bcbd4b806b8))
+- **api:** listen on 0.0.0.0 to resolve localhost CORS null-status errors ([29b7628](https://github.com/alternun-development/alternun/commit/29b7628bbc18379ea151f79071499e8402ecaf8f))
+- **auth:** referral code hidden by default, back button, fix sessionStorage pre-fill ([08242f5](https://github.com/alternun-development/alternun/commit/08242f5bfa65ea711f1b5f90d93321d430f2ab74))
+- **auth:** resolve signup 500 error and add social login to signup flow ([b2da482](https://github.com/alternun-development/alternun/commit/b2da482843163d843b6e0895aa1017356d7bdf61))
+- **referrals:** allow user_id in POST body and always show referred-by in profile card ([4dc5f7b](https://github.com/alternun-development/alternun/commit/4dc5f7b76378f17fb10160dcdb77f47ff1d9c333))
+- **referrals:** skip attribution on invalid/self referral code instead of 400 ([f3aaa41](https://github.com/alternun-development/alternun/commit/f3aaa41babe904c8d2357eda64822ed89defa27d))
+
+### Features
+
+- **auth:** improve signup UI and fix referral flow for social logins ([1e65f92](https://github.com/alternun-development/alternun/commit/1e65f92f94d35850a3db87b9941dcf2673209491))
+- **auth:** refactor signup flow into two-path selection UI ([9712b44](https://github.com/alternun-development/alternun/commit/9712b442b0c2542cb12b1caecd37c5728b64f9a7))
+
+## [1.1.3](https://github.com/alternun-development/alternun/compare/v1.1.2...v1.1.3) (2026-07-01)
+
+## [1.1.4](https://github.com/alternun-development/alternun/compare/v1.1.3-dev.0...v1.1.4) (2026-07-03)
+
+### Bug Fixes
+
+- **api:** guard null status before comparison in signup error handler ([dbf4fce](https://github.com/alternun-development/alternun/commit/dbf4fcee817dd359515c7373bab13bcbd4b806b8))
+- **api:** listen on 0.0.0.0 to resolve localhost CORS null-status errors ([29b7628](https://github.com/alternun-development/alternun/commit/29b7628bbc18379ea151f79071499e8402ecaf8f))
+- **auth:** referral code hidden by default, back button, fix sessionStorage pre-fill ([08242f5](https://github.com/alternun-development/alternun/commit/08242f5bfa65ea711f1b5f90d93321d430f2ab74))
+- **auth:** resolve signup 500 error and add social login to signup flow ([b2da482](https://github.com/alternun-development/alternun/commit/b2da482843163d843b6e0895aa1017356d7bdf61))
+- **referrals:** allow user_id in POST body and always show referred-by in profile card ([4dc5f7b](https://github.com/alternun-development/alternun/commit/4dc5f7b76378f17fb10160dcdb77f47ff1d9c333))
+- **referrals:** skip attribution on invalid/self referral code instead of 400 ([f3aaa41](https://github.com/alternun-development/alternun/commit/f3aaa41babe904c8d2357eda64822ed89defa27d))
+
+### Features
+
+- **auth:** improve signup UI and fix referral flow for social logins ([1e65f92](https://github.com/alternun-development/alternun/commit/1e65f92f94d35850a3db87b9941dcf2673209491))
+- **auth:** refactor signup flow into two-path selection UI ([9712b44](https://github.com/alternun-development/alternun/commit/9712b442b0c2542cb12b1caecd37c5728b64f9a7))
+
+## [1.1.3](https://github.com/alternun-development/alternun/compare/v1.1.2...v1.1.3) (2026-07-01)
 
 ## [1.1.3](https://github.com/alternun-development/alternun/compare/v1.1.2...v1.1.3) (2026-07-01)
 
