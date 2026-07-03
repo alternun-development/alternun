@@ -4,12 +4,12 @@ jest.mock('expo-image', (): { __esModule: boolean; Image: () => null } => ({
   Image: () => null,
 }));
 
+jest.mock('../../../utils/changelogData', () => ({
+  APP_VERSION: '9.9.9-test',
+}));
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const developmentManifest = require('../../../version.development.json') as {
-  version: string;
-};
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const productionManifest = require('../../../version.production.json') as {
   version: string;
 };
 import { resolveAppPackageVersion, resolveVersionMetadata } from '../Footer.shared';
@@ -30,16 +30,16 @@ describe('Footer.shared version metadata', () => {
     expect(versionMetadata.source).toBe('version.development.json');
   });
 
-  it('resolves the production manifest for production runtimes', () => {
+  it('resolves APP_VERSION from changelogData for production runtimes', () => {
     process.env.EXPO_PUBLIC_ORIGIN = 'https://airs.alternun.co';
 
     const versionMetadata = resolveVersionMetadata();
 
-    expect(versionMetadata.version).toBe(productionManifest.version);
-    expect(versionMetadata.source).toBe('version.production.json');
+    expect(versionMetadata.version).toBe('9.9.9-test');
+    expect(versionMetadata.source).toBe('changelogData');
   });
 
-  it('resolves the production manifest when EXPO_PUBLIC_ORIGIN is unset (SSR/static build)', () => {
+  it('resolves APP_VERSION from changelogData when EXPO_PUBLIC_ORIGIN is unset (SSR/static build)', () => {
     delete process.env.EXPO_PUBLIC_ORIGIN;
     const originalLocation = window.location;
     Object.defineProperty(window, 'location', { value: { origin: '' }, writable: true });
@@ -47,8 +47,8 @@ describe('Footer.shared version metadata', () => {
     const versionMetadata = resolveVersionMetadata();
 
     Object.defineProperty(window, 'location', { value: originalLocation, writable: true });
-    expect(versionMetadata.version).toBe(productionManifest.version);
-    expect(versionMetadata.source).toBe('version.production.json');
+    expect(versionMetadata.version).toBe('9.9.9-test');
+    expect(versionMetadata.source).toBe('changelogData');
   });
 
   it('resolves the branch release version for the footer badge', () => {
