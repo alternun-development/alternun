@@ -310,7 +310,8 @@ export default function Dashboard({
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
   const scrollTopInset = Math.max(topNavHeight > 0 ? topNavHeight + 16 : 0, isMobile ? 88 : 104);
-  const scrollBottomInset = isMobile ? 18 : 8;
+  const mobileScrollBottomInset = Math.max(footerHeight + 24, 96);
+  const scrollBottomInset = isMobile ? mobileScrollBottomInset : 8;
   const {
     themeMode,
     language,
@@ -611,7 +612,7 @@ export default function Dashboard({
             onPress={scrollToTop}
             isDark={isDark}
             isMobile={isMobile}
-            footerBottomOffset={isMobile ? footerHeight + 18 : undefined}
+            footerBottomOffset={isMobile ? mobileScrollBottomInset : undefined}
             bounceStyle={bounceStyle}
           />
 

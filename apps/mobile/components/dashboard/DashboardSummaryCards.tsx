@@ -21,14 +21,13 @@ import { useAppTranslation } from '../i18n/useAppTranslation';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import { listWalletAccounts, type WalletAccountRecord } from '../wallet/walletApiClient';
 import { resolveWalletSummaryState } from './walletSummary';
+import { getDashboardSummaryCardsLayout } from './dashboardSummaryCardsLayout';
 
 const CoinsIcon = Coins as React.FC<LucideProps>;
 const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
-const SUMMARY_CARDS_STACK_BREAKPOINT = 720;
-const SUMMARY_CARDS_DENSE_BREAKPOINT = 400;
 
 interface AuthClient {
   getSessionToken(): Promise<string | null>;
@@ -40,20 +39,6 @@ interface DashboardSummaryCardsProps {
   client?: AuthClient;
   signedIn?: boolean;
   airsBalance?: number | null;
-}
-
-export function getDashboardSummaryCardsLayout(width: number): {
-  isMobile: boolean;
-  isCompactMobile: boolean;
-  isDenseAtnCard: boolean;
-} {
-  const isMobile = width < SUMMARY_CARDS_STACK_BREAKPOINT;
-
-  return {
-    isMobile,
-    isCompactMobile: isMobile,
-    isDenseAtnCard: width < SUMMARY_CARDS_DENSE_BREAKPOINT,
-  };
 }
 
 function getPalette(isDark: boolean): {
@@ -612,8 +597,11 @@ export default function DashboardSummaryCards({
   airsBalance,
 }: DashboardSummaryCardsProps): React.JSX.Element {
   const p = getPalette(isDark);
-  const { width } = useWindowDimensions();
-  const { isMobile, isCompactMobile, isDenseAtnCard } = getDashboardSummaryCardsLayout(width);
+  const { width, fontScale = 1 } = useWindowDimensions();
+  const { isMobile, isCompactMobile, isDenseAtnCard } = getDashboardSummaryCardsLayout(
+    width,
+    fontScale
+  );
   const desktopMinHeight = isMobile ? undefined : 480;
   const [eligibleUsers, setEligibleUsers] = useState<number | null>(null);
   const [eligibleUsersLoading, setEligibleUsersLoading] = useState(false);
@@ -880,6 +868,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '500',
+    minWidth: 0,
   },
   statLabelCompact: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -1010,6 +999,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 8,
+    minWidth: 0,
   },
   rbiInfoTitle: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -1053,6 +1043,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginTop: 12,
     gap: 8,
+    minWidth: 0,
   },
   rbiDocLinkCompact: {
     borderRadius: 12,
@@ -1097,6 +1088,7 @@ const styles = StyleSheet.create({
   tokenLabelBlock: {
     flex: 1,
     gap: 3,
+    minWidth: 0,
   },
   tokenLabel: {
     fontFamily: ANEK_EXPANDED_FAMILY,
