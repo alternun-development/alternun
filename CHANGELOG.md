@@ -1,13 +1,27 @@
+## [1.1.6](https://github.com/alternun-development/alternun/compare/v1.1.5...v1.1.6) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** chore(mobile): version.production
+- **repo:** fix(referrals): award AIRS bonus to both referrer and referee on signup
+- **repo:** test(mobile): cover null-hostname branch in isDevelopmentRuntime
+- **repo:** feat(profile): collapsible invited users section with pagination in referral card
+- **repo:** feat(auth): add Enter key submit support to sign-in and sign-up email forms
+
+### Bug Fixes
+
+- **referrals:** award AIRS bonus to both referrer and referee on signup ([e163917](https://github.com/alternun-development/alternun/commit/e163917fe50d6df4006882510507758123245dd3))
+
+### Features
+
+- **auth:** add Enter key submit support to sign-in and sign-up email forms ([fbac6b7](https://github.com/alternun-development/alternun/commit/fbac6b75cde541053f7159ff3b64f69a2968202a))
+- **profile:** collapsible invited users section with pagination in referral card ([0874256](https://github.com/alternun-development/alternun/commit/0874256fede6ad6781ec60485a03b566246fed6a))
+
 ## [1.1.5](https://github.com/alternun-development/alternun/compare/v1.1.5-dev.0...v1.1.5) (2026-07-03)
 
 ### Bug Fixes
 
 - **repo:** chore: sync README and mobile version to v1.1.5-dev.0 --no-validate-reentry
-
-
-
-
-
 
 ## [1.1.5](https://github.com/alternun-development/alternun/compare/v1.1.3-dev.0...v1.1.5) (2026-07-03)
 
