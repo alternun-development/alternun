@@ -12,6 +12,10 @@ jest.mock('../../../utils/changelogData', () => ({
 const developmentManifest = require('../../../version.development.json') as {
   version: string;
 };
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const productionManifest = require('../../../version.production.json') as {
+  version: string;
+};
 import { resolveAppPackageVersion, resolveVersionMetadata } from '../Footer.shared';
 
 describe('Footer.shared version metadata', () => {
@@ -19,6 +23,7 @@ describe('Footer.shared version metadata', () => {
 
   afterEach(() => {
     process.env.EXPO_PUBLIC_ORIGIN = originalOrigin;
+    jest.resetModules();
   });
 
   it('resolves the development manifest for testnet and local runtimes', () => {
@@ -49,6 +54,22 @@ describe('Footer.shared version metadata', () => {
     Object.defineProperty(window, 'location', { value: originalLocation, writable: true });
     expect(versionMetadata.version).toBe('9.9.9-test');
     expect(versionMetadata.source).toBe('changelogData');
+  });
+
+  it('falls back to version.production.json when APP_VERSION is empty', () => {
+    jest.resetModules();
+    jest.doMock('../../../utils/changelogData', () => ({ APP_VERSION: '' }));
+
+    // Re-require after resetting module registry so the empty APP_VERSION is picked up
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { resolveVersionMetadata: freshResolve } =
+      require('../Footer.shared') as typeof import('../Footer.shared');
+
+    process.env.EXPO_PUBLIC_ORIGIN = 'https://airs.alternun.co';
+    const versionMetadata = freshResolve();
+
+    expect(versionMetadata.version).toBe(productionManifest.version);
+    expect(versionMetadata.source).toBe('version.production.json');
   });
 
   it('resolves the branch release version for the footer badge', () => {
