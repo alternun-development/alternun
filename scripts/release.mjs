@@ -709,14 +709,19 @@ function findOpenPullRequest({ repoSlug, base, head, dryRun }) {
   }
 }
 
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function extractChangelogSection(version) {
   const changelogPath = path.join(REPO_ROOT, 'CHANGELOG.md');
   if (!fs.existsSync(changelogPath)) return null;
 
   const text = fs.readFileSync(changelogPath, 'utf8');
+  const safeVersion = escapeRegExp(version);
   // Match the section comparing from the previous prod tag (no -dev suffix) to this version
   const heading = new RegExp(
-    `^## \\[${version.replace(/\./g, '\\.')}\\]\\([^)]*v[^.]+\\.[^.]+\\.[^-]+\\.\\.\\.v${version.replace(/\./g, '\\.')}\\)`,
+    `^## \\[${safeVersion}\\]\\([^)]*v[^.]+\\.[^.]+\\.[^-]+\\.\\.\\.v${safeVersion}\\)`,
     'm'
   );
   const start = text.search(heading);
