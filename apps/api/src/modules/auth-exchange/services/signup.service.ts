@@ -1,4 +1,4 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger, Optional } from '@nestjs/common';
 import { SignUpRequestDto } from '../dto/signup-request.dto';
 import { SignUpResponseDto } from '../dto/signup-response.dto';
 import {
@@ -160,7 +160,10 @@ export class SignupService {
         error: message,
       });
 
-      throw new Error(`PROVIDER_ERROR: ${message}`);
+      throw new HttpException(
+        `PROVIDER_ERROR: ${message}`,
+        (status ?? 0) >= 500 ? HttpStatus.BAD_GATEWAY : HttpStatus.UNAUTHORIZED
+      );
     }
   }
 

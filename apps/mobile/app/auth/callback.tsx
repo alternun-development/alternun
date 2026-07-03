@@ -31,6 +31,23 @@ import {
   type BetterAuthSessionRestoreClient,
 } from '../../components/auth/betterAuthSessionRestore';
 import { ToastSystem, type ToastItem } from '@alternun/ui';
+import {
+  hasPendingReferralData,
+  readPendingReferralData,
+  clearPendingReferralData,
+} from '../../components/auth/referralStorage';
+import { savePendingReferralData } from '../../components/auth/referralPersistence';
+
+async function applyPendingReferral(userId: string): Promise<void> {
+  const pending = readPendingReferralData();
+  if (!pending) return;
+  try {
+    await savePendingReferralData(userId, pending);
+    clearPendingReferralData();
+  } catch {
+    // non-fatal — referral can be retried via auth.tsx effect
+  }
+}
 
 const INITIAL_CALLBACK_SEARCH = typeof window !== 'undefined' ? window.location.search : '';
 const INITIAL_CALLBACK_HASH = typeof window !== 'undefined' ? window.location.hash : '';
@@ -183,10 +200,17 @@ export default function AuthCallbackRoute(): React.JSX.Element {
         retries: 3,
         retryDelayMs: 250,
       })
-        .then((restored) => {
+        .then(async (restored) => {
           if (!restored) {
             setErrorMessage(t('authCallback.errors.finalizeFailed'));
             return;
+          }
+
+          if (hasPendingReferralData() && typeof callbackClient.getUser === 'function') {
+            const user = await Promise.resolve(callbackClient.getUser()).catch(() => null);
+            if (user?.id) {
+              await applyPendingReferral(user.id);
+            }
           }
 
           finishRedirect();
@@ -207,8 +231,11 @@ export default function AuthCallbackRoute(): React.JSX.Element {
           supabaseUserId = await authentikPreset.onSessionReady(session.claims, session.provider);
         },
       })
-        .then((session) => {
+        .then(async (session) => {
           callbackClient.setOidcUser?.(oidcSessionToUser(session, supabaseUserId));
+          if (supabaseUserId && hasPendingReferralData()) {
+            await applyPendingReferral(supabaseUserId);
+          }
           finishRedirect();
         })
         .catch((error: unknown) => {
@@ -249,7 +276,10 @@ export default function AuthCallbackRoute(): React.JSX.Element {
           typeof callbackClient.getUser === 'function' ? callbackClient.getUser() : null
         ).catch(() => undefined);
       })
-      .then(() => {
+      .then(async (user) => {
+        if (user?.id && hasPendingReferralData()) {
+          await applyPendingReferral(user.id);
+        }
         setSuccessMessage(successCopy.message);
         pushToast(successCopy.title, successCopy.message);
         if (typeof window !== 'undefined') {
