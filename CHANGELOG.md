@@ -1,3 +1,14 @@
+## [1.1.8](https://github.com/alternun-development/alternun/compare/v1.1.8-dev.0...v1.1.8) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** chore: sync README and mobile version to v1.1.8-dev.0 --no-validate-reentry
+
+
+
+
+
+
 ## [1.1.8](https://github.com/alternun-development/alternun/compare/v1.1.7...v1.1.8) (2026-07-03)
 
 ### Bug Fixes
