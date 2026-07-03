@@ -25,6 +25,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { ChangelogDrawer, ThemeProvider } from '@alternun/ui';
 import SupportButton from './SupportButton';
+import { createSupportDialogPalette } from './supportDialogPalette';
 import { createTypographyStyles } from '../theme/typography';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import {
@@ -371,7 +372,10 @@ export default function LandingFooter(): React.JSX.Element {
                   triggerBorderColor={isDark ? undefined : 'rgba(255,255,255,0.16)'}
                 />
               </ThemeProvider>
-              <SupportButton supportEmail='support@alternun.co' palette={palette} />
+              <SupportButton
+                supportEmail='support@alternun.co'
+                palette={createSupportDialogPalette(isDark)}
+              />
             </View>
           </View>
         </ImageBackground>
