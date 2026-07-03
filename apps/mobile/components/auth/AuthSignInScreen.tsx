@@ -2481,7 +2481,8 @@ const styles = createTypographyStyles({
     alignItems: 'flex-start',
     gap: 12,
     marginBottom: 4,
-    zIndex: 50,
+    position: 'relative',
+    zIndex: 9998,
   },
   headerModal: {
     position: 'relative',
