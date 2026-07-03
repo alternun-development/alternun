@@ -118,18 +118,13 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.6**
+Current version: **1.1.7**
 
-## 📋 Latest Changes (v1.1.6)
+## 📋 Latest Changes (v1.1.7)
 
 ### Bug Fixes
 
-- **referrals:** award AIRS bonus to both referrer and referee on signup ([e163917](https://github.com/alternun-development/alternun/commit/e163917fe50d6df4006882510507758123245dd3))
-
-### Features
-
-- **auth:** add Enter key submit support to sign-in and sign-up email forms ([fbac6b7](https://github.com/alternun-development/alternun/commit/fbac6b75cde541053f7159ff3b64f69a2968202a))
-- **profile:** collapsible invited users section with pagination in referral card ([0874256](https://github.com/alternun-development/alternun/commit/0874256fede6ad6781ec60485a03b566246fed6a))
+- **auth:** settings menu Language/Theme clicks no longer close the dropdown ([b0bf6e6](https://github.com/alternun-development/alternun/commit/b0bf6e66ada043fb505a3f593a03919675f8b85f))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
