@@ -118,13 +118,13 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.7**
+Current version: **1.1.10**
 
-## 📋 Latest Changes (v1.1.7)
+## 📋 Latest Changes (v1.1.10)
 
 ### Bug Fixes
 
-- **auth:** settings menu Language/Theme clicks no longer close the dropdown ([b0bf6e6](https://github.com/alternun-development/alternun/commit/b0bf6e66ada043fb505a3f593a03919675f8b85f))
+- **mobile:** remove Mi perfil heading, reorder tabs, tighten top spacing ([cab0a2c](https://github.com/alternun-development/alternun/commit/cab0a2cf08f40fa4e972c5da4e3fd4e725372470))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

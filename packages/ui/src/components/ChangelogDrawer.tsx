@@ -193,8 +193,9 @@ export function parseChangelog(raw: string): ChangelogEntry[] {
   // Split at every "## [" boundary (version header)
   const blocks = raw.split(/(?=^## \[)/m).filter((b) => /^## \[/.test(b.trim()));
 
-  const entries: ChangelogEntry[] = [];
-  const seen = new Set<string>();
+  // Collect all blocks per version so we can pick the best one (the section
+  // comparing to the previous production release, not the dev→prod diff).
+  const versionBlocks = new Map<string, { compareUrl?: string; date: string; lines: string[] }[]>();
 
   for (const block of blocks) {
     const lines = block.split('\n');
@@ -207,11 +208,29 @@ export function parseChangelog(raw: string): ChangelogEntry[] {
     if (!m) continue;
 
     const version = m[1];
-    if (seen.has(version)) continue; // deduplicate
-    seen.add(version);
+    // Skip dev pre-releases — they are internal and not meaningful to end users.
+    if (/-dev\./.test(version)) continue;
 
     const compareUrl = m[2] ?? undefined;
     const date = m[3] ?? m[4] ?? '';
+
+    const existing = versionBlocks.get(version) ?? [];
+    existing.push({ compareUrl, date, lines });
+    versionBlocks.set(version, existing);
+  }
+
+  const entries: ChangelogEntry[] = [];
+
+  for (const [version, candidates] of Array.from(versionBlocks)) {
+    // Prefer the block whose compare URL references a previous production
+    // (non-dev) tag. This skips the auto-generated dev→prod diff section.
+    const best =
+      candidates.find(
+        (c: { compareUrl?: string }) => c.compareUrl && !/-dev\./.test(c.compareUrl)
+      ) ?? candidates[0];
+    if (!best) continue;
+
+    const { compareUrl, date, lines } = best;
 
     // Find ### section headers within this block
     const sections: ChangelogSection[] = [];
@@ -231,6 +250,10 @@ export function parseChangelog(raw: string): ChangelogEntry[] {
         const scopeMatch = itemText.match(/^\*\*([^*]+)\*\*:\s*(.*)/);
         const scope = scopeMatch?.[1];
         const text = scopeMatch ? scopeMatch[2] : itemText;
+
+        // Skip housekeeping entries that are only meaningful to maintainers.
+        if (scope === 'repo') continue;
+
         const commitReference = extractTrailingCommitReference(text);
 
         currentSection.items.push({
@@ -242,12 +265,15 @@ export function parseChangelog(raw: string): ChangelogEntry[] {
       }
     }
 
+    // Drop sections that became empty after filtering.
+    const nonEmptySections = sections.filter((s) => s.items.length > 0);
+
     entries.push({
       version,
       date,
       compareUrl,
-      sections,
-      hasContent: sections.length > 0,
+      sections: nonEmptySections,
+      hasContent: nonEmptySections.length > 0,
     });
   }
 
