@@ -8,6 +8,7 @@ import AIRS_LOGO_WHITE from '../../assets/SVGs/AIRS-logo-white.svg';
 import AIRS_LOGO_BLACK_DARK from '../../assets/SVGs/AIRS-logo-black-dark.svg';
 import developmentVersionManifest from '../../version.development.json';
 import productionVersionManifest from '../../version.production.json';
+import { APP_VERSION } from '../../utils/changelogData';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import type { FooterPrimaryLink } from './AppInfoFooter.links';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
@@ -112,6 +113,14 @@ export const SOCIAL_LINKS: FooterLink[] = [
 export function resolveVersionMetadata(): VersionMetadata {
   const runtimeHostname = resolveRuntimeHostname();
   const developmentRuntime = isDevelopmentRuntime(runtimeHostname);
+
+  if (!developmentRuntime) {
+    const buildVersion = trimVersion(APP_VERSION);
+    if (buildVersion) {
+      return { version: buildVersion, source: 'changelogData' };
+    }
+  }
+
   const selectedManifest = developmentRuntime
     ? DEVELOPMENT_VERSION_MANIFEST
     : PRODUCTION_VERSION_MANIFEST;
@@ -297,10 +306,27 @@ export function FooterTopFade({
   );
 }
 
-export function FooterCopyright({ color }: { color: string }): React.JSX.Element {
+export function FooterCopyright({
+  color,
+  compact = false,
+}: {
+  color: string;
+  compact?: boolean;
+}): React.JSX.Element {
   const footerYear = new Date().getFullYear();
   const [isHovered, setIsHovered] = React.useState(false);
   const { t } = useAppTranslation('mobile');
+
+  if (compact) {
+    return (
+      <Text
+        numberOfLines={1}
+        style={[styles.copyrightText, styles.copyrightTextCompact, { color }]}
+      >
+        {`© ${footerYear} Alternun`}
+      </Text>
+    );
+  }
 
   return (
     <View onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
@@ -393,5 +419,8 @@ const styles = StyleSheet.create({
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     fontWeight: '700',
+  },
+  copyrightTextCompact: {
+    fontSize: 10,
   },
 });
