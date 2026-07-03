@@ -341,11 +341,9 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
                 },
               ]}
             >
-              <View
-                style={[styles.bottomCenterSection, isMobile && styles.bottomCenterSectionMobile]}
-              >
+              <View style={styles.bottomCenterSection}>
                 <View style={styles.copyrightWrap}>
-                  <FooterCopyright color={palette.title} />
+                  <FooterCopyright color={palette.title} compact={isMobile} />
                 </View>
                 <View style={styles.bottomControlsRow}>
                   <ChangelogDrawer
@@ -354,7 +352,11 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
                     pageSize={3}
                     triggerLabel={`v${versionMetadata.version}`}
                   />
-                  <SupportButton supportEmail='support@alternun.co' palette={palette} />
+                  <SupportButton
+                    supportEmail='support@alternun.co'
+                    palette={palette}
+                    compact={isMobile}
+                  />
                 </View>
               </View>
             </View>
@@ -691,16 +693,12 @@ const styles = createTypographyStyles({
   bottomCenterSection: {
     flex: 1,
     flexDirection: 'row',
-    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 8,
   },
-  bottomCenterSectionMobile: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  },
   copyrightWrap: {
+    flex: 1,
     flexShrink: 1,
     minWidth: 0,
   },
@@ -709,6 +707,6 @@ const styles = createTypographyStyles({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
   },
 });

@@ -306,10 +306,27 @@ export function FooterTopFade({
   );
 }
 
-export function FooterCopyright({ color }: { color: string }): React.JSX.Element {
+export function FooterCopyright({
+  color,
+  compact = false,
+}: {
+  color: string;
+  compact?: boolean;
+}): React.JSX.Element {
   const footerYear = new Date().getFullYear();
   const [isHovered, setIsHovered] = React.useState(false);
   const { t } = useAppTranslation('mobile');
+
+  if (compact) {
+    return (
+      <Text
+        numberOfLines={1}
+        style={[styles.copyrightText, styles.copyrightTextCompact, { color }]}
+      >
+        {`© ${footerYear} Alternun`}
+      </Text>
+    );
+  }
 
   return (
     <View onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
@@ -402,5 +419,8 @@ const styles = StyleSheet.create({
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 11,
     fontWeight: '700',
+  },
+  copyrightTextCompact: {
+    fontSize: 10,
   },
 });
