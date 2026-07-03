@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { getDashboardSummaryCardsLayout } from '../DashboardSummaryCards';
+import { getDashboardSummaryCardsLayout } from '../dashboardSummaryCardsLayout';
 
 const describeTest = describe as unknown as (name: string, fn: () => void) => void;
 const itTest = it as unknown as (name: string, fn: () => void) => void;
