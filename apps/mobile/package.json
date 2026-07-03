@@ -17,7 +17,15 @@
     "lint": "expo lint"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "coverageThreshold": {
+      "global": {
+        "lines": 70,
+        "functions": 70,
+        "statements": 70,
+        "branches": 60
+      }
+    }
   },
   "dependencies": {
     "@alternun/auth": "workspace:*",

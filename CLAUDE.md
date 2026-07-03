@@ -447,3 +447,54 @@ develop  ──── (work, commits) ────► PR #N ──► master ─
 - `pnpm release` on `develop` → creates dev releases only (e.g. `1.1.2-dev.0`)
 - `pnpm release patch` on `master` → creates production patch releases (e.g. `1.1.2`)
 - Pre-push hook also validates: AWS account, version sync, secrets scan, changelog entry, reentry status
+
+---
+
+## 12. Code Coverage — 70% Minimum Threshold
+
+**Every PR must maintain ≥ 70% code coverage (lines, functions, branches, statements).**
+
+This threshold is enforced at three levels:
+
+| Level        | Guard                                                                 | Effect                                   |
+| ------------ | --------------------------------------------------------------------- | ---------------------------------------- |
+| **Local**    | `jest --coverage` in `@alternun/mobile`                               | Fails if global coverage drops below 70% |
+| **Pre-push** | `.husky/pre-push` runs `pnpm --filter @alternun/mobile test:coverage` | Blocks push if threshold not met         |
+| **CI**       | `CI / Test` GitHub Actions job                                        | Blocks PR merge if threshold not met     |
+
+### Jest config (`apps/mobile/package.json`)
+
+```json
+"jest": {
+  "preset": "jest-expo",
+  "coverageThreshold": {
+    "global": {
+      "lines": 70,
+      "functions": 70,
+      "statements": 70,
+      "branches": 60
+    }
+  }
+}
+```
+
+> **Note:** Branch coverage is currently ~65% (floor set at 60% to avoid immediate failure).
+> Target is 70% for all metrics. Improve branch coverage by adding tests for
+> conditional paths in UI providers and config files before raising the floor.
+
+### Rules
+
+- ✅ **DO** write tests alongside any new component, hook, or utility you add
+- ✅ **DO** update existing tests when you change behavior (especially source of truth, e.g. which JSON file a function reads from)
+- ❌ **DON'T** ship logic changes without updating the test that covers that path
+- ❌ **DON'T** skip the threshold — it exists to catch regressions like the v1.1.8 release that broke `Footer.shared` test expectations after changing `resolveVersionMetadata` to read from `changelogData` instead of `version.production.json`
+
+### When you change a function's behavior
+
+Always grep for its test file before committing:
+
+```bash
+grep -r "resolveVersionMetadata\|functionYouChanged" apps/mobile/**/__tests__/
+```
+
+If a test exists, update it. If none exists, add a minimal one covering the changed path.
