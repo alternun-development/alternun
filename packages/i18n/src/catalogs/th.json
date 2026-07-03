@@ -74,9 +74,16 @@
         "continueWithEmail": "ดำเนินการต่อด้วยอีเมล",
         "continueWithGoogle": "ดำเนินการต่อด้วย Google",
         "continueWithDiscord": "ดำเนินการต่อด้วย Discord",
+        "signUpWithGoogle": "สมัครด้วย Google",
+        "signUpWithDiscord": "สมัครด้วย Discord",
+        "signInWithGoogle": "เข้าสู่ระบบด้วย Google",
+        "signInWithDiscord": "เข้าสู่ระบบด้วย Discord",
         "createAccount": "สร้างบัญชี",
         "verifyConfirmationCode": "ยืนยันรหัสยืนยัน",
-        "useAnotherEmail": "ใช้อีเมลอื่น"
+        "useAnotherEmail": "ใช้อีเมลอื่น",
+        "signUpWithEmail": "สมัครด้วยอีเมล",
+        "signUpWithSocial": "สมัครด้วยโซเชียล",
+        "backToSignupOptions": "กลับ สมัครด้วยวิธีอื่น"
       },
       "confirmation": {
         "checkEmail": "ตรวจสอบอีเมลของคุณ",

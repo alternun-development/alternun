@@ -74,9 +74,16 @@
         "continueWithEmail": "Continue with Email",
         "continueWithGoogle": "Continue with Google",
         "continueWithDiscord": "Continue with Discord",
+        "signUpWithGoogle": "Sign up with Google",
+        "signUpWithDiscord": "Sign up with Discord",
+        "signInWithGoogle": "Sign in with Google",
+        "signInWithDiscord": "Sign in with Discord",
         "createAccount": "Create Account",
         "verifyConfirmationCode": "Verify confirmation code",
-        "useAnotherEmail": "Use another email"
+        "useAnotherEmail": "Use another email",
+        "signUpWithEmail": "Sign up with email",
+        "signUpWithSocial": "Sign up with social logins",
+        "backToSignupOptions": "Back, sign up with other methods"
       },
       "confirmation": {
         "checkEmail": "Check your email",
