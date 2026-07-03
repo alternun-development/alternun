@@ -1,13 +1,19 @@
+## [1.1.8](https://github.com/alternun-development/alternun/compare/v1.1.7...v1.1.8) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** fix(ui): align footer version with drawer and clean up changelog noise
+- **repo:** chore: sync mobile version.production to v1.1.7 --no-validate-reentry
+
+### Bug Fixes
+
+- **ui:** align footer version with drawer and clean up changelog noise ([2db69a2](https://github.com/alternun-development/alternun/commit/2db69a287b8b9a6b5e452b5e719ede9000de01ad))
+
 ## [1.1.7](https://github.com/alternun-development/alternun/compare/v1.1.7-dev.0...v1.1.7) (2026-07-03)
 
 ### Bug Fixes
 
 - **repo:** chore: sync README and mobile version to v1.1.7-dev.0 --no-validate-reentry
-
-
-
-
-
 
 ## [1.1.7](https://github.com/alternun-development/alternun/compare/v1.1.6...v1.1.7) (2026-07-03)
 
