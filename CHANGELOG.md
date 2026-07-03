@@ -1,3 +1,5 @@
+
+
 ## [1.1.11](https://github.com/alternun-development/alternun/compare/v1.1.11-dev.0...v1.1.11) (2026-07-03)
 
 ### Bug Fixes
