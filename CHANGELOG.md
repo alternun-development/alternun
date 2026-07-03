@@ -1,13 +1,18 @@
+## [1.1.7](https://github.com/alternun-development/alternun/compare/v1.1.6...v1.1.7) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** fix(auth): settings menu Language/Theme clicks no longer close the dropdown
+
+### Bug Fixes
+
+- **auth:** settings menu Language/Theme clicks no longer close the dropdown ([b0bf6e6](https://github.com/alternun-development/alternun/commit/b0bf6e66ada043fb505a3f593a03919675f8b85f))
+
 ## [1.1.6](https://github.com/alternun-development/alternun/compare/v1.1.6-dev.0...v1.1.6) (2026-07-03)
 
 ### Bug Fixes
 
 - **repo:** chore: sync README and mobile version to v1.1.6-dev.0 --no-validate-reentry
-
-
-
-
-
 
 ## [1.1.6](https://github.com/alternun-development/alternun/compare/v1.1.5...v1.1.6) (2026-07-03)
 
