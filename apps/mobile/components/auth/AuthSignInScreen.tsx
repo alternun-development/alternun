@@ -8,7 +8,6 @@ import {
 import { Image as ExpoImage } from 'expo-image';
 import {
   AlertCircle,
-  ArrowLeft,
   Chrome,
   AtSign,
   ChevronDown,
@@ -841,16 +840,14 @@ export default function AuthSignInScreen({
     setSubmitMode(provider);
     const attemptId = startSocialRedirectWatchdog(provider);
 
-    if (mode === 'signup') {
-      const normalizedReferralCode = referralCode.trim().toLowerCase();
-      if (normalizedReferralCode.length > 0) {
-        writePendingReferralData({
-          referred_by_username: null,
-          referred_by_email: null,
-          referral_code: normalizedReferralCode,
-          invitation_code: normalizedReferralCode,
-        });
-      }
+    const normalizedReferralCode = referralCode.trim().toLowerCase();
+    if (normalizedReferralCode.length > 0) {
+      writePendingReferralData({
+        referred_by_username: null,
+        referred_by_email: null,
+        referral_code: normalizedReferralCode,
+        invitation_code: normalizedReferralCode,
+      });
     }
 
     try {
@@ -989,12 +986,10 @@ export default function AuthSignInScreen({
             ]}
           >
             {settingsMenuOpen ? (
-              <View pointerEvents='none' style={styles.settingsMenuBackdrop}>
-                {/* Visual backdrop only - does not intercept touches */}
-              </View>
+              <Pressable onPress={closeSettingsMenu} style={styles.settingsMenuBackdrop} />
             ) : null}
             <Pressable
-              onPress={settingsMenuOpen ? closeSettingsMenu : undefined}
+              onPress={undefined}
               style={[
                 styles.header,
                 isModal && styles.headerModal,
@@ -1237,11 +1232,15 @@ export default function AuthSignInScreen({
                       }}
                       style={[
                         styles.signupMethodButton,
-                        { borderColor: p.accent, backgroundColor: p.inputBg },
+                        {
+                          borderColor: p.accent,
+                          backgroundColor: p.accent,
+                          justifyContent: 'center',
+                        },
                       ]}
                     >
-                      <AtSign size={18} color={p.accent} strokeWidth={2.1} />
-                      <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
+                      <AtSign size={18} color={p.accentText} strokeWidth={2.1} />
+                      <Text style={[styles.signupMethodButtonText, { color: p.accentText }]}>
                         {t('authModal.actions.signUpWithEmail', undefined, 'Sign up with email')}
                       </Text>
                     </TouchableOpacity>
@@ -1263,96 +1262,28 @@ export default function AuthSignInScreen({
                       }}
                       style={[
                         styles.signupMethodButton,
-                        { borderColor: p.inputBorder, backgroundColor: p.inputBg },
+                        {
+                          borderColor: p.inputBorder,
+                          backgroundColor: p.inputBg,
+                          justifyContent: 'center',
+                        },
                       ]}
                     >
-                      <Chrome size={18} color={p.accent} strokeWidth={2.1} />
+                      <Chrome size={18} color='#4285F4' strokeWidth={2.1} />
                       <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
                         {t(
                           'authModal.actions.signUpWithSocial',
                           undefined,
-                          'Continue with Google or Discord'
+                          'Sign up with social logins'
                         )}
                       </Text>
                     </TouchableOpacity>
                   </View>
                 ) : null}
 
-                {/* ── SIGNUP: referral code — title always visible, input toggles ── */}
-                {mode === 'signup' ? (
-                  <View style={styles.referralPrompt}>
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      disabled={isBusy}
-                      onPress={() => {
-                        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                        setShowReferralInput((v) => !v);
-                      }}
-                      style={styles.referralPromptToggle}
-                    >
-                      <KeyRound size={13} color={p.accent} strokeWidth={2.1} />
-                      <Text style={[styles.referralPromptTitle, { color: p.accent }]}>
-                        {t('authModal.referral.prompt', undefined, 'Have a referral code?')}
-                      </Text>
-                      <ChevronDown
-                        size={14}
-                        color={p.accent}
-                        strokeWidth={2.2}
-                        style={{
-                          transform: [{ rotate: showReferralInput ? '180deg' : '0deg' }],
-                        }}
-                      />
-                    </TouchableOpacity>
-                    {showReferralInput ? (
-                      <View
-                        style={[
-                          styles.inputWrapper,
-                          { backgroundColor: p.inputBg, borderColor: p.inputBorder, marginTop: 6 },
-                        ]}
-                      >
-                        <View style={[styles.inputIconWrap, { backgroundColor: 'transparent' }]}>
-                          <KeyRound size={15} color={p.accent} strokeWidth={2.1} />
-                        </View>
-                        <TextInput
-                          ref={referralCodeInputRef}
-                          autoCapitalize='none'
-                          autoCorrect={false}
-                          autoFocus
-                          onChangeText={(value) => {
-                            setReferralCode(value);
-                            setLocalError(null);
-                          }}
-                          placeholder={t(
-                            'authModal.referral.placeholder',
-                            undefined,
-                            'e.g., edward-44ft34'
-                          )}
-                          placeholderTextColor={p.textPlaceholder}
-                          style={[styles.input, { color: p.textPrimary }]}
-                          value={referralCode}
-                        />
-                      </View>
-                    ) : null}
-                  </View>
-                ) : null}
-
                 {/* ── SIGNUP email path: email + password + confirm + submit ── */}
                 {mode === 'signup' && signupMethod === 'email' ? (
                   <>
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      disabled={isBusy}
-                      onPress={() => {
-                        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                        setSignupMethod(null);
-                      }}
-                      style={styles.signupBackLink}
-                    >
-                      <ArrowLeft size={13} color={p.textMuted} strokeWidth={2.2} />
-                      <Text style={[styles.signupBackLinkText, { color: p.textMuted }]}>
-                        {t('authModal.actions.backToSignupOptions', undefined, 'Other methods')}
-                      </Text>
-                    </TouchableOpacity>
                     <View style={styles.inputGroup}>
                       <Animated.Text
                         style={[
@@ -1683,85 +1614,135 @@ export default function AuthSignInScreen({
                 {mode === 'signup' && signupMethod === 'social' ? (
                   <>
                     <TouchableOpacity
+                      activeOpacity={0.85}
+                      disabled={isBusy || !isSocialAuthEnabled()}
+                      onPress={() => void handleGoogleSignIn()}
+                      style={[
+                        styles.signupMethodButton,
+                        {
+                          backgroundColor: p.inputBg,
+                          borderColor: p.inputBorder,
+                          justifyContent: 'center',
+                          opacity: isBusy || !isSocialAuthEnabled() ? 0.6 : 1,
+                        },
+                      ]}
+                    >
+                      {submitMode === 'google' ? (
+                        <ActivityIndicator size='small' color={p.accent} />
+                      ) : (
+                        <Chrome size={18} color='#4285F4' strokeWidth={2.1} />
+                      )}
+                      <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
+                        {submitMode === 'google'
+                          ? t('authModal.redirecting.google')
+                          : t(
+                              'authModal.actions.signUpWithGoogle',
+                              undefined,
+                              'Sign up with Google'
+                            )}
+                      </Text>
+                      {!isSocialAuthEnabled() ? (
+                        <Text style={{ color: p.textMuted, fontSize: 10 }}>
+                          {t('authModal.underMaintenance')}
+                        </Text>
+                      ) : null}
+                    </TouchableOpacity>
+
+                    {shouldShowAuthentikSocialButtons ? (
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        disabled={isBusy || !isSocialAuthEnabled()}
+                        onPress={() => void handleDiscordSignIn()}
+                        style={[
+                          styles.signupMethodButton,
+                          {
+                            backgroundColor: p.inputBg,
+                            borderColor: p.inputBorder,
+                            justifyContent: 'center',
+                            opacity: isBusy || !isSocialAuthEnabled() ? 0.6 : 1,
+                          },
+                        ]}
+                      >
+                        {submitMode === 'discord' ? (
+                          <ActivityIndicator size='small' color={p.accent} />
+                        ) : (
+                          <MessageSquare size={18} color='#5865F2' strokeWidth={2.1} />
+                        )}
+                        <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
+                          {submitMode === 'discord'
+                            ? t('authModal.redirecting.discord')
+                            : t(
+                                'authModal.actions.signUpWithDiscord',
+                                undefined,
+                                'Sign up with Discord'
+                              )}
+                        </Text>
+                        {!isSocialAuthEnabled() ? (
+                          <Text style={{ color: p.textMuted, fontSize: 10 }}>
+                            {t('authModal.underMaintenance')}
+                          </Text>
+                        ) : null}
+                      </TouchableOpacity>
+                    ) : null}
+                  </>
+                ) : null}
+
+                {/* ── SIGNUP: referral code — always last, collapsed by default ── */}
+                {mode === 'signup' && signupMethod !== null ? (
+                  <View style={styles.referralPrompt}>
+                    <TouchableOpacity
                       activeOpacity={0.7}
                       disabled={isBusy}
                       onPress={() => {
                         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                        setSignupMethod(null);
+                        setShowReferralInput((v) => !v);
                       }}
-                      style={styles.signupBackLink}
+                      style={styles.referralPromptToggle}
                     >
-                      <ArrowLeft size={13} color={p.textMuted} strokeWidth={2.2} />
-                      <Text style={[styles.signupBackLinkText, { color: p.textMuted }]}>
-                        {t('authModal.actions.backToSignupOptions', undefined, 'Other methods')}
+                      <KeyRound size={13} color={p.accent} strokeWidth={2.1} />
+                      <Text style={[styles.referralPromptTitle, { color: p.accent }]}>
+                        {t('authModal.referral.prompt', undefined, 'Have a referral code?')}
                       </Text>
-                    </TouchableOpacity>
-                    <View style={{ position: 'relative' }}>
-                      <LoadingButton
-                        variant='secondary'
-                        label={t('authModal.actions.continueWithGoogle')}
-                        loadingLabel={t('authModal.redirecting.google')}
-                        isLoading={submitMode === 'google'}
-                        disabled={isBusy || !isSocialAuthEnabled()}
-                        onPress={() => void handleGoogleSignIn()}
-                        icon={Chrome}
+                      <ChevronDown
+                        size={14}
+                        color={p.accent}
+                        strokeWidth={2.2}
+                        style={{
+                          transform: [{ rotate: showReferralInput ? '180deg' : '0deg' }],
+                        }}
                       />
-                      {!isSocialAuthEnabled() && (
-                        <View
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                            borderRadius: 8,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <Text style={{ color: String(p.text), fontSize: 12, fontWeight: '600' }}>
-                            {t('authModal.underMaintenance')}
-                          </Text>
+                    </TouchableOpacity>
+                    {showReferralInput ? (
+                      <View
+                        style={[
+                          styles.inputWrapper,
+                          { backgroundColor: p.inputBg, borderColor: p.inputBorder, marginTop: 6 },
+                        ]}
+                      >
+                        <View style={[styles.inputIconWrap, { backgroundColor: 'transparent' }]}>
+                          <KeyRound size={15} color={p.accent} strokeWidth={2.1} />
                         </View>
-                      )}
-                    </View>
-
-                    {shouldShowAuthentikSocialButtons ? (
-                      <View style={{ position: 'relative' }}>
-                        <LoadingButton
-                          variant='secondary'
-                          label={t('authModal.actions.continueWithDiscord')}
-                          loadingLabel={t('authModal.redirecting.discord')}
-                          isLoading={submitMode === 'discord'}
-                          disabled={isBusy || !isSocialAuthEnabled()}
-                          onPress={() => void handleDiscordSignIn()}
-                          icon={MessageSquare}
+                        <TextInput
+                          ref={referralCodeInputRef}
+                          autoCapitalize='none'
+                          autoCorrect={false}
+                          autoFocus
+                          onChangeText={(value) => {
+                            setReferralCode(value);
+                            setLocalError(null);
+                          }}
+                          placeholder={t(
+                            'authModal.referral.placeholder',
+                            undefined,
+                            'e.g., edward-44ft34'
+                          )}
+                          placeholderTextColor={p.textPlaceholder}
+                          style={[styles.input, { color: p.textPrimary }]}
+                          value={referralCode}
                         />
-                        {!isSocialAuthEnabled() && (
-                          <View
-                            style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                              borderRadius: 8,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <Text
-                              style={{ color: String(p.text), fontSize: 12, fontWeight: '600' }}
-                            >
-                              {t('authModal.underMaintenance')}
-                            </Text>
-                          </View>
-                        )}
                       </View>
                     ) : null}
-                  </>
+                  </View>
                 ) : null}
 
                 {/* ── SIGNIN: email + password + forgot + divider + social ── */}
@@ -1974,70 +1955,76 @@ export default function AuthSignInScreen({
                       <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
                     </View>
 
-                    <View style={{ position: 'relative' }}>
-                      <LoadingButton
-                        variant='secondary'
-                        label={t('authModal.actions.continueWithGoogle')}
-                        loadingLabel={t('authModal.redirecting.google')}
-                        isLoading={submitMode === 'google'}
-                        disabled={isBusy || !isSocialAuthEnabled()}
-                        onPress={() => void handleGoogleSignIn()}
-                        icon={Chrome}
-                      />
-                      {!isSocialAuthEnabled() && (
-                        <View
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                            borderRadius: 8,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <Text style={{ color: String(p.text), fontSize: 12, fontWeight: '600' }}>
-                            {t('authModal.underMaintenance')}
-                          </Text>
-                        </View>
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      disabled={isBusy || !isSocialAuthEnabled()}
+                      onPress={() => void handleGoogleSignIn()}
+                      style={[
+                        styles.signupMethodButton,
+                        {
+                          backgroundColor: p.inputBg,
+                          borderColor: p.inputBorder,
+                          justifyContent: 'center',
+                          opacity: isBusy || !isSocialAuthEnabled() ? 0.6 : 1,
+                        },
+                      ]}
+                    >
+                      {submitMode === 'google' ? (
+                        <ActivityIndicator size='small' color={p.accent} />
+                      ) : (
+                        <Chrome size={18} color='#4285F4' strokeWidth={2.1} />
                       )}
-                    </View>
+                      <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
+                        {submitMode === 'google'
+                          ? t('authModal.redirecting.google')
+                          : t(
+                              'authModal.actions.signInWithGoogle',
+                              undefined,
+                              'Sign in with Google'
+                            )}
+                      </Text>
+                      {!isSocialAuthEnabled() ? (
+                        <Text style={{ color: p.textMuted, fontSize: 10 }}>
+                          {t('authModal.underMaintenance')}
+                        </Text>
+                      ) : null}
+                    </TouchableOpacity>
 
                     {shouldShowAuthentikSocialButtons ? (
-                      <View style={{ position: 'relative' }}>
-                        <LoadingButton
-                          variant='secondary'
-                          label={t('authModal.actions.continueWithDiscord')}
-                          loadingLabel={t('authModal.redirecting.discord')}
-                          isLoading={submitMode === 'discord'}
-                          disabled={isBusy || !isSocialAuthEnabled()}
-                          onPress={() => void handleDiscordSignIn()}
-                          icon={MessageSquare}
-                        />
-                        {!isSocialAuthEnabled() && (
-                          <View
-                            style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                              borderRadius: 8,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <Text
-                              style={{ color: String(p.text), fontSize: 12, fontWeight: '600' }}
-                            >
-                              {t('authModal.underMaintenance')}
-                            </Text>
-                          </View>
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        disabled={isBusy || !isSocialAuthEnabled()}
+                        onPress={() => void handleDiscordSignIn()}
+                        style={[
+                          styles.signupMethodButton,
+                          {
+                            backgroundColor: p.inputBg,
+                            borderColor: p.inputBorder,
+                            justifyContent: 'center',
+                            opacity: isBusy || !isSocialAuthEnabled() ? 0.6 : 1,
+                          },
+                        ]}
+                      >
+                        {submitMode === 'discord' ? (
+                          <ActivityIndicator size='small' color={p.accent} />
+                        ) : (
+                          <MessageSquare size={18} color='#5865F2' strokeWidth={2.1} />
                         )}
-                      </View>
+                        <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
+                          {submitMode === 'discord'
+                            ? t('authModal.redirecting.discord')
+                            : t(
+                                'authModal.actions.signInWithDiscord',
+                                undefined,
+                                'Sign in with Discord'
+                              )}
+                        </Text>
+                        {!isSocialAuthEnabled() ? (
+                          <Text style={{ color: p.textMuted, fontSize: 10 }}>
+                            {t('authModal.underMaintenance')}
+                          </Text>
+                        ) : null}
+                      </TouchableOpacity>
                     ) : null}
 
                     {ENABLE_WEB3_LOGIN && (
@@ -2099,13 +2086,45 @@ export default function AuthSignInScreen({
                   </View>
                 ) : null}
 
+                {mode === 'signup' && signupMethod !== null ? (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    disabled={isBusy}
+                    onPress={() => {
+                      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                      setSignupMethod(null);
+                    }}
+                    style={styles.footerToggle}
+                  >
+                    <Text
+                      style={[
+                        styles.footerToggleText,
+                        styles.footerToggleUnderline,
+                        { color: p.textMuted },
+                      ]}
+                    >
+                      {t(
+                        'authModal.actions.backToSignupOptions',
+                        undefined,
+                        'Back, sign up with other methods'
+                      )}
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+
                 <TouchableOpacity
-                  activeOpacity={0.8}
+                  activeOpacity={0.7}
                   disabled={isBusy}
                   onPress={() => switchMode(mode === 'signin' ? 'signup' : 'signin')}
                   style={styles.footerToggle}
                 >
-                  <Text style={[styles.footerToggleText, { color: p.textMuted }]}>
+                  <Text
+                    style={[
+                      styles.footerToggleText,
+                      styles.footerToggleUnderline,
+                      { color: p.textMuted },
+                    ]}
+                  >
                     {mode === 'signin'
                       ? t('authModal.footer.dontHaveAccount')
                       : t('authModal.footer.alreadyHaveAccount')}
@@ -2664,8 +2683,8 @@ const styles = createTypographyStyles({
     gap: 6,
   },
   signupMethodPicker: {
-    gap: 10,
-    marginBottom: 4,
+    gap: 12,
+    marginBottom: 6,
   },
   signupMethodButton: {
     flexDirection: 'row',
@@ -2677,10 +2696,12 @@ const styles = createTypographyStyles({
     borderWidth: 1,
   },
   signupMethodButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: -0.1,
     flex: 1,
+    textAlign: 'center',
   },
   referralPrompt: {
     gap: 6,
@@ -2999,5 +3020,8 @@ const styles = createTypographyStyles({
     color: 'rgba(232,232,255,0.65)',
     fontSize: 12,
     fontWeight: '600',
+  },
+  footerToggleUnderline: {
+    textDecorationLine: 'underline',
   },
 });
