@@ -364,13 +364,19 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
         </TouchableOpacity>
       </View>
 
-      {hasReferrer ? (
+      {!loading ? (
         <View
           style={[
             styles.referrerCard,
             {
-              borderColor: `${c.accent}26`,
-              backgroundColor: isDark ? 'rgba(28,203,161,0.08)' : 'rgba(28,203,161,0.1)',
+              borderColor: hasReferrer ? `${c.accent}26` : c.cardBorder,
+              backgroundColor: hasReferrer
+                ? isDark
+                  ? 'rgba(28,203,161,0.08)'
+                  : 'rgba(28,203,161,0.1)'
+                : isDark
+                ? 'rgba(255,255,255,0.03)'
+                : 'rgba(11,45,49,0.03)',
             },
           ]}
         >
@@ -378,25 +384,33 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
             style={[
               styles.referrerIcon,
               {
-                backgroundColor: `${c.accent}18`,
-                borderColor: `${c.accent}30`,
+                backgroundColor: hasReferrer ? `${c.accent}18` : `${c.muted}18`,
+                borderColor: hasReferrer ? `${c.accent}30` : `${c.muted}20`,
               },
             ]}
           >
-            <UserRoundCheck size={15} color={c.accent} strokeWidth={2.2} />
+            <UserRoundCheck size={15} color={hasReferrer ? c.accent : c.muted} strokeWidth={2.2} />
           </View>
           <View style={styles.referrerCopy}>
             <Text style={[styles.referrerLabel, { color: c.muted }]}>
               {t('profile.referral.referredByLabel', undefined, 'Who referred you')}
             </Text>
-            <Text style={[styles.referrerName, { color: c.text }]}>{referrerLabel}</Text>
-            <Text style={[styles.referrerHelper, { color: c.muted }]}>
-              {t(
-                'profile.referral.referredByHelper',
-                undefined,
-                'This is the referral source recorded on your account.'
-              )}
-            </Text>
+            {hasReferrer ? (
+              <>
+                <Text style={[styles.referrerName, { color: c.text }]}>{referrerLabel}</Text>
+                <Text style={[styles.referrerHelper, { color: c.muted }]}>
+                  {t(
+                    'profile.referral.referredByHelper',
+                    undefined,
+                    'This is the referral source recorded on your account.'
+                  )}
+                </Text>
+              </>
+            ) : (
+              <Text style={[styles.referrerName, { color: c.muted, fontWeight: '600' }]}>
+                {t('profile.referral.noReferrer', undefined, 'No referral source')}
+              </Text>
+            )}
           </View>
         </View>
       ) : null}
@@ -408,7 +422,7 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
             {t('profile.referral.referralCount', undefined, 'Invited members')}
           </Text>
         </View>
-        {hasReferrer ? (
+        {!loading ? (
           <>
             <View
               style={[
@@ -419,8 +433,10 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
               ]}
             />
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: c.text }]}>
-                {t('shared.labels.yes', undefined, 'Yes')}
+              <Text style={[styles.statValue, { color: hasReferrer ? c.accent : c.muted }]}>
+                {hasReferrer
+                  ? t('shared.labels.yes', undefined, 'Yes')
+                  : t('shared.labels.no', undefined, 'No')}
               </Text>
               <Text style={[styles.statLabel, { color: c.muted }]}>
                 {t('profile.referral.wasReferred', undefined, 'Referral on file')}

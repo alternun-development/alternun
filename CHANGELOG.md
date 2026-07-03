@@ -12,12 +12,6 @@
 
 - **db:** force-drop stale AIRS uuid overloads causing PGRST203 ambiguity ([6c81fd5](https://github.com/alternun-development/alternun/commit/6c81fd592b14ec229a4827014e324723b4fbf381))
 
-## [1.1.3](https://github.com/alternun-development/alternun/compare/v1.1.2...v1.1.3) (2026-07-01)
-
-### Bug Fixes
-
-- **db:** force-drop stale AIRS uuid overloads causing PGRST203 ambiguity ([6c81fd5](https://github.com/alternun-development/alternun/commit/6c81fd592b14ec229a4827014e324723b4fbf381))
-
 ## [1.1.2](https://github.com/alternun-development/alternun/compare/v1.1.0...v1.1.2) (2026-07-01)
 
 ### Bug Fixes

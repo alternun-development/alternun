@@ -1,7 +1,17 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateReferralDto {
+  @ApiPropertyOptional({
+    description: 'User ID of the account creating the referral (fallback when no auth token)',
+    type: String,
+    format: 'uuid',
+    nullable: true,
+  })
+  @IsOptional()
+  @IsUUID()
+  user_id?: string;
+
   @ApiPropertyOptional({
     description: 'Username of the person who referred this user for legacy attribution',
     type: String,

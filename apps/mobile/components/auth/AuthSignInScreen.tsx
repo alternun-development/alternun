@@ -75,11 +75,7 @@ import {
   shouldTransitionToEmailConfirmation,
   shouldSurfaceSharedAuthError,
 } from './authSignInFlow';
-import {
-  clearPendingReferralData,
-  readPendingReferralCode,
-  writePendingReferralData,
-} from './referralStorage';
+import { clearPendingReferralData, writePendingReferralData } from './referralStorage';
 const RESEND_COOLDOWN_SECONDS = 45;
 const SOCIAL_REDIRECT_TIMEOUT_MS = 15000; // 15 seconds
 
@@ -197,11 +193,9 @@ export default function AuthSignInScreen({
   const [authStep, setAuthStep] = useState<AuthStep>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [referralCode, setReferralCode] = useState(
-    () => initialReferralCode?.trim() ?? readPendingReferralCode() ?? ''
-  );
+  const [referralCode, setReferralCode] = useState(() => initialReferralCode?.trim() ?? '');
   const [showReferralInput, setShowReferralInput] = useState(() =>
-    Boolean(initialReferralCode?.trim() ?? readPendingReferralCode())
+    Boolean(initialReferralCode?.trim())
   );
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [invalidEmail, setInvalidEmail] = useState(false);
@@ -211,6 +205,9 @@ export default function AuthSignInScreen({
     createDefaultRequiredFieldState()
   );
   const [passwordValidationError, setPasswordValidationError] = useState<string | null>(null);
+  const [signupMethod, setSignupMethod] = useState<'email' | 'social' | null>(
+    initialMode === 'signup' ? null : null
+  );
 
   const emailInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
@@ -843,6 +840,16 @@ export default function AuthSignInScreen({
     setSubmitMode(provider);
     const attemptId = startSocialRedirectWatchdog(provider);
 
+    const normalizedReferralCode = referralCode.trim().toLowerCase();
+    if (normalizedReferralCode.length > 0) {
+      writePendingReferralData({
+        referred_by_username: null,
+        referred_by_email: null,
+        referral_code: normalizedReferralCode,
+        invitation_code: normalizedReferralCode,
+      });
+    }
+
     try {
       await startSocialSignIn({
         client,
@@ -909,6 +916,11 @@ export default function AuthSignInScreen({
 
     transitionToStep('form');
     setMode(nextMode);
+    if (nextMode === 'signup') {
+      setSignupMethod(null);
+      setShowReferralInput(false);
+      setReferralCode('');
+    }
     emailDraftRef.current = '';
     passwordDraftRef.current = '';
     confirmPasswordDraftRef.current = '';
@@ -974,12 +986,10 @@ export default function AuthSignInScreen({
             ]}
           >
             {settingsMenuOpen ? (
-              <View pointerEvents='none' style={styles.settingsMenuBackdrop}>
-                {/* Visual backdrop only - does not intercept touches */}
-              </View>
+              <Pressable onPress={closeSettingsMenu} style={styles.settingsMenuBackdrop} />
             ) : null}
             <Pressable
-              onPress={settingsMenuOpen ? closeSettingsMenu : undefined}
+              onPress={undefined}
               style={[
                 styles.header,
                 isModal && styles.headerModal,
@@ -1210,343 +1220,491 @@ export default function AuthSignInScreen({
                   </TouchableOpacity>
                 </View>
 
-                <View style={styles.inputGroup}>
-                  <Animated.Text
-                    style={[
-                      styles.inputLabel,
-                      { color: p.accent },
-                      {
-                        opacity: emailLabelAnim,
-                        transform: [
-                          {
-                            translateY: emailLabelAnim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [-6, 0],
-                            }),
-                          },
-                        ],
-                      },
-                    ]}
-                  >
-                    {t('authModal.placeholders.email')}
-                  </Animated.Text>
-                  <View
-                    style={[
-                      styles.inputWrapper,
-                      { backgroundColor: p.inputBg, borderColor: p.inputBorder },
-                      hasEmailInputError && {
-                        backgroundColor: p.errorBg,
-                        borderColor: p.errorBorder,
-                      },
-                      focusedField === 'email' &&
-                        !hasEmailInputError && {
-                          borderColor: p.inputBorderFocus,
-                        },
-                    ]}
-                  >
-                    <View
+                {/* ── SIGNUP: method picker shown until user selects a path ── */}
+                {mode === 'signup' && signupMethod === null ? (
+                  <View style={styles.signupMethodPicker}>
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      disabled={isBusy}
+                      onPress={() => {
+                        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                        setSignupMethod('email');
+                      }}
                       style={[
-                        styles.inputIconWrap,
+                        styles.signupMethodButton,
                         {
-                          backgroundColor: hasEmailInputError ? p.errorBg : 'transparent',
+                          borderColor: p.accent,
+                          backgroundColor: p.accent,
+                          justifyContent: 'center',
                         },
                       ]}
                     >
-                      <AtSign
-                        size={15}
-                        color={hasEmailInputError ? p.errorIcon : p.accent}
-                        strokeWidth={2.2}
-                      />
-                    </View>
-                    <TextInput
-                      ref={emailInputRef}
-                      autoCapitalize='none'
-                      autoCorrect={false}
-                      keyboardType='email-address'
-                      onChangeText={(value) => {
-                        emailDraftRef.current = value;
-                        setEmail(value);
-                        clearRequiredField('email');
-                        setInvalidEmail(false);
-                        setLocalError(null);
-                        animateLabel(emailLabelAnim, value.length > 0);
-                      }}
-                      onFocus={() => setFocusedField('email')}
-                      onBlur={() =>
-                        setFocusedField((current) => (current === 'email' ? null : current))
-                      }
-                      placeholder={t('authModal.placeholders.email')}
-                      placeholderTextColor={p.textPlaceholder}
-                      style={[styles.input, { color: p.textPrimary }]}
-                      value={email}
-                    />
-                  </View>
-                  {requiredFields.email ? (
-                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                      {t('authModal.validation.emailRequired')}
-                    </Text>
-                  ) : invalidEmail ? (
-                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                      {t('authModal.validation.validEmail')}
-                    </Text>
-                  ) : null}
-                </View>
+                      <AtSign size={18} color={p.accentText} strokeWidth={2.1} />
+                      <Text style={[styles.signupMethodButtonText, { color: p.accentText }]}>
+                        {t('authModal.actions.signUpWithEmail', undefined, 'Sign up with email')}
+                      </Text>
+                    </TouchableOpacity>
 
-                <View style={styles.inputGroup}>
-                  <Animated.Text
-                    style={[
-                      styles.inputLabel,
-                      { color: p.accent },
-                      {
-                        opacity: passwordLabelAnim,
-                        transform: [
-                          {
-                            translateY: passwordLabelAnim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [-6, 0],
-                            }),
-                          },
-                        ],
-                      },
-                    ]}
-                  >
-                    {t('authModal.placeholders.password')}
-                  </Animated.Text>
-                  <View
-                    style={[
-                      styles.inputWrapper,
-                      { backgroundColor: p.inputBg, borderColor: p.inputBorder },
-                      requiredFields.password && {
-                        backgroundColor: p.errorBg,
-                        borderColor: p.errorBorder,
-                      },
-                      focusedField === 'password' &&
-                        !requiredFields.password && {
-                          borderColor: p.inputBorderFocus,
-                        },
-                    ]}
-                  >
-                    <View
+                    <View style={styles.dividerRow}>
+                      <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
+                      <Text style={[styles.dividerText, { color: p.textMuted }]}>
+                        {t('authModal.divider.or')}
+                      </Text>
+                      <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
+                    </View>
+
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      disabled={isBusy}
+                      onPress={() => {
+                        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                        setSignupMethod('social');
+                      }}
                       style={[
-                        styles.inputIconWrap,
+                        styles.signupMethodButton,
                         {
-                          backgroundColor: requiredFields.password ? p.errorBg : 'transparent',
+                          borderColor: p.inputBorder,
+                          backgroundColor: p.inputBg,
+                          justifyContent: 'center',
                         },
                       ]}
                     >
-                      <LockKeyhole
-                        size={15}
-                        color={requiredFields.password ? p.errorIcon : p.accent}
-                        strokeWidth={2.15}
-                      />
-                    </View>
-                    <TextInput
-                      ref={passwordInputRef}
-                      autoCapitalize='none'
-                      autoCorrect={false}
-                      onChangeText={(value) => {
-                        passwordDraftRef.current = value;
-                        setPassword(value);
-                        clearRequiredField('password');
-                        setLocalError(null);
-                        animateLabel(passwordLabelAnim, value.length > 0);
-                        // Real-time password validation
-                        if (value.length > 0) {
-                          try {
-                            parseSignUpPassword(value);
-                            setPasswordValidationError(null);
-                          } catch {
-                            setPasswordValidationError(t('authModal.validation.passwordMin'));
-                          }
-                        } else {
-                          setPasswordValidationError(null);
-                        }
-                        setPasswordMismatch(
-                          confirmPasswordDraftRef.current.length > 0 &&
-                            confirmPasswordDraftRef.current !== value
-                        );
-                      }}
-                      onFocus={() => setFocusedField('password')}
-                      onBlur={() =>
-                        setFocusedField((current) => (current === 'password' ? null : current))
-                      }
-                      placeholder={t('authModal.placeholders.password')}
-                      placeholderTextColor={p.textPlaceholder}
-                      secureTextEntry={!showPassword}
-                      style={[styles.input, { color: p.textPrimary }]}
-                      value={password}
-                    />
-                    {password.length > 0 && (
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => setShowPassword((current) => !current)}
-                        style={[
-                          styles.visibilityToggle,
-                          {
-                            backgroundColor:
-                              focusedField === 'password' ? p.accentMuted : p.inputBg,
-                            borderColor:
-                              focusedField === 'password' ? p.inputBorderFocus : p.inputBorder,
-                          },
-                        ]}
-                      >
-                        {showPassword ? (
-                          <EyeOff size={16} color={p.accent} />
-                        ) : (
-                          <Eye size={16} color={p.accent} />
+                      <Chrome size={18} color='#4285F4' strokeWidth={2.1} />
+                      <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
+                        {t(
+                          'authModal.actions.signUpWithSocial',
+                          undefined,
+                          'Sign up with social logins'
                         )}
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  {requiredFields.password ? (
-                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                      {t('authModal.validation.passwordRequired')}
-                    </Text>
-                  ) : passwordValidationError && mode === 'signup' ? (
-                    <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                      {passwordValidationError}
-                    </Text>
-                  ) : null}
-                </View>
-
-                {mode === 'signup' && passwordDraftRef.current.length > 0 ? (
-                  <View style={styles.inputGroup}>
-                    <Animated.Text
-                      style={[
-                        styles.inputLabel,
-                        { color: p.accent },
-                        {
-                          opacity: confirmLabelAnim,
-                          transform: [
-                            {
-                              translateY: confirmLabelAnim.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [-6, 0],
-                              }),
-                            },
-                          ],
-                        },
-                      ]}
-                    >
-                      {t('authModal.placeholders.confirmPassword')}
-                    </Animated.Text>
-                    <View
-                      style={[
-                        styles.inputWrapper,
-                        { backgroundColor: p.inputBg, borderColor: p.inputBorder },
-                        (requiredFields.confirmPassword || passwordMismatch) && {
-                          backgroundColor: p.errorBg,
-                          borderColor: p.errorBorder,
-                        },
-                        focusedField === 'confirmPassword' &&
-                          !requiredFields.confirmPassword &&
-                          !passwordMismatch && {
-                            borderColor: p.inputBorderFocus,
-                          },
-                      ]}
-                    >
-                      <View
-                        style={[
-                          styles.inputIconWrap,
-                          {
-                            backgroundColor:
-                              requiredFields.confirmPassword || passwordMismatch
-                                ? p.errorBg
-                                : 'transparent',
-                          },
-                        ]}
-                      >
-                        <LockKeyhole
-                          size={15}
-                          color={
-                            requiredFields.confirmPassword || passwordMismatch
-                              ? p.errorIcon
-                              : p.accent
-                          }
-                          strokeWidth={2.15}
-                        />
-                      </View>
-                      <TextInput
-                        ref={confirmPasswordInputRef}
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        onChangeText={(value) => {
-                          confirmPasswordDraftRef.current = value;
-                          setConfirmPassword(value);
-                          clearRequiredField('confirmPassword');
-                          setLocalError(null);
-                          setPasswordMismatch(
-                            value.length > 0 && value !== passwordDraftRef.current
-                          );
-                          animateLabel(confirmLabelAnim, value.length > 0);
-                        }}
-                        onFocus={() => setFocusedField('confirmPassword')}
-                        onBlur={() =>
-                          setFocusedField((current) =>
-                            current === 'confirmPassword' ? null : current
-                          )
-                        }
-                        placeholder={t('authModal.placeholders.confirmPassword')}
-                        placeholderTextColor={p.textPlaceholder}
-                        secureTextEntry={!showConfirmPassword}
-                        style={[styles.input, { color: p.textPrimary }]}
-                        value={confirmPassword}
-                      />
-                      {confirmPassword.length > 0 && (
-                        <TouchableOpacity
-                          activeOpacity={0.8}
-                          onPress={() => setShowConfirmPassword((current) => !current)}
-                          style={[
-                            styles.visibilityToggle,
-                            {
-                              backgroundColor:
-                                focusedField === 'confirmPassword' ? p.accentMuted : p.inputBg,
-                              borderColor:
-                                focusedField === 'confirmPassword'
-                                  ? p.inputBorderFocus
-                                  : p.inputBorder,
-                            },
-                          ]}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff size={16} color={p.accent} />
-                          ) : (
-                            <Eye size={16} color={p.accent} />
-                          )}
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                    {requiredFields.confirmPassword ? (
-                      <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                        {t('authModal.validation.confirmPasswordRequired')}
                       </Text>
-                    ) : passwordMismatch ? (
-                      <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
-                        {t('authModal.validation.passwordMismatch')}
-                      </Text>
-                    ) : null}
+                    </TouchableOpacity>
                   </View>
                 ) : null}
 
-                {mode === 'signup' ? (
+                {/* ── SIGNUP email path: email + password + confirm + submit ── */}
+                {mode === 'signup' && signupMethod === 'email' ? (
+                  <>
+                    <View style={styles.inputGroup}>
+                      <Animated.Text
+                        style={[
+                          styles.inputLabel,
+                          { color: p.accent },
+                          {
+                            opacity: emailLabelAnim,
+                            transform: [
+                              {
+                                translateY: emailLabelAnim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [-6, 0],
+                                }),
+                              },
+                            ],
+                          },
+                        ]}
+                      >
+                        {t('authModal.placeholders.email')}
+                      </Animated.Text>
+                      <View
+                        style={[
+                          styles.inputWrapper,
+                          { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                          hasEmailInputError && {
+                            backgroundColor: p.errorBg,
+                            borderColor: p.errorBorder,
+                          },
+                          focusedField === 'email' &&
+                            !hasEmailInputError && {
+                              borderColor: p.inputBorderFocus,
+                            },
+                        ]}
+                      >
+                        <View
+                          style={[
+                            styles.inputIconWrap,
+                            { backgroundColor: hasEmailInputError ? p.errorBg : 'transparent' },
+                          ]}
+                        >
+                          <AtSign
+                            size={15}
+                            color={hasEmailInputError ? p.errorIcon : p.accent}
+                            strokeWidth={2.2}
+                          />
+                        </View>
+                        <TextInput
+                          ref={emailInputRef}
+                          autoCapitalize='none'
+                          autoCorrect={false}
+                          keyboardType='email-address'
+                          onChangeText={(value) => {
+                            emailDraftRef.current = value;
+                            setEmail(value);
+                            clearRequiredField('email');
+                            setInvalidEmail(false);
+                            setLocalError(null);
+                            animateLabel(emailLabelAnim, value.length > 0);
+                          }}
+                          onFocus={() => setFocusedField('email')}
+                          onBlur={() =>
+                            setFocusedField((current) => (current === 'email' ? null : current))
+                          }
+                          placeholder={t('authModal.placeholders.email')}
+                          placeholderTextColor={p.textPlaceholder}
+                          style={[styles.input, { color: p.textPrimary }]}
+                          value={email}
+                        />
+                      </View>
+                      {requiredFields.email ? (
+                        <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                          {t('authModal.validation.emailRequired')}
+                        </Text>
+                      ) : invalidEmail ? (
+                        <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                          {t('authModal.validation.validEmail')}
+                        </Text>
+                      ) : null}
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                      <Animated.Text
+                        style={[
+                          styles.inputLabel,
+                          { color: p.accent },
+                          {
+                            opacity: passwordLabelAnim,
+                            transform: [
+                              {
+                                translateY: passwordLabelAnim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [-6, 0],
+                                }),
+                              },
+                            ],
+                          },
+                        ]}
+                      >
+                        {t('authModal.placeholders.password')}
+                      </Animated.Text>
+                      <View
+                        style={[
+                          styles.inputWrapper,
+                          { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                          requiredFields.password && {
+                            backgroundColor: p.errorBg,
+                            borderColor: p.errorBorder,
+                          },
+                          focusedField === 'password' &&
+                            !requiredFields.password && {
+                              borderColor: p.inputBorderFocus,
+                            },
+                        ]}
+                      >
+                        <View
+                          style={[
+                            styles.inputIconWrap,
+                            {
+                              backgroundColor: requiredFields.password ? p.errorBg : 'transparent',
+                            },
+                          ]}
+                        >
+                          <LockKeyhole
+                            size={15}
+                            color={requiredFields.password ? p.errorIcon : p.accent}
+                            strokeWidth={2.15}
+                          />
+                        </View>
+                        <TextInput
+                          ref={passwordInputRef}
+                          autoCapitalize='none'
+                          autoCorrect={false}
+                          onChangeText={(value) => {
+                            passwordDraftRef.current = value;
+                            setPassword(value);
+                            clearRequiredField('password');
+                            setLocalError(null);
+                            animateLabel(passwordLabelAnim, value.length > 0);
+                            if (value.length > 0) {
+                              try {
+                                parseSignUpPassword(value);
+                                setPasswordValidationError(null);
+                              } catch {
+                                setPasswordValidationError(t('authModal.validation.passwordMin'));
+                              }
+                            } else {
+                              setPasswordValidationError(null);
+                            }
+                            setPasswordMismatch(
+                              confirmPasswordDraftRef.current.length > 0 &&
+                                confirmPasswordDraftRef.current !== value
+                            );
+                          }}
+                          onFocus={() => setFocusedField('password')}
+                          onBlur={() =>
+                            setFocusedField((current) => (current === 'password' ? null : current))
+                          }
+                          placeholder={t('authModal.placeholders.password')}
+                          placeholderTextColor={p.textPlaceholder}
+                          secureTextEntry={!showPassword}
+                          style={[styles.input, { color: p.textPrimary }]}
+                          value={password}
+                        />
+                        {password.length > 0 && (
+                          <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => setShowPassword((current) => !current)}
+                            style={[
+                              styles.visibilityToggle,
+                              {
+                                backgroundColor:
+                                  focusedField === 'password' ? p.accentMuted : p.inputBg,
+                                borderColor:
+                                  focusedField === 'password' ? p.inputBorderFocus : p.inputBorder,
+                              },
+                            ]}
+                          >
+                            {showPassword ? (
+                              <EyeOff size={16} color={p.accent} />
+                            ) : (
+                              <Eye size={16} color={p.accent} />
+                            )}
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                      {requiredFields.password ? (
+                        <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                          {t('authModal.validation.passwordRequired')}
+                        </Text>
+                      ) : passwordValidationError ? (
+                        <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                          {passwordValidationError}
+                        </Text>
+                      ) : null}
+                    </View>
+
+                    {passwordDraftRef.current.length > 0 ? (
+                      <View style={styles.inputGroup}>
+                        <Animated.Text
+                          style={[
+                            styles.inputLabel,
+                            { color: p.accent },
+                            {
+                              opacity: confirmLabelAnim,
+                              transform: [
+                                {
+                                  translateY: confirmLabelAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [-6, 0],
+                                  }),
+                                },
+                              ],
+                            },
+                          ]}
+                        >
+                          {t('authModal.placeholders.confirmPassword')}
+                        </Animated.Text>
+                        <View
+                          style={[
+                            styles.inputWrapper,
+                            { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                            (requiredFields.confirmPassword || passwordMismatch) && {
+                              backgroundColor: p.errorBg,
+                              borderColor: p.errorBorder,
+                            },
+                            focusedField === 'confirmPassword' &&
+                              !requiredFields.confirmPassword &&
+                              !passwordMismatch && {
+                                borderColor: p.inputBorderFocus,
+                              },
+                          ]}
+                        >
+                          <View
+                            style={[
+                              styles.inputIconWrap,
+                              {
+                                backgroundColor:
+                                  requiredFields.confirmPassword || passwordMismatch
+                                    ? p.errorBg
+                                    : 'transparent',
+                              },
+                            ]}
+                          >
+                            <LockKeyhole
+                              size={15}
+                              color={
+                                requiredFields.confirmPassword || passwordMismatch
+                                  ? p.errorIcon
+                                  : p.accent
+                              }
+                              strokeWidth={2.15}
+                            />
+                          </View>
+                          <TextInput
+                            ref={confirmPasswordInputRef}
+                            autoCapitalize='none'
+                            autoCorrect={false}
+                            onChangeText={(value) => {
+                              confirmPasswordDraftRef.current = value;
+                              setConfirmPassword(value);
+                              clearRequiredField('confirmPassword');
+                              setLocalError(null);
+                              setPasswordMismatch(
+                                value.length > 0 && value !== passwordDraftRef.current
+                              );
+                              animateLabel(confirmLabelAnim, value.length > 0);
+                            }}
+                            onFocus={() => setFocusedField('confirmPassword')}
+                            onBlur={() =>
+                              setFocusedField((current) =>
+                                current === 'confirmPassword' ? null : current
+                              )
+                            }
+                            placeholder={t('authModal.placeholders.confirmPassword')}
+                            placeholderTextColor={p.textPlaceholder}
+                            secureTextEntry={!showConfirmPassword}
+                            style={[styles.input, { color: p.textPrimary }]}
+                            value={confirmPassword}
+                          />
+                          {confirmPassword.length > 0 && (
+                            <TouchableOpacity
+                              activeOpacity={0.8}
+                              onPress={() => setShowConfirmPassword((current) => !current)}
+                              style={[
+                                styles.visibilityToggle,
+                                {
+                                  backgroundColor:
+                                    focusedField === 'confirmPassword' ? p.accentMuted : p.inputBg,
+                                  borderColor:
+                                    focusedField === 'confirmPassword'
+                                      ? p.inputBorderFocus
+                                      : p.inputBorder,
+                                },
+                              ]}
+                            >
+                              {showConfirmPassword ? (
+                                <EyeOff size={16} color={p.accent} />
+                              ) : (
+                                <Eye size={16} color={p.accent} />
+                              )}
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                        {requiredFields.confirmPassword ? (
+                          <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                            {t('authModal.validation.confirmPasswordRequired')}
+                          </Text>
+                        ) : passwordMismatch ? (
+                          <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                            {t('authModal.validation.passwordMismatch')}
+                          </Text>
+                        ) : null}
+                      </View>
+                    ) : null}
+
+                    <LoadingButton
+                      variant='primary'
+                      label={t('authModal.actions.createAccount')}
+                      loadingLabel={t('authModal.redirecting.signup')}
+                      isLoading={submitMode === 'signup'}
+                      disabled={isBusy}
+                      onPress={() => void handleEmailSignUp()}
+                    />
+                  </>
+                ) : null}
+
+                {/* ── SIGNUP social path: Google + Discord ── */}
+                {mode === 'signup' && signupMethod === 'social' ? (
+                  <>
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      disabled={isBusy || !isSocialAuthEnabled()}
+                      onPress={() => void handleGoogleSignIn()}
+                      style={[
+                        styles.signupMethodButton,
+                        {
+                          backgroundColor: p.inputBg,
+                          borderColor: p.inputBorder,
+                          justifyContent: 'center',
+                          opacity: isBusy || !isSocialAuthEnabled() ? 0.6 : 1,
+                        },
+                      ]}
+                    >
+                      {submitMode === 'google' ? (
+                        <ActivityIndicator size='small' color={p.accent} />
+                      ) : (
+                        <Chrome size={18} color='#4285F4' strokeWidth={2.1} />
+                      )}
+                      <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
+                        {submitMode === 'google'
+                          ? t('authModal.redirecting.google')
+                          : t(
+                              'authModal.actions.signUpWithGoogle',
+                              undefined,
+                              'Sign up with Google'
+                            )}
+                      </Text>
+                      {!isSocialAuthEnabled() ? (
+                        <Text style={{ color: p.textMuted, fontSize: 10 }}>
+                          {t('authModal.underMaintenance')}
+                        </Text>
+                      ) : null}
+                    </TouchableOpacity>
+
+                    {shouldShowAuthentikSocialButtons ? (
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        disabled={isBusy || !isSocialAuthEnabled()}
+                        onPress={() => void handleDiscordSignIn()}
+                        style={[
+                          styles.signupMethodButton,
+                          {
+                            backgroundColor: p.inputBg,
+                            borderColor: p.inputBorder,
+                            justifyContent: 'center',
+                            opacity: isBusy || !isSocialAuthEnabled() ? 0.6 : 1,
+                          },
+                        ]}
+                      >
+                        {submitMode === 'discord' ? (
+                          <ActivityIndicator size='small' color={p.accent} />
+                        ) : (
+                          <MessageSquare size={18} color='#5865F2' strokeWidth={2.1} />
+                        )}
+                        <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
+                          {submitMode === 'discord'
+                            ? t('authModal.redirecting.discord')
+                            : t(
+                                'authModal.actions.signUpWithDiscord',
+                                undefined,
+                                'Sign up with Discord'
+                              )}
+                        </Text>
+                        {!isSocialAuthEnabled() ? (
+                          <Text style={{ color: p.textMuted, fontSize: 10 }}>
+                            {t('authModal.underMaintenance')}
+                          </Text>
+                        ) : null}
+                      </TouchableOpacity>
+                    ) : null}
+                  </>
+                ) : null}
+
+                {/* ── SIGNUP: referral code — always last, collapsed by default ── */}
+                {mode === 'signup' && signupMethod !== null ? (
                   <View style={styles.referralPrompt}>
                     <TouchableOpacity
                       activeOpacity={0.7}
+                      disabled={isBusy}
                       onPress={() => {
                         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                         setShowReferralInput((v) => !v);
                       }}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
+                      style={styles.referralPromptToggle}
                     >
+                      <KeyRound size={13} color={p.accent} strokeWidth={2.1} />
                       <Text style={[styles.referralPromptTitle, { color: p.accent }]}>
                         {t('authModal.referral.prompt', undefined, 'Have a referral code?')}
                       </Text>
                       <ChevronDown
-                        size={16}
+                        size={14}
                         color={p.accent}
                         strokeWidth={2.2}
                         style={{
@@ -1554,7 +1712,6 @@ export default function AuthSignInScreen({
                         }}
                       />
                     </TouchableOpacity>
-
                     {showReferralInput ? (
                       <View
                         style={[
@@ -1588,31 +1745,197 @@ export default function AuthSignInScreen({
                   </View>
                 ) : null}
 
-                <LoadingButton
-                  variant='primary'
-                  label={
-                    mode === 'signin'
-                      ? t('authModal.actions.continueWithEmail')
-                      : t('authModal.actions.createAccount')
-                  }
-                  loadingLabel={
-                    mode === 'signin'
-                      ? t('authModal.redirecting.email')
-                      : t('authModal.redirecting.signup')
-                  }
-                  isLoading={submitMode === 'signin' || submitMode === 'signup'}
-                  disabled={isBusy}
-                  onPress={() => {
-                    if (mode === 'signin') {
-                      void handleEmailSignIn();
-                    } else {
-                      void handleEmailSignUp();
-                    }
-                  }}
-                />
-
+                {/* ── SIGNIN: email + password + forgot + divider + social ── */}
                 {mode === 'signin' ? (
                   <>
+                    <View style={styles.inputGroup}>
+                      <Animated.Text
+                        style={[
+                          styles.inputLabel,
+                          { color: p.accent },
+                          {
+                            opacity: emailLabelAnim,
+                            transform: [
+                              {
+                                translateY: emailLabelAnim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [-6, 0],
+                                }),
+                              },
+                            ],
+                          },
+                        ]}
+                      >
+                        {t('authModal.placeholders.email')}
+                      </Animated.Text>
+                      <View
+                        style={[
+                          styles.inputWrapper,
+                          { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                          hasEmailInputError && {
+                            backgroundColor: p.errorBg,
+                            borderColor: p.errorBorder,
+                          },
+                          focusedField === 'email' &&
+                            !hasEmailInputError && {
+                              borderColor: p.inputBorderFocus,
+                            },
+                        ]}
+                      >
+                        <View
+                          style={[
+                            styles.inputIconWrap,
+                            { backgroundColor: hasEmailInputError ? p.errorBg : 'transparent' },
+                          ]}
+                        >
+                          <AtSign
+                            size={15}
+                            color={hasEmailInputError ? p.errorIcon : p.accent}
+                            strokeWidth={2.2}
+                          />
+                        </View>
+                        <TextInput
+                          ref={emailInputRef}
+                          autoCapitalize='none'
+                          autoCorrect={false}
+                          keyboardType='email-address'
+                          onChangeText={(value) => {
+                            emailDraftRef.current = value;
+                            setEmail(value);
+                            clearRequiredField('email');
+                            setInvalidEmail(false);
+                            setLocalError(null);
+                            animateLabel(emailLabelAnim, value.length > 0);
+                          }}
+                          onFocus={() => setFocusedField('email')}
+                          onBlur={() =>
+                            setFocusedField((current) => (current === 'email' ? null : current))
+                          }
+                          placeholder={t('authModal.placeholders.email')}
+                          placeholderTextColor={p.textPlaceholder}
+                          style={[styles.input, { color: p.textPrimary }]}
+                          value={email}
+                        />
+                      </View>
+                      {requiredFields.email ? (
+                        <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                          {t('authModal.validation.emailRequired')}
+                        </Text>
+                      ) : invalidEmail ? (
+                        <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                          {t('authModal.validation.validEmail')}
+                        </Text>
+                      ) : null}
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                      <Animated.Text
+                        style={[
+                          styles.inputLabel,
+                          { color: p.accent },
+                          {
+                            opacity: passwordLabelAnim,
+                            transform: [
+                              {
+                                translateY: passwordLabelAnim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [-6, 0],
+                                }),
+                              },
+                            ],
+                          },
+                        ]}
+                      >
+                        {t('authModal.placeholders.password')}
+                      </Animated.Text>
+                      <View
+                        style={[
+                          styles.inputWrapper,
+                          { backgroundColor: p.inputBg, borderColor: p.inputBorder },
+                          requiredFields.password && {
+                            backgroundColor: p.errorBg,
+                            borderColor: p.errorBorder,
+                          },
+                          focusedField === 'password' &&
+                            !requiredFields.password && {
+                              borderColor: p.inputBorderFocus,
+                            },
+                        ]}
+                      >
+                        <View
+                          style={[
+                            styles.inputIconWrap,
+                            {
+                              backgroundColor: requiredFields.password ? p.errorBg : 'transparent',
+                            },
+                          ]}
+                        >
+                          <LockKeyhole
+                            size={15}
+                            color={requiredFields.password ? p.errorIcon : p.accent}
+                            strokeWidth={2.15}
+                          />
+                        </View>
+                        <TextInput
+                          ref={passwordInputRef}
+                          autoCapitalize='none'
+                          autoCorrect={false}
+                          onChangeText={(value) => {
+                            passwordDraftRef.current = value;
+                            setPassword(value);
+                            clearRequiredField('password');
+                            setLocalError(null);
+                            animateLabel(passwordLabelAnim, value.length > 0);
+                            setPasswordMismatch(false);
+                          }}
+                          onFocus={() => setFocusedField('password')}
+                          onBlur={() =>
+                            setFocusedField((current) => (current === 'password' ? null : current))
+                          }
+                          placeholder={t('authModal.placeholders.password')}
+                          placeholderTextColor={p.textPlaceholder}
+                          secureTextEntry={!showPassword}
+                          style={[styles.input, { color: p.textPrimary }]}
+                          value={password}
+                        />
+                        {password.length > 0 && (
+                          <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => setShowPassword((current) => !current)}
+                            style={[
+                              styles.visibilityToggle,
+                              {
+                                backgroundColor:
+                                  focusedField === 'password' ? p.accentMuted : p.inputBg,
+                                borderColor:
+                                  focusedField === 'password' ? p.inputBorderFocus : p.inputBorder,
+                              },
+                            ]}
+                          >
+                            {showPassword ? (
+                              <EyeOff size={16} color={p.accent} />
+                            ) : (
+                              <Eye size={16} color={p.accent} />
+                            )}
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                      {requiredFields.password ? (
+                        <Text style={[styles.requiredFieldText, { color: p.errorText }]}>
+                          {t('authModal.validation.passwordRequired')}
+                        </Text>
+                      ) : null}
+                    </View>
+
+                    <LoadingButton
+                      variant='primary'
+                      label={t('authModal.actions.continueWithEmail')}
+                      loadingLabel={t('authModal.redirecting.email')}
+                      isLoading={submitMode === 'signin'}
+                      disabled={isBusy}
+                      onPress={() => void handleEmailSignIn()}
+                    />
+
                     <TouchableOpacity
                       activeOpacity={0.8}
                       disabled={isBusy}
@@ -1632,88 +1955,76 @@ export default function AuthSignInScreen({
                       <View style={[styles.dividerLine, { backgroundColor: p.divider }]} />
                     </View>
 
-                    <View style={{ position: 'relative' }}>
-                      <LoadingButton
-                        variant='secondary'
-                        label={t('authModal.actions.continueWithGoogle')}
-                        loadingLabel={t('authModal.redirecting.google')}
-                        isLoading={submitMode === 'google'}
-                        disabled={isBusy || !isSocialAuthEnabled()}
-                        onPress={() => {
-                          void handleGoogleSignIn();
-                        }}
-                        icon={Chrome}
-                      />
-                      {!isSocialAuthEnabled() && (
-                        <View
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                            borderRadius: 8,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            backdropFilter: 'blur(2px)',
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: String(p.text),
-                              fontSize: 12,
-                              fontWeight: '600',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {t('authModal.underMaintenance')}
-                          </Text>
-                        </View>
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      disabled={isBusy || !isSocialAuthEnabled()}
+                      onPress={() => void handleGoogleSignIn()}
+                      style={[
+                        styles.signupMethodButton,
+                        {
+                          backgroundColor: p.inputBg,
+                          borderColor: p.inputBorder,
+                          justifyContent: 'center',
+                          opacity: isBusy || !isSocialAuthEnabled() ? 0.6 : 1,
+                        },
+                      ]}
+                    >
+                      {submitMode === 'google' ? (
+                        <ActivityIndicator size='small' color={p.accent} />
+                      ) : (
+                        <Chrome size={18} color='#4285F4' strokeWidth={2.1} />
                       )}
-                    </View>
+                      <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
+                        {submitMode === 'google'
+                          ? t('authModal.redirecting.google')
+                          : t(
+                              'authModal.actions.signInWithGoogle',
+                              undefined,
+                              'Sign in with Google'
+                            )}
+                      </Text>
+                      {!isSocialAuthEnabled() ? (
+                        <Text style={{ color: p.textMuted, fontSize: 10 }}>
+                          {t('authModal.underMaintenance')}
+                        </Text>
+                      ) : null}
+                    </TouchableOpacity>
 
                     {shouldShowAuthentikSocialButtons ? (
-                      <View style={{ position: 'relative' }}>
-                        <LoadingButton
-                          variant='secondary'
-                          label={t('authModal.actions.continueWithDiscord')}
-                          loadingLabel={t('authModal.redirecting.discord')}
-                          isLoading={submitMode === 'discord'}
-                          disabled={isBusy || !isSocialAuthEnabled()}
-                          onPress={() => {
-                            void handleDiscordSignIn();
-                          }}
-                          icon={MessageSquare}
-                        />
-                        {!isSocialAuthEnabled() && (
-                          <View
-                            style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                              borderRadius: 8,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              backdropFilter: 'blur(2px)',
-                            }}
-                          >
-                            <Text
-                              style={{
-                                color: String(p.text),
-                                fontSize: 12,
-                                fontWeight: '600',
-                                textAlign: 'center',
-                              }}
-                            >
-                              {t('authModal.underMaintenance')}
-                            </Text>
-                          </View>
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        disabled={isBusy || !isSocialAuthEnabled()}
+                        onPress={() => void handleDiscordSignIn()}
+                        style={[
+                          styles.signupMethodButton,
+                          {
+                            backgroundColor: p.inputBg,
+                            borderColor: p.inputBorder,
+                            justifyContent: 'center',
+                            opacity: isBusy || !isSocialAuthEnabled() ? 0.6 : 1,
+                          },
+                        ]}
+                      >
+                        {submitMode === 'discord' ? (
+                          <ActivityIndicator size='small' color={p.accent} />
+                        ) : (
+                          <MessageSquare size={18} color='#5865F2' strokeWidth={2.1} />
                         )}
-                      </View>
+                        <Text style={[styles.signupMethodButtonText, { color: p.textPrimary }]}>
+                          {submitMode === 'discord'
+                            ? t('authModal.redirecting.discord')
+                            : t(
+                                'authModal.actions.signInWithDiscord',
+                                undefined,
+                                'Sign in with Discord'
+                              )}
+                        </Text>
+                        {!isSocialAuthEnabled() ? (
+                          <Text style={{ color: p.textMuted, fontSize: 10 }}>
+                            {t('authModal.underMaintenance')}
+                          </Text>
+                        ) : null}
+                      </TouchableOpacity>
                     ) : null}
 
                     {ENABLE_WEB3_LOGIN && (
@@ -1723,7 +2034,10 @@ export default function AuthSignInScreen({
                         onPress={() => setWalletModalVisible(true)}
                         style={[
                           styles.secondaryButton,
-                          { backgroundColor: p.secondaryBtnBg, borderColor: p.secondaryBtnBorder },
+                          {
+                            backgroundColor: p.secondaryBtnBg,
+                            borderColor: p.secondaryBtnBorder,
+                          },
                           isBusy && styles.buttonDisabled,
                         ]}
                       >
@@ -1772,13 +2086,45 @@ export default function AuthSignInScreen({
                   </View>
                 ) : null}
 
+                {mode === 'signup' && signupMethod !== null ? (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    disabled={isBusy}
+                    onPress={() => {
+                      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                      setSignupMethod(null);
+                    }}
+                    style={styles.footerToggle}
+                  >
+                    <Text
+                      style={[
+                        styles.footerToggleText,
+                        styles.footerToggleUnderline,
+                        { color: p.textMuted },
+                      ]}
+                    >
+                      {t(
+                        'authModal.actions.backToSignupOptions',
+                        undefined,
+                        'Back, sign up with other methods'
+                      )}
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+
                 <TouchableOpacity
-                  activeOpacity={0.8}
+                  activeOpacity={0.7}
                   disabled={isBusy}
                   onPress={() => switchMode(mode === 'signin' ? 'signup' : 'signin')}
                   style={styles.footerToggle}
                 >
-                  <Text style={[styles.footerToggleText, { color: p.textMuted }]}>
+                  <Text
+                    style={[
+                      styles.footerToggleText,
+                      styles.footerToggleUnderline,
+                      { color: p.textMuted },
+                    ]}
+                  >
                     {mode === 'signin'
                       ? t('authModal.footer.dontHaveAccount')
                       : t('authModal.footer.alreadyHaveAccount')}
@@ -2336,9 +2682,46 @@ const styles = createTypographyStyles({
   inputGroup: {
     gap: 6,
   },
+  signupMethodPicker: {
+    gap: 12,
+    marginBottom: 6,
+  },
+  signupMethodButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  signupMethodButtonText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: -0.1,
+    flex: 1,
+    textAlign: 'center',
+  },
   referralPrompt: {
     gap: 6,
     marginTop: 2,
+  },
+  referralPromptToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  signupBackLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+  },
+  signupBackLinkText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   referralPromptTitle: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -2637,5 +3020,8 @@ const styles = createTypographyStyles({
     color: 'rgba(232,232,255,0.65)',
     fontSize: 12,
     fontWeight: '600',
+  },
+  footerToggleUnderline: {
+    textDecorationLine: 'underline',
   },
 });
