@@ -2438,7 +2438,7 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(255,255,255,0.08)',
     backgroundColor: 'rgba(13,13,31,0.92)',
     padding: 18,
-    gap: 10,
+    gap: 16,
   },
   cardModal: {
     width: '100%',
