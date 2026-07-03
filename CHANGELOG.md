@@ -1,3 +1,17 @@
+## [1.1.11](https://github.com/alternun-development/alternun/compare/v1.1.11-dev.0...v1.1.11) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.11-dev.0
+- **repo:** fix(mobile): theme support modal and narrow cards
+- **repo:** test(mobile): add FooterCopyright compact renderer test, upgrade react-test-renderer to 19
+- **repo:** test(mobile): cover APP_VERSION empty fallback path in Footer.shared
+
+
+
+
+
+
 ## [1.1.11](https://github.com/alternun-development/alternun/compare/v1.1.10...v1.1.11) (2026-07-03)
 
 ### Bug Fixes
