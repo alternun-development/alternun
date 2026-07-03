@@ -28,6 +28,7 @@ const WalletIcon = Wallet as React.FC<LucideProps>;
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
 const SUMMARY_CARDS_STACK_BREAKPOINT = 720;
+const SUMMARY_CARDS_DENSE_BREAKPOINT = 400;
 
 interface AuthClient {
   getSessionToken(): Promise<string | null>;
@@ -51,7 +52,7 @@ export function getDashboardSummaryCardsLayout(width: number): {
   return {
     isMobile,
     isCompactMobile: isMobile,
-    isDenseAtnCard: isMobile,
+    isDenseAtnCard: width < SUMMARY_CARDS_DENSE_BREAKPOINT,
   };
 }
 
@@ -188,11 +189,13 @@ function StatValue({
   loading,
   p,
   compact = false,
+  dense = false,
 }: {
   value?: number | null;
   loading?: boolean;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
+  dense?: boolean;
 }): React.JSX.Element {
   const t = useAppTranslation();
 
@@ -201,7 +204,14 @@ function StatValue({
   }
 
   return (
-    <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
+    <Text
+      style={[
+        styles.statValue,
+        compact && styles.statValueCompact,
+        dense && styles.statValueDense,
+        { color: p.title },
+      ]}
+    >
       {typeof value === 'number'
         ? value.toLocaleString()
         : t.t('dashboard.summaryCards.comingSoon')}
@@ -212,6 +222,7 @@ function StatValue({
 function RBICard({
   p,
   compact = false,
+  dense = false,
   eligibleUsers,
   eligibleUsersLoading = false,
   airsScore,
@@ -220,6 +231,7 @@ function RBICard({
 }: {
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
+  dense?: boolean;
   eligibleUsers?: number | null;
   eligibleUsersLoading?: boolean;
   airsScore?: number | null;
@@ -227,6 +239,7 @@ function RBICard({
   minHeight?: number;
 }): React.JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
+  const useDenseLayout = compact || dense;
   const t = useAppTranslation();
   const comingSoonLabel = t.t('dashboard.summaryCards.comingSoon');
 
@@ -264,25 +277,44 @@ function RBICard({
       <Divider p={p} compact={compact} />
 
       <View style={[styles.statList, compact && styles.statListCompact]}>
-        <View style={styles.statRow}>
+        <View style={[styles.statRow, useDenseLayout && styles.statRowDense]}>
           <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
             {t.t('dashboard.summaryCards.rbi.estimatedPool')}
           </Text>
-          <Text style={[styles.statValue, compact && styles.statValueCompact, { color: p.title }]}>
+          <Text
+            style={[
+              styles.statValue,
+              compact && styles.statValueCompact,
+              useDenseLayout && styles.statValueDense,
+              { color: p.title },
+            ]}
+          >
             {comingSoonLabel}
           </Text>
         </View>
-        <View style={styles.statRow}>
+        <View style={[styles.statRow, useDenseLayout && styles.statRowDense]}>
           <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
             {t.t('dashboard.summaryCards.rbi.eligibleUsers')}
           </Text>
-          <StatValue value={eligibleUsers} loading={eligibleUsersLoading} p={p} compact={compact} />
+          <StatValue
+            value={eligibleUsers}
+            loading={eligibleUsersLoading}
+            p={p}
+            compact={compact}
+            dense={useDenseLayout}
+          />
         </View>
-        <View style={styles.statRow}>
+        <View style={[styles.statRow, useDenseLayout && styles.statRowDense]}>
           <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
             {t.t('dashboard.summaryCards.rbi.airsScore')}
           </Text>
-          <StatValue value={airsScore} loading={airsScoreLoading} p={p} compact={compact} />
+          <StatValue
+            value={airsScore}
+            loading={airsScoreLoading}
+            p={p}
+            compact={compact}
+            dense={useDenseLayout}
+          />
         </View>
       </View>
 
@@ -293,6 +325,7 @@ function RBICard({
           style={[
             styles.rbiInfoBox,
             compact && styles.rbiInfoBoxCompact,
+            useDenseLayout && styles.rbiInfoBoxDense,
             { backgroundColor: p.accentSoft, borderColor: p.accent },
           ]}
         >
@@ -339,6 +372,7 @@ function RBICard({
               style={[
                 styles.rbiDocLink,
                 compact && styles.rbiDocLinkCompact,
+                useDenseLayout && styles.rbiDocLinkDense,
                 { backgroundColor: p.accentSoft, borderColor: p.accent },
               ]}
             >
@@ -346,6 +380,7 @@ function RBICard({
                 style={[
                   styles.rbiDocLinkText,
                   compact && styles.rbiDocLinkTextCompact,
+                  useDenseLayout && styles.rbiDocLinkTextDense,
                   { color: p.accent },
                 ]}
               >
@@ -402,7 +437,13 @@ function ATNCard({
         compact={compact}
       />
 
-      <View style={[styles.tokenRow, compact && styles.tokenRowCompact]}>
+      <View
+        style={[
+          styles.tokenRow,
+          compact && styles.tokenRowCompact,
+          useDenseLayout && styles.tokenRowDense,
+        ]}
+      >
         <View style={styles.tokenLabelBlock}>
           <Text
             style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
@@ -419,12 +460,25 @@ function ATNCard({
             {t.t('dashboard.summaryCards.atn.availableDesc')}
           </Text>
         </View>
-        <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
+        <Text
+          style={[
+            styles.tokenValue,
+            compact && styles.tokenValueCompact,
+            useDenseLayout && styles.tokenValueDense,
+            { color: p.title },
+          ]}
+        >
           {comingSoonLabel}
         </Text>
       </View>
       <Divider p={p} compact={compact} />
-      <View style={[styles.tokenRow, compact && styles.tokenRowCompact]}>
+      <View
+        style={[
+          styles.tokenRow,
+          compact && styles.tokenRowCompact,
+          useDenseLayout && styles.tokenRowDense,
+        ]}
+      >
         <View style={styles.tokenLabelBlock}>
           <Text
             style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
@@ -441,21 +495,35 @@ function ATNCard({
             {t.t('dashboard.summaryCards.atn.stackingDesc')}
           </Text>
         </View>
-        <Text style={[styles.tokenValue, compact && styles.tokenValueCompact, { color: p.title }]}>
+        <Text
+          style={[
+            styles.tokenValue,
+            compact && styles.tokenValueCompact,
+            useDenseLayout && styles.tokenValueDense,
+            { color: p.title },
+          ]}
+        >
           {comingSoonLabel}
         </Text>
       </View>
 
-      <View style={[styles.totalRow, compact && styles.totalRowCompact]}>
+      <View
+        style={[
+          styles.totalRow,
+          compact && styles.totalRowCompact,
+          useDenseLayout && styles.totalRowDense,
+        ]}
+      >
         <Text style={[styles.totalLabel, compact && styles.totalLabelCompact, { color: p.title }]}>
           {t.t('dashboard.summaryCards.atn.totalLabel')}
         </Text>
-        <View style={styles.totalValueWrap}>
+        <View style={[styles.totalValueWrap, useDenseLayout && styles.totalValueWrapDense]}>
           <TrendingUpIcon size={16} color={p.accent} />
           <Text
             style={[
               styles.totalValue,
               compact && styles.totalValueCompact,
+              useDenseLayout && styles.totalValueDense,
               { color: p.accentStrong },
             ]}
           >
@@ -637,6 +705,7 @@ export default function DashboardSummaryCards({
           <RBICard
             p={p}
             compact={isCompactMobile}
+            dense={isDenseAtnCard}
             eligibleUsers={eligibleUsers}
             eligibleUsersLoading={eligibleUsersLoading}
             airsScore={airsBalance}
@@ -800,6 +869,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
+  statRowDense: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 4,
+  },
   statLabel: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
@@ -818,11 +892,16 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: '800',
     textAlign: 'right',
+    flexShrink: 1,
+    minWidth: 0,
   },
   statValueCompact: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     lineHeight: 16,
+  },
+  statValueDense: {
+    textAlign: 'left',
   },
   calloutCard: {
     flexDirection: 'row',
@@ -917,6 +996,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
+  rbiInfoBoxDense: {
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
   rbiInfoBoxCompact: {
     borderRadius: 14,
     paddingHorizontal: 10,
@@ -933,6 +1016,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: '800',
+    minWidth: 0,
   },
   rbiInfoTitleCompact: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -976,15 +1060,23 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginTop: 10,
   },
+  rbiDocLinkDense: {
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+  },
   rbiDocLinkText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     flex: 1,
     fontSize: 13,
     fontWeight: '700',
+    minWidth: 0,
   },
   rbiDocLinkTextCompact: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
+  },
+  rbiDocLinkTextDense: {
+    textAlign: 'left',
   },
 
   tokenRow: {
@@ -997,6 +1089,11 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 0,
   },
+  tokenRowDense: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 4,
+  },
   tokenLabelBlock: {
     flex: 1,
     gap: 3,
@@ -1006,6 +1103,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: -0.2,
+    minWidth: 0,
   },
   tokenLabelCompact: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -1036,6 +1134,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     letterSpacing: -0.3,
   },
+  tokenValueDense: {
+    textAlign: 'left',
+  },
   totalRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1046,6 +1147,11 @@ const styles = StyleSheet.create({
   totalRowCompact: {
     marginTop: 12,
     marginBottom: 12,
+  },
+  totalRowDense: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 6,
   },
   totalLabel: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -1066,6 +1172,9 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     minWidth: 0,
   },
+  totalValueWrapDense: {
+    justifyContent: 'flex-start',
+  },
   totalValue: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 26,
@@ -1078,6 +1187,9 @@ const styles = StyleSheet.create({
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 18,
     letterSpacing: -0.4,
+  },
+  totalValueDense: {
+    textAlign: 'left',
   },
   walletPanel: {
     borderWidth: 1,
