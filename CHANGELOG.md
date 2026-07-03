@@ -1,3 +1,29 @@
+## [1.1.11](https://github.com/alternun-development/alternun/compare/v1.1.11-dev.0...v1.1.11) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.11-dev.0
+- **repo:** fix(mobile): theme support modal and narrow cards
+- **repo:** test(mobile): add FooterCopyright compact renderer test, upgrade react-test-renderer to 19
+- **repo:** test(mobile): cover APP_VERSION empty fallback path in Footer.shared
+
+
+
+
+
+
+## [1.1.11](https://github.com/alternun-development/alternun/compare/v1.1.10...v1.1.11) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): theme support modal and narrow cards
+- **repo:** test(mobile): add FooterCopyright compact renderer test, upgrade react-test-renderer to 19
+- **repo:** test(mobile): cover APP_VERSION empty fallback path in Footer.shared
+
+### Bug Fixes
+
+- **mobile:** theme support modal and narrow cards ([5de1d72](https://github.com/alternun-development/alternun/commit/5de1d72d03549dd98bae62543046db07a1b6f8d6))
+
 ## [1.1.10](https://github.com/alternun-development/alternun/compare/v1.1.10-dev.0...v1.1.10) (2026-07-03)
 
 ### Bug Fixes
@@ -6,15 +32,9 @@
 - **repo:** chore: sync README and mobile version to v1.1.10-dev.0 --no-validate-reentry
 - **repo:** fix(ci): repair Footer.shared tests and CodeQL regex injection alert
 
-
-
 ### Bug Fixes
 
-* **ci:** repair Footer.shared tests and CodeQL regex injection alert ([4e01b81](https://github.com/alternun-development/alternun/commit/4e01b815c6f32ea6d2d96c6bc7cac8b10501771b))
-
-
-
-
+- **ci:** repair Footer.shared tests and CodeQL regex injection alert ([4e01b81](https://github.com/alternun-development/alternun/commit/4e01b815c6f32ea6d2d96c6bc7cac8b10501771b))
 
 ## [1.1.10](https://github.com/alternun-development/alternun/compare/v1.1.9-dev.0...v1.1.10) (2026-07-03)
 

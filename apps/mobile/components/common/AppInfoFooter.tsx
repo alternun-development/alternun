@@ -28,6 +28,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { ChangelogDrawer } from '@alternun/ui';
 import SupportButton from './SupportButton';
+import { createSupportDialogPalette } from './supportDialogPalette';
 import { createTypographyStyles } from '../theme/typography';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -354,7 +355,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
                   />
                   <SupportButton
                     supportEmail='support@alternun.co'
-                    palette={palette}
+                    palette={createSupportDialogPalette(isDark)}
                     compact={isMobile}
                   />
                 </View>
