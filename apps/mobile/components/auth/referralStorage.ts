@@ -7,16 +7,16 @@ export interface PendingReferralData {
 
 const PENDING_REFERRAL_STORAGE_KEY = 'pendingReferralData';
 
-function getWindowSessionStorage(): Storage | null {
-  if (typeof window?.sessionStorage === 'undefined') {
+function getWindowLocalStorage(): Storage | null {
+  if (typeof window?.localStorage === 'undefined') {
     return null;
   }
 
-  return window.sessionStorage;
+  return window.localStorage;
 }
 
 export function readPendingReferralData(): PendingReferralData | null {
-  const storage = getWindowSessionStorage();
+  const storage = getWindowLocalStorage();
   if (!storage) {
     return null;
   }
@@ -53,7 +53,7 @@ export function readPendingReferralCode(): string | null {
 }
 
 export function writePendingReferralData(data: PendingReferralData): void {
-  const storage = getWindowSessionStorage();
+  const storage = getWindowLocalStorage();
   if (!storage) {
     return;
   }
@@ -62,7 +62,7 @@ export function writePendingReferralData(data: PendingReferralData): void {
 }
 
 export function clearPendingReferralData(): void {
-  const storage = getWindowSessionStorage();
+  const storage = getWindowLocalStorage();
   if (!storage) {
     return;
   }
