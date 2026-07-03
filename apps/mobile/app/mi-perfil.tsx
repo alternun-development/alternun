@@ -13,7 +13,6 @@ import {
   Moon,
   Settings,
   Shield,
-  ShieldCheck,
   Trophy,
   UserCircle2,
   Wallet,
@@ -95,7 +94,6 @@ const LogOutIcon = LogOut as React.FC<LucideProps>;
 const MapPinIcon = MapPin as React.FC<LucideProps>;
 const MoonIcon = Moon as React.FC<LucideProps>;
 const SettingsIcon = Settings as React.FC<LucideProps>;
-const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
 const TrophyIcon = Trophy as React.FC<LucideProps>;
 const UserCircle2Icon = UserCircle2 as React.FC<LucideProps>;
 const CopyIcon = Copy as React.FC<LucideProps>;
@@ -3081,13 +3079,13 @@ export default function MiPerfilScreen(): React.JSX.Element {
   const footerLabel = t('profile.footer', { version: appVersion });
   const tabs = useMemo<TabItem[]>(
     () => [
-      { key: 'ranking', label: t('profile.tabs.ranking', undefined, 'Ranking'), icon: TrophyIcon },
-      { key: 'wallet', label: t('profile.tabs.wallet', undefined, 'Wallet'), icon: WalletIcon },
       {
         key: 'perfil',
         label: t('profile.tabs.profile', undefined, 'Profile'),
         icon: UserCircle2Icon,
       },
+      { key: 'wallet', label: t('profile.tabs.wallet', undefined, 'Wallet'), icon: WalletIcon },
+      { key: 'ranking', label: t('profile.tabs.ranking', undefined, 'Ranking'), icon: TrophyIcon },
     ],
     [t]
   );
@@ -3169,12 +3167,6 @@ export default function MiPerfilScreen(): React.JSX.Element {
     <ScreenShell activeSection='mi-perfil' backgroundColor={c.bg}>
       <View style={[styles.root, { backgroundColor: c.bg }]}>
         <View style={styles.headerBar}>
-          <View style={styles.titleWithIcon}>
-            <ShieldCheckIcon size={24} color={c.accent} strokeWidth={1.8} />
-            <Text style={[styles.pageTitle, { color: c.text }]}>
-              {t('profile.screenTitle', undefined, 'My Profile')}
-            </Text>
-          </View>
           <View style={styles.tabRow}>
             <PageTabBar
               tabs={tabs}
@@ -3226,7 +3218,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'stretch',
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 4,
     paddingBottom: 4,
     // The tab tooltip below needs to render above tabContent's card, but tabContent has its own
     // transform (translateY), which creates a separate stacking context that otherwise paints on
@@ -3235,9 +3227,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     zIndex: 20,
   },
-  titleWithIcon: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
   tabRow: { marginHorizontal: -16 },
-  pageTitle: { fontSize: 20, fontWeight: '700', fontFamily: 'Sculpin-Bold' },
   tabContent: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 },
   signInPrompt: { fontSize: 16, fontWeight: '600', marginVertical: 12, textAlign: 'center' },
