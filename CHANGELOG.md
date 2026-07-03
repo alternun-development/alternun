@@ -1,13 +1,18 @@
+## [1.1.9](https://github.com/alternun-development/alternun/compare/v1.1.8...v1.1.9) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): prevent ATN/RBI card value overflow on small screens
+
+### Bug Fixes
+
+- **mobile:** prevent ATN/RBI card value overflow on small screens ([5321de7](https://github.com/alternun-development/alternun/commit/5321de7542dcc67433d9906f8b06958b2721b9bf))
+
 ## [1.1.8](https://github.com/alternun-development/alternun/compare/v1.1.8-dev.0...v1.1.8) (2026-07-03)
 
 ### Bug Fixes
 
 - **repo:** chore: sync README and mobile version to v1.1.8-dev.0 --no-validate-reentry
-
-
-
-
-
 
 ## [1.1.8](https://github.com/alternun-development/alternun/compare/v1.1.7...v1.1.8) (2026-07-03)
 
