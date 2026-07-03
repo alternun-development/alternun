@@ -118,24 +118,18 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.5**
+Current version: **1.1.6**
 
-## 📋 Latest Changes (v1.1.5)
+## 📋 Latest Changes (v1.1.6)
 
 ### Bug Fixes
 
-- **api:** guard null status before comparison in signup error handler ([dbf4fce](https://github.com/alternun-development/alternun/commit/dbf4fcee817dd359515c7373bab13bcbd4b806b8))
-- **api:** listen on 0.0.0.0 to resolve localhost CORS null-status errors ([29b7628](https://github.com/alternun-development/alternun/commit/29b7628bbc18379ea151f79071499e8402ecaf8f))
-- **auth:** referral code hidden by default, back button, fix sessionStorage pre-fill ([08242f5](https://github.com/alternun-development/alternun/commit/08242f5bfa65ea711f1b5f90d93321d430f2ab74))
-- **auth:** resolve signup 500 error and add social login to signup flow ([b2da482](https://github.com/alternun-development/alternun/commit/b2da482843163d843b6e0895aa1017356d7bdf61))
-- **mobile:** production version display and auth form spacing ([55d0bf6](https://github.com/alternun-development/alternun/commit/55d0bf6971de93be1d6fd79952ed0fc227eba85e))
-- **referrals:** allow user_id in POST body and always show referred-by in profile card ([4dc5f7b](https://github.com/alternun-development/alternun/commit/4dc5f7b76378f17fb10160dcdb77f47ff1d9c333))
-- **referrals:** skip attribution on invalid/self referral code instead of 400 ([f3aaa41](https://github.com/alternun-development/alternun/commit/f3aaa41babe904c8d2357eda64822ed89defa27d))
+- **referrals:** award AIRS bonus to both referrer and referee on signup ([e163917](https://github.com/alternun-development/alternun/commit/e163917fe50d6df4006882510507758123245dd3))
 
 ### Features
 
-- **auth:** improve signup UI and fix referral flow for social logins ([1e65f92](https://github.com/alternun-development/alternun/commit/1e65f92f94d35850a3db87b9941dcf2673209491))
-- **auth:** refactor signup flow into two-path selection UI ([9712b44](https://github.com/alternun-development/alternun/commit/9712b442b0c2542cb12b1caecd37c5728b64f9a7))
+- **auth:** add Enter key submit support to sign-in and sign-up email forms ([fbac6b7](https://github.com/alternun-development/alternun/commit/fbac6b75cde541053f7159ff3b64f69a2968202a))
+- **profile:** collapsible invited users section with pagination in referral card ([0874256](https://github.com/alternun-development/alternun/commit/0874256fede6ad6781ec60485a03b566246fed6a))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
