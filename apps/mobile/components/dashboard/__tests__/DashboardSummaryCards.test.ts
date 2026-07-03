@@ -12,7 +12,7 @@ describeTest('getDashboardSummaryCardsLayout', () => {
     expectValue(getDashboardSummaryCardsLayout(719)).toEqual({
       isMobile: true,
       isCompactMobile: true,
-      isDenseAtnCard: true,
+      isDenseAtnCard: false,
     });
   });
 
