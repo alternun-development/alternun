@@ -1,3 +1,14 @@
+## [1.1.10](https://github.com/alternun-development/alternun/compare/v1.1.9-dev.0...v1.1.10) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): remove Mi perfil heading, reorder tabs, tighten top spacing
+- **repo:** chore: sync README and mobile version to v1.1.9-dev.0 --no-validate-reentry
+
+### Bug Fixes
+
+- **mobile:** remove Mi perfil heading, reorder tabs, tighten top spacing ([cab0a2c](https://github.com/alternun-development/alternun/commit/cab0a2cf08f40fa4e972c5da4e3fd4e725372470))
+
 ## [1.1.9](https://github.com/alternun-development/alternun/compare/v1.1.8...v1.1.9) (2026-07-03)
 
 ### Bug Fixes
