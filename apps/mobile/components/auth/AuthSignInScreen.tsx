@@ -1335,6 +1335,9 @@ export default function AuthSignInScreen({
                           autoCapitalize='none'
                           autoCorrect={false}
                           keyboardType='email-address'
+                          returnKeyType='next'
+                          onSubmitEditing={() => passwordInputRef.current?.focus()}
+                          blurOnSubmit={false}
                           onChangeText={(value) => {
                             emailDraftRef.current = value;
                             setEmail(value);
@@ -1416,6 +1419,9 @@ export default function AuthSignInScreen({
                           ref={passwordInputRef}
                           autoCapitalize='none'
                           autoCorrect={false}
+                          returnKeyType='next'
+                          onSubmitEditing={() => confirmPasswordInputRef.current?.focus()}
+                          blurOnSubmit={false}
                           onChangeText={(value) => {
                             passwordDraftRef.current = value;
                             setPassword(value);
@@ -1541,6 +1547,8 @@ export default function AuthSignInScreen({
                             ref={confirmPasswordInputRef}
                             autoCapitalize='none'
                             autoCorrect={false}
+                            returnKeyType='go'
+                            onSubmitEditing={() => void handleEmailSignUp()}
                             onChangeText={(value) => {
                               confirmPasswordDraftRef.current = value;
                               setConfirmPassword(value);
@@ -1799,6 +1807,9 @@ export default function AuthSignInScreen({
                           autoCapitalize='none'
                           autoCorrect={false}
                           keyboardType='email-address'
+                          returnKeyType='next'
+                          onSubmitEditing={() => passwordInputRef.current?.focus()}
+                          blurOnSubmit={false}
                           onChangeText={(value) => {
                             emailDraftRef.current = value;
                             setEmail(value);
@@ -1880,6 +1891,8 @@ export default function AuthSignInScreen({
                           ref={passwordInputRef}
                           autoCapitalize='none'
                           autoCorrect={false}
+                          returnKeyType='go'
+                          onSubmitEditing={() => void handleEmailSignIn()}
                           onChangeText={(value) => {
                             passwordDraftRef.current = value;
                             setPassword(value);
@@ -2438,7 +2451,7 @@ const styles = createTypographyStyles({
     borderColor: 'rgba(255,255,255,0.08)',
     backgroundColor: 'rgba(13,13,31,0.92)',
     padding: 18,
-    gap: 10,
+    gap: 16,
   },
   cardModal: {
     width: '100%',
