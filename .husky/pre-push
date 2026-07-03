@@ -29,3 +29,17 @@ npm run changelog:check
 # Ensure REENTRY.md is in sync with reentry.status.json.
 # Skip with: git push --no-validate-reentry  OR  SKIP_REENTRY_VALIDATION=true git push
 bash scripts/validate-reentry-status.sh "$@"
+
+# Enforce 70% coverage threshold (CLAUDE.md §12).
+# Skip with: SKIP_COVERAGE=true git push
+if [ "${SKIP_COVERAGE:-}" != "true" ]; then
+  echo "🧪 Running coverage check (70% threshold)..."
+  CI=1 pnpm --filter @alternun/mobile run test:coverage || {
+    echo ""
+    echo "❌  PUSH BLOCKED: mobile test coverage fell below 70%."
+    echo "    Fix failing tests or add coverage, then push again."
+    echo "    To skip (emergency only): SKIP_COVERAGE=true git push"
+    echo ""
+    exit 1
+  }
+fi

@@ -1,13 +1,64 @@
+## [1.1.10](https://github.com/alternun-development/alternun/compare/v1.1.10-dev.0...v1.1.10) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** chore: enforce 70% coverage threshold with pre-push guard and CLAUDE.md docs
+- **repo:** chore: sync README and mobile version to v1.1.10-dev.0 --no-validate-reentry
+- **repo:** fix(ci): repair Footer.shared tests and CodeQL regex injection alert
+
+
+
+### Bug Fixes
+
+* **ci:** repair Footer.shared tests and CodeQL regex injection alert ([4e01b81](https://github.com/alternun-development/alternun/commit/4e01b815c6f32ea6d2d96c6bc7cac8b10501771b))
+
+
+
+
+
+## [1.1.10](https://github.com/alternun-development/alternun/compare/v1.1.9-dev.0...v1.1.10) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): remove Mi perfil heading, reorder tabs, tighten top spacing
+- **repo:** chore: sync README and mobile version to v1.1.9-dev.0 --no-validate-reentry
+
+### Bug Fixes
+
+- **mobile:** remove Mi perfil heading, reorder tabs, tighten top spacing ([cab0a2c](https://github.com/alternun-development/alternun/commit/cab0a2cf08f40fa4e972c5da4e3fd4e725372470))
+
+## [1.1.9](https://github.com/alternun-development/alternun/compare/v1.1.8...v1.1.9) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): prevent ATN/RBI card value overflow on small screens
+
+### Bug Fixes
+
+- **mobile:** prevent ATN/RBI card value overflow on small screens ([5321de7](https://github.com/alternun-development/alternun/commit/5321de7542dcc67433d9906f8b06958b2721b9bf))
+
+## [1.1.8](https://github.com/alternun-development/alternun/compare/v1.1.8-dev.0...v1.1.8) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** chore: sync README and mobile version to v1.1.8-dev.0 --no-validate-reentry
+
+## [1.1.8](https://github.com/alternun-development/alternun/compare/v1.1.7...v1.1.8) (2026-07-03)
+
+### Bug Fixes
+
+- **repo:** fix(ui): align footer version with drawer and clean up changelog noise
+- **repo:** chore: sync mobile version.production to v1.1.7 --no-validate-reentry
+
+### Bug Fixes
+
+- **ui:** align footer version with drawer and clean up changelog noise ([2db69a2](https://github.com/alternun-development/alternun/commit/2db69a287b8b9a6b5e452b5e719ede9000de01ad))
+
 ## [1.1.7](https://github.com/alternun-development/alternun/compare/v1.1.7-dev.0...v1.1.7) (2026-07-03)
 
 ### Bug Fixes
 
 - **repo:** chore: sync README and mobile version to v1.1.7-dev.0 --no-validate-reentry
-
-
-
-
-
 
 ## [1.1.7](https://github.com/alternun-development/alternun/compare/v1.1.6...v1.1.7) (2026-07-03)
 

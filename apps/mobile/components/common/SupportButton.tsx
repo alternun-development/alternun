@@ -12,6 +12,7 @@ import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 export interface SupportButtonProps {
   supportEmail: string;
+  compact?: boolean;
   palette: {
     title: string;
     muted: string;
@@ -23,7 +24,11 @@ export interface SupportButtonProps {
   };
 }
 
-function SupportButton({ supportEmail, palette }: SupportButtonProps): React.JSX.Element {
+function SupportButton({
+  supportEmail,
+  compact = false,
+  palette,
+}: SupportButtonProps): React.JSX.Element {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showChatOptions, setShowChatOptions] = useState(false);
 
@@ -90,6 +95,7 @@ function SupportButton({ supportEmail, palette }: SupportButtonProps): React.JSX
         onPress={() => setDialogOpen(true)}
         style={({ pressed }) => [
           styles.supportButton,
+          compact && styles.supportButtonCompact,
           {
             backgroundColor: pressed ? `${palette.accent}18` : 'transparent',
             borderColor: palette.muted,
@@ -98,7 +104,7 @@ function SupportButton({ supportEmail, palette }: SupportButtonProps): React.JSX
         accessibilityRole='button'
         accessibilityLabel='Open support'
       >
-        <HelpCircle size={16} color={palette.title} strokeWidth={1.8} />
+        <HelpCircle size={compact ? 13 : 16} color={palette.title} strokeWidth={1.8} />
       </Pressable>
 
       {/* Support dialog modal */}
@@ -308,6 +314,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  supportButtonCompact: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
   },
   modalOverlay: {
     flex: 1,
