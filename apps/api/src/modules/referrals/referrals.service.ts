@@ -282,6 +282,28 @@ async function sleep(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function callRpc(
+  rpcName: string,
+  body: Record<string, unknown>,
+  cfg: SupabaseConfig
+): Promise<void> {
+  const response = await fetch(`${cfg.url}/rest/v1/rpc/${rpcName}`, {
+    method: 'POST',
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`${rpcName} failed [${response.status}]: ${text}`);
+  }
+}
+
 async function awardReferralBonus(
   referrerUserId: string,
   referredUserId: string,
@@ -290,25 +312,26 @@ async function awardReferralBonus(
   const cfg = resolveSupabaseWriteConfig(env);
   if (!cfg) return;
 
-  const response = await fetch(`${cfg.url}/rest/v1/rpc/airs_award_referral_bonus`, {
-    method: 'POST',
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      p_referrer_user_id: referrerUserId,
-      p_referred_user_id: referredUserId,
-      p_bonus_amount: 25,
-    }),
-  });
+  await callRpc(
+    'airs_award_referral_bonus',
+    { p_referrer_user_id: referrerUserId, p_referred_user_id: referredUserId, p_bonus_amount: 25 },
+    cfg
+  );
+}
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => '');
-    throw new Error(`airs_award_referral_bonus failed [${response.status}]: ${text}`);
-  }
+async function awardRefereeBonus(
+  refereeUserId: string,
+  referrerUserId: string,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<void> {
+  const cfg = resolveSupabaseWriteConfig(env);
+  if (!cfg) return;
+
+  await callRpc(
+    'airs_award_referee_bonus',
+    { p_referee_user_id: refereeUserId, p_referrer_user_id: referrerUserId, p_bonus_amount: 25 },
+    cfg
+  );
 }
 
 async function supabaseSelectOne<T>(
@@ -515,7 +538,10 @@ export class ReferralsService {
     const referralCode = resolveReferralInput(dto);
     const referredByUsername = trimRuntimeValue(dto.referred_by_username) || null;
     const referredByEmail = trimRuntimeValue(dto.referred_by_email) || null;
-    const confirmedAt = currentUser.email_verified ? new Date().toISOString() : null;
+    // Trust the referral submission itself as confirmation: social-login users have
+    // email_verified=true at the OAuth provider but our DB may not reflect that yet.
+    // Email users who submit a referral code are active enough to award immediately.
+    const confirmedAt = new Date().toISOString();
 
     let resolvedReferrerUserId = currentUser.referred_by_user_id;
     let resolvedReferrerReferralCode = currentUser.referred_by_referral_code;
@@ -566,11 +592,19 @@ export class ReferralsService {
       throw new InternalServerErrorException('Failed to persist referral record');
     }
 
-    // Award AIRS to the referrer when the referral is confirmed (email verified)
-    if (confirmedAt && resolvedReferrerUserId) {
+    // Award AIRS to both parties when a valid referrer is found.
+    if (resolvedReferrerUserId) {
       awardReferralBonus(resolvedReferrerUserId, userId).catch((error: unknown) => {
         this.logger.warn(
-          `Failed to award referral bonus to ${resolvedReferrerUserId} for ${userId}: ${
+          `Failed to award referrer bonus to ${resolvedReferrerUserId} for ${userId}: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
+      });
+
+      awardRefereeBonus(userId, resolvedReferrerUserId).catch((error: unknown) => {
+        this.logger.warn(
+          `Failed to award referee bonus to ${userId} referred by ${resolvedReferrerUserId}: ${
             error instanceof Error ? error.message : String(error)
           }`
         );
