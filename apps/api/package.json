@@ -14,7 +14,7 @@
   "dependencies": {
     "@alternun/email-templates": "workspace:*",
     "@aws-sdk/client-secrets-manager": "^3.940.0",
-    "@better-auth/drizzle-adapter": "1.6.5",
+    "@better-auth/drizzle-adapter": "1.6.11",
     "@fastify/aws-lambda": "^5.1.4",
     "@fastify/swagger": "^9.5.0",
     "@fastify/swagger-ui": "^5.2.1",
@@ -24,7 +24,7 @@
     "@nestjs/swagger": "^8.1.1",
     "@nestjs/throttler": "^6.4.0",
     "@supabase/supabase-js": "^2.98.0",
-    "better-auth": "^1.6.3",
+    "better-auth": "^1.6.11",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "drizzle-orm": "^0.45.2",
