@@ -583,6 +583,8 @@ export default function Dashboard({
                 isDark={isDark}
                 entries={airsSnapshot?.recentEntries ?? []}
                 isLoading={isLoading || airsLoading}
+                client={client}
+                signedIn={Boolean(user)}
               />
               <SectionDivider isDark={isDark} />
               <AIRSLeaderboard isDark={isDark} client={client} signedIn={Boolean(user)} />
