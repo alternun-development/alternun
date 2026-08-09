@@ -19,6 +19,19 @@ export interface AirsLeaderboardResult {
   entries: AirsLeaderboardEntry[];
   requestingUserEntry: AirsLeaderboardEntry | null;
   totalEligibleUsers: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export type AirsActivityScope = 'personal' | 'global';
+
+export interface AirsActivityResult {
+  entries: AirsDashboardLedgerEntry[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface UserAchievement {
@@ -570,15 +583,19 @@ export async function getAirsLeaderboard(
   input: {
     requestingUserId: string;
     limit?: number;
+    page?: number;
   },
   env: Record<string, string | undefined> = process.env
 ): Promise<AirsLeaderboardResult> {
+  const pageSize = Math.max(1, Math.min(input.limit ?? 7, 50));
+  const page = Math.max(1, input.page ?? 1);
   const [rows, totalEligibleUsers] = await Promise.all([
     supabaseRpcArray(
-      'airs_get_leaderboard',
+      'airs_get_leaderboard_page',
       {
         p_requesting_user_id: input.requestingUserId,
-        p_limit: input.limit ?? 20,
+        p_limit: pageSize,
+        p_page: page,
       },
       env
     ),
@@ -596,7 +613,51 @@ export async function getAirsLeaderboard(
 
   const requestingUserEntry = entries.find((e) => e.isMe) ?? null;
 
-  return { entries, requestingUserEntry, totalEligibleUsers };
+  return {
+    entries,
+    requestingUserEntry,
+    totalEligibleUsers,
+    page,
+    pageSize,
+    totalPages: Math.max(1, Math.ceil(totalEligibleUsers / pageSize)),
+  };
+}
+
+export async function getAirsActivity(
+  input: {
+    requestingUserId: string;
+    scope?: AirsActivityScope;
+    page?: number;
+    limit?: number;
+    search?: string | null;
+    sourceKind?: AirsLedgerSourceKind | null;
+  },
+  env: Record<string, string | undefined> = process.env
+): Promise<AirsActivityResult> {
+  const pageSize = Math.max(1, Math.min(input.limit ?? 10, 50));
+  const page = Math.max(1, input.page ?? 1);
+  const search = input.search?.trim();
+  const body = await supabaseRpc<Record<string, unknown>>(
+    'airs_get_activity',
+    {
+      p_requesting_user_id: input.requestingUserId,
+      p_scope: input.scope ?? 'personal',
+      p_page: page,
+      p_limit: pageSize,
+      p_search: search && search.length > 0 ? search : null,
+      p_source_kind: input.sourceKind ?? null,
+    },
+    env
+  );
+
+  const totalCount = asNumber(body.total_count);
+  return {
+    entries: asRecordArray(body.entries).map(mapDashboardLedgerEntry),
+    totalCount,
+    page: asNumber(body.page) > 0 ? asNumber(body.page) : page,
+    pageSize: asNumber(body.page_size) || pageSize,
+    totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
+  };
 }
 
 export async function getAirsEligibleUsersCount(

@@ -9,6 +9,7 @@ import {
   UIManager,
   View,
 } from 'react-native';
+import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { createTypographyStyles } from '../theme/typography';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
@@ -26,6 +27,10 @@ interface LeaderboardEntry {
 interface LeaderboardResult {
   entries: LeaderboardEntry[];
   requestingUserEntry: LeaderboardEntry | null;
+  totalEligibleUsers?: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
 }
 
 interface UserPositions {
@@ -51,6 +56,7 @@ const FILTERS: { key: RankScope; label: string }[] = [
   { key: 'country', label: 'País' },
   { key: 'city', label: 'Ciudad' },
 ];
+const PAGE_SIZE = 7;
 
 function RankBadge({ rank, isDark }: { rank: number; isDark: boolean }): React.JSX.Element {
   const accent = isDark ? '#1EE6B5' : '#0d9488';
@@ -74,6 +80,7 @@ export default function AIRSLeaderboard({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scope, setScope] = useState<RankScope>('global');
+  const [page, setPage] = useState(0);
   const contentTransition = React.useRef(new Animated.Value(1)).current;
 
   const accent = isDark ? '#1EE6B5' : '#0d9488';
@@ -104,9 +111,12 @@ export default function AIRSLeaderboard({
         return;
       }
       const [lbRes, posRes] = await Promise.all([
-        fetch(`${resolveMobileApiBaseUrl()}/v1/airs/leaderboard?limit=20`, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        }),
+        fetch(
+          `${resolveMobileApiBaseUrl()}/v1/airs/leaderboard?limit=${PAGE_SIZE}&page=${page + 1}`,
+          {
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          }
+        ),
         fetch(`${resolveMobileApiBaseUrl()}/v1/airs/my-position`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
@@ -140,7 +150,7 @@ export default function AIRSLeaderboard({
     } finally {
       setIsLoading(false);
     }
-  }, [client, signedIn]);
+  }, [client, page, signedIn]);
 
   useEffect(() => {
     contentTransition.stopAnimation(() => {
@@ -158,9 +168,11 @@ export default function AIRSLeaderboard({
     void fetchData();
   }, [fetchData]);
 
-  const topEntries = result?.entries.filter((e) => e.rank <= 20) ?? [];
+  const topEntries = result?.entries ?? [];
   const myEntry = result?.requestingUserEntry ?? null;
-  const myRankOutsideTop = myEntry && myEntry.rank > 20;
+  const myRankOutsideTop = myEntry && !topEntries.some((entry) => entry.userId === myEntry.userId);
+  const totalEntries = result?.totalEligibleUsers ?? topEntries.length;
+  const totalPages = result?.totalPages ?? Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
 
   const scopeLabel =
     scope === 'global'
@@ -178,6 +190,7 @@ export default function AIRSLeaderboard({
 
   const handleScopeChange = useCallback(
     (nextScope: RankScope) => {
+      setPage(0);
       changeLeaderboardScope(nextScope, scope, setScope);
     },
     [scope]
@@ -373,6 +386,43 @@ export default function AIRSLeaderboard({
           </View>
         )}
       </Animated.View>
+      {scope === 'global' && totalPages > 1 && !isLoading && !error && (
+        <View style={styles.pagination}>
+          <Text style={[styles.pageInfo, { color: mutedColor }]}>
+            {`${page * PAGE_SIZE + 1}–${Math.min(
+              (page + 1) * PAGE_SIZE,
+              totalEntries
+            )} de ${totalEntries}`}
+          </Text>
+          <View style={styles.pageButtons}>
+            <TouchableOpacity
+              testID='airs-leaderboard-prev-page'
+              onPress={() => setPage((current) => Math.max(0, current - 1))}
+              disabled={page === 0}
+              style={[
+                styles.pageButton,
+                { borderColor: cardBorder, opacity: page === 0 ? 0.35 : 1 },
+              ]}
+            >
+              <ChevronLeft size={16} color={textColor} />
+            </TouchableOpacity>
+            <Text style={[styles.pageNumber, { color: accent }]}>
+              {page + 1} / {totalPages}
+            </Text>
+            <TouchableOpacity
+              testID='airs-leaderboard-next-page'
+              onPress={() => setPage((current) => Math.min(totalPages - 1, current + 1))}
+              disabled={page >= totalPages - 1}
+              style={[
+                styles.pageButton,
+                { borderColor: cardBorder, opacity: page >= totalPages - 1 ? 0.35 : 1 },
+              ]}
+            >
+              <ChevronRight size={16} color={textColor} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -548,5 +598,36 @@ const styles = createTypographyStyles({
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '600',
+  },
+  pagination: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    paddingHorizontal: 2,
+  },
+  pageInfo: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 11,
+  },
+  pageButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  pageButton: {
+    width: 30,
+    height: 30,
+    borderWidth: 1,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pageNumber: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 11,
+    fontWeight: '700',
+    minWidth: 38,
+    textAlign: 'center',
   },
 });
