@@ -11,6 +11,7 @@ const PROJECT_ROOT = path.resolve(SCRIPT_DIR, '..');
 const PUBLIC_DIR = path.join(PROJECT_ROOT, 'public');
 
 const SOURCE_ICON = path.join(PROJECT_ROOT, 'assets', 'images', 'alternun-logo.png');
+const FAVICON_SOURCE = path.join(PUBLIC_DIR, 'asset-9simbolo-airs.svg');
 
 const OUTPUT_APP_ICON = path.join(PROJECT_ROOT, 'assets', 'images', 'icon.png');
 const OUTPUT_ADAPTIVE_ICON = path.join(PROJECT_ROOT, 'assets', 'images', 'adaptive-icon.png');
@@ -37,10 +38,16 @@ async function ensureSourceIconExists() {
     console.error(`Source icon not found: ${SOURCE_ICON}`);
     process.exit(1);
   }
+  try {
+    await fs.access(FAVICON_SOURCE);
+  } catch {
+    console.error(`Favicon source not found: ${FAVICON_SOURCE}`);
+    process.exit(1);
+  }
 }
 
-async function renderSquareIcon(size, outputPath, background = SHARP_BRAND_BG) {
-  await sharp(SOURCE_ICON)
+async function renderSquareIcon(size, outputPath, background = SHARP_BRAND_BG, source = SOURCE_ICON) {
+  await sharp(source, { density: 384 })
     .resize({
       width: size,
       height: size,
@@ -51,8 +58,8 @@ async function renderSquareIcon(size, outputPath, background = SHARP_BRAND_BG) {
     .toFile(outputPath);
 }
 
-async function renderTransparentIcon(size, outputPath) {
-  await sharp(SOURCE_ICON)
+async function renderTransparentIcon(size, outputPath, source = SOURCE_ICON) {
+  await sharp(source, { density: 384 })
     .resize({
       width: size,
       height: size,
@@ -63,7 +70,7 @@ async function renderTransparentIcon(size, outputPath) {
     .toFile(outputPath);
 }
 
-function generateFaviconIco() {
+function generateFaviconIco(sourcePng) {
   const convertCheck = spawnSync('convert', ['-version'], { stdio: 'ignore' });
   if ((convertCheck.status ?? 1) !== 0) {
     console.warn('⚠️ ImageMagick convert is unavailable; skipping favicon.ico generation.');
@@ -73,7 +80,7 @@ function generateFaviconIco() {
   const result = spawnSync(
     'convert',
     [
-      OUTPUT_PUBLIC_ICON_1024,
+      sourcePng,
       '-define',
       'icon:auto-resize=16,24,32,48,64,128,256',
       OUTPUT_PUBLIC_FAVICON_ICO,
@@ -100,7 +107,7 @@ async function generateIcons() {
   await renderTransparentIcon(1024, OUTPUT_ADAPTIVE_ICON);
   console.log(`✓ Created ${path.basename(OUTPUT_ADAPTIVE_ICON)}`);
 
-  await renderSquareIcon(48, OUTPUT_FAVICON);
+  await renderSquareIcon(48, OUTPUT_FAVICON, SHARP_BRAND_BG, FAVICON_SOURCE);
   console.log(`✓ Created ${path.basename(OUTPUT_FAVICON)} (48x48)`);
 
   await renderTransparentIcon(1024, OUTPUT_SPLASH_ICON);
@@ -118,13 +125,16 @@ async function generateIcons() {
   await renderSquareIcon(1024, OUTPUT_PUBLIC_MASKABLE_1024);
   console.log(`✓ Created ${path.basename(OUTPUT_PUBLIC_MASKABLE_1024)}`);
 
-  await renderSquareIcon(180, OUTPUT_PUBLIC_APPLE_TOUCH);
+  await renderSquareIcon(180, OUTPUT_PUBLIC_APPLE_TOUCH, SHARP_BRAND_BG, FAVICON_SOURCE);
   console.log(`✓ Created ${path.basename(OUTPUT_PUBLIC_APPLE_TOUCH)} (180x180)`);
 
-  await renderSquareIcon(48, OUTPUT_PUBLIC_FAVICON_48);
+  await renderSquareIcon(48, OUTPUT_PUBLIC_FAVICON_48, SHARP_BRAND_BG, FAVICON_SOURCE);
   console.log(`✓ Created ${path.basename(OUTPUT_PUBLIC_FAVICON_48)} (48x48)`);
 
-  generateFaviconIco();
+  const faviconIcoSource = path.join(PUBLIC_DIR, '.favicon-ico-source-1024.png');
+  await renderSquareIcon(1024, faviconIcoSource, SHARP_BRAND_BG, FAVICON_SOURCE);
+  generateFaviconIco(faviconIcoSource);
+  await fs.unlink(faviconIcoSource);
 
   const ogIconSize = 400;
   const ogIconBuffer = await sharp(SOURCE_ICON)
