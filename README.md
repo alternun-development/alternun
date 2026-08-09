@@ -118,26 +118,13 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.12**
+Current version: **1.1.13**
 
-## 📋 Latest Changes (v1.1.12)
-
-### Bug Fixes
-
-- **repo:** test(mobile): update explorer navigation state
-- **repo:** feat(mobile): upgrade explorer experience
-- **repo:** chore: release v1.1.11
-- **repo:** fix(mobile): tighten dashboard cards and brand pwa icons
-- **repo:** fix(release): fail fast when promote PR creation fails
-
-### Bug Fixes
-
-- **mobile:** tighten dashboard cards and brand pwa icons ([11a3502](https://github.com/alternun-development/alternun/commit/11a3502b6638495a0de288ef28265cdb524c3127))
-- **release:** fail fast when promote PR creation fails ([bcb215e](https://github.com/alternun-development/alternun/commit/bcb215e4fdb3acb8c35e35c49938b5febd992f96))
+## 📋 Latest Changes (v1.1.13)
 
 ### Features
 
-- **mobile:** upgrade explorer experience ([bb88ce4](https://github.com/alternun-development/alternun/commit/bb88ce42f80ccc2e42b1b09c4d2e8560eb175763))
+- **airs:** paginate activity and secure referral rewards ([f87f9f8](https://github.com/alternun-development/alternun/commit/f87f9f84d457f8be450b6bed144494015429189e))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
