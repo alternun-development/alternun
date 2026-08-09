@@ -124,6 +124,14 @@ Current version: **1.1.12**
 
 ### Bug Fixes
 
+- **repo:** test(mobile): update explorer navigation state
+- **repo:** feat(mobile): upgrade explorer experience
+- **repo:** chore: release v1.1.11
+- **repo:** fix(mobile): tighten dashboard cards and brand pwa icons
+- **repo:** fix(release): fail fast when promote PR creation fails
+
+### Bug Fixes
+
 - **mobile:** tighten dashboard cards and brand pwa icons ([11a3502](https://github.com/alternun-development/alternun/commit/11a3502b6638495a0de288ef28265cdb524c3127))
 - **release:** fail fast when promote PR creation fails ([bcb215e](https://github.com/alternun-development/alternun/commit/bcb215e4fdb3acb8c35e35c49938b5febd992f96))
 
