@@ -853,6 +853,85 @@
         "error": "No pudimos cargar los detalles de referido ahora mismo."
       },
       "footer": "Alternun Airs · v{{version}}"
+    },
+    "explorer": {
+      "title": "Explorar",
+      "subtitle": "El mapa global de proyectos AIRS",
+      "marketplace": "MERCADO DE PROYECTOS AIRS",
+      "heroTitle": "Explora donde tu energía se vuelve impacto.",
+      "live": "EN VIVO",
+      "presentation": "PRESENTACIÓN DEL PROYECTO",
+      "presentationTitle": "Presentación del proyecto Eco Turismo",
+      "launchProject": "PROYECTO DE LANZAMIENTO",
+      "heroDescription": "Conoce la propuesta y encuentra la forma de sumar tu talento, red o experiencia.",
+      "collaborate": "Quiero colaborar",
+      "openMap": "ABRIMOS EL MAPA",
+      "submitProject": "Presentar proyecto",
+      "swipeHint": "Desliza para explorar",
+      "globalMarket": "MERCADO GLOBAL",
+      "projectsToActivate": "Proyectos para activar",
+      "available": "{{count}} disponible",
+      "searchPlaceholder": "Buscar por proyecto, país o tema",
+      "livePaths": "ELIGE TU CAMINO",
+      "active": "ACTIVO",
+      "productive": "PRODUCTIVO",
+      "waysToCollaborate": "Formas de colaborar",
+      "participateAndEarn": "Ver cómo participar y ganar AIRS",
+      "filters": {
+        "all": "Todos",
+        "active": "Activos",
+        "productive": "Productivos",
+        "conservation": "Conservación"
+      },
+      "intents": {
+        "question": "¿Qué quieres hacer hoy?",
+        "prompt": "ELIGE TU CAMINO",
+        "collaborate": {
+          "label": "Quiero colaborar",
+          "description": "Aporta tu tiempo, conocimiento o red a un proyecto activo."
+        },
+        "propose": {
+          "label": "Quiero proponer un proyecto",
+          "description": "Lleva tu iniciativa productiva o de conservación a la red AIRS."
+        },
+        "donate": {
+          "label": "Quiero donar",
+          "description": "Impulsa una causa y conecta tu apoyo con impacto verificable."
+        }
+      },
+      "submitBanner": {
+        "title": "Tu proyecto también puede mover AIRS.",
+        "description": "Presenta una iniciativa productiva o de conservación a la comunidad global de Alternun."
+      },
+      "project": {
+        "title": "Eco Turismo",
+        "place": "Colombia",
+        "theme": "Economía viva y territorio",
+        "description": "Un proyecto de turismo consciente para activar colaboración, experiencias locales y valor regenerativo.",
+        "contribute": {
+          "participate": "Participar",
+          "share": "Difundir",
+          "connectAllies": "Conectar aliados"
+        }
+      },
+      "empty": {
+        "title": "Aún no hay coincidencias",
+        "description": "Prueba otro filtro o presenta una nueva iniciativa."
+      },
+      "earn": {
+        "title": "Colaborar genera movimiento",
+        "description": "Las oportunidades AIRS se coordinan con cada proyecto y la comunidad."
+      },
+      "form": {
+        "title": "Presenta un proyecto",
+        "subtitle": "La comunidad de Alternun revisa cada propuesta.",
+        "projectName": "Nombre del proyecto",
+        "location": "País o territorio",
+        "productive": "Productivo",
+        "conservation": "Conservación",
+        "continueTelegram": "Continuar en Telegram",
+        "finePrint": "Comparte los detalles de tu propuesta con @alternun_io."
+      }
     }
   },
   "web": {
