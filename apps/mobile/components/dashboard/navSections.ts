@@ -21,7 +21,7 @@ export interface NavSection {
 
 export const NAV_SECTIONS: NavSection[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
-  { key: 'explorar', label: 'Explore', icon: LeafIcon, comingSoon: true },
+  { key: 'explorar', label: 'Explorer', icon: LeafIcon },
   { key: 'portafolio', label: 'Portfolio', icon: ShieldCheckIcon, comingSoon: true },
   { key: 'mi-perfil', label: 'My Profile', icon: CircleUserRoundIcon },
 ];

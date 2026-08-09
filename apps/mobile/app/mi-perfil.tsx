@@ -75,6 +75,7 @@ import profileStylesEnhanced from '../components/profile/ProfileStyles';
 import { isTestnetRuntime, resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
 import { createShadowStyle } from '../components/theme/deprecatedStylesHelper';
 import { resolveSessionTokenWithRetry } from '../components/auth/sessionToken';
+import { normalizeAirsDashboardSnapshot } from '../components/dashboard/airsSnapshot';
 import {
   AchievementBadge,
   AchievementTooltip,
@@ -2652,6 +2653,8 @@ function PerfilTab({
   const [achievements, setAchievements] = useState<
     Array<{ key: string; unlocked: boolean; unlockedAt: string | null }>
   >([]);
+  const [airsScore, setAirsScore] = useState<number | null>(null);
+  const airsScoreRefreshRef = useRef<number>(0);
 
   // Animated circles
   const { motionLevel } = useAppPreferences();
@@ -2735,6 +2738,56 @@ function PerfilTab({
     void fetchAchievements();
   }, [user?.id, client]);
 
+  useEffect(() => {
+    if (!user?.id || !client) {
+      return;
+    }
+
+    const requestId = airsScoreRefreshRef.current + 1;
+    airsScoreRefreshRef.current = requestId;
+
+    const fetchAirsScore = async (): Promise<void> => {
+      try {
+        const sessionToken = await resolveSessionTokenWithRetry(client, {
+          attempts: 4,
+          retryDelayMs: 250,
+        });
+        if (!sessionToken) {
+          return;
+        }
+
+        const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
+        const response = await fetch(`${apiBaseUrl}/v1/airs/me`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+            Accept: 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const payload: unknown = await response.json().catch(() => null);
+        if (airsScoreRefreshRef.current !== requestId) {
+          return;
+        }
+
+        const snapshot = normalizeAirsDashboardSnapshot(payload);
+        if (!snapshot) {
+          return;
+        }
+
+        setAirsScore(snapshot.balanceAIRS);
+      } catch {
+        // non-fatal — keep last known value
+      }
+    };
+
+    void fetchAirsScore();
+  }, [client, user?.id]);
+
   const accountIdLabel = t('profile.accountInfoModal.accountId', undefined, 'Account ID');
   const naLabel = t('profile.accountInfoModal.na', undefined, 'N/A');
   const verifiedLabel = t('profile.accountStatus.verified', undefined, 'Verified');
@@ -2759,7 +2812,7 @@ function PerfilTab({
         <View style={{ marginTop: 12 }} />
         <ProfileHeader
           displayName={profile.displayName}
-          score={0}
+          score={airsScore}
           email={profile.email}
           location={resolveProfileLocation(user)}
           isDark={isDark}
@@ -2769,7 +2822,7 @@ function PerfilTab({
         />
 
         {/* Tier Journey */}
-        <TierJourney score={0} isDark={isDark} c={c} />
+        <TierJourney score={airsScore} isDark={isDark} c={c} />
 
         {/* Achievements */}
         <SectionContainer
