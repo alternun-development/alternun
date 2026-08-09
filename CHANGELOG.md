@@ -1,4 +1,21 @@
+## [1.1.12](https://github.com/alternun-development/alternun/compare/v1.1.11...v1.1.12) (2026-08-09)
 
+### Bug Fixes
+
+- **repo:** test(mobile): update explorer navigation state
+- **repo:** feat(mobile): upgrade explorer experience
+- **repo:** chore: release v1.1.11
+- **repo:** fix(mobile): tighten dashboard cards and brand pwa icons
+- **repo:** fix(release): fail fast when promote PR creation fails
+
+### Bug Fixes
+
+- **mobile:** tighten dashboard cards and brand pwa icons ([11a3502](https://github.com/alternun-development/alternun/commit/11a3502b6638495a0de288ef28265cdb524c3127))
+- **release:** fail fast when promote PR creation fails ([bcb215e](https://github.com/alternun-development/alternun/commit/bcb215e4fdb3acb8c35e35c49938b5febd992f96))
+
+### Features
+
+- **mobile:** upgrade explorer experience ([bb88ce4](https://github.com/alternun-development/alternun/commit/bb88ce42f80ccc2e42b1b09c4d2e8560eb175763))
 
 ## [1.1.11](https://github.com/alternun-development/alternun/compare/v1.1.11-dev.0...v1.1.11) (2026-07-03)
 
@@ -8,11 +25,6 @@
 - **repo:** fix(mobile): theme support modal and narrow cards
 - **repo:** test(mobile): add FooterCopyright compact renderer test, upgrade react-test-renderer to 19
 - **repo:** test(mobile): cover APP_VERSION empty fallback path in Footer.shared
-
-
-
-
-
 
 ## [1.1.11](https://github.com/alternun-development/alternun/compare/v1.1.10...v1.1.11) (2026-07-03)
 
