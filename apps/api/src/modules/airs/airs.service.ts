@@ -7,6 +7,7 @@ import {
   awardAirsRegistrationBonus,
   awardAirsProfileBonus,
   getAirsDashboardSnapshot,
+  getAirsActivity,
   getAirsLeaderboard,
   getAirsUserPositions,
   getUserAchievements,
@@ -14,6 +15,9 @@ import {
   recordAirsDashboardVisit,
   updateAirsUserProfile,
   type AirsLeaderboardResult,
+  type AirsActivityResult,
+  type AirsActivityScope,
+  type AirsLedgerSourceKind,
   type AirsUserPositions,
   type UserAchievement,
 } from './airs.repository';
@@ -426,12 +430,34 @@ export class AirsService {
     });
   }
 
-  async leaderboard(token: string, limit?: number): Promise<AirsLeaderboardResult> {
+  async leaderboard(token: string, limit?: number, page?: number): Promise<AirsLeaderboardResult> {
     const userId = await resolveUserId(token);
-    return getAirsLeaderboard({ requestingUserId: userId, limit: limit ?? 20 }, process.env).catch(
+    return getAirsLeaderboard(
+      { requestingUserId: userId, limit: limit ?? 7, page: page ?? 1 },
+      process.env
+    ).catch((error: unknown) => {
+      this.logger.error(
+        `AIRS leaderboard fetch failed: ${error instanceof Error ? error.message : String(error)}`
+      );
+      throw error;
+    });
+  }
+
+  async activity(
+    token: string,
+    input: {
+      scope?: AirsActivityScope;
+      page?: number;
+      limit?: number;
+      search?: string | null;
+      sourceKind?: AirsLedgerSourceKind | null;
+    }
+  ): Promise<AirsActivityResult> {
+    const userId = await resolveUserId(token);
+    return getAirsActivity({ requestingUserId: userId, ...input }, process.env).catch(
       (error: unknown) => {
         this.logger.error(
-          `AIRS leaderboard fetch failed: ${error instanceof Error ? error.message : String(error)}`
+          `AIRS activity fetch failed: ${error instanceof Error ? error.message : String(error)}`
         );
         throw error;
       }
