@@ -554,7 +554,7 @@ export class ReferralsService {
       return;
     }
 
-    const referralRecord = await swallowOptionalQuery<CurrentUserReferralRecord>(
+    const referralRecord = await swallowOptionalQuery<CurrentUserReferralRecord | null>(
       this.logger,
       'referral record for confirmation sync',
       supabaseSelectOne<CurrentUserReferralRecord>(
