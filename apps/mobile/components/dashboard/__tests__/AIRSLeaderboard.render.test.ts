@@ -612,10 +612,13 @@ describe('AIRSLeaderboard render', () => {
     });
 
     const calls = (globalThis.fetch as unknown as jest.Mock).mock.calls;
-    const firstUrl = String(calls[0][0]);
-    const secondUrl = String(calls[2][0]);
+    const firstLeaderboardRequest = calls.find((call): boolean =>
+      String(call[0]).includes('/v1/airs/leaderboard')
+    );
+    expect(firstLeaderboardRequest).toBeDefined();
+    const firstUrl = String(firstLeaderboardRequest?.[0]);
+
     expect(firstUrl.includes('/v1/airs/leaderboard?limit=7&page=1')).toBe(true);
-    expect(secondUrl.includes('/v1/airs/leaderboard?limit=7&page=2')).toBe(true);
     expect(renderState.container.textContent).toContain('1–7 de 8');
 
     act(() => {
@@ -635,6 +638,16 @@ describe('AIRSLeaderboard render', () => {
       await flushEffects();
     });
 
+    const callsAfterLoadMore = (globalThis.fetch as unknown as jest.Mock).mock.calls;
+    const secondPageLeaderboardRequest = callsAfterLoadMore.find(
+      (call): boolean =>
+        String(call[0]).includes('/v1/airs/leaderboard') &&
+        new URL(String(call[0])).searchParams.get('page') === '2'
+    );
+    expect(secondPageLeaderboardRequest).toBeDefined();
+    expect(
+      String(secondPageLeaderboardRequest?.[0]).includes('/v1/airs/leaderboard?limit=7&page=2')
+    ).toBe(true);
     expect((globalThis.fetch as unknown as jest.Mock).mock.calls.length).toBe(4);
   });
 });
