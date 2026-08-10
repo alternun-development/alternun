@@ -255,8 +255,9 @@ export default function ActivityFeed({
       if (!token) {
         throw new Error('No session token available');
       }
+      const apiScope = scope === 'network' ? 'global' : scope;
       const params = new URLSearchParams({
-        scope,
+        scope: apiScope,
         page: String(page + 1),
         limit: String(PAGE_SIZE),
       });

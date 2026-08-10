@@ -555,6 +555,67 @@ export async function getAirsUserPositions(
   };
 }
 
+interface AirsActivityRpcEntry {
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  entries: AirsDashboardLedgerEntry[];
+}
+
+function compareActivityEntriesByRecordedAtDesc(
+  left: AirsDashboardLedgerEntry,
+  right: AirsDashboardLedgerEntry
+): number {
+  const leftTime = Date.parse(left.recordedAt);
+  const rightTime = Date.parse(right.recordedAt);
+
+  if (Number.isNaN(leftTime) && Number.isNaN(rightTime)) {
+    return 0;
+  }
+
+  if (Number.isNaN(leftTime)) {
+    return 1;
+  }
+
+  if (Number.isNaN(rightTime)) {
+    return -1;
+  }
+
+  return rightTime - leftTime;
+}
+
+async function fetchAirsActivityPage(
+  input: {
+    requestingUserId: string;
+    scope: AirsActivityScope;
+    page: number;
+    limit: number;
+    search: string | null;
+    sourceKind: AirsLedgerSourceKind | null;
+  },
+  env: Record<string, string | undefined>
+): Promise<AirsActivityRpcEntry> {
+  const body = await supabaseRpc<Record<string, unknown>>(
+    'airs_get_activity',
+    {
+      p_requesting_user_id: input.requestingUserId,
+      p_scope: input.scope,
+      p_page: input.page,
+      p_limit: input.limit,
+      p_search: input.search?.length ? input.search : null,
+      p_source_kind: input.sourceKind,
+    },
+    env
+  );
+
+  return {
+    totalCount: asNumber(body.total_count),
+    page: asNumber(body.page),
+    pageSize: asNumber(body.page_size) || input.limit,
+    entries: asRecordArray(body.entries).map(mapDashboardLedgerEntry),
+  };
+}
+
 export async function updateAirsUserProfile(
   input: { userId: string; name?: string | null; country?: string | null; city?: string | null },
   env: Record<string, string | undefined> = process.env
@@ -610,8 +671,27 @@ export async function getAirsLeaderboard(
     airsLifetimeEarned: asNumber(row.airs_lifetime_earned),
     isMe: row.is_me === true,
   }));
+  let requestingUserEntry = entries.find((e) => e.isMe) ?? null;
 
-  const requestingUserEntry = entries.find((e) => e.isMe) ?? null;
+  if (!requestingUserEntry) {
+    const [requestingUserPosition, requestingUserSnapshot] = await Promise.all([
+      getAirsUserPositions({ userId: input.requestingUserId }, env).catch(() => null),
+      getAirsDashboardSnapshot({ userId: input.requestingUserId }, env).catch(() => null),
+    ]);
+
+    if (requestingUserPosition ?? requestingUserSnapshot) {
+      const rank = requestingUserPosition?.globalRank ?? totalEligibleUsers + 1;
+      requestingUserEntry = {
+        rank,
+        userId: input.requestingUserId,
+        displayName: requestingUserSnapshot?.displayName ?? 'User',
+        airsBalance:
+          requestingUserSnapshot?.airsBalance ?? requestingUserPosition?.airsBalance ?? 0,
+        airsLifetimeEarned: requestingUserSnapshot?.airsLifetimeEarned ?? 0,
+        isMe: true,
+      };
+    }
+  }
 
   return {
     entries,
@@ -637,26 +717,74 @@ export async function getAirsActivity(
   const pageSize = Math.max(1, Math.min(input.limit ?? 10, 50));
   const page = Math.max(1, input.page ?? 1);
   const search = input.search?.trim();
-  const body = await supabaseRpc<Record<string, unknown>>(
-    'airs_get_activity',
+
+  const scope = input.scope ?? 'personal';
+
+  if (input.sourceKind === 'compensation') {
+    const queryLimit = page * pageSize;
+    const [compensationResult, regenerativeResult] = await Promise.all([
+      fetchAirsActivityPage(
+        {
+          requestingUserId: input.requestingUserId,
+          scope,
+          page: 1,
+          limit: queryLimit,
+          search: search && search.length > 0 ? search : null,
+          sourceKind: 'compensation',
+        },
+        env
+      ),
+      fetchAirsActivityPage(
+        {
+          requestingUserId: input.requestingUserId,
+          scope,
+          page: 1,
+          limit: queryLimit,
+          search: search && search.length > 0 ? search : null,
+          sourceKind: 'validated_regenerative_action',
+        },
+        env
+      ),
+    ]);
+
+    const mergedEntries: AirsDashboardLedgerEntry[] = Array.from(
+      new Map(
+        [...compensationResult.entries, ...regenerativeResult.entries].map((entry) => [
+          entry.id,
+          entry,
+        ])
+      ).values()
+    ).sort(compareActivityEntriesByRecordedAtDesc);
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const combinedTotalCount = compensationResult.totalCount + regenerativeResult.totalCount;
+    return {
+      entries: mergedEntries.slice(start, end),
+      totalCount: combinedTotalCount,
+      page,
+      pageSize,
+      totalPages: Math.max(1, Math.ceil(combinedTotalCount / pageSize)),
+    };
+  }
+
+  const body = await fetchAirsActivityPage(
     {
-      p_requesting_user_id: input.requestingUserId,
-      p_scope: input.scope ?? 'personal',
-      p_page: page,
-      p_limit: pageSize,
-      p_search: search && search.length > 0 ? search : null,
-      p_source_kind: input.sourceKind ?? null,
+      requestingUserId: input.requestingUserId,
+      scope,
+      page,
+      limit: pageSize,
+      search: search && search.length > 0 ? search : null,
+      sourceKind: input.sourceKind ?? null,
     },
     env
   );
 
-  const totalCount = asNumber(body.total_count);
   return {
-    entries: asRecordArray(body.entries).map(mapDashboardLedgerEntry),
-    totalCount,
-    page: asNumber(body.page) > 0 ? asNumber(body.page) : page,
-    pageSize: asNumber(body.page_size) || pageSize,
-    totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
+    entries: body.entries,
+    totalCount: body.totalCount,
+    page: body.page > 0 ? body.page : page,
+    pageSize: body.pageSize,
+    totalPages: Math.max(1, Math.ceil(body.totalCount / pageSize)),
   };
 }
 
