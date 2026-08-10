@@ -407,6 +407,7 @@ export default function ActivityFeed({
           return (
             <TouchableOpacity
               key={f.key}
+              testID={`airs-activity-scope-${f.key}`}
               onPress={() => {
                 setScope(f.key);
                 setPage(0);
@@ -507,6 +508,7 @@ export default function ActivityFeed({
               onPress={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
               activeOpacity={0.7}
+              testID='airs-activity-prev-page'
               style={[styles.pageBtn, { borderColor: cardBorder, opacity: page === 0 ? 0.35 : 1 }]}
             >
               <PrevIcon size={15} color={textColor} />
@@ -518,6 +520,7 @@ export default function ActivityFeed({
               onPress={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
               activeOpacity={0.7}
+              testID='airs-activity-next-page'
               style={[
                 styles.pageBtn,
                 { borderColor: cardBorder, opacity: page >= totalPages - 1 ? 0.35 : 1 },
