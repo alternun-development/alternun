@@ -1,3 +1,26 @@
+## [1.1.13](https://github.com/alternun-development/alternun/compare/v1.1.13-dev.0...v1.1.13) (2026-08-10)
+
+### Bug Fixes
+
+- **repo:** chore: sync release v1.1.13-dev.0
+
+
+
+
+
+
+## [1.1.13](https://github.com/alternun-development/alternun/compare/v1.1.12...v1.1.13) (2026-08-09)
+
+### Bug Fixes
+
+- **repo:** feat(airs): paginate activity and secure referral rewards
+- **repo:** chore: release v1.1.12
+- **repo:** chore: sync release v1.1.12
+
+### Features
+
+- **airs:** paginate activity and secure referral rewards ([f87f9f8](https://github.com/alternun-development/alternun/commit/f87f9f84d457f8be450b6bed144494015429189e))
+
 ## [1.1.12](https://github.com/alternun-development/alternun/compare/v1.1.11...v1.1.12) (2026-08-09)
 
 ### Bug Fixes

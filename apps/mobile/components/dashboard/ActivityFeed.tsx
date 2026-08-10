@@ -24,6 +24,7 @@ import SearchFilterBar, { type SearchFilterOption } from '../common/SearchFilter
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import type { AIRSEntry } from './types';
+import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const CartIcon = ShoppingCart as React.FC<LucideProps>;
@@ -46,6 +47,27 @@ interface ActivityItem {
   source: string;
   airs: number;
   date: string;
+}
+
+interface ActivityLedgerEntry {
+  id: string;
+  sourceKind: AIRSEntry['referenceType'];
+  sourceRef: string | null;
+  notes: string | null;
+  airsDelta: number;
+  recordedAt: string;
+}
+
+interface ActivityResult {
+  entries: ActivityLedgerEntry[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+interface AuthClient {
+  getSessionToken(): Promise<string | null>;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -87,8 +109,19 @@ function airsEntryToActivityItem(entry: AIRSEntry): ActivityItem {
     type: mapSourceKindToType(entry.referenceType),
     action: entry.reason ?? '',
     source: entry.reference ?? entry.referenceType,
-    airs: Math.abs(entry.amountAIRS),
+    airs: entry.amountAIRS,
     date: formatEntryDate(entry.timestamp),
+  };
+}
+
+function ledgerEntryToActivityItem(entry: ActivityLedgerEntry): ActivityItem {
+  return {
+    id: entry.id,
+    type: mapSourceKindToType(entry.sourceKind),
+    action: entry.notes ?? entry.sourceKind,
+    source: entry.sourceRef ?? entry.sourceKind,
+    airs: entry.airsDelta,
+    date: formatEntryDate(new Date(entry.recordedAt)),
   };
 }
 
@@ -161,7 +194,10 @@ function ActivityRow({
       <Text style={[styles.rowSource, { color: mutedColor }]} numberOfLines={1}>
         {item.source}
       </Text>
-      <Text style={[styles.rowAirs, { color: accent }]}>+{item.airs}</Text>
+      <Text style={[styles.rowAirs, { color: item.airs >= 0 ? accent : '#dc2626' }]}>
+        {item.airs > 0 ? '+' : ''}
+        {item.airs}
+      </Text>
       <Text style={[styles.rowDate, { color: mutedColor }]}>{item.date}</Text>
     </Animated.View>
   );
@@ -175,17 +211,24 @@ interface ActivityFeedProps {
   isDark: boolean;
   entries?: AIRSEntry[];
   isLoading?: boolean;
+  client: AuthClient;
+  signedIn: boolean;
 }
 
 export default function ActivityFeed({
   isDark,
   entries = [],
   isLoading = false,
+  client,
+  signedIn,
 }: ActivityFeedProps): React.JSX.Element {
   const [scope, setScope] = useState<'personal' | 'network'>('personal');
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<ActivityType | 'all'>('all');
   const [page, setPage] = useState(0);
+  const [remoteResult, setRemoteResult] = useState<ActivityResult | null>(null);
+  const [remoteLoading, setRemoteLoading] = useState(false);
+  const [remoteError, setRemoteError] = useState<string | null>(null);
   const rowAnims = useRef<Map<string, Animated.Value>>(new Map());
   const t = useAppTranslation();
 
@@ -199,7 +242,65 @@ export default function ActivityFeed({
   const pillActiveBg = isDark ? 'rgba(30,230,181,0.15)' : 'rgba(13,148,136,0.12)';
   const pillInactiveBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,90,95,0.06)';
 
-  const activities: ActivityItem[] = entries.map(airsEntryToActivityItem);
+  const fetchActivity = useCallback(async (): Promise<void> => {
+    if (!signedIn) {
+      setRemoteResult(null);
+      return;
+    }
+
+    setRemoteLoading(true);
+    setRemoteError(null);
+    try {
+      const token = await client.getSessionToken();
+      if (!token) {
+        throw new Error('No session token available');
+      }
+      const apiScope = scope === 'network' ? 'global' : scope;
+      const params = new URLSearchParams({
+        scope: apiScope,
+        page: String(page + 1),
+        limit: String(PAGE_SIZE),
+      });
+      if (search.trim()) params.set('search', search.trim());
+      if (activeFilter !== 'all')
+        params.set(
+          'source_kind',
+          activeFilter === 'reward'
+            ? 'profile_completion_bonus'
+            : activeFilter === 'account'
+            ? 'referral_bonus'
+            : activeFilter === 'profile'
+            ? 'correction'
+            : activeFilter === 'purchase'
+            ? 'allied_commerce'
+            : 'compensation'
+        );
+
+      const response = await fetch(
+        `${resolveMobileApiBaseUrl()}/v1/airs/activity?${params.toString()}`,
+        {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to load activity (${response.status})`);
+      }
+      setRemoteResult((await response.json()) as ActivityResult);
+    } catch (error) {
+      setRemoteError(error instanceof Error ? error.message : 'Failed to load activity');
+    } finally {
+      setRemoteLoading(false);
+    }
+  }, [activeFilter, client, page, scope, search, signedIn]);
+
+  useEffect(() => {
+    void fetchActivity();
+  }, [fetchActivity]);
+
+  const localActivities = entries.map(airsEntryToActivityItem);
+  const activities: ActivityItem[] = remoteResult
+    ? remoteResult.entries.map(ledgerEntryToActivityItem)
+    : localActivities;
 
   const getActivityActionText = (type: ActivityType): string => {
     switch (type) {
@@ -239,8 +340,14 @@ export default function ActivityFeed({
     return matchesFilter && matchesSearch;
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageItems = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const useRemotePagination = signedIn && remoteResult !== null;
+  const totalItems = useRemotePagination ? remoteResult.totalCount : filtered.length;
+  const totalPages = useRemotePagination
+    ? remoteResult.totalPages
+    : Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = useRemotePagination
+    ? activities
+    : filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const animateRow = useCallback((id: string): void => {
     if (!rowAnims.current.has(id)) {
@@ -260,11 +367,6 @@ export default function ActivityFeed({
   useEffect(() => {
     pageItems.forEach((item) => animateRow(item.id));
   }, [page, activeFilter, search, animateRow, pageItems]);
-
-  // Reset page when entries change
-  useEffect(() => {
-    setPage(0);
-  }, [entries]);
 
   const subtitleKey =
     scope === 'network'
@@ -306,6 +408,7 @@ export default function ActivityFeed({
           return (
             <TouchableOpacity
               key={f.key}
+              testID={`airs-activity-scope-${f.key}`}
               onPress={() => {
                 setScope(f.key);
                 setPage(0);
@@ -358,15 +461,13 @@ export default function ActivityFeed({
           </Text>
         </View>
 
-        {scope === 'network' ? (
-          <View style={styles.emptyBox}>
-            <Text style={[styles.emptyText, { color: mutedColor }]}>
-              Actividad global de la red — próximamente
-            </Text>
-          </View>
-        ) : isLoading ? (
+        {isLoading || remoteLoading ? (
           <View style={styles.loadingBox}>
             <ActivityIndicator color={accent} />
+          </View>
+        ) : remoteError ? (
+          <View style={styles.emptyBox}>
+            <Text style={[styles.emptyText, { color: mutedColor }]}>{remoteError}</Text>
           </View>
         ) : pageItems.length === 0 ? (
           <View style={styles.emptyBox}>
@@ -395,18 +496,20 @@ export default function ActivityFeed({
         )}
       </View>
 
-      {filtered.length > PAGE_SIZE && (
+      {totalItems > PAGE_SIZE && (
         <View style={styles.pagination}>
           <Text style={[styles.pageInfo, { color: mutedColor }]}>
-            {`${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, filtered.length)} de ${
-              filtered.length
-            }`}
+            {`${page * PAGE_SIZE + 1}–${Math.min(
+              (page + 1) * PAGE_SIZE,
+              totalItems
+            )} de ${totalItems}`}
           </Text>
           <View style={styles.pageButtons}>
             <TouchableOpacity
               onPress={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
               activeOpacity={0.7}
+              testID='airs-activity-prev-page'
               style={[styles.pageBtn, { borderColor: cardBorder, opacity: page === 0 ? 0.35 : 1 }]}
             >
               <PrevIcon size={15} color={textColor} />
@@ -418,6 +521,7 @@ export default function ActivityFeed({
               onPress={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
               activeOpacity={0.7}
+              testID='airs-activity-next-page'
               style={[
                 styles.pageBtn,
                 { borderColor: cardBorder, opacity: page >= totalPages - 1 ? 0.35 : 1 },
