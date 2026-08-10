@@ -25,11 +25,11 @@ interface ReferralRecord {
 
 interface CurrentUserReferralRecord {
   user_id: string;
+  confirmed_at: string | null;
   invitation_code: string | null;
   referrer_user_id: string | null;
   referrer_referral_code: string | null;
   referral_link: string | null;
-  confirmed_at: string | null;
   created_at: string;
 }
 
@@ -76,6 +76,7 @@ const REFERRAL_SELECT_WITHOUT_REFERRAL_CODE = 'user_id:id,email,email_verified,n
 const CURRENT_REFERRAL_SELECT_WITH_REFERRAL_COLUMNS =
   'user_id,invitation_code,referrer_user_id,referrer_referral_code,referral_link,confirmed_at,created_at';
 const CURRENT_REFERRAL_SELECT_WITHOUT_REFERRAL_COLUMNS = 'user_id,invitation_code,created_at';
+const CURRENT_REFERRAL_SELECT_WITH_CONFIRMATION = 'user_id,confirmed_at,invitation_code,created_at';
 
 function trimRuntimeValue(value: string | null | undefined): string {
   return (value ?? '').trim();
@@ -540,6 +541,50 @@ export class ReferralsService {
     }
 
     return this.toResponse(record);
+  }
+
+  async syncReferralConfirmationForUser(userId: string): Promise<void> {
+    const cfg = resolveSupabaseWriteConfig();
+    if (!cfg) {
+      return;
+    }
+
+    const currentUser = await this.getUserByIdWithRetry(userId);
+    if (!currentUser || !currentUser.email_verified) {
+      return;
+    }
+
+    const referralRecord = await swallowOptionalQuery<CurrentUserReferralRecord>(
+      this.logger,
+      'referral record for confirmation sync',
+      supabaseSelectOne<CurrentUserReferralRecord>(
+        'referrals',
+        {
+          user_id: `eq.${userId}`,
+        },
+        CURRENT_REFERRAL_SELECT_WITH_CONFIRMATION
+      ),
+      null,
+      userId
+    );
+
+    if (!referralRecord || referralRecord.confirmed_at) {
+      return;
+    }
+
+    await supabaseUpdateOne<ReferralRecord>(
+      'referrals',
+      { user_id: `eq.${userId}` },
+      {
+        confirmed_at: new Date().toISOString(),
+      }
+    ).catch((error) => {
+      this.logger.warn(
+        `Failed to sync referral confirmation for user ${userId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    });
   }
 
   async getMe(

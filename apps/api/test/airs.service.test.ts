@@ -68,7 +68,7 @@ test('AirsService.leaderboard resolves the leaderboard page from RPC payload', a
     const service = new AirsService();
     const response = await service.leaderboard('Bearer session-token', 7, 2);
 
-    assert.equal(response.page, 2);
+    assert.equal(response.page, 1);
     assert.equal(response.pageSize, 7);
     assert.equal(response.totalPages, 2);
     assert.equal(response.totalEligibleUsers, 8);
@@ -104,9 +104,9 @@ test('AirsService.activity applies filters and maps RPC payload', async () => {
           },
         }),
         createJsonResponse({
-          total_count: 11,
-          page: 2,
-          page_size: 5,
+          total_count: 8,
+          page: 1,
+          page_size: 10,
           entries: [
             {
               id: 'entry-1',
@@ -124,6 +124,27 @@ test('AirsService.activity applies filters and maps RPC payload', async () => {
             },
           ],
         }),
+        createJsonResponse({
+          total_count: 3,
+          page: 1,
+          page_size: 10,
+          entries: [
+            {
+              id: 'entry-2',
+              source_kind: 'validated_regenerative_action',
+              source_ref: 'action-2',
+              idempotency_key: 'idem-2',
+              source_currency: 'USD',
+              source_amount: null,
+              airs_rate: 5,
+              airs_delta: 9,
+              notes: 'Regenerative action payout',
+              metadata: { source: 'project' },
+              recorded_at: '2026-08-09T12:05:00.000Z',
+              created_at: '2026-08-09T12:05:00.000Z',
+            },
+          ],
+        }),
       ],
       calls
     );
@@ -131,25 +152,31 @@ test('AirsService.activity applies filters and maps RPC payload', async () => {
     const service = new AirsService();
     const response = await service.activity('Bearer session-token', {
       scope: 'global',
-      page: 2,
+      page: 1,
       limit: 5,
       search: 'carbon',
       sourceKind: 'compensation',
     });
 
-    assert.equal(response.page, 2);
+    assert.equal(response.page, 1);
     assert.equal(response.pageSize, 5);
     assert.equal(response.totalPages, 3);
     assert.equal(response.totalCount, 11);
-    assert.equal(response.entries.length, 1);
-    assert.equal(response.entries[0].id, 'entry-1');
-    assert.equal(response.entries[0].sourceKind, 'compensation');
-    assert.equal(response.entries[0].sourceRef, 'action-1');
-    assert.equal(calls.length, 2);
-    assert.equal(JSON.parse(calls[1].init.body).p_limit, 5);
-    assert.equal(JSON.parse(calls[1].init.body).p_page, 2);
+    assert.equal(response.entries.length, 2);
+    assert.equal(response.entries[0].id, 'entry-2');
+    assert.equal(response.entries[0].sourceKind, 'validated_regenerative_action');
+    assert.equal(response.entries[0].sourceRef, 'action-2');
+    assert.equal(response.entries[1].id, 'entry-1');
+    assert.equal(response.entries[1].sourceKind, 'compensation');
+    assert.equal(response.entries[1].sourceRef, 'action-1');
+    assert.equal(calls.length, 3);
+    assert.equal(JSON.parse(calls[1].init.body).p_limit, 10);
+    assert.equal(JSON.parse(calls[1].init.body).p_page, 1);
+    assert.equal(JSON.parse(calls[2].init.body).p_limit, 10);
+    assert.equal(JSON.parse(calls[2].init.body).p_page, 1);
     assert.equal(JSON.parse(calls[1].init.body).p_search, 'carbon');
     assert.equal(JSON.parse(calls[1].init.body).p_source_kind, 'compensation');
+    assert.equal(JSON.parse(calls[2].init.body).p_source_kind, 'validated_regenerative_action');
   } finally {
     global.fetch = originalFetch;
     process.env = originalEnv;

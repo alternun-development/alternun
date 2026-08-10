@@ -1,4 +1,4 @@
-import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable, Logger, Optional, ServiceUnavailableException } from '@nestjs/common';
 import type {
   AuthExchangeContext,
   AuthExchangeExternalIdentity,
@@ -13,6 +13,7 @@ import {
 } from './auth-exchange.mapper';
 import { mintIssuerAccessToken, mintIssuerIdToken } from './auth-exchange-jwt';
 import { upsertOidcUserViaSupabase } from '../authentik/supabase-sync';
+import { ReferralsService } from '../referrals/referrals.service';
 
 export interface AuthExchangeServiceResult extends AuthExchangeResponseShape {}
 
@@ -90,6 +91,11 @@ function normalizeContext(
 export class AuthExchangeService {
   private readonly logger = new Logger(AuthExchangeService.name);
 
+  constructor(
+    @Optional()
+    private readonly referralsService?: ReferralsService
+  ) {}
+
   private resolveSigningKey(): string | null {
     return (
       firstNonEmptyTrimmed([
@@ -132,6 +138,18 @@ export class AuthExchangeService {
       },
       process.env
     );
+
+    if (syncResult.appUserId && this.referralsService) {
+      void this.referralsService
+        .syncReferralConfirmationForUser(syncResult.appUserId)
+        .catch((error) => {
+          this.logger.warn(
+            `Failed to sync referral confirmation for exchange user ${syncResult.appUserId}: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          );
+        });
+    }
 
     if (syncResult.skipped) {
       this.logger.warn(

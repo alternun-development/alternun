@@ -159,7 +159,7 @@ export class AirsController {
     }
 
     return this.airsService.activity(authorization, {
-      scope: scope === 'global' ? 'global' : 'personal',
+      scope: scope === 'global' || scope === 'network' ? 'global' : 'personal',
       page,
       limit,
       search: search ?? null,
