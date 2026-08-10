@@ -467,4 +467,174 @@ describe('AIRSLeaderboard render', () => {
     expect(renderState.container.textContent).toContain('Tu posición global: #25');
     expect(renderState.container.textContent).toContain('· · ·');
   });
+
+  it('renders default paginated leaderboard and loads the next page on demand', async () => {
+    globalThis.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async (): Promise<{
+          entries: Array<{
+            rank: number;
+            userId: string;
+            displayName: string;
+            airsBalance: number;
+            airsLifetimeEarned: number;
+            isMe: boolean;
+          }>;
+          requestingUserEntry: {
+            rank: number;
+            userId: string;
+            displayName: string;
+            airsBalance: number;
+            airsLifetimeEarned: number;
+            isMe: boolean;
+          } | null;
+          totalEligibleUsers: number;
+          page: number;
+          pageSize: number;
+          totalPages: number;
+        }> => ({
+          entries: Array.from({ length: 7 }, (_, index) => ({
+            rank: index + 1,
+            userId: `user-${index + 1}`,
+            displayName: `User ${index + 1}`,
+            airsBalance: 100 - index,
+            airsLifetimeEarned: 100 - index,
+            isMe: index === 0,
+          })),
+          requestingUserEntry: {
+            rank: 1,
+            userId: 'user-1',
+            displayName: 'User 1',
+            airsBalance: 100,
+            airsLifetimeEarned: 100,
+            isMe: true,
+          },
+          totalEligibleUsers: 8,
+          page: 1,
+          pageSize: 7,
+          totalPages: 2,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async (): Promise<{
+          globalRank: number | null;
+          countryRank: number | null;
+          cityRank: number | null;
+          country: string | null;
+          city: string | null;
+        }> => ({
+          globalRank: 1,
+          countryRank: 1,
+          cityRank: 1,
+          country: 'Colombia',
+          city: 'Bogotá',
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async (): Promise<{
+          entries: Array<{
+            rank: number;
+            userId: string;
+            displayName: string;
+            airsBalance: number;
+            airsLifetimeEarned: number;
+            isMe: boolean;
+          }>;
+          requestingUserEntry: {
+            rank: number;
+            userId: string;
+            displayName: string;
+            airsBalance: number;
+            airsLifetimeEarned: number;
+            isMe: boolean;
+          } | null;
+          totalEligibleUsers: number;
+          page: number;
+          pageSize: number;
+          totalPages: number;
+        }> => ({
+          entries: [
+            {
+              rank: 8,
+              userId: 'user-8',
+              displayName: 'User 8',
+              airsBalance: 1,
+              airsLifetimeEarned: 1,
+              isMe: false,
+            },
+          ],
+          requestingUserEntry: {
+            rank: 1,
+            userId: 'user-1',
+            displayName: 'User 1',
+            airsBalance: 100,
+            airsLifetimeEarned: 100,
+            isMe: true,
+          },
+          totalEligibleUsers: 8,
+          page: 2,
+          pageSize: 7,
+          totalPages: 2,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async (): Promise<{
+          globalRank: number | null;
+          countryRank: number | null;
+          cityRank: number | null;
+          country: string | null;
+          city: string | null;
+        }> => ({
+          globalRank: 1,
+          countryRank: 1,
+          cityRank: 1,
+          country: 'Colombia',
+          city: 'Bogotá',
+        }),
+      }) as unknown as typeof fetch;
+
+    renderState = renderAIRSLeaderboard(
+      React.createElement(AIRSLeaderboard, {
+        isDark: true,
+        client: createClient(),
+        signedIn: true,
+      })
+    );
+
+    await act(async () => {
+      await flushEffects();
+      await flushEffects();
+    });
+
+    const calls = (globalThis.fetch as unknown as jest.Mock).mock.calls;
+    const firstUrl = String(calls[0][0]);
+    const secondUrl = String(calls[2][0]);
+    expect(firstUrl.includes('/v1/airs/leaderboard?limit=7&page=1')).toBe(true);
+    expect(secondUrl.includes('/v1/airs/leaderboard?limit=7&page=2')).toBe(true);
+    expect(renderState.container.textContent).toContain('1–7 de 8');
+
+    act(() => {
+      const nextButton = renderState.container.querySelector<HTMLElement>(
+        '[data-testid="airs-leaderboard-next-page"]'
+      );
+
+      if (!nextButton) {
+        throw new Error('Unable to find element with test id: airs-leaderboard-next-page');
+      }
+
+      nextButton.click();
+    });
+
+    await act(async () => {
+      await flushEffects();
+      await flushEffects();
+    });
+
+    expect((globalThis.fetch as unknown as jest.Mock).mock.calls.length).toBe(4);
+  });
 });
