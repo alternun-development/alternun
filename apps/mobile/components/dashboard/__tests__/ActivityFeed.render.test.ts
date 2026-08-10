@@ -11,6 +11,11 @@ import ActivityFeed from '../ActivityFeed';
 
 jest.mock('react-native', () => require('react-native-web'));
 
+jest.mock('../../common/SearchFilterBar', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 jest.mock('../../i18n/useAppTranslation', () => ({
   useAppTranslation: () => ({
     t: (key: string): string => {
@@ -268,7 +273,7 @@ describe('ActivityFeed render', () => {
       await flushEffects();
     });
 
-    clickByTestId(renderState.container, 'airs-activity-scope-global');
+    clickByTestId(renderState.container, 'airs-activity-scope-network');
 
     await act(async () => {
       await flushEffects();
