@@ -23,6 +23,15 @@ interface AirsSnapshotQuery {
   locale?: string | null;
 }
 
+const AIRS_SOURCE_KINDS = new Set([
+  'allied_commerce',
+  'validated_regenerative_action',
+  'compensation',
+  'profile_completion_bonus',
+  'correction',
+  'referral_bonus',
+]);
+
 @ApiTags('airs')
 @Controller({
   path: 'airs',
@@ -122,13 +131,42 @@ export class AirsController {
   })
   async leaderboard(
     @Headers('authorization') authorization: string | undefined,
-    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number
+    @Query('limit', new DefaultValuePipe(7), ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number
   ): Promise<import('./airs.repository').AirsLeaderboardResult> {
     if (!authorization?.trim()) {
       throw new UnauthorizedException('Missing AIRS bearer token.');
     }
 
-    return this.airsService.leaderboard(authorization, limit);
+    return this.airsService.leaderboard(authorization, limit, page);
+  }
+
+  @Get('activity')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Fetch paginated AIRS ledger activity for the user or global network.' })
+  @ApiOkResponse({ description: 'Paginated AIRS activity.' })
+  async activity(
+    @Headers('authorization') authorization: string | undefined,
+    @Query('scope') scope: string | undefined,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('search') search: string | undefined,
+    @Query('source_kind') sourceKind: string | undefined
+  ): Promise<import('./airs.repository').AirsActivityResult> {
+    if (!authorization?.trim()) {
+      throw new UnauthorizedException('Missing AIRS bearer token.');
+    }
+
+    return this.airsService.activity(authorization, {
+      scope: scope === 'global' || scope === 'network' ? 'global' : 'personal',
+      page,
+      limit,
+      search: search ?? null,
+      sourceKind: AIRS_SOURCE_KINDS.has(sourceKind ?? '')
+        ? (sourceKind as import('./airs.repository').AirsLedgerSourceKind)
+        : null,
+    });
   }
 
   @Get('achievements')
