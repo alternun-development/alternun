@@ -50,8 +50,8 @@ jobs:
           }
 
           git fetch --tags --force
-          git rev-parse --verify "v${VERSION}^{commit}"
-          git merge-base --is-ancestor "v${VERSION}^{commit}" "$HEAD_SHA" || {
-            echo "Release tag v${VERSION} is not contained in the PR head."
+          TAG_SHA="$(git rev-parse --verify "v${VERSION}^{commit}")"
+          test "$TAG_SHA" = "$HEAD_SHA" || {
+            echo "Release tag v${VERSION} must exactly match the PR head."
             exit 1
           }

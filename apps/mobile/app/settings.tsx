@@ -170,6 +170,41 @@ export default function SettingsScreen(): React.JSX.Element {
             ]}
           >
             <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>
+              {t('settingsScreen.sections.account')}
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.rowButton,
+                {
+                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.12)',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(15,23,42,0.03)',
+                },
+              ]}
+              onPress={() => router.push('/delete-account')}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.rowLabel, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>
+                {t('settingsScreen.deleteAccount')}
+              </Text>
+              <Text style={[styles.rowValue, { color: isDark ? '#66e6c5' : '#0f766e' }]}>›</Text>
+            </TouchableOpacity>
+            <Text
+              style={[styles.rowHelpText, { color: isDark ? 'rgba(232,232,255,0.58)' : '#64748b' }]}
+            >
+              {t('settingsScreen.deleteAccountHelp')}
+            </Text>
+          </View>
+
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: isDark ? '#0d0d1f' : '#ffffff',
+                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.12)',
+              },
+            ]}
+          >
+            <Text style={[styles.cardTitle, { color: isDark ? '#e8e8ff' : '#0f172a' }]}>
               {t('settingsScreen.sections.appearance')}
             </Text>
             <TouchableOpacity

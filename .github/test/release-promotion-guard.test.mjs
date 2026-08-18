@@ -19,5 +19,7 @@ void test('production PRs are guarded as generated release promotions', () => {
   assert.match(source, /release:manual-exception/);
   assert.match(source, /actions\/checkout@v4/);
   assert.match(source, /git fetch --tags --force/);
-  assert.match(source, /merge-base --is-ancestor/);
+  assert.match(source, /TAG_SHA="\$\(git rev-parse --verify "v\$\{VERSION\}\^\{commit\}"\)"/);
+  assert.match(source, /test "\$TAG_SHA" = "\$HEAD_SHA"/);
+  assert.doesNotMatch(source, /merge-base --is-ancestor/);
 });

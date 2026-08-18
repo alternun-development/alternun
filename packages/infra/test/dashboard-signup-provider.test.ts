@@ -5,8 +5,15 @@ import test from 'node:test';
 
 const dashboardSpecPath = path.resolve('config/pipelines/specs/dashboard.ts');
 
-void test('dashboard deployments explicitly use Better Auth for email signup', () => {
+void test('dashboard keeps testnet signup on Better Auth and production signup on Authentik', () => {
   const source = fs.readFileSync(dashboardSpecPath, 'utf8');
 
-  assert.match(source, /INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER:\s*'better-auth'/);
+  assert.match(
+    source,
+    /'dashboard-dev':[\s\S]*?INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER:\s*'better-auth'/
+  );
+  assert.match(
+    source,
+    /'dashboard-prod':[\s\S]*?INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER:\s*'authentik'/
+  );
 });

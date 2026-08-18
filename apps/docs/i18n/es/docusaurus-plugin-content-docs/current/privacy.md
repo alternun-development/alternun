@@ -69,6 +69,10 @@ Usted tiene derecho a:
 - Oponerse al procesamiento de sus datos
 - Portabilidad de datos
 
+## Eliminar tu cuenta
+
+Consulta los pasos para eliminar una cuenta, el selector de idioma y los enlaces de inicio de sesión/configuración en [airs.alternun.co/delete-account](https://airs.alternun.co/delete-account). Inicia sesión con la cuenta correspondiente, guarda la información que necesites y después contacta a soporte desde su correo registrado para completar una solicitud de eliminación verificada.
+
 ## Transferencias Internacionales de Datos
 
 Su información puede ser transferida y procesada en países distintos al suyo. Aseguramos que se implementen las salvaguardias apropiadas.

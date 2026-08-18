@@ -49,6 +49,7 @@ const FuturisticFooter = (): React.JSX.Element => {
       linktree: 'Linktree',
       support: 'Support',
       privacy: 'Privacy Policy',
+      accountDeletion: 'Delete your account',
       terms: 'Terms of Service',
       cookies: 'Cookies Policy',
       copyright: `© ${currentYear} Alternun. All rights reserved.`,
@@ -66,6 +67,7 @@ const FuturisticFooter = (): React.JSX.Element => {
       linktree: 'Linktree',
       support: 'Soporte',
       privacy: 'Política de Privacidad',
+      accountDeletion: 'Eliminar tu cuenta',
       terms: 'Términos de Servicio',
       cookies: 'Política de Cookies',
       copyright: `© ${currentYear} Alternun. Todos los derechos reservados.`,
@@ -83,6 +85,7 @@ const FuturisticFooter = (): React.JSX.Element => {
       linktree: 'Linktree',
       support: 'สนับสนุน',
       privacy: 'นโยบายความเป็นส่วนตัว',
+      accountDeletion: 'ลบบัญชีของคุณ',
       terms: 'เงื่อนไขการให้บริการ',
       cookies: 'นโยบายคุกกี้',
       copyright: `© ${currentYear} Alternun. สงวนลิขสิทธิ์ทั้งหมด`,
@@ -201,6 +204,11 @@ const FuturisticFooter = (): React.JSX.Element => {
                     <li>
                       <motion.a whileHover={{ x: 5 }} href='/privacy'>
                         {translations.privacy}
+                      </motion.a>
+                    </li>
+                    <li>
+                      <motion.a whileHover={{ x: 5 }} href='/delete-account'>
+                        {translations.accountDeletion}
                       </motion.a>
                     </li>
                     <li>
