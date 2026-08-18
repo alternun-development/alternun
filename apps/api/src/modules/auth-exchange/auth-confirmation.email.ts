@@ -1,6 +1,8 @@
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import * as nodemailer from 'nodemailer';
-import sanitizeHtml from 'sanitize-html';
+// sanitize-html is CommonJS.  Use an import assignment so the Lambda bundle
+// invokes the callable module directly rather than a nonexistent `.default`.
+import sanitizeHtml = require('sanitize-html');
 import { renderEmailTemplateTranslation, normalizeEmailLocale } from '@alternun/email-templates';
 
 type BetterAuthVerificationEmailInput = {
