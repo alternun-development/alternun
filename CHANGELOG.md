@@ -1,3 +1,9 @@
+## [1.1.22](https://github.com/alternun-development/alternun/compare/v1.1.21-dev.0...v1.1.22) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** test(infra): backend-api, backend-api-airs-env.test
+
 ## [1.1.21](https://github.com/alternun-development/alternun/compare/v1.1.20-dev.0...v1.1.21) (2026-08-18)
 
 ### Bug Fixes
