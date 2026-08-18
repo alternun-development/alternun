@@ -1,3 +1,15 @@
+## [1.1.17](https://github.com/alternun-development/alternun/compare/v1.1.16-dev.0...v1.1.17) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** fix(api,email,repo): airs.email, referrals.service, referral-reward, referral-reward.test
+- **repo:** chore: release v1.1.16
+- **repo:** chore: sync v1.1.16 production release artifact
+
+### Bug Fixes
+
+- **api,email,repo:** airs.email, referrals.service, referral-reward, referral-reward.test ([2808513](https://github.com/alternun-development/alternun/commit/2808513382d3be05c39e6359274cf51550e88104))
+
 ## [1.1.16](https://github.com/alternun-development/alternun/compare/v1.1.15...v1.1.16) (2026-08-18)
 
 ### Bug Fixes
