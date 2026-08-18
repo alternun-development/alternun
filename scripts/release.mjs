@@ -470,10 +470,16 @@ function ensureChangelogFile(dryRun) {
 }
 
 function stageReleaseFiles(dryRun, branchName = getCurrentBranch()) {
+  const mobileVersionManifest =
+    branchName === 'master' || branchName === 'main'
+      ? 'apps/mobile/version.production.json'
+      : 'apps/mobile/version.development.json';
   const managedPaths = new Set([
     getRootPackageJsonPath(),
     ...getManagedPackageJsonPaths(branchName),
     ...SUPPLEMENTAL_VERSION_FILES.map((entry) => entry.relativePath),
+    'README.md',
+    mobileVersionManifest,
   ]);
 
   const changelogPath = path.join(REPO_ROOT, 'CHANGELOG.md');
@@ -539,6 +545,9 @@ function collectReleaseStatePaths(branchName) {
       'version.production.json',
       ...SUPPLEMENTAL_VERSION_FILES.map((entry) => entry.relativePath),
       'CHANGELOG.md',
+      'README.md',
+      'apps/mobile/version.development.json',
+      'apps/mobile/version.production.json',
     ]),
   ];
 }

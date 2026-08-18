@@ -120,13 +120,16 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.17**
+Current version: **1.1.19**
 
-## 📋 Latest Changes (v1.1.17)
+## 📋 Latest Changes (v1.1.19)
 
 ### Bug Fixes
 
-- **api,email,repo:** airs.email, referrals.service, referral-reward, referral-reward.test ([2808513](https://github.com/alternun-development/alternun/commit/2808513382d3be05c39e6359274cf51550e88104))
+- **api,db:** harden referral email delivery ([0b8c5a6](https://github.com/alternun-development/alternun/commit/0b8c5a60af9bc06e88d54d615056122b84173e67))
+- **api,db:** make AIRS snapshot user ID comparison stage-safe ([f5c6528](https://github.com/alternun-development/alternun/commit/f5c6528fcac815aae4979fa0473b015bbf473b70))
+- **api:** use stage-aware referral email links ([b56e039](https://github.com/alternun-development/alternun/commit/b56e03980618c5b9cd45bde25d98cc89a64c583b))
+- **auth:** repair production signup provisioning ([cf50470](https://github.com/alternun-development/alternun/commit/cf50470147acf5584954e143519ccee16d23d5bf))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
