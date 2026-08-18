@@ -6,7 +6,7 @@ import { SupabaseLegacyIssuerProvider } from '../providers/supabase-legacy/Supab
 import { SupabaseExecutionProvider, } from '../providers/supabase-legacy/SupabaseExecutionProvider.js';
 import { SupabaseIdentityRepository } from '../providers/supabase-legacy/SupabaseIdentityRepository.js';
 import { PostmarkEmailProvider } from '../providers/email/PostmarkEmailProvider.js';
-import { TlaoEmailProvider } from '../providers/email/TlaoEmailProvider.js';
+import { SesEmailProvider } from '../providers/email/SesEmailProvider.js';
 import { SupabaseEmailProvider } from '../providers/email/SupabaseEmailProvider.js';
 import { BetterAuthEmailProvider } from '../providers/email/BetterAuthEmailProvider.js';
 import { upsertOidcUser } from '../compat/upsertOidcUser.js';
@@ -113,8 +113,8 @@ function createEmailProvider(runtime, options) {
                 from: runtime.emailFrom,
                 senderName: runtime.emailSenderName,
             });
-        case 'tlao':
-            return new TlaoEmailProvider({
+        case 'ses':
+            return new SesEmailProvider({
                 from: runtime.emailFrom,
                 senderName: runtime.emailSenderName,
             });

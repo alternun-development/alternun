@@ -125,7 +125,7 @@ Purpose:
 - centralizes app-side auth abstractions
 - wraps the upstream auth library used by the project
 - adds mobile-oriented auth client behavior
-- includes SES and email support scripts around identity/email setup
+- includes Tláo Mail SMTP automation, with Postmark available as the alternate provider
 
 ### `@alternun/ui`
 
