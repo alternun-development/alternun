@@ -1,28 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return */
 import { useAuth } from '../components/auth/AppAuthProvider';
 import Dashboard from '../components/dashboard/Dashboard';
+import { useAirsDashboardSnapshot } from '../components/dashboard/AirsDashboardProvider';
 import PublicLandingPage from '../components/landing/PublicLandingPage';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import { isBetterAuthExecutionEnabled } from '../components/auth/authExecutionMode';
 import { buildWebAuthCallbackRedirectPath } from '../components/auth/authCallbackFlow';
 import { readPendingAuthentikOAuthProvider } from '@alternun/auth';
 import { Redirect, useRootNavigationState, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
-import { normalizeAirsDashboardSnapshot } from '../components/dashboard/airsSnapshot';
-import type { AirsDashboardSnapshot } from '../components/dashboard/types';
 
 export default function HomeScreen(): React.JSX.Element {
   const { user, loading, signIn, signOutUser, client } = useAuth();
-  const { showAirsIntro, setShowAirsIntro, language } = useAppPreferences();
+  const { showAirsIntro, setShowAirsIntro } = useAppPreferences();
+  const { snapshot: airsSnapshot, refresh: refreshAirsSnapshot } = useAirsDashboardSnapshot();
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
   const [introDismissedThisSession, setIntroDismissedThisSession] = useState(false);
-  const [airsSnapshot, setAirsSnapshot] = useState<AirsDashboardSnapshot | null>(null);
-  const lastAirsOnboardingUserRef = useRef<string | null>(null);
-  const lastAirsSnapshotKeyRef = useRef<string | null>(null);
-  const airsSyncInFlightRef = useRef(false);
   const pendingAuthentikProvider = readPendingAuthentikOAuthProvider();
   const isBetterAuthExecution = isBetterAuthExecutionEnabled();
   const isNavigationReady = Boolean(rootNavigationState?.key);
@@ -39,11 +34,6 @@ export default function HomeScreen(): React.JSX.Element {
     [introDismissedThisSession, showAirsIntro, user]
   );
 
-  const handleReload = (): void => {
-    lastAirsSnapshotKeyRef.current = null;
-    void client.getUser();
-  };
-
   useEffect(() => {
     if (!webAuthCallbackRedirectPath || typeof window === 'undefined') {
       return;
@@ -51,121 +41,6 @@ export default function HomeScreen(): React.JSX.Element {
 
     window.location.replace(webAuthCallbackRedirectPath);
   }, [webAuthCallbackRedirectPath]);
-
-  const FALLBACK_SNAPSHOT = useMemo(
-    () =>
-      normalizeAirsDashboardSnapshot({
-        balanceAIRS: 10,
-        lifetimeEarnedAIRS: 10,
-        recentEntries: [],
-        registrationBonusClaimed: false,
-      }),
-    []
-  );
-
-  const syncAirsDashboardState = useCallback(
-    async (userKey: string): Promise<void> => {
-      if (airsSyncInFlightRef.current) {
-        return;
-      }
-
-      airsSyncInFlightRef.current = true;
-
-      // Abort signal with 8 second timeout — on expiry we fall back to dummy data
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-      try {
-        const sessionToken = await client.getSessionToken();
-        if (!sessionToken) {
-          setAirsSnapshot(FALLBACK_SNAPSHOT);
-          return;
-        }
-
-        const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
-        const snapshotKey = `${userKey}:${language ?? ''}`;
-
-        if (lastAirsOnboardingUserRef.current !== userKey) {
-          try {
-            const onboardingResponse = await fetch(`${apiBaseUrl}/v1/airs/onboarding`, {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${sessionToken}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ locale: language }),
-              signal: controller.signal,
-            });
-
-            if (onboardingResponse.ok) {
-              const onboardingSnapshot = normalizeAirsDashboardSnapshot(
-                await onboardingResponse.json().catch(() => null)
-              );
-              if (onboardingSnapshot) {
-                setAirsSnapshot(onboardingSnapshot);
-                lastAirsSnapshotKeyRef.current = snapshotKey;
-              }
-              lastAirsOnboardingUserRef.current = userKey;
-            }
-          } catch {
-            // Best-effort onboarding trigger — idempotent, safe to skip.
-          }
-        }
-
-        // Fetch current balance from /airs/me
-        try {
-          const meResponse = await fetch(`${apiBaseUrl}/v1/airs/me`, {
-            method: 'GET',
-            headers: { Authorization: `Bearer ${sessionToken}` },
-            signal: controller.signal,
-          });
-
-          if (meResponse.ok) {
-            const meSnapshot = normalizeAirsDashboardSnapshot(
-              await meResponse.json().catch(() => null)
-            );
-            if (meSnapshot) {
-              setAirsSnapshot(meSnapshot);
-              lastAirsSnapshotKeyRef.current = snapshotKey;
-              return;
-            }
-          }
-        } catch {
-          // Fall through to fallback below
-        }
-
-        // If we reach here without setting a snapshot, apply fallback so 0 is never shown
-        setAirsSnapshot((prev) => prev ?? FALLBACK_SNAPSHOT);
-      } catch {
-        setAirsSnapshot((prev) => prev ?? FALLBACK_SNAPSHOT);
-      } finally {
-        clearTimeout(timeoutId);
-        airsSyncInFlightRef.current = false;
-      }
-    },
-    [client, language, FALLBACK_SNAPSHOT]
-  );
-
-  useEffect(() => {
-    if (loading || !isNavigationReady || !user) {
-      return;
-    }
-
-    const userKey = typeof user.id === 'string' && user.id.trim().length > 0 ? user.id : user.email;
-    if (!userKey || airsSyncInFlightRef.current) {
-      return;
-    }
-
-    const snapshotKey = `${userKey}:${language ?? ''}`;
-    if (
-      lastAirsSnapshotKeyRef.current === snapshotKey &&
-      lastAirsOnboardingUserRef.current === userKey
-    ) {
-      return;
-    }
-
-    void syncAirsDashboardState(userKey);
-  }, [client, isNavigationReady, language, loading, syncAirsDashboardState, user]);
 
   if (webAuthCallbackRedirectPath) {
     return (
@@ -216,7 +91,7 @@ export default function HomeScreen(): React.JSX.Element {
       user={user ?? null}
       airsSnapshot={airsSnapshot}
       isLoading={loading}
-      onReload={handleReload}
+      onReload={() => void refreshAirsSnapshot()}
       onRequireSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
       onOpenProfilePage={() => router.push('/mi-perfil')}
       onOpenSettingsPage={() => router.push('/settings')}
