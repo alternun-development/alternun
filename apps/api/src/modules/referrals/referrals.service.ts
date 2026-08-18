@@ -6,6 +6,8 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { createHash } from 'node:crypto';
+import { renderReferralRewardEmail } from '@alternun/email-templates';
+import { sendAirsEmail } from '../airs/airs.email';
 import { CreateReferralDto } from './dto/create-referral.dto';
 import { ReferralResponseDto } from './dto/referral-response.dto';
 import { ReferralSummaryDto } from './dto/referral-summary.dto';
@@ -55,7 +57,16 @@ interface UserRecord {
   email_verified: boolean | null;
   email: string | null;
   name: string | null;
+  locale?: string | null;
   created_at: string | null;
+}
+
+interface ReferralRewardDistribution {
+  referral_id: string;
+  referrer_airs: number;
+  referee_airs: number;
+  referrer_email_sent_at: string | null;
+  referee_email_sent_at: string | null;
 }
 
 interface SupabaseConfig {
@@ -64,7 +75,7 @@ interface SupabaseConfig {
 }
 
 const USER_SELECT_WITH_REFERRAL_CODE =
-  'id,referral_code,referred_by_user_id,referred_by_referral_code,email_verified,email,name,created_at';
+  'id,referral_code,referred_by_user_id,referred_by_referral_code,email_verified,email,name,locale,created_at';
 const USER_SELECT_WITHOUT_REFERRAL_CODE = 'id,email_verified,email,name,created_at';
 const REFERRAL_INVITEE_SELECT_WITH_REFERRAL_CODE =
   'user_id:id,referral_code,email,email_verified,name,created_at,referred_by_user_id,referred_by_referral_code';
@@ -235,6 +246,7 @@ function normalizeUserRecord(record: Pick<UserRecord, 'id'> & Partial<UserRecord
     email_verified: record.email_verified ?? null,
     email: record.email ?? null,
     name: record.name ?? null,
+    locale: record.locale ?? null,
     created_at: record.created_at ?? null,
   };
 }
@@ -540,6 +552,16 @@ export class ReferralsService {
       throw new InternalServerErrorException('Failed to persist referral record');
     }
 
+    if (confirmedAt && resolvedReferrerUserId) {
+      void this.sendReferralRewardEmails(userId).catch((error) => {
+        this.logger.warn(
+          `Failed to send referral reward emails for user ${userId}: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
+      });
+    }
+
     return this.toResponse(record);
   }
 
@@ -572,19 +594,100 @@ export class ReferralsService {
       return;
     }
 
-    await supabaseUpdateOne<ReferralRecord>(
-      'referrals',
-      { user_id: `eq.${userId}` },
-      {
-        confirmed_at: new Date().toISOString(),
-      }
-    ).catch((error) => {
+    try {
+      await supabaseUpdateOne<ReferralRecord>(
+        'referrals',
+        { user_id: `eq.${userId}` },
+        {
+          confirmed_at: new Date().toISOString(),
+        }
+      );
+      await this.sendReferralRewardEmails(userId);
+    } catch (error) {
       this.logger.warn(
         `Failed to sync referral confirmation for user ${userId}: ${
           error instanceof Error ? error.message : String(error)
         }`
       );
-    });
+    }
+  }
+
+  private async sendReferralRewardEmails(refereeUserId: string): Promise<void> {
+    const distribution = await supabaseSelectOne<ReferralRewardDistribution>(
+      'referral_reward_distributions',
+      { referee_user_id: `eq.${refereeUserId}` },
+      'referral_id,referrer_user_id,referee_user_id,referrer_airs,referee_airs,referrer_email_sent_at,referee_email_sent_at'
+    );
+
+    if (!distribution) {
+      return;
+    }
+
+    const referee = await this.getUserById(refereeUserId);
+    const referral = await supabaseSelectOne<ReferralRecord>(
+      'referrals',
+      { id: `eq.${distribution.referral_id}` },
+      'id,user_id,referrer_user_id,referrer_referral_code,referral_link,confirmed_at,created_at'
+    );
+    const referrer = referral?.referrer_user_id
+      ? await this.getUserById(referral.referrer_user_id)
+      : null;
+
+    if (!referral || !referrer || !referee) {
+      return;
+    }
+
+    const referralUrl =
+      referral.referral_link ?? buildReferralLink(referrer.referral_code ?? '', process.env);
+    const sends: Array<Promise<void>> = [];
+
+    if (!distribution.referrer_email_sent_at && referrer.email) {
+      const email = renderReferralRewardEmail({
+        locale: referrer.locale,
+        recipientName: referrer.name,
+        counterpartName: referee.name ?? referee.email,
+        recipientRole: 'referrer',
+        recipientAirs: distribution.referrer_airs,
+        counterpartAirs: distribution.referee_airs,
+        referralUrl,
+      });
+      sends.push(
+        sendAirsEmail({ to: referrer.email, email }).then(async (result) => {
+          if (result.sent) {
+            await supabaseUpdateOne(
+              'referral_reward_distributions',
+              { referral_id: `eq.${distribution.referral_id}` },
+              { referrer_email_sent_at: new Date().toISOString() }
+            );
+          }
+        })
+      );
+    }
+
+    if (!distribution.referee_email_sent_at && referee.email) {
+      const email = renderReferralRewardEmail({
+        locale: referee.locale,
+        recipientName: referee.name,
+        counterpartName: referrer.name ?? referrer.email,
+        recipientRole: 'referee',
+        recipientAirs: distribution.referee_airs,
+        counterpartAirs: distribution.referrer_airs,
+        referralUrl,
+      });
+      sends.push(
+        sendAirsEmail({ to: referee.email, email }).then(async (result) => {
+          if (result.sent) {
+            await supabaseUpdateOne(
+              'referral_reward_distributions',
+              { referral_id: `eq.${distribution.referral_id}` },
+              { referee_email_sent_at: new Date().toISOString() }
+            );
+          }
+        })
+      );
+    }
+
+    await Promise.all(sends);
   }
 
   async getMe(
