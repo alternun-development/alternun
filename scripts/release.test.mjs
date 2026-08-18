@@ -20,6 +20,36 @@ void test('release patch stays wired to the release script and auto deploys test
   assert.match(releaseSource, /pnpm release:patch/);
   assert.match(releaseSource, /function resolveGitHubRepoSlug/);
   assert.match(releaseSource, /gh api repos\/\$\{repoSlug\}\/pulls/);
+  assert.match(releaseSource, /<!-- alternun-release:patch -->/);
+  assert.match(releaseSource, /## Release scope/);
+  assert.match(releaseSource, /## Release summary/);
+  assert.match(releaseSource, /## Affected surfaces/);
+  assert.match(releaseSource, /function getLatestProductionTag\(\{ version, base \}\)/);
+  assert.match(releaseSource, /tag !== `v\$\{version\}`/);
+  assert.match(releaseSource, /git', \['merge-base', '--is-ancestor', tag, base\]/);
+  assert.match(releaseSource, /getLatestProductionTag\(\{ version, base: `\$\{remote\}\/\$\{base\}` \}\)/);
+  assert.match(releaseSource, /run\('git', \['fetch', remote, '--tags', '--force'\]\)/);
+  assert.match(releaseSource, /git', \['diff', '--name-only', `\$\{previousTag\}\.\.HEAD`\]/);
+  assert.match(releaseSource, /prefix: 'apps\/api\//);
+  assert.match(releaseSource, /name: 'Backend API'/);
+  assert.match(releaseSource, /prefix: 'apps\/mobile\//);
+  assert.match(releaseSource, /name: 'AIRS client'/);
+  assert.match(releaseSource, /prefix: 'packages\/infra\//);
+  assert.match(releaseSource, /name: 'Cloud infrastructure'/);
+  assert.match(releaseSource, /prefix: '\.github\//);
+  assert.match(releaseSource, /name: 'GitHub automation'/);
+  assert.match(releaseSource, /## Commit details/);
+  assert.match(releaseSource, /const RELEASE_CHANGE_DESCRIPTIONS/);
+  assert.match(releaseSource, /Hardened production promotion: the release tag must exactly match the PR head/);
+  assert.match(releaseSource, /Kept Authentik as the canonical identity issuer while using the supported Supabase email\/password compatibility path/);
+  assert.match(releaseSource, /Added a localized, discoverable account-deletion route/);
+  assert.match(releaseSource, /apps\/mobile\/version\.development\.json/);
+  assert.match(releaseSource, /apps\/mobile\/version\.production\.json/);
+  assert.match(releaseSource, /'README\.md'/);
+  assert.match(
+    releaseSource,
+    /if \(!options\.dryRun\) \{\s*syncRootReadme\(\{\s*branch: releaseBranch,\s*version,\s*\}\)/
+  );
   assert.match(releaseSource, /gh api PATCH failed/);
   assert.match(releaseSource, /Release promotion cannot open or update the PR automatically/);
   assert.match(releaseSource, /gh api failed to open or update the PR automatically/);

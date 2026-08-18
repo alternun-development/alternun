@@ -506,8 +506,11 @@
     },
     "settingsScreen": {
       "currentLanguage": "Idioma actual",
+      "deleteAccount": "Eliminar cuenta",
+      "deleteAccountHelp": "Revisa las opciones para eliminar tu cuenta y contacta a soporte.",
       "localPreferenceHelp": "Se almacena localmente en este dispositivo",
       "sections": {
+        "account": "Cuenta y privacidad",
         "appearance": "Apariencia",
         "language": "Idioma",
         "onboarding": "Introduccion"
@@ -516,6 +519,19 @@
       "showWelcomeBonusModal": "Mostrar bono de bienvenida",
       "subtitle": "Administra las preferencias de interfaz y los controles de cuenta.",
       "title": "Configuracion"
+    },
+    "accountDeletion": {
+      "badge": "Cuenta y privacidad",
+      "contactSupport": "Contactar a soporte para eliminar mi cuenta",
+      "description": "Tú controlas tu cuenta de Alternun. Inicia sesión con la cuenta que deseas eliminar y luego contacta a soporte desde su correo registrado para que podamos verificar y completar tu solicitud de forma segura.",
+      "privacyLink": "Eliminar tu cuenta",
+      "settings": "Abrir configuración",
+      "signIn": "Iniciar sesión",
+      "stepOne": "Inicia sesión en la cuenta de Alternun que deseas eliminar.",
+      "stepThree": "Envía tu solicitud desde tu correo registrado; soporte confirmará los siguientes pasos.",
+      "stepTwo": "Revisa tus preferencias y la información que necesitas guardar.",
+      "stepsTitle": "Antes de solicitar la eliminación",
+      "title": "Eliminar tu cuenta"
     },
     "walletModal": {
       "disclaimer": "Al conectar, aceptas nuestros Terminos del servicio y Politica de privacidad",

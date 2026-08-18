@@ -9,6 +9,8 @@ void test('backend API module forwards Better Auth runtime env into the Lambda c
   const source = fs.readFileSync(backendApiModulePath, 'utf8');
 
   assert.match(source, /AUTH_BETTER_AUTH_URL/);
+  assert.match(source, /AUTH_SIGNUP_PROVIDER/);
+  assert.match(source, /INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER/);
   assert.match(source, /resolveBackendDatabaseUrl/);
   assert.match(source, /preferDedicatedBackendDatabase/);
   assert.match(source, /isTestnetStage\(env\.SST_STAGE \?\? env\.STACK\)/);

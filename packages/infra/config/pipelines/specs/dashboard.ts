@@ -80,6 +80,7 @@ export function buildDashboardPipelineSpecs({
         INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY:
           env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY ?? '',
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlDev,
+        INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER: 'better-auth',
         INFRA_BACKEND_API_DATABASE_URL: backendDatabaseUrl,
         AUTHENTIK_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-dev`,
         AIRS_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-dev`,
@@ -122,6 +123,11 @@ export function buildDashboardPipelineSpecs({
         INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY:
           env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY ?? '',
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlProd,
+        // Production identities remain owned by the canonical Authentik OIDC flow.
+        // Authentik remains the canonical issuer, while email/password stays on
+        // the supported Supabase compatibility path until Authentik provisioning
+        // is implemented end-to-end.
+        INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER: 'supabase',
         INFRA_BACKEND_API_DATABASE_URL: backendDatabaseUrl,
         AUTHENTIK_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-prod`,
         AIRS_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-prod`,

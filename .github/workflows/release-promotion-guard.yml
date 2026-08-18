@@ -1,0 +1,59 @@
+name: Release Promotion Guard
+
+on:
+  pull_request:
+    branches: [master, main]
+    # A new develop commit intentionally leaves the open promotion PR awaiting
+    # its next generated tag. Re-run when release:patch:promote updates the PR.
+    types: [opened, edited, reopened, ready_for_review, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  release-promotion-guard:
+    name: release-promotion-guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out proposed production release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Validate production promotion
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          EXPLICIT_EXCEPTION: ${{ contains(github.event.pull_request.labels.*.name, 'release:manual-exception') }}
+        run: |
+          if [ "$EXPLICIT_EXCEPTION" = "true" ]; then
+            echo "Explicit maintainer exception recorded."
+            exit 0
+          fi
+
+          test "$HEAD_REF" = "develop" || {
+            echo "Production changes must be promoted from develop by pnpm release:patch:promote."
+            exit 1
+          }
+
+          VERSION="$(printf '%s' "$PR_TITLE" | sed -nE 's/^chore: release v([0-9]+\.[0-9]+\.[0-9]+)$/\1/p')"
+          test -n "$VERSION" || {
+            echo "Production release PR titles must be generated as: chore: release vX.Y.Z"
+            exit 1
+          }
+
+          printf '%s' "$PR_BODY" | grep -Fq '<!-- alternun-release:patch -->' || {
+            echo "Missing release marker. Run pnpm release:patch:promote; do not open a manual production PR."
+            exit 1
+          }
+
+          git fetch --tags --force
+          TAG_SHA="$(git rev-parse --verify "v${VERSION}^{commit}")"
+          test "$TAG_SHA" = "$HEAD_SHA" || {
+            echo "Release tag v${VERSION} must exactly match the PR head."
+            exit 1
+          }

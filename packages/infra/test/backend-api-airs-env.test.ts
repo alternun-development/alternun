@@ -5,7 +5,7 @@ import test from 'node:test';
 
 const backendApiModulePath = path.resolve('modules/backend-api.ts');
 
-void test('backend API module forwards AIRS onboarding env into the Lambda config', () => {
+void test('backend API Lambda receives AIRS mail configuration and can read its SMTP secret', () => {
   const source = fs.readFileSync(backendApiModulePath, 'utf8');
 
   assert.match(source, /SUPABASE_URL/);
@@ -15,4 +15,11 @@ void test('backend API module forwards AIRS onboarding env into the Lambda confi
   assert.match(source, /AUTH_EMAIL_FROM/);
   assert.match(source, /AIRS_EMAIL_FROM/);
   assert.match(source, /AUTH_EMAIL_SENDER_NAME/);
+  assert.match(source, /smtp-secret-read/);
+  assert.match(source, /secretsmanager:GetSecretValue/);
+  assert.match(source, /secretsmanager:DescribeSecret/);
+  assert.match(source, /function resolveSmtpSecretPolicyResource/);
+  assert.match(source, /aws\.getCallerIdentityOutput\(\{\}\)\.accountId/);
+  assert.match(source, /secret:\$\{normalizedReference\}-\*/);
+  assert.match(source, /Resource": "\$\{smtpSecretPolicyResource\}/);
 });

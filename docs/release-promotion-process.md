@@ -1,55 +1,52 @@
-# Release Promotion Process
+# Patch Release And Production Promotion
 
-This document defines the maintained release flow for Alternun.
+This is the required release path for Alternun. Standard releases are always patch releases. Do not open a hand-written pull request into `master` to deploy production changes.
 
-## Branch Ownership
+## Required Flow
 
-- `develop` is the development source of truth.
-- `master` is the production source of truth.
-- `version.development.json` is the branch manifest for development releases.
-- `version.production.json` is the branch manifest for production releases.
-
-## Regular Development Release
-
-Use this when you are cutting a new testnet/development release from `develop`:
+Run these commands from a clean, up-to-date `develop` checkout, in order:
 
 ```bash
 pnpm release:patch
-```
-
-This flow:
-
-- bumps the development version
-- updates `version.development.json`
-- keeps the workspace packages on the semantic base version
-- creates the development release commit and tag
-- pushes the release to `develop`
-
-## Production Promotion
-
-Use this when you want to promote an already-cut development release to production:
-
-```bash
 pnpm release:patch:promote
 ```
 
-This flow:
+`pnpm release:patch` performs the local release validation, rebuilds the workspace, creates the development release commit and tag, pushes `develop`, and deploys the live testnet runtime. Validate testnet before continuing.
 
-- promotes the current `develop` release to the production branch context
-- updates `package.json` plus `version.production.json`
-- rebuilds the release artifacts in production mode
-- creates the production promotion commit and tag
-- opens or updates the pull request into `master`
+`pnpm release:patch:promote` performs the production-mode validation and build, creates the production tag, and opens or updates the generated `develop` → `master` promotion PR. Review and merge that PR through the normal production controls.
 
-## Why Two Commands
+The generated PR has all of these properties:
 
-The repo treats development and production as separate version sources of truth. That keeps the branch manifests explicit and avoids accidentally overwriting one environment while releasing the other.
+- head branch `develop`
+- title `chore: release vX.Y.Z`
+- hidden marker `<!-- alternun-release:patch -->`
+- matching `vX.Y.Z` tag contained in the PR head
+- a linked comparison from the preceding production tag to the release tag
+- a concise changelog-derived release summary
+- an affected-surfaces table listing apps, packages, infrastructure, workflows, database, documentation, and the deployment resources they affect
+- collapsible commit details for auditability without obscuring the release summary
 
-In practice:
+The release description is generated from the exact `previous production tag..release tag` range. It deliberately excludes the tag being promoted when selecting the previous tag, so the reported scope cannot collapse to an empty range after the promotion tag is created.
 
-- `release:patch` owns `version.development.json`
-- `release:patch:promote` owns `version.production.json` and opens or updates the production PR
+The `release-promotion-guard` check verifies these properties on every PR to `master`. It must remain required by branch protection.
 
-## Compatibility
+## Explicit Exceptions
 
-`pnpm release:promote` remains available as a compatibility alias for the same promotion flow.
+An unrelated or direct PR to `master` is prohibited unless a maintainer has explicitly authorized that exact exception. After authorization, a maintainer may apply the `release:manual-exception` label. The label records the exception and allows the guard to pass; it is not a substitute for authorization, review, or production validation.
+
+Do not add this label for routine fixes, release work, or to bypass a failed release command. Cut a new patch release instead.
+
+## Version Sources Of Truth
+
+- `develop` uses `version.development.json`.
+- `master` uses `version.production.json`.
+- `release:patch` owns the development manifest and development tag.
+- `release:patch:promote` owns the production manifest, production tag, and promotion PR.
+
+The semantic package version is synchronized by the scripts. Do not manually edit manifests, tags, or the generated production PR to simulate a release.
+
+## Non-Standard Releases
+
+Minor, major, and manually-versioned releases are not routine commands. They require explicit maintainer authorization before execution and must retain the generated promotion process and production review controls.
+
+`pnpm release:promote` remains a compatibility alias for `pnpm release:patch:promote`.

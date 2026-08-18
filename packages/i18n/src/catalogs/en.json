@@ -506,8 +506,11 @@
     },
     "settingsScreen": {
       "currentLanguage": "Current Language",
+      "deleteAccount": "Delete account",
+      "deleteAccountHelp": "Review account deletion options and contact support.",
       "localPreferenceHelp": "Stored locally on this device",
       "sections": {
+        "account": "Account & privacy",
         "appearance": "Appearance",
         "language": "Language",
         "onboarding": "Onboarding"
@@ -516,6 +519,19 @@
       "showWelcomeBonusModal": "Show Welcome Bonus",
       "subtitle": "Manage interface preferences and account-level controls.",
       "title": "Settings"
+    },
+    "accountDeletion": {
+      "badge": "Account & privacy",
+      "contactSupport": "Contact support to delete my account",
+      "description": "You control your Alternun account. Sign in with the account you want to delete, then contact support from its registered email address so we can verify and complete your request safely.",
+      "privacyLink": "Delete your account",
+      "settings": "Open settings",
+      "signIn": "Sign in",
+      "stepOne": "Sign in to the Alternun account you want to delete.",
+      "stepThree": "Send your request from your registered email address; support will confirm the next steps.",
+      "stepTwo": "Review your account preferences and any information you need to save.",
+      "stepsTitle": "Before you request deletion",
+      "title": "Delete your account"
     },
     "walletModal": {
       "disclaimer": "By connecting, you agree to our Terms of Service and Privacy Policy",

@@ -110,3 +110,14 @@ When the maintainer workflow changes:
 3. if the label taxonomy changed, update the existing GitHub labels to match
 
 Do not let the docs diverge from the actual GitHub issue structure.
+
+## Production Release PRs
+
+Routine production changes are released only through the patch workflow in `docs/release-promotion-process.md`:
+
+```bash
+pnpm release:patch
+pnpm release:patch:promote
+```
+
+The second command generates the only routine `develop` → `master` PR. Do not create a direct production PR. An exception must be explicitly authorized by a maintainer for that exact PR and carry the `release:manual-exception` label; the label does not remove review or validation requirements.
