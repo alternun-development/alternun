@@ -4,6 +4,7 @@ import { Stack, usePathname } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { AppAuthProvider } from '../components/auth/AppAuthProvider';
+import { AirsDashboardProvider } from '../components/dashboard/AirsDashboardProvider';
 import AppInfoFooter from '../components/common/AppInfoFooter';
 import {
   AppPreferencesProvider,
@@ -58,77 +59,79 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
   return (
     <NotificationsProvider>
       <AppAuthProvider>
-        <ThemeProvider value={navigationTheme}>
-          <View style={styles.appShell}>
-            <View style={styles.stackContainer}>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name='index' options={{ headerShown: false }} />
-                <Stack.Screen
-                  name='auth'
-                  options={{
-                    headerShown: false,
-                    presentation: 'transparentModal',
-                    animation: 'fade',
-                    contentStyle: { backgroundColor: 'transparent' },
-                  }}
-                />
-                <Stack.Screen
-                  name='auth/reset-password'
-                  options={{
-                    headerShown: false,
-                    presentation: 'transparentModal',
-                    animation: 'fade',
-                    contentStyle: { backgroundColor: 'transparent' },
-                  }}
-                />
-                <Stack.Screen
-                  name='auth-relay'
-                  options={{
-                    headerShown: false,
-                    presentation: 'transparentModal',
-                    animation: 'fade',
-                    contentStyle: { backgroundColor: 'transparent' },
-                  }}
-                />
-                <Stack.Screen
-                  name='auth/callback'
-                  options={{
-                    headerShown: false,
-                  }}
-                />
-                <Stack.Screen name='settings' options={{ headerShown: false }} />
-                <Stack.Screen
-                  name='explorar'
-                  options={{ headerShown: false, animation: 'slide_from_right' }}
-                />
-                <Stack.Screen
-                  name='portafolio'
-                  options={{ headerShown: false, animation: 'slide_from_right' }}
-                />
-                <Stack.Screen name='mi-perfil' options={{ headerShown: false }} />
-                <Stack.Screen
-                  name='privacy'
-                  options={{ headerShown: false, animation: 'slide_from_right' }}
-                />
-                <Stack.Screen
-                  name='terms'
-                  options={{ headerShown: false, animation: 'slide_from_right' }}
-                />
-                <Stack.Screen
-                  name='notifications'
-                  options={{ headerShown: false, animation: 'slide_from_right' }}
-                />
-              </Stack>
-            </View>
-            {showLayoutFooter ? (
-              <View pointerEvents='box-none' style={styles.footerOverlay}>
-                <AppInfoFooter />
+        <AirsDashboardProvider>
+          <ThemeProvider value={navigationTheme}>
+            <View style={styles.appShell}>
+              <View style={styles.stackContainer}>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name='index' options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name='auth'
+                    options={{
+                      headerShown: false,
+                      presentation: 'transparentModal',
+                      animation: 'fade',
+                      contentStyle: { backgroundColor: 'transparent' },
+                    }}
+                  />
+                  <Stack.Screen
+                    name='auth/reset-password'
+                    options={{
+                      headerShown: false,
+                      presentation: 'transparentModal',
+                      animation: 'fade',
+                      contentStyle: { backgroundColor: 'transparent' },
+                    }}
+                  />
+                  <Stack.Screen
+                    name='auth-relay'
+                    options={{
+                      headerShown: false,
+                      presentation: 'transparentModal',
+                      animation: 'fade',
+                      contentStyle: { backgroundColor: 'transparent' },
+                    }}
+                  />
+                  <Stack.Screen
+                    name='auth/callback'
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen name='settings' options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name='explorar'
+                    options={{ headerShown: false, animation: 'slide_from_right' }}
+                  />
+                  <Stack.Screen
+                    name='portafolio'
+                    options={{ headerShown: false, animation: 'slide_from_right' }}
+                  />
+                  <Stack.Screen name='mi-perfil' options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name='privacy'
+                    options={{ headerShown: false, animation: 'slide_from_right' }}
+                  />
+                  <Stack.Screen
+                    name='terms'
+                    options={{ headerShown: false, animation: 'slide_from_right' }}
+                  />
+                  <Stack.Screen
+                    name='notifications'
+                    options={{ headerShown: false, animation: 'slide_from_right' }}
+                  />
+                </Stack>
               </View>
-            ) : null}
-            <ReleaseUpdateBanner />
-          </View>
-          <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
-        </ThemeProvider>
+              {showLayoutFooter ? (
+                <View pointerEvents='box-none' style={styles.footerOverlay}>
+                  <AppInfoFooter />
+                </View>
+              ) : null}
+              <ReleaseUpdateBanner />
+            </View>
+            <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
+          </ThemeProvider>
+        </AirsDashboardProvider>
       </AppAuthProvider>
     </NotificationsProvider>
   );

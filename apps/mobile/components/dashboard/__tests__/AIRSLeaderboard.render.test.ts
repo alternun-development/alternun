@@ -97,7 +97,7 @@ describe('AIRSLeaderboard render', () => {
     renderState?.container.remove();
   });
 
-  it('renders the initial ranking copy after loading', async () => {
+  it('renders the initial ranking copy using the shared current-user balance', async () => {
     globalThis.fetch = jest
       .fn()
       .mockResolvedValueOnce({
@@ -162,6 +162,7 @@ describe('AIRSLeaderboard render', () => {
         isDark: true,
         client: createClient(),
         signedIn: true,
+        currentUserAirsBalance: 20,
       })
     );
 
@@ -173,6 +174,8 @@ describe('AIRSLeaderboard render', () => {
     expect(renderState.container.textContent).toContain('Top AIRS');
     expect(renderState.container.textContent).toContain('Ranking global de acumuladores');
     expect(renderState.container.textContent).toContain('Tu posición global: #4');
+    expect(renderState.container.textContent).toContain('20');
+    expect(renderState.container.textContent).not.toContain('12');
   });
 
   it('configures a layout animation when the ranking scope changes', () => {

@@ -75,7 +75,7 @@ import profileStylesEnhanced from '../components/profile/ProfileStyles';
 import { isTestnetRuntime, resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
 import { createShadowStyle } from '../components/theme/deprecatedStylesHelper';
 import { resolveSessionTokenWithRetry } from '../components/auth/sessionToken';
-import { normalizeAirsDashboardSnapshot } from '../components/dashboard/airsSnapshot';
+import { useAirsDashboardSnapshot } from '../components/dashboard/AirsDashboardProvider';
 import {
   AchievementBadge,
   AchievementTooltip,
@@ -402,6 +402,7 @@ function ProfileHeader({
   floatAnim2?: Animated.Value;
 }): React.JSX.Element {
   const { t, locale } = useAppTranslation('mobile');
+  const hasScore = score !== null;
   const safeScore = score ?? 0;
   const tier = resolveTier(safeScore);
   const tierLabels = {
@@ -513,7 +514,7 @@ function ProfileHeader({
               width: 96,
               height: 96,
               borderRadius: 48,
-              backgroundColor: spec.color,
+              backgroundColor: hasScore ? spec.color : c.accent,
               alignItems: 'center',
               justifyContent: 'center',
               borderWidth: 3,
@@ -539,32 +540,33 @@ function ProfileHeader({
               {toInitials(displayName)}
             </Text>
           </View>
-          {/* Tier badge */}
-          <View
-            style={{
-              position: 'absolute',
-              bottom: -4,
-              right: -4,
-              backgroundColor: spec.color,
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              borderRadius: 999,
-              borderWidth: 2,
-              borderColor: heroBg,
-            }}
-          >
-            <Text
+          {hasScore ? (
+            <View
               style={{
-                fontSize: 10,
-                fontWeight: '800',
-                color: '#050510',
-                letterSpacing: 0.08,
-                textTransform: 'uppercase',
+                position: 'absolute',
+                bottom: -4,
+                right: -4,
+                backgroundColor: spec.color,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 999,
+                borderWidth: 2,
+                borderColor: heroBg,
               }}
             >
-              {spec.label}
-            </Text>
-          </View>
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontWeight: '800',
+                  color: '#050510',
+                  letterSpacing: 0.08,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {spec.label}
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         {/* Name */}
@@ -615,7 +617,11 @@ function ProfileHeader({
 
         {/* Stats row */}
         <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
-          <Stat label={profileStats.airs} value={safeScore.toLocaleString(locale)} c={c} />
+          <Stat
+            label={profileStats.airs}
+            value={hasScore ? safeScore.toLocaleString(locale) : '—'}
+            c={c}
+          />
           <Divider c={c} />
           <Stat label={profileStats.projects} value='0' c={c} />
           <Divider c={c} />
@@ -687,6 +693,7 @@ function TierJourney({
   c: ColorPalette;
 }): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
+  const hasScore = score !== null;
   const safeScore = score ?? 0;
   const tiers = [
     {
@@ -714,7 +721,9 @@ function TierJourney({
       color: '#9ba9c4',
     },
   ];
-  const currentIdx = tiers.findIndex((tierItem) => tierItem.id === resolveTier(safeScore));
+  const currentIdx = hasScore
+    ? tiers.findIndex((tierItem) => tierItem.id === resolveTier(safeScore))
+    : -1;
 
   return (
     <GlassCard
@@ -760,7 +769,7 @@ function TierJourney({
             height: 3,
             borderRadius: 999,
             backgroundColor: '#d4b96a',
-            width: `${((currentIdx + 1) / tiers.length) * 100}%`,
+            width: `${(Math.max(currentIdx + 1, 0) / tiers.length) * 100}%`,
           }}
         />
 
@@ -2653,8 +2662,8 @@ function PerfilTab({
   const [achievements, setAchievements] = useState<
     Array<{ key: string; unlocked: boolean; unlockedAt: string | null }>
   >([]);
-  const [airsScore, setAirsScore] = useState<number | null>(null);
-  const airsScoreRefreshRef = useRef<number>(0);
+  const { snapshot: airsSnapshot } = useAirsDashboardSnapshot();
+  const airsScore = airsSnapshot?.balanceAIRS ?? null;
 
   // Animated circles
   const { motionLevel } = useAppPreferences();
@@ -2737,56 +2746,6 @@ function PerfilTab({
 
     void fetchAchievements();
   }, [user?.id, client]);
-
-  useEffect(() => {
-    if (!user?.id || !client) {
-      return;
-    }
-
-    const requestId = airsScoreRefreshRef.current + 1;
-    airsScoreRefreshRef.current = requestId;
-
-    const fetchAirsScore = async (): Promise<void> => {
-      try {
-        const sessionToken = await resolveSessionTokenWithRetry(client, {
-          attempts: 4,
-          retryDelayMs: 250,
-        });
-        if (!sessionToken) {
-          return;
-        }
-
-        const apiBaseUrl = resolveMobileApiBaseUrl().replace(/\/+$/, '');
-        const response = await fetch(`${apiBaseUrl}/v1/airs/me`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${sessionToken}`,
-            Accept: 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const payload: unknown = await response.json().catch(() => null);
-        if (airsScoreRefreshRef.current !== requestId) {
-          return;
-        }
-
-        const snapshot = normalizeAirsDashboardSnapshot(payload);
-        if (!snapshot) {
-          return;
-        }
-
-        setAirsScore(snapshot.balanceAIRS);
-      } catch {
-        // non-fatal — keep last known value
-      }
-    };
-
-    void fetchAirsScore();
-  }, [client, user?.id]);
 
   const accountIdLabel = t('profile.accountInfoModal.accountId', undefined, 'Account ID');
   const naLabel = t('profile.accountInfoModal.na', undefined, 'N/A');
