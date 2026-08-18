@@ -1,14 +1,39 @@
+## [1.1.33](https://github.com/alternun-development/alternun/compare/v1.1.33-dev.0...v1.1.33) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.33-dev.0
+- **repo:** fix(auth): restore generated artifacts
+- **repo:** fix(auth): address SMTP migration review
+- **repo:** chore: release v1.1.32
+
+
+
+
+
+
+## [1.1.33](https://github.com/alternun-development/alternun/compare/v1.1.32...v1.1.33) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** fix(repo): artifact, graph.db
+- **repo:** test(api,repo,auth): apply-migrations, migration-runner-env.test, ENVIRONMENT_SETUP_SUMMARY, LOCAL_DEV_SETUP
+- **repo:** fix(auth): restore generated artifacts
+- **repo:** fix(auth): address SMTP migration review
+- **repo:** chore: release v1.1.32
+
+### Bug Fixes
+
+- **auth:** address SMTP migration review ([5c88c56](https://github.com/alternun-development/alternun/commit/5c88c566078bf029810bb57e7dee27ee9e906888))
+- **auth:** restore generated artifacts ([f295f64](https://github.com/alternun-development/alternun/commit/f295f645afc096ce4e4cc1920caa4e17bbcc22ca))
+- **repo:** artifact, graph.db ([8ad8c04](https://github.com/alternun-development/alternun/commit/8ad8c043407f330374bb34435c0e897bd447237c))
+
 ## [1.1.32](https://github.com/alternun-development/alternun/compare/v1.1.32-dev.0...v1.1.32) (2026-08-18)
 
 ### Bug Fixes
 
 - **repo:** chore: release v1.1.32-dev.0
 - **repo:** fix(auth,infra): migrate SMTP delivery to Tlao
-
-
-
-
-
 
 ## [1.1.32](https://github.com/alternun-development/alternun/compare/v1.1.31...v1.1.32) (2026-08-18)
 

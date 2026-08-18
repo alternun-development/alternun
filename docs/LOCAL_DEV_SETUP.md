@@ -85,7 +85,7 @@ Contains testnet URLs. Used when:
 
 ```bash
 EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co/auth
-EXPO_PUBLIC_SUPABASE_URL=https://rjebeugdvwbjpaktrrbx.supabase.co
+EXPO_PUBLIC_SUPABASE_URL=https://aznfyazjndfniwsocdka.supabase.co
 EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik  # Shows Discord
 ```
 
@@ -238,7 +238,7 @@ Use `pnpm release patch` only when you need a versioned release; it is not the p
 | Variable                                  | Local                                      | Testnet                                    | Purpose                    |
 | ----------------------------------------- | ------------------------------------------ | ------------------------------------------ | -------------------------- |
 | `EXPO_PUBLIC_BETTER_AUTH_URL`             | `http://localhost:8082/auth`               | `https://testnet.api.alternun.co/auth`     | Auth service base URL      |
-| `EXPO_PUBLIC_SUPABASE_URL`                | `https://rjebeugdvwbjpaktrrbx.supabase.co` | `https://rjebeugdvwbjpaktrrbx.supabase.co` | User data (dev/testnet DB) |
+| `EXPO_PUBLIC_SUPABASE_URL`                | `https://aznfyazjndfniwsocdka.supabase.co` | `https://aznfyazjndfniwsocdka.supabase.co` | User data (dev/testnet DB) |
 | `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE` | `supabase`                                 | `authentik`                                | Discord button visibility  |
 | `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER`     | `better-auth`                              | `better-auth`                              | Auth provider to use       |
 
