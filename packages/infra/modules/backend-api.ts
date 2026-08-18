@@ -140,6 +140,30 @@ function resolveAuthSmtpSecretArn(stage: string, appName: string): string {
   return `${appName}/identity/smtp-credentials/${suffix}`;
 }
 
+function resolveSmtpSecretPolicyResource(
+  secretReference: pulumi.Input<string>
+): pulumi.Output<string> {
+  return pulumi
+    .all([
+      secretReference,
+      aws.getPartitionOutput({}).partition,
+      aws.getRegionOutput({}).name,
+      aws.getCallerIdentityOutput({}).accountId,
+    ])
+    .apply(([reference, partition, region, accountId]) => {
+      const normalizedReference = reference.trim();
+
+      if (normalizedReference.startsWith('arn:')) {
+        return normalizedReference;
+      }
+
+      // Runtime accepts a Secrets Manager name as a SecretId, but IAM requires an ARN.
+      // Secrets Manager appends a six-character suffix to a secret ARN, so scope the
+      // policy to the one resolved secret name rather than all secrets in the account.
+      return `arn:${partition}:secretsmanager:${region}:${accountId}:secret:${normalizedReference}-*`;
+    });
+}
+
 // Testnet-aligned stages must boot Better Auth in embedded mode. If the release path
 // leaves AUTH_BETTER_AUTH_URL empty the Lambda silently falls back to Authentik — which
 // is not ready. These stages force the testnet Better Auth URL as a last-resort fallback.
@@ -417,8 +441,9 @@ export function deployBackendApiInfrastructure(
   const resolvedAppPath = resolveBackendApiAppPath(args.settings.appPath);
   const bundlePath = path.resolve(resolvedAppPath, args.settings.buildOutput);
   const backendDatabaseUrl = resolveBackendDatabaseUrl(args.env);
-  const smtpSecretArn =
+  const smtpSecretReference =
     args.authentikSmtpSecretArn ?? resolveAuthSmtpSecretArn(args.stage, args.appName);
+  const smtpSecretPolicyResource = resolveSmtpSecretPolicyResource(smtpSecretReference);
 
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   if (!fs.existsSync(bundlePath)) {
@@ -460,7 +485,7 @@ export function deployBackendApiInfrastructure(
         {
           "Effect": "Allow",
           "Action": ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
-          "Resource": "${smtpSecretArn}"
+          "Resource": "${smtpSecretPolicyResource}"
         }
       ]
     }`,
@@ -514,8 +539,8 @@ export function deployBackendApiInfrastructure(
             : args.env.IPAPI_ACCESS
             ? { IPAPI_ACCESS: args.env.IPAPI_ACCESS }
             : {}),
-          AUTHENTIK_SMTP_SECRET_ARN: smtpSecretArn,
-          AIRS_SMTP_SECRET_ARN: smtpSecretArn,
+          AUTHENTIK_SMTP_SECRET_ARN: smtpSecretReference,
+          AIRS_SMTP_SECRET_ARN: smtpSecretReference,
           ...(args.env.INFRA_BACKEND_API_AUTH_EMAIL_FROM
             ? { AUTH_EMAIL_FROM: args.env.INFRA_BACKEND_API_AUTH_EMAIL_FROM }
             : args.env.AUTH_EMAIL_FROM

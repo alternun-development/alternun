@@ -18,5 +18,8 @@ void test('backend API Lambda receives AIRS mail configuration and can read its 
   assert.match(source, /smtp-secret-read/);
   assert.match(source, /secretsmanager:GetSecretValue/);
   assert.match(source, /secretsmanager:DescribeSecret/);
-  assert.match(source, /Resource": "\$\{smtpSecretArn\}/);
+  assert.match(source, /function resolveSmtpSecretPolicyResource/);
+  assert.match(source, /aws\.getCallerIdentityOutput\(\{\}\)\.accountId/);
+  assert.match(source, /secret:\$\{normalizedReference\}-\*/);
+  assert.match(source, /Resource": "\$\{smtpSecretPolicyResource\}/);
 });
