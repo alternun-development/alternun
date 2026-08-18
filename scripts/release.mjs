@@ -807,6 +807,29 @@ const RELEASE_SURFACE_DEFINITIONS = [
   },
 ];
 
+const RELEASE_CHANGE_DESCRIPTIONS = [
+  {
+    paths: ['.github/workflows/release-promotion-guard.yml'],
+    description: 'Hardened production promotion: the release tag must exactly match the PR head.',
+  },
+  {
+    paths: ['packages/infra/config/pipelines/specs/dashboard.ts'],
+    description: 'Kept production email signup on the canonical Authentik identity path.',
+  },
+  {
+    paths: ['apps/api/src/modules/auth-exchange/services/signup.service.ts'],
+    description: 'Preserved the canonical signup welcome message for every supported signup provider.',
+  },
+  {
+    paths: ['apps/mobile/app/delete-account.tsx'],
+    description: 'Added a localized, discoverable account-deletion route with privacy, settings, and documentation links.',
+  },
+  {
+    paths: ['scripts/release.mjs'],
+    description: 'Improved generated promotion PRs with a tag comparison, resource impact inventory, and audit details.',
+  },
+];
+
 function getLatestProductionTag(version) {
   const result = spawnSync('git', ['tag', '--list', 'v*', '--sort=-version:refname'], {
     cwd: REPO_ROOT,
@@ -863,7 +886,12 @@ function formatCommitDetails(commitSubjects) {
   return commitSubjects.map((subject) => `- ${subject}`).join('\n');
 }
 
-function summarizeReleaseChanges({ changelogSection, commitSubjects }) {
+function summarizeReleaseChanges({ changelogSection, commitSubjects, changedPaths }) {
+  const pathAwareChanges = RELEASE_CHANGE_DESCRIPTIONS.filter(({ paths }) =>
+    paths.some((filePath) => changedPaths.includes(filePath))
+  ).map(({ description }) => `- ${description}`);
+  if (pathAwareChanges.length > 0) return pathAwareChanges.join('\n');
+
   if (changelogSection) return changelogSection;
 
   const meaningfulSubjects = commitSubjects.filter(
@@ -927,7 +955,7 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
   const changedPaths = getChangedPathsSinceTag(previousTag);
   const commitSubjects = getReleaseCommitSubjects(previousTag) ?? [];
   const changelogSection = extractChangelogSection(version);
-  const summary = summarizeReleaseChanges({ changelogSection, commitSubjects });
+  const summary = summarizeReleaseChanges({ changelogSection, commitSubjects, changedPaths });
   const affectedSurfaces = formatAffectedSurfaces(changedPaths);
   const commitDetails = formatCommitDetails(commitSubjects);
   const releaseCompareUrl = previousTag ? buildCompareUrl(remoteUrl, previousTag, `v${version}`) : null;
