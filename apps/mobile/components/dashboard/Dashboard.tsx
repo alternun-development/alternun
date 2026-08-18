@@ -587,7 +587,12 @@ export default function Dashboard({
                 signedIn={Boolean(user)}
               />
               <SectionDivider isDark={isDark} />
-              <AIRSLeaderboard isDark={isDark} client={client} signedIn={Boolean(user)} />
+              <AIRSLeaderboard
+                isDark={isDark}
+                client={client}
+                signedIn={Boolean(user)}
+                currentUserAirsBalance={airsSnapshot?.balanceAIRS}
+              />
               <DashboardSummaryCards
                 isDark={isDark}
                 onNavigate={handleNavigate}
