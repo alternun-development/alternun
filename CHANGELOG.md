@@ -1,3 +1,37 @@
+## [1.1.19](https://github.com/alternun-development/alternun/compare/v1.1.17-dev.0...v1.1.19) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore(repo,docs,scripts): README, overview, contribution-workflow, release-deployment-flow
+- **repo:** fix(auth): repair production signup provisioning
+- **repo:** fix(api,db): harden referral email delivery
+- **repo:** fix(api): use stage-aware referral email links
+- **repo:** fix(api,db): make AIRS snapshot user ID comparison stage-safe
+
+### Bug Fixes
+
+- **api,db:** harden referral email delivery ([0b8c5a6](https://github.com/alternun-development/alternun/commit/0b8c5a60af9bc06e88d54d615056122b84173e67))
+- **api,db:** make AIRS snapshot user ID comparison stage-safe ([f5c6528](https://github.com/alternun-development/alternun/commit/f5c6528fcac815aae4979fa0473b015bbf473b70))
+- **api:** use stage-aware referral email links ([b56e039](https://github.com/alternun-development/alternun/commit/b56e03980618c5b9cd45bde25d98cc89a64c583b))
+- **auth:** repair production signup provisioning ([cf50470](https://github.com/alternun-development/alternun/commit/cf50470147acf5584954e143519ccee16d23d5bf))
+
+## [1.1.18](https://github.com/alternun-development/alternun/compare/v1.1.17-dev.0...v1.1.18) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore(repo,docs,scripts): README, overview, contribution-workflow, release-deployment-flow
+- **repo:** fix(auth): repair production signup provisioning
+- **repo:** fix(api,db): harden referral email delivery
+- **repo:** fix(api): use stage-aware referral email links
+- **repo:** fix(api,db): make AIRS snapshot user ID comparison stage-safe
+
+### Bug Fixes
+
+- **api,db:** harden referral email delivery ([0b8c5a6](https://github.com/alternun-development/alternun/commit/0b8c5a60af9bc06e88d54d615056122b84173e67))
+- **api,db:** make AIRS snapshot user ID comparison stage-safe ([f5c6528](https://github.com/alternun-development/alternun/commit/f5c6528fcac815aae4979fa0473b015bbf473b70))
+- **api:** use stage-aware referral email links ([b56e039](https://github.com/alternun-development/alternun/commit/b56e03980618c5b9cd45bde25d98cc89a64c583b))
+- **auth:** repair production signup provisioning ([cf50470](https://github.com/alternun-development/alternun/commit/cf50470147acf5584954e143519ccee16d23d5bf))
+
 ## [1.1.17](https://github.com/alternun-development/alternun/compare/v1.1.16-dev.0...v1.1.17) (2026-08-18)
 
 ### Bug Fixes
