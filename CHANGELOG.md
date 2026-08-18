@@ -1,3 +1,15 @@
+## [1.1.28](https://github.com/alternun-development/alternun/compare/v1.1.28-dev.0...v1.1.28) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.28-dev.0
+- **repo:** test(repo,api,docs): release-promotion-guard.test, release-promotion-guard, airs-profile-bonus-text-rpc.migration.test, delete-account
+
+
+
+
+
+
 ## [1.1.28](https://github.com/alternun-development/alternun/compare/v1.1.27-dev.0...v1.1.28) (2026-08-18)
 
 ### Bug Fixes
