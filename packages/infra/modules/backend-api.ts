@@ -452,6 +452,20 @@ export function deployBackendApiInfrastructure(
     policyArn: aws.iam.ManagedPolicies.AWSLambdaBasicExecutionRole,
   });
 
+  new aws.iam.RolePolicy(`${resourceBaseName}-smtp-secret-read`, {
+    role: role.name,
+    policy: pulumi.interpolate`{
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
+          "Resource": "${smtpSecretArn}"
+        }
+      ]
+    }`,
+  });
+
   const logGroup = new aws.cloudwatch.LogGroup(`${resourceBaseName}-logs`, {
     name: `/aws/lambda/${lambdaFunctionName}`,
     retentionInDays: args.settings.lambda.logRetentionDays,
