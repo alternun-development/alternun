@@ -1,14 +1,16 @@
+## [1.1.16](https://github.com/alternun-development/alternun/compare/v1.1.15...v1.1.16) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** test(api,repo): airs-uuid-overloads.migration.test, 20260818_0001_reload_postgrest_schema_after_airs_rpc_cleanup, 20260818_0002_make_airs_snapshot_rpc_uuid_canonical
+- **repo:** chore: sync v1.1.15 production release artifact
+
 ## [1.1.15](https://github.com/alternun-development/alternun/compare/v1.1.15-dev.0...v1.1.15) (2026-08-18)
 
 ### Bug Fixes
 
 - **repo:** chore: sync v1.1.15 README
 - **repo:** chore: sync v1.1.15-dev.0 release artifacts
-
-
-
-
-
 
 ## [1.1.15](https://github.com/alternun-development/alternun/compare/v1.1.14...v1.1.15) (2026-08-18)
 
