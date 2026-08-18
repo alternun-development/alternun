@@ -1,5 +1,6 @@
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
-import nodemailer, { type Transporter } from 'nodemailer';
+import * as nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 import sanitizeHtml from 'sanitize-html';
 export interface AirsTransactionalEmail {
   subject: string;
