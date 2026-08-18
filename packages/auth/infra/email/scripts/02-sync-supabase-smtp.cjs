@@ -11,7 +11,7 @@ const {
 } = require('./common.cjs');
 
 async function main() {
-  const { config, configPath } = loadConfig();
+  const { config, configPath } = loadConfig([], { allowMissing: true });
   const accessToken = getSupabaseToken();
   if (!accessToken) {
     throw new Error('SUPABASE_ACCESS_TOKEN (or SUPABASE_MANAGEMENT_TOKEN) is required.');

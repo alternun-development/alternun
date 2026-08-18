@@ -269,7 +269,7 @@ begin
         referrer_user_id = excluded.referrer_user_id,
         referrer_referral_code = excluded.referrer_referral_code,
         referral_link = excluded.referral_link,
-        confirmed_at = coalesce(confirmed_at, excluded.confirmed_at);
+        confirmed_at = coalesce(public.referrals.confirmed_at, excluded.confirmed_at);
 
   return new;
 end;
