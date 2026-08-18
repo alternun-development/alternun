@@ -79,7 +79,7 @@ export const ADMIN_SITE_INFRA_DEFAULTS = {
 } as const;
 
 export const IDENTITY_INFRA_DEFAULTS = {
-  emailProvider: 'ses',
+  emailProvider: 'tlao',
   authentikImageTag: '2026.2',
   ec2: {
     instanceType: 't3.small',

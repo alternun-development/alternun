@@ -185,7 +185,7 @@ Deliverables:
 
 Tasks:
 
-1. Choose `postmark` or `ses` as the first non-Supabase testnet provider.
+1. Use `tlao` as the first non-Supabase testnet provider; keep `postmark` as the configured fallback.
 2. Configure sender domain and templates.
 3. Verify Better Auth email verification and reset hooks route through the selected provider.
 4. Keep Supabase email as a rollback path only.
