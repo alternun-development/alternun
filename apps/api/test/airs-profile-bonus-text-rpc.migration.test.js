@@ -14,5 +14,6 @@ void test('the text profile-bonus RPC remains self-contained after UUID overload
 
   assert.match(source, /create or replace function public\.airs_award_profile_completion_bonus\(\s*p_user_id text/i);
   assert.match(source, /v_entry := public\.airs_record_ledger_entry\(/);
+  assert.match(source, /coalesce\(v_user\.airs_profile_completed_at, timezone\('utc', now\(\)\)\)/);
   assert.doesNotMatch(source, /from public\.airs_award_profile_completion_bonus\(\s*p_user_id::uuid/i);
 });
