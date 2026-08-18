@@ -26,3 +26,8 @@ export {
   type SignupWelcomeEmail,
   type SignupWelcomeEmailInput,
 } from './lib/signup-welcome';
+export {
+  renderReferralRewardEmail,
+  type ReferralRewardEmail,
+  type ReferralRewardEmailInput,
+} from './lib/referral-reward';

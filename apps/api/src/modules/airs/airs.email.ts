@@ -1,7 +1,11 @@
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import nodemailer, { type Transporter } from 'nodemailer';
 import sanitizeHtml from 'sanitize-html';
-import type { AirsWelcomeEmail } from '@alternun/email-templates';
+export interface AirsTransactionalEmail {
+  subject: string;
+  text: string;
+  html: string;
+}
 
 export interface AirsSmtpConfig {
   host: string;
@@ -16,7 +20,7 @@ export interface AirsSmtpConfig {
 
 export interface AirsWelcomeEmailSendInput {
   to: string;
-  email: AirsWelcomeEmail;
+  email: AirsTransactionalEmail;
 }
 
 export interface AirsWelcomeEmailSendResult {
@@ -149,7 +153,7 @@ async function resolveSmtpConfig(
   return cachedSmtpConfig;
 }
 
-export async function sendAirsWelcomeEmail(
+export async function sendAirsEmail(
   input: AirsWelcomeEmailSendInput,
   env: Record<string, string | undefined> = process.env
 ): Promise<AirsWelcomeEmailSendResult> {
@@ -192,4 +196,11 @@ export async function sendAirsWelcomeEmail(
     sent: true,
     skipped: false,
   };
+}
+
+export async function sendAirsWelcomeEmail(
+  input: AirsWelcomeEmailSendInput,
+  env: Record<string, string | undefined> = process.env
+): Promise<AirsWelcomeEmailSendResult> {
+  return sendAirsEmail(input, env);
 }
