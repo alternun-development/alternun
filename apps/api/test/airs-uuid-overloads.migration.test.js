@@ -43,3 +43,13 @@ void test('the production snapshot RPC has one UUID signature', () => {
   assert.match(source, /create function public\.airs_get_dashboard_snapshot\(\s*p_user_id uuid,/i);
   assert.match(source, /grant execute on function public\.airs_get_dashboard_snapshot\(uuid, text, integer\)/i);
 });
+
+void test('the snapshot RPC comparison is safe for UUID and text user schemas', () => {
+  const migrationPath = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../../../supabase/migrations/20260818_0004_make_airs_snapshot_user_id_comparison_stage_safe.sql'
+  );
+
+  const source = fs.readFileSync(migrationPath, 'utf8');
+  assert.match(source, /where id::text = p_user_id::text;/i);
+});
