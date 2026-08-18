@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/require-await */
 import { describe, expect, it, jest } from '@jest/globals';
 
-import { fetchAirsDashboardSnapshot, normalizeAirsDashboardSnapshot } from '../airsSnapshot';
+import {
+  fetchAirsDashboardSnapshot,
+  normalizeAirsDashboardSnapshot,
+  withAirsRequestTimeout,
+} from '../airsSnapshot';
+import { resolveAirsDashboardLoadState } from '../airsDashboardState';
 
 describe('AIRS dashboard snapshots', () => {
   it('rejects a payload without an explicit numeric balance instead of silently showing zero', () => {
@@ -62,5 +67,34 @@ describe('AIRS dashboard snapshots', () => {
         fetchImpl,
       })
     ).rejects.toThrow('AIRS snapshot request failed (500)');
+  });
+
+  it('aborts and rejects a request that exceeds the AIRS refresh timeout', async () => {
+    jest.useFakeTimers();
+    let receivedSignal: AbortSignal | null = null;
+
+    const request = withAirsRequestTimeout(
+      (signal) =>
+        new Promise<never>((_resolve, reject) => {
+          receivedSignal = signal;
+          signal.addEventListener('abort', () => reject(new Error('aborted')));
+        }),
+      8_000
+    );
+
+    jest.advanceTimersByTime(8_000);
+
+    await expect(request).rejects.toThrow('AIRS request timed out after 8000ms.');
+    expect(receivedSignal?.aborted).toBe(true);
+    jest.useRealTimers();
+  });
+
+  it('settles a failed initial load instead of keeping dashboard AIRS content loading', () => {
+    const error = new Error('AIRS snapshot request failed (500)');
+
+    expect(resolveAirsDashboardLoadState({ snapshot: null, isLoading: false, error })).toEqual({
+      isInitialLoading: false,
+      error,
+    });
   });
 });

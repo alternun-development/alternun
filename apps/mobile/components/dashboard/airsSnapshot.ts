@@ -1,5 +1,30 @@
 import type { AIRSEntry, AirsDashboardSnapshot } from './types';
 
+export const AIRS_REQUEST_TIMEOUT_MS = 8_000;
+
+export async function withAirsRequestTimeout<T>(
+  request: (signal: AbortSignal) => Promise<T>,
+  timeoutMs = AIRS_REQUEST_TIMEOUT_MS
+): Promise<T> {
+  const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`AIRS request timed out after ${timeoutMs}ms.`));
+      controller.abort();
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([request(controller.signal), timeout]);
+  } finally {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
 function asText(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
