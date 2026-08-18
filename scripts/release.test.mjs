@@ -27,6 +27,7 @@ void test('release patch stays wired to the release script and auto deploys test
   assert.match(releaseSource, /function getLatestProductionTag\(\{ version, base \}\)/);
   assert.match(releaseSource, /tag !== `v\$\{version\}`/);
   assert.match(releaseSource, /git', \['merge-base', '--is-ancestor', tag, base\]/);
+  assert.match(releaseSource, /getLatestProductionTag\(\{ version, base: `\$\{remote\}\/\$\{base\}` \}\)/);
   assert.match(releaseSource, /git', \['diff', '--name-only', `\$\{previousTag\}\.\.HEAD`\]/);
   assert.match(releaseSource, /prefix: 'apps\/api\//);
   assert.match(releaseSource, /name: 'Backend API'/);

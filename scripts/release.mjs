@@ -959,7 +959,7 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
   const repoSlug = resolveGitHubRepoSlug(remoteUrl);
   const title = `chore: release v${version}`;
 
-  const previousTag = getLatestProductionTag({ version, base });
+  const previousTag = getLatestProductionTag({ version, base: `${remote}/${base}` });
   const changedPaths = getChangedPathsSinceTag(previousTag);
   const commitSubjects = getReleaseCommitSubjects(previousTag) ?? [];
   const changelogSection = extractChangelogSection(version);
