@@ -1,3 +1,17 @@
+## [1.1.33](https://github.com/alternun-development/alternun/compare/v1.1.33-dev.0...v1.1.33) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.33-dev.0
+- **repo:** fix(auth): restore generated artifacts
+- **repo:** fix(auth): address SMTP migration review
+- **repo:** chore: release v1.1.32
+
+
+
+
+
+
 ## [1.1.33](https://github.com/alternun-development/alternun/compare/v1.1.32...v1.1.33) (2026-08-18)
 
 ### Bug Fixes
