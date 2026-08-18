@@ -144,16 +144,16 @@ fi
 | ----------------------------------------- | ----------- | ----------- | -------------------------------------------------- |
 | `expo-public-authentik-social-login-mode` | `authentik` | `authentik` | Keeps Google + Discord visible in deployed bundles |
 
-### Common (All Stages)
+### Stage-specific Supabase configuration
 
-| Parameter                                | Value                                      |
-| ---------------------------------------- | ------------------------------------------ |
-| `expo-public-supabase-url`               | `https://rjebeugdvwbjpaktrrbx.supabase.co` |
-| `expo-public-supabase-key`               | `sb_publishable_...`                       |
-| `expo-public-walletconnect-project-id`   | `d40ba2687be51a76...`                      |
-| `expo-public-authentik-issuer`           | `https://testnet.sso.alternun.co/...`      |
-| `expo-public-authentik-client-id`        | `alternun-mobile`                          |
-| `expo-public-authentik-login-entry-mode` | `source`                                   |
+| Parameter                                | Dev/Testnet                                | Production                                 |
+| ---------------------------------------- | ------------------------------------------ | ------------------------------------------ |
+| `expo-public-supabase-url`               | `https://aznfyazjndfniwsocdka.supabase.co` | `https://rjebeugdvwbjpaktrrbx.supabase.co` |
+| `expo-public-supabase-key`               | stage-specific publishable key             | stage-specific publishable key             |
+| `expo-public-walletconnect-project-id`   | `d40ba2687be51a76...`                      | `d40ba2687be51a76...`                      |
+| `expo-public-authentik-issuer`           | `https://testnet.sso.alternun.co/...`      | `https://sso.alternun.co/...`              |
+| `expo-public-authentik-client-id`        | `alternun-mobile`                          | `alternun-mobile`                          |
+| `expo-public-authentik-login-entry-mode` | `source`                                   | `source`                                   |
 
 ### Dev Stage
 
