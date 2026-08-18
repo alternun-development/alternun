@@ -123,7 +123,8 @@ export function buildDashboardPipelineSpecs({
         INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY:
           env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY ?? '',
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlProd,
-        INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER: 'better-auth',
+        // Production identities remain owned by the canonical Authentik OIDC flow.
+        INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER: 'authentik',
         INFRA_BACKEND_API_DATABASE_URL: backendDatabaseUrl,
         AUTHENTIK_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-prod`,
         AIRS_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-prod`,

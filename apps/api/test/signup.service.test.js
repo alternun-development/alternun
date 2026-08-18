@@ -195,6 +195,34 @@ test('resolveSignupProviderName ignores the execution provider and stays on Supa
   );
 });
 
+test('SignupService preserves the canonical welcome email for Better Auth signups', async () => {
+  const service = new SignupService(
+    {
+      name: 'better-auth',
+      signUpEmail: async () => ({
+        session: null,
+        user: {
+          id: 'user-123',
+          created_at: '2026-04-20T00:00:00.000Z',
+          updated_at: '2026-04-20T00:00:00.000Z',
+          email: 'ada@example.com',
+          email_confirmed_at: null,
+          user_metadata: {},
+        },
+      }),
+    },
+    async () => false
+  );
+  const sent = [];
+  service.sendSignupWelcomeEmailAsync = async (...args) => {
+    sent.push(args);
+  };
+
+  await service.signUp({ email: 'ada@example.com', password: 'Password123!', locale: 'es' });
+
+  assert.deepEqual(sent, [['ada@example.com', 'ada', 'es']]);
+});
+
 test('SignupService returns the verification flow when auth.users already has an unverified email', async () => {
   const service = new SignupService(
     {
