@@ -45,8 +45,10 @@ import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 import FOOTER_BG from '../../assets/images/pexels-shella-mijos-2438861-5068057-footer.png';
+import { useRouter } from 'expo-router';
 
 export default function LandingFooter(): React.JSX.Element {
+  const router = useRouter();
   const { themeMode, language } = useAppPreferences();
   const { width } = useWindowDimensions();
   const { t } = useAppTranslation('mobile');
@@ -59,6 +61,10 @@ export default function LandingFooter(): React.JSX.Element {
   const [termsOpen, setTermsOpen] = useState(false);
   const handlePrivacyOpen = useCallback(() => setPrivacyOpen(true), []);
   const handlePrivacyClose = useCallback(() => setPrivacyOpen(false), []);
+  const handleAccountDeletionOpen = useCallback(() => {
+    setPrivacyOpen(false);
+    router.push('/delete-account');
+  }, [router]);
   const handleTermsOpen = useCallback(() => setTermsOpen(true), []);
   const handleTermsClose = useCallback(() => setTermsOpen(false), []);
   const primaryLinkPressHandlers = {
@@ -421,6 +427,8 @@ export default function LandingFooter(): React.JSX.Element {
               textPrimary={drawerColors.title}
               textMuted={drawerColors.muted}
               accent={drawerColors.accent}
+              accountDeletionLabel={t('accountDeletion.privacyLink')}
+              onAccountDeletionPress={handleAccountDeletionOpen}
             />
           </View>
         </View>

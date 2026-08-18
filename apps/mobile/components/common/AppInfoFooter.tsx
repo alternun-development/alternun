@@ -48,6 +48,7 @@ import {
   resolveAppPackageVersion,
 } from './Footer.shared';
 import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
+import { useRouter } from 'expo-router';
 
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const ChevronUpIcon = ChevronUp as React.FC<LucideProps>;
@@ -57,6 +58,7 @@ interface AppInfoFooterProps {
 }
 
 export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): React.JSX.Element {
+  const router = useRouter();
   const { themeMode, language, motionLevel } = useAppPreferences();
   const { width } = useWindowDimensions();
   const { t } = useAppTranslation('mobile');
@@ -70,6 +72,10 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
   const [expanded, setExpanded] = useState(false);
   const handlePrivacyOpen = useCallback(() => setPrivacyOpen(true), []);
   const handlePrivacyClose = useCallback(() => setPrivacyOpen(false), []);
+  const handleAccountDeletionOpen = useCallback(() => {
+    setPrivacyOpen(false);
+    router.push('/delete-account');
+  }, [router]);
   const handleTermsOpen = useCallback(() => setTermsOpen(true), []);
   const handleTermsClose = useCallback(() => setTermsOpen(false), []);
   const handleToggleExpanded = useCallback(() => setExpanded((prev) => !prev), []);
@@ -405,6 +411,8 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
               textPrimary={drawerColors.title}
               textMuted={drawerColors.muted}
               accent={drawerColors.accent}
+              accountDeletionLabel={t('accountDeletion.privacyLink')}
+              onAccountDeletionPress={handleAccountDeletionOpen}
             />
           </View>
         </View>

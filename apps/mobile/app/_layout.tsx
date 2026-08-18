@@ -154,6 +154,10 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
                     options={{ headerShown: false, animation: 'slide_from_right' }}
                   />
                   <Stack.Screen
+                    name='delete-account'
+                    options={{ headerShown: false, animation: 'slide_from_right' }}
+                  />
+                  <Stack.Screen
                     name='terms'
                     options={{ headerShown: false, animation: 'slide_from_right' }}
                   />
