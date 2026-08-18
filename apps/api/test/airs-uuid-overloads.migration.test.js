@@ -21,3 +21,25 @@ void test('the AIRS overload repair migration removes every legacy UUID RPC over
     assert.ok(source.includes(`drop function if exists public.${signature}`));
   }
 });
+
+void test('the AIRS overload repair reloads the PostgREST schema cache', () => {
+  const migrationPath = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../../../supabase/migrations/20260818_0001_reload_postgrest_schema_after_airs_rpc_cleanup.sql'
+  );
+
+  const source = fs.readFileSync(migrationPath, 'utf8');
+  assert.match(source, /notify\s+pgrst\s*,\s*'reload schema'/i);
+});
+
+void test('the production snapshot RPC has one UUID signature', () => {
+  const migrationPath = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../../../supabase/migrations/20260818_0002_make_airs_snapshot_rpc_uuid_canonical.sql'
+  );
+
+  const source = fs.readFileSync(migrationPath, 'utf8');
+  assert.match(source, /drop function if exists public\.airs_get_dashboard_snapshot\(text, text, integer\)/i);
+  assert.match(source, /create function public\.airs_get_dashboard_snapshot\(\s*p_user_id uuid,/i);
+  assert.match(source, /grant execute on function public\.airs_get_dashboard_snapshot\(uuid, text, integer\)/i);
+});
