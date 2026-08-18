@@ -3,7 +3,7 @@
   "fallbackProviders": ["postmark"],
   "fromEmail": "no-reply@alternun.co",
   "senderName": "ALTERNUN",
-  "supabaseProjectRef": "your-supabase-project-ref",
+  "supabaseEnvironment": "development",
   "supabaseSmtpMaxFrequencySeconds": 45,
   "tlao": {
     "smtpHost": "mail.xn--tlo-fla.com",

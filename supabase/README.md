@@ -49,6 +49,26 @@ When ready to deploy:
 pnpm run db:migrate
 ```
 
+### Environment selection
+
+Migration targets are explicit and guarded:
+
+| Environment         | Supabase project ref   | Database variable   |
+| ------------------- | ---------------------- | ------------------- |
+| Development/Testnet | `aznfyazjndfniwsocdka` | `DATABASE_URL_DEV`  |
+| Production          | `rjebeugdvwbjpaktrrbx` | `DATABASE_URL_PROD` |
+
+Always preview each target before applying changes. Production requires an
+explicit confirmation:
+
+```bash
+MIGRATION_DATABASE_URL="$DATABASE_URL_DEV" pnpm --filter @alternun/api run db:migrate -- --dry-run
+MIGRATION_DATABASE_URL="$DATABASE_URL_PROD" APPROVE_PROD_MIGRATION=true pnpm --filter @alternun/api run db:migrate
+```
+
+The migration runner rejects unknown remote Supabase targets rather than
+defaulting them to development.
+
 ## Important Notes
 
 - **migrations/** folder is auto-processed by version (YYYYMMDD prefix)

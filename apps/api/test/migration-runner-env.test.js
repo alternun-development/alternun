@@ -16,7 +16,13 @@ void test('migration runners prefer the explicit migration database override fir
   assert.match(applySource, /INFRA_BACKEND_API_DATABASE_URL/);
   assert.match(applySource, /process\.env\.MIGRATION_DATABASE_URL\s*\?\?/);
   assert.match(applySource, /process\.env\.INFRA_BACKEND_API_DATABASE_URL\s*\?\?/);
-  assert.match(applySource, /environment === 'production' && !dryRun && !process\.env\.APPROVE_PROD_MIGRATION/);
+  assert.match(applySource, /rjebeugdvwbjpaktrrbx/);
+  assert.match(applySource, /aznfyazjndfniwsocdka/);
+  assert.match(applySource, /Unsupported Supabase migration target/);
+  assert.match(
+    applySource,
+    /environment === 'production' && !dryRun && !process\.env\.APPROVE_PROD_MIGRATION/
+  );
   assert.match(lambdaSource, /MIGRATION_DATABASE_URL/);
   assert.match(lambdaSource, /INFRA_BACKEND_API_DATABASE_URL/);
   assert.match(lambdaSource, /process\.env\.MIGRATION_DATABASE_URL\s*\?\?/);

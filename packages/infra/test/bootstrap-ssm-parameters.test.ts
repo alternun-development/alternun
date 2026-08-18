@@ -15,6 +15,7 @@ void test('bootstrap and mobile build scripts use stage-specific Supabase public
   assert.match(bootstrapSource, /SUPABASE_URL="https:\/\/aznfyazjndfniwsocdka\.supabase\.co"/);
   assert.match(bootstrapSource, /resolve_publishable_key_stage_suffix\(\)/);
   assert.match(bootstrapSource, /SUPABASE_URL="https:\/\/rjebeugdvwbjpaktrrbx\.supabase\.co"/);
+  assert.match(bootstrapSource, /ERROR: Unsupported stage '\$\{STAGE\}'\. Use dev or production\./);
   assert.match(bootstrapSource, /resolve_publishable_key\(\)/);
   assert.match(bootstrapSource, /SUPABASE_PUBLISHABLE_KEY_\$\{stage_suffix\}/);
   assert.match(
