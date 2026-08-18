@@ -1,14 +1,15 @@
+## [1.1.23](https://github.com/alternun-development/alternun/compare/v1.1.22...v1.1.23) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** test(repo,api,docs): release-promotion-guard.test, release-promotion-guard, signup.service, signup.service.test
+
 ## [1.1.22](https://github.com/alternun-development/alternun/compare/v1.1.22-dev.0...v1.1.22) (2026-08-18)
 
 ### Bug Fixes
 
 - **repo:** chore: release v1.1.22-dev.0
 - **repo:** test(infra): backend-api, backend-api-airs-env.test
-
-
-
-
-
 
 ## [1.1.22](https://github.com/alternun-development/alternun/compare/v1.1.21-dev.0...v1.1.22) (2026-08-18)
 
