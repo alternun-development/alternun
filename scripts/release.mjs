@@ -17,7 +17,7 @@ const {
   restoreFileContents,
   stripVersionSuffix,
 } = require('./versioning/version-files.cjs');
-const { checkRootReadme } = require('./readme-maintenance.cjs');
+const { checkRootReadme, syncRootReadme } = require('./readme-maintenance.cjs');
 
 const VALID_BUMPS = new Set(['patch', 'minor', 'major']);
 const BUILD_TARGET = 'build';
@@ -1157,6 +1157,12 @@ function main() {
 
     if (shouldPrepareRelease) {
       buildReleaseArtifacts(options.dryRun, process.env, releaseBuildStage, releaseBranch);
+      if (!options.dryRun) {
+        syncRootReadme({
+          branch: releaseBranch,
+          version,
+        });
+      }
     }
 
     if (shouldPrepareRelease && options.createCommit) {
