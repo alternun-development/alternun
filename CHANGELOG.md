@@ -1,3 +1,15 @@
+## [1.1.15](https://github.com/alternun-development/alternun/compare/v1.1.15-dev.0...v1.1.15) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: sync v1.1.15 README
+- **repo:** chore: sync v1.1.15-dev.0 release artifacts
+
+
+
+
+
+
 ## [1.1.15](https://github.com/alternun-development/alternun/compare/v1.1.14...v1.1.15) (2026-08-18)
 
 ### Bug Fixes
