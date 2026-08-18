@@ -1,5 +1,5 @@
 import type { User } from '../components/auth/AppAuthProvider';
-import { useLocalSearchParams, useRouter, type Router } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter, type Router } from 'expo-router';
 import {
   Award,
   Bell,
@@ -18,7 +18,7 @@ import {
   Wallet,
   type LucideProps,
 } from 'lucide-react-native';
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -2662,8 +2662,14 @@ function PerfilTab({
   const [achievements, setAchievements] = useState<
     Array<{ key: string; unlocked: boolean; unlockedAt: string | null }>
   >([]);
-  const { snapshot: airsSnapshot } = useAirsDashboardSnapshot();
+  const { snapshot: airsSnapshot, refresh: refreshAirsSnapshot } = useAirsDashboardSnapshot();
   const airsScore = airsSnapshot?.balanceAIRS ?? null;
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshAirsSnapshot();
+    }, [refreshAirsSnapshot])
+  );
 
   // Animated circles
   const { motionLevel } = useAppPreferences();

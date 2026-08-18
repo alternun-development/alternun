@@ -7,14 +7,19 @@ import { useAppPreferences } from '../components/settings/AppPreferencesProvider
 import { isBetterAuthExecutionEnabled } from '../components/auth/authExecutionMode';
 import { buildWebAuthCallbackRedirectPath } from '../components/auth/authCallbackFlow';
 import { readPendingAuthentikOAuthProvider } from '@alternun/auth';
-import { Redirect, useRootNavigationState, useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { Redirect, useFocusEffect, useRootNavigationState, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 export default function HomeScreen(): React.JSX.Element {
   const { user, loading, signIn, signOutUser, client } = useAuth();
   const { showAirsIntro, setShowAirsIntro } = useAppPreferences();
-  const { snapshot: airsSnapshot, refresh: refreshAirsSnapshot } = useAirsDashboardSnapshot();
+  const {
+    snapshot: airsSnapshot,
+    isLoading: airsIsLoading,
+    error: airsError,
+    refresh: refreshAirsSnapshot,
+  } = useAirsDashboardSnapshot();
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
   const [introDismissedThisSession, setIntroDismissedThisSession] = useState(false);
@@ -41,6 +46,12 @@ export default function HomeScreen(): React.JSX.Element {
 
     window.location.replace(webAuthCallbackRedirectPath);
   }, [webAuthCallbackRedirectPath]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshAirsSnapshot();
+    }, [refreshAirsSnapshot])
+  );
 
   if (webAuthCallbackRedirectPath) {
     return (
@@ -90,8 +101,10 @@ export default function HomeScreen(): React.JSX.Element {
     <Dashboard
       user={user ?? null}
       airsSnapshot={airsSnapshot}
+      airsIsLoading={airsIsLoading}
+      airsError={airsError}
       isLoading={loading}
-      onReload={() => void refreshAirsSnapshot()}
+      onReload={refreshAirsSnapshot}
       onRequireSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
       onOpenProfilePage={() => router.push('/mi-perfil')}
       onOpenSettingsPage={() => router.push('/settings')}

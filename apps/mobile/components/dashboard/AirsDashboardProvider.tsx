@@ -11,7 +11,7 @@ import React, {
 import { useAuth } from '../auth/AppAuthProvider';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
-import { fetchAirsDashboardSnapshot } from './airsSnapshot';
+import { fetchAirsDashboardSnapshot, withAirsRequestTimeout } from './airsSnapshot';
 import type { AirsDashboardSnapshot } from './types';
 
 type AirsDashboardContextValue = {
@@ -30,6 +30,8 @@ export function AirsDashboardProvider({ children }: React.PropsWithChildren): Re
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const requestIdRef = useRef(0);
+  const inFlightRefreshRef = useRef<Promise<void> | null>(null);
+  const inFlightUserKeyRef = useRef<string | null>(null);
   const snapshotUserKeyRef = useRef<string | null>(null);
   const onboardingKeyRef = useRef<string | null>(null);
 
@@ -41,12 +43,16 @@ export function AirsDashboardProvider({ children }: React.PropsWithChildren): Re
       : null;
   const onboardingKey = userKey ? `${userKey}:${language ?? ''}` : null;
 
-  const refresh = useCallback(async (): Promise<void> => {
+  const refresh = useCallback((): Promise<void> => {
+    if (inFlightRefreshRef.current && inFlightUserKeyRef.current === userKey) {
+      return inFlightRefreshRef.current;
+    }
+
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
 
     if (authLoading) {
-      return;
+      return Promise.resolve();
     }
 
     if (!userKey) {
@@ -55,7 +61,7 @@ export function AirsDashboardProvider({ children }: React.PropsWithChildren): Re
       setSnapshot(null);
       setError(null);
       setIsLoading(false);
-      return;
+      return Promise.resolve();
     }
 
     if (snapshotUserKeyRef.current !== userKey) {
@@ -66,53 +72,69 @@ export function AirsDashboardProvider({ children }: React.PropsWithChildren): Re
     setIsLoading(true);
     setError(null);
 
-    try {
-      const sessionToken = await client.getSessionToken();
-      if (!sessionToken) {
-        throw new Error('No AIRS session token is available.');
-      }
+    const nextRefresh = (async (): Promise<void> => {
+      try {
+        const sessionToken = await withAirsRequestTimeout(async () => client.getSessionToken());
+        if (!sessionToken) {
+          throw new Error('No AIRS session token is available.');
+        }
 
-      const apiBaseUrl = resolveMobileApiBaseUrl();
+        const apiBaseUrl = resolveMobileApiBaseUrl();
 
-      if (onboardingKey && onboardingKeyRef.current !== onboardingKey) {
-        try {
-          const onboardingResponse = await fetch(
-            `${apiBaseUrl.replace(/\/+$/, '')}/v1/airs/onboarding`,
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${sessionToken}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ locale: language }),
+        if (onboardingKey && onboardingKeyRef.current !== onboardingKey) {
+          try {
+            const onboardingResponse = await withAirsRequestTimeout((signal) =>
+              fetch(`${apiBaseUrl.replace(/\/+$/, '')}/v1/airs/onboarding`, {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${sessionToken}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ locale: language }),
+                signal,
+              })
+            );
+
+            if (onboardingResponse.ok) {
+              onboardingKeyRef.current = onboardingKey;
             }
-          );
-
-          if (onboardingResponse.ok) {
-            onboardingKeyRef.current = onboardingKey;
+          } catch {
+            // Onboarding is idempotent and must never replace the canonical balance read below.
           }
-        } catch {
-          // Onboarding is idempotent and must never replace the canonical balance read below.
+        }
+
+        const nextSnapshot = await withAirsRequestTimeout((signal) =>
+          fetchAirsDashboardSnapshot({
+            apiBaseUrl,
+            sessionToken,
+            signal,
+          })
+        );
+
+        if (requestIdRef.current === requestId) {
+          setSnapshot(nextSnapshot);
+        }
+      } catch (cause) {
+        if (requestIdRef.current === requestId) {
+          setError(cause instanceof Error ? cause : new Error('Unable to load the AIRS balance.'));
+        }
+      } finally {
+        if (requestIdRef.current === requestId) {
+          setIsLoading(false);
         }
       }
+    })();
 
-      const nextSnapshot = await fetchAirsDashboardSnapshot({
-        apiBaseUrl,
-        sessionToken,
-      });
+    inFlightRefreshRef.current = nextRefresh;
+    inFlightUserKeyRef.current = userKey;
+    void nextRefresh.finally(() => {
+      if (inFlightRefreshRef.current === nextRefresh) {
+        inFlightRefreshRef.current = null;
+        inFlightUserKeyRef.current = null;
+      }
+    });
 
-      if (requestIdRef.current === requestId) {
-        setSnapshot(nextSnapshot);
-      }
-    } catch (cause) {
-      if (requestIdRef.current === requestId) {
-        setError(cause instanceof Error ? cause : new Error('Unable to load the AIRS balance.'));
-      }
-    } finally {
-      if (requestIdRef.current === requestId) {
-        setIsLoading(false);
-      }
-    }
+    return nextRefresh;
   }, [authLoading, client, language, onboardingKey, userKey]);
 
   useEffect(() => {
