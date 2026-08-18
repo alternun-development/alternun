@@ -126,11 +126,8 @@ Current version: **1.1.31**
 
 ### Bug Fixes
 
+- **repo:** chore: release v1.1.31-dev.0
 - **repo:** fix(api): airs.email, auth-confirmation.email
-
-### Bug Fixes
-
-- **api:** airs.email, auth-confirmation.email ([9d7dbc4](https://github.com/alternun-development/alternun/commit/9d7dbc4db89bf461c3de7d1548a018febc456a03))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
