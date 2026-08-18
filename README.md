@@ -126,11 +126,8 @@ Current version: **1.1.32**
 
 ### Bug Fixes
 
+- **repo:** chore: release v1.1.32-dev.0
 - **repo:** fix(auth,infra): migrate SMTP delivery to Tlao
-
-### Bug Fixes
-
-- **auth,infra:** migrate SMTP delivery to Tlao ([6923e61](https://github.com/alternun-development/alternun/commit/6923e613d2ef6f14b5df54c0aceeaa689bebbf07))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
