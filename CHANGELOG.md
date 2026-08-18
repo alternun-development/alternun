@@ -1,3 +1,19 @@
+## [1.1.19](https://github.com/alternun-development/alternun/compare/v1.1.19-dev.0...v1.1.19) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** fix(release): stage generated release manifests
+
+
+
+### Bug Fixes
+
+* **release:** stage generated release manifests ([69a9258](https://github.com/alternun-development/alternun/commit/69a9258be8a16266295031d3143d5bae9a34a1a9))
+
+
+
+
+
 ## [1.1.19](https://github.com/alternun-development/alternun/compare/v1.1.17-dev.0...v1.1.19) (2026-08-18)
 
 ### Bug Fixes
