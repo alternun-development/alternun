@@ -118,14 +118,14 @@ pnpm version:check-secrets # scan staged files for secrets
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.15**
+Current version: **1.1.16**
 
-## 📋 Latest Changes (v1.1.15)
+## 📋 Latest Changes (v1.1.16)
 
 ### Bug Fixes
 
-- **repo:** test(mobile): mi-perfil, AirsDashboardProvider, Dashboard, HeroStats
-- **repo:** chore: sync v1.1.14 production release artifact
+- **repo:** test(api,repo): airs-uuid-overloads.migration.test, 20260818_0001_reload_postgrest_schema_after_airs_rpc_cleanup, 20260818_0002_make_airs_snapshot_rpc_uuid_canonical
+- **repo:** chore: sync v1.1.15 production release artifact
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
