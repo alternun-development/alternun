@@ -25,7 +25,9 @@ const IGNORED_WORKTREE_PATHS = new Set([
   'apps/web/.turbo/turbo-build.log',
   'packages/ui/.turbo/turbo-build.log',
 ]);
-const TRACKED_BUILD_OUTPUT_PATHS = ['packages/auth/dist', 'packages/update/dist'];
+// Build output is deliberately ignored: release builds may create it locally,
+// but source commits must never publish generated artifacts.
+const TRACKED_BUILD_OUTPUT_PATHS = [];
 const PRE_RELEASE_IGNORED_TRACKED_OUTPUT_PREFIXES = TRACKED_BUILD_OUTPUT_PATHS.map(
   (trackedPath) => `${trackedPath}/`
 );

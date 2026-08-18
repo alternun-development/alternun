@@ -146,10 +146,8 @@ case "$stage_normalized" in
     AUTH_EXCHANGE_URL="https://testnet.api.alternun.co/auth/exchange"
     ;;
   *)
-    SUPABASE_URL="https://rjebeugdvwbjpaktrrbx.supabase.co"
-    AUTHENTIK_ISSUER="https://testnet.sso.alternun.co/application/o/alternun-mobile/"
-    BETTER_AUTH_URL="https://testnet.api.alternun.co/auth"
-    AUTH_EXCHANGE_URL="https://testnet.api.alternun.co/auth/exchange"
+    echo "ERROR: Unsupported stage '${STAGE}'. Use dev or production." >&2
+    exit 1
     ;;
 esac
 
