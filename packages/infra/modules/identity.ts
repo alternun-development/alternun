@@ -10,7 +10,7 @@ import {
   type IdentitySourceLoginFlowMode,
 } from '../config/google-source-login-flow.js';
 
-export type IdentityEmailProvider = 'ses' | 'postmark';
+export type IdentityEmailProvider = 'tlao' | 'postmark';
 export type IdentityDatabaseMode = 'rds' | 'ec2';
 export type IdentityPolicyEngineMode = 'any' | 'all';
 export type IdentityIngressMode = 'instance' | 'alb';
@@ -317,7 +317,8 @@ function parsePositiveInteger(value: string | number | undefined, fallback: numb
 }
 
 function normalizeEmailProvider(value: string | undefined): IdentityEmailProvider {
-  return value?.toLowerCase() === 'postmark' ? 'postmark' : IDENTITY_INFRA_DEFAULTS.emailProvider;
+  const provider = value?.trim().toLowerCase();
+  return provider === 'postmark' ? 'postmark' : 'tlao';
 }
 
 function normalizeDatabaseMode(value: string | undefined): IdentityDatabaseMode {
