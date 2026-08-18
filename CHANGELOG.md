@@ -1,3 +1,15 @@
+## [1.1.29](https://github.com/alternun-development/alternun/compare/v1.1.29-dev.0...v1.1.29) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.29-dev.0
+- **repo:** chore(scripts): release, release.test
+
+
+
+
+
+
 ## [1.1.29](https://github.com/alternun-development/alternun/compare/v1.1.28...v1.1.29) (2026-08-18)
 
 ### Bug Fixes
