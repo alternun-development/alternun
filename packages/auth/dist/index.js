@@ -6,7 +6,7 @@ export { SupabaseLegacyIssuerProvider, } from './providers/supabase-legacy/Supab
 export { SupabaseIdentityRepository, } from './providers/supabase-legacy/SupabaseIdentityRepository.js';
 export { SupabaseEmailProvider } from './providers/email/SupabaseEmailProvider.js';
 export { PostmarkEmailProvider } from './providers/email/PostmarkEmailProvider.js';
-export { SesEmailProvider } from './providers/email/SesEmailProvider.js';
+export { TlaoEmailProvider, } from './providers/email/TlaoEmailProvider.js';
 export { resolveAuthRuntimeConfig, resolveAuthProviderSelection } from './runtime/config.js';
 export { createAuthFacade } from './facade/createAuthFacade.js';
 export { AlternunAuthFacade } from './facade/AlternunAuthFacade.js';
