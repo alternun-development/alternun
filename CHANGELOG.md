@@ -1,13 +1,22 @@
+## [1.1.14](https://github.com/alternun-development/alternun/compare/v1.1.13...v1.1.14) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,repo): airs-uuid-overloads.migration.test, \_layout, \_layout.web, mi-perfil
+- **repo:** fix(api): resolve referral type and update mobile dashboard tests
+- **repo:** fix airs referral verification and activity scope/filter behavior
+- **repo:** test(api,mobile): improve airs pagination and api coverage
+- **repo:** chore: sync release v1.1.13
+
+### Bug Fixes
+
+- **api:** resolve referral type and update mobile dashboard tests ([6cbb81f](https://github.com/alternun-development/alternun/commit/6cbb81f4fbf098f7fb645a6bea9cb47463cfab93))
+
 ## [1.1.13](https://github.com/alternun-development/alternun/compare/v1.1.13-dev.0...v1.1.13) (2026-08-10)
 
 ### Bug Fixes
 
 - **repo:** chore: sync release v1.1.13-dev.0
-
-
-
-
-
 
 ## [1.1.13](https://github.com/alternun-development/alternun/compare/v1.1.12...v1.1.13) (2026-08-09)
 
