@@ -110,15 +110,15 @@ This can be revisited later if the stack moves to a more AWS-native ingress mode
 
 ### 6. Email Provider Choice
 
-Use AWS SES as the initial transactional email provider for Authentik.
+Use Tláo Mail as the initial transactional email provider for Authentik.
 
 Rationale:
 
-- the repo already contains SES-oriented auth/email support scripts
-- SES fits the low-cost AWS-first deployment model
-- using SES reduces the number of third-party dependencies in the first production cut
+- the repo contains Tláo-oriented SMTP automation for Supabase Auth
+- Tláo is the selected managed mail provider for the Alternun domain
+- SMTP configuration remains provider-switchable without changing application code
 
-Postmark remains a valid fallback option if SES deliverability or operational complexity becomes a blocker.
+Postmark remains the configured alternate if Tláo deliverability or operational complexity becomes a blocker.
 
 ### 7. Database and Infrastructure Baseline
 
