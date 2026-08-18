@@ -49,6 +49,7 @@ interface AIRSLeaderboardProps {
   isDark: boolean;
   client: AuthClient;
   signedIn: boolean;
+  currentUserAirsBalance?: number;
 }
 
 const FILTERS: { key: RankScope; label: string }[] = [
@@ -74,6 +75,7 @@ export default function AIRSLeaderboard({
   isDark,
   client,
   signedIn,
+  currentUserAirsBalance,
 }: AIRSLeaderboardProps): React.JSX.Element {
   const [result, setResult] = useState<LeaderboardResult | null>(null);
   const [positions, setPositions] = useState<UserPositions | null>(null);
@@ -316,7 +318,10 @@ export default function AIRSLeaderboard({
                       {entry.isMe && <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>}
                     </View>
                     <Text style={[styles.balanceText, { color: entry.isMe ? accent : textColor }]}>
-                      {entry.airsBalance.toLocaleString('es-ES', { maximumFractionDigits: 0 })}
+                      {(entry.isMe
+                        ? currentUserAirsBalance ?? entry.airsBalance
+                        : entry.airsBalance
+                      ).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
                     </Text>
                   </View>
                 );
@@ -343,7 +348,9 @@ export default function AIRSLeaderboard({
                       <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>
                     </View>
                     <Text style={[styles.balanceText, { color: accent }]}>
-                      {myEntry.airsBalance.toLocaleString('es-ES', { maximumFractionDigits: 0 })}
+                      {(currentUserAirsBalance ?? myEntry.airsBalance).toLocaleString('es-ES', {
+                        maximumFractionDigits: 0,
+                      })}
                     </Text>
                   </View>
                 </>

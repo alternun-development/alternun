@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { View, ImageBackground, Animated, type ImageSourcePropType } from 'react-native';
+import {
+  View,
+  ImageBackground,
+  Animated,
+  Text,
+  TouchableOpacity,
+  type ImageSourcePropType,
+} from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import { HeroPanel } from '@alternun/ui';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -17,6 +24,7 @@ interface HeroStatsProps {
   tokensHeld: number | null;
   compensationsCompleted: number | null;
   isLoading?: boolean;
+  errorMessage?: string;
   onReload?: () => void;
   previewMode?: boolean;
   isDark?: boolean;
@@ -26,6 +34,7 @@ interface HeroStatsProps {
 export default function HeroStats({
   totalAIRS,
   isLoading = false,
+  errorMessage,
   onReload,
   previewMode = false,
   isDark = true,
@@ -120,6 +129,28 @@ export default function HeroStats({
           />
         </ImageBackground>
       </Animated.View>
+      {errorMessage ? (
+        <View
+          accessibilityLiveRegion='polite'
+          style={{
+            marginTop: 8,
+            paddingHorizontal: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ color: isDark ? 'rgba(255,255,255,0.82)' : '#475569', flex: 1 }}>
+            {errorMessage}
+          </Text>
+          {onReload ? (
+            <TouchableOpacity onPress={onReload} accessibilityRole='button'>
+              <Text style={{ color: isDark ? '#1ee6b5' : '#0b5a5f', fontWeight: '700' }}>
+                {t.t('dashboard.heroPanel.reloadButton')}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      ) : null}
     </View>
   );
 }
