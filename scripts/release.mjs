@@ -814,7 +814,8 @@ const RELEASE_CHANGE_DESCRIPTIONS = [
   },
   {
     paths: ['packages/infra/config/pipelines/specs/dashboard.ts'],
-    description: 'Kept production email signup on the canonical Authentik identity path.',
+    description:
+      'Kept Authentik as the canonical identity issuer while using the supported Supabase email/password compatibility path.',
   },
   {
     paths: ['apps/api/src/modules/auth-exchange/services/signup.service.ts'],
