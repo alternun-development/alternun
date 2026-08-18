@@ -92,8 +92,11 @@ Optional for multilingual template generation/sync:
 
 Common sender fields:
 
+- `SUPABASE_SMTP_SENDER` (dedicated Supabase Auth sender override)
 - `EMAIL_FROM` (optional override for `fromEmail`)
 - `EMAIL_SENDER_NAME` (optional override for `senderName`)
+- `ALTERNUN_NO_REPLY_EMAIL` (canonical no-reply address; used as the Tláo username when `TLAO_SMTP_USERNAME` is unset)
+- `ALTERNUN_NO_REPLY_PASSWORD` (canonical Tláo password when `TLAO_SMTP_PASSWORD` is unset)
 - `SUPABASE_SMTP_MAX_FREQUENCY` (optional override)
 - `EMAIL_SMTP_PROVIDER` (override the selected provider)
 - `EMAIL_SMTP_FALLBACK_PROVIDERS` (comma-separated ordered fallback providers)
@@ -104,6 +107,22 @@ Tláo SMTP credentials:
 - `TLAO_SMTP_PORT` (default `587`)
 - `TLAO_SMTP_USERNAME`
 - `TLAO_SMTP_PASSWORD`
+
+Dedicated Supabase Auth credentials may be supplied directly with
+`SUPABASE_SMTP_HOST`, `SUPABASE_SMTP_PORT`, `SUPABASE_SMTP_USERNAME`,
+`SUPABASE_SMTP_PASSWORD`, and `SUPABASE_SMTP_SENDER`. They take precedence over
+`TLAO_SMTP_*` and the canonical no-reply credentials, and are intended for a
+separate transactional mailbox such as `transactional@alternun.co`.
+
+For port 587, the Tláo submission endpoint requires STARTTLS; Supabase selects
+that transport from the SMTP port. Keep `SUPABASE_SMTP_TLS_MODE=starttls` in
+the private environment for operator clarity, but do not send it to the
+Supabase Management API.
+
+When no dedicated Supabase credentials are set, `TLAO_SMTP_*` provides an
+alternate Tláo account; otherwise production and development use the canonical
+`ALTERNUN_NO_REPLY_EMAIL` and `ALTERNUN_NO_REPLY_PASSWORD` secrets. This makes
+the email sync command work without an untracked `config.local.json`.
 
 Postmark credentials (any one mode):
 
