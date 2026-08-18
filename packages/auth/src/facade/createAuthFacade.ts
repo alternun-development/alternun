@@ -20,7 +20,7 @@ import {
 } from '../providers/supabase-legacy/SupabaseExecutionProvider';
 import { SupabaseIdentityRepository } from '../providers/supabase-legacy/SupabaseIdentityRepository';
 import { PostmarkEmailProvider } from '../providers/email/PostmarkEmailProvider';
-import { SesEmailProvider } from '../providers/email/SesEmailProvider';
+import { TlaoEmailProvider } from '../providers/email/TlaoEmailProvider';
 import { SupabaseEmailProvider } from '../providers/email/SupabaseEmailProvider';
 import { BetterAuthEmailProvider } from '../providers/email/BetterAuthEmailProvider';
 import { upsertOidcUser } from '../compat/upsertOidcUser';
@@ -169,8 +169,8 @@ function createEmailProvider(
         from: runtime.emailFrom,
         senderName: runtime.emailSenderName,
       });
-    case 'ses':
-      return new SesEmailProvider({
+    case 'tlao':
+      return new TlaoEmailProvider({
         from: runtime.emailFrom,
         senderName: runtime.emailSenderName,
       });

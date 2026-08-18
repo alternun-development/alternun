@@ -35,3 +35,11 @@ test('resolveAuthRuntimeConfig still honors an explicit supabase rollback flag',
 
   assert.equal(config.executionProvider, 'supabase');
 });
+
+test('resolveAuthRuntimeConfig preserves tlao as the selected email provider', () => {
+  const config = resolveAuthRuntimeConfig({
+    EMAIL_SMTP_PROVIDER: 'tlao',
+  });
+
+  assert.equal(config.emailProvider, 'tlao');
+});

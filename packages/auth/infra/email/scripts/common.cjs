@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const SMTP_PASS_FIELD = "smtp" + "_pass";
@@ -89,8 +88,7 @@ function resolveConfigPath() {
     return emailConfigPath;
   }
 
-  // Backward compatibility with previous SES-only setup.
-  return path.resolve(__dirname, "..", "..", "ses", "config.local.json");
+  return emailConfigPath;
 }
 
 function ensureRequiredKeys(config, keys, contextLabel = "config") {
@@ -168,32 +166,6 @@ function maskValue(value) {
   return `${value.slice(0, 3)}***${value.slice(-3)}`;
 }
 
-function deriveSesSmtpPassword(secretAccessKey, region) {
-  const initialKey = Buffer.from(`AWS4${secretAccessKey}`, "utf8");
-  const dateKey = crypto
-    .createHmac("sha256", initialKey)
-    .update("11111111", "utf8")
-    .digest();
-  const regionKey = crypto
-    .createHmac("sha256", dateKey)
-    .update(region, "utf8")
-    .digest();
-  const serviceKey = crypto
-    .createHmac("sha256", regionKey)
-    .update("ses", "utf8")
-    .digest();
-  const signingKey = crypto
-    .createHmac("sha256", serviceKey)
-    .update("aws4_request", "utf8")
-    .digest();
-  const signature = crypto
-    .createHmac("sha256", signingKey)
-    .update("SendRawEmail", "utf8")
-    .digest();
-
-  return Buffer.concat([Buffer.from([0x04]), signature]).toString("base64");
-}
-
 function firstNonEmpty(values) {
   for (const value of values) {
     if (value !== undefined && value !== null && String(value).trim() !== "") {
@@ -204,14 +176,30 @@ function firstNonEmpty(values) {
 }
 
 function parseProvider(value) {
-  const normalized = (value || "postmark").trim().toLowerCase();
-  if (normalized === "postmark" || normalized === "ses") {
+  const normalized = (value || "tlao").trim().toLowerCase();
+  if (normalized === "tlao" || normalized === "postmark") {
     return normalized;
   }
 
   throw new Error(
-    `Unsupported email provider "${value}". Allowed values: postmark, ses.`
+    `Unsupported email provider "${value}". Allowed values: tlao, postmark.`
   );
+}
+
+function parseProviderList(value) {
+  if (Array.isArray(value)) {
+    return value.map(parseProvider);
+  }
+
+  if (typeof value !== 'string') {
+    return [];
+  }
+
+  return value
+    .split(',')
+    .map((candidate) => candidate.trim())
+    .filter(Boolean)
+    .map(parseProvider);
 }
 
 function parsePort(rawValue, defaultPort) {
@@ -355,65 +343,29 @@ function resolvePostmarkProvider(config) {
   };
 }
 
-function resolveSesProvider(config) {
-  const providerConfig = config.ses || {};
-
-  const region = firstNonEmpty([
-    process.env.AWS_REGION,
-    process.env.AWS_DEFAULT_REGION,
-    providerConfig.awsRegion,
-    config.awsRegion,
-    "us-east-1",
-  ]);
-
+function resolveTlaoProvider(config) {
+  const providerConfig = config.tlao || {};
   const smtpHost = firstNonEmpty([
-    process.env.AWS_SES_SMTP_HOST,
+    process.env.TLAO_SMTP_HOST,
+    providerConfig.host,
     providerConfig.smtpHost,
-    `email-smtp.${region}.amazonaws.com`,
+    'mail.xn--tlo-fla.com',
   ]);
-
   const smtpPort = parsePort(
-    firstNonEmpty([process.env.AWS_SES_SMTP_PORT, providerConfig.smtpPort, 587]),
+    firstNonEmpty([
+      process.env.TLAO_SMTP_PORT,
+      providerConfig.port,
+      providerConfig.smtpPort,
+      587,
+    ]),
     587
   );
+  const smtpUser = firstNonEmpty([process.env.TLAO_SMTP_USERNAME, providerConfig.username]);
+  const smtpPass = firstNonEmpty([process.env.TLAO_SMTP_PASSWORD, providerConfig.password]);
 
-  const smtpUser = firstNonEmpty([
-    process.env.AWS_SES_SMTP_ACCESS_KEY_ID,
-    process.env.AWS_ACCESS_KEY_ID,
-    process.env.AWS_KEY_ID,
-    providerConfig.smtpUser,
-    config.awsAccessKeyId,
-  ]);
-
-  const directPassword = firstNonEmpty([
-    process.env.AWS_SES_SMTP_PASSWORD,
-    providerConfig.smtpPassword,
-  ]);
-
-  const secretAccessKey = firstNonEmpty([
-    process.env.AWS_SES_SMTP_SECRET_ACCESS_KEY,
-    process.env.AWS_SECRET_ACCESS_KEY,
-    providerConfig.smtpSecretAccessKey,
-    config.awsSecretAccessKey,
-  ]);
-
-  let smtpPass = directPassword;
-  let credentialMode = directPassword ? "precomputed-password" : "";
-
-  if (!smtpPass && smtpUser && secretAccessKey) {
-    smtpPass = deriveSesSmtpPassword(secretAccessKey, region);
-    credentialMode = "derived-from-secret";
-  }
-
-  if (!smtpUser || !smtpPass) {
+  if (!smtpHost || !smtpUser || !smtpPass) {
     throw new Error(
-      [
-        "SES SMTP credentials are missing.",
-        "Set one of the following:",
-        "- AWS_SES_SMTP_ACCESS_KEY_ID + AWS_SES_SMTP_PASSWORD",
-        "- AWS_SES_SMTP_ACCESS_KEY_ID + AWS_SES_SMTP_SECRET_ACCESS_KEY",
-        "- AWS_ACCESS_KEY_ID/AWS_KEY_ID + AWS_SECRET_ACCESS_KEY",
-      ].join("\n")
+      'Tláo SMTP credentials are missing. Set TLAO_SMTP_HOST, TLAO_SMTP_USERNAME, and TLAO_SMTP_PASSWORD.'
     );
   }
 
@@ -423,33 +375,48 @@ function resolveSesProvider(config) {
     smtp_user: smtpUser,
     [SMTP_PASS_FIELD]: smtpPass,
     meta: {
-      provider: "ses",
-      region,
-      credentialMode,
+      provider: 'tlao',
+      credentialMode: 'username-password',
     },
   };
 }
 
 function buildSupabaseSmtpConfig(config) {
   const provider = parseProvider(
-    firstNonEmpty([process.env.EMAIL_SMTP_PROVIDER, config.provider, "postmark"])
+    firstNonEmpty([process.env.EMAIL_SMTP_PROVIDER, config.provider, "tlao"])
   );
 
   const commonFields = resolveCommonFields(config);
-  const providerFields =
-    provider === "postmark" ? resolvePostmarkProvider(config) : resolveSesProvider(config);
+  const fallbackProviders = parseProviderList(
+    process.env.EMAIL_SMTP_FALLBACK_PROVIDERS || config.fallbackProviders
+  );
+  const providers = [...new Set([provider, ...fallbackProviders])];
+  let lastError;
 
-  return {
-    provider,
-    payload: {
-      ...commonFields,
-      smtp_host: providerFields.smtp_host,
-      smtp_port: String(providerFields.smtp_port),
-      smtp_user: providerFields.smtp_user,
-      [SMTP_PASS_FIELD]: providerFields[SMTP_PASS_FIELD],
-    },
-    meta: providerFields.meta,
-  };
+  for (const candidate of providers) {
+    try {
+      const providerFields =
+        candidate === 'tlao'
+          ? resolveTlaoProvider(config)
+          : resolvePostmarkProvider(config);
+
+      return {
+        provider: candidate,
+        payload: {
+          ...commonFields,
+          smtp_host: providerFields.smtp_host,
+          smtp_port: String(providerFields.smtp_port),
+          smtp_user: providerFields.smtp_user,
+          [SMTP_PASS_FIELD]: providerFields[SMTP_PASS_FIELD],
+        },
+        meta: providerFields.meta,
+      };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
 }
 
 module.exports = {

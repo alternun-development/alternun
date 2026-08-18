@@ -27,7 +27,7 @@ supabase/.temp/
 # Lockfiles for non-pnpm managers
 **/package-lock.json
 
-# Local SES infra secrets and generated outputs
+# Retired SES local secrets and generated outputs (kept ignored during migration)
 packages/auth/infra/ses/config.local.json
 packages/auth/infra/ses/*.local.json
 packages/auth/infra/ses/out/
