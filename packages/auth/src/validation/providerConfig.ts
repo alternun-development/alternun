@@ -7,7 +7,7 @@ import type {
 
 export const authExecutionProviderSchema = z.enum(['better-auth', 'supabase']);
 export const authIssuerProviderSchema = z.enum(['authentik', 'supabase-legacy']);
-export const authEmailProviderSchema = z.enum(['supabase', 'postmark', 'ses']);
+export const authEmailProviderSchema = z.enum(['supabase', 'postmark', 'tlao']);
 
 export const authProviderSelectionSchema = z.object({
   executionProvider: authExecutionProviderSchema.default('supabase'),

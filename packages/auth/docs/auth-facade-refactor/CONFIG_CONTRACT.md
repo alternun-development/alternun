@@ -17,7 +17,7 @@ It covers:
 | ------------------------- | ------------------------------ | ---------------------------------------------------- | --------------- |
 | `AUTH_EXECUTION_PROVIDER` | `better-auth`, `supabase`      | Selects the login execution engine                   | `supabase`      |
 | `AUTH_ISSUER_PROVIDER`    | `authentik`, `supabase-legacy` | Selects the canonical issuer or compatibility bridge | `authentik`     |
-| `AUTH_EMAIL_PROVIDER`     | `supabase`, `postmark`, `ses`  | Selects transactional auth email delivery            | `supabase`      |
+| `AUTH_EMAIL_PROVIDER`     | `supabase`, `tlao`, `postmark` | Selects transactional auth email delivery            | `supabase`      |
 
 ## Package Runtime Inputs
 
@@ -126,7 +126,7 @@ The first real rollout should use:
 
 - `AUTH_EXECUTION_PROVIDER=supabase`
 - `AUTH_ISSUER_PROVIDER=authentik`
-- `AUTH_EMAIL_PROVIDER=postmark` or `ses`
+- `AUTH_EMAIL_PROVIDER=tlao` or `postmark`
 - `AUTH_EXCHANGE_URL=https://testnet.api.alternun.co/auth/exchange`
 - The current testnet rollout uses Better Auth when `AUTH_EXECUTION_PROVIDER=better-auth` and `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` point at the API-origin `/auth` route; keep Supabase as the rollback path.
 - If the Better Auth URL is present and the execution flag is missing, the runtime still promotes to Better Auth so a stale legacy alias cannot force Authentik.

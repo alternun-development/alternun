@@ -9,13 +9,24 @@ const {
   writeJson,
 } = require('./common.cjs');
 
-function inferProviderFromHost(smtpHost) {
+function resolveTlaoSmtpHost(config = {}) {
+  const tlao = config.tlao ?? {};
+  return (
+    process.env.TLAO_SMTP_HOST ??
+    tlao.host ??
+    tlao.smtpHost ??
+    config.tlaoSmtpHost ??
+    'mail.xn--tlo-fla.com'
+  );
+}
+
+function inferProviderFromHost(smtpHost, config = {}) {
   const host = normalizeHostname(smtpHost);
+  if (host && host === normalizeHostname(resolveTlaoSmtpHost(config))) {
+    return 'tlao';
+  }
   if (matchesHostname(host, 'postmarkapp.com')) {
     return 'postmark';
-  }
-  if (matchesHostname(host, 'amazonaws.com')) {
-    return 'ses';
   }
   if (!host) {
     return 'unknown';
@@ -88,7 +99,7 @@ async function main() {
     smtp_max_frequency: parsed.smtp_max_frequency,
   };
 
-  const provider = inferProviderFromHost(authConfig.smtp_host);
+  const provider = inferProviderFromHost(authConfig.smtp_host, config);
 
   const report = {
     generatedAt: new Date().toISOString(),
@@ -109,8 +120,12 @@ async function main() {
   console.log(`- Output: ${outputPath}`);
 }
 
-main().catch((error) => {
-  console.error('Status report generation failed.');
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error('Status report generation failed.');
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}
+
+module.exports = { inferProviderFromHost, resolveTlaoSmtpHost };

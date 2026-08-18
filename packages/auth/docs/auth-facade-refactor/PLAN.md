@@ -104,7 +104,7 @@ Use staged rollout flags so the refactor can be adopted incrementally:
 
 - `AUTH_EXECUTION_PROVIDER=better-auth|supabase`
 - `AUTH_ISSUER_PROVIDER=authentik|supabase-legacy`
-- `AUTH_EMAIL_PROVIDER=supabase|postmark|ses`
+- `AUTH_EMAIL_PROVIDER=supabase|tlao|postmark`
 
 The default rollout should preserve compatibility while new paths are introduced.
 

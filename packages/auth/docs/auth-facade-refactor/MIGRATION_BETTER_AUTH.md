@@ -117,7 +117,7 @@ The migration is complete only when all of the following are true:
 ### Workstream 4: Email Migration
 
 - Keep `SupabaseEmailProvider` as the current fallback.
-- Stand up the target provider path for `postmark` or `ses`.
+- Stand up the target provider path for `tlao` or `postmark`.
 - Route verification, password reset, and magic link behavior through the provider abstraction.
 
 ### Workstream 5: Testnet Rollout

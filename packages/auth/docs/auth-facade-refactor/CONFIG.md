@@ -10,7 +10,7 @@ For the more exhaustive contract, see `CONFIG_CONTRACT.md`.
 | ------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------- | ----------- |
 | `AUTH_EXECUTION_PROVIDER`            | `better-auth`, `supabase`      | Selects the login execution engine                                              | `supabase`  |
 | `AUTH_ISSUER_PROVIDER`               | `authentik`, `supabase-legacy` | Selects the canonical issuer boundary                                           | `authentik` |
-| `AUTH_EMAIL_PROVIDER`                | `supabase`, `postmark`, `ses`  | Selects transactional email delivery                                            | `supabase`  |
+| `AUTH_EMAIL_PROVIDER`                | `supabase`, `tlao`, `postmark` | Selects transactional email delivery                                            | `supabase`  |
 | `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED` | `true`, `false`                | Forces `/auth/exchange` to fail closed when issuer-owned minting is unavailable | `false`     |
 
 Accepted aliases include:

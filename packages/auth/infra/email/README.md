@@ -2,8 +2,8 @@
 
 Provider-driven SMTP automation for Supabase Auth.
 
-- default provider: `postmark`
-- fallback provider: `ses`
+- default provider: `tlao`
+- optional fallback provider: `postmark`
 - no secrets committed
 
 ## Location
@@ -26,23 +26,22 @@ Copy:
 cp packages/auth/infra/email/config.example.json packages/auth/infra/email/config.local.json
 ```
 
-If this file is missing, scripts fall back to:
-
-`packages/auth/infra/ses/config.local.json`
-
 ## Provider Selection
 
 Set in config:
 
 ```json
-{ "provider": "postmark" }
+{
+  "provider": "tlao",
+  "fallbackProviders": ["postmark"]
+}
 ```
 
 Or override per command:
 
 ```bash
+EMAIL_SMTP_PROVIDER=tlao ...
 EMAIL_SMTP_PROVIDER=postmark ...
-EMAIL_SMTP_PROVIDER=ses ...
 ```
 
 ## Env Variables
@@ -64,6 +63,15 @@ Common sender fields:
 - `EMAIL_FROM` (optional override for `fromEmail`)
 - `EMAIL_SENDER_NAME` (optional override for `senderName`)
 - `SUPABASE_SMTP_MAX_FREQUENCY` (optional override)
+- `EMAIL_SMTP_PROVIDER` (override the selected provider)
+- `EMAIL_SMTP_FALLBACK_PROVIDERS` (comma-separated ordered fallback providers)
+
+Tláo SMTP credentials:
+
+- `TLAO_SMTP_HOST` (default `mail.xn--tlo-fla.com`)
+- `TLAO_SMTP_PORT` (default `587`)
+- `TLAO_SMTP_USERNAME`
+- `TLAO_SMTP_PASSWORD`
 
 Postmark credentials (any one mode):
 
@@ -85,13 +93,6 @@ Optional Postmark host/port:
 
 - `POSTMARK_SMTP_HOST` (default `smtp-broadcasts.postmarkapp.com`)
 - `POSTMARK_SMTP_PORT` (default `587`)
-
-SES rollback credentials:
-
-- `AWS_SES_SMTP_ACCESS_KEY_ID` + `AWS_SES_SMTP_PASSWORD`
-- or `AWS_SES_SMTP_ACCESS_KEY_ID` + `AWS_SES_SMTP_SECRET_ACCESS_KEY`
-- or `AWS_ACCESS_KEY_ID`/`AWS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`
-- optional `AWS_REGION` and `AWS_SES_SMTP_HOST`/`AWS_SES_SMTP_PORT`
 
 ## Commands
 
@@ -137,17 +138,26 @@ Generate + sync multilingual templates:
 pnpm --filter @alternun/auth email:templates:apply
 ```
 
-Force Postmark:
+Apply the Tláo configuration to Supabase:
+
+```bash
+pnpm --filter @alternun/auth email:tlao
+```
+
+Switch Supabase to the configured Postmark fallback:
 
 ```bash
 pnpm --filter @alternun/auth email:postmark
 ```
 
-Force SES rollback:
+## Fallback behavior
 
-```bash
-pnpm --filter @alternun/auth email:ses
-```
+The provider chain automatically picks the first provider with valid local
+configuration when generating or applying Supabase SMTP settings. Supabase Auth
+itself supports one active SMTP server, so it cannot retry an individual
+confirmation email through a second provider. If delivery begins failing after a
+provider has been applied, switch the active configuration with `email:tlao` or
+`email:postmark` after investigating the provider error.
 
 ## Outputs
 

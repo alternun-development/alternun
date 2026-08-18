@@ -2,7 +2,7 @@ import type { AuthRuntime, OAuthFlow, SignInOptions, User } from '@edcalderon/au
 
 export type AuthExecutionProviderName = 'better-auth' | 'supabase';
 export type IdentityIssuerProviderName = 'authentik' | 'supabase-legacy';
-export type EmailProviderName = 'supabase' | 'postmark' | 'ses';
+export type EmailProviderName = 'supabase' | 'postmark' | 'tlao';
 
 export type LinkedAuthAccountType = 'social' | 'password' | 'wallet' | 'oidc' | 'custom';
 export type WalletProvider = 'metamask' | 'walletconnect';
