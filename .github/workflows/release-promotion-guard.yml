@@ -2,8 +2,10 @@ name: Release Promotion Guard
 
 on:
   pull_request:
-    branches: [master]
-    types: [opened, edited, synchronize, reopened, ready_for_review, labeled, unlabeled]
+    branches: [master, main]
+    # A new develop commit intentionally leaves the open promotion PR awaiting
+    # its next generated tag. Re-run when release:patch:promote updates the PR.
+    types: [opened, edited, reopened, ready_for_review, labeled, unlabeled]
 
 permissions:
   contents: read

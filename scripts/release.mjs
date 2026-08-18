@@ -954,6 +954,11 @@ function formatAffectedSurfaces(changedPaths) {
 }
 
 function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
+  // A shallow CI checkout might have only the new tag. Fetch the historical
+  // production tags before deriving the comparison and impact inventory.
+  if (!dryRun) {
+    run('git', ['fetch', remote, '--tags', '--force']);
+  }
   const remoteUrl = run('git', ['remote', 'get-url', remote], { capture: true }).stdout.trim();
   const compareUrl = buildCompareUrl(remoteUrl, base, head);
   const repoSlug = resolveGitHubRepoSlug(remoteUrl);
