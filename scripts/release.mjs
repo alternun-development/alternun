@@ -830,18 +830,26 @@ const RELEASE_CHANGE_DESCRIPTIONS = [
   },
 ];
 
-function getLatestProductionTag(version) {
+function getLatestProductionTag({ version, base }) {
   const result = spawnSync('git', ['tag', '--list', 'v*', '--sort=-version:refname'], {
     cwd: REPO_ROOT,
     encoding: 'utf8',
   });
   if (result.status !== 0) return null;
 
+  const candidates = result.stdout
+    .split('\n')
+    .map((tag) => tag.trim())
+    .filter((tag) => tag !== `v${version}` && /^v\d+\.\d+\.\d+$/.test(tag));
+
   return (
-    result.stdout
-      .split('\n')
-      .map((tag) => tag.trim())
-      .find((tag) => tag !== `v${version}` && /^v\d+\.\d+\.\d+$/.test(tag)) ?? null
+    candidates.find(
+      (tag) =>
+        spawnSync('git', ['merge-base', '--is-ancestor', tag, base], {
+          cwd: REPO_ROOT,
+          stdio: 'ignore',
+        }).status === 0
+    ) ?? null
   );
 }
 
@@ -951,7 +959,7 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
   const repoSlug = resolveGitHubRepoSlug(remoteUrl);
   const title = `chore: release v${version}`;
 
-  const previousTag = getLatestProductionTag(version);
+  const previousTag = getLatestProductionTag({ version, base });
   const changedPaths = getChangedPathsSinceTag(previousTag);
   const commitSubjects = getReleaseCommitSubjects(previousTag) ?? [];
   const changelogSection = extractChangelogSection(version);
