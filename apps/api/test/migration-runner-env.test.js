@@ -6,11 +6,13 @@ const test = require('node:test');
 const applyMigrationsPath = path.resolve('scripts/apply-migrations.ts');
 const lambdaMigrationsPath = path.resolve('scripts/run-migrations-lambda.ts');
 const oneOffMigrationPath = path.resolve('scripts/run-migration.mjs');
+const migrationWrapperPath = path.resolve('../../scripts/db-migrate.sh');
 
 void test('migration runners prefer the explicit migration database override first', () => {
   const applySource = fs.readFileSync(applyMigrationsPath, 'utf8');
   const lambdaSource = fs.readFileSync(lambdaMigrationsPath, 'utf8');
   const oneOffSource = fs.readFileSync(oneOffMigrationPath, 'utf8');
+  const migrationWrapperSource = fs.readFileSync(migrationWrapperPath, 'utf8');
 
   assert.match(applySource, /MIGRATION_DATABASE_URL/);
   assert.match(applySource, /INFRA_BACKEND_API_DATABASE_URL/);
@@ -34,4 +36,6 @@ void test('migration runners prefer the explicit migration database override fir
   assert.match(oneOffSource, /const migrationArg = process\.argv\[2\] \?\?/);
   assert.match(oneOffSource, /CREATE TABLE IF NOT EXISTS _migrations/);
   assert.match(oneOffSource, /INSERT INTO _migrations \(name, version\) VALUES/);
+  assert.match(migrationWrapperSource, /localhost/);
+  assert.match(migrationWrapperSource, /127\\\.0\\\.0\\\.1/);
 });
