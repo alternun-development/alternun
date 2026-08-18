@@ -68,7 +68,7 @@ begin
          order by recorded_at desc limit 1),
         v_user.airs_balance, v_user.airs_lifetime_earned,
         v_user.airs_profile_bonus_awarded_at,
-        coalesce(v_user.airs_profile_completed_at, timezone('utc', now));
+        coalesce(v_user.airs_profile_completed_at, timezone('utc', now()));
     return;
   end if;
 

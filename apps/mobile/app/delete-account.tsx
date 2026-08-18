@@ -14,6 +14,7 @@ export default function DeleteAccountPage(): React.JSX.Element {
   const { user } = useAuth();
   const { language, setLanguage, themeMode } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
+  const [mailClientUnavailable, setMailClientUnavailable] = React.useState(false);
   const isDark = themeMode === 'dark';
   const colors = {
     accent: isDark ? '#66e6c5' : '#0f766e',
@@ -26,6 +27,16 @@ export default function DeleteAccountPage(): React.JSX.Element {
 
   const handleSignIn = (): void => {
     router.push({ pathname: '/auth', params: { next: '/delete-account' } });
+  };
+
+  const handleContactSupport = (): void => {
+    const url = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t('accountDeletion.title'))}`;
+    void Linking.canOpenURL(url)
+      .then((canOpen) =>
+        canOpen ? Linking.openURL(url) : Promise.reject(new Error('No mail handler'))
+      )
+      .then(() => setMailClientUnavailable(false))
+      .catch(() => setMailClientUnavailable(true));
   };
 
   return (
@@ -114,15 +125,16 @@ export default function DeleteAccountPage(): React.JSX.Element {
           <TouchableOpacity
             accessibilityRole='link'
             activeOpacity={0.85}
-            onPress={() => {
-              void Linking.openURL(
-                `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t('accountDeletion.title'))}`
-              );
-            }}
+            onPress={handleContactSupport}
             style={[styles.supportAction, { backgroundColor: colors.accent }]}
           >
             <Text style={styles.primaryActionText}>{t('accountDeletion.contactSupport')}</Text>
           </TouchableOpacity>
+          <Text selectable style={[styles.supportEmail, { color: colors.muted }]}>
+            {mailClientUnavailable
+              ? `${SUPPORT_EMAIL} (copy this address to contact support)`
+              : SUPPORT_EMAIL}
+          </Text>
         </View>
       </ScrollView>
     </ScreenShell>
@@ -150,4 +162,5 @@ const styles = StyleSheet.create({
   stepNumber: { fontSize: 18, fontWeight: '800', lineHeight: 22, width: 18 },
   stepText: { flex: 1, fontSize: 14, lineHeight: 21 },
   supportAction: { borderRadius: 12, marginTop: 4, paddingHorizontal: 16, paddingVertical: 13 },
+  supportEmail: { fontSize: 13, textAlign: 'center' },
 });

@@ -96,6 +96,7 @@ const FuturisticFooter = (): React.JSX.Element => {
 
   const lang = i18n.currentLocale || 'en';
   const translations = t[lang as keyof typeof t] || t.en;
+  const accountDeletionPath = lang === 'en' ? '/delete-account' : `/${lang}/delete-account`;
 
   return (
     <footer className={styles.footer}>
@@ -207,7 +208,7 @@ const FuturisticFooter = (): React.JSX.Element => {
                       </motion.a>
                     </li>
                     <li>
-                      <motion.a whileHover={{ x: 5 }} href='/delete-account'>
+                      <motion.a whileHover={{ x: 5 }} href={accountDeletionPath}>
                         {translations.accountDeletion}
                       </motion.a>
                     </li>

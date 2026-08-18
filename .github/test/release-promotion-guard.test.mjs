@@ -11,7 +11,9 @@ void test('production PRs are guarded as generated release promotions', () => {
   const source = fs.readFileSync(workflowPath, 'utf8');
 
   assert.match(source, /pull_request:/);
-  assert.match(source, /branches: \[master\]/);
+  assert.match(source, /branches: \[master, main\]/);
+  assert.match(source, /types: \[opened, edited, reopened, ready_for_review, labeled, unlabeled\]/);
+  assert.doesNotMatch(source, /synchronize/);
   assert.match(source, /HEAD_REF.*pull_request\.head\.ref/);
   assert.match(source, /test "\$HEAD_REF" = "develop"/);
   assert.match(source, /chore: release vX\.Y\.Z/);
