@@ -24,6 +24,10 @@ void test('release patch stays wired to the release script and auto deploys test
   assert.match(releaseSource, /apps\/mobile\/version\.development\.json/);
   assert.match(releaseSource, /apps\/mobile\/version\.production\.json/);
   assert.match(releaseSource, /'README\.md'/);
+  assert.match(
+    releaseSource,
+    /if \(!options\.dryRun\) \{\s*syncRootReadme\(\{\s*branch: releaseBranch,\s*version,\s*\}\)/
+  );
   assert.match(releaseSource, /gh api PATCH failed/);
   assert.match(releaseSource, /Release promotion cannot open or update the PR automatically/);
   assert.match(releaseSource, /gh api failed to open or update the PR automatically/);
