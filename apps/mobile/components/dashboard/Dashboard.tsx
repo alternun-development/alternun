@@ -32,6 +32,7 @@ import { USE_V2_NAV } from '../navigation/featureFlags';
 import { BackToTopButton } from '../common/BackToTopButton';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import type { AirsDashboardSnapshot } from './types';
+import { resolveAirsDashboardLoadState } from './airsDashboardState';
 
 let toastIdCounter = 0;
 
@@ -43,10 +44,12 @@ interface AuthClient {
 interface DashboardProps {
   user: User | null;
   airsSnapshot?: AirsDashboardSnapshot | null;
+  airsIsLoading?: boolean;
+  airsError?: Error | null;
   /** When true the hero stats and section headers render as skeletons */
   isLoading?: boolean;
   /** Called when user taps the reload button in HeroStats */
-  onReload?: () => void;
+  onReload?: () => void | Promise<void>;
   onRequireSignIn: () => void;
   onOpenProfilePage: () => void;
   onOpenSettingsPage: () => void;
@@ -291,6 +294,8 @@ function getAuthMethodLabel(user: User | null): string {
 export default function Dashboard({
   user,
   airsSnapshot,
+  airsIsLoading,
+  airsError,
   isLoading = false,
   onReload,
   onRequireSignIn,
@@ -339,18 +344,9 @@ export default function Dashboard({
   // Reload handler for both pull-to-refresh and button tap
   const handleRefresh = useCallback((): void => {
     setIsRefreshing(true);
-    try {
-      // Call the onReload callback from auth provider to refresh user data
-      if (onReload) {
-        onReload();
-      }
-      // Simulate a small delay to show loading state (in practice, auth refresh takes time)
-      setTimeout(() => {
-        setIsRefreshing(false);
-      }, 800);
-    } catch (error) {
+    void Promise.resolve(onReload?.()).finally(() => {
       setIsRefreshing(false);
-    }
+    });
   }, [onReload]);
 
   const addToast = useCallback((type: ToastType, title: string, message: string) => {
@@ -437,7 +433,11 @@ export default function Dashboard({
   const userStats = useMemo(() => getUserDashboardStats(user), [user]);
   const profileInfo = useMemo(() => getUserProfileInfo(user), [user]);
   const airsScore = airsSnapshot?.balanceAIRS;
-  const airsLoading = !airsSnapshot;
+  const { isInitialLoading: airsLoading, error: settledAirsError } = resolveAirsDashboardLoadState({
+    snapshot: airsSnapshot,
+    isLoading: airsIsLoading,
+    error: airsError,
+  });
   const bonusAlreadyClaimed =
     Boolean(airsSnapshot?.registrationBonusClaimed) || bonusAlreadyClaimedOverride;
 
@@ -558,6 +558,11 @@ export default function Dashboard({
                 tokensHeld={userStats ? userStats.tokensHeld : null}
                 compensationsCompleted={userStats ? userStats.compensationsCompleted : null}
                 isLoading={isLoading || isRefreshing || airsLoading}
+                errorMessage={
+                  settledAirsError
+                    ? 'Unable to refresh your AIRS balance. Tap reload to try again.'
+                    : undefined
+                }
                 onReload={handleRefresh}
                 previewMode={!user}
                 isDark={isDark}
