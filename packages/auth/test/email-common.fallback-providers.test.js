@@ -6,6 +6,10 @@ const { buildSupabaseSmtpConfig } = common;
 
 test('uses the first usable fallback provider when Tláo credentials are unavailable', () => {
   const keys = [
+    'TLAO_SMTP_HOST',
+    'TLAO_SMTP_PORT',
+    'TLAO_SMTP_USERNAME',
+    'TLAO_SMTP_PASSWORD',
     'POSTMARK_SMTP_HOST',
     'POSTMARK_SMTP_PORT',
     'POSTMARK_SMTP_ACCESS_KEY',
