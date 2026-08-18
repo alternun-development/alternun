@@ -2,6 +2,19 @@
 
 ### Bug Fixes
 
+- **repo:** chore: release v1.1.25-dev.0
+- **repo:** chore(scripts): release, release.test
+- **repo:** Potential fix for pull request finding 'CodeQL / Incomplete string escaping or encoding'
+
+
+
+
+
+
+## [1.1.25](https://github.com/alternun-development/alternun/compare/v1.1.24...v1.1.25) (2026-08-18)
+
+### Bug Fixes
+
 - **repo:** chore(scripts): release, release.test
 
 ## [1.1.24](https://github.com/alternun-development/alternun/compare/v1.1.24-dev.0...v1.1.24) (2026-08-18)
