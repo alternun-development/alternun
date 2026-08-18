@@ -179,7 +179,7 @@
       "performanceInsights": false,
       "enhancedMonitoring": false
     },
-    "emailProvider": "ses",
+    "emailProvider": "tlao",
     "authentikImageTag": "2026.2",
     "jwt": {
       "audience": "alternun-app",

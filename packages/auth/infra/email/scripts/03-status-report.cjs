@@ -11,11 +11,11 @@ const {
 
 function inferProviderFromHost(smtpHost) {
   const host = normalizeHostname(smtpHost);
+  if (host === 'mail.xn--tlo-fla.com') {
+    return 'tlao';
+  }
   if (matchesHostname(host, 'postmarkapp.com')) {
     return 'postmark';
-  }
-  if (matchesHostname(host, 'amazonaws.com')) {
-    return 'ses';
   }
   if (!host) {
     return 'unknown';

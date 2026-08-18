@@ -31,7 +31,10 @@ export {
 } from './providers/supabase-legacy/SupabaseIdentityRepository';
 export { SupabaseEmailProvider } from './providers/email/SupabaseEmailProvider';
 export { PostmarkEmailProvider } from './providers/email/PostmarkEmailProvider';
-export { SesEmailProvider } from './providers/email/SesEmailProvider';
+export {
+  TlaoEmailProvider,
+  type TlaoEmailProviderOptions,
+} from './providers/email/TlaoEmailProvider';
 
 export { resolveAuthRuntimeConfig, resolveAuthProviderSelection } from './runtime/config';
 
