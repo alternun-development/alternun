@@ -21,6 +21,7 @@ The project uses a few simple operating rules:
 3. **Keep acceptance criteria explicit.** Every issue should say what done means.
 4. **Use labels as metadata, not decoration.** Labels should answer what kind of work this is, what area it belongs to, how urgent it is, and whether it is blocked or in progress.
 5. **Close with evidence.** Issues should be closed only when their acceptance criteria are actually satisfied.
+6. **Promote production through a patch release.** Routine production changes go through `pnpm release:patch` and `pnpm release:patch:promote`; contributors must not open ad hoc PRs into `master`.
 
 ## Standard Work Shape
 
@@ -78,3 +79,5 @@ To work inside the backlog correctly:
 2. Then review the relevant architecture and delivery docs before implementation
 
 When work changes repo structure or contracts, update the documentation in the same pull request whenever practical.
+
+Maintainers must follow the repository's Patch Release And Production Promotion procedure for production work.

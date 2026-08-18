@@ -20,6 +20,7 @@ void test('release patch stays wired to the release script and auto deploys test
   assert.match(releaseSource, /pnpm release:patch/);
   assert.match(releaseSource, /function resolveGitHubRepoSlug/);
   assert.match(releaseSource, /gh api repos\/\$\{repoSlug\}\/pulls/);
+  assert.match(releaseSource, /<!-- alternun-release:patch -->/);
   assert.match(releaseSource, /gh api PATCH failed/);
   assert.match(releaseSource, /Release promotion cannot open or update the PR automatically/);
   assert.match(releaseSource, /gh api failed to open or update the PR automatically/);
