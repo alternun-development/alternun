@@ -1,3 +1,15 @@
+## [1.1.31](https://github.com/alternun-development/alternun/compare/v1.1.31-dev.0...v1.1.31) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.31-dev.0
+- **repo:** fix(api): airs.email, auth-confirmation.email
+
+
+
+
+
+
 ## [1.1.31](https://github.com/alternun-development/alternun/compare/v1.1.30...v1.1.31) (2026-08-18)
 
 ### Bug Fixes
