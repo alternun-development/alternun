@@ -11,7 +11,8 @@ If a release includes schema repair work, preview the backend database queue fir
 The release/version flow and the live testnet deploy flow are separate:
 
 ```text
-pnpm release:patch -> version/tag update -> automatic testnet API deploy via dashboard-dev
+pnpm release:patch -> validation, tag, automatic testnet API deploy -> testnet verification
+  -> pnpm release:patch:promote -> guarded generated PR -> review and production merge
 ```
 
 Current live testnet ownership:
@@ -28,17 +29,16 @@ Retired stage names such as `api-dev` and `backend-*` must not be used for live 
 
 ```bash
 pnpm release:patch
-# or: pnpm release:minor, pnpm release:major
 ```
 
 This command:
 
 - updates the current branch release manifest
-- bumps the semantic version for patch/minor/major releases
+- bumps the semantic version for the standard patch release
 - rebuilds packages with the new version
 - creates the release commit and tag
 
-On `develop`, the tag/version metadata stays on the development manifest. `pnpm release:patch:promote` handles the production promotion flow.
+On `develop`, the tag/version metadata stays on the development manifest. After testnet verification, `pnpm release:patch:promote` creates the guarded production promotion PR. See `docs/release-promotion-process.md`; do not open a manual PR into `master` for routine release work.
 
 ### 2. Deploy to Live Testnet
 

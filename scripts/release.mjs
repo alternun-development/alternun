@@ -783,10 +783,11 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
     `## Release v${version}`,
     '',
     `**Branch:** \`${head}\` → \`${base}\``,
+    '<!-- alternun-release:patch -->',
   ];
 
   if (changelogSection) {
-    bodyParts.push('', '---', '', '## What\'s changed', '', changelogSection);
+    bodyParts.push('', '---', '', "## What's changed", '', changelogSection);
   }
 
   if (commits) {
