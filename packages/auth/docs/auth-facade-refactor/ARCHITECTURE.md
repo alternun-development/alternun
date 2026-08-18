@@ -58,7 +58,7 @@ The architecture layer is implemented, but the runtime migration is still partia
 ### Email
 
 - `SupabaseEmailProvider` is the temporary compatibility layer.
-- `PostmarkEmailProvider` and `SesEmailProvider` are target-ready abstractions.
+- `TlaoEmailProvider` is the primary target-ready abstraction, with `PostmarkEmailProvider` available as an alternate.
 
 ## Compatibility Layer
 
