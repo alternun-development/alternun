@@ -108,12 +108,16 @@ export class SignupService {
             });
         }
 
-        this.sendSignupWelcomeEmailAsync(email, name, locale).catch((err) => {
-          this.logger.warn('Failed to send signup welcome email', {
-            email,
-            error: err instanceof Error ? err.message : String(err),
+        // Better Auth sends the same welcome message from its user-create hook.
+        // Avoid sending an identical second message when it owns the signup flow.
+        if (authApi.name !== 'better-auth') {
+          this.sendSignupWelcomeEmailAsync(email, name, locale).catch((err) => {
+            this.logger.warn('Failed to send signup welcome email', {
+              email,
+              error: err instanceof Error ? err.message : String(err),
+            });
           });
-        });
+        }
       }
 
       return normalized;

@@ -544,6 +544,11 @@ export function deployBackendApiInfrastructure(
                   args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_REQUEST_TIMEOUT_MS,
               }
             : {}),
+          ...(args.env.INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER
+            ? { AUTH_SIGNUP_PROVIDER: args.env.INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER }
+            : args.env.AUTH_SIGNUP_PROVIDER
+            ? { AUTH_SIGNUP_PROVIDER: args.env.AUTH_SIGNUP_PROVIDER }
+            : {}),
           ...(args.env.INFRA_BACKEND_API_AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED
             ? {
                 AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED:
