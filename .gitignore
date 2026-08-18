@@ -22,6 +22,7 @@ packages/i18n/dist/
 packages/ui/dist/
 packages/email-templates/dist/
 packages/wallet/dist/
+packages/auth/dist/
 supabase/.temp/
 
 # Lockfiles for non-pnpm managers

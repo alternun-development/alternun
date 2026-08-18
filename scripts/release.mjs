@@ -25,7 +25,9 @@ const IGNORED_WORKTREE_PATHS = new Set([
   'apps/web/.turbo/turbo-build.log',
   'packages/ui/.turbo/turbo-build.log',
 ]);
-const TRACKED_BUILD_OUTPUT_PATHS = ['packages/auth/dist', 'packages/update/dist'];
+// @alternun/update is not yet source-exported, so its published runtime output
+// remains staged for releases. Auth build output is intentionally omitted.
+const TRACKED_BUILD_OUTPUT_PATHS = ['packages/update/dist'];
 const PRE_RELEASE_IGNORED_TRACKED_OUTPUT_PREFIXES = TRACKED_BUILD_OUTPUT_PATHS.map(
   (trackedPath) => `${trackedPath}/`
 );

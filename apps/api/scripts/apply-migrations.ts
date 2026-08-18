@@ -4,16 +4,30 @@ import { resolve } from 'node:path';
 import { Pool, type PoolClient } from 'pg';
 import '../src/bootstrap-env';
 
-// Detect environment from DATABASE_URL
+const SUPABASE_PROJECTS = {
+  development: 'aznfyazjndfniwsocdka',
+  production: 'rjebeugdvwbjpaktrrbx',
+} as const;
+
+// Detect environment from the canonical Supabase project reference. Unknown
+// remote targets must not silently be treated as development.
 function detectEnvironment(databaseUrl: string): 'production' | 'development' {
-  if (
-    databaseUrl.includes('rjebeugdvwbjpaktrrbx') ||
-    databaseUrl.includes('PROD') ||
-    process.env.NODE_ENV === 'production'
-  ) {
+  if (databaseUrl.includes(SUPABASE_PROJECTS.production)) {
     return 'production';
   }
-  return 'development';
+
+  if (databaseUrl.includes(SUPABASE_PROJECTS.development)) {
+    return 'development';
+  }
+
+  const hostname = new URL(databaseUrl).hostname;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'development';
+  }
+
+  throw new Error(
+    `Unsupported Supabase migration target "${hostname}". Use the development or production database URL.`
+  );
 }
 
 const databaseUrl =

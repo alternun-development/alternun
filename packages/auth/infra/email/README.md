@@ -49,7 +49,39 @@ EMAIL_SMTP_PROVIDER=postmark ...
 Required for Supabase API sync:
 
 - `SUPABASE_ACCESS_TOKEN` (or `SUPABASE_MANAGEMENT_TOKEN`)
-- `SUPABASE_PROJECT_REF` (or `supabaseProjectRef` in config)
+- `SUPABASE_ENVIRONMENT` (or `supabaseEnvironment` in config): `development` or `production`
+
+### Environment mapping and drift protection
+
+| Environment           | Supabase project ref   | Auth/site URL                      |
+| --------------------- | ---------------------- | ---------------------------------- |
+| Development (testnet) | `aznfyazjndfniwsocdka` | `https://testnet.airs.alternun.co` |
+| Production            | `rjebeugdvwbjpaktrrbx` | `https://airs.alternun.co`         |
+
+Email sync commands require `SUPABASE_ENVIRONMENT`. The scripts resolve the
+project ref from this mapping and reject a conflicting `SUPABASE_PROJECT_REF`.
+This prevents a stale local value from applying production SMTP or templates to
+development, or the reverse.
+
+For example:
+
+```bash
+SUPABASE_ENVIRONMENT=development pnpm --filter @alternun/auth email:apply
+SUPABASE_ENVIRONMENT=production pnpm --filter @alternun/auth email:apply
+```
+
+### Production management-token rotation
+
+`DATABASE_PERSONAL_ACCESS_TOKEN_PROD` is the production secret used to supply
+the Supabase Management API token to these commands. It was created without an
+expiry on 2026-08-18 as a temporary operational exception. Never commit it or
+substitute a database/service key for it.
+
+The next security iteration must move this token to a finite-lifetime rotation
+policy: assign an owner, use the production secret-injection path, replace it
+on a defined cadence (recommended: every 90 days or sooner), and run
+`email:status` after each rotation. Record the rotation date and replacement
+owner in the operational change record; do not record the token value.
 
 Optional for multilingual template generation/sync:
 
@@ -141,13 +173,13 @@ pnpm --filter @alternun/auth email:templates:apply
 Apply the Tláo configuration to Supabase:
 
 ```bash
-pnpm --filter @alternun/auth email:tlao
+SUPABASE_ENVIRONMENT=production pnpm --filter @alternun/auth email:tlao
 ```
 
 Switch Supabase to the configured Postmark fallback:
 
 ```bash
-pnpm --filter @alternun/auth email:postmark
+SUPABASE_ENVIRONMENT=production pnpm --filter @alternun/auth email:postmark
 ```
 
 ## Fallback behavior
