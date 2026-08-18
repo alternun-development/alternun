@@ -893,7 +893,7 @@ function getAffectedSurfaces(changedPaths) {
 }
 
 function escapeMarkdownTableCell(value) {
-  return value.replace(/\|/g, '\\|');
+  return value.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
 }
 
 function formatAffectedSurfaces(changedPaths) {
