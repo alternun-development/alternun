@@ -29,6 +29,7 @@ import { useAppTranslation } from '../i18n/useAppTranslation';
 import { CHANGELOG_TEXT } from '../../utils/changelogData';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import SupportButton from '../common/SupportButton';
+import { useRouter } from 'expo-router';
 
 // ── Helper: Policy content fetcher and formatter ──────────────────────────────
 
@@ -92,6 +93,8 @@ interface PolicyDrawerContentProps {
   textPrimary: string;
   textMuted: string;
   accent: string;
+  accountDeletionLabel?: string;
+  onAccountDeletionPress?: () => void;
 }
 
 export function PolicyDrawerContent({
@@ -101,6 +104,8 @@ export function PolicyDrawerContent({
   textPrimary,
   textMuted,
   accent,
+  accountDeletionLabel,
+  onAccountDeletionPress,
 }: PolicyDrawerContentProps): React.JSX.Element {
   const [content, setContent] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -151,6 +156,19 @@ export function PolicyDrawerContent({
       showsVerticalScrollIndicator={false}
       scrollEnabled
     >
+      {type === 'privacy' && accountDeletionLabel && onAccountDeletionPress && (
+        <TouchableOpacity
+          accessibilityRole='link'
+          accessibilityLabel={accountDeletionLabel}
+          activeOpacity={0.8}
+          onPress={onAccountDeletionPress}
+          style={[innerStyles.accountDeletionLink, { borderColor: accent }]}
+        >
+          <Text style={[innerStyles.accountDeletionLinkText, { color: accent }]}>
+            {accountDeletionLabel}
+          </Text>
+        </TouchableOpacity>
+      )}
       {loading ? (
         <Text style={[innerStyles.loadingText, { color: textMuted }]}>Loading...</Text>
       ) : error ? (
@@ -262,6 +280,7 @@ export interface AuthFooterProps {
 }
 
 export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProps): JSX.Element {
+  const router = useRouter();
   const p = useAppPalette();
   const { t } = useAppTranslation('mobile');
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -298,6 +317,10 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
   const handlePrivacyClose = useCallback(() => {
     setPrivacyOpen(false);
   }, []);
+  const handleAccountDeletionOpen = useCallback(() => {
+    setPrivacyOpen(false);
+    router.push('/delete-account');
+  }, [router]);
 
   const handleTermsOpen = useCallback(() => {
     setTermsOpen(true);
@@ -433,6 +456,8 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
               textPrimary={p.textPrimary}
               textMuted={p.textMuted}
               accent={p.accent}
+              accountDeletionLabel={t('accountDeletion.privacyLink')}
+              onAccountDeletionPress={handleAccountDeletionOpen}
             />
             {/* Documentation link footer */}
             <View
@@ -617,6 +642,18 @@ const innerStyles = StyleSheet.create({
   contentContainer: {
     padding: spacing[4],
     paddingBottom: spacing[6],
+  },
+  accountDeletionLink: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  accountDeletionLinkText: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
   },
 
   // Headings

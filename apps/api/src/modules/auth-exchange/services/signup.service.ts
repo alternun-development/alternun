@@ -108,6 +108,9 @@ export class SignupService {
             });
         }
 
+        // Better Auth's user-create hook sends the AIRS reward message. This
+        // canonical account-created welcome is a different onboarding email and
+        // must be delivered for every signup provider.
         this.sendSignupWelcomeEmailAsync(email, name, locale).catch((err) => {
           this.logger.warn('Failed to send signup welcome email', {
             email,

@@ -17,7 +17,7 @@ const {
   restoreFileContents,
   stripVersionSuffix,
 } = require('./versioning/version-files.cjs');
-const { checkRootReadme } = require('./readme-maintenance.cjs');
+const { checkRootReadme, syncRootReadme } = require('./readme-maintenance.cjs');
 
 const VALID_BUMPS = new Set(['patch', 'minor', 'major']);
 const BUILD_TARGET = 'build';
@@ -470,10 +470,16 @@ function ensureChangelogFile(dryRun) {
 }
 
 function stageReleaseFiles(dryRun, branchName = getCurrentBranch()) {
+  const mobileVersionManifest =
+    branchName === 'master' || branchName === 'main'
+      ? 'apps/mobile/version.production.json'
+      : 'apps/mobile/version.development.json';
   const managedPaths = new Set([
     getRootPackageJsonPath(),
     ...getManagedPackageJsonPaths(branchName),
     ...SUPPLEMENTAL_VERSION_FILES.map((entry) => entry.relativePath),
+    'README.md',
+    mobileVersionManifest,
   ]);
 
   const changelogPath = path.join(REPO_ROOT, 'CHANGELOG.md');
@@ -539,6 +545,9 @@ function collectReleaseStatePaths(branchName) {
       'version.production.json',
       ...SUPPLEMENTAL_VERSION_FILES.map((entry) => entry.relativePath),
       'CHANGELOG.md',
+      'README.md',
+      'apps/mobile/version.development.json',
+      'apps/mobile/version.production.json',
     ]),
   ];
 }
@@ -749,8 +758,121 @@ function extractChangelogSection(version) {
   return body || null;
 }
 
-function getNewCommitsSinceBase(base) {
-  const result = spawnSync('git', ['log', `origin/${base}..HEAD`, '--oneline', '--no-merges'], {
+const RELEASE_SURFACE_DEFINITIONS = [
+  {
+    prefix: 'apps/api/',
+    name: 'Backend API',
+    resources: 'API Lambda, authentication, and API contracts',
+  },
+  {
+    prefix: 'apps/mobile/',
+    name: 'AIRS client',
+    resources: 'Mobile/web client experience and localized UI',
+  },
+  { prefix: 'apps/admin/', name: 'Admin console', resources: 'Admin web application' },
+  { prefix: 'apps/web/', name: 'Public web', resources: 'Public Next.js site' },
+  { prefix: 'apps/docs/', name: 'Documentation', resources: 'Public documentation site' },
+  {
+    prefix: 'packages/infra/',
+    name: 'Cloud infrastructure',
+    resources: 'AWS stacks, Lambda permissions, and deployment configuration',
+  },
+  {
+    prefix: 'packages/auth/',
+    name: 'Authentication package',
+    resources: 'Authentik and email authentication integration',
+  },
+  {
+    prefix: 'packages/email-templates/',
+    name: 'Email templates',
+    resources: 'Transactional email content and delivery templates',
+  },
+  {
+    prefix: 'packages/i18n/',
+    name: 'Translations',
+    resources: 'Shared locale catalogues',
+  },
+  { prefix: 'packages/ui/', name: 'Shared UI', resources: 'Reusable UI components' },
+  { prefix: 'packages/', name: 'Shared package', resources: 'Shared application package' },
+  {
+    prefix: '.github/',
+    name: 'GitHub automation',
+    resources: 'CI, release protections, and repository automation',
+  },
+  { prefix: 'supabase/', name: 'Database', resources: 'Supabase schema, functions, and policies' },
+  {
+    prefix: 'scripts/',
+    name: 'Release automation',
+    resources: 'Build, release, and deployment tooling',
+  },
+];
+
+const RELEASE_CHANGE_DESCRIPTIONS = [
+  {
+    paths: ['.github/workflows/release-promotion-guard.yml'],
+    description: 'Hardened production promotion: the release tag must exactly match the PR head.',
+  },
+  {
+    paths: ['packages/infra/config/pipelines/specs/dashboard.ts'],
+    description:
+      'Kept Authentik as the canonical identity issuer while using the supported Supabase email/password compatibility path.',
+  },
+  {
+    paths: ['apps/api/src/modules/auth-exchange/services/signup.service.ts'],
+    description: 'Preserved the canonical signup welcome message for every supported signup provider.',
+  },
+  {
+    paths: ['apps/mobile/app/delete-account.tsx'],
+    description: 'Added a localized, discoverable account-deletion route with privacy, settings, and documentation links.',
+  },
+  {
+    paths: ['scripts/release.mjs'],
+    description: 'Improved generated promotion PRs with a tag comparison, resource impact inventory, and audit details.',
+  },
+];
+
+function getLatestProductionTag({ version, base }) {
+  const result = spawnSync('git', ['tag', '--list', 'v*', '--sort=-version:refname'], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) return null;
+
+  const candidates = result.stdout
+    .split('\n')
+    .map((tag) => tag.trim())
+    .filter((tag) => tag !== `v${version}` && /^v\d+\.\d+\.\d+$/.test(tag));
+
+  return (
+    candidates.find(
+      (tag) =>
+        spawnSync('git', ['merge-base', '--is-ancestor', tag, base], {
+          cwd: REPO_ROOT,
+          stdio: 'ignore',
+        }).status === 0
+    ) ?? null
+  );
+}
+
+function getChangedPathsSinceTag(previousTag) {
+  if (!previousTag) return [];
+
+  const result = spawnSync('git', ['diff', '--name-only', `${previousTag}..HEAD`], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) return [];
+
+  return result.stdout
+    .split('\n')
+    .map((filePath) => filePath.trim())
+    .filter(Boolean);
+}
+
+function getReleaseCommitSubjects(previousTag) {
+  if (!previousTag) return [];
+
+  const result = spawnSync('git', ['log', `${previousTag}..HEAD`, '--format=%s', '--no-merges'], {
     cwd: REPO_ROOT,
     encoding: 'utf8',
   });
@@ -763,34 +885,114 @@ function getNewCommitsSinceBase(base) {
       (line) =>
         line &&
         !line.includes('--no-validate-reentry') &&
-        !line.match(/^[a-f0-9]+ chore: release v\d/) &&
-        !line.match(/^[a-f0-9]+ chore: sync (README|mobile version)/)
-    )
-    .map((line) => `- ${line}`)
-    .join('\n');
+        !line.match(/^chore: release v\d/) &&
+        !line.match(/^chore: sync (README|mobile version)/)
+    );
+}
+
+function formatCommitDetails(commitSubjects) {
+  if (commitSubjects.length === 0) return null;
+  return commitSubjects.map((subject) => `- ${subject}`).join('\n');
+}
+
+function summarizeReleaseChanges({ changelogSection, commitSubjects, changedPaths }) {
+  const pathAwareChanges = RELEASE_CHANGE_DESCRIPTIONS.filter(({ paths }) =>
+    paths.some((filePath) => changedPaths.includes(filePath))
+  ).map(({ description }) => `- ${description}`);
+  if (pathAwareChanges.length > 0) return pathAwareChanges.join('\n');
+
+  if (changelogSection) return changelogSection;
+
+  const meaningfulSubjects = commitSubjects.filter(
+    (subject) => !/^(test|docs|chore|ci|build|refactor)(\([^)]*\))?:/i.test(subject)
+  );
+  const summaries = (meaningfulSubjects.length > 0 ? meaningfulSubjects : commitSubjects).slice(0, 8);
+  if (summaries.length === 0) return '- No application changes were detected outside release metadata.';
+
+  return summaries.map((subject) => `- ${subject}`).join('\n');
+}
+
+function getAffectedSurfaces(changedPaths) {
+  const affected = new Map();
+
+  for (const changedPath of changedPaths) {
+    const definition =
+      RELEASE_SURFACE_DEFINITIONS.find((candidate) => changedPath.startsWith(candidate.prefix)) ?? {
+        name: 'Repository configuration',
+        resources: 'Repository-wide configuration and release metadata',
+      };
+    const paths = affected.get(definition.name) ?? { ...definition, paths: [] };
+    paths.paths.push(changedPath);
+    affected.set(definition.name, paths);
+  }
+
+  return [...affected.values()];
+}
+
+function escapeMarkdownTableCell(value) {
+  return value.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+}
+
+function formatAffectedSurfaces(changedPaths) {
+  const surfaces = getAffectedSurfaces(changedPaths);
+  if (surfaces.length === 0) return '- No changed paths could be resolved from the release range.';
+
+  const rows = [
+    '| Surface | Resources affected | Files changed |',
+    '| --- | --- | ---: |',
+    ...surfaces.map(
+      ({ name, resources, paths }) =>
+        `| ${escapeMarkdownTableCell(name)} | ${escapeMarkdownTableCell(resources)} | ${paths.length} |`
+    ),
+  ];
+  const fileDetails = surfaces.map(({ name, paths }) => {
+    const sample = paths.slice(0, 5).map((filePath) => `\`${filePath}\``).join(', ');
+    const overflow = paths.length > 5 ? `, and ${paths.length - 5} more` : '';
+    return `- **${name}:** ${sample}${overflow}`;
+  });
+
+  return [...rows, '', ...fileDetails].join('\n');
 }
 
 function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
+  // A shallow CI checkout might have only the new tag. Fetch the historical
+  // production tags before deriving the comparison and impact inventory.
+  if (!dryRun) {
+    run('git', ['fetch', remote, '--tags', '--force']);
+  }
   const remoteUrl = run('git', ['remote', 'get-url', remote], { capture: true }).stdout.trim();
   const compareUrl = buildCompareUrl(remoteUrl, base, head);
   const repoSlug = resolveGitHubRepoSlug(remoteUrl);
   const title = `chore: release v${version}`;
 
+  const previousTag = getLatestProductionTag({ version, base: `${remote}/${base}` });
+  const changedPaths = getChangedPathsSinceTag(previousTag);
+  const commitSubjects = getReleaseCommitSubjects(previousTag) ?? [];
   const changelogSection = extractChangelogSection(version);
-  const commits = getNewCommitsSinceBase(base);
+  const summary = summarizeReleaseChanges({ changelogSection, commitSubjects, changedPaths });
+  const affectedSurfaces = formatAffectedSurfaces(changedPaths);
+  const commitDetails = formatCommitDetails(commitSubjects);
+  const releaseCompareUrl = previousTag ? buildCompareUrl(remoteUrl, previousTag, `v${version}`) : null;
 
   const bodyParts = [
     `## Release v${version}`,
     '',
-    `**Branch:** \`${head}\` → \`${base}\``,
+    '## Release scope',
+    '',
+    `**Promotion:** \`${head}\` → \`${base}\``,
+    previousTag
+      ? `**Release range:** ${
+          releaseCompareUrl ? `[\`${previousTag}\` → \`v${version}\`](${releaseCompareUrl})` : `\`${previousTag}\` → \`v${version}\``
+        }`
+      : '**Release range:** first tagged release',
+    '<!-- alternun-release:patch -->',
   ];
 
-  if (changelogSection) {
-    bodyParts.push('', '---', '', '## What\'s changed', '', changelogSection);
-  }
+  bodyParts.push('', '---', '', '## Release summary', '', summary);
+  bodyParts.push('', '---', '', '## Affected surfaces', '', affectedSurfaces);
 
-  if (commits) {
-    bodyParts.push('', '---', '', '## Commits', '', commits);
+  if (commitDetails) {
+    bodyParts.push('', '---', '', '## Commit details', '', '<details>', `<summary>${commitSubjects.length} commits in this release range</summary>`, '', commitDetails, '', '</details>');
   }
 
   bodyParts.push('', '---', '', '🤖 Generated by `pnpm release --promote`');
@@ -1147,6 +1349,12 @@ function main() {
 
     if (shouldPrepareRelease) {
       buildReleaseArtifacts(options.dryRun, process.env, releaseBuildStage, releaseBranch);
+      if (!options.dryRun) {
+        syncRootReadme({
+          branch: releaseBranch,
+          version,
+        });
+      }
     }
 
     if (shouldPrepareRelease && options.createCommit) {

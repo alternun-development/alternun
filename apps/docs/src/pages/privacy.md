@@ -69,6 +69,10 @@ You have the right to:
 - Object to processing of your data
 - Data portability
 
+## Delete Your Account
+
+You can find the account-deletion steps, language selector, and sign-in/settings links at [airs.alternun.co/delete-account](https://airs.alternun.co/delete-account). Sign in with the account concerned, preserve any information you need, then contact support from its registered email address to complete a verified deletion request.
+
 ## International Data Transfers
 
 Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place.

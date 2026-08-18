@@ -1,3 +1,155 @@
+## [1.1.29](https://github.com/alternun-development/alternun/compare/v1.1.29-dev.0...v1.1.29) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.29-dev.0
+- **repo:** chore(scripts): release, release.test
+
+
+
+
+
+
+## [1.1.29](https://github.com/alternun-development/alternun/compare/v1.1.28...v1.1.29) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): release, release.test
+
+## [1.1.28](https://github.com/alternun-development/alternun/compare/v1.1.28-dev.0...v1.1.28) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.28-dev.0
+- **repo:** test(repo,api,docs): release-promotion-guard.test, release-promotion-guard, airs-profile-bonus-text-rpc.migration.test, delete-account
+
+## [1.1.28](https://github.com/alternun-development/alternun/compare/v1.1.27-dev.0...v1.1.28) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** test(repo,api,docs): release-promotion-guard.test, release-promotion-guard, airs-profile-bonus-text-rpc.migration.test, delete-account
+
+## [1.1.27](https://github.com/alternun-development/alternun/compare/v1.1.26...v1.1.27) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): release, release.test
+
+## [1.1.26](https://github.com/alternun-development/alternun/compare/v1.1.26-dev.0...v1.1.26) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.26-dev.0
+- **repo:** chore(scripts): release, release.test
+
+## [1.1.26](https://github.com/alternun-development/alternun/compare/v1.1.25...v1.1.26) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): release, release.test
+
+## [1.1.25](https://github.com/alternun-development/alternun/compare/v1.1.24...v1.1.25) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.25-dev.0
+- **repo:** chore(scripts): release, release.test
+- **repo:** Potential fix for pull request finding 'CodeQL / Incomplete string escaping or encoding'
+
+## [1.1.25](https://github.com/alternun-development/alternun/compare/v1.1.24...v1.1.25) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore(scripts): release, release.test
+
+## [1.1.24](https://github.com/alternun-development/alternun/compare/v1.1.24-dev.0...v1.1.24) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.24-dev.0
+- **repo:** chore(repo,scripts): release-promotion-process, release, release.test
+
+## [1.1.24](https://github.com/alternun-development/alternun/compare/v1.1.23-dev.0...v1.1.24) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore(repo,scripts): release-promotion-process, release, release.test
+
+## [1.1.23](https://github.com/alternun-development/alternun/compare/v1.1.22...v1.1.23) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** test(repo,api,docs): release-promotion-guard.test, release-promotion-guard, signup.service, signup.service.test
+
+## [1.1.22](https://github.com/alternun-development/alternun/compare/v1.1.22-dev.0...v1.1.22) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.22-dev.0
+- **repo:** test(infra): backend-api, backend-api-airs-env.test
+
+## [1.1.22](https://github.com/alternun-development/alternun/compare/v1.1.21-dev.0...v1.1.22) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** test(infra): backend-api, backend-api-airs-env.test
+
+## [1.1.21](https://github.com/alternun-development/alternun/compare/v1.1.20-dev.0...v1.1.21) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore(repo,scripts): README, release, release.test
+
+## [1.1.20](https://github.com/alternun-development/alternun/compare/v1.1.19...v1.1.20) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** test(infra): backend-api, backend-api-airs-env.test
+
+## [1.1.19](https://github.com/alternun-development/alternun/compare/v1.1.19-dev.0...v1.1.19) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** fix(release): stage generated release manifests
+
+### Bug Fixes
+
+- **release:** stage generated release manifests ([69a9258](https://github.com/alternun-development/alternun/commit/69a9258be8a16266295031d3143d5bae9a34a1a9))
+
+## [1.1.19](https://github.com/alternun-development/alternun/compare/v1.1.17-dev.0...v1.1.19) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore(repo,docs,scripts): README, overview, contribution-workflow, release-deployment-flow
+- **repo:** fix(auth): repair production signup provisioning
+- **repo:** fix(api,db): harden referral email delivery
+- **repo:** fix(api): use stage-aware referral email links
+- **repo:** fix(api,db): make AIRS snapshot user ID comparison stage-safe
+
+### Bug Fixes
+
+- **api,db:** harden referral email delivery ([0b8c5a6](https://github.com/alternun-development/alternun/commit/0b8c5a60af9bc06e88d54d615056122b84173e67))
+- **api,db:** make AIRS snapshot user ID comparison stage-safe ([f5c6528](https://github.com/alternun-development/alternun/commit/f5c6528fcac815aae4979fa0473b015bbf473b70))
+- **api:** use stage-aware referral email links ([b56e039](https://github.com/alternun-development/alternun/commit/b56e03980618c5b9cd45bde25d98cc89a64c583b))
+- **auth:** repair production signup provisioning ([cf50470](https://github.com/alternun-development/alternun/commit/cf50470147acf5584954e143519ccee16d23d5bf))
+
+## [1.1.18](https://github.com/alternun-development/alternun/compare/v1.1.17-dev.0...v1.1.18) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** chore(repo,docs,scripts): README, overview, contribution-workflow, release-deployment-flow
+- **repo:** fix(auth): repair production signup provisioning
+- **repo:** fix(api,db): harden referral email delivery
+- **repo:** fix(api): use stage-aware referral email links
+- **repo:** fix(api,db): make AIRS snapshot user ID comparison stage-safe
+
+### Bug Fixes
+
+- **api,db:** harden referral email delivery ([0b8c5a6](https://github.com/alternun-development/alternun/commit/0b8c5a60af9bc06e88d54d615056122b84173e67))
+- **api,db:** make AIRS snapshot user ID comparison stage-safe ([f5c6528](https://github.com/alternun-development/alternun/commit/f5c6528fcac815aae4979fa0473b015bbf473b70))
+- **api:** use stage-aware referral email links ([b56e039](https://github.com/alternun-development/alternun/commit/b56e03980618c5b9cd45bde25d98cc89a64c583b))
+- **auth:** repair production signup provisioning ([cf50470](https://github.com/alternun-development/alternun/commit/cf50470147acf5584954e143519ccee16d23d5bf))
+
 ## [1.1.17](https://github.com/alternun-development/alternun/compare/v1.1.16-dev.0...v1.1.17) (2026-08-18)
 
 ### Bug Fixes
