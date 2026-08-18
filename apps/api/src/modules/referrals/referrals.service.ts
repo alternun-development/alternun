@@ -191,6 +191,14 @@ function resolveReferralShareBaseUrl(
     return stripTrailingSlashes(requestOrigin);
   }
 
+  const stage = trimRuntimeValue(env.STACK ?? env.SST_STAGE ?? env.APP_ENV ?? env.NODE_ENV);
+  if (
+    ['dev', 'development', 'testnet'].includes(stage.toLowerCase()) ||
+    stage.toLowerCase().endsWith('-dev')
+  ) {
+    return 'https://testnet.airs.alternun.co';
+  }
+
   return 'https://airs.alternun.co';
 }
 
@@ -637,8 +645,9 @@ export class ReferralsService {
       return;
     }
 
-    const referralUrl =
-      referral.referral_link ?? buildReferralLink(referrer.referral_code ?? '', process.env);
+    const referralUrl = referrer.referral_code
+      ? buildReferralLink(referrer.referral_code, process.env)
+      : referral.referral_link ?? 'https://airs.alternun.co/mi-perfil';
     const sends: Array<Promise<void>> = [];
 
     if (!distribution.referrer_email_sent_at && referrer.email) {
