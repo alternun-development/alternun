@@ -126,6 +126,7 @@ Current version: **1.1.22**
 
 ### Bug Fixes
 
+- **repo:** chore: release v1.1.22-dev.0
 - **repo:** test(infra): backend-api, backend-api-airs-env.test
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
