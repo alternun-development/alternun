@@ -54,7 +54,7 @@ fi
 if [[ "$DATABASE_URL" == *"rjebeugdvwbjpaktrrbx"* ]] || [[ "$ENV_SOURCE" == "DATABASE_URL_PROD" ]]; then
   ENVIRONMENT="PRODUCTION"
   EMOJI="🔴"
-elif [[ "$DATABASE_URL" == *"aznfyazjndfniwsocdka"* ]] || [[ "$ENV_SOURCE" == "DATABASE_URL_DEV" ]]; then
+elif [[ "$DATABASE_URL" == *"aznfyazjndfniwsocdka"* ]] || [[ "$ENV_SOURCE" == "DATABASE_URL_DEV" ]] || [[ "$DATABASE_URL" =~ ^[a-zA-Z][a-zA-Z0-9+.-]*://([^/@]+@)?(localhost|127\.0\.0\.1)(:[0-9]+)?(/|$) ]]; then
   ENVIRONMENT="DEVELOPMENT"
   EMOJI="🟢"
 else
