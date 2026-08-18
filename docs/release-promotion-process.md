@@ -21,6 +21,12 @@ The generated PR has all of these properties:
 - title `chore: release vX.Y.Z`
 - hidden marker `<!-- alternun-release:patch -->`
 - matching `vX.Y.Z` tag contained in the PR head
+- a linked comparison from the preceding production tag to the release tag
+- a concise changelog-derived release summary
+- an affected-surfaces table listing apps, packages, infrastructure, workflows, database, documentation, and the deployment resources they affect
+- collapsible commit details for auditability without obscuring the release summary
+
+The release description is generated from the exact `previous production tag..release tag` range. It deliberately excludes the tag being promoted when selecting the previous tag, so the reported scope cannot collapse to an empty range after the promotion tag is created.
 
 The `release-promotion-guard` check verifies these properties on every PR to `master`. It must remain required by branch protection.
 

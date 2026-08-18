@@ -758,8 +758,89 @@ function extractChangelogSection(version) {
   return body || null;
 }
 
-function getNewCommitsSinceBase(base) {
-  const result = spawnSync('git', ['log', `origin/${base}..HEAD`, '--oneline', '--no-merges'], {
+const RELEASE_SURFACE_DEFINITIONS = [
+  {
+    prefix: 'apps/api/',
+    name: 'Backend API',
+    resources: 'API Lambda, authentication, and API contracts',
+  },
+  {
+    prefix: 'apps/mobile/',
+    name: 'AIRS client',
+    resources: 'Mobile/web client experience and localized UI',
+  },
+  { prefix: 'apps/admin/', name: 'Admin console', resources: 'Admin web application' },
+  { prefix: 'apps/web/', name: 'Public web', resources: 'Public Next.js site' },
+  { prefix: 'apps/docs/', name: 'Documentation', resources: 'Public documentation site' },
+  {
+    prefix: 'packages/infra/',
+    name: 'Cloud infrastructure',
+    resources: 'AWS stacks, Lambda permissions, and deployment configuration',
+  },
+  {
+    prefix: 'packages/auth/',
+    name: 'Authentication package',
+    resources: 'Authentik and email authentication integration',
+  },
+  {
+    prefix: 'packages/email-templates/',
+    name: 'Email templates',
+    resources: 'Transactional email content and delivery templates',
+  },
+  {
+    prefix: 'packages/i18n/',
+    name: 'Translations',
+    resources: 'Shared locale catalogues',
+  },
+  { prefix: 'packages/ui/', name: 'Shared UI', resources: 'Reusable UI components' },
+  { prefix: 'packages/', name: 'Shared package', resources: 'Shared application package' },
+  {
+    prefix: '.github/',
+    name: 'GitHub automation',
+    resources: 'CI, release protections, and repository automation',
+  },
+  { prefix: 'supabase/', name: 'Database', resources: 'Supabase schema, functions, and policies' },
+  {
+    prefix: 'scripts/',
+    name: 'Release automation',
+    resources: 'Build, release, and deployment tooling',
+  },
+];
+
+function getLatestProductionTag(version) {
+  const result = spawnSync('git', ['tag', '--list', 'v*', '--sort=-version:refname'], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) return null;
+
+  return (
+    result.stdout
+      .split('\n')
+      .map((tag) => tag.trim())
+      .find((tag) => tag !== `v${version}` && /^v\d+\.\d+\.\d+$/.test(tag)) ?? null
+  );
+}
+
+function getChangedPathsSinceTag(previousTag) {
+  if (!previousTag) return [];
+
+  const result = spawnSync('git', ['diff', '--name-only', `${previousTag}..HEAD`], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) return [];
+
+  return result.stdout
+    .split('\n')
+    .map((filePath) => filePath.trim())
+    .filter(Boolean);
+}
+
+function getReleaseCommitSubjects(previousTag) {
+  if (!previousTag) return [];
+
+  const result = spawnSync('git', ['log', `${previousTag}..HEAD`, '--format=%s', '--no-merges'], {
     cwd: REPO_ROOT,
     encoding: 'utf8',
   });
@@ -772,11 +853,68 @@ function getNewCommitsSinceBase(base) {
       (line) =>
         line &&
         !line.includes('--no-validate-reentry') &&
-        !line.match(/^[a-f0-9]+ chore: release v\d/) &&
-        !line.match(/^[a-f0-9]+ chore: sync (README|mobile version)/)
-    )
-    .map((line) => `- ${line}`)
-    .join('\n');
+        !line.match(/^chore: release v\d/) &&
+        !line.match(/^chore: sync (README|mobile version)/)
+    );
+}
+
+function formatCommitDetails(commitSubjects) {
+  if (commitSubjects.length === 0) return null;
+  return commitSubjects.map((subject) => `- ${subject}`).join('\n');
+}
+
+function summarizeReleaseChanges({ changelogSection, commitSubjects }) {
+  if (changelogSection) return changelogSection;
+
+  const meaningfulSubjects = commitSubjects.filter(
+    (subject) => !/^(test|docs|chore|ci|build|refactor)(\([^)]*\))?:/i.test(subject)
+  );
+  const summaries = (meaningfulSubjects.length > 0 ? meaningfulSubjects : commitSubjects).slice(0, 8);
+  if (summaries.length === 0) return '- No application changes were detected outside release metadata.';
+
+  return summaries.map((subject) => `- ${subject}`).join('\n');
+}
+
+function getAffectedSurfaces(changedPaths) {
+  const affected = new Map();
+
+  for (const changedPath of changedPaths) {
+    const definition =
+      RELEASE_SURFACE_DEFINITIONS.find((candidate) => changedPath.startsWith(candidate.prefix)) ?? {
+        name: 'Repository configuration',
+        resources: 'Repository-wide configuration and release metadata',
+      };
+    const paths = affected.get(definition.name) ?? { ...definition, paths: [] };
+    paths.paths.push(changedPath);
+    affected.set(definition.name, paths);
+  }
+
+  return [...affected.values()];
+}
+
+function escapeMarkdownTableCell(value) {
+  return value.replace(/\|/g, '\\|');
+}
+
+function formatAffectedSurfaces(changedPaths) {
+  const surfaces = getAffectedSurfaces(changedPaths);
+  if (surfaces.length === 0) return '- No changed paths could be resolved from the release range.';
+
+  const rows = [
+    '| Surface | Resources affected | Files changed |',
+    '| --- | --- | ---: |',
+    ...surfaces.map(
+      ({ name, resources, paths }) =>
+        `| ${escapeMarkdownTableCell(name)} | ${escapeMarkdownTableCell(resources)} | ${paths.length} |`
+    ),
+  ];
+  const fileDetails = surfaces.map(({ name, paths }) => {
+    const sample = paths.slice(0, 5).map((filePath) => `\`${filePath}\``).join(', ');
+    const overflow = paths.length > 5 ? `, and ${paths.length - 5} more` : '';
+    return `- **${name}:** ${sample}${overflow}`;
+  });
+
+  return [...rows, '', ...fileDetails].join('\n');
 }
 
 function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
@@ -785,22 +923,34 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
   const repoSlug = resolveGitHubRepoSlug(remoteUrl);
   const title = `chore: release v${version}`;
 
+  const previousTag = getLatestProductionTag(version);
+  const changedPaths = getChangedPathsSinceTag(previousTag);
+  const commitSubjects = getReleaseCommitSubjects(previousTag) ?? [];
   const changelogSection = extractChangelogSection(version);
-  const commits = getNewCommitsSinceBase(base);
+  const summary = summarizeReleaseChanges({ changelogSection, commitSubjects });
+  const affectedSurfaces = formatAffectedSurfaces(changedPaths);
+  const commitDetails = formatCommitDetails(commitSubjects);
+  const releaseCompareUrl = previousTag ? buildCompareUrl(remoteUrl, previousTag, `v${version}`) : null;
 
   const bodyParts = [
     `## Release v${version}`,
     '',
-    `**Branch:** \`${head}\` → \`${base}\``,
+    '## Release scope',
+    '',
+    `**Promotion:** \`${head}\` → \`${base}\``,
+    previousTag
+      ? `**Release range:** ${
+          releaseCompareUrl ? `[\`${previousTag}\` → \`v${version}\`](${releaseCompareUrl})` : `\`${previousTag}\` → \`v${version}\``
+        }`
+      : '**Release range:** first tagged release',
     '<!-- alternun-release:patch -->',
   ];
 
-  if (changelogSection) {
-    bodyParts.push('', '---', '', "## What's changed", '', changelogSection);
-  }
+  bodyParts.push('', '---', '', '## Release summary', '', summary);
+  bodyParts.push('', '---', '', '## Affected surfaces', '', affectedSurfaces);
 
-  if (commits) {
-    bodyParts.push('', '---', '', '## Commits', '', commits);
+  if (commitDetails) {
+    bodyParts.push('', '---', '', '## Commit details', '', '<details>', `<summary>${commitSubjects.length} commits in this release range</summary>`, '', commitDetails, '', '</details>');
   }
 
   bodyParts.push('', '---', '', '🤖 Generated by `pnpm release --promote`');
