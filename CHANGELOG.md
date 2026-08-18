@@ -1,14 +1,19 @@
+## [1.1.31](https://github.com/alternun-development/alternun/compare/v1.1.30...v1.1.31) (2026-08-18)
+
+### Bug Fixes
+
+- **repo:** fix(api): airs.email, auth-confirmation.email
+
+### Bug Fixes
+
+- **api:** airs.email, auth-confirmation.email ([9d7dbc4](https://github.com/alternun-development/alternun/commit/9d7dbc4db89bf461c3de7d1548a018febc456a03))
+
 ## [1.1.30](https://github.com/alternun-development/alternun/compare/v1.1.30-dev.0...v1.1.30) (2026-08-18)
 
 ### Bug Fixes
 
 - **repo:** chore: release v1.1.30-dev.0
 - **repo:** fix(api): airs.email, airs-welcome.email, auth-confirmation.email, signup-welcome.email
-
-
-
-
-
 
 ## [1.1.30](https://github.com/alternun-development/alternun/compare/v1.1.29...v1.1.30) (2026-08-18)
 
