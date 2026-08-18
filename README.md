@@ -126,10 +126,7 @@ Current version: **1.1.19**
 
 ### Bug Fixes
 
-- **api,db:** harden referral email delivery ([0b8c5a6](https://github.com/alternun-development/alternun/commit/0b8c5a60af9bc06e88d54d615056122b84173e67))
-- **api,db:** make AIRS snapshot user ID comparison stage-safe ([f5c6528](https://github.com/alternun-development/alternun/commit/f5c6528fcac815aae4979fa0473b015bbf473b70))
-- **api:** use stage-aware referral email links ([b56e039](https://github.com/alternun-development/alternun/commit/b56e03980618c5b9cd45bde25d98cc89a64c583b))
-- **auth:** repair production signup provisioning ([cf50470](https://github.com/alternun-development/alternun/commit/cf50470147acf5584954e143519ccee16d23d5bf))
+* **release:** stage generated release manifests ([69a9258](https://github.com/alternun-development/alternun/commit/69a9258be8a16266295031d3143d5bae9a34a1a9))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
