@@ -36,6 +36,10 @@ void test('release patch stays wired to the release script and auto deploys test
   assert.match(releaseSource, /prefix: '\.github\//);
   assert.match(releaseSource, /name: 'GitHub automation'/);
   assert.match(releaseSource, /## Commit details/);
+  assert.match(releaseSource, /const RELEASE_CHANGE_DESCRIPTIONS/);
+  assert.match(releaseSource, /Hardened production promotion: the release tag must exactly match the PR head/);
+  assert.match(releaseSource, /Kept production email signup on the canonical Authentik identity path/);
+  assert.match(releaseSource, /Added a localized, discoverable account-deletion route/);
   assert.match(releaseSource, /apps\/mobile\/version\.development\.json/);
   assert.match(releaseSource, /apps\/mobile\/version\.production\.json/);
   assert.match(releaseSource, /'README\.md'/);
