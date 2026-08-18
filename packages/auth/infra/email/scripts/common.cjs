@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
-const SMTP_PASS_FIELD = "smtp" + "_pass";
+const fs = require('fs');
+const path = require('path');
+const SMTP_PASS_FIELD = 'smtp' + '_pass';
+const SUPABASE_PROJECTS = Object.freeze({
+  development: 'aznfyazjndfniwsocdka',
+  production: 'rjebeugdvwbjpaktrrbx',
+});
 
 function findRepoRoot(startDir = __dirname) {
   let current = startDir;
   while (true) {
-    if (fs.existsSync(path.join(current, "pnpm-workspace.yaml"))) {
+    if (fs.existsSync(path.join(current, 'pnpm-workspace.yaml'))) {
       return current;
     }
 
@@ -37,14 +41,14 @@ function loadDotEnvFile(filePath) {
     return;
   }
 
-  const contents = fs.readFileSync(filePath, "utf8");
+  const contents = fs.readFileSync(filePath, 'utf8');
   for (const line of contents.split(/\r?\n/)) {
     const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) {
+    if (!trimmed || trimmed.startsWith('#')) {
       continue;
     }
 
-    const separatorIndex = trimmed.indexOf("=");
+    const separatorIndex = trimmed.indexOf('=');
     if (separatorIndex <= 0) {
       continue;
     }
@@ -59,8 +63,8 @@ function loadDotEnvFile(filePath) {
 }
 
 const repoRoot = findRepoRoot(__dirname);
-loadDotEnvFile(path.join(repoRoot, ".env"));
-loadDotEnvFile(path.join(repoRoot, "packages", "auth", ".env"));
+loadDotEnvFile(path.join(repoRoot, '.env'));
+loadDotEnvFile(path.join(repoRoot, 'packages', 'auth', '.env'));
 
 function getArgValue(flagName) {
   const index = process.argv.indexOf(flagName);
@@ -72,7 +76,7 @@ function getArgValue(flagName) {
 }
 
 function resolveConfigPath() {
-  const argPath = getArgValue("--config");
+  const argPath = getArgValue('--config');
   const envPath = process.env.EMAIL_CONFIG_PATH;
   const rawPath = argPath || envPath;
 
@@ -83,7 +87,7 @@ function resolveConfigPath() {
     return path.resolve(process.cwd(), rawPath);
   }
 
-  const emailConfigPath = path.resolve(__dirname, "..", "config.local.json");
+  const emailConfigPath = path.resolve(__dirname, '..', 'config.local.json');
   if (fs.existsSync(emailConfigPath)) {
     return emailConfigPath;
   }
@@ -91,14 +95,14 @@ function resolveConfigPath() {
   return emailConfigPath;
 }
 
-function ensureRequiredKeys(config, keys, contextLabel = "config") {
+function ensureRequiredKeys(config, keys, contextLabel = 'config') {
   const missing = keys.filter((key) => {
     const value = config[key];
-    return value === undefined || value === null || String(value).trim() === "";
+    return value === undefined || value === null || String(value).trim() === '';
   });
 
   if (missing.length > 0) {
-    throw new Error(`Missing required ${contextLabel} keys: ${missing.join(", ")}`);
+    throw new Error(`Missing required ${contextLabel} keys: ${missing.join(', ')}`);
   }
 }
 
@@ -121,14 +125,16 @@ function loadConfig(requiredKeys = [], options = {}) {
 
   let config;
   try {
-    config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   } catch (error) {
     throw new Error(
-      `Invalid JSON in email config file ${configPath}: ${error instanceof Error ? error.message : String(error)}`
+      `Invalid JSON in email config file ${configPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
     );
   }
 
-  ensureRequiredKeys(config, requiredKeys, "email config");
+  ensureRequiredKeys(config, requiredKeys, 'email config');
 
   return {
     config,
@@ -142,25 +148,25 @@ function ensureDirectory(directoryPath) {
 
 function writeJson(filePath, payload) {
   ensureDirectory(path.dirname(filePath));
-  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
 function writeText(filePath, contents) {
   ensureDirectory(path.dirname(filePath));
-  fs.writeFileSync(filePath, contents, "utf8");
+  fs.writeFileSync(filePath, contents, 'utf8');
 }
 
 function getOutputDirectory() {
-  return path.resolve(__dirname, "..", "out");
+  return path.resolve(__dirname, '..', 'out');
 }
 
 function maskValue(value) {
   if (!value) {
-    return "";
+    return '';
   }
 
   if (value.length <= 6) {
-    return "*".repeat(value.length);
+    return '*'.repeat(value.length);
   }
 
   return `${value.slice(0, 3)}***${value.slice(-3)}`;
@@ -168,22 +174,20 @@ function maskValue(value) {
 
 function firstNonEmpty(values) {
   for (const value of values) {
-    if (value !== undefined && value !== null && String(value).trim() !== "") {
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
       return String(value).trim();
     }
   }
-  return "";
+  return '';
 }
 
 function parseProvider(value) {
-  const normalized = (value || "tlao").trim().toLowerCase();
-  if (normalized === "tlao" || normalized === "postmark") {
+  const normalized = (value || 'tlao').trim().toLowerCase();
+  if (normalized === 'tlao' || normalized === 'postmark') {
     return normalized;
   }
 
-  throw new Error(
-    `Unsupported email provider "${value}". Allowed values: tlao, postmark.`
-  );
+  throw new Error(`Unsupported email provider "${value}". Allowed values: tlao, postmark.`);
 }
 
 function parseProviderList(value) {
@@ -203,7 +207,7 @@ function parseProviderList(value) {
 }
 
 function parsePort(rawValue, defaultPort) {
-  if (rawValue === undefined || rawValue === null || String(rawValue).trim() === "") {
+  if (rawValue === undefined || rawValue === null || String(rawValue).trim() === '') {
     return defaultPort;
   }
 
@@ -216,11 +220,49 @@ function parsePort(rawValue, defaultPort) {
 }
 
 function getSupabaseToken() {
-  return process.env.SUPABASE_ACCESS_TOKEN || process.env.SUPABASE_MANAGEMENT_TOKEN || "";
+  return process.env.SUPABASE_ACCESS_TOKEN || process.env.SUPABASE_MANAGEMENT_TOKEN || '';
 }
 
-function getSupabaseProjectRef(config) {
-  return firstNonEmpty([process.env.SUPABASE_PROJECT_REF, config.supabaseProjectRef]);
+function normalizeSupabaseEnvironment(value) {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
+
+  if (['dev', 'development', 'testnet'].includes(normalized)) {
+    return 'development';
+  }
+
+  if (['prod', 'production'].includes(normalized)) {
+    return 'production';
+  }
+
+  return '';
+}
+
+function getSupabaseProjectRef(config = {}) {
+  const environment = normalizeSupabaseEnvironment(
+    firstNonEmpty([process.env.SUPABASE_ENVIRONMENT, config.supabaseEnvironment])
+  );
+
+  if (!environment) {
+    throw new Error(
+      'SUPABASE_ENVIRONMENT is required. Set it to development or production before syncing Supabase Auth.'
+    );
+  }
+
+  const expectedProjectRef = SUPABASE_PROJECTS[environment];
+  const configuredProjectRef = firstNonEmpty([
+    process.env.SUPABASE_PROJECT_REF,
+    config.supabaseProjectRef,
+  ]);
+
+  if (configuredProjectRef && configuredProjectRef !== expectedProjectRef) {
+    throw new Error(
+      `Supabase project ref "${configuredProjectRef}" does not match the ${environment} project "${expectedProjectRef}".`
+    );
+  }
+
+  return expectedProjectRef;
 }
 
 function resolveCommonFields(config) {
@@ -243,13 +285,11 @@ function resolveCommonFields(config) {
   ]);
 
   if (!fromEmail) {
-    throw new Error("Missing sender email. Set fromEmail in config or EMAIL_FROM in env.");
+    throw new Error('Missing sender email. Set fromEmail in config or EMAIL_FROM in env.');
   }
 
   if (!senderName) {
-    throw new Error(
-      "Missing sender name. Set senderName in config or EMAIL_SENDER_NAME in env."
-    );
+    throw new Error('Missing sender name. Set senderName in config or EMAIL_SENDER_NAME in env.');
   }
 
   const smtpMaxFrequency = Number(maxFrequencyRaw);
@@ -270,7 +310,7 @@ function resolvePostmarkProvider(config) {
   const smtpHost = firstNonEmpty([
     process.env.POSTMARK_SMTP_HOST,
     providerConfig.smtpHost,
-    "smtp-broadcasts.postmarkapp.com",
+    'smtp-broadcasts.postmarkapp.com',
   ]);
 
   const smtpPort = parsePort(
@@ -278,22 +318,10 @@ function resolvePostmarkProvider(config) {
     587
   );
 
-  const accessKey = firstNonEmpty([
-    process.env.POSTMARK_SMTP_ACCESS_KEY,
-    providerConfig.accessKey,
-  ]);
-  const secretKey = firstNonEmpty([
-    process.env.POSTMARK_SMTP_SECRET_KEY,
-    providerConfig.secretKey,
-  ]);
-  const explicitUser = firstNonEmpty([
-    process.env.POSTMARK_SMTP_USERNAME,
-    providerConfig.username,
-  ]);
-  const explicitPass = firstNonEmpty([
-    process.env.POSTMARK_SMTP_PASSWORD,
-    providerConfig.password,
-  ]);
+  const accessKey = firstNonEmpty([process.env.POSTMARK_SMTP_ACCESS_KEY, providerConfig.accessKey]);
+  const secretKey = firstNonEmpty([process.env.POSTMARK_SMTP_SECRET_KEY, providerConfig.secretKey]);
+  const explicitUser = firstNonEmpty([process.env.POSTMARK_SMTP_USERNAME, providerConfig.username]);
+  const explicitPass = firstNonEmpty([process.env.POSTMARK_SMTP_PASSWORD, providerConfig.password]);
   const serverToken = firstNonEmpty([
     process.env.POSTMARK_SERVER_TOKEN,
     process.env.POSTMARK_SERVER_API_TOKEN,
@@ -301,33 +329,33 @@ function resolvePostmarkProvider(config) {
     providerConfig.serverToken,
   ]);
 
-  let smtpUser = "";
-  let smtpPass = "";
-  let credentialMode = "";
+  let smtpUser = '';
+  let smtpPass = '';
+  let credentialMode = '';
 
   if (accessKey && secretKey) {
     smtpUser = accessKey;
     smtpPass = secretKey;
-    credentialMode = "smtp-token";
+    credentialMode = 'smtp-token';
   } else if (explicitUser && explicitPass) {
     smtpUser = explicitUser;
     smtpPass = explicitPass;
-    credentialMode = "username-password";
+    credentialMode = 'username-password';
   } else if (serverToken) {
     smtpUser = explicitUser || serverToken;
     smtpPass = explicitPass || serverToken;
-    credentialMode = "server-token";
+    credentialMode = 'server-token';
   }
 
   if (!smtpUser || !smtpPass) {
     throw new Error(
       [
-        "Postmark SMTP credentials are missing.",
-        "Set one of the following:",
-        "- POSTMARK_SMTP_ACCESS_KEY + POSTMARK_SMTP_SECRET_KEY",
-        "- POSTMARK_SMTP_USERNAME + POSTMARK_SMTP_PASSWORD",
-        "- POSTMARK_SERVER_TOKEN (or POSTMARK_SERVER_API_TOKEN / POSTMARK_API_TOKEN)",
-      ].join("\n")
+        'Postmark SMTP credentials are missing.',
+        'Set one of the following:',
+        '- POSTMARK_SMTP_ACCESS_KEY + POSTMARK_SMTP_SECRET_KEY',
+        '- POSTMARK_SMTP_USERNAME + POSTMARK_SMTP_PASSWORD',
+        '- POSTMARK_SERVER_TOKEN (or POSTMARK_SERVER_API_TOKEN / POSTMARK_API_TOKEN)',
+      ].join('\n')
     );
   }
 
@@ -337,7 +365,7 @@ function resolvePostmarkProvider(config) {
     smtp_user: smtpUser,
     [SMTP_PASS_FIELD]: smtpPass,
     meta: {
-      provider: "postmark",
+      provider: 'postmark',
       credentialMode,
     },
   };
@@ -352,12 +380,7 @@ function resolveTlaoProvider(config) {
     'mail.xn--tlo-fla.com',
   ]);
   const smtpPort = parsePort(
-    firstNonEmpty([
-      process.env.TLAO_SMTP_PORT,
-      providerConfig.port,
-      providerConfig.smtpPort,
-      587,
-    ]),
+    firstNonEmpty([process.env.TLAO_SMTP_PORT, providerConfig.port, providerConfig.smtpPort, 587]),
     587
   );
   const smtpUser = firstNonEmpty([process.env.TLAO_SMTP_USERNAME, providerConfig.username]);
@@ -383,7 +406,7 @@ function resolveTlaoProvider(config) {
 
 function buildSupabaseSmtpConfig(config) {
   const provider = parseProvider(
-    firstNonEmpty([process.env.EMAIL_SMTP_PROVIDER, config.provider, "tlao"])
+    firstNonEmpty([process.env.EMAIL_SMTP_PROVIDER, config.provider, 'tlao'])
   );
 
   const commonFields = resolveCommonFields(config);
@@ -396,9 +419,7 @@ function buildSupabaseSmtpConfig(config) {
   for (const candidate of providers) {
     try {
       const providerFields =
-        candidate === 'tlao'
-          ? resolveTlaoProvider(config)
-          : resolvePostmarkProvider(config);
+        candidate === 'tlao' ? resolveTlaoProvider(config) : resolvePostmarkProvider(config);
 
       return {
         provider: candidate,
@@ -426,6 +447,7 @@ module.exports = {
   getSupabaseToken,
   loadConfig,
   maskValue,
+  normalizeSupabaseEnvironment,
   writeJson,
   writeText,
 };

@@ -54,9 +54,12 @@ fi
 if [[ "$DATABASE_URL" == *"rjebeugdvwbjpaktrrbx"* ]] || [[ "$ENV_SOURCE" == "DATABASE_URL_PROD" ]]; then
   ENVIRONMENT="PRODUCTION"
   EMOJI="🔴"
-else
+elif [[ "$DATABASE_URL" == *"aznfyazjndfniwsocdka"* ]] || [[ "$ENV_SOURCE" == "DATABASE_URL_DEV" ]]; then
   ENVIRONMENT="DEVELOPMENT"
   EMOJI="🟢"
+else
+  echo "❌ Unsupported Supabase migration target. Use the development or production database URL."
+  exit 1
 fi
 
 # Display info
