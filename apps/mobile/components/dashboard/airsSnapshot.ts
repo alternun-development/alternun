@@ -1,5 +1,30 @@
 import type { AIRSEntry, AirsDashboardSnapshot } from './types';
 
+export const AIRS_REQUEST_TIMEOUT_MS = 8_000;
+
+export async function withAirsRequestTimeout<T>(
+  request: (signal: AbortSignal) => Promise<T>,
+  timeoutMs = AIRS_REQUEST_TIMEOUT_MS
+): Promise<T> {
+  const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`AIRS request timed out after ${timeoutMs}ms.`));
+      controller.abort();
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([request(controller.signal), timeout]);
+  } finally {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
 function asText(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
@@ -17,6 +42,21 @@ function asNumber(value: unknown): number {
   }
 
   return 0;
+}
+
+function asRequiredNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return null;
 }
 
 function parseDate(value: unknown): Date {
@@ -68,6 +108,13 @@ export function normalizeAirsDashboardSnapshot(value: unknown): AirsDashboardSna
   }
 
   const record = value as Record<string, unknown>;
+  const balanceAIRS = asRequiredNumber(
+    record.balanceAIRS ?? record.airsBalance ?? record.airs_balance
+  );
+
+  if (balanceAIRS === null) {
+    return null;
+  }
 
   return {
     userId: asText(record.userId ?? record.user_id) ?? '',
@@ -84,7 +131,7 @@ export function normalizeAirsDashboardSnapshot(value: unknown): AirsDashboardSna
     welcomeEmailSentAt: asText(record.welcomeEmailSentAt ?? record.welcome_email_sent_at),
     profileBonusAwardedAt: asText(record.profileBonusAwardedAt ?? record.profile_bonus_awarded_at),
     profileCompletedAt: asText(record.profileCompletedAt ?? record.profile_completed_at),
-    balanceAIRS: asNumber(record.balanceAIRS ?? record.airsBalance ?? record.airs_balance),
+    balanceAIRS,
     lifetimeEarnedAIRS: asNumber(
       record.lifetimeEarnedAIRS ?? record.airsLifetimeEarned ?? record.airs_lifetime_earned
     ),
@@ -94,4 +141,36 @@ export function normalizeAirsDashboardSnapshot(value: unknown): AirsDashboardSna
           .filter((entry): entry is AIRSEntry => Boolean(entry))
       : [],
   };
+}
+
+export async function fetchAirsDashboardSnapshot({
+  apiBaseUrl,
+  sessionToken,
+  fetchImpl = fetch,
+  signal,
+}: {
+  apiBaseUrl: string;
+  sessionToken: string;
+  fetchImpl?: typeof fetch;
+  signal?: AbortSignal;
+}): Promise<AirsDashboardSnapshot> {
+  const response = await fetchImpl(`${apiBaseUrl.replace(/\/+$/, '')}/v1/airs/me`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${sessionToken}`,
+      Accept: 'application/json',
+    },
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(`AIRS snapshot request failed (${response.status})`);
+  }
+
+  const snapshot = normalizeAirsDashboardSnapshot(await response.json().catch(() => null));
+  if (!snapshot) {
+    throw new Error('AIRS snapshot response did not contain a valid balance.');
+  }
+
+  return snapshot;
 }
