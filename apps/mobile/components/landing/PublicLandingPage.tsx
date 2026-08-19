@@ -2206,8 +2206,6 @@ function BeneficiosSection({
         >
           {t('landing.beneficios.subtitle')}
         </Text>
-        <CommunityAirsCounter isDark={isDark} accentColor={accentColor} />
-
         <View
           style={[styles.benefitsCardsContainer, isMobile && styles.benefitsCardsContainerMobile]}
         >
@@ -2236,6 +2234,7 @@ function BeneficiosSection({
             />
           ))}
         </View>
+        <CommunityAirsCounter isDark={isDark} accentColor={accentColor} />
       </Animated.View>
 
       {openBenefit && (
@@ -2491,6 +2490,7 @@ const styles = createTypographyStyles({
     width: '100%',
     maxWidth: 360,
     alignSelf: 'center',
+    marginTop: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
