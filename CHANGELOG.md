@@ -1,14 +1,34 @@
+## [1.1.39](https://github.com/alternun-development/alternun/compare/v1.1.39-dev.0...v1.1.39) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.39-dev.0
+- **repo:** fix(infra): apply dashboard migrations before deploy
+- **repo:** fix(mobile): refine AIRS community total card
+
+
+
+
+
+
+## [1.1.39](https://github.com/alternun-development/alternun/compare/v1.1.38...v1.1.39) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** fix(infra): apply dashboard migrations before deploy
+- **repo:** fix(mobile): refine AIRS community total card
+
+### Bug Fixes
+
+- **infra:** apply dashboard migrations before deploy ([bc02f92](https://github.com/alternun-development/alternun/commit/bc02f92fb50e0e5d1fa036cfb0a3cbd07a6eff9c))
+- **mobile:** refine AIRS community total card ([8b4dc5c](https://github.com/alternun-development/alternun/commit/8b4dc5cf3aa603e08f6797c77b060bc8057c6ed5))
+
 ## [1.1.38](https://github.com/alternun-development/alternun/compare/v1.1.38-dev.0...v1.1.38) (2026-08-19)
 
 ### Bug Fixes
 
 - **repo:** chore: release v1.1.38-dev.0
 - **repo:** test(mobile,repo,api): NotificationsContext, NotificationsContext.test, 20260819_0001_create_user_notifications, notifications.migration.test
-
-
-
-
-
 
 ## [1.1.38](https://github.com/alternun-development/alternun/compare/v1.1.37-dev.0...v1.1.38) (2026-08-19)
 
