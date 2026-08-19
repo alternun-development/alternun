@@ -1,3 +1,55 @@
+## [1.1.38](https://github.com/alternun-development/alternun/compare/v1.1.38-dev.0...v1.1.38) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.38-dev.0
+- **repo:** test(mobile,repo,api): NotificationsContext, NotificationsContext.test, 20260819_0001_create_user_notifications, notifications.migration.test
+
+
+
+
+
+
+## [1.1.38](https://github.com/alternun-development/alternun/compare/v1.1.37-dev.0...v1.1.38) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** test(mobile,repo,api): NotificationsContext, NotificationsContext.test, 20260819_0001_create_user_notifications, notifications.migration.test
+
+## [1.1.37](https://github.com/alternun-development/alternun/compare/v1.1.36...v1.1.37) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** fix(i18n): runtime.test
+
+### Bug Fixes
+
+- **i18n:** runtime.test ([8de40a9](https://github.com/alternun-development/alternun/commit/8de40a9ba272337e02a7e673e26d3f25db258832))
+
+## [1.1.36](https://github.com/alternun-development/alternun/compare/v1.1.36-dev.0...v1.1.36) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.36-dev.0
+- **repo:** test(mobile): NotificationsContext.test
+
+## [1.1.36](https://github.com/alternun-development/alternun/compare/v1.1.35-dev.0...v1.1.36) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** test(mobile): NotificationsContext.test
+
+## [1.1.35](https://github.com/alternun-development/alternun/compare/v1.1.34...v1.1.35) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,repo): app.module, airs.controller, airs.repository, airs.service
+- **repo:** fix(auth): preserve metadata after email verification
+
+### Bug Fixes
+
+- **auth:** preserve metadata after email verification ([8bcc3c4](https://github.com/alternun-development/alternun/commit/8bcc3c4539601da3e04c41bd7d3784478ad3d414))
+
 ## [1.1.34](https://github.com/alternun-development/alternun/compare/v1.1.34-dev.0...v1.1.34) (2026-08-19)
 
 ### Bug Fixes
@@ -5,11 +57,6 @@
 - **repo:** chore: release v1.1.34-dev.0
 - **repo:** fix(api,auth): route email confirmation through backend
 - **repo:** fix(release): preserve consumer startup and update staging
-
-
-
-
-
 
 ## [1.1.34](https://github.com/alternun-development/alternun/compare/v1.1.33...v1.1.34) (2026-08-19)
 

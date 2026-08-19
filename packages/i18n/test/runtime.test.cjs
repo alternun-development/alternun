@@ -26,7 +26,7 @@ const thaiMobile = i18n.createTranslator({
 });
 
 assert.equal(spanishMobile.locale, 'es');
-assert.equal(spanishMobile.t('settingsScreen.title'), 'Configuracion');
+assert.equal(spanishMobile.t('settingsScreen.title'), 'Configuración');
 assert.equal(spanishMobile.t('labels.theme'), 'Tema');
 assert.equal(spanishMobile.t('labels.dark'), 'Oscuro');
 assert.equal(spanishMobile.t('missing.key'), 'missing.key');
@@ -46,7 +46,7 @@ assert.equal(thaiMobile.t('landing.comoFunciona.sectionTitle'), 'วิธีก
 assert.equal(thaiMobile.t('landing.nav.joinNow'), 'เข้าร่วมเลย');
 assert.equal(thaiMobile.t('landing.beneficios.moreInfo'), 'ข้อมูลเพิ่มเติม');
 
-assert.equal(i18n.getLocaleLabel('th', 'es'), 'Tailandes');
+assert.equal(i18n.getLocaleLabel('th', 'es'), 'Tailandés');
 assert.equal(
   i18n.translate({
     locale: 'en',
