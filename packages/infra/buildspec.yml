@@ -63,6 +63,9 @@ env:
     INFRA_ADMIN_AUTH_CLIENT_ID: 'alternun-admin'
     INFRA_ADMIN_AUTH_AUDIENCE: 'alternun-app'
     INFRA_ENABLE_BACKEND_API: 'false'
+    # Dashboard API pipelines opt in explicitly. Apply before SST so a failed
+    # migration never leaves application code ahead of its database schema.
+    INFRA_APPLY_PENDING_MIGRATIONS: 'false'
     INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true'
     INFRA_BACKEND_API_ENABLED_STAGES: ''
     INFRA_BACKEND_API_APP_PATH: '../../apps/api'
@@ -404,6 +407,20 @@ phases:
           bash -lc "${INFRA_BACKEND_API_BUILD_COMMAND}"
         else
           echo "Skipping backend API build (INFRA_ENABLE_BACKEND_API=${INFRA_ENABLE_BACKEND_API:-false})"
+        fi
+
+        if [ "${INFRA_ENABLE_BACKEND_API:-false}" = "true" ] && [ "${INFRA_APPLY_PENDING_MIGRATIONS:-false}" = "true" ]; then
+          migration_force_prod=""
+          stage_normalized=$(echo "${SST_STAGE}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+          case "${stage_normalized}" in
+            *prod|*production)
+              migration_force_prod="--force-prod"
+              ;;
+          esac
+          echo "Applying pending backend migrations before SST deployment..."
+          bash scripts/sync-db-migrations.sh "${SST_STAGE}" --all ${migration_force_prod}
+        else
+          echo "Skipping pending migration sync (backend=${INFRA_ENABLE_BACKEND_API:-false}, enabled=${INFRA_APPLY_PENDING_MIGRATIONS:-false})"
         fi
 
         if [ "${INFRA_ENABLE_EXPO_SITE:-true}" = "true" ]; then

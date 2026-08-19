@@ -16,7 +16,7 @@ pnpm db:migrate:dry-run
 
 ### Production Database
 
-⚠️ **Production backend migrations require explicit approval:**
+⚠️ **Manual production migration commands require explicit approval:**
 
 ```bash
 # Preview the pending production migrations against the backend DATABASE_URL secret
@@ -26,12 +26,9 @@ bash scripts/sync-db-migrations.sh production --dry-run
 bash scripts/sync-db-migrations.sh production --file supabase/migrations/20260424_0002_better_auth_user_identity_defaults.sql --force-prod
 ```
 
-Current production state:
-
-- the live backend database is now up to date with the repo migration history; the June 29 AIRS eligible-user count
-  and wallet schema migrations were applied after previewing the production queue one migration at a time
-- the safe repair path starts with the Better Auth fixes in `20260424_0001`, `20260424_0002`, and `20260424_0003`
-- do **not** batch-apply the whole pending queue unless you are intentionally performing a recovery exercise and have reviewed every file
+The dashboard production pipeline applies the reviewed repository migration
+queue automatically before it deploys the backend API. Use the manual commands
+for diagnosis, recovery, or a deliberately isolated migration.
 
 ### Using the Wrapper Script
 
@@ -52,9 +49,18 @@ bash scripts/sync-db-migrations.sh production --file supabase/migrations/2026042
 The repo migrations are the source of truth. Do not copy schemas directly from
 development to production.
 
-Use the stage-aware wrapper when you need to reconcile a stage database with
-the current `supabase/migrations/` history. It resolves the stage-scoped
-backend `DATABASE_URL` secret and applies migrations one by one:
+The `dashboard-dev` and `dashboard-prod` CodeBuild pipelines keep their
+stage database aligned with the current `supabase/migrations/` history. They
+run `scripts/sync-db-migrations.sh "$SST_STAGE" --all` before SST deployment
+(`dashboard-prod` adds `--force-prod`). A migration failure stops the build
+before new API code is deployed, preventing schema drift such as a route
+reaching tables or functions that have not been created yet.
+
+Identity-only pipelines do not opt into this step because they do not own the
+backend API database.
+
+Use the stage-aware wrapper for a dry run, recovery, or an intentionally
+isolated production migration:
 
 ```bash
 # Dry-run the next migrations for development/testnet
@@ -66,7 +72,7 @@ bash scripts/sync-db-migrations.sh production --dry-run
 # Apply a single production migration after review
 bash scripts/sync-db-migrations.sh production --file supabase/migrations/20260424_0002_better_auth_user_identity_defaults.sql --force-prod
 
-# Legacy full-queue apply path, only when you explicitly want the entire backlog
+# Apply the full production queue manually only for recovery after review
 bash scripts/sync-db-migrations.sh production --all --force-prod
 ```
 
@@ -75,11 +81,8 @@ bash scripts/sync-db-migrations.sh production --all --force-prod
 promotion work, prefer the wrapper above because it resolves the stage-specific
 backend database secret before running the repo migration chain.
 
-If you are repairing the current live auth issue, prefer the one-by-one flow:
-
-1. preview with `bash scripts/sync-db-migrations.sh production --dry-run`
-2. apply only the next safe repair file with `--file`
-3. re-run the preview before touching the next migration
+For manual production work, prefer the one-by-one flow: preview, apply the
+reviewed file with `--file --force-prod`, then preview again.
 
 ## How It Works
 
