@@ -64,6 +64,12 @@ begin
 end;
 $$;
 
+-- Trigger functions execute as their owner. The helper must not be available
+-- through PostgREST/RPC because it intentionally bypasses table RLS.
+revoke all on function public.create_user_notification(text, text, text, jsonb, text) from public;
+revoke all on function public.create_user_notification(text, text, text, jsonb, text) from anon;
+revoke all on function public.create_user_notification(text, text, text, jsonb, text) from authenticated;
+
 create or replace function public.notify_user_registered()
 returns trigger
 language plpgsql

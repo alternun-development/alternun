@@ -137,15 +137,20 @@ function notificationsReducer(
 
 export function NotificationsProvider({ children }: { children: ReactNode }): React.JSX.Element {
   const { user, loading: authLoading, client } = useAuth();
+  const userId = typeof user?.id === 'string' && user.id.trim() ? user.id : null;
   const translator = useAppTranslation();
   const translatorRef = useRef(translator);
   const clientRef = useRef(client);
+  const sessionRef = useRef({ userId });
   translatorRef.current = translator;
   clientRef.current = client;
+  if (sessionRef.current.userId !== userId) {
+    sessionRef.current = { userId };
+  }
   const [items, dispatch] = useReducer(notificationsReducer, []);
-  const userId = typeof user?.id === 'string' && user.id.trim() ? user.id : null;
 
   const refresh = useCallback(async (): Promise<void> => {
+    const requestSession = sessionRef.current;
     if (authLoading) return;
 
     if (!userId) {
@@ -154,6 +159,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }): Re
     }
 
     const sessionToken = await clientRef.current.getSessionToken();
+    if (sessionRef.current !== requestSession) return;
     if (!sessionToken) {
       dispatch({ type: 'REPLACE', items: [] });
       return;
@@ -170,6 +176,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }): Re
     }
 
     const body = (await response.json()) as { notifications?: NotificationFeedRecord[] };
+    if (sessionRef.current !== requestSession) return;
     const records = Array.isArray(body.notifications) ? body.notifications : [];
     dispatch({
       type: 'REPLACE',

@@ -102,6 +102,67 @@ describe('NotificationsProvider', () => {
     await act(async () => renderer.unmount());
   });
 
+  it('discards a prior account response that completes after logout', async () => {
+    mockAuth.user = { id: 'account-a' };
+    mockAuth.client.getSessionToken.mockResolvedValue('account-a-token');
+    let resolveResponse: (value: Response) => void;
+    jest.spyOn(global, 'fetch').mockImplementation(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveResponse = resolve;
+        })
+    );
+    let items: ReturnType<typeof useNotifications>['items'] = [];
+    let renderer: ReturnType<typeof create>;
+
+    function Probe(): null {
+      items = useNotifications().items;
+      return null;
+    }
+
+    await act(async () => {
+      renderer = create(
+        <NotificationsProvider>
+          <Probe />
+        </NotificationsProvider>
+      );
+      await Promise.resolve();
+    });
+
+    mockAuth.user = null;
+    await act(async () => {
+      renderer.update(
+        <NotificationsProvider>
+          <Probe />
+        </NotificationsProvider>
+      );
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      resolveResponse({
+        ok: true,
+        json: async () => ({
+          notifications: [
+            {
+              id: 'account-a-notification',
+              eventType: 'registration_completed',
+              severity: 'success',
+              payload: {},
+              read: false,
+              archived: false,
+              createdAt: '2026-08-19T12:00:00.000Z',
+            },
+          ],
+        }),
+      } as Response);
+      await Promise.resolve();
+    });
+
+    expect(items).toEqual([]);
+    await act(async () => renderer.unmount());
+  });
+
   it('persists every user action while updating the rendered feed immediately', async () => {
     mockAuth.user = { id: 'app-user-123' };
     mockAuth.client.getSessionToken.mockResolvedValue('session-token');
