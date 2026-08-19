@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Headers,
+  Header,
   HttpCode,
   Patch,
   Post,
@@ -39,6 +40,15 @@ const AIRS_SOURCE_KINDS = new Set([
 })
 export class AirsController {
   constructor(private readonly airsService: AirsService) {}
+
+  @Get('community-total')
+  @HttpCode(200)
+  @Header('Cache-Control', 'public, max-age=0, s-maxage=15')
+  @ApiOperation({ summary: 'Fetch the public total AIRS accumulated by the community.' })
+  @ApiOkResponse({ description: 'Community AIRS total.' })
+  async communityTotal(): Promise<import('./airs.repository').AirsCommunityTotal> {
+    return this.airsService.communityTotal();
+  }
 
   @Post('onboarding')
   @HttpCode(200)
