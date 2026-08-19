@@ -91,7 +91,7 @@ export const IDENTITY_INFRA_DEFAULTS = {
     storageGiB: 20,
     multiAz: false,
     publicAccess: false,
-    backupRetentionDays: 7,
+    backupRetentionDays: 1,
     performanceInsights: false,
     enhancedMonitoring: false,
   },
