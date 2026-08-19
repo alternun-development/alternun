@@ -548,7 +548,14 @@
         "communityTotal": {
           "label": "Global AIRS balance accumulated by the platform",
           "loading": "Loading live total…",
-          "live": "Updates automatically"
+          "live": "Updates automatically",
+          "infoLabel": "What AIRS means",
+          "closeLabel": "Close AIRS explanation",
+          "tooltipTitle": "How to read this total",
+          "tooltipMeaning": "AIRS is Alternun's impact and reputation score; it is not money or a redeemable balance.",
+          "tooltipMoneyLoading": "For allied commerce, the earning reference is 5 AIRS for each eligible US$1. We are loading the total to show that reference.",
+          "tooltipMoney": "In allied commerce, {{amount}} is the eligible-purchase reference for earning this total at 5 AIRS per US$1. The total may also include other activities.",
+          "tooltipImpact": "There is no fixed AIRS-to-CO₂ conversion: each action or credit depends on a reduction or offset that has been measured and verified."
         },
         "topRated": "Verified",
         "moreInfo": "More info",

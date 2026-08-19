@@ -67,7 +67,7 @@ import {
 import { getBenefitCardDefaultDetailsExpanded } from './benefitCard';
 import { getTokenCardDefaultExpanded } from './tokenCard';
 import DynamicMessageBar, { type DynamicMessageContent } from './DynamicMessageBar';
-import { fetchCommunityAirsTotal } from './communityAirsTotal';
+import { fetchCommunityAirsTotal, getEligibleSpendReference } from './communityAirsTotal';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
@@ -155,6 +155,11 @@ const TOKEN_IMAGE_FOCI: Record<
 const STEP_LOOP_INTERVAL = 3200;
 const COMMUNITY_TOTAL_REFRESH_INTERVAL_MS = 30_000;
 const COMMUNITY_AIRS_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 2,
+});
+const COMMUNITY_AIRS_USD_FORMATTER = new Intl.NumberFormat(undefined, {
+  style: 'currency',
+  currency: 'USD',
   maximumFractionDigits: 2,
 });
 
@@ -1396,6 +1401,7 @@ function CommunityAirsCounter({
 }: Pick<SectionProps, 'isDark' | 'accentColor'>): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
   const [totalAirs, setTotalAirs] = useState<number | null>(null);
+  const [isInfoVisible, setIsInfoVisible] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -1424,31 +1430,100 @@ function CommunityAirsCounter({
     totalAirs == null
       ? t('landing.beneficios.communityTotal.loading')
       : COMMUNITY_AIRS_NUMBER_FORMATTER.format(totalAirs);
+  const eligibleSpendReference =
+    totalAirs == null
+      ? null
+      : COMMUNITY_AIRS_USD_FORMATTER.format(getEligibleSpendReference(totalAirs));
+  const tooltipSurfaceColor = isDark ? '#0b4d47' : '#ffffff';
+  const tooltipTextColor = isDark ? '#e8fff6' : '#083d39';
 
   return (
-    <View
-      testID='community-airs-total'
-      style={[styles.communityAirsCounter, { backgroundColor: surfaceColor, borderColor }]}
-    >
-      <View style={[styles.communityAirsIcon, { backgroundColor: isDark ? '#0b4d47' : '#dff7f0' }]}>
-        <AirsBrandMark
-          size={30}
-          fillColor={accentColor}
-          cutoutColor={isDark ? '#062f2d' : '#f3fbf9'}
+    <>
+      <View
+        testID='community-airs-total'
+        style={[styles.communityAirsCounter, { backgroundColor: surfaceColor, borderColor }]}
+      >
+        <View
+          style={[styles.communityAirsIcon, { backgroundColor: isDark ? '#0b4d47' : '#dff7f0' }]}
+        >
+          <AirsBrandMark
+            size={30}
+            fillColor={accentColor}
+            cutoutColor={isDark ? '#062f2d' : '#f3fbf9'}
+          />
+        </View>
+        <View style={styles.communityAirsCopy}>
+          <Text style={[styles.communityAirsLabel, { color: mutedColor }]}>
+            {t('landing.beneficios.communityTotal.label')}
+          </Text>
+          <Text style={[styles.communityAirsValue, { color: numberColor }]}>
+            {totalAirs == null ? formattedTotal : `${formattedTotal} AIRS`}
+          </Text>
+          <Text style={[styles.communityAirsLive, { color: accentColor }]}>
+            {t('landing.beneficios.communityTotal.live')}
+          </Text>
+        </View>
+        <TouchableOpacity
+          accessibilityRole='button'
+          accessibilityLabel={t('landing.beneficios.communityTotal.infoLabel')}
+          onPress={() => setIsInfoVisible(true)}
+          style={[
+            styles.communityAirsInfoButton,
+            { borderColor, backgroundColor: `${accentColor}14` },
+          ]}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <InfoIcon size={16} color={accentColor} strokeWidth={2.5} />
+        </TouchableOpacity>
+      </View>
+
+      <Modal
+        transparent
+        visible={isInfoVisible}
+        animationType='fade'
+        onRequestClose={() => setIsInfoVisible(false)}
+      >
+        <Pressable
+          style={styles.communityAirsTooltipBackdrop}
+          onPress={() => setIsInfoVisible(false)}
         />
-      </View>
-      <View style={styles.communityAirsCopy}>
-        <Text style={[styles.communityAirsLabel, { color: mutedColor }]}>
-          {t('landing.beneficios.communityTotal.label')}
-        </Text>
-        <Text style={[styles.communityAirsValue, { color: numberColor }]}>
-          {totalAirs == null ? formattedTotal : `${formattedTotal} AIRS`}
-        </Text>
-        <Text style={[styles.communityAirsLive, { color: accentColor }]}>
-          {t('landing.beneficios.communityTotal.live')}
-        </Text>
-      </View>
-    </View>
+        <View style={styles.communityAirsTooltipWrapper} pointerEvents='box-none'>
+          <View
+            style={[
+              styles.communityAirsTooltip,
+              { backgroundColor: tooltipSurfaceColor, borderColor },
+            ]}
+          >
+            <View style={styles.communityAirsTooltipHeader}>
+              <Text style={[styles.communityAirsTooltipTitle, { color: tooltipTextColor }]}>
+                {t('landing.beneficios.communityTotal.tooltipTitle')}
+              </Text>
+              <TouchableOpacity
+                accessibilityRole='button'
+                accessibilityLabel={t('landing.beneficios.communityTotal.closeLabel')}
+                onPress={() => setIsInfoVisible(false)}
+                style={[styles.communityAirsTooltipClose, { backgroundColor: `${accentColor}14` }]}
+              >
+                <CloseIcon size={16} color={accentColor} strokeWidth={2.5} />
+              </TouchableOpacity>
+            </View>
+            <Text style={[styles.communityAirsTooltipBody, { color: mutedColor }]}>
+              {t('landing.beneficios.communityTotal.tooltipMeaning')}
+            </Text>
+            <Text style={[styles.communityAirsTooltipBody, { color: mutedColor }]}>
+              {totalAirs == null
+                ? t('landing.beneficios.communityTotal.tooltipMoneyLoading')
+                : t('landing.beneficios.communityTotal.tooltipMoney', {
+                    amount: eligibleSpendReference,
+                  })}
+            </Text>
+            <Text style={[styles.communityAirsTooltipBody, { color: mutedColor }]}>
+              {t('landing.beneficios.communityTotal.tooltipImpact')}
+            </Text>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -2206,8 +2281,6 @@ function BeneficiosSection({
         >
           {t('landing.beneficios.subtitle')}
         </Text>
-        <CommunityAirsCounter isDark={isDark} accentColor={accentColor} />
-
         <View
           style={[styles.benefitsCardsContainer, isMobile && styles.benefitsCardsContainerMobile]}
         >
@@ -2236,6 +2309,7 @@ function BeneficiosSection({
             />
           ))}
         </View>
+        <CommunityAirsCounter isDark={isDark} accentColor={accentColor} />
       </Animated.View>
 
       {openBenefit && (
@@ -2490,6 +2564,8 @@ const styles = createTypographyStyles({
   communityAirsCounter: {
     width: '100%',
     maxWidth: 360,
+    alignSelf: 'center',
+    marginTop: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -2497,6 +2573,14 @@ const styles = createTypographyStyles({
     borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 16,
+  },
+  communityAirsInfoButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   communityAirsIcon: {
     width: 44,
@@ -2509,6 +2593,56 @@ const styles = createTypographyStyles({
     alignItems: 'flex-start',
     flex: 1,
     gap: 1,
+  },
+  communityAirsTooltipBackdrop: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(0,0,0,0.48)',
+  },
+  communityAirsTooltipWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  communityAirsTooltip: {
+    width: '100%',
+    maxWidth: 380,
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 20,
+    gap: 12,
+    ...createShadowStyle({
+      color: '#000',
+      offsetX: 0,
+      offsetY: 12,
+      opacity: 0.28,
+      radius: 24,
+      elevation: 16,
+    }),
+  },
+  communityAirsTooltipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  communityAirsTooltipTitle: {
+    flex: 1,
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  communityAirsTooltipClose: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  communityAirsTooltipBody: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 13,
+    lineHeight: 20,
   },
   communityAirsLabel: {
     fontFamily: ANEK_EXPANDED_FAMILY,

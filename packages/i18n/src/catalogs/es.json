@@ -546,9 +546,16 @@
         "sectionTitle": "Cómo acumular Airs",
         "subtitle": "Acumula Airs con comercio aliado, proyectos regenerativos, servicios verificados y acciones de huella de carbono.",
         "communityTotal": {
-          "label": "Balance global de AIRS acumulado por la plataforma",
+          "label": "AIRS acumulados en la plataforma",
           "loading": "Cargando el total en vivo…",
-          "live": "Actualización automática"
+          "live": "Actualización automática",
+          "infoLabel": "Qué significan los AIRS",
+          "closeLabel": "Cerrar explicación de AIRS",
+          "tooltipTitle": "Cómo leer este total",
+          "tooltipMeaning": "AIRS es la puntuación de impacto y reputación de Alternun; no es dinero ni un saldo canjeable.",
+          "tooltipMoneyLoading": "En comercio aliado, la referencia de acumulación es 5 AIRS por cada US$1 elegible. Cargamos el total para mostrarte esa referencia.",
+          "tooltipMoney": "En comercio aliado, {{amount}} es la referencia de compra elegible para acumular este total a una tasa de 5 AIRS por US$1. El total también puede incluir otras actividades.",
+          "tooltipImpact": "No existe una conversión fija de AIRS a CO₂: cada acción o bono depende de una reducción o compensación que haya sido medida y validada."
         },
         "topRated": "Verificado",
         "moreInfo": "Más información",
