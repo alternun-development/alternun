@@ -50,9 +50,7 @@ export function buildDashboardPipelineSpecs({
   // Falling back to the shared DATABASE_URL would silently pin testnet to the wrong project.
   const backendDatabaseUrl = env.INFRA_BACKEND_API_DATABASE_URL ?? '';
   const smtpSecretArn =
-    env.AUTHENTIK_SMTP_SECRET_ARN ??
-    env.AIRS_SMTP_SECRET_ARN ??
-    'alternun-infra/identity/smtp-credentials';
+    env.AUTHENTIK_SMTP_SECRET_ARN ?? env.AIRS_SMTP_SECRET_ARN ?? 'alternun/postmark/smtp';
 
   return {
     'dashboard-dev': {
@@ -83,8 +81,8 @@ export function buildDashboardPipelineSpecs({
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlDev,
         INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER: 'better-auth',
         INFRA_BACKEND_API_DATABASE_URL: backendDatabaseUrl,
-        AUTHENTIK_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-dev`,
-        AIRS_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-dev`,
+        AUTHENTIK_SMTP_SECRET_ARN: smtpSecretArn,
+        AIRS_SMTP_SECRET_ARN: smtpSecretArn,
         AUTH_BETTER_AUTH_URL: betterAuthUrlDev,
         BETTER_AUTH_URL: betterAuthUrlDev,
         ALTERNUN_TESTNET_MODE: 'on',
@@ -131,8 +129,8 @@ export function buildDashboardPipelineSpecs({
         // is implemented end-to-end.
         INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER: 'supabase',
         INFRA_BACKEND_API_DATABASE_URL: backendDatabaseUrl,
-        AUTHENTIK_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-prod`,
-        AIRS_SMTP_SECRET_ARN: `${smtpSecretArn}/identity-prod`,
+        AUTHENTIK_SMTP_SECRET_ARN: smtpSecretArn,
+        AIRS_SMTP_SECRET_ARN: smtpSecretArn,
         INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
         ...(discordAuthClientId
           ? { INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID: discordAuthClientId }

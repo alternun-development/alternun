@@ -84,6 +84,32 @@ if [ -z "$identity_stage" ]; then
 elif [ "${INFRA_IDENTITY_ENABLED:-false}" != "true" ] && [ "${INFRA_ENABLE_BACKEND_API:-false}" != "true" ]; then
   echo "Skipped Secrets Manager auth env resolution for stage '${STACK}' because no backend or identity auth build is enabled." >&2
 else
+  backend_google_client_id=${INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID:-${GOOGLE_AUTH_CLIENT_ID:-}}
+  backend_google_client_secret=${INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_SECRET:-${GOOGLE_AUTH_CLIENT_SECRET:-}}
+  backend_discord_client_id=${INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID:-${DISCORD_AUTH_CLIENT_ID:-${DISCORD_CLIENT_ID:-}}}
+  backend_discord_client_secret=${INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_SECRET:-${DISCORD_AUTH_CLIENT_SECRET:-${DISCORD_CLIENT_SECRET:-}}}
+
+  # Discord is optional. If it is configured directly, require its complete
+  # credential pair before bypassing hydration; a half-configured provider must
+  # still be resolved from the integration secret (or fail clearly below).
+  backend_google_credentials_complete=false
+  backend_discord_credentials_complete=false
+  backend_discord_not_configured=false
+  [ -n "$backend_google_client_id" ] && [ -n "$backend_google_client_secret" ] && backend_google_credentials_complete=true
+  [ -n "$backend_discord_client_id" ] && [ -n "$backend_discord_client_secret" ] && backend_discord_credentials_complete=true
+  [ -z "$backend_discord_client_id" ] && [ -z "$backend_discord_client_secret" ] && backend_discord_not_configured=true
+
+  if [ "${INFRA_IDENTITY_ENABLED:-false}" != "true" ] && \
+    [ "$backend_google_credentials_complete" = "true" ] && \
+    { [ "$backend_discord_credentials_complete" = "true" ] || [ "$backend_discord_not_configured" = "true" ]; }; then
+  # Better Auth owns backend social login. Once the Authentik stack is retired,
+  # dashboard deployments must be able to use their independently configured
+  # OAuth credentials without resolving the retired identity secret. An absent
+  # Discord pair intentionally leaves that optional provider disabled.
+    echo "Skipped retired identity secret resolution for backend stage '${STACK}'; configured backend OAuth credentials are complete." >&2
+    return 0 2>/dev/null || exit 0
+  fi
+
   integration_config_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:-${APP_NAME}/identity/integration-config}" "$identity_stage")
   if [ -z "$integration_config_secret_name" ]; then
     echo "ERROR: Could not resolve the identity integration-config secret name for stage '${STACK}'." >&2
