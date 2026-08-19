@@ -267,8 +267,10 @@ function getSupabaseProjectRef(config = {}) {
 
 function resolveCommonFields(config) {
   const fromEmail = firstNonEmpty([
+    process.env.SUPABASE_SMTP_SENDER,
     process.env.EMAIL_FROM,
     process.env.SUPABASE_SMTP_ADMIN_EMAIL,
+    process.env.ALTERNUN_NO_REPLY_EMAIL,
     config.fromEmail,
   ]);
 
@@ -285,7 +287,9 @@ function resolveCommonFields(config) {
   ]);
 
   if (!fromEmail) {
-    throw new Error('Missing sender email. Set fromEmail in config or EMAIL_FROM in env.');
+    throw new Error(
+      'Missing sender email. Set EMAIL_FROM, ALTERNUN_NO_REPLY_EMAIL, or fromEmail in config.'
+    );
   }
 
   if (!senderName) {
@@ -374,21 +378,42 @@ function resolvePostmarkProvider(config) {
 function resolveTlaoProvider(config) {
   const providerConfig = config.tlao || {};
   const smtpHost = firstNonEmpty([
+    process.env.SUPABASE_SMTP_HOST,
     process.env.TLAO_SMTP_HOST,
     providerConfig.host,
     providerConfig.smtpHost,
     'mail.xn--tlo-fla.com',
   ]);
   const smtpPort = parsePort(
-    firstNonEmpty([process.env.TLAO_SMTP_PORT, providerConfig.port, providerConfig.smtpPort, 587]),
+    firstNonEmpty([
+      process.env.SUPABASE_SMTP_PORT,
+      process.env.TLAO_SMTP_PORT,
+      providerConfig.port,
+      providerConfig.smtpPort,
+      587,
+    ]),
     587
   );
-  const smtpUser = firstNonEmpty([process.env.TLAO_SMTP_USERNAME, providerConfig.username]);
-  const smtpPass = firstNonEmpty([process.env.TLAO_SMTP_PASSWORD, providerConfig.password]);
+  const smtpUser = firstNonEmpty([
+    process.env.SUPABASE_SMTP_USERNAME,
+    process.env.TLAO_SMTP_USERNAME,
+    process.env.ALTERNUN_NO_REPLY_EMAIL,
+    providerConfig.username,
+  ]);
+  const smtpPass = firstNonEmpty([
+    process.env.SUPABASE_SMTP_PASSWORD,
+    process.env.TLAO_SMTP_PASSWORD,
+    process.env.ALTERNUN_NO_REPLY_PASSWORD,
+    providerConfig.password,
+  ]);
 
   if (!smtpHost || !smtpUser || !smtpPass) {
     throw new Error(
-      'Tláo SMTP credentials are missing. Set TLAO_SMTP_HOST, TLAO_SMTP_USERNAME, and TLAO_SMTP_PASSWORD.'
+      [
+        'Tláo SMTP credentials are missing.',
+        'Set TLAO_SMTP_HOST, TLAO_SMTP_USERNAME, and TLAO_SMTP_PASSWORD,',
+        'or use ALTERNUN_NO_REPLY_EMAIL and ALTERNUN_NO_REPLY_PASSWORD.',
+      ].join(' ')
     );
   }
 

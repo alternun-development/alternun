@@ -961,24 +961,48 @@ export class AlternunMobileAuthClient implements AuthClient {
     this.linkedWallet = null;
     this.walletSessionToken = null;
 
-    const supabase = this.ensureSupabase();
-    const { data, error } = await supabase.auth.verifyOtp({
-      type: 'signup',
-      email: normalizedEmail,
-      token: normalizedCode,
+    let baseUrl = process.env.REACT_APP_API_URL || process.env.EXPO_PUBLIC_API_URL;
+    if (!baseUrl && typeof window !== 'undefined') {
+      const url = new URL(window.location.origin);
+      const isLoopback = ['localhost', '127.0.0.1', '::1', '0.0.0.0'].includes(url.hostname);
+      baseUrl = isLoopback ? 'http://localhost:8082' : url.origin;
+    }
+    baseUrl = baseUrl || 'http://localhost:8082';
+
+    const response = await fetch(`${baseUrl}/auth/verify-email`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: normalizedEmail, code: normalizedCode }),
     });
+    const data = (await response.json()) as {
+      message?: string;
+      user?: unknown;
+      session?: { token?: string | null; refreshToken?: string | null } | null;
+    };
 
-    if (error) {
-      throw new Error(`PROVIDER_ERROR: ${error.message}`);
+    if (!response.ok) {
+      throw new Error(`PROVIDER_ERROR: ${data.message ?? 'Email verification failed.'}`);
     }
 
-    if (data?.user) {
-      this.emit(this.mapSupabaseUser(data.user));
-      return;
+    const supabase = this.ensureSupabase();
+    let verifiedUser = data.user;
+    if (data.session?.token && data.session.refreshToken) {
+      const { data: establishedSession, error } = await supabase.auth.setSession({
+        access_token: data.session.token,
+        refresh_token: data.session.refreshToken,
+      });
+      if (error) {
+        throw new Error(`PROVIDER_ERROR: ${error.message}`);
+      }
+
+      // The API response is normalized for backend callers. The freshly
+      // established Supabase session retains the raw metadata that this client
+      // maps into avatar and external-provider fields.
+      verifiedUser = establishedSession.session?.user ?? verifiedUser;
     }
 
-    const currentUser = await this.safeGetBaseUser();
-    this.emit(currentUser);
+    this.emit(this.mapSupabaseUser(verifiedUser));
   }
 
   async signOut(): Promise<void> {
