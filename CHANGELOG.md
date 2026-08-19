@@ -1,3 +1,15 @@
+## [1.1.42](https://github.com/alternun-development/alternun/compare/v1.1.42-dev.0...v1.1.42) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.42-dev.0
+- **repo:** test(mobile,infra): PublicLandingPage, .env, deployment.config.example, infrastructure-specs
+
+
+
+
+
+
 ## [1.1.42](https://github.com/alternun-development/alternun/compare/v1.1.41...v1.1.42) (2026-08-19)
 
 ### Bug Fixes
