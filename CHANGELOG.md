@@ -1,3 +1,9 @@
+## [1.1.38](https://github.com/alternun-development/alternun/compare/v1.1.37-dev.0...v1.1.38) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** test(mobile,repo,api): NotificationsContext, NotificationsContext.test, 20260819_0001_create_user_notifications, notifications.migration.test
+
 ## [1.1.37](https://github.com/alternun-development/alternun/compare/v1.1.36...v1.1.37) (2026-08-19)
 
 ### Bug Fixes
