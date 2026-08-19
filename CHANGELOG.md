@@ -1,14 +1,19 @@
+## [1.1.37](https://github.com/alternun-development/alternun/compare/v1.1.36...v1.1.37) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** fix(i18n): runtime.test
+
+### Bug Fixes
+
+- **i18n:** runtime.test ([8de40a9](https://github.com/alternun-development/alternun/commit/8de40a9ba272337e02a7e673e26d3f25db258832))
+
 ## [1.1.36](https://github.com/alternun-development/alternun/compare/v1.1.36-dev.0...v1.1.36) (2026-08-19)
 
 ### Bug Fixes
 
 - **repo:** chore: release v1.1.36-dev.0
 - **repo:** test(mobile): NotificationsContext.test
-
-
-
-
-
 
 ## [1.1.36](https://github.com/alternun-development/alternun/compare/v1.1.35-dev.0...v1.1.36) (2026-08-19)
 
