@@ -1,3 +1,16 @@
+## [1.1.34](https://github.com/alternun-development/alternun/compare/v1.1.34-dev.0...v1.1.34) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.34-dev.0
+- **repo:** fix(api,auth): route email confirmation through backend
+- **repo:** fix(release): preserve consumer startup and update staging
+
+
+
+
+
+
 ## [1.1.34](https://github.com/alternun-development/alternun/compare/v1.1.33...v1.1.34) (2026-08-19)
 
 ### Bug Fixes
