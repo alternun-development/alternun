@@ -317,11 +317,18 @@ function parsePositiveInteger(value: string | number | undefined, fallback: numb
 }
 
 function resolveIdentityRdsBackupRetentionDefault(env: NodeJS.ProcessEnv): number {
-  const stage = (env.STACK ?? env.SST_STAGE ?? '').trim().toLowerCase();
+  const stage = (env.STACK ?? env.SST_STAGE ?? '').trim().toLowerCase().replace(/_/g, '-');
 
   // Keep production point-in-time recovery at the approved seven-day window,
   // while the disposable development identity stack stays at the cost baseline.
-  return stage === 'production' || stage === 'prod' || stage.includes('identity-prod')
+  return [
+    'production',
+    'prod',
+    'identity-prod',
+    'identity-production',
+    'auth-prod',
+    'authentik-prod',
+  ].includes(stage)
     ? IDENTITY_INFRA_DEFAULTS.rds.backupRetentionDays
     : 1;
 }
