@@ -1,3 +1,14 @@
+## [1.1.35](https://github.com/alternun-development/alternun/compare/v1.1.34...v1.1.35) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** test(api,mobile,repo): app.module, airs.controller, airs.repository, airs.service
+- **repo:** fix(auth): preserve metadata after email verification
+
+### Bug Fixes
+
+- **auth:** preserve metadata after email verification ([8bcc3c4](https://github.com/alternun-development/alternun/commit/8bcc3c4539601da3e04c41bd7d3784478ad3d414))
+
 ## [1.1.34](https://github.com/alternun-development/alternun/compare/v1.1.34-dev.0...v1.1.34) (2026-08-19)
 
 ### Bug Fixes
@@ -5,11 +16,6 @@
 - **repo:** chore: release v1.1.34-dev.0
 - **repo:** fix(api,auth): route email confirmation through backend
 - **repo:** fix(release): preserve consumer startup and update staging
-
-
-
-
-
 
 ## [1.1.34](https://github.com/alternun-development/alternun/compare/v1.1.33...v1.1.34) (2026-08-19)
 
