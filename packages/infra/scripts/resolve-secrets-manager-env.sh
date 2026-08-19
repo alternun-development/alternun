@@ -83,6 +83,13 @@ if [ -z "$identity_stage" ]; then
   echo "Skipped Secrets Manager auth env resolution for stage '${STACK}'." >&2
 elif [ "${INFRA_IDENTITY_ENABLED:-false}" != "true" ] && [ "${INFRA_ENABLE_BACKEND_API:-false}" != "true" ]; then
   echo "Skipped Secrets Manager auth env resolution for stage '${STACK}' because no backend or identity auth build is enabled." >&2
+elif [ "${INFRA_IDENTITY_ENABLED:-false}" != "true" ] && \
+  [ -n "${INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID:-${GOOGLE_AUTH_CLIENT_ID:-}}" ] && \
+  [ -n "${INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_SECRET:-${GOOGLE_AUTH_CLIENT_SECRET:-}}" ]; then
+  # Better Auth owns backend social login. Once the Authentik stack is retired,
+  # dashboard deployments must be able to use their independently configured
+  # OAuth credentials without resolving the retired identity secret.
+  echo "Skipped retired identity secret resolution for backend stage '${STACK}'; backend OAuth credentials are configured." >&2
 else
   integration_config_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:-${APP_NAME}/identity/integration-config}" "$identity_stage")
   if [ -z "$integration_config_secret_name" ]; then
