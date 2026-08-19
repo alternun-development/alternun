@@ -1,3 +1,32 @@
+## [1.1.41](https://github.com/alternun-development/alternun/compare/v1.1.41-dev.0...v1.1.41) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.41-dev.0
+- **repo:** test(mobile,i18n): PublicLandingPage, communityAirsTotal.test, communityAirsTotal, en
+
+
+
+
+
+
+## [1.1.41](https://github.com/alternun-development/alternun/compare/v1.1.40-dev.0...v1.1.41) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** test(mobile,i18n): PublicLandingPage, communityAirsTotal.test, communityAirsTotal, en
+
+## [1.1.40](https://github.com/alternun-development/alternun/compare/v1.1.39...v1.1.40) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** test(mobile,i18n,infra): PublicLandingPage, es, deployment.config.example, infrastructure-specs
+- **repo:** fix(mobile): center AIRS community counter
+
+### Bug Fixes
+
+- **mobile:** center AIRS community counter ([723e6d2](https://github.com/alternun-development/alternun/commit/723e6d23ae834bbfdde1453398a4b508f8cf90ee))
+
 ## [1.1.39](https://github.com/alternun-development/alternun/compare/v1.1.39-dev.0...v1.1.39) (2026-08-19)
 
 ### Bug Fixes
@@ -5,11 +34,6 @@
 - **repo:** chore: release v1.1.39-dev.0
 - **repo:** fix(infra): apply dashboard migrations before deploy
 - **repo:** fix(mobile): refine AIRS community total card
-
-
-
-
-
 
 ## [1.1.39](https://github.com/alternun-development/alternun/compare/v1.1.38...v1.1.39) (2026-08-19)
 
