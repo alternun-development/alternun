@@ -14,6 +14,8 @@ void test('identity RDS keeps production recovery while development uses the min
   assert.match(defaultsSource, /performanceInsights:\s*false/);
   assert.match(defaultsSource, /enhancedMonitoring:\s*false/);
   assert.match(identitySource, /function resolveIdentityRdsBackupRetentionDefault/);
-  assert.match(identitySource, /stage\.includes\('identity-prod'\)/);
+  assert.match(identitySource, /'identity-production'/);
+  assert.match(identitySource, /'auth-prod'/);
+  assert.match(identitySource, /'authentik-prod'/);
   assert.match(identitySource, /:\s*1;/);
 });
