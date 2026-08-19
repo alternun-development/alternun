@@ -3,6 +3,17 @@ export interface CommunityAirsTotal {
   updatedAt: string | null;
 }
 
+/** The published earning rate for eligible allied-commerce purchases. */
+export const AIRS_PER_ELIGIBLE_USD = 5;
+
+/**
+ * Gives a purchase-only reference for an AIRS amount. AIRS can also be earned
+ * through non-purchase activities, so this must never be presented as a cash value.
+ */
+export function getEligibleSpendReference(totalAirs: number): number {
+  return totalAirs / AIRS_PER_ELIGIBLE_USD;
+}
+
 export async function fetchCommunityAirsTotal(
   fetcher: typeof fetch,
   apiBaseUrl: string
