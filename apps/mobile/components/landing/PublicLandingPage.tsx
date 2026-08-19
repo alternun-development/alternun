@@ -67,6 +67,8 @@ import {
 import { getBenefitCardDefaultDetailsExpanded } from './benefitCard';
 import { getTokenCardDefaultExpanded } from './tokenCard';
 import DynamicMessageBar, { type DynamicMessageContent } from './DynamicMessageBar';
+import { fetchCommunityAirsTotal } from './communityAirsTotal';
+import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 
 const LeafIcon = Leaf as React.FC<LucideProps>;
 const ZapIcon = Zap as React.FC<LucideProps>;
@@ -151,6 +153,7 @@ const TOKEN_IMAGE_FOCI: Record<
 
 // ── Auto-loop interval for ComoFunciona steps (ms) ────────────────────────────
 const STEP_LOOP_INTERVAL = 3200;
+const COMMUNITY_TOTAL_REFRESH_INTERVAL_MS = 30_000;
 
 interface PublicLandingPageProps {
   onSignIn: () => void;
@@ -1384,6 +1387,64 @@ function ComoFuncionaSection({
   );
 }
 
+function CommunityAirsCounter({
+  isDark,
+  accentColor,
+}: Pick<SectionProps, 'isDark' | 'accentColor'>): React.JSX.Element {
+  const { t } = useAppTranslation('mobile');
+  const [totalAirs, setTotalAirs] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const refresh = async (): Promise<void> => {
+      try {
+        const total = await fetchCommunityAirsTotal(fetch, resolveMobileApiBaseUrl());
+        if (active) setTotalAirs(total.totalAirs);
+      } catch {
+        // Keep the counter in its loading state instead of displaying a made-up total.
+      }
+    };
+
+    void refresh();
+    const interval = setInterval(() => void refresh(), COMMUNITY_TOTAL_REFRESH_INTERVAL_MS);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const numberColor = isDark ? '#e8fff6' : '#083d39';
+  const surfaceColor = isDark ? 'rgba(30,230,181,0.12)' : 'rgba(13,148,136,0.10)';
+  const borderColor = isDark ? 'rgba(30,230,181,0.35)' : 'rgba(13,148,136,0.24)';
+  const mutedColor = isDark ? 'rgba(232,255,246,0.72)' : '#50716e';
+  const formattedTotal =
+    totalAirs == null
+      ? t('landing.beneficios.communityTotal.loading')
+      : new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(totalAirs);
+
+  return (
+    <View
+      testID='community-airs-total'
+      style={[styles.communityAirsCounter, { backgroundColor: surfaceColor, borderColor }]}
+    >
+      <View style={[styles.communityAirsIcon, { backgroundColor: accentColor }]}>
+        <SparklesIcon size={16} color={isDark ? '#050510' : '#ffffff'} />
+      </View>
+      <View style={styles.communityAirsCopy}>
+        <Text style={[styles.communityAirsLabel, { color: mutedColor }]}>
+          {t('landing.beneficios.communityTotal.label')}
+        </Text>
+        <Text style={[styles.communityAirsValue, { color: numberColor }]}>
+          {totalAirs == null ? formattedTotal : `${formattedTotal} AIRS`}
+        </Text>
+        <Text style={[styles.communityAirsLive, { color: accentColor }]}>
+          {t('landing.beneficios.communityTotal.live')}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 // ── MembresiaSection with infinite scrolling logos ────────────────────────────
 function MembresiaSection({
   isDark,
@@ -2138,6 +2199,7 @@ function BeneficiosSection({
         >
           {t('landing.beneficios.subtitle')}
         </Text>
+        <CommunityAirsCounter isDark={isDark} accentColor={accentColor} />
 
         <View
           style={[styles.benefitsCardsContainer, isMobile && styles.benefitsCardsContainerMobile]}
@@ -2417,6 +2479,47 @@ const styles = createTypographyStyles({
     textAlign: 'center',
     lineHeight: 24,
     maxWidth: 560,
+  },
+  communityAirsCounter: {
+    minWidth: 252,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  communityAirsIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  communityAirsCopy: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  communityAirsLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+    textAlign: 'center',
+  },
+  communityAirsValue: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+    textAlign: 'center',
+  },
+  communityAirsLive: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 
   // ── Membresia ─────────────────────────────────────────────────────────────────

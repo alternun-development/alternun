@@ -26,27 +26,26 @@ import { useAppPreferences } from '../components/settings/AppPreferencesProvider
 import { useNotifications } from '../components/notifications/NotificationsContext';
 import { useAuth } from '../components/auth/AppAuthProvider';
 import { TYPE_CONFIG } from '../components/dashboard/NotificationDropdown';
+import { useAppTranslation } from '../components/i18n/useAppTranslation';
 
 const BellIcon = Bell as React.FC<LucideProps>;
 const ArchiveIcon = Archive as React.FC<LucideProps>;
 const InboxIcon = Inbox as React.FC<LucideProps>;
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date, t: ReturnType<typeof useAppTranslation>): string {
   const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 60) return t.t('notifications.ui.secondsAgo', { count: diff });
+  if (diff < 3600) return t.t('notifications.ui.minutesAgo', { count: Math.floor(diff / 60) });
+  if (diff < 86400) return t.t('notifications.ui.hoursAgo', { count: Math.floor(diff / 3600) });
+  return t.t('notifications.ui.daysAgo', { count: Math.floor(diff / 86400) });
 }
 
-const FILTER_OPTIONS: SearchFilterOption[] = [
-  { key: 'all', label: 'Todos' },
-  { key: 'unread', label: 'No leídos' },
-  { key: 'success', label: 'Éxito' },
-  { key: 'error', label: 'Error' },
-  { key: 'info', label: 'Info' },
-  { key: 'warning', label: 'Alerta' },
-];
+function getFilterOptions(t: ReturnType<typeof useAppTranslation>): SearchFilterOption[] {
+  return ['all', 'unread', 'success', 'error', 'info', 'warning'].map((key) => ({
+    key,
+    label: t.t(`notifications.ui.${key}`),
+  }));
+}
 
 type FilterTab = 'inbox' | 'archived';
 
@@ -54,12 +53,14 @@ export default function NotificationsScreen(): React.JSX.Element {
   const router = useRouter();
   const { user } = useAuth();
   const { themeMode } = useAppPreferences();
+  const t = useAppTranslation();
   const { items, markRead, markUnread, markAllRead, archive, unarchive, deleteNotif } =
     useNotifications();
   const isDark = themeMode === 'dark';
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [activeTab, setActiveTab] = useState<FilterTab>('inbox');
+  const filterOptions = useMemo(() => getFilterOptions(t), [t]);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
@@ -130,8 +131,8 @@ export default function NotificationsScreen(): React.JSX.Element {
   const inboxUnreadCount = items.filter((n) => !n.read && !n.archived).length;
 
   const tabs: TabItem[] = [
-    { key: 'inbox', label: 'Inbox', icon: InboxIcon },
-    { key: 'archived', label: 'Archived', icon: ArchiveIcon },
+    { key: 'inbox', label: t.t('notifications.ui.inbox'), icon: InboxIcon },
+    { key: 'archived', label: t.t('notifications.ui.archived'), icon: ArchiveIcon },
   ];
 
   if (!user) {
@@ -148,7 +149,7 @@ export default function NotificationsScreen(): React.JSX.Element {
               <Bell size={48} color={isDark ? '#1ee6b5' : '#0d9488'} />
             </View>
             <Text style={[styles.modalTitle, { color: isDark ? '#e8fff6' : '#0f172a' }]}>
-              Sign In to View Notifications
+              {t.t('notifications.ui.signInTitle')}
             </Text>
             <Text
               style={[
@@ -156,7 +157,7 @@ export default function NotificationsScreen(): React.JSX.Element {
                 { color: isDark ? 'rgba(232,255,246,0.6)' : '#475569' },
               ]}
             >
-              You need to sign in to access your notifications and stay updated.
+              {t.t('notifications.ui.signInBody')}
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -164,7 +165,7 @@ export default function NotificationsScreen(): React.JSX.Element {
                 onPress={() => router.push('/signin')}
               >
                 <Text style={[styles.modalBtnText, { color: isDark ? '#0a0a1a' : '#ffffff' }]}>
-                  Sign In
+                  {t.t('notifications.ui.signIn')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -178,7 +179,7 @@ export default function NotificationsScreen(): React.JSX.Element {
                 <Text
                   style={[styles.modalBtnTextSecondary, { color: isDark ? '#e8fff6' : '#0f172a' }]}
                 >
-                  Go Back
+                  {t.t('notifications.ui.goBack')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -200,7 +201,7 @@ export default function NotificationsScreen(): React.JSX.Element {
             <ArrowLeft size={24} color={c.text} strokeWidth={2} />
           </TouchableOpacity>
           <View style={styles.headerTitle}>
-            <Text style={[styles.title, { color: c.text }]}>Notifications</Text>
+            <Text style={[styles.title, { color: c.text }]}>{t.t('notifications.ui.title')}</Text>
             {inboxUnreadCount > 0 && (
               <View style={styles.unreadBadge}>
                 <Text style={styles.unreadBadgeText}>{inboxUnreadCount}</Text>
@@ -215,8 +216,8 @@ export default function NotificationsScreen(): React.JSX.Element {
           <SearchFilterBar
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder='Buscar notificaciones...'
-            filters={FILTER_OPTIONS}
+            placeholder={t.t('notifications.ui.search')}
+            filters={filterOptions}
             activeFilter={activeFilter}
             onChangeFilter={setActiveFilter}
           />
@@ -245,7 +246,9 @@ export default function NotificationsScreen(): React.JSX.Element {
               activeOpacity={0.7}
             >
               <CheckCheck size={16} color={c.buttonText} />
-              <Text style={[styles.bulkActionText, { color: c.buttonText }]}>Mark all read</Text>
+              <Text style={[styles.bulkActionText, { color: c.buttonText }]}>
+                {t.t('notifications.ui.markAllRead')}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -269,10 +272,10 @@ export default function NotificationsScreen(): React.JSX.Element {
                 <BellIcon size={48} color={c.muted} />
                 <Text style={[styles.emptyText, { color: c.muted }]}>
                   {activeTab === 'inbox'
-                    ? 'No notifications'
+                    ? t.t('notifications.ui.noInbox')
                     : activeFilter === 'all'
-                    ? 'No archived notifications'
-                    : 'No matching notifications'}
+                    ? t.t('notifications.ui.noArchived')
+                    : t.t('notifications.ui.noMatches')}
                 </Text>
               </View>
             ) : (
@@ -316,7 +319,7 @@ export default function NotificationsScreen(): React.JSX.Element {
                             {notif.title}
                           </Text>
                           <Text style={[styles.itemTime, { color: c.muted }]}>
-                            {timeAgo(notif.timestamp)}
+                            {timeAgo(notif.timestamp, t)}
                           </Text>
                         </View>
                         <Text style={[styles.itemDesc, { color: c.muted }]}>{notif.body}</Text>
@@ -336,7 +339,9 @@ export default function NotificationsScreen(): React.JSX.Element {
                           >
                             <CheckCheck size={14} color={c.buttonText} />
                             <Text style={[styles.actionBtnText, { color: c.buttonText }]}>
-                              {notif.read ? 'Mark unread' : 'Mark read'}
+                              {notif.read
+                                ? t.t('notifications.ui.markUnread')
+                                : t.t('notifications.ui.markRead')}
                             </Text>
                           </TouchableOpacity>
 
@@ -355,14 +360,14 @@ export default function NotificationsScreen(): React.JSX.Element {
                               <>
                                 <InboxIcon size={14} color={c.buttonText} />
                                 <Text style={[styles.actionBtnText, { color: c.buttonText }]}>
-                                  Unarchive
+                                  {t.t('notifications.ui.unarchive')}
                                 </Text>
                               </>
                             ) : (
                               <>
                                 <ArchiveIcon size={14} color={c.buttonText} />
                                 <Text style={[styles.actionBtnText, { color: c.buttonText }]}>
-                                  Archive
+                                  {t.t('notifications.ui.archive')}
                                 </Text>
                               </>
                             )}
@@ -375,7 +380,7 @@ export default function NotificationsScreen(): React.JSX.Element {
                           >
                             <Trash2 size={14} color={c.buttonText} />
                             <Text style={[styles.actionBtnText, { color: c.buttonText }]}>
-                              Delete
+                              {t.t('notifications.ui.delete')}
                             </Text>
                           </TouchableOpacity>
                         </View>
