@@ -24,6 +24,38 @@ interface ConvertedStyle extends BoxShadowStyle {
   [key: string]: unknown;
 }
 
+function withShadowOpacity(color: string, opacity: number): string {
+  const normalizedOpacity = Math.max(0, Math.min(1, opacity));
+  const hex = color.trim().replace('#', '');
+
+  if (/^[\da-f]{3}$/i.test(hex) || /^[\da-f]{6}$/i.test(hex)) {
+    const expanded =
+      hex.length === 3
+        ? hex
+            .split('')
+            .map((component) => component.repeat(2))
+            .join('')
+        : hex;
+    const red = Number.parseInt(expanded.slice(0, 2), 16);
+    const green = Number.parseInt(expanded.slice(2, 4), 16);
+    const blue = Number.parseInt(expanded.slice(4, 6), 16);
+    return `rgba(${red}, ${green}, ${blue}, ${normalizedOpacity})`;
+  }
+
+  const rgb = color.match(/^rgb\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)$/i);
+  if (rgb) {
+    return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${normalizedOpacity})`;
+  }
+
+  const rgba = color.match(/^rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*[\d.]+\s*\)$/i);
+  if (rgba) {
+    return `rgba(${rgba[1]}, ${rgba[2]}, ${rgba[3]}, ${normalizedOpacity})`;
+  }
+
+  // Preserve a valid CSS color even when it cannot be safely converted to rgba.
+  return color;
+}
+
 /**
  * Converts deprecated shadow style props to boxShadow for web platforms.
  * Keeps native shadow props for iOS/Android.
@@ -46,12 +78,9 @@ export function convertShadowStyle(style: DeprecatedStyle): ConvertedStyle {
   const offsetY = shadowOffset?.height ?? 0;
   const radius = shadowRadius ?? 4;
 
-  // Convert to CSS boxShadow format: x-offset y-offset blur-radius spread-radius color
-  const boxShadow = `${offsetX}px ${offsetY}px ${radius}px 0px ${color}`;
-
   return {
     ...rest,
-    boxShadow: `${boxShadow} rgba(0,0,0,${opacity})`,
+    boxShadow: `${offsetX}px ${offsetY}px ${radius}px 0px ${withShadowOpacity(color, opacity)}`,
   };
 }
 
@@ -118,7 +147,7 @@ export function createShadowStyle(config: {
 
   if (Platform.OS === 'web') {
     return {
-      boxShadow: `${offsetX}px ${offsetY}px ${radius}px 0px ${color} rgba(0,0,0,${opacity})`,
+      boxShadow: `${offsetX}px ${offsetY}px ${radius}px 0px ${withShadowOpacity(color, opacity)}`,
     };
   }
 

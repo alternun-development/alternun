@@ -546,9 +546,9 @@
         "sectionTitle": "Cómo acumular Airs",
         "subtitle": "Acumula Airs con comercio aliado, proyectos regenerativos, servicios verificados y acciones de huella de carbono.",
         "communityTotal": {
-          "label": "AIRS acumulados por la comunidad",
+          "label": "Balance global de AIRS acumulado por la plataforma",
           "loading": "Cargando el total en vivo…",
-          "live": "Se actualiza automáticamente"
+          "live": "Actualización automática"
         },
         "topRated": "Verificado",
         "moreInfo": "Más información",

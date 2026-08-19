@@ -546,7 +546,7 @@
         "sectionTitle": "How to accumulate Airs",
         "subtitle": "Earn Airs through allied commerce, regenerative projects, verified services, and carbon-footprint actions.",
         "communityTotal": {
-          "label": "AIRS accumulated by the community",
+          "label": "Global AIRS balance accumulated by the platform",
           "loading": "Loading live total…",
           "live": "Updates automatically"
         },
