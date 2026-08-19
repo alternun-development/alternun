@@ -9,6 +9,11 @@ const repoRoot = path.resolve(testDir, '../../..');
 
 const syncScriptPath = path.join(repoRoot, 'scripts/sync-db-migrations.sh');
 const dbMigrateScriptPath = path.join(repoRoot, 'scripts/db-migrate.sh');
+const buildspecPath = path.join(repoRoot, 'packages/infra/buildspec.yml');
+const dashboardPipelineSpecPath = path.join(
+  repoRoot,
+  'packages/infra/config/pipelines/specs/dashboard.ts'
+);
 
 void test('stage-aware migration sync wrapper resolves the backend secret and supports one-by-one apply', () => {
   const source = fs.readFileSync(syncScriptPath, 'utf8');
@@ -30,5 +35,21 @@ void test('stage-aware migration sync wrapper resolves the backend secret and su
   assert.match(
     migrateSource,
     /if \[\[ "\$ENVIRONMENT" == "PRODUCTION" && -z "\$DRY_RUN" \]\]; then/
+  );
+});
+
+void test('dashboard pipeline deploys apply pending AIRS migrations before SST deployment', () => {
+  const buildspecSource = fs.readFileSync(buildspecPath, 'utf8');
+  const dashboardPipelineSource = fs.readFileSync(dashboardPipelineSpecPath, 'utf8');
+
+  assert.match(dashboardPipelineSource, /INFRA_APPLY_PENDING_MIGRATIONS: 'true'/);
+  assert.match(buildspecSource, /INFRA_APPLY_PENDING_MIGRATIONS:-false/);
+  assert.match(buildspecSource, /INFRA_ENABLE_BACKEND_API:-false/);
+  assert.match(buildspecSource, /bash scripts\/sync-db-migrations\.sh "\$\{SST_STAGE\}" --all/);
+  assert.match(buildspecSource, /\$\{migration_force_prod\}/);
+  assert.ok(
+    buildspecSource.indexOf('sync-db-migrations.sh') <
+      buildspecSource.indexOf('Deploying to ${SST_STAGE}'),
+    'expected migrations to run before SST deployment'
   );
 });
