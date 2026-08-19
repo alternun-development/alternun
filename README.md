@@ -126,6 +126,7 @@ Current version: **1.1.41**
 
 ### Bug Fixes
 
+- **repo:** chore: release v1.1.41-dev.0
 - **repo:** test(mobile,i18n): PublicLandingPage, communityAirsTotal.test, communityAirsTotal, en
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
