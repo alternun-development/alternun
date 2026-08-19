@@ -1,19 +1,14 @@
-## [1.1.43](https://github.com/alternun-development/alternun/compare/v1.1.42...v1.1.43) (2026-08-19)
-
-### Bug Fixes
-
-- **repo:** fix(infra): preserve identity recovery aliases
-
-### Bug Fixes
-
-- **infra:** preserve identity recovery aliases ([6dfe346](https://github.com/alternun-development/alternun/commit/6dfe34627a1e6050bff362c4224a7d3b78bf6731))
-
 ## [1.1.42](https://github.com/alternun-development/alternun/compare/v1.1.42-dev.0...v1.1.42) (2026-08-19)
 
 ### Bug Fixes
 
 - **repo:** chore: release v1.1.42-dev.0
 - **repo:** test(mobile,infra): PublicLandingPage, .env, deployment.config.example, infrastructure-specs
+
+
+
+
+
 
 ## [1.1.42](https://github.com/alternun-development/alternun/compare/v1.1.41...v1.1.42) (2026-08-19)
 
