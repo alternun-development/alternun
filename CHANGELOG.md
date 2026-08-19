@@ -1,3 +1,15 @@
+## [1.1.41](https://github.com/alternun-development/alternun/compare/v1.1.41-dev.0...v1.1.41) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.41-dev.0
+- **repo:** test(mobile,i18n): PublicLandingPage, communityAirsTotal.test, communityAirsTotal, en
+
+
+
+
+
+
 ## [1.1.41](https://github.com/alternun-development/alternun/compare/v1.1.40-dev.0...v1.1.41) (2026-08-19)
 
 ### Bug Fixes
