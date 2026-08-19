@@ -16,6 +16,8 @@ void test('resolve-secrets-manager-env hydrates the stage-mapped identity integr
   assert.match(source, /INFRA_IDENTITY_ENABLED/);
   assert.match(source, /INFRA_ENABLE_BACKEND_API/);
   assert.match(source, /Skipped Secrets Manager auth env resolution/);
+  assert.match(source, /Skipped retired identity secret resolution for backend stage/);
+  assert.match(source, /backend OAuth credentials are configured/);
   assert.match(source, /googleClientId/);
   assert.match(source, /googleClientSecret/);
   assert.match(source, /discordClientId/);

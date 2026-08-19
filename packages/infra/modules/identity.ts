@@ -316,6 +316,16 @@ function parsePositiveInteger(value: string | number | undefined, fallback: numb
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
 }
 
+function resolveIdentityRdsBackupRetentionDefault(env: NodeJS.ProcessEnv): number {
+  const stage = (env.STACK ?? env.SST_STAGE ?? '').trim().toLowerCase();
+
+  // Keep production point-in-time recovery at the approved seven-day window,
+  // while the disposable development identity stack stays at the cost baseline.
+  return stage === 'production' || stage === 'prod' || stage.includes('identity-prod')
+    ? IDENTITY_INFRA_DEFAULTS.rds.backupRetentionDays
+    : 1;
+}
+
 function normalizeEmailProvider(value: string | undefined): IdentityEmailProvider {
   const provider = value?.trim().toLowerCase();
   return provider === 'postmark' ? 'postmark' : 'tlao';
@@ -517,7 +527,7 @@ export function buildIdentitySettings(args: BuildIdentitySettingsArgs): Identity
       ),
       backupRetentionDays: parsePositiveInteger(
         args.env.INFRA_IDENTITY_RDS_BACKUP_RETENTION_DAYS ?? localConfig?.rds?.backupRetentionDays,
-        IDENTITY_INFRA_DEFAULTS.rds.backupRetentionDays
+        resolveIdentityRdsBackupRetentionDefault(args.env)
       ),
       performanceInsights: parseBoolean(
         args.env.INFRA_IDENTITY_RDS_PERFORMANCE_INSIGHTS ??
