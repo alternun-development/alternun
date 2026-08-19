@@ -126,13 +126,9 @@ Current version: **1.1.39**
 
 ### Bug Fixes
 
+- **repo:** chore: release v1.1.39-dev.0
 - **repo:** fix(infra): apply dashboard migrations before deploy
 - **repo:** fix(mobile): refine AIRS community total card
-
-### Bug Fixes
-
-- **infra:** apply dashboard migrations before deploy ([bc02f92](https://github.com/alternun-development/alternun/commit/bc02f92fb50e0e5d1fa036cfb0a3cbd07a6eff9c))
-- **mobile:** refine AIRS community total card ([8b4dc5c](https://github.com/alternun-development/alternun/commit/8b4dc5cf3aa603e08f6797c77b060bc8057c6ed5))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
