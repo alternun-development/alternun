@@ -24,6 +24,11 @@ export interface AirsLeaderboardResult {
   totalPages: number;
 }
 
+export interface AirsCommunityTotal {
+  totalAirs: number;
+  updatedAt: string | null;
+}
+
 export type AirsActivityScope = 'personal' | 'global';
 
 export interface AirsActivityResult {
@@ -700,6 +705,18 @@ export async function getAirsLeaderboard(
     page,
     pageSize,
     totalPages: Math.max(1, Math.ceil(totalEligibleUsers / pageSize)),
+  };
+}
+
+export async function getAirsCommunityTotal(
+  env: Record<string, string | undefined> = process.env
+): Promise<AirsCommunityTotal> {
+  const rows = await supabaseRpcArray('airs_get_community_total', {}, env);
+  const row = rows[0] ?? {};
+
+  return {
+    totalAirs: asNumber(row.total_airs),
+    updatedAt: asText(row.updated_at),
   };
 }
 

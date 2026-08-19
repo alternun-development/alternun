@@ -321,6 +321,66 @@
       "later": "Later",
       "reload": "Reload"
     },
+    "notifications": {
+      "ui": {
+        "title": "Notifications",
+        "markAllRead": "Mark all read",
+        "empty": "No notifications yet",
+        "viewCenter": "View Notification Center",
+        "seeAll": "See all notifications",
+        "secondsAgo": "{{count}}s ago",
+        "minutesAgo": "{{count}}m ago",
+        "hoursAgo": "{{count}}h ago",
+        "daysAgo": "{{count}}d ago",
+        "inbox": "Inbox",
+        "archived": "Archived",
+        "search": "Search notifications...",
+        "all": "All",
+        "unread": "Unread",
+        "success": "Success",
+        "error": "Error",
+        "info": "Info",
+        "warning": "Alert",
+        "noInbox": "No notifications",
+        "noArchived": "No archived notifications",
+        "noMatches": "No matching notifications",
+        "markRead": "Mark read",
+        "markUnread": "Mark unread",
+        "archive": "Archive",
+        "unarchive": "Unarchive",
+        "delete": "Delete",
+        "signInTitle": "Sign in to view notifications",
+        "signInBody": "Sign in to access your notifications and stay updated.",
+        "signIn": "Sign in",
+        "goBack": "Go back"
+      },
+      "events": {
+        "registration_completed": {
+          "title": "Registration complete",
+          "body": "Your AIRS account is ready."
+        },
+        "airs_credited": {
+          "title": "AIRS earned",
+          "body": "You received {{amount}} AIRS."
+        },
+        "referral_confirmed": {
+          "title": "Referral confirmed",
+          "body": "One of your referrals confirmed their account."
+        },
+        "wallet_connected": {
+          "title": "Wallet connected",
+          "body": "Your {{chain}} wallet is now connected."
+        },
+        "profile_completed": {
+          "title": "Profile complete",
+          "body": "Your AIRS profile is complete."
+        },
+        "generic": {
+          "title": "Account update",
+          "body": "There is a new update to your AIRS account."
+        }
+      }
+    },
     "landing": {
       "actions": {
         "goToDashboard": "Go to dashboard"
@@ -485,6 +545,11 @@
         "cta": "See earning paths",
         "sectionTitle": "How to accumulate Airs",
         "subtitle": "Earn Airs through allied commerce, regenerative projects, verified services, and carbon-footprint actions.",
+        "communityTotal": {
+          "label": "AIRS accumulated by the community",
+          "loading": "Loading live total…",
+          "live": "Updates automatically"
+        },
         "topRated": "Verified",
         "moreInfo": "More info",
         "redeemCta": "Start earning Airs",

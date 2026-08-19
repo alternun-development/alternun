@@ -8,8 +8,10 @@ import {
   Bell,
   X,
   CheckCheck,
+  type LucideProps,
 } from 'lucide-react-native';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { useAppTranslation } from '../i18n/useAppTranslation';
 
 export type NotifType = 'success' | 'error' | 'info' | 'warning';
 
@@ -32,12 +34,12 @@ interface NotificationDropdownProps {
   onNavigateToCenter?: () => void;
 }
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date, t: ReturnType<typeof useAppTranslation>): string {
   const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 60) return t.t('notifications.ui.secondsAgo', { count: diff });
+  if (diff < 3600) return t.t('notifications.ui.minutesAgo', { count: Math.floor(diff / 60) });
+  if (diff < 86400) return t.t('notifications.ui.hoursAgo', { count: Math.floor(diff / 3600) });
+  return t.t('notifications.ui.daysAgo', { count: Math.floor(diff / 86400) });
 }
 
 export const TYPE_CONFIG: Record<
@@ -74,6 +76,7 @@ export default function NotificationDropdown({
   onClose,
   onNavigateToCenter,
 }: NotificationDropdownProps): React.JSX.Element {
+  const t = useAppTranslation();
   const p = isDark
     ? {
         bg: '#0b0f1e',
@@ -110,7 +113,9 @@ export default function NotificationDropdown({
       <View style={[styles.header, { borderBottomColor: p.divider }]}>
         <View style={styles.headerLeft}>
           <Bell size={14} color={p.header} />
-          <Text style={[styles.headerTitle, { color: p.header }]}>Notifications</Text>
+          <Text style={[styles.headerTitle, { color: p.header }]}>
+            {t.t('notifications.ui.title')}
+          </Text>
           {unreadCount > 0 && (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
@@ -125,7 +130,9 @@ export default function NotificationDropdown({
               style={styles.markAllBtn}
             >
               <CheckCheck size={12} color={p.markAll} />
-              <Text style={[styles.markAllText, { color: p.markAll }]}>Mark all read</Text>
+              <Text style={[styles.markAllText, { color: p.markAll }]}>
+                {t.t('notifications.ui.markAllRead')}
+              </Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity onPress={onClose} activeOpacity={0.75}>
@@ -138,7 +145,9 @@ export default function NotificationDropdown({
       {notifications.length === 0 ? (
         <View style={styles.empty}>
           <Bell size={28} color={p.emptyIcon} />
-          <Text style={[styles.emptyText, { color: p.emptyText }]}>No notifications yet</Text>
+          <Text style={[styles.emptyText, { color: p.emptyText }]}>
+            {t.t('notifications.ui.empty')}
+          </Text>
         </View>
       ) : (
         <ScrollView
@@ -177,7 +186,7 @@ export default function NotificationDropdown({
                       {notif.title}
                     </Text>
                     <Text style={[styles.itemTime, { color: p.sub }]}>
-                      {timeAgo(notif.timestamp)}
+                      {timeAgo(notif.timestamp, t)}
                     </Text>
                   </View>
                   <Text style={[styles.itemDesc, { color: p.sub }]} numberOfLines={2}>
@@ -213,7 +222,9 @@ export default function NotificationDropdown({
             style={styles.seeAllBtn}
           >
             <Text style={[styles.seeAllText, { color: p.markAll }]}>
-              {notifications.length === 0 ? 'View Notification Center' : 'See all notifications'}
+              {notifications.length === 0
+                ? t.t('notifications.ui.viewCenter')
+                : t.t('notifications.ui.seeAll')}
             </Text>
           </TouchableOpacity>
         </View>
