@@ -2490,6 +2490,7 @@ const styles = createTypographyStyles({
   communityAirsCounter: {
     width: '100%',
     maxWidth: 360,
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
