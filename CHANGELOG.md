@@ -1,3 +1,28 @@
+## [1.1.34](https://github.com/alternun-development/alternun/compare/v1.1.34-dev.0...v1.1.34) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.34-dev.0
+- **repo:** fix(api,auth): route email confirmation through backend
+- **repo:** fix(release): preserve consumer startup and update staging
+
+
+
+
+
+
+## [1.1.34](https://github.com/alternun-development/alternun/compare/v1.1.33...v1.1.34) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** fix(api,auth): route email confirmation through backend
+- **repo:** fix(release): preserve consumer startup and update staging
+
+### Bug Fixes
+
+- **api,auth:** route email confirmation through backend ([98cf360](https://github.com/alternun-development/alternun/commit/98cf3600b20b1cf84ceb73245592333ac2409718))
+- **release:** preserve consumer startup and update staging ([f9dd58f](https://github.com/alternun-development/alternun/commit/f9dd58fa8e904b488ece8bec4fa39604e9c5a5bf))
+
 ## [1.1.33](https://github.com/alternun-development/alternun/compare/v1.1.33-dev.0...v1.1.33) (2026-08-18)
 
 ### Bug Fixes
@@ -6,11 +31,6 @@
 - **repo:** fix(auth): restore generated artifacts
 - **repo:** fix(auth): address SMTP migration review
 - **repo:** chore: release v1.1.32
-
-
-
-
-
 
 ## [1.1.33](https://github.com/alternun-development/alternun/compare/v1.1.32...v1.1.33) (2026-08-18)
 
