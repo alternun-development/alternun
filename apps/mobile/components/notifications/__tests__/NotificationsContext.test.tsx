@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/require-await, @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/require-await, @typescript-eslint/no-floating-promises */
 import React from 'react';
 import { act, create } from 'react-test-renderer';
 
@@ -99,6 +99,105 @@ describe('NotificationsProvider', () => {
         read: false,
       }),
     ]);
+    await act(async () => renderer.unmount());
+  });
+
+  it('persists every user action while updating the rendered feed immediately', async () => {
+    mockAuth.user = { id: 'app-user-123' };
+    mockAuth.client.getSessionToken.mockResolvedValue('session-token');
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        notifications: [
+          {
+            id: 'notification-1',
+            eventType: 'wallet_connected',
+            severity: 'info',
+            payload: { chain: 'Ethereum' },
+            read: false,
+            archived: false,
+            createdAt: 'not-a-date',
+          },
+          {
+            id: 'notification-2',
+            eventType: 'unknown_event',
+            severity: 'warning',
+            payload: {},
+            read: false,
+            archived: false,
+            createdAt: '2026-08-19T12:00:00.000Z',
+          },
+        ],
+      }),
+    } as Response);
+    let notifications: ReturnType<typeof useNotifications>;
+    let renderer: ReturnType<typeof create>;
+
+    function Probe(): null {
+      notifications = useNotifications();
+      return null;
+    }
+
+    await act(async () => {
+      renderer = create(
+        <NotificationsProvider>
+          <Probe />
+        </NotificationsProvider>
+      );
+      await Promise.resolve();
+    });
+
+    expect(notifications.items[0]).toEqual(
+      expect.objectContaining({
+        body: 'notifications.events.wallet_connected.body',
+        timestamp: new Date(0),
+      })
+    );
+    expect(notifications.items[1]).toEqual(
+      expect.objectContaining({ title: 'notifications.events.generic.title' })
+    );
+
+    const expectAction = async (action: () => void, assertion: () => void): Promise<void> => {
+      await act(async () => {
+        action();
+        await Promise.resolve();
+      });
+      assertion();
+    };
+
+    await expectAction(
+      () => notifications.markRead('notification-1'),
+      () => expect(notifications.items[0]?.read).toBe(true)
+    );
+    await expectAction(
+      () => notifications.markUnread('notification-1'),
+      () => expect(notifications.items[0]?.read).toBe(false)
+    );
+    await expectAction(
+      () => notifications.archive('notification-1'),
+      () => expect(notifications.items[0]?.archived).toBe(true)
+    );
+    await expectAction(
+      () => notifications.unarchive('notification-1'),
+      () => expect(notifications.items[0]?.archived).toBe(false)
+    );
+    await expectAction(
+      () => notifications.markAllRead(),
+      () => expect(notifications.unreadCount).toBe(0)
+    );
+    await expectAction(
+      () => notifications.deleteNotif('notification-1'),
+      () => expect(notifications.items).toHaveLength(1)
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://127.0.0.1:3000/v1/notifications/read-all',
+      expect.objectContaining({ method: 'POST' })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://127.0.0.1:3000/v1/notifications/notification-1',
+      expect.objectContaining({ method: 'PATCH' })
+    );
     await act(async () => renderer.unmount());
   });
 });
