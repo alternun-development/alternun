@@ -986,17 +986,23 @@ export class AlternunMobileAuthClient implements AuthClient {
     }
 
     const supabase = this.ensureSupabase();
+    let verifiedUser = data.user;
     if (data.session?.token && data.session.refreshToken) {
-      const { error } = await supabase.auth.setSession({
+      const { data: establishedSession, error } = await supabase.auth.setSession({
         access_token: data.session.token,
         refresh_token: data.session.refreshToken,
       });
       if (error) {
         throw new Error(`PROVIDER_ERROR: ${error.message}`);
       }
+
+      // The API response is normalized for backend callers. The freshly
+      // established Supabase session retains the raw metadata that this client
+      // maps into avatar and external-provider fields.
+      verifiedUser = establishedSession.session?.user ?? verifiedUser;
     }
 
-    this.emit(this.mapSupabaseUser(data.user));
+    this.emit(this.mapSupabaseUser(verifiedUser));
   }
 
   async signOut(): Promise<void> {
