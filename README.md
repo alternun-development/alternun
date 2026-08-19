@@ -126,6 +126,7 @@ Current version: **1.1.36**
 
 ### Bug Fixes
 
+- **repo:** chore: release v1.1.36-dev.0
 - **repo:** test(mobile): NotificationsContext.test
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
