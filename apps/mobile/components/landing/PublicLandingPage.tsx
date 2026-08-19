@@ -154,6 +154,9 @@ const TOKEN_IMAGE_FOCI: Record<
 // ── Auto-loop interval for ComoFunciona steps (ms) ────────────────────────────
 const STEP_LOOP_INTERVAL = 3200;
 const COMMUNITY_TOTAL_REFRESH_INTERVAL_MS = 30_000;
+const COMMUNITY_AIRS_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 2,
+});
 
 interface PublicLandingPageProps {
   onSignIn: () => void;
@@ -1414,21 +1417,25 @@ function CommunityAirsCounter({
   }, []);
 
   const numberColor = isDark ? '#e8fff6' : '#083d39';
-  const surfaceColor = isDark ? 'rgba(30,230,181,0.12)' : 'rgba(13,148,136,0.10)';
-  const borderColor = isDark ? 'rgba(30,230,181,0.35)' : 'rgba(13,148,136,0.24)';
+  const surfaceColor = isDark ? 'rgba(8,61,57,0.72)' : '#f3fbf9';
+  const borderColor = isDark ? 'rgba(30,230,181,0.28)' : 'rgba(8,61,57,0.12)';
   const mutedColor = isDark ? 'rgba(232,255,246,0.72)' : '#50716e';
   const formattedTotal =
     totalAirs == null
       ? t('landing.beneficios.communityTotal.loading')
-      : new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(totalAirs);
+      : COMMUNITY_AIRS_NUMBER_FORMATTER.format(totalAirs);
 
   return (
     <View
       testID='community-airs-total'
       style={[styles.communityAirsCounter, { backgroundColor: surfaceColor, borderColor }]}
     >
-      <View style={[styles.communityAirsIcon, { backgroundColor: accentColor }]}>
-        <SparklesIcon size={16} color={isDark ? '#050510' : '#ffffff'} />
+      <View style={[styles.communityAirsIcon, { backgroundColor: isDark ? '#0b4d47' : '#dff7f0' }]}>
+        <AirsBrandMark
+          size={30}
+          fillColor={accentColor}
+          cutoutColor={isDark ? '#062f2d' : '#f3fbf9'}
+        />
       </View>
       <View style={styles.communityAirsCopy}>
         <Text style={[styles.communityAirsLabel, { color: mutedColor }]}>
@@ -2481,45 +2488,46 @@ const styles = createTypographyStyles({
     maxWidth: 560,
   },
   communityAirsCounter: {
-    minWidth: 252,
+    width: '100%',
+    maxWidth: 360,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     borderWidth: 1,
-    borderRadius: 18,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   communityAirsIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   communityAirsCopy: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     flex: 1,
+    gap: 1,
   },
   communityAirsLabel: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 0.2,
-    textAlign: 'center',
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.35,
+    textTransform: 'uppercase',
   },
   communityAirsValue: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '800',
-    letterSpacing: 0.4,
-    textAlign: 'center',
+    letterSpacing: 0.15,
   },
   communityAirsLive: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 10,
     fontWeight: '600',
-    textAlign: 'center',
+    letterSpacing: 0.1,
   },
 
   // ── Membresia ─────────────────────────────────────────────────────────────────
