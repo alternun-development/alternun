@@ -57,8 +57,8 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
   }
 
   return (
-    <NotificationsProvider>
-      <AppAuthProvider>
+    <AppAuthProvider>
+      <NotificationsProvider>
         <AirsDashboardProvider>
           <ThemeProvider value={navigationTheme}>
             <View style={styles.appShell}>
@@ -132,8 +132,8 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
             <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
           </ThemeProvider>
         </AirsDashboardProvider>
-      </AppAuthProvider>
-    </NotificationsProvider>
+      </NotificationsProvider>
+    </AppAuthProvider>
   );
 }
 
