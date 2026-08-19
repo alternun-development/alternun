@@ -331,7 +331,7 @@ export default function Dashboard({
     items: notificationItems,
     markAllRead: markAllNotificationsRead,
     deleteNotif: dismissNotification,
-    addNotification,
+    refresh: refreshNotifications,
   } = useNotifications();
   const router = useRouter();
   const isDark = themeMode === 'dark';
@@ -393,14 +393,7 @@ export default function Dashboard({
           setBonusModalVisible(true);
         }
 
-        addNotification({
-          type: 'success',
-          title: t.t('dashboard.notifications.welcomeBonus.title'),
-          body: t.t('dashboard.notifications.welcomeBonus.message'),
-          timestamp: new Date(),
-          read: false,
-          archived: false,
-        });
+        void refreshNotifications();
 
         if (wasAwarded) {
           lastAirsSnapshotKeyRef.current = null;
@@ -410,7 +403,7 @@ export default function Dashboard({
     } catch {
       // Silently fail - bonus is nice to have but not critical
     }
-  }, [client, showWelcomeBonusModal, t, addNotification]);
+  }, [client, showWelcomeBonusModal, refreshNotifications]);
 
   // Periodically check if email was verified (for newly verified users)
   React.useEffect(() => {

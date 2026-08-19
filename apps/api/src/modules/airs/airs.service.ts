@@ -8,6 +8,7 @@ import {
   awardAirsProfileBonus,
   getAirsDashboardSnapshot,
   getAirsActivity,
+  getAirsCommunityTotal,
   getAirsLeaderboard,
   getAirsUserPositions,
   getUserAchievements,
@@ -17,6 +18,7 @@ import {
   type AirsLeaderboardResult,
   type AirsActivityResult,
   type AirsActivityScope,
+  type AirsCommunityTotal,
   type AirsLedgerSourceKind,
   type AirsUserPositions,
   type UserAchievement,
@@ -412,6 +414,17 @@ export class AirsService {
     return getAirsUserPositions({ userId }, process.env).catch((error: unknown) => {
       this.logger.error(
         `AIRS positions fetch failed: ${error instanceof Error ? error.message : String(error)}`
+      );
+      throw error;
+    });
+  }
+
+  async communityTotal(): Promise<AirsCommunityTotal> {
+    return getAirsCommunityTotal(process.env).catch((error: unknown) => {
+      this.logger.error(
+        `AIRS community total fetch failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`
       );
       throw error;
     });
