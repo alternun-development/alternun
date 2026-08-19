@@ -5,7 +5,7 @@
     "repo": "alternun-development/alternun",
     "prefix": "alternun",
     "projectTag": "alternun",
-    "pipelines": "production,dev,identity-dev,identity-prod,dashboard-dev,dashboard-prod",
+    "pipelines": "production,dev,dashboard-dev,dashboard-prod",
     "branchProd": "master",
     "branchDev": "develop",
     "branchIdentityDev": "develop",
