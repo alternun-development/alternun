@@ -154,15 +154,6 @@ const TOKEN_IMAGE_FOCI: Record<
 // ── Auto-loop interval for ComoFunciona steps (ms) ────────────────────────────
 const STEP_LOOP_INTERVAL = 3200;
 const COMMUNITY_TOTAL_REFRESH_INTERVAL_MS = 30_000;
-const COMMUNITY_AIRS_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, {
-  maximumFractionDigits: 2,
-});
-const COMMUNITY_AIRS_USD_FORMATTER = new Intl.NumberFormat(undefined, {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 2,
-});
-
 interface PublicLandingPageProps {
   onSignIn: () => void;
   /** Optional handler for "continue to dashboard" with dontShowAgain flag */
@@ -1399,9 +1390,22 @@ function CommunityAirsCounter({
   isDark,
   accentColor,
 }: Pick<SectionProps, 'isDark' | 'accentColor'>): React.JSX.Element {
-  const { t } = useAppTranslation('mobile');
+  const { t, locale } = useAppTranslation('mobile');
   const [totalAirs, setTotalAirs] = useState<number | null>(null);
   const [isInfoVisible, setIsInfoVisible] = useState(false);
+  const numberFormatter = useMemo(
+    () => new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }),
+    [locale]
+  );
+  const usdFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 2,
+      }),
+    [locale]
+  );
 
   useEffect(() => {
     let active = true;
@@ -1429,11 +1433,9 @@ function CommunityAirsCounter({
   const formattedTotal =
     totalAirs == null
       ? t('landing.beneficios.communityTotal.loading')
-      : COMMUNITY_AIRS_NUMBER_FORMATTER.format(totalAirs);
+      : numberFormatter.format(totalAirs);
   const eligibleSpendReference =
-    totalAirs == null
-      ? null
-      : COMMUNITY_AIRS_USD_FORMATTER.format(getEligibleSpendReference(totalAirs));
+    totalAirs == null ? null : usdFormatter.format(getEligibleSpendReference(totalAirs));
   const tooltipSurfaceColor = isDark ? '#0b4d47' : '#ffffff';
   const tooltipTextColor = isDark ? '#e8fff6' : '#083d39';
 

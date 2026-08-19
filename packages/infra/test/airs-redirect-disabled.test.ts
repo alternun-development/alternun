@@ -26,10 +26,7 @@ void test('airs to testnet redirect is disabled by default everywhere it is conf
 
   assert.match(infraDefaultsSource, /enableAirsToDev: false/);
   assert.match(localInfraEnvSource, /INFRA_REDIRECT_AIRS_TO_DEV=false/);
-  assert.match(
-    localInfraEnvSource,
-    /INFRA_PIPELINES=production,dev,identity-dev,identity-prod,dashboard-dev,dashboard-prod/
-  );
+  assert.match(localInfraEnvSource, /INFRA_PIPELINES=production,dev,dashboard-dev,dashboard-prod/);
   assert.match(deploymentConfigExampleSource, /"enableAirsToDev": false/);
   assert.match(envExampleSource, /INFRA_REDIRECT_AIRS_TO_DEV=false/);
   assert.match(sstDeploySource, /INFRA_REDIRECT_AIRS_TO_DEV:-false/);
