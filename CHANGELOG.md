@@ -1,3 +1,15 @@
+## [1.1.36](https://github.com/alternun-development/alternun/compare/v1.1.36-dev.0...v1.1.36) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.36-dev.0
+- **repo:** test(mobile): NotificationsContext.test
+
+
+
+
+
+
 ## [1.1.36](https://github.com/alternun-development/alternun/compare/v1.1.35-dev.0...v1.1.36) (2026-08-19)
 
 ### Bug Fixes
