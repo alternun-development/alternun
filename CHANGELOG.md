@@ -1,3 +1,16 @@
+## [1.1.39](https://github.com/alternun-development/alternun/compare/v1.1.39-dev.0...v1.1.39) (2026-08-19)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.39-dev.0
+- **repo:** fix(infra): apply dashboard migrations before deploy
+- **repo:** fix(mobile): refine AIRS community total card
+
+
+
+
+
+
 ## [1.1.39](https://github.com/alternun-development/alternun/compare/v1.1.38...v1.1.39) (2026-08-19)
 
 ### Bug Fixes
