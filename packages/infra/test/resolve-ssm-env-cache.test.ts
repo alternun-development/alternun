@@ -65,14 +65,34 @@ void test('resolve-ssm-env refreshes cached auth env when the public Supabase ke
 void test('resolve-ssm-env resolves Google and Discord OAuth credentials for production stages', () => {
   const source = fs.readFileSync(helperPath, 'utf8');
 
-  assert.match(source, /export_env_from_ssm "GOOGLE_AUTH_CLIENT_ID" "google-auth-client-id"/);
+  // Isolate the production export_env_from_ssm block specifically (the dev-stage
+  // case block above it already contains identical Google/Discord export lines,
+  // so a whole-file regex search would pass even if the production block never
+  // resolved these vars at all). The comment preceding this block is duplicated
+  // above the ssm_param_names priming array, so anchor on the first export call
+  // instead, which is unique to the export_env_from_ssm block.
+  const anchor =
+    'export_env_from_ssm "INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL" "infra-backend-api-auth-better-auth-url-prod"';
+  const anchorIndex = source.indexOf(anchor);
+  assert.notEqual(anchorIndex, -1, 'expected production case-block comment anchor not found');
+  const blockEnd = source.indexOf('\n      ;;', anchorIndex);
+  assert.notEqual(blockEnd, -1, 'expected end of production case block not found');
+  const productionBlock = source.slice(anchorIndex, blockEnd);
+
   assert.match(
-    source,
+    productionBlock,
+    /export_env_from_ssm "GOOGLE_AUTH_CLIENT_ID" "google-auth-client-id"/
+  );
+  assert.match(
+    productionBlock,
     /export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret"/
   );
-  assert.match(source, /export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id"/);
   assert.match(
-    source,
+    productionBlock,
+    /export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id"/
+  );
+  assert.match(
+    productionBlock,
     /export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret"/
   );
 });
