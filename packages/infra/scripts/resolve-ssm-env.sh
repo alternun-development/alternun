@@ -386,6 +386,10 @@ main() {
         expo-public-auth-exchange-url-prod
         expo-public-authentik-social-login-mode-prod
         database-url-prod
+        google-auth-client-id
+        google-auth-client-secret
+        discord-auth-client-id
+        discord-auth-client-secret
       )
       ;;
     *)
@@ -439,6 +443,10 @@ main() {
       export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url-prod" "https://api.alternun.co/auth/exchange"
       export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-prod" "authentik"
       export_env_from_ssm "DATABASE_URL" "database-url-prod"
+      export_env_from_ssm "GOOGLE_AUTH_CLIENT_ID" "google-auth-client-id"
+      export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret"
+      export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id"
+      export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret"
       ;;
     *)
       export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url" ""

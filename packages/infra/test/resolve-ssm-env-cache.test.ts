@@ -61,3 +61,18 @@ void test('resolve-ssm-env refreshes cached auth env when the public Supabase ke
     /export_env_from_ssm "EXPO_PUBLIC_SUPABASE_KEY" "expo-public-supabase-key" "" "\$\{SSM_SHARED_STAGE\}"/
   );
 });
+
+void test('resolve-ssm-env resolves Google and Discord OAuth credentials for production stages', () => {
+  const source = fs.readFileSync(helperPath, 'utf8');
+
+  assert.match(source, /export_env_from_ssm "GOOGLE_AUTH_CLIENT_ID" "google-auth-client-id"/);
+  assert.match(
+    source,
+    /export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret"/
+  );
+  assert.match(source, /export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id"/);
+  assert.match(
+    source,
+    /export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret"/
+  );
+});
