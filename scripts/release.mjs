@@ -821,15 +821,18 @@ const RELEASE_CHANGE_DESCRIPTIONS = [
   },
   {
     paths: ['apps/api/src/modules/auth-exchange/services/signup.service.ts'],
-    description: 'Preserved the canonical signup welcome message for every supported signup provider.',
+    description:
+      'Preserved the canonical signup welcome message for every supported signup provider.',
   },
   {
     paths: ['apps/mobile/app/delete-account.tsx'],
-    description: 'Added a localized, discoverable account-deletion route with privacy, settings, and documentation links.',
+    description:
+      'Added a localized, discoverable account-deletion route with privacy, settings, and documentation links.',
   },
   {
     paths: ['scripts/release.mjs'],
-    description: 'Improved generated promotion PRs with a tag comparison, resource impact inventory, and audit details.',
+    description:
+      'Improved generated promotion PRs with a tag comparison, resource impact inventory, and audit details.',
   },
 ];
 
@@ -908,8 +911,12 @@ function summarizeReleaseChanges({ changelogSection, commitSubjects, changedPath
   const meaningfulSubjects = commitSubjects.filter(
     (subject) => !/^(test|docs|chore|ci|build|refactor)(\([^)]*\))?:/i.test(subject)
   );
-  const summaries = (meaningfulSubjects.length > 0 ? meaningfulSubjects : commitSubjects).slice(0, 8);
-  if (summaries.length === 0) return '- No application changes were detected outside release metadata.';
+  const summaries = (meaningfulSubjects.length > 0 ? meaningfulSubjects : commitSubjects).slice(
+    0,
+    8
+  );
+  if (summaries.length === 0)
+    return '- No application changes were detected outside release metadata.';
 
   return summaries.map((subject) => `- ${subject}`).join('\n');
 }
@@ -918,11 +925,12 @@ function getAffectedSurfaces(changedPaths) {
   const affected = new Map();
 
   for (const changedPath of changedPaths) {
-    const definition =
-      RELEASE_SURFACE_DEFINITIONS.find((candidate) => changedPath.startsWith(candidate.prefix)) ?? {
-        name: 'Repository configuration',
-        resources: 'Repository-wide configuration and release metadata',
-      };
+    const definition = RELEASE_SURFACE_DEFINITIONS.find((candidate) =>
+      changedPath.startsWith(candidate.prefix)
+    ) ?? {
+      name: 'Repository configuration',
+      resources: 'Repository-wide configuration and release metadata',
+    };
     const paths = affected.get(definition.name) ?? { ...definition, paths: [] };
     paths.paths.push(changedPath);
     affected.set(definition.name, paths);
@@ -944,11 +952,16 @@ function formatAffectedSurfaces(changedPaths) {
     '| --- | --- | ---: |',
     ...surfaces.map(
       ({ name, resources, paths }) =>
-        `| ${escapeMarkdownTableCell(name)} | ${escapeMarkdownTableCell(resources)} | ${paths.length} |`
+        `| ${escapeMarkdownTableCell(name)} | ${escapeMarkdownTableCell(resources)} | ${
+          paths.length
+        } |`
     ),
   ];
   const fileDetails = surfaces.map(({ name, paths }) => {
-    const sample = paths.slice(0, 5).map((filePath) => `\`${filePath}\``).join(', ');
+    const sample = paths
+      .slice(0, 5)
+      .map((filePath) => `\`${filePath}\``)
+      .join(', ');
     const overflow = paths.length > 5 ? `, and ${paths.length - 5} more` : '';
     return `- **${name}:** ${sample}${overflow}`;
   });
@@ -974,7 +987,9 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
   const summary = summarizeReleaseChanges({ changelogSection, commitSubjects, changedPaths });
   const affectedSurfaces = formatAffectedSurfaces(changedPaths);
   const commitDetails = formatCommitDetails(commitSubjects);
-  const releaseCompareUrl = previousTag ? buildCompareUrl(remoteUrl, previousTag, `v${version}`) : null;
+  const releaseCompareUrl = previousTag
+    ? buildCompareUrl(remoteUrl, previousTag, `v${version}`)
+    : null;
 
   const bodyParts = [
     `## Release v${version}`,
@@ -984,7 +999,9 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
     `**Promotion:** \`${head}\` → \`${base}\``,
     previousTag
       ? `**Release range:** ${
-          releaseCompareUrl ? `[\`${previousTag}\` → \`v${version}\`](${releaseCompareUrl})` : `\`${previousTag}\` → \`v${version}\``
+          releaseCompareUrl
+            ? `[\`${previousTag}\` → \`v${version}\`](${releaseCompareUrl})`
+            : `\`${previousTag}\` → \`v${version}\``
         }`
       : '**Release range:** first tagged release',
     '<!-- alternun-release:patch -->',
@@ -994,7 +1011,19 @@ function maybeCreatePullRequest({ remote, base, head, version, dryRun }) {
   bodyParts.push('', '---', '', '## Affected surfaces', '', affectedSurfaces);
 
   if (commitDetails) {
-    bodyParts.push('', '---', '', '## Commit details', '', '<details>', `<summary>${commitSubjects.length} commits in this release range</summary>`, '', commitDetails, '', '</details>');
+    bodyParts.push(
+      '',
+      '---',
+      '',
+      '## Commit details',
+      '',
+      '<details>',
+      `<summary>${commitSubjects.length} commits in this release range</summary>`,
+      '',
+      commitDetails,
+      '',
+      '</details>'
+    );
   }
 
   bodyParts.push('', '---', '', '🤖 Generated by `pnpm release --promote`');
@@ -1272,6 +1301,7 @@ function performVersionChange(target, options, branchName, productionBranch) {
       } catch (err) {
         // Ignored
       }
+      run('node', ['scripts/publish-production-changelog.mjs', '--version', promotedVersion]);
     }
 
     return options.dryRun ? promotedVersion : readRootVersion(productionBranch);
