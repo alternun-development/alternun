@@ -126,17 +126,10 @@ Current version: **1.1.43**
 
 ### Bug Fixes
 
+- **repo:** chore: release v1.1.43-dev.1
 - **repo:** chore: release v1.1.43-dev.0
 - **repo:** fix(mobile): DashboardSummaryCards
 - **repo:** Revert "chore: release v1.1.43-dev.0"
-
-### Bug Fixes
-
-- **mobile:** DashboardSummaryCards ([55860e3](https://github.com/alternun-development/alternun/commit/55860e3247ddcccbd51aac36083827407c9938d0))
-
-### Reverts
-
-- Revert "chore: release v1.1.43-dev.0" ([4864113](https://github.com/alternun-development/alternun/commit/4864113ba3a3ddcd97e28be586a0342568138cae))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
