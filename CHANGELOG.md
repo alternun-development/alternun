@@ -2,6 +2,22 @@
 
 ### Bug Fixes
 
+- **repo:** chore: release v1.1.43-dev.0
+- **repo:** fix(mobile): DashboardSummaryCards
+- **repo:** Revert "chore: release v1.1.43-dev.0"
+
+### Bug Fixes
+
+- **mobile:** DashboardSummaryCards ([55860e3](https://github.com/alternun-development/alternun/commit/55860e3247ddcccbd51aac36083827407c9938d0))
+
+### Reverts
+
+- Revert "chore: release v1.1.43-dev.0" ([4864113](https://github.com/alternun-development/alternun/commit/4864113ba3a3ddcd97e28be586a0342568138cae))
+
+## [1.1.43](https://github.com/alternun-development/alternun/compare/v1.1.43-dev.0...v1.1.43) (2026-08-20)
+
+### Bug Fixes
+
 - **repo:** fix(mobile): DashboardSummaryCards
 - **repo:** Revert "chore: release v1.1.43-dev.0"
 
