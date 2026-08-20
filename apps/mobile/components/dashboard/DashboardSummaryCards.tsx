@@ -109,16 +109,19 @@ function SummaryCard({
   p,
   compact = false,
   mobile = false,
+  testID,
   minHeight,
 }: {
   children: React.ReactNode;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
   mobile?: boolean;
+  testID?: string;
   minHeight?: number;
 }): React.JSX.Element {
   return (
     <View
+      testID={testID}
       style={[
         styles.card,
         compact && styles.cardCompact,
@@ -251,7 +254,7 @@ function RBICard({
   minHeight?: number;
 }): React.JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
-  const useDenseLayout = compact || dense;
+  const useDenseLayout = dense;
   const t = useAppTranslation();
   const comingSoonLabel = t.t('dashboard.summaryCards.comingSoon');
 
@@ -263,7 +266,13 @@ function RBICard({
   };
 
   return (
-    <SummaryCard p={p} compact={compact} mobile={mobile} minHeight={minHeight}>
+    <SummaryCard
+      p={p}
+      compact={compact}
+      mobile={mobile}
+      testID='dashboard-rbi-card'
+      minHeight={minHeight}
+    >
       <CardTitle
         label={t.t('dashboard.summaryCards.rbi.title')}
         sub={t.t('dashboard.summaryCards.rbi.subtitle')}
@@ -273,6 +282,7 @@ function RBICard({
       />
 
       <View
+        testID='dashboard-rbi-status'
         style={[
           styles.rbiHero,
           compact && styles.rbiHeroCompact,
@@ -291,6 +301,7 @@ function RBICard({
           {comingSoonLabel}
         </Text>
         <View
+          testID='dashboard-rbi-hero-icon'
           style={[
             styles.heroBadge,
             compact && styles.heroBadgeCompact,
@@ -305,6 +316,7 @@ function RBICard({
 
       <View style={[styles.statList, compact && styles.statListCompact]}>
         <View
+          testID='dashboard-rbi-estimated-pool'
           style={[
             styles.statRow,
             useDenseLayout && styles.statRowDense,
@@ -327,6 +339,7 @@ function RBICard({
           </Text>
         </View>
         <View
+          testID='dashboard-rbi-eligible-users'
           style={[
             styles.statRow,
             useDenseLayout && styles.statRowDense,
@@ -346,6 +359,7 @@ function RBICard({
           />
         </View>
         <View
+          testID='dashboard-rbi-airs-score'
           style={[
             styles.statRow,
             useDenseLayout && styles.statRowDense,
@@ -468,7 +482,7 @@ function ATNCard({
   walletAccount?: WalletAccountRecord | null;
   minHeight?: number;
 }): React.JSX.Element {
-  const useDenseLayout = compact || dense;
+  const useDenseLayout = dense;
   const t = useAppTranslation();
   const comingSoonLabel = t.t('dashboard.summaryCards.comingSoon');
   const primaryWalletLabel = t.t('dashboard.summaryCards.atn.primaryWalletLabel');
@@ -479,7 +493,13 @@ function ATNCard({
     : null;
 
   return (
-    <SummaryCard p={p} compact={compact} mobile={mobile} minHeight={minHeight}>
+    <SummaryCard
+      p={p}
+      compact={compact}
+      mobile={mobile}
+      testID='dashboard-atn-card'
+      minHeight={minHeight}
+    >
       <CardTitle
         label={t.t('dashboard.summaryCards.atn.title')}
         sub={t.t('dashboard.summaryCards.atn.subtitle')}
@@ -489,6 +509,7 @@ function ATNCard({
       />
 
       <View
+        testID='dashboard-atn-available'
         style={[
           styles.tokenRow,
           compact && styles.tokenRowCompact,
@@ -526,6 +547,7 @@ function ATNCard({
       </View>
       <Divider p={p} compact={compact} />
       <View
+        testID='dashboard-atn-stacking'
         style={[
           styles.tokenRow,
           compact && styles.tokenRowCompact,
