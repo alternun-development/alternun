@@ -1,3 +1,17 @@
+## [1.1.43](https://github.com/alternun-development/alternun/compare/v1.1.43-dev.1...v1.1.43) (2026-08-20)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.43-dev.1
+- **repo:** chore: release v1.1.43-dev.0
+- **repo:** fix(mobile): DashboardSummaryCards
+- **repo:** Revert "chore: release v1.1.43-dev.0"
+
+
+
+
+
+
 ## [1.1.43](https://github.com/alternun-development/alternun/compare/v1.1.43-dev.0...v1.1.43) (2026-08-20)
 
 ### Bug Fixes
