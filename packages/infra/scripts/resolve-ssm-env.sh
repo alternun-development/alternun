@@ -16,10 +16,14 @@ APP_NAME="${INFRA_APP_NAME:-alternun-infra}"
 STAGE="${STACK:-${SST_STAGE:-dev}}"
 REGION="${AWS_REGION:-us-east-1}"
 CACHE_DIR="${INFRA_SSM_ENV_CACHE_DIR:-${TMPDIR:-/tmp}/alternun-infra}"
-CACHE_FILE="${INFRA_SSM_ENV_CACHE_FILE:-${CACHE_DIR}/ssm-env-${STAGE}-${REGION}.sh}"
+CACHE_FILE="${INFRA_SSM_ENV_CACHE_FILE:-${CACHE_DIR}/ssm-env-v2-${STAGE}-${REGION}.sh}"
 
 declare -A SSM_PARAM_CACHE=()
 declare -a CACHE_EXPORT_VARS=(
+  GOOGLE_AUTH_CLIENT_ID
+  GOOGLE_AUTH_CLIENT_SECRET
+  DISCORD_AUTH_CLIENT_ID
+  DISCORD_AUTH_CLIENT_SECRET
   EXPO_PUBLIC_SUPABASE_URL
   EXPO_PUBLIC_SUPABASE_KEY
   INFRA_BACKEND_API_SUPABASE_URL
@@ -443,6 +447,10 @@ main() {
       export_env_from_ssm "EXPO_PUBLIC_AUTH_EXCHANGE_URL" "expo-public-auth-exchange-url-prod" "https://api.alternun.co/auth/exchange"
       export_env_from_ssm "EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE" "expo-public-authentik-social-login-mode-prod" "authentik"
       export_env_from_ssm "DATABASE_URL" "database-url-prod"
+      # Sourced from SSM (SecureString), not Secrets Manager, deviating from the
+      # AGENTS.md prod-secrets convention: the legacy identity/integration-config
+      # secret that used to hold these is retired, mirrors the existing dev-stage
+      # pattern below, and unblocks production Google/Discord sign-in today.
       export_env_from_ssm "GOOGLE_AUTH_CLIENT_ID" "google-auth-client-id"
       export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret"
       export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id"
