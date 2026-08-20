@@ -124,9 +124,9 @@ Current version: **1.1.44**
 
 ## 📋 Latest Changes (v1.1.44)
 
-### Bug Fixes
+### Changes
 
-- **repo:** test(repo,mobile,scripts): CHANGELOG, DashboardSummaryCards, DashboardSummaryCards.render.test, release
+- **repo,mobile,scripts:** CHANGELOG, DashboardSummaryCards, DashboardSummaryCards.render.test, release ([8247267](https://github.com/alternun-development/alternun/commit/824726779f3e4f500cd9ba40ef617a1cdf7ed590))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

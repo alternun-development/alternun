@@ -1,8 +1,8 @@
 ## [1.1.44](https://github.com/alternun-development/alternun/compare/v1.1.43...v1.1.44) (2026-08-20)
 
-### Bug Fixes
+### Changes
 
-- **repo:** test(repo,mobile,scripts): CHANGELOG, DashboardSummaryCards, DashboardSummaryCards.render.test, release
+- **repo,mobile,scripts:** CHANGELOG, DashboardSummaryCards, DashboardSummaryCards.render.test, release ([8247267](https://github.com/alternun-development/alternun/commit/824726779f3e4f500cd9ba40ef617a1cdf7ed590))
 
 ## [1.1.43](https://github.com/alternun-development/alternun/compare/v1.1.42...v1.1.43) (2026-08-20)
 
