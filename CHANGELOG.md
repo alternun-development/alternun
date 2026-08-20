@@ -1,3 +1,9 @@
+## [1.1.46](https://github.com/alternun-development/alternun/compare/v1.1.45...v1.1.46) (2026-08-20)
+
+### Bug Fixes
+
+- **infra:** resolve Google/Discord OAuth creds from SSM for production stages ([d327770](https://github.com/alternun-development/alternun/commit/d327770374e3bfa44eac85a945caee2934deb4b9))
+
 ## [1.1.45](https://github.com/alternun-development/alternun/compare/v1.1.44...v1.1.45) (2026-08-20)
 
 ### Bug Fixes
