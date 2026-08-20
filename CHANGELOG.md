@@ -2,11 +2,6 @@
 
 ### Bug Fixes
 
-- **repo:** chore: release v1.1.44
-- **repo:** fix(infra): treat backend API Google OAuth as optional like Discord
-
-### Bug Fixes
-
 - **infra:** treat backend API Google OAuth as optional like Discord ([1142016](https://github.com/alternun-development/alternun/commit/11420165d229637b89d749ba3e044d9a1f7698c0))
 
 ## [1.1.44](https://github.com/alternun-development/alternun/compare/v1.1.43...v1.1.44) (2026-08-20)
