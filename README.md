@@ -126,10 +126,6 @@ Current version: **1.1.46**
 
 ### Bug Fixes
 
-- **repo:** fix(infra): resolve Google/Discord OAuth creds from SSM for production stages
-
-### Bug Fixes
-
 - **infra:** resolve Google/Discord OAuth creds from SSM for production stages ([d327770](https://github.com/alternun-development/alternun/commit/d327770374e3bfa44eac85a945caee2934deb4b9))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
