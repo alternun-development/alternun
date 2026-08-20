@@ -1,36 +1,29 @@
 {
-  "version": "1.1.42-dev.0",
+  "version": "1.1.44-dev.0",
   "build": 0,
-  "lastUpdated": "2026-08-19T05:32:27.138Z",
+  "lastUpdated": "2026-08-20T06:10:43.485Z",
   "environment": "development",
   "lastDeployment": {
     "id": "development-0",
-    "version": "1.1.42-dev.0",
+    "version": "1.1.44-dev.0",
     "build": 0,
-    "date": "2026-08-19T05:32:27.138Z",
-    "message": "Release 1.1.42-dev.0"
+    "date": "2026-08-20T06:10:43.485Z",
+    "message": "Release 1.1.44-dev.0"
   },
   "deploymentHistory": [
     {
       "id": "development-0",
-      "version": "1.1.42-dev.0",
+      "version": "1.1.44-dev.0",
       "build": 0,
-      "date": "2026-08-19T05:32:27.138Z",
-      "message": "Release 1.1.42-dev.0"
+      "date": "2026-08-20T06:10:43.485Z",
+      "message": "Release 1.1.44-dev.0"
     },
     {
       "id": "development-1",
-      "version": "1.1.1-dev.0",
+      "version": "1.1.43-dev.1",
       "build": 1,
-      "date": "2026-07-01T11:31:17.000Z",
-      "message": "Sync to 1.1.1-dev.0 after production release v1.1.1"
-    },
-    {
-      "id": "development-1",
-      "version": "1.0.283-dev.1",
-      "build": 1,
-      "date": "2026-06-27T14:41:22.044Z",
-      "message": "Release 1.0.283-dev.1"
+      "date": "2026-08-20T05:45:23.323Z",
+      "message": "Release 1.1.43-dev.1"
     },
     {
       "id": "development-4",

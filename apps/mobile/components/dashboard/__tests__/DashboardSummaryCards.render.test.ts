@@ -67,12 +67,12 @@ type RenderState = {
   root: Root;
 };
 
-function mockWindowDimensions(width: number): void {
+function mockWindowDimensions(width: number, fontScale = 1): void {
   jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({
     width,
     height: 800,
     scale: 2,
-    fontScale: 2,
+    fontScale,
   });
 }
 
@@ -131,6 +131,16 @@ function clickElementByText(container: HTMLElement, text: string): void {
   });
 }
 
+function getElementByTestId(container: HTMLElement, testID: string): HTMLElement {
+  const element = container.querySelector<HTMLElement>(`[data-testid="${testID}"]`);
+
+  if (!element) {
+    throw new Error(`Unable to find element with testID ${testID}`);
+  }
+
+  return element;
+}
+
 describe('DashboardSummaryCards render', () => {
   const originalFetch = globalThis.fetch;
   let renderState: RenderState | null = null;
@@ -166,6 +176,47 @@ describe('DashboardSummaryCards render', () => {
 
     expect(renderState.container.textContent).toContain('Mis ATN');
     expect(renderState.container.textContent).toContain('Proyección RBI');
+  });
+
+  it('uses panelized mobile styles at narrow and wide-mobile viewports', () => {
+    mockWindowDimensions(375, 2);
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: true,
+        signedIn: false,
+        airsBalance: null,
+      })
+    );
+
+    const narrowStatus = getElementByTestId(renderState.container, 'dashboard-rbi-status');
+    const narrowMetric = getElementByTestId(renderState.container, 'dashboard-rbi-estimated-pool');
+    const narrowAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-available');
+
+    expect(narrowStatus.className).not.toBe('');
+    expect(narrowMetric.className).not.toBe('');
+    expect(narrowAtnMetric.className).not.toBe('');
+
+    act(() => {
+      renderState?.root.unmount();
+    });
+    renderState.container.remove();
+
+    mockWindowDimensions(600, 1);
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: true,
+        signedIn: false,
+        airsBalance: null,
+      })
+    );
+
+    const wideStatus = getElementByTestId(renderState.container, 'dashboard-rbi-status');
+    const wideMetric = getElementByTestId(renderState.container, 'dashboard-rbi-estimated-pool');
+    const wideAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-available');
+
+    expect(wideStatus.className).toBe(narrowStatus.className);
+    expect(wideMetric.className).not.toBe(narrowMetric.className);
+    expect(wideAtnMetric.className).not.toBe(narrowAtnMetric.className);
   });
 
   it('renders the desktop layout above the mobile breakpoint', () => {

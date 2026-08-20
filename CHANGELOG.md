@@ -1,14 +1,22 @@
+## [1.1.44](https://github.com/alternun-development/alternun/compare/v1.1.43...v1.1.44) (2026-08-20)
+
+### Changes
+
+- **repo,mobile,scripts:** CHANGELOG, DashboardSummaryCards, DashboardSummaryCards.render.test, release ([8247267](https://github.com/alternun-development/alternun/commit/824726779f3e4f500cd9ba40ef617a1cdf7ed590))
+
+## [1.1.43](https://github.com/alternun-development/alternun/compare/v1.1.42...v1.1.43) (2026-08-20)
+
+### Bug Fixes
+
+- **mobile:** DashboardSummaryCards ([55860e3](https://github.com/alternun-development/alternun/commit/55860e3247ddcccbd51aac36083827407c9938d0))
+- **infra:** preserve identity recovery aliases ([6dfe346](https://github.com/alternun-development/alternun/commit/6dfe34627a1e6050bff362c4224a7d3b78bf6731))
+
 ## [1.1.42](https://github.com/alternun-development/alternun/compare/v1.1.42-dev.0...v1.1.42) (2026-08-19)
 
 ### Bug Fixes
 
 - **repo:** chore: release v1.1.42-dev.0
 - **repo:** test(mobile,infra): PublicLandingPage, .env, deployment.config.example, infrastructure-specs
-
-
-
-
-
 
 ## [1.1.42](https://github.com/alternun-development/alternun/compare/v1.1.41...v1.1.42) (2026-08-19)
 
