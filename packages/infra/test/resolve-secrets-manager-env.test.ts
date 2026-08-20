@@ -20,6 +20,8 @@ void test('resolve-secrets-manager-env hydrates the stage-mapped identity integr
   assert.match(source, /configured backend OAuth credentials are complete/);
   assert.match(source, /backend_discord_credentials_complete/);
   assert.match(source, /backend_discord_not_configured/);
+  assert.match(source, /backend_google_not_configured/);
+  assert.match(source, /Google and Discord OAuth are both unconfigured \(optional\)/);
   assert.match(source, /googleClientId/);
   assert.match(source, /googleClientSecret/);
   assert.match(source, /discordClientId/);
