@@ -1,47 +1,9 @@
-## [1.1.43](https://github.com/alternun-development/alternun/compare/v1.1.43-dev.1...v1.1.43) (2026-08-20)
-
-### Bug Fixes
-
-- **repo:** chore: release v1.1.43-dev.1
-- **repo:** chore: release v1.1.43-dev.0
-- **repo:** fix(mobile): DashboardSummaryCards
-- **repo:** Revert "chore: release v1.1.43-dev.0"
-
-
-
-
-
-
-## [1.1.43](https://github.com/alternun-development/alternun/compare/v1.1.43-dev.0...v1.1.43) (2026-08-20)
-
-### Bug Fixes
-
-- **repo:** chore: release v1.1.43-dev.0
-- **repo:** fix(mobile): DashboardSummaryCards
-- **repo:** Revert "chore: release v1.1.43-dev.0"
+## [1.1.43](https://github.com/alternun-development/alternun/compare/v1.1.42...v1.1.43) (2026-08-20)
 
 ### Bug Fixes
 
 - **mobile:** DashboardSummaryCards ([55860e3](https://github.com/alternun-development/alternun/commit/55860e3247ddcccbd51aac36083827407c9938d0))
-
-### Reverts
-
-- Revert "chore: release v1.1.43-dev.0" ([4864113](https://github.com/alternun-development/alternun/commit/4864113ba3a3ddcd97e28be586a0342568138cae))
-
-## [1.1.43](https://github.com/alternun-development/alternun/compare/v1.1.43-dev.0...v1.1.43) (2026-08-20)
-
-### Bug Fixes
-
-- **repo:** fix(mobile): DashboardSummaryCards
-- **repo:** Revert "chore: release v1.1.43-dev.0"
-
-### Bug Fixes
-
-- **mobile:** DashboardSummaryCards ([55860e3](https://github.com/alternun-development/alternun/commit/55860e3247ddcccbd51aac36083827407c9938d0))
-
-### Reverts
-
-- Revert "chore: release v1.1.43-dev.0" ([4864113](https://github.com/alternun-development/alternun/commit/4864113ba3a3ddcd97e28be586a0342568138cae))
+- **infra:** preserve identity recovery aliases ([6dfe346](https://github.com/alternun-development/alternun/commit/6dfe34627a1e6050bff362c4224a7d3b78bf6731))
 
 ## [1.1.42](https://github.com/alternun-development/alternun/compare/v1.1.42-dev.0...v1.1.42) (2026-08-19)
 
