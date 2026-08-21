@@ -451,10 +451,13 @@ main() {
       # AGENTS.md prod-secrets convention: the legacy identity/integration-config
       # secret that used to hold these is retired, mirrors the existing dev-stage
       # pattern below, and unblocks production Google/Discord sign-in today.
-      export_env_from_ssm "GOOGLE_AUTH_CLIENT_ID" "google-auth-client-id"
-      export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret"
-      export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id"
-      export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret"
+      # Stage must be forced to SSM_SHARED_STAGE ('production'): these params live
+      # under /alternun-infra/production/..., but the default stage_override here
+      # is SSM_STAGE ('prod'), so an unqualified call silently resolves to empty.
+      export_env_from_ssm "GOOGLE_AUTH_CLIENT_ID" "google-auth-client-id" "" "${SSM_SHARED_STAGE}"
+      export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret" "" "${SSM_SHARED_STAGE}"
+      export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id" "" "${SSM_SHARED_STAGE}"
+      export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret" "" "${SSM_SHARED_STAGE}"
       ;;
     *)
       export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url" ""

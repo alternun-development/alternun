@@ -120,13 +120,15 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.46**
+Current version: **1.1.47**
 
-## 📋 Latest Changes (v1.1.46)
+## 📋 Latest Changes (v1.1.47)
 
 ### Bug Fixes
 
-- **infra:** resolve Google/Discord OAuth creds from SSM for production stages ([d327770](https://github.com/alternun-development/alternun/commit/d327770374e3bfa44eac85a945caee2934deb4b9))
+- **infra:** force SSM_SHARED_STAGE for prod Google/Discord OAuth lookup ([b42a14a](https://github.com/alternun-development/alternun/commit/b42a14adbd747d338d0e7cad88460230be97383a))
+- **infra:** stop recreating retired identity-dev/identity-prod pipelines ([5d67610](https://github.com/alternun-development/alternun/commit/5d67610fa37a8cdbeb24c215aea4bf779770f515))
+- **infra:** address code review findings on OAuth SSM resolution ([3e0a382](https://github.com/alternun-development/alternun/commit/3e0a382dbaacbadf0e7f7e479f2bbbc42fda94a7))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
