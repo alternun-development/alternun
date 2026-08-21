@@ -1,3 +1,11 @@
+## [1.1.47](https://github.com/alternun-development/alternun/compare/v1.1.46...v1.1.47) (2026-08-20)
+
+### Bug Fixes
+
+- **infra:** force SSM_SHARED_STAGE for prod Google/Discord OAuth lookup ([b42a14a](https://github.com/alternun-development/alternun/commit/b42a14adbd747d338d0e7cad88460230be97383a))
+- **infra:** stop recreating retired identity-dev/identity-prod pipelines ([5d67610](https://github.com/alternun-development/alternun/commit/5d67610fa37a8cdbeb24c215aea4bf779770f515))
+- **infra:** address code review findings on OAuth SSM resolution ([3e0a382](https://github.com/alternun-development/alternun/commit/3e0a382dbaacbadf0e7f7e479f2bbbc42fda94a7))
+
 ## [1.1.46](https://github.com/alternun-development/alternun/compare/v1.1.45...v1.1.46) (2026-08-20)
 
 ### Bug Fixes
