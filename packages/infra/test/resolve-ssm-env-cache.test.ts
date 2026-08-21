@@ -79,20 +79,26 @@ void test('resolve-ssm-env resolves Google and Discord OAuth credentials for pro
   assert.notEqual(blockEnd, -1, 'expected end of production case block not found');
   const productionBlock = source.slice(anchorIndex, blockEnd);
 
+  // These must force stage_override to SSM_SHARED_STAGE ('production'). The
+  // default stage_override is SSM_STAGE, which resolves production-family
+  // stages to 'prod' — but the actual params live under
+  // /alternun-infra/production/..., so an unqualified call silently resolves
+  // to empty in production (confirmed against a live dashboard-prod build:
+  // the Lambda deployed with no Google/Discord credentials at all).
   assert.match(
     productionBlock,
-    /export_env_from_ssm "GOOGLE_AUTH_CLIENT_ID" "google-auth-client-id"/
+    /export_env_from_ssm "GOOGLE_AUTH_CLIENT_ID" "google-auth-client-id" "" "\$\{SSM_SHARED_STAGE\}"/
   );
   assert.match(
     productionBlock,
-    /export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret"/
+    /export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret" "" "\$\{SSM_SHARED_STAGE\}"/
   );
   assert.match(
     productionBlock,
-    /export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id"/
+    /export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id" "" "\$\{SSM_SHARED_STAGE\}"/
   );
   assert.match(
     productionBlock,
-    /export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret"/
+    /export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret" "" "\$\{SSM_SHARED_STAGE\}"/
   );
 });
