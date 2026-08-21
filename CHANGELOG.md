@@ -1,3 +1,13 @@
+## [1.1.48](https://github.com/alternun-development/alternun/compare/v1.1.47...v1.1.48) (2026-08-20)
+
+### Changes
+
+- **infra:** guard INFRA_PIPELINES parity between buildspec.yml and .env ([f1f95db](https://github.com/alternun-development/alternun/commit/f1f95db99d80c47c4ef861373189b385493d234f))
+
+### Bug Fixes
+
+- **infra:** bump SSM env cache to v3 for the stage-path fix ([b6debce](https://github.com/alternun-development/alternun/commit/b6debcedd377ab523f58b27c64a24275ebe3328f))
+
 ## [1.1.47](https://github.com/alternun-development/alternun/compare/v1.1.46...v1.1.47) (2026-08-20)
 
 ### Bug Fixes
