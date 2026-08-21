@@ -92,6 +92,9 @@ jobs:
       - name: Run i18n tests
         run: pnpm --filter @alternun/i18n test
 
+      - name: Run infra tests
+        run: pnpm --filter @alternun/infra test
+
       - name: Run mobile coverage tests
         run: CI=1 pnpm --filter @alternun/mobile run test:coverage
 

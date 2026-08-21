@@ -15,7 +15,6 @@ const readmePath = path.resolve('README.md');
 
 void test('airs to testnet redirect is disabled by default everywhere it is configured', () => {
   const infraDefaultsSource = fs.readFileSync(infraDefaultsPath, 'utf8');
-  const localInfraEnvSource = fs.readFileSync(localInfraEnvPath, 'utf8');
   const deploymentConfigExampleSource = fs.readFileSync(deploymentConfigExamplePath, 'utf8');
   const envExampleSource = fs.readFileSync(envExamplePath, 'utf8');
   const sstDeploySource = fs.readFileSync(sstDeployPath, 'utf8');
@@ -25,8 +24,16 @@ void test('airs to testnet redirect is disabled by default everywhere it is conf
   const readmeSource = fs.readFileSync(readmePath, 'utf8');
 
   assert.match(infraDefaultsSource, /enableAirsToDev: false/);
-  assert.match(localInfraEnvSource, /INFRA_REDIRECT_AIRS_TO_DEV=false/);
-  assert.match(localInfraEnvSource, /INFRA_PIPELINES=production,dev,dashboard-dev,dashboard-prod/);
+  // .env is gitignored and does not exist on a clean checkout (e.g. CI); only
+  // assert against it when a developer has one locally.
+  if (fs.existsSync(localInfraEnvPath)) {
+    const localInfraEnvSource = fs.readFileSync(localInfraEnvPath, 'utf8');
+    assert.match(localInfraEnvSource, /INFRA_REDIRECT_AIRS_TO_DEV=false/);
+    assert.match(
+      localInfraEnvSource,
+      /INFRA_PIPELINES=production,dev,dashboard-dev,dashboard-prod/
+    );
+  }
   assert.match(deploymentConfigExampleSource, /"enableAirsToDev": false/);
   assert.match(envExampleSource, /INFRA_REDIRECT_AIRS_TO_DEV=false/);
   assert.match(sstDeploySource, /INFRA_REDIRECT_AIRS_TO_DEV:-false/);
