@@ -124,10 +124,9 @@ Current version: **1.1.48**
 
 ## 📋 Latest Changes (v1.1.48)
 
-### Bug Fixes
+### Changes
 
-- **repo:** test(infra): guard INFRA_PIPELINES parity between buildspec.yml and .env
-- **repo:** fix(infra): bump SSM env cache to v3 for the stage-path fix
+- **infra:** guard INFRA_PIPELINES parity between buildspec.yml and .env ([f1f95db](https://github.com/alternun-development/alternun/commit/f1f95db99d80c47c4ef861373189b385493d234f))
 
 ### Bug Fixes
 
