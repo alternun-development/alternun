@@ -120,17 +120,19 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.48**
+Current version: **1.1.49**
 
-## 📋 Latest Changes (v1.1.48)
-
-### Changes
-
-- **infra:** guard INFRA_PIPELINES parity between buildspec.yml and .env ([f1f95db](https://github.com/alternun-development/alternun/commit/f1f95db99d80c47c4ef861373189b385493d234f))
+## 📋 Latest Changes (v1.1.49)
 
 ### Bug Fixes
 
-- **infra:** bump SSM env cache to v3 for the stage-path fix ([b6debce](https://github.com/alternun-development/alternun/commit/b6debcedd377ab523f58b27c64a24275ebe3328f))
+- **repo:** fix(mobile): stop RBI/ATN card content overflowing the card border on mobile
+- **repo:** fix(infra): make the pipeline-parity guard actually run and actually work
+
+### Bug Fixes
+
+- **infra:** make the pipeline-parity guard actually run and actually work ([b91825b](https://github.com/alternun-development/alternun/commit/b91825b0796fb0565fe7e9ce16dd220258ab7051))
+- **mobile:** stop RBI/ATN card content overflowing the card border on mobile ([fa5ce5e](https://github.com/alternun-development/alternun/commit/fa5ce5e5ebc79859cf3dd0ca52f5707f47d110b6))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
