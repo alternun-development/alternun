@@ -16,7 +16,7 @@ APP_NAME="${INFRA_APP_NAME:-alternun-infra}"
 STAGE="${STACK:-${SST_STAGE:-dev}}"
 REGION="${AWS_REGION:-us-east-1}"
 CACHE_DIR="${INFRA_SSM_ENV_CACHE_DIR:-${TMPDIR:-/tmp}/alternun-infra}"
-CACHE_FILE="${INFRA_SSM_ENV_CACHE_FILE:-${CACHE_DIR}/ssm-env-v2-${STAGE}-${REGION}.sh}"
+CACHE_FILE="${INFRA_SSM_ENV_CACHE_FILE:-${CACHE_DIR}/ssm-env-v3-${STAGE}-${REGION}.sh}"
 
 declare -A SSM_PARAM_CACHE=()
 declare -a CACHE_EXPORT_VARS=(
