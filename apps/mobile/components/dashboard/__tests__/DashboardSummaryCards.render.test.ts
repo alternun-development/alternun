@@ -219,6 +219,36 @@ describe('DashboardSummaryCards render', () => {
     expect(wideAtnMetric.className).not.toBe(narrowAtnMetric.className);
   });
 
+  it('sizes mobile cards to their content instead of collapsing to minHeight', () => {
+    // Regression test: SummaryCard applies `typeof minHeight === 'number' ? {
+    // flex: 1 } : { flex: 0 }` after styles.cardMobile. On mobile, minHeight
+    // is undefined (only the desktop layout passes a numeric minHeight), so
+    // this resolved to `{ flex: 0 }` — which, like `flex: 1`, still compiles
+    // to CSS flex-basis: 0%. In a shrink-wrapped mobile slot with no
+    // available space to grow into, that collapsed the card to exactly its
+    // `minHeight` (100) instead of its content height, so the hero pill,
+    // stat rows, and button all rendered visually outside the card's own
+    // border. Confirmed via a live browser: card height was 100px (should be
+    // ~429px) and the pill's bottom edge sat 39px past the card's own.
+    mockWindowDimensions(390);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: true,
+        signedIn: false,
+        airsBalance: null,
+      })
+    );
+
+    const rbiCard = getElementByTestId(renderState.container, 'dashboard-rbi-card');
+    const atnCard = getElementByTestId(renderState.container, 'dashboard-atn-card');
+
+    for (const card of [rbiCard, atnCard]) {
+      const computed = getComputedStyle(card);
+      expect(computed.flexBasis).toBe('auto');
+    }
+  });
+
   it('renders the desktop layout above the mobile breakpoint', () => {
     mockWindowDimensions(1024);
 

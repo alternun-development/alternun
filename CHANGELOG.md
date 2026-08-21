@@ -1,3 +1,10 @@
+## [1.1.49](https://github.com/alternun-development/alternun/compare/v1.1.48...v1.1.49) (2026-08-20)
+
+### Bug Fixes
+
+- **mobile:** stop RBI/ATN card content overflowing the card border on mobile ([fa5ce5e](https://github.com/alternun-development/alternun/commit/fa5ce5e5ebc79859cf3dd0ca52f5707f47d110b6))
+- **infra:** make the pipeline-parity guard actually run and actually work ([b91825b](https://github.com/alternun-development/alternun/commit/b91825b0796fb0565fe7e9ce16dd220258ab7051))
+
 ## [1.1.48](https://github.com/alternun-development/alternun/compare/v1.1.47...v1.1.48) (2026-08-20)
 
 ### Changes

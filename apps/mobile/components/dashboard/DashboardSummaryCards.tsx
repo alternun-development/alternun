@@ -126,7 +126,13 @@ function SummaryCard({
         styles.card,
         compact && styles.cardCompact,
         mobile && styles.cardMobile,
-        typeof minHeight === 'number' ? { flex: 1 } : { flex: 0 },
+        // Desktop (minHeight is a number, from desktopMinHeight): flex: 1 lets
+        // the two cards stretch to equal height across the row. Mobile
+        // (minHeight undefined): flexBasis: 'auto' preserves cardMobile's
+        // content-based sizing — flex: 0 alone still resolves to CSS
+        // flex-basis: 0%, which collapses the card to just `minHeight` (100)
+        // and lets content below that point render outside the card's border.
+        typeof minHeight === 'number' ? { flex: 1 } : { flex: 0, flexBasis: 'auto' },
         {
           backgroundColor: p.cardBg,
           borderColor: p.cardBorder,
