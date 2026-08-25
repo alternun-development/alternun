@@ -126,10 +126,6 @@ Current version: **1.1.50**
 
 ### Bug Fixes
 
-- **repo:** fix(i18n): sync landing copy across locales
-
-### Bug Fixes
-
 - **i18n:** sync landing copy across locales ([f020194](https://github.com/alternun-development/alternun/commit/f0201941058eb3568a2917127f3551ab77bbb0b0))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
