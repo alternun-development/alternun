@@ -1,3 +1,13 @@
+## [1.1.50](https://github.com/alternun-development/alternun/compare/v1.1.49...v1.1.50) (2026-08-25)
+
+### Bug Fixes
+
+- **repo:** fix(i18n): sync landing copy across locales
+
+### Bug Fixes
+
+- **i18n:** sync landing copy across locales ([f020194](https://github.com/alternun-development/alternun/commit/f0201941058eb3568a2917127f3551ab77bbb0b0))
+
 ## [1.1.49](https://github.com/alternun-development/alternun/compare/v1.1.48...v1.1.49) (2026-08-20)
 
 ### Bug Fixes
