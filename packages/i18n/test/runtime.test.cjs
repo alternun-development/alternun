@@ -31,18 +31,19 @@ assert.equal(spanishMobile.t('labels.theme'), 'Tema');
 assert.equal(spanishMobile.t('labels.dark'), 'Oscuro');
 assert.equal(spanishMobile.t('missing.key'), 'missing.key');
 assert.equal(spanishMobile.t('landing.nav.howItWorks'), '¿Cómo funciona?');
-assert.equal(spanishMobile.t('landing.beneficios.cards.eco.title'), 'Comercio aliado');
+assert.equal(spanishMobile.t('landing.beneficios.cards.eco.title'), 'Acciones cotidiana');
 assert.equal(
   englishMobile.t('landing.beneficios.cards.experiencias.title'),
-  'Regenerative projects'
+  'Conservation and regeneration missions'
 );
 assert.equal(englishMobile.t('landing.nav.joinNow'), 'Join now');
-assert.equal(englishMobile.t('landing.beneficios.cards.eco.atn'), '+5');
+assert.equal(englishMobile.t('landing.beneficios.cards.eco.atn'), 'Variable');
 assert.equal(englishMobile.t('landing.beneficios.topRated'), 'Verified');
 assert.equal(englishMobile.t('dashboard.summaryCards.comingSoon'), 'Coming soon');
 assert.equal(spanishMobile.t('dashboard.summaryCards.comingSoon'), 'Próximamente');
 assert.equal(thaiMobile.t('dashboard.summaryCards.atn.primaryWalletLabel'), 'วอลเล็ตหลัก');
 assert.equal(thaiMobile.t('landing.comoFunciona.sectionTitle'), 'วิธีการทำงาน');
+assert.equal(thaiMobile.t('landing.comoFunciona.steps.s1.title'), 'เข้าร่วม Airs');
 assert.equal(thaiMobile.t('landing.nav.joinNow'), 'เข้าร่วมเลย');
 assert.equal(thaiMobile.t('landing.beneficios.moreInfo'), 'ข้อมูลเพิ่มเติม');
 
