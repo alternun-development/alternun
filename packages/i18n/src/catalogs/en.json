@@ -387,9 +387,9 @@
       },
       "message": {
         "regenerative": "Join Airs By Alternun: Regenerative Capitalism in Action",
-        "welcome": "Welcome to AIRS: Your Gateway to Digital Opportunities",
-        "earn": "Earn AIRS Tokens: Participate and Grow Your Rewards",
-        "community": "Join Our Community: Connect With Blockchain Enthusiasts",
+        "welcome": "Welcome to AIRS: Where Your Actions Count",
+        "earn": "Earn AIRS Points: Build a Regenerative Legacy",
+        "community": "Join Our Community: Connect With Regenerative Finance Enthusiasts",
         "impact": "Make an Impact: Turn Your Actions Into Real Value"
       },
       "messageCta": {
@@ -420,9 +420,9 @@
       },
       "elProyecto": {
         "sectionTitle": "A regenerative economy that benefits you",
-        "sectionDescriptionPart1": "For decades, we have tried to solve environmental problems with the same tools that created them. At ",
+        "sectionDescriptionPart1": "Every positive action can generate more than impact. At ",
         "sectionDescriptionHighlight": "Alternun",
-        "sectionDescriptionPart2": " we believe caring for and regenerating the planet should not be an economic sacrifice, but an opportunity to create shared value.",
+        "sectionDescriptionPart2": " we believe caring for and regenerating the planet can also build reputation, open new opportunities, and create shared value for people, businesses, and communities.",
         "moreInfo": "More info",
         "airs": {
           "overview": "By Alternun is your positive footprint on Alternun. It is not bought; it is earned through real actions, never decreases, and determines your monthly income from the Regenerative Basic Income (RBI).",
@@ -430,12 +430,12 @@
           "title": "Airs"
         },
         "atn": {
-          "overview": "is Alternun's currency for accessing benefits and projects. It is received monthly via RBI according to your Airs score, and can also be purchased to accelerate your participation.",
-          "subtitle": "Governance Token",
+          "overview": "is Alternun's currency for accessing benefits and projects. It is received monthly via RBI according to your Airs score, and can also be purchased to complete redemptions.",
+          "subtitle": "Rewards Token",
           "title": "ATN"
         },
         "rbi": {
-          "overview": "is a monthly income in ATN financed by the ecosystem's real profitability. It grows according to your Airs score, turning your commitment to regeneration into tangible prosperity.",
+          "overview": "is a monthly reward delivered in ATN and funded by the ecosystem's real profitability. It depends on your Airs score, turning your commitment to regeneration into tangible prosperity.",
           "subtitle": "Regenerative Basic Income",
           "title": "RBI"
         }
@@ -445,31 +445,31 @@
         "subtitle": "Four simple steps to start your regenerative journey",
         "steps": {
           "s1": {
-            "b1": "Connect your Web3 wallet",
-            "b2": "Complete your impact profile",
-            "b3": "Start generating Airs score",
-            "description": "Sign up and connect your wallet to start your regenerative journey on Alternun.",
-            "title": "Connect your wallet"
+            "b1": "Complete your profile",
+            "b2": "Create your wallet in the app",
+            "b3": "Invite others to join",
+            "description": "Sign up and start building your reputation",
+            "title": "Join Airs"
           },
           "s2": {
-            "b1": "Complete verified impact actions",
-            "b2": "Earn Airs points for each action",
+            "b1": "Complete program missions",
+            "b2": "Build your track record through everyday actions",
             "b3": "Build your regenerative reputation",
-            "description": "Perform positive impact actions and earn Airs points for each verified action.",
-            "title": "Generate impact"
+            "description": "Complete actions listed on the platform and earn Airs points for each verified action.",
+            "title": "Accumulate points"
           },
           "s3": {
-            "b1": "Your RBI is calculated based on your Airs",
-            "b2": "Receive automatic compensation",
+            "b1": "Allocations are based on the global Airs score",
+            "b2": "Receive automatic rewards",
             "b3": "Grow with the ecosystem",
-            "description": "As your Airs grows, your Regenerative Basic Income increases automatically.",
+            "description": "Your Airs score determines your RBI. That is why it is so important to keep participating in the system.",
             "title": "Receive your RBI"
           },
           "s4": {
             "b1": "Redeem in the marketplace",
             "b2": "Access products and services",
             "b3": "Support regenerative projects",
-            "description": "Use your ATN and RBI tokens to access products, services and projects in the ecosystem.",
+            "description": "Use your RBI to access products, services, and projects in the ecosystem.",
             "title": "Redeem and grow"
           }
         }
@@ -477,16 +477,16 @@
       "membresia": {
         "sectionTitle": "Lifetime membership from Day 1",
         "descriptionPart1": "No monthly fees or renewals needed.",
-        "descriptionPart2Bold": "When you offset your first carbon footprint, you become a lifetime member.",
-        "descriptionPart3": "From that moment, you start accumulating Airs and receiving your RBI monthly.",
-        "descriptionPart4": "Your membership never expires and your benefits only grow over time.",
+        "descriptionPart2Bold": "Join and become a lifetime member.",
+        "descriptionPart3": "From that moment, you can accumulate Airs and receive your monthly RBI.",
+        "descriptionPart4": "Your points never expire, and your benefits grow with your reputation.",
         "descriptionLine1": "No monthly fees or renewals needed.",
-        "descriptionLine2Bold": "When you offset your first carbon footprint, you become a lifetime member.",
-        "descriptionLine3Prefix": "From that moment, you start accumulating ",
+        "descriptionLine2Bold": "Join and become a lifetime member.",
+        "descriptionLine3Prefix": "From that moment, you can accumulate ",
         "descriptionLine3BrandBold": "Airs By Alternun",
-        "descriptionLine3Mid": " and receiving your ",
+        "descriptionLine3Mid": " and receive your ",
         "descriptionLine3TokenBold": "RBI",
-        "descriptionLine3Suffix": " monthly. Your membership never expires and your benefits only grow over time."
+        "descriptionLine3Suffix": " monthly. Your points never expire, and your benefits grow with your reputation."
       },
       "beneficios": {
         "atnUnit": "Airs / USD",
@@ -494,22 +494,22 @@
           "eco": {
             "tag1": "Verified",
             "tag2": "Allied",
-            "description": "Earn Airs every time you spend with allied commerce or complete validated regenerative actions.",
-            "atn": "+5",
-            "meta": "Spend and earn",
-            "title": "Allied commerce",
+            "description": "Accumulate Airs whenever you buy eligible products or shop with partner merchants.",
+            "atn": "Variable",
+            "meta": "Consume consciously",
+            "title": "Everyday actions",
             "cta": "Earn Airs",
-            "infoBody": "Eligible purchases and validated actions typically earn 5 Airs per USD. Rewards are credited after the transaction or action is verified."
+            "infoBody": "These are everyday actions you can take to accumulate points consistently and build a regenerative track record. We work continuously to establish new partnerships every day."
           },
           "experiencias": {
-            "tag1": "Projects",
+            "tag1": "Missions",
             "tag2": "Services",
-            "description": "Invest in regenerative projects or acquire verified services to accumulate Airs on each contribution.",
+            "description": "Join missions that protect our present and build our future while accumulating Airs.",
             "atn": "Variable",
-            "meta": "Regenerative projects",
-            "title": "Regenerative projects",
-            "cta": "Invest",
-            "infoBody": "Contributions to validated projects earn Airs at variable rates based on impact, traceability, and the amount committed."
+            "meta": "Build your legacy",
+            "title": "Conservation and regeneration missions",
+            "cta": "Join",
+            "infoBody": "You can join missions by contributing your work or money to achieve the proposed goal. Each mission has a budget allocated from the outset to avoid diluting program participants' global scores."
           },
           "marketplace": {
             "description": "Access a marketplace of regenerative products and services.",
@@ -517,14 +517,14 @@
             "title": "Marketplace"
           },
           "premium": {
-            "tag1": "CO2",
+            "tag1": "Offset",
             "tag2": "Validated",
-            "description": "Validate footprint reductions and offsets to convert climate action into Airs.",
-            "atn": "Bonus",
-            "meta": "CO2 footprint",
-            "title": "CO2 footprint",
+            "description": "Take part in ecological-footprint offset missions and give the planet some breathing room.",
+            "atn": "Variable",
+            "meta": "Mitigate your ecological footprint",
+            "title": "Offset missions",
             "cta": "Offset now",
-            "infoBody": "When your footprint reduction or offset is measured and validated, Airs can be credited as a bonus for the verified impact."
+            "infoBody": "Our daily lives inevitably require actions that have a negative impact. Missions available in the system let you voluntarily offset your ecological footprint."
           },
           "cursos": {
             "tag1": "Card",
@@ -544,7 +544,7 @@
         },
         "cta": "See earning paths",
         "sectionTitle": "How to accumulate Airs",
-        "subtitle": "Earn Airs through allied commerce, regenerative projects, verified services, and carbon-footprint actions.",
+        "subtitle": "Accumulate Airs by offsetting your footprint, purchasing eligible products or services, and taking part in missions that help you build your legacy.",
         "communityTotal": {
           "label": "Global AIRS balance accumulated by the platform",
           "loading": "Loading live total…",
