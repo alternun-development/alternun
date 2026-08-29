@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
-import { buildAuthentikLoginEntryUrl, resolveSafeRedirect } from '@alternun/auth';
+import { buildAuthentikLoginEntryUrl, resolveSafeRedirect } from '@alternun/auth/authentik';
 import { OidcClient, type UserManager } from 'oidc-client-ts';
+import { adminEnv } from '../config/env';
 
 export type AdminAuthentikRelayProvider = 'google';
 
@@ -69,6 +70,10 @@ export async function startAdminAuthentikRelaySignIn({
       issuer: userManager.settings.authority,
       authorizeUrl: authorizeRequest.url,
       providerHint: provider,
+      providerFlowSlugs:
+        provider === 'google' && adminEnv.authGoogleFlowSlug
+          ? { google: adminEnv.authGoogleFlowSlug }
+          : undefined,
     })
   );
 }

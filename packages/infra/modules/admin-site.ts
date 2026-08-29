@@ -79,6 +79,7 @@ export interface AdminSiteSettings {
 }
 
 export interface AdminSiteInfrastructureArgs {
+  env: NodeJS.ProcessEnv;
   invalidationWait: boolean;
   rootDomain: string;
   stage: string;
@@ -301,6 +302,14 @@ export function deployAdminSiteInfrastructure(
       VITE_ALLOWED_ADMIN_EMAIL_DOMAIN: args.settings.auth.allowedEmailDomain,
       VITE_APP_ENV: deploymentStage,
       ...args.settings.environment,
+      VITE_AUTH_GOOGLE_ENABLED:
+        args.env.INFRA_ADMIN_AUTH_GOOGLE_ENABLED ??
+        args.settings.environment.VITE_AUTH_GOOGLE_ENABLED ??
+        'false',
+      VITE_AUTH_GOOGLE_FLOW_SLUG:
+        args.env.INFRA_ADMIN_AUTH_GOOGLE_FLOW_SLUG ??
+        args.settings.environment.VITE_AUTH_GOOGLE_FLOW_SLUG ??
+        '',
     },
     errorPage: 'index.html',
     invalidation: {

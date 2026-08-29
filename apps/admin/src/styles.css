@@ -132,6 +132,9 @@ select {
 }
 
 .admin-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
   padding: 1.5rem;
 }
 
@@ -422,6 +425,48 @@ select {
   font-size: 0.88rem;
 }
 
+.admin-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: auto;
+  padding: 2rem 0 0.5rem;
+  border-top: 1px solid rgba(89, 227, 205, 0.12);
+  color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.admin-footer-label,
+.admin-footer-copy {
+  display: block;
+}
+
+.admin-footer-label {
+  color: var(--accent);
+  letter-spacing: 0.14em;
+}
+
+.admin-footer-copy {
+  margin-top: 0.3rem;
+  letter-spacing: 0.04em;
+}
+
+.admin-footer-meta {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 0.7rem;
+  row-gap: 0.3rem;
+  text-align: right;
+}
+
+.admin-footer-meta strong {
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
 @media (max-width: 980px) {
   .admin-shell {
     grid-template-columns: 1fr;
@@ -463,6 +508,15 @@ select {
   .auth-footer {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .admin-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-footer-meta {
+    text-align: left;
   }
 
   .data-table th,
