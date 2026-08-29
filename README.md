@@ -124,9 +124,9 @@ Current version: **1.1.53**
 
 ## 📋 Latest Changes (v1.1.53)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore: release v1.1.52
+- **repo:** Internal release maintenance.
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
