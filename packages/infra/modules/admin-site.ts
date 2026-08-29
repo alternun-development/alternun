@@ -273,6 +273,15 @@ export function deployAdminSiteInfrastructure(
   args: AdminSiteInfrastructureArgs
 ): AdminSiteInfrastructureResources {
   const deploymentStage = resolveStageKey(args.stage);
+  const defaultGoogleFlowSlug = deploymentStage === 'production' ? 'alternun-google-login' : '';
+  const googleFlowSlug =
+    args.env.INFRA_ADMIN_AUTH_GOOGLE_FLOW_SLUG ??
+    args.settings.environment.VITE_AUTH_GOOGLE_FLOW_SLUG ??
+    defaultGoogleFlowSlug;
+  const googleEnabled =
+    args.env.INFRA_ADMIN_AUTH_GOOGLE_ENABLED ??
+    args.settings.environment.VITE_AUTH_GOOGLE_ENABLED ??
+    (googleFlowSlug ? 'true' : 'false');
   const appPath = resolveAdminSiteAppPath(args.settings.appPath);
   const siteDomain = resolveAdminStageDomain(args.settings, args.stage);
   const resolvedDomain = args.settings.enableCustomDomain
@@ -302,14 +311,8 @@ export function deployAdminSiteInfrastructure(
       VITE_ALLOWED_ADMIN_EMAIL_DOMAIN: args.settings.auth.allowedEmailDomain,
       VITE_APP_ENV: deploymentStage,
       ...args.settings.environment,
-      VITE_AUTH_GOOGLE_ENABLED:
-        args.env.INFRA_ADMIN_AUTH_GOOGLE_ENABLED ??
-        args.settings.environment.VITE_AUTH_GOOGLE_ENABLED ??
-        'false',
-      VITE_AUTH_GOOGLE_FLOW_SLUG:
-        args.env.INFRA_ADMIN_AUTH_GOOGLE_FLOW_SLUG ??
-        args.settings.environment.VITE_AUTH_GOOGLE_FLOW_SLUG ??
-        '',
+      VITE_AUTH_GOOGLE_ENABLED: googleEnabled,
+      VITE_AUTH_GOOGLE_FLOW_SLUG: googleFlowSlug,
     },
     errorPage: 'index.html',
     invalidation: {
