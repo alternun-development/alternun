@@ -2,10 +2,6 @@
 
 ### Bug Fixes
 
-- **repo:** fix(identity): align production google flow
-
-### Bug Fixes
-
 - **identity:** align production google flow ([ee0db2a](https://github.com/alternun-development/alternun/commit/ee0db2a62442a9031ea471dad93c314f6fc69558))
 
 ## [1.1.51](https://github.com/alternun-development/alternun/compare/v1.1.50...v1.1.51) (2026-08-29)

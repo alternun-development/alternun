@@ -126,10 +126,6 @@ Current version: **1.1.52**
 
 ### Bug Fixes
 
-- **repo:** fix(identity): align production google flow
-
-### Bug Fixes
-
 - **identity:** align production google flow ([ee0db2a](https://github.com/alternun-development/alternun/commit/ee0db2a62442a9031ea471dad93c314f6fc69558))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
