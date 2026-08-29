@@ -1,3 +1,30 @@
+## [1.1.51](https://github.com/alternun-development/alternun/compare/v1.1.50...v1.1.51) (2026-08-29)
+
+### Bug Fixes
+
+- **repo:** fix(admin): isolate browser authentik relay
+- **repo:** fix(mobile): verify the bundled package release version
+- **repo:** fix(video-studio): use port 3003 by default
+- **repo:** fix(auth): repair admin authentik sign-in
+
+
+
+### Bug Fixes
+
+* **admin:** isolate browser authentik relay ([73d1f31](https://github.com/alternun-development/alternun/commit/73d1f317db9ce4bbf58c4c76c48b0d7d77c484fe))
+* **auth:** repair admin authentik sign-in ([b2d2b38](https://github.com/alternun-development/alternun/commit/b2d2b38867e82cbebe430d3866381a2d91edcc24))
+* **mobile:** verify the bundled package release version ([79b92cc](https://github.com/alternun-development/alternun/commit/79b92cc8a534b5968b263ba4bd1c55054635af05))
+* **video-studio:** use port 3003 by default ([4127df4](https://github.com/alternun-development/alternun/commit/4127df45d0d015ba982ffcb3d24c3efeae71fced))
+
+
+
+
+
+
+
+
+
+
 ## [1.1.50](https://github.com/alternun-development/alternun/compare/v1.1.49...v1.1.50) (2026-08-24)
 
 ### Bug Fixes
