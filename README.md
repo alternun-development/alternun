@@ -120,16 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.51**
+Current version: **1.1.52**
 
-## 📋 Latest Changes (v1.1.51)
+## 📋 Latest Changes (v1.1.52)
 
 ### Bug Fixes
 
-- **admin:** isolate browser authentik relay ([73d1f31](https://github.com/alternun-development/alternun/commit/73d1f317db9ce4bbf58c4c76c48b0d7d77c484fe))
-- **mobile:** verify the bundled package release version ([79b92cc](https://github.com/alternun-development/alternun/commit/79b92cc8a534b5968b263ba4bd1c55054635af05))
-- **video-studio:** use port 3003 by default ([4127df4](https://github.com/alternun-development/alternun/commit/4127df45d0d015ba982ffcb3d24c3efeae71fced))
-- **auth:** repair admin authentik sign-in ([b2d2b38](https://github.com/alternun-development/alternun/commit/b2d2b38867e82cbebe430d3866381a2d91edcc24))
+- **repo:** fix(identity): align production google flow
+
+### Bug Fixes
+
+- **identity:** align production google flow ([ee0db2a](https://github.com/alternun-development/alternun/commit/ee0db2a62442a9031ea471dad93c314f6fc69558))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
