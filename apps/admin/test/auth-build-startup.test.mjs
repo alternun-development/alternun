@@ -34,17 +34,19 @@ void test('admin development commands build the workspace auth package first', (
   );
 });
 
-void test('admin imports Authentik browser helpers from the browser-safe auth entrypoint', () => {
+void test('admin owns its browser-only Authentik relay helpers', () => {
   assert.deepEqual(authPackageJson.exports['./authentik'], {
     types: './dist/authentik.d.ts',
     default: './dist/authentik.js',
   });
-  assert.match(authentikRelaySource, /from '@alternun\/auth\/authentik';/);
+  assert.match(authentikRelaySource, /function buildAdminAuthentikLoginEntryUrl/);
+  assert.match(authentikRelaySource, /function resolveSafeAdminRedirect/);
+  assert.doesNotMatch(authentikRelaySource, /from '@alternun\/auth\/authentik';/);
   assert.doesNotMatch(authentikRelaySource, /from '@alternun\/auth';/);
 });
 
 void test('admin dashboard access requires an Authentik role rather than an email domain', () => {
-  assert.match(oidcClientSource, /return hasAdminRole\(roles,\);/);
+  assert.match(oidcClientSource, /return hasAdminRole\(roles,?\);/);
   assert.doesNotMatch(oidcClientSource, /hasAllowedAdminEmailDomain/);
   assert.doesNotMatch(accessControlSource, /hasAllowedAdminEmailDomain/);
   assert.doesNotMatch(accessControlSource, /Workspace Google users/);
