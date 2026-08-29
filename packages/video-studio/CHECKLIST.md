@@ -47,7 +47,7 @@ Track your progress through the entire workflow.
 
 - [ ] **Open browser**
 
-  - Navigate to http://localhost:3000
+  - Navigate to http://localhost:3003
   - Studio should load
 
 - [ ] **Explore scenes**
