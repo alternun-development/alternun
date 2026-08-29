@@ -15,7 +15,7 @@ pnpm install
 pnpm dev
 ```
 
-Opens Remotion Studio at **http://localhost:3000**
+Opens Remotion Studio at **http://localhost:3003**
 
 - Real-time preview of all 7 scenes
 - Timeline scrubber to jump between scenes
@@ -284,4 +284,4 @@ ffmpeg -f concat -safe 0 -i filelist.txt -c copy final.mp4
 
 ---
 
-**Ready?** → `pnpm dev` and open http://localhost:3000
+**Ready?** → `pnpm dev` and open http://localhost:3003
