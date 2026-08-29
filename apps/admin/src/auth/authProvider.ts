@@ -73,7 +73,7 @@ export const authProvider: AuthProvider = {
         authenticated: false,
         redirectTo: '/login',
         error: new Error(
-          'Only approved admin users or @alternun.io accounts can access Alternun Admin.'
+          'Only users assigned to an approved Alternun admin role can access Alternun Admin.'
         ),
       };
     }

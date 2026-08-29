@@ -125,7 +125,17 @@ else
 
   integration_config_secret_json=$(get_secret_json "$integration_config_secret_name" || true)
   if [ -z "$integration_config_secret_json" ] || [ "$integration_config_secret_json" = "None" ]; then
+    if [ "${INFRA_IDENTITY_ENABLED:-false}" = "true" ] && \
+      [ "$backend_google_credentials_complete" = "true" ]; then
+      # The first identity deployment creates this secret itself. Direct Google
+      # credentials are sufficient to synthesize that initial secret version;
+      # later deployments hydrate the generated OIDC and bootstrap values here.
+      echo "Identity integration-config secret ${integration_config_secret_name} will be created by the identity stack." >&2
+      return 0 2>/dev/null || exit 0
+    fi
+
     echo "ERROR: Missing identity integration-config secret at ${integration_config_secret_name}." >&2
+    echo "ERROR: Initial identity bootstrap requires configured Google OAuth credentials." >&2
     exit 1
   fi
 

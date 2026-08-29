@@ -726,6 +726,7 @@ export function createInfrastructure() {
     : undefined;
   const adminSiteInfrastructure = adminSiteEnabledForStage
     ? deployAdminSiteInfrastructure({
+        env: process.env,
         rootDomain,
         invalidationWait: staticSiteInvalidationWait,
         settings: adminSiteSettings,
