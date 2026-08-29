@@ -43,6 +43,7 @@ apps/admin/src/sst-env.d.ts
 # Claude Code workspace
 .claude/
 .codex
+.specs/scratchpad/
 tmp/
 __pycache__/
 apps/admin/src/bones/

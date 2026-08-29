@@ -1,11 +1,17 @@
 import json
 import os
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.x509.oid import NameOID
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
 from authentik.core.models import Application, Group
+from authentik.crypto.models import CertificateKeyPair
 from authentik.events.models import Event, EventAction, NotificationTransport, NotificationRule, NotificationSeverity
 from authentik.flows.models import Flow, FlowStageBinding, FlowToken
 from authentik.policies.expression.models import ExpressionPolicy
@@ -102,10 +108,9 @@ def normalize_google_source_login_flow_mode(value: str) -> str:
     return "source"
 
 
-def build_admin_access_expression(allowed_domain: str, allowed_groups):
+def build_admin_access_expression(allowed_groups):
     encoded_groups = json.dumps(sorted(set(group for group in allowed_groups if group)))
     return f"""
-allowed_domain = {json.dumps(allowed_domain.lower())}
 allowed_groups = set({encoded_groups})
 user = request.user
 
@@ -116,77 +121,8 @@ if not user or not getattr(user, "is_authenticated", False):
 if user.groups.filter(name__in=list(allowed_groups)).exists():
     return True
 
-email = (getattr(user, "email", "") or "").strip().lower()
-if allowed_domain and email.endswith(f"@{{allowed_domain}}"):
-    if getattr(user, "type", "") != "internal":
-        user.type = "internal"
-        user.save(update_fields=["type"])
-    return True
-
-ak_message(f"Only approved admin users or @{{allowed_domain}} accounts can access Alternun Admin.")
+ak_message("Only users assigned to an approved Alternun admin group can access Alternun Admin.")
 return False
-""".strip()
-
-
-def build_internal_user_promotion_expression(promotion_mode: str, allowed_domain: str):
-    normalized_mode = (promotion_mode or "domain").strip().lower()
-
-    if normalized_mode == "any":
-        return """
-plan = request.context.get("flow_plan")
-
-user = getattr(request, "user", None)
-if user and getattr(user, "is_authenticated", False):
-    if getattr(user, "type", "") != "internal":
-        user.type = "internal"
-        user.save(update_fields=["type"])
-    return True
-
-if not plan:
-    return True
-
-context = getattr(plan, "context", {})
-context["user_type"] = "internal"
-return True
-""".strip()
-
-    return f"""
-allowed_domain = {json.dumps(allowed_domain.lower())}
-plan = request.context.get("flow_plan")
-
-def normalize_email(value):
-    return (value or "").strip().lower()
-
-def is_allowed_email(value):
-    email = normalize_email(value)
-    return bool(allowed_domain and email.endswith(f"@{{allowed_domain}}"))
-
-user = getattr(request, "user", None)
-if user and getattr(user, "is_authenticated", False) and is_allowed_email(getattr(user, "email", "")):
-    if getattr(user, "type", "") != "internal":
-        user.type = "internal"
-        user.save(update_fields=["type"])
-    return True
-
-if not plan:
-    return True
-
-context = getattr(plan, "context", {{}})
-pending_user = context.get("pending_user") or request.context.get("pending_user")
-prompt_data = context.get("prompt_data") or request.context.get("prompt_data") or {{}}
-email_candidates = [
-    getattr(pending_user, "email", ""),
-    prompt_data.get("email", ""),
-    prompt_data.get("mail", ""),
-    request.context.get("pending_user_identifier", ""),
-]
-
-for candidate in email_candidates:
-    if is_allowed_email(candidate):
-        context["user_type"] = "internal"
-        return True
-
-return True
 """.strip()
 
 
@@ -214,6 +150,46 @@ if user.groups.filter(name__in=list(allowed_groups)).exists():
 ak_message("{application_name} can only be accessed by approved Alternun admin/editor groups.")
 return False
 """.strip()
+
+
+def ensure_oidc_signing_key(name: str):
+    """Create one durable RSA keypair for OIDC providers when it is absent.
+
+    Without an Authentik signing key, public OIDC clients receive HS256 tokens
+    signed with the client secret. A browser client cannot safely hold that
+    secret, and the API cannot validate those tokens through JWKS.
+    """
+    existing = CertificateKeyPair.objects.filter(name=name).first()
+    if existing:
+        return existing, False
+
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=3072)
+    subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, name)])
+    now = datetime.now(timezone.utc)
+    certificate = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(subject)
+        .public_key(private_key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(now - timedelta(minutes=5))
+        .not_valid_after(now + timedelta(days=3650))
+        .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+        .sign(private_key, hashes.SHA256())
+    )
+    return (
+        CertificateKeyPair.objects.create(
+            name=name,
+            certificate_data=certificate.public_bytes(serialization.Encoding.PEM).decode("utf-8"),
+            key_data=private_key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption(),
+            ).decode("utf-8"),
+            key_type="rsa",
+        ),
+        True,
+    )
 
 
 def upsert_expression_policy(name: str, expression: str):
@@ -299,6 +275,15 @@ def find_flow_stage_binding(flow, stage_name: str):
 def ensure_named_user_login_stage(name: str):
     stage, created = UserLoginStage.objects.get_or_create(name=name)
     return stage, created
+
+
+def ensure_source_flow_user_login_stage(flow, name: str):
+    """Source completion must establish an Authentik session before resuming OIDC."""
+    if not flow:
+        return False
+    stage, created = ensure_named_user_login_stage(name)
+    binding_created, binding_changed = ensure_flow_stage_binding(flow, stage, order=100)
+    return created or binding_created or binding_changed
 
 
 def ensure_named_user_logout_stage(name: str):
@@ -541,6 +526,7 @@ results = {
     "user_sync_webhook": "skipped",
     "admin_user": "skipped",
     "admin_application_policy": "skipped",
+    "oidc_signing_key": "skipped",
     "admin_oidc_provider": "skipped",
     "docs_cms_application_policy": "skipped",
     "docs_cms_oidc_provider": "skipped",
@@ -571,14 +557,11 @@ admin_oidc_application_name = read_env(
 admin_oidc_application_slug = read_env(
     "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_APPLICATION_SLUG", "alternun-admin"
 )
-admin_allowed_email_domain = read_env(
-    "ALTERNUN_BOOTSTRAP_ADMIN_ALLOWED_EMAIL_DOMAIN", "alternun.io"
-)
-internal_user_promotion_mode = (
-    read_env("ALTERNUN_BOOTSTRAP_INTERNAL_USER_PROMOTION_MODE", "domain") or "domain"
-).lower()
 admin_oidc_provider_name = read_env(
     "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_PROVIDER_NAME", "Alternun Admin OIDC"
+)
+oidc_signing_key_name = read_env(
+    "ALTERNUN_BOOTSTRAP_OIDC_SIGNING_KEY_NAME", "Alternun OIDC Signing Key"
 )
 admin_oidc_client_id = read_env(
     "ALTERNUN_BOOTSTRAP_ADMIN_OIDC_CLIENT_ID", "alternun-admin"
@@ -614,6 +597,8 @@ docs_cms_oidc_allowed_groups = read_list_env(
     ["authentik Admins", "Alternun Dashboard Admins", "Alternun Docs Editors"],
 )
 user_model = get_user_model()
+oidc_signing_key, oidc_signing_key_created = ensure_oidc_signing_key(oidc_signing_key_name)
+results["oidc_signing_key"] = "created" if oidc_signing_key_created else "unchanged"
 
 if admin_username and admin_email:
     admin_defaults = {
@@ -670,35 +655,6 @@ if admin_username and admin_email:
 else:
     results["admin_user"] = "missing_inputs"
 
-if internal_user_promotion_mode == "any":
-    promoted_usernames = []
-    for internal_user in user_model.objects.exclude(type="internal"):
-        internal_user.type = "internal"
-        internal_user.save(update_fields=["type"])
-        promoted_usernames.append(internal_user.username)
-
-    results["internal_domain_users"] = {
-        "status": "updated" if promoted_usernames else "unchanged",
-        "count": len(promoted_usernames),
-        "usernames": promoted_usernames,
-    }
-elif admin_allowed_email_domain:
-    promoted_usernames = []
-    for internal_user in user_model.objects.filter(
-        email__iendswith=f"@{admin_allowed_email_domain}"
-    ).exclude(type="internal"):
-        internal_user.type = "internal"
-        internal_user.save(update_fields=["type"])
-        promoted_usernames.append(internal_user.username)
-
-    results["internal_domain_users"] = {
-        "status": "updated" if promoted_usernames else "unchanged",
-        "count": len(promoted_usernames),
-        "usernames": promoted_usernames,
-    }
-else:
-    results["internal_domain_users"] = "missing_allowed_domain"
-
 if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_url:
     admin_scope_mapping_ids = [
         "goauthentik.io/providers/oauth2/scope-openid",
@@ -728,7 +684,9 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
     provider_updates = {
         "client_id": admin_oidc_client_id,
         "client_secret": admin_oidc_client_secret,
-        "sub_mode": "user_email",
+        # This aligns the OIDC subject with Authentik's user-sync webhook.
+        "sub_mode": "user_uuid",
+        "signing_key": oidc_signing_key,
     }
     for field, expected in provider_updates.items():
         current = getattr(provider, field)
@@ -820,7 +778,6 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
     application_policy, policy_created, policy_changed = upsert_expression_policy(
         "alternun-admin-access",
         build_admin_access_expression(
-            admin_allowed_email_domain,
             [admin_group, "authentik Admins", "Alternun Dashboard Admins"],
         ),
     )
@@ -1011,21 +968,6 @@ if docs_cms_oidc_application_slug and docs_cms_oidc_client_id and docs_cms_oidc_
 else:
     results["docs_cms_oidc_provider"] = "missing_inputs"
 
-internal_user_promotion_policy = None
-if admin_allowed_email_domain:
-    internal_user_promotion_policy, promotion_policy_created, promotion_policy_changed = (
-        upsert_expression_policy(
-            "alternun-internal-user-promotion",
-            build_internal_user_promotion_expression(
-                internal_user_promotion_mode,
-                admin_allowed_email_domain,
-            ),
-        )
-    )
-else:
-    promotion_policy_created = False
-    promotion_policy_changed = False
-
 default_application_enabled = read_bool_env(
     "ALTERNUN_BOOTSTRAP_DEFAULT_APPLICATION_ENABLED", True
 )
@@ -1209,6 +1151,14 @@ if google_client_id and google_client_secret:
     if source_enrollment_flow and source.enrollment_flow_id != source_enrollment_flow.pk:
         source.enrollment_flow = source_enrollment_flow
         source_changed = True
+    if ensure_source_flow_user_login_stage(
+        source_authentication_flow, "alternun-source-authentication-login"
+    ):
+        source_changed = True
+    if ensure_source_flow_user_login_stage(
+        source_enrollment_flow, "alternun-source-enrollment-login"
+    ):
+        source_changed = True
     if (
         source_authentication_flow_pruned
         or source_enrollment_flow_pruned
@@ -1227,11 +1177,15 @@ if google_client_id and google_client_secret:
             starter_mode=google_login_flow_mode,
         )
         if google_login_stage:
-            if source.authentication_flow_id != google_login_flow.pk:
-                source.authentication_flow = google_login_flow
+            # This flow is an entry flow for applications that need to start
+            # Google directly.  It must not become the source's own
+            # post-authentication flow, otherwise SourceStage resumes itself
+            # after Google and either loops or drops the pending OIDC request.
+            if source_authentication_flow and source.authentication_flow_id != source_authentication_flow.pk:
+                source.authentication_flow = source_authentication_flow
                 source_changed = True
-            if getattr(source, "enrollment_flow_id", None) is not None:
-                source.enrollment_flow = None
+            if source_enrollment_flow and source.enrollment_flow_id != source_enrollment_flow.pk:
+                source.enrollment_flow = source_enrollment_flow
                 source_changed = True
             if google_login_flow_created or google_login_flow_changed:
                 source_changed = True
@@ -1297,40 +1251,6 @@ if google_client_id and google_client_secret:
             identification_stage.save()
         if not identification_stage.sources.filter(pk=source.pk).exists():
             identification_stage.sources.add(source)
-
-    source_enrollment_flow = source.enrollment_flow or source_enrollment_flow
-    if internal_user_promotion_policy and source_enrollment_flow:
-        user_write_stage_ids = list(
-            UserWriteStage.objects.values_list("stage_ptr_id", flat=True)
-        )
-        enrollment_user_write_binding = (
-            FlowStageBinding.objects.filter(
-                target=source_enrollment_flow,
-                stage_id__in=user_write_stage_ids,
-            )
-            .order_by("order")
-            .first()
-        )
-
-        if enrollment_user_write_binding:
-            policy_binding_created, policy_binding_changed = ensure_policy_binding(
-                enrollment_user_write_binding,
-                internal_user_promotion_policy,
-                order=0,
-            )
-            if (
-                promotion_policy_created
-                or promotion_policy_changed
-                or policy_binding_created
-                or policy_binding_changed
-            ):
-                results["internal_domain_user_promotion"] = "updated"
-            else:
-                results["internal_domain_user_promotion"] = "unchanged"
-        else:
-            results["internal_domain_user_promotion"] = "missing_user_write_binding"
-    elif internal_user_promotion_policy:
-        results["internal_domain_user_promotion"] = "missing_source_enrollment_flow"
 
     if source_created:
         results["google_source"] = "created"

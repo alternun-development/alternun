@@ -113,6 +113,8 @@ export function buildDashboardPipelineSpecs({
         INFRA_ENABLE_ADMIN_SITE: 'true',
         INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
         INFRA_ADMIN_ENABLED_STAGES: 'production',
+        INFRA_ADMIN_AUTH_GOOGLE_ENABLED: 'true',
+        INFRA_ADMIN_AUTH_GOOGLE_FLOW_SLUG: 'alternun-google-login',
         INFRA_ENABLE_BACKEND_API: 'true',
         INFRA_APPLY_PENDING_MIGRATIONS: 'true',
         INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',

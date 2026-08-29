@@ -1,0 +1,35 @@
+name: alternun-authentik-dev
+
+services:
+  postgres:
+    image: docker.io/library/postgres:16
+    env_file: ${AUTHENTIK_ENV_FILE:-.env}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - authentik-dev-postgres:/var/lib/postgresql/data
+
+  server:
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_IMAGE_TAG}
+    command: server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: ${AUTHENTIK_ENV_FILE:-.env}
+    ports:
+      - '127.0.0.1:9000:9000'
+      - '127.0.0.1:9443:9443'
+
+  worker:
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_IMAGE_TAG}
+    command: worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: ${AUTHENTIK_ENV_FILE:-.env}
+
+volumes:
+  authentik-dev-postgres:
