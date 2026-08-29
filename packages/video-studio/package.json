@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node src/server/studio-server.mjs",
-    "dev:studio": "remotion studio",
+    "dev:studio": "remotion studio --port 3003",
     "build": "remotion bundle",
     "render": "remotion render",
     "clean": "rm -rf dist .remotion"

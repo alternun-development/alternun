@@ -9,7 +9,7 @@ import { spawn } from 'child_process';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const PUBLIC_DIR = path.resolve(PROJECT_ROOT, 'public');
-const PORT = process.env.STUDIO_PORT || 3000;
+const PORT = process.env.STUDIO_PORT || 3003;
 
 const app = express();
 

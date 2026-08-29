@@ -339,7 +339,7 @@ pnpm install
 
 # 2. Preview
 pnpm dev
-# Open http://localhost:3000
+# Open http://localhost:3003
 
 # 3. Render
 pnpm render
@@ -391,7 +391,7 @@ Start here based on your role:
 
 1. Run `pnpm install`
 2. Run `pnpm dev`
-3. Preview at http://localhost:3000
+3. Preview at http://localhost:3003
 4. Run `pnpm render`
 5. Post-process output with FFmpeg
 6. Upload to platforms

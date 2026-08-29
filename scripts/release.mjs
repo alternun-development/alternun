@@ -593,13 +593,17 @@ function releaseTagExists(version, dryRun) {
     .includes(`v${version}`);
 }
 
-function createReleaseTag(version, dryRun) {
-  if (releaseTagExists(version, dryRun)) {
+function createReleaseTag(version, dryRun, { replaceExisting = false } = {}) {
+  if (releaseTagExists(version, dryRun) && !replaceExisting) {
     console.log(`Tag v${version} already exists; skipping tag creation.`);
     return;
   }
 
-  run('git', ['tag', '-a', `v${version}`, '-m', `Release v${version}`], { dryRun });
+  run(
+    'git',
+    ['tag', ...(replaceExisting ? ['-f'] : []), '-a', `v${version}`, '-m', `Release v${version}`],
+    { dryRun }
+  );
 }
 
 function pushRelease({ remote, dryRun, targetBranch }) {
@@ -1212,7 +1216,8 @@ function promoteRelease({ version, remote, dryRun, productionBranch }) {
     throw new Error(`Release promotion requires develop. Current branch: ${currentBranch}`);
   }
 
-  run('git', ['push', remote, 'develop', '--follow-tags'], { dryRun });
+  run('git', ['push', remote, 'develop'], { dryRun });
+  run('git', ['push', remote, `refs/tags/v${version}`, '--force'], { dryRun });
   maybeCreatePullRequest({
     remote,
     base: productionBranch,
@@ -1400,7 +1405,7 @@ function main() {
   }
 
   if (shouldPrepareRelease && options.createTag) {
-    createReleaseTag(version, options.dryRun);
+    createReleaseTag(version, options.dryRun, { replaceExisting: options.promote });
   }
 
   if (directPushEnabled) {

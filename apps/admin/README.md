@@ -23,8 +23,11 @@ The app expects:
 - `VITE_AUTH_ISSUER`
 - `VITE_AUTH_CLIENT_ID`
 - `VITE_AUTH_AUDIENCE`
-- `VITE_ALLOWED_ADMIN_EMAIL_DOMAIN`
 - `VITE_APP_ENV`
+
+Admin authorization is role-based: each `@alternun.co`, `@alternun.io`, or local
+password user must be assigned to an approved Authentik admin group. An email
+domain alone never grants dashboard access.
 
 ## Deployment
 

@@ -1,24 +1,25 @@
-import { useEffect, useState, } from 'react';
-import { NavLink, Outlet, } from 'react-router-dom';
-import { authProvider, } from '../auth/authProvider';
-import { extractAdminIdentity, getActiveAdminSession, } from '../auth/oidc-client';
-import { adminResources, } from '../resources/catalog';
+import { useEffect, useState } from 'react';
+import { NavLink, Outlet } from 'react-router-dom';
+import { authProvider } from '../auth/authProvider';
+import { extractAdminIdentity, getActiveAdminSession } from '../auth/oidc-client';
+import { adminEnv } from '../config/env';
+import { adminResources } from '../resources/catalog';
 
 type AdminIdentity = NonNullable<Awaited<ReturnType<typeof extractIdentity>>>;
 
 async function extractIdentity(): Promise<Awaited<ReturnType<typeof extractAdminIdentity>>> {
   const session = await getActiveAdminSession();
-  return extractAdminIdentity(session,);
+  return extractAdminIdentity(session);
 }
 
 export function AppShell(): React.ReactElement {
-  const [identity, setIdentity,] = useState<AdminIdentity | null>(null,);
+  const [identity, setIdentity] = useState<AdminIdentity | null>(null);
 
   useEffect(() => {
-    void extractIdentity().then(setIdentity,);
-  }, [],);
+    void extractIdentity().then(setIdentity);
+  }, []);
 
-  const primaryResources = adminResources.filter((resource,) => resource.name !== 'dashboard',);
+  const primaryResources = adminResources.filter((resource) => resource.name !== 'dashboard');
 
   return (
     <div className='admin-shell'>
@@ -35,12 +36,12 @@ export function AppShell(): React.ReactElement {
             <span className='admin-nav-meta'>Health and operator shortcuts</span>
           </NavLink>
 
-          {primaryResources.map((resource,) => (
+          {primaryResources.map((resource) => (
             <NavLink key={resource.name} to={resource.list} className='admin-nav-link'>
               <span className='admin-nav-title'>{resource.meta.title}</span>
               <span className='admin-nav-meta'>{resource.meta.description}</span>
             </NavLink>
-          ),)}
+          ))}
         </nav>
       </aside>
 
@@ -55,14 +56,14 @@ export function AppShell(): React.ReactElement {
             <div className='identity-badge'>
               <span>{identity?.email ?? 'No email claim'}</span>
               <strong>
-                {identity?.roles.length ? identity.roles.join(', ',) : 'No roles detected'}
+                {identity?.roles.length ? identity.roles.join(', ') : 'No roles detected'}
               </strong>
             </div>
             <button
               className='secondary-button'
               type='button'
               onClick={() => {
-                void authProvider.logout({},);
+                void authProvider.logout({});
               }}
             >
               Sign out
@@ -71,6 +72,19 @@ export function AppShell(): React.ReactElement {
         </header>
 
         <Outlet />
+
+        <footer className='admin-footer' aria-label='Admin release information'>
+          <div>
+            <span className='admin-footer-label'>Alternun Admin</span>
+            <span className='admin-footer-copy'>Internal operations console</span>
+          </div>
+          <div className='admin-footer-meta'>
+            <span>Release</span>
+            <strong>v{adminEnv.appVersion}</strong>
+            <span>Environment</span>
+            <strong>{adminEnv.appEnv}</strong>
+          </div>
+        </footer>
       </main>
     </div>
   );
