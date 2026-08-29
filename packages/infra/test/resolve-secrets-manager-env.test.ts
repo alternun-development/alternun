@@ -30,6 +30,8 @@ void test('resolve-secrets-manager-env hydrates the stage-mapped identity integr
   assert.match(source, /INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_SECRET/);
   assert.match(source, /INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID/);
   assert.match(source, /INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET/);
+  assert.match(source, /identity_google_credentials_complete/);
+  assert.match(source, /bootstrap_google_credentials_complete/);
   assert.match(source, /GOOGLE_AUTH_CLIENT_SECRET/);
   assert.match(source, /will be created by the identity stack/);
   assert.match(source, /identity bootstrap requires configured Google OAuth credentials/);
