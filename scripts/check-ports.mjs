@@ -4,7 +4,7 @@ import { execSync } from 'child_process';
 import readline from 'readline';
 
 const REQUIRED_PORTS = {
-  3000: 'Video Studio',
+  3003: 'Video Studio',
   5173: 'Admin Dashboard',
   8081: 'Mobile Web App',
   8082: 'API Server',

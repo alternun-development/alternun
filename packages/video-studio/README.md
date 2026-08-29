@@ -70,7 +70,7 @@ pnpm install
 # Start Remotion preview (live composition editing)
 pnpm dev
 
-# Open browser at: http://localhost:3000
+# Open browser at: http://localhost:3003
 # Hot reload on file changes
 ```
 
@@ -210,7 +210,7 @@ await typeWithPauses(page, selector, 'text', 50);
 
 ```bash
 pnpm dev
-# Runs Remotion studio at http://localhost:3000
+# Runs Remotion studio at http://localhost:3003
 # Live preview with timeline scrubbing
 # Real-time parameter adjustment
 ```

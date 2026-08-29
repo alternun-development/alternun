@@ -92,7 +92,7 @@ pnpm install
 
 # Start Remotion preview (hot-reload, live scrubbing)
 pnpm dev
-# Opens: http://localhost:3000
+# Opens: http://localhost:3003
 
 # Edit any scene component, auto-refreshes in browser
 # Use timeline to jump between scenes
@@ -570,7 +570,7 @@ pnpm clean                 # Remove build artifacts
    ```bash
    cd packages/video-studio
    pnpm install
-   pnpm dev  # Preview at http://localhost:3000
+   pnpm dev  # Preview at http://localhost:3003
    ```
 
 2. **Customize for Your Brand**
@@ -628,7 +628,7 @@ Your cinematic product demo is ready to go. Start here:
 cd packages/video-studio
 pnpm install
 pnpm dev
-# Open http://localhost:3000
+# Open http://localhost:3003
 ```
 
 Enjoy creating world-class product videos! 🎬✨

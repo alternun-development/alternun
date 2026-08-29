@@ -241,7 +241,7 @@ When `INFRA_IDENTITY_ENABLED=true`, the stack now provisions:
 - a PostgreSQL database (mode selectable: EC2-local or dedicated RDS)
 - Route53 DNS for the stage-specific identity domain
 - Route53 DNS-01 ACME on non-production identity stages
-- production ALB + ACM in front of the identity host
+- production direct instance ingress with Traefik Route53 DNS-01 ACME
 - Secrets Manager entries for:
   - Authentik secret key
   - database credentials
@@ -385,12 +385,12 @@ Important behavior:
 - identity provisioning is isolated to dedicated stacks by default (`identity-dev`, `identity-prod`) to prevent duplicate instances per environment
 - Authentik image tag is validated to calendar-version format and must be `>= 2025.10` (Redisless baseline)
 - identity deployment can be stage-scoped with `INFRA_IDENTITY_ENABLED_STAGES` (for example `dev` to keep production untouched)
-- default pipeline profile behavior is `identity-dev => INFRA_IDENTITY_DATABASE_MODE=rds` and `identity-prod => INFRA_IDENTITY_DATABASE_MODE=rds`
+- default pipeline profile behavior is `identity-dev => INFRA_IDENTITY_DATABASE_MODE=rds` and `identity-prod => INFRA_IDENTITY_DATABASE_MODE=ec2`
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
 - the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
 - non-production identity defaults to direct instance ingress with Traefik Route53 DNS-01 ACME
 - non-production identity persists Traefik ACME state locally and backs it up to a private S3 bucket for restore after instance replacement
-- production identity defaults to ALB + ACM, with the ALB terminating TLS and forwarding HTTPS to the instance
+- production identity defaults to direct instance ingress with Traefik Route53 DNS-01 ACME; this keeps the budget profile on a single EC2 host and avoids ALB/ACM resources
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google and Discord social sources + Supabase OIDC application/provider
 - the default internal application tile falls back to the stage-specific admin dashboard origin, so it opens the dashboard instead of the Authentik library unless you override `INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL`
 - the dedicated identity pipelines intentionally leave `INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL` unset so the internal tile keeps that admin-dashboard fallback; only the mobile tile should point at the AIRS auth entrypoint
@@ -434,7 +434,7 @@ For production identity:
 ```bash
 INFRA_IDENTITY_ENABLED=true \
 INFRA_IDENTITY_ENABLED_STAGES=production \
-INFRA_IDENTITY_DATABASE_MODE=rds \
+INFRA_IDENTITY_DATABASE_MODE=ec2 \
 pnpm --filter @alternun/infra run deploy:identity-prod
 ```
 

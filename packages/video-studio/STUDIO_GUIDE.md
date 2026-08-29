@@ -10,7 +10,7 @@ AIRS Studio is a unified interface that combines:
 - **Remotion Studio** — Video composition and preview
 - **Documentation** — Quick access to guides and resources
 
-Access it at: **http://localhost:3000** (when running `pnpm dev`)
+Access it at: **http://localhost:3003** (when running `pnpm dev`)
 
 ## 🚀 Getting Started
 
@@ -19,14 +19,14 @@ Access it at: **http://localhost:3000** (when running `pnpm dev`)
 ```bash
 cd packages/video-studio
 pnpm dev
-# Opens http://localhost:3000
+# Opens http://localhost:3003
 ```
 
 ### From Dev:All
 
 ```bash
 pnpm dev:all:video
-# Then navigate to http://localhost:3000
+# Then navigate to http://localhost:3003
 ```
 
 ## 📋 Features
@@ -259,7 +259,7 @@ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))';
 1. Check browser console for errors
 2. Verify Remotion server started:
    ```bash
-   curl http://localhost:3000
+   curl http://localhost:3003
    ```
 3. Try refreshing the page
 4. Restart dev server: `pnpm dev`
