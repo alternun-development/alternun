@@ -86,6 +86,8 @@ elif [ "${INFRA_IDENTITY_ENABLED:-false}" != "true" ] && [ "${INFRA_ENABLE_BACKE
 else
   backend_google_client_id=${INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_ID:-${GOOGLE_AUTH_CLIENT_ID:-}}
   backend_google_client_secret=${INFRA_BACKEND_API_GOOGLE_AUTH_CLIENT_SECRET:-${GOOGLE_AUTH_CLIENT_SECRET:-}}
+  identity_google_client_id=${INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID:-}
+  identity_google_client_secret=${INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_SECRET:-}
   backend_discord_client_id=${INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_ID:-${DISCORD_AUTH_CLIENT_ID:-${DISCORD_CLIENT_ID:-}}}
   backend_discord_client_secret=${INFRA_BACKEND_API_DISCORD_AUTH_CLIENT_SECRET:-${DISCORD_AUTH_CLIENT_SECRET:-${DISCORD_CLIENT_SECRET:-}}}
 
@@ -94,10 +96,14 @@ else
   # provider must still be resolved from the integration secret (or fail
   # clearly below).
   backend_google_credentials_complete=false
+  identity_google_credentials_complete=false
+  bootstrap_google_credentials_complete=false
   backend_discord_credentials_complete=false
   backend_discord_not_configured=false
   backend_google_not_configured=false
   [ -n "$backend_google_client_id" ] && [ -n "$backend_google_client_secret" ] && backend_google_credentials_complete=true
+  [ -n "$identity_google_client_id" ] && [ -n "$identity_google_client_secret" ] && identity_google_credentials_complete=true
+  { [ "$backend_google_credentials_complete" = "true" ] || [ "$identity_google_credentials_complete" = "true" ]; } && bootstrap_google_credentials_complete=true
   [ -n "$backend_discord_client_id" ] && [ -n "$backend_discord_client_secret" ] && backend_discord_credentials_complete=true
   [ -z "$backend_discord_client_id" ] && [ -z "$backend_discord_client_secret" ] && backend_discord_not_configured=true
   [ -z "$backend_google_client_id" ] && [ -z "$backend_google_client_secret" ] && backend_google_not_configured=true
@@ -125,7 +131,17 @@ else
 
   integration_config_secret_json=$(get_secret_json "$integration_config_secret_name" || true)
   if [ -z "$integration_config_secret_json" ] || [ "$integration_config_secret_json" = "None" ]; then
+    if [ "${INFRA_IDENTITY_ENABLED:-false}" = "true" ] && \
+      [ "$bootstrap_google_credentials_complete" = "true" ]; then
+      # The first identity deployment creates this secret itself. Direct Google
+      # credentials are sufficient to synthesize that initial secret version;
+      # later deployments hydrate the generated OIDC and bootstrap values here.
+      echo "Identity integration-config secret ${integration_config_secret_name} will be created by the identity stack." >&2
+      return 0 2>/dev/null || exit 0
+    fi
+
     echo "ERROR: Missing identity integration-config secret at ${integration_config_secret_name}." >&2
+    echo "ERROR: Initial identity bootstrap requires configured Google OAuth credentials." >&2
     exit 1
   fi
 

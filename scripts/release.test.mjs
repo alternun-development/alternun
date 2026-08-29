@@ -60,6 +60,12 @@ void test('release patch stays wired to the release script and auto deploys test
     releaseSource,
     /createReleaseCommit\(version, options\.dryRun, releaseBranch, options\.promote\)/
   );
+  assert.match(releaseSource, /replaceExisting: options\.promote/);
+  assert.match(releaseSource, /refs\/tags\/v\$\{version\}/);
+  assert.match(
+    releaseSource,
+    /run\('git', \['push', remote, `refs\/tags\/v\$\{version\}`, '--force'\]/
+  );
   assert.doesNotMatch(releaseSource, /gh pr edit/);
   assert.doesNotMatch(releaseSource, /gh pr create/);
   assert.match(releaseSource, /ALTERNUN_RELEASE_COMMIT/);

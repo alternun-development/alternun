@@ -34,3 +34,14 @@ void test('bootstrap keeps source authentication flows open by default', () => {
     /if not mobile_oidc_post_logout_redirect_urls and mobile_oidc_launch_url:/
   );
 });
+
+void test('admin application access is restricted to assigned admin groups', () => {
+  const template = fs.readFileSync(templatePath, 'utf8');
+
+  assert.match(template, /def build_admin_access_expression\(allowed_groups\):/);
+  assert.match(template, /Only users assigned to an approved Alternun admin group/);
+  assert.doesNotMatch(template, /Only approved admin users or @/);
+  assert.doesNotMatch(template, /ALTERNUN_BOOTSTRAP_ADMIN_ALLOWED_EMAIL_DOMAIN/);
+  assert.doesNotMatch(template, /admin_allowed_email_domain/);
+  assert.doesNotMatch(template, /internal_user_promotion/);
+});

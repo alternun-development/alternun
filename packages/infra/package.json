@@ -1,6 +1,6 @@
 {
   "name": "@alternun/infra",
-  "version": "1.1.50",
+  "version": "1.1.52",
   "private": true,
   "type": "module",
   "description": "Alternun AWS/SST infrastructure wrapper for Expo web deployments.",
@@ -13,6 +13,10 @@
     "deploy:admin-prod": "APPROVE=true STACK=admin-prod bash scripts/sst-deploy.sh",
     "deploy:identity-dev": "APPROVE=true STACK=identity-dev bash scripts/sst-deploy.sh",
     "deploy:identity-prod": "APPROVE=true STACK=identity-prod bash scripts/sst-deploy.sh",
+    "authentik:dev:init": "bash dev/authentik/init-local-env.sh",
+    "authentik:dev:up": "docker compose --env-file dev/authentik/.env -f dev/authentik/compose.yml up -d",
+    "authentik:dev:down": "docker compose --env-file dev/authentik/.env -f dev/authentik/compose.yml down -v",
+    "authentik:dev:logs": "docker compose --env-file dev/authentik/.env -f dev/authentik/compose.yml logs -f",
     "diff:dev": "sst diff --stage dev",
     "diff:production": "sst diff --stage production",
     "remove:dev": "sst remove --stage dev",

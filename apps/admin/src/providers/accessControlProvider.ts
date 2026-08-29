@@ -1,10 +1,5 @@
 import type { AccessControlProvider } from '@refinedev/core';
-import {
-  getActiveAdminSession,
-  getAdminRolesFromSession,
-  hasAdminRole,
-  hasAllowedAdminEmailDomain,
-} from '../auth/oidc-client';
+import { getActiveAdminSession, getAdminRolesFromSession, hasAdminRole } from '../auth/oidc-client';
 
 const readOnlyActions = new Set(['list', 'show']);
 const supportWritableResources = new Set(['users', 'wallets', 'organizations', 'memberships']);
@@ -13,12 +8,11 @@ export const accessControlProvider: AccessControlProvider = {
   can: async ({ resource, action }) => {
     const session = await getActiveAdminSession();
     const roles = getAdminRolesFromSession(session);
-    const hasCompanyEmailAccess = hasAllowedAdminEmailDomain(session);
 
-    if (!hasAdminRole(roles) && !hasCompanyEmailAccess) {
+    if (!hasAdminRole(roles)) {
       return {
         can: false,
-        reason: 'Only approved admin users or @alternun.io accounts can access this dashboard.',
+        reason: 'Only users assigned to an approved Alternun admin role can access this dashboard.',
       };
     }
 
@@ -49,16 +43,6 @@ export const accessControlProvider: AccessControlProvider = {
         reason: readOnlyActions.has(action)
           ? undefined
           : 'Read-only admins cannot mutate resources.',
-      };
-    }
-
-    if (hasCompanyEmailAccess) {
-      return {
-        can: resource === 'dashboard' || !resource || readOnlyActions.has(action),
-        reason:
-          resource === 'dashboard' || !resource || readOnlyActions.has(action)
-            ? undefined
-            : 'Workspace Google users have read-only dashboard access.',
       };
     }
 

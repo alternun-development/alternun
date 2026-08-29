@@ -7,8 +7,8 @@ export function LoginPage(): JSX.Element {
   const [searchParams] = useSearchParams();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const loginError =
-    searchParams.get('error') === 'unauthorized-email-domain'
-      ? `Google sign-in is limited to @${adminEnv.allowedEmailDomain} accounts, unless you have an approved admin role.`
+    searchParams.get('error') === 'unauthorized-admin'
+      ? 'Your Authentik account is not assigned to an approved Alternun admin group.'
       : null;
   const releaseLabel = `v${adminEnv.appVersion} · ${adminEnv.appEnv}`;
 
@@ -39,20 +39,22 @@ export function LoginPage(): JSX.Element {
         </p>
 
         <div className='auth-methods'>
-          <article className='auth-method'>
-            <span className='panel-label'>Password Admin</span>
-            <h2>Email and password</h2>
-            <p>
-              Use the hosted Authentik login form for the bootstrap admin or another approved
-              internal admin account.
-            </p>
-          </article>
+          {adminEnv.authGoogleEnabled ? (
+            <article className='auth-method'>
+              <span className='panel-label'>Password Admin</span>
+              <h2>Email and password</h2>
+              <p>
+                Use the hosted Authentik login form for the bootstrap admin or another approved
+                internal admin account.
+              </p>
+            </article>
+          ) : null}
           <article className='auth-method'>
             <span className='panel-label'>Google Workspace</span>
             <h2>Company Google sign-in</h2>
             <p>
-              Google sign-in is accepted only for <strong>@{adminEnv.allowedEmailDomain}</strong>{' '}
-              accounts. Other Google accounts are rejected before dashboard access is granted.
+              Use either <strong>@alternun.co</strong> or <strong>@alternun.io</strong>, then ask an
+              operator to assign your Authentik account to an approved admin group.
             </p>
           </article>
         </div>
@@ -74,22 +76,20 @@ export function LoginPage(): JSX.Element {
             <dt>Audience</dt>
             <dd>{adminEnv.authAudience}</dd>
           </div>
-          <div>
-            <dt>Google domain</dt>
-            <dd>@{adminEnv.allowedEmailDomain}</dd>
-          </div>
         </dl>
 
         <div className='auth-actions'>
-          <button
-            className='primary-button'
-            type='button'
-            onClick={() => {
-              void handleLogin('google');
-            }}
-          >
-            Continue with Google
-          </button>
+          {adminEnv.authGoogleEnabled ? (
+            <button
+              className='primary-button'
+              type='button'
+              onClick={() => {
+                void handleLogin('google');
+              }}
+            >
+              Continue with Google
+            </button>
+          ) : null}
 
           <button
             className='secondary-button'
