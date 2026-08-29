@@ -9,11 +9,11 @@ cd packages/video-studio
 pnpm dev
 ```
 
-Access **http://localhost:3000** for the studio dashboard.
+Access **http://localhost:3003** for the studio dashboard.
 
 ## 📍 Services
 
-- **Studio Dashboard**: http://localhost:3000
+- **Studio Dashboard**: http://localhost:3003
 
   - Project management interface
   - Recording studio with frame tracking
@@ -110,7 +110,7 @@ video-studio/
 
 ### Recording Workflow
 
-1. Open http://localhost:3000
+1. Open http://localhost:3003
 2. Create a new project
 3. Select the project
 4. Click **⏺ Start Recording**
@@ -184,12 +184,12 @@ This starts:
 - Admin dashboard (port 5173)
 - Mobile web app (port 8081)
 - Docs site (port 8083)
-- **Video Studio (port 3000)** ← You are here
+- **Video Studio (port 3003)** ← You are here
 - Remotion Composition (auto-detected port)
 
 ## 🐛 Troubleshooting
 
-**Q: Blank white page at localhost:3000**
+**Q: Blank white page at localhost:3003**
 
 - A: Force refresh (Ctrl+Shift+R)
 - Check browser console for errors

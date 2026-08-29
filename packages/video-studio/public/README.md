@@ -48,7 +48,7 @@ public/
 
 ### Start Recording
 
-1. Navigate to `http://localhost:3000/recorder/`
+1. Navigate to `http://localhost:3003/recorder/`
 2. Click "🎥 Start Recording"
 3. Interact with the composition
 4. Click "⏹ Stop Recording"
