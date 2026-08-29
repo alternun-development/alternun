@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
-import { buildAuthentikLoginEntryUrl, resolveSafeRedirect } from '@alternun/auth/authentik';
 import { OidcClient, type UserManager } from 'oidc-client-ts';
 import { adminEnv } from '../config/env';
 
@@ -18,13 +16,58 @@ function normalizeInternalHref(target: string): string {
   }
 }
 
-export function resolveAdminRelayReturnTo(target: string | null | undefined): string {
-  const safe = resolveSafeRedirect(target ?? '/dashboard', {
-    allowedOrigins: typeof window === 'undefined' ? [] : [window.location.origin],
-    fallbackUrl: '/dashboard',
-  });
+function resolveSafeAdminRedirect(target: string | null | undefined): string {
+  if (!target) {
+    return '/dashboard';
+  }
 
-  return normalizeInternalHref(safe);
+  if (target.startsWith('/') && !target.startsWith('//')) {
+    return target;
+  }
+
+  if (typeof window === 'undefined') {
+    return '/dashboard';
+  }
+
+  try {
+    const url = new URL(target, window.location.origin);
+    return url.origin === window.location.origin
+      ? `${url.pathname}${url.search}${url.hash}`
+      : '/dashboard';
+  } catch {
+    return '/dashboard';
+  }
+}
+
+function buildAdminAuthentikLoginEntryUrl({
+  issuer,
+  authorizeUrl,
+  flowSlug,
+}: {
+  issuer: string;
+  authorizeUrl: string;
+  flowSlug?: string;
+}): string {
+  const authentikOrigin = new URL(issuer).origin;
+  const trimmedAuthorizeUrl = authorizeUrl.trim();
+
+  if (!trimmedAuthorizeUrl) {
+    throw new Error('CONFIG_ERROR: authorizeUrl is required');
+  }
+
+  if (flowSlug?.trim()) {
+    return `${authentikOrigin}/if/flow/${encodeURIComponent(
+      flowSlug.trim()
+    )}/?next=${encodeURIComponent(trimmedAuthorizeUrl)}`;
+  }
+
+  return `${authentikOrigin}/source/oauth/login/google/?next=${encodeURIComponent(
+    trimmedAuthorizeUrl
+  )}`;
+}
+
+export function resolveAdminRelayReturnTo(target: string | null | undefined): string {
+  return normalizeInternalHref(resolveSafeAdminRedirect(target));
 }
 
 export function buildAdminAuthentikRelayPath(
@@ -66,14 +109,10 @@ export async function startAdminAuthentikRelaySignIn({
   });
 
   window.location.replace(
-    buildAuthentikLoginEntryUrl({
+    buildAdminAuthentikLoginEntryUrl({
       issuer: userManager.settings.authority,
       authorizeUrl: authorizeRequest.url,
-      providerHint: provider,
-      providerFlowSlugs:
-        provider === 'google' && adminEnv.authGoogleFlowSlug
-          ? { google: adminEnv.authGoogleFlowSlug }
-          : undefined,
+      flowSlug: provider === 'google' ? adminEnv.authGoogleFlowSlug : undefined,
     })
   );
 }
