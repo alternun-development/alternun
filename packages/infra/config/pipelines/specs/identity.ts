@@ -30,6 +30,14 @@ export function buildIdentityPipelineSpecs({
   const devDiscordLoginFlowSlug = resolveDevDiscordLoginFlowSlug(env);
   const productionExistingSmtpCredentialsSecretName =
     env.INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME?.trim() ?? '';
+  const productionExistingAuthentikSecretName =
+    env.INFRA_IDENTITY_EXISTING_AUTHENTIK_SECRET_NAME?.trim() ?? '';
+  const productionExistingDatabaseCredentialsSecretName =
+    env.INFRA_IDENTITY_EXISTING_DATABASE_CREDENTIALS_SECRET_NAME?.trim() ?? '';
+  const productionExistingJwtSigningSecretName =
+    env.INFRA_IDENTITY_EXISTING_JWT_SIGNING_SECRET_NAME?.trim() ?? '';
+  const productionExistingIntegrationConfigSecretName =
+    env.INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME?.trim() ?? '';
   const clearedDefaultApplicationLaunchUrl = '';
 
   return {
@@ -88,7 +96,13 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_SECRET_SMTP_CREDENTIALS_NAME: 'alternun-infra/identity/smtp-credentials-v2',
         // Adoption is opt-in per deployment environment. New and recovery
         // accounts leave this empty and create the managed secret instead.
+        INFRA_IDENTITY_EXISTING_AUTHENTIK_SECRET_NAME: productionExistingAuthentikSecretName,
+        INFRA_IDENTITY_EXISTING_DATABASE_CREDENTIALS_SECRET_NAME:
+          productionExistingDatabaseCredentialsSecretName,
         INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME: productionExistingSmtpCredentialsSecretName,
+        INFRA_IDENTITY_EXISTING_JWT_SIGNING_SECRET_NAME: productionExistingJwtSigningSecretName,
+        INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME:
+          productionExistingIntegrationConfigSecretName,
         INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME: 'alternun-infra/identity/jwt-signing-key-v2',
         INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:
           'alternun-infra/identity/integration-config-v2',
