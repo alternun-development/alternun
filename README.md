@@ -124,10 +124,10 @@ Current version: **1.1.54**
 
 ## 📋 Latest Changes (v1.1.54)
 
-### Bug Fixes
+### Changes
 
-- **repo:** 🐛 fix: complete Authentik Google source flow
-- **repo:** 🐛 fix: default production admin Google relay
+- **repo:** 🐛 fix: complete Authentik Google source flow ([de57c9e](https://github.com/alternun-development/alternun/commit/de57c9eaeab67528783156edb0affeda82fa0487))
+- **repo:** 🐛 fix: default production admin Google relay ([1ad1f98](https://github.com/alternun-development/alternun/commit/1ad1f98056d6d22e540f74cdfedb640a818db30a))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
