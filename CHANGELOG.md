@@ -1,3 +1,13 @@
+## [1.1.56](https://github.com/alternun-development/alternun/compare/v1.1.55...v1.1.56) (2026-08-30)
+
+### Bug Fixes
+
+- **repo:** fix(admin): use direct Google source login in production
+
+### Bug Fixes
+
+- **admin:** use direct Google source login in production ([ddbc444](https://github.com/alternun-development/alternun/commit/ddbc444ef6782e015a6b02db54e042f677ef443d))
+
 ## [1.1.55](https://github.com/alternun-development/alternun/compare/v1.1.54...v1.1.55) (2026-08-29)
 
 ### Features
