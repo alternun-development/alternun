@@ -1,8 +1,8 @@
-## [1.1.60](https://github.com/alternun-development/alternun/compare/v1.1.59-dev.0...v1.1.60) (2026-08-30)
+## [1.1.60](https://github.com/alternun-development/alternun/compare/v1.1.58...v1.1.60) (2026-08-30)
 
-### Bug Fixes
+### Changes
 
-- **repo:** 🐛 fix(auth): map configured admin groups to roles
+- **repo:** 🐛 fix(auth): map configured admin groups to roles ([191439c](https://github.com/alternun-development/alternun/commit/191439c6fc7c3546270aab85f5b4193008b6a7bd))
 
 ## [1.1.59](https://github.com/alternun-development/alternun/compare/v1.1.58...v1.1.59) (2026-08-30)
 

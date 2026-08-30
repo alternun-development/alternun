@@ -124,9 +124,9 @@ Current version: **1.1.60**
 
 ## 📋 Latest Changes (v1.1.60)
 
-### Bug Fixes
+### Changes
 
-- **repo:** 🐛 fix(auth): map configured admin groups to roles
+- **repo:** 🐛 fix(auth): map configured admin groups to roles ([191439c](https://github.com/alternun-development/alternun/commit/191439c6fc7c3546270aab85f5b4193008b6a7bd))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
