@@ -25,6 +25,8 @@ const callbackPageSource = fs.readFileSync(
   'utf8'
 );
 const appShellSource = fs.readFileSync(path.join(adminDirectory, 'src/components/app-shell.tsx'), 'utf8');
+const stylesSource = fs.readFileSync(path.join(adminDirectory, 'src/styles.css'), 'utf8');
+const indexSource = fs.readFileSync(path.join(adminDirectory, 'index.html'), 'utf8');
 
 void test('admin development commands build the workspace auth package first', () => {
   assert.match(packageJson.scripts.dev, /^pnpm --filter @alternun\/auth run build && vite$/);
@@ -58,4 +60,31 @@ void test('every authenticated admin view carries the deployed release footer', 
   assert.match(appShellSource, /className='admin-footer'/);
   assert.match(appShellSource, /v\{adminEnv\.appVersion\}/);
   assert.match(appShellSource, /\{adminEnv\.appEnv\}/);
+});
+
+void test('the authenticated shell provides an accessible mobile navigation drawer', () => {
+  assert.match(appShellSource, /aria-controls='admin-navigation'/);
+  assert.match(appShellSource, /aria-expanded=\{isNavigationOpen\}/);
+  assert.match(appShellSource, /event\.key === 'Escape'/);
+  assert.match(appShellSource, /className=\{`sidebar-backdrop\$\{isNavigationOpen/);
+  assert.match(stylesSource, /\.admin-sidebar\.is-open/);
+  assert.match(stylesSource, /\.mobile-nav-toggle/);
+  assert.match(stylesSource, /@media \(max-width: 980px\)/);
+});
+
+void test('operator identity uses a compact profile menu instead of an overflowing header card', () => {
+  assert.match(appShellSource, /className='profile-trigger'/);
+  assert.match(appShellSource, /aria-haspopup='menu'/);
+  assert.match(appShellSource, /className='profile-popover'/);
+  assert.match(appShellSource, /className='profile-sign-out'/);
+  assert.doesNotMatch(appShellSource, /identity-badge/);
+  assert.match(stylesSource, /\.profile-trigger/);
+  assert.match(stylesSource, /\.profile-popover/);
+});
+
+void test('admin ships Alternun favicon and PWA metadata', () => {
+  assert.match(indexSource, /href="\/favicon\.ico"/);
+  assert.match(indexSource, /href="\/favicon-32x32\.png"/);
+  assert.match(indexSource, /href="\/apple-touch-icon\.png"/);
+  assert.match(indexSource, /href="\/site\.webmanifest"/);
 });
