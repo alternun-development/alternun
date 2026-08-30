@@ -15,11 +15,8 @@ void test('production identity pipeline uses the single-instance budget profile'
   assert.match(productionPipeline, /INFRA_IDENTITY_DATABASE_MODE: 'ec2'/);
   assert.match(productionPipeline, /INFRA_IDENTITY_INGRESS_MODE_PRODUCTION: 'instance'/);
   assert.match(productionPipeline, /INFRA_IDENTITY_TLS_MODE_PRODUCTION: 'acme-route53-dns-01'/);
-  assert.match(productionPipeline, /INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS: 'true'/);
-  assert.match(
-    productionPipeline,
-    /INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: 'alternun-google-login'/
-  );
+  assert.match(productionPipeline, /INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS: 'false'/);
+  assert.match(productionPipeline, /INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: ''/);
   assert.match(
     productionPipeline,
     /INFRA_IDENTITY_SECRET_AUTHENTIK_KEY_NAME:\s*'alternun-infra\/identity\/authentik-secret-key-v2'/
