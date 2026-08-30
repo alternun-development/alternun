@@ -1,3 +1,13 @@
+## [1.1.55](https://github.com/alternun-development/alternun/compare/v1.1.54...v1.1.55) (2026-08-30)
+
+### Bug Fixes
+
+- **repo:** feat(admin): improve mobile navigation and profile menu
+
+### Features
+
+- **admin:** improve mobile navigation and profile menu ([d3f484d](https://github.com/alternun-development/alternun/commit/d3f484dfbbd9ae86da93948a2b551b7a719cfe43))
+
 ## [1.1.54](https://github.com/alternun-development/alternun/compare/v1.1.53...v1.1.54) (2026-08-29)
 
 ### Changes
