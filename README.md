@@ -126,10 +126,6 @@ Current version: **1.1.66**
 
 ### Bug Fixes
 
-- **repo:** fix(infra): sync adopted identity secrets
-
-### Bug Fixes
-
 - **infra:** sync adopted identity secrets ([f273520](https://github.com/alternun-development/alternun/commit/f27352090c3631737d108eb139dccf18f1c77e14))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)

@@ -2,10 +2,6 @@
 
 ### Bug Fixes
 
-- **repo:** fix(infra): sync adopted identity secrets
-
-### Bug Fixes
-
 - **infra:** sync adopted identity secrets ([f273520](https://github.com/alternun-development/alternun/commit/f27352090c3631737d108eb139dccf18f1c77e14))
 
 ## [1.1.65](https://github.com/alternun-development/alternun/compare/v1.1.64...v1.1.65) (2026-08-30)
