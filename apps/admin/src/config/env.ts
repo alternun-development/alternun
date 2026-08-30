@@ -21,7 +21,8 @@ function readBoolean(value: string | undefined): boolean {
 }
 
 const env = import.meta.env as ImportMetaEnvVars;
-const authGoogleFlowSlug = readEnvString(env.VITE_AUTH_GOOGLE_FLOW_SLUG)?.trim();
+const appEnv = requireLike(readEnvString(env.VITE_APP_ENV), 'development');
+const configuredGoogleFlowSlug = readEnvString(env.VITE_AUTH_GOOGLE_FLOW_SLUG)?.trim();
 
 export const adminEnv = {
   apiUrl: requireLike(readEnvString(env.VITE_API_URL), 'http://localhost:8082'),
@@ -32,7 +33,13 @@ export const adminEnv = {
   authClientId: requireLike(readEnvString(env.VITE_AUTH_CLIENT_ID), 'alternun-admin'),
   authAudience: requireLike(readEnvString(env.VITE_AUTH_AUDIENCE), 'alternun-app'),
   authGoogleEnabled: readBoolean(readEnvString(env.VITE_AUTH_GOOGLE_ENABLED)),
-  authGoogleFlowSlug: authGoogleFlowSlug === '' ? undefined : authGoogleFlowSlug,
-  appEnv: requireLike(readEnvString(env.VITE_APP_ENV), 'development'),
+  // Production resumes the original OIDC request through Authentik's direct
+  // Google source endpoint. Never let an obsolete wrapper-flow setting route
+  // a browser back to the non-redirecting SourceStage page.
+  authGoogleFlowSlug:
+    appEnv === 'production' || configuredGoogleFlowSlug === ''
+      ? undefined
+      : configuredGoogleFlowSlug,
+  appEnv,
   appVersion: __APP_VERSION__,
 } as const;

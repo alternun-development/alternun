@@ -278,10 +278,14 @@ export function deployAdminSiteInfrastructure(
   // returns its callback as a wrapped `query` value.
   const defaultGoogleFlowSlug = '';
   const defaultGoogleEnabled = deploymentStage === 'production' ? 'true' : 'false';
-  const googleFlowSlug =
+  const configuredGoogleFlowSlug =
     args.env.INFRA_ADMIN_AUTH_GOOGLE_FLOW_SLUG ??
     args.settings.environment.VITE_AUTH_GOOGLE_FLOW_SLUG ??
     defaultGoogleFlowSlug;
+  // Production must start the provider at Authentik's direct source endpoint.
+  // A custom SourceStage wrapper drops the pending OIDC authorization after
+  // Google's callback and traps the user on its loading page.
+  const googleFlowSlug = deploymentStage === 'production' ? '' : configuredGoogleFlowSlug;
   const googleEnabled =
     args.env.INFRA_ADMIN_AUTH_GOOGLE_ENABLED ??
     args.settings.environment.VITE_AUTH_GOOGLE_ENABLED ??
