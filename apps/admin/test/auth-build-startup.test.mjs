@@ -14,6 +14,7 @@ const authentikRelaySource = fs.readFileSync(
   path.join(adminDirectory, 'src/auth/authentikRelay.ts'),
   'utf8'
 );
+const adminEnvSource = fs.readFileSync(path.join(adminDirectory, 'src/config/env.ts'), 'utf8');
 const oidcClientSource = fs.readFileSync(path.join(adminDirectory, 'src/auth/oidc-client.ts'), 'utf8');
 const accessControlSource = fs.readFileSync(
   path.join(adminDirectory, 'src/providers/accessControlProvider.ts'),
@@ -45,6 +46,7 @@ void test('admin owns its browser-only Authentik relay helpers', () => {
   assert.match(authentikRelaySource, /function resolveSafeAdminRedirect/);
   assert.doesNotMatch(authentikRelaySource, /from '@alternun\/auth\/authentik';/);
   assert.doesNotMatch(authentikRelaySource, /from '@alternun\/auth';/);
+  assert.match(adminEnvSource, /appEnv === 'production' \|\| configuredGoogleFlowSlug === ''/);
 });
 
 void test('admin dashboard access requires an Authentik role rather than an email domain', () => {
