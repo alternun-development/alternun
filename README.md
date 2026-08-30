@@ -126,10 +126,6 @@ Current version: **1.1.65**
 
 ### Bug Fixes
 
-- **repo:** fix(infra): adopt existing identity secrets
-
-### Bug Fixes
-
 - **infra:** adopt existing identity secrets ([b983bb1](https://github.com/alternun-development/alternun/commit/b983bb1b14ab202db8fcd722004d3ecfeaa23dde))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
