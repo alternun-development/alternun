@@ -30,6 +30,10 @@ if ! command -v aws >/dev/null 2>&1; then
   exit 1
 fi
 
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/_pipeline-safety.sh"
+
 pipeline_suffix_for_key() {
   case "$1" in
     identity-dev) printf '%s\n' 'auth-dev' ;;
@@ -42,7 +46,13 @@ PIPELINE_PREFIX=${INFRA_PIPELINE_PREFIX:-alternun}
 REGION=${AWS_REGION:-us-east-1}
 STATE_DIR=${IDENTITY_PIPELINE_BOOTSTRAP_STATE_DIR:-"/tmp/alternun-identity-pipeline-bootstrap-${CODEBUILD_BUILD_ID:-local}"}
 STATE_FILE="$STATE_DIR/missing-pipelines"
-IDENTITY_PIPELINE_KEYS=(identity-dev identity-prod)
+SELECTED_PIPELINES=${INFRA_PIPELINES:-$(resolve_selected_pipeline_csv)}
+IDENTITY_PIPELINE_KEYS=()
+while IFS= read -r pipeline_key; do
+  case "$pipeline_key" in
+    identity-dev | identity-prod) IDENTITY_PIPELINE_KEYS+=("$pipeline_key") ;;
+  esac
+done < <(emit_pipeline_keys_from_csv "$SELECTED_PIPELINES")
 
 pipeline_name_for_key() {
   local suffix
