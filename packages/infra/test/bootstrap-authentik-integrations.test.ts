@@ -40,12 +40,14 @@ void test('admin application access is restricted to assigned admin groups', () 
   const template = fs.readFileSync(templatePath, 'utf8');
 
   assert.match(template, /def build_admin_access_expression\(allowed_groups\):/);
-  assert.match(template, /def ensure_admin_group_claim_mapping\(\):/);
+  assert.match(template, /def ensure_admin_group_claim_mapping\(allowed_groups\):/);
   assert.match(template, /Alternun Admin OAuth Mapping: profile groups/);
   assert.match(
     template,
     /"groups": \[group\.name for group in request\.user\.ak_groups\.all\(\)\]/
   );
+  assert.match(template, /"alternun_roles": \["platform_admin"\] if is_admin else \[\]/);
+  assert.match(template, /ensure_admin_group_claim_mapping\(\s*\[admin_group,/);
   assert.match(template, /desired_scope_mappings\.append\(admin_group_claim_mapping\)/);
   assert.match(template, /Only users assigned to an approved Alternun admin group/);
   assert.doesNotMatch(template, /Only approved admin users or @/);
