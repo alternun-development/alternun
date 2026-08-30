@@ -1013,11 +1013,11 @@ sync_identity_runtime_templates() {
   identity_root_domain="${INFRA_ROOT_DOMAIN:-${DOMAIN_ROOT:-alternun.co}}"
   identity_authentik_image_tag="${INFRA_IDENTITY_AUTHENTIK_IMAGE_TAG:-2026.2}"
   identity_database_mode="${INFRA_IDENTITY_DATABASE_MODE:-rds}"
-  identity_authentik_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_AUTHENTIK_KEY_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/authentik-secret-key}" "$STACK")
-  identity_database_credentials_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/database-credentials}" "$STACK")
+  identity_authentik_secret_name=$(resolve_identity_secret_name INFRA_IDENTITY_EXISTING_AUTHENTIK_SECRET_NAME "${INFRA_IDENTITY_SECRET_AUTHENTIK_KEY_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/authentik-secret-key}" "$STACK")
+  identity_database_credentials_secret_name=$(resolve_identity_secret_name INFRA_IDENTITY_EXISTING_DATABASE_CREDENTIALS_SECRET_NAME "${INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/database-credentials}" "$STACK")
   identity_smtp_credentials_secret_name=$(resolve_identity_smtp_credentials_secret_name "${INFRA_IDENTITY_SECRET_SMTP_CREDENTIALS_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/smtp-credentials}" "$STACK")
-  identity_jwt_signing_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/jwt-signing-key}" "$STACK")
-  identity_integration_config_secret_name=$(scope_secret_name "${INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/integration-config}" "$STACK")
+  identity_jwt_signing_secret_name=$(resolve_identity_secret_name INFRA_IDENTITY_EXISTING_JWT_SIGNING_SECRET_NAME "${INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/jwt-signing-key}" "$STACK")
+  identity_integration_config_secret_name=$(resolve_identity_secret_name INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME "${INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/integration-config}" "$STACK")
   identity_allow_custom_provider_flow_slugs="$(
     if is_truthy "${INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS:-${EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:-false}}"; then
       echo "true"
