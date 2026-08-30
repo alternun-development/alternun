@@ -126,10 +126,6 @@ Current version: **1.1.56**
 
 ### Bug Fixes
 
-- **repo:** fix(admin): use direct Google source login in production
-
-### Bug Fixes
-
 - **admin:** use direct Google source login in production ([ddbc444](https://github.com/alternun-development/alternun/commit/ddbc444ef6782e015a6b02db54e042f677ef443d))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
