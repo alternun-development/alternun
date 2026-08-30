@@ -15,6 +15,7 @@
     "deploy:identity-prod": "APPROVE=true STACK=identity-prod bash scripts/sst-deploy.sh",
     "authentik:dev:init": "bash dev/authentik/init-local-env.sh",
     "authentik:dev:up": "docker compose --env-file dev/authentik/.env -f dev/authentik/compose.yml up -d",
+    "authentik:dev:stop": "docker compose --env-file dev/authentik/.env -f dev/authentik/compose.yml stop",
     "authentik:dev:down": "docker compose --env-file dev/authentik/.env -f dev/authentik/compose.yml down -v",
     "authentik:dev:logs": "docker compose --env-file dev/authentik/.env -f dev/authentik/compose.yml logs -f",
     "diff:dev": "sst diff --stage dev",
