@@ -273,7 +273,11 @@ export function deployAdminSiteInfrastructure(
   args: AdminSiteInfrastructureArgs
 ): AdminSiteInfrastructureResources {
   const deploymentStage = resolveStageKey(args.stage);
-  const defaultGoogleFlowSlug = deploymentStage === 'production' ? 'alternun-google-login' : '';
+  // Production Authentik uses the direct Google source endpoint. A custom
+  // SourceStage wrapper loses the pending OIDC authorization when Google
+  // returns its callback as a wrapped `query` value.
+  const defaultGoogleFlowSlug = '';
+  const defaultGoogleEnabled = deploymentStage === 'production' ? 'true' : 'false';
   const googleFlowSlug =
     args.env.INFRA_ADMIN_AUTH_GOOGLE_FLOW_SLUG ??
     args.settings.environment.VITE_AUTH_GOOGLE_FLOW_SLUG ??
@@ -281,7 +285,7 @@ export function deployAdminSiteInfrastructure(
   const googleEnabled =
     args.env.INFRA_ADMIN_AUTH_GOOGLE_ENABLED ??
     args.settings.environment.VITE_AUTH_GOOGLE_ENABLED ??
-    (googleFlowSlug ? 'true' : 'false');
+    (googleFlowSlug ? 'true' : defaultGoogleEnabled);
   const appPath = resolveAdminSiteAppPath(args.settings.appPath);
   const siteDomain = resolveAdminStageDomain(args.settings, args.stage);
   const resolvedDomain = args.settings.enableCustomDomain
