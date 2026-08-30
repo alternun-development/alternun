@@ -272,20 +272,6 @@ def find_flow_stage_binding(flow, stage_name: str):
     )
 
 
-def ensure_named_user_login_stage(name: str):
-    stage, created = UserLoginStage.objects.get_or_create(name=name)
-    return stage, created
-
-
-def ensure_source_flow_user_login_stage(flow, name: str):
-    """Source completion must establish an Authentik session before resuming OIDC."""
-    if not flow:
-        return False
-    stage, created = ensure_named_user_login_stage(name)
-    binding_created, binding_changed = ensure_flow_stage_binding(flow, stage, order=100)
-    return created or binding_created or binding_changed
-
-
 def ensure_named_user_logout_stage(name: str):
     stage, created = UserLogoutStage.objects.get_or_create(name=name)
     return stage, created
@@ -1150,14 +1136,6 @@ if google_client_id and google_client_secret:
         source_changed = True
     if source_enrollment_flow and source.enrollment_flow_id != source_enrollment_flow.pk:
         source.enrollment_flow = source_enrollment_flow
-        source_changed = True
-    if ensure_source_flow_user_login_stage(
-        source_authentication_flow, "alternun-source-authentication-login"
-    ):
-        source_changed = True
-    if ensure_source_flow_user_login_stage(
-        source_enrollment_flow, "alternun-source-enrollment-login"
-    ):
         source_changed = True
     if (
         source_authentication_flow_pruned
