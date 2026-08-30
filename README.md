@@ -126,10 +126,6 @@ Current version: **1.1.64**
 
 ### Bug Fixes
 
-- **repo:** fix(infra): make SMTP secret adoption opt-in
-
-### Bug Fixes
-
 - **infra:** make SMTP secret adoption opt-in ([eb2188e](https://github.com/alternun-development/alternun/commit/eb2188e18aada49a4aeca0ca00fcf02939670919))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
