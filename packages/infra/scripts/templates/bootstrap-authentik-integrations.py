@@ -231,6 +231,47 @@ def resolve_scope_mappings(managed_ids):
     return ordered, missing
 
 
+def ensure_admin_group_claim_mapping(allowed_groups):
+    """Expose Authentik group membership to the admin OIDC client.
+
+    The admin SPA authorizes only after its callback and must therefore receive
+    the group and canonical role that the application policy has already
+    approved. Keep the claims on the standard ``profile`` scope so existing
+    clients need no extra scope.
+    """
+    name = "Alternun Admin OAuth Mapping: profile groups"
+    scope_name = "profile"
+    encoded_groups = json.dumps(sorted(set(group for group in allowed_groups if group)))
+    expression = f"""
+allowed_groups = set({encoded_groups})
+is_admin = request.user.groups.filter(name__in=list(allowed_groups)).exists()
+
+return {
+    "groups": [group.name for group in request.user.ak_groups.all()],
+    "alternun_roles": ["platform_admin"] if is_admin else [],
+}
+""".strip()
+
+    mapping, created = ScopeMapping.objects.get_or_create(
+        name=name,
+        defaults={
+            "scope_name": scope_name,
+            "expression": expression,
+        },
+    )
+    changed = False
+    if mapping.scope_name != scope_name:
+        mapping.scope_name = scope_name
+        changed = True
+    if mapping.expression != expression:
+        mapping.expression = expression
+        changed = True
+    if created or changed:
+        mapping.save()
+
+    return mapping, created, changed
+
+
 def ensure_flow_stage_binding(flow, stage, order: int = 0):
     binding, created = FlowStageBinding.objects.get_or_create(
         target=flow,
@@ -717,6 +758,12 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
     desired_scope_mappings, missing_scope_mapping_ids = resolve_scope_mappings(
         admin_scope_mapping_ids
     )
+    admin_group_claim_mapping, admin_group_claim_mapping_created, admin_group_claim_mapping_changed = (
+        ensure_admin_group_claim_mapping(
+            [admin_group, "authentik Admins", "Alternun Dashboard Admins"]
+        )
+    )
+    desired_scope_mappings.append(admin_group_claim_mapping)
     current_scope_mapping_ids = set(provider.property_mappings.values_list("pk", flat=True))
     desired_scope_mapping_pks = {mapping.pk for mapping in desired_scope_mappings}
     if current_scope_mapping_ids != desired_scope_mapping_pks:
@@ -733,6 +780,13 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
             "status": "configured",
             "scopes": [mapping.scope_name for mapping in desired_scope_mappings],
         }
+    results["admin_oidc_group_claim_mapping"] = (
+        "created"
+        if admin_group_claim_mapping_created
+        else "updated"
+        if admin_group_claim_mapping_changed
+        else "unchanged"
+    )
 
     application, application_created = Application.objects.get_or_create(
         slug=admin_oidc_application_slug,

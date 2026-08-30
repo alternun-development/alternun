@@ -1,3 +1,21 @@
+## [1.1.60](https://github.com/alternun-development/alternun/compare/v1.1.58...v1.1.60) (2026-08-30)
+
+### Changes
+
+- **repo:** 🐛 fix(auth): map configured admin groups to roles ([191439c](https://github.com/alternun-development/alternun/commit/191439c6fc7c3546270aab85f5b4193008b6a7bd))
+
+## [1.1.59](https://github.com/alternun-development/alternun/compare/v1.1.58...v1.1.59) (2026-08-30)
+
+### Bug Fixes
+
+- **repo:** chore: release v1.1.58
+
+## [1.1.58](https://github.com/alternun-development/alternun/compare/v1.1.57...v1.1.58) (2026-08-30)
+
+### Bug Fixes
+
+- **repo:** 🐛 fix(auth): emit admin groups in oidc claims
+
 ## [1.1.57](https://github.com/alternun-development/alternun/compare/v1.1.56...v1.1.57) (2026-08-30)
 
 ### Bug Fixes
