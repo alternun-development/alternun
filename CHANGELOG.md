@@ -2,10 +2,6 @@
 
 ### Bug Fixes
 
-- **repo:** fix(infra): unblock production identity deploy
-
-### Bug Fixes
-
 - **infra:** unblock production identity deploy ([cc9852c](https://github.com/alternun-development/alternun/commit/cc9852c88f8e45944778e16063853638b510fd2e))
 
 ## [1.1.62](https://github.com/alternun-development/alternun/compare/v1.1.61...v1.1.62) (2026-08-30)
