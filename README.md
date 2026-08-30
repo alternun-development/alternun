@@ -124,10 +124,6 @@ Current version: **1.1.55**
 
 ## 📋 Latest Changes (v1.1.55)
 
-### Bug Fixes
-
-- **repo:** feat(admin): improve mobile navigation and profile menu
-
 ### Features
 
 - **admin:** improve mobile navigation and profile menu ([d3f484d](https://github.com/alternun-development/alternun/commit/d3f484dfbbd9ae86da93948a2b551b7a719cfe43))
