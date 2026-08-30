@@ -10,9 +10,9 @@ export const INFRA_CORE_DEFAULTS = {
 export const PIPELINE_INFRA_DEFAULTS = {
   repo: 'alternun-development/alternun',
   prefix: 'alternun',
-  standardPipelineSet: 'production,dev,dashboard-dev,dashboard-prod',
-  allPipelineSet: 'production,dev,dashboard-dev,dashboard-prod',
-  identityPipelineSet: 'production,dev,dashboard-dev,dashboard-prod',
+  standardPipelineSet: 'production,dev,identity-dev,identity-prod,dashboard-dev,dashboard-prod',
+  allPipelineSet: 'production,dev,identity-dev,identity-prod,dashboard-dev,dashboard-prod',
+  identityPipelineSet: 'production,dev,identity-dev,identity-prod,dashboard-dev,dashboard-prod',
   branches: {
     production: 'master',
     dev: 'develop',

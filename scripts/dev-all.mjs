@@ -1,9 +1,55 @@
 #!/usr/bin/env node
 
 import { spawn, spawnSync } from 'child_process';
-import { execSync } from 'child_process';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 
 const includeVideoStudio = process.argv.includes('--video-studio');
+let authentikStarted = false;
+
+function runAuthentik(command) {
+  const result = spawnSync(
+    'pnpm',
+    ['--filter', '@alternun/infra', 'run', `authentik:dev:${command}`],
+    {
+      stdio: 'inherit',
+      cwd: process.cwd(),
+    }
+  );
+
+  if (result.status !== 0) {
+    throw new Error(`Local Authentik command failed: authentik:dev:${command}`);
+  }
+}
+
+function stopAuthentik() {
+  if (!authentikStarted) {
+    return;
+  }
+
+  authentikStarted = false;
+  runAuthentik('stop');
+}
+
+function startAuthentik() {
+  const authentikEnvPath = path.join(
+    process.cwd(),
+    'packages',
+    'infra',
+    'dev',
+    'authentik',
+    '.env'
+  );
+
+  if (!existsSync(authentikEnvPath)) {
+    console.log('🔐 Initializing isolated local Authentik credentials...');
+    runAuthentik('init');
+  }
+
+  console.log('🔐 Starting isolated local Authentik...');
+  runAuthentik('up');
+  authentikStarted = true;
+}
 
 // Check and optionally kill conflicting ports first
 function checkPorts() {
@@ -58,9 +104,9 @@ if (includeVideoStudio) {
 }
 
 // Build concurrently command
-const names = services.map(s => s.name).join(',');
-const colors = services.map(s => s.color).join(',');
-const commands = services.map(s => `pnpm --filter ${s.filter} run ${s.script}`);
+const names = services.map((s) => s.name).join(',');
+const colors = services.map((s) => s.color).join(',');
+const commands = services.map((s) => `pnpm --filter ${s.filter} run ${s.script}`);
 
 console.log(`🚀 Checking port availability...`);
 if (!checkPorts()) {
@@ -68,26 +114,53 @@ if (!checkPorts()) {
   process.exit(1);
 }
 
-console.log(`\n🚀 Starting dev servers${includeVideoStudio ? ' (including video-studio)' : ''}...\n`);
+console.log(
+  `\n🚀 Starting dev servers${includeVideoStudio ? ' (including video-studio)' : ''}...\n`
+);
+
+try {
+  startAuthentik();
+} catch (error) {
+  console.error(`\n❌ ${error.message}`);
+  process.exit(1);
+}
 
 // Build command line
-const concurrentlyArgs = [
-  '-k',
-  '--names', names,
-  '--prefix-colors', colors,
-  ...commands
-];
+const concurrentlyArgs = ['-k', '--names', names, '--prefix-colors', colors, ...commands];
 
 const child = spawn('npx', ['concurrently', ...concurrentlyArgs], {
   stdio: 'inherit',
   cwd: process.cwd(),
 });
 
-process.on('SIGINT', () => {
-  child.kill('SIGINT');
+function stopDevServers(signal) {
+  child.kill(signal);
+
+  try {
+    stopAuthentik();
+  } catch (error) {
+    console.error(`\n❌ ${error.message}`);
+    process.exit(1);
+  }
+
   process.exit(0);
+}
+
+process.on('SIGINT', () => {
+  stopDevServers('SIGINT');
+});
+
+process.on('SIGTERM', () => {
+  stopDevServers('SIGTERM');
 });
 
 child.on('exit', (code) => {
+  try {
+    stopAuthentik();
+  } catch (error) {
+    console.error(`\n❌ ${error.message}`);
+    process.exit(1);
+  }
+
   process.exit(code);
 });

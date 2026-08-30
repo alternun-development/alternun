@@ -40,6 +40,14 @@ void test('buildspec.yml and the tracked env template agree on which pipelines a
 
   const buildspecPipelines = parseInfraPipelinesFromBuildspec(buildspecSource);
   const envExamplePipelines = parseInfraPipelinesFromEnvFile(envExampleSource, '.env.example');
+  const expectedManagedPipelines = [
+    'production',
+    'dev',
+    'identity-dev',
+    'identity-prod',
+    'dashboard-dev',
+    'dashboard-prod',
+  ];
 
   const mismatchMessage = (label: string, pipelines: string[]) =>
     `INFRA_PIPELINES differs between buildspec.yml (${buildspecPipelines.join(
@@ -48,6 +56,18 @@ void test('buildspec.yml and the tracked env template agree on which pipelines a
     'Update both together, and if you are removing a pipeline, reconcile AWS in the same change ' +
     '(APPROVE=true INFRA_ALLOW_PIPELINE_DELETION=true STACK=production bash scripts/sst-deploy.sh) ' +
     'before merging — otherwise the next production deploy will refuse to run.';
+
+  assert.deepEqual(
+    [...buildspecPipelines].sort(),
+    [...expectedManagedPipelines].sort(),
+    'buildspec.yml must provision the identity pipelines so branch-based releases deploy Authentik.'
+  );
+
+  assert.deepEqual(
+    [...envExamplePipelines].sort(),
+    [...expectedManagedPipelines].sort(),
+    '.env.example must document every managed release pipeline.'
+  );
 
   assert.deepEqual(
     [...buildspecPipelines].sort(),
