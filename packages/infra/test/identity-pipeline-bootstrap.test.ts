@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
@@ -15,7 +17,46 @@ void test('a production release starts identity pipelines that were created by t
   assert.match(bootstrapScript, /aws codepipeline get-pipeline/);
   assert.match(bootstrapScript, /aws codepipeline start-pipeline-execution/);
   assert.match(bootstrapScript, /list-pipeline-executions/);
+  assert.match(bootstrapScript, /resolve_selected_pipeline_csv/);
+  assert.match(bootstrapScript, /emit_pipeline_keys_from_csv/);
   assert.match(bootstrapScript, /case "\$stage" in[\s\S]*production\)[\s\S]*\*\)[\s\S]*exit 0/);
   assert.match(buildspecSource, /bootstrap-new-identity-pipelines\.sh"? record/);
   assert.match(buildspecSource, /bootstrap-new-identity-pipelines\.sh"? start-recorded/);
+});
+
+void test('production bootstrap ignores identity pipelines omitted from INFRA_PIPELINES', (t) => {
+  const tempRoot = mkdtempSync(join(tmpdir(), 'alternun-identity-bootstrap-test-'));
+  const mockBin = join(tempRoot, 'bin');
+  const stateDirectory = join(tempRoot, 'state');
+  const callsPath = join(tempRoot, 'aws-calls.log');
+  const awsPath = join(mockBin, 'aws');
+
+  mkdirSync(mockBin);
+  writeFileSync(callsPath, '', 'utf8');
+  writeFileSync(
+    awsPath,
+    `#!/usr/bin/env bash
+printf '%s\\n' "$*" >> "$ALTERNUN_AWS_CALLS"
+exit 1
+`,
+    'utf8'
+  );
+  chmodSync(awsPath, 0o755);
+
+  t.after(() => rmSync(tempRoot, { recursive: true, force: true }));
+
+  const env = {
+    ...process.env,
+    ALTERNUN_AWS_CALLS: callsPath,
+    IDENTITY_PIPELINE_BOOTSTRAP_STATE_DIR: stateDirectory,
+    INFRA_PIPELINES: 'production',
+    PATH: `${mockBin}:${process.env.PATH}`,
+    SST_STAGE: 'production',
+  };
+  const scriptPath = join(infraRoot, 'scripts', 'bootstrap-new-identity-pipelines.sh');
+
+  execFileSync('bash', [scriptPath, 'record'], { env });
+  execFileSync('bash', [scriptPath, 'start-recorded'], { env });
+
+  assert.equal(readFileSync(callsPath, 'utf8'), '');
 });
