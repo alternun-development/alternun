@@ -1,3 +1,9 @@
+## [1.1.58](https://github.com/alternun-development/alternun/compare/v1.1.57...v1.1.58) (2026-08-30)
+
+### Bug Fixes
+
+- **repo:** 🐛 fix(auth): emit admin groups in oidc claims
+
 ## [1.1.57](https://github.com/alternun-development/alternun/compare/v1.1.56...v1.1.57) (2026-08-30)
 
 ### Bug Fixes
