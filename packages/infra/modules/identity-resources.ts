@@ -402,6 +402,11 @@ export function deployIdentityInfrastructure(
       args.stage
     ),
   };
+  const existingSmtpCredentialsSecretName =
+    process.env.INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME?.trim() ?? '';
+  const existingSmtpCredentialsSecret = existingSmtpCredentialsSecretName
+    ? aws.secretsmanager.getSecretOutput({ name: existingSmtpCredentialsSecretName })
+    : undefined;
   const amazonLinuxAmiParameter = isArmInstanceType(args.settings.ec2.instanceType)
     ? '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-arm64'
     : '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64';
@@ -622,25 +627,35 @@ export function deployIdentityInfrastructure(
     secretString: pulumi.interpolate`{"secretKey":"${authentikSecretKey.result}","domain":"${identityDomain}"}`,
   });
 
-  const smtpCredentialsSecret = new aws.secretsmanager.Secret(`${resourceBaseName}-smtp-secret`, {
-    description: `SMTP placeholder secret for ${args.stage}`,
-    name: stageScopedSecrets.smtpCredentials,
-    tags: {
-      ...resourceTags,
-      Name: `${resourceDisplayPrefix}-smtp-secret`,
-    },
-  });
+  const smtpCredentialsSecret = existingSmtpCredentialsSecret
+    ? undefined
+    : new aws.secretsmanager.Secret(`${resourceBaseName}-smtp-secret`, {
+        description: `SMTP placeholder secret for ${args.stage}`,
+        name: stageScopedSecrets.smtpCredentials,
+        tags: {
+          ...resourceTags,
+          Name: `${resourceDisplayPrefix}-smtp-secret`,
+        },
+      });
+  const smtpCredentialsSecretArn = existingSmtpCredentialsSecret
+    ? existingSmtpCredentialsSecret.arn
+    : smtpCredentialsSecret!.arn;
+  const smtpCredentialsSecretName = existingSmtpCredentialsSecret
+    ? existingSmtpCredentialsSecret.name
+    : smtpCredentialsSecret!.name;
 
-  new aws.secretsmanager.SecretVersion(`${resourceBaseName}-smtp-secret-version`, {
-    secretId: smtpCredentialsSecret.id,
-    secretString: JSON.stringify({
-      host: '',
-      password: '',
-      port: 587,
-      provider: args.settings.emailProvider,
-      username: '',
-    }),
-  });
+  if (smtpCredentialsSecret) {
+    new aws.secretsmanager.SecretVersion(`${resourceBaseName}-smtp-secret-version`, {
+      secretId: smtpCredentialsSecret.id,
+      secretString: JSON.stringify({
+        host: '',
+        password: '',
+        port: 587,
+        provider: args.settings.emailProvider,
+        username: '',
+      }),
+    });
+  }
 
   const jwtSigningKeySecret = new aws.secretsmanager.Secret(`${resourceBaseName}-jwt-secret`, {
     description: `Alternun JWT signing key for ${args.stage}`,
@@ -936,7 +951,7 @@ export function deployIdentityInfrastructure(
       .all([
         authentikSecret.arn,
         databaseCredentialsSecret.arn,
-        smtpCredentialsSecret.arn,
+        smtpCredentialsSecretArn,
         jwtSigningKeySecret.arn,
         integrationConfigSecret.arn,
       ])
@@ -1024,7 +1039,7 @@ export function deployIdentityInfrastructure(
     allowCustomProviderFlowSlugs: args.settings.integration.google.allowCustomProviderFlowSlugs,
     authentikSecretArn: authentikSecret.arn,
     databaseCredentialsSecretArn: databaseCredentialsSecret.arn,
-    smtpCredentialsSecretArn: smtpCredentialsSecret.arn,
+    smtpCredentialsSecretArn,
     jwtSigningKeySecretArn: jwtSigningKeySecret.arn,
     integrationConfigSecretArn: integrationConfigSecret.arn,
   });
@@ -1275,8 +1290,8 @@ export function deployIdentityInfrastructure(
         value: jwtSigningKey.result,
       },
       smtpCredentials: {
-        arn: smtpCredentialsSecret.arn,
-        name: smtpCredentialsSecret.name,
+        arn: smtpCredentialsSecretArn,
+        name: smtpCredentialsSecretName,
       },
       integrationConfig: {
         arn: integrationConfigSecret.arn,
