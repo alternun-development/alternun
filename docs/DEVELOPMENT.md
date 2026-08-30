@@ -12,6 +12,7 @@ pnpm dev:all
 
 Starts:
 
+- 🔐 **Authentik** (`@alternun/infra`) — Isolated local OIDC issuer at http://127.0.0.1:9000
 - 🔵 **API** (`@alternun/api`) — Backend REST API
 - 🟢 **Admin** (`@alternun/admin`) — Admin dashboard
 - 🟣 **Mobile** (`@alternun/mobile`) — Mobile web app
@@ -31,6 +32,7 @@ Same as above, plus:
 
 | Service      | Port | URL                              |
 | ------------ | ---- | -------------------------------- |
+| Authentik    | 9000 | http://127.0.0.1:9000            |
 | API          | 3001 | http://localhost:3001            |
 | Admin        | 3002 | http://localhost:3002            |
 | Mobile       | 3000 | http://localhost:3000            |
@@ -70,18 +72,18 @@ Press **Ctrl+C** in terminal.
 
 ## 🔧 Development Commands
 
-| Command              | Purpose                     |
-| -------------------- | --------------------------- |
-| `pnpm dev:all`       | Start all services          |
-| `pnpm dev:all:video` | All services + video-studio |
-| `pnpm dev`           | Turbo dev (all packages)    |
-| `pnpm admin`         | Admin only                  |
-| `pnpm mobile`        | Mobile only                 |
-| `pnpm build`         | Build all packages          |
-| `pnpm lint`          | Lint all code               |
-| `pnpm test`          | Run tests                   |
-| `pnpm type-check`    | TypeScript validation       |
-| `pnpm clean`         | Clean build artifacts       |
+| Command              | Purpose                                    |
+| -------------------- | ------------------------------------------ |
+| `pnpm dev:all`       | Start local Authentik and all app services |
+| `pnpm dev:all:video` | All services + video-studio                |
+| `pnpm dev`           | Turbo dev (all packages)                   |
+| `pnpm admin`         | Admin only                                 |
+| `pnpm mobile`        | Mobile only                                |
+| `pnpm build`         | Build all packages                         |
+| `pnpm lint`          | Lint all code                              |
+| `pnpm test`          | Run tests                                  |
+| `pnpm type-check`    | TypeScript validation                      |
+| `pnpm clean`         | Clean build artifacts                      |
 
 ## 📚 Full Documentation
 
