@@ -31,10 +31,63 @@ void test('a production release starts identity pipelines that were created by t
     /INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME/
   );
   assert.match(readInfraFile('modules/identity-resources.ts'), /getSecretOutput/);
+  const identityPipelineSource = readInfraFile('config/pipelines/specs/identity.ts');
   assert.match(
-    readInfraFile('config/pipelines/specs/identity.ts'),
-    /INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME:[\s\S]*smtp-credentials-v2\/identity-prod/
+    identityPipelineSource,
+    /const productionExistingSmtpCredentialsSecretName\s*=\s*env\.INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME/
   );
+  assert.match(
+    identityPipelineSource,
+    /INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME:\s*productionExistingSmtpCredentialsSecretName/
+  );
+  assert.doesNotMatch(
+    identityPipelineSource,
+    /INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME:\s*'alternun-infra\//
+  );
+});
+
+void test('identity SMTP secret resolver preserves an explicitly adopted secret', () => {
+  const resolverPath = join(infraRoot, 'scripts', 'identity-secret-names.sh');
+  const resolved = execFileSync(
+    'bash',
+    [
+      '-c',
+      'scope_secret_name() { printf "%s/%s" "$1" "$2"; }; source "$1"; resolve_identity_smtp_credentials_secret_name "$2" "$3"',
+      'bash',
+      resolverPath,
+      'managed-smtp',
+      'identity-prod',
+    ],
+    {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME: 'adopted-smtp',
+      },
+    }
+  ).trim();
+
+  assert.equal(resolved, 'adopted-smtp');
+});
+
+void test('identity SMTP secret resolver uses the managed secret when no adoption is configured', () => {
+  const resolverPath = join(infraRoot, 'scripts', 'identity-secret-names.sh');
+  const env = { ...process.env };
+  delete env.INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME;
+  const resolved = execFileSync(
+    'bash',
+    [
+      '-c',
+      'scope_secret_name() { printf "%s/%s" "$1" "$2"; }; source "$1"; resolve_identity_smtp_credentials_secret_name "$2" "$3"',
+      'bash',
+      resolverPath,
+      'managed-smtp',
+      'identity-prod',
+    ],
+    { encoding: 'utf8', env }
+  ).trim();
+
+  assert.equal(resolved, 'managed-smtp/identity-prod');
 });
 
 void test('production bootstrap ignores identity pipelines omitted from INFRA_PIPELINES', (t) => {
