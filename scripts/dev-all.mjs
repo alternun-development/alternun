@@ -6,6 +6,7 @@ import path from 'node:path';
 
 const includeVideoStudio = process.argv.includes('--video-studio');
 let authentikStarted = false;
+let child = null;
 
 function runAuthentik(command) {
   const result = spawnSync(
@@ -27,8 +28,8 @@ function stopAuthentik() {
     return;
   }
 
-  authentikStarted = false;
   runAuthentik('stop');
+  authentikStarted = false;
 }
 
 function startAuthentik() {
@@ -47,8 +48,9 @@ function startAuthentik() {
   }
 
   console.log('🔐 Starting isolated local Authentik...');
-  runAuthentik('up');
+  // Claim cleanup ownership before Compose can partially start or be interrupted.
   authentikStarted = true;
+  runAuthentik('up');
 }
 
 // Check and optionally kill conflicting ports first
@@ -118,23 +120,8 @@ console.log(
   `\n🚀 Starting dev servers${includeVideoStudio ? ' (including video-studio)' : ''}...\n`
 );
 
-try {
-  startAuthentik();
-} catch (error) {
-  console.error(`\n❌ ${error.message}`);
-  process.exit(1);
-}
-
-// Build command line
-const concurrentlyArgs = ['-k', '--names', names, '--prefix-colors', colors, ...commands];
-
-const child = spawn('npx', ['concurrently', ...concurrentlyArgs], {
-  stdio: 'inherit',
-  cwd: process.cwd(),
-});
-
 function stopDevServers(signal) {
-  child.kill(signal);
+  child?.kill(signal);
 
   try {
     stopAuthentik();
@@ -154,6 +141,26 @@ process.on('SIGTERM', () => {
   stopDevServers('SIGTERM');
 });
 
+try {
+  startAuthentik();
+} catch (error) {
+  try {
+    stopAuthentik();
+  } catch (cleanupError) {
+    console.error(`\n❌ ${cleanupError.message}`);
+  }
+  console.error(`\n❌ ${error.message}`);
+  process.exit(1);
+}
+
+// Build command line
+const concurrentlyArgs = ['-k', '--names', names, '--prefix-colors', colors, ...commands];
+
+child = spawn('npx', ['concurrently', ...concurrentlyArgs], {
+  stdio: 'inherit',
+  cwd: process.cwd(),
+});
+
 child.on('exit', (code) => {
   try {
     stopAuthentik();
@@ -162,5 +169,5 @@ child.on('exit', (code) => {
     process.exit(1);
   }
 
-  process.exit(code);
+  process.exit(code ?? 1);
 });
