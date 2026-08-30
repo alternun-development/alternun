@@ -2,10 +2,6 @@
 
 ### Bug Fixes
 
-- **repo:** fix(auth): bootstrap identity pipelines on release
-
-### Bug Fixes
-
 - **auth:** bootstrap identity pipelines on release ([4ebfb0c](https://github.com/alternun-development/alternun/commit/4ebfb0c0c284dd94ab522a78bb40fce5ada0ba9e))
 
 ## [1.1.60](https://github.com/alternun-development/alternun/compare/v1.1.58...v1.1.60) (2026-08-30)
