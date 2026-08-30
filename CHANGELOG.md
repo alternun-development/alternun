@@ -1,3 +1,16 @@
+## [1.1.55](https://github.com/alternun-development/alternun/compare/v1.1.54...v1.1.55) (2026-08-29)
+
+### Features
+
+- **admin:** improve mobile navigation and profile menu ([d3f484d](https://github.com/alternun-development/alternun/commit/d3f484dfbbd9ae86da93948a2b551b7a719cfe43))
+
+## [1.1.54](https://github.com/alternun-development/alternun/compare/v1.1.53...v1.1.54) (2026-08-29)
+
+### Changes
+
+- **repo:** 🐛 fix: complete Authentik Google source flow ([de57c9e](https://github.com/alternun-development/alternun/commit/de57c9eaeab67528783156edb0affeda82fa0487))
+- **repo:** 🐛 fix: default production admin Google relay ([1ad1f98](https://github.com/alternun-development/alternun/commit/1ad1f98056d6d22e540f74cdfedb640a818db30a))
+
 ## [1.1.53](https://github.com/alternun-development/alternun/compare/v1.1.52...v1.1.53) (2026-08-29)
 
 ### Changes
