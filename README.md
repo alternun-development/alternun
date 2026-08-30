@@ -126,10 +126,6 @@ Current version: **1.1.61**
 
 ### Bug Fixes
 
-- **repo:** fix(auth): bootstrap identity pipelines on release
-
-### Bug Fixes
-
 - **auth:** bootstrap identity pipelines on release ([4ebfb0c](https://github.com/alternun-development/alternun/commit/4ebfb0c0c284dd94ab522a78bb40fce5ada0ba9e))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
