@@ -84,6 +84,10 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME:
           'alternun-infra/identity/database-credentials-v2',
         INFRA_IDENTITY_SECRET_SMTP_CREDENTIALS_NAME: 'alternun-infra/identity/smtp-credentials-v2',
+        // The production SMTP secret was created before this stack. Keep its
+        // value intact while the stack adopts it as a runtime dependency.
+        INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME:
+          'alternun-infra/identity/smtp-credentials-v2/identity-prod',
         INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME: 'alternun-infra/identity/jwt-signing-key-v2',
         INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:
           'alternun-infra/identity/integration-config-v2',

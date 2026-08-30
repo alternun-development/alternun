@@ -97,7 +97,7 @@ start_recorded_pipelines() {
       --output text)
 
     case "$latest_execution" in
-      '' | None | null)
+      '' | None | null | Failed)
         echo "Starting newly created identity pipeline: $pipeline_name"
         aws codepipeline start-pipeline-execution --name "$pipeline_name" --region "$REGION" >/dev/null
         ;;
