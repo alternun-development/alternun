@@ -1,3 +1,15 @@
+## [1.1.62](https://github.com/alternun-development/alternun/compare/v1.1.61...v1.1.62) (2026-08-30)
+
+### Bug Fixes
+
+- **infra:** harden Authentik startup cleanup ([2220a7b](https://github.com/alternun-development/alternun/commit/2220a7be29a17524c49088b93605027ac7337582))
+
+## [1.1.61](https://github.com/alternun-development/alternun/compare/v1.1.60...v1.1.61) (2026-08-30)
+
+### Bug Fixes
+
+- **auth:** bootstrap identity pipelines on release ([4ebfb0c](https://github.com/alternun-development/alternun/commit/4ebfb0c0c284dd94ab522a78bb40fce5ada0ba9e))
+
 ## [1.1.60](https://github.com/alternun-development/alternun/compare/v1.1.58...v1.1.60) (2026-08-30)
 
 ### Changes

@@ -11,6 +11,15 @@ pnpm authentik:dev:init
 pnpm authentik:dev:up
 ```
 
+`pnpm dev:all` performs these startup steps automatically: it creates the
+local-only `.env` when absent, starts this Compose project, then stops it when
+the development servers exit. The manual commands remain useful for running
+the identity service on its own.
+
+The automatic shutdown uses `docker compose stop`, preserving local Authentik
+users and configuration. `pnpm authentik:dev:down` is intentionally separate
+because it deletes the disposable database volume.
+
 `authentik:dev:init` generates a `.env` with unique local-only secrets and refuses
 to overwrite it. Remove the file only when you intentionally want a fresh local
 environment.
