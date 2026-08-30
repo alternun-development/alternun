@@ -1,3 +1,15 @@
+## [1.1.64](https://github.com/alternun-development/alternun/compare/v1.1.63...v1.1.64) (2026-08-30)
+
+### Bug Fixes
+
+- **infra:** make SMTP secret adoption opt-in ([eb2188e](https://github.com/alternun-development/alternun/commit/eb2188e18aada49a4aeca0ca00fcf02939670919))
+
+## [1.1.63](https://github.com/alternun-development/alternun/compare/v1.1.62...v1.1.63) (2026-08-30)
+
+### Bug Fixes
+
+- **infra:** unblock production identity deploy ([cc9852c](https://github.com/alternun-development/alternun/commit/cc9852c88f8e45944778e16063853638b510fd2e))
+
 ## [1.1.62](https://github.com/alternun-development/alternun/compare/v1.1.61...v1.1.62) (2026-08-30)
 
 ### Bug Fixes
