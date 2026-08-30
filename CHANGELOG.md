@@ -2,10 +2,6 @@
 
 ### Bug Fixes
 
-- **repo:** fix(infra): make SMTP secret adoption opt-in
-
-### Bug Fixes
-
 - **infra:** make SMTP secret adoption opt-in ([eb2188e](https://github.com/alternun-development/alternun/commit/eb2188e18aada49a4aeca0ca00fcf02939670919))
 
 ## [1.1.63](https://github.com/alternun-development/alternun/compare/v1.1.62...v1.1.63) (2026-08-30)
