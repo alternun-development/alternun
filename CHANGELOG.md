@@ -1,3 +1,10 @@
+## [1.1.54](https://github.com/alternun-development/alternun/compare/v1.1.53...v1.1.54) (2026-08-30)
+
+### Bug Fixes
+
+- **repo:** 🐛 fix: complete Authentik Google source flow
+- **repo:** 🐛 fix: default production admin Google relay
+
 ## [1.1.53](https://github.com/alternun-development/alternun/compare/v1.1.52...v1.1.53) (2026-08-29)
 
 ### Changes
