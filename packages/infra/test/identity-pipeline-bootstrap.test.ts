@@ -40,6 +40,27 @@ void test('a production release starts identity pipelines that were created by t
     identityPipelineSource,
     /INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME:\s*productionExistingSmtpCredentialsSecretName/
   );
+  assert.match(
+    identityPipelineSource,
+    /INFRA_IDENTITY_EXISTING_AUTHENTIK_SECRET_NAME:\s*productionExistingAuthentikSecretName/
+  );
+  assert.match(
+    identityPipelineSource,
+    /INFRA_IDENTITY_EXISTING_DATABASE_CREDENTIALS_SECRET_NAME:\s*productionExistingDatabaseCredentialsSecretName/
+  );
+  assert.match(
+    identityPipelineSource,
+    /INFRA_IDENTITY_EXISTING_JWT_SIGNING_SECRET_NAME:\s*productionExistingJwtSigningSecretName/
+  );
+  assert.match(
+    identityPipelineSource,
+    /INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME:\s*productionExistingIntegrationConfigSecretName/
+  );
+  const identityResourcesSource = readInfraFile('modules/identity-resources.ts');
+  assert.match(identityResourcesSource, /INFRA_IDENTITY_EXISTING_AUTHENTIK_SECRET_NAME/);
+  assert.match(identityResourcesSource, /INFRA_IDENTITY_EXISTING_DATABASE_CREDENTIALS_SECRET_NAME/);
+  assert.match(identityResourcesSource, /INFRA_IDENTITY_EXISTING_JWT_SIGNING_SECRET_NAME/);
+  assert.match(identityResourcesSource, /INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME/);
   assert.doesNotMatch(
     identityPipelineSource,
     /INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME:\s*'alternun-infra\//

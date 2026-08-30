@@ -142,6 +142,13 @@ function scopeSecretName(secretName: string, stage: string): string {
   return `${normalized}/${stage}`;
 }
 
+function getExistingSecretFromEnvironment(
+  environmentVariable: string
+): ReturnType<typeof aws.secretsmanager.getSecretOutput> | undefined {
+  const secretName = process.env[environmentVariable]?.trim();
+  return secretName ? aws.secretsmanager.getSecretOutput({ name: secretName }) : undefined;
+}
+
 function resolveApplicationStageKey(stage: string): 'production' | 'dev' | 'mobile' {
   const normalized = stage.trim().toLowerCase().replace(/_/g, '-');
 
@@ -402,11 +409,21 @@ export function deployIdentityInfrastructure(
       args.stage
     ),
   };
-  const existingSmtpCredentialsSecretName =
-    process.env.INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME?.trim() ?? '';
-  const existingSmtpCredentialsSecret = existingSmtpCredentialsSecretName
-    ? aws.secretsmanager.getSecretOutput({ name: existingSmtpCredentialsSecretName })
-    : undefined;
+  const existingAuthentikSecret = getExistingSecretFromEnvironment(
+    'INFRA_IDENTITY_EXISTING_AUTHENTIK_SECRET_NAME'
+  );
+  const existingDatabaseCredentialsSecret = getExistingSecretFromEnvironment(
+    'INFRA_IDENTITY_EXISTING_DATABASE_CREDENTIALS_SECRET_NAME'
+  );
+  const existingSmtpCredentialsSecret = getExistingSecretFromEnvironment(
+    'INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME'
+  );
+  const existingJwtSigningKeySecret = getExistingSecretFromEnvironment(
+    'INFRA_IDENTITY_EXISTING_JWT_SIGNING_SECRET_NAME'
+  );
+  const existingIntegrationConfigSecret = getExistingSecretFromEnvironment(
+    'INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME'
+  );
   const amazonLinuxAmiParameter = isArmInstanceType(args.settings.ec2.instanceType)
     ? '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-arm64'
     : '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64';
@@ -613,19 +630,29 @@ export function deployIdentityInfrastructure(
     ? pulumi.output(args.settings.integration.bootstrap.admin.password)
     : bootstrapAdminPassword.result;
 
-  const authentikSecret = new aws.secretsmanager.Secret(`${resourceBaseName}-authentik-secret`, {
-    description: `Authentik secret key for ${args.stage}`,
-    name: stageScopedSecrets.authentik,
-    tags: {
-      ...resourceTags,
-      Name: `${resourceDisplayPrefix}-authentik-secret`,
-    },
-  });
+  const authentikSecret = existingAuthentikSecret
+    ? undefined
+    : new aws.secretsmanager.Secret(`${resourceBaseName}-authentik-secret`, {
+        description: `Authentik secret key for ${args.stage}`,
+        name: stageScopedSecrets.authentik,
+        tags: {
+          ...resourceTags,
+          Name: `${resourceDisplayPrefix}-authentik-secret`,
+        },
+      });
+  const authentikSecretArn = existingAuthentikSecret
+    ? existingAuthentikSecret.arn
+    : authentikSecret!.arn;
+  const authentikSecretName = existingAuthentikSecret
+    ? existingAuthentikSecret.name
+    : authentikSecret!.name;
 
-  new aws.secretsmanager.SecretVersion(`${resourceBaseName}-authentik-secret-version`, {
-    secretId: authentikSecret.id,
-    secretString: pulumi.interpolate`{"secretKey":"${authentikSecretKey.result}","domain":"${identityDomain}"}`,
-  });
+  if (authentikSecret) {
+    new aws.secretsmanager.SecretVersion(`${resourceBaseName}-authentik-secret-version`, {
+      secretId: authentikSecret.id,
+      secretString: pulumi.interpolate`{"secretKey":"${authentikSecretKey.result}","domain":"${identityDomain}"}`,
+    });
+  }
 
   const smtpCredentialsSecret = existingSmtpCredentialsSecret
     ? undefined
@@ -657,31 +684,46 @@ export function deployIdentityInfrastructure(
     });
   }
 
-  const jwtSigningKeySecret = new aws.secretsmanager.Secret(`${resourceBaseName}-jwt-secret`, {
-    description: `Alternun JWT signing key for ${args.stage}`,
-    name: stageScopedSecrets.jwtSigningKey,
-    tags: {
-      ...resourceTags,
-      Name: `${resourceDisplayPrefix}-jwt-signing-secret`,
-    },
-  });
+  const jwtSigningKeySecret = existingJwtSigningKeySecret
+    ? undefined
+    : new aws.secretsmanager.Secret(`${resourceBaseName}-jwt-secret`, {
+        description: `Alternun JWT signing key for ${args.stage}`,
+        name: stageScopedSecrets.jwtSigningKey,
+        tags: {
+          ...resourceTags,
+          Name: `${resourceDisplayPrefix}-jwt-signing-secret`,
+        },
+      });
+  const jwtSigningKeySecretArn = existingJwtSigningKeySecret
+    ? existingJwtSigningKeySecret.arn
+    : jwtSigningKeySecret!.arn;
+  const jwtSigningKeySecretName = existingJwtSigningKeySecret
+    ? existingJwtSigningKeySecret.name
+    : jwtSigningKeySecret!.name;
 
-  new aws.secretsmanager.SecretVersion(`${resourceBaseName}-jwt-secret-version`, {
-    secretId: jwtSigningKeySecret.id,
-    secretString: pulumi.interpolate`{"audience":"${args.settings.jwt.audience}","key":"${jwtSigningKey.result}","roleClaim":"${args.settings.jwt.roleClaim}","rolesClaim":"${args.settings.jwt.rolesClaim}"}`,
-  });
+  if (jwtSigningKeySecret) {
+    new aws.secretsmanager.SecretVersion(`${resourceBaseName}-jwt-secret-version`, {
+      secretId: jwtSigningKeySecret.id,
+      secretString: pulumi.interpolate`{"audience":"${args.settings.jwt.audience}","key":"${jwtSigningKey.result}","roleClaim":"${args.settings.jwt.roleClaim}","rolesClaim":"${args.settings.jwt.rolesClaim}"}`,
+    });
+  }
 
-  const integrationConfigSecret = new aws.secretsmanager.Secret(
-    `${resourceBaseName}-integration-config-secret`,
-    {
-      description: `Identity integration configuration for ${args.stage}`,
-      name: stageScopedSecrets.integrationConfig,
-      tags: {
-        ...resourceTags,
-        Name: `${resourceDisplayPrefix}-integration-config`,
-      },
-    }
-  );
+  const integrationConfigSecret = existingIntegrationConfigSecret
+    ? undefined
+    : new aws.secretsmanager.Secret(`${resourceBaseName}-integration-config-secret`, {
+        description: `Identity integration configuration for ${args.stage}`,
+        name: stageScopedSecrets.integrationConfig,
+        tags: {
+          ...resourceTags,
+          Name: `${resourceDisplayPrefix}-integration-config`,
+        },
+      });
+  const integrationConfigSecretArn = existingIntegrationConfigSecret
+    ? existingIntegrationConfigSecret.arn
+    : integrationConfigSecret!.arn;
+  const integrationConfigSecretName = existingIntegrationConfigSecret
+    ? existingIntegrationConfigSecret.name
+    : integrationConfigSecret!.name;
 
   const adminOidcClientSecret = new RandomPassword(`${resourceBaseName}-admin-oidc-secret`, {
     length: 40,
@@ -721,7 +763,7 @@ export function deployIdentityInfrastructure(
     .map((url) => `${url}/admin`);
 
   new aws.secretsmanager.SecretVersion(`${resourceBaseName}-integration-config-secret-version`, {
-    secretId: integrationConfigSecret.id,
+    secretId: integrationConfigSecretArn,
     secretString: pulumi.secret(
       pulumi
         .all([
@@ -803,14 +845,22 @@ export function deployIdentityInfrastructure(
         )
     ),
   });
-  const databaseCredentialsSecret = new aws.secretsmanager.Secret(`${resourceBaseName}-db-secret`, {
-    description: `Authentik database credentials for ${args.stage}`,
-    name: stageScopedSecrets.databaseCredentials,
-    tags: {
-      ...resourceTags,
-      Name: `${resourceDisplayPrefix}-database-credentials`,
-    },
-  });
+  const databaseCredentialsSecret = existingDatabaseCredentialsSecret
+    ? undefined
+    : new aws.secretsmanager.Secret(`${resourceBaseName}-db-secret`, {
+        description: `Authentik database credentials for ${args.stage}`,
+        name: stageScopedSecrets.databaseCredentials,
+        tags: {
+          ...resourceTags,
+          Name: `${resourceDisplayPrefix}-database-credentials`,
+        },
+      });
+  const databaseCredentialsSecretArn = existingDatabaseCredentialsSecret
+    ? existingDatabaseCredentialsSecret.arn
+    : databaseCredentialsSecret!.arn;
+  const databaseCredentialsSecretName = existingDatabaseCredentialsSecret
+    ? existingDatabaseCredentialsSecret.name
+    : databaseCredentialsSecret!.name;
 
   const databaseUsername = 'authentik';
   const databaseName = 'authentik';
@@ -895,40 +945,42 @@ export function deployIdentityInfrastructure(
   const databaseEndpoint = useEc2Database ? pulumi.output('postgres:5432') : database!.endpoint;
   const databasePort = pulumi.output(5432);
 
-  new aws.secretsmanager.SecretVersion(`${resourceBaseName}-db-secret-version`, {
-    secretId: databaseCredentialsSecret.id,
-    secretString: useEc2Database
-      ? databasePassword.result.apply((password) =>
-          JSON.stringify({
-            database: databaseName,
-            endpoint: 'postgres:5432',
-            engine: 'postgres',
-            host: 'postgres',
-            mode: 'ec2',
-            password,
-            port: 5432,
-            sslmode: 'disable',
-            uri: `postgresql://${databaseUsername}:${password}@postgres:5432/${databaseName}?sslmode=disable`,
-            username: databaseUsername,
-          })
-        )
-      : pulumi
-          .all([databaseAddress, databaseEndpoint, databasePort, databasePassword.result])
-          .apply(([address, endpoint, port, password]) =>
+  if (databaseCredentialsSecret) {
+    new aws.secretsmanager.SecretVersion(`${resourceBaseName}-db-secret-version`, {
+      secretId: databaseCredentialsSecret.id,
+      secretString: useEc2Database
+        ? databasePassword.result.apply((password) =>
             JSON.stringify({
               database: databaseName,
-              endpoint,
+              endpoint: 'postgres:5432',
               engine: 'postgres',
-              host: address,
-              mode: 'rds',
+              host: 'postgres',
+              mode: 'ec2',
               password,
-              port,
-              sslmode: 'require',
-              uri: `postgresql://${databaseUsername}:${password}@${address}:${port}/${databaseName}?sslmode=require`,
+              port: 5432,
+              sslmode: 'disable',
+              uri: `postgresql://${databaseUsername}:${password}@postgres:5432/${databaseName}?sslmode=disable`,
               username: databaseUsername,
             })
-          ),
-  });
+          )
+        : pulumi
+            .all([databaseAddress, databaseEndpoint, databasePort, databasePassword.result])
+            .apply(([address, endpoint, port, password]) =>
+              JSON.stringify({
+                database: databaseName,
+                endpoint,
+                engine: 'postgres',
+                host: address,
+                mode: 'rds',
+                password,
+                port,
+                sslmode: 'require',
+                uri: `postgresql://${databaseUsername}:${password}@${address}:${port}/${databaseName}?sslmode=require`,
+                username: databaseUsername,
+              })
+            ),
+    });
+  }
 
   const instanceRole = new aws.iam.Role(`${resourceBaseName}-instance-role`, {
     assumeRolePolicy: aws.iam.assumeRolePolicyForPrincipal({
@@ -949,11 +1001,11 @@ export function deployIdentityInfrastructure(
     role: instanceRole.name,
     policy: pulumi
       .all([
-        authentikSecret.arn,
-        databaseCredentialsSecret.arn,
+        authentikSecretArn,
+        databaseCredentialsSecretArn,
         smtpCredentialsSecretArn,
-        jwtSigningKeySecret.arn,
-        integrationConfigSecret.arn,
+        jwtSigningKeySecretArn,
+        integrationConfigSecretArn,
       ])
       .apply((secretArns) =>
         JSON.stringify({
@@ -1037,11 +1089,11 @@ export function deployIdentityInfrastructure(
     acmeBackupPrefix: args.settings.tls.acmeBackup.prefix,
     authentikImageTag: args.settings.authentikImageTag,
     allowCustomProviderFlowSlugs: args.settings.integration.google.allowCustomProviderFlowSlugs,
-    authentikSecretArn: authentikSecret.arn,
-    databaseCredentialsSecretArn: databaseCredentialsSecret.arn,
+    authentikSecretArn,
+    databaseCredentialsSecretArn,
     smtpCredentialsSecretArn,
-    jwtSigningKeySecretArn: jwtSigningKeySecret.arn,
-    integrationConfigSecretArn: integrationConfigSecret.arn,
+    jwtSigningKeySecretArn,
+    integrationConfigSecretArn,
   });
 
   const identityInstance = new aws.ec2.Instance(
@@ -1277,16 +1329,16 @@ export function deployIdentityInfrastructure(
     },
     secrets: {
       authentik: {
-        arn: authentikSecret.arn,
-        name: authentikSecret.name,
+        arn: authentikSecretArn,
+        name: authentikSecretName,
       },
       databaseCredentials: {
-        arn: databaseCredentialsSecret.arn,
-        name: databaseCredentialsSecret.name,
+        arn: databaseCredentialsSecretArn,
+        name: databaseCredentialsSecretName,
       },
       jwtSigningKey: {
-        arn: jwtSigningKeySecret.arn,
-        name: jwtSigningKeySecret.name,
+        arn: jwtSigningKeySecretArn,
+        name: jwtSigningKeySecretName,
         value: jwtSigningKey.result,
       },
       smtpCredentials: {
@@ -1294,8 +1346,8 @@ export function deployIdentityInfrastructure(
         name: smtpCredentialsSecretName,
       },
       integrationConfig: {
-        arn: integrationConfigSecret.arn,
-        name: integrationConfigSecret.name,
+        arn: integrationConfigSecretArn,
+        name: integrationConfigSecretName,
       },
     },
     vpc: {
