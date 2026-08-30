@@ -1,3 +1,13 @@
+## [1.1.65](https://github.com/alternun-development/alternun/compare/v1.1.64...v1.1.65) (2026-08-30)
+
+### Bug Fixes
+
+- **repo:** fix(infra): adopt existing identity secrets
+
+### Bug Fixes
+
+- **infra:** adopt existing identity secrets ([b983bb1](https://github.com/alternun-development/alternun/commit/b983bb1b14ab202db8fcd722004d3ecfeaa23dde))
+
 ## [1.1.64](https://github.com/alternun-development/alternun/compare/v1.1.63...v1.1.64) (2026-08-30)
 
 ### Bug Fixes
