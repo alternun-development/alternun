@@ -1,3 +1,13 @@
+## [1.1.62](https://github.com/alternun-development/alternun/compare/v1.1.61...v1.1.62) (2026-08-30)
+
+### Bug Fixes
+
+- **repo:** fix(infra): harden Authentik startup cleanup
+
+### Bug Fixes
+
+- **infra:** harden Authentik startup cleanup ([2220a7b](https://github.com/alternun-development/alternun/commit/2220a7be29a17524c49088b93605027ac7337582))
+
 ## [1.1.61](https://github.com/alternun-development/alternun/compare/v1.1.60...v1.1.61) (2026-08-30)
 
 ### Bug Fixes
