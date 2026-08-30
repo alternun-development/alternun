@@ -22,6 +22,72 @@ void test('a production release starts identity pipelines that were created by t
   assert.match(bootstrapScript, /case "\$stage" in[\s\S]*production\)[\s\S]*\*\)[\s\S]*exit 0/);
   assert.match(buildspecSource, /bootstrap-new-identity-pipelines\.sh"? record/);
   assert.match(buildspecSource, /bootstrap-new-identity-pipelines\.sh"? start-recorded/);
+  assert.match(
+    readInfraFile('infra.config.ts'),
+    /process\.env\.INFRA_CODESTAR_CONNECTION_ARN \?\? localConfig\.pipeline\?\.codestarConnectionArn/
+  );
+  assert.match(
+    readInfraFile('modules/identity-resources.ts'),
+    /INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME/
+  );
+  assert.match(readInfraFile('modules/identity-resources.ts'), /getSecretOutput/);
+  const identityPipelineSource = readInfraFile('config/pipelines/specs/identity.ts');
+  assert.match(
+    identityPipelineSource,
+    /const productionExistingSmtpCredentialsSecretName\s*=\s*env\.INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME/
+  );
+  assert.match(
+    identityPipelineSource,
+    /INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME:\s*productionExistingSmtpCredentialsSecretName/
+  );
+  assert.doesNotMatch(
+    identityPipelineSource,
+    /INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME:\s*'alternun-infra\//
+  );
+});
+
+void test('identity SMTP secret resolver preserves an explicitly adopted secret', () => {
+  const resolverPath = join(infraRoot, 'scripts', 'identity-secret-names.sh');
+  const resolved = execFileSync(
+    'bash',
+    [
+      '-c',
+      'scope_secret_name() { printf "%s/%s" "$1" "$2"; }; source "$1"; resolve_identity_smtp_credentials_secret_name "$2" "$3"',
+      'bash',
+      resolverPath,
+      'managed-smtp',
+      'identity-prod',
+    ],
+    {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME: 'adopted-smtp',
+      },
+    }
+  ).trim();
+
+  assert.equal(resolved, 'adopted-smtp');
+});
+
+void test('identity SMTP secret resolver uses the managed secret when no adoption is configured', () => {
+  const resolverPath = join(infraRoot, 'scripts', 'identity-secret-names.sh');
+  const env = { ...process.env };
+  delete env.INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME;
+  const resolved = execFileSync(
+    'bash',
+    [
+      '-c',
+      'scope_secret_name() { printf "%s/%s" "$1" "$2"; }; source "$1"; resolve_identity_smtp_credentials_secret_name "$2" "$3"',
+      'bash',
+      resolverPath,
+      'managed-smtp',
+      'identity-prod',
+    ],
+    { encoding: 'utf8', env }
+  ).trim();
+
+  assert.equal(resolved, 'managed-smtp/identity-prod');
 });
 
 void test('production bootstrap ignores identity pipelines omitted from INFRA_PIPELINES', (t) => {
@@ -59,4 +125,52 @@ exit 1
   execFileSync('bash', [scriptPath, 'start-recorded'], { env });
 
   assert.equal(readFileSync(callsPath, 'utf8'), '');
+});
+
+void test('production bootstrap starts a newly created identity pipeline after its failed creation record', (t) => {
+  const tempRoot = mkdtempSync(join(tmpdir(), 'alternun-identity-bootstrap-test-'));
+  const mockBin = join(tempRoot, 'bin');
+  const stateDirectory = join(tempRoot, 'state');
+  const callsPath = join(tempRoot, 'aws-calls.log');
+  const awsPath = join(mockBin, 'aws');
+
+  mkdirSync(mockBin);
+  mkdirSync(stateDirectory);
+  writeFileSync(join(stateDirectory, 'missing-pipelines'), 'alternun-auth-prod-pipeline\n', 'utf8');
+  writeFileSync(callsPath, '', 'utf8');
+  writeFileSync(
+    awsPath,
+    `#!/usr/bin/env bash
+printf '%s\\n' "$*" >> "$ALTERNUN_AWS_CALLS"
+case "$1" in
+  codepipeline)
+    case "$2" in
+      get-pipeline|start-pipeline-execution) exit 0 ;;
+      list-pipeline-executions) printf '%s\\n' 'Failed'; exit 0 ;;
+    esac
+    ;;
+esac
+exit 1
+`,
+    'utf8'
+  );
+  chmodSync(awsPath, 0o755);
+
+  t.after(() => rmSync(tempRoot, { recursive: true, force: true }));
+
+  execFileSync(
+    'bash',
+    [join(infraRoot, 'scripts', 'bootstrap-new-identity-pipelines.sh'), 'start-recorded'],
+    {
+      env: {
+        ...process.env,
+        ALTERNUN_AWS_CALLS: callsPath,
+        IDENTITY_PIPELINE_BOOTSTRAP_STATE_DIR: stateDirectory,
+        PATH: `${mockBin}:${process.env.PATH}`,
+        SST_STAGE: 'production',
+      },
+    }
+  );
+
+  assert.match(readFileSync(callsPath, 'utf8'), /codepipeline start-pipeline-execution/);
 });

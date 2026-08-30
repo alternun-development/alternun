@@ -28,6 +28,8 @@ export function buildIdentityPipelineSpecs({
   const discordAuthClientSecretKey = 'INFRA_IDENTITY_DISCORD_AUTH_CLIENT_SECRET';
   const devGoogleLoginFlowSlug = resolveDevGoogleLoginFlowSlug(env);
   const devDiscordLoginFlowSlug = resolveDevDiscordLoginFlowSlug(env);
+  const productionExistingSmtpCredentialsSecretName =
+    env.INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME?.trim() ?? '';
   const clearedDefaultApplicationLaunchUrl = '';
 
   return {
@@ -84,6 +86,9 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME:
           'alternun-infra/identity/database-credentials-v2',
         INFRA_IDENTITY_SECRET_SMTP_CREDENTIALS_NAME: 'alternun-infra/identity/smtp-credentials-v2',
+        // Adoption is opt-in per deployment environment. New and recovery
+        // accounts leave this empty and create the managed secret instead.
+        INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME: productionExistingSmtpCredentialsSecretName,
         INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME: 'alternun-infra/identity/jwt-signing-key-v2',
         INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:
           'alternun-infra/identity/integration-config-v2',
