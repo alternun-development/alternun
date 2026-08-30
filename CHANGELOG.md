@@ -1,3 +1,9 @@
+## [1.1.57](https://github.com/alternun-development/alternun/compare/v1.1.56...v1.1.57) (2026-08-30)
+
+### Bug Fixes
+
+- **auth:** bypass legacy Google flow in production ([0362223](https://github.com/alternun-development/alternun/commit/036222306bc5042c6fb7581df6e08bcfe741a801))
+
 ## [1.1.56](https://github.com/alternun-development/alternun/compare/v1.1.55...v1.1.56) (2026-08-29)
 
 ### Bug Fixes
