@@ -91,6 +91,30 @@ void test('identity SMTP secret resolver preserves an explicitly adopted secret'
   assert.equal(resolved, 'adopted-smtp');
 });
 
+void test('identity secret resolver preserves an explicitly adopted non-SMTP secret', () => {
+  const resolverPath = join(infraRoot, 'scripts', 'identity-secret-names.sh');
+  const resolved = execFileSync(
+    'bash',
+    [
+      '-c',
+      'scope_secret_name() { printf "%s/%s" "$1" "$2"; }; source "$1"; resolve_identity_secret_name INFRA_IDENTITY_EXISTING_AUTHENTIK_SECRET_NAME "$2" "$3"',
+      'bash',
+      resolverPath,
+      'managed-authentik',
+      'identity-prod',
+    ],
+    {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        INFRA_IDENTITY_EXISTING_AUTHENTIK_SECRET_NAME: 'adopted-authentik',
+      },
+    }
+  ).trim();
+
+  assert.equal(resolved, 'adopted-authentik');
+});
+
 void test('identity SMTP secret resolver uses the managed secret when no adoption is configured', () => {
   const resolverPath = join(infraRoot, 'scripts', 'identity-secret-names.sh');
   const env = { ...process.env };
@@ -109,6 +133,23 @@ void test('identity SMTP secret resolver uses the managed secret when no adoptio
   ).trim();
 
   assert.equal(resolved, 'managed-smtp/identity-prod');
+});
+
+void test('identity secret adoption inputs are documented for recovery deployments', () => {
+  const envExample = readInfraFile('.env.example');
+  const readme = readInfraFile('README.md');
+  const adoptionVariables = [
+    'INFRA_IDENTITY_EXISTING_AUTHENTIK_SECRET_NAME',
+    'INFRA_IDENTITY_EXISTING_DATABASE_CREDENTIALS_SECRET_NAME',
+    'INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME',
+    'INFRA_IDENTITY_EXISTING_JWT_SIGNING_SECRET_NAME',
+    'INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME',
+  ];
+
+  for (const variableName of adoptionVariables) {
+    assert.match(envExample, new RegExp(`^${variableName}=`, 'm'));
+    assert.match(readme, new RegExp(variableName));
+  }
 });
 
 void test('production bootstrap ignores identity pipelines omitted from INFRA_PIPELINES', (t) => {
