@@ -120,17 +120,15 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.76**
+Current version: **1.1.77**
 
-## 📋 Latest Changes (v1.1.76)
+## 📋 Latest Changes (v1.1.77)
 
 ### Bug Fixes
 
-- **infra:** auto-recover identity RDS drift via sst refresh ([9140ed6](https://github.com/alternun-development/alternun/commit/9140ed667c829f705f87b351733b57cecb501b2f))
-
-### Documentation
-
-- **repo:** restore accurate v1.1.74 changelog section ([4aa3cf1](https://github.com/alternun-development/alternun/commit/4aa3cf11d88815902976d9649fa23144e7eb23c0))
+- **repo:** artifact, graph.db ([3664138](https://github.com/alternun-development/alternun/commit/366413886e9989ad0e397de7232d5da2340537fb))
+- **mobile:** stop infinite reload loop on Google auth callback ([557e760](https://github.com/alternun-development/alternun/commit/557e760c3a2ac41daed674f197c6bdd3ebe42b1c))
+- **infra:** lift identity RDS protection during drift-recovery refresh ([803484e](https://github.com/alternun-development/alternun/commit/803484eef14d1fd168a4ab8b36a776b8a916ee6b))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
