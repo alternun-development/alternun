@@ -120,17 +120,14 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.73**
+Current version: **1.1.74**
 
-## 📋 Latest Changes (v1.1.73)
+## 📋 Latest Changes (v1.1.74)
 
 ### Bug Fixes
 
-- **repo:** isolate production provider source flows ([c75356d](https://github.com/alternun-development/alternun/commit/c75356def4d192e526f24e9f66e063ccf230c106))
-
-### Changes
-
-- **repo:** cover production google source wrapper ([466fe95](https://github.com/alternun-development/alternun/commit/466fe95b631c2f94824f64c88c859b00d9578e81))
+- **repo:** adopt retained identity secrets before deploy ([506ad75](https://github.com/alternun-development/alternun/commit/506ad759ee79e31e12cb17b89fd51b4ebaf83aea))
+- **repo:** prevent discord source flow recursion ([6ae5e31](https://github.com/alternun-development/alternun/commit/6ae5e311032767c28d7c918f0e16d11428f600b8))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
