@@ -1,3 +1,14 @@
+## [1.1.73](https://github.com/alternun-development/alternun/compare/v1.1.72...v1.1.73) (2026-08-31)
+
+### Bug Fixes
+
+- **repo:** fix: isolate production provider source flows
+- **repo:** test: cover production google source wrapper
+
+### Bug Fixes
+
+- isolate production provider source flows ([c75356d](https://github.com/alternun-development/alternun/commit/c75356def4d192e526f24e9f66e063ccf230c106))
+
 ## [1.1.72](https://github.com/alternun-development/alternun/compare/v1.1.71...v1.1.72) (2026-08-30)
 
 ### Changes
