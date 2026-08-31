@@ -126,12 +126,11 @@ Current version: **1.1.76**
 
 ### Bug Fixes
 
-- **repo:** fix(infra): auto-recover identity RDS drift via sst refresh
-- **repo:** docs: restore accurate v1.1.74 changelog section
-
-### Bug Fixes
-
 - **infra:** auto-recover identity RDS drift via sst refresh ([9140ed6](https://github.com/alternun-development/alternun/commit/9140ed667c829f705f87b351733b57cecb501b2f))
+
+### Documentation
+
+- **repo:** restore accurate v1.1.74 changelog section ([4aa3cf1](https://github.com/alternun-development/alternun/commit/4aa3cf11d88815902976d9649fa23144e7eb23c0))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
