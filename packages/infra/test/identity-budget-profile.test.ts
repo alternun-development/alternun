@@ -30,8 +30,11 @@ void test('production identity keeps the existing RDS and ALB topology until an 
     productionPipeline,
     /INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: productionEc2MigrationEnabled \? 'true' : 'false'/
   );
-  assert.match(productionPipeline, /INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS: 'false'/);
-  assert.match(productionPipeline, /INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: ''/);
+  assert.match(productionPipeline, /INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS: 'true'/);
+  assert.match(
+    productionPipeline,
+    /INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: 'alternun-google-login'/
+  );
   assert.match(
     productionPipeline,
     /INFRA_IDENTITY_SECRET_AUTHENTIK_KEY_NAME:\s*'alternun-infra\/identity\/authentik-secret-key-v2'/

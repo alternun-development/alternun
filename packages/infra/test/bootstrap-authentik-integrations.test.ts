@@ -5,7 +5,7 @@ import test from 'node:test';
 
 const templatePath = path.resolve('scripts/templates/bootstrap-authentik-integrations.py');
 
-void test('bootstrap completes direct source authentication before following its next URL', () => {
+void test('bootstrap resumes Google through an outer SourceStage flow before returning to the OIDC request', () => {
   const template = fs.readFileSync(templatePath, 'utf8');
 
   assert.match(template, /authentication: str = "none"/);
@@ -15,16 +15,14 @@ void test('bootstrap completes direct source authentication before following its
     template,
     /source_authentication_flow_opened = ensure_flow_authentication\(source_authentication_flow\)/
   );
-  assert.match(template, /def ensure_source_flow_user_login_stage\(flow\):/);
+  assert.match(template, /def upsert_source_stage_flow\(/);
+  assert.match(template, /login_stage_name = f"\{stage_name\.removesuffix\('-stage'\)\}-login"/);
+  assert.match(template, /ensure_flow_stage_binding\(\s*flow,\s*login_stage,\s*order=10,\s*\)/);
   assert.match(
     template,
-    /source_authentication_flow_login_stage_added = ensure_source_flow_user_login_stage\(\s*source_authentication_flow\s*\)/
+    /source_authentication_flow_pruned = prune_flow_stage_bindings\(\s*source_authentication_flow, UserLoginStage\s*\)/
   );
-  assert.match(
-    template,
-    /source_enrollment_flow_login_stage_added = ensure_source_flow_user_login_stage\(\s*source_enrollment_flow\s*\)/
-  );
-  assert.match(template, /Direct source mode must establish an Authentik session/);
+  assert.match(template, /SourceStage resumes the original flow/);
   assert.match(template, /derive_origin_redirect\(url: str\)/);
   assert.match(template, /derive_auth_callback_redirect\(url: str\)/);
   assert.match(template, /if not mobile_oidc_redirect_urls and mobile_oidc_launch_url:/);
