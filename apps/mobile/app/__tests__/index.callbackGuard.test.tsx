@@ -64,10 +64,16 @@ jest.mock('../../components/auth/authCallbackFlow', () => ({
   buildWebAuthCallbackRedirectPath: () => '/auth/callback?code=test-code',
 }));
 
-jest.mock('@alternun/auth', () => ({
-  __esModule: true,
-  readPendingAuthentikOAuthProvider: () => null,
-}));
+// virtual: true — CI does not build packages/auth/dist before running mobile
+// tests, so the real module is unresolvable there; this mock never needs it.
+jest.mock(
+  '@alternun/auth',
+  () => ({
+    __esModule: true,
+    readPendingAuthentikOAuthProvider: () => null,
+  }),
+  { virtual: true }
+);
 
 import { usePathname } from 'expo-router';
 import HomeScreen from '../index';
