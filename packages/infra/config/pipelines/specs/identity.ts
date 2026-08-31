@@ -38,6 +38,8 @@ export function buildIdentityPipelineSpecs({
     env.INFRA_IDENTITY_EXISTING_JWT_SIGNING_SECRET_NAME?.trim() ?? '';
   const productionExistingIntegrationConfigSecretName =
     env.INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME?.trim() ?? '';
+  const productionEc2MigrationEnabled =
+    env.INFRA_IDENTITY_ENABLE_EC2_PRODUCTION_MIGRATION?.trim().toLowerCase() === 'true';
   const clearedDefaultApplicationLaunchUrl = '';
 
   return {
@@ -85,9 +87,14 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_ENABLED: 'true',
         INFRA_IDENTITY_DEDICATED_STACKS_ONLY: 'true',
         INFRA_IDENTITY_ENABLED_STAGES: 'production',
-        INFRA_IDENTITY_DATABASE_MODE: 'ec2',
-        INFRA_IDENTITY_INGRESS_MODE_PRODUCTION: 'instance',
-        INFRA_IDENTITY_TLS_MODE_PRODUCTION: 'acme-route53-dns-01',
+        // Existing production stacks use RDS behind an ALB. Do not transition
+        // that topology just by deploying a source change: an operator must
+        // explicitly opt in to the coordinated EC2/direct-ingress migration.
+        INFRA_IDENTITY_DATABASE_MODE: productionEc2MigrationEnabled ? 'ec2' : 'rds',
+        INFRA_IDENTITY_INGRESS_MODE_PRODUCTION: productionEc2MigrationEnabled ? 'instance' : 'alb',
+        INFRA_IDENTITY_TLS_MODE_PRODUCTION: productionEc2MigrationEnabled
+          ? 'acme-route53-dns-01'
+          : 'alb-acm',
         // The original names are awaiting deletion in Secrets Manager. Keep the
         // new production deployment isolated from that retired secret set.
         INFRA_IDENTITY_SECRET_AUTHENTIK_KEY_NAME: 'alternun-infra/identity/authentik-secret-key-v2',
@@ -109,7 +116,7 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_USERDATA_REPLACE_ON_CHANGE: 'false',
         INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION: 'true',
         INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
-        INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
+        INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: productionEc2MigrationEnabled ? 'true' : 'false',
         // Keep production on Authentik's direct source callback. A SourceStage
         // wrapper cannot preserve the pending admin OIDC authorization after
         // Google returns to the source callback.
