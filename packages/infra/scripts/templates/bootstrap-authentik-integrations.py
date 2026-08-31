@@ -246,10 +246,10 @@ def ensure_admin_group_claim_mapping(allowed_groups):
 allowed_groups = set({encoded_groups})
 is_admin = request.user.groups.filter(name__in=list(allowed_groups)).exists()
 
-return {
+return {{
     "groups": [group.name for group in request.user.ak_groups.all()],
     "alternun_roles": ["platform_admin"] if is_admin else [],
-}
+}}
 """.strip()
 
     mapping, created = ScopeMapping.objects.get_or_create(

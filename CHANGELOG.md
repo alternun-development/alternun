@@ -1,3 +1,9 @@
+## [1.1.69](https://github.com/alternun-development/alternun/compare/v1.1.68...v1.1.69) (2026-08-30)
+
+### Changes
+
+- **repo:** 🐛 fix: render admin group claim mapping ([fd366a3](https://github.com/alternun-development/alternun/commit/fd366a32521a7f5c178f4c3d16ad4781b674073c))
+
 ## [1.1.68](https://github.com/alternun-development/alternun/compare/v1.1.67...v1.1.68) (2026-08-30)
 
 ### Bug Fixes
