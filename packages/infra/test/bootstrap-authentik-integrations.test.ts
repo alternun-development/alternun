@@ -5,7 +5,7 @@ import test from 'node:test';
 
 const templatePath = path.resolve('scripts/templates/bootstrap-authentik-integrations.py');
 
-void test('bootstrap keeps source authentication flows open by default', () => {
+void test('bootstrap completes direct source authentication before following its next URL', () => {
   const template = fs.readFileSync(templatePath, 'utf8');
 
   assert.match(template, /authentication: str = "none"/);
@@ -15,17 +15,16 @@ void test('bootstrap keeps source authentication flows open by default', () => {
     template,
     /source_authentication_flow_opened = ensure_flow_authentication\(source_authentication_flow\)/
   );
+  assert.match(template, /def ensure_source_flow_user_login_stage\(flow\):/);
   assert.match(
     template,
-    /source_authentication_flow_pruned = prune_flow_stage_bindings\(\s*source_authentication_flow, UserLoginStage\s*\)/
+    /source_authentication_flow_login_stage_added = ensure_source_flow_user_login_stage\(\s*source_authentication_flow\s*\)/
   );
   assert.match(
     template,
-    /source_enrollment_flow_pruned = prune_flow_stage_bindings\(\s*source_enrollment_flow, UserLoginStage\s*\)/
+    /source_enrollment_flow_login_stage_added = ensure_source_flow_user_login_stage\(\s*source_enrollment_flow\s*\)/
   );
-  assert.doesNotMatch(template, /default-source-authentication-login/);
-  assert.doesNotMatch(template, /default-source-enrollment-login/);
-  assert.doesNotMatch(template, /ensure_source_flow_user_login_stage/);
+  assert.match(template, /Direct source mode must establish an Authentik session/);
   assert.match(template, /derive_origin_redirect\(url: str\)/);
   assert.match(template, /derive_auth_callback_redirect\(url: str\)/);
   assert.match(template, /if not mobile_oidc_redirect_urls and mobile_oidc_launch_url:/);
