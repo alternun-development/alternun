@@ -331,6 +331,24 @@ def ensure_flow_authentication(flow, authentication: str = "none"):
     return changed
 
 
+def ensure_source_flow_user_login_stage(flow):
+    """Finish a direct OAuth source flow by establishing an Authentik session.
+
+    A direct ``/source/oauth/login/<slug>/`` entrypoint has no parent
+    SourceStage to resume it. Its source authentication or enrollment flow
+    must therefore include UserLoginStage before Authentik can follow ``next``
+    back to the relying party's pending OIDC authorization request.
+    """
+    if not flow:
+        return False
+
+    stage, stage_created = UserLoginStage.objects.get_or_create(
+        name="alternun-direct-source-login"
+    )
+    binding_created, binding_changed = ensure_flow_stage_binding(flow, stage, order=100)
+    return stage_created or binding_created or binding_changed
+
+
 def ensure_google_source_username_mapping_binding(source_enrollment_flow):
     if not source_enrollment_flow:
         return "missing_source_enrollment_flow"
@@ -1125,6 +1143,8 @@ if google_client_id and google_client_secret:
     source_enrollment_flow = Flow.objects.filter(slug="default-source-enrollment").first()
     source_authentication_flow_pruned = 0
     source_enrollment_flow_pruned = 0
+    source_authentication_flow_login_stage_added = False
+    source_enrollment_flow_login_stage_added = False
     source_authentication_flow_opened = ensure_flow_authentication(source_authentication_flow)
     source_enrollment_flow_opened = ensure_flow_authentication(source_enrollment_flow)
 
@@ -1136,13 +1156,13 @@ if google_client_id and google_client_secret:
             source_enrollment_flow, UserLoginStage
         )
     else:
-        # Direct source mode keeps the source flows open and removes any
-        # UserLoginStage bindings so SourceStage can resume the original flow.
-        source_authentication_flow_pruned = prune_flow_stage_bindings(
-            source_authentication_flow, UserLoginStage
+        # Direct source mode must establish an Authentik session before it can
+        # follow the relay's pending OIDC authorization URL in ``next``.
+        source_authentication_flow_login_stage_added = ensure_source_flow_user_login_stage(
+            source_authentication_flow
         )
-        source_enrollment_flow_pruned = prune_flow_stage_bindings(
-            source_enrollment_flow, UserLoginStage
+        source_enrollment_flow_login_stage_added = ensure_source_flow_user_login_stage(
+            source_enrollment_flow
         )
     source, source_created = OAuthSource.objects.get_or_create(
         slug=google_source_slug,
@@ -1196,6 +1216,8 @@ if google_client_id and google_client_secret:
         or source_enrollment_flow_pruned
         or source_authentication_flow_opened
         or source_enrollment_flow_opened
+        or source_authentication_flow_login_stage_added
+        or source_enrollment_flow_login_stage_added
     ):
         source_changed = True
 
@@ -1510,6 +1532,8 @@ if discord_client_id and discord_client_secret:
     source_enrollment_flow = Flow.objects.filter(slug="default-source-enrollment").first()
     source_authentication_flow_pruned = 0
     source_enrollment_flow_pruned = 0
+    source_authentication_flow_login_stage_added = False
+    source_enrollment_flow_login_stage_added = False
     source_authentication_flow_opened = ensure_flow_authentication(source_authentication_flow)
     source_enrollment_flow_opened = ensure_flow_authentication(source_enrollment_flow)
 
@@ -1521,13 +1545,13 @@ if discord_client_id and discord_client_secret:
             source_enrollment_flow, UserLoginStage
         )
     else:
-        # Direct source mode keeps the source flows open and removes any
-        # UserLoginStage bindings so SourceStage can resume the original flow.
-        source_authentication_flow_pruned = prune_flow_stage_bindings(
-            source_authentication_flow, UserLoginStage
+        # Direct source mode must establish an Authentik session before it can
+        # follow the relay's pending OIDC authorization URL in ``next``.
+        source_authentication_flow_login_stage_added = ensure_source_flow_user_login_stage(
+            source_authentication_flow
         )
-        source_enrollment_flow_pruned = prune_flow_stage_bindings(
-            source_enrollment_flow, UserLoginStage
+        source_enrollment_flow_login_stage_added = ensure_source_flow_user_login_stage(
+            source_enrollment_flow
         )
 
     discord_source, discord_source_created = OAuthSource.objects.get_or_create(
@@ -1579,6 +1603,8 @@ if discord_client_id and discord_client_secret:
         or source_enrollment_flow_pruned
         or source_authentication_flow_opened
         or source_enrollment_flow_opened
+        or source_authentication_flow_login_stage_added
+        or source_enrollment_flow_login_stage_added
     ):
         discord_source_changed = True
 
