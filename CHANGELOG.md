@@ -2,6 +2,7 @@
 
 ### Bug Fixes
 
+- **infra:** preserve adopted database password on import ([6144d81](https://github.com/alternun-development/alternun/commit/6144d813f245e261105bf9e1406e3b2696c4932f))
 - **infra:** reconcile adopted identity recovery state ([3b684ad](https://github.com/alternun-development/alternun/commit/3b684adb029d2b6d0479d95ebb96b11f14471b13))
 
 ## [1.1.67](https://github.com/alternun-development/alternun/compare/v1.1.66...v1.1.67) (2026-08-30)
