@@ -124,9 +124,9 @@ Current version: **1.1.69**
 
 ## 📋 Latest Changes (v1.1.69)
 
-### Bug Fixes
+### Changes
 
-- **repo:** 🐛 fix: render admin group claim mapping
+- **repo:** 🐛 fix: render admin group claim mapping ([fd366a3](https://github.com/alternun-development/alternun/commit/fd366a32521a7f5c178f4c3d16ad4781b674073c))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
