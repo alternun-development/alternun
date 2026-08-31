@@ -7,7 +7,13 @@ import { useAppPreferences } from '../components/settings/AppPreferencesProvider
 import { isBetterAuthExecutionEnabled } from '../components/auth/authExecutionMode';
 import { buildWebAuthCallbackRedirectPath } from '../components/auth/authCallbackFlow';
 import { readPendingAuthentikOAuthProvider } from '@alternun/auth';
-import { Redirect, useFocusEffect, useRootNavigationState, useRouter } from 'expo-router';
+import {
+  Redirect,
+  useFocusEffect,
+  usePathname,
+  useRootNavigationState,
+  useRouter,
+} from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
@@ -21,6 +27,7 @@ export default function HomeScreen(): React.JSX.Element {
     refresh: refreshAirsSnapshot,
   } = useAirsDashboardSnapshot();
   const router = useRouter();
+  const pathname = usePathname();
   const rootNavigationState = useRootNavigationState();
   const [introDismissedThisSession, setIntroDismissedThisSession] = useState(false);
   const pendingAuthentikProvider = readPendingAuthentikOAuthProvider();
@@ -44,8 +51,15 @@ export default function HomeScreen(): React.JSX.Element {
       return;
     }
 
+    // Already on the callback route — let /auth/callback handle it.
+    // A full-page window.location.replace() here races the callback handler
+    // and causes an infinite reload loop for new users finishing Google sign-up.
+    if (pathname === '/auth/callback') {
+      return;
+    }
+
     window.location.replace(webAuthCallbackRedirectPath);
-  }, [webAuthCallbackRedirectPath]);
+  }, [webAuthCallbackRedirectPath, pathname]);
 
   useFocusEffect(
     useCallback(() => {
