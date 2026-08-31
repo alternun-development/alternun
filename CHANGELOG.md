@@ -1,3 +1,9 @@
+## [1.1.72](https://github.com/alternun-development/alternun/compare/v1.1.71...v1.1.72) (2026-08-31)
+
+### Bug Fixes
+
+- **repo:** 🐛 fix: resume admin oidc after google
+
 ## [1.1.71](https://github.com/alternun-development/alternun/compare/v1.1.70...v1.1.71) (2026-08-30)
 
 ### Changes
