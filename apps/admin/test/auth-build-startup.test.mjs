@@ -49,6 +49,14 @@ void test('admin owns its browser-only Authentik relay helpers', () => {
   assert.match(adminEnvSource, /appEnv === 'production' \|\| configuredGoogleFlowSlug === ''/);
 });
 
+void test('the production Google relay starts the selected Google source with its pending Admin OIDC authorization request', () => {
+  assert.match(authentikRelaySource, /if \(flowSlug\?\.trim\(\)\) \{[\s\S]*?return `\$\{authentikOrigin\}\/if\/flow\//);
+  assert.match(
+    authentikRelaySource,
+    /return `\$\{authentikOrigin\}\/source\/oauth\/login\/google\/\?next=\$\{encodeURIComponent\(/
+  );
+});
+
 void test('admin dashboard access requires an Authentik role rather than an email domain', () => {
   assert.match(oidcClientSource, /return hasAdminRole\(roles,?\);/);
   assert.doesNotMatch(oidcClientSource, /hasAllowedAdminEmailDomain/);
