@@ -124,12 +124,15 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION: 'true',
         INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: productionEc2MigrationEnabled ? 'true' : 'false',
-        // The outer SourceStage flow resumes the pending Admin OIDC request
-        // after Google returns to the source callback.
+        // Provider-specific outer SourceStage flows resume the pending Admin
+        // OIDC request after the selected provider returns to its callback.
+        // Keep every configured provider out of the shared default source
+        // flows so one direct provider cannot reintroduce UserLoginStage.
         INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS: 'true',
         INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
         INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: 'alternun-google-login',
         INFRA_IDENTITY_DISCORD_AUTH_CLIENT_ID: discordAuthClientId,
+        INFRA_IDENTITY_DISCORD_LOGIN_FLOW_SLUG: 'alternun-discord-login',
         INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL: clearedDefaultApplicationLaunchUrl,
         [googleAuthClientSecretKey]: googleAuthClientSecret,
         [discordAuthClientSecretKey]: discordAuthClientSecret,

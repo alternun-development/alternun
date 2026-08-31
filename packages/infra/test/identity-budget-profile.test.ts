@@ -37,6 +37,10 @@ void test('production identity keeps the existing RDS and ALB topology until an 
   );
   assert.match(
     productionPipeline,
+    /INFRA_IDENTITY_DISCORD_LOGIN_FLOW_SLUG: 'alternun-discord-login'/
+  );
+  assert.match(
+    productionPipeline,
     /INFRA_IDENTITY_SECRET_AUTHENTIK_KEY_NAME:\s*'alternun-infra\/identity\/authentik-secret-key-v2'/
   );
   assert.match(
