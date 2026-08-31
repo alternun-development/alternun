@@ -1,3 +1,9 @@
+## [1.1.67](https://github.com/alternun-development/alternun/compare/v1.1.66...v1.1.67) (2026-08-30)
+
+### Bug Fixes
+
+- **infra:** guard production identity migration ([3e59890](https://github.com/alternun-development/alternun/commit/3e5989084abe27a4f7bb89e0c3fe255134c44b63))
+
 ## [1.1.66](https://github.com/alternun-development/alternun/compare/v1.1.65...v1.1.66) (2026-08-30)
 
 ### Bug Fixes

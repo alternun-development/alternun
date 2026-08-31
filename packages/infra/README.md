@@ -328,6 +328,8 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_ALB_HEALTH_CHECK_MATCHER`
 - `INFRA_IDENTITY_ALB_IDLE_TIMEOUT_SECONDS`
 - `INFRA_IDENTITY_DATABASE_MODE` (`ec2` for local-on-instance DB, `rds` for dedicated DB)
+- `INFRA_IDENTITY_ENABLE_EC2_PRODUCTION_MIGRATION` (default `false`; enables the coordinated production RDS/ALB to EC2/direct-ingress migration)
+- `INFRA_IDENTITY_IMPORT_EXISTING_ALB_NAME` (one-time recovery import of a retained production ALB)
 - `INFRA_IDENTITY_EC2_INSTANCE_TYPE`
 - `INFRA_IDENTITY_RDS_INSTANCE_TYPE`
 - `INFRA_IDENTITY_EMAIL_PROVIDER`
@@ -391,12 +393,12 @@ Important behavior:
 - identity provisioning is isolated to dedicated stacks by default (`identity-dev`, `identity-prod`) to prevent duplicate instances per environment
 - Authentik image tag is validated to calendar-version format and must be `>= 2025.10` (Redisless baseline)
 - identity deployment can be stage-scoped with `INFRA_IDENTITY_ENABLED_STAGES` (for example `dev` to keep production untouched)
-- default pipeline profile behavior is `identity-dev => INFRA_IDENTITY_DATABASE_MODE=rds` and `identity-prod => INFRA_IDENTITY_DATABASE_MODE=ec2`
+- default pipeline profile behavior is `identity-dev => INFRA_IDENTITY_DATABASE_MODE=rds`; existing production identity remains on RDS/ALB until `INFRA_IDENTITY_ENABLE_EC2_PRODUCTION_MIGRATION=true` is explicitly approved for a coordinated migration
 - the identity VPC does not create NAT by default, keeping the baseline cost lean
 - the EC2 host bootstraps Docker + Traefik + Authentik (server/worker) at startup using Secrets Manager values and no Redis
 - non-production identity defaults to direct instance ingress with Traefik Route53 DNS-01 ACME
 - non-production identity persists Traefik ACME state locally and backs it up to a private S3 bucket for restore after instance replacement
-- production identity defaults to direct instance ingress with Traefik Route53 DNS-01 ACME; this keeps the budget profile on a single EC2 host and avoids ALB/ACM resources
+- the optional production EC2 migration moves identity to direct instance ingress with Traefik Route53 DNS-01 ACME; it is intentionally opt-in because an existing RDS/ALB stack must be migrated as a coordinated operation
 - the bootstrap process creates/updates a default Authentik admin user and default internal application, and can configure Google and Discord social sources + Supabase OIDC application/provider
 - the default internal application tile falls back to the stage-specific admin dashboard origin, so it opens the dashboard instead of the Authentik library unless you override `INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL`
 - the dedicated identity pipelines intentionally leave `INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL` unset so the internal tile keeps that admin-dashboard fallback; only the mobile tile should point at the AIRS auth entrypoint

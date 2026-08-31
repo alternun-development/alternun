@@ -381,6 +381,8 @@ export function deployIdentityInfrastructure(
   const identityIngressMode = args.settings.ingress.stageModes[identityStageKey];
   const identityTlsMode = args.settings.tls.stageModes[identityStageKey];
   const useAlbIngress = identityIngressMode === 'alb';
+  const existingIdentityLoadBalancerName =
+    process.env.INFRA_IDENTITY_IMPORT_EXISTING_ALB_NAME?.trim() ?? '';
   const useAcmeBackup =
     identityTlsMode === 'acme-route53-dns-01' && args.settings.tls.acmeBackup.enabled;
   const resourceBaseName = sanitizeResourceName(`identity-${args.stage}`);
@@ -1216,6 +1218,7 @@ export function deployIdentityInfrastructure(
         },
       },
       {
+        import: existingIdentityLoadBalancerName || undefined,
         protect: preventDestructiveIdentityChanges,
       }
     );
