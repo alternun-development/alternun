@@ -48,7 +48,6 @@ function buildAdminAuthentikLoginEntryUrl({
   authorizeUrl: string;
   flowSlug?: string;
 }): string {
-  const authentikOrigin = new URL(issuer).origin;
   const trimmedAuthorizeUrl = authorizeUrl.trim();
 
   if (!trimmedAuthorizeUrl) {
@@ -56,14 +55,16 @@ function buildAdminAuthentikLoginEntryUrl({
   }
 
   if (flowSlug?.trim()) {
+    const authentikOrigin = new URL(issuer).origin;
     return `${authentikOrigin}/if/flow/${encodeURIComponent(
       flowSlug.trim()
     )}/?next=${encodeURIComponent(trimmedAuthorizeUrl)}`;
   }
 
-  return `${authentikOrigin}/source/oauth/login/google/?next=${encodeURIComponent(
-    trimmedAuthorizeUrl
-  )}`;
+  // Begin the provider authorization request itself. The normal Authentik
+  // authentication flow then owns the Google source handoff and retains the
+  // pending OIDC callback after Google returns.
+  return trimmedAuthorizeUrl;
 }
 
 export function resolveAdminRelayReturnTo(target: string | null | undefined): string {
