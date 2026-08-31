@@ -1,8 +1,8 @@
-## [1.1.70](https://github.com/alternun-development/alternun/compare/v1.1.69...v1.1.70) (2026-08-31)
+## [1.1.70](https://github.com/alternun-development/alternun/compare/v1.1.69...v1.1.70) (2026-08-30)
 
-### Bug Fixes
+### Changes
 
-- **repo:** 🐛 fix: preserve admin oidc context for google
+- **repo:** 🐛 fix: preserve admin oidc context for google ([2a554ec](https://github.com/alternun-development/alternun/commit/2a554ec9587507969056eb22cf16462d830aaebf))
 
 ## [1.1.69](https://github.com/alternun-development/alternun/compare/v1.1.68...v1.1.69) (2026-08-30)
 
