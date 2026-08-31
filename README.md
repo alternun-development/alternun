@@ -126,10 +126,6 @@ Current version: **1.1.67**
 
 ### Bug Fixes
 
-- **repo:** fix(infra): guard production identity migration
-
-### Bug Fixes
-
 - **infra:** guard production identity migration ([3e59890](https://github.com/alternun-development/alternun/commit/3e5989084abe27a4f7bb89e0c3fe255134c44b63))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
