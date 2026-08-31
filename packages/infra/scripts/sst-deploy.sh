@@ -879,6 +879,10 @@ auto_adopt_existing_identity_secrets() {
     return 0
   fi
 
+  if ! is_truthy "${INFRA_IDENTITY_ADOPT_RETAINED_SECRETS:-false}"; then
+    return 0
+  fi
+
   case "$stage_normalized" in
     identity-prod|identity-production|auth-prod|authentik-prod)
       ;;
