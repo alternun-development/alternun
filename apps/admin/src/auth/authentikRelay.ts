@@ -61,6 +61,8 @@ function buildAdminAuthentikLoginEntryUrl({
     )}/?next=${encodeURIComponent(trimmedAuthorizeUrl)}`;
   }
 
+  // The direct Google source preserves the provider selection. Its source
+  // flow establishes the Authentik session before following this OIDC URL.
   return `${authentikOrigin}/source/oauth/login/google/?next=${encodeURIComponent(
     trimmedAuthorizeUrl
   )}`;
