@@ -854,6 +854,59 @@ run_sst_deploy() {
   return "$exit_code"
 }
 
+adopt_existing_identity_secret() {
+  local env_name=$1 secret_base_name=$2 candidate
+
+  if [ -n "${!env_name:-}" ]; then
+    return 0
+  fi
+
+  candidate=$(scope_secret_name "$secret_base_name" "$STACK")
+  if [ -z "$candidate" ]; then
+    return 0
+  fi
+
+  if aws secretsmanager describe-secret \
+    --region "${AWS_REGION:-us-east-1}" \
+    --secret-id "$candidate" >/dev/null 2>&1; then
+    export "$env_name=$candidate"
+    echo "Adopting retained identity secret: $candidate"
+  fi
+}
+
+auto_adopt_existing_identity_secrets() {
+  if [ "$is_identity_stage" != "true" ]; then
+    return 0
+  fi
+
+  case "$stage_normalized" in
+    identity-prod|identity-production|auth-prod|authentik-prod)
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+
+  # A prior deployment may have created these stage-scoped names before its
+  # state was retained. Adopt only names that actually exist; a new account
+  # still follows the managed-secret creation path.
+  adopt_existing_identity_secret \
+    INFRA_IDENTITY_EXISTING_AUTHENTIK_SECRET_NAME \
+    "${INFRA_IDENTITY_SECRET_AUTHENTIK_KEY_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/authentik-secret-key}"
+  adopt_existing_identity_secret \
+    INFRA_IDENTITY_EXISTING_DATABASE_CREDENTIALS_SECRET_NAME \
+    "${INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/database-credentials}"
+  adopt_existing_identity_secret \
+    INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME \
+    "${INFRA_IDENTITY_SECRET_SMTP_CREDENTIALS_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/smtp-credentials}"
+  adopt_existing_identity_secret \
+    INFRA_IDENTITY_EXISTING_JWT_SIGNING_SECRET_NAME \
+    "${INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/jwt-signing-key}"
+  adopt_existing_identity_secret \
+    INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME \
+    "${INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:-${INFRA_APP_NAME:-alternun-infra}/identity/integration-config}"
+}
+
 should_attempt_bucket_drift_recovery() {
   local log_file=$1
 
@@ -1152,6 +1205,7 @@ sync_identity_runtime_templates() {
 DEPLOY_LOG=$(mktemp)
 IDENTITY_INSTANCE_UNDELIVERABLE=0
 echo "Running sst deploy"
+auto_adopt_existing_identity_secrets
 if run_sst_deploy "$DEPLOY_LOG"; then
   if sync_identity_runtime_templates; then
     rm -f "$DEPLOY_LOG"
