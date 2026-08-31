@@ -868,6 +868,24 @@ export function deployIdentityInfrastructure(
 
   const databaseUsername = 'authentik';
   const databaseName = 'authentik';
+  const adoptedDatabasePassword = existingDatabaseCredentialsSecret
+    ? aws.secretsmanager
+        .getSecretVersionOutput({ secretId: existingDatabaseCredentialsSecret.arn })
+        .secretString.apply((secretString) => {
+          const parsedSecret: unknown = JSON.parse(secretString);
+          const password =
+            typeof parsedSecret === 'object' && parsedSecret !== null && 'password' in parsedSecret
+              ? parsedSecret.password
+              : undefined;
+          if (typeof password !== 'string' || password.length === 0) {
+            throw new Error(
+              `Adopted database credentials secret for ${args.stage} must contain a password.`
+            );
+          }
+          return password;
+        })
+    : undefined;
+  const databasePasswordValue = adoptedDatabasePassword ?? databasePassword.result;
   const databaseSubnetIds =
     !useEc2Database && args.settings.rds.publicAccess ? publicSubnetIds : privateSubnetIds;
   const databaseSubnetGroup = useEc2Database
@@ -924,7 +942,7 @@ export function deployIdentityInfrastructure(
           monitoringInterval: args.settings.rds.enhancedMonitoring ? 60 : 0,
           monitoringRoleArn: databaseMonitoringRole?.arn,
           multiAz: args.settings.rds.multiAz,
-          password: databasePassword.result,
+          password: databasePasswordValue,
           performanceInsightsEnabled: args.settings.rds.performanceInsights,
           performanceInsightsRetentionPeriod: args.settings.rds.performanceInsights ? 7 : undefined,
           port: 5432,
