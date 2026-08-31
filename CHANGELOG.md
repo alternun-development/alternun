@@ -6,12 +6,10 @@
 - **infra:** apply production RDS protections to identity-prod stage ([2ff96e8](https://github.com/alternun-development/alternun/commit/2ff96e8330552323921cb6ce7ef62a813bfa2f1d))
 - **repo:** gate retained secret adoption to recovery ([b9fb39c](https://github.com/alternun-development/alternun/commit/b9fb39c434dfeabb3266ea89de3c1a6ee404e493))
 
-## [1.1.74](https://github.com/alternun-development/alternun/compare/v1.1.73...v1.1.74) (2026-08-31)
+## [1.1.74](https://github.com/alternun-development/alternun/compare/v1.1.73...v1.1.74) (2026-08-30)
 
 ### Bug Fixes
 
-- **infra:** apply production RDS protections to identity-prod stage ([2ff96e8](https://github.com/alternun-development/alternun/commit/2ff96e8330552323921cb6ce7ef62a813bfa2f1d))
-- **repo:** gate retained secret adoption to recovery ([b9fb39c](https://github.com/alternun-development/alternun/commit/b9fb39c434dfeabb3266ea89de3c1a6ee404e493))
 - **repo:** adopt retained identity secrets before deploy ([506ad75](https://github.com/alternun-development/alternun/commit/506ad759ee79e31e12cb17b89fd51b4ebaf83aea))
 - **repo:** prevent discord source flow recursion ([6ae5e31](https://github.com/alternun-development/alternun/commit/6ae5e311032767c28d7c918f0e16d11428f600b8))
 
