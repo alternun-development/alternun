@@ -1,3 +1,9 @@
+## [1.1.71](https://github.com/alternun-development/alternun/compare/v1.1.70...v1.1.71) (2026-08-31)
+
+### Bug Fixes
+
+- **repo:** 🐛 fix: complete direct source authentication
+
 ## [1.1.70](https://github.com/alternun-development/alternun/compare/v1.1.69...v1.1.70) (2026-08-30)
 
 ### Changes
