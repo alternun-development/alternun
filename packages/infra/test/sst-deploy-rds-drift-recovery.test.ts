@@ -18,3 +18,19 @@ void test('sst-deploy retries once via sst refresh when Pulumi state retains an 
   assert.match(source, /grep -q "DBInstanceNotFound" "\$log_file"/);
   assert.match(source, /if should_attempt_rds_drift_recovery "\$DEPLOY_LOG"; then/);
 });
+
+void test('the recovery refresh lifts identity RDS protection so Pulumi can drop the missing instance from state', () => {
+  const source = fs.readFileSync(sstDeployPath, 'utf8');
+
+  // On protected identity stages the RDS instance is declared with
+  // protect: true (see modules/identity-resources.ts), and Pulumi refuses
+  // to remove a protected resource from state during `sst refresh` even
+  // when it's already gone in AWS. Without this override the refresh
+  // exits nonzero under `set -e` and the recovery retry never runs.
+  const blockStart = source.indexOf('should_attempt_rds_drift_recovery "$DEPLOY_LOG"; then');
+  const refreshBlock = source.slice(
+    blockStart,
+    source.indexOf('npx sst refresh --stage "$STACK"', blockStart)
+  );
+  assert.match(refreshBlock, /INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT=true/);
+});
