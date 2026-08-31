@@ -1635,11 +1635,15 @@ if discord_client_id and discord_client_secret:
             discord_source,
         )
         if discord_login_stage:
-            if discord_source.authentication_flow_id != discord_login_flow.pk:
-                discord_source.authentication_flow = discord_login_flow
+            # This flow is an entry flow for applications that need to start
+            # Discord directly. It must not become the source's own
+            # post-authentication flow, otherwise SourceStage resumes itself
+            # after Discord and either loops or drops the pending OIDC request.
+            if source_authentication_flow and discord_source.authentication_flow_id != source_authentication_flow.pk:
+                discord_source.authentication_flow = source_authentication_flow
                 discord_source_changed = True
-            if getattr(discord_source, "enrollment_flow_id", None) is not None:
-                discord_source.enrollment_flow = None
+            if source_enrollment_flow and discord_source.enrollment_flow_id != source_enrollment_flow.pk:
+                discord_source.enrollment_flow = source_enrollment_flow
                 discord_source_changed = True
             if discord_login_flow_created or discord_login_flow_changed:
                 discord_source_changed = True
