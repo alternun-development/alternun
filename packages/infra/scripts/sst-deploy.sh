@@ -1272,7 +1272,12 @@ if should_attempt_rds_drift_recovery "$DEPLOY_LOG"; then
   echo "Detected a retained RDS instance missing in AWS. Running sst refresh once before retry..."
   (
     cd "$INFRA_DIR"
-    env SST_TELEMETRY_DISABLED=1 npx sst refresh --stage "$STACK"
+    # On protected identity stages the RDS instance is declared with
+    # protect: true, and Pulumi refuses to drop a protected resource from
+    # state during refresh even when it's already gone in AWS. Lift
+    # protection for this one-off refresh only; the subsequent deploy
+    # re-declares the resource with protection restored.
+    env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT=true npx sst refresh --stage "$STACK"
   )
 
   echo "Retrying sst deploy after refresh"
