@@ -40,6 +40,10 @@ export function buildIdentityPipelineSpecs({
     env.INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME?.trim() ?? '';
   const productionEc2MigrationEnabled =
     env.INFRA_IDENTITY_ENABLE_EC2_PRODUCTION_MIGRATION?.trim().toLowerCase() === 'true';
+  const productionExistingLoadBalancerArn =
+    env.INFRA_IDENTITY_IMPORT_EXISTING_ALB_ARN?.trim() ?? '';
+  const productionExistingDatabaseIdentifier =
+    env.INFRA_IDENTITY_IMPORT_EXISTING_RDS_INSTANCE_IDENTIFIER?.trim() ?? '';
   const clearedDefaultApplicationLaunchUrl = '';
 
   return {
@@ -95,6 +99,9 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_TLS_MODE_PRODUCTION: productionEc2MigrationEnabled
           ? 'acme-route53-dns-01'
           : 'alb-acm',
+        INFRA_IDENTITY_IMPORT_EXISTING_ALB_ARN: productionExistingLoadBalancerArn,
+        INFRA_IDENTITY_IMPORT_EXISTING_RDS_INSTANCE_IDENTIFIER:
+          productionExistingDatabaseIdentifier,
         // The original names are awaiting deletion in Secrets Manager. Keep the
         // new production deployment isolated from that retired secret set.
         INFRA_IDENTITY_SECRET_AUTHENTIK_KEY_NAME: 'alternun-infra/identity/authentik-secret-key-v2',

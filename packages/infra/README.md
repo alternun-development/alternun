@@ -329,7 +329,8 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_ALB_IDLE_TIMEOUT_SECONDS`
 - `INFRA_IDENTITY_DATABASE_MODE` (`ec2` for local-on-instance DB, `rds` for dedicated DB)
 - `INFRA_IDENTITY_ENABLE_EC2_PRODUCTION_MIGRATION` (default `false`; enables the coordinated production RDS/ALB to EC2/direct-ingress migration)
-- `INFRA_IDENTITY_IMPORT_EXISTING_ALB_NAME` (one-time recovery import of a retained production ALB)
+- `INFRA_IDENTITY_IMPORT_EXISTING_ALB_ARN` (one-time recovery import of a retained production ALB by ARN)
+- `INFRA_IDENTITY_IMPORT_EXISTING_RDS_INSTANCE_IDENTIFIER` (one-time recovery import of a retained RDS instance)
 - `INFRA_IDENTITY_EC2_INSTANCE_TYPE`
 - `INFRA_IDENTITY_RDS_INSTANCE_TYPE`
 - `INFRA_IDENTITY_EMAIL_PROVIDER`
