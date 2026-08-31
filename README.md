@@ -126,12 +126,11 @@ Current version: **1.1.73**
 
 ### Bug Fixes
 
-- **repo:** fix: isolate production provider source flows
-- **repo:** test: cover production google source wrapper
+- **repo:** isolate production provider source flows ([c75356d](https://github.com/alternun-development/alternun/commit/c75356def4d192e526f24e9f66e063ccf230c106))
 
-### Bug Fixes
+### Changes
 
-- isolate production provider source flows ([c75356d](https://github.com/alternun-development/alternun/commit/c75356def4d192e526f24e9f66e063ccf230c106))
+- **repo:** cover production google source wrapper ([466fe95](https://github.com/alternun-development/alternun/commit/466fe95b631c2f94824f64c88c859b00d9578e81))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
