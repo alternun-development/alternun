@@ -114,9 +114,8 @@ export function buildDashboardPipelineSpecs({
         INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
         INFRA_ADMIN_ENABLED_STAGES: 'production',
         INFRA_ADMIN_AUTH_GOOGLE_ENABLED: 'true',
-        // Authentik production is configured for its direct Google source endpoint.
-        // Do not force the deprecated SourceStage wrapper flow here.
-        INFRA_ADMIN_AUTH_GOOGLE_FLOW_SLUG: '',
+        // The Google SourceStage flow preserves the pending Admin OIDC request.
+        INFRA_ADMIN_AUTH_GOOGLE_FLOW_SLUG: 'alternun-google-login',
         INFRA_ENABLE_BACKEND_API: 'true',
         INFRA_APPLY_PENDING_MIGRATIONS: 'true',
         INFRA_BACKEND_API_DEDICATED_STACKS_ONLY: 'true',
