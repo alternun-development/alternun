@@ -124,9 +124,9 @@ Current version: **1.1.70**
 
 ## 📋 Latest Changes (v1.1.70)
 
-### Bug Fixes
+### Changes
 
-- **repo:** 🐛 fix: preserve admin oidc context for google
+- **repo:** 🐛 fix: preserve admin oidc context for google ([2a554ec](https://github.com/alternun-development/alternun/commit/2a554ec9587507969056eb22cf16462d830aaebf))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
