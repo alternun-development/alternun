@@ -124,9 +124,9 @@ Current version: **1.1.72**
 
 ## 📋 Latest Changes (v1.1.72)
 
-### Bug Fixes
+### Changes
 
-- **repo:** 🐛 fix: resume admin oidc after google
+- **repo:** 🐛 fix: resume admin oidc after google ([c0fc668](https://github.com/alternun-development/alternun/commit/c0fc66898413ff133abff8b52fb64a0e133ae2fa))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
