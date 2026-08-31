@@ -152,6 +152,22 @@ void test('identity secret adoption inputs are documented for recovery deploymen
   }
 });
 
+void test('production identity adopts retained managed secrets only with an explicit recovery flag', () => {
+  const deployScript = readInfraFile('scripts/sst-deploy.sh');
+
+  assert.match(deployScript, /auto_adopt_existing_identity_secrets\(\)/);
+  assert.match(
+    deployScript,
+    /if ! is_truthy "\$\{INFRA_IDENTITY_ADOPT_RETAINED_SECRETS:-false\}"; then/
+  );
+  assert.match(
+    deployScript,
+    /aws secretsmanager describe-secret\s+\\[\s\S]*?--secret-id "\$candidate"/
+  );
+  assert.match(deployScript, /INFRA_IDENTITY_EXISTING_AUTHENTIK_SECRET_NAME/);
+  assert.match(deployScript, /auto_adopt_existing_identity_secrets\nif run_sst_deploy/);
+});
+
 void test('production bootstrap ignores identity pipelines omitted from INFRA_PIPELINES', (t) => {
   const tempRoot = mkdtempSync(join(tmpdir(), 'alternun-identity-bootstrap-test-'));
   const mockBin = join(tempRoot, 'bin');
