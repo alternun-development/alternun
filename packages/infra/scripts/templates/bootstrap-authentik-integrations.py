@@ -318,6 +318,11 @@ def ensure_named_user_logout_stage(name: str):
     return stage, created
 
 
+def ensure_named_user_login_stage(name: str):
+    stage, created = UserLoginStage.objects.get_or_create(name=name)
+    return stage, created
+
+
 def ensure_flow_authentication(flow, authentication: str = "none"):
     if not flow:
         return False
@@ -541,6 +546,19 @@ def upsert_source_stage_flow(
     if stage_binding_created or stage_binding_changed:
         flow_changed = True
 
+    # SourceStage resumes the original flow after the external provider
+    # callback. The resumed outer flow must then establish the Authentik
+    # session before the flow executor follows its pending ``next`` URL.
+    login_stage_name = f"{stage_name.removesuffix('-stage')}-login"
+    login_stage, login_stage_created = ensure_named_user_login_stage(login_stage_name)
+    login_stage_binding_created, login_stage_binding_changed = ensure_flow_stage_binding(
+        flow,
+        login_stage,
+        order=10,
+    )
+    if login_stage_created or login_stage_binding_created or login_stage_binding_changed:
+        flow_changed = True
+
     if normalized_starter_mode == "logout-then-source":
         logout_stage_name = f"{stage_name.removesuffix('-stage')}-logout"
         logout_stage, logout_stage_created = ensure_named_user_logout_stage(logout_stage_name)
@@ -555,7 +573,7 @@ def upsert_source_stage_flow(
     # Keep these source-login flows deterministic. If an earlier bootstrap run
     # created a different stage for the same source, prune the stale binding so
     # the flow keeps the configured stage order instead of accumulating leftovers.
-    keep_stage_ids = [stage.pk]
+    keep_stage_ids = [stage.pk, login_stage.pk]
     if logout_stage:
         keep_stage_ids.append(logout_stage.pk)
     stale_bindings = FlowStageBinding.objects.filter(target=flow).exclude(stage_id__in=keep_stage_ids)
