@@ -1,8 +1,4 @@
-## [1.1.68](https://github.com/alternun-development/alternun/compare/v1.1.67...v1.1.68) (2026-08-31)
-
-### Bug Fixes
-
-- **repo:** fix(infra): reconcile adopted identity recovery state
+## [1.1.68](https://github.com/alternun-development/alternun/compare/v1.1.67...v1.1.68) (2026-08-30)
 
 ### Bug Fixes
 
