@@ -4,17 +4,32 @@ import path from 'node:path';
 import test from 'node:test';
 
 const identityPipelinePath = path.resolve('config/pipelines/specs/identity.ts');
+const identityResourcesPath = path.resolve('modules/identity-resources.ts');
 const localComposePath = path.resolve('dev/authentik/compose.yml');
 const localEnvInitializerPath = path.resolve('dev/authentik/init-local-env.sh');
 
-void test('production identity pipeline uses the single-instance budget profile', () => {
+void test('production identity keeps the existing RDS and ALB topology until an explicit migration is enabled', () => {
   const source = fs.readFileSync(identityPipelinePath, 'utf8');
   const productionPipeline = source.split("'identity-prod':", 2)[1];
 
   assert.ok(productionPipeline, 'identity-prod pipeline must be configured');
-  assert.match(productionPipeline, /INFRA_IDENTITY_DATABASE_MODE: 'ec2'/);
-  assert.match(productionPipeline, /INFRA_IDENTITY_INGRESS_MODE_PRODUCTION: 'instance'/);
-  assert.match(productionPipeline, /INFRA_IDENTITY_TLS_MODE_PRODUCTION: 'acme-route53-dns-01'/);
+  assert.match(source, /const productionEc2MigrationEnabled =/);
+  assert.match(
+    productionPipeline,
+    /INFRA_IDENTITY_DATABASE_MODE: productionEc2MigrationEnabled \? 'ec2' : 'rds'/
+  );
+  assert.match(
+    productionPipeline,
+    /INFRA_IDENTITY_INGRESS_MODE_PRODUCTION:\s*productionEc2MigrationEnabled\s*\? 'instance'\s*:\s*'alb'/
+  );
+  assert.match(
+    productionPipeline,
+    /INFRA_IDENTITY_TLS_MODE_PRODUCTION:\s*productionEc2MigrationEnabled\s*\? 'acme-route53-dns-01'\s*:\s*'alb-acm'/
+  );
+  assert.match(
+    productionPipeline,
+    /INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: productionEc2MigrationEnabled \? 'true' : 'false'/
+  );
   assert.match(productionPipeline, /INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS: 'false'/);
   assert.match(productionPipeline, /INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: ''/);
   assert.match(
@@ -37,7 +52,13 @@ void test('production identity pipeline uses the single-instance budget profile'
     productionPipeline,
     /INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:\s*'alternun-infra\/identity\/integration-config-v2'/
   );
-  assert.doesNotMatch(productionPipeline, /INFRA_IDENTITY_DATABASE_MODE: 'rds'/);
+});
+
+void test('identity load balancers can be explicitly imported after a partial state recovery', () => {
+  const source = fs.readFileSync(identityResourcesPath, 'utf8');
+
+  assert.match(source, /INFRA_IDENTITY_IMPORT_EXISTING_ALB_NAME/);
+  assert.match(source, /import: existingIdentityLoadBalancerName \|\| undefined/);
 });
 
 void test('local Authentik development uses isolated disposable Compose volumes', () => {
