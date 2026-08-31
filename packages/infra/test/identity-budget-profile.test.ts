@@ -61,6 +61,15 @@ void test('identity load balancers can be explicitly imported after a partial st
   assert.match(source, /import: existingIdentityLoadBalancerArn \|\| undefined/);
   assert.match(source, /INFRA_IDENTITY_IMPORT_EXISTING_RDS_INSTANCE_IDENTIFIER/);
   assert.match(source, /import: existingIdentityDatabaseIdentifier \|\| undefined/);
+  assert.match(
+    source,
+    /getSecretVersionOutput\(\{ secretId: existingDatabaseCredentialsSecret\.arn \}\)/
+  );
+  assert.match(
+    source,
+    /const databasePasswordValue = adoptedDatabasePassword \?\? databasePassword\.result/
+  );
+  assert.match(source, /password: databasePasswordValue/);
 });
 
 void test('local Authentik development uses isolated disposable Compose volumes', () => {
