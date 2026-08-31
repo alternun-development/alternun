@@ -55,3 +55,12 @@ void test('admin application access is restricted to assigned admin groups', () 
   assert.doesNotMatch(template, /admin_allowed_email_domain/);
   assert.doesNotMatch(template, /internal_user_promotion/);
 });
+
+void test('bootstrap renders the admin group claim payload as a Python dictionary', () => {
+  const template = fs.readFileSync(templatePath, 'utf8');
+
+  assert.match(
+    template,
+    /def ensure_admin_group_claim_mapping\(allowed_groups\):[\s\S]*?return \{\{[\s\S]*?"alternun_roles"/
+  );
+});
