@@ -124,9 +124,9 @@ Current version: **1.1.71**
 
 ## 📋 Latest Changes (v1.1.71)
 
-### Bug Fixes
+### Changes
 
-- **repo:** 🐛 fix: complete direct source authentication
+- **repo:** 🐛 fix: complete direct source authentication ([c5b756b](https://github.com/alternun-development/alternun/commit/c5b756bf0ec457f92f32365f97bb8e232fb20d74))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
