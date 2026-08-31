@@ -126,15 +126,9 @@ Current version: **1.1.77**
 
 ### Bug Fixes
 
-- **repo:** fix(repo): artifact, graph.db
-- **repo:** fix(mobile): stop infinite reload loop on Google auth callback
-- **repo:** fix(infra): lift identity RDS protection during drift-recovery refresh
-
-### Bug Fixes
-
-- **infra:** lift identity RDS protection during drift-recovery refresh ([803484e](https://github.com/alternun-development/alternun/commit/803484eef14d1fd168a4ab8b36a776b8a916ee6b))
-- **mobile:** stop infinite reload loop on Google auth callback ([557e760](https://github.com/alternun-development/alternun/commit/557e760c3a2ac41daed674f197c6bdd3ebe42b1c))
 - **repo:** artifact, graph.db ([3664138](https://github.com/alternun-development/alternun/commit/366413886e9989ad0e397de7232d5da2340537fb))
+- **mobile:** stop infinite reload loop on Google auth callback ([557e760](https://github.com/alternun-development/alternun/commit/557e760c3a2ac41daed674f197c6bdd3ebe42b1c))
+- **infra:** lift identity RDS protection during drift-recovery refresh ([803484e](https://github.com/alternun-development/alternun/commit/803484eef14d1fd168a4ab8b36a776b8a916ee6b))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
