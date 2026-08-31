@@ -33,13 +33,9 @@ export const adminEnv = {
   authClientId: requireLike(readEnvString(env.VITE_AUTH_CLIENT_ID), 'alternun-admin'),
   authAudience: requireLike(readEnvString(env.VITE_AUTH_AUDIENCE), 'alternun-app'),
   authGoogleEnabled: readBoolean(readEnvString(env.VITE_AUTH_GOOGLE_ENABLED)),
-  // Production resumes the original OIDC request through Authentik's direct
-  // Google source endpoint. Never let an obsolete wrapper-flow setting route
-  // a browser back to the non-redirecting SourceStage page.
-  authGoogleFlowSlug:
-    appEnv === 'production' || configuredGoogleFlowSlug === ''
-      ? undefined
-      : configuredGoogleFlowSlug,
+  // A configured SourceStage flow preserves both the Google selection and the
+  // pending Admin OIDC authorization request across the external callback.
+  authGoogleFlowSlug: configuredGoogleFlowSlug ?? undefined,
   appEnv,
   appVersion: __APP_VERSION__,
 } as const;

@@ -124,12 +124,11 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION: 'true',
         INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: productionEc2MigrationEnabled ? 'true' : 'false',
-        // Keep production on Authentik's direct source callback. A SourceStage
-        // wrapper cannot preserve the pending admin OIDC authorization after
-        // Google returns to the source callback.
-        INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS: 'false',
+        // The outer SourceStage flow resumes the pending Admin OIDC request
+        // after Google returns to the source callback.
+        INFRA_ALLOW_CUSTOM_AUTHENTIK_PROVIDER_FLOW_SLUGS: 'true',
         INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
-        INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: '',
+        INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: 'alternun-google-login',
         INFRA_IDENTITY_DISCORD_AUTH_CLIENT_ID: discordAuthClientId,
         INFRA_IDENTITY_DEFAULT_APPLICATION_LAUNCH_URL: clearedDefaultApplicationLaunchUrl,
         [googleAuthClientSecretKey]: googleAuthClientSecret,

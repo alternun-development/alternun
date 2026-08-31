@@ -273,18 +273,15 @@ export function deployAdminSiteInfrastructure(
   args: AdminSiteInfrastructureArgs
 ): AdminSiteInfrastructureResources {
   const deploymentStage = resolveStageKey(args.stage);
-  // Leave the production override empty so the Admin relay uses Authentik's
-  // direct Google source entrypoint with the pending OIDC callback in `next`.
-  const defaultGoogleFlowSlug = '';
+  // The outer SourceStage flow retains the pending OIDC authorization while
+  // explicitly selecting Google for the Admin relay.
+  const defaultGoogleFlowSlug = deploymentStage === 'production' ? 'alternun-google-login' : '';
   const defaultGoogleEnabled = deploymentStage === 'production' ? 'true' : 'false';
   const configuredGoogleFlowSlug =
     args.env.INFRA_ADMIN_AUTH_GOOGLE_FLOW_SLUG ??
     args.settings.environment.VITE_AUTH_GOOGLE_FLOW_SLUG ??
     defaultGoogleFlowSlug;
-  // Production deliberately does not force a custom starter flow: direct
-  // source login preserves the user's Google selection and resumes the Admin
-  // OIDC authorization request after its callback.
-  const googleFlowSlug = deploymentStage === 'production' ? '' : configuredGoogleFlowSlug;
+  const googleFlowSlug = configuredGoogleFlowSlug;
   const googleEnabled =
     args.env.INFRA_ADMIN_AUTH_GOOGLE_ENABLED ??
     args.settings.environment.VITE_AUTH_GOOGLE_ENABLED ??
