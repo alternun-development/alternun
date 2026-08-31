@@ -933,6 +933,25 @@ should_attempt_bucket_drift_recovery() {
   return 1
 }
 
+should_attempt_rds_drift_recovery() {
+  local log_file=$1
+
+  if ! is_truthy "${INFRA_ENABLE_RDS_DRIFT_RECOVERY:-true}"; then
+    return 1
+  fi
+
+  # Pulumi state can retain an RDS instance that was deleted outside of
+  # Pulumi (e.g. by a prior deploy with deletion protection disabled). The
+  # next deploy then tries to ModifyDBInstance against an identifier AWS no
+  # longer has, which fails outright instead of recreating it. A refresh
+  # reconciles state with reality so the retry creates it fresh.
+  if grep -q "DBInstanceNotFound" "$log_file"; then
+    return 0
+  fi
+
+  return 1
+}
+
 print_recent_sst_logs() {
   local log_file=${1:-}
   local sst_log_dir="${INFRA_DIR}/.sst/log"
@@ -1239,6 +1258,26 @@ if should_attempt_bucket_drift_recovery "$DEPLOY_LOG"; then
   (
     cd "$INFRA_DIR"
     env SST_TELEMETRY_DISABLED=1 npx sst refresh --stage "$STACK"
+  )
+
+  echo "Retrying sst deploy after refresh"
+  if run_sst_deploy "$DEPLOY_LOG"; then
+    sync_identity_runtime_templates
+    rm -f "$DEPLOY_LOG"
+    exit 0
+  fi
+fi
+
+if should_attempt_rds_drift_recovery "$DEPLOY_LOG"; then
+  echo "Detected a retained RDS instance missing in AWS. Running sst refresh once before retry..."
+  (
+    cd "$INFRA_DIR"
+    # On protected identity stages the RDS instance is declared with
+    # protect: true, and Pulumi refuses to drop a protected resource from
+    # state during refresh even when it's already gone in AWS. Lift
+    # protection for this one-off refresh only; the subsequent deploy
+    # re-declares the resource with protection restored.
+    env SST_TELEMETRY_DISABLED=1 INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT=true npx sst refresh --stage "$STACK"
   )
 
   echo "Retrying sst deploy after refresh"
