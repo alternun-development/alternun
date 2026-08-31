@@ -57,8 +57,10 @@ void test('production identity keeps the existing RDS and ALB topology until an 
 void test('identity load balancers can be explicitly imported after a partial state recovery', () => {
   const source = fs.readFileSync(identityResourcesPath, 'utf8');
 
-  assert.match(source, /INFRA_IDENTITY_IMPORT_EXISTING_ALB_NAME/);
-  assert.match(source, /import: existingIdentityLoadBalancerName \|\| undefined/);
+  assert.match(source, /INFRA_IDENTITY_IMPORT_EXISTING_ALB_ARN/);
+  assert.match(source, /import: existingIdentityLoadBalancerArn \|\| undefined/);
+  assert.match(source, /INFRA_IDENTITY_IMPORT_EXISTING_RDS_INSTANCE_IDENTIFIER/);
+  assert.match(source, /import: existingIdentityDatabaseIdentifier \|\| undefined/);
 });
 
 void test('local Authentik development uses isolated disposable Compose volumes', () => {
