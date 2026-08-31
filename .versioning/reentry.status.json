@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-07-01T00:43:07.023Z",
+  "lastUpdated": "2026-08-31T21:31:26.673Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Three fixes: (1) MetaMask POST body empty fixed — Content-Type only when body present; (2) Export backup PIN false positive fixed — unlockMnemonicWithDiagnosis distinguishes wrong-PIN vs no-vault with accurate error; (3) Global ProgressiveImage blur-load component wrapping expo-image with blurhash + cross-dissolve transition + memory-disk cache.",
+      "description": "Merge PR #217 (v1.1.77) into master once CodeQL/required checks pass, then sync master back into develop",
       "id": "next",
       "priority": 1
     }
