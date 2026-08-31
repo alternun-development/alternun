@@ -126,13 +126,8 @@ Current version: **1.1.74**
 
 ### Bug Fixes
 
-- **repo:** fix: adopt retained identity secrets before deploy
-- **repo:** fix: prevent discord source flow recursion
-
-### Bug Fixes
-
-- adopt retained identity secrets before deploy ([506ad75](https://github.com/alternun-development/alternun/commit/506ad759ee79e31e12cb17b89fd51b4ebaf83aea))
-- prevent discord source flow recursion ([6ae5e31](https://github.com/alternun-development/alternun/commit/6ae5e311032767c28d7c918f0e16d11428f600b8))
+- **repo:** adopt retained identity secrets before deploy ([506ad75](https://github.com/alternun-development/alternun/commit/506ad759ee79e31e12cb17b89fd51b4ebaf83aea))
+- **repo:** prevent discord source flow recursion ([6ae5e31](https://github.com/alternun-development/alternun/commit/6ae5e311032767c28d7c918f0e16d11428f600b8))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
