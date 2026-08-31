@@ -273,18 +273,18 @@ export function deployAdminSiteInfrastructure(
   args: AdminSiteInfrastructureArgs
 ): AdminSiteInfrastructureResources {
   const deploymentStage = resolveStageKey(args.stage);
-  // Production Authentik uses the direct Google source endpoint. A custom
-  // SourceStage wrapper loses the pending OIDC authorization when Google
-  // returns its callback as a wrapped `query` value.
+  // Leave the production override empty so the Admin relay begins at the
+  // provider authorization URL. Authentik's normal authentication flow then
+  // owns the Google source handoff and preserves the pending OIDC callback.
   const defaultGoogleFlowSlug = '';
   const defaultGoogleEnabled = deploymentStage === 'production' ? 'true' : 'false';
   const configuredGoogleFlowSlug =
     args.env.INFRA_ADMIN_AUTH_GOOGLE_FLOW_SLUG ??
     args.settings.environment.VITE_AUTH_GOOGLE_FLOW_SLUG ??
     defaultGoogleFlowSlug;
-  // Production must start the provider at Authentik's direct source endpoint.
-  // A custom SourceStage wrapper drops the pending OIDC authorization after
-  // Google's callback and traps the user on its loading page.
+  // Production deliberately does not force a custom starter flow: the
+  // default Authentik authentication flow is responsible for selecting Google
+  // and resuming the Admin OIDC authorization request after its callback.
   const googleFlowSlug = deploymentStage === 'production' ? '' : configuredGoogleFlowSlug;
   const googleEnabled =
     args.env.INFRA_ADMIN_AUTH_GOOGLE_ENABLED ??
