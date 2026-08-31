@@ -270,8 +270,11 @@ validate_identity_database_mode_transition() {
   local expected_mode default_secret_name secret_name scoped_secret_name secret_json current_mode current_host
   expected_mode=$(normalize_identity_db_mode "${INFRA_IDENTITY_DATABASE_MODE:-rds}")
   default_secret_name="${INFRA_APP_NAME:-alternun-infra}/identity/database-credentials"
-  secret_name=${INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME:-$default_secret_name}
-  scoped_secret_name=$(scope_secret_name "$secret_name" "$STACK")
+  secret_name=$(resolve_identity_secret_name \
+    INFRA_IDENTITY_EXISTING_DATABASE_CREDENTIALS_SECRET_NAME \
+    "${INFRA_IDENTITY_SECRET_DB_CREDENTIALS_NAME:-$default_secret_name}" \
+    "$STACK")
+  scoped_secret_name=$secret_name
 
   if [ -z "$scoped_secret_name" ]; then
     echo "WARN: Identity database mode safety check skipped because secret name is empty." >&2
