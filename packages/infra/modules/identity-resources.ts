@@ -924,19 +924,18 @@ export function deployIdentityInfrastructure(
         `${resourceBaseName}-db`,
         {
           allocatedStorage: args.settings.rds.storageGiB,
-          applyImmediately: args.stage !== 'production',
+          applyImmediately: !productionIdentityStage,
           autoMinorVersionUpgrade: true,
           backupRetentionPeriod: args.settings.rds.backupRetentionDays,
           copyTagsToSnapshot: true,
           dbName: databaseName,
           dbSubnetGroupName: databaseSubnetGroup?.name,
-          deletionProtection: args.stage === 'production',
+          deletionProtection: productionIdentityStage,
           engine: 'postgres',
           engineVersion: args.settings.rds.engineVersion,
-          finalSnapshotIdentifier:
-            args.stage === 'production'
-              ? `${args.appName}-${args.stage}-authentik-db-final`.toLowerCase()
-              : undefined,
+          finalSnapshotIdentifier: productionIdentityStage
+            ? `${args.appName}-${args.stage}-authentik-db-final`.toLowerCase()
+            : undefined,
           identifier: `${args.appName}-${args.stage}-authentik-db`.toLowerCase(),
           instanceClass: args.settings.rds.instanceType,
           monitoringInterval: args.settings.rds.enhancedMonitoring ? 60 : 0,
@@ -947,7 +946,7 @@ export function deployIdentityInfrastructure(
           performanceInsightsRetentionPeriod: args.settings.rds.performanceInsights ? 7 : undefined,
           port: 5432,
           publiclyAccessible: args.settings.rds.publicAccess,
-          skipFinalSnapshot: args.stage !== 'production',
+          skipFinalSnapshot: !productionIdentityStage,
           storageEncrypted: true,
           storageType: 'gp3',
           tags: {
