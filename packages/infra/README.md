@@ -377,6 +377,7 @@ Enable/configure through env or local config:
 - `INFRA_IDENTITY_EXISTING_SMTP_SECRET_NAME`
 - `INFRA_IDENTITY_EXISTING_JWT_SIGNING_SECRET_NAME`
 - `INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME`
+- `INFRA_IDENTITY_ADOPT_RETAINED_SECRETS` (recovery-only one-time adoption of retained managed secret names)
 - `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` (`better-auth` is the current testnet rollout path; use `supabase` only for rollback/legacy)
 - `EXPO_PUBLIC_API_URL` (stage API origin used by the auth footer and legal drawers; `https://testnet.api.alternun.co` on testnet. Stage-aware pipeline builds now ignore mismatched overrides and fall back to the active stage origin)
 - `AUTH_BETTER_AUTH_URL` / `EXPO_PUBLIC_BETTER_AUTH_URL` (`https://testnet.api.alternun.co` for the canonical browser-facing Better Auth route; `/auth` is appended by the client/proxy layers). If that explicit base URL is missing, the infra/runtime can derive the same browser-facing origin from `AUTH_EXCHANGE_URL` / `EXPO_PUBLIC_AUTH_EXCHANGE_URL`.
@@ -391,6 +392,7 @@ Important behavior:
 
 - secret names are automatically stage-scoped on creation to avoid dev/production collisions
 - set an `INFRA_IDENTITY_EXISTING_*_SECRET_NAME` only during recovery to adopt that exact existing secret; leave these values empty in new environments so the stack creates managed secrets
+- set `INFRA_IDENTITY_ADOPT_RETAINED_SECRETS=true` only for a single recovery deployment when retained stage-scoped names must be adopted automatically; reset it to `false` immediately after a successful recovery
 - identity provisioning is isolated to dedicated stacks by default (`identity-dev`, `identity-prod`) to prevent duplicate instances per environment
 - Authentik image tag is validated to calendar-version format and must be `>= 2025.10` (Redisless baseline)
 - identity deployment can be stage-scoped with `INFRA_IDENTITY_ENABLED_STAGES` (for example `dev` to keep production untouched)
