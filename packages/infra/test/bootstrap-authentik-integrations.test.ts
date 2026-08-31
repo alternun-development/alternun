@@ -23,6 +23,14 @@ void test('bootstrap resumes Google through an outer SourceStage flow before ret
     /source_authentication_flow_pruned = prune_flow_stage_bindings\(\s*source_authentication_flow, UserLoginStage\s*\)/
   );
   assert.match(template, /SourceStage resumes the original flow/);
+  assert.match(
+    template,
+    /if discord_login_stage:[\s\S]*?if source_authentication_flow and discord_source\.authentication_flow_id != source_authentication_flow\.pk:/
+  );
+  assert.doesNotMatch(
+    template,
+    /if discord_login_stage:[\s\S]*?discord_source\.authentication_flow = discord_login_flow/
+  );
   assert.match(template, /derive_origin_redirect\(url: str\)/);
   assert.match(template, /derive_auth_callback_redirect\(url: str\)/);
   assert.match(template, /if not mobile_oidc_redirect_urls and mobile_oidc_launch_url:/);
