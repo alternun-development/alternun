@@ -1,3 +1,18 @@
+## [1.1.75](https://github.com/alternun-development/alternun/compare/v1.1.74...v1.1.75) (2026-08-31)
+
+### Bug Fixes
+
+- **repo:** fix(repo): artifact, graph.db, todo
+- **repo:** chore: release v1.1.74
+- **repo:** fix(infra): apply production RDS protections to identity-prod stage
+- **repo:** fix: gate retained secret adoption to recovery
+
+### Bug Fixes
+
+- gate retained secret adoption to recovery ([b9fb39c](https://github.com/alternun-development/alternun/commit/b9fb39c434dfeabb3266ea89de3c1a6ee404e493))
+- **infra:** apply production RDS protections to identity-prod stage ([2ff96e8](https://github.com/alternun-development/alternun/commit/2ff96e8330552323921cb6ce7ef62a813bfa2f1d))
+- **repo:** artifact, graph.db, todo ([34c9ba1](https://github.com/alternun-development/alternun/commit/34c9ba1d3742549356378e20c99ddb04f84da9a6))
+
 ## [1.1.74](https://github.com/alternun-development/alternun/compare/v1.1.73...v1.1.74) (2026-08-31)
 
 ### Bug Fixes
