@@ -6,7 +6,7 @@ import {
   getAdminRolesFromSession,
   oidcClient,
 } from './oidc-client';
-import { buildAdminAuthentikRelayPath } from './authentikRelay';
+import { buildAdminAuthentikRelayPath, startAdminHostedSignIn } from './authentikRelay';
 
 function currentReturnTo(): string {
   if (typeof window === 'undefined') {
@@ -35,13 +35,10 @@ export const authProvider: AuthProvider = {
       };
     }
 
-    await oidcClient.removeUser();
-    // Reuse any active Authentik session instead of forcing a fresh login; the
-    // callback still validates that the resulting user is allowed into admin.
-    await oidcClient.signinRedirect({
-      state: {
-        returnTo: currentReturnTo(),
-      },
+    await startAdminHostedSignIn({
+      userManager: oidcClient,
+      provider: 'password',
+      returnTo: currentReturnTo(),
     });
 
     return {

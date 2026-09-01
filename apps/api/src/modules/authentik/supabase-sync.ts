@@ -22,8 +22,7 @@ export function resolveSupabaseOidcSyncConfig(
   const supabaseUrl = (env.SUPABASE_URL ?? env.EXPO_PUBLIC_SUPABASE_URL ?? '').trim();
   const supabaseKey = (
     env.SUPABASE_SERVICE_ROLE_KEY ??
-    env.SUPABASE_ANON_KEY ??
-    env.EXPO_PUBLIC_SUPABASE_KEY ??
+    env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY ??
     ''
   ).trim();
 

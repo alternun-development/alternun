@@ -244,11 +244,20 @@ def ensure_admin_group_claim_mapping(allowed_groups):
     encoded_groups = json.dumps(sorted(set(group for group in allowed_groups if group)))
     expression = f"""
 allowed_groups = set({encoded_groups})
-is_admin = request.user.groups.filter(name__in=list(allowed_groups)).exists()
+group_roles = {{
+    "Alternun Platform Owner": "platform_owner",
+    "Alternun Internal Admin": "internal_admin",
+    "Alternun Partner Operator": "partner_operator",
+    "Alternun Partner Read Only": "partner_readonly",
+}}
+user_groups = {{group.name for group in request.user.ak_groups.all()}}
+alternun_roles = [
+    role for group_name, role in group_roles.items() if group_name in user_groups
+]
 
 return {{
     "groups": [group.name for group in request.user.ak_groups.all()],
-    "alternun_roles": ["platform_admin"] if is_admin else [],
+    "alternun_roles": alternun_roles,
 }}
 """.strip()
 
