@@ -15,17 +15,26 @@ const authentikRelaySource = fs.readFileSync(
   'utf8'
 );
 const adminEnvSource = fs.readFileSync(path.join(adminDirectory, 'src/config/env.ts'), 'utf8');
-const oidcClientSource = fs.readFileSync(path.join(adminDirectory, 'src/auth/oidc-client.ts'), 'utf8');
+const oidcClientSource = fs.readFileSync(
+  path.join(adminDirectory, 'src/auth/oidc-client.ts'),
+  'utf8'
+);
 const accessControlSource = fs.readFileSync(
   path.join(adminDirectory, 'src/providers/accessControlProvider.ts'),
   'utf8'
 );
-const authProviderSource = fs.readFileSync(path.join(adminDirectory, 'src/auth/authProvider.ts'), 'utf8');
+const authProviderSource = fs.readFileSync(
+  path.join(adminDirectory, 'src/auth/authProvider.ts'),
+  'utf8'
+);
 const callbackPageSource = fs.readFileSync(
   path.join(adminDirectory, 'src/pages/auth/callback-page.tsx'),
   'utf8'
 );
-const appShellSource = fs.readFileSync(path.join(adminDirectory, 'src/components/app-shell.tsx'), 'utf8');
+const appShellSource = fs.readFileSync(
+  path.join(adminDirectory, 'src/components/app-shell.tsx'),
+  'utf8'
+);
 const stylesSource = fs.readFileSync(path.join(adminDirectory, 'src/styles.css'), 'utf8');
 const indexSource = fs.readFileSync(path.join(adminDirectory, 'index.html'), 'utf8');
 
@@ -47,16 +56,41 @@ void test('admin owns its browser-only Authentik relay helpers', () => {
   assert.doesNotMatch(authentikRelaySource, /from '@alternun\/auth\/authentik';/);
   assert.doesNotMatch(authentikRelaySource, /from '@alternun\/auth';/);
   assert.match(adminEnvSource, /authGoogleFlowSlug:\s*configuredGoogleFlowSlug \?\? undefined/);
-  assert.doesNotMatch(adminEnvSource, /appEnv === 'production' \|\| configuredGoogleFlowSlug === ''/);
+  assert.doesNotMatch(
+    adminEnvSource,
+    /appEnv === 'production' \|\| configuredGoogleFlowSlug === ''/
+  );
+  assert.match(adminEnvSource, /VITE_AUTH_LOGIN_ENTRY_URL\?: string;/);
+  assert.match(adminEnvSource, /VITE_AUTH_PASSWORD_FLOW_SLUG\?: string;/);
+  assert.match(adminEnvSource, /authLoginEntryUrl:\s*configuredLoginEntryUrl \?\? undefined/);
+  assert.match(adminEnvSource, /authPasswordFlowSlug:\s*configuredPasswordFlowSlug \?\? undefined/);
 });
 
 void test('the production Google relay starts the selected Google source with its pending Admin OIDC authorization request', () => {
-  assert.match(authentikRelaySource, /if \(flowSlug\?\.trim\(\)\) \{[\s\S]*?return `\$\{authentikOrigin\}\/if\/flow\//);
+  assert.match(authentikRelaySource, /if \(loginEntryUrl\?\.trim\(\)\) \{/);
+  assert.match(authentikRelaySource, /entryUrl\.searchParams\.set\('next', trimmedAuthorizeUrl\)/);
+  assert.match(
+    authentikRelaySource,
+    /if \(flowSlug\?\.trim\(\)\) \{[\s\S]*?return `\$\{authentikOrigin\}\/if\/flow\//
+  );
   assert.match(authentikRelaySource, /\/if\/flow\/\$\{encodeURIComponent\(/);
 });
 
+void test('password login also routes through the configured hosted Authentik entry point instead of starting a raw SPA redirect', () => {
+  assert.match(authProviderSource, /startAdminHostedSignIn\(/);
+  assert.doesNotMatch(authProviderSource, /await oidcClient\.signinRedirect\(\{/);
+});
+
 void test('admin dashboard access requires an Authentik role rather than an email domain', () => {
-  assert.match(oidcClientSource, /return hasAdminRole\(roles,?\);/);
+  assert.match(oidcClientSource, /export function hasAdminRole\(roles: readonly string\[\],?\)/);
+  assert.match(oidcClientSource, /resolveAdminAccessProfile\(/);
+  assert.match(oidcClientSource, /'platform_owner'/);
+  assert.match(oidcClientSource, /'internal_admin'/);
+  assert.match(oidcClientSource, /'partner_operator'/);
+  assert.match(oidcClientSource, /'partner_readonly'/);
+  assert.doesNotMatch(oidcClientSource, /'platform_admin'/);
+  assert.doesNotMatch(oidcClientSource, /'support_admin'/);
+  assert.doesNotMatch(oidcClientSource, /'read_only_admin'/);
   assert.doesNotMatch(oidcClientSource, /hasAllowedAdminEmailDomain/);
   assert.doesNotMatch(accessControlSource, /hasAllowedAdminEmailDomain/);
   assert.doesNotMatch(accessControlSource, /Workspace Google users/);
@@ -85,9 +119,21 @@ void test('operator identity uses a compact profile menu instead of an overflowi
   assert.match(appShellSource, /aria-haspopup='menu'/);
   assert.match(appShellSource, /className='profile-popover'/);
   assert.match(appShellSource, /className='profile-sign-out'/);
+  assert.match(appShellSource, /Allies Panel/);
+  assert.match(appShellSource, /Organization scope/);
   assert.doesNotMatch(appShellSource, /identity-badge/);
   assert.match(stylesSource, /\.profile-trigger/);
   assert.match(stylesSource, /\.profile-popover/);
+});
+
+void test('partner admin users are restricted to the partner workspace resources and read-only actions', () => {
+  assert.match(accessControlSource, /partner workspace is restricted to your assigned sections/);
+  assert.match(
+    accessControlSource,
+    /Partner access is currently limited to read-only workflows in this panel/
+  );
+  assert.match(oidcClientSource, /alternun partner operator/);
+  assert.match(oidcClientSource, /alternun partner read only/);
 });
 
 void test('admin ships Alternun favicon and PWA metadata', () => {

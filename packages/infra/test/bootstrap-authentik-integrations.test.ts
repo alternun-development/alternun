@@ -51,7 +51,6 @@ void test('admin application access is restricted to assigned admin groups', () 
     template,
     /"groups": \[group\.name for group in request\.user\.ak_groups\.all\(\)\]/
   );
-  assert.match(template, /"alternun_roles": \["platform_admin"\] if is_admin else \[\]/);
   assert.match(template, /ensure_admin_group_claim_mapping\(\s*\[admin_group,/);
   assert.match(template, /desired_scope_mappings\.append\(admin_group_claim_mapping\)/);
   assert.match(template, /Only users assigned to an approved Alternun admin group/);
@@ -68,6 +67,24 @@ void test('bootstrap renders the admin group claim payload as a Python dictionar
     template,
     /def ensure_admin_group_claim_mapping\(allowed_groups\):[\s\S]*?return \{\{[\s\S]*?"alternun_roles"/
   );
+});
+
+void test('admin group claims map explicit admin groups to only canonical least-privilege roles', () => {
+  const template = fs.readFileSync(templatePath, 'utf8');
+  const canonicalGroupRoles = {
+    'Alternun Platform Owner': 'platform_owner',
+    'Alternun Internal Admin': 'internal_admin',
+    'Alternun Partner Operator': 'partner_operator',
+    'Alternun Partner Read Only': 'partner_readonly',
+  };
+
+  for (const [groupName, role] of Object.entries(canonicalGroupRoles)) {
+    assert.match(template, new RegExp(`"${groupName}":\\s*"${role}"`));
+  }
+
+  assert.doesNotMatch(template, /"platform_admin"/);
+  assert.doesNotMatch(template, /"support_admin"/);
+  assert.doesNotMatch(template, /"read_only_admin"/);
 });
 
 void test('admin OIDC logout redirects back to the admin app instead of the Authentik logout page', () => {
