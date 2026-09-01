@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-08-31T21:31:26.673Z",
+  "lastUpdated": "2026-09-01T00:17:44.552Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Merge PR #217 (v1.1.77) into master once CodeQL/required checks pass, then sync master back into develop",
+      "description": "Get explicit go-ahead to merge develop->master PR and run pnpm release patch (deploys new AWS Backup plan + admin SSO fix to production identity), then discuss Authentik-to-Supabase user integration approach",
       "id": "next",
       "priority": 1
     }
