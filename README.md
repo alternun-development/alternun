@@ -120,15 +120,15 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.77**
+Current version: **1.1.78**
 
-## 📋 Latest Changes (v1.1.77)
+## 📋 Latest Changes (v1.1.78)
 
 ### Bug Fixes
 
-- **repo:** artifact, graph.db ([3664138](https://github.com/alternun-development/alternun/commit/366413886e9989ad0e397de7232d5da2340537fb))
-- **mobile:** stop infinite reload loop on Google auth callback ([557e760](https://github.com/alternun-development/alternun/commit/557e760c3a2ac41daed674f197c6bdd3ebe42b1c))
-- **infra:** lift identity RDS protection during drift-recovery refresh ([803484e](https://github.com/alternun-development/alternun/commit/803484eef14d1fd168a4ab8b36a776b8a916ee6b))
+- **identity:** admin logout redirects to admin login, not Authentik screen ([39bb6d5](https://github.com/alternun-development/alternun/commit/39bb6d5455fe4483a06939687c05e58dd73d45a2))
+- **identity:** repair admin SSO redirect loop and add monthly DB backups ([e8c3e03](https://github.com/alternun-development/alternun/commit/e8c3e036f63d155e3bd0e9baf6e41a42a3b84c57))
+- **mobile:** resolve @alternun/auth mock in CI test environment ([728003d](https://github.com/alternun-development/alternun/commit/728003d538abb1432f3792625450a297018f284c))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

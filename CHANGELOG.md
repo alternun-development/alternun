@@ -1,3 +1,19 @@
+## [1.1.78](https://github.com/alternun-development/alternun/compare/v1.1.77...v1.1.78) (2026-09-01)
+
+### Bug Fixes
+
+- **repo:** fix(identity): admin logout redirects to admin login, not Authentik screen
+- **repo:** docs: fix stale release-flow guidance to require release:patch:promote
+- **repo:** chore: update reentry status for admin SSO fix + backup hardening
+- **repo:** fix(identity): repair admin SSO redirect loop and add monthly DB backups
+- **repo:** fix(mobile): resolve @alternun/auth mock in CI test environment
+
+### Bug Fixes
+
+- **identity:** admin logout redirects to admin login, not Authentik screen ([39bb6d5](https://github.com/alternun-development/alternun/commit/39bb6d5455fe4483a06939687c05e58dd73d45a2))
+- **identity:** repair admin SSO redirect loop and add monthly DB backups ([e8c3e03](https://github.com/alternun-development/alternun/commit/e8c3e036f63d155e3bd0e9baf6e41a42a3b84c57))
+- **mobile:** resolve @alternun/auth mock in CI test environment ([728003d](https://github.com/alternun-development/alternun/commit/728003d538abb1432f3792625450a297018f284c))
+
 ## [1.1.77](https://github.com/alternun-development/alternun/compare/v1.1.76...v1.1.77) (2026-08-31)
 
 ### Bug Fixes
