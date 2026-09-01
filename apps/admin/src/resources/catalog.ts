@@ -2,6 +2,7 @@ export interface AdminResourceDefinition {
   name: string;
   list: string;
   show?: string;
+  surfaces: readonly ('internal' | 'partner')[];
   meta: {
     title: string;
     description: string;
@@ -14,6 +15,7 @@ export const adminResources: AdminResourceDefinition[] = [
   {
     name: 'dashboard',
     list: '/dashboard',
+    surfaces: ['internal', 'partner'],
     meta: {
       title: 'Command Center',
       description: 'Platform health, quick links, and operational visibility.',
@@ -25,6 +27,7 @@ export const adminResources: AdminResourceDefinition[] = [
     name: 'users',
     list: '/users',
     show: '/users/:id',
+    surfaces: ['internal'],
     meta: {
       title: 'Users',
       description: 'Identity principals and application users.',
@@ -36,6 +39,7 @@ export const adminResources: AdminResourceDefinition[] = [
     name: 'wallets',
     list: '/wallets',
     show: '/wallets/:id',
+    surfaces: ['internal'],
     meta: {
       title: 'Wallets',
       description: 'Provisioning state, ownership, and signed actions.',
@@ -47,6 +51,7 @@ export const adminResources: AdminResourceDefinition[] = [
     name: 'organizations',
     list: '/organizations',
     show: '/organizations/:id',
+    surfaces: ['internal', 'partner'],
     meta: {
       title: 'Organizations',
       description: 'Tenants, org profiles, and lifecycle operations.',
@@ -58,6 +63,7 @@ export const adminResources: AdminResourceDefinition[] = [
     name: 'memberships',
     list: '/memberships',
     show: '/memberships/:id',
+    surfaces: ['internal', 'partner'],
     meta: {
       title: 'Memberships',
       description: 'User-role assignments across organizations.',
@@ -70,6 +76,7 @@ export const adminResources: AdminResourceDefinition[] = [
     name: 'audit',
     list: '/audit',
     show: '/audit/:id',
+    surfaces: ['internal'],
     meta: {
       title: 'Audit',
       description: 'Operational history, actor trails, and event review.',
@@ -79,10 +86,15 @@ export const adminResources: AdminResourceDefinition[] = [
   },
 ];
 
-export function getAdminResource(resourceName: string,): AdminResourceDefinition {
-  const resource = adminResources.find((entry,) => entry.name === resourceName,);
+export const internalAdminResourceNames = adminResources.map((resource) => resource.name);
+export const partnerAdminResourceNames = adminResources
+  .filter((resource) => resource.surfaces.includes('partner'))
+  .map((resource) => resource.name);
+
+export function getAdminResource(resourceName: string): AdminResourceDefinition {
+  const resource = adminResources.find((entry) => entry.name === resourceName);
   if (!resource) {
-    throw new Error(`Unknown admin resource: ${resourceName}`,);
+    throw new Error(`Unknown admin resource: ${resourceName}`);
   }
 
   return resource;
