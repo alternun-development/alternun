@@ -1,3 +1,14 @@
+## [1.1.80](https://github.com/alternun-development/alternun/compare/v1.1.79...v1.1.80) (2026-09-01)
+
+### Bug Fixes
+
+- **repo:** feat(identity): harden partner admin access
+- **repo:** docs(workflow): adopt canonical task specifications
+
+### Features
+
+- **identity:** harden partner admin access ([4346794](https://github.com/alternun-development/alternun/commit/4346794677f5b0c7c0a5e049374c5b595fb1c539))
+
 ## [1.1.79](https://github.com/alternun-development/alternun/compare/v1.1.77...v1.1.79) (2026-08-31)
 
 ### Bug Fixes
