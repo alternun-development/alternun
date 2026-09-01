@@ -1,3 +1,21 @@
+## [1.1.79](https://github.com/alternun-development/alternun/compare/v1.1.77...v1.1.79) (2026-09-01)
+
+### Bug Fixes
+
+- **repo:** fix(repo): artifact, graph.db
+- **repo:** fix(repo,admin,api): artifact, graph.db, CHANGELOG, README
+- **repo:** fix(identity): admin logout redirects to admin login, not Authentik screen
+- **repo:** docs: fix stale release-flow guidance to require release:patch:promote
+- **repo:** chore: update reentry status for admin SSO fix + backup hardening
+
+### Bug Fixes
+
+- **identity:** admin logout redirects to admin login, not Authentik screen ([39bb6d5](https://github.com/alternun-development/alternun/commit/39bb6d5455fe4483a06939687c05e58dd73d45a2))
+- **identity:** repair admin SSO redirect loop and add monthly DB backups ([e8c3e03](https://github.com/alternun-development/alternun/commit/e8c3e036f63d155e3bd0e9baf6e41a42a3b84c57))
+- **mobile:** resolve @alternun/auth mock in CI test environment ([728003d](https://github.com/alternun-development/alternun/commit/728003d538abb1432f3792625450a297018f284c))
+- **repo,admin,api:** artifact, graph.db, CHANGELOG, README ([d46860b](https://github.com/alternun-development/alternun/commit/d46860ba281160fd7141ebd8a65c9b2fa9be0442))
+- **repo:** artifact, graph.db ([f16352f](https://github.com/alternun-development/alternun/commit/f16352faed830a113d0fe7c59d775cb206d2a212))
+
 ## [1.1.78](https://github.com/alternun-development/alternun/compare/v1.1.77...v1.1.78) (2026-09-01)
 
 ### Bug Fixes
