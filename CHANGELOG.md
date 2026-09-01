@@ -1,20 +1,22 @@
-## [1.1.79](https://github.com/alternun-development/alternun/compare/v1.1.77...v1.1.79) (2026-09-01)
+## [1.1.79](https://github.com/alternun-development/alternun/compare/v1.1.77...v1.1.79) (2026-08-31)
 
 ### Bug Fixes
 
-- **repo:** fix(repo): artifact, graph.db
-- **repo:** fix(repo,admin,api): artifact, graph.db, CHANGELOG, README
-- **repo:** fix(identity): admin logout redirects to admin login, not Authentik screen
-- **repo:** docs: fix stale release-flow guidance to require release:patch:promote
-- **repo:** chore: update reentry status for admin SSO fix + backup hardening
-
-### Bug Fixes
-
+- **repo:** artifact, graph.db ([f16352f](https://github.com/alternun-development/alternun/commit/f16352faed830a113d0fe7c59d775cb206d2a212))
+- **repo,admin,api:** artifact, graph.db, CHANGELOG, README ([d46860b](https://github.com/alternun-development/alternun/commit/d46860ba281160fd7141ebd8a65c9b2fa9be0442))
 - **identity:** admin logout redirects to admin login, not Authentik screen ([39bb6d5](https://github.com/alternun-development/alternun/commit/39bb6d5455fe4483a06939687c05e58dd73d45a2))
 - **identity:** repair admin SSO redirect loop and add monthly DB backups ([e8c3e03](https://github.com/alternun-development/alternun/commit/e8c3e036f63d155e3bd0e9baf6e41a42a3b84c57))
 - **mobile:** resolve @alternun/auth mock in CI test environment ([728003d](https://github.com/alternun-development/alternun/commit/728003d538abb1432f3792625450a297018f284c))
-- **repo,admin,api:** artifact, graph.db, CHANGELOG, README ([d46860b](https://github.com/alternun-development/alternun/commit/d46860ba281160fd7141ebd8a65c9b2fa9be0442))
-- **repo:** artifact, graph.db ([f16352f](https://github.com/alternun-development/alternun/commit/f16352faed830a113d0fe7c59d775cb206d2a212))
+
+### Documentation
+
+- **repo:** fix stale release-flow guidance to require release:patch:promote ([964617b](https://github.com/alternun-development/alternun/commit/964617b04c60cc634c623c2e2d8b4c2e90339061))
+
+### Changes
+
+- **repo:** update reentry status for admin SSO fix + backup hardening ([c2c7a46](https://github.com/alternun-development/alternun/commit/c2c7a467ec9418dac30b3ac6de79b6610399fe39))
+- **mobile:** add regression coverage for auth callback redirect guard ([9828dbc](https://github.com/alternun-development/alternun/commit/9828dbc863c2b6cd5a8718ba91fe5043056b4f20))
+- **repo:** update reentry status for v1.1.77 release ([f7b04d8](https://github.com/alternun-development/alternun/commit/f7b04d8cffd7e24d4e415b8a7ba4a3f109af3c7f))
 
 ## [1.1.78](https://github.com/alternun-development/alternun/compare/v1.1.77...v1.1.78) (2026-09-01)
 
