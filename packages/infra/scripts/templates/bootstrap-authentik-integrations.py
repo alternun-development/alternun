@@ -729,7 +729,47 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
     authorization_flow = Flow.objects.filter(
         slug="default-provider-authorization-implicit-consent"
     ).first()
-    invalidation_flow = Flow.objects.filter(slug="default-provider-invalidation-flow").first()
+
+    # The stock default-provider-invalidation-flow has no redirect stage, so
+    # Authentik's own "You've logged out" page is shown instead of returning
+    # to the admin app. Mirror the alternun-mobile invalidation flow: a
+    # logout stage followed by an explicit redirect stage back to /login.
+    admin_invalidation_flow, admin_invalidation_flow_created, admin_invalidation_flow_changed = (
+        upsert_invalidation_flow(
+            "alternun-admin-provider-invalidation-flow",
+            "Alternun Admin Provider Invalidation",
+            "Log out of Alternun Admin",
+        )
+    )
+    admin_logout_stage = UserLogoutStage.objects.filter(name="default-invalidation-logout").first()
+    if admin_logout_stage and not FlowStageBinding.objects.filter(
+        target=admin_invalidation_flow, stage=admin_logout_stage
+    ).exists():
+        ensure_flow_stage_binding(admin_invalidation_flow, admin_logout_stage, order=0)
+        admin_invalidation_flow_changed = True
+
+    admin_logout_redirect_stage = None
+    admin_logout_redirect_stage_created = False
+    admin_logout_redirect_stage_changed = False
+    if admin_oidc_post_logout_redirect_url:
+        (
+            admin_logout_redirect_stage,
+            admin_logout_redirect_stage_created,
+            admin_logout_redirect_stage_changed,
+        ) = upsert_redirect_stage(
+            "alternun-admin-provider-invalidation-redirect",
+            admin_oidc_post_logout_redirect_url,
+            keep_context=True,
+        )
+        if not FlowStageBinding.objects.filter(
+            target=admin_invalidation_flow, stage=admin_logout_redirect_stage
+        ).exists():
+            ensure_flow_stage_binding(admin_invalidation_flow, admin_logout_redirect_stage, order=1)
+            admin_invalidation_flow_changed = True
+        elif admin_logout_redirect_stage_created or admin_logout_redirect_stage_changed:
+            admin_invalidation_flow_changed = True
+
+    invalidation_flow = admin_invalidation_flow
 
     provider, provider_created = OAuth2Provider.objects.get_or_create(
         name=admin_oidc_provider_name,
@@ -790,6 +830,15 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
 
     if provider_created or provider_changed:
         provider.save()
+
+    if admin_invalidation_flow_created or admin_invalidation_flow_changed:
+        results["admin_oidc_invalidation_flow"] = (
+            "created" if admin_invalidation_flow_created else "updated"
+        )
+    if admin_logout_redirect_stage_created or admin_logout_redirect_stage_changed:
+        results["admin_oidc_logout_redirect_stage"] = (
+            "created" if admin_logout_redirect_stage_created else "updated"
+        )
 
     desired_scope_mappings, missing_scope_mapping_ids = resolve_scope_mappings(
         admin_scope_mapping_ids
