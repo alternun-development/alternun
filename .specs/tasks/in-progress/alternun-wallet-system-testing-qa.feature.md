@@ -66,7 +66,7 @@ testing as a final phase. This file tracks the full matrix so nothing is missed.
       2026-06-30 (see Integration tests above). The server genuinely never receives a mnemonic, private key, or
       PIN-derived encryption key — confirmed by reading every wallet API request/response shape, not just trusting
       the design doc.
-- [ ] Brute-force math, stated honestly for the actual threat model (`00-SPEC.md` §3.1) — not yet computed/written
+- [ ] Brute-force math, stated honestly for the actual threat model (`alternun-wallet-system-spec.feature.md` §3.1) — not yet computed/written
       up.
 - [ ] Confirm `expo-secure-store` is actually backed by the platform Keychain/Keystore on native (not falling back
       to plain storage on some platform/Expo-Go combination) — **the equivalent web-platform question was

@@ -1,5 +1,7 @@
 # Self-Hosted IP Geolocation Service — Pending Tasks
 
+> Archived index. The canonical task specification is [`.specs/tasks/todo/geo-service-spec.feature.md`](../../../../../.specs/tasks/todo/geo-service-spec.feature.md).
+
 Replace `ipapi.co` (1000 req/day trial limit) with an owned MaxMind GeoLite2-based service.
 Same `GET /v1/geo` contract, zero external dependency, < $0.01/month infra cost.
 
@@ -27,4 +29,4 @@ Start this work when **any** of:
 
 GEO-01 → GEO-02 → GEO-03 → GEO-04 (deploy, validate) → GEO-05 → GEO-06 → GEO-07
 
-Full spec: [00-SPEC.md](./00-SPEC.md)
+Full spec: [geo-service-spec.feature.md](../../../../../.specs/tasks/todo/geo-service-spec.feature.md)

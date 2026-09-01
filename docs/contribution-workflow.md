@@ -16,6 +16,20 @@ The public contributor-facing summary lives in:
 - `apps/docs/docs/Contribution/overview.md`
 - `apps/docs/docs/Contribution/issue-tracking-and-labels.md`
 
+## Canonical Task Specifications
+
+`.specs/` is the canonical repository-local system for implementation task specifications. This is an Alternun convention; it is not an OpenSpec default and is not managed by `@edcalderon/versioning`.
+
+Create one task file in `.specs/tasks/draft/`, then move that same file through:
+
+```text
+draft -> todo -> in-progress -> done
+```
+
+Do not duplicate task bodies across lifecycle folders or in `.agents/`. The legacy `.agents/*-tasks` workflow is archived under `.agents/archive/task-workflow/` and must not receive new work. `.agents/skills/` is unaffected.
+
+For non-trivial work, add the canonical `.specs` path to the GitHub issue and PR, and include the GitHub issue, owner, area, priority, dependencies, and intended release in the task metadata where known. GitHub remains the delivery-tracking record; `@edcalderon/versioning` remains responsible for release versions and changelogs. See `.specs/README.md` for the complete local convention and `.specs/MIGRATION-INDEX.md` for the legacy mapping.
+
 ## Canonical Label Set
 
 ### Type
