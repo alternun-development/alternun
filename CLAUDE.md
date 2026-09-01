@@ -397,49 +397,46 @@ identity; renaming breaks cross-references and git history.
 ### The canonical flow
 
 ```
-develop  ──── (work, commits) ────► PR #N ──► master ──► CI deploys to prod
-                                    ▲
-                    pnpm release patch (run on master after merging develop)
+develop  ── pnpm release patch ──► v1.2.3-dev.N ── pnpm release:patch:promote ──► PR (develop→master) ──► merge ──► CI deploys to prod
 ```
+
+**The `develop` → `master` PR must always be created/updated by `pnpm release:patch:promote`, never by hand.** `.github/workflows/release-promotion-guard.yml` blocks any PR into `master`/`main` whose head isn't `develop`, whose title isn't exactly `chore: release vX.Y.Z`, whose body is missing the `<!-- alternun-release:patch -->` marker, or whose tag `vX.Y.Z` doesn't exactly match the PR head commit. A manually-run `gh pr create` (or a hand-edited title/body) fails all four checks and will not pass CI — do not do it, even as a "just this once" fallback.
 
 #### Step-by-step
 
-1. **Merge develop → master** via a PR (not a release branch):
-
-   ```bash
-   git checkout master && git pull origin master
-   git merge origin/develop --no-ff -m "chore: merge develop for vX.Y.Z"
-   ```
-
-2. **Run the production release** on master:
+1. **On `develop`**, with your changes already committed, cut a dev release:
 
    ```bash
    pnpm release patch   # or minor / major
    ```
 
-   This bumps all package.json versions, updates CHANGELOG, builds, creates the git tag, and pushes.
+   This bumps the version to a `-dev.N` prerelease, updates the changelog, commits, tags, and pushes `develop`. (`pnpm release patch` on `develop` also deploys the live testnet API — this is expected.)
 
-3. **If master push is blocked by branch protection**, push the release tag only and open the PR from `develop`:
+2. **Promote it** — this is the only supported way to open or update the `develop` → `master` PR:
 
    ```bash
-   git push origin v1.1.3  # push only the tag
-   gh pr create --base master --head develop --title "chore: release vX.Y.Z"
+   pnpm release:patch:promote   # wraps: node scripts/release.mjs --promote
    ```
 
-   **Do NOT create a separate branch.** `develop` is already the release candidate.
+   This strips the `-dev.N` suffix, tags the real production version, pushes `develop` and the tag, then opens (or, if one already exists, updates in place) the PR into `master` with the title/body/marker the Release Promotion Guard requires.
 
-4. **Sync master back to develop**:
+3. **Merge the PR** once approved. Merging to `master` triggers the production deploy pipeline (AWS CodePipeline watches `master`) — treat the merge itself as the outward-facing, hard-to-reverse step and confirm before doing it.
+
+4. **Sync master back to develop** via the `Sync Master To Develop` GitHub Action (`workflow_dispatch`), or manually:
    ```bash
    git checkout develop
    git merge origin/master --no-ff -m "chore: merge master vX.Y.Z into develop"
    git push
    ```
 
+If a PR into `master` genuinely needs to be opened by hand (e.g. the promote script itself is broken), label it `release:manual-exception` — that's the guard's only recognized escape hatch — and say so explicitly rather than silently working around the check.
+
 ### What NOT to do
 
 - ❌ Never create `release/vX.Y.Z` or `promote/vX.Y.Z` branches — the pre-push hook blocks this
 - ❌ Never release a patch from `develop` (`pnpm release patch` on develop creates dev builds)
 - ❌ Never open a PR from a release or promote branch — always PR from `develop`
+- ❌ Never run `gh pr create` (or hand-edit the title/body) for the `develop` → `master` release PR — always use `pnpm release:patch:promote`. The Release Promotion Guard CI check will fail a manually-created PR every time.
 
 ### Guards (enforced automatically)
 
