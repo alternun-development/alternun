@@ -1,7 +1,9 @@
 # Pending Tasks
 
+> Deprecated workflow index. Open task specifications were moved to [`.specs/tasks/todo/`](../../../../.specs/tasks/todo/); this historical structure is retained only for migration context.
+
 Security findings, technical debt, and deferred work organized by feature subfolder.
-Mirrors the structure of `.agents/active-tasks/` and `.agents/done-tasks/`.
+Mirrored the structure of the former `.agents/active-tasks/` and `.agents/done-tasks/` directories.
 
 ## Structure
 
@@ -18,10 +20,9 @@ pending-tasks/
     └── SEC-08-...  (🟢 LOW)
 ```
 
-## When a task is done
+## Current workflow
 
-Move it: `mv pending-tasks/<feature>/<file>.md done-tasks/<feature>/`  
-Don't copy — the original file is the authoritative record.
+Do not add or move tasks in this archive. Use the lifecycle in [`.specs/`](../../../../.specs/README.md).
 
 ## Feature index
 
