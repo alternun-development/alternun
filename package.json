@@ -1,6 +1,6 @@
 {
   "name": "alternun",
-  "version": "1.1.77",
+  "version": "1.1.78",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -107,7 +107,7 @@
       "eslint --fix --quiet",
       "prettier --write"
     ],
-    "*.{md,json}": [
+    "{*,!(.codebase-memory)/**/*}.{md,json}": [
       "prettier --write"
     ]
   }
