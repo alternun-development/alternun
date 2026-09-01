@@ -400,6 +400,7 @@ If you need to change the current flow, start here:
 
 ## Related Reading
 
+- [Admin SSO and Access Control](./admin-sso-and-access-control) — admin outer-flow login and group-gated access, a different path from the consumer flow above
 - [Runtime Architecture](./runtime-architecture)
 - [Infrastructure and Delivery](./infrastructure-and-delivery)
 - [Security and Quality](./security-and-quality)

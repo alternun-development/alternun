@@ -288,15 +288,27 @@ from pathlib import Path
 path = Path('/authentik/enterprise/stages/source/stage.py')
 text = path.read_text()
 
-marker = 'self.request.session.pop(SESSION_KEY_OVERRIDE_FLOW_TOKEN, None)'
-if marker in text:
+fixed_needle = '''        response = plan.to_redirect(self.request, token.flow)
+        try:
+            token.delete()
+        except ValueError:
+            self.logger.warning(
+                "Skipping source flow token delete after redirect because token_ptr_id was already cleared"
+            )
+'''
+
+if fixed_needle in text:
     print('Authentik source-stage hotfix already present.')
     raise SystemExit(0)
 
-needle = '''        response = plan.to_redirect(self.request, token.flow)
-        token.delete()
-'''
-replacement = '''        response = plan.to_redirect(self.request, token.flow)
+# Older deploys applied a broken variant of this hotfix that popped
+# SESSION_KEY_OVERRIDE_FLOW_TOKEN from the session right after building the
+# redirect. SourceStageView.dispatch() reads that same session key on the
+# browser's next request to detect "we're resuming after the source flow
+# completed" and skip re-triggering the provider. Popping it here made that
+# check always fail, so SourceStage restarted the OAuth handshake forever
+# instead of finishing the resumed flow. Repair that variant if present.
+buggy_needle = '''        response = plan.to_redirect(self.request, token.flow)
         self.request.session.pop(SESSION_KEY_OVERRIDE_FLOW_TOKEN, None)
         self.request.session.pop(SESSION_KEY_SOURCE_FLOW_STAGES, None)
         self.request.session.pop(SESSION_KEY_SOURCE_FLOW_CONTEXT, None)
@@ -308,12 +320,18 @@ replacement = '''        response = plan.to_redirect(self.request, token.flow)
             )
 '''
 
-if needle not in text:
-    print('WARN: source-stage hotfix needle not found in stage.py — skipping patch (Authentik version may have changed).')
-    raise SystemExit(0)
+stock_needle = '''        response = plan.to_redirect(self.request, token.flow)
+        token.delete()
+'''
 
-path.write_text(text.replace(needle, replacement, 1))
-print('Applied Authentik source-stage hotfix.')
+if buggy_needle in text:
+    path.write_text(text.replace(buggy_needle, fixed_needle, 1))
+    print('Repaired Authentik source-stage hotfix (removed premature session-key pops that broke SourceStage resume).')
+elif stock_needle in text:
+    path.write_text(text.replace(stock_needle, fixed_needle, 1))
+    print('Applied Authentik source-stage hotfix.')
+else:
+    print('WARN: source-stage hotfix needle not found in stage.py — skipping patch (Authentik version may have changed).')
 PY
   local py_exit=$?
   if [ "${py_exit}" -eq 0 ]; then
