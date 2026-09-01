@@ -37,7 +37,7 @@ But this has **never been confirmed on a real device**. Specific things to verif
 
 ## Why this matters
 
-The security model for native (`00-SPEC.md`) claims: "the device-only recovery model defends against a server
+The security model for native (`alternun-wallet-system-spec.feature.md`) claims: "the device-only recovery model defends against a server
 breach since the server has no decryption key" — and it also implicitly claims that the encrypted vault on-device
 is reasonably protected. If expo-secure-store were silently storing the vault in an unprotected location on native
 (a bug that has existed in older versions), the entire security model would be undermined without any error or

@@ -1,6 +1,8 @@
 # Done Tasks — Archived
 
-Completed and verified work organized by feature subfolder, mirroring `.agents/active-tasks/`.
+> Deprecated task workflow archive. New task specifications and lifecycle changes happen only in [`.specs/`](../../../../.specs/README.md).
+
+Completed and verified work organized by feature subfolder, preserving the former task workflow.
 
 ## Structure
 
@@ -16,21 +18,9 @@ done-tasks/
     └── TECH-01-...
 ```
 
-## Workflow: archiving a completed task
+## Current workflow
 
-When a task is fully done (verified, no blocking gaps):
-
-```bash
-# From active-tasks to done-tasks
-mv .agents/active-tasks/<feature>/<task>.md .agents/done-tasks/<feature>/
-
-# From pending-tasks to done-tasks
-mv .agents/pending-tasks/<feature>/<task>.md .agents/done-tasks/<feature>/
-```
-
-Then update both the source folder's README and the done-tasks feature README.
-
-**Do not create a new file** — the original is the authoritative record. Moving preserves history.
+This directory is read-only historical context. Move canonical files through `.specs/tasks/draft`, `todo`, `in-progress`, and `done`; do not add new files here.
 
 ## Feature index
 
