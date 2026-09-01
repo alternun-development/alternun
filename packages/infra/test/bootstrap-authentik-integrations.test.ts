@@ -69,3 +69,21 @@ void test('bootstrap renders the admin group claim payload as a Python dictionar
     /def ensure_admin_group_claim_mapping\(allowed_groups\):[\s\S]*?return \{\{[\s\S]*?"alternun_roles"/
   );
 });
+
+void test('admin OIDC logout redirects back to the admin app instead of the Authentik logout page', () => {
+  const template = fs.readFileSync(templatePath, 'utf8');
+
+  assert.match(
+    template,
+    /admin_invalidation_flow, admin_invalidation_flow_created, admin_invalidation_flow_changed = \(\s*upsert_invalidation_flow\(\s*"alternun-admin-provider-invalidation-flow",/
+  );
+  assert.match(
+    template,
+    /admin_logout_stage = UserLogoutStage\.objects\.filter\(name="default-invalidation-logout"\)\.first\(\)/
+  );
+  assert.match(
+    template,
+    /upsert_redirect_stage\(\s*"alternun-admin-provider-invalidation-redirect",\s*admin_oidc_post_logout_redirect_url,\s*keep_context=True,\s*\)/
+  );
+  assert.match(template, /invalidation_flow = admin_invalidation_flow/);
+});
