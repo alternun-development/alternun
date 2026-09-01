@@ -963,6 +963,71 @@ export function deployIdentityInfrastructure(
         }
       );
 
+  // Production only: the 7-day automated backup window above is a short-term rolling
+  // buffer, not a durable recovery point. This adds a monthly long-term snapshot via
+  // AWS Backup so the identity database has at least one recovery point per month,
+  // retained for a year, independent of the RDS automated-backup retention setting.
+  const databaseBackupVault =
+    productionIdentityStage && database
+      ? new aws.backup.Vault(`${resourceBaseName}-backup-vault`, {
+          name: `${args.appName}-${args.stage}-authentik-db-backup`.toLowerCase(),
+          tags: {
+            ...resourceTags,
+            Name: `${resourceDisplayPrefix}-backup-vault`,
+          },
+        })
+      : undefined;
+
+  const databaseBackupPlan =
+    productionIdentityStage && database && databaseBackupVault
+      ? new aws.backup.Plan(`${resourceBaseName}-backup-plan`, {
+          name: `${args.appName}-${args.stage}-authentik-db-backup`.toLowerCase(),
+          rules: [
+            {
+              ruleName: 'monthly',
+              targetVaultName: databaseBackupVault.name,
+              schedule: 'cron(0 5 1 * ? *)',
+              lifecycle: {
+                deleteAfter: 365,
+              },
+            },
+          ],
+          tags: {
+            ...resourceTags,
+            Name: `${resourceDisplayPrefix}-backup-plan`,
+          },
+        })
+      : undefined;
+
+  const databaseBackupRole =
+    productionIdentityStage && database
+      ? new aws.iam.Role(`${resourceBaseName}-backup-role`, {
+          assumeRolePolicy: aws.iam.assumeRolePolicyForPrincipal({
+            Service: 'backup.amazonaws.com',
+          }),
+          tags: {
+            ...resourceTags,
+            Name: `${resourceDisplayPrefix}-backup-role`,
+          },
+        })
+      : undefined;
+
+  if (databaseBackupRole) {
+    new aws.iam.RolePolicyAttachment(`${resourceBaseName}-backup-policy`, {
+      policyArn: 'arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup',
+      role: databaseBackupRole.name,
+    });
+  }
+
+  if (productionIdentityStage && database && databaseBackupPlan && databaseBackupRole) {
+    new aws.backup.Selection(`${resourceBaseName}-backup-selection`, {
+      iamRoleArn: databaseBackupRole.arn,
+      name: `${args.appName}-${args.stage}-authentik-db`.toLowerCase(),
+      planId: databaseBackupPlan.id,
+      resources: [database.arn],
+    });
+  }
+
   const databaseAddress = useEc2Database ? pulumi.output('postgres') : database!.address;
   const databaseEndpoint = useEc2Database ? pulumi.output('postgres:5432') : database!.endpoint;
   const databasePort = pulumi.output(5432);
