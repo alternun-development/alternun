@@ -35,7 +35,7 @@ this — it can only slow it down, not stop it.
 
 ### Why this matters more than it sounds
 
-The spec (`00-SPEC.md` §3.1) says "brute-forcing PIN through the app's own UI/API should take years" — that's
+The wallet specification (`alternun-wallet-system-spec.feature.md` §3.1) says "brute-forcing PIN through the app's own UI/API should take years" — that's
 true of the **server-rate-limited verify-pin path**. But the offline vault path bypasses the server entirely. The
 ~51-minute ceiling is a materially different threat model and this distinction is not currently called out clearly
 anywhere in the user-facing UI.

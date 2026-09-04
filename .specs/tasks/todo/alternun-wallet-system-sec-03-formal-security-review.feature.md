@@ -12,7 +12,7 @@ The project's skill (`/security-review`) runs a multi-agent cloud review focused
 beyond what regular code review catches. It should be run on the full wallet module before any real user can
 create or interact with a real-funds wallet on this platform.
 
-This is explicitly listed in the wallet system's non-negotiables (`active-tasks/alternun-wallet-system/README.md`):
+This is explicitly listed in the [wallet system specification](../in-progress/alternun-wallet-system-spec.feature.md):
 
 > "/security-review runs on this module before any real-user exposure, and again before the feature-flag removal"
 

@@ -2,6 +2,7 @@ import { OidcClient, type UserManager } from 'oidc-client-ts';
 import { adminEnv } from '../config/env';
 
 export type AdminAuthentikRelayProvider = 'google';
+type AdminHostedSignInProvider = AdminAuthentikRelayProvider | 'password';
 
 function normalizeInternalHref(target: string): string {
   if (target.startsWith('/') && !target.startsWith('//')) {
@@ -42,11 +43,15 @@ function resolveSafeAdminRedirect(target: string | null | undefined): string {
 function buildAdminAuthentikLoginEntryUrl({
   issuer,
   authorizeUrl,
+  loginEntryUrl,
   flowSlug,
+  directSourceProvider,
 }: {
   issuer: string;
   authorizeUrl: string;
+  loginEntryUrl?: string;
   flowSlug?: string;
+  directSourceProvider?: AdminAuthentikRelayProvider;
 }): string {
   const authentikOrigin = new URL(issuer).origin;
   const trimmedAuthorizeUrl = authorizeUrl.trim();
@@ -55,17 +60,27 @@ function buildAdminAuthentikLoginEntryUrl({
     throw new Error('CONFIG_ERROR: authorizeUrl is required');
   }
 
+  if (loginEntryUrl?.trim()) {
+    const entryUrl = new URL(loginEntryUrl.trim());
+    entryUrl.searchParams.set('next', trimmedAuthorizeUrl);
+    return entryUrl.toString();
+  }
+
   if (flowSlug?.trim()) {
     return `${authentikOrigin}/if/flow/${encodeURIComponent(
       flowSlug.trim()
     )}/?next=${encodeURIComponent(trimmedAuthorizeUrl)}`;
   }
 
-  // The direct Google source preserves the provider selection. Its source
-  // flow establishes the Authentik session before following this OIDC URL.
-  return `${authentikOrigin}/source/oauth/login/google/?next=${encodeURIComponent(
-    trimmedAuthorizeUrl
-  )}`;
+  if (directSourceProvider === 'google') {
+    // The direct Google source preserves the provider selection. Its source
+    // flow establishes the Authentik session before following this OIDC URL.
+    return `${authentikOrigin}/source/oauth/login/google/?next=${encodeURIComponent(
+      trimmedAuthorizeUrl
+    )}`;
+  }
+
+  return trimmedAuthorizeUrl;
 }
 
 export function resolveAdminRelayReturnTo(target: string | null | undefined): string {
@@ -88,6 +103,52 @@ export function parseAdminAuthentikRelayProvider(
   return value === 'google' ? value : null;
 }
 
+async function createAdminAuthorizeRequest({
+  userManager,
+  returnTo,
+}: {
+  userManager: UserManager;
+  returnTo?: string | null;
+}) {
+  if (typeof window === 'undefined') {
+    throw new Error('CONFIG_ERROR: Admin Authentik relay requires a browser runtime');
+  }
+
+  await userManager.removeUser();
+
+  const oidcClient = new OidcClient(userManager.settings);
+  return oidcClient.createSigninRequest({
+    state: {
+      returnTo: resolveAdminRelayReturnTo(returnTo),
+    },
+  });
+}
+
+export async function startAdminHostedSignIn({
+  userManager,
+  provider,
+  returnTo,
+}: {
+  userManager: UserManager;
+  provider: AdminHostedSignInProvider;
+  returnTo?: string | null;
+}): Promise<void> {
+  const authorizeRequest = await createAdminAuthorizeRequest({
+    userManager,
+    returnTo,
+  });
+
+  window.location.replace(
+    buildAdminAuthentikLoginEntryUrl({
+      issuer: userManager.settings.authority,
+      authorizeUrl: authorizeRequest.url,
+      loginEntryUrl: provider === 'password' ? adminEnv.authLoginEntryUrl : undefined,
+      flowSlug: provider === 'google' ? adminEnv.authGoogleFlowSlug : adminEnv.authPasswordFlowSlug,
+      directSourceProvider: provider === 'google' ? provider : undefined,
+    })
+  );
+}
+
 export async function startAdminAuthentikRelaySignIn({
   userManager,
   provider,
@@ -97,24 +158,9 @@ export async function startAdminAuthentikRelaySignIn({
   provider: AdminAuthentikRelayProvider;
   returnTo?: string | null;
 }): Promise<void> {
-  if (typeof window === 'undefined') {
-    throw new Error('CONFIG_ERROR: Admin Authentik relay requires a browser runtime');
-  }
-
-  await userManager.removeUser();
-
-  const oidcClient = new OidcClient(userManager.settings);
-  const authorizeRequest = await oidcClient.createSigninRequest({
-    state: {
-      returnTo: resolveAdminRelayReturnTo(returnTo),
-    },
+  await startAdminHostedSignIn({
+    userManager,
+    provider,
+    returnTo,
   });
-
-  window.location.replace(
-    buildAdminAuthentikLoginEntryUrl({
-      issuer: userManager.settings.authority,
-      authorizeUrl: authorizeRequest.url,
-      flowSlug: provider === 'google' ? adminEnv.authGoogleFlowSlug : undefined,
-    })
-  );
 }

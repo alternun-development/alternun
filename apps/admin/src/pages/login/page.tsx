@@ -34,8 +34,8 @@ export function LoginPage(): JSX.Element {
         <span className='panel-label'>Alternun Admin</span>
         <h1>Operator sign in</h1>
         <p>
-          Use Authentik for the credential step, then operate on the NestJS admin API surfaces with
-          bearer tokens.
+          Start from the hosted Authentik login on `login.alternun.co`. This app never collects raw
+          passwords and only grants access after admin-role checks complete.
         </p>
 
         <div className='auth-methods'>
@@ -44,17 +44,17 @@ export function LoginPage(): JSX.Element {
               <span className='panel-label'>Password Admin</span>
               <h2>Email and password</h2>
               <p>
-                Use the hosted Authentik login form for the bootstrap admin or another approved
-                internal admin account.
+                Use the hosted Authentik login form for invited internal operators and approved
+                partner accounts.
               </p>
             </article>
           ) : null}
           <article className='auth-method'>
-            <span className='panel-label'>Google Workspace</span>
-            <h2>Company Google sign-in</h2>
+            <span className='panel-label'>Hosted Identity</span>
+            <h2>Company or partner sign-in</h2>
             <p>
-              Use either <strong>@alternun.co</strong> or <strong>@alternun.io</strong>, then ask an
-              operator to assign your Authentik account to an approved admin group.
+              Access is invitation-only. Internal operators and approved allies must be assigned to
+              the correct Authentik admin group before this panel will open.
             </p>
           </article>
         </div>
@@ -103,9 +103,9 @@ export function LoginPage(): JSX.Element {
         </div>
 
         <p className='auth-note'>
-          Google sign-in now starts from an app-owned relay route so Authentik can hand control
-          straight back to the dashboard callback. Password entry still stays on Authentik, and the
-          dashboard never handles raw credentials directly.
+          Google sign-in still relays through the app-owned route so Authentik can return directly
+          to the dashboard callback. Password entry stays on Authentik, and unauthorized users are
+          rejected before the admin shell loads.
         </p>
 
         {loginError ? (
