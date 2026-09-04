@@ -11,16 +11,9 @@ const EXPECTED_ADMIN_ROLES = [
   'partner_operator',
   'partner_readonly',
 ];
-const AUTHENTIK_JWKS_URL =
-  'https://login.alternun.co/application/o/alternun-admin/jwks/';
-const AUTHENTIK_ISSUER =
-  'https://login.alternun.co/application/o/alternun-admin/';
-const AUTHENTIK_JWT_SIGNING_SECRET_ENV = [
-  'AUTHENTIK',
-  'JWT',
-  'SIGNING',
-  'SECRET',
-].join('_');
+const AUTHENTIK_JWKS_URL = 'https://login.alternun.co/application/o/alternun-admin/jwks/';
+const AUTHENTIK_ISSUER = 'https://login.alternun.co/application/o/alternun-admin/';
+const AUTHENTIK_JWT_SIGNING_SECRET_ENV = ['AUTHENTIK', 'JWT', 'SIGNING', 'SECRET'].join('_');
 const originalFetch = global.fetch;
 const originalAdminAuthEnv = {
   ADMIN_AUTH_AUDIENCE: process.env.ADMIN_AUTH_AUDIENCE,
@@ -114,6 +107,7 @@ function signAuthentikAdminToken({
   subject = 'partner-user-1',
   expiresInSeconds = 60 * 15,
   expiresAt,
+  includeTokenUse = true,
 } = {}) {
   const issuedAt = Math.floor(Date.now() / 1000);
   const payload = {
@@ -127,7 +121,7 @@ function signAuthentikAdminToken({
     exp: expiresAt ?? issuedAt + expiresInSeconds,
     roles,
     alternun_roles: roles,
-    token_use: 'access',
+    ...(includeTokenUse ? { token_use: 'access' } : {}),
     organization_ids: organizationIds,
   };
   const encodedHeader = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT', kid })).toString(
@@ -345,7 +339,7 @@ test('resolveRuntimeOptions accepts RS256 Authentik tokens through the configure
 
   assert.ok(options, 'resolveRuntimeOptions should accept AUTHENTIK_JWKS_URL-backed verification');
   const principal = await adminAuth.authenticateAdminPrincipal(
-    `Bearer ${signAuthentikAdminToken()}`,
+    `Bearer ${signAuthentikAdminToken({ includeTokenUse: false })}`,
     options
   );
 
@@ -420,13 +414,16 @@ test('the production admin module registers guarded allowance routes in AppModul
 
   assert.match(
     controllerSource,
-    /@Controller\(\s*['"]admin\/organizations\/:organizationId\/allowances['"]\s*\)/
+    /@Controller\(\s*\{\s*path:\s*['"]admin\/organizations\/:organizationId\/allowances['"],\s*version:\s*['"]1['"]\s*\}\s*\)/
   );
   assert.match(controllerSource, /@UseGuards\(\s*AdminAuthGuard\s*\)/);
   assert.match(controllerSource, /@Delete\(\s*['"]:allowanceId['"]\s*\)/);
   assert.match(moduleSource, /controllers:\s*\[\s*AdminAllowancesController\s*\]/);
   assert.match(moduleSource, /providers:\s*\[\s*AdminAuthGuard\s*\]/);
-  assert.match(appModuleSource, /import\s+\{\s*AdminModule\s*\}\s+from ['"].\/modules\/admin\/admin\.module['"]/);
+  assert.match(
+    appModuleSource,
+    /import\s+\{\s*AdminModule\s*\}\s+from ['"].\/modules\/admin\/admin\.module['"]/
+  );
   assert.match(appModuleSource, /AdminModule/);
 });
 
@@ -439,8 +436,7 @@ test('dedicated admin JWT verification requires an Authentik JWKS configuration'
   const dedicatedConfig = adminAuth.resolveAdminJwtVerificationConfig({
     ADMIN_AUTH_ISSUER: 'https://login.alternun.co/application/o/alternun-admin/',
     ADMIN_AUTH_AUDIENCE: 'alternun-app',
-    ADMIN_AUTH_JWKS_URL:
-      'https://login.alternun.co/application/o/alternun-admin/jwks/',
+    ADMIN_AUTH_JWKS_URL: 'https://login.alternun.co/application/o/alternun-admin/jwks/',
     AUTHENTIK_ISSUER: 'https://login.alternun.co/application/o/alternun-mobile/',
     AUTHENTIK_CLIENT_ID: 'alternun-mobile',
     AUTHENTIK_JWT_SIGNING_KEY: 'legacy-shared-secret',
@@ -463,8 +459,7 @@ test('dedicated admin JWT verification does not fall back to generic issuer, cli
     adminAuth.resolveAdminJwtVerificationConfig({
       AUTHENTIK_ISSUER: 'https://login.alternun.co/application/o/alternun-mobile/',
       AUTHENTIK_CLIENT_ID: 'alternun-mobile',
-      AUTHENTIK_JWKS_URL:
-        'https://login.alternun.co/application/o/alternun-mobile/jwks/',
+      AUTHENTIK_JWKS_URL: 'https://login.alternun.co/application/o/alternun-mobile/jwks/',
       AUTHENTIK_JWT_SIGNING_KEY: 'legacy-shared-secret',
       ADMIN_AUTH_AUDIENCE: 'alternun-app',
     }),
