@@ -1,12 +1,14 @@
 # V2 UI Migration — Pending Tasks
 
+> Archived index. The canonical task specification is [`.specs/tasks/todo/v2-ui-migration-spec.feature.md`](../../../../../.specs/tasks/todo/v2-ui-migration-spec.feature.md).
+
 Full layout overhaul: desktop sidebar + mobile bottom dock, matching the `docs/v2-ui/` design spec.
 
 ## Open items
 
-| Phase | File                       | Summary                     |
-| ----- | -------------------------- | --------------------------- |
-| P0    | [00-SPEC.md](./00-SPEC.md) | Full spec + all phase tasks |
+| Phase | File                                                                                                | Summary                     |
+| ----- | --------------------------------------------------------------------------------------------------- | --------------------------- |
+| P0    | [v2-ui-migration-spec.feature.md](../../../../../.specs/tasks/todo/v2-ui-migration-spec.feature.md) | Full spec + all phase tasks |
 
 ## Quick task index
 

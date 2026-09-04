@@ -65,9 +65,25 @@ export function AppShell(): React.ReactElement {
   }, [isProfileMenuOpen]);
 
   const primaryResources = adminResources.filter((resource) => resource.name !== 'dashboard');
+  const surfaceLabel = identity?.surface === 'partner' ? 'Allies Panel' : 'Internal Admin';
+  const shellTitle = identity?.surface === 'partner' ? 'Allies Console' : 'Admin Control';
+  const shellDescription =
+    identity?.surface === 'partner'
+      ? 'Restricted partner workspace with organization-scoped visibility.'
+      : 'Internal operations surface for platform, support, and audit workflows.';
+  const footerCopy =
+    identity?.surface === 'partner' ? 'Partner operations console' : 'Internal operations console';
+  const accessibleResources = primaryResources.filter((resource) =>
+    identity
+      ? identity.allowedResources.includes(resource.name)
+      : resource.surfaces.includes('partner')
+  );
   const displayName = identity?.name ?? 'Operator';
   const email = identity?.email ?? 'No email claim';
   const roles = identity?.roles.length ? identity.roles.join(', ') : 'No roles detected';
+  const organizationScope = identity?.organizationIds.length
+    ? identity.organizationIds.join(', ')
+    : 'No organization scope detected';
   const initials = displayName
     .split(/\s+/)
     .filter(Boolean)
@@ -95,7 +111,7 @@ export function AppShell(): React.ReactElement {
           <div className='brand-heading'>
             <div>
               <span className='brand-eyebrow'>Alternun</span>
-              <h1>Admin Control</h1>
+              <h1>{shellTitle}</h1>
             </div>
             <button
               aria-label='Close navigation'
@@ -106,7 +122,7 @@ export function AppShell(): React.ReactElement {
               <span aria-hidden='true'>×</span>
             </button>
           </div>
-          <p>Internal operations surface for platform, support, and audit workflows.</p>
+          <p>{shellDescription}</p>
         </div>
 
         <nav className='admin-nav'>
@@ -119,7 +135,7 @@ export function AppShell(): React.ReactElement {
             <span className='admin-nav-meta'>Health and operator shortcuts</span>
           </NavLink>
 
-          {primaryResources.map((resource) => (
+          {accessibleResources.map((resource) => (
             <NavLink
               key={resource.name}
               to={resource.list}
@@ -152,7 +168,7 @@ export function AppShell(): React.ReactElement {
               <span>Menu</span>
             </button>
             <div>
-              <span className='panel-label'>Internal Admin</span>
+              <span className='panel-label'>{surfaceLabel}</span>
               <h2>{displayName}</h2>
             </div>
           </div>
@@ -194,6 +210,10 @@ export function AppShell(): React.ReactElement {
                     <span>Authorized roles</span>
                     <strong title={roles}>{roles}</strong>
                   </div>
+                  <div className='profile-role'>
+                    <span>Organization scope</span>
+                    <strong title={organizationScope}>{organizationScope}</strong>
+                  </div>
                   <button
                     className='profile-sign-out'
                     onClick={() => {
@@ -215,7 +235,7 @@ export function AppShell(): React.ReactElement {
         <footer className='admin-footer' aria-label='Admin release information'>
           <div>
             <span className='admin-footer-label'>Alternun Admin</span>
-            <span className='admin-footer-copy'>Internal operations console</span>
+            <span className='admin-footer-copy'>{footerCopy}</span>
           </div>
           <div className='admin-footer-meta'>
             <span>Release</span>

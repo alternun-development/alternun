@@ -231,7 +231,7 @@ def resolve_scope_mappings(managed_ids):
     return ordered, missing
 
 
-def ensure_admin_group_claim_mapping(allowed_groups):
+def ensure_admin_group_claim_mapping(group_roles):
     """Expose Authentik group membership to the admin OIDC client.
 
     The admin SPA authorizes only after its callback and must therefore receive
@@ -241,14 +241,19 @@ def ensure_admin_group_claim_mapping(allowed_groups):
     """
     name = "Alternun Admin OAuth Mapping: profile groups"
     scope_name = "profile"
-    encoded_groups = json.dumps(sorted(set(group for group in allowed_groups if group)))
+    encoded_groups = json.dumps(sorted(group for group in group_roles if group))
+    encoded_group_roles = json.dumps(group_roles, sort_keys=True)
     expression = f"""
 allowed_groups = set({encoded_groups})
-is_admin = request.user.groups.filter(name__in=list(allowed_groups)).exists()
+group_roles = {encoded_group_roles}
+user_groups = {{group.name for group in request.user.ak_groups.all()}}
+alternun_roles = [
+    role for group_name, role in group_roles.items() if group_name in user_groups
+]
 
 return {{
     "groups": [group.name for group in request.user.ak_groups.all()],
-    "alternun_roles": ["platform_admin"] if is_admin else [],
+    "alternun_roles": alternun_roles,
 }}
 """.strip()
 
@@ -843,10 +848,17 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
     desired_scope_mappings, missing_scope_mapping_ids = resolve_scope_mappings(
         admin_scope_mapping_ids
     )
+    admin_group_roles = {
+        admin_group: "platform_owner",
+        "authentik Admins": "platform_owner",
+        "Alternun Dashboard Admins": "internal_admin",
+        "Alternun Platform Owner": "platform_owner",
+        "Alternun Internal Admin": "internal_admin",
+        "Alternun Partner Operator": "partner_operator",
+        "Alternun Partner Read Only": "partner_readonly",
+    }
     admin_group_claim_mapping, admin_group_claim_mapping_created, admin_group_claim_mapping_changed = (
-        ensure_admin_group_claim_mapping(
-            [admin_group, "authentik Admins", "Alternun Dashboard Admins"]
-        )
+        ensure_admin_group_claim_mapping(admin_group_roles)
     )
     desired_scope_mappings.append(admin_group_claim_mapping)
     current_scope_mapping_ids = set(provider.property_mappings.values_list("pk", flat=True))
@@ -902,9 +914,7 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
 
     application_policy, policy_created, policy_changed = upsert_expression_policy(
         "alternun-admin-access",
-        build_admin_access_expression(
-            [admin_group, "authentik Admins", "Alternun Dashboard Admins"],
-        ),
+        build_admin_access_expression(admin_group_roles.keys()),
     )
     policy_binding_created, policy_binding_changed = ensure_policy_binding(
         application, application_policy, order=0

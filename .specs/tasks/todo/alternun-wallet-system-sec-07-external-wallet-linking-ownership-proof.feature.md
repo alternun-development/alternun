@@ -18,7 +18,7 @@ The challenge/sign/verify flow for EVM (MetaMask) is complete:
 
 **Priority:** 🟡 MEDIUM — EVM/MetaMask done; WalletConnect native mobile remains  
 **Status:** EVM portion DONE (2026-07-01) — WalletConnect native pending  
-**See also:** `active-tasks/alternun-wallet-system/12-external-wallet-linking.md` for the full spec
+**See also:** [the canonical external-wallet-linking task](./alternun-wallet-system-external-wallet-linking.feature.md) for the full spec
 
 ---
 

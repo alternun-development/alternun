@@ -227,7 +227,7 @@ See the numbered files in this folder. Suggested order / dependency chain:
 6. `06-mobile-wallet-home-send-receive.md` — depends on 02, 03, 05.
 7. `07-multichain-rpc-integration.md` — depends on 02 (balances/activity/broadcast proxy endpoints).
 8. `08-rate-limiting-security-hardening.md` — depends on 02; should land before this ships to any real users.
-9. `09-testing-qa-plan.md` — cross-cutting, write alongside each task above, not at the end.
+9. `alternun-wallet-system-testing-qa.feature.md` — cross-cutting, write alongside each task above, not at the end.
 
 ## 8. Explicit non-goals (v1)
 
