@@ -55,7 +55,6 @@ type VerifiedIssuerClaims = Record<string, unknown> & {
   iss: string;
   nbf: number;
   sub: string;
-  token_use: string;
 };
 
 type JwtHeader = {
@@ -201,9 +200,7 @@ function validateVerifiedClaims(claims: Record<string, unknown>): VerifiedIssuer
     typeof claims.iss !== 'string' ||
     !claims.iss.trim() ||
     typeof claims.sub !== 'string' ||
-    !claims.sub.trim() ||
-    typeof claims.token_use !== 'string' ||
-    !claims.token_use.trim()
+    !claims.sub.trim()
   ) {
     throw new Error('Invalid JWT claims.');
   }
@@ -216,7 +213,6 @@ function validateVerifiedClaims(claims: Record<string, unknown>): VerifiedIssuer
     iss: claims.iss,
     nbf: claims.nbf,
     sub: claims.sub,
-    token_use: claims.token_use,
   };
 }
 
@@ -407,9 +403,6 @@ export function createIssuerJwtAdminVerifier(signingKey: string): VerifyAccessTo
     }
 
     const claims = verifyHmacJwt(normalizeBearerToken(authorization), normalizedSigningKey);
-    if (claims.token_use !== 'access') {
-      return Promise.resolve(null);
-    }
 
     return Promise.resolve({
       iss: claims.iss,
@@ -446,9 +439,6 @@ export function createRemoteJwksAdminVerifier(
     }
 
     const parsed = parseJwt(normalizeBearerToken(authorization));
-    if (parsed.claims.token_use !== 'access') {
-      return null;
-    }
 
     let jwk = selectJwk(await loadKeys(false), parsed.header.kid);
     if (!jwk) {

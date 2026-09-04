@@ -717,6 +717,10 @@ export function createInfrastructure() {
           identityInfrastructure?.secrets.smtpCredentials.arn ??
           'alternun/postmark/smtp',
         authentikJwtSigningKey: identityInfrastructure?.secrets.jwtSigningKey.value,
+        authentikIntegrationConfigSecretArn:
+          process.env.INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME ??
+          identityInfrastructure?.secrets.integrationConfig.arn,
+        authentikWebhookSecret: identityInfrastructure?.secrets.integrationConfig.webhookSecret,
         env: process.env,
         hostedZoneId: process.env.INFRA_ROUTE53_HOSTED_ZONE_ID,
         rootDomain,
