@@ -126,10 +126,6 @@ Current version: **1.1.81**
 
 ### Bug Fixes
 
-- **repo:** fix(identity): complete admin release integration
-
-### Bug Fixes
-
 - **identity:** complete admin release integration ([59f7bdf](https://github.com/alternun-development/alternun/commit/59f7bdf788d725435b3ef7c338da91819c1bd7ad))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
