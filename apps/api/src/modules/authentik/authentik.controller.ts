@@ -6,6 +6,7 @@ import {
   HttpCode,
   Logger,
   Post,
+  ServiceUnavailableException,
   UnauthorizedException,
   VERSION_NEUTRAL,
 } from '@nestjs/common';
@@ -40,13 +41,22 @@ export class AuthentikController {
     @Headers('x-authentik-webhook-secret') secret: string | undefined,
     @Body() payload: AuthentikWebhookPayload
   ): Promise<{ ok: boolean }> {
-    const expectedSecret = process.env.AUTHENTIK_WEBHOOK_SECRET;
+    const expectedSecret = (process.env.AUTHENTIK_WEBHOOK_SECRET ?? '').trim();
 
     if (!expectedSecret) {
-      this.logger.warn('AUTHENTIK_WEBHOOK_SECRET not set; webhook verification skipped.');
-    } else if (
-      secret === undefined ||
-      !timingSafeEqual(Buffer.from(secret), Buffer.from(expectedSecret))
+      this.logger.error('AUTHENTIK_WEBHOOK_SECRET is not configured; refusing Authentik webhook.');
+      throw new ServiceUnavailableException(
+        'AUTHENTIK_WEBHOOK_SECRET must be configured before accepting Authentik webhooks.'
+      );
+    }
+
+    const providedSecret = secret ?? '';
+    const providedBuffer = Buffer.from(providedSecret);
+    const expectedBuffer = Buffer.from(expectedSecret);
+
+    if (
+      providedBuffer.length !== expectedBuffer.length ||
+      !timingSafeEqual(providedBuffer, expectedBuffer)
     ) {
       throw new UnauthorizedException('Invalid webhook secret.');
     }
