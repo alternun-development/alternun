@@ -1,3 +1,13 @@
+## [1.1.81](https://github.com/alternun-development/alternun/compare/v1.1.80...v1.1.81) (2026-09-04)
+
+### Bug Fixes
+
+- **repo:** fix(identity): complete admin release integration
+
+### Bug Fixes
+
+- **identity:** complete admin release integration ([59f7bdf](https://github.com/alternun-development/alternun/commit/59f7bdf788d725435b3ef7c338da91819c1bd7ad))
+
 ## [1.1.80](https://github.com/alternun-development/alternun/compare/v1.1.79...v1.1.80) (2026-09-01)
 
 ### Features
