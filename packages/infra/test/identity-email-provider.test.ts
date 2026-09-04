@@ -15,3 +15,12 @@ void test('identity infrastructure defaults to Tláo with Postmark as the altern
   assert.match(defaults, /emailProvider: 'tlao'/);
   assert.doesNotMatch(identityModule, /'ses'/);
 });
+
+void test('identity integration configuration provisions the shared user-sync webhook secret', () => {
+  const resources = fs.readFileSync(path.resolve('modules/identity-resources.ts'), 'utf8');
+
+  assert.match(resources, /user-sync-webhook-secret/);
+  assert.match(resources, /userSyncWebhookSecret: webhookSecret/);
+  assert.match(resources, /userSyncWebhookUrl:[\s\S]*?\/authentik\/webhook/);
+  assert.match(resources, /webhookSecret: userSyncWebhookSecret\.result/);
+});

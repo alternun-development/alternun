@@ -9,7 +9,7 @@ function requireAdminPermission(permission: AdminPermission) {
   return SetMetadata(ADMIN_PERMISSION_METADATA, permission);
 }
 
-@Controller('admin/organizations/:organizationId/allowances')
+@Controller({ path: 'admin/organizations/:organizationId/allowances', version: '1' })
 @UseGuards(AdminAuthGuard)
 export class AdminAllowancesController {
   @Get()

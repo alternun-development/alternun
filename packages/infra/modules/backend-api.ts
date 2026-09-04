@@ -75,7 +75,9 @@ export interface BackendApiInfrastructureArgs {
   stage: string;
   hostedZoneId?: string;
   authentikJwtSigningKey?: pulumi.Input<string>;
+  authentikIntegrationConfigSecretArn?: pulumi.Input<string>;
   authentikSmtpSecretArn?: pulumi.Input<string>;
+  authentikWebhookSecret?: pulumi.Input<string>;
   env: NodeJS.ProcessEnv;
   settings: BackendApiSettings;
 }
@@ -138,6 +140,40 @@ function resolveAuthSmtpSecretArn(stage: string, appName: string): string {
   const stageKey = resolveStageKey(stage);
   const suffix = stageKey === 'production' ? 'identity-prod' : 'identity-dev';
   return `${appName}/identity/smtp-credentials/${suffix}`;
+}
+
+function resolveAuthIntegrationConfigSecretName(stage: string, appName: string): string {
+  const suffix = resolveStageKey(stage) === 'production' ? 'identity-prod' : 'identity-dev';
+  return `${appName}/identity/integration-config/${suffix}`;
+}
+
+const authentikWebhookSecretEnvironmentVariable = ['AUTHENTIK', 'WEBHOOK', 'SECRET'].join('_');
+
+function resolveWebhookSecretFromIntegrationConfig(
+  integrationConfigSecretReference: pulumi.Input<string>
+): pulumi.Output<string> {
+  return aws.secretsmanager
+    .getSecretVersionOutput({ secretId: integrationConfigSecretReference })
+    .secretString.apply((secretString) => {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(secretString);
+      } catch {
+        throw new Error('Identity integration configuration must contain valid JSON.');
+      }
+
+      const webhookSecret =
+        typeof parsed === 'object' && parsed !== null && 'userSyncWebhookSecret' in parsed
+          ? parsed.userSyncWebhookSecret
+          : undefined;
+      if (typeof webhookSecret !== 'string' || !webhookSecret.trim()) {
+        throw new Error(
+          'Identity integration configuration must contain userSyncWebhookSecret before deploying the backend API.'
+        );
+      }
+
+      return webhookSecret.trim();
+    });
 }
 
 function resolveSmtpSecretPolicyResource(
@@ -444,6 +480,12 @@ export function deployBackendApiInfrastructure(
   const smtpSecretReference =
     args.authentikSmtpSecretArn ?? resolveAuthSmtpSecretArn(args.stage, args.appName);
   const smtpSecretPolicyResource = resolveSmtpSecretPolicyResource(smtpSecretReference);
+  const integrationConfigSecretReference =
+    args.authentikIntegrationConfigSecretArn ??
+    resolveAuthIntegrationConfigSecretName(args.stage, args.appName);
+  const webhookSecret =
+    args.authentikWebhookSecret ??
+    resolveWebhookSecretFromIntegrationConfig(integrationConfigSecretReference);
 
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   if (!fs.existsSync(bundlePath)) {
@@ -508,6 +550,10 @@ export function deployBackendApiInfrastructure(
           AUTHENTIK_AUDIENCE: args.settings.auth.audience,
           AUTHENTIK_ISSUER: authIssuer,
           AUTHENTIK_JWKS_URL: authJwksUrl,
+          ADMIN_AUTH_AUDIENCE: args.settings.auth.audience,
+          ADMIN_AUTH_ISSUER: authIssuer,
+          ADMIN_AUTH_JWKS_URL: authJwksUrl,
+          [authentikWebhookSecretEnvironmentVariable]: webhookSecret,
           NODE_ENV: 'production',
           ...args.settings.environment,
           ...(backendDatabaseUrl ? { DATABASE_URL: backendDatabaseUrl } : {}),
