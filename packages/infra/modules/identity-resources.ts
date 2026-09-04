@@ -52,6 +52,7 @@ export interface IdentityInfrastructureResources {
     integrationConfig: {
       arn: pulumi.Output<string>;
       name: pulumi.Output<string>;
+      webhookSecret: pulumi.Output<string>;
     };
   };
   vpc: {
@@ -737,6 +738,10 @@ export function deployIdentityInfrastructure(
     length: 40,
     special: false,
   });
+  const userSyncWebhookSecret = new RandomPassword(`${resourceBaseName}-user-sync-webhook-secret`, {
+    length: 48,
+    special: false,
+  });
   const adminStageKey = resolveApplicationStageKey(args.stage);
   const adminStageDomain = buildStageDomains('admin', args.rootDomain)[adminStageKey];
   const normalizeBaseUrl = (value: string): string => value.replace(/\/+$/, '');
@@ -775,77 +780,92 @@ export function deployIdentityInfrastructure(
           adminOidcClientSecret.result,
           docsCmsOidcClientSecret.result,
           bootstrapAdminPasswordValue,
+          userSyncWebhookSecret.result,
         ])
-        .apply(([supabaseClientSecret, adminClientSecret, docsCmsClientSecret, adminPassword]) =>
-          JSON.stringify({
-            adminEmail: args.settings.integration.bootstrap.admin.email,
-            adminGroup: args.settings.integration.bootstrap.admin.group,
-            adminName: args.settings.integration.bootstrap.admin.name,
-            adminAllowedEmailDomain: args.settings.integration.adminOidc.allowedEmailDomain,
-            adminOidcApplicationName: args.settings.integration.adminOidc.applicationName,
-            adminOidcApplicationSlug: args.settings.integration.adminOidc.applicationSlug,
-            adminOidcClientId: args.settings.integration.adminOidc.clientId,
-            adminOidcClientSecret: adminClientSecret,
-            adminOidcLaunchUrl,
-            adminOidcPostLogoutRedirectUrl,
-            adminOidcProviderName: args.settings.integration.adminOidc.providerName,
-            adminOidcRedirectUrl,
+        .apply(
+          ([
+            supabaseClientSecret,
+            adminClientSecret,
+            docsCmsClientSecret,
             adminPassword,
-            adminUsername: args.settings.integration.bootstrap.admin.username,
-            docsCmsOidcAllowedGroups: args.settings.integration.docsCmsOidc.allowedGroups,
-            docsCmsOidcApplicationName: args.settings.integration.docsCmsOidc.applicationName,
-            docsCmsOidcApplicationSlug: args.settings.integration.docsCmsOidc.applicationSlug,
-            docsCmsOidcClientId: args.settings.integration.docsCmsOidc.clientId,
-            docsCmsOidcClientSecret: docsCmsClientSecret,
-            docsCmsOidcLaunchUrl,
-            docsCmsOidcPostLogoutRedirectUrls,
-            docsCmsOidcProviderName: args.settings.integration.docsCmsOidc.providerName,
-            docsCmsOidcRedirectUrls,
-            defaultApplicationDescription:
-              args.settings.integration.bootstrap.defaultApplication.description,
-            defaultApplicationEnabled:
-              args.settings.integration.bootstrap.defaultApplication.enabled,
-            defaultApplicationGroup: args.settings.integration.bootstrap.defaultApplication.group,
-            defaultApplicationLaunchUrl,
-            defaultApplicationName: args.settings.integration.bootstrap.defaultApplication.name,
-            defaultApplicationOpenInNewTab:
-              args.settings.integration.bootstrap.defaultApplication.openInNewTab,
-            defaultApplicationPolicyEngineMode:
-              args.settings.integration.bootstrap.defaultApplication.policyEngineMode,
-            defaultApplicationPublisher:
-              args.settings.integration.bootstrap.defaultApplication.publisher,
-            defaultApplicationSlug: args.settings.integration.bootstrap.defaultApplication.slug,
-            // Non-production identity stages should let any social-login user register and
-            // reach the Authentik interface. Production keeps the domain gate.
-            internalUserPromotionMode: productionIdentityStage ? 'domain' : 'any',
-            googleClientId: args.settings.integration.google.clientId,
-            googleClientSecret: args.settings.integration.google.clientSecret,
-            googleSourceLoginFlowSlug: args.settings.integration.google.loginFlowSlug,
-            googleSourceLoginFlowMode: args.settings.integration.google.loginFlowMode,
-            googleSourceName: args.settings.integration.google.sourceName,
-            googleSourceSlug: args.settings.integration.google.sourceSlug,
-            discordClientId: args.settings.integration.discord.clientId,
-            discordClientSecret: args.settings.integration.discord.clientSecret,
-            discordSourceLoginFlowSlug: args.settings.integration.discord.loginFlowSlug,
-            discordSourceName: args.settings.integration.discord.sourceName,
-            discordSourceSlug: args.settings.integration.discord.sourceSlug,
-            mobileOidcClientId: args.settings.integration.mobileOidc.clientId,
-            mobileOidcApplicationName: args.settings.integration.mobileOidc.applicationName,
-            mobileOidcApplicationSlug: args.settings.integration.mobileOidc.applicationSlug,
-            mobileOidcLaunchUrl,
-            mobileOidcProviderName: args.settings.integration.mobileOidc.providerName,
-            mobileOidcRedirectUrls: args.settings.integration.mobileOidc.redirectUrls,
-            mobileOidcPostLogoutRedirectUrls:
-              args.settings.integration.mobileOidc.postLogoutRedirectUrls,
-            supabaseApplicationName: args.settings.integration.supabase.applicationName,
-            supabaseApplicationSlug: args.settings.integration.supabase.applicationSlug,
-            supabaseManagementAccessToken: args.settings.integration.supabase.managementAccessToken,
-            supabaseOidcClientId: args.settings.integration.supabase.oidcClientId,
-            supabaseOidcClientSecret: supabaseClientSecret,
-            supabaseProjectRef: args.settings.integration.supabase.projectRef,
-            supabaseProviderName: args.settings.integration.supabase.providerName,
-            supabaseSyncConfig: args.settings.integration.supabase.syncConfig,
-          })
+            webhookSecret,
+          ]) =>
+            JSON.stringify({
+              adminEmail: args.settings.integration.bootstrap.admin.email,
+              adminGroup: args.settings.integration.bootstrap.admin.group,
+              adminName: args.settings.integration.bootstrap.admin.name,
+              adminAllowedEmailDomain: args.settings.integration.adminOidc.allowedEmailDomain,
+              adminOidcApplicationName: args.settings.integration.adminOidc.applicationName,
+              adminOidcApplicationSlug: args.settings.integration.adminOidc.applicationSlug,
+              adminOidcClientId: args.settings.integration.adminOidc.clientId,
+              adminOidcClientSecret: adminClientSecret,
+              adminOidcLaunchUrl,
+              adminOidcPostLogoutRedirectUrl,
+              adminOidcProviderName: args.settings.integration.adminOidc.providerName,
+              adminOidcRedirectUrl,
+              adminPassword,
+              adminUsername: args.settings.integration.bootstrap.admin.username,
+              docsCmsOidcAllowedGroups: args.settings.integration.docsCmsOidc.allowedGroups,
+              docsCmsOidcApplicationName: args.settings.integration.docsCmsOidc.applicationName,
+              docsCmsOidcApplicationSlug: args.settings.integration.docsCmsOidc.applicationSlug,
+              docsCmsOidcClientId: args.settings.integration.docsCmsOidc.clientId,
+              docsCmsOidcClientSecret: docsCmsClientSecret,
+              docsCmsOidcLaunchUrl,
+              docsCmsOidcPostLogoutRedirectUrls,
+              docsCmsOidcProviderName: args.settings.integration.docsCmsOidc.providerName,
+              docsCmsOidcRedirectUrls,
+              defaultApplicationDescription:
+                args.settings.integration.bootstrap.defaultApplication.description,
+              defaultApplicationEnabled:
+                args.settings.integration.bootstrap.defaultApplication.enabled,
+              defaultApplicationGroup: args.settings.integration.bootstrap.defaultApplication.group,
+              defaultApplicationLaunchUrl,
+              defaultApplicationName: args.settings.integration.bootstrap.defaultApplication.name,
+              defaultApplicationOpenInNewTab:
+                args.settings.integration.bootstrap.defaultApplication.openInNewTab,
+              defaultApplicationPolicyEngineMode:
+                args.settings.integration.bootstrap.defaultApplication.policyEngineMode,
+              defaultApplicationPublisher:
+                args.settings.integration.bootstrap.defaultApplication.publisher,
+              defaultApplicationSlug: args.settings.integration.bootstrap.defaultApplication.slug,
+              // Non-production identity stages should let any social-login user register and
+              // reach the Authentik interface. Production keeps the domain gate.
+              internalUserPromotionMode: productionIdentityStage ? 'domain' : 'any',
+              googleClientId: args.settings.integration.google.clientId,
+              googleClientSecret: args.settings.integration.google.clientSecret,
+              googleSourceLoginFlowSlug: args.settings.integration.google.loginFlowSlug,
+              googleSourceLoginFlowMode: args.settings.integration.google.loginFlowMode,
+              googleSourceName: args.settings.integration.google.sourceName,
+              googleSourceSlug: args.settings.integration.google.sourceSlug,
+              discordClientId: args.settings.integration.discord.clientId,
+              discordClientSecret: args.settings.integration.discord.clientSecret,
+              discordSourceLoginFlowSlug: args.settings.integration.discord.loginFlowSlug,
+              discordSourceName: args.settings.integration.discord.sourceName,
+              discordSourceSlug: args.settings.integration.discord.sourceSlug,
+              mobileOidcClientId: args.settings.integration.mobileOidc.clientId,
+              mobileOidcApplicationName: args.settings.integration.mobileOidc.applicationName,
+              mobileOidcApplicationSlug: args.settings.integration.mobileOidc.applicationSlug,
+              mobileOidcLaunchUrl,
+              mobileOidcProviderName: args.settings.integration.mobileOidc.providerName,
+              mobileOidcRedirectUrls: args.settings.integration.mobileOidc.redirectUrls,
+              mobileOidcPostLogoutRedirectUrls:
+                args.settings.integration.mobileOidc.postLogoutRedirectUrls,
+              supabaseApplicationName: args.settings.integration.supabase.applicationName,
+              supabaseApplicationSlug: args.settings.integration.supabase.applicationSlug,
+              supabaseManagementAccessToken:
+                args.settings.integration.supabase.managementAccessToken,
+              supabaseOidcClientId: args.settings.integration.supabase.oidcClientId,
+              supabaseOidcClientSecret: supabaseClientSecret,
+              supabaseProjectRef: args.settings.integration.supabase.projectRef,
+              supabaseProviderName: args.settings.integration.supabase.providerName,
+              supabaseSyncConfig: args.settings.integration.supabase.syncConfig,
+              userSyncRuleName: 'Alternun Sync Users to Supabase',
+              userSyncTransportName: 'Alternun User Sync Webhook',
+              userSyncWebhookSecret: webhookSecret,
+              userSyncWebhookUrl: `https://${
+                buildStageDomains('api', args.rootDomain)[identityStageKey]
+              }/authentik/webhook`,
+            })
         )
     ),
   });
@@ -1436,6 +1456,7 @@ export function deployIdentityInfrastructure(
       integrationConfig: {
         arn: integrationConfigSecretArn,
         name: integrationConfigSecretName,
+        webhookSecret: userSyncWebhookSecret.result,
       },
     },
     vpc: {
