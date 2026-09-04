@@ -388,9 +388,9 @@
       "message": {
         "regenerative": "Únete a Airs By Alternun: Capitalismo regenerativo en acción",
         "welcome": "Bienvenido a AIRS: Donde tus acciones cuentan",
-        "earn": "Gana puntos AIRS: Construye un legado regenerativo",
-        "community": "Únete a nuestra comunidad: Conecta con entusiastas de las Finanzas Regenerativas",
-        "impact": "Haz un Impacto: Convierte tus acciones en valor real"
+        "earn": "Construye tu AIRS Score: Convierte acciones verificables en una trayectoria",
+        "community": "Únete al Green Circle: Personas, empresas y proyectos construyendo una economía más regenerativa",
+        "impact": "Haz que tus acciones cuenten: Del impacto individual al valor compartido"
       },
       "messageCta": {
         "joinHere": "Únete aquí",
@@ -403,12 +403,12 @@
         "scrollToInteract": "Desplázate para interactuar"
       },
       "info": {
-        "scoreLine": "Puntuación de impacto y reputación de Alternun",
-        "summaryLine": "Una sola superficie para impacto verificado, ciclo de compensación y módulos vinculados a la wallet."
+        "scoreLine": "AIRS — Alternun Impact & Reputation Score",
+        "summaryLine": "AIRS convierte acciones verificables en una reputación que crece contigo. Hace visible tu contribución y puede abrir acceso a beneficios, proyectos, oportunidades y nuevas formas de participar en el valor que el ecosistema ayuda a crear"
       },
       "media": {
-        "subtitle": "El programa de lealtad definitivo para quienes, como tú, protegen el planeta.",
-        "title": "Puntuación de impacto y reputación de Alternun"
+        "subtitle": "Tus acciones ya pueden crear impacto. AIRS lo hace visible, construye una trayectoria verificable y convierte tu participación en reputación.",
+        "title": "AIRS: Impacto que se convierte en reputación"
       },
       "nav": {
         "benefits": "Beneficios",
@@ -419,74 +419,74 @@
         "start": "Inicio"
       },
       "elProyecto": {
-        "sectionTitle": "Una economía regenerativa que te beneficia",
-        "sectionDescriptionPart1": "Cada acción positiva puede generar algo más que impacto. En ",
+        "sectionTitle": "Tus acciones pueden construir algo que permanece",
+        "sectionDescriptionPart1": "Muchas de las acciones que realizamos generan impacto, pero ese impacto suele desaparecer después de cada acción. En ",
         "sectionDescriptionHighlight": "Alternun",
-        "sectionDescriptionPart2": " creemos que cuidar y regenerar el planeta también puede construir reputación, abrir nuevas oportunidades y crear valor compartido para personas, empresas y comunidades.",
+        "sectionDescriptionPart2": " convertimos esas acciones en una trayectoria verificable. AIRS hace visible tu contribución, construye reputación a lo largo del tiempo y conecta esa reputación con nuevas oportunidades dentro de una economía regenerativa.",
         "moreInfo": "Más información",
         "airs": {
-          "overview": "By Alternun es tu huella positiva en Alternun. Se gana con acciones reales, nunca disminuye y determina tu Ingreso Básico Regenerativo (RBI).",
-          "subtitle": "Tu Reputación Regenerativa",
-          "title": "Airs"
+          "overview": "AIRS es tu puntuación de impacto y reputación. Se construye con acciones verificadas dentro del ecosistema y conserva la memoria de tu contribución a lo largo del tiempo. No se compra ni se transfiere: se construye participando.",
+          "subtitle": "Tu trayectoria hecha visible",
+          "title": "AIRS"
         },
         "atn": {
-          "overview": "es la moneda de Alternun para acceder a beneficios y proyectos. Se recibe mensualmente vía RBI según tu puntaje Airs o también se puede comprar para completar redenciones.",
-          "subtitle": "Token de Recompensas",
+          "overview": "es el token que ayuda a coordinar y mover valor dentro del ecosistema. Conecta participantes, proyectos y oportunidades, y es uno de los medios mediante los cuales el valor generado puede regresar a la comunidad.",
+          "subtitle": "Token de coordinación y valor",
           "title": "ATN"
         },
         "rbi": {
-          "overview": "es una recompensa mensual entregada en ATN y financiada por la rentabilidad real del ecosistema. Depende de tu puntuación Airs, convirtiendo tu compromiso con la regeneración en prosperidad tangible.",
-          "subtitle": "Renta Básica Regenerativa",
+          "overview": "es el mecanismo mediante el cual una parte del valor generado por las actividades y proyectos del ecosistema puede regresar a participantes elegibles. Su distribución depende del valor disponible y de la participación reconocida a través de AIRS.",
+          "subtitle": "Ingreso Básico Regenerativo",
           "title": "RBI"
         }
       },
       "comoFunciona": {
-        "sectionTitle": "Cómo funciona",
-        "subtitle": "Cuatro pasos simples para comenzar tu viaje regenerativo",
+        "sectionTitle": "Cómo AIRS convierte tus acciones en una trayectoria",
+        "subtitle": "Actúa. Verifica. Construye reputación. Abre nuevas posibilidades.",
         "steps": {
           "s1": {
-            "b1": "Completa tu perfil",
-            "b2": "Crea tu billetera en la aplicación",
-            "b3": "Invita a otros a unirse",
-            "description": "Regístrate y comienza a construir tu reputación",
-            "title": "Únete a Airs"
+            "b1": "Crea tu perfil",
+            "b2": "Elige cómo quieres participar",
+            "b3": "Comienza a construir tu trayectoria",
+            "description": "Crea tu cuenta y entra a una comunidad donde tu contribución puede empezar a dejar una huella verificable",
+            "title": "Únete a AIRS"
           },
           "s2": {
-            "b1": "Completa misiones del programa",
-            "b2": "Crea tu trayectoria con acciones cotidianas",
-            "b3": "Construye tu reputación regenerativa",
-            "description": "Realiza acciones listadas en la plataforma y gana puntos Airs por cada acción verificada.",
-            "title": "Acumula puntos"
+            "b1": "Participa en acciones y misiones verificadas",
+            "b2": "Aporta con tus decisiones, tu tiempo o tus recursos",
+            "b3": "Haz visible tu contribución",
+            "description": "Cada acción elegible y verificada suma a tu AIRS Score y pasa a formar parte de la trayectoria que estás construyendo.",
+            "title": "Haz que tus acciones cuenten"
           },
           "s3": {
-            "b1": "Se asignan cuotas según la puntuación global de Airs",
-            "b2": "Recibe recompensas automáticas",
-            "b3": "Crece con el ecosistema",
-            "description": "Tu puntuación Airs determina tu RBI.  Por esto es muy importante que sigas participando en el sistema",
-            "title": "Recibe tu RBI"
+            "b1": "Tu AIRS Score crece con tu contribución",
+            "b2": "Tu trayectoria construye reputación",
+            "b3": "Tu reputación puede abrir nuevos niveles de acceso",
+            "description": "AIRS convierte acciones aisladas en una reputación acumulativa que puede abrir beneficios, oportunidades y nuevas formas de participar en el ecosistema",
+            "title": "Construye reputación"
           },
           "s4": {
-            "b1": "Canjea en el marketplace",
-            "b2": "Accede a productos y servicios",
-            "b3": "Apoya proyectos regenerativos",
-            "description": "Usa tu RBI para acceder a productos, servicios y proyectos en el ecosistema.",
-            "title": "Canjea y crece"
+            "b1": "Accede a productos, servicios y experiencias",
+            "b2": "Participa en proyectos regenerativos",
+            "b3": "Participa del valor generado cuando seas elegible",
+            "description": "Cuando el ecosistema genera valor, parte de ese valor puede regresar a participantes elegibles a través del RBI, creando un ciclo donde impacto, reputación y prosperidad compartida se fortalecen entre sí.",
+            "title": "Crece con el ecosistema"
           }
         }
       },
       "membresia": {
-        "sectionTitle": "Membresía vitalicia desde el Día 1",
-        "descriptionPart1": "No necesitas pagar cuotas mensuales ni renovaciones.",
-        "descriptionPart2Bold": "Únete y eres miembro vitalicio.",
-        "descriptionPart3": "Desde ese momento, puedes acumular Airs y recibir tu RBI mensual.",
-        "descriptionPart4": "Tus puntos no expiran y tus beneficios crecen con tu reputación",
+        "sectionTitle": "Tu trayectoria comienza desde el Día 1",
+        "descriptionPart1": "No necesitas pagar una membresía para comenzar a construirla.",
+        "descriptionPart2Bold": "Cada acción verificada puede convertirse en parte de tu historia dentro de AIRS.",
+        "descriptionPart3": "Tu AIRS Score es acumulativo y acompaña tu participación a lo largo del tiempo.",
+        "descriptionPart4": "Mientras tu puntuación permanece, tu nivel de participación y acceso evoluciona con la forma en que sigues contribuyendo.",
         "descriptionLine1": "No necesitas pagar cuotas mensuales ni renovaciones.",
-        "descriptionLine2Bold": "Únete y eres miembro vitalicio.",
-        "descriptionLine3Prefix": "Desde ese momento, puedes acumular ",
-        "descriptionLine3BrandBold": "Airs By Alternun",
-        "descriptionLine3Mid": " y recibir tu ",
-        "descriptionLine3TokenBold": "RBI",
-        "descriptionLine3Suffix": " mensual. Tus puntos no expiran y tus beneficios crecen con tu reputación."
+        "descriptionLine2Bold": "Tu trayectoria comienza desde tu primera acción verificada.",
+        "descriptionLine3Prefix": ""Desde ese momento, cada acción elegible puede sumar a tu ",
+        "descriptionLine3BrandBold": "AIRS Score",
+        "descriptionLine3Mid": " y fortalecer la ",
+        "descriptionLine3TokenBold": "reputación",
+        "descriptionLine3Suffix": " que construyes dentro del ecosistema. Tu puntuación es acumulativa y el acceso a beneficios y oportunidades depende de tu participación y de las reglas vigentes."
       },
       "beneficios": {
         "atnUnit": "Airs / USD",
@@ -494,22 +494,22 @@
           "eco": {
             "tag1": "Verificado",
             "tag2": "Aliado",
-            "description": "Acumula Airs cada vez que compras productos elegibles o en comercios aliados",
+            "description": "Haz que decisiones cotidianas elegibles formen parte de tu trayectoria AIRS.",
             "atn": "variable",
-            "meta": "Consume consciente",
-            "title": "Acciones cotidiana",
+            "meta": "Impacto cotidiano",
+            "title": "Acciones cotidianas",
             "cta": "Acumular Airs",
-            "infoBody": "Estas son acciones cotidianas que puedes realizar para acumular puntos constantemente y crear una trayectoria regenerativa. Trabajamos permanentemente para construir nuevas alianzas todos los días."
+            "infoBody": "Productos, servicios y comercios aliados pueden convertir decisiones cotidianas elegibles en acciones verificadas dentro de AIRS. Así, acciones que antes terminaban en una transacción pasan a formar parte de tu trayectoria."
           },
           "experiencias": {
             "tag1": "Misiones",
             "tag2": "Servicios",
-            "description": "Únete a misiones que protegen nuestro presente, construyen nuestro futuro y acumula Airs",
+            "description": "Participa en misiones que protegen, restauran o fortalecen territorios y comunidades, y haz que tu contribución forme parte de tu trayectoria AIRS.",
             "atn": "Variable",
             "meta": "Construye tu legado",
             "title": "Misiones de conservación y regeneración",
             "cta": "Unirme",
-            "infoBody": "Puedes unirte a misiones aportando tu trabajo o dinero para alcanzar el objetivo propuesto.  Cada misión tiene unos presupuestos asignados desde el principio para evitar diluir las puntuaciones globales de los participantes del programa."
+            "infoBody": "Puedes contribuir con tiempo, recursos o participación directa. Cada misión establece desde el inicio qué acciones son verificables, cómo contribuyen al objetivo y cómo se reconocen dentro de AIRS."
           },
           "marketplace": {
             "description": "Accede a un mercado de productos y servicios regenerativos.",
@@ -519,22 +519,22 @@
           "premium": {
             "tag1": "Compensación",
             "tag2": "Validado",
-            "description": "Participa en misiones de compensación de huella ecológica y dale un respiro al planeta",
+            "description": "Reconoce parte de la huella que generas y apoya iniciativas verificadas que ayudan a compensarla.",
             "atn": "Variable",
             "meta": "Mitiga tu huella ecológica",
             "title": "Misiones de compensación",
             "cta": "Compensar ahora",
-            "infoBody": "Es una realidad que nuestro día a día nos obliga a tomar acciones que tienen un impacto negativo, hay misiones disponibles dentro del sistema que te permiten hacer una compensación voluntaria de tu huella ecológica."
+            "infoBody": "No todas nuestras actividades pueden evitar un impacto. AIRS te permite participar voluntariamente en iniciativas verificadas de compensación y registrar esa acción como parte de tu trayectoria."
           },
           "cursos": {
             "tag1": "Tarjeta",
             "tag2": "Impulso",
-            "description": "Usa la tarjeta Airs para registrar actividad verificada y acelerar la acumulación en todo el ecosistema.",
+            "description": "Usa la tarjeta AIRS para conectar compras elegibles con tu identidad y registrar automáticamente acciones verificables.",
             "atn": "Impulso",
             "meta": "Tarjeta Airs",
             "title": "Tarjeta Airs",
-            "cta": "Obtener la tarjeta",
-            "infoBody": "La tarjeta Airs conecta tu gasto y tu impacto con tu puntuación para que la actividad elegible acumule Airs más rápido."
+            "cta": "Próximamente",
+            "infoBody": "La tarjeta AIRS conecta gasto elegible, comercios aliados e impacto en una misma experiencia, haciendo que determinadas decisiones cotidianas puedan incorporarse automáticamente a tu trayectoria."
           },
           "services": {
             "description": "Servicios verificados que contribuyen al impacto positivo.",
@@ -542,9 +542,9 @@
             "title": "Servicios"
           }
         },
-        "cta": "Ver rutas de acumulación",
-        "sectionTitle": "Cómo acumular Airs",
-        "subtitle": "Acumula Airs al compensar tu huella, comprar productos o servicios elegibles y al tomar parte de misiones que te permiten construir tu legado",
+        "cta": "Ver formas de participar",
+        "sectionTitle": "Cómo construir tu AIRS Score",
+        "subtitle": "Tu reputación crece a través de acciones verificables: compensando tu huella, eligiendo productos y servicios elegibles, aportando tiempo o recursos a misiones y participando en proyectos regenerativos.",
         "communityTotal": {
           "label": "AIRS acumulados en la plataforma",
           "loading": "Cargando el total en vivo…",
@@ -552,14 +552,14 @@
           "infoLabel": "Qué significan los AIRS",
           "closeLabel": "Cerrar explicación de AIRS",
           "tooltipTitle": "Cómo leer este total",
-          "tooltipMeaning": "AIRS es la puntuación de impacto y reputación de Alternun; no es dinero ni un saldo canjeable.",
+          "tooltipMeaning": "AIRS es la puntuación de impacto y reputación de Alternun. No es dinero, no se compra y no es un saldo canjeable: representa una trayectoria construida mediante acciones verificadas.",
           "tooltipMoneyLoading": "En comercio aliado, la referencia de acumulación es 5 AIRS por cada US$1 elegible. Cargamos el total para mostrarte esa referencia.",
           "tooltipMoney": "En comercio aliado, {{amount}} es la referencia de compra elegible para acumular este total a una tasa de 5 AIRS por US$1. El total también puede incluir otras actividades.",
           "tooltipImpact": "No existe una conversión fija de AIRS a CO₂: cada acción o bono depende de una reducción o compensación que haya sido medida y validada."
         },
         "topRated": "Verificado",
         "moreInfo": "Más información",
-        "redeemCta": "Empezar a acumular Airs",
+        "redeemCta": "Comenzar mi trayectoria",
         "availableFrom": "Tasa típica: {{atn}}"
       },
       "video": {
