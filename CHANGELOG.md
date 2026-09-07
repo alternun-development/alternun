@@ -1,3 +1,10 @@
+## [1.1.82](https://github.com/alternun-development/alternun/compare/v1.1.81...v1.1.82) (2026-09-07)
+
+### Bug Fixes
+
+- **landing:** remove duplicated AIRS word from overview/kicker copy, sync all locales ([ca95271](https://github.com/alternun-development/alternun/commit/ca95271e09d7b47ef832dd282f2ff66e11096057))
+- **landing:** refine desktop hero typography and CTA sizing ([8e600ae](https://github.com/alternun-development/alternun/commit/8e600ae724a501102b3a4971d6671fe4b9f806e4))
+
 ## [1.1.81](https://github.com/alternun-development/alternun/compare/v1.1.80...v1.1.81) (2026-09-04)
 
 ### Bug Fixes
