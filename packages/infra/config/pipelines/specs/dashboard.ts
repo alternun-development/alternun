@@ -110,6 +110,12 @@ export function buildDashboardPipelineSpecs({
       outputKey: 'dashboardProdPipelineName',
       stage: 'dashboard-prod',
       buildEnv: buildNonExpoPipelineEnv('dashboard-prod', ALL_PIPELINE_SET, {
+        // The original un-versioned integration-config secret is retired; production
+        // identity resources live under the -v2 name (see identity.ts). Without this
+        // override, sst-deploy.sh resolves the retired path and the stack update fails
+        // with "couldn't find resource" even though the admin site itself deploys fine.
+        INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:
+          'alternun-infra/identity/integration-config-v2',
         INFRA_ENABLE_ADMIN_SITE: 'true',
         INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
         INFRA_ADMIN_ENABLED_STAGES: 'production',

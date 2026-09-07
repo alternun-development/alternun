@@ -17,3 +17,12 @@ void test('dashboard keeps testnet signup on Better Auth and production email si
     /'dashboard-prod':[\s\S]*?INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER:\s*'supabase'/
   );
 });
+
+void test('dashboard-prod points the identity integration-config secret at the -v2 name', () => {
+  const source = fs.readFileSync(dashboardSpecPath, 'utf8');
+
+  assert.match(
+    source,
+    /'dashboard-prod':[\s\S]*?INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:\s*\n?\s*'alternun-infra\/identity\/integration-config-v2'/
+  );
+});
