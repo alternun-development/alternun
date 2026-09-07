@@ -41,6 +41,7 @@ import { BackToTopButton } from '../common/BackToTopButton';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import AirsIntroSettingsMenu from './AirsIntroSettingsMenu';
 import { resolveHeroWordmarkSource } from './heroWordmarkSource';
+import { getHeroLayoutMetrics } from './heroLayoutMetrics';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import { HeroVideoNative } from './HeroVideoNative';
 
@@ -567,24 +568,16 @@ const AirsIntroExperience = forwardRef<
         };
 
     const heroWordmarkSource = resolveHeroWordmarkSource(isDark, logoAtTop);
-    const heroCopyTop = isMobile
-      ? Math.min(heroHeight * 0.22, 194)
-      : Math.min(heroHeight * 0.27, 250);
-    const heroCopyMaxWidth = isMobile
-      ? Math.min(screenWidth - 40, 620)
-      : Math.min(screenWidth * 0.82, 1080);
-    const heroHeadlineSize = isMobile
-      ? Math.min(Math.max(screenWidth * 0.043, 30), 66)
-      : Math.min(Math.max(screenWidth * 0.03, 30), 46);
-    const heroHeadlineLineHeight = heroHeadlineSize * 1.08;
-    const heroKickerSize = isMobile
-      ? Math.min(Math.max(screenWidth * 0.036, 20), 32)
-      : Math.min(Math.max(screenWidth * 0.022, 24), 32);
-    const heroKickerLineHeight = heroKickerSize * 1.02;
-    const heroButtonWidth = isMobile ? '100%' : Math.min(screenWidth * 0.24, 300);
-    const heroButtonFontSize = isMobile
-      ? Math.min(Math.max(screenWidth * 0.023, 18), 24)
-      : Math.min(Math.max(screenWidth * 0.016, 17), 20);
+    const {
+      heroCopyTop,
+      heroCopyMaxWidth,
+      heroHeadlineSize,
+      heroHeadlineLineHeight,
+      heroKickerSize,
+      heroKickerLineHeight,
+      heroButtonWidth,
+      heroButtonFontSize,
+    } = getHeroLayoutMetrics(screenWidth, heroHeight, isMobile);
     const heroButtonBorderWidth = isDesktopView ? 1.35 : 1;
     const headerNavDropdownAnimatedStyle = useMemo(
       () => ({
