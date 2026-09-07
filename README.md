@@ -120,13 +120,19 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.81**
+Current version: **1.1.82**
 
-## 📋 Latest Changes (v1.1.81)
+## 📋 Latest Changes (v1.1.82)
 
 ### Bug Fixes
 
-- **identity:** complete admin release integration ([59f7bdf](https://github.com/alternun-development/alternun/commit/59f7bdf788d725435b3ef7c338da91819c1bd7ad))
+- **repo:** fix(landing): remove duplicated AIRS word from overview/kicker copy, sync all locales
+- **repo:** fix(landing): refine desktop hero typography and CTA sizing
+
+### Bug Fixes
+
+- **landing:** refine desktop hero typography and CTA sizing ([8e600ae](https://github.com/alternun-development/alternun/commit/8e600ae724a501102b3a4971d6671fe4b9f806e4))
+- **landing:** remove duplicated AIRS word from overview/kicker copy, sync all locales ([ca95271](https://github.com/alternun-development/alternun/commit/ca95271e09d7b47ef832dd282f2ff66e11096057)), closes [alternun-development/alternun#224](https://github.com/alternun-development/alternun/issues/224) [#225](https://github.com/alternun-development/alternun/issues/225)
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
