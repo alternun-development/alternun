@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import {
   useWindowDimensions,
   StyleSheet,
@@ -50,7 +50,6 @@ export default function DynamicMessageBar({
   const { width } = useWindowDimensions();
   const offsetX = useSharedValue(width);
   const [isPaused, setIsPaused] = useState(false);
-  const isInitialRef = useRef(true);
   const palette = useAppPalette();
   const resolvedBgColor = bgColor ?? (isDark ? '#000000' : '#333480');
 
@@ -61,43 +60,63 @@ export default function DynamicMessageBar({
   const calculatedDuration = Math.round((pixelsToScroll / pixelsPerSecond) * 1000);
   const duration = durationProp ?? calculatedDuration;
 
+  // Kept current via refs so a scroll-driven re-render (which does not change
+  // width/duration) never tears down and restarts the running animation below.
+  const widthRef = useRef(width);
+  const durationRef = useRef(duration);
   useEffect(() => {
-    if (isPaused) {
-      cancelAnimation(offsetX);
+    widthRef.current = width;
+    durationRef.current = duration;
+  }, [width, duration]);
+
+  const startLoop = useCallback(() => {
+    // No completion callback here: with a non-reversing (reverse: false) repeat,
+    // Reanimated already snaps back to the starting value at the top of each
+    // iteration. Reanimated also invokes withTiming's callback at the end of
+    // every iteration (not just once), so assigning offsetX.value from inside
+    // it would overwrite and cancel the still-running withRepeat after the
+    // first pass, leaving the marquee stuck offscreen.
+    offsetX.value = withRepeat(
+      withTiming(-widthRef.current * 1.5, {
+        duration: durationRef.current,
+        easing: Easing.linear,
+      }),
+      -1,
+      false
+    );
+  }, [offsetX]);
+
+  // Resets scroll position and (re)starts the loop when the message changes,
+  // or when width/duration change (resize, rotation, duration prop update) so
+  // the running animation doesn't keep scrolling to a stale destination at a
+  // stale speed. offsetX/isPaused/startLoop are intentionally excluded:
+  // they're handled by the separate pause effect below and must not retrigger
+  // this reset.
+  useEffect(() => {
+    offsetX.value = widthRef.current;
+    if (!isPaused) {
+      startLoop();
+    }
+    return () => cancelAnimation(offsetX);
+    // eslint-disable-next-line -- see comment above for the intentional omissions
+  }, [message, width, duration]);
+
+  // Pauses/resumes on hover or press without resetting the current position.
+  // Skips its first run: the message effect above already starts the loop on
+  // mount, and both effects fire together on mount, so acting here too would
+  // start it twice.
+  const isFirstPauseEffect = useRef(true);
+  useEffect(() => {
+    if (isFirstPauseEffect.current) {
+      isFirstPauseEffect.current = false;
       return;
     }
-
-    cancelAnimation(offsetX);
-
-    // Only reset to width on initial load or when message changes
-    if (isInitialRef.current) {
-      offsetX.value = width;
-      isInitialRef.current = false;
+    if (isPaused) {
+      cancelAnimation(offsetX);
+    } else {
+      startLoop();
     }
-
-    offsetX.value = withRepeat(
-      withTiming(
-        -width * 1.5,
-        {
-          duration,
-          easing: Easing.linear,
-        },
-        (finished) => {
-          if (finished) {
-            offsetX.value = width;
-          }
-        }
-      ),
-      -1,
-      true
-    );
-
-    return () => cancelAnimation(offsetX);
-  }, [message, width, duration, offsetX, isPaused]);
-
-  useEffect(() => {
-    isInitialRef.current = true;
-  }, [message]);
+  }, [isPaused, startLoop, offsetX]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: offsetX.value }],
