@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import {
   useWindowDimensions,
   StyleSheet,
@@ -50,7 +50,6 @@ export default function DynamicMessageBar({
   const { width } = useWindowDimensions();
   const offsetX = useSharedValue(width);
   const [isPaused, setIsPaused] = useState(false);
-  const isInitialRef = useRef(true);
   const palette = useAppPalette();
   const resolvedBgColor = bgColor ?? (isDark ? '#000000' : '#333480');
 
@@ -61,43 +60,62 @@ export default function DynamicMessageBar({
   const calculatedDuration = Math.round((pixelsToScroll / pixelsPerSecond) * 1000);
   const duration = durationProp ?? calculatedDuration;
 
+  // Kept current via refs so a scroll-driven re-render (which does not change
+  // width/duration) never tears down and restarts the running animation below.
+  const widthRef = useRef(width);
+  const durationRef = useRef(duration);
   useEffect(() => {
-    if (isPaused) {
-      cancelAnimation(offsetX);
-      return;
-    }
+    widthRef.current = width;
+    durationRef.current = duration;
+  }, [width, duration]);
 
-    cancelAnimation(offsetX);
-
-    // Only reset to width on initial load or when message changes
-    if (isInitialRef.current) {
-      offsetX.value = width;
-      isInitialRef.current = false;
-    }
-
+  const startLoop = useCallback(() => {
     offsetX.value = withRepeat(
       withTiming(
-        -width * 1.5,
+        -widthRef.current * 1.5,
         {
-          duration,
+          duration: durationRef.current,
           easing: Easing.linear,
         },
         (finished) => {
           if (finished) {
-            offsetX.value = width;
+            offsetX.value = widthRef.current;
           }
         }
       ),
       -1,
-      true
+      false
     );
+  }, [offsetX]);
 
-    return () => cancelAnimation(offsetX);
-  }, [message, width, duration, offsetX, isPaused]);
-
+  // Resets scroll position and (re)starts the loop only when the message
+  // itself changes, so the animation keeps rolling uninterrupted otherwise.
   useEffect(() => {
-    isInitialRef.current = true;
+    offsetX.value = widthRef.current;
+    if (!isPaused) {
+      startLoop();
+    }
+    return () => cancelAnimation(offsetX);
+    // eslint-disable-next-line -- intentionally scoped to [message]; offsetX/isPaused/startLoop
+    // are handled by the separate pause effect below and must not retrigger this reset.
   }, [message]);
+
+  // Pauses/resumes on hover or press without resetting the current position.
+  // Skips its first run: the message effect above already starts the loop on
+  // mount, and both effects fire together on mount, so acting here too would
+  // start it twice.
+  const isFirstPauseEffect = useRef(true);
+  useEffect(() => {
+    if (isFirstPauseEffect.current) {
+      isFirstPauseEffect.current = false;
+      return;
+    }
+    if (isPaused) {
+      cancelAnimation(offsetX);
+    } else {
+      startLoop();
+    }
+  }, [isPaused, startLoop, offsetX]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: offsetX.value }],
