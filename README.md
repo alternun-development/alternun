@@ -126,14 +126,12 @@ Current version: **1.1.83**
 
 ### Bug Fixes
 
-- **repo:** fix(repo): artifact, graph.db
-- **repo:** fix(infra): point dashboard-prod at the -v2 identity integration-config secret (#228)
-- **repo:** test(onboarding): add coverage for hero layout metrics
-
-### Bug Fixes
-
-- **infra:** point dashboard-prod at the -v2 identity integration-config secret ([#228](https://github.com/alternun-development/alternun/issues/228)) ([050e879](https://github.com/alternun-development/alternun/commit/050e87993ab674efbaa2c997ba74d76c9c336988)), closes [#220](https://github.com/alternun-development/alternun/issues/220)
 - **repo:** artifact, graph.db ([4a07436](https://github.com/alternun-development/alternun/commit/4a074362b05ba2f5737ef6e4b1410649ae0afb7f))
+- **infra:** point dashboard-prod at the -v2 identity integration-config secret (#228) ([050e879](https://github.com/alternun-development/alternun/commit/050e87993ab674efbaa2c997ba74d76c9c336988))
+
+### Changes
+
+- **onboarding:** add coverage for hero layout metrics ([c59051c](https://github.com/alternun-development/alternun/commit/c59051cb5697c6f531176954ab43c144fa5c8419))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
