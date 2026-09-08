@@ -70,35 +70,36 @@ export default function DynamicMessageBar({
   }, [width, duration]);
 
   const startLoop = useCallback(() => {
+    // No completion callback here: with a non-reversing (reverse: false) repeat,
+    // Reanimated already snaps back to the starting value at the top of each
+    // iteration. Reanimated also invokes withTiming's callback at the end of
+    // every iteration (not just once), so assigning offsetX.value from inside
+    // it would overwrite and cancel the still-running withRepeat after the
+    // first pass, leaving the marquee stuck offscreen.
     offsetX.value = withRepeat(
-      withTiming(
-        -widthRef.current * 1.5,
-        {
-          duration: durationRef.current,
-          easing: Easing.linear,
-        },
-        (finished) => {
-          if (finished) {
-            offsetX.value = widthRef.current;
-          }
-        }
-      ),
+      withTiming(-widthRef.current * 1.5, {
+        duration: durationRef.current,
+        easing: Easing.linear,
+      }),
       -1,
       false
     );
   }, [offsetX]);
 
-  // Resets scroll position and (re)starts the loop only when the message
-  // itself changes, so the animation keeps rolling uninterrupted otherwise.
+  // Resets scroll position and (re)starts the loop when the message changes,
+  // or when width/duration change (resize, rotation, duration prop update) so
+  // the running animation doesn't keep scrolling to a stale destination at a
+  // stale speed. offsetX/isPaused/startLoop are intentionally excluded:
+  // they're handled by the separate pause effect below and must not retrigger
+  // this reset.
   useEffect(() => {
     offsetX.value = widthRef.current;
     if (!isPaused) {
       startLoop();
     }
     return () => cancelAnimation(offsetX);
-    // eslint-disable-next-line -- intentionally scoped to [message]; offsetX/isPaused/startLoop
-    // are handled by the separate pause effect below and must not retrigger this reset.
-  }, [message]);
+    // eslint-disable-next-line -- see comment above for the intentional omissions
+  }, [message, width, duration]);
 
   // Pauses/resumes on hover or press without resetting the current position.
   // Skips its first run: the message effect above already starts the loop on
