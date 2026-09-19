@@ -1,6 +1,7 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import { Image, Modal, Text, TouchableOpacity } from 'react-native';
+import { Image, Modal, Text, TouchableOpacity, View } from 'react-native';
+import { Check } from 'lucide-react-native';
 import { TierJourney } from '../TierJourney';
 import { TierDetailsModal } from '../TierDetailsModal';
 import { STATUS_DETAIL_BADGES } from '../badgeAssets';
@@ -96,6 +97,57 @@ it.each([
         .props.onPress()
     );
     expect(onClose).toHaveBeenCalledTimes(2);
+    act(() => tree.unmount());
+  }
+);
+
+it.each([
+  [null, false, '0%', 0, 'Your score is currently unavailable'],
+  [0, true, '25%', 1, '20,000 AIRS to reach this tier'],
+  [1000, false, '50%', 2, '19,000 AIRS to reach this tier'],
+  [5000, true, '75%', 3, '15,000 AIRS to reach this tier'],
+  [20000, false, '100%', 3, 'Your current tier'],
+  [25000, true, '100%', 3, 'Your current tier'],
+])(
+  'shows accurate milestone progress at score=%s in dark mode=%s',
+  (score, isDark, progressWidth, reachedImageCount, expectedDetails) => {
+    let tree;
+    act(() => {
+      tree = renderer.create(<TierJourney score={score} isDark={isDark} c={colors} />);
+    });
+
+    const tracks = tree.root.findAllByType(View).filter((node) => node.props.style?.height === 3);
+    expect(tracks).toHaveLength(2);
+    expect(tracks[0].props.style.backgroundColor).toBe(
+      isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.08)'
+    );
+    expect(tracks[1].props.style.width).toBe(progressWidth);
+    const images = tree.root.findAllByType(Image);
+    expect(images).toHaveLength(3);
+    expect(images.filter((node) => node.props.style.opacity === 1)).toHaveLength(reachedImageCount);
+    expect(images.filter((node) => node.props.style.opacity === 0.35)).toHaveLength(
+      3 - reachedImageCount
+    );
+
+    const platinum = tree.root
+      .findAllByType(TouchableOpacity)
+      .find((node) => node.props.accessibilityLabel === 'Platinum');
+    const marker = platinum.findAllByType(View).find((node) => node.props.style?.borderWidth === 2);
+    const reachedPlatinum = score !== null && score >= 20000;
+    expect(marker.props.style.backgroundColor).toBe(reachedPlatinum ? '#9ba9c4' : 'transparent');
+    expect(marker.props.style.borderColor).toBe(
+      reachedPlatinum ? '#9ba9c4' : isDark ? 'rgba(255,255,255,0.12)' : 'rgba(11,45,49,0.12)'
+    );
+    expect(platinum.findAllByType(Check)).toHaveLength(reachedPlatinum ? 1 : 0);
+    if (!reachedPlatinum) {
+      expect(platinum.findAllByType(Text).some((node) => node.props.children === 4)).toBe(true);
+    }
+
+    act(() => platinum.props.onPress());
+    expect(textContent(tree)).toContain('Platinum status');
+    expect(textContent(tree)).toContain(expectedDetails);
+    act(() => tree.root.findByType(Modal).props.onRequestClose());
+    expect(tree.root.findAllByType(Modal)).toHaveLength(0);
     act(() => tree.unmount());
   }
 );
