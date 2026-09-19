@@ -1,3 +1,25 @@
+## [1.1.85](https://github.com/alternun-development/alternun/compare/v1.1.84...v1.1.85) (2026-09-19)
+
+### Bug Fixes
+
+- **security:** patch Next.js and retain CI audit evidence ([621a075](https://github.com/alternun-development/alternun/commit/621a07510aacb7cd6a6348ce3be322e172cc5553))
+- **api:** load app environment for repository-root startup ([6967406](https://github.com/alternun-development/alternun/commit/6967406c3d607bc02aab77d39d59b6d0e935c120))
+
+### Changes
+
+- **profile:** cover tier thresholds and unavailable scores ([f4c08af](https://github.com/alternun-development/alternun/commit/f4c08af0f31f9b40ac671bf6f676e46fdb2aba60))
+
+## [1.1.84](https://github.com/alternun-development/alternun/compare/v1.1.83...v1.1.84) (2026-09-19)
+
+### Features
+
+- **profile:** add AIRS badge artwork and tier detail modals ([775af4a](https://github.com/alternun-development/alternun/commit/775af4a980aa5b5812ee7c180005c8caccca99de))
+
+### Bug Fixes
+
+- **api:** resolve startup migrations and explain inactive tenants ([9c5cd18](https://github.com/alternun-development/alternun/commit/9c5cd18f597669ed386cbefcceed3d06e548f055))
+- **mobile:** stop DynamicMessageBar marquee from stalling and going stale ([ae53f1b](https://github.com/alternun-development/alternun/commit/ae53f1ba92ffc608b7377a841f4c6a8b8beac9bd))
+
 ## [1.1.83](https://github.com/alternun-development/alternun/compare/v1.1.82...v1.1.83) (2026-09-07)
 
 ### Bug Fixes
