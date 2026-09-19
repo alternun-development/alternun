@@ -120,18 +120,24 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.83**
+Current version: **1.1.84**
 
-## 📋 Latest Changes (v1.1.83)
+## 📋 Latest Changes (v1.1.84)
 
 ### Bug Fixes
 
-- **repo:** artifact, graph.db ([4a07436](https://github.com/alternun-development/alternun/commit/4a074362b05ba2f5737ef6e4b1410649ae0afb7f))
-- **infra:** point dashboard-prod at the -v2 identity integration-config secret (#228) ([050e879](https://github.com/alternun-development/alternun/commit/050e87993ab674efbaa2c997ba74d76c9c336988))
+- **repo:** feat(profile): add AIRS badge artwork and tier detail modals
+- **repo:** fix(api): resolve startup migrations and explain inactive tenants
+- **repo:** fix(mobile): stop DynamicMessageBar marquee from stalling and going stale
 
-### Changes
+### Bug Fixes
 
-- **onboarding:** add coverage for hero layout metrics ([c59051c](https://github.com/alternun-development/alternun/commit/c59051cb5697c6f531176954ab43c144fa5c8419))
+- **api:** resolve startup migrations and explain inactive tenants ([9c5cd18](https://github.com/alternun-development/alternun/commit/9c5cd18f597669ed386cbefcceed3d06e548f055))
+- **mobile:** stop DynamicMessageBar marquee from stalling and going stale ([ae53f1b](https://github.com/alternun-development/alternun/commit/ae53f1ba92ffc608b7377a841f4c6a8b8beac9bd)), closes [#229](https://github.com/alternun-development/alternun/issues/229)
+
+### Features
+
+- **profile:** add AIRS badge artwork and tier detail modals ([775af4a](https://github.com/alternun-development/alternun/commit/775af4a980aa5b5812ee7c180005c8caccca99de))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
