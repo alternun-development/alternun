@@ -898,6 +898,29 @@
         "countryPlaceholder": "ej. Colombia",
         "cityPlaceholder": "ej. Medellín"
       },
+      "tierDetails": {
+        "open": "Ver detalles y beneficios del nivel",
+        "title": "Estatus {{tier}}",
+        "close": "Cerrar detalles del nivel",
+        "threshold": "{{amount}}+ AIRS",
+        "current": "Tu nivel actual",
+        "unavailable": "Tu puntuación no está disponible en este momento",
+        "remaining": "{{amount}} AIRS para alcanzar este nivel",
+        "reached": "Hito alcanzado",
+        "benefits": "Lo que AIRS hace posible",
+        "reputation": "Una reputación visible y verificable construida con tu contribución.",
+        "opportunities": "Acceso a beneficios, descuentos, proyectos y oportunidades del ecosistema según los requisitos de cada programa.",
+        "rbi": "Tu trayectoria AIRS contribuye a determinar tu participación en el Ingreso Básico Regenerativo (RBI), cuando cumples los requisitos.",
+        "eligibility": "La disponibilidad depende de las reglas de participación y elegibilidad de cada programa. Alcanzar un nivel no concede automáticamente todos los beneficios.",
+        "descriptions": {
+          "bronze": "Tu camino en AIRS comienza aquí. Construye una trayectoria visible mediante acciones elegibles y verificadas que contribuyen al ecosistema regenerativo.",
+          "silver": "Una trayectoria de contribución en crecimiento. Plata reconoce las acciones verificadas que han llevado tu puntuación AIRS acumulada hasta este hito.",
+          "gold": "Un hito significativo en tu camino regenerativo. Oro hace visibles tu contribución acumulada y tu compromiso dentro del ecosistema.",
+          "platinum": "El nivel más alto del camino AIRS actual. Platino reconoce una amplia trayectoria de contribución verificada, construida a lo largo del tiempo."
+        }
+      },
+      "achievementUnlocked": "Desbloqueado",
+      "achievementLocked": "Bloqueado",
       "achievementBadges": {
         "account_confirmed": "Cuenta verificada",
         "first_10_airs": "10 AIRS",
