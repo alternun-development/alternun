@@ -21,6 +21,7 @@ import {
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Alert,
   Animated,
   Platform,
@@ -83,6 +84,8 @@ import {
   type AchievementDef,
   type ColorPalette,
 } from '../components/profile/AchievementBadge';
+import { TierJourney } from '../components/profile/TierJourney';
+import { STATUS_BADGES } from '../components/profile/badgeAssets';
 import { ReferralCard } from '../components/profile/ReferralCard';
 
 const AwardIcon = Award as React.FC<LucideProps>;
@@ -514,7 +517,8 @@ function ProfileHeader({
               width: 96,
               height: 96,
               borderRadius: 48,
-              backgroundColor: hasScore ? spec.color : c.accent,
+              backgroundColor:
+                hasScore && STATUS_BADGES[tier] ? 'transparent' : hasScore ? spec.color : c.accent,
               alignItems: 'center',
               justifyContent: 'center',
               borderWidth: 3,
@@ -529,16 +533,25 @@ function ProfileHeader({
               }),
             }}
           >
-            <Text
-              style={{
-                fontSize: 36,
-                fontWeight: '800',
-                color: '#050510',
-                fontFamily: 'Sculpin-Bold',
-              }}
-            >
-              {toInitials(displayName)}
-            </Text>
+            {hasScore && STATUS_BADGES[tier] ? (
+              <Image
+                source={STATUS_BADGES[tier]}
+                accessibilityLabel={spec.label}
+                resizeMode='contain'
+                style={{ width: 90, height: 90 }}
+              />
+            ) : (
+              <Text
+                style={{
+                  fontSize: 36,
+                  fontWeight: '800',
+                  color: '#050510',
+                  fontFamily: 'Sculpin-Bold',
+                }}
+              >
+                {toInitials(displayName)}
+              </Text>
+            )}
           </View>
           {hasScore ? (
             <View
@@ -680,174 +693,6 @@ function Divider({ c }: { c: ColorPalette }): React.JSX.Element {
         height: 40,
       }}
     />
-  );
-}
-
-function TierJourney({
-  score,
-  isDark,
-  c,
-}: {
-  score: number | null;
-  isDark: boolean;
-  c: ColorPalette;
-}): React.JSX.Element {
-  const { t } = useAppTranslation('mobile');
-  const hasScore = score !== null;
-  const safeScore = score ?? 0;
-  const tiers = [
-    {
-      id: 'bronze' as const,
-      label: t('profile.tierLabels.bronze', undefined, 'Bronze'),
-      threshold: 0,
-      color: '#cd7f32',
-    },
-    {
-      id: 'silver' as const,
-      label: t('profile.tierLabels.silver', undefined, 'Silver'),
-      threshold: 1000,
-      color: '#a8b8cc',
-    },
-    {
-      id: 'gold' as const,
-      label: t('profile.tierLabels.gold', undefined, 'Gold'),
-      threshold: 5000,
-      color: '#d4b96a',
-    },
-    {
-      id: 'platinum' as const,
-      label: t('profile.tierLabels.platinum', undefined, 'Platinum'),
-      threshold: 20000,
-      color: '#9ba9c4',
-    },
-  ];
-  const currentIdx = hasScore
-    ? tiers.findIndex((tierItem) => tierItem.id === resolveTier(safeScore))
-    : -1;
-
-  return (
-    <GlassCard
-      style={{
-        margin: 12,
-        padding: 18,
-      }}
-    >
-      <Text
-        style={{
-          fontSize: 11,
-          fontWeight: '700',
-          letterSpacing: 0.12,
-          color: c.muted,
-          textTransform: 'uppercase',
-          marginBottom: 14,
-        }}
-      >
-        {t('profile.tierJourney', undefined, 'Tier Journey')}
-      </Text>
-
-      <View style={{ position: 'relative', height: 120 }}>
-        {/* Track background */}
-        <View
-          style={{
-            position: 'absolute',
-            top: 14,
-            left: 14,
-            right: 14,
-            height: 3,
-            backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,45,49,0.08)',
-            borderRadius: 999,
-          }}
-        />
-
-        {/* Track fill */}
-        <View
-          style={{
-            position: 'absolute',
-            top: 14,
-            left: 14,
-            right: 14,
-            height: 3,
-            borderRadius: 999,
-            backgroundColor: '#d4b96a',
-            width: `${(Math.max(currentIdx + 1, 0) / tiers.length) * 100}%`,
-          }}
-        />
-
-        {/* Tier nodes */}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-          }}
-        >
-          {tiers.map((t, i) => {
-            const reached = i <= currentIdx;
-            return (
-              <View
-                key={t.id}
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  zIndex: 1,
-                }}
-              >
-                <View
-                  style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 15,
-                    backgroundColor: reached ? t.color : 'transparent',
-                    borderWidth: 2,
-                    borderColor: reached
-                      ? t.color
-                      : isDark
-                      ? 'rgba(255,255,255,0.12)'
-                      : 'rgba(11,45,49,0.12)',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {i === currentIdx && reached ? (
-                    <CheckIcon size={14} color='#050510' strokeWidth={3} />
-                  ) : (
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        fontWeight: '700',
-                        color: reached ? '#050510' : c.muted,
-                      }}
-                    >
-                      {i + 1}
-                    </Text>
-                  )}
-                </View>
-                <Text
-                  style={{
-                    fontSize: 10,
-                    fontWeight: '700',
-                    color: reached ? c.text : c.muted,
-                    marginTop: 6,
-                  }}
-                >
-                  {t.label}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 9,
-                    color: c.muted,
-                    fontFamily: 'monospace',
-                    marginTop: 2,
-                  }}
-                >
-                  {t.threshold >= 1000 ? `${(t.threshold / 1000).toFixed(0)}K` : t.threshold}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-      </View>
-    </GlassCard>
   );
 }
 
@@ -2821,6 +2666,7 @@ function PerfilTab({
                 <AchievementBadge
                   key={key}
                   def={achievementDef}
+                  textColor={c.text}
                   onPress={() =>
                     setSelectedAchievement({ label: achievementLabel, color: def.color })
                   }

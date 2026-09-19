@@ -7,7 +7,7 @@
  *   await initMigrations();
  *   const app = await createApp();
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { Pool, type PoolClient } from 'pg';
 
@@ -88,34 +88,36 @@ async function getAppliedMigrations(client: PoolClient): Promise<Set<string>> {
 }
 
 function getMigrationFiles(): Migration[] {
-  try {
-    const migrationsDir = resolve('./supabase/migrations');
-    const files = readdirSync(migrationsDir)
-      .filter((file) => file.endsWith('.sql'))
-      .sort();
+  const migrationsDir = [
+    resolve('./supabase/migrations'),
+    resolve('../../supabase/migrations'),
+  ].find((directory) => existsSync(directory));
 
-    return files
-      .map((file) => {
-        const match = file.match(/^(\d+_\d+)_(.+)\.sql$/);
-        if (!match) {
-          throw new Error(
-            `Invalid migration filename: ${file}. Use format: YYYYMMDD_NNNN_description.sql`
-          );
-        }
-        const [, version, name] = match;
-        return {
-          name: name ?? 'unknown',
-          version: version ?? '0',
-          path: resolve(migrationsDir, file),
-        };
-      })
-      .filter((migration) => !skippedMigrationVersions.has(migration.version));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return [];
-    }
-    throw error;
+  if (!migrationsDir) {
+    throw new Error(
+      'Migration files not found. Start the API from the repository root or apps/api.'
+    );
   }
+  const files = readdirSync(migrationsDir)
+    .filter((file) => file.endsWith('.sql'))
+    .sort();
+
+  return files
+    .map((file) => {
+      const match = file.match(/^(\d+_\d+)_(.+)\.sql$/);
+      if (!match) {
+        throw new Error(
+          `Invalid migration filename: ${file}. Use format: YYYYMMDD_NNNN_description.sql`
+        );
+      }
+      const [, version, name] = match;
+      return {
+        name: name ?? 'unknown',
+        version: version ?? '0',
+        path: resolve(migrationsDir, file),
+      };
+    })
+    .filter((migration) => !skippedMigrationVersions.has(migration.version));
 }
 
 async function runMigration(client: PoolClient, migration: Migration): Promise<void> {
@@ -185,6 +187,13 @@ export async function initMigrations(): Promise<void> {
       console.log(`[migrations] All ${pendingMigrations.length} migration(s) applied`);
     }
   } catch (error) {
+    if (error instanceof Error && /tenant(?:\/| or )user.*not found/i.test(error.message)) {
+      const diagnostic = new Error(
+        'The configured Supabase pooler cannot find the database tenant. Check that the development project is active (resume it if paused), then copy its current connection string from Supabase Connect into apps/api/.env. Check MIGRATION_DATABASE_URL and INFRA_BACKEND_API_DATABASE_URL overrides first, then DATABASE_URL_DEV. Do not switch to production to recover local development.'
+      );
+      console.error('[migrations] Failed:', diagnostic.message);
+      throw diagnostic;
+    }
     console.error('[migrations] Failed:', error);
     throw error;
   } finally {

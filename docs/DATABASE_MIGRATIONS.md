@@ -252,3 +252,27 @@ SELECT t.column FROM public.table t WHERE t.id = ...
 
 - [Supabase README](../supabase/README.md) - Migration file organization
 - [Auth sync triggers](../docs/AUTH_SYNC_TRIGGERS.md) - Example complex migrations
+
+## Local API startup: pooler tenant not found
+
+`XX000` with `(ENOTFOUND) tenant/user ... not found` is a response from
+Supabase's shared pooler, not necessarily a local DNS failure. Check whether
+the development project is paused/inactive and resume it in Supabase before
+retrying. If it is active, copy its complete current connection string from
+**Connect**; the pooler host and username must belong to the same project.
+See [Supabase's tenant troubleshooting guide](https://supabase.com/docs/guides/troubleshooting/tenant-or-user-not-found).
+
+Local startup loads the root `.env`, then `apps/api/.env`, whether launched
+from the repository root or `apps/api`. Local file values override existing
+process values; process values absent from both files are preserved. An explicit
+custom env-file path loads only that file. Production does not load local files.
+Migration target
+precedence is `MIGRATION_DATABASE_URL`, `INFRA_BACKEND_API_DATABASE_URL`,
+`DATABASE_URL_DEV`, `DATABASE_URL_DEV_IPV4`, `DATABASE_URL_DEV_NOIPV4`,
+`DATABASE_URL`, then `SUPABASE_DATABASE_URL`. Update the selected value in the
+local environment; keep credentials out of tracked files. Do not point local
+development at production or disable migrations to hide an unavailable database.
+
+Startup searches for `supabase/migrations` from the repository root or from
+`apps/api` and fails if neither location exists. It must not silently report
+success while applying no migrations because of the working directory.
