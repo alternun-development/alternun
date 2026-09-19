@@ -1,19 +1,13 @@
 ## [1.1.84](https://github.com/alternun-development/alternun/compare/v1.1.83...v1.1.84) (2026-09-19)
 
-### Bug Fixes
+### Features
 
-- **repo:** feat(profile): add AIRS badge artwork and tier detail modals
-- **repo:** fix(api): resolve startup migrations and explain inactive tenants
-- **repo:** fix(mobile): stop DynamicMessageBar marquee from stalling and going stale
+- **profile:** add AIRS badge artwork and tier detail modals ([775af4a](https://github.com/alternun-development/alternun/commit/775af4a980aa5b5812ee7c180005c8caccca99de))
 
 ### Bug Fixes
 
 - **api:** resolve startup migrations and explain inactive tenants ([9c5cd18](https://github.com/alternun-development/alternun/commit/9c5cd18f597669ed386cbefcceed3d06e548f055))
-- **mobile:** stop DynamicMessageBar marquee from stalling and going stale ([ae53f1b](https://github.com/alternun-development/alternun/commit/ae53f1ba92ffc608b7377a841f4c6a8b8beac9bd)), closes [#229](https://github.com/alternun-development/alternun/issues/229)
-
-### Features
-
-- **profile:** add AIRS badge artwork and tier detail modals ([775af4a](https://github.com/alternun-development/alternun/commit/775af4a980aa5b5812ee7c180005c8caccca99de))
+- **mobile:** stop DynamicMessageBar marquee from stalling and going stale ([ae53f1b](https://github.com/alternun-development/alternun/commit/ae53f1ba92ffc608b7377a841f4c6a8b8beac9bd))
 
 ## [1.1.83](https://github.com/alternun-development/alternun/compare/v1.1.82...v1.1.83) (2026-09-07)
 
