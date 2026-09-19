@@ -898,6 +898,29 @@
         "countryPlaceholder": "e.g. Colombia",
         "cityPlaceholder": "e.g. Medellín"
       },
+      "tierDetails": {
+        "open": "View tier details and benefits",
+        "title": "{{tier}} status",
+        "close": "Close tier details",
+        "threshold": "{{amount}}+ AIRS",
+        "current": "Your current tier",
+        "unavailable": "Your score is currently unavailable",
+        "remaining": "{{amount}} AIRS to reach this tier",
+        "reached": "Milestone reached",
+        "benefits": "What AIRS opens up",
+        "reputation": "A visible, verifiable reputation built from your contribution.",
+        "opportunities": "Access to eligible ecosystem benefits, discounts, projects and opportunities.",
+        "rbi": "Your AIRS track record informs participation in Regenerative Basic Income (RBI), when eligible.",
+        "eligibility": "Availability depends on each program’s participation and eligibility rules. Reaching a tier does not automatically grant every benefit.",
+        "descriptions": {
+          "bronze": "Your AIRS journey starts here. Build a visible track record through eligible, verified actions that contribute to the regenerative ecosystem.",
+          "silver": "A growing track record of contribution. Silver recognizes the verified actions that have brought your cumulative AIRS score to this milestone.",
+          "gold": "A significant milestone in your regenerative journey. Gold makes your accumulated contribution and commitment visible within the ecosystem.",
+          "platinum": "The highest tier in the current AIRS journey. Platinum recognizes an extensive track record of verified contribution, built over time."
+        }
+      },
+      "achievementUnlocked": "Unlocked",
+      "achievementLocked": "Locked",
       "achievementBadges": {
         "account_confirmed": "Account Verified",
         "first_10_airs": "10 AIRS",
