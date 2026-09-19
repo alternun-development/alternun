@@ -120,18 +120,20 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.84**
+Current version: **1.1.85**
 
-## 📋 Latest Changes (v1.1.84)
-
-### Features
-
-- **profile:** add AIRS badge artwork and tier detail modals ([775af4a](https://github.com/alternun-development/alternun/commit/775af4a980aa5b5812ee7c180005c8caccca99de))
+## 📋 Latest Changes (v1.1.85)
 
 ### Bug Fixes
 
-- **api:** resolve startup migrations and explain inactive tenants ([9c5cd18](https://github.com/alternun-development/alternun/commit/9c5cd18f597669ed386cbefcceed3d06e548f055))
-- **mobile:** stop DynamicMessageBar marquee from stalling and going stale ([ae53f1b](https://github.com/alternun-development/alternun/commit/ae53f1ba92ffc608b7377a841f4c6a8b8beac9bd))
+- **repo:** fix(security): patch Next.js and retain CI audit evidence
+- **repo:** test(profile): cover tier thresholds and unavailable scores
+- **repo:** fix(api): load app environment for repository-root startup
+
+### Bug Fixes
+
+- **api:** load app environment for repository-root startup ([6967406](https://github.com/alternun-development/alternun/commit/6967406c3d607bc02aab77d39d59b6d0e935c120))
+- **security:** patch Next.js and retain CI audit evidence ([621a075](https://github.com/alternun-development/alternun/commit/621a07510aacb7cd6a6348ce3be322e172cc5553))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
