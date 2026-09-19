@@ -129,7 +129,18 @@ jobs:
         run: pnpm install
 
       - name: Run security audit
-        run: pnpm run security:audit
+        id: security-audit
+        run: |
+          set -o pipefail
+          pnpm run security:audit 2>&1 | tee security-audit.log
+
+      - name: Upload security audit evidence
+        if: always() && steps.security-audit.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-${{ github.sha }}
+          path: security-audit.log
+          retention-days: 30
 
   build:
     name: Build
