@@ -54,17 +54,17 @@ export function loadLocalApiEnv(envFilePath = resolve(process.cwd(), '.env')): v
   }
 
   const defaultEnvFilePath = resolve(process.cwd(), '.env');
-  const repoRootEnvFilePath = resolve(process.cwd(), '..', '..', '.env');
-
-  if (envFilePath === defaultEnvFilePath && existsSync(repoRootEnvFilePath)) {
-    loadEnvFile(repoRootEnvFilePath);
-  }
-
-  if (!existsSync(envFilePath)) {
+  if (envFilePath !== defaultEnvFilePath) {
+    loadEnvFile(envFilePath);
     return;
   }
 
-  loadEnvFile(envFilePath);
+  const apiDirectory = existsSync(resolve(process.cwd(), 'apps', 'api'))
+    ? resolve(process.cwd(), 'apps', 'api')
+    : process.cwd();
+
+  loadEnvFile(resolve(apiDirectory, '..', '..', '.env'));
+  loadEnvFile(resolve(apiDirectory, '.env'));
 }
 
 loadLocalApiEnv();
