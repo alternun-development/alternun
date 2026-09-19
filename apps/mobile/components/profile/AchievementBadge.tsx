@@ -1,6 +1,9 @@
 import { Shield, Trophy, type LucideProps } from 'lucide-react-native';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
+
+import { useAppTranslation } from '../i18n/useAppTranslation';
+import { ACHIEVEMENT_ARTWORK, LOCKED_BADGE } from './badgeAssets';
 
 export interface ColorPalette {
   bg: string;
@@ -100,14 +103,24 @@ export const ACHIEVEMENT_CATALOG = {
 export function AchievementBadge({
   def,
   onPress,
+  textColor = '#637875',
 }: {
   def: AchievementDef;
   onPress?: () => void;
+  textColor?: string;
 }): React.JSX.Element {
   const Icon = def.icon;
+  const { t } = useAppTranslation('mobile');
 
   return (
     <TouchableOpacity
+      accessibilityRole='button'
+      accessibilityLabel={def.label}
+      accessibilityValue={{
+        text: def.unlocked
+          ? t('profile.achievementUnlocked', undefined, 'Unlocked')
+          : t('profile.achievementLocked', undefined, 'Locked'),
+      }}
       onPress={onPress}
       activeOpacity={0.7}
       style={{
@@ -117,97 +130,43 @@ export function AchievementBadge({
         paddingHorizontal: 4,
       }}
     >
-      {/* Badge Container with Glow Effect */}
-      <View
-        style={{
-          position: 'relative',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {/* Outer Glow */}
-        <View
-          style={{
-            position: 'absolute',
-            width: 72,
-            height: 72,
-            borderRadius: 24,
-            backgroundColor: def.color,
-            opacity: def.unlocked ? 0.15 : 0.05,
-          }}
-        />
-
-        {/* Main Badge */}
-        <View
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: 20,
-            backgroundColor: def.unlocked ? def.color : 'rgba(255,255,255,0.1)',
-            borderWidth: 2,
-            borderColor: def.unlocked ? `${def.color}99` : 'rgba(255,255,255,0.15)',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Inner Shine */}
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '50%',
-              backgroundColor: 'white',
-              opacity: def.unlocked ? 0.12 : 0.06,
-              borderTopLeftRadius: 18,
-              borderTopRightRadius: 18,
-            }}
+      <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
+        {!def.unlocked || ACHIEVEMENT_ARTWORK[def.key] ? (
+          <Image
+            source={def.unlocked ? ACHIEVEMENT_ARTWORK[def.key] : LOCKED_BADGE}
+            resizeMode='contain'
+            style={{ width: 64, height: 64 }}
+            accessible={false}
           />
-
-          {/* Icon Container */}
+        ) : (
           <View
             style={{
+              width: 56,
+              height: 56,
+              borderRadius: 18,
+              backgroundColor: `${def.color}20`,
+              borderWidth: 1,
+              borderColor: def.color,
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 2,
-              backgroundColor: def.unlocked ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.1)',
-              width: 48,
-              height: 48,
-              borderRadius: 12,
             }}
           >
-            <Icon
-              size={22}
-              color={def.unlocked ? '#fff' : 'rgba(255,255,255,0.4)'}
-              strokeWidth={2}
-            />
+            <Icon size={26} color={def.color} strokeWidth={2} />
           </View>
-
-          {/* Unlock Star */}
-          {def.unlocked && (
-            <View
-              style={{
-                position: 'absolute',
-                top: -6,
-                right: -6,
-                width: 24,
-                height: 24,
-                borderRadius: 12,
-                backgroundColor: def.color,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderWidth: 2,
-                borderColor: '#050510',
-              }}
-            >
-              <Text style={{ fontSize: 12, color: '#050510', fontWeight: '900' }}>★</Text>
-            </View>
-          )}
-        </View>
+        )}
       </View>
+      <Text
+        numberOfLines={2}
+        style={{
+          marginTop: 6,
+          fontSize: 10,
+          lineHeight: 13,
+          textAlign: 'center',
+          color: textColor,
+        }}
+      >
+        {def.label}
+      </Text>
     </TouchableOpacity>
   );
 }
