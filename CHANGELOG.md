@@ -1,3 +1,16 @@
+## [1.1.85](https://github.com/alternun-development/alternun/compare/v1.1.84...v1.1.85) (2026-09-19)
+
+### Bug Fixes
+
+- **repo:** fix(security): patch Next.js and retain CI audit evidence
+- **repo:** test(profile): cover tier thresholds and unavailable scores
+- **repo:** fix(api): load app environment for repository-root startup
+
+### Bug Fixes
+
+- **api:** load app environment for repository-root startup ([6967406](https://github.com/alternun-development/alternun/commit/6967406c3d607bc02aab77d39d59b6d0e935c120))
+- **security:** patch Next.js and retain CI audit evidence ([621a075](https://github.com/alternun-development/alternun/commit/621a07510aacb7cd6a6348ce3be322e172cc5553))
+
 ## [1.1.84](https://github.com/alternun-development/alternun/compare/v1.1.83...v1.1.84) (2026-09-19)
 
 ### Features
