@@ -1,15 +1,13 @@
-## [1.1.87](https://github.com/alternun-development/alternun/compare/v1.1.86...v1.1.87) (2026-09-20)
-
-### Bug Fixes
-
-- **repo:** fix(airs): streamline mobile milestone sharing
-- **repo:** test(airs): cover badge sharing fallbacks and tier states
-- **repo:** fix(infra): qualify production identity secret with its stage
+## [1.1.87](https://github.com/alternun-development/alternun/compare/v1.1.86...v1.1.87) (2026-09-19)
 
 ### Bug Fixes
 
 - **airs:** streamline mobile milestone sharing ([3de22e3](https://github.com/alternun-development/alternun/commit/3de22e3e70f66a45c6e3893123ee3ff257821264))
 - **infra:** qualify production identity secret with its stage ([9c0a222](https://github.com/alternun-development/alternun/commit/9c0a2226ed4e2f17c30d9ac62dae549c5d320a70))
+
+### Changes
+
+- **airs:** cover badge sharing fallbacks and tier states ([c81cb58](https://github.com/alternun-development/alternun/commit/c81cb580f026239b7451429e531cb11512cde418))
 
 ## [1.1.86](https://github.com/alternun-development/alternun/compare/v1.1.85...v1.1.86) (2026-09-19)
 
