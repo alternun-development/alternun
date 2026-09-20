@@ -1,3 +1,4 @@
+jest.mock('../AchievementDetailsModal', () => ({ __esModule: true, default: () => null }));
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { TouchableOpacity } from 'react-native';
