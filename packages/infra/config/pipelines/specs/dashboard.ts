@@ -121,7 +121,7 @@ export function buildDashboardPipelineSpecs({
         // actually runs deployIdentityInfrastructure, e.g. identity-prod — it has no
         // effect here.)
         INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME:
-          'alternun-infra/identity/integration-config-v2',
+          'alternun-infra/identity/integration-config-v2/identity-prod',
         INFRA_ENABLE_ADMIN_SITE: 'true',
         INFRA_ADMIN_DEDICATED_STACKS_ONLY: 'true',
         INFRA_ADMIN_ENABLED_STAGES: 'production',
