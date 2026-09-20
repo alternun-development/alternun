@@ -119,3 +119,30 @@ preview timing/caching; a web composer cannot force an uploaded attachment.
 Instagram uses device image sharing or a downloaded PNG and copied caption.
 Deployment and live crawler validation are required; localhost URLs cannot be
 previewed by external social networks.
+
+## Mobile navbar and compact sharing
+
+The mobile account pill reserves a 12px navbar gutter, uses up to 220px of available
+space, and truncates long names/balances within the control. Its mobile container
+can use 75% of the navbar instead of the desktop 45% cap. Below 360px the existing
+compact menu remains available. The loading skeleton uses the same width budget.
+
+After creating a personalized card, the milestone modal shows one primary
+**Share with apps** action. **Social links** and **Save & caption** expand on demand.
+The personalized card replaces the badge preview rather than displaying both.
+Native/web file sharing attaches the prepared PNG; browsers that support link
+sharing but not PNG files share the public preview URL instead. Sharing is invoked
+directly from the tap, after preparation, to retain browser user activation.
+Unsupported browsers expand the social/download alternatives. Cancellation is not
+reported as a failure.
+
+X, Facebook and LinkedIn buttons share links, separate from the image share sheet.
+Mobile browsers (including iPad desktop mode) navigate directly to HTTPS composers;
+desktop uses a separate window. The operating system controls associated-app routing
+and available share targets. No undocumented custom URL schemes or automatic social
+posts are used. Instagram image posts use the device share sheet or manual attachment
+of the saved PNG. The browser cannot force a particular installed app to accept it.
+
+Reference: [Web Share API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Share_API).
+Component browser checks cover 320–430px layouts; sharing tests mock browser/native
+APIs and do not claim physical-device social-app integration coverage.

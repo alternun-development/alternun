@@ -1017,7 +1017,14 @@
         },
         "createImage": "Create share image",
         "publishHint": "Create a public image with your display name and this earned badge to share on social media.",
-        "previewHint": "Your post link includes the personalized image preview. The social network controls when it appears."
+        "previewHint": "Your post link includes the personalized image preview. The social network controls when it appears.",
+        "shareApps": "Share with apps",
+        "appsHint": "Choose an installed app from your device’s share menu. For Instagram, share the image or save it to attach to a post.",
+        "socialLinks": "Social links",
+        "linksHint": "Share the public preview link. To attach the image in an app, use Share with apps.",
+        "saveCaption": "Save & caption",
+        "browserFallback": "Choose a social link, or save the image and copy your caption.",
+        "downloadError": "Unable to save the image. Try Share with apps instead."
       }
     },
     "explorer": {

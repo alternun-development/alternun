@@ -51,18 +51,20 @@ const props = {
   onSignOut: jest.fn(),
 };
 
-it.each([
-  [30, 'Bronze', '#cd7f32'],
-  [1000, 'Silver', '#a8b8cc'],
-  [5000, 'Gold', '#d4b96a'],
-  [20000, 'Platinum', '#9ba9c4'],
-])(
-  'keeps the shared %s AIRS tier when navigating from dashboard to profile',
-  (score, label, color) => {
+it.each(
+  [
+    [30, 'Bronze', '#cd7f32'],
+    [1000, 'Silver', '#a8b8cc'],
+    [5000, 'Gold', '#d4b96a'],
+    [20000, 'Platinum', '#9ba9c4'],
+  ].flatMap((row) => ['dark', 'light'].map((theme) => [...row, theme]))
+)(
+  'keeps the shared %s AIRS tier (%s, %s) across routes in %s mode',
+  (score, label, color, themeMode) => {
     mockBalance = score;
     let tree;
     act(() => {
-      tree = renderer.create(<TopNav {...props} activeSection='dashboard' />);
+      tree = renderer.create(<TopNav {...props} themeMode={themeMode} activeSection='dashboard' />);
     });
     const expectTier = () => {
       expect(
@@ -92,11 +94,11 @@ it.each([
         .some((node) => StyleSheet.flatten(node.props.style)?.backgroundColor === color)
     ).toBe(false);
     act(() => {
-      tree.update(<TopNav {...props} activeSection='mi-perfil' />);
+      tree.update(<TopNav {...props} themeMode={themeMode} activeSection='mi-perfil' />);
     });
     expectTier();
     act(() => {
-      tree.update(<TopNav {...props} activeSection='settings' />);
+      tree.update(<TopNav {...props} themeMode={themeMode} activeSection='settings' />);
     });
     expectTier();
     act(() => {
