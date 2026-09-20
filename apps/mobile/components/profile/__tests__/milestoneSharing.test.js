@@ -7,6 +7,9 @@ import { Asset } from 'expo-asset';
 import * as Sharing from 'expo-sharing';
 import {
   canShareMilestoneFile,
+  canShareMilestoneLink,
+  isMobileShareBrowser,
+  openMilestoneComposer,
   downloadMilestoneImage,
   prepareMilestoneImage,
   publishMilestoneImage,
@@ -179,4 +182,77 @@ it.each([
   ['Instagram', 'https://www.instagram.com/'],
 ])('uses the %s fallback when no public preview exists', (platform, url) => {
   expect(socialComposerUrl(platform, 'caption')).toBe(url);
+});
+
+it('shares the public preview through installed apps when the browser accepts links but not files', async () => {
+  navigator.canShare.mockImplementation((data) => Boolean(data.url));
+  const image = {
+    file: new File(['png'], 'badge.png'),
+    uri: 'https://cdn.example/card.png',
+    shareUrl: 'https://api.example/share/earned',
+  };
+  expect(canShareMilestoneFile(image)).toBe(false);
+  expect(canShareMilestoneLink(image)).toBe(true);
+  await shareMilestoneImage(image, 'Earned 10 AIRS');
+  expect(navigator.share).toHaveBeenCalledWith({
+    url: image.shareUrl,
+    text: 'Earned 10 AIRS',
+    title: 'AIRS milestone',
+  });
+});
+
+it('supports link sharing without canShare but never claims support without share', async () => {
+  const image = {
+    uri: 'https://cdn.example/card.png',
+    shareUrl: 'https://api.example/share/earned',
+  };
+  Object.defineProperty(navigator, 'canShare', { configurable: true, value: undefined });
+  expect(canShareMilestoneLink(image)).toBe(true);
+  Object.defineProperty(navigator, 'share', { configurable: true, value: undefined });
+  expect(canShareMilestoneLink(image)).toBe(false);
+  await expect(shareMilestoneImage(image, 'caption')).rejects.toThrow('File sharing unavailable');
+});
+
+it.each(['Mozilla Android Mobile', 'Mozilla iPhone', 'Mozilla iPad'])(
+  'recognizes mobile browser %s',
+  (agent) => {
+    jest.spyOn(navigator, 'userAgent', 'get').mockReturnValue(agent);
+    expect(isMobileShareBrowser()).toBe(true);
+  }
+);
+
+it('recognizes iPad desktop-mode browsing without classifying a Mac as mobile', () => {
+  jest.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla Macintosh');
+  const original = Object.getOwnPropertyDescriptor(navigator, 'maxTouchPoints');
+  try {
+    Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, value: 5 });
+    expect(isMobileShareBrowser()).toBe(true);
+    Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, value: 0 });
+    expect(isMobileShareBrowser()).toBe(false);
+  } finally {
+    if (original) Object.defineProperty(navigator, 'maxTouchPoints', original);
+    else delete navigator.maxTouchPoints;
+  }
+});
+
+it('uses direct mobile navigation and an isolated desktop composer window', () => {
+  const descriptor = Object.getOwnPropertyDescriptor(window, 'location');
+  const assign = jest.fn();
+  const open = jest.spyOn(window, 'open').mockImplementation(() => null);
+  const ua = jest.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla Android');
+  Object.defineProperty(window, 'location', { configurable: true, value: { assign } });
+  try {
+    openMilestoneComposer('X', 'I reached 10 AIRS');
+    expect(assign).toHaveBeenCalledWith(socialComposerUrl('X', 'I reached 10 AIRS'));
+    expect(open).not.toHaveBeenCalled();
+    ua.mockReturnValue('Mozilla Windows');
+    openMilestoneComposer('LinkedIn', 'caption', 'https://api.example/share/id');
+    expect(open).toHaveBeenCalledWith(
+      socialComposerUrl('LinkedIn', 'caption', 'https://api.example/share/id'),
+      '_blank',
+      'noopener,noreferrer'
+    );
+  } finally {
+    Object.defineProperty(window, 'location', descriptor);
+  }
 });
