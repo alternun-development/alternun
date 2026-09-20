@@ -124,18 +124,6 @@ export default function SettingsScreen(): React.JSX.Element {
   const walletConnected = Boolean(walletAddress || walletProvider);
   const authMethod = useMemo(() => getAuthMethodLabel(user), [user]);
 
-  const userStats = useMemo(() => {
-    if (!user) return null;
-    const metadata = getMetadata(user);
-    const stats =
-      typeof metadata.stats === 'object' && metadata.stats !== null
-        ? (metadata.stats as Record<string, unknown>)
-        : {};
-    return {
-      totalAIRS: Number.isFinite(Number(stats.totalAIRS)) ? Number(stats.totalAIRS) : 0,
-    };
-  }, [user]);
-
   const handleNavigate = (key: string): void => {
     if (key === 'dashboard') {
       router.push('/');
@@ -327,7 +315,6 @@ export default function SettingsScreen(): React.JSX.Element {
             authMethodLabel={authMethod}
             userDisplayName={profile.displayName}
             userEmail={profile.email}
-            airsScore={userStats?.totalAIRS ?? null}
             onSignIn={() => router.replace({ pathname: '/auth', params: { next: '/settings' } })}
             onConnectWallet={() => {
               if (!user) {

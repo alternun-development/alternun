@@ -656,7 +656,6 @@ export default function Dashboard({
               authMethodLabel={authMethodLabel}
               userDisplayName={profileInfo.displayName}
               userEmail={profileInfo.email}
-              airsScore={airsScore}
               onSignIn={handleRequireSignIn}
               onConnectWallet={handleOpenWalletConnect}
               motionLevel={motionLevel}
@@ -753,6 +752,8 @@ const styles = createTypographyStyles({
     height: 12,
   },
   stickyBottom: {
-    marginTop: 'auto',
+    // Let content show through the footer’s rounded, transparent top corners.
+    marginTop: -20,
+    backgroundColor: 'transparent',
   },
 });

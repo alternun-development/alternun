@@ -1,3 +1,7 @@
+import TierAvatarBorder from '../profile/TierAvatarBorder';
+import { resolveTier, TIERS } from '@alternun/ui';
+import { useAirsDashboardSnapshot } from './AirsDashboardProvider';
+import { useAuth } from '../auth/AppAuthProvider';
 import { getLocaleLabel } from '@alternun/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -73,7 +77,6 @@ interface TopNavProps {
   authMethodLabel?: string;
   userDisplayName?: string;
   userEmail?: string;
-  airsScore?: number | null;
   notifications?: NotificationItem[];
   activeSection?: string;
   onSignIn: () => void;
@@ -108,15 +111,14 @@ export default function TopNav({
   authMethodLabel: _authMethodLabel,
   userDisplayName,
   userEmail,
-  airsScore,
   notifications = EMPTY_NOTIFICATIONS,
   activeSection = 'dashboard',
   onSignIn,
-  _onConnectWallet,
+  onConnectWallet: _onConnectWallet,
   onToggleTheme,
   onCycleLanguage,
   onCycleMotionLevel,
-  _onOpenProfile,
+  onOpenProfile: _onOpenProfile,
   onOpenSettings,
   onSignOut,
   onNavigate,
@@ -124,6 +126,10 @@ export default function TopNav({
   onDismissNotification,
   onNavigateToNotifications,
 }: TopNavProps): React.JSX.Element {
+  const { loading: authLoading } = useAuth();
+  const { snapshot, error: balanceError } = useAirsDashboardSnapshot();
+  const airsScore = signedIn ? snapshot?.balanceAIRS ?? null : null;
+  const badgeLoading = authLoading || (signedIn && airsScore == null && !balanceError);
   const [menuVisible, setMenuVisible] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(true);
@@ -198,6 +204,31 @@ export default function TopNav({
         danger: '#ef4444',
         dangerBg: 'rgba(239,68,68,0.08)',
       };
+
+  const tier =
+    signedIn && airsScore != null && Number.isFinite(airsScore) ? resolveTier(airsScore) : null;
+  const tierColor = tier ? TIERS[tier].color : null;
+  const tierTextColor = tier
+    ? isDark
+      ? TIERS[tier].color
+      : { bronze: '#86501f', silver: '#4c6078', gold: '#756019', platinum: '#505d78' }[tier]
+    : p.accent;
+  if (tierColor) {
+    p.pillBg = isDark ? '#111e21' : '#f8faf9';
+    p.pillBorder = tierColor;
+    p.pillText = isDark ? '#e8f0ee' : '#183331';
+    p.scoreText = isDark ? '#b3c5c0' : '#506762';
+    p.chevron = p.scoreText;
+    p.avatarBg = `${tierColor}18`;
+    p.avatarText = isDark ? '#e8f0ee' : '#183331';
+  }
+
+  if (signedIn && !tierColor) {
+    p.pillBg = isDark ? '#263238' : '#e4e9ec';
+    p.pillText = isDark ? '#e4e9ec' : '#263238';
+    p.avatarText = p.pillText;
+    p.chevron = p.pillText;
+  }
 
   const profileName = userDisplayName?.trim() ?? 'Account';
   const profileFirstName = useMemo(() => getFirstName(profileName), [profileName]);
@@ -331,10 +362,60 @@ export default function TopNav({
 
         {/* Right: profile pill (notification badge inside) or hamburger on extra small */}
         <View style={styles.rightArea}>
+          {badgeLoading && (
+            <View
+              testID='account-badge-skeleton'
+              accessibilityRole='progressbar'
+              accessibilityLabel={t('common.loading', undefined, 'Loading account')}
+              accessibilityState={{ busy: true }}
+              style={[
+                styles.profilePill,
+                isMobile && styles.profilePillMobile,
+                {
+                  width: isExtraSmall ? 40 : isMobile ? 180 : 220,
+                  height: isExtraSmall ? 40 : isMobile ? 36 : 40,
+                  backgroundColor: isDark ? '#202a32' : '#e4e9ec',
+                  boxShadow: 'none',
+                },
+              ]}
+            >
+              <View
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 15,
+                  backgroundColor: isDark ? '#39464f' : '#c8d2d9',
+                }}
+              />
+              {!isExtraSmall && (
+                <View style={{ gap: 6, flex: 1, paddingHorizontal: 6 }}>
+                  <View
+                    style={{
+                      width: '70%',
+                      height: 10,
+                      borderRadius: 5,
+                      backgroundColor: isDark ? '#39464f' : '#c8d2d9',
+                    }}
+                  />
+                  <View
+                    style={{
+                      width: '90%',
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: isDark ? '#39464f' : '#c8d2d9',
+                    }}
+                  />
+                </View>
+              )}
+            </View>
+          )}
           {/* ── Hamburger menu button (extra small screens only) ────────── */}
-          {isExtraSmall && (
+          {!badgeLoading && isExtraSmall && (
             <TouchableOpacity
-              style={[styles.hamburgerButton, { backgroundColor: p.pillBg }]}
+              style={[
+                styles.hamburgerButton,
+                { backgroundColor: p.pillBg, borderColor: p.pillBorder },
+              ]}
               onPress={toggleMenu}
               activeOpacity={0.85}
             >
@@ -347,14 +428,22 @@ export default function TopNav({
           )}
 
           {/* ── Profile trigger pill (normal screens) ────────────────────── */}
-          {!isExtraSmall && (
+          {!badgeLoading && !isExtraSmall && (
             <View style={styles.profileContainer}>
               <TouchableOpacity
                 style={[
                   styles.profilePill,
+                  signedIn && { minWidth: isMobile ? 180 : 220 },
                   isMobile && styles.profilePillMobile,
                   isExtraSmall && styles.profilePillExtraSmall,
                   { backgroundColor: p.pillBg, borderColor: p.pillBorder },
+                  tierColor && {
+                    borderTopColor: `${tierColor}80`,
+                    borderBottomColor: tierColor,
+                    boxShadow: `inset 0px 1px 0px ${
+                      isDark ? '#ffffff12' : '#ffffff'
+                    }, 0px 3px 12px ${tierColor}12`,
+                  },
                 ]}
                 onPress={toggleMenu}
                 activeOpacity={0.85}
@@ -368,6 +457,7 @@ export default function TopNav({
                     { backgroundColor: p.avatarBg },
                   ]}
                 >
+                  {tierColor && <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />}
                   {signedIn ? (
                     <Text style={[styles.avatarText, { color: p.avatarText }]}>{initials}</Text>
                   ) : (
@@ -402,6 +492,9 @@ export default function TopNav({
                         numberOfLines={1}
                       >
                         {airsScore.toLocaleString()} Airs
+                        {tier
+                          ? ` · ${t(`profile.tierLabels.${tier}`, undefined, TIERS[tier].label)}`
+                          : ''}
                       </Text>
                     )}
                   </View>
@@ -420,7 +513,7 @@ export default function TopNav({
                   }}
                   hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                 >
-                  <BellIcon size={11} color='rgba(255,255,255,0.85)' />
+                  <BellIcon size={11} color={p.pillText} />
                   {unreadCount > 0 && (
                     <Animated.View
                       style={[
@@ -516,7 +609,16 @@ export default function TopNav({
                         { borderBottomColor: p.dropDivider },
                       ]}
                     >
-                      <View style={[styles.dropAvatar, { backgroundColor: p.avatarBg }]}>
+                      <View
+                        style={[
+                          styles.dropAvatar,
+                          { backgroundColor: p.avatarBg },
+                          tierColor && { borderWidth: 1, borderColor: `${tierColor}80` },
+                        ]}
+                      >
+                        {tierColor && (
+                          <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />
+                        )}
                         <Text style={[styles.dropAvatarText, { color: p.avatarText }]}>
                           {initials}
                         </Text>
@@ -537,9 +639,33 @@ export default function TopNav({
                           </Text>
                         ) : null}
                         {airsScore != null && (
-                          <View style={[styles.dropScorePill, { backgroundColor: p.navActive }]}>
-                            <Text style={[styles.dropScoreText, { color: p.accent }]}>
+                          <View
+                            testID='dropdown-tier-badge'
+                            style={[
+                              styles.dropScorePill,
+                              {
+                                backgroundColor: tierColor ? `${tierColor}14` : p.navActive,
+                                borderWidth: 1,
+                                borderColor: tierColor ? `${tierColor}80` : 'transparent',
+                              },
+                            ]}
+                          >
+                            <Text
+                              numberOfLines={1}
+                              ellipsizeMode='tail'
+                              style={[
+                                styles.dropScoreText,
+                                { color: tierTextColor, flexShrink: 1 },
+                              ]}
+                            >
                               {airsScore.toLocaleString()} Airs
+                              {tier
+                                ? ` · ${t(
+                                    `profile.tierLabels.${tier}`,
+                                    undefined,
+                                    TIERS[tier].label
+                                  )}`
+                                : ''}
                             </Text>
                           </View>
                         )}

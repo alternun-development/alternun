@@ -547,6 +547,7 @@ export function deployBackendApiInfrastructure(
       environment: {
         variables: {
           APP_STAGE: resolveStageKey(args.stage),
+          AIRS_SHARE_PUBLIC_API_URL: `https://${stageDomain}`,
           AUTHENTIK_AUDIENCE: args.settings.auth.audience,
           AUTHENTIK_ISSUER: authIssuer,
           AUTHENTIK_JWKS_URL: authJwksUrl,

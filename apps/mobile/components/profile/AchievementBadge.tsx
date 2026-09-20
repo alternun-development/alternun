@@ -1,9 +1,10 @@
 import { Shield, Trophy, type LucideProps } from 'lucide-react-native';
-import React from 'react';
+import React, { useState } from 'react';
+import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 import { useAppTranslation } from '../i18n/useAppTranslation';
-import { ACHIEVEMENT_ARTWORK, LOCKED_BADGE } from './badgeAssets';
+import { ACHIEVEMENT_ARTWORK, LOCKED_ACHIEVEMENT_ARTWORK, LOCKED_BADGE } from './badgeAssets';
 
 export interface ColorPalette {
   bg: string;
@@ -27,21 +28,38 @@ export interface AchievementDef {
 const ShieldCheckIcon = Shield as React.FC<LucideProps>;
 const TrophyIcon = Trophy as React.FC<LucideProps>;
 
+export const AIRS_MILESTONES: Record<string, number> = {
+  first_10_airs: 10,
+  fifty_airs: 50,
+  first_100_airs: 100,
+  first_500_airs: 500,
+  first_1000_airs: 1000,
+  first_5000_airs: 5000,
+  first_10000_airs: 10000,
+  first_50000_airs: 50000,
+};
+
+export function isAchievementUnlocked(key: string, score: number | null, earned: boolean): boolean {
+  const threshold = AIRS_MILESTONES[key];
+  return (
+    earned || (threshold != null && score != null && Number.isFinite(score) && score >= threshold)
+  );
+}
+
 export const ACHIEVEMENT_CATALOG = {
+  first_10_airs: { label: '10 AIRS', color: '#d4b96a', icon: TrophyIcon },
+  fifty_airs: { label: '50 AIRS', color: '#d4b96a', icon: TrophyIcon },
+  first_100_airs: { label: '100 AIRS', color: '#d4b96a', icon: TrophyIcon },
+  first_500_airs: { label: '500 AIRS', color: '#d4b96a', icon: TrophyIcon },
+  first_1000_airs: { label: '1,000 AIRS', color: '#d4b96a', icon: TrophyIcon },
+  first_5000_airs: { label: '5,000 AIRS', color: '#d4b96a', icon: TrophyIcon },
+  first_10000_airs: { label: '10,000 AIRS', color: '#d4b96a', icon: TrophyIcon },
+  first_50000_airs: { label: '50,000 AIRS', color: '#d4b96a', icon: TrophyIcon },
+
   account_confirmed: {
     label: 'Cuenta Verificada',
     color: '#1EE6B5',
     icon: ShieldCheckIcon,
-  },
-  first_10_airs: {
-    label: '10 AIRS',
-    color: '#d4b96a',
-    icon: TrophyIcon,
-  },
-  first_100_airs: {
-    label: '100 AIRS',
-    color: '#ffd700',
-    icon: TrophyIcon,
   },
   first_regenerative_action: {
     label: 'Acción Verde',
@@ -88,11 +106,6 @@ export const ACHIEVEMENT_CATALOG = {
     color: '#ce93d8',
     icon: TrophyIcon,
   },
-  fifty_airs: {
-    label: '50 AIRS',
-    color: '#ffca28',
-    icon: TrophyIcon,
-  },
   ambassador: {
     label: 'Embajador',
     color: '#e91e63',
@@ -110,6 +123,11 @@ export function AchievementBadge({
   textColor?: string;
 }): React.JSX.Element {
   const Icon = def.icon;
+  const [loadedSource, setLoadedSource] = useState<unknown>(null);
+  const source = def.unlocked
+    ? ACHIEVEMENT_ARTWORK[def.key]
+    : LOCKED_ACHIEVEMENT_ARTWORK[def.key] ?? LOCKED_BADGE;
+  const amount = AIRS_MILESTONES[def.key];
   const { t } = useAppTranslation('mobile');
 
   return (
@@ -132,12 +150,42 @@ export function AchievementBadge({
     >
       <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
         {!def.unlocked || ACHIEVEMENT_ARTWORK[def.key] ? (
-          <Image
-            source={def.unlocked ? ACHIEVEMENT_ARTWORK[def.key] : LOCKED_BADGE}
-            resizeMode='contain'
-            style={{ width: 64, height: 64 }}
-            accessible={false}
-          />
+          <>
+            {amount != null && loadedSource !== source && (
+              <Svg
+                width={64}
+                height={64}
+                viewBox='0 0 64 64'
+                style={{ position: 'absolute' }}
+                accessible={false}
+              >
+                <Path
+                  d='M 4 44 L 44 4 C 51 -3 62 2 62 13 L 62 49 Q 62 62 49 62 L 14 62 Q -2 62 4 44 Z'
+                  fill={def.unlocked ? '#10dbb1' : '#aaa'}
+                  stroke={def.unlocked ? '#1c6c70' : '#555'}
+                  strokeWidth={2}
+                />
+                <SvgText
+                  x={55}
+                  y={53}
+                  textAnchor='end'
+                  fontSize={amount >= 1000 ? 17 : 20}
+                  fontWeight='700'
+                  fill='#3c5553'
+                >
+                  {amount >= 5000 ? `${amount / 1000}k` : amount}
+                </SvgText>
+              </Svg>
+            )}
+            <Image
+              source={source}
+              onLoad={() => setLoadedSource(source)}
+              onError={() => setLoadedSource(null)}
+              resizeMode='contain'
+              style={{ width: 64, height: 64 }}
+              accessible={false}
+            />
+          </>
         ) : (
           <View
             style={{
