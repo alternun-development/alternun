@@ -120,18 +120,18 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.85**
+Current version: **1.1.86**
 
-## 📋 Latest Changes (v1.1.85)
+## 📋 Latest Changes (v1.1.86)
 
 ### Bug Fixes
 
-- **security:** patch Next.js and retain CI audit evidence ([621a075](https://github.com/alternun-development/alternun/commit/621a07510aacb7cd6a6348ce3be322e172cc5553))
-- **api:** load app environment for repository-root startup ([6967406](https://github.com/alternun-development/alternun/commit/6967406c3d607bc02aab77d39d59b6d0e935c120))
+- **repo:** test(airs): align release checks with current pagination and referrals
+- **repo:** fix(airs): polish badge journeys and personalize milestone sharing
 
-### Changes
+### Bug Fixes
 
-- **profile:** cover tier thresholds and unavailable scores ([f4c08af](https://github.com/alternun-development/alternun/commit/f4c08af0f31f9b40ac671bf6f676e46fdb2aba60))
+- **airs:** polish badge journeys and personalize milestone sharing ([d2b2588](https://github.com/alternun-development/alternun/commit/d2b258859cbdbfe53d8fc29c4c1066c9f21ea2cf))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
