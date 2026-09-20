@@ -7,7 +7,7 @@ import { MILESTONE_DETAIL_ARTWORK, LOCKED_ACHIEVEMENT_ARTWORK } from '../badgeAs
 import {
   canShareMilestoneFile,
   downloadMilestoneImage,
-  socialComposerUrl,
+  openMilestoneComposer,
   publishMilestoneImage,
   shareMilestoneImage,
 } from '../milestoneSharing';
@@ -25,7 +25,8 @@ jest.mock('../milestoneSharing', () => ({
   shareMilestoneImage: jest.fn(),
   canShareMilestoneFile: jest.fn(() => true),
   downloadMilestoneImage: jest.fn(),
-  socialComposerUrl: jest.fn(),
+  openMilestoneComposer: jest.fn(),
+  canShareMilestoneLink: jest.fn(() => false),
 }));
 jest.mock('../../i18n/useAppTranslation', () => ({
   useAppTranslation: () => ({
@@ -63,7 +64,9 @@ it('shows the metallic artwork and shares that prepared image with the reached m
   expect(tree.root.findByType(Image).props.source).toEqual(MILESTONE_DETAIL_ARTWORK.first_10_airs);
   expect(publishMilestoneImage).toHaveBeenCalledWith('first_10_airs', 'token');
   await act(async () => {
-    tree.root.findAll((node) => node.props.accessibilityLabel === 'X')[0].props.onPress();
+    tree.root
+      .findAll((node) => node.props.accessibilityLabel === 'Share with apps')[0]
+      .props.onPress();
   });
   expect(shareMilestoneImage).toHaveBeenCalledWith(
     { uri: 'file://badge.png' },
@@ -170,6 +173,8 @@ it('copies the caption, reports copy failures, and closes using the modal contro
         )[0]
         .props.onPress()
     );
+  await press('Create share image');
+  await press('Save & caption');
   await press('Copy caption');
   expect(modalText()).toContain('Caption copied.');
   Clipboard.setStringAsync.mockResolvedValueOnce(false);
@@ -199,9 +204,9 @@ it('reports sharing errors and allows sharing the prepared image again', async (
     );
   await press('Create share image');
   shareMilestoneImage.mockRejectedValueOnce(new Error('sharing unavailable'));
-  await press('Share image…');
+  await press('Share with apps');
   expect(modalText()).toContain('Unable to open sharing');
-  await press('Share image…');
+  await press('Share with apps');
   expect(shareMilestoneImage).toHaveBeenCalledTimes(2);
 });
 
@@ -230,12 +235,9 @@ it('asks for retry when the session expires without publishing an anonymous card
   expect(modalText()).toContain('The image could not be prepared');
 });
 
-it('uses personalized previews and desktop composers, downloading images only when needed', async () => {
+it('keeps sharing compact and separates desktop social links from download tools', async () => {
   const os = Platform.OS;
-  const oldWindow = global.window;
-  const open = jest.fn();
   Platform.OS = 'web';
-  global.window = { ...oldWindow, open };
   canShareMilestoneFile.mockReturnValue(false);
   const image = {
     uri: 'file://badge.png',
@@ -244,49 +246,45 @@ it('uses personalized previews and desktop composers, downloading images only wh
     shareUrl: 'https://api.example/share/earned',
   };
   publishMilestoneImage.mockResolvedValueOnce(image);
-  socialComposerUrl.mockImplementation((platform) => `https://social.example/${platform}`);
+  const hasAction = (label) =>
+    tree.root.findAll(
+      (node) => node.props.accessibilityLabel === label && typeof node.props.onPress === 'function'
+    ).length > 0;
   try {
     await mountEarned();
-    expect(
-      tree.root.findAll(
-        (node) =>
-          node.props.accessibilityLabel === 'Save image' && typeof node.props.onPress === 'function'
-      )[0].props.disabled
-    ).toBe(true);
+    expect(hasAction('X')).toBe(false);
+    expect(hasAction('Save image')).toBe(false);
     await pressAction('Create share image');
-    expect(
-      tree.root
-        .findAllByType(Image)
-        .some(
-          (node) =>
-            node.props.source.uri === image.previewUri && node.props.accessibilityLabel === 'Edward'
-        )
-    ).toBe(true);
+    expect(tree.root.findAllByType(Image)).toHaveLength(1);
+    expect(tree.root.findByType(Image).props.source).toEqual({ uri: image.previewUri });
+    expect(hasAction('Share with apps')).toBe(true);
+    expect(hasAction('X')).toBe(false);
+    expect(hasAction('Save image')).toBe(false);
+    await pressAction('Social links');
     for (const platform of ['X', 'Facebook', 'LinkedIn']) {
       await pressAction(platform);
-      expect(socialComposerUrl).toHaveBeenLastCalledWith(
+      expect(openMilestoneComposer).toHaveBeenLastCalledWith(
         platform,
         expect.stringContaining(image.shareUrl),
         image.shareUrl
       );
-      expect(open).toHaveBeenLastCalledWith(
-        `https://social.example/${platform}`,
-        '_blank',
-        'noopener,noreferrer'
-      );
-      expect(modalText()).toContain('personalized image preview');
     }
-    expect(downloadMilestoneImage).not.toHaveBeenCalled();
-    await pressAction('Instagram');
-    expect(downloadMilestoneImage).toHaveBeenLastCalledWith(image);
-    expect(modalText()).toContain('Image saved. Attach it');
-    await pressAction('Share image…');
-    await pressAction('Save image');
-    expect(downloadMilestoneImage).toHaveBeenCalledTimes(3);
     expect(shareMilestoneImage).not.toHaveBeenCalled();
+    await pressAction('Social links');
+    expect(hasAction('X')).toBe(false);
+    await pressAction('Share with apps');
+    expect(modalText()).toContain('Choose a social link');
+    expect(hasAction('Save image')).toBe(true);
+    expect(downloadMilestoneImage).not.toHaveBeenCalled();
+    await pressAction('Save image');
+    expect(downloadMilestoneImage).toHaveBeenCalledWith(image);
+    downloadMilestoneImage.mockImplementationOnce(() => {
+      throw new Error('blocked');
+    });
+    await pressAction('Save image');
+    expect(modalText()).toContain('Unable to save the image');
   } finally {
     Platform.OS = os;
-    global.window = oldWindow;
   }
 });
 
@@ -296,8 +294,8 @@ it('treats a cancelled share as cancellation and allows another attempt', async 
   shareMilestoneImage.mockRejectedValueOnce(
     Object.assign(new Error('cancelled'), { name: 'AbortError' })
   );
-  await pressAction('Share image…');
+  await pressAction('Share with apps');
   expect(modalText()).not.toContain('Unable to open sharing');
-  await pressAction('Share image…');
+  await pressAction('Share with apps');
   expect(shareMilestoneImage).toHaveBeenCalledTimes(2);
 });
