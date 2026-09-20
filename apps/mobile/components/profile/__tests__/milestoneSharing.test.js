@@ -193,10 +193,10 @@ it('shares the public preview through installed apps when the browser accepts li
   };
   expect(canShareMilestoneFile(image)).toBe(false);
   expect(canShareMilestoneLink(image)).toBe(true);
-  await shareMilestoneImage(image, 'Earned 10 AIRS');
+  await shareMilestoneImage(image, 'Earned 10 AIRS https://api.example/share/earned #AIRS');
   expect(navigator.share).toHaveBeenCalledWith({
     url: image.shareUrl,
-    text: 'Earned 10 AIRS',
+    text: 'Earned 10 AIRS #AIRS',
     title: 'AIRS milestone',
   });
 });

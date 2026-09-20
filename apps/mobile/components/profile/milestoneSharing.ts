@@ -62,7 +62,11 @@ export async function shareMilestoneImage(
     if (image.file && canShareMilestoneFile(image)) {
       await navigator.share({ files: [image.file], text: caption, title: 'AIRS milestone' });
     } else if (canShareMilestoneLink(image)) {
-      await navigator.share({ url: image.shareUrl, text: caption, title: 'AIRS milestone' });
+      const text = caption
+        .replace(image.shareUrl ?? '', '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      await navigator.share({ url: image.shareUrl, text, title: 'AIRS milestone' });
     } else {
       throw new Error('File sharing unavailable');
     }

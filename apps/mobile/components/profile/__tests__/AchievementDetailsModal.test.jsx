@@ -156,6 +156,22 @@ it.each([30, null])('explains the target even when the balance is %s', async (sc
   );
 });
 
+it('describes an earned account badge without presenting it as an AIRS milestone', async () => {
+  await act(async () => {
+    tree = renderer.create(
+      <AchievementDetailsModal
+        def={{ ...ACHIEVEMENT_CATALOG.account_confirmed, key: 'account_confirmed', unlocked: true }}
+        score={30}
+        c={c}
+        onClose={jest.fn()}
+      />
+    );
+  });
+  expect(modalText()).toContain('verified participation');
+  expect(modalText()).not.toContain('more AIRS');
+  expect(publishMilestoneImage).not.toHaveBeenCalled();
+});
+
 it('copies the caption, reports copy failures, and closes using the modal control', async () => {
   const Clipboard = require('expo-clipboard');
   const onClose = jest.fn();
