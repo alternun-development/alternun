@@ -8,9 +8,10 @@ Covered cases:
 
 - Expired sessions do not publish anonymous milestone cards and offer retry.
 - Personalized image previews retain the verified display name and public share URL.
-- Desktop X, Facebook and LinkedIn actions open composers with the public preview;
-  Instagram and generic file sharing download an attachment when native file sharing
-  is unavailable. Explicit download remains disabled until an image is prepared.
+- Desktop X, Facebook and LinkedIn actions open composers with the public preview.
+  When browser file sharing is unavailable, the modal expands its social and manual
+  save alternatives; users explicitly choose **Save image** before attaching it.
+  Explicit download remains disabled until an image is prepared.
 - User cancellation does not show a sharing failure or prevent another attempt.
 - Unknown artwork, failed downloads, unavailable native sharing and incomplete API
   responses reject instead of silently substituting a generic image.
@@ -20,7 +21,7 @@ Covered cases:
   profile and settings in both light and dark themes.
 
 Validation: `pnpm --filter @alternun/mobile test:coverage` passed 57 suites and
-303 tests. Local line coverage is 100% for `AchievementDetailsModal.tsx`,
+310 tests. Local line coverage is 100% for `AchievementDetailsModal.tsx`,
 `AchievementCollection.tsx` and `milestoneSharing.ts`. Overall mobile line coverage
 is 77.45%, statements 76.84%, branches 68.52% and functions 71.87%.
 
