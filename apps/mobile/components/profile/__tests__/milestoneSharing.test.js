@@ -96,10 +96,24 @@ it('encodes the caption in the X composer URL', () => {
 });
 
 it('publishes only the milestone key and uses the personalized CDN image returned by the API', async () => {
-  Asset.fromURI.mockReturnValue({uri:'https://cdn.example/edward.png'});
-  global.fetch.mockResolvedValueOnce({ok:true,json:async()=>({imageUrl:'https://cdn.example/edward.png',shareUrl:'https://api.example/share/id',displayName:'Edward'})});
+  Asset.fromURI.mockReturnValue({ uri: 'https://cdn.example/edward.png' });
+  global.fetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({
+      imageUrl: 'https://cdn.example/edward.png',
+      shareUrl: 'https://api.example/share/id',
+      displayName: 'Edward',
+    }),
+  });
   const image = await publishMilestoneImage('first_10_airs', 'session-token');
-  expect(global.fetch).toHaveBeenNthCalledWith(1, 'https://api.example/v1/airs/milestones/share', expect.objectContaining({body:JSON.stringify({milestone:'first_10_airs'}),headers:expect.objectContaining({Authorization:'Bearer session-token'})}));
+  expect(global.fetch).toHaveBeenNthCalledWith(
+    1,
+    'https://api.example/v1/airs/milestones/share',
+    expect.objectContaining({
+      body: JSON.stringify({ milestone: 'first_10_airs' }),
+      headers: expect.objectContaining({ Authorization: 'Bearer session-token' }),
+    })
+  );
   expect(Asset.fromURI).toHaveBeenCalledWith('https://cdn.example/edward.png');
   expect(image.shareUrl).toBe('https://api.example/share/id');
   expect(image.displayName).toBe('Edward');
@@ -107,13 +121,62 @@ it('publishes only the milestone key and uses the personalized CDN image returne
 });
 
 it('does not substitute a generic image when publishing fails', async () => {
-  global.fetch.mockResolvedValueOnce({ok:false});
-  await expect(publishMilestoneImage('first_10_airs','token')).rejects.toThrow('Unable to publish');
+  global.fetch.mockResolvedValueOnce({ ok: false });
+  await expect(publishMilestoneImage('first_10_airs', 'token')).rejects.toThrow(
+    'Unable to publish'
+  );
   expect(Asset.fromModule).not.toHaveBeenCalled();
 });
 
 it('passes the public preview URL to Facebook and LinkedIn', () => {
-  const url='https://api.example/share/123';
-  expect(socialComposerUrl('Facebook','caption',url)).toContain(encodeURIComponent(url));
-  expect(socialComposerUrl('LinkedIn','caption',url)).toContain(encodeURIComponent(url));
+  const url = 'https://api.example/share/123';
+  expect(socialComposerUrl('Facebook', 'caption', url)).toContain(encodeURIComponent(url));
+  expect(socialComposerUrl('LinkedIn', 'caption', url)).toContain(encodeURIComponent(url));
+});
+
+it('rejects missing artwork and failed image downloads', async () => {
+  await expect(prepareMilestoneImage('unknown')).rejects.toThrow('No milestone share image');
+  global.fetch.mockResolvedValueOnce({ ok: false });
+  await expect(prepareMilestoneImage('first_10_airs')).rejects.toThrow(
+    'Unable to prepare milestone image'
+  );
+});
+
+it('rejects native downloads without a local file and unavailable native sharing', async () => {
+  Platform.OS = 'android';
+  Asset.fromModule.mockReturnValue({ downloadAsync: jest.fn().mockResolvedValue() });
+  await expect(prepareMilestoneImage('first_10_airs')).rejects.toThrow(
+    'Milestone image is unavailable'
+  );
+  Sharing.isAvailableAsync.mockResolvedValueOnce(false);
+  await expect(shareMilestoneImage({ uri: 'file://badge.png' }, 'caption')).rejects.toThrow(
+    'Sharing unavailable'
+  );
+  expect(Sharing.shareAsync).not.toHaveBeenCalled();
+  expect(() => downloadMilestoneImage({ uri: 'file://badge.png' })).toThrow('Download unavailable');
+});
+
+it.each(['imageUrl', 'shareUrl', 'displayName'])(
+  'rejects personalized responses missing %s',
+  async (missing) => {
+    const result = {
+      imageUrl: 'https://cdn.example/card.png',
+      shareUrl: 'https://api.example/share/id',
+      displayName: 'Edward',
+    };
+    delete result[missing];
+    global.fetch.mockResolvedValueOnce({ ok: true, json: async () => result });
+    await expect(publishMilestoneImage('first_10_airs', 'token')).rejects.toThrow(
+      'Incomplete milestone response'
+    );
+    expect(Asset.fromURI).not.toHaveBeenCalled();
+  }
+);
+
+it.each([
+  ['Facebook', 'https://www.facebook.com/'],
+  ['LinkedIn', 'https://www.linkedin.com/feed/'],
+  ['Instagram', 'https://www.instagram.com/'],
+])('uses the %s fallback when no public preview exists', (platform, url) => {
+  expect(socialComposerUrl(platform, 'caption')).toBe(url);
 });
