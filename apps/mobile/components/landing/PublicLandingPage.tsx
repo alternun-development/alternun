@@ -1932,7 +1932,11 @@ function PlaceCard({
               fillColor={accentColor}
               cutoutColor={isDark ? '#050510' : '#ffffff'}
             />
-            <Text style={[styles.placeCardPrice, { color: titleColor }]}>
+            <Text
+              style={[styles.placeCardPrice, { color: titleColor }]}
+              numberOfLines={1}
+              ellipsizeMode='tail'
+            >
               {atnLabel}{' '}
               <Text style={[styles.placeCardPriceSub, { color: metaColor }]}>{atnUnit}</Text>
             </Text>
@@ -1951,6 +1955,8 @@ function PlaceCard({
               <InfoIcon size={14} color={accentColor} strokeWidth={2.5} />
             </TouchableOpacity>
             <TouchableOpacity
+              accessibilityRole='button'
+              accessibilityLabel={ctaLabel}
               style={[styles.placeCardButton, { backgroundColor: accentColor }]}
               onPress={onPress}
               activeOpacity={0.82}
@@ -3004,7 +3010,17 @@ const styles = createTypographyStyles({
   infoIconButton: {
     padding: 2,
   },
+  infoCircleButton: {
+    width: 24,
+    height: 24,
+    flexShrink: 0,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   placeCardFooterActions: {
+    flexShrink: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -3037,17 +3053,22 @@ const styles = createTypographyStyles({
     lineHeight: 18,
   },
   placeCardFooter: {
+    gap: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 4,
   },
   placeCardPriceRow: {
+    flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
   placeCardPrice: {
+    flexShrink: 1,
+    minWidth: 0,
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 15,
     fontWeight: '700',
@@ -3058,6 +3079,10 @@ const styles = createTypographyStyles({
     fontWeight: '400',
   },
   placeCardButton: {
+    width: 148,
+    height: 40,
+    flexShrink: 0,
+    justifyContent: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -3066,6 +3091,8 @@ const styles = createTypographyStyles({
     borderRadius: 20,
   },
   placeCardButtonText: {
+    flexShrink: 1,
+    minWidth: 0,
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
     fontWeight: '600',

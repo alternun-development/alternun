@@ -68,7 +68,7 @@ test('AirsService.leaderboard resolves the leaderboard page from RPC payload', a
     const service = new AirsService();
     const response = await service.leaderboard('Bearer session-token', 7, 2);
 
-    assert.equal(response.page, 1);
+    assert.equal(response.page, 2);
     assert.equal(response.pageSize, 7);
     assert.equal(response.totalPages, 2);
     assert.equal(response.totalEligibleUsers, 8);
@@ -170,9 +170,9 @@ test('AirsService.activity applies filters and maps RPC payload', async () => {
     assert.equal(response.entries[1].sourceKind, 'compensation');
     assert.equal(response.entries[1].sourceRef, 'action-1');
     assert.equal(calls.length, 3);
-    assert.equal(JSON.parse(calls[1].init.body).p_limit, 10);
+    assert.equal(JSON.parse(calls[1].init.body).p_limit, 5);
     assert.equal(JSON.parse(calls[1].init.body).p_page, 1);
-    assert.equal(JSON.parse(calls[2].init.body).p_limit, 10);
+    assert.equal(JSON.parse(calls[2].init.body).p_limit, 5);
     assert.equal(JSON.parse(calls[2].init.body).p_page, 1);
     assert.equal(JSON.parse(calls[1].init.body).p_search, 'carbon');
     assert.equal(JSON.parse(calls[1].init.body).p_source_kind, 'compensation');

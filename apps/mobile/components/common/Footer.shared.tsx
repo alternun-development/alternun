@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
   },
   textLinkTextCompact: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 13,
+    fontSize: 11,
   },
   textLinkTextCenter: {
     textAlign: 'center',

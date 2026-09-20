@@ -1,3 +1,13 @@
+## [1.1.86](https://github.com/alternun-development/alternun/compare/v1.1.85...v1.1.86) (2026-09-19)
+
+### Changes
+
+- **airs:** align release checks with current pagination and referrals ([cf78020](https://github.com/alternun-development/alternun/commit/cf78020e59abc8fce748682e045e417135a09cbc))
+
+### Bug Fixes
+
+- **airs:** polish badge journeys and personalize milestone sharing ([d2b2588](https://github.com/alternun-development/alternun/commit/d2b258859cbdbfe53d8fc29c4c1066c9f21ea2cf))
+
 ## [1.1.85](https://github.com/alternun-development/alternun/compare/v1.1.84...v1.1.85) (2026-09-19)
 
 ### Bug Fixes
