@@ -178,7 +178,7 @@ test('ReferralsService.create resolves a referral code and stores attribution', 
   }
 });
 
-test('ReferralsService.create stamps confirmed referrals when the current user is verified', async () => {
+test('ReferralsService.create stamps confirmed referrals when the current user is verified', async (t) => {
   const originalEnv = { ...process.env };
   const originalFetch = global.fetch;
   const calls = [];
@@ -241,12 +241,14 @@ test('ReferralsService.create stamps confirmed referrals when the current user i
     );
 
     const service = new ReferralsService();
+    const emails = t.mock.method(service, 'sendReferralRewardEmails', async () => {});
     const response = await service.create('user-123', {
       referral_code: 'EDWARD-REF123',
     });
 
     assert.equal(response.referrer_user_id, 'referrer-1');
     assert.equal(calls.length, 4);
+    assert.equal(emails.mock.callCount(), 1);
     const createdReferral = JSON.parse(calls[3].init.body);
     assert.equal(typeof createdReferral.confirmed_at, 'string');
     assert.match(createdReferral.confirmed_at, /^\d{4}-\d{2}-\d{2}T/);
@@ -337,7 +339,7 @@ test('ReferralsService.create recovers a stale slug-suffix referral code', async
   }
 });
 
-test('ReferralsService.create rejects self referrals', async () => {
+test('ReferralsService.create ignores self referrals without attributing rewards', async () => {
   const originalEnv = { ...process.env };
   const originalFetch = global.fetch;
   const calls = [];
@@ -372,19 +374,18 @@ test('ReferralsService.create rejects self referrals', async () => {
             name: 'Self User',
           },
         ]),
+        createJsonResponse([{ id: 'referral-self', user_id: 'user-123', referrer_user_id: null, referrer_referral_code: null, confirmed_at: null }]),
       ],
       calls
     );
 
     const service = new ReferralsService();
 
-    await assert.rejects(
-      service.create('user-123', {
-        referral_code: 'SELF-USER-ABCDEF',
-      }),
-      (error) => error instanceof BadRequestException && error.getStatus() === 400
-    );
-    assert.equal(calls.length, 2);
+    const result = await service.create('user-123', { referral_code: 'SELF-USER-ABCDEF' });
+    assert.equal(result.referrer_user_id, null);
+    assert.equal(calls.length, 3);
+    assert.equal(JSON.parse(calls[2].init.body).referrer_user_id, null);
+    assert.equal(JSON.parse(calls[2].init.body).confirmed_at, null);
   } finally {
     global.fetch = originalFetch;
     process.env = originalEnv;

@@ -48,3 +48,8 @@ for locale in es th; do
     [ -f "$src" ] && cp "$src" "dist-lambda/legal/${doc}.${locale}.md" || true
   done
 done
+
+# Runtime assets for personalized milestone PNGs (pure-JS renderer).
+mkdir -p dist-lambda/milestone-assets
+cp ../mobile/assets/badges/milestones-share/*.png dist-lambda/milestone-assets/
+cp ../mobile/assets/fonts/Sculpin-Bold.ttf dist-lambda/milestone-assets/
