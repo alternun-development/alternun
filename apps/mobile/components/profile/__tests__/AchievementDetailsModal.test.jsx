@@ -1,10 +1,16 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import { Image, Modal, Pressable, Text } from 'react-native';
+import { Image, Modal, Platform, Pressable, Text } from 'react-native';
 import AchievementDetailsModal from '../AchievementDetailsModal';
 import { ACHIEVEMENT_CATALOG } from '../AchievementBadge';
 import { MILESTONE_DETAIL_ARTWORK, LOCKED_ACHIEVEMENT_ARTWORK } from '../badgeAssets';
-import { publishMilestoneImage, shareMilestoneImage } from '../milestoneSharing';
+import {
+  canShareMilestoneFile,
+  downloadMilestoneImage,
+  socialComposerUrl,
+  publishMilestoneImage,
+  shareMilestoneImage,
+} from '../milestoneSharing';
 
 jest.mock('../../auth/AppAuthProvider', () => {
   const client = {};
@@ -17,7 +23,7 @@ jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn().mockResolvedValue
 jest.mock('../milestoneSharing', () => ({
   publishMilestoneImage: jest.fn(),
   shareMilestoneImage: jest.fn(),
-  canShareMilestoneFile: () => true,
+  canShareMilestoneFile: jest.fn(() => true),
   downloadMilestoneImage: jest.fn(),
   socialComposerUrl: jest.fn(),
 }));
@@ -32,6 +38,7 @@ const def = { ...ACHIEVEMENT_CATALOG.first_10_airs, key: 'first_10_airs', unlock
 let tree;
 beforeEach(() => {
   jest.clearAllMocks();
+  canShareMilestoneFile.mockReturnValue(true);
   publishMilestoneImage.mockResolvedValue({ uri: 'file://badge.png' });
   shareMilestoneImage.mockResolvedValue();
 });
@@ -149,8 +156,20 @@ it.each([30, null])('explains the target even when the balance is %s', async (sc
 it('copies the caption, reports copy failures, and closes using the modal control', async () => {
   const Clipboard = require('expo-clipboard');
   const onClose = jest.fn();
-  await act(async () => { tree = renderer.create(<AchievementDetailsModal def={def} score={30} c={c} onClose={onClose} />); });
-  const press = async label => act(async () => tree.root.findAll(node => node.props.accessibilityLabel === label && typeof node.props.onPress === 'function')[0].props.onPress());
+  await act(async () => {
+    tree = renderer.create(
+      <AchievementDetailsModal def={def} score={30} c={c} onClose={onClose} />
+    );
+  });
+  const press = async (label) =>
+    act(async () =>
+      tree.root
+        .findAll(
+          (node) =>
+            node.props.accessibilityLabel === label && typeof node.props.onPress === 'function'
+        )[0]
+        .props.onPress()
+    );
   await press('Copy caption');
   expect(modalText()).toContain('Caption copied.');
   Clipboard.setStringAsync.mockResolvedValueOnce(false);
@@ -164,12 +183,121 @@ it('copies the caption, reports copy failures, and closes using the modal contro
 });
 
 it('reports sharing errors and allows sharing the prepared image again', async () => {
-  await act(async () => { tree = renderer.create(<AchievementDetailsModal def={def} score={30} c={c} onClose={jest.fn()} />); });
-  const press = async label => act(async () => tree.root.findAll(node => node.props.accessibilityLabel === label && typeof node.props.onPress === 'function')[0].props.onPress());
+  await act(async () => {
+    tree = renderer.create(
+      <AchievementDetailsModal def={def} score={30} c={c} onClose={jest.fn()} />
+    );
+  });
+  const press = async (label) =>
+    act(async () =>
+      tree.root
+        .findAll(
+          (node) =>
+            node.props.accessibilityLabel === label && typeof node.props.onPress === 'function'
+        )[0]
+        .props.onPress()
+    );
   await press('Create share image');
   shareMilestoneImage.mockRejectedValueOnce(new Error('sharing unavailable'));
   await press('Share image…');
   expect(modalText()).toContain('Unable to open sharing');
   await press('Share image…');
+  expect(shareMilestoneImage).toHaveBeenCalledTimes(2);
+});
+
+const pressAction = async (label) =>
+  act(async () =>
+    tree.root
+      .findAll(
+        (node) =>
+          node.props.accessibilityLabel === label && typeof node.props.onPress === 'function'
+      )[0]
+      .props.onPress()
+  );
+const mountEarned = async () =>
+  act(async () => {
+    tree = renderer.create(
+      <AchievementDetailsModal def={def} score={30} c={c} onClose={jest.fn()} />
+    );
+  });
+
+it('asks for retry when the session expires without publishing an anonymous card', async () => {
+  const { resolveSessionTokenWithRetry } = require('../../auth/sessionToken');
+  resolveSessionTokenWithRetry.mockResolvedValueOnce(null);
+  await mountEarned();
+  await pressAction('Create share image');
+  expect(publishMilestoneImage).not.toHaveBeenCalled();
+  expect(modalText()).toContain('The image could not be prepared');
+});
+
+it('uses personalized previews and desktop composers, downloading images only when needed', async () => {
+  const os = Platform.OS;
+  const oldWindow = global.window;
+  const open = jest.fn();
+  Platform.OS = 'web';
+  global.window = { ...oldWindow, open };
+  canShareMilestoneFile.mockReturnValue(false);
+  const image = {
+    uri: 'file://badge.png',
+    previewUri: 'https://cdn.example/edward.png',
+    displayName: 'Edward',
+    shareUrl: 'https://api.example/share/earned',
+  };
+  publishMilestoneImage.mockResolvedValueOnce(image);
+  socialComposerUrl.mockImplementation((platform) => `https://social.example/${platform}`);
+  try {
+    await mountEarned();
+    expect(
+      tree.root.findAll(
+        (node) =>
+          node.props.accessibilityLabel === 'Save image' && typeof node.props.onPress === 'function'
+      )[0].props.disabled
+    ).toBe(true);
+    await pressAction('Create share image');
+    expect(
+      tree.root
+        .findAllByType(Image)
+        .some(
+          (node) =>
+            node.props.source.uri === image.previewUri && node.props.accessibilityLabel === 'Edward'
+        )
+    ).toBe(true);
+    for (const platform of ['X', 'Facebook', 'LinkedIn']) {
+      await pressAction(platform);
+      expect(socialComposerUrl).toHaveBeenLastCalledWith(
+        platform,
+        expect.stringContaining(image.shareUrl),
+        image.shareUrl
+      );
+      expect(open).toHaveBeenLastCalledWith(
+        `https://social.example/${platform}`,
+        '_blank',
+        'noopener,noreferrer'
+      );
+      expect(modalText()).toContain('personalized image preview');
+    }
+    expect(downloadMilestoneImage).not.toHaveBeenCalled();
+    await pressAction('Instagram');
+    expect(downloadMilestoneImage).toHaveBeenLastCalledWith(image);
+    expect(modalText()).toContain('Image saved. Attach it');
+    await pressAction('Share image…');
+    await pressAction('Save image');
+    expect(downloadMilestoneImage).toHaveBeenCalledTimes(3);
+    expect(shareMilestoneImage).not.toHaveBeenCalled();
+  } finally {
+    Platform.OS = os;
+    global.window = oldWindow;
+  }
+});
+
+it('treats a cancelled share as cancellation and allows another attempt', async () => {
+  await mountEarned();
+  await pressAction('Create share image');
+  shareMilestoneImage.mockRejectedValueOnce(
+    Object.assign(new Error('cancelled'), { name: 'AbortError' })
+  );
+  await pressAction('Share image…');
+  expect(modalText()).not.toContain('Unable to open sharing');
+  await pressAction('Share image…');
   expect(shareMilestoneImage).toHaveBeenCalledTimes(2);
 });
