@@ -124,10 +124,9 @@ Current version: **1.1.86**
 
 ## 📋 Latest Changes (v1.1.86)
 
-### Bug Fixes
+### Changes
 
-- **repo:** test(airs): align release checks with current pagination and referrals
-- **repo:** fix(airs): polish badge journeys and personalize milestone sharing
+- **airs:** align release checks with current pagination and referrals ([cf78020](https://github.com/alternun-development/alternun/commit/cf78020e59abc8fce748682e045e417135a09cbc))
 
 ### Bug Fixes
 
