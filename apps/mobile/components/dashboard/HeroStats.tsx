@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   View,
@@ -40,6 +41,7 @@ export default function HeroStats({
   isDark = true,
   displayName,
 }: HeroStatsProps): React.JSX.Element {
+  const router = useRouter();
   const { motionLevel } = useAppPreferences();
   const t = useAppTranslation();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -55,8 +57,6 @@ export default function HeroStats({
     }
   }, [imageLoaded, fadeAnim]);
 
-  const heroImageScale = isDark ? 1 : 1.03;
-  const heroImageTranslateY = isDark ? 0 : -12;
   const heroImageBackgroundColor = isDark ? '#0a0f0d' : '#08231f';
   const heroImageOpacity = isDark ? 0.95 : 1;
 
@@ -96,12 +96,10 @@ export default function HeroStats({
           source={DASHBOARD_BG}
           onLoad={() => setImageLoaded(true)}
           style={{ borderRadius: 20, overflow: 'hidden', minHeight: 280 }}
+          resizeMode='cover'
           imageStyle={{
-            resizeMode: 'cover',
-            borderRadius: 20,
             backgroundColor: heroImageBackgroundColor,
             opacity: heroImageOpacity,
-            transform: [{ scale: heroImageScale }, { translateY: heroImageTranslateY }],
             width: '100%',
             height: '100%',
           }}
@@ -112,6 +110,8 @@ export default function HeroStats({
             score={totalAIRS}
             isLoading={isLoading}
             onReload={onReload}
+            onOpenProfile={() => router.push('/mi-perfil')}
+            closeInfoLabel={t.t('common.close', undefined, 'Close')}
             previewMode={previewMode}
             isDark={isDark}
             motionLevel={motionLevel}

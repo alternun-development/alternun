@@ -77,13 +77,8 @@ import { isTestnetRuntime, resolveMobileApiBaseUrl } from '../utils/runtimeConfi
 import { createShadowStyle } from '../components/theme/deprecatedStylesHelper';
 import { resolveSessionTokenWithRetry } from '../components/auth/sessionToken';
 import { useAirsDashboardSnapshot } from '../components/dashboard/AirsDashboardProvider';
-import {
-  AchievementBadge,
-  AchievementTooltip,
-  ACHIEVEMENT_CATALOG,
-  type AchievementDef,
-  type ColorPalette,
-} from '../components/profile/AchievementBadge';
+import type { ColorPalette } from '../components/profile/AchievementBadge';
+import AchievementCollection from '../components/profile/AchievementCollection';
 import { TierJourney } from '../components/profile/TierJourney';
 import { STATUS_BADGES } from '../components/profile/badgeAssets';
 import { ReferralCard } from '../components/profile/ReferralCard';
@@ -433,7 +428,7 @@ function ProfileHeader({
           paddingVertical: 24,
           backgroundColor: heroBg,
           borderWidth: 1,
-          borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(11,45,49,0.08)',
+          borderColor: hasScore ? `${spec.color}66` : c.border,
           position: 'relative',
           overflow: 'hidden',
         },
@@ -458,7 +453,7 @@ function ProfileHeader({
               width: 200,
               height: 200,
               borderRadius: 100,
-              backgroundColor: isDark ? 'rgba(30,230,181,0.08)' : 'rgba(13,148,136,0.05)',
+              backgroundColor: hasScore ? `${spec.color}16` : 'transparent',
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               transform: [
                 {
@@ -492,7 +487,7 @@ function ProfileHeader({
               width: 150,
               height: 150,
               borderRadius: 75,
-              backgroundColor: isDark ? 'rgba(30,230,181,0.06)' : 'rgba(13,148,136,0.04)',
+              backgroundColor: hasScore ? `${spec.color}12` : 'transparent',
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               transform: [
                 {
@@ -2500,10 +2495,6 @@ function PerfilTab({
   const [showAccountInfoModal, setShowAccountInfoModal] = useState(false);
   const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [selectedAchievement, setSelectedAchievement] = useState<{
-    label: string;
-    color: string;
-  } | null>(null);
   const [achievements, setAchievements] = useState<
     Array<{ key: string; unlocked: boolean; unlockedAt: string | null }>
   >([]);
@@ -2635,70 +2626,7 @@ function PerfilTab({
         <TierJourney score={airsScore} isDark={isDark} c={c} />
 
         {/* Achievements */}
-        <SectionContainer
-          title={t('profile.sections.achievements', undefined, 'Achievements')}
-          style={{ margin: 12 }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              gap: 10,
-              padding: 16,
-              position: 'relative',
-            }}
-          >
-            {Object.entries(ACHIEVEMENT_CATALOG).map(([key, def]) => {
-              const achievement = achievements.find((a) => a.key === key);
-              const isUnlocked = achievement?.unlocked ?? false;
-              const achievementLabel = t(`profile.achievementBadges.${key}`, undefined, def.label);
-
-              const achievementDef: AchievementDef = {
-                key,
-                label: achievementLabel,
-                color: def.color,
-                icon: def.icon,
-                unlocked: isUnlocked,
-                unlockedAt: achievement?.unlockedAt ?? null,
-              };
-
-              return (
-                <AchievementBadge
-                  key={key}
-                  def={achievementDef}
-                  textColor={c.text}
-                  onPress={() =>
-                    setSelectedAchievement({ label: achievementLabel, color: def.color })
-                  }
-                />
-              );
-            })}
-
-            {/* Tooltip */}
-            {selectedAchievement && (
-              <TouchableOpacity
-                style={{ position: 'absolute', width: '100%', height: '100%' }}
-                onPress={() => setSelectedAchievement(null)}
-              >
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <AchievementTooltip
-                    visible={Boolean(selectedAchievement)}
-                    label={selectedAchievement?.label || ''}
-                    color={selectedAchievement?.color || ''}
-                    isDark={isDark}
-                    _c={c}
-                  />
-                </View>
-              </TouchableOpacity>
-            )}
-          </View>
-        </SectionContainer>
+        <AchievementCollection achievements={achievements} score={airsScore} c={c} />
 
         {/* Referrals */}
         <SectionContainer

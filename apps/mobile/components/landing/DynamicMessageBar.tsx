@@ -86,6 +86,8 @@ export default function DynamicMessageBar({
     );
   }, [offsetX]);
 
+  // Track visible content rather than message object identity: scroll updates
+  // recreate parent callbacks and message objects without changing the text.
   // Resets scroll position and (re)starts the loop when the message changes,
   // or when width/duration change (resize, rotation, duration prop update) so
   // the running animation doesn't keep scrolling to a stale destination at a
@@ -99,7 +101,7 @@ export default function DynamicMessageBar({
     }
     return () => cancelAnimation(offsetX);
     // eslint-disable-next-line -- see comment above for the intentional omissions
-  }, [message, width, duration]);
+  }, [message.text, message.link?.label, width, duration]);
 
   // Pauses/resumes on hover or press without resetting the current position.
   // Skips its first run: the message effect above already starts the loop on

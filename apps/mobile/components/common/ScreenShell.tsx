@@ -55,30 +55,6 @@ function getUserDisplayName(user: User | null): string {
   return 'Account';
 }
 
-function getUserAirsScore(user: User | null): number | null {
-  if (!user) return null;
-  const m = (user.metadata ?? {}) as Record<string, unknown>;
-  const stats =
-    typeof m.stats === 'object' && m.stats !== null ? (m.stats as Record<string, unknown>) : {};
-  const candidates = [
-    stats.totalAIRS,
-    stats.totalAirs,
-    stats.total_airs,
-    m.totalAIRS,
-    m.totalAirs,
-    m.total_airs,
-    m.airs,
-  ];
-  for (const v of candidates) {
-    if (typeof v === 'number' && Number.isFinite(v)) return Math.max(0, Math.floor(v));
-    if (typeof v === 'string' && v.trim().length > 0) {
-      const n = Number(v);
-      if (Number.isFinite(n)) return Math.max(0, Math.floor(n));
-    }
-  }
-  return null;
-}
-
 function getWalletInfo(user: User | null): { connected: boolean; address: string } {
   if (!user) return { connected: false, address: '' };
   const m = (user.metadata ?? {}) as Record<string, unknown>;
@@ -151,7 +127,6 @@ export default function ScreenShell({
   };
 
   const userDisplayName = getUserDisplayName(user ?? null);
-  const airsScore = getUserAirsScore(user ?? null);
   const { connected: walletConnected, address: walletAddress } = getWalletInfo(user ?? null);
   const signedIn = Boolean(user);
 
@@ -227,7 +202,6 @@ export default function ScreenShell({
               motionLevel={motionLevel}
               userDisplayName={userDisplayName}
               userEmail={user?.email}
-              airsScore={airsScore}
               activeSection={activeSection}
               onSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
               onConnectWallet={() => router.push('/mi-perfil')}
@@ -260,7 +234,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   footerStack: {
-    marginTop: 'auto',
+    // Let content show through the footer’s rounded, transparent top corners.
+    marginTop: -20,
+    backgroundColor: 'transparent',
   },
   floatingNav: {
     position: 'absolute',
