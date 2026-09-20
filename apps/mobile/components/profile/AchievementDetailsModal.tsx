@@ -12,6 +12,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { ChevronDown, ChevronUp, Share2 } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { AIRS_MILESTONES, type AchievementDef, type ColorPalette } from './AchievementBadge';
@@ -19,10 +20,11 @@ import { MILESTONE_DETAIL_ARTWORK, LOCKED_ACHIEVEMENT_ARTWORK } from './badgeAss
 import { ACHIEVEMENT_UNLOCK_STEPS } from './achievementUnlockSteps';
 import {
   canShareMilestoneFile,
+  canShareMilestoneLink,
+  openMilestoneComposer,
   downloadMilestoneImage,
   publishMilestoneImage,
   shareMilestoneImage,
-  socialComposerUrl,
   type PreparedMilestoneImage,
   type SocialPlatform,
 } from './milestoneSharing';
@@ -47,6 +49,8 @@ export default function AchievementDetailsModal({
   const [notice, setNotice] = useState('');
   const [retry, setRetry] = useState(0);
   const [failed, setFailed] = useState(false);
+  const [socialExpanded, setSocialExpanded] = useState(false);
+  const [toolsExpanded, setToolsExpanded] = useState(false);
   const threshold = AIRS_MILESTONES[def.key];
   const artwork = def.unlocked
     ? MILESTONE_DETAIL_ARTWORK[def.key]
@@ -81,39 +85,43 @@ export default function AchievementDetailsModal({
     };
   }, [def.key, canCelebrate, retry, client]);
 
-  const handleShare = async (platform?: SocialPlatform): Promise<void> => {
+  const handleShare = async (): Promise<void> => {
     if (!image || !canCelebrate || busy) return;
     setBusy(true);
     setNotice('');
     try {
-      if (canShareMilestoneFile(image)) {
+      // Keep navigator.share in the original tap; the image is prepared beforehand.
+      if (canShareMilestoneFile(image) || canShareMilestoneLink(image)) {
         await shareMilestoneImage(image, caption);
       } else {
-        // Browser composers cannot attach local files through a URL. Keep the
-        // image and caption available instead of pretending they were posted.
-        if (platform && Platform.OS === 'web')
-          window.open(
-            socialComposerUrl(platform, caption, image.shareUrl),
-            '_blank',
-            'noopener,noreferrer'
-          );
-        if (!platform || platform === 'Instagram') downloadMilestoneImage(image);
+        setSocialExpanded(true);
+        setToolsExpanded(true);
         setNotice(
-          platform && platform !== 'Instagram'
-            ? copy(
-                'previewHint',
-                'Your post link includes the personalized image preview. The social network controls when it appears.'
-              )
-            : copy('attach', 'Image saved. Attach it to your post and paste the caption below.')
+          copy('browserFallback', 'Choose a social link, or save the image and copy your caption.')
         );
       }
     } catch (error) {
-      if (!(error instanceof Error && error.name === 'AbortError'))
+      if (!(error instanceof Error && error.name === 'AbortError')) {
+        setToolsExpanded(true);
         setNotice(
           copy('shareError', 'Unable to open sharing. Save the image and copy the caption instead.')
         );
+      }
     } finally {
       setBusy(false);
+    }
+  };
+  const handleSocial = (platform: SocialPlatform): void => {
+    if (!image) return;
+    openMilestoneComposer(platform, caption, image.shareUrl);
+  };
+  const handleDownload = (): void => {
+    if (!image) return;
+    try {
+      downloadMilestoneImage(image);
+      setNotice(copy('attach', 'Image saved. Attach it to your post and paste the caption below.'));
+    } catch {
+      setNotice(copy('downloadError', 'Unable to save the image. Try Share with apps instead.'));
     }
   };
   const button = (label: string, onPress: () => void, disabled = false): React.JSX.Element => (
@@ -126,6 +134,8 @@ export default function AchievementDetailsModal({
       style={{
         paddingHorizontal: 12,
         paddingVertical: 10,
+        minHeight: 44,
+        justifyContent: 'center',
         borderRadius: 12,
         borderWidth: 1,
         borderColor: c.border,
@@ -177,7 +187,14 @@ export default function AchievementDetailsModal({
             </Pressable>
           </View>
           <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, gap: 14 }}>
-            {artwork ? (
+            {image?.previewUri ? (
+              <Image
+                source={{ uri: image.previewUri }}
+                resizeMode='contain'
+                style={{ width: '100%', maxWidth: 260, aspectRatio: 1, alignSelf: 'center' }}
+                accessibilityLabel={image.displayName}
+              />
+            ) : artwork ? (
               <Image
                 source={artwork}
                 resizeMode='contain'
@@ -200,28 +217,30 @@ export default function AchievementDetailsModal({
                 ? copy('earned', 'Milestone reached')
                 : copy('locked', 'Not yet achieved')}
             </Text>
-            <Text style={{ color: c.text, lineHeight: 21 }}>
-              {threshold != null
-                ? def.unlocked
-                  ? t(
-                      'profile.milestoneDetails.reached',
-                      { amount: threshold.toLocaleString() },
-                      'You reached the {{amount}} AIRS milestone. Celebrate your progress in the Alternun ecosystem.'
+            {!image && (
+              <Text style={{ color: c.text, lineHeight: 21 }}>
+                {threshold != null
+                  ? def.unlocked
+                    ? t(
+                        'profile.milestoneDetails.reached',
+                        { amount: threshold.toLocaleString() },
+                        'You reached the {{amount}} AIRS milestone. Celebrate your progress in the Alternun ecosystem.'
+                      )
+                    : score == null
+                    ? copy('unavailable', 'Your AIRS balance is currently unavailable.')
+                    : t(
+                        'profile.milestoneDetails.remaining',
+                        { amount: Math.max(0, threshold - score).toLocaleString() },
+                        '{{amount}} more AIRS to reach this milestone.'
+                      )
+                  : def.unlocked
+                  ? copy(
+                      'accountInfo',
+                      'This badge recognizes your verified participation in the AIRS community.'
                     )
-                  : score == null
-                  ? copy('unavailable', 'Your AIRS balance is currently unavailable.')
-                  : t(
-                      'profile.milestoneDetails.remaining',
-                      { amount: Math.max(0, threshold - score).toLocaleString() },
-                      '{{amount}} more AIRS to reach this milestone.'
-                    )
-                : def.unlocked
-                ? copy(
-                    'accountInfo',
-                    'This badge recognizes your verified participation in the AIRS community.'
-                  )
-                : copy('unlockTitle', 'How to unlock')}
-            </Text>
+                  : copy('unlockTitle', 'How to unlock')}
+              </Text>
+            )}
             {!def.unlocked && (
               <View style={{ gap: 10 }}>
                 {threshold != null && (
@@ -263,78 +282,140 @@ export default function AchievementDetailsModal({
             )}
             {canCelebrate && (
               <>
-                {image?.previewUri && (
-                  <Image
-                    source={{ uri: image.previewUri }}
-                    resizeMode='contain'
-                    style={{ width: '100%', aspectRatio: 1 }}
-                    accessibilityLabel={image.displayName}
-                  />
-                )}
-                {retry === 0 && (
-                  <>
-                    <Text style={{ color: c.muted, fontSize: 12, lineHeight: 18 }}>
-                      {copy(
-                        'publishHint',
-                        'Create a public image with your display name and this earned badge to share on social media.'
-                      )}
-                    </Text>
-                    {button(copy('createImage', 'Create share image'), () => setRetry(1))}
-                  </>
-                )}
                 <Text style={{ color: c.text, fontWeight: '700' }}>
                   {copy('shareTitle', 'Share your milestone')}
                 </Text>
-                <Text selectable style={{ color: c.muted, lineHeight: 20, fontSize: 13 }}>
-                  {caption}
-                </Text>
                 <Text style={{ color: c.muted, fontSize: 12, lineHeight: 18 }}>
-                  {copy(
-                    'shareHint',
-                    'Share the personalized image through your device, or use its public preview link on X, Facebook and LinkedIn. For Instagram, attach the saved image and paste your caption.'
-                  )}
-                </Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  {(['X', 'Facebook', 'Instagram', 'LinkedIn'] as const).map((platform) => (
-                    <React.Fragment key={platform}>
-                      {button(
-                        platform,
-                        () => {
-                          void handleShare(platform);
-                        },
-                        !image || busy
-                      )}
-                    </React.Fragment>
-                  ))}
-                  {button(
-                    copy('share', 'Share image…'),
-                    () => {
-                      void handleShare();
-                    },
-                    !image || busy
-                  )}
-                  {Platform.OS === 'web' &&
-                    button(
-                      copy('download', 'Save image'),
-                      () => {
-                        if (image) downloadMilestoneImage(image);
-                      },
-                      !image
-                    )}
-                  {button(copy('copy', 'Copy caption'), () => {
-                    void Clipboard.setStringAsync(caption)
-                      .then((copied) =>
-                        setNotice(
-                          copied
-                            ? copy('copied', 'Caption copied.')
-                            : copy('copyError', 'Select the caption above to copy it.')
-                        )
+                  {retry === 0
+                    ? copy(
+                        'publishHint',
+                        'Create a public image with your display name and this earned badge to share on social media.'
                       )
-                      .catch(() =>
-                        setNotice(copy('copyError', 'Select the caption above to copy it.'))
-                      );
-                  })}
-                </View>
+                    : copy(
+                        'appsHint',
+                        'Choose an installed app from your device’s share menu. For Instagram, share the image or save it to attach to a post.'
+                      )}
+                </Text>
+                {retry === 0 ? (
+                  button(copy('createImage', 'Create share image'), () => setRetry(1))
+                ) : image ? (
+                  <Pressable
+                    accessibilityRole='button'
+                    accessibilityLabel={copy('shareApps', 'Share with apps')}
+                    accessibilityState={{ disabled: busy }}
+                    disabled={busy}
+                    onPress={() => {
+                      void handleShare();
+                    }}
+                    style={{
+                      minHeight: 44,
+                      borderRadius: 14,
+                      backgroundColor: '#10dbb1',
+                      opacity: busy ? 0.5 : 1,
+                      flexDirection: 'row',
+                      gap: 8,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 12,
+                    }}
+                  >
+                    <Share2 size={18} color='#052d28' />
+                    <Text style={{ color: '#052d28', fontWeight: '700' }}>
+                      {copy('shareApps', 'Share with apps')}
+                    </Text>
+                  </Pressable>
+                ) : null}
+                {image && (
+                  <View style={{ borderTopWidth: 1, borderColor: c.border }}>
+                    {Platform.OS === 'web' && (
+                      <>
+                        <Pressable
+                          accessibilityRole='button'
+                          accessibilityLabel={copy('socialLinks', 'Social links')}
+                          accessibilityState={{ expanded: socialExpanded }}
+                          onPress={() => setSocialExpanded((value) => !value)}
+                          style={{
+                            minHeight: 44,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <Text style={{ color: c.text, fontSize: 13 }}>
+                            {copy('socialLinks', 'Social links')}
+                          </Text>
+                          {socialExpanded ? (
+                            <ChevronUp size={16} color={c.muted} />
+                          ) : (
+                            <ChevronDown size={16} color={c.muted} />
+                          )}
+                        </Pressable>
+                        {socialExpanded && (
+                          <View style={{ gap: 8, paddingBottom: 10 }}>
+                            <Text style={{ color: c.muted, fontSize: 12, lineHeight: 18 }}>
+                              {copy(
+                                'linksHint',
+                                'Share the public preview link. To attach the image in an app, use Share with apps.'
+                              )}
+                            </Text>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                              {(['X', 'Facebook', 'LinkedIn'] as const).map((platform) => (
+                                <React.Fragment key={platform}>
+                                  {button(platform, () => handleSocial(platform))}
+                                </React.Fragment>
+                              ))}
+                            </View>
+                          </View>
+                        )}
+                      </>
+                    )}
+                    <Pressable
+                      accessibilityRole='button'
+                      accessibilityLabel={copy('saveCaption', 'Save & caption')}
+                      accessibilityState={{ expanded: toolsExpanded }}
+                      onPress={() => setToolsExpanded((value) => !value)}
+                      style={{
+                        minHeight: 44,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <Text style={{ color: c.text, fontSize: 13 }}>
+                        {copy('saveCaption', 'Save & caption')}
+                      </Text>
+                      {toolsExpanded ? (
+                        <ChevronUp size={16} color={c.muted} />
+                      ) : (
+                        <ChevronDown size={16} color={c.muted} />
+                      )}
+                    </Pressable>
+                    {toolsExpanded && (
+                      <View style={{ gap: 10 }}>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                          {Platform.OS === 'web' &&
+                            button(copy('download', 'Save image'), handleDownload)}
+                          {button(copy('copy', 'Copy caption'), () => {
+                            void Clipboard.setStringAsync(caption)
+                              .then((copied) =>
+                                setNotice(
+                                  copied
+                                    ? copy('copied', 'Caption copied.')
+                                    : copy('copyError', 'Select the caption above to copy it.')
+                                )
+                              )
+                              .catch(() =>
+                                setNotice(copy('copyError', 'Select the caption above to copy it.'))
+                              );
+                          })}
+                        </View>
+                        <Text selectable style={{ color: c.muted, lineHeight: 18, fontSize: 12 }}>
+                          {caption}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
                 {retry > 0 && !image && !failed && (
                   <Text accessibilityLiveRegion='polite' style={{ color: c.muted }}>
                     {copy('preparing', 'Preparing your image…')}

@@ -90,6 +90,17 @@ Expected result:
 | `identity-dev`  | Testnet Authentik              | Identity runtime                            |
 | `api-dev`       | Retired                        | Stale stage path; do not use                |
 
+### Production API cannot find its identity integration secret
+
+The production identity stack writes the stage-qualified secret
+`alternun-infra/identity/integration-config-v2/identity-prod`. The `dashboard-prod`
+pipeline must pass that full name as
+`INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME`; the unsuffixed
+`alternun-infra/identity/integration-config-v2` is a naming prefix, not a secret.
+If an existing CodeBuild project retains the prefix, correct that environment
+reference and retry the failed `Build-Deploy` stage. Do not create a duplicate
+secret or rotate credentials to work around this lookup failure.
+
 ## Manual Deploy
 
 If you need to deploy manually:
