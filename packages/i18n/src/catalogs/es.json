@@ -1017,7 +1017,14 @@
         },
         "createImage": "Crear imagen para compartir",
         "publishHint": "Crea una imagen pública con tu nombre y esta insignia obtenida para compartirla en redes sociales.",
-        "previewHint": "El enlace incluye la vista previa de tu imagen personalizada. La red social determina cuándo aparece."
+        "previewHint": "El enlace incluye la vista previa de tu imagen personalizada. La red social determina cuándo aparece.",
+        "shareApps": "Compartir con apps",
+        "appsHint": "Elige una app instalada en el menú de tu dispositivo. Para Instagram, comparte la imagen o guárdala para adjuntarla a una publicación.",
+        "socialLinks": "Enlaces sociales",
+        "linksHint": "Comparte el enlace con vista previa. Para adjuntar la imagen en una app, usa Compartir con apps.",
+        "saveCaption": "Guardar y texto",
+        "browserFallback": "Elige un enlace social o guarda la imagen y copia el texto.",
+        "downloadError": "No se pudo guardar la imagen. Prueba Compartir con apps."
       }
     },
     "explorer": {

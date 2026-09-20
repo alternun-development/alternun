@@ -82,3 +82,34 @@ it('finds milestone numbers without thousands separators and by their artwork ab
   act(() => tree.root.findByType(SearchFilterBar).props.onChangeText('50k'));
   expect(keys()).toEqual(['first_50000_airs']);
 });
+
+it('opens earned and locked details, closes them, and clears selection when paging backwards', () => {
+  const Details = require('../AchievementDetailsModal').default;
+  const open = (key) =>
+    act(() =>
+      tree.root
+        .findAllByType(AchievementBadge)
+        .find((node) => node.props.def.key === key)
+        .props.onPress()
+    );
+  open('account_confirmed');
+  expect(tree.root.findByType(Details).props.def).toMatchObject({
+    key: 'account_confirmed',
+    unlocked: true,
+    unlockedAt: null,
+  });
+  act(() => tree.root.findByType(Details).props.onClose());
+  expect(tree.root.findAllByType(Details)).toHaveLength(0);
+  const firstPage = keys();
+  act(() => next().props.onPress());
+  open(keys()[0]);
+  expect(tree.root.findByType(Details).props.def.unlocked).toBe(false);
+  act(() =>
+    tree.root
+      .findAllByType(TouchableOpacity)
+      .find((node) => node.props.accessibilityLabel === 'Previous page')
+      .props.onPress()
+  );
+  expect(keys()).toEqual(firstPage);
+  expect(tree.root.findAllByType(Details)).toHaveLength(0);
+});

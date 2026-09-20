@@ -59,8 +59,17 @@ export async function shareMilestoneImage(
   caption: string
 ): Promise<void> {
   if (Platform.OS === 'web') {
-    if (!image.file || !canShareMilestoneFile(image)) throw new Error('File sharing unavailable');
-    await navigator.share({ files: [image.file], text: caption, title: 'AIRS milestone' });
+    if (image.file && canShareMilestoneFile(image)) {
+      await navigator.share({ files: [image.file], text: caption, title: 'AIRS milestone' });
+    } else if (canShareMilestoneLink(image)) {
+      const text = caption
+        .replace(image.shareUrl ?? '', '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      await navigator.share({ url: image.shareUrl, text, title: 'AIRS milestone' });
+    } else {
+      throw new Error('File sharing unavailable');
+    }
   } else {
     if (!(await Sharing.isAvailableAsync())) throw new Error('Sharing unavailable');
     await Sharing.shareAsync(image.uri, {
@@ -69,6 +78,38 @@ export async function shareMilestoneImage(
       dialogTitle: caption,
     });
   }
+}
+
+/** Capability detection also supports browsers that share links but not PNG files. */
+export function canShareMilestoneLink(image: PreparedMilestoneImage): boolean {
+  return (
+    Platform.OS === 'web' &&
+    typeof navigator !== 'undefined' &&
+    typeof navigator.share === 'function' &&
+    Boolean(image.shareUrl) &&
+    (typeof navigator.canShare !== 'function' || navigator.canShare({ url: image.shareUrl }))
+  );
+}
+
+export function isMobileShareBrowser(): boolean {
+  if (Platform.OS !== 'web' || typeof navigator === 'undefined') return false;
+  return (
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
+  );
+}
+
+export function openMilestoneComposer(
+  platform: SocialPlatform,
+  caption: string,
+  shareUrl?: string
+): void {
+  if (Platform.OS !== 'web') return;
+  const url = socialComposerUrl(platform, caption, shareUrl);
+  // A direct, user-initiated HTTPS navigation lets the OS handle associated apps.
+  // No undocumented app schemes, delayed redirects, or automatic posting.
+  if (isMobileShareBrowser()) window.location.assign(url);
+  else window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 export function downloadMilestoneImage(image: PreparedMilestoneImage): void {

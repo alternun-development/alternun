@@ -1,3 +1,34 @@
+## [1.1.89](https://github.com/alternun-development/alternun/compare/v1.1.87...v1.1.89) (2026-09-19)
+
+### Documentation
+
+- **security:** record v1.1.89 dependency audit ([209f7ac](https://github.com/alternun-development/alternun/commit/209f7ace87f96dad9d95148804f5f1095232f6b9))
+
+### Bug Fixes
+
+- **airs:** avoid duplicate links in mobile sharing ([2a6aaea](https://github.com/alternun-development/alternun/commit/2a6aaea95b75cd85a4a1333bf9bfd18a99ff9f2d))
+
+## [1.1.88](https://github.com/alternun-development/alternun/compare/v1.1.87...v1.1.88) (2026-09-20)
+
+### Bug Fixes
+
+- **repo:** fix(airs): avoid duplicate links in mobile sharing
+
+### Bug Fixes
+
+- **airs:** avoid duplicate links in mobile sharing ([2a6aaea](https://github.com/alternun-development/alternun/commit/2a6aaea95b75cd85a4a1333bf9bfd18a99ff9f2d))
+
+## [1.1.87](https://github.com/alternun-development/alternun/compare/v1.1.86...v1.1.87) (2026-09-19)
+
+### Bug Fixes
+
+- **airs:** streamline mobile milestone sharing ([3de22e3](https://github.com/alternun-development/alternun/commit/3de22e3e70f66a45c6e3893123ee3ff257821264))
+- **infra:** qualify production identity secret with its stage ([9c0a222](https://github.com/alternun-development/alternun/commit/9c0a2226ed4e2f17c30d9ac62dae549c5d320a70))
+
+### Changes
+
+- **airs:** cover badge sharing fallbacks and tier states ([c81cb58](https://github.com/alternun-development/alternun/commit/c81cb580f026239b7451429e531cb11512cde418))
+
 ## [1.1.86](https://github.com/alternun-development/alternun/compare/v1.1.85...v1.1.86) (2026-09-19)
 
 ### Changes
