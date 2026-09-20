@@ -16,9 +16,12 @@
  *   />
  */
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
+  Modal,
+  Pressable,
+  ScrollView,
   Easing,
   StyleSheet,
   Text,
@@ -38,7 +41,6 @@ import {
   SkeletonLoader,
 } from './SkeletonLoader';
 import { ThemeProvider } from '../theme/ThemeContext';
-import { useTooltip } from './Tooltip';
 
 // ─── Tier system ──────────────────────────────────────────────────────────────
 
@@ -131,6 +133,9 @@ export interface HeroPanelProps {
   isLoading?: boolean;
   /** Called when user taps the reload button (top-right). If not provided, no reload button is shown. */
   onReload?: () => void;
+  /** Open the user's profile from the tier badge. */
+  onOpenProfile?: () => void;
+  closeInfoLabel?: string;
   /** Hides score / tier when user is not signed in. */
   previewMode?: boolean;
   /** ISO date string for the "last updated" line. */
@@ -174,6 +179,8 @@ export function HeroPanel({
   score,
   isLoading = false,
   onReload,
+  onOpenProfile,
+  closeInfoLabel = 'Close',
   previewMode = false,
   updatedAt: _updatedAt,
   brandMark,
@@ -195,6 +202,8 @@ export function HeroPanel({
   const safeScore = score ?? 0;
   const tier = previewMode || score == null ? 'bronze' : resolveTier(safeScore);
   const tierSpec = resolveTierSpec(tier);
+  const hasTier = !previewMode && score != null && !isLoading;
+  const tierAccent = hasTier ? tierSpec.color : '#1ee6b5';
 
   // Compute last updated time: use provided updatedAt or fallback to now (initial load)
   const lastUpdatedAt = _updatedAt ?? new Date().toISOString();
@@ -220,12 +229,9 @@ export function HeroPanel({
   const infoIconColor = '#ffffff';
   const tooltipTitleColor = '#ffffff';
   const tooltipBackgroundColor = isDark ? 'rgba(5,15,12,0.95)' : 'rgba(5,15,12,0.92)';
-  const tooltipBorderColor = isDark ? 'rgba(30,230,181,0.16)' : 'rgba(30,230,181,0.22)';
+  const tooltipBorderColor = `${tierSpec.color}80`;
   const { width: viewportWidth } = useWindowDimensions();
-  const compactTooltip = viewportWidth < 420;
-  const tooltipWidth = compactTooltip
-    ? Math.min(Math.max(Math.round(viewportWidth * 0.58), 180), 220)
-    : 280;
+  const tooltipWidth = Math.min(280, Math.max(0, viewportWidth - 32));
   const motionFull = motionLevel === 'full';
   const orbTR = useRef(new Animated.Value(0)).current;
   const orbBL = useRef(new Animated.Value(0)).current;
@@ -359,34 +365,7 @@ export function HeroPanel({
   const ReloadIcon = RotateCcw as React.FC<LucideProps>;
   const InfoIcon = Info as React.FC<LucideProps>;
 
-  // Tooltip for status tier info
-  const { isVisible: showStatusTooltip, toggle: toggleStatusTooltip } = useTooltip(false);
-
-  // Floating animation for tooltip
-  const tooltipOpacity = useRef(new Animated.Value(0)).current;
-  const tooltipTranslateY = useRef(new Animated.Value(10)).current;
-
-  useEffect(() => {
-    if (showStatusTooltip) {
-      Animated.parallel([
-        Animated.timing(tooltipOpacity, {
-          toValue: 1,
-          duration: 200,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(tooltipTranslateY, {
-          toValue: 0,
-          duration: 200,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      tooltipOpacity.setValue(0);
-      tooltipTranslateY.setValue(10);
-    }
-  }, [showStatusTooltip, tooltipOpacity, tooltipTranslateY]);
+  const [showStatusTooltip, setShowStatusTooltip] = useState(false);
 
   const formatDateWithTime = (isoString?: string): string => {
     if (!isoString) return 'N/A';
@@ -424,8 +403,6 @@ export function HeroPanel({
 
   const statusTooltipContent = (
     <View style={styles.tooltipContent}>
-      <Text style={[styles.tooltipLabel, { color: tooltipTitleColor }]}>{tooltipTitle}</Text>
-      <View style={styles.tooltipDivider} />
       <View style={styles.tooltipLine}>
         <Text style={[styles.tooltipKey, { color: textMuted }]}>{tooltipUpdatedLabel}</Text>
         <Text style={[styles.tooltipValue, { color: textPrimary }]}>
@@ -445,14 +422,16 @@ export function HeroPanel({
 
   return (
     <ThemeProvider mode={isDark ? 'dark' : 'light'}>
-      <View style={[styles.container]}>
+      <View
+        style={[styles.container, hasTier && { borderWidth: 1, borderColor: `${tierAccent}66` }]}
+      >
         {/* Decorative ambient orbs */}
         <Animated.View
           pointerEvents='none'
           style={[
             styles.orbTopRight,
             {
-              backgroundColor: isDark ? 'rgba(11,90,95,0.20)' : 'rgba(11,90,95,0.12)',
+              backgroundColor: `${tierAccent}18`,
               shadowColor: isDark ? 'rgba(11,90,95,0.18)' : 'rgba(11,90,95,0.12)',
             },
             orbTRStyle,
@@ -463,7 +442,7 @@ export function HeroPanel({
           style={[
             styles.orbBottomLeft,
             {
-              backgroundColor: isDark ? 'rgba(30,230,181,0.14)' : 'rgba(30,230,181,0.10)',
+              backgroundColor: `${tierAccent}18`,
               shadowColor: isDark ? 'rgba(30,230,181,0.16)' : 'rgba(30,230,181,0.12)',
             },
             orbBLStyle,
@@ -474,7 +453,7 @@ export function HeroPanel({
           style={[
             styles.orbTopLeft,
             {
-              backgroundColor: isDark ? 'rgba(30,230,181,0.10)' : 'rgba(30,230,181,0.08)',
+              backgroundColor: `${tierAccent}18`,
               shadowColor: isDark ? 'rgba(30,230,181,0.16)' : 'rgba(30,230,181,0.10)',
             },
             orbTLStyle,
@@ -485,7 +464,7 @@ export function HeroPanel({
           style={[
             styles.orbBottomRight,
             {
-              backgroundColor: isDark ? 'rgba(11,90,95,0.10)' : 'rgba(11,90,95,0.08)',
+              backgroundColor: `${tierAccent}18`,
               shadowColor: isDark ? 'rgba(11,90,95,0.12)' : 'rgba(11,90,95,0.08)',
             },
             orbBRStyle,
@@ -496,7 +475,7 @@ export function HeroPanel({
           style={[
             styles.orbMidLeft,
             {
-              backgroundColor: isDark ? 'rgba(30,230,181,0.09)' : 'rgba(30,230,181,0.06)',
+              backgroundColor: `${tierAccent}18`,
               shadowColor: isDark ? 'rgba(30,230,181,0.14)' : 'rgba(30,230,181,0.08)',
             },
             orbMidLeftStyle,
@@ -507,7 +486,7 @@ export function HeroPanel({
           style={[
             styles.orbMidRight,
             {
-              backgroundColor: isDark ? 'rgba(11,90,95,0.08)' : 'rgba(11,90,95,0.06)',
+              backgroundColor: `${tierAccent}18`,
               shadowColor: isDark ? 'rgba(11,90,95,0.10)' : 'rgba(11,90,95,0.06)',
             },
             orbMidRightStyle,
@@ -560,58 +539,95 @@ export function HeroPanel({
         ) : (
           <>
             <View style={styles.tierBadgeRow}>
-              <View style={[styles.tierBadge, { borderColor: tierSpec.trackColor }]}>
+              <TouchableOpacity
+                onPress={onOpenProfile}
+                disabled={!onOpenProfile || !hasTier}
+                accessibilityRole={onOpenProfile ? 'button' : undefined}
+                accessibilityLabel={statusLabel.replace('{{tier}}', tierSpec.label)}
+                testID='hero-tier-profile'
+                style={[
+                  styles.tierBadge,
+                  {
+                    borderColor: tierSpec.color,
+                    borderTopColor: `${tierSpec.color}80`,
+                    backgroundColor: '#111e21',
+                    boxShadow: `inset 0px 1px 0px #ffffff12, 0px 3px 12px ${tierSpec.color}12`,
+                  },
+                ]}
+              >
                 <View style={[styles.tierDot, { backgroundColor: tierSpec.color }]} />
-                <Text style={[styles.tierLabel, { color: tierSpec.color }]}>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.tierLabel, { color: '#e8f0ee', flexShrink: 1 }]}
+                >
                   {statusLabel.replace('{{tier}}', tierSpec.label.toUpperCase())}
                 </Text>
-              </View>
-              <View style={styles.iconButtonWrapper}>
-                <TouchableOpacity
-                  onPress={toggleStatusTooltip}
-                  // @ts-expect-error - web hover support (onMouseEnter/onMouseLeave)
-                  onMouseEnter={() => {
-                    if (!showStatusTooltip) toggleStatusTooltip();
-                  }}
-                  onMouseLeave={() => {
-                    if (showStatusTooltip) toggleStatusTooltip();
-                  }}
-                  accessibilityRole='button'
-                  accessibilityLabel={statusInfoButtonLabel}
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setShowStatusTooltip(true)}
+                accessibilityRole='button'
+                accessibilityLabel={statusInfoButtonLabel}
+                style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <InfoIcon size={16} color={infoIconColor} strokeWidth={2} />
+              </TouchableOpacity>
+              <Modal
+                visible={showStatusTooltip}
+                transparent
+                animationType={motionFull ? 'fade' : 'none'}
+                onRequestClose={() => setShowStatusTooltip(false)}
+              >
+                <View
+                  style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 }}
                 >
-                  <InfoIcon size={16} color={infoIconColor} strokeWidth={2} />
-                </TouchableOpacity>
-                {showStatusTooltip && (
-                  <Animated.View
+                  <Pressable
+                    style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.25)' }]}
+                    onPress={() => setShowStatusTooltip(false)}
+                    accessibilityRole='button'
+                    accessibilityLabel={closeInfoLabel}
+                  />
+                  <View
+                    testID='hero-status-popover'
+                    accessibilityViewIsModal
                     style={[
-                      styles.tooltipOverlay,
+                      styles.statusTooltip,
                       {
-                        left: compactTooltip ? undefined : 30,
-                        right: compactTooltip ? 0 : undefined,
-                        minWidth: tooltipWidth,
-                        maxWidth: tooltipWidth,
-                        opacity: tooltipOpacity,
-                        transform: [{ translateY: tooltipTranslateY }],
+                        width: tooltipWidth,
+                        maxHeight: '80%',
+                        backgroundColor: tooltipBackgroundColor,
+                        borderColor: tooltipBorderColor,
                       },
                     ]}
                   >
                     <View
-                      style={[
-                        styles.statusTooltip,
-                        {
-                          backgroundColor: tooltipBackgroundColor,
-                          borderColor: tooltipBorderColor,
-                          minWidth: tooltipWidth,
-                          width: tooltipWidth,
-                          shadowColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.20)',
-                        },
-                      ]}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8,
+                      }}
                     >
-                      {statusTooltipContent}
+                      <Text style={[styles.tooltipLabel, { color: tooltipTitleColor, flex: 1 }]}>
+                        {tooltipTitle}
+                      </Text>
+                      <TouchableOpacity
+                        accessibilityRole='button'
+                        accessibilityLabel={closeInfoLabel}
+                        onPress={() => setShowStatusTooltip(false)}
+                        style={{
+                          width: 32,
+                          height: 32,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Text style={{ color: '#ffffff', fontSize: 18 }}>×</Text>
+                      </TouchableOpacity>
                     </View>
-                  </Animated.View>
-                )}
-              </View>
+                    <ScrollView>{statusTooltipContent}</ScrollView>
+                  </View>
+                </View>
+              </Modal>
             </View>
           </>
         )}
@@ -850,13 +866,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing[4],
     zIndex: 1,
   },
-  iconButtonWrapper: {
-    position: 'relative',
-  },
   tierBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    flexShrink: 1,
+    minWidth: 0,
     borderWidth: 1,
     borderRadius: radius.full,
     paddingHorizontal: spacing[3],
@@ -870,15 +885,7 @@ const styles = StyleSheet.create({
   tierLabel: {
     fontSize: fontSize.sm,
     fontWeight: '700',
-    letterSpacing: 0.6,
-  },
-  tooltipOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 30,
-    zIndex: 1000,
-    minWidth: 0,
-    maxWidth: 340,
+    letterSpacing: 0.2,
   },
   statusTooltip: {
     minWidth: 0,
@@ -894,19 +901,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
-  tooltipArrow: {
-    position: 'absolute',
-    top: -6,
-    right: 16,
-    width: 0,
-    height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 6,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: 'rgba(30,230,181,0.12)',
-  },
 
   /* Tooltip content */
   tooltipContent: {
@@ -918,11 +912,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     opacity: 0.85,
-  },
-  tooltipDivider: {
-    height: 0.5,
-    backgroundColor: 'rgba(30,230,181,0.12)',
-    marginVertical: spacing[1],
   },
   tooltipLine: {
     flexDirection: 'column',

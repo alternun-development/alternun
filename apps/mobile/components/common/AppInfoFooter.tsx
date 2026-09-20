@@ -167,7 +167,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
         bottomBar: 'rgba(255,255,255,0.2)',
       };
 
-  const shellPadding = isWide ? 8 : isMobile ? 6 : 9;
+  const shellPadding = isMobile ? 5 : 6;
   const shellRevealHeight = isWide ? 18 : isMobile ? 12 : 14;
   const wordmarkWidth = isWide ? 84 : isMobile ? 64 : 76;
   const wordmarkHeight = isWide ? 28 : isMobile ? 20 : 24;
@@ -189,7 +189,10 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
             <BlurView
               intensity={isWide ? 48 : 34}
               tint={isDark ? 'dark' : 'light'}
-              style={StyleSheet.absoluteFill}
+              style={[
+                StyleSheet.absoluteFill,
+                { borderTopLeftRadius: 20, borderTopRightRadius: 20, overflow: 'hidden' },
+              ]}
             />
           )}
           <View
@@ -256,6 +259,7 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
                     <SocialPill
                       key={link.label}
                       {...link}
+                      compact
                       iconColor={palette.accent}
                       backgroundColor={palette.socialBg}
                       borderColor={palette.socialBorder}
@@ -320,20 +324,22 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
                 </Pressable>
               </View>
 
-              <View style={styles.mobileSocialRowCompact}>
-                {SOCIAL_LINKS.map((link) => (
-                  <SocialPill
-                    key={link.label}
-                    {...link}
-                    compact
-                    mobileMini
-                    iconColor={palette.accent}
-                    backgroundColor={palette.socialBg}
-                    borderColor={palette.socialBorder}
-                    hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
-                  />
-                ))}
-              </View>
+              {expanded && (
+                <View style={styles.mobileSocialRowCompact}>
+                  {SOCIAL_LINKS.map((link) => (
+                    <SocialPill
+                      key={link.label}
+                      {...link}
+                      compact
+                      mobileMini
+                      iconColor={palette.accent}
+                      backgroundColor={palette.socialBg}
+                      borderColor={palette.socialBorder}
+                      hoverColor={isDark ? 'rgba(30,230,181,0.24)' : 'rgba(11,90,95,0.14)'}
+                    />
+                  ))}
+                </View>
+              )}
             </View>
           )}
 
@@ -514,11 +520,13 @@ const drawerStyles = StyleSheet.create({
 
 const styles = createTypographyStyles({
   outer: {
+    backgroundColor: 'transparent',
     alignSelf: 'stretch',
     minWidth: 0,
     marginTop: 'auto',
   },
   shell: {
+    backgroundColor: 'transparent',
     overflow: 'hidden',
     position: 'relative',
     borderTopLeftRadius: 20,
@@ -561,7 +569,7 @@ const styles = createTypographyStyles({
   },
   brandBlock: {
     gap: 0,
-    minWidth: 148,
+    minWidth: 88,
     flexShrink: 0,
   },
   brandHeader: {

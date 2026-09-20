@@ -129,6 +129,21 @@ describe('DynamicMessageBar', () => {
     expect(reanimatedMock.cancelAnimation).toHaveBeenCalledTimes(0);
   });
 
+  it('keeps its position when scroll updates recreate the message and link callback', () => {
+    renderState = render({
+      text: 'Hello world',
+      link: { label: 'Learn more', onPress: jest.fn() },
+    });
+    for (let index = 0; index < 5; index += 1) {
+      rerender(renderState, {
+        text: 'Hello world',
+        link: { label: 'Learn more', onPress: jest.fn() },
+      });
+    }
+    expect(reanimatedMock.withRepeat).toHaveBeenCalledTimes(1);
+    expect(reanimatedMock.cancelAnimation).not.toHaveBeenCalled();
+  });
+
   it('resets position and restarts the loop when the message changes', () => {
     const messageA: DynamicMessageContent = { text: 'First' };
     const messageB: DynamicMessageContent = { text: 'Second' };

@@ -42,6 +42,7 @@ interface SearchFilterBarProps {
   value: string;
   onChangeText: (value: string) => void;
   placeholder?: string;
+  filterLabel?: string;
   filters: readonly SearchFilterOption[];
   activeFilter: string;
   onChangeFilter: (filterKey: string) => void;
@@ -53,6 +54,7 @@ export default function SearchFilterBar({
   value,
   onChangeText,
   placeholder = 'Buscar...',
+  filterLabel = 'Filtrar por',
   filters,
   activeFilter,
   onChangeFilter,
@@ -116,6 +118,7 @@ export default function SearchFilterBar({
         <SearchIcon size={16} color={theme.iconMuted} />
         <TextInput
           style={[styles.input, { color: theme.textPrimary }]}
+          accessibilityLabel={placeholder}
           placeholder={placeholder}
           placeholderTextColor={theme.textPlaceholder}
           value={value}
@@ -125,6 +128,9 @@ export default function SearchFilterBar({
         <View ref={filterButtonRef} collapsable={false} style={styles.filterButtonAnchor}>
           <TouchableOpacity
             activeOpacity={0.8}
+            accessibilityRole='button'
+            accessibilityLabel={activeOption?.label}
+            accessibilityState={{ expanded: isOpen }}
             onPress={() => setIsOpen((open) => !open)}
             style={[
               styles.filterButton,
@@ -177,13 +183,18 @@ export default function SearchFilterBar({
               },
             ]}
           >
-            <Text style={[styles.dropdownLabel, { color: theme.dropdownMuted }]}>Filtrar por</Text>
+            <Text style={[styles.dropdownLabel, { color: theme.dropdownMuted }]}>
+              {filterLabel}
+            </Text>
             {filters.map((option, index) => {
               const active = option.key === activeFilter;
               const OptionIcon = option.icon;
               return (
                 <TouchableOpacity
                   key={option.key}
+                  accessibilityRole='button'
+                  accessibilityLabel={option.label}
+                  accessibilityState={{ selected: active }}
                   activeOpacity={0.8}
                   onPress={() => {
                     onChangeFilter(option.key);
