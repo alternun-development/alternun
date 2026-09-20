@@ -361,7 +361,7 @@ export default function TopNav({
         </View>
 
         {/* Right: profile pill (notification badge inside) or hamburger on extra small */}
-        <View style={styles.rightArea}>
+        <View style={[styles.rightArea, isMobile && styles.rightAreaMobile]}>
           {badgeLoading && (
             <View
               testID='account-badge-skeleton'
@@ -372,7 +372,8 @@ export default function TopNav({
                 styles.profilePill,
                 isMobile && styles.profilePillMobile,
                 {
-                  width: isExtraSmall ? 40 : isMobile ? 180 : 220,
+                  width: isExtraSmall ? 40 : 220,
+                  maxWidth: '100%',
                   height: isExtraSmall ? 40 : isMobile ? 36 : 40,
                   backgroundColor: isDark ? '#202a32' : '#e4e9ec',
                   boxShadow: 'none',
@@ -431,9 +432,10 @@ export default function TopNav({
           {!badgeLoading && !isExtraSmall && (
             <View style={styles.profileContainer}>
               <TouchableOpacity
+                testID='account-badge-pill'
                 style={[
                   styles.profilePill,
-                  signedIn && { minWidth: isMobile ? 180 : 220 },
+                  signedIn && (isMobile ? styles.signedInPillMobile : { minWidth: 220 }),
                   isMobile && styles.profilePillMobile,
                   isExtraSmall && styles.profilePillExtraSmall,
                   { backgroundColor: p.pillBg, borderColor: p.pillBorder },
@@ -1019,9 +1021,19 @@ const styles = StyleSheet.create({
     maxWidth: '45%',
   },
 
+  rightAreaMobile: {
+    // Reserve room for the logo and keep the pill within the navbar's gutters.
+    maxWidth: '75%',
+    minWidth: 0,
+    flexShrink: 1,
+  },
+
   // ── Profile pill ────────────────────────────────────────────────────────
   profileContainer: {
     position: 'relative',
+    minWidth: 0,
+    maxWidth: '100%',
+    flexShrink: 1,
   },
   profilePill: {
     flexDirection: 'row',
@@ -1033,6 +1045,11 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     paddingRight: 10,
     boxShadow: '0px 10px 22px rgba(30, 230, 181, 0.18)',
+  },
+  signedInPillMobile: {
+    width: 220,
+    maxWidth: '100%',
+    minWidth: 0,
   },
   profilePillMobile: {
     gap: 6,
@@ -1082,7 +1099,9 @@ const styles = StyleSheet.create({
     maxWidth: 110,
   },
   nameBlockMobile: {
-    maxWidth: 92,
+    flex: 1,
+    minWidth: 0,
+    maxWidth: 120,
   },
   pillName: {
     fontSize: 12,
