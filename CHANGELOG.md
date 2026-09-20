@@ -1,3 +1,9 @@
+## [1.1.89](https://github.com/alternun-development/alternun/compare/v1.1.88-dev.0...v1.1.89) (2026-09-20)
+
+### Bug Fixes
+
+- **repo:** docs(security): record v1.1.89 dependency audit
+
 ## [1.1.88](https://github.com/alternun-development/alternun/compare/v1.1.87...v1.1.88) (2026-09-20)
 
 ### Bug Fixes
