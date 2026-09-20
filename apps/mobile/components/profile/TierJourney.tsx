@@ -110,45 +110,55 @@ export function TierJourney({
                   zIndex: 1,
                 }}
               >
-                {STATUS_BADGES[t.id] ? (
-                  <Image
-                    source={STATUS_BADGES[t.id]}
-                    accessible={false}
-                    resizeMode='contain'
-                    style={{ width: 54, height: 54, opacity: reached ? 1 : 0.35 }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      width: 54,
-                      height: 54,
-                      borderRadius: 27,
-                      backgroundColor: reached ? t.color : 'transparent',
-                      borderWidth: 2,
-                      borderColor: reached
-                        ? t.color
-                        : isDark
-                        ? 'rgba(255,255,255,0.12)'
-                        : 'rgba(11,45,49,0.12)',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {i === currentIdx && reached ? (
-                      <CheckIcon size={14} color='#050510' strokeWidth={3} />
-                    ) : (
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          fontWeight: '700',
-                          color: reached ? '#050510' : c.muted,
-                        }}
-                      >
-                        {i + 1}
-                      </Text>
-                    )}
-                  </View>
-                )}
+                <View
+                  style={{
+                    width: 54,
+                    height: 54,
+                    borderRadius: 27,
+                    overflow: 'hidden',
+                    backgroundColor: isDark ? '#0d0d1f' : '#ffffff',
+                  }}
+                >
+                  {STATUS_BADGES[t.id] ? (
+                    <Image
+                      source={STATUS_BADGES[t.id]}
+                      accessible={false}
+                      resizeMode='contain'
+                      style={{ width: 54, height: 54, opacity: reached ? 1 : 0.35 }}
+                    />
+                  ) : (
+                    <View
+                      style={{
+                        width: 54,
+                        height: 54,
+                        borderRadius: 27,
+                        backgroundColor: reached ? t.color : 'transparent',
+                        borderWidth: 2,
+                        borderColor: reached
+                          ? t.color
+                          : isDark
+                          ? 'rgba(255,255,255,0.12)'
+                          : 'rgba(11,45,49,0.12)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {i === currentIdx && reached ? (
+                        <CheckIcon size={14} color='#050510' strokeWidth={3} />
+                      ) : (
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            fontWeight: '700',
+                            color: reached ? '#050510' : c.muted,
+                          }}
+                        >
+                          {i + 1}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                </View>
                 <Text
                   style={{
                     fontSize: 10,
