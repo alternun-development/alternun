@@ -387,63 +387,26 @@ build_backend_api_artifacts() {
   )
 }
 
-remove_state_resource() {
-  local target=$1
-
-  if [ -z "$target" ]; then
-    return 0
-  fi
-
-  echo "Pruning legacy managed certificate state for ${target}..."
-
-  local remove_output
-  if remove_output=$(
-    printf 'y\n' | (
-      cd "$INFRA_DIR" &&
-        SST_TELEMETRY_DISABLED=1 npx sst state remove --stage "$STACK" "$target"
-    ) 2>&1
-  ); then
-    echo "Removed state resource: ${target}"
-    return 0
-  fi
-
-  if printf '%s' "$remove_output" | grep -q "No changes made"; then
-    echo "No legacy state changes required for ${target}."
-    return 0
-  fi
-
-  echo "WARN: Failed to remove state resource ${target}; continuing. Output: ${remove_output}" >&2
-  return 0
-}
-
 prune_legacy_managed_certificate_state() {
   local prefixes=()
 
-  # `sst state remove` only removes the named resource, not its child resources.
-  # When a site/redirect migrates from SST-managed TLS to an explicit ACM ARN,
-  # we need to prune the certificate component plus its certificate/validation
-  # children so the next deploy stops trying to delete the in-use cert.
+  # Preserve the complete certificate subtree, including renewal DNS records.
+  # Export and validate state before removal, then verify migration completed.
   if [ -n "${INFRA_EXPO_CERT_ARN_PRODUCTION:-}" ] && [ "$STACK" = "production" ]; then
     prefixes+=(
       "expo-web-${STACK}CdnSsl"
-      "expo-web-${STACK}CdnSslCertificate"
-      "expo-web-${STACK}CdnSslValidation"
     )
   fi
 
   if [ -n "${INFRA_EXPO_CERT_ARN_DEV:-}" ] && [ "$STACK" = "dev" ]; then
     prefixes+=(
       "expo-web-${STACK}CdnSsl"
-      "expo-web-${STACK}CdnSslCertificate"
-      "expo-web-${STACK}CdnSslValidation"
     )
   fi
 
   if [ -n "${INFRA_EXPO_CERT_ARN_MOBILE:-}" ] && [ "$STACK" = "mobile" ]; then
     prefixes+=(
       "expo-web-${STACK}CdnSsl"
-      "expo-web-${STACK}CdnSslCertificate"
-      "expo-web-${STACK}CdnSslValidation"
     )
   fi
 
@@ -451,24 +414,18 @@ prune_legacy_managed_certificate_state() {
     if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-false}" && [ -n "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}" ]; then
       prefixes+=(
         "airs-redir-${STACK}CdnSsl"
-        "airs-redir-${STACK}CdnSslCertificate"
-        "airs-redir-${STACK}CdnSslValidation"
       )
     fi
 
     if is_truthy "${INFRA_REDIRECT_DEV_TO_TESTNET:-true}" && [ -n "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}" ]; then
       prefixes+=(
         "dev-redir-${STACK}CdnSsl"
-        "dev-redir-${STACK}CdnSslCertificate"
-        "dev-redir-${STACK}CdnSslValidation"
       )
     fi
 
     if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}" && [ -n "${INFRA_REDIRECT_ROOT_CERT_ARN:-}" ]; then
       prefixes+=(
         "root-redir-${STACK}CdnSsl"
-        "root-redir-${STACK}CdnSslCertificate"
-        "root-redir-${STACK}CdnSslValidation"
       )
     fi
   fi
@@ -477,10 +434,10 @@ prune_legacy_managed_certificate_state() {
     return 0
   fi
 
-  local prefix
-  for prefix in "${prefixes[@]}"; do
-    remove_state_resource "$prefix"
-  done
+  (
+    cd "$INFRA_DIR"
+    node "$SCRIPT_DIR/preserve-certificate-state.mjs" "$STACK" "${prefixes[@]}"
+  ) || return 1
 }
 
 remove_cloudfront_aliases_from_distribution() {

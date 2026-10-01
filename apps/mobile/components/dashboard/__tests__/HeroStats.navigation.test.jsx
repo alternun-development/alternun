@@ -5,6 +5,7 @@ import HeroStats from '../HeroStats';
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
+jest.mock('expo-image', () => ({ __esModule: true, Image: () => null }));
 jest.mock('@alternun/ui', () => ({ HeroPanel: jest.fn(() => null) }));
 jest.mock('../../settings/AppPreferencesProvider', () => ({
   useAppPreferences: () => ({ motionLevel: 'off' }),
