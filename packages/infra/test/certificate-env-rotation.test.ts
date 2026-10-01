@@ -30,13 +30,8 @@ void test('build defaults preserve rotating AIRS certificates supplied by CodeBu
     for (const generation of ['replacement', 'next-renewal']) {
       const expected = [`${generation}-production`, `${generation}-dev`];
       const result = spawnSync(
-        'bash',
-        [
-          '-c',
-          'source "$1"; load_infra_env; printf "%s\\n" "$INFRA_EXPO_CERT_ARN_PRODUCTION" "$INFRA_EXPO_CERT_ARN_DEV"',
-          'certificate-env-test',
-          path.join(infraDir, 'scripts/_load-infra-env.sh'),
-        ],
+        path.join(infraDir, 'scripts/_load-infra-env.sh'),
+        [expected[0], expected[1]],
         {
           encoding: 'utf8',
           env: {
