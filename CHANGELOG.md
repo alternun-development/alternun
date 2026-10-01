@@ -1,8 +1,9 @@
-## [1.1.91](https://github.com/alternun-development/alternun/compare/v1.1.90-dev.0...v1.1.91) (2026-10-01)
+## [1.1.91](https://github.com/alternun-development/alternun/compare/v1.1.89...v1.1.91) (2026-10-01)
 
-### Bug Fixes
+### Changes
 
-- **repo:** test(repo,mobile): artifact, graph.db, HeroStats.navigation.test, TopNav.tier.test
+- **repo,mobile:** artifact, graph.db, HeroStats.navigation.test, TopNav.tier.test ([9acef4d](https://github.com/alternun-development/alternun/commit/9acef4d9b59d58938d3628b2006dfec57bf35b81))
+- **repo,mobile,i18n:** artifact, graph.db, tls-health, README ([71b6beb](https://github.com/alternun-development/alternun/commit/71b6beb63fbc70edbb2d230b1d3bd3cfe3b9be91))
 
 ## [1.1.90](https://github.com/alternun-development/alternun/compare/v1.1.89...v1.1.90) (2026-10-01)
 

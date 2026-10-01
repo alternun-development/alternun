@@ -124,9 +124,10 @@ Current version: **1.1.91**
 
 ## 📋 Latest Changes (v1.1.91)
 
-### Bug Fixes
+### Changes
 
-- **repo:** test(repo,mobile): artifact, graph.db, HeroStats.navigation.test, TopNav.tier.test
+- **repo,mobile:** artifact, graph.db, HeroStats.navigation.test, TopNav.tier.test ([9acef4d](https://github.com/alternun-development/alternun/commit/9acef4d9b59d58938d3628b2006dfec57bf35b81))
+- **repo,mobile,i18n:** artifact, graph.db, tls-health, README ([71b6beb](https://github.com/alternun-development/alternun/commit/71b6beb63fbc70edbb2d230b1d3bd3cfe3b9be91))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
