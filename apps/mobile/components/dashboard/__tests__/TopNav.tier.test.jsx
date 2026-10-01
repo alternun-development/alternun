@@ -3,6 +3,9 @@ import renderer, { act } from 'react-test-renderer';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import TopNav from '../TopNav';
 
+jest.mock('expo-blur', () => ({ __esModule: true, BlurView: () => null }));
+jest.mock('expo-image', () => ({ __esModule: true, Image: () => null }));
+
 let mockBalance = null;
 let mockAuthLoading = false;
 let mockBalanceError = null;
