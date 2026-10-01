@@ -410,8 +410,8 @@ Important behavior:
 - the Google source bootstrap binds a username-mapping policy to `default-source-enrollment-prompt`, so first-time Google enrollments reuse the upstream email as the username and skip the manual Authentik username screen
 - the custom Google starter flow can optionally run `User Logout` before `SourceStage` when `INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_MODE=logout-then-source` is set, but that mode is still experimental and should not be treated as the default fix for stale browser sessions
 - the `Alternun Mobile` Authentik application tile defaults to the stage-specific AIRS auth entrypoint (`/auth?next=/`) so the tile opens the app instead of the Authentik library
-- legacy SST state for managed certificate migrations is pruned automatically when explicit cert ARNs are present
-- live cleanup of CloudFront aliases, Route53 records, and ACM validation CNAMEs is blocked unless `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true`
+- legacy SST certificate subtrees are preserved when explicit cert ARNs are present: export state, remove all descendants (including renewal CNAMEs) from state before their parents, then verify completion; export, parsing, ambiguous resource, and removal failures stop deployment
+- live cleanup of CloudFront aliases and application Route53 records is blocked unless `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true`
 - `AUTH_EXECUTION_PROVIDER` / `EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER` (`better-auth` is the current testnet rollout path; keep `EXPO_PUBLIC_AUTHENTIK_SOCIAL_LOGIN_MODE=authentik` for the Authentik social-login path and Discord-visible testnet bundle)
 - in direct source mode, Authentik must keep `default-source-authentication` and `default-source-enrollment` open (`authentication=none`) and prune `UserLoginStage` from both flows; keeping `default-source-authentication-login` or `default-source-enrollment-login` causes Google callback loops or `SourceStage` token crashes instead of dashboard redirects
 - the identity deploy template reapplies the live Authentik source-stage runtime hotfix on every identity rollout so the `FlowToken` delete crash stays patched after redeploys; the hotfix specifically keeps `SourceStageFinal.dispatch()`'s ordering as redirect-first, session-pop-second, `token.delete()`-last — popping the override session keys before `plan.to_redirect(...)` reintroduces an infinite admin login redirect loop, see `docs/alternun-authentik-admin-sso-incident-2026-08.md`
@@ -476,7 +476,8 @@ Config knobs:
 - `INFRA_REDIRECT_DEV_TO_TESTNET_SOURCES` (CSV list of dev-stage aliases; defaults include `dev`, `demo`, and `beta`)
 - `INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN` (optional; infra auto-provisions a wildcard `*.airs.alternun.co` cert when multiple dev aliases are enabled)
 - `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS` (default `false`; required for any live DNS/CDN/ACM cleanup)
-- `INFRA_REMOVE_ACM_VALIDATION_CNAME` (auto-cleans `_*.domain` ACM CNAME records when DNS auto-remove is enabled and `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true`)
+- `INFRA_REMOVE_ACM_VALIDATION_CNAME` (deprecated and ignored; deployment scripts never delete ACM validation CNAMEs, even during recovery)
+- ACM validation CNAMEs are permanent renewal dependencies. Keep them published for every certificate in use, including certificates supplied by ARN. State migration preserves cloud resources but does not repair already missing DNS records; restore those from ACM DomainValidationOptions.
 - `INFRA_ENABLE_ALIAS_CLEANUP` (recovery-only; also requires `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true`)
 - `INFRA_REDIRECT_ROOT_DOMAIN`
 - `INFRA_REDIRECT_ROOT_TARGET`
@@ -681,3 +682,26 @@ Optional auth/wallet env:
 - `EXPO_PUBLIC_WALLETCONNECT_CHAIN_ID`
 - `EXPO_PUBLIC_ENABLE_MOCK_WALLET_AUTH`
 - `EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH`
+
+## TLS renewal monitoring
+
+ACM validation CNAMEs must remain in public DNS for the lifetime of each certificate.
+A certificate can still serve valid HTTPS after its validation record disappears;
+the outage arrives later when renewal fails and the certificate expires.
+
+From the repository root, run `node packages/infra/scripts/check-tls.ts` for public
+trust, hostname and expiry checks. The default minimum validity is 30 days; override
+with `TLS_MINIMUM_DAYS`. Add `--acm` with the normal AWS credentials to also check the
+certificates actually attached to CloudFront, renewal eligibility/status, and every
+public validation CNAME. This read-only mode needs `cloudfront:ListDistributions`
+and `acm:DescribeCertificate`; CloudFront certificates are inspected in `us-east-1`.
+Pass hostnames as positional arguments to narrow either check.
+
+The `TLS certificate health` GitHub Actions workflow checks the six current
+CloudFront hosts hourly and supports manual runs. Scheduling starts only after the
+workflow reaches the default branch. Enable and verify Actions failure notifications
+for the responsible maintainers; scheduled workflows can be delayed or disabled.
+The credential-free scheduled check measures public TLS; `--acm` is an additional
+authenticated diagnostic and is not enabled in that workflow.
+
+See [the September 2026 incident and recovery procedure](../../docs/airs-tls-incident-2026-09-17.md).
