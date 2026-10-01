@@ -30,6 +30,7 @@ Public-facing technical documentation lives in `apps/docs/docs/`.
 13. `docs/alternun-better-auth-testnet-execution-plan.md`
 14. `docs/notifications.md`
 15. `docs/airs-community-total.md`
+16. `docs/airs-tls-incident-2026-09-17.md`
 
 ## How To Use This Directory
 

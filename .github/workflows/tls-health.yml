@@ -1,0 +1,29 @@
+name: TLS certificate health
+
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/tls-health.yml'
+      - 'packages/infra/scripts/check-tls.ts'
+      - 'packages/infra/test/tls-monitor.test.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  tls-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.0'
+      - name: Test certificate monitor
+        run: node --test --experimental-strip-types packages/infra/test/tls-monitor.test.ts
+      - name: Verify public certificate trust, hostname and 30-day expiry margin
+        if: github.event_name != 'pull_request'
+        run: node packages/infra/scripts/check-tls.ts
