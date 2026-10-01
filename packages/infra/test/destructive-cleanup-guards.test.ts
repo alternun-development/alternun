@@ -25,13 +25,7 @@ void test('destructive infra cleanup stays opt-in across deploy scripts, env def
     sstDeploySource,
     /if ! require_destructive_cleanup_allowed "CloudFront alias cleanup"; then\n\s+return 0\n\s+fi/
   );
-  assert.match(sstDeploySource, /npx sst state remove --stage "\$STACK" "\$target"/);
-  assert.match(sstDeploySource, /CdnSslCertificate/);
-  assert.match(sstDeploySource, /CdnSslValidation/);
-  assert.doesNotMatch(
-    sstDeploySource,
-    /if ! require_destructive_cleanup_allowed "SST state removal for \$\{target\}"; then\n\s+return 0\n\s+fi/
-  );
+  assert.match(sstDeploySource, /preserve-certificate-state\.mjs/);
   assert.match(
     sstDeploySource,
     /if \[ "\$\{CLOUDFRONT_ALIAS_CLEANUP_ATTEMPTED:-false\}" = "true" \]; then\n\s+# CloudFront was mutated outside SST, so refresh state before synthesis\/deploy\.\n\s+refresh_sst_state_after_alias_cleanup\n\s+else\n\s+echo "Skipping SST state refresh because CloudFront alias cleanup was not performed\."\n\s+fi/
@@ -47,11 +41,8 @@ void test('destructive infra cleanup stays opt-in across deploy scripts, env def
     predeploySource,
     /if ! require_destructive_cleanup_allowed "Route53 DNS record deletion for \$\{record_name\}"; then\n\s+return 0\n\s+fi/
   );
-  assert.match(
-    predeploySource,
-    /if ! require_destructive_cleanup_allowed "ACM validation CNAME deletion for \$\{domain_name\}"; then\n\s+return 0\n\s+fi/
-  );
-  assert.match(predeploySource, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true/);
+  assert.doesNotMatch(predeploySource, /delete_acm_validation_cname_records/);
+  assert.match(predeploySource, /Preserving ACM validation CNAME records/);
 
   assert.match(buildspecSource, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS: 'false'/);
   assert.match(envExampleSource, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=false/);
@@ -59,11 +50,11 @@ void test('destructive infra cleanup stays opt-in across deploy scripts, env def
 
   assert.match(
     readmeSource,
-    /legacy SST state for managed certificate migrations is pruned automatically when explicit cert ARNs are present/
+    /legacy SST certificate subtrees are preserved when explicit cert ARNs are present/
   );
   assert.match(
     readmeSource,
-    /live cleanup of CloudFront aliases, Route53 records, and ACM validation CNAMEs is blocked unless `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true`/
+    /live cleanup of CloudFront aliases and application Route53 records is blocked unless `INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true`/
   );
   assert.match(readmeSource, /INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS/);
   assert.match(readmeSource, /INFRA_ENABLE_ALIAS_CLEANUP/);
