@@ -1,11 +1,11 @@
 {
     "schema_version": 1,
-    "commit": "7508c31965d742d02c003a4ddd106004b7245e44",
-    "indexed_at": "2026-10-01T15:56:07Z",
+    "commit": "a8da8d55784e5f4afc23f3a5ab3652507e1ecbd5",
+    "indexed_at": "2026-10-01T17:03:32Z",
     "project": "home-ed-Documents-Alternun-alternun",
-    "nodes": 0,
-    "edges": 0,
-    "original_size": 102400,
-    "compressed_size": 1396,
+    "nodes": 15513,
+    "edges": 29680,
+    "original_size": 32768000,
+    "compressed_size": 5620591,
     "compression_level": 3
 }
