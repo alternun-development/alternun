@@ -1,5 +1,11 @@
-import { Body, Controller, HttpCode, Post, Res, VERSION_NEUTRAL } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Headers, HttpCode, Post, Res, VERSION_NEUTRAL } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import type { FastifyReply } from 'fastify';
 import { AuthExchangeRequestDto } from './dto/auth-exchange-request.dto';
 import { AuthExchangeResponseDto } from './dto/auth-exchange-response.dto';
@@ -38,8 +44,14 @@ export class AuthExchangeController {
     description: 'Canonical issuer session payload.',
     type: AuthExchangeResponseDto,
   })
-  async exchange(@Body() body: AuthExchangeRequestDto): Promise<AuthExchangeResponseDto> {
-    return this.authExchangeService.exchangeIdentity(body);
+  @ApiBearerAuth()
+  @ApiUnauthorizedResponse({ description: 'Missing, invalid, or expired execution session.' })
+  async exchange(
+    @Body() body: AuthExchangeRequestDto,
+    @Headers('authorization') authorization?: string,
+    @Headers('cookie') cookie?: string
+  ): Promise<AuthExchangeResponseDto> {
+    return this.authExchangeService.exchangeIdentity(body, { authorization, cookie });
   }
 
   @Post('sign-up/email')
