@@ -159,9 +159,11 @@ function buildExecutionSession(
       }
 
       const identity = mapUserToExternalIdentity(user);
+      const exchangeBearerToken = token?.trim() ? token : null;
       return {
         provider: user.provider ?? 'supabase',
         accessToken: token ?? null,
+        exchangeBearerToken,
         refreshToken: null,
         idToken: null,
         expiresAt: null,
