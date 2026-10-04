@@ -119,6 +119,7 @@ test('AuthentikIssuerProvider prefers the backend auth exchange when configured'
     executionSession: {
       provider: 'better-auth',
       accessToken: 'exec-token',
+      exchangeBearerToken: 'exec-token',
       refreshToken: 'exec-refresh',
       idToken: 'exec-id',
       expiresAt: 1730000000,
@@ -183,7 +184,8 @@ test('AuthentikIssuerProvider authenticates email and social exchanges only with
       sessionProvider: 'email',
       runtime: 'native',
       accessToken: 'supabase-token',
-      raw: { user: { id: 'email-123' }, runtime: 'native' },
+      exchangeBearerToken: 'supabase-token',
+      raw: null,
       expectedAuthorization: 'Bearer supabase-token',
     },
     {
@@ -192,7 +194,8 @@ test('AuthentikIssuerProvider authenticates email and social exchanges only with
       sessionProvider: 'email',
       runtime: 'native',
       accessToken: null,
-      raw: { user: { id: 'email-123' }, runtime: 'native' },
+      exchangeBearerToken: null,
+      raw: undefined,
       expectedAuthorization: undefined,
     },
     {
@@ -201,7 +204,8 @@ test('AuthentikIssuerProvider authenticates email and social exchanges only with
       sessionProvider: 'better-auth',
       runtime: 'native',
       accessToken: 'better-auth-token',
-      raw: { user: { id: 'discord-123' } },
+      exchangeBearerToken: 'better-auth-token',
+      raw: { shape: 'may-change' },
       expectedAuthorization: 'Bearer better-auth-token',
     },
     {
@@ -210,7 +214,8 @@ test('AuthentikIssuerProvider authenticates email and social exchanges only with
       sessionProvider: 'better-auth',
       runtime: 'native',
       accessToken: null,
-      raw: { user: { id: 'discord-123' } },
+      exchangeBearerToken: null,
+      raw: null,
       expectedAuthorization: undefined,
     },
     {
@@ -219,6 +224,7 @@ test('AuthentikIssuerProvider authenticates email and social exchanges only with
       sessionProvider: 'better-auth',
       runtime: 'web',
       accessToken: 'session-row-id',
+      exchangeBearerToken: null,
       raw: {
         data: {
           session: { id: 'session-row-id' },
@@ -236,6 +242,7 @@ test('AuthentikIssuerProvider authenticates email and social exchanges only with
     const executionSession = {
       provider: scenario.sessionProvider,
       accessToken: scenario.accessToken,
+      exchangeBearerToken: scenario.exchangeBearerToken,
       refreshToken: null,
       idToken: null,
       expiresAt: null,

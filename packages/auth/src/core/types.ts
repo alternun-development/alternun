@@ -50,6 +50,8 @@ export interface LinkedAuthAccount {
 export interface ExecutionSession {
   provider: string;
   accessToken?: string | null;
+  /** Token the exchange server can verify as an Authorization bearer. */
+  exchangeBearerToken?: string | null;
   refreshToken?: string | null;
   idToken?: string | null;
   expiresAt?: number | null;
