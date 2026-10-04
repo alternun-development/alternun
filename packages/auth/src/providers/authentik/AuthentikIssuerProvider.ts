@@ -111,6 +111,42 @@ function normalizeOptionalTrimmedString(value?: string | null): string | null {
   return trimmed && trimmed.length > 0 ? trimmed : null;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function resolveExecutionBearerToken(input: IdentityExchangeInput): string | null {
+  const executionSession = input.executionSession;
+  const token = normalizeOptionalTrimmedString(executionSession?.accessToken);
+  if (!executionSession || !token) {
+    return null;
+  }
+
+  const provider = input.externalIdentity.provider.trim().toLowerCase();
+  const raw = executionSession.raw;
+  const rawKeys = Object.keys(raw);
+  const hasOwn = (key: string) => Object.prototype.hasOwnProperty.call(raw, key);
+
+  const isSupabaseEmailSession =
+    (provider === 'email' || provider === 'password') &&
+    rawKeys.length === 2 &&
+    hasOwn('user') &&
+    hasOwn('runtime') &&
+    isRecord(raw.user);
+  if (isSupabaseEmailSession) {
+    return token;
+  }
+
+  const isBetterAuthNativeSession =
+    (provider === 'google' || provider === 'discord') &&
+    input.context?.runtime !== 'web' &&
+    rawKeys.length === 1 &&
+    hasOwn('user') &&
+    isRecord(raw.user);
+
+  return isBetterAuthNativeSession ? token : null;
+}
+
 function normalizeBackendRoles(roles: unknown, fallback: string[]): string[] {
   if (!Array.isArray(roles)) {
     return fallback;
@@ -272,6 +308,8 @@ export class AuthentikIssuerProvider implements IdentityIssuerProvider {
 
   private buildBackendExchangeRequest(input: IdentityExchangeInput): Record<string, unknown> {
     const executionSession = input.executionSession;
+    const { authExchangeUrl: _authExchangeUrl, ...context } = input.context ?? {};
+    void _authExchangeUrl;
 
     return {
       externalIdentity: input.externalIdentity,
@@ -285,12 +323,7 @@ export class AuthentikIssuerProvider implements IdentityIssuerProvider {
             linkedAccounts: executionSession.linkedAccounts ?? [],
           }
         : undefined,
-      context: {
-        ...(input.context ?? {}),
-        authExchangeUrl: this.authExchangeUrl,
-      },
-      claims: input.claims ?? input.externalIdentity.rawClaims,
-      redirectTo: input.redirectTo ?? null,
+      context,
     };
   }
 
@@ -357,10 +390,14 @@ export class AuthentikIssuerProvider implements IdentityIssuerProvider {
       return null;
     }
 
+    const bearerToken = resolveExecutionBearerToken(input);
+
     const response = await this.fetchFn(this.authExchangeUrl, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'content-type': 'application/json',
+        ...(bearerToken ? { Authorization: `Bearer ${bearerToken}` } : {}),
       },
       body: JSON.stringify(this.buildBackendExchangeRequest(input)),
     });
