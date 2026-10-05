@@ -96,7 +96,7 @@ La arquitectura actual es lo bastante sólida para crecer, pero aún se ven vari
 
 Ejemplos:
 
-- CORS sigue siendo permisivo en el bootstrap de Nest
+- el CORS con credenciales está limitado a la lista `trustedOrigins` de Better Auth en el bootstrap de Nest
 - la superficie de la API personalizada aún es temprana y necesita más hardening de políticas
 - se necesitará más cobertura de auth y autorización por endpoint a medida que la API crezca
 
