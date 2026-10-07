@@ -6,8 +6,14 @@ import { pathToFileURL } from 'node:url';
 export function planCertificatePreservation(checkpoint, prefixes) {
   const resources = checkpoint?.latest?.resources;
   if (!Array.isArray(resources)) throw new Error('Unsupported SST state format');
-  if (checkpoint.latest.pending_operations?.length)
-    throw new Error('SST state has pending operations');
+  // A pending operation whose resource URN no longer exists in state is orphaned
+  // (e.g. left behind by an interrupted build step already removed from state),
+  // not an in-flight operation that could race with this migration.
+  const resourceUrns = new Set(resources.map((resource) => resource.urn));
+  const activePendingOperations = (checkpoint.latest.pending_operations ?? []).filter(
+    (operation) => resourceUrns.has(operation.resource?.urn)
+  );
+  if (activePendingOperations.length) throw new Error('SST state has pending operations');
   const byUrn = new Map();
   const byName = new Map();
   for (const resource of resources) {
