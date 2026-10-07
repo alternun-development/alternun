@@ -23,6 +23,8 @@ This endpoint must:
 
 ## Request Contract
 
+### Supported fields
+
 ```json
 {
   "externalIdentity": {
@@ -49,6 +51,17 @@ This endpoint must:
   }
 }
 ```
+
+### Temporarily accepted legacy fields
+
+Older clients may also send `claims`, `redirectTo`, and `context.authExchangeUrl`. These fields are
+deprecated, strictly validated, and ignored by the server. They are not used to authenticate the
+request, select the audience, define the external identity, or create issuer tokens. Undeclared
+fields remain rejected.
+
+- `claims`: optional object
+- `redirectTo`: optional string, maximum 2048 characters
+- `context.authExchangeUrl`: optional string, maximum 2048 characters
 
 ## Response Contract
 

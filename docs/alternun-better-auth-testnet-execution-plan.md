@@ -14,6 +14,8 @@ This is a cross-team plan covering:
 
 ## Current State
 
+Última validación: [2026-10-06](./release-validation/better-auth-testnet-validation-matrix.md).
+
 What is already true:
 
 - `packages/auth` has a provider-agnostic facade and compatibility adapters.
@@ -21,15 +23,20 @@ What is already true:
 - Authentik remains the configured issuer default.
 - Legacy Supabase execution still remains the rollback/legacy path, while the live testnet API/auth runtime now serves Better Auth on `/auth/*`.
 - The issuer provider already prefers `AUTH_EXCHANGE_URL` when it is configured.
+- Manual validation on `2026-10-06` passed for Google sign-in, sign-out, repeated sign-in without an observed duplicate profile, session restoration after reload, callback return-to, and the `state_mismatch` error redirect.
+- The validated deployment reported web client `v1.1.89-dev.0` and API `1.1.91`; it predates the integration and deployment of PRs #236, #237, and #238.
 - Current testnet ownership is split across `dev` for the Expo bundle, `dashboard-dev` for the live API/admin runtime, and `identity-dev` for Authentik. Former backend-only aliases such as `api-dev` and `backend-*` are retired.
 - Issue `#99` is closed; follow-up issue `#100` tracks the remaining validation and migration work.
 
 What is not true yet:
 
-- Better Auth is live on testnet for the social-login route, but the broader migration to canonical issuer sessions, persistence, and email cutover is still incomplete.
-- The backend exchange contract can already mint issuer-owned tokens when the backend signing key is available, but it still falls back to compatibility payloads when that key or path is missing.
+- The session-verified exchange, restricted CORS behavior, and Supabase rollback have not been validated on testnet because PRs #236, #237, and #238 are not yet deployed there.
+- Discord is implemented in the Better Auth server and client paths but was not tested on `2026-10-06`.
+- GitHub login is not implemented in the current Better Auth server or client provider paths.
+- Apple login remains explicitly deferred.
 - Identity persistence still depends on compatibility behavior.
-- Email still depends on the current Supabase-oriented operational path.
+- Email still depends on the current Supabase-oriented compatibility path. During the `2026-10-06` test, registration was submitted but the verification email did not arrive. The cause was not determined and server-side investigation was not performed; the environment's email delivery configuration remains to be reviewed.
+- Email/password sign-in remains unconfirmed because the test registration could not complete verification.
 
 ## Target Testnet Shape
 
@@ -37,11 +44,12 @@ Testnet should look like this:
 
 1. App calls `@alternun/auth`.
 2. `@alternun/auth` uses `AUTH_EXECUTION_PROVIDER=better-auth`.
-3. Better Auth executes Google, GitHub, and Apple social login flows.
-4. Email/password continues through the legacy compatibility execution path and does not depend on Better Auth.
+3. Better Auth executes Google and Discord social login flows after both are validated on testnet. GitHub is not currently implemented, and Apple remains deferred.
+4. Email/password continues through the Supabase compatibility execution path until verification email delivery and sign-in are validated end to end.
 5. Backend `POST /auth/exchange` reconciles the Better Auth identity to an Alternun principal.
 6. Authentik-aligned issuer claims become the final application session.
 7. App authorization depends on canonical issuer claims and app-owned persistence, not Better Auth cookies and not Supabase user metadata.
+8. Credentialed CORS is limited to the configured trusted-origin allowlist across the API.
 
 ## Self-Hosted Better Auth Resources
 

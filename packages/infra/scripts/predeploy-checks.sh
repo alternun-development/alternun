@@ -52,7 +52,7 @@ report_managed_cert_conflict() {
     return 0
   fi
 
-  guidance="Set ${cert_env_name} to reuse an existing ACM certificate, or enable AUTO_REMOVE_CONFLICTING_DNS=true, INFRA_REMOVE_ACM_VALIDATION_CNAME=true, and INFRA_ALLOW_DESTRUCTIVE_DEPLOYMENTS=true if you intend to replace the validation records."
+  guidance="Set ${cert_env_name} to reuse an existing ACM certificate, or explicitly import its validation records into infrastructure state. ACM validation records must remain in DNS for renewal."
 
   if is_truthy "$fail_on_conflict"; then
     echo "ERROR: Existing ACM validation CNAME records for ${domain_name} will conflict with managed certificate creation." >&2
@@ -118,67 +118,25 @@ EOF
   done
 }
 
-delete_acm_validation_cname_records() {
+check_acm_validation_cname_records() {
   local hosted_zone_id=$1
   local domain_name=$2
   local cert_env_name=${3:-}
   local cert_env_value=${4:-}
-  local auto_remove=${AUTO_REMOVE_CONFLICTING_DNS:-false}
-  local remove_validation=${INFRA_REMOVE_ACM_VALIDATION_CNAME:-true}
-
   local existing
-  existing=$(aws route53 list-resource-record-sets \
+  # Validation DNS records are permanent renewal dependencies. Never delete them,
+  # even during an otherwise authorized destructive recovery deployment.
+  if ! existing=$(aws route53 list-resource-record-sets \
     --hosted-zone-id "$hosted_zone_id" \
-    --query "ResourceRecordSets[?Type=='CNAME' && starts_with(Name, '_') && contains(Name, '.${domain_name}.')]" \
-    --output json 2>/dev/null || echo "[]")
-
-  if [ "$existing" = "[]" ]; then
-    return 0
-  fi
-
-  echo "Found ACM validation CNAME records for ${domain_name}:"
-  echo "$existing"
-
-  if ! is_truthy "$remove_validation"; then
-    report_managed_cert_conflict "$domain_name" "$cert_env_name" "$cert_env_value" || return 1
-    echo "WARN: INFRA_REMOVE_ACM_VALIDATION_CNAME=false; keeping ACM validation CNAME records for ${domain_name}." >&2
-    return 0
-  fi
-
-  if ! is_truthy "$auto_remove"; then
-    report_managed_cert_conflict "$domain_name" "$cert_env_name" "$cert_env_value" || return 1
-    echo "WARN: AUTO_REMOVE_CONFLICTING_DNS=false; keeping ACM validation CNAME records for ${domain_name}." >&2
-    return 0
-  fi
-
-  if ! command -v jq >/dev/null 2>&1; then
-    echo "ERROR: jq is required to auto-remove ACM validation CNAME records." >&2
+    --query "ResourceRecordSets[?Type=='CNAME' && starts_with(Name, '_') && ends_with(Name, '.${domain_name}.')]" \
+    --output json); then
+    echo "ERROR: Could not inspect ACM validation records; stopping deployment." >&2
     return 1
   fi
-
-  if ! require_destructive_cleanup_allowed "ACM validation CNAME deletion for ${domain_name}"; then
-    return 0
+  if [ "$existing" != "[]" ]; then
+    report_managed_cert_conflict "$domain_name" "$cert_env_name" "$cert_env_value" || return 1
+    echo "Preserving ACM validation CNAME records for ${domain_name}."
   fi
-
-  echo "AUTO_REMOVE_CONFLICTING_DNS=true — deleting ACM validation CNAME records for ${domain_name}"
-  echo "$existing" | jq -c '.[]' | while read -r rec; do
-    local tmp
-    tmp=$(mktemp)
-    cat > "$tmp" <<EOF
-{
-  "Comment": "DELETE ACM validation CNAME records for ${domain_name}",
-  "Changes": [
-    {
-      "Action": "DELETE",
-      "ResourceRecordSet": ${rec}
-    }
-  ]
-}
-EOF
-    aws route53 change-resource-record-sets --hosted-zone-id "$hosted_zone_id" --change-batch "file://${tmp}" >/dev/null
-    rm -f "$tmp"
-    echo "Deleted ACM validation CNAME record for ${domain_name}"
-  done
 }
 
 check_stage_domain_validation_cname_records() {
@@ -221,7 +179,7 @@ check_stage_domain_validation_cname_records() {
   esac
 
   if [ -n "$stage_domain" ]; then
-    delete_acm_validation_cname_records "$hosted_zone_id" "$stage_domain" "$cert_env_name" "$cert_env_value"
+    check_acm_validation_cname_records "$hosted_zone_id" "$stage_domain" "$cert_env_name" "$cert_env_value"
   fi
 }
 
@@ -264,7 +222,7 @@ run_extra_redirect_dns_cleanup() {
 
   if is_truthy "${INFRA_REDIRECT_AIRS_TO_DEV:-false}" && [ -n "$airs_source" ]; then
     delete_conflicting_dns_records "$hosted_zone_id" "$airs_source"
-    delete_acm_validation_cname_records "$hosted_zone_id" "$airs_source" \
+    check_acm_validation_cname_records "$hosted_zone_id" "$airs_source" \
       INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN "${INFRA_REDIRECT_AIRS_TO_DEV_CERT_ARN:-}"
   fi
 
@@ -278,14 +236,14 @@ run_extra_redirect_dns_cleanup() {
       fi
 
       delete_conflicting_dns_records "$hosted_zone_id" "$dev_source"
-      delete_acm_validation_cname_records "$hosted_zone_id" "$dev_source" \
+      check_acm_validation_cname_records "$hosted_zone_id" "$dev_source" \
         INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN "${INFRA_REDIRECT_DEV_TO_TESTNET_CERT_ARN:-}"
     done
   fi
 
   if is_truthy "${INFRA_REDIRECT_ROOT_DOMAIN:-true}" && [ -n "$root_source" ]; then
     delete_conflicting_dns_records "$hosted_zone_id" "$root_source"
-    delete_acm_validation_cname_records "$hosted_zone_id" "$root_source" \
+    check_acm_validation_cname_records "$hosted_zone_id" "$root_source" \
       INFRA_REDIRECT_ROOT_CERT_ARN "${INFRA_REDIRECT_ROOT_CERT_ARN:-}"
   fi
 }
