@@ -109,6 +109,28 @@ void test('migration rejects uncertain state before any mutation', () => {
   assert.deepEqual(planCertificatePreservation({ latest: { resources: [] } }, [prefix]), []);
 });
 
+void test('pending operations only block migration when their resource still exists in state', () => {
+  const state = fixture();
+  const activeState = {
+    latest: {
+      ...state.latest,
+      pending_operations: [{ type: 'creating', resource: { urn: component.urn } }],
+    },
+  };
+  assert.throws(() => planCertificatePreservation(activeState, [prefix]), /pending operations/);
+
+  const orphanedState = {
+    latest: {
+      ...state.latest,
+      pending_operations: [{ type: 'creating', resource: { urn: urn('long-gone') } }],
+    },
+  };
+  assert.deepEqual(
+    planCertificatePreservation(orphanedState, [prefix]),
+    planCertificatePreservation(state, [prefix])
+  );
+});
+
 void test('ACM DNS checks never delete renewal records, even with all legacy cleanup flags enabled', () => {
   const source = fs.readFileSync('scripts/predeploy-checks.sh', 'utf8');
   const start = source.indexOf('check_acm_validation_cname_records() {');
