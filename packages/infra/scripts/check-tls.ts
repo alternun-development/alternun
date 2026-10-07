@@ -30,6 +30,8 @@ const errorMessage = (error: unknown): string =>
 const execFileAsync = promisify(execFile);
 export const defaultHosts = [
   'airs.alternun.co',
+  'air.alternun.co',
+  'alternun.co',
   'testnet.airs.alternun.co',
   'testnet.admin.alternun.co',
   'testnet.alternun.co',
