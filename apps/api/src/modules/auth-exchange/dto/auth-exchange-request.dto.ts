@@ -129,6 +129,15 @@ export class AuthExchangeContextDto {
   @IsInt()
   @Min(0)
   issuerExpiresAt?: number | null;
+
+  @ApiPropertyOptional({
+    deprecated: true,
+    description: 'Legacy client field accepted temporarily and ignored by the server.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  authExchangeUrl?: string;
 }
 
 export class AuthExchangeRequestDto {
@@ -148,4 +157,23 @@ export class AuthExchangeRequestDto {
   @ValidateNested()
   @Type(() => AuthExchangeContextDto)
   context?: AuthExchangeContextDto;
+
+  // Legacy fields accepted temporarily; remove after client migration.
+  @ApiPropertyOptional({
+    type: Object,
+    deprecated: true,
+    description: 'Legacy client field accepted temporarily and ignored by the server.',
+  })
+  @IsOptional()
+  @IsObject()
+  claims?: Record<string, unknown>;
+
+  @ApiPropertyOptional({
+    deprecated: true,
+    description: 'Legacy client field accepted temporarily and ignored by the server.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  redirectTo?: string;
 }
