@@ -168,6 +168,25 @@ void test('production identity adopts retained managed secrets only with an expl
   assert.match(deployScript, /auto_adopt_existing_identity_secrets\nif run_sst_deploy/);
 });
 
+void test('identity-dev adopts retained managed secrets through the same recovery flag as production', () => {
+  const deployScript = readInfraFile('scripts/sst-deploy.sh');
+
+  assert.match(
+    deployScript,
+    /case "\$stage_normalized" in\s*\n\s*identity-prod\|identity-production\|auth-prod\|authentik-prod\|identity-dev\|auth-dev\|authentik-dev\)/
+  );
+
+  const identityPipelineSource = readInfraFile('config/pipelines/specs/identity.ts');
+  assert.match(
+    identityPipelineSource,
+    /'identity-dev':[\s\S]*?INFRA_IDENTITY_ADOPT_RETAINED_SECRETS:\s*'true'[\s\S]*?'identity-prod':/
+  );
+  assert.match(
+    identityPipelineSource,
+    /'identity-prod':[\s\S]*?INFRA_IDENTITY_ADOPT_RETAINED_SECRETS:\s*'true'/
+  );
+});
+
 void test('production bootstrap ignores identity pipelines omitted from INFRA_PIPELINES', (t) => {
   const tempRoot = mkdtempSync(join(tmpdir(), 'alternun-identity-bootstrap-test-'));
   const mockBin = join(tempRoot, 'bin');
