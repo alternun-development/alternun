@@ -12,16 +12,16 @@ function createJsonResponse(body, status = 200) {
   };
 }
 
-function createIdentity() {
+function createIdentity(provider = 'google') {
   return {
-    provider: 'google',
-    providerUserId: 'google-123',
+    provider,
+    providerUserId: `${provider}-123`,
     email: 'ada@example.com',
     emailVerified: true,
     displayName: 'Ada Lovelace',
     avatarUrl: 'https://example.com/avatar.png',
     rawClaims: {
-      sub: 'google-123',
+      sub: `${provider}-123`,
       email: 'ada@example.com',
       name: 'Ada Lovelace',
     },
@@ -72,12 +72,6 @@ test('AuthentikIssuerProvider prefers the backend auth exchange when configured'
     authExchangeUrl: 'https://api.example.com/auth/exchange',
     fetchFn: async (url, init) => {
       requests.push({ url, init });
-      const body = JSON.parse(String(init?.body ?? '{}'));
-
-      assert.equal(url, 'https://api.example.com/auth/exchange');
-      assert.equal(init?.method, 'POST');
-      assert.equal(body.externalIdentity.provider, 'google');
-      assert.equal(body.executionSession.provider, 'better-auth');
 
       return createJsonResponse({
         exchangeMode: 'remote',
@@ -125,20 +119,47 @@ test('AuthentikIssuerProvider prefers the backend auth exchange when configured'
     executionSession: {
       provider: 'better-auth',
       accessToken: 'exec-token',
+      exchangeBearerToken: 'exec-token',
       refreshToken: 'exec-refresh',
       idToken: 'exec-id',
       expiresAt: 1730000000,
       linkedAccounts: [],
-      raw: { source: 'test' },
+      raw: { user: { id: 'google-123' } },
     },
     context: {
-      trigger: 'oauth-callback',
-      runtime: 'web',
+      trigger: 'signIn',
+      runtime: 'native',
       app: 'mobile',
+      authExchangeUrl: 'https://legacy.example.com/auth/exchange',
     },
+    claims: { legacy: true },
+    redirectTo: 'myapp://legacy-redirect',
   });
 
   assert.equal(requests.length, 1);
+  assert.equal(requests[0].url, 'https://api.example.com/auth/exchange');
+  assert.equal(requests[0].init?.method, 'POST');
+  assert.equal(requests[0].init?.credentials, 'include');
+  assert.deepEqual(requests[0].init?.headers, {
+    'content-type': 'application/json',
+    Authorization: 'Bearer exec-token',
+  });
+  assert.deepEqual(JSON.parse(String(requests[0].init?.body ?? '{}')), {
+    externalIdentity: createIdentity(),
+    executionSession: {
+      provider: 'better-auth',
+      accessToken: 'exec-token',
+      refreshToken: 'exec-refresh',
+      idToken: 'exec-id',
+      expiresAt: 1730000000,
+      linkedAccounts: [],
+    },
+    context: {
+      trigger: 'signIn',
+      runtime: 'native',
+      app: 'mobile',
+    },
+  });
   assert.equal(result.issuerAccessToken, 'issuer-token');
   assert.equal(result.issuerRefreshToken, 'issuer-refresh');
   assert.equal(result.principal.subject, 'principal-1');
@@ -153,6 +174,143 @@ test('AuthentikIssuerProvider prefers the backend auth exchange when configured'
   const issuerSession = await provider.getIssuerSession();
   assert.equal(issuerSession?.idToken, 'issuer-id');
   assert.equal(issuerSession?.claims.sub, 'principal-1');
+});
+
+test('AuthentikIssuerProvider authenticates email and social exchanges only with safe credentials', async () => {
+  const scenarios = [
+    {
+      name: 'Supabase email token',
+      provider: 'email',
+      sessionProvider: 'email',
+      runtime: 'native',
+      accessToken: 'supabase-token',
+      exchangeBearerToken: 'supabase-token',
+      raw: null,
+      expectedAuthorization: 'Bearer supabase-token',
+    },
+    {
+      name: 'Supabase email without token',
+      provider: 'email',
+      sessionProvider: 'email',
+      runtime: 'native',
+      accessToken: null,
+      exchangeBearerToken: null,
+      raw: undefined,
+      expectedAuthorization: undefined,
+    },
+    {
+      name: 'Better Auth native social token',
+      provider: 'discord',
+      sessionProvider: 'better-auth',
+      runtime: 'native',
+      accessToken: 'better-auth-token',
+      exchangeBearerToken: 'better-auth-token',
+      raw: { shape: 'may-change' },
+      expectedAuthorization: 'Bearer better-auth-token',
+    },
+    {
+      name: 'Better Auth native social without token',
+      provider: 'discord',
+      sessionProvider: 'better-auth',
+      runtime: 'native',
+      accessToken: null,
+      exchangeBearerToken: null,
+      raw: null,
+      expectedAuthorization: undefined,
+    },
+    {
+      name: 'Better Auth web session with ambiguous token',
+      provider: 'google',
+      sessionProvider: 'better-auth',
+      runtime: 'web',
+      accessToken: 'session-row-id',
+      exchangeBearerToken: null,
+      raw: {
+        data: {
+          session: { id: 'session-row-id' },
+          user: { id: 'google-123' },
+        },
+      },
+      expectedAuthorization: undefined,
+    },
+  ];
+
+  for (const scenario of scenarios) {
+    const { repo } = createRepositoryTracker();
+    const requests = [];
+    const identity = createIdentity(scenario.provider);
+    const executionSession = {
+      provider: scenario.sessionProvider,
+      accessToken: scenario.accessToken,
+      exchangeBearerToken: scenario.exchangeBearerToken,
+      refreshToken: null,
+      idToken: null,
+      expiresAt: null,
+      linkedAccounts: [],
+      raw: scenario.raw,
+    };
+    const provider = new AuthentikIssuerProvider({
+      identityRepository: repo,
+      issuer: 'https://sso.example.com/application/o/alternun-mobile/',
+      clientId: 'alternun-mobile',
+      redirectUri: 'myapp://auth/callback',
+      authExchangeUrl: 'https://api.example.com/auth/exchange',
+      fetchFn: async (url, init) => {
+        requests.push({ url, init });
+        return createJsonResponse({
+          issuerAccessToken: 'issuer-token',
+          principal: {
+            subject: `${scenario.provider}-principal`,
+            email: identity.email,
+            roles: ['authenticated'],
+          },
+          linkedAccounts: [],
+          claims: {},
+        });
+      },
+    });
+
+    await provider.exchangeIdentity({
+      externalIdentity: identity,
+      executionSession,
+      context: {
+        trigger: 'signIn',
+        runtime: scenario.runtime,
+        app: 'mobile',
+        authExchangeUrl: 'https://legacy.example.com/auth/exchange',
+      },
+      claims: { legacy: true },
+      redirectTo: 'myapp://legacy-redirect',
+    });
+
+    assert.equal(requests.length, 1, scenario.name);
+    assert.equal(requests[0].init?.credentials, 'include', scenario.name);
+    assert.equal(
+      requests[0].init?.headers?.Authorization,
+      scenario.expectedAuthorization,
+      scenario.name
+    );
+    assert.deepEqual(
+      JSON.parse(String(requests[0].init?.body ?? '{}')),
+      {
+        externalIdentity: identity,
+        executionSession: {
+          provider: scenario.sessionProvider,
+          accessToken: scenario.accessToken,
+          refreshToken: null,
+          idToken: null,
+          expiresAt: null,
+          linkedAccounts: [],
+        },
+        context: {
+          trigger: 'signIn',
+          runtime: scenario.runtime,
+          app: 'mobile',
+        },
+      },
+      scenario.name
+    );
+  }
 });
 
 test('AuthentikIssuerProvider keeps the local compatibility fallback when the backend exchange is absent', async () => {

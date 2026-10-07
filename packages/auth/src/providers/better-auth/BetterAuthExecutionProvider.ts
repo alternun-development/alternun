@@ -202,6 +202,7 @@ function normalizeSession(input: unknown, fallbackProvider: string): ExecutionSe
         ? payload.provider
         : identityCandidate?.provider ?? fallbackProvider,
     accessToken: accessTokenCandidate,
+    exchangeBearerToken: null,
     refreshToken: refreshTokenCandidate,
     idToken: idTokenCandidate,
     expiresAt: expiresAtCandidate,
@@ -833,9 +834,11 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         const user = await this.client.getUser();
         const token = await this.client.getSessionToken();
         if (user) {
+          const exchangeBearerToken = token?.trim() ? token : null;
           return {
             provider: user.provider ?? this.options.defaultProvider ?? 'better-auth',
             accessToken: token ?? null,
+            exchangeBearerToken,
             refreshToken: null,
             idToken: null,
             expiresAt: null,
