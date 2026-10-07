@@ -244,6 +244,91 @@ test('handleBetterAuthRuntimeRequest rewrites auth error redirects to the app ca
   );
 });
 
+test('handleBetterAuthRuntimeRequest rewrites auth redirects for errors other than state_mismatch', async () => {
+  const request = {
+    method: 'GET',
+    raw: {
+      url: '/auth/error?error=access_denied',
+    },
+    headers: {
+      origin: 'https://testnet.airs.alternun.co',
+      'x-forwarded-host': 'testnet.api.alternun.co',
+      'x-forwarded-proto': 'https',
+    },
+  };
+
+  const reply = createReply();
+  const handled = await handleBetterAuthRuntimeRequest(request, reply, {
+    baseUrl: 'https://testnet.api.alternun.co',
+    authHandler: async () =>
+      new Response(null, {
+        status: 302,
+        headers: {
+          location: '/auth/error?error=access_denied&error_description=Consent+denied',
+        },
+      }),
+  });
+
+  assert.equal(handled, true);
+  assert.equal(
+    reply.headers.location,
+    'https://testnet.airs.alternun.co/auth/callback?error=access_denied&error_description=Consent+denied'
+  );
+});
+
+for (const scenario of [
+  {
+    name: 'repeated social login',
+    method: 'POST',
+    url: '/auth/sign-in/social',
+    body: { provider: 'google' },
+    responseCookie: 'better-auth-session=renewed-session; Path=/; HttpOnly; Secure',
+  },
+  {
+    name: 'sign-out',
+    method: 'POST',
+    url: '/auth/sign-out',
+    body: {},
+    responseCookie: 'better-auth-session=; Path=/; Max-Age=0; HttpOnly; Secure',
+  },
+]) {
+  test(`handleBetterAuthRuntimeRequest preserves Set-Cookie on ${scenario.name}`, async () => {
+    let observedCookie = null;
+    const reply = createReply();
+    const handled = await handleBetterAuthRuntimeRequest(
+      {
+        method: scenario.method,
+        raw: { url: scenario.url },
+        headers: {
+          origin: 'https://testnet.airs.alternun.co',
+          'content-type': 'application/json',
+          'x-forwarded-host': 'testnet.api.alternun.co',
+          'x-forwarded-proto': 'https',
+          cookie: 'better-auth-session=existing-session',
+        },
+        body: scenario.body,
+      },
+      reply,
+      {
+        baseUrl: 'https://testnet.api.alternun.co',
+        authHandler: async (runtimeRequest) => {
+          observedCookie = runtimeRequest.headers.get('cookie');
+          return new Response(null, {
+            status: 200,
+            headers: {
+              'set-cookie': scenario.responseCookie,
+            },
+          });
+        },
+      }
+    );
+
+    assert.equal(handled, true);
+    assert.equal(observedCookie, 'better-auth-session=existing-session');
+    assert.deepEqual(reply.headers['set-cookie'], [scenario.responseCookie]);
+  });
+}
+
 test('handleBetterAuthRuntimeRequest answers OPTIONS preflight locally', async () => {
   let called = false;
   const reply = createReply();

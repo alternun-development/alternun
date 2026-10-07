@@ -28,9 +28,10 @@ Public-facing technical documentation lives in `apps/docs/docs/`.
 11. `docs/refine_admin_integration_issue.md`
 12. `docs/alternun-authentik-social-login-incident-2026-04.md`
 13. `docs/alternun-better-auth-testnet-execution-plan.md`
-14. `docs/notifications.md`
-15. `docs/airs-community-total.md`
-16. `docs/airs-tls-incident-2026-09-17.md`
+14. `docs/release-validation/better-auth-testnet-validation-matrix.md`
+15. `docs/notifications.md`
+16. `docs/airs-community-total.md`
+17. `docs/airs-tls-incident-2026-09-17.md`
 
 ## How To Use This Directory
 
