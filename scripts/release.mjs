@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
+import { parsePorcelainStatus } from './release-git-status.mjs';
 
 const require = createRequire(import.meta.url);
 const {
@@ -217,37 +218,20 @@ function getCurrentBranch() {
   return run('git', ['branch', '--show-current'], { capture: true }).stdout.trim();
 }
 
-function parseStatusPath(line) {
-  const rawPath = line.slice(3).trim();
-
-  if (rawPath.includes(' -> ')) {
-    return rawPath.split(' -> ').at(-1)?.replace(/\\/g, '/') ?? '';
-  }
-
-  return rawPath.replace(/\\/g, '/');
-}
-
 function getPendingChanges() {
-  return run('git', ['status', '--porcelain'], { capture: true })
-    .stdout.split('\n')
-    .map((line) => line.trimEnd())
-    .filter(Boolean)
-    .filter((line) => {
-      const pathName = parseStatusPath(line);
+  return parsePorcelainStatus(
+    run('git', ['status', '--porcelain=v1', '-z'], { capture: true }).stdout
+  ).filter((line) => {
+    const pathName = line.path;
 
-      if (IGNORED_WORKTREE_PATHS.has(pathName)) {
-        return false;
-      }
+    if (IGNORED_WORKTREE_PATHS.has(pathName)) {
+      return false;
+    }
 
-      return !PRE_RELEASE_IGNORED_TRACKED_OUTPUT_PREFIXES.some((prefix) =>
-        pathName.startsWith(prefix)
-      );
-    })
-    .map((line) => ({
-      xy: line.slice(0, 2).trim(),
-      path: parseStatusPath(line),
-      untracked: line.startsWith('??'),
-    }));
+    return !PRE_RELEASE_IGNORED_TRACKED_OUTPUT_PREFIXES.some((prefix) =>
+      pathName.startsWith(prefix)
+    );
+  });
 }
 
 const AREA_MAP = [
