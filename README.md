@@ -126,6 +126,7 @@ Current version: **1.1.92**
 
 ### Bug Fixes
 
+- **repo:** artifact, graph.db ([fa16e3b](https://github.com/alternun-development/alternun/commit/fa16e3bc8d8814aa348009ffb10b1e0bd6a1eb89))
 - **repo:** artifact, graph.db ([2e75bb7](https://github.com/alternun-development/alternun/commit/2e75bb78dff289d784c58240f930fb2208fb873c))
 - **infra:** correct misleading 'reset to false' comment on identity secret adoption ([4471374](https://github.com/alternun-development/alternun/commit/447137402a3f174dbf7dce13d6cd4266970351f8))
 - **infra:** widen cert-preservation test fixture type to allow outputs field ([c506a3b](https://github.com/alternun-development/alternun/commit/c506a3bebdb1254aa27805b0fb2ad42d21eac0be))
@@ -142,17 +143,18 @@ Current version: **1.1.92**
 - **infra:** restore sourcing invocation in certificate-env-rotation test ([25b10fe](https://github.com/alternun-development/alternun/commit/25b10fe042d496e8893fddc8caa547c2502eca9b))
 - **api:** accept legacy exchange fields and ignore them (refs #100) ([73c0686](https://github.com/alternun-development/alternun/commit/73c068651738bc42af0fb03d049dd63a325e6a6f))
 
+### Documentation
+
+- **infra:** correct identity secret adoption runbook to match permanent-flag behavior ([96a2eee](https://github.com/alternun-development/alternun/commit/96a2eee731d2b829e046412cd911aa690d9d3e6c))
+- **auth:** record live testnet validation results (refs #100) ([e540c36](https://github.com/alternun-development/alternun/commit/e540c36faf1abd4dc1e24597676af1769c12dde5))
+- **auth:** record testnet smoke-check results (refs #100) ([d557dbf](https://github.com/alternun-development/alternun/commit/d557dbfd40551fa975fd1092a95a265cf64fcb75))
+- **auth:** add Better Auth testnet validation matrix (refs #100) ([4be16c7](https://github.com/alternun-development/alternun/commit/4be16c7c1d2f6ea5a044f5edb7e6b2ebc40baeb7))
+
 ### Changes
 
 - **repo:** gitignore .pnpm-store ([95ffa28](https://github.com/alternun-development/alternun/commit/95ffa28ea911d0f367bb92ce8f9efb7c24ccc863))
 - **api:** cover remaining Better Auth callback cases; add smoke runbook (refs #100) ([538901d](https://github.com/alternun-development/alternun/commit/538901d3511479a009ab6653f905aa074f22e1b4))
 - **repo:** Potential fix for pull request finding 'CodeQL / Shell command built from environment values' ([c2b06b0](https://github.com/alternun-development/alternun/commit/c2b06b02b7c4da7dec8a57ec9c1524976d06739d))
-
-### Documentation
-
-- **auth:** record live testnet validation results (refs #100) ([e540c36](https://github.com/alternun-development/alternun/commit/e540c36faf1abd4dc1e24597676af1769c12dde5))
-- **auth:** record testnet smoke-check results (refs #100) ([d557dbf](https://github.com/alternun-development/alternun/commit/d557dbfd40551fa975fd1092a95a265cf64fcb75))
-- **auth:** add Better Auth testnet validation matrix (refs #100) ([4be16c7](https://github.com/alternun-development/alternun/commit/4be16c7c1d2f6ea5a044f5edb7e6b2ebc40baeb7))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
