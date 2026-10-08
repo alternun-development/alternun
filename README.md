@@ -126,6 +126,8 @@ Current version: **1.1.92**
 
 ### Bug Fixes
 
+- **repo:** artifact, graph.db ([5292ceb](https://github.com/alternun-development/alternun/commit/5292cebb35d0acbd6242f80e6f56b0dd7cb35ff6))
+- **repo:** artifact, graph.db ([a59dd3c](https://github.com/alternun-development/alternun/commit/a59dd3c786668f51c7fd78a395b1cb6682a80b0d))
 - **repo:** artifact, graph.db ([fa16e3b](https://github.com/alternun-development/alternun/commit/fa16e3bc8d8814aa348009ffb10b1e0bd6a1eb89))
 - **repo:** artifact, graph.db ([2e75bb7](https://github.com/alternun-development/alternun/commit/2e75bb78dff289d784c58240f930fb2208fb873c))
 - **infra:** correct misleading 'reset to false' comment on identity secret adoption ([4471374](https://github.com/alternun-development/alternun/commit/447137402a3f174dbf7dce13d6cd4266970351f8))
@@ -145,6 +147,7 @@ Current version: **1.1.92**
 
 ### Documentation
 
+- **infra:** correct identity secret adoption guidance in .env.example ([ed15a67](https://github.com/alternun-development/alternun/commit/ed15a67cd091b523f143a1902aca5ddd8590b5d2))
 - **infra:** correct identity secret adoption runbook to match permanent-flag behavior ([96a2eee](https://github.com/alternun-development/alternun/commit/96a2eee731d2b829e046412cd911aa690d9d3e6c))
 - **auth:** record live testnet validation results (refs #100) ([e540c36](https://github.com/alternun-development/alternun/commit/e540c36faf1abd4dc1e24597676af1769c12dde5))
 - **auth:** record testnet smoke-check results (refs #100) ([d557dbf](https://github.com/alternun-development/alternun/commit/d557dbfd40551fa975fd1092a95a265cf64fcb75))
