@@ -9,9 +9,19 @@ export function planCertificatePreservation(checkpoint, prefixes) {
   // A pending operation whose resource URN no longer exists in state is orphaned
   // (e.g. left behind by an interrupted build step already removed from state),
   // not an in-flight operation that could race with this migration.
-  const resourceUrns = new Set(resources.map((resource) => resource.urn));
+  const resourceByUrn = new Map(resources.map((resource) => [resource.urn, resource]));
   const activePendingOperations = (checkpoint.latest.pending_operations ?? []).filter(
-    (operation) => resourceUrns.has(operation.resource?.urn)
+    (operation) => {
+      const resource = resourceByUrn.get(operation.resource?.urn);
+      if (!resource) return false;
+      // A 'creating' operation whose resource already has recorded outputs
+      // completed successfully; the pending-operation record is stale
+      // checkpoint bookkeeping left behind for that resource, not an
+      // in-flight operation that could race with this migration.
+      if (operation.type === 'creating' && resource.outputs && Object.keys(resource.outputs).length)
+        return false;
+      return true;
+    }
   );
   if (activePendingOperations.length) throw new Error('SST state has pending operations');
   const byUrn = new Map();
