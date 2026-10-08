@@ -841,7 +841,7 @@ auto_adopt_existing_identity_secrets() {
   fi
 
   case "$stage_normalized" in
-    identity-prod|identity-production|auth-prod|authentik-prod)
+    identity-prod|identity-production|auth-prod|authentik-prod|identity-dev|auth-dev|authentik-dev)
       ;;
     *)
       return 0
