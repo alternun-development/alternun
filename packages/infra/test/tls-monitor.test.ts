@@ -2,7 +2,17 @@ import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
 import type { TLSSocket } from 'node:tls';
-import { checkExpiry, checkEndpoint, checkAcmCertificate } from '../scripts/check-tls.ts';
+import {
+  checkExpiry,
+  checkEndpoint,
+  checkAcmCertificate,
+  defaultHosts,
+} from '../scripts/check-tls.ts';
+
+void test('default TLS hosts include the public redirect endpoints', () => {
+  assert.ok(defaultHosts.includes('air.alternun.co'));
+  assert.ok(defaultHosts.includes('alternun.co'));
+});
 
 void test('expiry monitor rejects expired, near-expiry and missing certificates', () => {
   const now = Date.parse('2026-09-18T00:00:00Z');

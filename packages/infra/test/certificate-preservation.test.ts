@@ -18,7 +18,14 @@ const cname = {
   type: 'aws:route53/record:Record',
 };
 const fixture = (): {
-  latest: { resources: Array<{ urn: string; type: string; parent?: string }> };
+  latest: {
+    resources: Array<{
+      urn: string;
+      type: string;
+      parent?: string;
+      outputs?: Record<string, unknown>;
+    }>;
+  };
 } => ({
   latest: {
     resources: [
@@ -107,6 +114,61 @@ void test('migration rejects uncertain state before any mutation', () => {
   });
   assert.throws(() => planCertificatePreservation(state, [prefix]), /Ambiguous/);
   assert.deepEqual(planCertificatePreservation({ latest: { resources: [] } }, [prefix]), []);
+});
+
+void test('pending operations only block migration when their resource still exists in state', () => {
+  const state = fixture();
+  const activeState = {
+    latest: {
+      ...state.latest,
+      pending_operations: [{ type: 'creating', resource: { urn: component.urn } }],
+    },
+  };
+  assert.throws(() => planCertificatePreservation(activeState, [prefix]), /pending operations/);
+
+  const orphanedState = {
+    latest: {
+      ...state.latest,
+      pending_operations: [{ type: 'creating', resource: { urn: urn('long-gone') } }],
+    },
+  };
+  assert.deepEqual(
+    planCertificatePreservation(orphanedState, [prefix]),
+    planCertificatePreservation(state, [prefix])
+  );
+});
+
+void test('a stale creating operation does not block migration once its resource recorded outputs', () => {
+  const state = fixture();
+  state.latest.resources.push({
+    urn: urn('unrelated-builder'),
+    type: 'command:local:Command',
+    outputs: { stdout: 'done' },
+  });
+  const staleState = {
+    latest: {
+      ...state.latest,
+      pending_operations: [{ type: 'creating', resource: { urn: urn('unrelated-builder') } }],
+    },
+  };
+  assert.deepEqual(
+    planCertificatePreservation(staleState, [prefix]),
+    planCertificatePreservation(state, [prefix])
+  );
+
+  const stillCreatingState = {
+    latest: {
+      ...state.latest,
+      pending_operations: [{ type: 'creating', resource: { urn: urn('unrelated-builder') } }],
+      resources: state.latest.resources.map((item) =>
+        item.urn === urn('unrelated-builder') ? { ...item, outputs: {} } : item
+      ),
+    },
+  };
+  assert.throws(
+    () => planCertificatePreservation(stillCreatingState, [prefix]),
+    /pending operations/
+  );
 });
 
 void test('ACM DNS checks never delete renewal records, even with all legacy cleanup flags enabled', () => {
