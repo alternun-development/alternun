@@ -126,6 +126,9 @@ Current version: **1.1.92**
 
 ### Bug Fixes
 
+- **repo:** artifact, graph.db ([2e75bb7](https://github.com/alternun-development/alternun/commit/2e75bb78dff289d784c58240f930fb2208fb873c))
+- **infra:** correct misleading 'reset to false' comment on identity secret adoption ([4471374](https://github.com/alternun-development/alternun/commit/447137402a3f174dbf7dce13d6cd4266970351f8))
+- **infra:** widen cert-preservation test fixture type to allow outputs field ([c506a3b](https://github.com/alternun-development/alternun/commit/c506a3bebdb1254aa27805b0fb2ad42d21eac0be))
 - **repo:** artifact, graph.db ([6034cdd](https://github.com/alternun-development/alternun/commit/6034cdd02aa585c3bfb5a8725e51e04c8ac797c6))
 - **repo:** artifact, graph.db ([ca5ea54](https://github.com/alternun-development/alternun/commit/ca5ea543fcfa1e0e491d4ca996f8e02c0db5da5a))
 - **repo:** artifact, graph.db ([7c553ab](https://github.com/alternun-development/alternun/commit/7c553abafe492e5967ceec9df7a7578b4b5dd6e2))
