@@ -131,6 +131,39 @@ void test('pending operations only block migration when their resource still exi
   );
 });
 
+void test('a stale creating operation does not block migration once its resource recorded outputs', () => {
+  const state = fixture();
+  state.latest.resources.push({
+    urn: urn('unrelated-builder'),
+    type: 'command:local:Command',
+    outputs: { stdout: 'done' },
+  });
+  const staleState = {
+    latest: {
+      ...state.latest,
+      pending_operations: [{ type: 'creating', resource: { urn: urn('unrelated-builder') } }],
+    },
+  };
+  assert.deepEqual(
+    planCertificatePreservation(staleState, [prefix]),
+    planCertificatePreservation(state, [prefix])
+  );
+
+  const stillCreatingState = {
+    latest: {
+      ...state.latest,
+      pending_operations: [{ type: 'creating', resource: { urn: urn('unrelated-builder') } }],
+      resources: state.latest.resources.map((item) =>
+        item.urn === urn('unrelated-builder') ? { ...item, outputs: {} } : item
+      ),
+    },
+  };
+  assert.throws(
+    () => planCertificatePreservation(stillCreatingState, [prefix]),
+    /pending operations/
+  );
+});
+
 void test('ACM DNS checks never delete renewal records, even with all legacy cleanup flags enabled', () => {
   const source = fs.readFileSync('scripts/predeploy-checks.sh', 'utf8');
   const start = source.indexOf('check_acm_validation_cname_records() {');
