@@ -1,3 +1,32 @@
+## [1.1.92](https://github.com/alternun-development/alternun/compare/v1.1.91...v1.1.92) (2026-10-08)
+
+### Bug Fixes
+
+- **repo:** artifact, graph.db ([6034cdd](https://github.com/alternun-development/alternun/commit/6034cdd02aa585c3bfb5a8725e51e04c8ac797c6))
+- **repo:** artifact, graph.db ([ca5ea54](https://github.com/alternun-development/alternun/commit/ca5ea543fcfa1e0e491d4ca996f8e02c0db5da5a))
+- **repo:** artifact, graph.db ([7c553ab](https://github.com/alternun-development/alternun/commit/7c553abafe492e5967ceec9df7a7578b4b5dd6e2))
+- **infra:** ignore stale completed pending operations in cert state guard ([f6ab4b9](https://github.com/alternun-development/alternun/commit/f6ab4b940de4b5dd81e704e6013995b8020b4d93))
+- **repo:** artifact, graph.db ([1cbe022](https://github.com/alternun-development/alternun/commit/1cbe022b9be869788551c4fc3f494082e2a33890))
+- **repo:** artifact, graph.db ([817f4e2](https://github.com/alternun-development/alternun/commit/817f4e2ff6f69f51e220a2550141ee3e69664aad))
+- **infra:** monitor TLS for air.alternun.co and alternun.co redirects ([f244c8a](https://github.com/alternun-development/alternun/commit/f244c8a33ee4f0302a42f54b9efc95bb84391541))
+- **infra:** adopt retained identity secrets for identity-prod and identity-dev ([5d65320](https://github.com/alternun-development/alternun/commit/5d6532016e19ab54703f8b99428fa8ab0c53ed6c))
+- **infra:** ignore orphaned pending operations in cert state guard ([16b14e5](https://github.com/alternun-development/alternun/commit/16b14e5424b3735aa6a47362644d2847af764b05))
+- **security:** bump proxy-addr, shell-quote, simple-git past critical advisories ([8c2476a](https://github.com/alternun-development/alternun/commit/8c2476ac797718fef27036503548246a08371891))
+- **infra:** restore sourcing invocation in certificate-env-rotation test ([25b10fe](https://github.com/alternun-development/alternun/commit/25b10fe042d496e8893fddc8caa547c2502eca9b))
+- **api:** accept legacy exchange fields and ignore them (refs #100) ([73c0686](https://github.com/alternun-development/alternun/commit/73c068651738bc42af0fb03d049dd63a325e6a6f))
+
+### Changes
+
+- **repo:** gitignore .pnpm-store ([95ffa28](https://github.com/alternun-development/alternun/commit/95ffa28ea911d0f367bb92ce8f9efb7c24ccc863))
+- **api:** cover remaining Better Auth callback cases; add smoke runbook (refs #100) ([538901d](https://github.com/alternun-development/alternun/commit/538901d3511479a009ab6653f905aa074f22e1b4))
+- **repo:** Potential fix for pull request finding 'CodeQL / Shell command built from environment values' ([c2b06b0](https://github.com/alternun-development/alternun/commit/c2b06b02b7c4da7dec8a57ec9c1524976d06739d))
+
+### Documentation
+
+- **auth:** record live testnet validation results (refs #100) ([e540c36](https://github.com/alternun-development/alternun/commit/e540c36faf1abd4dc1e24597676af1769c12dde5))
+- **auth:** record testnet smoke-check results (refs #100) ([d557dbf](https://github.com/alternun-development/alternun/commit/d557dbfd40551fa975fd1092a95a265cf64fcb75))
+- **auth:** add Better Auth testnet validation matrix (refs #100) ([4be16c7](https://github.com/alternun-development/alternun/commit/4be16c7c1d2f6ea5a044f5edb7e6b2ebc40baeb7))
+
 ## [1.1.91](https://github.com/alternun-development/alternun/compare/v1.1.89...v1.1.91) (2026-10-01)
 
 ### Changes

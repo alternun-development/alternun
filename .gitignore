@@ -49,3 +49,4 @@ __pycache__/
 apps/admin/src/bones/
 
 packages/video-studio/build
+.pnpm-store/
