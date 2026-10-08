@@ -18,7 +18,14 @@ const cname = {
   type: 'aws:route53/record:Record',
 };
 const fixture = (): {
-  latest: { resources: Array<{ urn: string; type: string; parent?: string }> };
+  latest: {
+    resources: Array<{
+      urn: string;
+      type: string;
+      parent?: string;
+      outputs?: Record<string, unknown>;
+    }>;
+  };
 } => ({
   latest: {
     resources: [
