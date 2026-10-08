@@ -120,14 +120,31 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.91**
+Current version: **1.1.92**
 
-## 📋 Latest Changes (v1.1.91)
+## 📋 Latest Changes (v1.1.92)
 
-### Changes
+### Bug Fixes
 
-- **repo,mobile:** artifact, graph.db, HeroStats.navigation.test, TopNav.tier.test ([9acef4d](https://github.com/alternun-development/alternun/commit/9acef4d9b59d58938d3628b2006dfec57bf35b81))
-- **repo,mobile,i18n:** artifact, graph.db, tls-health, README ([71b6beb](https://github.com/alternun-development/alternun/commit/71b6beb63fbc70edbb2d230b1d3bd3cfe3b9be91))
+- **repo:** fix(repo): artifact, graph.db
+- **repo:** fix(repo): artifact, graph.db
+- **repo:** fix(infra): ignore stale completed pending operations in cert state guard
+- **repo:** fix(repo): artifact, graph.db
+- **repo:** fix(repo): artifact, graph.db
+
+### Bug Fixes
+
+- **api:** accept legacy exchange fields and ignore them (refs [#100](https://github.com/alternun-development/alternun/issues/100)) ([73c0686](https://github.com/alternun-development/alternun/commit/73c068651738bc42af0fb03d049dd63a325e6a6f))
+- **infra:** adopt retained identity secrets for identity-prod and identity-dev ([5d65320](https://github.com/alternun-development/alternun/commit/5d6532016e19ab54703f8b99428fa8ab0c53ed6c))
+- **infra:** ignore orphaned pending operations in cert state guard ([16b14e5](https://github.com/alternun-development/alternun/commit/16b14e5424b3735aa6a47362644d2847af764b05))
+- **infra:** ignore stale completed pending operations in cert state guard ([f6ab4b9](https://github.com/alternun-development/alternun/commit/f6ab4b940de4b5dd81e704e6013995b8020b4d93))
+- **infra:** monitor TLS for air.alternun.co and alternun.co redirects ([f244c8a](https://github.com/alternun-development/alternun/commit/f244c8a33ee4f0302a42f54b9efc95bb84391541))
+- **infra:** restore sourcing invocation in certificate-env-rotation test ([25b10fe](https://github.com/alternun-development/alternun/commit/25b10fe042d496e8893fddc8caa547c2502eca9b))
+- **repo:** artifact, graph.db ([ca5ea54](https://github.com/alternun-development/alternun/commit/ca5ea543fcfa1e0e491d4ca996f8e02c0db5da5a))
+- **repo:** artifact, graph.db ([7c553ab](https://github.com/alternun-development/alternun/commit/7c553abafe492e5967ceec9df7a7578b4b5dd6e2))
+- **repo:** artifact, graph.db ([1cbe022](https://github.com/alternun-development/alternun/commit/1cbe022b9be869788551c4fc3f494082e2a33890))
+- **repo:** artifact, graph.db ([817f4e2](https://github.com/alternun-development/alternun/commit/817f4e2ff6f69f51e220a2550141ee3e69664aad))
+- **security:** bump proxy-addr, shell-quote, simple-git past critical advisories ([8c2476a](https://github.com/alternun-development/alternun/commit/8c2476ac797718fef27036503548246a08371891))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
