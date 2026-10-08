@@ -68,10 +68,14 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION: 'true',
         INFRA_IDENTITY_ALLOW_INSTANCE_REPLACEMENT: 'false',
         INFRA_ALLOW_IDENTITY_DATABASE_MODE_CHANGE: 'false',
-        // One-time recovery: Pulumi state lost track of these stage-scoped
-        // secrets while the real AWS resources were retained. Adopt them by
-        // name instead of trying (and failing) to recreate them. Reset to
-        // 'false' once the next identity-dev deploy succeeds.
+        // Recovery: Pulumi state lost track of these stage-scoped secrets
+        // while the real AWS resources were retained. Adopt them by name
+        // instead of trying (and failing) to recreate them. This adopts via
+        // a read-only lookup (aws.secretsmanager.getSecretOutput), not a
+        // managed resource, so Pulumi state never takes ownership of them.
+        // Leave this 'true' permanently; resetting to 'false' makes the next
+        // deploy try to create these same secret names again and fail with
+        // ResourceExistsException.
         INFRA_IDENTITY_ADOPT_RETAINED_SECRETS: 'true',
         INFRA_IDENTITY_GOOGLE_AUTH_CLIENT_ID: googleAuthClientId,
         INFRA_IDENTITY_GOOGLE_LOGIN_FLOW_SLUG: devGoogleLoginFlowSlug,
@@ -125,11 +129,15 @@ export function buildIdentityPipelineSpecs({
         INFRA_IDENTITY_SECRET_JWT_SIGNING_KEY_NAME: 'alternun-infra/identity/jwt-signing-key-v2',
         INFRA_IDENTITY_SECRET_INTEGRATION_CONFIG_NAME:
           'alternun-infra/identity/integration-config-v2',
-        // One-time recovery: the -v2 secrets above were already created in
-        // AWS by an interrupted prior deploy, but Pulumi state never
-        // recorded it. Adopt them by name instead of trying (and failing)
-        // to recreate them. Reset to 'false' once the next identity-prod
-        // deploy succeeds.
+        // Recovery: the -v2 secrets above were already created in AWS by an
+        // interrupted prior deploy, but Pulumi state never recorded it.
+        // Adopt them by name instead of trying (and failing) to recreate
+        // them. This adopts via a read-only lookup
+        // (aws.secretsmanager.getSecretOutput), not a managed resource, so
+        // Pulumi state never takes ownership of them. Leave this 'true'
+        // permanently; resetting to 'false' makes the next deploy try to
+        // create these same secret names again and fail with
+        // ResourceExistsException.
         INFRA_IDENTITY_ADOPT_RETAINED_SECRETS: 'true',
         INFRA_IDENTITY_USERDATA_REPLACE_ON_CHANGE: 'false',
         INFRA_IDENTITY_ENABLE_RESOURCE_PROTECTION: 'true',
