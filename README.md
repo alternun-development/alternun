@@ -124,12 +124,14 @@ Current version: **1.1.95**
 
 ## 📋 Latest Changes (v1.1.95)
 
-### Bug Fixes
+### Documentation
 
-- **repo:** docs: consolidate and translate AIRS terms (#253)
-- **repo:** test(auth): cover callback provisioning failures
-- **repo:** test(auth): make callback mock resolvable in CI
-- **repo:** fix(auth): provision Authentik callbacks through API
+- **repo:** consolidate and translate AIRS terms (#253) ([89f6690](https://github.com/alternun-development/alternun/commit/89f66904edb0bdfa0f43bc51ad93216f7e03372a))
+
+### Changes
+
+- **auth:** cover callback provisioning failures ([d5b4cac](https://github.com/alternun-development/alternun/commit/d5b4cac4477f315f016d0f21122a2e7d5f4c7f91))
+- **auth:** make callback mock resolvable in CI ([d37b540](https://github.com/alternun-development/alternun/commit/d37b540f4bb73389de234e09e9f226289d944e8d))
 
 ### Bug Fixes
 
