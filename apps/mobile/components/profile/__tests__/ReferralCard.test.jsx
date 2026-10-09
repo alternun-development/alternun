@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import { Modal, Platform, Share, Text, TouchableOpacity } from 'react-native';
+import { Modal, Platform, Share, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { ReferralCard } from '../ReferralCard';
 
@@ -44,6 +44,7 @@ let originalPlatform;
 let originalShare;
 let originalAddEventListener;
 let originalRemoveEventListener;
+let windowDimensionsSpy;
 
 function makeSummary(referralLink = VALID_LINK) {
   return {
@@ -59,13 +60,13 @@ function makeSummary(referralLink = VALID_LINK) {
   };
 }
 
-async function mountCard(referralLink = VALID_LINK) {
+async function mountCard(referralLink = VALID_LINK, isDark = false) {
   global.fetch = jest.fn().mockResolvedValue({
     ok: true,
     json: async () => makeSummary(referralLink),
   });
   await act(async () => {
-    tree = renderer.create(<ReferralCard user={user} isDark={false} c={c} />);
+    tree = renderer.create(<ReferralCard user={user} isDark={isDark} c={c} />);
   });
   await act(async () => Promise.resolve());
 }
@@ -82,6 +83,9 @@ function modal() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  windowDimensionsSpy = jest
+    .spyOn(require('react-native'), 'useWindowDimensions')
+    .mockReturnValue({ width: 320, height: 640, scale: 1, fontScale: 1 });
   originalPlatform = Platform.OS;
   originalShare = Share.share;
   originalAddEventListener = globalThis.addEventListener;
@@ -98,6 +102,7 @@ afterEach(() => {
   Share.share = originalShare;
   globalThis.addEventListener = originalAddEventListener;
   globalThis.removeEventListener = originalRemoveEventListener;
+  windowDimensionsSpy.mockRestore();
 });
 
 it('opens from the referral code and encodes the exact API referral link', async () => {
@@ -106,7 +111,12 @@ it('opens from the referral code and encodes the exact API referral link', async
   act(() => findAction('Show referral QR code').props.onPress());
 
   expect(modal().props.visible).toBe(true);
-  expect(mockQRCode.mock.calls.at(-1)[0].value).toBe(VALID_LINK);
+  expect(modal().props.statusBarTranslucent).toBe(true);
+  const qrProps = mockQRCode.mock.calls.at(-1)[0];
+  expect(qrProps.value).toBe(VALID_LINK);
+  expect(qrProps.quietZone).toBe(20);
+  expect(qrProps.size).toBe(208);
+  expect(qrProps.size + 8 + 40).toBeLessThanOrEqual(320 - 32);
 });
 
 it('closes with the X, backdrop, onRequestClose, and Escape on web', async () => {
@@ -185,3 +195,14 @@ it.each(['', '/auth?referralCode=ana-verde-a1b2c3', 'not-a-url', 'https://'])(
     expect(disabledActions.every((node) => node.props.disabled === true)).toBe(true);
   }
 );
+
+it('uses a higher-contrast unavailable message in dark mode', async () => {
+  await mountCard('', true);
+  act(() => findAction('Show referral QR code').props.onPress());
+
+  const unavailableMessage = tree.root
+    .findAllByType(Text)
+    .find((node) => node.props.children === 'Referral link unavailable.');
+
+  expect(StyleSheet.flatten(unavailableMessage.props.style).color).toBe('#fca5a5');
+});

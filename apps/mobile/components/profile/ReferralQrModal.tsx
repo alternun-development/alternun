@@ -74,7 +74,13 @@ export function ReferralQrModal({
   }, [onClose, visible]);
 
   return (
-    <Modal visible={visible} transparent animationType='fade' onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      statusBarTranslucent
+      animationType='fade'
+      onRequestClose={onClose}
+    >
       <View style={styles.centered}>
         <Pressable
           testID='referral-qr-backdrop'
@@ -131,11 +137,14 @@ export function ReferralQrModal({
                   size={qrSize}
                   color='#111827'
                   backgroundColor='#ffffff'
-                  quietZone={12}
+                  quietZone={20}
                 />
               </View>
             ) : (
-              <Text accessibilityLiveRegion='polite' style={styles.unavailable}>
+              <Text
+                accessibilityLiveRegion='polite'
+                style={[styles.unavailable, { color: isDark ? '#fca5a5' : '#b91c1c' }]}
+              >
                 {t('profile.referral.linkUnavailable', undefined, 'Referral link unavailable.')}
               </Text>
             )}
@@ -251,7 +260,6 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   unavailable: {
-    color: '#b91c1c',
     fontSize: 14,
     fontWeight: '700',
     lineHeight: 20,
