@@ -33,6 +33,11 @@ function isTruthyEnvValue(value: string | undefined | null): boolean {
   return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
 }
 
+function readStringClaim(claims: Record<string, unknown>, key: string): string | null {
+  const value = claims[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
 function normalizeExternalIdentity(
   input: AuthExchangeRequestShape['externalIdentity']
 ): AuthExchangeExternalIdentity {
@@ -118,6 +123,8 @@ export class AuthExchangeService {
     const audience = context?.audience ?? defaultAudienceFromEnv();
     const signingKey = this.resolveSigningKey();
     const requireIssuerOwnedExchange = this.requiresIssuerOwnedExchange();
+    const legacySub = readStringClaim(externalIdentity.rawClaims ?? {}, 'sub');
+    const legacyIss = readStringClaim(externalIdentity.rawClaims ?? {}, 'iss');
 
     if (requireIssuerOwnedExchange && !signingKey) {
       throw new ServiceUnavailableException(
@@ -129,6 +136,8 @@ export class AuthExchangeService {
       {
         sub: `${externalIdentity.provider}:${externalIdentity.providerUserId}`,
         iss: issuer,
+        legacySub,
+        legacyIss,
         email: externalIdentity.email,
         emailVerified: externalIdentity.emailVerified,
         name: externalIdentity.displayName,

@@ -3,6 +3,8 @@ import { createHash } from 'node:crypto';
 export interface SupabaseOidcSyncInput {
   sub: string;
   iss: string;
+  legacySub?: string | null;
+  legacyIss?: string | null;
   email?: string | null;
   emailVerified?: boolean;
   name?: string | null;
@@ -71,6 +73,8 @@ export function buildCompatOidcPayload(input: SupabaseOidcSyncInput): {
     payload: {
       p_sub: principalId,
       p_iss: input.iss,
+      p_legacy_sub: input.legacySub ?? null,
+      p_legacy_iss: input.legacyIss ?? null,
       p_email: claims.email ?? null,
       p_email_verified: claims.email_verified ?? false,
       p_name: input.name ?? null,
@@ -97,7 +101,7 @@ export async function upsertOidcUserViaSupabase(
   }
 
   const response = await fetch(
-    `${config.supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/upsert_oidc_user`,
+    `${config.supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/upsert_oidc_user_compat`,
     {
       method: 'POST',
       headers: {

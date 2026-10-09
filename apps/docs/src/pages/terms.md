@@ -365,10 +365,10 @@ When the current rules use AIRS to determine the proportionality of an RBI distr
 
 The reference formula, developed in detail in the _AIRS — RBI Participation Factor_ document, is:
 
-`` Z`text
+```text
 RPF ajustado   = mínimo( RPF base × Multiplicador de Status , 100% )
 Effective AIRS = AIRS acumulados × RPF ajustado
-`Z ``
+```
 
 A user's relative participation may change as other participants build AIRS or modify their own RPF. Therefore, obtaining AIRS today, or a high RPF today, does not establish a future rate, percentage, performance or specific economic right.
 
@@ -944,11 +944,11 @@ Ecosystem economic stocks are classified into three categories based on how they
 
 Summary of current rates (see document _AIRS — RBI Participation Factor_ for details of splits, Qualified Actions and RPF boost):
 
-`` Z`text
+```text
 Tipo 1 — Compensación o restauración:                5 AIRS por USD elegible
 Tipo 2 — Actividad positiva que fortalece el RBI:    10 AIRS por USD elegible
 Tipo 3 — Acción productiva con excedentes futuros:   20 AIRS por USD elegible
-`Z ``
+```
 
 Only Type 2 and Type 3 actions can generate an increase in RPF, and only when they meet the Qualified Action criteria. Type 1 actions generate AIRS and count as activity for Activity Floor purposes, but do not generate RPF Boost.
 
@@ -1136,9 +1136,9 @@ Starting with this version, the Status multiplier **no longer applies to AIRS ac
 
 | Status | Multiplier on RPF | |---|---:| | Green | 1.00x | | Silver | 1.02x | | Gold | 1.05x | | Platinum | 1.08x | | Diamond | 1.12x |
 
-`` Z`text
+```text
 RPF ajustado = mínimo( RPF base × Multiplicador de Status , 100% )
-`Z ``
+```
 
 Example: A Silver user with base RPF of 50% gets an adjusted RPF of 51% (50% × 1.02). See document _AIRS — RBI Participation Factor_, Section 10, for complete detail and more examples.
 
@@ -1298,12 +1298,12 @@ Eligibility may vary depending on the nature of the reward. A user with RPF of 0
 
 When a reward is distributed proportionally, the system uses the **Effective AIRS** of each user, calculated according to the document _AIRS — RBI Participation Factor_:
 
-``Z`text
+```text
 RPF ajustado = mínimo( RPF base × Multiplicador de Status , 100% )
 Effective AIRS = AIRS acumulados × RPF ajustado
 
 Recompensa del usuario = (Effective AIRS del usuario / Effective AIRS totales elegibles) × Recompensa distribuible
-`Z``
+```
 
 This formula expresses reputational proportionality and active participation; It does not represent a financial return.
 
@@ -1915,11 +1915,11 @@ Example: a project (for example, a Fruver or a solar farm) whose operator assume
 
 #### 2.4 Rate summary
 
-`` Z`text
+```text
 Tipo 1: AIRS base = USD elegibles × 5   · RPF Boost: no aplica
 Tipo 2: AIRS base = USD elegibles × 10  · RPF Boost: +2,5 pp por Qualified Action
 Tipo 3: AIRS base = USD elegibles × 20  · RPF Boost: +25 pp por Qualified Action
-`Z ``
+```
 
 #### 2.5 Shares not classified as Type 1, 2 or 3
 
@@ -1949,9 +1949,9 @@ To be Qualified Action, a Type 2 or 3 action must meet criteria published by Alt
 
 The **RBI Activity Clock** records the time since the last Qualified Action Type 2/3. After **6 months** without one, the base RPF can be reduced **25 percentage points**, repeating every additional 6 months, subject to the Activity Floor:
 
-`` Z`text
+```text
 100% → 75% → 50% → 25% → floor aplicable
-`Z ``
+```
 
 The passive holding company does not restart this period.
 
@@ -1977,9 +1977,9 @@ The Status multiplier **does not apply to AIRS accumulation**. It applies exclus
 
 | Status | Multiplier on RPF | |---|---:| | Green | 1.00x | | Silver | 1.02x | | Gold | 1.05x | | Platinum | 1.08x | | Diamond | 1.12x |
 
-`` Z`text
+```text
 RPF ajustado = mínimo( RPF base × Multiplicador de Status , 100% )
-`Z ``
+```
 
 Example: A Silver user (1.02x) with base RPF of 50% gets an adjusted RPF of 51%. A Diamond user (1.12x) with base RPF of 80% gets 89.6%. No calculation exceeds 100%.
 
@@ -1989,11 +1989,11 @@ It is applied at the time of calculating the user's weight for an RBI cycle, usi
 
 ### 11. Calculation of Effective AIRS for RBI
 
-`` Z`text
+```text
 RPF ajustado   = mínimo( RPF base × Multiplicador de Status , 100% )
 Effective AIRS = AIRS acumulados × RPF ajustado
 User Reward Weight = User Effective AIRS / Total Eligible Effective AIRS
-`Z ``
+```
 
 The reward is determined by applying that weight to the amount actually available in the cycle. It does not guarantee the amount or continuity of future RPF/Status.
 
