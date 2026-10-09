@@ -192,4 +192,40 @@ describe('Authentik callback provisioning', () => {
       )
     ).rejects.toThrow('Auth backend did not confirm Authentik user provisioning.');
   });
+
+  it('rejects callback completion when the backend URL is missing', async () => {
+    delete process.env.EXPO_PUBLIC_AUTH_EXCHANGE_URL;
+
+    await expect(
+      authentikPreset.onSessionReady(
+        {
+          sub: 'authentik-user-3',
+          iss: 'https://sso.example.com/application/o/alternun-mobile/',
+          email: 'linus@example.com',
+        },
+        'authentik'
+      )
+    ).rejects.toThrow('Auth exchange URL is not configured for Authentik provisioning.');
+  });
+
+  it('rejects callback completion when the backend request fails', async () => {
+    process.env.EXPO_PUBLIC_AUTH_EXCHANGE_URL = 'https://api.example.com/auth/exchange';
+    globalThis.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      statusText: 'Unavailable',
+      text: () => Promise.resolve('service unavailable'),
+    }) as unknown as typeof fetch;
+
+    await expect(
+      authentikPreset.onSessionReady(
+        {
+          sub: 'authentik-user-4',
+          iss: 'https://sso.example.com/application/o/alternun-mobile/',
+          email: 'margaret@example.com',
+        },
+        'authentik'
+      )
+    ).rejects.toThrow('Auth backend provisioning failed (503 Unavailable): service unavailable');
+  });
 });
