@@ -120,17 +120,20 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.94**
+Current version: **1.1.95**
 
-## 📋 Latest Changes (v1.1.94)
+## 📋 Latest Changes (v1.1.95)
 
 ### Bug Fixes
 
-- **api:** correct milestone card counters and patch security audit ([6bb8b22](https://github.com/alternun-development/alternun/commit/6bb8b224f0fad8bfe07615cfc333da565affbecd))
+- **repo:** docs: consolidate and translate AIRS terms (#253)
+- **repo:** test(auth): cover callback provisioning failures
+- **repo:** test(auth): make callback mock resolvable in CI
+- **repo:** fix(auth): provision Authentik callbacks through API
 
-### Changes
+### Bug Fixes
 
-- **repo:** 🔒️ fix: restrict OIDC upsert function execution ([90a9953](https://github.com/alternun-development/alternun/commit/90a99537b0f1ca9e0955071f286f428d2fc06fb5))
+- **auth:** provision Authentik callbacks through API ([9982e3a](https://github.com/alternun-development/alternun/commit/9982e3a0c942c8268beb887dea9b13058d790ad2))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
