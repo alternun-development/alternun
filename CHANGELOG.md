@@ -1,3 +1,9 @@
+## [1.1.93](https://github.com/alternun-development/alternun/compare/v1.1.92...v1.1.93) (2026-10-09)
+
+### Bug Fixes
+
+- **repo:** 🔒️ fix: restrict OIDC upsert function execution
+
 ## [1.1.92](https://github.com/alternun-development/alternun/compare/v1.1.91...v1.1.92) (2026-10-08)
 
 ### Bug Fixes
