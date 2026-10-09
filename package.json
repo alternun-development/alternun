@@ -1,6 +1,6 @@
 {
   "name": "alternun",
-  "version": "1.1.93",
+  "version": "1.1.95",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -87,7 +87,7 @@
       "@fastify/middie": "9.3.2",
       "axios": "1.15.0",
       "fast-xml-parser": "4.5.4",
-      "handlebars": "4.7.9",
+      "handlebars": "4.7.10",
       "protobufjs": "7.5.5",
       "proxy-addr": "2.0.8",
       "shell-quote": "1.12.0",

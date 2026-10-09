@@ -55,7 +55,7 @@ export class MilestoneShareService {
     if (!origin || !/^https?:\/\//.test(origin))
       throw new ServiceUnavailableException('Public share URL is not configured');
     const id = createHash('sha256')
-      .update(JSON.stringify(['v1', userId, milestone, displayName]))
+      .update(JSON.stringify(['v2', userId, milestone, displayName]))
       .digest('hex');
     const storage = this.storage();
     const imagePath = `${id}.png`;

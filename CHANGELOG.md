@@ -1,3 +1,28 @@
+## [1.1.95](https://github.com/alternun-development/alternun/compare/v1.1.94...v1.1.95) (2026-10-09)
+
+### Documentation
+
+- **repo:** consolidate and translate AIRS terms (#253) ([89f6690](https://github.com/alternun-development/alternun/commit/89f66904edb0bdfa0f43bc51ad93216f7e03372a))
+
+### Changes
+
+- **auth:** cover callback provisioning failures ([d5b4cac](https://github.com/alternun-development/alternun/commit/d5b4cac4477f315f016d0f21122a2e7d5f4c7f91))
+- **auth:** make callback mock resolvable in CI ([d37b540](https://github.com/alternun-development/alternun/commit/d37b540f4bb73389de234e09e9f226289d944e8d))
+
+### Bug Fixes
+
+- **auth:** provision Authentik callbacks through API ([9982e3a](https://github.com/alternun-development/alternun/commit/9982e3a0c942c8268beb887dea9b13058d790ad2))
+
+## [1.1.94](https://github.com/alternun-development/alternun/compare/v1.1.92...v1.1.94) (2026-10-09)
+
+### Bug Fixes
+
+- **api:** correct milestone card counters and patch security audit ([6bb8b22](https://github.com/alternun-development/alternun/commit/6bb8b224f0fad8bfe07615cfc333da565affbecd))
+
+### Changes
+
+- **repo:** 🔒️ fix: restrict OIDC upsert function execution ([90a9953](https://github.com/alternun-development/alternun/commit/90a99537b0f1ca9e0955071f286f428d2fc06fb5))
+
 ## [1.1.93](https://github.com/alternun-development/alternun/compare/v1.1.92...v1.1.93) (2026-10-09)
 
 ### Bug Fixes
