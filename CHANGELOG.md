@@ -1,3 +1,16 @@
+## [1.1.95](https://github.com/alternun-development/alternun/compare/v1.1.94...v1.1.95) (2026-10-09)
+
+### Bug Fixes
+
+- **repo:** docs: consolidate and translate AIRS terms (#253)
+- **repo:** test(auth): cover callback provisioning failures
+- **repo:** test(auth): make callback mock resolvable in CI
+- **repo:** fix(auth): provision Authentik callbacks through API
+
+### Bug Fixes
+
+- **auth:** provision Authentik callbacks through API ([9982e3a](https://github.com/alternun-development/alternun/commit/9982e3a0c942c8268beb887dea9b13058d790ad2))
+
 ## [1.1.94](https://github.com/alternun-development/alternun/compare/v1.1.92...v1.1.94) (2026-10-09)
 
 ### Bug Fixes
