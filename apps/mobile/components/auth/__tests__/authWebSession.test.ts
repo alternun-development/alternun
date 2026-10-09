@@ -4,32 +4,36 @@ import { jest } from '@jest/globals';
 import { restoreBetterAuthSession } from '../betterAuthSessionRestore';
 import { authentikPreset } from '../authWebSession';
 
-jest.mock('@alternun/auth', () => ({
-  createAlternunAuthentikPreset: (options: any) => ({
-    onSessionReady: async (claims: any, provider?: string) => {
-      const result = await options.provisioningAdapter.sync({
-        sub: claims.sub,
-        iss: claims.iss,
-        email: claims.email,
-        emailVerified: claims.email_verified,
-        name: claims.name,
-        picture: claims.picture,
-        provider,
-        rawClaims: claims,
-      });
-      if (!result.synced) {
-        throw new Error(result.error ?? 'Provisioning failed');
-      }
-      return result.appUserId;
-    },
+jest.mock(
+  '@alternun/auth',
+  () => ({
+    createAlternunAuthentikPreset: (options: any) => ({
+      onSessionReady: async (claims: any, provider?: string) => {
+        const result = await options.provisioningAdapter.sync({
+          sub: claims.sub,
+          iss: claims.iss,
+          email: claims.email,
+          emailVerified: claims.email_verified,
+          name: claims.name,
+          picture: claims.picture,
+          provider,
+          rawClaims: claims,
+        });
+        if (!result.synced) {
+          throw new Error(result.error ?? 'Provisioning failed');
+        }
+        return result.appUserId;
+      },
+    }),
+    resolveAuthRuntimeConfig: () => ({
+      authExchangeUrl: process.env.EXPO_PUBLIC_AUTH_EXCHANGE_URL,
+    }),
+    resolveAuthentikClientId: (value: string | undefined) => value ?? '',
+    resolveAuthentikIssuer: (value: string | undefined) => value,
+    resolveAuthentikRedirectUri: (value: string | undefined) => value,
   }),
-  resolveAuthRuntimeConfig: () => ({
-    authExchangeUrl: process.env.EXPO_PUBLIC_AUTH_EXCHANGE_URL,
-  }),
-  resolveAuthentikClientId: (value: string | undefined) => value ?? '',
-  resolveAuthentikIssuer: (value: string | undefined) => value,
-  resolveAuthentikRedirectUri: (value: string | undefined) => value,
-}));
+  { virtual: true }
+);
 
 type TestFn = (name: string, fn: () => Promise<void> | void) => void;
 type ExpectFn = (actual: unknown) => {
