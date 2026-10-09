@@ -126,11 +126,11 @@ Current version: **1.1.94**
 
 ### Bug Fixes
 
-- **repo:** fix(api): correct milestone card counters and patch security audit
-
-### Bug Fixes
-
 - **api:** correct milestone card counters and patch security audit ([6bb8b22](https://github.com/alternun-development/alternun/commit/6bb8b224f0fad8bfe07615cfc333da565affbecd))
+
+### Changes
+
+- **repo:** 🔒️ fix: restrict OIDC upsert function execution ([90a9953](https://github.com/alternun-development/alternun/commit/90a99537b0f1ca9e0955071f286f428d2fc06fb5))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
