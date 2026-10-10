@@ -126,10 +126,6 @@ Current version: **1.1.96**
 
 ### Bug Fixes
 
-- **repo:** fix(docs): repair localized terms Markdown rendering
-
-### Bug Fixes
-
 - **docs:** repair localized terms Markdown rendering ([23d9a98](https://github.com/alternun-development/alternun/commit/23d9a98909853e9cf3a76543bd2ca9d88114d9a0))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
