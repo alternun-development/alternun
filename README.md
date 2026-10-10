@@ -120,22 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.95**
+Current version: **1.1.96**
 
-## 📋 Latest Changes (v1.1.95)
-
-### Documentation
-
-- **repo:** consolidate and translate AIRS terms (#253) ([89f6690](https://github.com/alternun-development/alternun/commit/89f66904edb0bdfa0f43bc51ad93216f7e03372a))
-
-### Changes
-
-- **auth:** cover callback provisioning failures ([d5b4cac](https://github.com/alternun-development/alternun/commit/d5b4cac4477f315f016d0f21122a2e7d5f4c7f91))
-- **auth:** make callback mock resolvable in CI ([d37b540](https://github.com/alternun-development/alternun/commit/d37b540f4bb73389de234e09e9f226289d944e8d))
+## 📋 Latest Changes (v1.1.96)
 
 ### Bug Fixes
 
-- **auth:** provision Authentik callbacks through API ([9982e3a](https://github.com/alternun-development/alternun/commit/9982e3a0c942c8268beb887dea9b13058d790ad2))
+- **repo:** fix(docs): repair localized terms Markdown rendering
+
+### Bug Fixes
+
+- **docs:** repair localized terms Markdown rendering ([23d9a98](https://github.com/alternun-development/alternun/commit/23d9a98909853e9cf3a76543bd2ca9d88114d9a0))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
