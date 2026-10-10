@@ -38,7 +38,7 @@ Este documento único consolida las versiones vigentes del estándar AIRS, sus t
 **Versión anterior:** V1.0 (6 de agosto de 2026)
 **Tipo de cambio:** Operativo (adición de principio y referencia documental; no modifica derechos ni elegibilidad)
 
-### 1\. Propósito
+### 1. Propósito
 
 AIRS es un sistema de reputación regenerativa diseñado para reconocer
 una trayectoria verificable de decisiones, contribuciones y acciones
@@ -47,7 +47,7 @@ la historia que la construyó.
 
 **Protegemos el presente. Corregimos el pasado. Construimos el futuro.**
 
-### 2\. Principios rectores
+### 2. Principios rectores
 
 #### Reputación antes que recompensa
 
@@ -104,7 +104,7 @@ depósito ni promesa de rentabilidad.
 
 El saldo AIRS resume la trayectoria histórica de un participante y nunca disminuye por inactividad. La participación activa y reciente con la sostenibilidad económica del ecosistema se mide por separado mediante el **RBI Participation Factor (RPF)**, que sí puede aumentar o disminuir. Ambas variables cumplen funciones distintas y se combinan únicamente para efectos de calcular el peso de un usuario en una distribución RBI (ver documento _AIRS — RBI Participation Factor_).
 
-### 3\. Arquitectura conceptual
+### 3. Arquitectura conceptual
 
 - **Misiones de Conservación:** protegen el presente.
 - **Misiones de Compensación:** permiten asumir responsabilidad sobre
@@ -135,7 +135,7 @@ El saldo AIRS resume la trayectoria histórica de un participante y nunca dismin
 
 > **Nota de revisión:** Este documento constituye un borrador contractual y de producto. Antes de publicación o aceptación por usuarios debe ser revisado por asesores jurídicos y tributarios colombianos, especialmente en materia de protección al consumidor, comercio electrónico, tratamiento de datos, tributación y naturaleza de los activos digitales utilizados.
 
-### 1\. Objeto
+### 1. Objeto
 
 Estos Términos y Condiciones regulan el acceso, uso y participación en AIRS, un sistema de reputación regenerativa que reconoce acciones verificables realizadas por personas y organizaciones dentro del ecosistema Alternun.
 
@@ -145,7 +145,7 @@ La filosofía del Programa puede resumirse así:
 
 **Protegemos el presente. Corregimos el pasado. Construimos el futuro.**
 
-### 2\. Naturaleza de AIRS
+### 2. Naturaleza de AIRS
 
 AIRS es un sistema de reputación, participación y fidelización. Los Puntos AIRS son unidades internas, personales y no transferibles que permiten registrar y resumir contribuciones verificadas dentro del Programa.
 
@@ -163,13 +163,13 @@ Los Puntos AIRS:
 
 Los AIRS se obtienen por acciones elegibles y verificadas conforme a las reglas vigentes del Programa. La participación activa y reciente de un usuario con la sostenibilidad económica del ecosistema se mide de forma separada mediante el **RBI Participation Factor (RPF)** (ver Sección 14 y el documento _AIRS — RBI Participation Factor_).
 
-### 3\. Principio de reputación
+### 3. Principio de reputación
 
 AIRS no pretende reducir la participación de una persona a un saldo. El saldo AIRS resume una reputación; los Badges y registros asociados preservan la historia que la originó.
 
 Dos participantes con un saldo AIRS equivalente pueden haber construido trayectorias completamente distintas, e incluso tener un RPF diferente según su participación reciente.
 
-### 4\. Formas de participación
+### 4. Formas de participación
 
 El Programa reconoce, entre otras, dos grandes formas de participación:
 
@@ -196,7 +196,7 @@ Son comportamientos recurrentes y verificables que desplazan decisiones de consu
 
 Las acciones cotidianas construyen la **Trayectoria Regenerativa**. Las Misiones pueden contribuir al **Legado Regenerativo**.
 
-### 5\. Contribuciones elegibles
+### 5. Contribuciones elegibles
 
 Una persona podrá construir AIRS mediante una o más de las siguientes formas, cuando hayan sido previamente habilitadas y posteriormente verificadas:
 
@@ -216,7 +216,7 @@ Una persona podrá construir AIRS mediante una o más de las siguientes formas, 
 
 La existencia de una contribución no implica automáticamente la asignación de AIRS. La acción debe cumplir las reglas de elegibilidad, evidencia y validación aplicables. Cuando la contribución sea económica, su clasificación como Tipo 1, Tipo 2 o Tipo 3 determinará, además de la tasa de AIRS aplicable, si puede afectar el RPF del usuario, conforme al documento _AIRS — RBI Participation Factor_.
 
-### 6\. Presupuesto financiero y Presupuesto AIRS
+### 6. Presupuesto financiero y Presupuesto AIRS
 
 Cada Misión podrá contar con:
 
@@ -227,13 +227,13 @@ El Presupuesto AIRS podrá distribuirse entre diferentes roles y tipos de contri
 
 La existencia de un Presupuesto AIRS busca proteger la sostenibilidad, trazabilidad y coherencia del Programa y evitar asignaciones arbitrarias.
 
-### 7\. Principio de sostenibilidad
+### 7. Principio de sostenibilidad
 
 Toda asignación material de AIRS deberá estar vinculada a una acción elegible, identificable y verificable y, cuando corresponda, a una fuente de financiación, patrocinio o generación de valor definida para la Misión, campaña, alianza o regla de acción correspondiente.
 
 Alternun podrá establecer límites, presupuestos, tasas, multiplicadores y mecanismos de control destinados a evitar abuso, farming, fraude o dilución desproporcionada de la reputación dentro del ecosistema.
 
-### 8\. Contribuciones económicas
+### 8. Contribuciones económicas
 
 Cuando una Misión admita contribuciones económicas, el participante aporta recursos para hacer posible el objetivo descrito en la ficha particular de la Misión.
 
@@ -249,7 +249,7 @@ La contribución económica no constituye, por sí sola:
 
 La recompensa ofrecida podrá incluir un Badge y la asignación de AIRS conforme a reglas conocidas previamente.
 
-### 9\. Contribuciones de tiempo, trabajo y conocimiento
+### 9. Contribuciones de tiempo, trabajo y conocimiento
 
 AIRS podrá reconocer contribuciones no monetarias cuando hayan sido autorizadas, registradas y verificadas.
 
@@ -265,13 +265,13 @@ La ficha de la actividad deberá indicar, cuando resulte aplicable:
 
 La asignación de AIRS por una contribución no convierte dicha actividad en una relación laboral. Sin embargo, AIRS no podrá utilizarse para encubrir, sustituir o eludir salarios, prestaciones, honorarios u obligaciones legales cuando, por las circunstancias reales, exista una relación laboral, contractual o profesional remunerada.
 
-### 10\. Patrocinadores y aliados
+### 10. Patrocinadores y aliados
 
 Una Misión o Acción Regenerativa Cotidiana podrá ser financiada total o parcialmente por Alternun, empresas, organizaciones, entidades públicas, fundaciones, comercios, usuarios u otros aliados elegibles.
 
 El patrocinio de una Misión no concede al patrocinador facultad para alterar evidencias, validar contribuciones inexistentes o asignar AIRS fuera de las reglas aprobadas.
 
-### 11\. Badges
+### 11. Badges
 
 Los Badges son reconocimientos digitales asociados a hechos, acciones, Misiones o hitos verificables de la trayectoria del participante.
 
@@ -283,7 +283,7 @@ Algunos Badges podrán ser dinámicos o "Living Badges", de manera que incorpore
 
 La ficha de cada Badge indicará su naturaleza tecnológica y los derechos que incorpora. La mera existencia de un Badge no confiere derechos económicos sobre una Misión o proyecto.
 
-### 12\. Activos digitales y badges emitidos en blockchain
+### 12. Activos digitales y badges emitidos en blockchain
 
 Cuando un Badge sea emitido mediante blockchain, NFT, token no fungible, credencial verificable u otra tecnología digital, su función principal dentro de AIRS será acreditar o representar una participación, reconocimiento o memoria digital según las reglas particulares de emisión.
 
@@ -291,7 +291,7 @@ Salvo indicación expresa y jurídicamente válida en contrario, dicho activo di
 
 La tecnología utilizada para registrar un Badge no modifica por sí sola la naturaleza económica de la relación subyacente.
 
-### 13\. Regenerative Basic Income — RBI
+### 13. Regenerative Basic Income — RBI
 
 El RBI es un mecanismo separado de distribución de valor dentro del ecosistema Alternun.
 
@@ -309,7 +309,7 @@ El RBI:
 
 La participación en una Misión, la adquisición de un Badge, la obtención de AIRS o el mantenimiento de un RPF elevado **no garantizan que el participante reciba RBI**.
 
-### 14\. AIRS, RPF y distribución de RBI
+### 14. AIRS, RPF y distribución de RBI
 
 Cuando las reglas vigentes utilicen AIRS para determinar la proporcionalidad de una distribución RBI, la variable utilizada no es el saldo AIRS crudo, sino los **AIRS Efectivos**, resultado de combinar el saldo AIRS del usuario con su **RBI Participation Factor (RPF)** vigente, incluyendo el multiplicador de Status aplicable conforme al Reglamento de Status y Multiplicadores.
 
@@ -333,7 +333,7 @@ Cualquier eventual distribución dependerá, entre otros factores, de:
 
 El RPF es una variable de participación independiente del saldo AIRS: un RPF bajo o en 0% no elimina el historial AIRS del usuario, pero reduce su peso relativo dentro de una distribución RBI mientras se mantenga en ese nivel.
 
-### 15\. Principio de Riesgo Regenerativo
+### 15. Principio de Riesgo Regenerativo
 
 Las Misiones Proactivas pueden financiar iniciativas cuyo resultado económico, ambiental o social sea incierto.
 
@@ -343,7 +343,7 @@ Por ello, una Misión puede no generar ingresos, no alcanzar el impacto esperado
 
 El Programa reconoce la disposición a contribuir a la construcción de soluciones regenerativas, no una rentabilidad futura.
 
-### 16\. Ausencia de participación económica directa en las Misiones
+### 16. Ausencia de participación económica directa en las Misiones
 
 Salvo que exista un producto separado, expresamente documentado y sujeto al régimen jurídico que le corresponda, quienes participen en una Misión AIRS no adquieren derechos sobre:
 
@@ -360,7 +360,7 @@ Salvo que exista un producto separado, expresamente documentado y sujeto al rég
 
 Si una Misión genera excedentes y su operador ha acordado destinar parte de ellos al ecosistema AIRS o al RBI —como ocurre típicamente en las acciones clasificadas como Tipo 3—, dicha asignación se realiza a favor del mecanismo colectivo definido y no como pago individual debido a los participantes de esa Misión.
 
-### 17\. Compensaciones y declaraciones de impacto
+### 17. Compensaciones y declaraciones de impacto
 
 Las herramientas de cálculo de huella, emisiones o impacto que AIRS pueda ofrecer tendrán el alcance indicado en cada metodología.
 
@@ -368,7 +368,7 @@ Cuando una compensación no esté certificada bajo un estándar específico, AIR
 
 El participante deberá describir de buena fe la actividad que pretende compensar. Alternun podrá solicitar información adicional o rechazar declaraciones manifiestamente falsas, incompletas o incompatibles con la metodología aplicable.
 
-### 18\. Acciones Regenerativas Cotidianas y aliados comerciales
+### 18. Acciones Regenerativas Cotidianas y aliados comerciales
 
 Los aliados podrán ofrecer AIRS por transacciones o comportamientos elegibles conforme a reglas previamente publicadas.
 
@@ -385,7 +385,7 @@ Cada regla podrá especificar:
 
 La compra de un producto o servicio no se considerará regenerativa únicamente por generar AIRS. Alternun podrá establecer criterios de curaduría, evidencia y permanencia para aliados y productos. Salvo clasificación expresa como Tipo 2 o Tipo 3, estas acciones no generan RPF Boost.
 
-### 19\. Evidencia y verificación
+### 19. Evidencia y verificación
 
 Toda asignación de AIRS deberá poder asociarse a una evidencia suficiente según la naturaleza de la acción.
 
@@ -410,7 +410,7 @@ Cuando la acción sea Tipo 2 o Tipo 3, el registro deberá además permitir veri
 
 Alternun podrá utilizar POSH u otros mecanismos de firma, validación o trazabilidad.
 
-### 20\. Errores, fraude y reversión administrativa
+### 20. Errores, fraude y reversión administrativa
 
 Aunque AIRS está diseñado como un registro acumulativo, Alternun podrá corregir registros cuando exista error material, duplicidad, fraude, suplantación, manipulación, evidencia inválida o incumplimiento de las reglas.
 
@@ -418,7 +418,7 @@ Una corrección administrativa no constituye una "quema" económica de AIRS, sin
 
 Alternun podrá suspender preventivamente una cuenta mientras investiga irregularidades.
 
-### 21\. Status y multiplicadores
+### 21. Status y multiplicadores
 
 El Programa podrá utilizar niveles de Status y beneficios asociados conforme al reglamento vigente.
 
@@ -433,7 +433,7 @@ El multiplicador de Status:
 
 Las reglas concretas de niveles, periodos y status vitalicio se publicarán en el Reglamento de Status y Multiplicadores.
 
-### 22\. Información al participante
+### 22. Información al participante
 
 Antes de realizar una contribución económica a una Misión, el participante deberá poder consultar información suficiente sobre, al menos:
 
@@ -451,7 +451,7 @@ Antes de realizar una contribución económica a una Misión, el participante de
 - vigencia; y
 - mecanismos de contacto.
 
-### 23\. Pagos, precios, impuestos y facturación
+### 23. Pagos, precios, impuestos y facturación
 
 Los precios, aportes y cargos aplicables se mostrarán antes de confirmar una transacción.
 
@@ -461,7 +461,7 @@ Cuando un Badge sea jurídicamente tratado como un activo digital o intangible, 
 
 Los impuestos, retenciones, reportes y obligaciones individuales que correspondan al participante serán de su responsabilidad cuando la ley así lo disponga.
 
-### 24\. Comercio electrónico y aceptación
+### 24. Comercio electrónico y aceptación
 
 Cuando la contratación se realice por medios electrónicos, el usuario tendrá acceso a estos Términos antes de aceptar o pagar.
 
@@ -469,7 +469,7 @@ La plataforma conservará evidencia razonable de la aceptación y pondrá a disp
 
 Cuando la legislación otorgue derechos de retracto, reversión del pago, garantía, devolución u otros derechos irrenunciables, estos serán respetados en los términos legales aplicables. Ninguna disposición de estos Términos pretende excluir derechos que legalmente no puedan ser renunciados.
 
-### 25\. Protección de datos
+### 25. Protección de datos
 
 El tratamiento de datos personales se realizará conforme a la Política de Tratamiento de Datos Personales y la legislación aplicable.
 
@@ -477,13 +477,13 @@ Los Badges, memorias, mapas de trayectoria y experiencias personalizadas podrán
 
 La publicación de información personal, geolocalización precisa, fotografías identificables u otros datos que no deban ser públicos estará sujeta a las autorizaciones y controles correspondientes.
 
-### 26\. Propiedad intelectual
+### 26. Propiedad intelectual
 
 La plataforma, marcas, diseños, software, textos y demás contenidos de Alternun estarán protegidos conforme a la legislación aplicable.
 
 La emisión de un Badge no transfiere derechos de propiedad intelectual sobre marcas, obras, diseños o contenidos asociados, salvo licencia expresa.
 
-### 27\. Modificaciones del Programa
+### 27. Modificaciones del Programa
 
 AIRS es un sistema evolutivo. Alternun podrá modificar reglas para mejorar sostenibilidad, seguridad, verificación, cumplimiento regulatorio o funcionamiento.
 
@@ -493,13 +493,13 @@ Las reglas aplicables a una acción serán, en principio, las vigentes al moment
 
 Las modificaciones no convertirán retroactivamente una contribución ya realizada en una promesa de rentabilidad o derecho económico distinto.
 
-### 28\. Gobernanza futura
+### 28. Gobernanza futura
 
 Alternun podrá habilitar mecanismos de consulta o gobernanza comunitaria para proponer o votar ajustes a determinadas reglas.
 
 La existencia de gobernanza comunitaria no limita las modificaciones que sean necesarias para cumplir la ley, proteger usuarios, corregir vulnerabilidades o preservar la integridad del sistema.
 
-### 29\. Disponibilidad tecnológica
+### 29. Disponibilidad tecnológica
 
 La plataforma puede depender de servicios de terceros, infraestructura blockchain, proveedores de identidad, pagos, almacenamiento o conectividad.
 
@@ -507,11 +507,11 @@ Alternun procurará continuidad razonable, pero no garantiza disponibilidad inin
 
 Cuando una blockchain o proveedor externo presente una falla, Alternun podrá utilizar registros internos y evidencias verificables para preservar la historia de la participación.
 
-### 30\. Menores de edad
+### 30. Menores de edad
 
 La participación de menores de edad estará sujeta a las restricciones, autorizaciones y mecanismos de protección que resulten aplicables. Determinadas Misiones, pagos, actividades presenciales o funciones digitales podrán limitarse a mayores de edad o requerir autorización de representante legal.
 
-### 31\. Conductas prohibidas
+### 31. Conductas prohibidas
 
 Se prohíbe:
 
@@ -526,13 +526,13 @@ Se prohíbe:
 - utilizar Badges para afirmar derechos económicos inexistentes;
 - utilizar el Programa para lavado de activos, fraude u otras actividades ilícitas.
 
-### 32\. Suspensión y terminación
+### 32. Suspensión y terminación
 
 Alternun podrá limitar, suspender o terminar cuentas por incumplimiento material, fraude, riesgo de seguridad, requerimiento legal o abuso del Programa, respetando los procedimientos que resulten aplicables.
 
 Cuando sea razonablemente posible, el usuario tendrá mecanismos para solicitar revisión de una decisión.
 
-### 33\. Limitación de responsabilidad
+### 33. Limitación de responsabilidad
 
 Alternun no garantiza el éxito económico, ambiental o social de una Misión, salvo compromisos específicos expresamente asumidos.
 
@@ -540,13 +540,13 @@ La información prospectiva, metas e indicadores de impacto constituyen objetivo
 
 Nada en estos Términos limita responsabilidades que no puedan excluirse legalmente.
 
-### 34\. Ley aplicable y solución de controversias
+### 34. Ley aplicable y solución de controversias
 
 Estos Términos se regirán por las leyes de la República de Colombia, sin perjuicio de normas imperativas que resulten aplicables al usuario por su lugar de residencia.
 
 Las partes procurarán resolver inicialmente cualquier controversia mediante los canales de atención establecidos por Alternun. Los mecanismos adicionales de solución de controversias y la autoridad competente serán los previstos en la versión publicada y revisada jurídicamente de estos Términos.
 
-### 35\. Documentos integrantes
+### 35. Documentos integrantes
 
 Forman parte del marco normativo de AIRS, según su versión vigente:
 
@@ -564,7 +564,7 @@ Forman parte del marco normativo de AIRS, según su versión vigente:
 
 En caso de contradicción, la ficha particular podrá establecer reglas específicas para una Misión sin alterar la naturaleza general de AIRS ni crear derechos económicos no expresamente autorizados. En caso de contradicción entre este documento y el documento _AIRS — RBI Participation Factor_ respecto de las reglas de RPF, categorías de acción económica o el multiplicador de Status sobre el RBI, prevalecerá este último por ser la fuente única de dichas reglas.
 
-### 36\. Contacto
+### 36. Contacto
 
 Alternun Colombia SAS - info@alternun.io Tel +573006996607 Calle 35B N86-55 Medellín, Antioquia, Colombia
 
@@ -780,7 +780,7 @@ Conjunto de procedimientos utilizados para establecer si una acción ocurrió y 
 **Fecha:** 7 de septiembre de 2026
 **Tipo de cambio:** Económico/reputacional (reemplaza la tasa única de compensación por el modelo de tres tipos de acción económica)
 
-### 1\. Principio general
+### 1. Principio general
 
 AIRS se acumula como resultado de acciones verificables. **Más impacto
 real y más compromiso sostenido = más AIRS.**
@@ -788,7 +788,7 @@ real y más compromiso sostenido = más AIRS.**
 AIRS es acumulativo. Una vez correctamente reconocido, permanece en el
 historial salvo rectificación por fraude, duplicidad o error.
 
-### 2\. Reglas fundamentales
+### 2. Reglas fundamentales
 
 1. AIRS no se compra directamente.
 2. AIRS no se transfiere ni vende.
@@ -800,7 +800,7 @@ historial salvo rectificación por fraude, duplicidad o error.
 8. La legitimidad de una contribución no depende del éxito futuro de la
    Misión.
 
-### 3\. AIRS por acciones económicas: Tipo 1, Tipo 2 y Tipo 3
+### 3. AIRS por acciones económicas: Tipo 1, Tipo 2 y Tipo 3
 
 Las acciones económicas del ecosistema se clasifican en tres categorías según cómo aportan al fondo RBI. Las tasas de AIRS, los porcentajes de destino del pago y el eventual efecto sobre el RBI Participation Factor (RPF) de cada tipo están definidos en el documento **AIRS — RBI Participation Factor**, que es la fuente única para estas reglas.
 
@@ -820,7 +820,7 @@ Tipo 3 — Acción productiva con excedentes futuros:   20 AIRS por USD elegible
 
 Solo las acciones Tipo 2 y Tipo 3 pueden generar un incremento del RPF, y únicamente cuando cumplen los criterios de Qualified Action. Las acciones Tipo 1 generan AIRS y cuentan como actividad para efectos del Activity Floor, pero no generan RPF Boost.
 
-### 4\. AIRS por Misiones Regenerativas
+### 4. AIRS por Misiones Regenerativas
 
 Cada Misión tendrá un Presupuesto AIRS y reglas de distribución
 publicadas. Los AIRS pueden reconocer contribuciones económicas,
@@ -832,7 +832,7 @@ Cuando una Misión admita contribuciones económicas, su ficha deberá indicar s
 En una Misión Proactiva, los AIRS se reconocen por la contribución
 realizada y no se condicionan a utilidades o resultados futuros. Las Misiones Proactivas con compromiso de excedentes futuros al RBI son, por regla general, el escenario típico de una acción Tipo 3.
 
-### 5\. Contribución económica
+### 5. Contribución económica
 
 La ficha particular establecerá la relación entre contribución y AIRS
 antes de participar, incluyendo su clasificación como Tipo 1, 2 o 3 cuando aplique. La contribución financia la Misión; AIRS es
@@ -840,7 +840,7 @@ reconocimiento reputacional y no participación en el proyecto.
 
 Podrán existir boosts de campaña o misión (sobre AIRS) para Misiones prioritarias si están definidos previamente y respetan el Presupuesto AIRS. Estos boosts son distintos del Multiplicador de Status, que se aplica al RPF y no a la acumulación de AIRS (ver Reglamento de Status y Multiplicadores).
 
-### 6\. Trabajo y contribución directa
+### 6. Trabajo y contribución directa
 
 Las contribuciones de trabajo deberán estar asignadas, registradas y
 validadas.
@@ -853,7 +853,7 @@ topes.
 
 El trabajo validado no se clasifica como Tipo 1, 2 o 3 y, por tanto, no genera RPF Boost, aunque sí cuenta como actividad AIRS para efectos del Activity Floor.
 
-### 7\. Participación en proyectos elegibles
+### 7. Participación en proyectos elegibles
 
 Cuando se habiliten mecanismos de participación o permanencia en
 proyectos curados, sus reglas podrán reconocer AIRS por compromiso
@@ -862,7 +862,7 @@ jurídicamente separado de AIRS.
 
 Cuando dicha participación corresponda a un proyecto con compromiso de excedentes futuros al RBI, podrá clasificarse como Tipo 3 conforme a la Sección 3 y al documento _AIRS — RBI Participation Factor_.
 
-### 8\. Acciones Regenerativas Cotidianas
+### 8. Acciones Regenerativas Cotidianas
 
 Los aliados podrán financiar reglas recurrentes: compras en Fruver
 elegible, ecohoteles, bienes reutilizados, productos elegibles con
@@ -871,30 +871,30 @@ materiales reciclados u otras acciones aprobadas.
 Cada regla indicará tasa, fuente de financiación, evidencia, límites y
 vigencia. Salvo que Alternun clasifique expresamente una regla como Tipo 2 o Tipo 3, las Acciones Regenerativas Cotidianas no generan RPF Boost.
 
-### 9\. Participación estructural
+### 9. Participación estructural
 
 Podrán otorgarse AIRS fijos y de bajo peso por onboarding, votaciones
 elegibles, educación, campañas oficiales, referencias verificadas o
 eventos. No deben desplazar las fuentes basadas en impacto real. Estas acciones no generan RPF Boost.
 
-### 10\. Multiplicadores de campaña o misión
+### 10. Multiplicadores de campaña o misión
 
 Los multiplicadores de campaña o misión amplifican AIRS base en categorías elegibles. No se
 aplican normalmente a acciones triviales y no se acumulan entre sí salvo
 regla expresa. Estos multiplicadores son independientes del Multiplicador de Status, que afecta el RPF y no la acumulación de AIRS (ver Reglamento de Status y Multiplicadores y documento _AIRS — RBI Participation Factor_).
 
-### 11\. Presupuesto AIRS
+### 11. Presupuesto AIRS
 
 Una Misión o campaña no podrá asignar más AIRS que los autorizados,
 salvo ampliación formal registrada. El presupuesto no utilizado no debe
 emitirse.
 
-### 12\. Correcciones
+### 12. Correcciones
 
 Errores, duplicidades, fraude o evidencia inválida podrán rectificarse
 de forma auditable.
 
-### 13\. Cambios futuros
+### 13. Cambios futuros
 
 Tasas y parámetros podrán evolucionar conforme al Reglamento de
 Gobernanza. Las acciones realizadas se evalúan bajo las reglas vigentes
@@ -909,32 +909,32 @@ al momento de su ejecución, salvo fraude o error. Los cambios a las tasas Tipo 
 **Fecha:** 7 de septiembre de 2026
 **Tipo de cambio:** Operativo (incorpora verificación de Qualified Actions para efectos de RPF)
 
-### 1\. Objeto
+### 1. Objeto
 
 Define cómo AIRS determina que una acción ocurrió y cumple las
 condiciones necesarias para formar parte de la reputación.
 
-### 2\. Principio
+### 2. Principio
 
 **No existe reputación verificable sin evidencia verificable.**
 
 El nivel de evidencia será proporcional al tipo de acción, valor, riesgo
 de fraude y AIRS involucrados.
 
-### 3\. Estados
+### 3. Estados
 
 Una acción podrá estar Registrada, Pendiente, Validada, Rechazada,
 Observada o Rectificada. Solo una acción validada genera AIRS
 definitivos.
 
-### 4\. Registro mínimo
+### 4. Registro mínimo
 
 Cada entrada procurará conservar userId, timestamp, categoría,
 actionType, missionId/ruleId, baseAirs, multiplierApplied,
 totalAirsGranted, referenceId, referenceType, validador, evidencia,
 txHash cuando aplique y metadata relevante. Cuando la acción sea Tipo 2 o Tipo 3, la entrada deberá además registrar si cumple los criterios de Qualified Action y, en tal caso, el RPF Boost otorgado.
 
-### 5\. Evidencia
+### 5. Evidencia
 
 Podrán utilizarse comprobantes de pago, POS, API, facturas, fotografías,
 georreferenciación cuando sea necesaria y autorizada, firmas, POSH,
@@ -942,7 +942,7 @@ certificaciones, actas, sensores, blockchain, documentos o validación
 humana. Ningún tipo de evidencia será universalmente suficiente por sí
 solo.
 
-### 6\. Contribuciones económicas
+### 6. Contribuciones económicas
 
 Se confirmará cuenta del participante, monto, Misión, pago, ausencia de
 reversión cuando corresponda y regla AIRS aplicable.
@@ -960,62 +960,62 @@ Cuando la contribución económica sea Tipo 2 o Tipo 3 y la misión, proyecto o 
 
 Una acción Tipo 2 o Tipo 3 que no cumpla estos criterios podrá seguir generando AIRS conforme a la tasa aplicable, pero no generará RPF Boost.
 
-### 7\. Trabajo y tiempo
+### 7. Trabajo y tiempo
 
 Las horas deben corresponder a actividad elegible, ser asignadas o
 aceptadas, tener responsable, duración razonable y soporte POSH u otro
 mecanismo aprobado cuando aplique.
 
-### 8\. Conservación presencial
+### 8. Conservación presencial
 
 Podrá requerirse asistencia, firma, evidencia fotográfica, coordinador,
 ubicación general y resultado básico, minimizando datos personales.
 
-### 9\. Compensaciones
+### 9. Compensaciones
 
 Se distinguirá entre declaración del impacto, cálculo, contribución,
 proyecto seleccionado y evidencia de aplicación. Sin certificación
 formal, AIRS no presentará la acción como neutralidad certificada.
 
-### 10\. Misiones Proactivas
+### 10. Misiones Proactivas
 
 Se valida la contribución, no el resultado futuro. El fracaso posterior
 de una iniciativa no invalida una contribución legítima, ni revierte un RPF Boost Tipo 3 legítimamente otorgado.
 
-### 11\. Acciones Cotidianas
+### 11. Acciones Cotidianas
 
 Se preferirán integraciones automáticas auditables: POS, API, factura o
 código de transacción. El aliado no puede autoasignar AIRS fuera de
 reglas autorizadas, ni clasificar por su cuenta una acción como Tipo 2 o Tipo 3.
 
-### 12\. Validadores
+### 12. Validadores
 
 Podrán existir niveles de autorización, límites, doble validación,
 auditorías y reglas de conflicto de interés.
 
-### 13\. POSH
+### 13. POSH
 
 POSH podrá firmar contribuciones de trabajo, presencia u otras
 actividades, vinculando razonablemente participante, actividad, fecha,
 Misión y responsable.
 
-### 14\. Fraude
+### 14. Fraude
 
 Se controlarán duplicidad, evidencia reutilizada, colusión, identidades
 falsas, manipulación de ubicación, transacciones reversadas, creación
 artificial de AIRS y fraccionamiento artificial de una misma operación económica para obtener múltiples incrementos de RPF.
 
-### 15\. Auditoría
+### 15. Auditoría
 
 El sistema deberá permitir reconstruir por qué una persona recibió AIRS y, cuando aplique, por qué recibió o no un RPF Boost.
 Toda rectificación dejará historial.
 
-### 16\. Privacidad
+### 16. Privacidad
 
 La trazabilidad no implica que toda evidencia sea pública. Se conservará
 únicamente lo necesario conforme a la política de datos.
 
-### 17\. Revisión
+### 17. Revisión
 
 El participante podrá disponer de un mecanismo razonable de revisión
 cuando una acción sea rechazada o rectificada, incluyendo el rechazo de un RPF Boost por no cumplir los criterios de Qualified Action.
@@ -1029,12 +1029,12 @@ cuando una acción sea rechazada o rectificada, incluyendo el rechazo de un RPF 
 **Fecha:** 7 de septiembre de 2026
 **Tipo de cambio:** Económico/reputacional (el multiplicador de Status cambia su función: ahora se aplica al RBI Participation Factor y no a la acumulación de AIRS)
 
-### 1\. Propósito
+### 1. Propósito
 
 El Status AIRS reconoce consistencia y profundidad de participación. No
 representa riqueza, solvencia ni categoría financiera.
 
-### 2\. Niveles
+### 2. Niveles
 
 | Status   | AIRS acumulados en el año calendario | Rol                       |
 | -------- | -----------------------------------: | ------------------------- |
@@ -1046,7 +1046,7 @@ representa riqueza, solvencia ni categoría financiera.
 
 Los nombres y los umbrales AIRS para alcanzar cada Status pueden cambiar en cualquier momento conforme al Reglamento de Gobernanza. Estos umbrales se mantienen sin cambios en esta versión: el mercado y la velocidad real de acumulación determinarán si ameritan ajuste en el futuro.
 
-### 3\. Multiplicador de Status sobre el RBI Participation Factor (RPF)
+### 3. Multiplicador de Status sobre el RBI Participation Factor (RPF)
 
 A partir de esta versión, el multiplicador de Status **ya no se aplica a la acumulación de AIRS**. Se aplica exclusivamente sobre el **RBI Participation Factor (RPF)** del usuario, conforme al documento _AIRS — RBI Participation Factor_, que es la fuente única de esta regla.
 
@@ -1064,7 +1064,7 @@ RPF ajustado = mínimo( RPF base × Multiplicador de Status , 100% )
 
 Ejemplo: un usuario Silver con RPF base de 50% obtiene un RPF ajustado de 51% (50% × 1,02). Ver documento _AIRS — RBI Participation Factor_, Sección 10, para el detalle completo y más ejemplos.
 
-### 4\. Aplicación
+### 4. Aplicación
 
 1. El multiplicador se aplica en el momento de calcular el peso del usuario para un ciclo RBI, no en el momento de una acción individual de acumulación de AIRS.
 2. No es retroactivo.
@@ -1074,11 +1074,11 @@ Ejemplo: un usuario Silver con RPF base de 50% obtiene un RPF ajustado de 51% (5
 6. El multiplicador de Status no modifica los límites de incremento (+25 pp/trimestre), decay (−25 pp/6 meses sin Tipo 2/3) ni el Activity Floor del RPF base: estos límites se calculan siempre sobre el RPF base, antes de aplicar el multiplicador.
 7. El RPF ajustado nunca supera 100%, sin importar el Status o el RPF base del usuario.
 
-### 5\. Multiplicadores de campaña o misión sobre AIRS
+### 5. Multiplicadores de campaña o misión sobre AIRS
 
 Independientemente del multiplicador de Status, podrán existir multiplicadores de campaña o misión que amplifiquen la acumulación de AIRS base en categorías elegibles, conforme a las Reglas de Acumulación (Sección 10). Estos multiplicadores de AIRS son distintos y no reemplazan al Multiplicador de Status descrito en la Sección 3, que actúa exclusivamente sobre el RPF.
 
-### 6\. Vigencia del Status
+### 6. Vigencia del Status
 
 El Status se obtiene inmediatamente al alcanzar el umbral y se mantiene
 durante el resto del año.
@@ -1088,7 +1088,7 @@ beneficios del Status alcanzado en el año anterior, mientras el contador
 anual reinicia. Si alcanza un nivel superior, este aplica desde ese
 momento.
 
-### 7\. Status vitalicio
+### 7. Status vitalicio
 
 Cuando un participante haya alcanzado o superado un determinado Status
 durante al menos diez años, dicho nivel podrá convertirse en su Status
@@ -1098,11 +1098,11 @@ Si alcanza Silver o superior durante diez años, Silver puede convertirse
 en su base. Si posteriormente completa diez años en Gold o superior,
 Gold podrá convertirse en su nueva base.
 
-### 8\. Protección
+### 8. Protección
 
 El multiplicador de Status ajusta el RPF del usuario, pero no garantiza una recompensa RBI ni un monto determinado: sigue dependiendo de los recursos efectivamente disponibles en cada ciclo (ver AIRS — RBI y Distribución de Recompensas). Podrán existir topes adicionales en categorías con riesgo de abuso.
 
-### 9\. Cambios
+### 9. Cambios
 
 Umbrales AIRS para Status podrán modificarse para periodos futuros
 conforme al Reglamento de Gobernanza y deberán publicarse antes de
@@ -1117,7 +1117,7 @@ entrar en vigor. Cambios al multiplicador de Status sobre el RPF se gestionan y 
 **Fecha:** 7 de septiembre de 2026
 **Tipo de cambio:** Económico/reputacional (la fórmula de distribución pasa de usar AIRS elegibles a usar AIRS Efectivos, incorporando el RBI Participation Factor)
 
-### 1\. Propósito
+### 1. Propósito
 
 El **Regenerative Basic Income (RBI)** es el mecanismo de recompensas del ecosistema AIRS.
 
@@ -1127,7 +1127,7 @@ AIRS registra la reputación a partir de acciones verificables. El **RBI Partici
 
 Por diseño, las recompensas RBI se distribuirán **principalmente en ATN**, sin perjuicio de que el ecosistema pueda distribuir otras especies, beneficios, activos digitales, productos, servicios, experiencias u otras recompensas cuando existan campañas, alianzas o promociones específicas.
 
-### 2\. Principio fundamental
+### 2. Principio fundamental
 
 **Primero se construye reputación. Luego, la participación activa determina cuánto de esa reputación cuenta. Finalmente, cuando existen recompensas disponibles, estas se distribuyen de acuerdo con las reglas del RBI.**
 
@@ -1135,7 +1135,7 @@ La tenencia de AIRS, incluso con un RPF elevado, no implica por sí sola que exi
 
 El RBI no debe interpretarse como una promesa de ingreso, rentabilidad o retorno económico. Es un **mecanismo de recompensa variable**, condicionado a la existencia de recursos o beneficios disponibles dentro del ecosistema.
 
-### 3\. Naturaleza de la recompensa
+### 3. Naturaleza de la recompensa
 
 Las recompensas RBI pueden provenir de distintas fuentes del ecosistema y adoptar distintas formas.
 
@@ -1155,7 +1155,7 @@ También podrán existir recompensas en otras especies, por ejemplo:
 
 Estas recompensas pueden ser generales o estar dirigidas a segmentos específicos de usuarios conforme a criterios de reputación, trayectoria, ubicación, participación, categoría de actividad u otras condiciones previamente comunicadas.
 
-### 4\. Fuentes de las recompensas
+### 4. Fuentes de las recompensas
 
 El sistema de recompensas podrá nutrirse de fuentes autorizadas, incluyendo:
 
@@ -1170,7 +1170,7 @@ El sistema de recompensas podrá nutrirse de fuentes autorizadas, incluyendo:
 
 Una fuente potencial no se considera disponible hasta que el recurso o beneficio haya sido efectivamente recibido, habilitado o puesto a disposición del mecanismo de recompensas.
 
-### 5\. AIRS, RPF y base reputacional
+### 5. AIRS, RPF y base reputacional
 
 AIRS no es la recompensa. AIRS es la **medida de reputación** que permite al ecosistema reconocer cuánto y cómo ha participado una persona a lo largo del tiempo.
 
@@ -1180,7 +1180,7 @@ El RBI utiliza el resultado combinado de ambas variables —los **AIRS Efectivos
 
 **Acciones verificadas → AIRS → RPF (participación activa) → AIRS Efectivos → Elegibilidad y proporcionalidad → Recompensas RBI**
 
-### 6\. Elegibilidad
+### 6. Elegibilidad
 
 La versión operativa del RBI podrá requerir:
 
@@ -1195,7 +1195,7 @@ La versión operativa del RBI podrá requerir:
 
 La elegibilidad puede variar dependiendo de la naturaleza de la recompensa. Un usuario con RPF de 0% conserva su saldo AIRS, pero su peso en el ciclo (Sección 7) será igualmente 0% hasta que recupere RPF.
 
-### 7\. Distribución proporcional de referencia
+### 7. Distribución proporcional de referencia
 
 Cuando una recompensa se distribuya proporcionalmente, el sistema utiliza los **AIRS Efectivos** de cada usuario, calculados conforme al documento _AIRS — RBI Participation Factor_:
 
@@ -1208,7 +1208,7 @@ Recompensa del usuario = (Effective AIRS del usuario / Effective AIRS totales el
 
 Esta fórmula expresa proporcionalidad reputacional y de participación activa; no representa un rendimiento financiero.
 
-### 8\. Dilución relativa y variación del RPF
+### 8. Dilución relativa y variación del RPF
 
 Los AIRS acumulados por un usuario pueden permanecer constantes mientras aumenta el total de AIRS Efectivos elegibles del ecosistema. En consecuencia, la participación relativa de un usuario en una distribución futura puede disminuir.
 
@@ -1216,7 +1216,7 @@ Adicionalmente, el peso de un usuario puede cambiar entre ciclos por variaciones
 
 Ninguna asignación de AIRS, ningún nivel de RPF y ningún Status fijan una alícuota perpetua, porcentaje mínimo o derecho garantizado sobre recompensas futuras.
 
-### 9\. Misiones Proactivas y acciones Tipo 3
+### 9. Misiones Proactivas y acciones Tipo 3
 
 Si una Misión Proactiva clasificada como Tipo 3, como un Fruver o una granja solar, no genera excedentes, los AIRS obtenidos por contribuciones legítimas permanecen como parte de la reputación del participante, y el RPF Boost ya otorgado por una Qualified Action tampoco se revierte.
 
@@ -1224,7 +1224,7 @@ Si una Misión genera excedentes y parte de ellos se destina al RBI conforme al 
 
 La persona que participó en una Misión no recibe por ello un derecho individual sobre los excedentes de dicha Misión.
 
-### 10\. Recompensas principalmente en ATN
+### 10. Recompensas principalmente en ATN
 
 ATN es, por diseño, la principal especie de recompensa del RBI.
 
@@ -1232,7 +1232,7 @@ Sin embargo, el RBI no queda limitado exclusivamente a ATN.
 
 Aliados, empresas u otras organizaciones podrán financiar o aportar recompensas adicionales, generales o dirigidas, siempre que su naturaleza sea claramente comunicada y no se presenten como una rentabilidad garantizada.
 
-### 11\. Recompensas dirigidas y promociones
+### 11. Recompensas dirigidas y promociones
 
 Las empresas o aliados podrán crear campañas de recompensa dirigidas a grupos específicos de usuarios.
 
@@ -1247,7 +1247,7 @@ Ejemplos:
 
 Estas campañas podrán utilizar AIRS, RPF, Badges, Status, trayectoria u otros criterios del ecosistema para determinar elegibilidad.
 
-### 12\. Periodicidad
+### 12. Periodicidad
 
 El RBI podrá operar mediante cortes mensuales u otra periodicidad publicada.
 
@@ -1263,15 +1263,15 @@ Cada periodo deberá identificar, cuando corresponda:
 - ventana de claim;
 - reglas aplicables a recompensas no reclamadas.
 
-### 13\. Claim
+### 13. Claim
 
 Cuando una recompensa requiera claim, el usuario deberá realizarlo dentro de la ventana correspondiente.
 
-### 14\. Transparencia
+### 14. Transparencia
 
 AIRS procurará publicar información agregada suficiente para comprender qué recompensas están disponibles, de dónde provienen, qué especie se distribuye, quiénes son elegibles y qué metodología se utiliza, incluyendo cómo se calculan los AIRS Efectivos.
 
-### 15\. Lenguaje de comunicación
+### 15. Lenguaje de comunicación
 
 El RBI debe comunicarse siempre como un **mecanismo de recompensa**.
 
@@ -1288,7 +1288,7 @@ Las interfaces, documentos comerciales y comunicaciones deberán evitar expresio
 
 La palabra **recompensa** será el concepto rector de comunicación.
 
-### 16\. Cambios
+### 16. Cambios
 
 Las reglas del RBI podrán ajustarse para preservar sostenibilidad, claridad, cumplimiento regulatorio y coherencia con el sistema de reputación.
 
@@ -1303,7 +1303,7 @@ Las modificaciones materiales deberán publicarse antes de entrar en vigor y no 
 **Fecha:** 7 de septiembre de 2026
 **Tipo de cambio:** Operativo (incorpora clasificación Tipo 1/2/3 y campos de Qualified Action a la ficha de Misión)
 
-### 1\. Propósito
+### 1. Propósito
 
 Las Misiones Regenerativas convierten una intención colectiva en una acción organizada, verificable y narrativamente comprensible.
 
@@ -1313,7 +1313,7 @@ Cada Misión debe responder a una de tres preguntas:
 - **¿Qué impacto queremos asumir y compensar?**
 - **¿Qué queremos ayudar a construir para mañana?**
 
-### 2\. Categorías
+### 2. Categorías
 
 #### Conservación — Presente
 
@@ -1347,7 +1347,7 @@ Cuando el operador de la Misión asuma un compromiso de destinar utilidades o ex
 
 La categoría narrativa de la Misión (Conservación, Compensación o Proactiva) no determina automáticamente su Tipo económico. La clasificación como Tipo 1, 2 o 3 depende de qué ocurre económicamente con el pago del participante, conforme a la regla de sentido común descrita en el documento _AIRS — RBI Participation Factor_, y debe indicarse expresamente en la ficha de la Misión (Sección 3).
 
-### 3\. Ficha obligatoria de Misión
+### 3. Ficha obligatoria de Misión
 
 Toda Misión deberá contar, como mínimo, con:
 
@@ -1377,7 +1377,7 @@ Toda Misión deberá contar, como mínimo, con:
 - actualizaciones y reportes;
 - reglas de cierre.
 
-### 4\. Roles
+### 4. Roles
 
 Una Misión puede incluir:
 
@@ -1393,7 +1393,7 @@ Una Misión puede incluir:
 
 Una misma persona puede desempeñar más de un rol cuando no exista conflicto de interés incompatible.
 
-### 5\. Presupuesto AIRS
+### 5. Presupuesto AIRS
 
 El Presupuesto AIRS es una herramienta de control reputacional.
 
@@ -1408,7 +1408,7 @@ Antes de abrir una Misión debe definirse:
 
 Las asignaciones no utilizadas no tienen que emitirse.
 
-### 6\. Riesgo Regenerativo
+### 6. Riesgo Regenerativo
 
 El resultado futuro no determina retroactivamente la validez de una contribución.
 
@@ -1416,7 +1416,7 @@ Una Misión Proactiva que fracasa puede haber producido contribuciones legítima
 
 El riesgo debe explicarse antes de participar y nunca convertirse en una promesa implícita de rentabilidad.
 
-### 7\. Excedentes de proyectos
+### 7. Excedentes de proyectos
 
 Una Misión podrá informar que el operador pretende o se obliga contractualmente a destinar parte de futuros excedentes al ecosistema o al Fondo RBI. Este compromiso es, típicamente, lo que clasifica a la Misión como **Acción Tipo 3** conforme al documento _AIRS — RBI Participation Factor_.
 
@@ -1428,7 +1428,7 @@ Esta circunstancia:
 - no garantiza que existan excedentes; y
 - no vincula la cantidad de AIRS otorgada, ni el RPF Boost recibido, al desempeño económico futuro.
 
-### 8\. Cierre y memoria
+### 8. Cierre y memoria
 
 Al finalizar una Misión se deberá registrar, en la medida razonablemente posible:
 
@@ -1450,26 +1450,26 @@ Los Badges podrán seguir recibiendo actualizaciones posteriores sobre la evoluc
 
 **Versión:** 1.0
 
-### 1\. Principio
+### 1. Principio
 
 **AIRS resume tu reputación. Los Badges preservan su historia.**
 
 Un Badge no es simplemente un premio visual. Es un fragmento
 estructurado de la historia regenerativa de una persona u organización.
 
-### 2\. Propósito
+### 2. Propósito
 
 Los Badges permiten recordar acciones, acreditar participación,
 reconstruir trayectoria, mostrar Misiones, preservar hitos, crear
 experiencias personalizadas y actualizar el impacto posterior de
 determinadas iniciativas.
 
-### 3\. Tipos
+### 3. Tipos
 
 Podrán existir Badge de Misión, Conservación, Compensación, Proactivo,
 contribución, hito, Status, aniversario, aliado y Living Badge.
 
-### 4\. Metadata
+### 4. Metadata
 
 Cuando corresponda, podrá contener badgeId, userId o referencia
 pseudónima, nombre, categoría, missionId/actionId, fecha, rol,
@@ -1479,7 +1479,7 @@ hash/txHash y versión.
 
 No toda metadata debe ser pública.
 
-### 5\. Living Badges
+### 5. Living Badges
 
 Un Living Badge conserva inmutable la contribución histórica, pero
 permite añadir información sobre lo que ocurrió después: operación de
@@ -1489,13 +1489,13 @@ una Misión o contribuciones posteriores al RBI.
 Las actualizaciones no alteran los AIRS originales ni crean derechos
 económicos.
 
-### 6\. Trayectoria Regenerativa
+### 6. Trayectoria Regenerativa
 
 Es la historia acumulada de decisiones y acciones verificadas. Puede
 incluir acciones cotidianas, compensaciones, Misiones, horas de trabajo,
 contribuciones profesionales, Status, Badges e hitos.
 
-### 7\. Legado Regenerativo
+### 7. Legado Regenerativo
 
 Representa aquello que el participante ayudó a proteger, reparar o
 construir y cuyos efectos pueden permanecer en el tiempo.
@@ -1503,7 +1503,7 @@ construir y cuyos efectos pueden permanecer en el tiempo.
 No todo Badge constituye legado. El legado emerge especialmente de
 Misiones y contribuciones con continuidad o impacto duradero.
 
-### 8\. Memorias personalizadas
+### 8. Memorias personalizadas
 
 La plataforma podrá generar resumen anual, aniversarios, primeras
 Misiones, mapas de trayectoria, hitos, evolución de Status y
@@ -1511,14 +1511,14 @@ experiencias como "hace cinco años ayudaste a construir esto".
 
 Estas experiencias deberán construirse con datos reales y verificables.
 
-### 9\. Privacidad
+### 9. Privacidad
 
 El usuario deberá disponer de controles razonables sobre visibilidad.
 Información sensible, ubicación precisa, fotografías identificables y
 evidencia privada no se harán públicas únicamente por estar vinculadas a
 un Badge.
 
-### 10\. Blockchain
+### 10. Blockchain
 
 Un Badge podrá utilizar NFT, credencial verificable, SBT u otra
 tecnología. La tecnología no modifica automáticamente su naturaleza
@@ -1527,7 +1527,7 @@ jurídica.
 Cuando sea posible se separarán prueba pública, metadata pública y
 evidencia privada.
 
-### 11\. Transferibilidad
+### 11. Transferibilidad
 
 Por defecto, los Badges reputacionales deberán ser personales y no
 transferibles cuando la transferencia destruya su significado.
@@ -1535,7 +1535,7 @@ transferibles cuando la transferencia destruya su significado.
 Un Badge comercial o coleccionable distinto deberá identificarse
 expresamente y no confundirse con una credencial reputacional.
 
-### 12\. Integridad histórica
+### 12. Integridad histórica
 
 AIRS no deberá reescribir el pasado para mostrar únicamente éxitos.
 
@@ -1554,13 +1554,13 @@ aquello que se intentó responsablemente.
 **Fecha:** 7 de septiembre de 2026
 **Tipo de cambio:** Operativo (aclara la relación entre Acciones Cotidianas y el RBI Participation Factor)
 
-### 1\. Propósito
+### 1. Propósito
 
 La reputación no se construye únicamente en grandes Misiones. También se construye mediante decisiones repetidas.
 
 **Las acciones cotidianas construyen tu trayectoria. Las Misiones construyen tu legado.**
 
-### 2\. Naturaleza
+### 2. Naturaleza
 
 Una Acción Regenerativa Cotidiana es una conducta repetible y verificable previamente aprobada por AIRS.
 
@@ -1576,7 +1576,7 @@ Ejemplos potenciales:
 
 La elegibilidad nunca dependerá únicamente de una afirmación comercial del aliado.
 
-### 3\. Regla de Acción Elegible
+### 3. Regla de Acción Elegible
 
 Cada acción recurrente deberá definir:
 
@@ -1592,23 +1592,23 @@ Cada acción recurrente deberá definir:
 - vigencia;
 - exclusiones.
 
-### 4\. Financiación
+### 4. Financiación
 
 Los AIRS asociados a acciones cotidianas podrán financiarse mediante contribuciones del aliado, campañas, presupuestos específicos u otras fuentes autorizadas.
 
 La existencia de una compra no obliga a AIRS a otorgar puntos si la regla no se encuentra activa o no existe financiación/presupuesto suficiente conforme a las condiciones publicadas.
 
-### 5\. Relación con el RBI Participation Factor
+### 5. Relación con el RBI Participation Factor
 
 Las Acciones Regenerativas Cotidianas generan AIRS y cuentan como actividad para efectos del Activity Floor del usuario, pero **no generan RPF Boost**, salvo que Alternun clasifique expresamente una regla específica como Acción Tipo 2 o Tipo 3, conforme al documento _AIRS — RBI Participation Factor_. Cuando una regla de acción cotidiana sea clasificada de esa forma, la ficha de la regla (Sección 3) deberá indicarlo expresamente junto con los criterios de Qualified Action aplicables.
 
-### 6\. Curaduría
+### 6. Curaduría
 
 AIRS podrá exigir evidencia sobre las características ambientales, sociales o económicas que justifican la inclusión de un aliado o producto.
 
 La curaduría podrá considerar certificaciones, trazabilidad, materiales, modelo de negocio, cadena de suministro, circularidad, impacto local u otros criterios.
 
-### 7\. Prevención de greenwashing
+### 7. Prevención de greenwashing
 
 El otorgamiento de AIRS no equivale a certificar que una empresa, producto o servicio sea integralmente "sostenible", "verde", "carbono neutral" o "regenerativo".
 
@@ -1623,12 +1623,12 @@ AIRS reconoce únicamente la Acción Elegible y el criterio específico validado
 **Fecha:** 7 de septiembre de 2026
 **Tipo de cambio:** Editorial/Operativo (incorpora el RBI Participation Factor a la clasificación de tipos de cambio)
 
-### 1\. Propósito
+### 1. Propósito
 
 AIRS debe evolucionar sin perder predictibilidad, trazabilidad ni
 confianza.
 
-### 2\. Versionado
+### 2. Versionado
 
 Los documentos normativos deberán incluir número de versión, fecha,
 estado e historial de cambios materiales. Las versiones anteriores se
@@ -1636,7 +1636,7 @@ conservarán para auditoría en la carpeta OBSOLETO, identificadas con el
 sufijo "-OBSOLETO" y un encabezado que indique el documento que las
 reemplaza.
 
-### 3\. Tipos de cambio
+### 3. Tipos de cambio
 
 - **Editorial:** no modifica derechos, AIRS, elegibilidad ni economía.
 - **Operativo:** ajusta procedimientos sin alterar materialmente la
@@ -1649,13 +1649,13 @@ reemplaza.
 - **Material:** modifica elegibilidad, RBI, naturaleza de productos,
   derechos o riesgos relevantes.
 
-### 4\. Publicación previa
+### 4. Publicación previa
 
 Los cambios económicos o materiales deberán comunicarse antes de entrar
 en vigor, salvo fraude, vulnerabilidad, orden legal, error crítico o
 riesgo grave.
 
-### 5\. No retroactividad reputacional
+### 5. No retroactividad reputacional
 
 Como regla general, una acción se evalúa con las condiciones vigentes al
 realizarse. Las reglas futuras no deben reducir retroactivamente AIRS
@@ -1663,20 +1663,20 @@ legítimamente obtenidos, ni revertir un RPF Boost legítimamente otorgado
 por una Qualified Action pasada. Esto no impide rectificar fraude, error
 o duplicidad.
 
-### 6\. Autoridad inicial
+### 6. Autoridad inicial
 
 Durante la etapa inicial, Alternun administrará parámetros, curaduría y
 actualizaciones necesarias para operar AIRS. Las decisiones materiales
 deberán documentarse.
 
-### 7\. Gobernanza comunitaria futura
+### 7. Gobernanza comunitaria futura
 
 A medida que la comunidad madure, podrán habilitarse mecanismos para
 proponer o votar tasas de acumulación, categorías, multiplicadores,
 criterios de Misiones, prioridades de impacto, parámetros de RBI, del
 RBI Participation Factor u otros aspectos habilitados.
 
-### 8\. Materias no delegables automáticamente
+### 8. Materias no delegables automáticamente
 
 Alternun podrá reservar decisiones necesarias para cumplimiento legal,
 privacidad, seguridad, prevención de fraude, sanciones, protección del
@@ -1684,19 +1684,19 @@ consumidor, vulnerabilidades y obligaciones contractuales.
 
 Una votación comunitaria no puede obligar a ejecutar una acción ilegal.
 
-### 9\. Presupuestos AIRS
+### 9. Presupuestos AIRS
 
 La creación o ampliación de Presupuestos AIRS deberá ser trazable.
 Podrán existir límites por Misión, campaña, aliado, categoría, periodo o
 usuario.
 
-### 10\. Conflictos de interés
+### 10. Conflictos de interés
 
 Quienes diseñen, financien, validen o se beneficien de una Misión
 deberán revelar conflictos relevantes cuando puedan afectar la
 integridad de la decisión.
 
-### 11\. Cambios de RBI
+### 11. Cambios de RBI
 
 Las modificaciones a la fórmula RBI, incluyendo la fórmula de AIRS
 Efectivos (AIRS × RPF ajustado), al RPF mismo, o al multiplicador de
@@ -1706,13 +1706,13 @@ rentabilidad prometida. Estos cambios se gestionan y publican en el
 documento _AIRS — RBI Participation Factor_, conforme a la arquitectura
 de fuente única descrita en dicho documento.
 
-### 12\. Registro de decisiones
+### 12. Registro de decisiones
 
 Las decisiones materiales deberán conservar propuesta, responsable,
 fundamento, fecha, versión afectada, aprobación y fecha de entrada en
 vigor.
 
-### 13\. Principio de evolución responsable
+### 13. Principio de evolución responsable
 
 **AIRS puede cambiar sus reglas, pero no su historia.**
 
