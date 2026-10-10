@@ -137,9 +137,28 @@ test('Supabase OIDC sync uses the service-role key for the RPC call', async () =
     assert.equal(result.skipped, false);
     assert.equal(result.appUserId, 'app-user-1');
     assert.equal(calls.length, 1);
-    assert.equal(calls[0].url, 'https://example.supabase.co/rest/v1/rpc/upsert_oidc_user');
+    assert.equal(calls[0].url, 'https://example.supabase.co/rest/v1/rpc/upsert_oidc_user_compat');
     assert.equal(calls[0].init.headers.apikey, 'service-role-key');
     assert.equal(calls[0].init.headers.Authorization, 'Bearer service-role-key');
+    assert.deepEqual(JSON.parse(calls[0].init.body), {
+      p_sub: result.principalId,
+      p_iss: 'https://login.alternun.co/application/o/alternun-admin/',
+      p_legacy_sub: null,
+      p_legacy_iss: null,
+      p_email: 'user@example.com',
+      p_email_verified: true,
+      p_name: 'User Example',
+      p_picture: null,
+      p_provider: null,
+      p_raw_claims: {
+        sub: 'authentik:user-1',
+        iss: 'https://login.alternun.co/application/o/alternun-admin/',
+        email: 'user@example.com',
+        email_verified: true,
+        name: 'User Example',
+        picture: null,
+      },
+    });
   } finally {
     global.fetch = originalFetch;
   }

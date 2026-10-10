@@ -120,6 +120,52 @@ test('AuthExchangeService mints issuer-owned tokens when a signing key is config
   }
 });
 
+test('AuthExchangeService sends the legacy OIDC identity for compatibility migration', async () => {
+  const originalEnv = { ...process.env };
+  const originalFetch = global.fetch;
+  const calls = [];
+
+  try {
+    process.env.AUTHENTIK_ISSUER = 'https://new.sso.alternun.co/application/o/alternun-mobile/';
+    process.env.AUTH_AUDIENCE = 'alternun-app';
+    process.env.SUPABASE_URL = 'https://example.supabase.co';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+    global.fetch = async (url, init) => {
+      calls.push({ url, init });
+      return {
+        ok: true,
+        json: async () => [{ id: 'legacy-app-user-42' }],
+      };
+    };
+
+    const service = new AuthExchangeService();
+    const response = await service.exchangeIdentity({
+      externalIdentity: {
+        provider: 'authentik',
+        providerUserId: 'authentik-user-1',
+        email: 'ada@example.com',
+        rawClaims: {
+          sub: 'authentik-user-1',
+          iss: 'https://old.sso.alternun.co/application/o/alternun-mobile/',
+        },
+      },
+    });
+
+    assert.equal(response.appUserId, 'legacy-app-user-42');
+    assert.equal(calls.length, 1);
+    assert.equal(
+      calls[0].url,
+      'https://example.supabase.co/rest/v1/rpc/upsert_oidc_user_compat'
+    );
+    const body = JSON.parse(calls[0].init.body);
+    assert.equal(body.p_legacy_sub, 'authentik-user-1');
+    assert.equal(body.p_legacy_iss, 'https://old.sso.alternun.co/application/o/alternun-mobile/');
+  } finally {
+    global.fetch = originalFetch;
+    process.env = originalEnv;
+  }
+});
+
 test('AuthExchangeService fails closed when issuer-owned exchange is required but the signing key is missing', async () => {
   const originalEnv = { ...process.env };
 
