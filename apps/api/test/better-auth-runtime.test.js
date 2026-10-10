@@ -342,7 +342,7 @@ test('handleBetterAuthRuntimeRequest answers OPTIONS preflight locally', async (
       headers: {
         origin: 'https://testnet.airs.alternun.co',
         'access-control-request-method': 'POST',
-        'access-control-request-headers': 'content-type',
+        'access-control-request-headers': 'content-type, x-untrusted-header',
       },
       body: undefined,
     },
@@ -364,5 +364,8 @@ test('handleBetterAuthRuntimeRequest answers OPTIONS preflight locally', async (
     reply.headers['access-control-allow-methods'],
     'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS'
   );
-  assert.equal(reply.headers['access-control-allow-headers'], 'content-type');
+  assert.equal(
+    reply.headers['access-control-allow-headers'],
+    'content-type, authorization, x-requested-with, accept, origin'
+  );
 });

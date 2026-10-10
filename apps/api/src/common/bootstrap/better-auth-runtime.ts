@@ -33,6 +33,7 @@ type ResponseHeadersWithCookies = Omit<Headers, 'getSetCookie'> & {
 
 export interface BetterAuthBootstrapConfig {
   mode: 'disabled' | 'proxy' | 'embedded';
+  trustedOrigins: string[];
   runtimeConfig?: BetterAuthDevConfig;
   targetBaseUrl?: string;
 }
@@ -76,7 +77,7 @@ function serializeRequestBody(body: unknown): string | undefined {
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   if (Buffer.isBuffer(body)) {
-    return (body as Buffer).toString('utf8');
+    return body.toString('utf8');
   }
 
   return JSON.stringify(body as Record<string, unknown>);
@@ -129,7 +130,8 @@ async function copyRuntimeResponse(
   response: Response,
   requestHeaders: BetterAuthRequestHeaders,
   requestPath: string,
-  baseUrl: string
+  baseUrl: string,
+  trustedOrigins: readonly string[]
 ): Promise<void> {
   void reply.code(response.status);
 
@@ -141,12 +143,15 @@ async function copyRuntimeResponse(
     void reply.header('set-cookie', setCookies);
   }
 
-  const rewrittenLocation = rewriteBetterAuthErrorRedirect(
-    response.headers.get?.('location') ?? null,
-    requestPath,
-    requestHeaders,
-    baseUrl
-  );
+  const isTrustedOrigin = applyBetterAuthCorsHeaders(reply, requestHeaders, trustedOrigins);
+  const rewrittenLocation = isTrustedOrigin
+    ? rewriteBetterAuthErrorRedirect(
+        response.headers.get?.('location') ?? null,
+        requestPath,
+        requestHeaders,
+        baseUrl
+      )
+    : null;
 
   for (const [name, value] of response.headers.entries()) {
     const normalizedName = (name as string).toLowerCase();
@@ -162,8 +167,6 @@ async function copyRuntimeResponse(
     void reply.header(name as string, value as string);
   }
 
-  applyBetterAuthCorsHeaders(reply, requestHeaders);
-
   const payload = await response.arrayBuffer();
   void reply.send(Buffer.from(payload));
 }
@@ -178,23 +181,24 @@ export function resolveBetterAuthBootstrapConfig(
       env.AUTH_EXCHANGE_URL ??
       env.EXPO_PUBLIC_AUTH_EXCHANGE_URL
   );
-
-  if (proxyTargetUrl && (!publicBaseUrl || proxyTargetUrl !== publicBaseUrl)) {
-    return {
-      mode: 'proxy',
-      targetBaseUrl: proxyTargetUrl,
-    };
-  }
-
   const runtimeConfig = resolveBetterAuthDevConfig({
     ...env,
     ...(publicBaseUrl ? { BETTER_AUTH_URL: publicBaseUrl } : {}),
   });
 
+  if (proxyTargetUrl && (!publicBaseUrl || proxyTargetUrl !== publicBaseUrl)) {
+    return {
+      mode: 'proxy',
+      targetBaseUrl: proxyTargetUrl,
+      trustedOrigins: runtimeConfig.trustedOrigins,
+    };
+  }
+
   if (publicBaseUrl) {
     return {
       mode: 'embedded',
       runtimeConfig,
+      trustedOrigins: runtimeConfig.trustedOrigins,
     };
   }
 
@@ -202,10 +206,11 @@ export function resolveBetterAuthBootstrapConfig(
     return {
       mode: 'proxy',
       targetBaseUrl: proxyTargetUrl,
+      trustedOrigins: runtimeConfig.trustedOrigins,
     };
   }
 
-  return { mode: 'disabled' };
+  return { mode: 'disabled', trustedOrigins: runtimeConfig.trustedOrigins };
 }
 
 export async function handleBetterAuthRuntimeRequest(
@@ -214,6 +219,7 @@ export async function handleBetterAuthRuntimeRequest(
   options: {
     authHandler: (request: Request) => Promise<Response>;
     baseUrl: string;
+    trustedOrigins?: readonly string[];
   }
 ): Promise<boolean> {
   const requestUrl = request.raw.url;
@@ -223,6 +229,8 @@ export async function handleBetterAuthRuntimeRequest(
   }
 
   const requestPath = new URL(requestUrl, 'http://alternun.local').pathname;
+  const trustedOrigins =
+    options.trustedOrigins ?? resolveBetterAuthDevConfig(process.env).trustedOrigins;
   console.log('[Better Auth Handler]', { path: requestPath, method: request.method });
 
   if (!shouldProxyBetterAuthPath(requestPath)) {
@@ -236,7 +244,7 @@ export async function handleBetterAuthRuntimeRequest(
   }
 
   if (request.method.toUpperCase() === 'OPTIONS') {
-    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders, {
+    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders, trustedOrigins, {
       preflight: true,
     });
     void reply.code(204).send();
@@ -276,7 +284,7 @@ export async function handleBetterAuthRuntimeRequest(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : typeof error === 'string' ? error : String(error);
-    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders);
+    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders, trustedOrigins);
     void reply.code(500).send({
       statusCode: 500,
       error: 'Internal Server Error',
@@ -290,7 +298,8 @@ export async function handleBetterAuthRuntimeRequest(
     response,
     request.headers as BetterAuthRequestHeaders,
     requestPath,
-    options.baseUrl
+    options.baseUrl,
+    trustedOrigins
   );
   return true;
 }
@@ -306,6 +315,7 @@ export function registerBetterAuthRuntime(app: FastifyInstance, config: BetterAu
         await handleBetterAuthRuntimeRequest(request, reply, {
           authHandler: auth.handler,
           baseUrl: config.baseURL,
+          trustedOrigins: config.trustedOrigins,
         })
       ) {
         return reply;

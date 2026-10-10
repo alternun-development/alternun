@@ -4,6 +4,7 @@ import type { AbstractHttpAdapter } from '@nestjs/core/adapters/http-adapter';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import type { FastifyInstance } from 'fastify';
 import { AppModule } from '../../app.module';
+import { BETTER_AUTH_ALLOWED_HEADERS, resolveBetterAuthTrustedOrigin } from './better-auth-cors';
 import { registerBetterAuthProxy } from './better-auth-proxy';
 import { registerBetterAuthRuntime, resolveBetterAuthBootstrapConfig } from './better-auth-runtime';
 import { setupOpenApi } from '../openapi/setup-openapi';
@@ -18,18 +19,34 @@ export async function createApp(): Promise<INestApplication> {
   app.enableVersioning({
     type: VersioningType.URI,
   });
+  const betterAuth = resolveBetterAuthBootstrapConfig(process.env);
   app.enableCors({
-    origin: true,
+    origin: (origin, callback) => {
+      callback(null, Boolean(resolveBetterAuthTrustedOrigin(origin, betterAuth.trustedOrigins)));
+    },
     credentials: true,
+    allowedHeaders: [...BETTER_AUTH_ALLOWED_HEADERS],
   });
 
-  // Ensure CORS headers are sent for all responses, including errors
+  // Preserve CORS headers on errors without allowing origins outside the shared allowlist.
   const fastify = app.getHttpAdapter().getInstance() as FastifyInstance;
   fastify.addHook('onSend', async (request, reply, payload) => {
-    if (!reply.hasHeader('Access-Control-Allow-Origin')) {
-      void reply.header('Access-Control-Allow-Origin', request.headers.origin ?? '*');
-      void reply.header('Access-Control-Allow-Credentials', 'true');
+    const trustedOrigin = resolveBetterAuthTrustedOrigin(
+      request.headers.origin,
+      betterAuth.trustedOrigins
+    );
+
+    if (!trustedOrigin) {
+      void reply.removeHeader('Access-Control-Allow-Origin');
+      void reply.removeHeader('Access-Control-Allow-Credentials');
+      void reply.removeHeader('Access-Control-Allow-Methods');
+      void reply.removeHeader('Access-Control-Allow-Headers');
+      void reply.removeHeader('Access-Control-Max-Age');
+      return payload;
     }
+
+    void reply.header('Access-Control-Allow-Origin', trustedOrigin);
+    void reply.header('Access-Control-Allow-Credentials', 'true');
     return payload;
   });
 
@@ -42,12 +59,12 @@ export async function createApp(): Promise<INestApplication> {
   );
 
   setupOpenApi(app);
-  const betterAuth = resolveBetterAuthBootstrapConfig(process.env);
 
   if (betterAuth.mode === 'proxy' && betterAuth.targetBaseUrl) {
     fastify.log.info({ targetBaseUrl: betterAuth.targetBaseUrl }, 'Registering Better Auth proxy');
     registerBetterAuthProxy(fastify, {
       targetBaseUrl: betterAuth.targetBaseUrl,
+      trustedOrigins: betterAuth.trustedOrigins,
     });
   }
 

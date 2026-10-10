@@ -17,7 +17,6 @@ High-value next steps:
 - add more domain endpoints with documented DTOs and auth guards
 - expand OpenAPI coverage so the backend contract is public and reviewable
 - add stronger integration tests for auth, health, and operational flows
-- tighten CORS to explicit allowed origins per environment
 
 ## 2. Mature The AIRS Runtime Contract
 
