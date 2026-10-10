@@ -1,3 +1,13 @@
+## [1.1.96](https://github.com/alternun-development/alternun/compare/v1.1.95...v1.1.96) (2026-10-10)
+
+### Bug Fixes
+
+- **repo:** fix(docs): repair localized terms Markdown rendering
+
+### Bug Fixes
+
+- **docs:** repair localized terms Markdown rendering ([23d9a98](https://github.com/alternun-development/alternun/commit/23d9a98909853e9cf3a76543bd2ca9d88114d9a0))
+
 ## [1.1.95](https://github.com/alternun-development/alternun/compare/v1.1.94...v1.1.95) (2026-10-09)
 
 ### Documentation
