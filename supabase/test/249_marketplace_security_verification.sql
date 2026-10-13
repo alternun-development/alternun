@@ -180,4 +180,3 @@ join pg_catalog.pg_class sequence
 join pg_catalog.pg_namespace namespace on namespace.oid = sequence.relnamespace
 where dependency.deptype = 'a'
 order by namespace.nspname, sequence.relname;
-
