@@ -1,8 +1,8 @@
 import React, { useMemo, useRef, useState } from 'react';
 import {
   Animated,
+  Image,
   Linking,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -30,11 +30,11 @@ import {
   Users,
   type LucideProps,
 } from 'lucide-react-native';
-import { WebView } from 'react-native-webview';
 import type { Translator } from '@alternun/i18n';
 import { useAppTranslation } from '../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import ScreenShell from '../components/common/ScreenShell';
+import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
 
 const CompassIcon = Compass as React.FC<LucideProps>;
 const LeafIcon = Leaf as React.FC<LucideProps>;
@@ -54,8 +54,6 @@ const LightbulbIcon = Lightbulb as React.FC<LucideProps>;
 const GiftIcon = Gift as React.FC<LucideProps>;
 
 const TELEGRAM_URL = 'https://t.me/alternun_io';
-const CANVA_ECO_TURISMO_URL =
-  'https://www.canva.com/design/DAHIGZY5d6Q/xOM9mNFn2qtqA8dd7WHrSQ/view?embed';
 
 type ProjectFilter = 'all' | 'active' | 'productive' | 'conservation';
 type Translate = Translator['t'];
@@ -75,41 +73,118 @@ interface Palette {
 
 interface MarketProject {
   id: string;
+  slug: string;
   title: string;
   place: string;
-  type: 'productive' | 'conservation';
+  type: 'productive' | 'conservation' | null;
+  categoryCode: string;
   status: 'active';
   theme: string;
   description: string;
   waysToContribute: string[];
+  imageUrl: string | null;
 }
 
-function getMarketProjects(t: Translate): MarketProject[] {
-  return [
-    {
-      id: 'eco-turismo',
-      title: t('explorer.project.title'),
-      place: t('explorer.project.place'),
-      type: 'productive',
-      status: 'active',
-      theme: t('explorer.project.theme'),
-      description: t('explorer.project.description'),
-      waysToContribute: [
-        t('explorer.project.contribute.participate'),
-        t('explorer.project.contribute.share'),
-        t('explorer.project.contribute.connectAllies'),
-      ],
-    },
-  ];
+interface MarketplaceMedia {
+  kind: string;
+  url: string;
+  isActive: boolean;
 }
 
-function getFilters(t: Translate): { key: ProjectFilter; label: string }[] {
-  return [
+interface MarketplaceProjectResponse {
+  id: string;
+  slug: string;
+  status: 'published';
+  categoryCode: string;
+  title: string;
+  location: string;
+  theme: string;
+  description: string;
+  waysToContribute: string[];
+  media: MarketplaceMedia[];
+}
+
+type LoadMarketplaceProjects = (locale: string, signal?: AbortSignal) => Promise<MarketProject[]>;
+
+function categoryType(categoryCode: string): MarketProject['type'] {
+  if (categoryCode === 'conservation') return 'conservation';
+  return categoryCode === 'productive_enterprise' ? 'productive' : null;
+}
+
+function safeImageUrl(media: MarketplaceMedia[]): string | null {
+  const preferredKinds = ['cover', 'gallery_image', 'logo'];
+  for (const kind of preferredKinds) {
+    const item = media.find((candidate) => candidate.isActive && candidate.kind === kind);
+    if (!item) continue;
+    try {
+      const url = new URL(item.url);
+      if (url.protocol === 'https:' && !url.username && !url.password) return url.toString();
+    } catch {
+      // Ignore malformed media; the card keeps its existing icon treatment.
+    }
+  }
+  return null;
+}
+
+function isMarketplaceProject(value: unknown): value is MarketplaceProjectResponse {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const project = value as Partial<MarketplaceProjectResponse>;
+  return (
+    typeof project.id === 'string' &&
+    typeof project.slug === 'string' &&
+    project.status === 'published' &&
+    typeof project.categoryCode === 'string' &&
+    typeof project.title === 'string' &&
+    typeof project.location === 'string' &&
+    typeof project.theme === 'string' &&
+    typeof project.description === 'string' &&
+    Array.isArray(project.waysToContribute) &&
+    project.waysToContribute.every((item) => typeof item === 'string') &&
+    Array.isArray(project.media)
+  );
+}
+
+export const loadMarketplaceProjects: LoadMarketplaceProjects = async (locale, signal) => {
+  const url = `${resolveMobileApiBaseUrl()}/v1/projects?locale=${encodeURIComponent(locale)}`;
+  const response = await fetch(url, { signal });
+  if (!response.ok) throw new Error(`Marketplace request failed with ${response.status}.`);
+  const payload: unknown = await response.json();
+  if (
+    !payload ||
+    typeof payload !== 'object' ||
+    !Array.isArray((payload as { data?: unknown }).data)
+  )
+    throw new Error('Marketplace response is invalid.');
+  const projects = (payload as { data: unknown[] }).data;
+  if (!projects.every(isMarketplaceProject)) throw new Error('Marketplace response is invalid.');
+  return projects.map((project) => ({
+    id: project.id,
+    slug: project.slug,
+    title: project.title,
+    place: project.location,
+    type: categoryType(project.categoryCode),
+    categoryCode: project.categoryCode,
+    status: 'active',
+    theme: project.theme,
+    description: project.description,
+    waysToContribute: project.waysToContribute,
+    imageUrl: safeImageUrl(project.media),
+  }));
+};
+
+function getFilters(
+  t: Translate,
+  projects: MarketProject[]
+): { key: ProjectFilter; label: string }[] {
+  const filters: { key: ProjectFilter; label: string }[] = [
     { key: 'all', label: t('explorer.filters.all') },
-    { key: 'active', label: t('explorer.filters.active') },
-    { key: 'productive', label: t('explorer.filters.productive') },
-    { key: 'conservation', label: t('explorer.filters.conservation') },
   ];
+  if (projects.length) filters.push({ key: 'active', label: t('explorer.filters.active') });
+  if (projects.some((project) => project.type === 'productive'))
+    filters.push({ key: 'productive', label: t('explorer.filters.productive') });
+  if (projects.some((project) => project.type === 'conservation'))
+    filters.push({ key: 'conservation', label: t('explorer.filters.conservation') });
+  return filters;
 }
 
 function getIntentActions(t: Translate): {
@@ -142,29 +217,6 @@ function getIntentActions(t: Translate): {
 
 function openTelegram(): void {
   void Linking.openURL(TELEGRAM_URL);
-}
-
-function CanvaPresentation({ title }: { title: string }): React.JSX.Element {
-  if (Platform.OS === 'web') {
-    return React.createElement('iframe', {
-      title,
-      src: CANVA_ECO_TURISMO_URL,
-      allowFullScreen: true,
-      style: { border: 0, display: 'block', height: '100%', width: '100%' },
-    });
-  }
-
-  return (
-    <WebView
-      source={{ uri: CANVA_ECO_TURISMO_URL }}
-      style={styles.webView}
-      javaScriptEnabled
-      domStorageEnabled
-      allowsFullscreenVideo
-      scrollEnabled={false}
-      originWhitelist={['https://*']}
-    />
-  );
 }
 
 function IntentRotator({
@@ -259,11 +311,13 @@ function HeroCarousel({
   onProposeProject,
   t,
   isDark,
+  featuredProject,
 }: {
   palette: Palette;
   onProposeProject: () => void;
   t: Translate;
   isDark: boolean;
+  featuredProject: MarketProject | null;
 }): React.JSX.Element {
   const { width } = useWindowDimensions();
   const [activeSlide, setActiveSlide] = useState(0);
@@ -307,22 +361,32 @@ function HeroCarousel({
           <View
             style={[styles.heroMediaFrame, { height: mediaHeight, borderColor: palette.border }]}
           >
-            <CanvaPresentation title={t('explorer.presentationTitle')} />
+            {featuredProject?.imageUrl ? (
+              <Image
+                source={{ uri: featuredProject.imageUrl }}
+                style={styles.projectImage}
+                resizeMode='cover'
+              />
+            ) : (
+              <View style={[styles.heroMediaFallback, { backgroundColor: palette.mist }]}>
+                <LeafIcon size={42} color={palette.primary} strokeWidth={1.5} />
+              </View>
+            )}
             <View style={styles.heroMediaShade} pointerEvents='none' />
             <View style={styles.heroMediaLabel} pointerEvents='none'>
               <PlayIcon size={12} color='#edfff5' fill='#edfff5' />
-              <Text style={styles.heroMediaLabelText}>{t('explorer.presentation')}</Text>
+              <Text style={styles.heroMediaLabelText}>{t('explorer.featured')}</Text>
             </View>
           </View>
           <View style={styles.heroCopy}>
             <Text style={[styles.heroKicker, { color: launchKickerColor }]}>
-              {t('explorer.launchProject')}
+              {featuredProject ? t('explorer.featuredProject') : t('explorer.globalMarket')}
             </Text>
             <Text style={[styles.heroProjectTitle, { color: launchTitleColor }]}>
-              {t('explorer.project.title')}
+              {featuredProject?.title ?? t('explorer.projectsToActivate')}
             </Text>
             <Text style={[styles.heroDescription, { color: launchDescriptionColor }]}>
-              {t('explorer.heroDescription')}
+              {featuredProject?.description ?? t('explorer.heroDescription')}
             </Text>
             <Pressable style={styles.heroAction} onPress={openTelegram}>
               <Text style={styles.heroActionText}>{t('explorer.collaborate')}</Text>
@@ -383,11 +447,19 @@ function ProjectCard({
 }): React.JSX.Element {
   return (
     <View
+      testID={`explorer-project-${project.id}`}
       style={[
         styles.projectCard,
         { backgroundColor: palette.surface, borderColor: palette.border },
       ]}
     >
+      {project.imageUrl ? (
+        <Image
+          source={{ uri: project.imageUrl }}
+          style={styles.projectCardImage}
+          resizeMode='cover'
+        />
+      ) : null}
       <View style={styles.projectTopline}>
         <View style={[styles.projectMark, { backgroundColor: palette.mist }]}>
           <LeafIcon size={22} color={palette.primary} strokeWidth={1.8} />
@@ -399,11 +471,13 @@ function ProjectCard({
               {t('explorer.active')}
             </Text>
           </View>
-          <View style={[styles.typePill, { borderColor: palette.border }]}>
-            <Text style={[styles.typePillText, { color: palette.muted }]}>
-              {t('explorer.productive')}
-            </Text>
-          </View>
+          {project.type ? (
+            <View style={[styles.typePill, { borderColor: palette.border }]}>
+              <Text style={[styles.typePillText, { color: palette.muted }]}>
+                {t(`explorer.filters.${project.type}`)}
+              </Text>
+            </View>
+          ) : null}
         </View>
       </View>
       <Text style={[styles.projectTheme, { color: palette.primary }]}>
@@ -440,6 +514,181 @@ function ProjectCard({
         <ChevronRightIcon size={17} color={palette.primaryDeep} />
       </Pressable>
     </View>
+  );
+}
+
+export function MarketplaceProjectBrowser({
+  locale,
+  palette,
+  t,
+  loader = loadMarketplaceProjects,
+  onFeaturedProjectChange,
+}: {
+  locale: string;
+  palette: Palette;
+  t: Translate;
+  loader?: LoadMarketplaceProjects;
+  onFeaturedProjectChange?: (project: MarketProject | null) => void;
+}): React.JSX.Element {
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<ProjectFilter>('all');
+  const [projects, setProjects] = useState<MarketProject[]>([]);
+  const [state, setState] = useState<'loading' | 'success' | 'error'>('loading');
+  const [requestVersion, setRequestVersion] = useState(0);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    setState('loading');
+    setProjects([]);
+    void loader(locale, controller.signal)
+      .then((loadedProjects) => {
+        if (controller.signal.aborted) return;
+        setProjects(loadedProjects);
+        setState('success');
+        onFeaturedProjectChange?.(loadedProjects[0] ?? null);
+      })
+      .catch(() => {
+        if (controller.signal.aborted) return;
+        setProjects([]);
+        setState('error');
+        onFeaturedProjectChange?.(null);
+      });
+    return () => controller.abort();
+  }, [loader, locale, onFeaturedProjectChange, requestVersion]);
+
+  const filters = useMemo(() => getFilters(t, projects), [projects, t]);
+  React.useEffect(() => {
+    if (!filters.some((item) => item.key === filter)) setFilter('all');
+  }, [filter, filters]);
+  const visibleProjects = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return projects.filter((project) => {
+      const matchesQuery =
+        !normalizedQuery ||
+        `${project.title} ${project.place} ${project.theme}`
+          .toLowerCase()
+          .includes(normalizedQuery);
+      const matchesFilter =
+        filter === 'all' ||
+        (filter === 'active' && project.status === 'active') ||
+        project.type === filter;
+      return matchesQuery && matchesFilter;
+    });
+  }, [filter, projects, query]);
+
+  return (
+    <>
+      <View style={styles.marketHeader}>
+        <View>
+          <Text style={[styles.sectionEyebrow, { color: palette.primary }]}>
+            {t('explorer.globalMarket')}
+          </Text>
+          <Text style={[styles.sectionTitle, { color: palette.text }]}>
+            {t('explorer.projectsToActivate')}
+          </Text>
+        </View>
+        <View style={[styles.marketCount, { borderColor: palette.border }]}>
+          <SparklesIcon size={13} color={palette.primary} />
+          <Text style={[styles.marketCountText, { color: palette.muted }]}>
+            {t('explorer.available', { count: visibleProjects.length })}
+          </Text>
+        </View>
+      </View>
+
+      <View
+        style={[
+          styles.searchBox,
+          { backgroundColor: palette.surface, borderColor: palette.border },
+        ]}
+      >
+        <SearchIcon size={18} color={palette.muted} />
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t('explorer.searchPlaceholder')}
+          placeholderTextColor={palette.muted}
+          style={[styles.searchInput, { color: palette.text }]}
+        />
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterRow}
+      >
+        {filters.map((item) => {
+          const selected = filter === item.key;
+          return (
+            <Pressable
+              key={item.key}
+              testID={`explorer-filter-${item.key}`}
+              style={[
+                styles.filterChip,
+                { borderColor: selected ? palette.primary : palette.border },
+                selected && { backgroundColor: palette.primaryDeep },
+              ]}
+              onPress={() => setFilter(item.key)}
+            >
+              <Text
+                style={[styles.filterChipText, { color: selected ? '#e9fff5' : palette.muted }]}
+              >
+                {item.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
+      <View style={styles.projectList}>
+        {state === 'loading' ? (
+          <View
+            testID='explorer-loading'
+            style={[styles.loadingState, { borderColor: palette.border }]}
+          >
+            <View style={[styles.loadingLine, { backgroundColor: palette.mist }]} />
+            <View style={[styles.loadingLineShort, { backgroundColor: palette.mist }]} />
+            <Text style={[styles.emptyText, { color: palette.muted }]}>
+              {t('explorer.marketplaceState.loading')}
+            </Text>
+          </View>
+        ) : state === 'error' ? (
+          <View
+            testID='explorer-error'
+            style={[styles.emptyState, { borderColor: palette.border }]}
+          >
+            <Text style={[styles.emptyTitle, { color: palette.text }]}>
+              {t('explorer.marketplaceState.error')}
+            </Text>
+            <Pressable
+              testID='explorer-retry'
+              style={[styles.retryButton, { backgroundColor: palette.primaryDeep }]}
+              onPress={() => setRequestVersion((value) => value + 1)}
+            >
+              <Text style={styles.retryButtonText}>{t('explorer.marketplaceState.retry')}</Text>
+            </Pressable>
+          </View>
+        ) : visibleProjects.length ? (
+          visibleProjects.map((project) => (
+            <ProjectCard key={project.id} project={project} palette={palette} t={t} />
+          ))
+        ) : (
+          <View
+            testID='explorer-empty'
+            style={[styles.emptyState, { borderColor: palette.border }]}
+          >
+            <LeafIcon size={24} color={palette.primary} />
+            <Text style={[styles.emptyTitle, { color: palette.text }]}>
+              {projects.length ? t('explorer.empty.title') : t('explorer.marketplaceState.empty')}
+            </Text>
+            {projects.length ? (
+              <Text style={[styles.emptyText, { color: palette.muted }]}>
+                {t('explorer.empty.description')}
+              </Text>
+            ) : null}
+          </View>
+        )}
+      </View>
+    </>
   );
 }
 
@@ -527,11 +776,10 @@ function SubmitProject({ palette, t }: { palette: Palette; t: Translate }): Reac
 }
 
 export default function ExplorarScreen(): React.JSX.Element {
-  const { themeMode } = useAppPreferences();
+  const { themeMode, language } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
   const isDark = themeMode === 'dark';
-  const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<ProjectFilter>('all');
+  const [featuredProject, setFeaturedProject] = useState<MarketProject | null>(null);
   const [projectFormOffset, setProjectFormOffset] = useState(0);
   const entrance = useRef(new Animated.Value(0)).current;
   const explorerScrollRef = useRef<ScrollView>(null);
@@ -565,25 +813,6 @@ export default function ExplorarScreen(): React.JSX.Element {
   React.useEffect(() => {
     Animated.timing(entrance, { toValue: 1, duration: 520, useNativeDriver: true }).start();
   }, [entrance]);
-
-  const marketProjects = useMemo(() => getMarketProjects(t), [t]);
-  const filters = useMemo(() => getFilters(t), [t]);
-  const projects = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    return marketProjects.filter((project) => {
-      const matchesQuery =
-        !normalizedQuery ||
-        `${project.title} ${project.place} ${project.theme}`
-          .toLowerCase()
-          .includes(normalizedQuery);
-      const matchesFilter =
-        filter === 'all' ||
-        (filter === 'active' && project.status === 'active') ||
-        (filter === 'productive' && project.type === 'productive') ||
-        (filter === 'conservation' && project.type === 'conservation');
-      return matchesQuery && matchesFilter;
-    });
-  }, [filter, marketProjects, query]);
 
   const handleProposeProject = (): void => {
     explorerScrollRef.current?.scrollTo({
@@ -630,85 +859,15 @@ export default function ExplorarScreen(): React.JSX.Element {
             onProposeProject={handleProposeProject}
             t={t}
             isDark={isDark}
+            featuredProject={featuredProject}
           />
 
-          <View style={styles.marketHeader}>
-            <View>
-              <Text style={[styles.sectionEyebrow, { color: palette.primary }]}>
-                {t('explorer.globalMarket')}
-              </Text>
-              <Text style={[styles.sectionTitle, { color: palette.text }]}>
-                {t('explorer.projectsToActivate')}
-              </Text>
-            </View>
-            <View style={[styles.marketCount, { borderColor: palette.border }]}>
-              <SparklesIcon size={13} color={palette.primary} />
-              <Text style={[styles.marketCountText, { color: palette.muted }]}>
-                {t('explorer.available', { count: projects.length })}
-              </Text>
-            </View>
-          </View>
-
-          <View
-            style={[
-              styles.searchBox,
-              { backgroundColor: palette.surface, borderColor: palette.border },
-            ]}
-          >
-            <SearchIcon size={18} color={palette.muted} />
-            <TextInput
-              value={query}
-              onChangeText={setQuery}
-              placeholder={t('explorer.searchPlaceholder')}
-              placeholderTextColor={palette.muted}
-              style={[styles.searchInput, { color: palette.text }]}
-            />
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterRow}
-          >
-            {filters.map((item) => {
-              const selected = filter === item.key;
-              return (
-                <Pressable
-                  key={item.key}
-                  style={[
-                    styles.filterChip,
-                    { borderColor: selected ? palette.primary : palette.border },
-                    selected && { backgroundColor: palette.primaryDeep },
-                  ]}
-                  onPress={() => setFilter(item.key)}
-                >
-                  <Text
-                    style={[styles.filterChipText, { color: selected ? '#e9fff5' : palette.muted }]}
-                  >
-                    {item.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-
-          <View style={styles.projectList}>
-            {projects.length ? (
-              projects.map((project) => (
-                <ProjectCard key={project.id} project={project} palette={palette} t={t} />
-              ))
-            ) : (
-              <View style={[styles.emptyState, { borderColor: palette.border }]}>
-                <LeafIcon size={24} color={palette.primary} />
-                <Text style={[styles.emptyTitle, { color: palette.text }]}>
-                  {t('explorer.empty.title')}
-                </Text>
-                <Text style={[styles.emptyText, { color: palette.muted }]}>
-                  {t('explorer.empty.description')}
-                </Text>
-              </View>
-            )}
-          </View>
+          <MarketplaceProjectBrowser
+            locale={language}
+            palette={palette}
+            t={t}
+            onFeaturedProjectChange={setFeaturedProject}
+          />
 
           <View style={[styles.earnBanner, { backgroundColor: palette.primaryDeep }]}>
             <BadgeDollarSignIcon size={24} color='#1ee6b5' />
@@ -817,7 +976,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: '#092c25',
   },
-  webView: { flex: 1, backgroundColor: '#092c25' },
+  projectImage: { width: '100%', height: '100%' },
+  heroMediaFallback: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   heroMediaShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(2, 29, 22, 0.08)' },
   heroMediaLabel: {
     position: 'absolute',
@@ -956,6 +1116,7 @@ const styles = StyleSheet.create({
   filterChipText: { fontSize: 11, fontWeight: '700' },
   projectList: { gap: 12 },
   projectCard: { borderWidth: 1, borderRadius: 21, padding: 18 },
+  projectCardImage: { width: '100%', height: 180, borderRadius: 14, marginBottom: 14 },
   projectTopline: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1012,6 +1173,11 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { fontSize: 15, fontWeight: '800' },
   emptyText: { fontSize: 12, textAlign: 'center' },
+  loadingState: { padding: 28, borderWidth: 1, borderRadius: 18, gap: 10 },
+  loadingLine: { height: 18, width: '76%', borderRadius: 9 },
+  loadingLineShort: { height: 12, width: '48%', borderRadius: 6 },
+  retryButton: { marginTop: 4, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9 },
+  retryButtonText: { color: '#effff6', fontSize: 12, fontWeight: '800' },
   earnBanner: {
     flexDirection: 'row',
     gap: 13,
