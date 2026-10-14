@@ -56,6 +56,26 @@ $rpcRequests = @(
   @{
     Name = 'marketplace_reverse_activity_completion'
     Body = '{"p_completion_id":"00000000-0000-0000-0000-000000000000","p_actor_issuer":"security-test","p_actor_subject":"security-test","p_actor_roles":[],"p_request_id":"security-test","p_reason":"security-test"}'
+  },
+  @{
+    Name = 'marketplace_actor_has_scope'
+    Body = '{"p_member_issuer":"security-test","p_member_subject":"security-test","p_roles":[],"p_enterprise_id":"00000000-0000-0000-0000-000000000000","p_project_id":null,"p_required_roles":["partner_operator"]}'
+  },
+  @{
+    Name = 'marketplace_create_project'
+    Body = '{"p_enterprise_id":"00000000-0000-0000-0000-000000000000","p_slug":"security-test","p_category_code":"other","p_country_code":"CO","p_time_zone":"UTC","p_default_locale":"es","p_content":{"es":{"title":"Test","location":"Test","theme":"Test","description":"Test","waysToContribute":["Test"]}},"p_actor_issuer":"security-test","p_actor_subject":"security-test","p_actor_roles":[],"p_request_id":"security-test"}'
+  },
+  @{
+    Name = 'marketplace_update_project'
+    Body = '{"p_project_id":"00000000-0000-0000-0000-000000000000","p_patch":{"content":{}},"p_actor_issuer":"security-test","p_actor_subject":"security-test","p_actor_roles":[],"p_request_id":"security-test"}'
+  },
+  @{
+    Name = 'marketplace_reorder_project_media'
+    Body = '{"p_project_id":"00000000-0000-0000-0000-000000000000","p_items":[],"p_actor_issuer":"security-test","p_actor_subject":"security-test","p_actor_roles":[],"p_request_id":"security-test"}'
+  },
+  @{
+    Name = 'marketplace_set_enterprise_status'
+    Body = '{"p_enterprise_id":"00000000-0000-0000-0000-000000000000","p_target_status":"paused","p_actor_issuer":"security-test","p_actor_subject":"security-test","p_actor_roles":[],"p_request_id":"security-test","p_reason":"security-test"}'
   }
 )
 

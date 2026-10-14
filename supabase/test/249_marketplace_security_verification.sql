@@ -1,6 +1,6 @@
--- Read-only verification for issue #249 marketplace migrations.
--- Run after 0001, 0002, and 0003 in testnet and production. This file does
--- not apply migrations or mutate data.
+-- Verification for issue #249 marketplace migrations.
+-- Run after 0001 through 0004. Catalog queries are read-only; behavioral
+-- assertions run in a transaction that is always rolled back.
 
 -- Edward: record this result independently in testnet and production before a
 -- later migration adds any FK to public.users(id).
@@ -126,7 +126,12 @@ with marketplace_function(signature, expected_security_definer) as (
     ('public.marketplace_change_project_membership(uuid,text,text,text,text,text[],text,text)', true),
     ('public.marketplace_transition_project_status(uuid,text,text,text,text[],text,text)', true),
     ('public.marketplace_approve_activity_completion(uuid,text,text,text[],text,text)', true),
-    ('public.marketplace_reverse_activity_completion(uuid,text,text,text[],text,text)', true)
+    ('public.marketplace_reverse_activity_completion(uuid,text,text,text[],text,text)', true),
+    ('public.marketplace_actor_has_scope(text,text,text[],uuid,uuid,text[])', true),
+    ('public.marketplace_create_project(uuid,text,text,text,text,text,jsonb,text,text,text[],text)', true),
+    ('public.marketplace_update_project(uuid,jsonb,text,text,text[],text)', true),
+    ('public.marketplace_reorder_project_media(uuid,jsonb,text,text,text[],text)', true),
+    ('public.marketplace_set_enterprise_status(uuid,text,text,text,text[],text,text)', true)
 )
 select
   marketplace_function.signature,
@@ -180,3 +185,235 @@ join pg_catalog.pg_class sequence
 join pg_catalog.pg_namespace namespace on namespace.oid = sequence.relnamespace
 where dependency.deptype = 'a'
 order by namespace.nspname, sequence.relname;
+
+-- Behavioral assertions. Fixed fixture IDs are isolated by the final rollback.
+begin;
+
+do $$
+declare
+  v_result jsonb;
+  v_project_id uuid;
+  v_membership_id uuid;
+  v_content jsonb := '{
+    "es": {
+      "title": "Proyecto de verificacion",
+      "location": "Bogota",
+      "theme": "Ecoturismo",
+      "description": "Contenido completo para verificar las mutaciones atomicas.",
+      "waysToContribute": ["Participar"]
+    }
+  }'::jsonb;
+  v_enterprise_id constant uuid := '24999999-0000-4000-8000-000000000001';
+  v_media_one constant uuid := '24999999-0000-4000-8000-000000000002';
+  v_media_two constant uuid := '24999999-0000-4000-8000-000000000003';
+  v_missing_id constant uuid := '24999999-0000-4000-8000-000000000099';
+begin
+  insert into public.enterprises (
+    id, slug, display_name, status, country_code,
+    created_by_issuer, created_by_subject, updated_by_issuer, updated_by_subject
+  ) values (
+    v_enterprise_id, 'verification-enterprise', 'Verification Enterprise',
+    'active', 'CO', 'verification', 'actor', 'verification', 'actor'
+  );
+
+  -- NULL membership inputs return structured denials and never constraints/FKs.
+  v_result := public.marketplace_grant_project_membership(
+    'verification', 'member-scope-null', null, v_enterprise_id, null, null,
+    'sub_admin', 'verification', 'actor', array['platform_owner'],
+    'verification-scope-null', null
+  );
+  if v_result ->> 'reasonCode' is distinct from 'MEMBERSHIP_INPUT_INVALID' then
+    raise exception 'scope NULL assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_grant_project_membership(
+    'verification', 'member-role-null', null, v_enterprise_id, null,
+    'enterprise', null, 'verification', 'actor', array['platform_owner'],
+    'verification-role-null', null
+  );
+  if v_result ->> 'reasonCode' is distinct from 'MEMBERSHIP_INPUT_INVALID' then
+    raise exception 'role NULL assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_grant_project_membership(
+    'verification', 'member-enterprise-missing', null, v_missing_id, null,
+    'enterprise', 'sub_admin', 'verification', 'actor',
+    array['platform_owner'], 'verification-enterprise-missing', null
+  );
+  if v_result ->> 'reasonCode' is distinct from 'ENTERPRISE_NOT_FOUND' then
+    raise exception 'missing enterprise assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_grant_project_membership(
+    'verification', 'member-project-missing', null, v_enterprise_id,
+    v_missing_id, 'project', 'sub_admin', 'verification', 'actor',
+    array['platform_owner'], 'verification-project-missing', null
+  );
+  if v_result ->> 'reasonCode' is distinct from 'PROJECT_NOT_FOUND' then
+    raise exception 'missing project assertion failed: %', v_result;
+  end if;
+
+  insert into public.project_memberships (
+    member_issuer, member_subject, enterprise_id, scope_type, role, status,
+    granted_by_issuer, granted_by_subject
+  ) values (
+    'verification', 'member-change', v_enterprise_id, 'enterprise',
+    'sub_admin', 'active', 'verification', 'actor'
+  ) returning id into v_membership_id;
+
+  v_result := public.marketplace_change_project_membership(
+    v_membership_id, null, 'active', 'verification', 'actor',
+    array['platform_owner'], 'verification-change-role-null', null
+  );
+  if v_result ->> 'reasonCode' is distinct from 'MEMBERSHIP_INPUT_INVALID' then
+    raise exception 'new role NULL assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_transition_project_status(
+    '24900000-0000-4000-8000-000000000002', null, 'verification', 'actor',
+    array['platform_owner'], 'verification-status-null', null
+  );
+  if v_result ->> 'reasonCode' is distinct from 'PROJECT_STATUS_TRANSITION_INVALID' then
+    raise exception 'target status NULL assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_transition_project_status(
+    v_missing_id, 'published', 'verification', 'actor',
+    array['platform_owner'], 'verification-project-not-found', null
+  );
+  if v_result ->> 'reasonCode' is distinct from 'PROJECT_NOT_FOUND' then
+    raise exception 'transition missing project assertion failed: %', v_result;
+  end if;
+
+  -- The scope helper treats every NULL-bearing identity/role input as false.
+  if public.marketplace_actor_has_scope(
+    'verification', 'actor', array['platform_owner'], v_enterprise_id, null,
+    array['partner_operator']
+  ) is not true then
+    raise exception 'global scope assertion failed';
+  end if;
+  if public.marketplace_actor_has_scope(
+    'verification', 'actor', array['platform_owner', null], v_enterprise_id,
+    null, array['partner_operator']
+  ) is not false then
+    raise exception 'NULL scope assertion failed';
+  end if;
+
+  v_result := public.marketplace_create_project(
+    v_enterprise_id, 'verification-project', 'hospitality_ecotourism', 'CO',
+    'America/Bogota', 'es', v_content, 'verification', 'actor',
+    array['platform_owner'], 'verification-create-project'
+  );
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true then
+    raise exception 'create project assertion failed: %', v_result;
+  end if;
+  v_project_id := (v_result -> 'project' ->> 'id')::uuid;
+  if not exists (
+    select 1 from public.enterprise_projects relation
+    where relation.enterprise_id = v_enterprise_id
+      and relation.project_id = v_project_id
+      and relation.relation = 'owner'
+      and relation.is_primary
+  ) then
+    raise exception 'primary enterprise relation assertion failed';
+  end if;
+  if public.marketplace_actor_has_scope(
+    'verification', 'member-change', array['sub_admin'], v_enterprise_id,
+    v_project_id, array['sub_admin']
+  ) is not true then
+    raise exception 'enterprise membership project coverage assertion failed';
+  end if;
+  if public.marketplace_actor_has_scope(
+    'verification', 'member-change', array['sub_admin'], v_enterprise_id,
+    v_missing_id, array['sub_admin']
+  ) is not false then
+    raise exception 'cross-project scope assertion failed';
+  end if;
+
+  v_result := public.marketplace_update_project(
+    v_project_id, '{"content":{"es":{"title":"Proyecto actualizado","location":"Bogota","theme":"Ecoturismo","description":"Contenido actualizado y completo.","waysToContribute":["Participar"]}}}'::jsonb,
+    'verification', 'actor', array['platform_owner'], 'verification-update-project'
+  );
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true then
+    raise exception 'update project assertion failed: %', v_result;
+  end if;
+
+  -- Malformed JSON must produce a clean denial, never a JSON iterator error.
+  v_result := public.marketplace_update_project(
+    v_project_id, '[]'::jsonb, 'verification', 'actor',
+    array['platform_owner'], 'verification-update-malformed'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'VALIDATION_FAILED' then
+    raise exception 'malformed patch assertion failed: %', v_result;
+  end if;
+  v_result := public.marketplace_reorder_project_media(
+    v_project_id, '{}'::jsonb, 'verification', 'actor',
+    array['platform_owner'], 'verification-reorder-malformed'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'MEDIA_ORDER_INVALID' then
+    raise exception 'malformed media order assertion failed: %', v_result;
+  end if;
+
+  insert into public.project_media_allowed_hosts (media_kind, host)
+  values ('gallery_image', 'images.test')
+  on conflict do nothing;
+  insert into public.project_media (
+    id, project_id, kind, url, alt_text, caption, sort_order,
+    created_by_issuer, created_by_subject, updated_by_issuer, updated_by_subject
+  ) values
+    (v_media_one, v_project_id, 'gallery_image', 'https://images.test/one.jpg',
+      '{"es":"Uno"}', '{}', 0, 'verification', 'actor', 'verification', 'actor'),
+    (v_media_two, v_project_id, 'gallery_image', 'https://images.test/two.jpg',
+      '{"es":"Dos"}', '{}', 1, 'verification', 'actor', 'verification', 'actor');
+
+  v_result := public.marketplace_reorder_project_media(
+    v_project_id,
+    jsonb_build_array(
+      jsonb_build_object('id', v_media_one, 'sortOrder', 1),
+      jsonb_build_object('id', v_media_two, 'sortOrder', 0)
+    ),
+    'verification', 'actor', array['platform_owner'], 'verification-reorder'
+  );
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true then
+    raise exception 'reorder media assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_transition_project_status(
+    v_project_id, 'published', 'verification', 'actor',
+    array['platform_owner'], 'verification-publish', null
+  );
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true then
+    raise exception 'publish assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_update_project(
+    v_project_id, '{"slug":"verification-project-renamed"}'::jsonb,
+    'verification', 'actor', array['platform_owner'], 'verification-slug'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'PROJECT_SLUG_IMMUTABLE' then
+    raise exception 'immutable slug assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_set_enterprise_status(
+    v_enterprise_id, 'paused', 'verification', 'actor',
+    array['platform_owner'], 'verification-pause-enterprise', 'verification'
+  );
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true
+    or (v_result ->> 'publishedProjectCount')::integer is distinct from 1
+    or (select status from public.projects where id = v_project_id) is distinct from 'published'
+  then
+    raise exception 'enterprise no-cascade assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_create_project(
+    v_enterprise_id, 'verification-blocked', 'hospitality_ecotourism', 'CO',
+    'America/Bogota', 'es', v_content, 'verification', 'actor',
+    array['platform_owner'], 'verification-create-paused'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'ENTERPRISE_NOT_ACTIVE' then
+    raise exception 'inactive enterprise assertion failed: %', v_result;
+  end if;
+end;
+$$;
+
+rollback;
