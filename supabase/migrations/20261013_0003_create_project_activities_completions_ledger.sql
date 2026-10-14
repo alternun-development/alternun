@@ -187,6 +187,30 @@ begin
   for update;
 
   if not found then
+    insert into public.admin_audit_log (
+      actor_issuer,
+      actor_subject,
+      actor_roles,
+      action,
+      target_type,
+      target_id,
+      request_id,
+      result,
+      reason_code,
+      metadata
+    ) values (
+      p_actor_issuer,
+      p_actor_subject,
+      coalesce(p_actor_roles, '{}'::text[]),
+      'project.status_change_denied',
+      'project',
+      p_project_id,
+      p_request_id,
+      'denied',
+      'PROJECT_NOT_FOUND',
+      jsonb_build_object('targetStatus', p_target_status, 'reason', p_reason)
+    );
+
     return jsonb_build_object('ok', false, 'reasonCode', 'PROJECT_NOT_FOUND');
   end if;
 
@@ -202,7 +226,9 @@ begin
     && array['platform_owner', 'internal_admin']
   ) then
     v_reason := 'PERMISSION_DENIED';
-  elsif p_target_status not in ('draft', 'published', 'paused', 'archived') then
+  elsif p_target_status is null
+    or p_target_status not in ('draft', 'published', 'paused', 'archived')
+  then
     v_reason := 'PROJECT_STATUS_TRANSITION_INVALID';
   elsif v_before.status = p_target_status then
     return jsonb_build_object(
@@ -221,7 +247,7 @@ begin
   elsif p_target_status = 'published'
     and (
       not (v_before.content ? v_before.default_locale)
-      or jsonb_typeof(v_before.content -> v_before.default_locale) <> 'object'
+      or jsonb_typeof(v_before.content -> v_before.default_locale) is distinct from 'object'
       or nullif(btrim(v_before.content -> v_before.default_locale ->> 'title'), '') is null
       or nullif(btrim(v_before.content -> v_before.default_locale ->> 'location'), '') is null
       or nullif(btrim(v_before.content -> v_before.default_locale ->> 'theme'), '') is null
@@ -668,7 +694,10 @@ begin
   where relation.project_id = v_completion.project_id
     and relation.is_primary;
 
-  if not ('platform_owner' = any(coalesce(p_actor_roles, '{}'::text[]))) then
+  if not coalesce(
+    'platform_owner' = any(coalesce(p_actor_roles, '{}'::text[])),
+    false
+  ) then
     v_reason := 'PERMISSION_DENIED';
   elsif v_completion.status = 'reversed' then
     return jsonb_build_object(
