@@ -1058,9 +1058,15 @@
       "participateAndEarn": "See how to participate and earn AIRS",
       "filters": {
         "all": "All",
-        "active": "Active",
-        "productive": "Productive",
-        "conservation": "Conservation"
+        "active": "Active"
+      },
+      "categories": {
+        "hospitality_ecotourism": "Hospitality and ecotourism",
+        "conservation": "Conservation",
+        "productive_enterprise": "Productive enterprise",
+        "regenerative_agriculture": "Regenerative agriculture",
+        "community": "Community",
+        "education": "Education"
       },
       "marketplaceState": {
         "loading": "Loading projects…",

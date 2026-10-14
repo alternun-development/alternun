@@ -1058,9 +1058,15 @@
       "participateAndEarn": "ดูวิธีเข้าร่วมและรับ AIRS",
       "filters": {
         "all": "ทั้งหมด",
-        "active": "กำลังดำเนินการ",
-        "productive": "สร้างสรรค์",
-        "conservation": "การอนุรักษ์"
+        "active": "กำลังดำเนินการ"
+      },
+      "categories": {
+        "hospitality_ecotourism": "การต้อนรับและการท่องเที่ยวเชิงนิเวศ",
+        "conservation": "การอนุรักษ์",
+        "productive_enterprise": "วิสาหกิจการผลิต",
+        "regenerative_agriculture": "เกษตรฟื้นฟู",
+        "community": "ชุมชน",
+        "education": "การศึกษา"
       },
       "marketplaceState": {
         "loading": "กำลังโหลดโครงการ…",

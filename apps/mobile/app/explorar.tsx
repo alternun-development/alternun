@@ -55,7 +55,7 @@ const GiftIcon = Gift as React.FC<LucideProps>;
 
 const TELEGRAM_URL = 'https://t.me/alternun_io';
 
-type ProjectFilter = 'all' | 'active' | 'productive' | 'conservation';
+type ProjectFilter = string;
 type Translate = Translator['t'];
 
 interface Palette {
@@ -76,7 +76,6 @@ interface MarketProject {
   slug: string;
   title: string;
   place: string;
-  type: 'productive' | 'conservation' | null;
   categoryCode: string;
   status: 'active';
   theme: string;
@@ -105,11 +104,6 @@ interface MarketplaceProjectResponse {
 }
 
 type LoadMarketplaceProjects = (locale: string, signal?: AbortSignal) => Promise<MarketProject[]>;
-
-function categoryType(categoryCode: string): MarketProject['type'] {
-  if (categoryCode === 'conservation') return 'conservation';
-  return categoryCode === 'productive_enterprise' ? 'productive' : null;
-}
 
 function safeImageUrl(media: MarketplaceMedia[]): string | null {
   const preferredKinds = ['cover', 'gallery_image', 'logo'];
@@ -162,7 +156,6 @@ export const loadMarketplaceProjects: LoadMarketplaceProjects = async (locale, s
     slug: project.slug,
     title: project.title,
     place: project.location,
-    type: categoryType(project.categoryCode),
     categoryCode: project.categoryCode,
     status: 'active',
     theme: project.theme,
@@ -176,15 +169,24 @@ function getFilters(
   t: Translate,
   projects: MarketProject[]
 ): { key: ProjectFilter; label: string }[] {
-  const filters: { key: ProjectFilter; label: string }[] = [
+  const categories: string[] = Array.from(
+    new Set<string>(projects.map((project) => project.categoryCode))
+  );
+  return [
     { key: 'all', label: t('explorer.filters.all') },
+    ...categories.map((categoryCode) => ({
+      key: categoryCode,
+      label: categoryLabel(t, categoryCode),
+    })),
   ];
-  if (projects.length) filters.push({ key: 'active', label: t('explorer.filters.active') });
-  if (projects.some((project) => project.type === 'productive'))
-    filters.push({ key: 'productive', label: t('explorer.filters.productive') });
-  if (projects.some((project) => project.type === 'conservation'))
-    filters.push({ key: 'conservation', label: t('explorer.filters.conservation') });
-  return filters;
+}
+
+function categoryLabel(t: Translate, categoryCode: string): string {
+  const key = `explorer.categories.${categoryCode}`;
+  const translated = t(key) as unknown;
+  return typeof translated !== 'string' || !translated || translated === key
+    ? categoryCode
+    : translated;
 }
 
 function getIntentActions(t: Translate): {
@@ -471,13 +473,11 @@ function ProjectCard({
               {t('explorer.active')}
             </Text>
           </View>
-          {project.type ? (
-            <View style={[styles.typePill, { borderColor: palette.border }]}>
-              <Text style={[styles.typePillText, { color: palette.muted }]}>
-                {t(`explorer.filters.${project.type}`)}
-              </Text>
-            </View>
-          ) : null}
+          <View style={[styles.typePill, { borderColor: palette.border }]}>
+            <Text style={[styles.typePillText, { color: palette.muted }]}>
+              {categoryLabel(t, project.categoryCode)}
+            </Text>
+          </View>
         </View>
       </View>
       <Text style={[styles.projectTheme, { color: palette.primary }]}>
@@ -568,10 +568,7 @@ export function MarketplaceProjectBrowser({
         `${project.title} ${project.place} ${project.theme}`
           .toLowerCase()
           .includes(normalizedQuery);
-      const matchesFilter =
-        filter === 'all' ||
-        (filter === 'active' && project.status === 'active') ||
-        project.type === filter;
+      const matchesFilter = filter === 'all' || project.categoryCode === filter;
       return matchesQuery && matchesFilter;
     });
   }, [filter, projects, query]);

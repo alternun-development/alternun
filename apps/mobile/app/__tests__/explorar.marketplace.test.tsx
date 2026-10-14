@@ -26,7 +26,6 @@ const productiveProject = {
   slug: 'productive-project',
   title: 'Productive project',
   place: 'Colombia',
-  type: 'productive' as const,
   categoryCode: 'productive_enterprise',
   status: 'active' as const,
   theme: 'Local economy',
@@ -40,7 +39,6 @@ const conservationProject = {
   id: 'project-2',
   slug: 'conservation-project',
   title: 'Conservation project',
-  type: 'conservation' as const,
   categoryCode: 'conservation',
 };
 
@@ -103,6 +101,25 @@ describe('Explorer marketplace projects', () => {
     const renderer = await renderBrowser(() =>
       Promise.resolve([productiveProject, conservationProject])
     );
+
+    const categoryFilters = new Set(
+      renderer.root
+        .findAll(
+          (node) =>
+            typeof node.props.testID === 'string' &&
+            node.props.testID.startsWith('explorer-filter-')
+        )
+        .map((node) => {
+          const testId = node.props.testID as unknown;
+          return typeof testId === 'string' ? testId : '';
+        })
+    );
+    expect(categoryFilters.size).toBe(3);
+    expect(renderer.root.findByProps({ testID: 'explorer-filter-all' })).toBeTruthy();
+    expect(
+      renderer.root.findByProps({ testID: 'explorer-filter-productive_enterprise' })
+    ).toBeTruthy();
+    expect(renderer.root.findByProps({ testID: 'explorer-filter-conservation' })).toBeTruthy();
 
     void act(() => {
       renderer.root.findByProps({ testID: 'explorer-filter-conservation' }).props.onPress();
