@@ -391,19 +391,9 @@ export class MarketplaceAdminService {
       marketplaceError('CATEGORY_UNSUPPORTED');
     const created = await this.repository.createProject(
       input as unknown as Record<string, unknown>,
-      actorFromPrincipal(principal)
+      actorFromPrincipal(principal),
+      requestId
     );
-    await this.repository.audit({
-      actor: actorFromPrincipal(principal),
-      action: 'project.created',
-      targetType: 'project',
-      targetId: created.id,
-      enterpriseId: created.enterpriseId,
-      projectId: created.id,
-      requestId,
-      result: 'allowed',
-      afterState: created as unknown as Record<string, unknown>,
-    });
     return created;
   }
 
@@ -451,20 +441,10 @@ export class MarketplaceAdminService {
     const after = await this.repository.updateProject(
       id,
       input as unknown as Record<string, unknown>,
-      actorFromPrincipal(principal)
-    );
-    await this.repository.audit({
-      actor: actorFromPrincipal(principal),
-      action: 'project.updated',
-      targetType: 'project',
-      targetId: id,
-      enterpriseId: before.enterpriseId,
-      projectId: id,
+      actorFromPrincipal(principal),
       requestId,
-      result: 'allowed',
-      beforeState: before as unknown as Record<string, unknown>,
-      afterState: after as unknown as Record<string, unknown>,
-    });
+      before.enterpriseId
+    );
     return after;
   }
 
@@ -672,18 +652,9 @@ export class MarketplaceAdminService {
     const after = await this.repository.reorderMedia(
       projectId,
       input.items,
-      actorFromPrincipal(principal)
+      actorFromPrincipal(principal),
+      requestId
     );
-    await this.repository.audit({
-      actor: actorFromPrincipal(principal),
-      action: 'project_media.reordered',
-      targetType: 'project_media',
-      enterpriseId: project.enterpriseId,
-      projectId,
-      requestId,
-      result: 'allowed',
-      metadata: { order: input.items },
-    });
     return after;
   }
 }

@@ -358,6 +358,105 @@ test('repository scope RPC errors return false', async () => {
   );
 });
 
+test('create, update, and reorder use one atomic RPC each', async () => {
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const projectRow = {
+    id: 'p1',
+    slug: 'hotel-project',
+    status: 'draft',
+    category_code: 'hospitality_ecotourism',
+    country_code: 'CO',
+    time_zone: 'America/Bogota',
+    default_locale: 'es',
+    content,
+    first_published_at: null,
+    published_at: null,
+    created_at: 'now',
+    updated_at: 'now',
+  };
+  const client = {
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      calls.push({ name, args });
+      if (name === 'marketplace_reorder_project_media') {
+        return {
+          data: {
+            ok: true,
+            media: [
+              {
+                id: 'm1',
+                project_id: 'p1',
+                kind: 'gallery_image',
+                url: 'https://images.example/one.jpg',
+                embed_url: null,
+                alt_text: { es: 'Uno' },
+                caption: {},
+                sort_order: 0,
+                is_active: true,
+                created_at: 'now',
+                updated_at: 'now',
+              },
+            ],
+          },
+          error: null,
+        };
+      }
+      return { data: { ok: true, project: projectRow }, error: null };
+    },
+  };
+  const repository = new MarketplaceAdminRepository(client as never);
+  const actor = { issuer: 'issuer', subject: 'subject', roles: ['platform_owner'] };
+  const input = {
+    enterpriseId: 'e1',
+    slug: 'hotel-project',
+    categoryCode: 'hospitality_ecotourism',
+    countryCode: 'CO',
+    timeZone: 'America/Bogota',
+    defaultLocale: 'es',
+    content,
+  };
+
+  await repository.createProject(input, actor, 'create-request');
+  await repository.updateProject('p1', { content }, actor, 'update-request', 'e1');
+  await repository.reorderMedia('p1', [{ id: 'm1', sortOrder: 0 }], actor, 'reorder-request');
+
+  assert.deepEqual(
+    calls.map(({ name }) => name),
+    [
+      'marketplace_create_project',
+      'marketplace_update_project',
+      'marketplace_reorder_project_media',
+    ]
+  );
+  assert.equal(calls[0].args.p_request_id, 'create-request');
+  assert.equal(calls[1].args.p_request_id, 'update-request');
+  assert.equal(calls[2].args.p_request_id, 'reorder-request');
+});
+
+test('atomic mutation reasonCode maps to the marketplace API error', async () => {
+  const repository = new MarketplaceAdminRepository({
+    rpc: async () => ({
+      data: { ok: false, reasonCode: 'ENTERPRISE_NOT_ACTIVE' },
+      error: null,
+    }),
+  } as never);
+  await assert.rejects(
+    repository.createProject(
+      {
+        enterpriseId: 'e1',
+        slug: 'hotel-project',
+        categoryCode: 'hospitality_ecotourism',
+        countryCode: 'CO',
+        timeZone: 'America/Bogota',
+        defaultLocale: 'es',
+        content,
+      },
+      { issuer: 'issuer', subject: 'subject', roles: ['platform_owner'] },
+      'request'
+    ),
+    expectApiError('ENTERPRISE_NOT_ACTIVE', 409)
+  );
+});
+
 test('non-global project creation without membership scope is denied', async () => {
   let creates = 0;
   const { repository } = adminRepository({

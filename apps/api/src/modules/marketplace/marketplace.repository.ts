@@ -382,35 +382,24 @@ export class MarketplaceAdminRepository {
     return data ? mapProject(data as Row) : null;
   }
 
-  async createProject(input: Row, actor: AdminActor): Promise<ProjectRecord> {
-    const { data, error } = await this.client
-      .from('projects')
-      .insert({
-        slug: input.slug,
-        status: 'draft',
-        category_code: input.categoryCode,
-        country_code: input.countryCode ?? null,
-        time_zone: input.timeZone,
-        default_locale: input.defaultLocale,
-        content: input.content,
-        created_by_issuer: actor.issuer,
-        created_by_subject: actor.subject,
-        updated_by_issuer: actor.issuer,
-        updated_by_subject: actor.subject,
-      })
-      .select('*')
-      .single();
-    if (error) failDatabase(error, 'PROJECT_SLUG_CONFLICT');
-    const project = mapProject({ ...(data as Row), enterprise_id: input.enterpriseId });
-    const relation = await this.client.from('enterprise_projects').insert({
-      enterprise_id: input.enterpriseId,
-      project_id: project.id,
-      relation: 'owner',
-      is_primary: true,
-      created_by_issuer: actor.issuer,
-      created_by_subject: actor.subject,
+  async createProject(input: Row, actor: AdminActor, requestId: string): Promise<ProjectRecord> {
+    const { data, error } = await this.client.rpc('marketplace_create_project', {
+      p_enterprise_id: input.enterpriseId,
+      p_slug: input.slug,
+      p_category_code: input.categoryCode,
+      p_country_code: input.countryCode ?? null,
+      p_time_zone: input.timeZone,
+      p_default_locale: input.defaultLocale,
+      p_content: input.content,
+      p_actor_issuer: actor.issuer,
+      p_actor_subject: actor.subject,
+      p_actor_roles: [...actor.roles],
+      p_request_id: requestId,
     });
-    if (relation.error) failDatabase(relation.error);
+    if (error) failDatabase(error);
+    const result = record(data);
+    if (result.ok !== true) marketplaceError(text(result.reasonCode) || 'VALIDATION_FAILED');
+    const project = mapProject({ ...record(result.project), enterprise_id: input.enterpriseId });
     project.enterprises = [
       {
         enterpriseId: text(input.enterpriseId),
@@ -424,28 +413,25 @@ export class MarketplaceAdminRepository {
     return project;
   }
 
-  async updateProject(id: string, input: Row, actor: AdminActor): Promise<ProjectRecord> {
-    const values: Row = { updated_by_issuer: actor.issuer, updated_by_subject: actor.subject };
-    for (const [camel, snake] of Object.entries({
-      slug: 'slug',
-      categoryCode: 'category_code',
-      countryCode: 'country_code',
-      timeZone: 'time_zone',
-      defaultLocale: 'default_locale',
-      content: 'content',
-    })) {
-      if (camel in input) values[snake] = input[camel];
-    }
-    const { data, error } = await this.client
-      .from('projects')
-      .update(values)
-      .eq('id', id)
-      .select('*')
-      .maybeSingle();
-    if (error) failDatabase(error, 'PROJECT_SLUG_CONFLICT');
-    if (!data) marketplaceError('PROJECT_NOT_FOUND');
-    const existing = await this.findProject(id);
-    return existing ?? mapProject(data as Row);
+  async updateProject(
+    id: string,
+    input: Row,
+    actor: AdminActor,
+    requestId: string,
+    enterpriseId: string
+  ): Promise<ProjectRecord> {
+    const { data, error } = await this.client.rpc('marketplace_update_project', {
+      p_project_id: id,
+      p_patch: input,
+      p_actor_issuer: actor.issuer,
+      p_actor_subject: actor.subject,
+      p_actor_roles: [...actor.roles],
+      p_request_id: requestId,
+    });
+    if (error) failDatabase(error);
+    const result = record(data);
+    if (result.ok !== true) marketplaceError(text(result.reasonCode) || 'VALIDATION_FAILED');
+    return mapProject({ ...record(result.project), enterprise_id: enterpriseId });
   }
 
   async categoryExists(code: string): Promise<boolean> {
@@ -569,10 +555,20 @@ export class MarketplaceAdminRepository {
   async reorderMedia(
     projectId: string,
     items: Array<{ id: string; sortOrder: number }>,
-    actor: AdminActor
+    actor: AdminActor,
+    requestId: string
   ): Promise<ProjectMediaRecord[]> {
-    for (const item of items)
-      await this.updateMedia(projectId, item.id, { sortOrder: item.sortOrder }, actor);
-    return this.listMedia(projectId);
+    const { data, error } = await this.client.rpc('marketplace_reorder_project_media', {
+      p_project_id: projectId,
+      p_items: items,
+      p_actor_issuer: actor.issuer,
+      p_actor_subject: actor.subject,
+      p_actor_roles: [...actor.roles],
+      p_request_id: requestId,
+    });
+    if (error) failDatabase(error);
+    const result = record(data);
+    if (result.ok !== true) marketplaceError(text(result.reasonCode) || 'MEDIA_ORDER_INVALID');
+    return rowArray(result.media).map(mapMedia);
   }
 }
