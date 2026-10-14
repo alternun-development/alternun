@@ -223,6 +223,11 @@ test('marketplace permission matrix preserves role-specific enterprise, project,
   assert.equal(can('sub_admin', 'project_media:write'), true);
   assert.equal(can('partner_readonly', 'projects:read'), true);
   assert.equal(can('partner_readonly', 'projects:update'), false);
+  assert.equal(can('partner_readonly', 'activities:read'), true);
+  assert.equal(can('partner_readonly', 'activities:write'), false);
+  assert.equal(can('sub_admin', 'activities:write'), true);
+  assert.equal(can('sub_admin', 'activities:publish'), false);
+  assert.equal(can('partner_operator', 'activities:publish'), true);
 });
 
 test('partner_readonly admin receives 403 for an allowance mutation', async () => {

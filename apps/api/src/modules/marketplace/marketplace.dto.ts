@@ -5,9 +5,11 @@ import {
   ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsDateString,
   IsIn,
   IsInt,
   IsNotEmptyObject,
+  IsNumber,
   IsObject,
   IsOptional,
   IsString,
@@ -20,7 +22,7 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { MEDIA_KINDS, PROJECT_CATEGORIES } from './marketplace.types';
+import { ACTIVITY_REPEAT_PERIODS, MEDIA_KINDS, PROJECT_CATEGORIES } from './marketplace.types';
 
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const LOCALE_PATTERN = /^[a-z]{2}(?:-[A-Z]{2})?$/;
@@ -119,6 +121,30 @@ export class ReorderProjectMediaDto {
   @ValidateNested({ each: true })
   @Type(() => MediaOrderItemDto)
   items!: MediaOrderItemDto[];
+}
+
+export class ActivityContentBlockDto {
+  @IsString() @MinLength(1) @MaxLength(160) title!: string;
+  @IsString() @MinLength(1) @MaxLength(4000) description!: string;
+}
+
+export class CreateProjectActivityDto {
+  @IsString() @Matches(SLUG_PATTERN) @MinLength(3) @MaxLength(80) code!: string;
+  @IsString() @Matches(LOCALE_PATTERN) defaultLocale!: string;
+  @IsObject() @IsNotEmptyObject() content!: Record<string, ActivityContentBlockDto>;
+  @Type(() => Number) @IsNumber() @Min(0.000001) defaultAirsAmount!: number;
+  @Type(() => Number) @IsNumber() @Min(0.000001) maxAirsPerAward!: number;
+  @IsString() @IsIn(ACTIVITY_REPEAT_PERIODS) repeatPeriod!: string;
+  @Type(() => Number) @IsInt() @Min(1) maxAwardsPerPeriod!: number;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) maxAwardsLifetime?: number;
+  @IsOptional() @IsDateString() startsAt?: string;
+  @IsOptional() @IsDateString() endsAt?: string;
+}
+
+export class UpdateProjectActivityDto extends PartialType(CreateProjectActivityDto) {}
+
+export class TransitionActivityDto {
+  @IsOptional() @IsString() @MinLength(1) @MaxLength(500) reason?: string;
 }
 
 export class LocaleQueryDto {

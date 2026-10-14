@@ -8,6 +8,8 @@ import { validate } from 'class-validator';
 import type { AdminPrincipal } from '../src/common/admin-auth/admin-auth.guard';
 import { CreateProjectMediaDto } from '../src/modules/marketplace/marketplace.dto';
 import { MarketplaceApiError } from '../src/modules/marketplace/marketplace.errors';
+import type { MarketplaceActivityRepository } from '../src/modules/marketplace/marketplace-activity.repository';
+import { MarketplaceActivityService } from '../src/modules/marketplace/marketplace-activity.service';
 import {
   MarketplaceAdminRepository,
   resolveMarketplaceSupabaseConfig,
@@ -21,6 +23,7 @@ import type {
   AuditInput,
   EnterpriseRecord,
   ProjectMediaRecord,
+  ProjectActivityRecord,
   ProjectRecord,
 } from '../src/modules/marketplace/marketplace.types';
 
@@ -76,6 +79,26 @@ const media: ProjectMediaRecord = {
   caption: {},
   sortOrder: 0,
   isActive: true,
+  createdAt: 'now',
+  updatedAt: 'now',
+};
+const activity: ProjectActivityRecord = {
+  id: 'a1',
+  projectId: 'p1',
+  code: 'nature-walk',
+  status: 'published',
+  defaultLocale: 'es',
+  content: {
+    es: { title: 'Caminata', description: 'Recorrido guiado' },
+    en: { title: 'Walk', description: 'Guided tour' },
+  },
+  defaultAirsAmount: 5,
+  maxAirsPerAward: 10,
+  repeatPeriod: 'day',
+  maxAwardsPerPeriod: 1,
+  maxAwardsLifetime: 20,
+  startsAt: null,
+  endsAt: null,
   createdAt: 'now',
   updatedAt: 'now',
 };
@@ -645,5 +668,41 @@ test('service-role configuration never falls back to anon or Expo public keys', 
       SUPABASE_SERVICE_ROLE_KEY: 'service',
     }),
     { url: 'https://example.supabase.co', serviceRoleKey: 'service' }
+  );
+});
+
+test('public activities expose localized copy without AIRS policy fields', async () => {
+  const publicRepository = {
+    findPublishedBySlug: async () => ({
+      project: { ...project, status: 'published' },
+      enterprise,
+      media: [],
+    }),
+  } as unknown as MarketplacePublicRepository;
+  const activityRepository = {
+    list: async () => [activity],
+  } as unknown as MarketplaceActivityRepository;
+  const { repository } = adminRepository();
+  const service = new MarketplaceActivityService(activityRepository, repository, publicRepository);
+  const [result] = await service.listPublished(project.slug, 'en');
+  assert.equal(result.title, 'Walk');
+  assert.equal('defaultAirsAmount' in result, false);
+  assert.equal('maxAwardsLifetime' in result, false);
+  assert.equal('createdByIssuer' in result, false);
+});
+
+test('non-global activity read without a project membership is denied', async () => {
+  const activityRepository = {
+    list: async () => [activity],
+  } as unknown as MarketplaceActivityRepository;
+  const { repository } = adminRepository({ actorHasScope: async () => false });
+  const service = new MarketplaceActivityService(
+    activityRepository,
+    repository,
+    {} as MarketplacePublicRepository
+  );
+  await assert.rejects(
+    service.list(principal('partner_readonly', ['e1']), 'no-membership', 'p1'),
+    expectApiError('PROJECT_SCOPE_DENIED', 403)
   );
 });

@@ -11,10 +11,52 @@ export const PROJECT_CATEGORIES = [
 ] as const;
 export const PROJECT_STATUSES = ['draft', 'published', 'paused', 'archived'] as const;
 export const MEDIA_KINDS = ['logo', 'cover', 'gallery_image', 'video', 'canva'] as const;
+export const ACTIVITY_STATUSES = ['draft', 'published', 'paused', 'archived'] as const;
+export const ACTIVITY_REPEAT_PERIODS = ['none', 'day', 'week', 'month', 'assignment'] as const;
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 export type LocalizedText = Record<string, string>;
+export type ActivityStatus = (typeof ACTIVITY_STATUSES)[number];
+export type ActivityRepeatPeriod = (typeof ACTIVITY_REPEAT_PERIODS)[number];
+
+export interface ActivityContentBlock {
+  title: string;
+  description: string;
+}
+export type ActivityContent = Record<string, ActivityContentBlock>;
+
+export interface ProjectActivityRecord {
+  id: string;
+  projectId: string;
+  code: string;
+  status: ActivityStatus;
+  defaultLocale: string;
+  content: ActivityContent;
+  defaultAirsAmount: number;
+  maxAirsPerAward: number;
+  repeatPeriod: ActivityRepeatPeriod;
+  maxAwardsPerPeriod: number;
+  maxAwardsLifetime: number | null;
+  startsAt: string | null;
+  endsAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PublicProjectActivity {
+  id: string;
+  projectId: string;
+  code: string;
+  status: 'published';
+  locale: string;
+  availableLocales: string[];
+  title: string;
+  description: string;
+  startsAt: string | null;
+  endsAt: string | null;
+  updatedAt: string;
+}
 
 export interface ProjectContentBlock {
   title: string;

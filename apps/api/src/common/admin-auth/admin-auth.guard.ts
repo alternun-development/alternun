@@ -24,7 +24,10 @@ export type AdminPermission =
   | 'projects:transfer'
   | 'project_media:read'
   | 'project_media:write'
-  | 'project_media:moderate';
+  | 'project_media:moderate'
+  | 'activities:read'
+  | 'activities:write'
+  | 'activities:publish';
 
 export const ADMIN_ROLES = [
   'platform_owner',
@@ -101,7 +104,13 @@ type JwksDocument = {
 };
 
 const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = {
-  partner_readonly: ['allowances:read', 'enterprises:read', 'projects:read', 'project_media:read'],
+  partner_readonly: [
+    'allowances:read',
+    'enterprises:read',
+    'projects:read',
+    'project_media:read',
+    'activities:read',
+  ],
   sub_admin: [
     'enterprises:read',
     'projects:read',
@@ -109,6 +118,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'activities:read',
+    'activities:write',
   ],
   partner_operator: [
     'allowances:read',
@@ -121,6 +132,9 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'activities:read',
+    'activities:write',
+    'activities:publish',
   ],
   moderator: [
     'enterprises:read',
@@ -128,6 +142,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'projects:update',
     'project_media:read',
     'project_media:moderate',
+    'activities:read',
   ],
   internal_admin: [
     'allowances:read',
@@ -145,6 +160,9 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'activities:read',
+    'activities:write',
+    'activities:publish',
   ],
   platform_owner: [
     'allowances:read',
@@ -163,6 +181,9 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'activities:read',
+    'activities:write',
+    'activities:publish',
   ],
 };
 const knownAdminRoles = new Set<string>(ADMIN_ROLES);
