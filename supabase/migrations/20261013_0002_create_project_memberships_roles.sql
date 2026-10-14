@@ -100,13 +100,42 @@ declare
   v_is_global boolean;
   v_is_scoped_operator boolean;
   v_membership public.project_memberships;
+  v_audit_enterprise_id uuid;
+  v_audit_project_id uuid;
   v_reason text;
 begin
-  if p_scope_type not in ('enterprise', 'project')
+  select enterprise.id into v_audit_enterprise_id
+  from public.enterprises enterprise
+  where enterprise.id = p_enterprise_id;
+
+  if p_project_id is not null then
+    select project.id into v_audit_project_id
+    from public.projects project
+    where project.id = p_project_id;
+  end if;
+
+  if p_scope_type is null
+    or p_scope_type not in ('enterprise', 'project')
     or (p_scope_type = 'enterprise' and p_project_id is not null)
     or (p_scope_type = 'project' and p_project_id is null)
+    or p_role is null
     or p_role not in ('partner_operator', 'sub_admin', 'partner_readonly')
+    or nullif(btrim(coalesce(p_member_issuer, '')), '') is null
+    or nullif(btrim(coalesce(p_member_subject, '')), '') is null
+    or nullif(btrim(coalesce(p_actor_issuer, '')), '') is null
+    or nullif(btrim(coalesce(p_actor_subject, '')), '') is null
   then
+    v_reason := 'MEMBERSHIP_INPUT_INVALID';
+  elsif v_audit_enterprise_id is null then
+    v_reason := 'ENTERPRISE_NOT_FOUND';
+  elsif p_project_id is not null and v_audit_project_id is null then
+    v_reason := 'PROJECT_NOT_FOUND';
+  elsif p_project_id is not null and not exists (
+    select 1
+    from public.enterprise_projects relation
+    where relation.enterprise_id = p_enterprise_id
+      and relation.project_id = p_project_id
+  ) then
     v_reason := 'MEMBERSHIP_INPUT_INVALID';
   elsif p_member_issuer = p_actor_issuer and p_member_subject = p_actor_subject then
     v_reason := 'SELF_MEMBERSHIP_CHANGE_DENIED';
@@ -132,7 +161,7 @@ begin
 
     if v_is_global then
       v_reason := null;
-    elsif 'partner_operator' = any(coalesce(p_actor_roles, '{}'::text[]))
+    elsif coalesce('partner_operator' = any(coalesce(p_actor_roles, '{}'::text[])), false)
       and v_is_scoped_operator
       and p_role in ('sub_admin', 'partner_readonly')
     then
@@ -174,14 +203,16 @@ begin
       coalesce(p_actor_roles, '{}'::text[]),
       'project_membership.grant_denied',
       'project_membership',
-      p_enterprise_id,
-      p_project_id,
+      v_audit_enterprise_id,
+      v_audit_project_id,
       p_request_id,
       'denied',
       v_reason,
       jsonb_build_object(
         'requestedRole', p_role,
         'scopeType', p_scope_type,
+        'requestedEnterpriseId', p_enterprise_id,
+        'requestedProjectId', p_project_id,
         'reason', p_reason
       )
     );
@@ -277,8 +308,12 @@ begin
     return jsonb_build_object('ok', false, 'reasonCode', 'MEMBERSHIP_NOT_FOUND');
   end if;
 
-  if p_new_role not in ('partner_operator', 'sub_admin', 'partner_readonly')
+  if p_new_role is null
+    or p_new_role not in ('partner_operator', 'sub_admin', 'partner_readonly')
+    or p_new_status is null
     or p_new_status not in ('active', 'revoked')
+    or nullif(btrim(coalesce(p_actor_issuer, '')), '') is null
+    or nullif(btrim(coalesce(p_actor_subject, '')), '') is null
   then
     v_reason := 'MEMBERSHIP_INPUT_INVALID';
   elsif v_before.member_issuer = p_actor_issuer and v_before.member_subject = p_actor_subject then
@@ -307,7 +342,7 @@ begin
 
     if v_is_global then
       v_reason := null;
-    elsif 'partner_operator' = any(coalesce(p_actor_roles, '{}'::text[]))
+    elsif coalesce('partner_operator' = any(coalesce(p_actor_roles, '{}'::text[])), false)
       and v_is_scoped_operator
       and v_before.role in ('sub_admin', 'partner_readonly')
       and p_new_role in ('sub_admin', 'partner_readonly')
