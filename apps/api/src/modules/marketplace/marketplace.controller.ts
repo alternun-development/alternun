@@ -33,6 +33,8 @@ import type { FastifyRequest } from 'fastify';
 import type { FastifyAdminRequest } from '../../common/admin-auth/admin-auth.guard';
 import {
   ApiErrorDto,
+  ApproveActivityCompletionDto,
+  CreateActivityCompletionDto,
   CreateProjectActivityDto,
   CreateEnterpriseDto,
   CreateProjectDto,
@@ -40,6 +42,8 @@ import {
   ListProjectsQueryDto,
   LocaleQueryDto,
   ReorderProjectMediaDto,
+  RejectActivityCompletionDto,
+  ReverseActivityCompletionDto,
   TransitionProjectDto,
   TransitionActivityDto,
   UpdateEnterpriseDto,
@@ -471,6 +475,106 @@ export class MarketplaceActivityAdminController {
       projectId,
       activityId,
       body?.reason
+    );
+  }
+}
+
+@ApiTags('admin activity completions')
+@ApiBearerAuth()
+@ApiBadRequestResponse({ type: ApiErrorDto })
+@ApiUnauthorizedResponse({ type: ApiErrorDto })
+@ApiForbiddenResponse({ type: ApiErrorDto })
+@ApiNotFoundResponse({ type: ApiErrorDto })
+@ApiConflictResponse({ type: ApiErrorDto })
+@ApiUnprocessableEntityResponse({ type: ApiErrorDto })
+@ApiServiceUnavailableResponse({ type: ApiErrorDto })
+@Controller({ path: 'admin/projects/:projectId', version: '1' })
+@UseGuards(MarketplaceAdminGuard)
+@UseFilters(MarketplaceExceptionFilter)
+export class MarketplaceCompletionAdminController {
+  constructor(private readonly service: MarketplaceActivityService) {}
+
+  @Get('activities/:activityId/completions')
+  @RequireMarketplacePermission('completions:read', 'project')
+  list(
+    @Req() request: FastifyAdminRequest,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('activityId', new ParseUUIDPipe({ version: '4' })) activityId: string
+  ) {
+    return this.service.listCompletions(
+      request.adminPrincipal!,
+      requestId(request),
+      projectId,
+      activityId
+    );
+  }
+
+  @Post('activities/:activityId/completions')
+  @RequireMarketplacePermission('completions:create', 'project')
+  @ApiCreatedResponse({ description: 'Pending activity completion.' })
+  create(
+    @Req() request: FastifyAdminRequest,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('activityId', new ParseUUIDPipe({ version: '4' })) activityId: string,
+    @Body() body: CreateActivityCompletionDto
+  ) {
+    return this.service.createCompletion(
+      request.adminPrincipal!,
+      requestId(request),
+      projectId,
+      activityId,
+      body
+    );
+  }
+
+  @Post('completions/:completionId/award')
+  @RequireMarketplacePermission('completions:award', 'project')
+  award(
+    @Req() request: FastifyAdminRequest,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('completionId', new ParseUUIDPipe({ version: '4' })) completionId: string,
+    @Body() body: ApproveActivityCompletionDto
+  ) {
+    return this.service.awardCompletion(
+      request.adminPrincipal!,
+      requestId(request),
+      projectId,
+      completionId,
+      body
+    );
+  }
+
+  @Post('completions/:completionId/reject')
+  @RequireMarketplacePermission('completions:reject', 'project')
+  reject(
+    @Req() request: FastifyAdminRequest,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('completionId', new ParseUUIDPipe({ version: '4' })) completionId: string,
+    @Body() body: RejectActivityCompletionDto
+  ) {
+    return this.service.rejectCompletion(
+      request.adminPrincipal!,
+      requestId(request),
+      projectId,
+      completionId,
+      body
+    );
+  }
+
+  @Post('completions/:completionId/reverse')
+  @RequireMarketplacePermission('completions:reverse', 'project')
+  reverse(
+    @Req() request: FastifyAdminRequest,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('completionId', new ParseUUIDPipe({ version: '4' })) completionId: string,
+    @Body() body: ReverseActivityCompletionDto
+  ) {
+    return this.service.reverseCompletion(
+      request.adminPrincipal!,
+      requestId(request),
+      projectId,
+      completionId,
+      body
     );
   }
 }

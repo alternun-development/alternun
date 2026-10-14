@@ -58,6 +58,38 @@ export interface PublicProjectActivity {
   updatedAt: string;
 }
 
+export type ActivityCompletionStatus = 'pending' | 'awarded' | 'rejected' | 'reversed';
+
+export interface ActivityCompletionRecord {
+  id: string;
+  projectId: string;
+  activityId: string;
+  userId: string;
+  occurrenceKey: string;
+  periodKey: string;
+  assignmentKey: string | null;
+  status: ActivityCompletionStatus;
+  completedAt: string;
+  evidenceNote: string | null;
+  evidenceUrl: string | null;
+  awardedAirs: number | null;
+  ledgerEntryId: string | null;
+  reversalLedgerEntryId: string | null;
+  awardedAt: string | null;
+  rejectedAt: string | null;
+  reversedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AirsAssignmentRecord {
+  completionId: string;
+  ledgerEntryId?: string;
+  reversalLedgerEntryId?: string;
+  airsDelta: number;
+  idempotent: boolean;
+}
+
 export interface ProjectContentBlock {
   title: string;
   location: string;

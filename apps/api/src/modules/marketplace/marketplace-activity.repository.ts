@@ -4,10 +4,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { MarketplaceApiError, marketplaceError } from './marketplace.errors';
 import { MARKETPLACE_SUPABASE } from './marketplace.repository';
 import type {
+  ActivityCompletionRecord,
   ActivityContent,
   ActivityRepeatPeriod,
   ActivityStatus,
   AdminActor,
+  AirsAssignmentRecord,
   AuditInput,
   ProjectActivityRecord,
 } from './marketplace.types';
@@ -47,6 +49,30 @@ function mapActivity(row: Row): ProjectActivityRecord {
     maxAwardsLifetime: row.max_awards_lifetime == null ? null : Number(row.max_awards_lifetime),
     startsAt: nullableText(row.starts_at),
     endsAt: nullableText(row.ends_at),
+    createdAt: text(row.created_at),
+    updatedAt: text(row.updated_at),
+  };
+}
+
+function mapCompletion(row: Row): ActivityCompletionRecord {
+  return {
+    id: text(row.id),
+    projectId: text(row.project_id),
+    activityId: text(row.activity_id),
+    userId: text(row.user_id),
+    occurrenceKey: text(row.occurrence_key),
+    periodKey: text(row.period_key),
+    assignmentKey: nullableText(row.assignment_key),
+    status: text(row.status) as ActivityCompletionRecord['status'],
+    completedAt: text(row.completed_at),
+    evidenceNote: nullableText(row.evidence_note),
+    evidenceUrl: nullableText(row.evidence_url),
+    awardedAirs: row.awarded_airs == null ? null : Number(row.awarded_airs),
+    ledgerEntryId: nullableText(row.ledger_entry_id),
+    reversalLedgerEntryId: nullableText(row.reversal_ledger_entry_id),
+    awardedAt: nullableText(row.awarded_at),
+    rejectedAt: nullableText(row.rejected_at),
+    reversedAt: nullableText(row.reversed_at),
     createdAt: text(row.created_at),
     updatedAt: text(row.updated_at),
   };
@@ -234,5 +260,170 @@ export class MarketplaceActivityRepository {
       metadata: reason ? { reason } : {},
     });
     return activity;
+  }
+
+  async listCompletions(
+    projectId: string,
+    activityId: string
+  ): Promise<ActivityCompletionRecord[]> {
+    const { data, error } = await this.client
+      .from('project_activity_completions')
+      .select('*')
+      .eq('project_id', projectId)
+      .eq('activity_id', activityId)
+      .order('completed_at', { ascending: false });
+    if (error) failDatabase(error);
+    return rows(data).map(mapCompletion);
+  }
+
+  async findCompletion(
+    projectId: string,
+    completionId: string
+  ): Promise<ActivityCompletionRecord | null> {
+    const { data, error } = await this.client
+      .from('project_activity_completions')
+      .select('*')
+      .eq('project_id', projectId)
+      .eq('id', completionId)
+      .maybeSingle();
+    if (error) failDatabase(error);
+    return data ? mapCompletion(data as Row) : null;
+  }
+
+  async createCompletion(
+    input: {
+      id: string;
+      projectId: string;
+      activityId: string;
+      userId: string;
+      occurrenceKey: string;
+      periodKey: string;
+      assignmentKey: string | null;
+      completedAt: string;
+      evidenceNote?: string;
+      evidenceUrl?: string;
+    },
+    actor: AdminActor,
+    requestId: string
+  ): Promise<ActivityCompletionRecord> {
+    const { data, error } = await this.client
+      .from('project_activity_completions')
+      .insert({
+        id: input.id,
+        project_id: input.projectId,
+        activity_id: input.activityId,
+        user_id: input.userId,
+        occurrence_key: input.occurrenceKey,
+        period_key: input.periodKey,
+        assignment_key: input.assignmentKey,
+        status: 'pending',
+        completed_at: input.completedAt,
+        evidence_note: input.evidenceNote ?? null,
+        evidence_url: input.evidenceUrl ?? null,
+        created_by_issuer: actor.issuer,
+        created_by_subject: actor.subject,
+      })
+      .select('*')
+      .single();
+    if (error) failDatabase(error, 'COMPLETION_DUPLICATE');
+    const completion = mapCompletion(data as Row);
+    await this.audit({
+      actor,
+      action: 'completion.created',
+      targetType: 'project_activity_completion',
+      targetId: completion.id,
+      projectId: input.projectId,
+      requestId,
+      result: 'allowed',
+      afterState: record(data),
+    });
+    return completion;
+  }
+
+  async rejectCompletion(
+    completion: ActivityCompletionRecord,
+    actor: AdminActor,
+    requestId: string,
+    notes?: string
+  ): Promise<ActivityCompletionRecord> {
+    const { data, error } = await this.client
+      .from('project_activity_completions')
+      .update({
+        status: 'rejected',
+        rejected_at: new Date().toISOString(),
+        validated_by_issuer: actor.issuer,
+        validated_by_subject: actor.subject,
+      })
+      .eq('project_id', completion.projectId)
+      .eq('id', completion.id)
+      .eq('status', 'pending')
+      .select('*')
+      .maybeSingle();
+    if (error) failDatabase(error);
+    if (!data) marketplaceError('COMPLETION_STATUS_INVALID');
+    const rejected = mapCompletion(data as Row);
+    await this.audit({
+      actor,
+      action: 'completion.rejected',
+      targetType: 'project_activity_completion',
+      targetId: completion.id,
+      projectId: completion.projectId,
+      requestId,
+      result: 'allowed',
+      beforeState: completion as unknown as Row,
+      afterState: record(data),
+      metadata: notes ? { notes } : {},
+    });
+    return rejected;
+  }
+
+  async awardCompletion(
+    completionId: string,
+    actor: AdminActor,
+    requestId: string,
+    notes?: string
+  ): Promise<AirsAssignmentRecord> {
+    const { data, error } = await this.client.rpc('marketplace_approve_activity_completion', {
+      p_completion_id: completionId,
+      p_actor_issuer: actor.issuer,
+      p_actor_subject: actor.subject,
+      p_actor_roles: [...actor.roles],
+      p_request_id: requestId,
+      p_notes: notes ?? null,
+    });
+    if (error) failDatabase(error);
+    const result = record(data);
+    if (result.ok !== true) marketplaceError(text(result.reasonCode) || 'VALIDATION_FAILED');
+    return {
+      completionId: text(result.completionId),
+      ledgerEntryId: text(result.ledgerEntryId),
+      airsDelta: Number(result.airsDelta),
+      idempotent: result.idempotent === true,
+    };
+  }
+
+  async reverseCompletion(
+    completionId: string,
+    actor: AdminActor,
+    requestId: string,
+    reason: string
+  ): Promise<AirsAssignmentRecord> {
+    const { data, error } = await this.client.rpc('marketplace_reverse_activity_completion', {
+      p_completion_id: completionId,
+      p_actor_issuer: actor.issuer,
+      p_actor_subject: actor.subject,
+      p_actor_roles: [...actor.roles],
+      p_request_id: requestId,
+      p_reason: reason,
+    });
+    if (error) failDatabase(error);
+    const result = record(data);
+    if (result.ok !== true) marketplaceError(text(result.reasonCode) || 'VALIDATION_FAILED');
+    return {
+      completionId: text(result.completionId),
+      reversalLedgerEntryId: text(result.reversalLedgerEntryId),
+      airsDelta: Number(result.airsDelta),
+      idempotent: result.idempotent === true,
+    };
   }
 }

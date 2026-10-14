@@ -27,7 +27,12 @@ export type AdminPermission =
   | 'project_media:moderate'
   | 'activities:read'
   | 'activities:write'
-  | 'activities:publish';
+  | 'activities:publish'
+  | 'completions:read'
+  | 'completions:create'
+  | 'completions:award'
+  | 'completions:reject'
+  | 'completions:reverse';
 
 export const ADMIN_ROLES = [
   'platform_owner',
@@ -110,6 +115,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'projects:read',
     'project_media:read',
     'activities:read',
+    'completions:read',
   ],
   sub_admin: [
     'enterprises:read',
@@ -120,6 +126,9 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:moderate',
     'activities:read',
     'activities:write',
+    'completions:read',
+    'completions:create',
+    'completions:reject',
   ],
   partner_operator: [
     'allowances:read',
@@ -135,6 +144,10 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'activities:read',
     'activities:write',
     'activities:publish',
+    'completions:read',
+    'completions:create',
+    'completions:award',
+    'completions:reject',
   ],
   moderator: [
     'enterprises:read',
@@ -143,6 +156,10 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:moderate',
     'activities:read',
+    'completions:read',
+    'completions:create',
+    'completions:award',
+    'completions:reject',
   ],
   internal_admin: [
     'allowances:read',
@@ -163,6 +180,10 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'activities:read',
     'activities:write',
     'activities:publish',
+    'completions:read',
+    'completions:create',
+    'completions:award',
+    'completions:reject',
   ],
   platform_owner: [
     'allowances:read',
@@ -184,6 +205,11 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'activities:read',
     'activities:write',
     'activities:publish',
+    'completions:read',
+    'completions:create',
+    'completions:award',
+    'completions:reject',
+    'completions:reverse',
   ],
 };
 const knownAdminRoles = new Set<string>(ADMIN_ROLES);

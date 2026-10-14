@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+import { isIP } from 'node:net';
 import { Injectable } from '@nestjs/common';
 import {
   hasPermission,
@@ -5,14 +7,23 @@ import {
   type AdminPermission,
   type AdminPrincipal,
 } from '../../common/admin-auth/admin-auth.guard';
-import type { CreateProjectActivityDto, UpdateProjectActivityDto } from './marketplace.dto';
+import type {
+  ApproveActivityCompletionDto,
+  CreateActivityCompletionDto,
+  CreateProjectActivityDto,
+  RejectActivityCompletionDto,
+  ReverseActivityCompletionDto,
+  UpdateProjectActivityDto,
+} from './marketplace.dto';
 import { marketplaceError } from './marketplace.errors';
 import { MarketplaceActivityRepository } from './marketplace-activity.repository';
 import { MarketplaceAdminRepository, MarketplacePublicRepository } from './marketplace.repository';
 import {
   actorFromPrincipal,
+  type ActivityCompletionRecord,
   type ActivityContent,
   type ActivityContentBlock,
+  type AirsAssignmentRecord,
   type ProjectActivityRecord,
   type ProjectRecord,
   type PublicProjectActivity,
@@ -111,6 +122,55 @@ function validateActivityInput(input: CreateProjectActivityDto | UpdateProjectAc
     marketplaceError('AIRS_AMOUNT_OUT_OF_RANGE');
   if (input.startsAt && input.endsAt && Date.parse(input.startsAt) >= Date.parse(input.endsAt))
     marketplaceError('VALIDATION_FAILED');
+}
+
+function isoWeek(date: Date): string {
+  const value = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  value.setUTCDate(value.getUTCDate() + 4 - (value.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(value.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((value.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return `${value.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
+function completionKeys(
+  activity: ProjectActivityRecord,
+  completedAt: Date,
+  assignmentId: string | undefined,
+  completionId: string
+): { occurrenceKey: string; periodKey: string; assignmentKey: string | null } {
+  if (activity.repeatPeriod === 'assignment') {
+    if (!assignmentId) marketplaceError('VALIDATION_FAILED');
+    const key = `assignment:${assignmentId}`;
+    return { occurrenceKey: key, periodKey: key, assignmentKey: assignmentId };
+  }
+  if (assignmentId) marketplaceError('VALIDATION_FAILED');
+  if (activity.repeatPeriod === 'none')
+    return { occurrenceKey: 'once', periodKey: 'lifetime', assignmentKey: null };
+  const periodKey =
+    activity.repeatPeriod === 'day'
+      ? completedAt.toISOString().slice(0, 10)
+      : activity.repeatPeriod === 'week'
+      ? isoWeek(completedAt)
+      : completedAt.toISOString().slice(0, 7);
+  return { occurrenceKey: `${periodKey}:${completionId}`, periodKey, assignmentKey: null };
+}
+
+function validateEvidenceUrl(value: string | undefined): void {
+  if (!value) return;
+  try {
+    const parsed = new URL(value);
+    if (
+      parsed.protocol !== 'https:' ||
+      parsed.username ||
+      parsed.password ||
+      parsed.port ||
+      isIP(parsed.hostname)
+    )
+      marketplaceError('VALIDATION_FAILED');
+  } catch (error) {
+    if (error instanceof Error && error.name === 'MarketplaceApiError') throw error;
+    marketplaceError('VALIDATION_FAILED');
+  }
 }
 
 @Injectable()
@@ -302,6 +362,106 @@ export class MarketplaceActivityService {
       requestId,
       before,
       reason
+    );
+  }
+
+  async listCompletions(
+    principal: AdminPrincipal,
+    requestId: string,
+    projectId: string,
+    activityId: string
+  ): Promise<ActivityCompletionRecord[]> {
+    await this.authorizeProject(principal, 'completions:read', requestId, projectId);
+    const activity = await this.repository.find(projectId, activityId);
+    if (!activity) marketplaceError('ACTIVITY_NOT_FOUND');
+    return this.repository.listCompletions(projectId, activityId);
+  }
+
+  async createCompletion(
+    principal: AdminPrincipal,
+    requestId: string,
+    projectId: string,
+    activityId: string,
+    input: CreateActivityCompletionDto
+  ): Promise<ActivityCompletionRecord> {
+    await this.authorizeProject(principal, 'completions:create', requestId, projectId);
+    const activity = await this.repository.find(projectId, activityId);
+    if (!activity) marketplaceError('ACTIVITY_NOT_FOUND');
+    validateEvidenceUrl(input.evidenceUrl);
+    const completedAt = input.completedAt ? new Date(input.completedAt) : new Date();
+    if (Number.isNaN(completedAt.getTime())) marketplaceError('VALIDATION_FAILED');
+    const id = randomUUID();
+    const keys = completionKeys(activity, completedAt, input.assignmentId, id);
+    return this.repository.createCompletion(
+      {
+        id,
+        projectId,
+        activityId,
+        userId: input.userId,
+        ...keys,
+        completedAt: completedAt.toISOString(),
+        evidenceNote: input.evidenceNote,
+        evidenceUrl: input.evidenceUrl,
+      },
+      actorFromPrincipal(principal),
+      requestId
+    );
+  }
+
+  async awardCompletion(
+    principal: AdminPrincipal,
+    requestId: string,
+    projectId: string,
+    completionId: string,
+    input: ApproveActivityCompletionDto
+  ): Promise<AirsAssignmentRecord> {
+    await this.authorizeProject(principal, 'completions:award', requestId, projectId);
+    const completion = await this.repository.findCompletion(projectId, completionId);
+    if (!completion) marketplaceError('COMPLETION_NOT_FOUND');
+    return this.repository.awardCompletion(
+      completionId,
+      actorFromPrincipal(principal),
+      requestId,
+      input.notes
+    );
+  }
+
+  async rejectCompletion(
+    principal: AdminPrincipal,
+    requestId: string,
+    projectId: string,
+    completionId: string,
+    input: RejectActivityCompletionDto
+  ): Promise<ActivityCompletionRecord> {
+    await this.authorizeProject(principal, 'completions:reject', requestId, projectId);
+    const completion = await this.repository.findCompletion(projectId, completionId);
+    if (!completion) marketplaceError('COMPLETION_NOT_FOUND');
+    if (completion.status !== 'pending') marketplaceError('COMPLETION_STATUS_INVALID');
+    return this.repository.rejectCompletion(
+      completion,
+      actorFromPrincipal(principal),
+      requestId,
+      input.notes
+    );
+  }
+
+  async reverseCompletion(
+    principal: AdminPrincipal,
+    requestId: string,
+    projectId: string,
+    completionId: string,
+    input: ReverseActivityCompletionDto
+  ): Promise<AirsAssignmentRecord> {
+    await this.authorizeProject(principal, 'completions:reverse', requestId, projectId);
+    if (!hasRole(principal, 'platform_owner'))
+      await this.deny(principal, requestId, projectId, 'PERMISSION_DENIED');
+    const completion = await this.repository.findCompletion(projectId, completionId);
+    if (!completion) marketplaceError('COMPLETION_NOT_FOUND');
+    return this.repository.reverseCompletion(
+      completionId,
+      actorFromPrincipal(principal),
+      requestId,
+      input.reason
     );
   }
 }

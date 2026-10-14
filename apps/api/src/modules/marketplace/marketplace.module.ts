@@ -3,6 +3,7 @@ import { AdminAuthGuard } from '../../common/admin-auth/admin-auth.nest.guard';
 import {
   MarketplaceEnterpriseAdminController,
   MarketplaceActivityAdminController,
+  MarketplaceCompletionAdminController,
   MarketplaceProjectAdminController,
   MarketplacePublicController,
 } from './marketplace.controller';
@@ -24,6 +25,7 @@ import { MarketplaceActivityService } from './marketplace-activity.service';
     MarketplaceEnterpriseAdminController,
     MarketplaceProjectAdminController,
     MarketplaceActivityAdminController,
+    MarketplaceCompletionAdminController,
   ],
   providers: [
     { provide: MARKETPLACE_SUPABASE, useFactory: () => createMarketplaceSupabaseClient() },

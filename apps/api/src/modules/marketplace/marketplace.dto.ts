@@ -147,6 +147,29 @@ export class TransitionActivityDto {
   @IsOptional() @IsString() @MinLength(1) @MaxLength(500) reason?: string;
 }
 
+export class CreateActivityCompletionDto {
+  @IsString() @MinLength(1) @MaxLength(255) userId!: string;
+  @IsOptional() @IsDateString() completedAt?: string;
+  @IsOptional() @IsString() @MinLength(1) @MaxLength(120) assignmentId?: string;
+  @IsOptional() @IsString() @MaxLength(2000) evidenceNote?: string;
+  @IsOptional()
+  @IsUrl({ protocols: ['https'], require_protocol: true })
+  @MaxLength(2048)
+  evidenceUrl?: string;
+}
+
+export class ApproveActivityCompletionDto {
+  @IsOptional() @IsString() @MaxLength(500) notes?: string;
+}
+
+export class RejectActivityCompletionDto {
+  @IsOptional() @IsString() @MaxLength(500) notes?: string;
+}
+
+export class ReverseActivityCompletionDto {
+  @IsString() @MinLength(1) @MaxLength(500) reason!: string;
+}
+
 export class LocaleQueryDto {
   @ApiPropertyOptional({ example: 'es' })
   @IsOptional()
