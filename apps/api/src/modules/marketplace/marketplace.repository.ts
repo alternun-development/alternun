@@ -322,6 +322,28 @@ export class MarketplaceAdminRepository {
     return mapEnterprise(data as Row);
   }
 
+  async setEnterpriseStatus(
+    enterpriseId: string,
+    targetStatus: EnterpriseRecord['status'],
+    actor: AdminActor,
+    requestId: string,
+    reason?: string
+  ): Promise<EnterpriseRecord> {
+    const { data, error } = await this.client.rpc('marketplace_set_enterprise_status', {
+      p_enterprise_id: enterpriseId,
+      p_target_status: targetStatus,
+      p_actor_issuer: actor.issuer,
+      p_actor_subject: actor.subject,
+      p_actor_roles: [...actor.roles],
+      p_request_id: requestId,
+      p_reason: reason ?? null,
+    });
+    if (error) failDatabase(error);
+    const result = record(data);
+    if (result.ok !== true) marketplaceError(text(result.reasonCode) || 'VALIDATION_FAILED');
+    return mapEnterprise(record(result.enterprise));
+  }
+
   async listProjects(scope?: {
     enterpriseIds: readonly string[];
     projectIds: readonly string[];

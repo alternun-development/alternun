@@ -136,6 +136,57 @@ export class MarketplaceEnterpriseAdminController {
   ) {
     return this.service.updateEnterprise(request.adminPrincipal!, requestId(request), id, body);
   }
+
+  @Post(':id/pause')
+  @RequireMarketplacePermission('enterprises:status', 'enterprise')
+  @ApiOperation({ summary: 'Pause an enterprise without cascading project status.' })
+  pause(
+    @Req() request: FastifyAdminRequest,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() body: TransitionProjectDto
+  ) {
+    return this.service.transitionEnterprise(
+      request.adminPrincipal!,
+      requestId(request),
+      id,
+      'paused',
+      body?.reason
+    );
+  }
+
+  @Post(':id/resume')
+  @RequireMarketplacePermission('enterprises:status', 'enterprise')
+  @ApiOperation({ summary: 'Resume an enterprise.' })
+  resume(
+    @Req() request: FastifyAdminRequest,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() body: TransitionProjectDto
+  ) {
+    return this.service.transitionEnterprise(
+      request.adminPrincipal!,
+      requestId(request),
+      id,
+      'active',
+      body?.reason
+    );
+  }
+
+  @Post(':id/archive')
+  @RequireMarketplacePermission('enterprises:status', 'enterprise')
+  @ApiOperation({ summary: 'Archive an enterprise without cascading project status.' })
+  archive(
+    @Req() request: FastifyAdminRequest,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() body: TransitionProjectDto
+  ) {
+    return this.service.transitionEnterprise(
+      request.adminPrincipal!,
+      requestId(request),
+      id,
+      'archived',
+      body?.reason
+    );
+  }
 }
 
 @ApiTags('admin projects')

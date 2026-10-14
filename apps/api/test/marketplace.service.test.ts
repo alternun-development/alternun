@@ -108,6 +108,7 @@ function adminRepository(overrides: Record<string, unknown> = {}) {
     findEnterprise: async (id: string) => (id === enterprise.id ? enterprise : null),
     createEnterprise: async () => enterprise,
     updateEnterprise: async () => enterprise,
+    setEnterpriseStatus: async () => enterprise,
     listProjects: async () => [project],
     findProject: async (id: string) => (id === project.id ? project : null),
     createProject: async () => project,
@@ -202,6 +203,43 @@ test('partner operator edits enterprise presentation but not protected legal ide
     }),
     expectApiError('PROTECTED_FIELD_WRITE_DENIED', 403)
   );
+});
+
+test('pause, resume, and archive enterprise use the atomic status RPC', async () => {
+  const targets: string[] = [];
+  const { repository } = adminRepository({
+    setEnterpriseStatus: async (_id: string, target: string) => {
+      targets.push(target);
+      return { ...enterprise, status: target };
+    },
+  });
+  const service = new MarketplaceAdminService(repository);
+  const owner = principal('platform_owner');
+  await service.transitionEnterprise(owner, 'pause', 'e1', 'paused', 'maintenance');
+  await service.transitionEnterprise(owner, 'resume', 'e1', 'active');
+  await service.transitionEnterprise(owner, 'archive', 'e1', 'archived', 'closed');
+  assert.deepEqual(targets, ['paused', 'active', 'archived']);
+});
+
+test('non-global role cannot change enterprise status', async () => {
+  let statusCalls = 0;
+  const { repository } = adminRepository({
+    setEnterpriseStatus: async () => {
+      statusCalls += 1;
+      return enterprise;
+    },
+  });
+  await assert.rejects(
+    new MarketplaceAdminService(repository).transitionEnterprise(
+      principal('partner_operator', ['e1']),
+      'status-denied',
+      'e1',
+      'paused',
+      'maintenance'
+    ),
+    expectApiError('PERMISSION_DENIED', 403)
+  );
+  assert.equal(statusCalls, 0);
 });
 
 test('invalid SQL transition reason maps to the contract 409', async () => {
@@ -454,6 +492,48 @@ test('atomic mutation reasonCode maps to the marketplace API error', async () =>
       'request'
     ),
     expectApiError('ENTERPRISE_NOT_ACTIVE', 409)
+  );
+});
+
+test('enterprise status changes call the atomic RPC with confirmed status values', async () => {
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const repository = new MarketplaceAdminRepository({
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      calls.push({ name, args });
+      return {
+        data: {
+          ok: true,
+          enterprise: {
+            id: 'e1',
+            slug: 'hotel',
+            display_name: 'Hotel',
+            legal_name: null,
+            status: args.p_target_status,
+            country_code: 'CO',
+            website_url: null,
+            created_at: 'now',
+            updated_at: 'now',
+          },
+        },
+        error: null,
+      };
+    },
+  } as never);
+  const actor = { issuer: 'issuer', subject: 'subject', roles: ['platform_owner'] };
+  await repository.setEnterpriseStatus('e1', 'paused', actor, 'pause', 'maintenance');
+  await repository.setEnterpriseStatus('e1', 'active', actor, 'resume');
+  await repository.setEnterpriseStatus('e1', 'archived', actor, 'archive', 'closed');
+  assert.deepEqual(
+    calls.map(({ name }) => name),
+    [
+      'marketplace_set_enterprise_status',
+      'marketplace_set_enterprise_status',
+      'marketplace_set_enterprise_status',
+    ]
+  );
+  assert.deepEqual(
+    calls.map(({ args }) => args.p_target_status),
+    ['paused', 'active', 'archived']
   );
 });
 

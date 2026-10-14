@@ -336,6 +336,25 @@ export class MarketplaceAdminService {
     return after;
   }
 
+  async transitionEnterprise(
+    principal: AdminPrincipal,
+    requestId: string,
+    id: string,
+    target: EnterpriseRecord['status'],
+    reason?: string
+  ): Promise<EnterpriseRecord> {
+    const enterprise = await this.repository.findEnterprise(id);
+    if (!enterprise) marketplaceError('ENTERPRISE_NOT_FOUND');
+    await this.authorize(principal, 'enterprises:status', requestId, 'enterprise', enterprise.id);
+    return this.repository.setEnterpriseStatus(
+      id,
+      target,
+      actorFromPrincipal(principal),
+      requestId,
+      reason
+    );
+  }
+
   async listProjects(principal: AdminPrincipal, requestId: string): Promise<ProjectRecord[]> {
     await this.authorize(principal, 'projects:read', requestId, 'project');
     if (isGlobal(principal)) return this.repository.listProjects();
