@@ -329,6 +329,12 @@ begin
   ) is not false then
     raise exception 'cross-project scope assertion failed';
   end if;
+  if public.marketplace_actor_has_scope(
+    'verification', 'member-change', array['partner_readonly'], v_enterprise_id,
+    v_project_id, array['sub_admin']
+  ) is not false then
+    raise exception 'claim and membership role mismatch assertion failed';
+  end if;
 
   v_result := public.marketplace_update_project(
     v_project_id, '{"content":{"es":{"title":"Proyecto actualizado","location":"Bogota","theme":"Ecoturismo","description":"Contenido actualizado y completo.","waysToContribute":["Participar"]}}}'::jsonb,

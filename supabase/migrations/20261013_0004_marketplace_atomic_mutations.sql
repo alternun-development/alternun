@@ -52,6 +52,7 @@ begin
       and membership.status = 'active'
       and membership.enterprise_id = p_enterprise_id
       and membership.role = any(p_required_roles)
+      and membership.role = any(p_roles)
       and (
         membership.scope_type = 'enterprise'
         or (
