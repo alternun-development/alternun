@@ -220,6 +220,13 @@ export function hasPermission(principal: AdminPrincipal, permission: AdminPermis
   return principal.roles.some((role) => permissionsByRole[role]?.includes(permission));
 }
 
+export function rolesWithPermission(
+  principal: AdminPrincipal,
+  permission: AdminPermission
+): string[] {
+  return principal.roles.filter((role) => permissionsByRole[role]?.includes(permission));
+}
+
 function hasKnownAdminRole(principal: AdminPrincipal): boolean {
   return principal.roles.some((role) => knownAdminRoles.has(role));
 }

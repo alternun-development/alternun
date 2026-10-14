@@ -9,6 +9,7 @@ import type {
   MediaKind,
   ProjectContent,
   ProjectMediaRecord,
+  ProjectMembershipScope,
   ProjectRecord,
   ProjectStatus,
 } from './marketplace.types';
@@ -126,6 +127,15 @@ function mapMedia(row: Row): ProjectMediaRecord {
   };
 }
 
+function mapMembershipScope(row: Row): ProjectMembershipScope {
+  return {
+    enterpriseId: text(row.enterprise_id),
+    projectId: nullableText(row.project_id),
+    scopeType: text(row.scope_type) as ProjectMembershipScope['scopeType'],
+    role: text(row.role),
+  };
+}
+
 function failDatabase(
   error: { code?: string; message?: string } | null,
   conflictCode?: string
@@ -220,7 +230,43 @@ export class MarketplaceAdminRepository {
     if (error) failDatabase(error);
   }
 
+  async actorHasScope(
+    actor: AdminActor,
+    roles: readonly string[],
+    enterpriseId: string,
+    projectId: string | null,
+    requiredRoles: readonly string[]
+  ): Promise<boolean> {
+    try {
+      const { data, error } = await this.client.rpc('marketplace_actor_has_scope', {
+        p_member_issuer: actor.issuer,
+        p_member_subject: actor.subject,
+        p_roles: [...roles],
+        p_enterprise_id: enterpriseId,
+        p_project_id: projectId,
+        p_required_roles: [...requiredRoles],
+      });
+      return !error && data === true;
+    } catch {
+      return false;
+    }
+  }
+
+  async listActorMemberships(actor: AdminActor): Promise<ProjectMembershipScope[]> {
+    if (actor.roles.length === 0) return [];
+    const { data, error } = await this.client
+      .from('project_memberships')
+      .select('enterprise_id, project_id, scope_type, role')
+      .eq('member_issuer', actor.issuer)
+      .eq('member_subject', actor.subject)
+      .eq('status', 'active')
+      .in('role', [...actor.roles]);
+    if (error) failDatabase(error);
+    return rowArray(data).map(mapMembershipScope);
+  }
+
   async listEnterprises(enterpriseIds?: readonly string[]): Promise<EnterpriseRecord[]> {
+    if (enterpriseIds?.length === 0) return [];
     let query = this.client.from('enterprises').select('*').order('display_name');
     if (enterpriseIds) query = query.in('id', [...enterpriseIds]);
     const { data, error } = await query;
@@ -276,16 +322,53 @@ export class MarketplaceAdminRepository {
     return mapEnterprise(data as Row);
   }
 
-  async listProjects(enterpriseIds?: readonly string[]): Promise<ProjectRecord[]> {
-    let query = this.client
-      .from('projects')
-      .select('*, enterprise_projects!inner(*), project_media(*)')
-      .eq('enterprise_projects.is_primary', true)
-      .order('created_at', { ascending: false });
-    if (enterpriseIds) query = query.in('enterprise_projects.enterprise_id', [...enterpriseIds]);
-    const { data, error } = await query;
-    if (error) failDatabase(error);
-    return rowArray(data).map(mapProject);
+  async listProjects(scope?: {
+    enterpriseIds: readonly string[];
+    projectIds: readonly string[];
+  }): Promise<ProjectRecord[]> {
+    const select = '*, enterprise_projects!inner(*), project_media(*)';
+    if (!scope) {
+      const { data, error } = await this.client
+        .from('projects')
+        .select(select)
+        .eq('enterprise_projects.is_primary', true)
+        .order('created_at', { ascending: false });
+      if (error) failDatabase(error);
+      return rowArray(data).map(mapProject);
+    }
+
+    const rows: Row[] = [];
+    if (scope.enterpriseIds.length > 0) {
+      const { data, error } = await this.client
+        .from('projects')
+        .select(select)
+        .eq('enterprise_projects.is_primary', true)
+        .in('enterprise_projects.enterprise_id', [...scope.enterpriseIds])
+        .order('created_at', { ascending: false });
+      if (error) failDatabase(error);
+      rows.push(...rowArray(data));
+    }
+    if (scope.projectIds.length > 0) {
+      const { data, error } = await this.client
+        .from('projects')
+        .select(select)
+        .eq('enterprise_projects.is_primary', true)
+        .in('id', [...scope.projectIds])
+        .order('created_at', { ascending: false });
+      if (error) failDatabase(error);
+      rows.push(...rowArray(data));
+    }
+
+    const seen = new Set<string>();
+    return rows
+      .sort((a, b) => text(b.created_at).localeCompare(text(a.created_at)))
+      .filter((row) => {
+        const id = text(row.id);
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      })
+      .map(mapProject);
   }
 
   async findProject(id: string): Promise<ProjectRecord | null> {

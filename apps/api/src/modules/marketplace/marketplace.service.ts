@@ -2,6 +2,7 @@ import { isIP } from 'node:net';
 import { Injectable } from '@nestjs/common';
 import {
   hasPermission,
+  rolesWithPermission,
   type AdminPermission,
   type AdminPrincipal,
 } from '../../common/admin-auth/admin-auth.guard';
@@ -35,12 +36,6 @@ function isGlobal(principal: AdminPrincipal): boolean {
 
 function hasRole(principal: AdminPrincipal, ...roles: string[]): boolean {
   return principal.roles.some((role) => roles.includes(role));
-}
-
-function scopedEnterpriseIds(principal: AdminPrincipal): readonly string[] | undefined {
-  return isGlobal(principal) || principal.organizationIds.includes('*')
-    ? undefined
-    : principal.organizationIds;
 }
 
 function resolveLocale(
@@ -236,12 +231,21 @@ export class MarketplaceAdminService {
         enterpriseId,
         projectId
       );
-    if (
-      enterpriseId &&
-      !isGlobal(principal) &&
-      !principal.organizationIds.includes('*') &&
-      !principal.organizationIds.includes(enterpriseId)
-    ) {
+    let hasScope = true;
+    if (enterpriseId && !isGlobal(principal)) {
+      try {
+        hasScope = await this.repository.actorHasScope(
+          actorFromPrincipal(principal),
+          principal.roles,
+          enterpriseId,
+          projectId ?? null,
+          rolesWithPermission(principal, permission)
+        );
+      } catch {
+        hasScope = false;
+      }
+    }
+    if (!hasScope) {
       await this.deny(
         principal,
         projectId ? 'PROJECT_SCOPE_DENIED' : 'ENTERPRISE_SCOPE_DENIED',
@@ -255,7 +259,10 @@ export class MarketplaceAdminService {
 
   async listEnterprises(principal: AdminPrincipal, requestId: string): Promise<EnterpriseRecord[]> {
     await this.authorize(principal, 'enterprises:read', requestId, 'enterprise');
-    return this.repository.listEnterprises(scopedEnterpriseIds(principal));
+    if (isGlobal(principal)) return this.repository.listEnterprises();
+    const memberships = await this.repository.listActorMemberships(actorFromPrincipal(principal));
+    const enterpriseIds = [...new Set(memberships.map(({ enterpriseId }) => enterpriseId))];
+    return this.repository.listEnterprises(enterpriseIds);
   }
 
   async createEnterprise(
@@ -331,7 +338,24 @@ export class MarketplaceAdminService {
 
   async listProjects(principal: AdminPrincipal, requestId: string): Promise<ProjectRecord[]> {
     await this.authorize(principal, 'projects:read', requestId, 'project');
-    return this.repository.listProjects(scopedEnterpriseIds(principal));
+    if (isGlobal(principal)) return this.repository.listProjects();
+    const memberships = await this.repository.listActorMemberships(actorFromPrincipal(principal));
+    return this.repository.listProjects({
+      enterpriseIds: [
+        ...new Set(
+          memberships
+            .filter(({ scopeType }) => scopeType === 'enterprise')
+            .map(({ enterpriseId }) => enterpriseId)
+        ),
+      ],
+      projectIds: [
+        ...new Set(
+          memberships
+            .filter(({ scopeType, projectId }) => scopeType === 'project' && projectId)
+            .map(({ projectId }) => projectId as string)
+        ),
+      ],
+    });
   }
 
   async getProject(

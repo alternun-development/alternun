@@ -1,6 +1,7 @@
 import { Injectable, SetMetadata, type CanActivate, type ExecutionContext } from '@nestjs/common';
 import {
   hasPermission,
+  rolesWithPermission,
   type AdminPermission,
   type FastifyAdminRequest,
 } from '../../common/admin-auth/admin-auth.guard';
@@ -60,12 +61,18 @@ export class MarketplaceAdminGuard implements CanActivate {
       }
     }
 
-    const hasScope =
-      !enterpriseId ||
-      isGlobalRole(principal.roles) ||
-      principal.organizationIds.includes('*') ||
-      principal.organizationIds.includes(enterpriseId);
-    if (!hasPermission(principal, metadata.permission) || !hasScope) {
+    const permissionGranted = hasPermission(principal, metadata.permission);
+    let hasScope = true;
+    if (permissionGranted && enterpriseId && !isGlobalRole(principal.roles)) {
+      hasScope = await this.repository.actorHasScope(
+        actorFromPrincipal(principal),
+        principal.roles,
+        enterpriseId,
+        projectId ?? null,
+        rolesWithPermission(principal, metadata.permission)
+      );
+    }
+    if (!permissionGranted || !hasScope) {
       const reasonCode = !hasScope
         ? projectId
           ? 'PROJECT_SCOPE_DENIED'

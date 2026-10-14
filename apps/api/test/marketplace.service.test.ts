@@ -9,8 +9,8 @@ import type { AdminPrincipal } from '../src/common/admin-auth/admin-auth.guard';
 import { CreateProjectMediaDto } from '../src/modules/marketplace/marketplace.dto';
 import { MarketplaceApiError } from '../src/modules/marketplace/marketplace.errors';
 import {
+  MarketplaceAdminRepository,
   resolveMarketplaceSupabaseConfig,
-  type MarketplaceAdminRepository,
   type MarketplacePublicRepository,
 } from '../src/modules/marketplace/marketplace.repository';
 import {
@@ -95,6 +95,15 @@ function adminRepository(overrides: Record<string, unknown> = {}) {
     audit: async (input: AuditInput) => {
       audits.push(input);
     },
+    actorHasScope: async () => true,
+    listActorMemberships: async () => [
+      {
+        enterpriseId: enterprise.id,
+        projectId: null,
+        scopeType: 'enterprise',
+        role: 'partner_operator',
+      },
+    ],
     listEnterprises: async () => [enterprise],
     findEnterprise: async (id: string) => (id === enterprise.id ? enterprise : null),
     createEnterprise: async () => enterprise,
@@ -258,16 +267,188 @@ test('malformed and null media input produces validation errors instead of reach
   );
 });
 
-test('project lookup resolves enterprise scope from repository and blocks cross-enterprise access', async () => {
+test('project lookup ignores organizationIds and blocks access when membership scope is false', async () => {
   const { repository, audits } = adminRepository({
     findProject: async () => ({ ...project, enterpriseId: 'e2' }),
+    actorHasScope: async () => false,
   });
   const service = new MarketplaceAdminService(repository);
   await assert.rejects(
-    service.getProject(principal('partner_operator', ['e1']), 'r1', 'p1'),
+    service.getProject(principal('partner_operator', ['e2']), 'r1', 'p1'),
     expectApiError('PROJECT_SCOPE_DENIED', 403)
   );
   assert.equal(audits[0].enterpriseId, 'e2');
+});
+
+test('global access skips scope RPC while scoped access requires a true result', async () => {
+  let scopeCalls = 0;
+  let receivedRoles: readonly string[] = [];
+  let receivedRequiredRoles: readonly string[] = [];
+  const global = adminRepository({
+    actorHasScope: async () => {
+      scopeCalls += 1;
+      return false;
+    },
+  });
+  await new MarketplaceAdminService(global.repository).getProject(
+    principal('platform_owner'),
+    'global',
+    'p1'
+  );
+  assert.equal(scopeCalls, 0);
+
+  const scoped = adminRepository({
+    actorHasScope: async (
+      _actor: unknown,
+      roles: readonly string[],
+      _enterpriseId: string,
+      _projectId: string | null,
+      requiredRoles: readonly string[]
+    ) => {
+      scopeCalls += 1;
+      receivedRoles = roles;
+      receivedRequiredRoles = requiredRoles;
+      return true;
+    },
+  });
+  const scopedPrincipal = {
+    ...principal('sub_admin', []),
+    roles: ['sub_admin', 'unknown_role'],
+  };
+  await new MarketplaceAdminService(scoped.repository).getProject(scopedPrincipal, 'scoped', 'p1');
+  assert.equal(scopeCalls, 1);
+  assert.deepEqual(receivedRoles, ['sub_admin', 'unknown_role']);
+  assert.deepEqual(receivedRequiredRoles, ['sub_admin']);
+});
+
+test('scope RPC false or exception fails closed with 403', async () => {
+  for (const actorHasScope of [
+    async () => false,
+    async () => {
+      throw new Error('rpc unavailable');
+    },
+  ]) {
+    const { repository } = adminRepository({ actorHasScope });
+    await assert.rejects(
+      new MarketplaceAdminService(repository).getProject(
+        principal('sub_admin', ['e1']),
+        'scope-denied',
+        'p1'
+      ),
+      expectApiError('PROJECT_SCOPE_DENIED', 403)
+    );
+  }
+});
+
+test('repository scope RPC errors return false', async () => {
+  const repository = new MarketplaceAdminRepository({
+    rpc: async () => {
+      throw new Error('rpc unavailable');
+    },
+  } as never);
+  assert.equal(
+    await repository.actorHasScope(
+      { issuer: 'issuer', subject: 'subject', roles: ['sub_admin'] },
+      ['sub_admin'],
+      'e1',
+      'p1',
+      ['sub_admin']
+    ),
+    false
+  );
+});
+
+test('non-global project creation without membership scope is denied', async () => {
+  let creates = 0;
+  const { repository } = adminRepository({
+    actorHasScope: async () => false,
+    createProject: async () => {
+      creates += 1;
+      return project;
+    },
+  });
+  await assert.rejects(
+    new MarketplaceAdminService(repository).createProject(
+      principal('partner_operator', ['e1']),
+      'create-denied',
+      {
+        enterpriseId: 'e1',
+        slug: 'hotel-project',
+        categoryCode: 'hospitality_ecotourism',
+        countryCode: 'CO',
+        timeZone: 'America/Bogota',
+        defaultLocale: 'es',
+        content,
+      }
+    ),
+    expectApiError('ENTERPRISE_SCOPE_DENIED', 403)
+  );
+  assert.equal(creates, 0);
+});
+
+test('project-scoped sub-admin lists only its member project', async () => {
+  const otherProject = { ...project, id: 'p2', slug: 'other-project' };
+  const { repository } = adminRepository({
+    listActorMemberships: async () => [
+      { enterpriseId: 'e1', projectId: 'p1', scopeType: 'project', role: 'sub_admin' },
+    ],
+    listProjects: async (scope: { enterpriseIds: string[]; projectIds: string[] }) =>
+      [project, otherProject].filter(
+        (item) =>
+          scope.enterpriseIds.includes(item.enterpriseId) || scope.projectIds.includes(item.id)
+      ),
+  });
+  const result = await new MarketplaceAdminService(repository).listProjects(
+    principal('sub_admin', ['*']),
+    'list-projects'
+  );
+  assert.deepEqual(
+    result.map(({ id }) => id),
+    ['p1']
+  );
+});
+
+test('non-global enterprise list comes only from active memberships', async () => {
+  let listedIds: readonly string[] | undefined;
+  const secondEnterprise = { ...enterprise, id: 'e2', slug: 'second' };
+  const { repository } = adminRepository({
+    listActorMemberships: async () => [
+      { enterpriseId: 'e2', projectId: 'p2', scopeType: 'project', role: 'sub_admin' },
+    ],
+    listEnterprises: async (enterpriseIds?: readonly string[]) => {
+      listedIds = enterpriseIds;
+      return [enterprise, secondEnterprise].filter((item) => enterpriseIds?.includes(item.id));
+    },
+  });
+  const result = await new MarketplaceAdminService(repository).listEnterprises(
+    principal('sub_admin', ['e1', '*']),
+    'list-enterprises'
+  );
+  assert.deepEqual(listedIds, ['e2']);
+  assert.deepEqual(
+    result.map(({ id }) => id),
+    ['e2']
+  );
+});
+
+test('missing project route returns PROJECT_NOT_FOUND before scope lookup', async () => {
+  let scopeCalls = 0;
+  const { repository } = adminRepository({
+    findProject: async () => null,
+    actorHasScope: async () => {
+      scopeCalls += 1;
+      return true;
+    },
+  });
+  await assert.rejects(
+    new MarketplaceAdminService(repository).getProject(
+      principal('sub_admin'),
+      'missing-project',
+      'missing'
+    ),
+    expectApiError('PROJECT_NOT_FOUND', 404)
+  );
+  assert.equal(scopeCalls, 0);
 });
 
 test('service-role configuration never falls back to anon or Expo public keys', () => {

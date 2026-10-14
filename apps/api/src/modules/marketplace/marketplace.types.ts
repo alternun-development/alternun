@@ -111,6 +111,13 @@ export interface AdminActor {
   roles: readonly string[];
 }
 
+export interface ProjectMembershipScope {
+  enterpriseId: string;
+  projectId: string | null;
+  scopeType: 'enterprise' | 'project';
+  role: string;
+}
+
 export function actorFromPrincipal(principal: AdminPrincipal): AdminActor {
   return { issuer: principal.iss, subject: principal.sub, roles: principal.roles };
 }
