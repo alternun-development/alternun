@@ -8,12 +8,30 @@ import { UnauthorizedException } from '@nestjs/common';
 import type { JsonWebKey as NodeJsonWebKey } from 'node:crypto';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
-export type AdminPermission = 'allowances:read' | 'allowances:write';
+export type AdminPermission =
+  | 'allowances:read'
+  | 'allowances:write'
+  | 'enterprises:read'
+  | 'enterprises:create'
+  | 'enterprises:update'
+  | 'enterprises:status'
+  | 'projects:read'
+  | 'projects:create'
+  | 'projects:update'
+  | 'projects:publish'
+  | 'projects:pause'
+  | 'projects:archive'
+  | 'projects:transfer'
+  | 'project_media:read'
+  | 'project_media:write'
+  | 'project_media:moderate';
 
 export const ADMIN_ROLES = [
   'platform_owner',
   'internal_admin',
+  'moderator',
   'partner_operator',
+  'sub_admin',
   'partner_readonly',
 ] as const;
 
@@ -83,10 +101,69 @@ type JwksDocument = {
 };
 
 const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = {
-  partner_readonly: ['allowances:read'],
-  partner_operator: ['allowances:read', 'allowances:write'],
-  internal_admin: ['allowances:read', 'allowances:write'],
-  platform_owner: ['allowances:read', 'allowances:write'],
+  partner_readonly: ['allowances:read', 'enterprises:read', 'projects:read', 'project_media:read'],
+  sub_admin: [
+    'enterprises:read',
+    'projects:read',
+    'projects:update',
+    'project_media:read',
+    'project_media:write',
+    'project_media:moderate',
+  ],
+  partner_operator: [
+    'allowances:read',
+    'allowances:write',
+    'enterprises:read',
+    'enterprises:update',
+    'projects:read',
+    'projects:create',
+    'projects:update',
+    'project_media:read',
+    'project_media:write',
+    'project_media:moderate',
+  ],
+  moderator: [
+    'enterprises:read',
+    'projects:read',
+    'projects:update',
+    'project_media:read',
+    'project_media:moderate',
+  ],
+  internal_admin: [
+    'allowances:read',
+    'allowances:write',
+    'enterprises:read',
+    'enterprises:create',
+    'enterprises:update',
+    'enterprises:status',
+    'projects:read',
+    'projects:create',
+    'projects:update',
+    'projects:publish',
+    'projects:pause',
+    'projects:archive',
+    'project_media:read',
+    'project_media:write',
+    'project_media:moderate',
+  ],
+  platform_owner: [
+    'allowances:read',
+    'allowances:write',
+    'enterprises:read',
+    'enterprises:create',
+    'enterprises:update',
+    'enterprises:status',
+    'projects:read',
+    'projects:create',
+    'projects:update',
+    'projects:publish',
+    'projects:pause',
+    'projects:archive',
+    'projects:transfer',
+    'project_media:read',
+    'project_media:write',
+    'project_media:moderate',
+  ],
 };
 const knownAdminRoles = new Set<string>(ADMIN_ROLES);
 const wildcardOrganizationId = '*';
