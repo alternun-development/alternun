@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { useRouter } from 'expo-router';
 import {
   Animated,
   Image,
@@ -442,14 +443,18 @@ function ProjectCard({
   project,
   palette,
   t,
+  onOpen,
 }: {
   project: MarketProject;
   palette: Palette;
   t: Translate;
+  onOpen: (slug: string) => void;
 }): React.JSX.Element {
   return (
-    <View
+    <Pressable
       testID={`explorer-project-${project.id}`}
+      accessibilityRole='button'
+      onPress={() => onOpen(project.slug)}
       style={[
         styles.projectCard,
         { backgroundColor: palette.surface, borderColor: palette.border },
@@ -506,14 +511,14 @@ function ProjectCard({
       </View>
       <Pressable
         style={[styles.projectAction, { borderColor: palette.primary }]}
-        onPress={openTelegram}
+        onPress={() => onOpen(project.slug)}
       >
         <Text style={[styles.projectActionText, { color: palette.primaryDeep }]}>
           {t('explorer.participateAndEarn')}
         </Text>
         <ChevronRightIcon size={17} color={palette.primaryDeep} />
       </Pressable>
-    </View>
+    </Pressable>
   );
 }
 
@@ -523,12 +528,14 @@ export function MarketplaceProjectBrowser({
   t,
   loader = loadMarketplaceProjects,
   onFeaturedProjectChange,
+  onOpenProject = () => undefined,
 }: {
   locale: string;
   palette: Palette;
   t: Translate;
   loader?: LoadMarketplaceProjects;
   onFeaturedProjectChange?: (project: MarketProject | null) => void;
+  onOpenProject?: (slug: string) => void;
 }): React.JSX.Element {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<ProjectFilter>('all');
@@ -666,7 +673,13 @@ export function MarketplaceProjectBrowser({
           </View>
         ) : visibleProjects.length ? (
           visibleProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} palette={palette} t={t} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+              palette={palette}
+              t={t}
+              onOpen={onOpenProject}
+            />
           ))
         ) : (
           <View
@@ -775,6 +788,7 @@ function SubmitProject({ palette, t }: { palette: Palette; t: Translate }): Reac
 export default function ExplorarScreen(): React.JSX.Element {
   const { themeMode, language } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
+  const router = useRouter();
   const isDark = themeMode === 'dark';
   const [featuredProject, setFeaturedProject] = useState<MarketProject | null>(null);
   const [projectFormOffset, setProjectFormOffset] = useState(0);
@@ -864,6 +878,12 @@ export default function ExplorarScreen(): React.JSX.Element {
             palette={palette}
             t={t}
             onFeaturedProjectChange={setFeaturedProject}
+            onOpenProject={(slug) =>
+              router.push({
+                pathname: '/explorar/[slug]',
+                params: { slug },
+              })
+            }
           />
 
           <View style={[styles.earnBanner, { backgroundColor: palette.primaryDeep }]}>

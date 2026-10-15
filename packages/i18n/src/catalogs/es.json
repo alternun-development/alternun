@@ -1074,6 +1074,17 @@
         "error": "No se pudieron cargar los proyectos.",
         "retry": "Reintentar"
       },
+      "detail": {
+        "back": "Volver a proyectos",
+        "loading": "Cargando proyecto…",
+        "unavailable": "Proyecto no disponible",
+        "error": "No se pudo cargar el proyecto.",
+        "retry": "Reintentar",
+        "waysToContribute": "Formas de contribuir",
+        "gallery": "Galería",
+        "video": "Video",
+        "openPresentation": "Ver presentación"
+      },
       "intents": {
         "question": "¿Qué quieres hacer hoy?",
         "prompt": "ELIGE TU CAMINO",

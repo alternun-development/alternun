@@ -1074,6 +1074,17 @@
         "error": "Projects could not be loaded.",
         "retry": "Try again"
       },
+      "detail": {
+        "back": "Back to projects",
+        "loading": "Loading project…",
+        "unavailable": "Project unavailable",
+        "error": "The project could not be loaded.",
+        "retry": "Try again",
+        "waysToContribute": "Ways to contribute",
+        "gallery": "Gallery",
+        "video": "Video",
+        "openPresentation": "View presentation"
+      },
       "intents": {
         "question": "What do you want to do today?",
         "prompt": "CHOOSE YOUR PATH",
