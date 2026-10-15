@@ -22,7 +22,12 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { ACTIVITY_REPEAT_PERIODS, MEDIA_KINDS, PROJECT_CATEGORIES } from './marketplace.types';
+import {
+  ACTIVITY_REPEAT_PERIODS,
+  COMMENT_STATUSES,
+  MEDIA_KINDS,
+  PROJECT_CATEGORIES,
+} from './marketplace.types';
 
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const LOCALE_PATTERN = /^[a-z]{2}(?:-[A-Z]{2})?$/;
@@ -221,4 +226,28 @@ export class ListProjectsQueryDto extends LocaleQueryDto {
   @IsOptional() @IsString() @IsIn(PROJECT_CATEGORIES) categoryCode?: string;
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1;
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) perPage = 20;
+}
+
+export class ListProjectCommentsQueryDto {
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) perPage = 20;
+}
+
+export class CreateProjectCommentDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(1000)
+  @Matches(/^[^\p{Cc}]+$/u)
+  body!: string;
+}
+
+export class ListAdminProjectCommentsQueryDto {
+  @IsOptional()
+  @IsString()
+  @IsIn(COMMENT_STATUSES)
+  status?: (typeof COMMENT_STATUSES)[number];
+}
+
+export class ModerateProjectCommentDto {
+  @IsString() @MinLength(1) @MaxLength(500) reason!: string;
 }
