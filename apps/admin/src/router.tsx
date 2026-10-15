@@ -12,6 +12,9 @@ import { AuthCallbackPage } from './pages/auth/callback-page';
 import { AuthRelayPage } from './pages/auth/relay-page';
 import { DashboardPage } from './pages/dashboard/page';
 import { LoginPage } from './pages/login/page';
+import { MarketplaceEnterpriseDetailPage } from './pages/marketplace/enterprise-detail-page';
+import { MarketplaceProjectDetailPage } from './pages/marketplace/project-detail-page';
+import { MarketplaceProjectsPage } from './pages/marketplace/projects-page';
 import { ResourceListPage } from './pages/resources/resource-list-page';
 import { ResourceShowPage } from './pages/resources/resource-show-page';
 import { adminResources } from './resources/catalog';
@@ -30,7 +33,9 @@ function AdminLandingRedirect(): React.ReactElement | null {
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function AdminRouter() {
-  const dataResources = adminResources.filter((resource) => resource.name !== 'dashboard');
+  const dataResources = adminResources.filter(
+    (resource) => resource.name !== 'dashboard' && !resource.name.startsWith('marketplace-')
+  );
 
   return (
     <BrowserRouter>
@@ -59,6 +64,35 @@ export function AdminRouter() {
             element={
               <CanAccess resource='dashboard' action='list' fallback={<ForbiddenPage />}>
                 <DashboardPage />
+              </CanAccess>
+            }
+          />
+
+          <Route
+            path='/marketplace'
+            element={
+              <CanAccess resource='marketplace-projects' action='list' fallback={<ForbiddenPage />}>
+                <MarketplaceProjectsPage />
+              </CanAccess>
+            }
+          />
+          <Route
+            path='/marketplace/projects/:id'
+            element={
+              <CanAccess resource='marketplace-projects' action='show' fallback={<ForbiddenPage />}>
+                <MarketplaceProjectDetailPage />
+              </CanAccess>
+            }
+          />
+          <Route
+            path='/marketplace/enterprises/:id'
+            element={
+              <CanAccess
+                resource='marketplace-enterprises'
+                action='show'
+                fallback={<ForbiddenPage />}
+              >
+                <MarketplaceEnterpriseDetailPage />
               </CanAccess>
             }
           />
