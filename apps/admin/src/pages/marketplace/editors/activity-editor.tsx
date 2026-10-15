@@ -19,6 +19,7 @@ type ActivityDraft = {
   description: string;
   defaultPoints: string;
   maximumPoints: string;
+  content?: ProjectActivity['content'];
 };
 
 const emptyDraft: ActivityDraft = {
@@ -44,6 +45,7 @@ export function ActivityEditor({ project, activities, roles, onChanged }: Props)
       description: content?.description ?? '',
       defaultPoints: String(activity.defaultAirsAmount),
       maximumPoints: String(activity.maxAirsPerAward),
+      content: activity.content,
     });
   }
 
@@ -51,9 +53,11 @@ export function ActivityEditor({ project, activities, roles, onChanged }: Props)
     if (!draft) return;
     const defaultPoints = Number(draft.defaultPoints);
     const maximumPoints = Number(draft.maximumPoints);
+    if (!draft.title.trim() || !draft.description.trim() || slugFromName(draft.title).length < 3) {
+      setFieldError(marketplaceCopy.activitiesEditor.invalidContent);
+      return;
+    }
     if (
-      !draft.title.trim() ||
-      !draft.description.trim() ||
       !Number.isFinite(defaultPoints) ||
       !Number.isFinite(maximumPoints) ||
       defaultPoints <= 0 ||
@@ -68,6 +72,7 @@ export function ActivityEditor({ project, activities, roles, onChanged }: Props)
       ...(draft.id ? {} : { code: slugFromName(draft.title) }),
       defaultLocale: project.defaultLocale,
       content: {
+        ...draft.content,
         [project.defaultLocale]: {
           title: draft.title.trim(),
           description: draft.description.trim(),

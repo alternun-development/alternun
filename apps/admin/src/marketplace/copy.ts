@@ -258,6 +258,7 @@ export const marketplaceCopy = {
     cancel: 'Cancel',
     publish: 'Publish activity',
     pause: 'Pause activity',
+    invalidContent: 'Enter an activity name and description.',
     invalidPoints: 'Default points must be positive and cannot exceed the maximum.',
     success: 'Activity saved.',
     statusSuccess: 'Activity status updated.',

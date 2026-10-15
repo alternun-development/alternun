@@ -19,7 +19,10 @@ import {
 import { ErrorPanel, LoadingPanel, SectionMessage, StatusPill } from './components';
 import { ContentEditor } from './editors/content-editor';
 import { ActivityEditor } from './editors/activity-editor';
+import { ApprovalInbox } from './editors/approval-inbox';
 import { MediaEditor } from './editors/media-editor';
+import { ProjectStatusActions } from './editors/project-status-actions';
+import { TeamEditor } from './editors/team-editor';
 
 type Tab = 'overview' | 'content' | 'media' | 'activities' | 'team';
 const tabs: Tab[] = ['overview', 'content', 'media', 'activities', 'team'];
@@ -59,7 +62,15 @@ function categoryLabel(code: string): string {
   );
 }
 
-function OverviewTab({ snapshot }: { snapshot: ProjectDetailSnapshot }): JSX.Element {
+function OverviewTab({
+  snapshot,
+  roles,
+  onChanged,
+}: {
+  snapshot: ProjectDetailSnapshot;
+  roles: Parameters<typeof ProjectStatusActions>[0]['roles'];
+  onChanged: (message: string) => void;
+}): JSX.Element {
   const project = snapshot.project;
   const media = snapshot.media.kind === 'success' ? snapshot.media.data : [];
   const activities = snapshot.activities.kind === 'success' ? snapshot.activities.data : [];
@@ -132,6 +143,13 @@ function OverviewTab({ snapshot }: { snapshot: ProjectDetailSnapshot }): JSX.Ele
           ))}
         </ul>
       </section>
+
+      <ProjectStatusActions
+        project={project}
+        roles={roles}
+        ready={readiness.every((item) => item.complete)}
+        onChanged={onChanged}
+      />
     </div>
   );
 }
@@ -280,7 +298,7 @@ export function Activities({ activities }: { activities: ProjectActivity[] }): J
   );
 }
 
-function Team({ memberships }: { memberships: ProjectMembership[] }): JSX.Element {
+export function Team({ memberships }: { memberships: ProjectMembership[] }): JSX.Element {
   const active = memberships.filter((membership) => membership.status === 'active');
   if (!active.length) {
     return <SectionMessage>{marketplaceCopy.projectDetail.team.empty}</SectionMessage>;
@@ -359,7 +377,16 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
       </div>
 
       <div role='tabpanel'>
-        {tab === 'overview' ? <OverviewTab snapshot={snapshot} /> : null}
+        {tab === 'overview' ? (
+          <OverviewTab
+            snapshot={snapshot}
+            roles={roles}
+            onChanged={(message) => {
+              setSuccess(message);
+              load();
+            }}
+          />
+        ) : null}
         {tab === 'content' ? (
           <ContentEditor
             project={snapshot.project}
@@ -388,9 +415,40 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
         {tab === 'activities' ? (
           <SectionState result={snapshot.activities} empty={() => false} onRetry={load}>
             {(activities) => (
-              <ActivityEditor
+              <div className='page-grid'>
+                <ActivityEditor
+                  project={snapshot.project}
+                  activities={activities}
+                  roles={roles}
+                  onChanged={(message) => {
+                    setSuccess(message);
+                    load();
+                  }}
+                />
+                <SectionState result={snapshot.completions} empty={() => false} onRetry={load}>
+                  {(completions) => (
+                    <ApprovalInbox
+                      project={snapshot.project}
+                      activities={activities}
+                      completions={completions}
+                      roles={roles}
+                      onChanged={(message) => {
+                        setSuccess(message);
+                        load();
+                      }}
+                    />
+                  )}
+                </SectionState>
+              </div>
+            )}
+          </SectionState>
+        ) : null}
+        {tab === 'team' ? (
+          <SectionState result={snapshot.memberships} empty={() => false} onRetry={load}>
+            {(memberships) => (
+              <TeamEditor
                 project={snapshot.project}
-                activities={activities}
+                memberships={memberships}
                 roles={roles}
                 onChanged={(message) => {
                   setSuccess(message);
@@ -399,14 +457,6 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
               />
             )}
           </SectionState>
-        ) : null}
-        {tab === 'team' ? (
-          <section className='panel'>
-            <h3>{marketplaceCopy.projectDetail.team.heading}</h3>
-            <SectionState result={snapshot.memberships} empty={() => false} onRetry={load}>
-              {(memberships) => <Team memberships={memberships} />}
-            </SectionState>
-          </section>
         ) : null}
       </div>
     </div>

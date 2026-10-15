@@ -5,11 +5,15 @@ import { createServer } from 'vite';
 
 let viteServer;
 let marketplaceErrorMessage;
+let marketplaceCopy;
 let MarketplaceRequestError;
 let loadProjectDetail;
 let projectReadiness;
 let slugFromName;
 let validateProjectStep;
+let hasMarketplacePermission;
+let projectStatusActions;
+let completionActionAvailability;
 
 const project = {
   id: 'project-1',
@@ -79,13 +83,24 @@ before(async () => {
     logLevel: 'silent',
     server: { middlewareMode: true },
   });
-  ({ marketplaceErrorMessage } = await viteServer.ssrLoadModule('/src/marketplace/copy.ts'));
+  ({ marketplaceCopy, marketplaceErrorMessage } = await viteServer.ssrLoadModule(
+    '/src/marketplace/copy.ts'
+  ));
   ({ MarketplaceRequestError } = await viteServer.ssrLoadModule('/src/marketplace/api.ts'));
   ({ loadProjectDetail, projectReadiness } = await viteServer.ssrLoadModule(
     '/src/marketplace/project-detail-model.ts'
   ));
   ({ slugFromName, validateProjectStep } = await viteServer.ssrLoadModule(
     '/src/pages/marketplace/project-create-wizard.tsx'
+  ));
+  ({ hasMarketplacePermission } = await viteServer.ssrLoadModule(
+    '/src/marketplace/permissions.ts'
+  ));
+  ({ projectStatusActions } = await viteServer.ssrLoadModule(
+    '/src/pages/marketplace/editors/project-status-actions.tsx'
+  ));
+  ({ completionActionAvailability } = await viteServer.ssrLoadModule(
+    '/src/pages/marketplace/editors/approval-inbox.tsx'
   ));
 });
 
@@ -100,6 +115,8 @@ function simulatedGet(overrides = {}) {
     if (path === `/v1/admin/projects/${project.id}/media`) return overrides.media ?? media;
     if (path === `/v1/admin/projects/${project.id}/activities`)
       return overrides.activities ?? activities;
+    if (path === `/v1/admin/projects/${project.id}/activities/${activities[0].id}/completions`)
+      return overrides.completions ?? [];
     if (path === `/v1/admin/project-memberships?projectId=${project.id}`)
       return overrides.memberships ?? memberships;
     throw new Error(`Unexpected test path: ${path}`);
@@ -114,6 +131,10 @@ void test('marketplace API errors always become friendly copy', () => {
   assert.equal(
     marketplaceErrorMessage({ code: 'AN_UNKNOWN_CODE', statusCode: 500 }),
     'Something went wrong. Please try again.'
+  );
+  assert.equal(
+    marketplaceErrorMessage({ code: 'PROJECT_STATUS_TRANSITION_INVALID', statusCode: 409 }),
+    'This project status change is not available.'
   );
 });
 
@@ -138,6 +159,34 @@ void test('project creation wizard generates a safe slug and validates each step
     'description',
     'contribution',
   ]);
+});
+
+void test('a disallowed status action is disabled with a friendly reason', () => {
+  assert.equal(hasMarketplacePermission(['sub_admin'], 'projects:publish'), false);
+  assert.equal(
+    marketplaceCopy.permissions.changeStatus,
+    'Only Alternun platform administrators can change project status.'
+  );
+});
+
+void test('pause and archive confirmations explain the effect and require a reason', () => {
+  for (const action of ['pause', 'archive']) {
+    assert.equal(projectStatusActions[action].requiresReason, true);
+    assert.ok(projectStatusActions[action].effect.length > 20);
+  }
+});
+
+void test('approval inbox exposes Approve and Reject by role and Reverse only to platform owner', () => {
+  assert.deepEqual(completionActionAvailability(['partner_operator']), {
+    approve: true,
+    reject: true,
+    reverse: false,
+  });
+  assert.deepEqual(completionActionAvailability(['platform_owner']), {
+    approve: true,
+    reject: true,
+    reverse: true,
+  });
 });
 
 void test('project detail loads successful sections and a complete publishing checklist', async () => {

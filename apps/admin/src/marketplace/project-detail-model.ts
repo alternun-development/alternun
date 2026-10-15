@@ -1,5 +1,6 @@
 import {
   MarketplaceRequestError,
+  type ActivityCompletion,
   type Enterprise,
   type Project,
   type ProjectActivity,
@@ -19,6 +20,7 @@ export type ProjectDetailSnapshot = {
   media: SectionResult<ProjectMedia[]>;
   activities: SectionResult<ProjectActivity[]>;
   memberships: SectionResult<ProjectMembership[]>;
+  completions: SectionResult<ActivityCompletion[]>;
 };
 
 async function section<T>(operation: Promise<T>): Promise<SectionResult<T>> {
@@ -47,7 +49,23 @@ export async function loadProjectDetail(
       )
     ),
   ]);
-  return { project, enterprise, media, activities, memberships };
+  const completions =
+    activities.kind === 'success'
+      ? await section(
+          Promise.all(
+            activities.data.map((activity) =>
+              get<ActivityCompletion[]>(
+                `/v1/admin/projects/${encodedProjectId}/activities/${encodeURIComponent(
+                  activity.id
+                )}/completions`
+              )
+            )
+          ).then((collections) => collections.flat())
+        )
+      : activities.kind === 'forbidden'
+      ? { kind: 'forbidden' as const }
+      : { kind: 'error' as const, error: activities.error };
+  return { project, enterprise, media, activities, memberships, completions };
 }
 
 export function isProjectLocaleComplete(project: Project, locale: string): boolean {
