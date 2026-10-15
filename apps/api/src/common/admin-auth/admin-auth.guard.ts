@@ -25,6 +25,9 @@ export type AdminPermission =
   | 'project_media:read'
   | 'project_media:write'
   | 'project_media:moderate'
+  | 'project_memberships:read'
+  | 'project_memberships:assign'
+  | 'project_memberships:revoke'
   | 'activities:read'
   | 'activities:write'
   | 'activities:publish'
@@ -114,6 +117,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'enterprises:read',
     'projects:read',
     'project_media:read',
+    'project_memberships:read',
     'activities:read',
     'completions:read',
   ],
@@ -124,6 +128,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'project_memberships:read',
     'activities:read',
     'activities:write',
     'completions:read',
@@ -141,6 +146,9 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'project_memberships:read',
+    'project_memberships:assign',
+    'project_memberships:revoke',
     'activities:read',
     'activities:write',
     'activities:publish',
@@ -155,6 +163,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'projects:update',
     'project_media:read',
     'project_media:moderate',
+    'project_memberships:read',
     'activities:read',
     'completions:read',
     'completions:create',
@@ -177,6 +186,9 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'project_memberships:read',
+    'project_memberships:assign',
+    'project_memberships:revoke',
     'activities:read',
     'activities:write',
     'activities:publish',
@@ -202,6 +214,9 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'project_memberships:read',
+    'project_memberships:assign',
+    'project_memberships:revoke',
     'activities:read',
     'activities:write',
     'activities:publish',

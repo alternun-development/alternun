@@ -192,6 +192,26 @@ export interface ProjectMembershipScope {
   role: string;
 }
 
+export interface ActorReference {
+  issuer: string;
+  subject: string;
+}
+
+export interface ProjectMembershipRecord {
+  id: string;
+  member: ActorReference;
+  memberUserId: string | null;
+  enterpriseId: string;
+  projectId: string | null;
+  scopeType: 'enterprise' | 'project';
+  role: 'partner_operator' | 'sub_admin' | 'partner_readonly';
+  status: 'active' | 'revoked';
+  grantedBy: ActorReference;
+  createdAt: string;
+  updatedAt: string;
+  revokedAt: string | null;
+}
+
 export function actorFromPrincipal(principal: AdminPrincipal): AdminActor {
   return { issuer: principal.iss, subject: principal.sub, roles: principal.roles };
 }

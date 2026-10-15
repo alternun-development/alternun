@@ -235,6 +235,17 @@ test('marketplace permission matrix preserves role-specific enterprise, project,
   for (const role of EXPECTED_ADMIN_ROLES) {
     assert.equal(can(role, 'completions:reverse'), role === 'platform_owner');
   }
+  for (const role of EXPECTED_ADMIN_ROLES) {
+    assert.equal(can(role, 'project_memberships:read'), true);
+    assert.equal(
+      can(role, 'project_memberships:assign'),
+      ['platform_owner', 'internal_admin', 'partner_operator'].includes(role)
+    );
+    assert.equal(
+      can(role, 'project_memberships:revoke'),
+      ['platform_owner', 'internal_admin', 'partner_operator'].includes(role)
+    );
+  }
 });
 
 test('partner_readonly admin receives 403 for an allowance mutation', async () => {

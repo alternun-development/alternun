@@ -26,6 +26,11 @@ import { ACTIVITY_REPEAT_PERIODS, MEDIA_KINDS, PROJECT_CATEGORIES } from './mark
 
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const LOCALE_PATTERN = /^[a-z]{2}(?:-[A-Z]{2})?$/;
+export const PROJECT_MEMBERSHIP_ROLES = [
+  'partner_operator',
+  'sub_admin',
+  'partner_readonly',
+] as const;
 
 export class ApiErrorDto {
   @ApiProperty() statusCode!: number;
@@ -167,6 +172,40 @@ export class RejectActivityCompletionDto {
 }
 
 export class ReverseActivityCompletionDto {
+  @IsString() @MinLength(1) @MaxLength(500) reason!: string;
+}
+
+export class ActorRefDto {
+  @IsString() @MinLength(1) @MaxLength(500) issuer!: string;
+  @IsString() @MinLength(1) @MaxLength(255) subject!: string;
+}
+
+export class ListProjectMembershipsQueryDto {
+  @IsOptional() @IsUUID('4') enterpriseId?: string;
+  @IsOptional() @IsUUID('4') projectId?: string;
+}
+
+export class CreateProjectMembershipDto {
+  @ValidateNested() @Type(() => ActorRefDto) member!: ActorRefDto;
+  @IsOptional() @IsString() @MinLength(1) @MaxLength(255) memberUserId?: string;
+  @IsUUID('4') enterpriseId!: string;
+  @IsOptional() @IsUUID('4') projectId?: string;
+  @IsString() @IsIn(['enterprise', 'project']) scopeType!: 'enterprise' | 'project';
+  @IsString()
+  @IsIn(PROJECT_MEMBERSHIP_ROLES)
+  role!: (typeof PROJECT_MEMBERSHIP_ROLES)[number];
+}
+
+export class ChangeProjectMembershipDto {
+  @IsOptional()
+  @IsString()
+  @IsIn(PROJECT_MEMBERSHIP_ROLES)
+  role?: (typeof PROJECT_MEMBERSHIP_ROLES)[number];
+  @IsOptional() @IsString() @IsIn(['active', 'revoked']) status?: 'active' | 'revoked';
+  @IsOptional() @IsString() @MinLength(1) @MaxLength(500) reason?: string;
+}
+
+export class RevokeProjectMembershipDto {
   @IsString() @MinLength(1) @MaxLength(500) reason!: string;
 }
 
