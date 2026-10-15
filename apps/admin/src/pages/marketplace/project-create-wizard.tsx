@@ -15,6 +15,7 @@ const categoryCodes = [
 ] as const;
 const languages = ['en', 'es', 'th'] as const;
 const timeZones = Object.keys(marketplaceCopy.create.timeZones);
+const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export type ProjectDraft = {
   name: string;
@@ -30,21 +31,31 @@ export type ProjectDraft = {
 };
 
 export function slugFromName(name: string): string {
-  return name
+  const slug = name
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
+    .match(/[a-z0-9]+/g)
+    ?.join('-');
+
+  return (slug ?? '').slice(0, 80).replace(/-+$/, '');
+}
+
+export function isValidSlug(slug: string): boolean {
+  return slug.length >= 3 && slug.length <= 80 && slugPattern.test(slug);
+}
+
+export function resolveDefaultTimeZone(
+  detectedTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+): string {
+  return timeZones.includes(detectedTimeZone) ? detectedTimeZone : 'UTC';
 }
 
 export function validateProjectStep(draft: ProjectDraft, step: number): Record<string, string> {
   const errors: Record<string, string> = {};
   if (step === 1) {
     if (!draft.name.trim()) errors.name = marketplaceCopy.create.validation.name;
-    if (!/^[a-z0-9-]{3,80}$/.test(draft.slug)) errors.slug = marketplaceCopy.create.validation.slug;
+    if (!isValidSlug(draft.slug)) errors.slug = marketplaceCopy.create.validation.slug;
     if (!categoryCodes.includes(draft.categoryCode as (typeof categoryCodes)[number]))
       errors.categoryCode = marketplaceCopy.create.validation.category;
     if (!draft.enterpriseId) errors.enterpriseId = marketplaceCopy.create.validation.enterprise;
@@ -85,7 +96,7 @@ export function ProjectCreateWizard({
     categoryCode: 'hospitality_ecotourism',
     enterpriseId: enterprises[0]?.id ?? '',
     location: '',
-    timeZone: 'America/Bogota',
+    timeZone: resolveDefaultTimeZone(),
     defaultLocale: 'en',
     theme: '',
     description: '',
@@ -162,8 +173,7 @@ export function ProjectCreateWizard({
     const slug = enterpriseSlug.trim();
     const nextErrors: Record<string, string> = {};
     if (!name) nextErrors.enterpriseName = marketplaceCopy.create.validation.name;
-    if (!/^[a-z0-9-]{3,80}$/.test(slug))
-      nextErrors.enterpriseSlug = marketplaceCopy.create.validation.slug;
+    if (!isValidSlug(slug)) nextErrors.enterpriseSlug = marketplaceCopy.create.validation.slug;
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
     setSaving(true);

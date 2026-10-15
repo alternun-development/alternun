@@ -6,8 +6,15 @@ import {
   resolveAdminAccessProfile,
 } from '../auth/oidc-client';
 
+const partnerWritableResources = new Set(['marketplace-enterprises', 'marketplace-projects']);
+const readOnlyActions = new Set(['list', 'show']);
+
+export function partnerCanUseAdminAction(resource: string, action: string): boolean {
+  return readOnlyActions.has(action) || partnerWritableResources.has(resource);
+}
+
 export const accessControlProvider: AccessControlProvider = {
-  can: async ({ resource }) => {
+  can: async ({ resource, action }) => {
     const session = await getActiveAdminSession();
     const accessProfile = resolveAdminAccessProfile(
       getAdminRolesFromSession(session),
@@ -32,6 +39,13 @@ export const accessControlProvider: AccessControlProvider = {
           accessProfile.surface === 'partner'
             ? 'Your partner workspace is restricted to your assigned sections.'
             : 'Your admin role does not grant access to this section.',
+      };
+    }
+
+    if (accessProfile.surface === 'partner' && !partnerCanUseAdminAction(resource, action)) {
+      return {
+        can: false,
+        reason: 'Partner access is currently limited to read-only workflows in this panel.',
       };
     }
 

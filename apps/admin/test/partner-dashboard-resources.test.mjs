@@ -4,6 +4,7 @@ import { after, before, test } from 'node:test';
 import { createServer } from 'vite';
 
 let viteServer;
+let partnerCanUseAdminAction;
 let resolveAdminAccessProfile;
 
 before(async () => {
@@ -14,6 +15,9 @@ before(async () => {
   });
 
   ({ resolveAdminAccessProfile } = await viteServer.ssrLoadModule('/src/auth/oidc-client.ts'));
+  ({ partnerCanUseAdminAction } = await viteServer.ssrLoadModule(
+    '/src/providers/accessControlProvider.ts'
+  ));
 });
 
 after(async () => {
@@ -55,4 +59,13 @@ void test('moderator and sub-admin profiles expose only marketplace resources', 
     assert.equal(access.surface, 'partner');
     assert.deepEqual(access.allowedResources, ['marketplace-enterprises', 'marketplace-projects']);
   }
+});
+
+void test('partner write access is limited to marketplace enterprise and project resources', () => {
+  assert.equal(partnerCanUseAdminAction('marketplace-projects', 'create'), true);
+  assert.equal(partnerCanUseAdminAction('marketplace-enterprises', 'edit'), true);
+  assert.equal(partnerCanUseAdminAction('organizations', 'list'), true);
+  assert.equal(partnerCanUseAdminAction('organizations', 'show'), true);
+  assert.equal(partnerCanUseAdminAction('organizations', 'create'), false);
+  assert.equal(partnerCanUseAdminAction('memberships', 'edit'), false);
 });

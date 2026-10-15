@@ -9,6 +9,8 @@ let marketplaceCopy;
 let MarketplaceRequestError;
 let loadProjectDetail;
 let projectReadiness;
+let isValidSlug;
+let resolveDefaultTimeZone;
 let slugFromName;
 let validateProjectStep;
 let hasMarketplacePermission;
@@ -90,9 +92,8 @@ before(async () => {
   ({ loadProjectDetail, projectReadiness } = await viteServer.ssrLoadModule(
     '/src/marketplace/project-detail-model.ts'
   ));
-  ({ slugFromName, validateProjectStep } = await viteServer.ssrLoadModule(
-    '/src/pages/marketplace/project-create-wizard.tsx'
-  ));
+  ({ isValidSlug, resolveDefaultTimeZone, slugFromName, validateProjectStep } =
+    await viteServer.ssrLoadModule('/src/pages/marketplace/project-create-wizard.tsx'));
   ({ hasMarketplacePermission } = await viteServer.ssrLoadModule(
     '/src/marketplace/permissions.ts'
   ));
@@ -152,6 +153,12 @@ void test('project creation wizard generates a safe slug and validates each step
     contribution: '',
   };
   assert.equal(draft.slug, 'hotel-bosque-magico');
+  assert.equal(slugFromName('---Hotel---Bosque---'), 'hotel-bosque');
+  assert.equal(isValidSlug('hotel--bosque'), false);
+  assert.equal(isValidSlug('-hotel'), false);
+  assert.equal(isValidSlug('hotel-'), false);
+  assert.equal(resolveDefaultTimeZone('Asia/Bangkok'), 'Asia/Bangkok');
+  assert.equal(resolveDefaultTimeZone('Europe/Madrid'), 'UTC');
   assert.deepEqual(Object.keys(validateProjectStep(draft, 1)), ['enterpriseId']);
   assert.deepEqual(Object.keys(validateProjectStep(draft, 2)), ['location']);
   assert.deepEqual(Object.keys(validateProjectStep(draft, 3)), [
