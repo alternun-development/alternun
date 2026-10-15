@@ -56,12 +56,30 @@ export type ProjectActivity = {
   defaultLocale: string;
   content: Record<string, { title: string; description: string }>;
   defaultAirsAmount: number;
+  maxAirsPerAward: number;
+  repeatPeriod: 'none' | 'day' | 'week' | 'month' | 'assignment';
+  maxAwardsPerPeriod: number;
+  maxAwardsLifetime: number | null;
 };
 
 export type ProjectMembership = {
   id: string;
+  member: { issuer: string; subject: string };
+  memberUserId: string | null;
+  enterpriseId: string;
+  projectId: string | null;
+  scopeType: 'enterprise' | 'project';
   role: 'partner_operator' | 'sub_admin' | 'partner_readonly';
   status: 'active' | 'revoked';
+};
+
+export type ActivityCompletion = {
+  id: string;
+  projectId: string;
+  activityId: string;
+  userId: string;
+  status: 'pending' | 'awarded' | 'rejected' | 'reversed';
+  awardedAirs: number | null;
 };
 
 export class MarketplaceRequestError extends Error {
@@ -71,13 +89,19 @@ export class MarketplaceRequestError extends Error {
   }
 }
 
-export async function requestMarketplace<T>(path: string): Promise<T> {
+export async function requestMarketplace<T>(
+  path: string,
+  options?: { method?: 'POST' | 'PATCH' | 'PUT' | 'DELETE'; body?: unknown }
+): Promise<T> {
   const token = await getAccessToken();
   const response = await fetch(`${adminEnv.apiUrl}${path}`, {
+    method: options?.method ?? 'GET',
     headers: {
       Accept: 'application/json',
+      ...(options?.body === undefined ? {} : { 'Content-Type': 'application/json' }),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
+    body: options?.body === undefined ? undefined : JSON.stringify(options.body),
   });
   if (!response.ok) {
     let code: string | undefined;
@@ -90,7 +114,7 @@ export async function requestMarketplace<T>(path: string): Promise<T> {
     }
     throw new MarketplaceRequestError(response.status, code);
   }
-  return (await response.json()) as T;
+  return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
 }
 
 export function localizedProjectContent(project: Project): ProjectContentBlock | undefined {

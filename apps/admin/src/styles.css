@@ -583,6 +583,119 @@ select {
   color: var(--text-muted);
 }
 
+.marketplace-dialog {
+  border-color: rgba(91, 246, 208, 0.45);
+}
+
+.marketplace-form-grid,
+.marketplace-inline-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.marketplace-form-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.marketplace-form-grid label,
+.marketplace-inline-form label {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+  color: var(--text-muted);
+}
+
+.marketplace-form-grid input,
+.marketplace-form-grid select,
+.marketplace-form-grid textarea,
+.marketplace-inline-form input,
+.marketplace-inline-form select,
+.marketplace-inline-form textarea,
+.marketplace-confirmation input,
+.marketplace-confirmation textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.marketplace-form-grid textarea,
+.marketplace-inline-form textarea,
+.marketplace-confirmation textarea {
+  resize: vertical;
+}
+
+.marketplace-form-grid input:focus-visible,
+.marketplace-form-grid select:focus-visible,
+.marketplace-form-grid textarea:focus-visible,
+.marketplace-inline-form input:focus-visible,
+.marketplace-inline-form select:focus-visible,
+.marketplace-inline-form textarea:focus-visible,
+.marketplace-confirmation input:focus-visible,
+.marketplace-confirmation textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.marketplace-form-grid small,
+.marketplace-inline-form small {
+  color: var(--text-muted);
+}
+
+.marketplace-inline-form,
+.marketplace-confirmation {
+  padding: 1rem;
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.marketplace-form-actions,
+.marketplace-compact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.marketplace-success {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(91, 246, 208, 0.35);
+  border-radius: 12px;
+  color: var(--accent);
+  background: rgba(91, 246, 208, 0.08);
+}
+
+.marketplace-unsaved {
+  color: #ffe39a;
+}
+
+.marketplace-preview {
+  max-width: 28rem;
+  margin: 0;
+}
+
+.marketplace-preview img {
+  width: 100%;
+  max-height: 16rem;
+  margin-top: 0.5rem;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.marketplace-confirmation {
+  margin-top: 1rem;
+  border-color: rgba(255, 227, 154, 0.35);
+}
+
+.marketplace-confirmation h4 {
+  margin-top: 0;
+}
+
 .data-table-wrap {
   overflow-x: auto;
 }
@@ -1033,6 +1146,10 @@ select {
 
   .marketplace-detail-heading {
     flex-direction: column;
+  }
+
+  .marketplace-form-grid {
+    grid-template-columns: 1fr;
   }
 
   .marketplace-checklist li {

@@ -8,6 +8,7 @@ import type {
 } from '../../marketplace/api';
 import { localizedProjectContent, requestMarketplace } from '../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../marketplace/copy';
+import { useMarketplaceRoles } from '../../marketplace/permissions';
 import {
   isProjectLocaleComplete,
   loadProjectDetail,
@@ -16,6 +17,9 @@ import {
   type SectionResult,
 } from '../../marketplace/project-detail-model';
 import { ErrorPanel, LoadingPanel, SectionMessage, StatusPill } from './components';
+import { ContentEditor } from './editors/content-editor';
+import { ActivityEditor } from './editors/activity-editor';
+import { MediaEditor } from './editors/media-editor';
 
 type Tab = 'overview' | 'content' | 'media' | 'activities' | 'team';
 const tabs: Tab[] = ['overview', 'content', 'media', 'activities', 'team'];
@@ -132,7 +136,7 @@ function OverviewTab({ snapshot }: { snapshot: ProjectDetailSnapshot }): JSX.Ele
   );
 }
 
-function ContentTab({ project }: { project: Project }): JSX.Element {
+export function ContentTab({ project }: { project: Project }): JSX.Element {
   const [locale, setLocale] = useState<(typeof locales)[number]>(
     locales.includes(project.defaultLocale as (typeof locales)[number])
       ? (project.defaultLocale as (typeof locales)[number])
@@ -201,7 +205,13 @@ function ContentTab({ project }: { project: Project }): JSX.Element {
   );
 }
 
-function MediaItems({ project, media }: { project: Project; media: ProjectMedia[] }): JSX.Element {
+export function MediaItems({
+  project,
+  media,
+}: {
+  project: Project;
+  media: ProjectMedia[];
+}): JSX.Element {
   const active = media.filter((item) => item.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
   if (!active.length) {
     return <SectionMessage>{marketplaceCopy.projectDetail.media.empty}</SectionMessage>;
@@ -246,7 +256,7 @@ function MediaItems({ project, media }: { project: Project; media: ProjectMedia[
   );
 }
 
-function Activities({ activities }: { activities: ProjectActivity[] }): JSX.Element {
+export function Activities({ activities }: { activities: ProjectActivity[] }): JSX.Element {
   if (!activities.length) {
     return <SectionMessage>{marketplaceCopy.projectDetail.activities.empty}</SectionMessage>;
   }
@@ -294,6 +304,8 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
   const [tab, setTab] = useState<Tab>('overview');
   const [snapshot, setSnapshot] = useState<ProjectDetailSnapshot | null>(null);
   const [error, setError] = useState<unknown>();
+  const [success, setSuccess] = useState<string>();
+  const roles = useMarketplaceRoles();
 
   const load = useCallback(() => {
     setSnapshot(null);
@@ -304,7 +316,7 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
   useEffect(load, [load]);
 
   if (error) return <ErrorPanel error={error} onRetry={load} />;
-  if (!snapshot) return <LoadingPanel />;
+  if (!snapshot || !roles) return <LoadingPanel />;
 
   const title =
     localizedProjectContent(snapshot.project)?.title ?? marketplaceCopy.common.notAvailable;
@@ -320,6 +332,12 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
           {marketplaceCopy.common.backToProjects}
         </Link>
       </section>
+
+      {success ? (
+        <p className='marketplace-success' role='status'>
+          {success}
+        </p>
+      ) : null}
 
       <div
         aria-label={marketplaceCopy.projectDetail.tabsLabel}
@@ -342,22 +360,45 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
 
       <div role='tabpanel'>
         {tab === 'overview' ? <OverviewTab snapshot={snapshot} /> : null}
-        {tab === 'content' ? <ContentTab project={snapshot.project} /> : null}
+        {tab === 'content' ? (
+          <ContentEditor
+            project={snapshot.project}
+            roles={roles}
+            onSaved={() => {
+              setSuccess(marketplaceCopy.edit.success);
+              load();
+            }}
+          />
+        ) : null}
         {tab === 'media' ? (
-          <section className='panel'>
-            <h3>{marketplaceCopy.projectDetail.media.heading}</h3>
-            <SectionState result={snapshot.media} empty={() => false} onRetry={load}>
-              {(media) => <MediaItems project={snapshot.project} media={media} />}
-            </SectionState>
-          </section>
+          <SectionState result={snapshot.media} empty={() => false} onRetry={load}>
+            {(media) => (
+              <MediaEditor
+                project={snapshot.project}
+                media={media}
+                roles={roles}
+                onChanged={(message) => {
+                  setSuccess(message);
+                  load();
+                }}
+              />
+            )}
+          </SectionState>
         ) : null}
         {tab === 'activities' ? (
-          <section className='panel'>
-            <h3>{marketplaceCopy.projectDetail.activities.heading}</h3>
-            <SectionState result={snapshot.activities} empty={() => false} onRetry={load}>
-              {(activities) => <Activities activities={activities} />}
-            </SectionState>
-          </section>
+          <SectionState result={snapshot.activities} empty={() => false} onRetry={load}>
+            {(activities) => (
+              <ActivityEditor
+                project={snapshot.project}
+                activities={activities}
+                roles={roles}
+                onChanged={(message) => {
+                  setSuccess(message);
+                  load();
+                }}
+              />
+            )}
+          </SectionState>
         ) : null}
         {tab === 'team' ? (
           <section className='panel'>

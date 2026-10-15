@@ -6,10 +6,8 @@ import {
   resolveAdminAccessProfile,
 } from '../auth/oidc-client';
 
-const readOnlyActions = new Set(['list', 'show']);
-
 export const accessControlProvider: AccessControlProvider = {
-  can: async ({ resource, action }) => {
+  can: async ({ resource }) => {
     const session = await getActiveAdminSession();
     const accessProfile = resolveAdminAccessProfile(
       getAdminRolesFromSession(session),
@@ -34,17 +32,6 @@ export const accessControlProvider: AccessControlProvider = {
           accessProfile.surface === 'partner'
             ? 'Your partner workspace is restricted to your assigned sections.'
             : 'Your admin role does not grant access to this section.',
-      };
-    }
-
-    if (readOnlyActions.has(action)) {
-      return { can: true };
-    }
-
-    if (accessProfile.surface === 'partner') {
-      return {
-        can: false,
-        reason: 'Partner access is currently limited to read-only workflows in this panel.',
       };
     }
 

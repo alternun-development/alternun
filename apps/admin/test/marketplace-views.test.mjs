@@ -8,6 +8,8 @@ let marketplaceErrorMessage;
 let MarketplaceRequestError;
 let loadProjectDetail;
 let projectReadiness;
+let slugFromName;
+let validateProjectStep;
 
 const project = {
   id: 'project-1',
@@ -82,6 +84,9 @@ before(async () => {
   ({ loadProjectDetail, projectReadiness } = await viteServer.ssrLoadModule(
     '/src/marketplace/project-detail-model.ts'
   ));
+  ({ slugFromName, validateProjectStep } = await viteServer.ssrLoadModule(
+    '/src/pages/marketplace/project-create-wizard.tsx'
+  ));
 });
 
 after(async () => {
@@ -110,6 +115,29 @@ void test('marketplace API errors always become friendly copy', () => {
     marketplaceErrorMessage({ code: 'AN_UNKNOWN_CODE', statusCode: 500 }),
     'Something went wrong. Please try again.'
   );
+});
+
+void test('project creation wizard generates a safe slug and validates each step', () => {
+  const draft = {
+    name: 'Hotel Bosque Mágico',
+    slug: slugFromName('Hotel Bosque Mágico'),
+    categoryCode: 'hospitality_ecotourism',
+    enterpriseId: '',
+    location: '',
+    timeZone: 'America/Bogota',
+    defaultLocale: 'es',
+    theme: '',
+    description: '',
+    contribution: '',
+  };
+  assert.equal(draft.slug, 'hotel-bosque-magico');
+  assert.deepEqual(Object.keys(validateProjectStep(draft, 1)), ['enterpriseId']);
+  assert.deepEqual(Object.keys(validateProjectStep(draft, 2)), ['location']);
+  assert.deepEqual(Object.keys(validateProjectStep(draft, 3)), [
+    'theme',
+    'description',
+    'contribution',
+  ]);
 });
 
 void test('project detail loads successful sections and a complete publishing checklist', async () => {

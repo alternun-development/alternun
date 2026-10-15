@@ -8,27 +8,20 @@ import {
   type Project,
 } from '../../marketplace/api';
 import { marketplaceCopy } from '../../marketplace/copy';
+import { hasMarketplacePermission, useMarketplaceRoles } from '../../marketplace/permissions';
 import { ErrorPanel, LoadingPanel, SectionMessage, StatusPill } from './components';
+import { ProjectCreateWizard } from './project-create-wizard';
 
 type ProjectListData = {
   projects: Project[];
-  enterprises: Record<string, Enterprise | undefined>;
+  enterprises: Enterprise[];
 };
 
 async function loadProjectList(): Promise<ProjectListData> {
-  const projects = await requestMarketplace<Project[]>('/v1/admin/projects');
-  const enterpriseIds = [...new Set<string>(projects.map((project) => project.enterpriseId))];
-  const entries: Array<readonly [string, Enterprise | undefined]> = await Promise.all(
-    enterpriseIds.map(async (id) => {
-      try {
-        return [id, await requestMarketplace<Enterprise>(`/v1/admin/enterprises/${id}`)] as const;
-      } catch {
-        return [id, undefined] as const;
-      }
-    })
-  );
-  const enterprises: Record<string, Enterprise | undefined> = {};
-  for (const [id, enterprise] of entries) enterprises[id] = enterprise;
+  const [projects, enterprises] = await Promise.all([
+    requestMarketplace<Project[]>('/v1/admin/projects'),
+    requestMarketplace<Enterprise[]>('/v1/admin/enterprises'),
+  ]);
   return { projects, enterprises };
 }
 
@@ -36,6 +29,9 @@ export function MarketplaceProjectsPage(): JSX.Element {
   const [data, setData] = useState<ProjectListData | null>(null);
   const [error, setError] = useState<unknown>();
   const [search, setSearch] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
+  const [success, setSuccess] = useState<string>();
+  const roles = useMarketplaceRoles();
 
   const load = useCallback(() => {
     setError(undefined);
@@ -59,9 +55,23 @@ export function MarketplaceProjectsPage(): JSX.Element {
   return (
     <div className='page-grid'>
       <section className='panel hero-panel'>
-        <span className='panel-label'>{marketplaceCopy.projectList.eyebrow}</span>
-        <h2>{marketplaceCopy.projectList.title}</h2>
-        <p>{marketplaceCopy.projectList.intro}</p>
+        <div className='panel-heading'>
+          <div>
+            <span className='panel-label'>{marketplaceCopy.projectList.eyebrow}</span>
+            <h2>{marketplaceCopy.projectList.title}</h2>
+            <p>{marketplaceCopy.projectList.intro}</p>
+          </div>
+          {roles && hasMarketplacePermission(roles, 'projects:create') ? (
+            <button className='primary-button' onClick={() => setShowCreate(true)} type='button'>
+              {marketplaceCopy.create.button}
+            </button>
+          ) : null}
+        </div>
+        {success ? (
+          <p className='marketplace-success' role='status'>
+            {success}
+          </p>
+        ) : null}
         <label className='marketplace-search'>
           <span>{marketplaceCopy.projectList.searchLabel}</span>
           <input
@@ -72,6 +82,25 @@ export function MarketplaceProjectsPage(): JSX.Element {
           />
         </label>
       </section>
+
+      {showCreate && roles ? (
+        <ProjectCreateWizard
+          enterprises={data.enterprises}
+          roles={roles}
+          onCancel={() => setShowCreate(false)}
+          onCreated={() => {
+            setShowCreate(false);
+            setSuccess(marketplaceCopy.create.success);
+            load();
+          }}
+          onEnterpriseCreated={(enterprise) => {
+            setData((current) =>
+              current ? { ...current, enterprises: [...current.enterprises, enterprise] } : current
+            );
+            setSuccess(marketplaceCopy.create.enterpriseSuccess);
+          }}
+        />
+      ) : null}
 
       {data.projects.length === 0 ? (
         <section className='panel'>
@@ -89,7 +118,7 @@ export function MarketplaceProjectsPage(): JSX.Element {
               ? content.title
               : marketplaceCopy.common.notAvailable;
             const cover = activeProjectMedia(project, 'cover');
-            const enterprise = data.enterprises[project.enterpriseId];
+            const enterprise = data.enterprises.find((item) => item.id === project.enterpriseId);
             return (
               <article className='panel marketplace-project-card' key={project.id}>
                 {cover ? (
