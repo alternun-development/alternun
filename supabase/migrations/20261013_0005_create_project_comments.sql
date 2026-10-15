@@ -90,8 +90,15 @@ declare
   v_comment public.project_comments;
   v_recent_count integer;
   v_daily_count integer;
+  v_project_exists boolean := false;
+  v_project_published boolean := false;
   v_reason text;
 begin
+  select true, project.status = 'published'
+    into v_project_exists, v_project_published
+  from public.projects project
+  where project.id = p_project_id;
+
   if p_project_id is null
     or nullif(btrim(coalesce(p_author_issuer, '')), '') is null
     or nullif(btrim(coalesce(p_author_subject, '')), '') is null
@@ -108,11 +115,17 @@ begin
 
   if v_reason is not null then
     insert into public.admin_audit_log (
-      actor_issuer, actor_subject, action, target_type, project_id,
-      request_id, result, reason_code
+      actor_issuer, actor_subject, action, target_type, enterprise_id, project_id,
+      request_id, result, reason_code, metadata
     ) values (
       p_author_issuer, p_author_subject, 'comment.create_denied', 'comment',
-      p_project_id, p_request_id, 'denied', v_reason
+      null,
+      case when coalesce(v_project_exists, false) then p_project_id else null end,
+      p_request_id, 'denied', v_reason,
+      case
+        when coalesce(v_project_exists, false) then '{}'::jsonb
+        else jsonb_build_object('requestedProjectId', p_project_id)
+      end
     );
     return jsonb_build_object('ok', false, 'reasonCode', v_reason);
   end if;
@@ -145,12 +158,7 @@ begin
     );
   end if;
 
-  if not exists (
-    select 1
-    from public.projects project
-    where project.id = p_project_id
-      and project.status = 'published'
-  ) then
+  if not coalesce(v_project_published, false) then
     v_reason := 'PROJECT_NOT_FOUND';
   end if;
 
@@ -183,16 +191,21 @@ begin
 
   if v_reason is not null then
     insert into public.admin_audit_log (
-      actor_issuer, actor_subject, action, target_type, project_id,
+      actor_issuer, actor_subject, action, target_type, enterprise_id, project_id,
       request_id, result, reason_code,
       metadata
     ) values (
       p_author_issuer, p_author_subject, 'comment.create_denied', 'comment',
-      p_project_id, p_request_id, 'denied', v_reason,
+      null,
+      case when coalesce(v_project_exists, false) then p_project_id else null end,
+      p_request_id, 'denied', v_reason,
       jsonb_build_object(
         'recentCount', coalesce(v_recent_count, 0),
         'dailyCount', coalesce(v_daily_count, 0)
-      )
+      ) || case
+        when coalesce(v_project_exists, false) then '{}'::jsonb
+        else jsonb_build_object('requestedProjectId', p_project_id)
+      end
     );
     return jsonb_build_object('ok', false, 'reasonCode', v_reason);
   end if;

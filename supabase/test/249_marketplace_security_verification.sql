@@ -436,6 +436,27 @@ begin
   end if;
 
   v_result := public.marketplace_create_comment(
+    v_missing_id, 'verification', 'commenter', 'comment-user',
+    'Verification Commenter', 'Missing project comment.',
+    'verification-comment-project-missing'
+  );
+  if coalesce((v_result ->> 'ok')::boolean, true) is not false
+    or v_result ->> 'reasonCode' is distinct from 'PROJECT_NOT_FOUND'
+  then
+    raise exception 'comment missing project assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_moderate_comment(
+    v_missing_id, 'visible', 'verification', 'actor', array['platform_owner'],
+    'verification-comment-missing', null
+  );
+  if coalesce((v_result ->> 'ok')::boolean, true) is not false
+    or v_result ->> 'reasonCode' is distinct from 'COMMENT_NOT_FOUND'
+  then
+    raise exception 'moderate missing comment assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_create_comment(
     v_project_id, 'verification', 'commenter', 'comment-user',
     'Verification Commenter', 'First verification comment.',
     'verification-comment-1'
