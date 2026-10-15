@@ -1083,7 +1083,29 @@
         "waysToContribute": "Ways to contribute",
         "gallery": "Gallery",
         "video": "Video",
-        "openPresentation": "View presentation"
+        "openPresentation": "View presentation",
+        "comments": {
+          "title": "Comments",
+          "loading": "Loading comments…",
+          "loadError": "Comments could not be loaded.",
+          "retry": "Try again",
+          "emptyList": "No comments yet",
+          "emptyInvite": "Be the first to share a thoughtful comment.",
+          "loadMore": "Load more",
+          "loadingMore": "Loading…",
+          "loadMoreError": "More comments could not be loaded.",
+          "placeholder": "Write a comment",
+          "publish": "Publish",
+          "publishing": "Publishing…",
+          "signInPrompt": "Sign in to leave a comment.",
+          "signIn": "Sign in",
+          "submitted": "Your comment will be published after it is reviewed.",
+          "rateLimited": "You have commented too often. Please try again later.",
+          "emptyBody": "Write a comment before publishing.",
+          "signInRequired": "Sign in to publish your comment.",
+          "projectUnavailable": "This project is no longer available.",
+          "submitError": "Your comment could not be sent. Please try again."
+        }
       },
       "intents": {
         "question": "What do you want to do today?",

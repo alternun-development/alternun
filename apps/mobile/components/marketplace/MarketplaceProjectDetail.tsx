@@ -3,6 +3,7 @@ import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'r
 import { ArrowLeft, ExternalLink, Leaf, MapPin, RotateCcw } from 'lucide-react-native';
 import type { Translator } from '@alternun/i18n';
 import AirsIntroVideoCard from '../onboarding/AirsIntroVideoCard';
+import MarketplaceProjectComments from './MarketplaceProjectComments';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 
 type Translate = Translator['t'];
@@ -115,6 +116,9 @@ export function MarketplaceProjectDetailView({
   loader = loadMarketplaceProject,
   onBack,
   openUrl = async (url) => Linking.openURL(url),
+  signedIn = false,
+  getSessionToken = () => Promise.resolve(null),
+  onSignIn = () => undefined,
 }: {
   slug: string;
   locale: string;
@@ -123,6 +127,9 @@ export function MarketplaceProjectDetailView({
   loader?: typeof loadMarketplaceProject;
   onBack: () => void;
   openUrl?: (url: string) => Promise<unknown>;
+  signedIn?: boolean;
+  getSessionToken?: () => Promise<string | null>;
+  onSignIn?: () => void;
 }): React.JSX.Element {
   const [project, setProject] = useState<MarketplacePublicProject | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'not-found' | 'error'>('loading');
@@ -318,6 +325,16 @@ export function MarketplaceProjectDetailView({
               <ExternalLink size={16} color='#effff7' />
             </Pressable>
           ) : null}
+
+          <MarketplaceProjectComments
+            slug={project.slug}
+            locale={locale}
+            palette={palette}
+            t={t}
+            signedIn={signedIn}
+            getSessionToken={getSessionToken}
+            onSignIn={onSignIn}
+          />
         </>
       ) : null}
     </ScrollView>

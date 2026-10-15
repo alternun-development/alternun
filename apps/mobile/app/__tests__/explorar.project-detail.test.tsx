@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import React from 'react';
-import { View } from 'react-native';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import {
   MarketplaceProjectDetailView,
@@ -10,9 +9,12 @@ import {
 
 jest.mock('../../components/onboarding/AirsIntroVideoCard', () => ({
   __esModule: true,
-  default: ({ videoUri }: { videoUri: string }) => (
-    <View testID='project-video-player' accessibilityHint={videoUri} />
-  ),
+  default: () => null,
+}));
+
+jest.mock('../../components/marketplace/MarketplaceProjectComments', () => ({
+  __esModule: true,
+  default: () => null,
 }));
 
 const palette = {

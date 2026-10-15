@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import ScreenShell from '../../components/common/ScreenShell';
+import { useAuth } from '../../components/auth/AppAuthProvider';
 import { useAppTranslation } from '../../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../../components/settings/AppPreferencesProvider';
 import {
@@ -8,9 +9,15 @@ import {
   type DetailPalette,
 } from '../../components/marketplace/MarketplaceProjectDetail';
 
+interface MarketplaceAuthContext {
+  user: unknown;
+  client: { getSessionToken(): Promise<string | null> };
+}
+
 export default function MarketplaceProjectDetailScreen(): React.JSX.Element {
   const params = useLocalSearchParams<{ slug?: string | string[] }>();
   const router = useRouter();
+  const { user, client } = (useAuth as unknown as () => MarketplaceAuthContext)();
   const { language, themeMode } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
   const slug = Array.isArray(params.slug) ? params.slug[0] ?? '' : params.slug ?? '';
@@ -45,6 +52,14 @@ export default function MarketplaceProjectDetailScreen(): React.JSX.Element {
         palette={palette}
         t={t}
         onBack={() => router.back()}
+        signedIn={Boolean(user)}
+        getSessionToken={() => client.getSessionToken()}
+        onSignIn={() =>
+          router.push({
+            pathname: '/auth',
+            params: { next: `/explorar/${slug}` },
+          })
+        }
       />
     </ScreenShell>
   );

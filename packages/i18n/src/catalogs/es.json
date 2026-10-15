@@ -1083,7 +1083,29 @@
         "waysToContribute": "Formas de contribuir",
         "gallery": "Galería",
         "video": "Video",
-        "openPresentation": "Ver presentación"
+        "openPresentation": "Ver presentación",
+        "comments": {
+          "title": "Comentarios",
+          "loading": "Cargando comentarios…",
+          "loadError": "No se pudieron cargar los comentarios.",
+          "retry": "Reintentar",
+          "emptyList": "Aún no hay comentarios",
+          "emptyInvite": "Sé la primera persona en compartir un comentario.",
+          "loadMore": "Cargar más",
+          "loadingMore": "Cargando…",
+          "loadMoreError": "No se pudieron cargar más comentarios.",
+          "placeholder": "Escribe un comentario",
+          "publish": "Publicar",
+          "publishing": "Publicando…",
+          "signInPrompt": "Inicia sesión para dejar un comentario.",
+          "signIn": "Iniciar sesión",
+          "submitted": "Tu comentario se publicará cuando sea revisado.",
+          "rateLimited": "Has comentado con demasiada frecuencia. Inténtalo más tarde.",
+          "emptyBody": "Escribe un comentario antes de publicarlo.",
+          "signInRequired": "Inicia sesión para publicar tu comentario.",
+          "projectUnavailable": "Este proyecto ya no está disponible.",
+          "submitError": "No se pudo enviar tu comentario. Inténtalo de nuevo."
+        }
       },
       "intents": {
         "question": "¿Qué quieres hacer hoy?",
