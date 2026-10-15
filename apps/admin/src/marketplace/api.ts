@@ -5,6 +5,7 @@ export type ProjectStatus = 'draft' | 'published' | 'paused' | 'archived';
 export type EnterpriseStatus = 'active' | 'paused' | 'archived';
 export type ActivityStatus = ProjectStatus;
 export type MediaKind = 'logo' | 'cover' | 'gallery_image' | 'video' | 'canva';
+export type CommentStatus = 'pending' | 'visible' | 'rejected' | 'hidden';
 
 export type ProjectContentBlock = {
   title: string;
@@ -80,6 +81,17 @@ export type ActivityCompletion = {
   userId: string;
   status: 'pending' | 'awarded' | 'rejected' | 'reversed';
   awardedAirs: number | null;
+};
+
+export type ProjectComment = {
+  id: string;
+  projectId: string;
+  authorDisplayName: string;
+  body: string;
+  status: CommentStatus;
+  moderationReason: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export class MarketplaceRequestError extends Error {

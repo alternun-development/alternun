@@ -8,7 +8,7 @@ import type {
 } from '../../marketplace/api';
 import { localizedProjectContent, requestMarketplace } from '../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../marketplace/copy';
-import { useMarketplaceRoles } from '../../marketplace/permissions';
+import { hasMarketplacePermission, useMarketplaceRoles } from '../../marketplace/permissions';
 import {
   isProjectLocaleComplete,
   loadProjectDetail,
@@ -23,9 +23,10 @@ import { ApprovalInbox } from './editors/approval-inbox';
 import { MediaEditor } from './editors/media-editor';
 import { ProjectStatusActions } from './editors/project-status-actions';
 import { TeamEditor } from './editors/team-editor';
+import { CommentModerationQueue } from './editors/comment-moderation-queue';
 
-type Tab = 'overview' | 'content' | 'media' | 'activities' | 'team';
-const tabs: Tab[] = ['overview', 'content', 'media', 'activities', 'team'];
+type Tab = 'overview' | 'content' | 'media' | 'activities' | 'comments' | 'team';
+const tabs: Tab[] = ['overview', 'content', 'media', 'activities', 'comments', 'team'];
 const locales = ['es', 'en', 'th'] as const;
 
 function SectionState<T>({
@@ -323,6 +324,7 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
   const [snapshot, setSnapshot] = useState<ProjectDetailSnapshot | null>(null);
   const [error, setError] = useState<unknown>();
   const [success, setSuccess] = useState<string>();
+  const [pendingCommentCount, setPendingCommentCount] = useState(0);
   const roles = useMarketplaceRoles();
 
   const load = useCallback(() => {
@@ -333,11 +335,20 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
 
   useEffect(load, [load]);
 
+  useEffect(() => {
+    setPendingCommentCount(
+      snapshot?.comments.kind === 'success' ? snapshot.comments.data.length : 0
+    );
+  }, [snapshot]);
+
   if (error) return <ErrorPanel error={error} onRetry={load} />;
   if (!snapshot || !roles) return <LoadingPanel />;
 
   const title =
     localizedProjectContent(snapshot.project)?.title ?? marketplaceCopy.common.notAvailable;
+  const visibleTabs = tabs.filter(
+    (item) => item !== 'comments' || hasMarketplacePermission(roles, 'comments:read')
+  );
   return (
     <div className='page-grid'>
       <section className='panel hero-panel marketplace-detail-heading'>
@@ -362,7 +373,7 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
         className='marketplace-tabs'
         role='tablist'
       >
-        {tabs.map((item) => (
+        {visibleTabs.map((item) => (
           <button
             aria-selected={tab === item}
             className={tab === item ? 'is-active' : ''}
@@ -372,6 +383,14 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
             type='button'
           >
             {marketplaceCopy.projectDetail.tabs[item]}
+            {item === 'comments' && pendingCommentCount > 0 ? (
+              <span
+                aria-label={`${pendingCommentCount} ${marketplaceCopy.comments.pendingCountLabel}`}
+              >
+                {' '}
+                ({pendingCommentCount})
+              </span>
+            ) : null}
           </button>
         ))}
       </div>
@@ -457,6 +476,17 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
               />
             )}
           </SectionState>
+        ) : null}
+        {tab === 'comments' ? (
+          <CommentModerationQueue
+            project={snapshot.project}
+            initialPending={snapshot.comments}
+            roles={roles}
+            onChanged={(message, pendingDelta) => {
+              setSuccess(message);
+              setPendingCommentCount((current) => Math.max(0, current + pendingDelta));
+            }}
+          />
         ) : null}
       </div>
     </div>

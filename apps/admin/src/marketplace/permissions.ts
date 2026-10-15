@@ -19,6 +19,8 @@ export type MarketplacePermission =
   | 'completions:award'
   | 'completions:reject'
   | 'completions:reverse'
+  | 'comments:read'
+  | 'comments:moderate'
   | 'project_memberships:assign'
   | 'project_memberships:revoke';
 
@@ -30,6 +32,8 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'project_media:moderate',
     'activities:write',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
   ],
   partner_operator: [
     'projects:create',
@@ -40,6 +44,8 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'activities:publish',
     'completions:award',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
     'project_memberships:assign',
     'project_memberships:revoke',
   ],
@@ -48,6 +54,8 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'project_media:moderate',
     'completions:award',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
   ],
   internal_admin: [
     'enterprises:create',
@@ -62,6 +70,8 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'activities:publish',
     'completions:award',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
     'project_memberships:assign',
     'project_memberships:revoke',
   ],
@@ -79,6 +89,8 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'completions:award',
     'completions:reject',
     'completions:reverse',
+    'comments:read',
+    'comments:moderate',
     'project_memberships:assign',
     'project_memberships:revoke',
   ],

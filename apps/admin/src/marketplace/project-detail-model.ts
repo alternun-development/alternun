@@ -4,6 +4,7 @@ import {
   type Enterprise,
   type Project,
   type ProjectActivity,
+  type ProjectComment,
   type ProjectMedia,
   type ProjectMembership,
 } from './api';
@@ -21,6 +22,7 @@ export type ProjectDetailSnapshot = {
   activities: SectionResult<ProjectActivity[]>;
   memberships: SectionResult<ProjectMembership[]>;
   completions: SectionResult<ActivityCompletion[]>;
+  comments: SectionResult<ProjectComment[]>;
 };
 
 async function section<T>(operation: Promise<T>): Promise<SectionResult<T>> {
@@ -39,7 +41,7 @@ export async function loadProjectDetail(
 ): Promise<ProjectDetailSnapshot> {
   const project = await get<Project>(`/v1/admin/projects/${encodeURIComponent(projectId)}`);
   const encodedProjectId = encodeURIComponent(projectId);
-  const [enterprise, media, activities, memberships] = await Promise.all([
+  const [enterprise, media, activities, memberships, comments] = await Promise.all([
     section(get<Enterprise>(`/v1/admin/enterprises/${encodeURIComponent(project.enterpriseId)}`)),
     section(get<ProjectMedia[]>(`/v1/admin/projects/${encodedProjectId}/media`)),
     section(get<ProjectActivity[]>(`/v1/admin/projects/${encodedProjectId}/activities`)),
@@ -47,6 +49,9 @@ export async function loadProjectDetail(
       get<ProjectMembership[]>(
         `/v1/admin/project-memberships?projectId=${encodeURIComponent(projectId)}`
       )
+    ),
+    section(
+      get<ProjectComment[]>(`/v1/admin/projects/${encodedProjectId}/comments?status=pending`)
     ),
   ]);
   const completions =
@@ -65,7 +70,7 @@ export async function loadProjectDetail(
       : activities.kind === 'forbidden'
       ? { kind: 'forbidden' as const }
       : { kind: 'error' as const, error: activities.error };
-  return { project, enterprise, media, activities, memberships, completions };
+  return { project, enterprise, media, activities, memberships, completions, comments };
 }
 
 export function isProjectLocaleComplete(project: Project, locale: string): boolean {

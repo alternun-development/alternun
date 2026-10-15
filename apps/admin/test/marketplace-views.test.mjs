@@ -16,6 +16,9 @@ let validateProjectStep;
 let hasMarketplacePermission;
 let projectStatusActions;
 let completionActionAvailability;
+let commentActionAvailability;
+let commentReasonError;
+let commentsForStatus;
 
 const project = {
   id: 'project-1',
@@ -78,6 +81,28 @@ const activities = [
   },
 ];
 const memberships = [{ id: 'membership-1', role: 'sub_admin', status: 'active' }];
+const comments = [
+  {
+    id: 'comment-1',
+    projectId: project.id,
+    authorDisplayName: 'Guest One',
+    body: 'A thoughtful visit.',
+    status: 'pending',
+    moderationReason: null,
+    createdAt: '2026-10-15T12:00:00.000Z',
+    updatedAt: '2026-10-15T12:00:00.000Z',
+  },
+  {
+    id: 'comment-2',
+    projectId: project.id,
+    authorDisplayName: 'Guest Two',
+    body: 'Already visible.',
+    status: 'visible',
+    moderationReason: null,
+    createdAt: '2026-10-14T12:00:00.000Z',
+    updatedAt: '2026-10-14T12:00:00.000Z',
+  },
+];
 
 before(async () => {
   viteServer = await createServer({
@@ -103,6 +128,8 @@ before(async () => {
   ({ completionActionAvailability } = await viteServer.ssrLoadModule(
     '/src/pages/marketplace/editors/approval-inbox.tsx'
   ));
+  ({ commentActionAvailability, commentReasonError, commentsForStatus } =
+    await viteServer.ssrLoadModule('/src/pages/marketplace/editors/comment-moderation-queue.tsx'));
 });
 
 after(async () => {
@@ -120,6 +147,8 @@ function simulatedGet(overrides = {}) {
       return overrides.completions ?? [];
     if (path === `/v1/admin/project-memberships?projectId=${project.id}`)
       return overrides.memberships ?? memberships;
+    if (path === `/v1/admin/projects/${project.id}/comments?status=pending`)
+      return overrides.comments ?? comments.filter((comment) => comment.status === 'pending');
     throw new Error(`Unexpected test path: ${path}`);
   };
 }
@@ -136,6 +165,14 @@ void test('marketplace API errors always become friendly copy', () => {
   assert.equal(
     marketplaceErrorMessage({ code: 'PROJECT_STATUS_TRANSITION_INVALID', statusCode: 409 }),
     'This project status change is not available.'
+  );
+  assert.equal(
+    marketplaceErrorMessage(new MarketplaceRequestError(403, 'PROJECT_SCOPE_DENIED')),
+    "You don't have access to this project."
+  );
+  assert.equal(
+    marketplaceErrorMessage(new MarketplaceRequestError(409, 'COMMENT_TRANSITION_INVALID')),
+    'This comment has already changed. Refresh and try again.'
   );
 });
 
@@ -196,12 +233,33 @@ void test('approval inbox exposes Approve and Reject by role and Reverse only to
   });
 });
 
+void test('comment queue filters by status and enforces moderation permissions and reasons', () => {
+  assert.deepEqual(
+    commentsForStatus(comments, 'pending').map((comment) => comment.id),
+    ['comment-1']
+  );
+  assert.deepEqual(
+    commentsForStatus(comments, 'visible').map((comment) => comment.id),
+    ['comment-2']
+  );
+  assert.deepEqual(commentActionAvailability(['partner_readonly'], 'pending'), {
+    approve: false,
+    reject: false,
+    hide: false,
+    restore: false,
+  });
+  assert.equal(commentActionAvailability(['sub_admin'], 'pending').approve, true);
+  assert.equal(commentReasonError('reject', '   '), marketplaceCopy.comments.reasonRequired);
+  assert.equal(commentReasonError('reject', 'Duplicate comment'), null);
+});
+
 void test('project detail loads successful sections and a complete publishing checklist', async () => {
   const detail = await loadProjectDetail(simulatedGet(), project.id);
   assert.equal(detail.enterprise.kind, 'success');
   assert.equal(detail.media.kind, 'success');
   assert.equal(detail.activities.kind, 'success');
   assert.equal(detail.memberships.kind, 'success');
+  assert.equal(detail.comments.kind, 'success');
   assert.deepEqual(projectReadiness(project, media, activities), [
     { key: 'title', complete: true },
     { key: 'description', complete: true },
@@ -219,6 +277,7 @@ void test('project detail preserves useful empty sections and missing readiness 
   assert.deepEqual(detail.media, { kind: 'success', data: [] });
   assert.deepEqual(detail.activities, { kind: 'success', data: [] });
   assert.deepEqual(detail.memberships, { kind: 'success', data: [] });
+  assert.deepEqual(detail.comments, { kind: 'success', data: comments.slice(0, 1) });
   assert.deepEqual(
     projectReadiness(project, [], [])
       .filter((item) => !item.complete)
@@ -231,11 +290,17 @@ void test('a forbidden section does not hide the rest of project detail', async 
   const forbidden = new MarketplaceRequestError(403, 'PROJECT_SCOPE_DENIED');
   const get = simulatedGet();
   const detail = await loadProjectDetail(async (path) => {
-    if (path.endsWith('/media') || path.includes('project-memberships')) throw forbidden;
+    if (
+      path.endsWith('/media') ||
+      path.includes('project-memberships') ||
+      path.includes('/comments')
+    )
+      throw forbidden;
     return get(path);
   }, project.id);
   assert.deepEqual(detail.media, { kind: 'forbidden' });
   assert.deepEqual(detail.memberships, { kind: 'forbidden' });
+  assert.deepEqual(detail.comments, { kind: 'forbidden' });
   assert.equal(detail.enterprise.kind, 'success');
   assert.equal(detail.activities.kind, 'success');
 });

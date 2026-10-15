@@ -1,10 +1,23 @@
 import type { ReactNode } from 'react';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../marketplace/copy';
-import type { EnterpriseStatus, ProjectStatus } from '../../marketplace/api';
+import type { CommentStatus, EnterpriseStatus, ProjectStatus } from '../../marketplace/api';
 
-export function StatusPill({ status }: { status: ProjectStatus | EnterpriseStatus }): JSX.Element {
+const commentStatusStyle: Record<CommentStatus, ProjectStatus> = {
+  pending: 'draft',
+  visible: 'published',
+  hidden: 'paused',
+  rejected: 'archived',
+};
+
+export function StatusPill({
+  status,
+}: {
+  status: ProjectStatus | EnterpriseStatus | CommentStatus;
+}): JSX.Element {
+  const styleStatus =
+    status in commentStatusStyle ? commentStatusStyle[status as CommentStatus] : status;
   return (
-    <span className={`status-pill marketplace-status marketplace-status-${status}`}>
+    <span className={`status-pill marketplace-status marketplace-status-${styleStatus}`}>
       {marketplaceCopy.status[status]}
     </span>
   );
