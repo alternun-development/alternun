@@ -1,5 +1,5 @@
 -- Verification for issue #249 marketplace migrations.
--- Run after 0001 through 0004. Catalog queries are read-only; behavioral
+-- Run after 0001 through 0005. Catalog queries are read-only; behavioral
 -- assertions run in a transaction that is always rolled back.
 
 -- Edward: record this result independently in testnet and production before a
@@ -44,7 +44,8 @@ with marketplace_tables(table_name) as (
     ('admin_audit_log'),
     ('project_memberships'),
     ('project_activities'),
-    ('project_activity_completions')
+    ('project_activity_completions'),
+    ('project_comments')
 ), roles(role_name) as (
   values ('anon'), ('authenticated'), ('service_role')
 ), privileges(privilege_name) as (
@@ -96,7 +97,8 @@ with marketplace_tables(table_name) as (
     ('admin_audit_log'),
     ('project_memberships'),
     ('project_activities'),
-    ('project_activity_completions')
+    ('project_activity_completions'),
+    ('project_comments')
 )
 select
   marketplace_tables.table_name,
@@ -131,7 +133,9 @@ with marketplace_function(signature, expected_security_definer) as (
     ('public.marketplace_create_project(uuid,text,text,text,text,text,jsonb,text,text,text[],text)', true),
     ('public.marketplace_update_project(uuid,jsonb,text,text,text[],text)', true),
     ('public.marketplace_reorder_project_media(uuid,jsonb,text,text,text[],text)', true),
-    ('public.marketplace_set_enterprise_status(uuid,text,text,text,text[],text,text)', true)
+    ('public.marketplace_set_enterprise_status(uuid,text,text,text,text[],text,text)', true),
+    ('public.marketplace_create_comment(uuid,text,text,text,text,text,text)', true),
+    ('public.marketplace_moderate_comment(uuid,text,text,text,text[],text,text)', true)
 )
 select
   marketplace_function.signature,
@@ -168,7 +172,8 @@ with marketplace_table_oids as (
       'admin_audit_log',
       'project_memberships',
       'project_activities',
-      'project_activity_completions'
+      'project_activity_completions',
+      'project_comments'
     )
 )
 select
@@ -194,6 +199,7 @@ declare
   v_result jsonb;
   v_project_id uuid;
   v_membership_id uuid;
+  v_comment_id uuid;
   v_content jsonb := '{
     "es": {
       "title": "Proyecto de verificacion",
@@ -418,6 +424,113 @@ begin
   );
   if v_result ->> 'reasonCode' is distinct from 'ENTERPRISE_NOT_ACTIVE' then
     raise exception 'inactive enterprise assertion failed: %', v_result;
+  end if;
+
+  -- Comment validation is NULL-safe and never falls through to constraints.
+  v_result := public.marketplace_create_comment(
+    v_project_id, 'verification', 'commenter', 'comment-user',
+    'Verification Commenter', null, 'verification-comment-null'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'COMMENT_INPUT_INVALID' then
+    raise exception 'comment NULL assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_create_comment(
+    v_project_id, 'verification', 'commenter', 'comment-user',
+    'Verification Commenter', 'First verification comment.',
+    'verification-comment-1'
+  );
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true
+    or coalesce((v_result ->> 'idempotent')::boolean, true) is not false
+  then
+    raise exception 'comment creation assertion failed: %', v_result;
+  end if;
+  v_comment_id := (v_result -> 'comment' ->> 'id')::uuid;
+
+  v_result := public.marketplace_create_comment(
+    v_project_id, 'verification', 'commenter', 'comment-user',
+    'Verification Commenter', 'Changed retry body.',
+    'verification-comment-1'
+  );
+  if coalesce((v_result ->> 'idempotent')::boolean, false) is not true
+    or (v_result -> 'comment' ->> 'id')::uuid is distinct from v_comment_id
+  then
+    raise exception 'comment idempotency assertion failed: %', v_result;
+  end if;
+
+  perform public.marketplace_create_comment(
+    v_project_id, 'verification', 'commenter', 'comment-user',
+    'Verification Commenter', 'Second verification comment.',
+    'verification-comment-2'
+  );
+  perform public.marketplace_create_comment(
+    v_project_id, 'verification', 'commenter', 'comment-user',
+    'Verification Commenter', 'Third verification comment.',
+    'verification-comment-3'
+  );
+  v_result := public.marketplace_create_comment(
+    v_project_id, 'verification', 'commenter', 'comment-user',
+    'Verification Commenter', 'Fourth verification comment.',
+    'verification-comment-4'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'COMMENT_RATE_LIMITED' then
+    raise exception 'comment rate limit assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_moderate_comment(
+    v_comment_id, null, 'verification', 'actor', array['platform_owner'],
+    'verification-comment-status-null', null
+  );
+  if v_result ->> 'reasonCode' is distinct from 'COMMENT_TRANSITION_INVALID' then
+    raise exception 'comment target NULL assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_moderate_comment(
+    v_comment_id, 'visible', 'verification', 'member-no-scope',
+    array['sub_admin'], 'verification-comment-no-scope', null
+  );
+  if v_result ->> 'reasonCode' is distinct from 'PROJECT_SCOPE_DENIED' then
+    raise exception 'comment membership scope assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_moderate_comment(
+    v_comment_id, 'visible', 'verification', 'member-change',
+    array['sub_admin'], 'verification-comment-visible', null
+  );
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true then
+    raise exception 'comment scoped moderation assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_moderate_comment(
+    v_comment_id, 'rejected', 'verification', 'actor', array['platform_owner'],
+    'verification-comment-invalid-transition', 'invalid transition'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'COMMENT_TRANSITION_INVALID' then
+    raise exception 'comment invalid transition assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_moderate_comment(
+    v_comment_id, 'hidden', 'verification', 'actor', array['platform_owner'],
+    'verification-comment-reason-required', null
+  );
+  if v_result ->> 'reasonCode' is distinct from 'COMMENT_REASON_REQUIRED' then
+    raise exception 'comment reason assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_moderate_comment(
+    v_comment_id, 'hidden', 'verification', 'member-change', array['sub_admin'],
+    'verification-comment-hidden', 'verification reason'
+  );
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true then
+    raise exception 'comment hide assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_moderate_comment(
+    v_comment_id, 'visible', 'verification', 'member-change', array['sub_admin'],
+    'verification-comment-restored', null
+  );
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true then
+    raise exception 'comment restore assertion failed: %', v_result;
   end if;
 end;
 $$;

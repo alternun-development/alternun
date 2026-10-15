@@ -35,7 +35,9 @@ export type AdminPermission =
   | 'completions:create'
   | 'completions:award'
   | 'completions:reject'
-  | 'completions:reverse';
+  | 'completions:reverse'
+  | 'comments:read'
+  | 'comments:moderate';
 
 export const ADMIN_ROLES = [
   'platform_owner',
@@ -134,6 +136,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'completions:read',
     'completions:create',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
   ],
   partner_operator: [
     'allowances:read',
@@ -156,6 +160,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'completions:create',
     'completions:award',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
   ],
   moderator: [
     'enterprises:read',
@@ -169,6 +175,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'completions:create',
     'completions:award',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
   ],
   internal_admin: [
     'allowances:read',
@@ -196,6 +204,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'completions:create',
     'completions:award',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
   ],
   platform_owner: [
     'allowances:read',
@@ -225,6 +235,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'completions:award',
     'completions:reject',
     'completions:reverse',
+    'comments:read',
+    'comments:moderate',
   ],
 };
 const knownAdminRoles = new Set<string>(ADMIN_ROLES);
