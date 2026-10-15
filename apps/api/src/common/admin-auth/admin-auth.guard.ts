@@ -25,6 +25,9 @@ export type AdminPermission =
   | 'project_media:read'
   | 'project_media:write'
   | 'project_media:moderate'
+  | 'project_memberships:read'
+  | 'project_memberships:assign'
+  | 'project_memberships:revoke'
   | 'activities:read'
   | 'activities:write'
   | 'activities:publish'
@@ -32,7 +35,9 @@ export type AdminPermission =
   | 'completions:create'
   | 'completions:award'
   | 'completions:reject'
-  | 'completions:reverse';
+  | 'completions:reverse'
+  | 'comments:read'
+  | 'comments:moderate';
 
 export const ADMIN_ROLES = [
   'platform_owner',
@@ -114,6 +119,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'enterprises:read',
     'projects:read',
     'project_media:read',
+    'project_memberships:read',
     'activities:read',
     'completions:read',
   ],
@@ -124,11 +130,14 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'project_memberships:read',
     'activities:read',
     'activities:write',
     'completions:read',
     'completions:create',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
   ],
   partner_operator: [
     'allowances:read',
@@ -141,6 +150,9 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'project_memberships:read',
+    'project_memberships:assign',
+    'project_memberships:revoke',
     'activities:read',
     'activities:write',
     'activities:publish',
@@ -148,6 +160,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'completions:create',
     'completions:award',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
   ],
   moderator: [
     'enterprises:read',
@@ -155,11 +169,14 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'projects:update',
     'project_media:read',
     'project_media:moderate',
+    'project_memberships:read',
     'activities:read',
     'completions:read',
     'completions:create',
     'completions:award',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
   ],
   internal_admin: [
     'allowances:read',
@@ -177,6 +194,9 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'project_memberships:read',
+    'project_memberships:assign',
+    'project_memberships:revoke',
     'activities:read',
     'activities:write',
     'activities:publish',
@@ -184,6 +204,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'completions:create',
     'completions:award',
     'completions:reject',
+    'comments:read',
+    'comments:moderate',
   ],
   platform_owner: [
     'allowances:read',
@@ -202,6 +224,9 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
+    'project_memberships:read',
+    'project_memberships:assign',
+    'project_memberships:revoke',
     'activities:read',
     'activities:write',
     'activities:publish',
@@ -210,6 +235,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'completions:award',
     'completions:reject',
     'completions:reverse',
+    'comments:read',
+    'comments:moderate',
   ],
 };
 const knownAdminRoles = new Set<string>(ADMIN_ROLES);

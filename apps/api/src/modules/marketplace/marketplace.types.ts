@@ -13,12 +13,44 @@ export const PROJECT_STATUSES = ['draft', 'published', 'paused', 'archived'] as 
 export const MEDIA_KINDS = ['logo', 'cover', 'gallery_image', 'video', 'canva'] as const;
 export const ACTIVITY_STATUSES = ['draft', 'published', 'paused', 'archived'] as const;
 export const ACTIVITY_REPEAT_PERIODS = ['none', 'day', 'week', 'month', 'assignment'] as const;
+export const COMMENT_STATUSES = ['pending', 'visible', 'rejected', 'hidden'] as const;
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 export type LocalizedText = Record<string, string>;
 export type ActivityStatus = (typeof ACTIVITY_STATUSES)[number];
 export type ActivityRepeatPeriod = (typeof ACTIVITY_REPEAT_PERIODS)[number];
+export type CommentStatus = (typeof COMMENT_STATUSES)[number];
+
+export interface ProjectCommentRecord {
+  id: string;
+  projectId: string;
+  authorIssuer: string;
+  authorSubject: string;
+  authorUserId: string;
+  authorDisplayName: string;
+  body: string;
+  status: CommentStatus;
+  moderatedByIssuer: string | null;
+  moderatedBySubject: string | null;
+  moderatedAt: string | null;
+  moderationReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PublicProjectComment {
+  displayName: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface VerifiedCommentAuthor {
+  issuer: string;
+  subject: string;
+  userId: string;
+  displayName: string;
+}
 
 export interface ActivityContentBlock {
   title: string;
@@ -190,6 +222,26 @@ export interface ProjectMembershipScope {
   projectId: string | null;
   scopeType: 'enterprise' | 'project';
   role: string;
+}
+
+export interface ActorReference {
+  issuer: string;
+  subject: string;
+}
+
+export interface ProjectMembershipRecord {
+  id: string;
+  member: ActorReference;
+  memberUserId: string | null;
+  enterpriseId: string;
+  projectId: string | null;
+  scopeType: 'enterprise' | 'project';
+  role: 'partner_operator' | 'sub_admin' | 'partner_readonly';
+  status: 'active' | 'revoked';
+  grantedBy: ActorReference;
+  createdAt: string;
+  updatedAt: string;
+  revokedAt: string | null;
 }
 
 export function actorFromPrincipal(principal: AdminPrincipal): AdminActor {

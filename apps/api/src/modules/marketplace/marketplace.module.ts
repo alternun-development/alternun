@@ -18,6 +18,19 @@ import {
 import { MarketplaceAdminService, MarketplacePublicService } from './marketplace.service';
 import { MarketplaceActivityRepository } from './marketplace-activity.repository';
 import { MarketplaceActivityService } from './marketplace-activity.service';
+import { MarketplaceMembershipAdminController } from './marketplace-membership.controller';
+import { MarketplaceMembershipRepository } from './marketplace-membership.repository';
+import { MarketplaceMembershipService } from './marketplace-membership.service';
+import {
+  MarketplaceCommentAdminController,
+  MarketplaceCommentPublicController,
+} from './marketplace-comment.controller';
+import { MarketplaceCommentRepository } from './marketplace-comment.repository';
+import {
+  MARKETPLACE_COMMENT_USER_RESOLVER,
+  MarketplaceCommentService,
+  marketplaceCommentUserResolver,
+} from './marketplace-comment.service';
 
 @Module({
   controllers: [
@@ -26,15 +39,26 @@ import { MarketplaceActivityService } from './marketplace-activity.service';
     MarketplaceProjectAdminController,
     MarketplaceActivityAdminController,
     MarketplaceCompletionAdminController,
+    MarketplaceMembershipAdminController,
+    MarketplaceCommentPublicController,
+    MarketplaceCommentAdminController,
   ],
   providers: [
     { provide: MARKETPLACE_SUPABASE, useFactory: () => createMarketplaceSupabaseClient() },
     MarketplacePublicRepository,
     MarketplaceAdminRepository,
     MarketplaceActivityRepository,
+    MarketplaceMembershipRepository,
+    MarketplaceCommentRepository,
     MarketplacePublicService,
     MarketplaceAdminService,
     MarketplaceActivityService,
+    MarketplaceMembershipService,
+    MarketplaceCommentService,
+    {
+      provide: MARKETPLACE_COMMENT_USER_RESOLVER,
+      useValue: marketplaceCommentUserResolver,
+    },
     MarketplaceExceptionFilter,
     AdminAuthGuard,
     MarketplaceAdminGuard,
