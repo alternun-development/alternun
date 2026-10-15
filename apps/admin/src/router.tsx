@@ -1,5 +1,11 @@
 import { Authenticated, CanAccess } from '@refinedev/core';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import {
+  getActiveAdminSession,
+  getAdminRolesFromSession,
+  resolveAdminLandingPath,
+} from './auth/oidc-client';
 import { AppShell } from './components/app-shell';
 import { ForbiddenPage } from './components/forbidden-page';
 import { AuthCallbackPage } from './pages/auth/callback-page';
@@ -9,6 +15,18 @@ import { LoginPage } from './pages/login/page';
 import { ResourceListPage } from './pages/resources/resource-list-page';
 import { ResourceShowPage } from './pages/resources/resource-show-page';
 import { adminResources } from './resources/catalog';
+
+function AdminLandingRedirect(): React.ReactElement | null {
+  const [path, setPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    void getActiveAdminSession().then((session) => {
+      setPath(resolveAdminLandingPath(getAdminRolesFromSession(session)));
+    });
+  }, []);
+
+  return path ? <Navigate to={path} replace /> : null;
+}
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function AdminRouter() {
@@ -21,7 +39,7 @@ export function AdminRouter() {
           path='/login'
           element={
             <Authenticated key='login-route' fallback={<LoginPage />}>
-              <Navigate to='/dashboard' replace />
+              <AdminLandingRedirect />
             </Authenticated>
           }
         />
@@ -35,7 +53,7 @@ export function AdminRouter() {
             </Authenticated>
           }
         >
-          <Route index element={<Navigate to='/dashboard' replace />} />
+          <Route index element={<AdminLandingRedirect />} />
           <Route
             path='/dashboard'
             element={
@@ -72,7 +90,7 @@ export function AdminRouter() {
             ))}
         </Route>
 
-        <Route path='*' element={<Navigate to='/dashboard' replace />} />
+        <Route path='*' element={<AdminLandingRedirect />} />
       </Routes>
     </BrowserRouter>
   );

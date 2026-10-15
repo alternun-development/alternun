@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
 import { after, before, test } from 'node:test';
 import { createServer } from 'vite';
 
@@ -7,7 +8,7 @@ let resolveAdminAccessProfile;
 
 before(async () => {
   viteServer = await createServer({
-    root: new URL('..', import.meta.url).pathname,
+    root: fileURLToPath(new URL('..', import.meta.url)),
     logLevel: 'silent',
     server: { middlewareMode: true },
   });
@@ -44,5 +45,14 @@ void test('partner readonly access exposes no internal admin resource links', ()
       true,
       `${internalOnlyResource} must remain available to internal administrators`
     );
+  }
+});
+
+void test('moderator and sub-admin profiles expose only marketplace resources', () => {
+  for (const role of ['moderator', 'sub_admin']) {
+    const access = resolveAdminAccessProfile([role], ['assigned-enterprise']);
+    assert.ok(access);
+    assert.equal(access.surface, 'partner');
+    assert.deepEqual(access.allowedResources, ['marketplace-enterprises', 'marketplace-projects']);
   }
 });

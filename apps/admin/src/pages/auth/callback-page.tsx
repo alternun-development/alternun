@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { canAccessAdminDashboard, oidcClient } from '../../auth/oidc-client';
+import {
+  canAccessAdminDashboard,
+  getAdminRolesFromSession,
+  oidcClient,
+  resolveAdminLandingPath,
+} from '../../auth/oidc-client';
 
 // React development Strict Mode re-runs effects. An authorization code can be
 // redeemed exactly once, so both effect executions must await the same request.
@@ -48,7 +53,7 @@ export function AuthCallbackPage(): JSX.Element {
           'returnTo' in user.state &&
           typeof user.state.returnTo === 'string'
             ? user.state.returnTo
-            : '/dashboard';
+            : resolveAdminLandingPath(getAdminRolesFromSession(user));
 
         void navigate(returnTo, { replace: true });
       })

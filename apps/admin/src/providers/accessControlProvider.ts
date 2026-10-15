@@ -23,7 +23,7 @@ export const accessControlProvider: AccessControlProvider = {
       };
     }
 
-    if (resource === 'dashboard' || !resource) {
+    if (!resource) {
       return { can: true };
     }
 
