@@ -45,7 +45,8 @@ with marketplace_tables(table_name) as (
     ('project_memberships'),
     ('project_activities'),
     ('project_activity_completions'),
-    ('project_comments')
+    ('project_comments'),
+    ('project_participants')
 ), roles(role_name) as (
   values ('anon'), ('authenticated'), ('service_role')
 ), privileges(privilege_name) as (
@@ -98,7 +99,8 @@ with marketplace_tables(table_name) as (
     ('project_memberships'),
     ('project_activities'),
     ('project_activity_completions'),
-    ('project_comments')
+    ('project_comments'),
+    ('project_participants')
 )
 select
   marketplace_tables.table_name,
@@ -135,7 +137,9 @@ with marketplace_function(signature, expected_security_definer) as (
     ('public.marketplace_reorder_project_media(uuid,jsonb,text,text,text[],text)', true),
     ('public.marketplace_set_enterprise_status(uuid,text,text,text,text[],text,text)', true),
     ('public.marketplace_create_comment(uuid,text,text,text,text,text,text)', true),
-    ('public.marketplace_moderate_comment(uuid,text,text,text,text[],text,text)', true)
+    ('public.marketplace_moderate_comment(uuid,text,text,text,text[],text,text)', true),
+    ('public.marketplace_add_project_participant(uuid,text,text,text,text[],text)', true),
+    ('public.marketplace_remove_project_participant(uuid,text,text,text[],text,text)', true)
 )
 select
   marketplace_function.signature,
@@ -173,7 +177,8 @@ with marketplace_table_oids as (
       'project_memberships',
       'project_activities',
       'project_activity_completions',
-      'project_comments'
+      'project_comments',
+      'project_participants'
     )
 )
 select
@@ -200,6 +205,8 @@ declare
   v_project_id uuid;
   v_membership_id uuid;
   v_comment_id uuid;
+  v_participant_id uuid;
+  v_participant_user_id constant uuid := '24999999-0000-4000-8000-000000000004';
   v_content jsonb := '{
     "es": {
       "title": "Proyecto de verificacion",
@@ -220,6 +227,13 @@ begin
   ) values (
     v_enterprise_id, 'verification-enterprise', 'Verification Enterprise',
     'active', 'CO', 'verification', 'actor', 'verification', 'actor'
+  );
+
+  insert into public.users (
+    id, sub, iss, email, email_verified, name
+  ) values (
+    v_participant_user_id, 'verification-participant', 'verification',
+    'participant@example.test', true, 'Verification Participant'
   );
 
   -- NULL membership inputs return structured denials and never constraints/FKs.
@@ -340,6 +354,94 @@ begin
     v_project_id, array['sub_admin']
   ) is not false then
     raise exception 'claim and membership role mismatch assertion failed';
+  end if;
+
+  v_result := public.marketplace_add_project_participant(
+    v_project_id, null, 'verification', 'actor', array['platform_owner'],
+    'verification-participant-email-null'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'PARTICIPANT_INPUT_INVALID' then
+    raise exception 'participant email NULL assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_add_project_participant(
+    v_project_id, 'missing@example.test', 'verification', 'actor',
+    array['platform_owner'], 'verification-participant-user-missing'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'USER_NOT_FOUND' then
+    raise exception 'participant missing user assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_add_project_participant(
+    v_project_id, 'participant@example.test', 'verification', 'member-no-scope',
+    array['sub_admin'], 'verification-participant-no-scope'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'PROJECT_SCOPE_DENIED' then
+    raise exception 'participant membership scope assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_add_project_participant(
+    v_project_id, 'participant@example.test', 'verification', 'moderator',
+    array['moderator'], 'verification-participant-moderator'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'PERMISSION_DENIED' then
+    raise exception 'participant moderator assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_add_project_participant(
+    v_project_id, ' PARTICIPANT@example.test ', 'verification', 'member-change',
+    array['sub_admin'], 'verification-participant-add'
+  );
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true
+    or coalesce((v_result ->> 'idempotent')::boolean, true) is not false
+    or v_result -> 'participant' ->> 'userId' is distinct from v_participant_user_id::text
+  then
+    raise exception 'participant scoped add assertion failed: %', v_result;
+  end if;
+  v_participant_id := (v_result -> 'participant' ->> 'id')::uuid;
+
+  v_result := public.marketplace_add_project_participant(
+    v_project_id, 'changed@example.test', 'verification', 'member-change',
+    array['sub_admin'], 'verification-participant-add'
+  );
+  if coalesce((v_result ->> 'idempotent')::boolean, false) is not true
+    or (v_result -> 'participant' ->> 'id')::uuid is distinct from v_participant_id
+  then
+    raise exception 'participant add idempotency assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_add_project_participant(
+    v_project_id, 'participant@example.test', 'verification', 'actor',
+    array['platform_owner'], 'verification-participant-duplicate'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'PARTICIPANT_CONFLICT' then
+    raise exception 'participant duplicate assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_remove_project_participant(
+    v_participant_id, 'verification', 'member-change', array['sub_admin'],
+    'verification-participant-remove-reason', null
+  );
+  if v_result ->> 'reasonCode' is distinct from 'PARTICIPANT_REASON_REQUIRED' then
+    raise exception 'participant removal reason assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_remove_project_participant(
+    v_participant_id, 'verification', 'member-change', array['sub_admin'],
+    'verification-participant-remove', 'No longer staying at the hotel'
+  );
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true
+    or coalesce((v_result ->> 'idempotent')::boolean, true) is not false
+  then
+    raise exception 'participant removal assertion failed: %', v_result;
+  end if;
+
+  v_result := public.marketplace_remove_project_participant(
+    v_participant_id, 'verification', 'member-change', array['sub_admin'],
+    'verification-participant-remove', 'Changed retry reason'
+  );
+  if coalesce((v_result ->> 'idempotent')::boolean, false) is not true then
+    raise exception 'participant removal idempotency assertion failed: %', v_result;
   end if;
 
   v_result := public.marketplace_update_project(
