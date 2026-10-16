@@ -7,6 +7,7 @@ import {
   type ProjectComment,
   type ProjectMedia,
   type ProjectMembership,
+  type ProjectParticipant,
 } from './api';
 
 export type MarketplaceGet = <T>(path: string) => Promise<T>;
@@ -23,6 +24,7 @@ export type ProjectDetailSnapshot = {
   memberships: SectionResult<ProjectMembership[]>;
   completions: SectionResult<ActivityCompletion[]>;
   comments: SectionResult<ProjectComment[]>;
+  participants: SectionResult<ProjectParticipant[]>;
 };
 
 async function section<T>(operation: Promise<T>): Promise<SectionResult<T>> {
@@ -41,7 +43,7 @@ export async function loadProjectDetail(
 ): Promise<ProjectDetailSnapshot> {
   const project = await get<Project>(`/v1/admin/projects/${encodeURIComponent(projectId)}`);
   const encodedProjectId = encodeURIComponent(projectId);
-  const [enterprise, media, activities, memberships, comments] = await Promise.all([
+  const [enterprise, media, activities, memberships, comments, participants] = await Promise.all([
     section(get<Enterprise>(`/v1/admin/enterprises/${encodeURIComponent(project.enterpriseId)}`)),
     section(get<ProjectMedia[]>(`/v1/admin/projects/${encodedProjectId}/media`)),
     section(get<ProjectActivity[]>(`/v1/admin/projects/${encodedProjectId}/activities`)),
@@ -53,6 +55,7 @@ export async function loadProjectDetail(
     section(
       get<ProjectComment[]>(`/v1/admin/projects/${encodedProjectId}/comments?status=pending`)
     ),
+    section(get<ProjectParticipant[]>(`/v1/admin/projects/${encodedProjectId}/participants`)),
   ]);
   const completions =
     activities.kind === 'success'
@@ -70,7 +73,16 @@ export async function loadProjectDetail(
       : activities.kind === 'forbidden'
       ? { kind: 'forbidden' as const }
       : { kind: 'error' as const, error: activities.error };
-  return { project, enterprise, media, activities, memberships, completions, comments };
+  return {
+    project,
+    enterprise,
+    media,
+    activities,
+    memberships,
+    completions,
+    comments,
+    participants,
+  };
 }
 
 export function isProjectLocaleComplete(project: Project, locale: string): boolean {

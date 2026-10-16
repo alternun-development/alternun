@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../marketplace/copy';
-import type { CommentStatus, EnterpriseStatus, ProjectStatus } from '../../marketplace/api';
+import type {
+  ActivityCompletion,
+  CommentStatus,
+  EnterpriseStatus,
+  ProjectParticipant,
+  ProjectStatus,
+} from '../../marketplace/api';
 
 const commentStatusStyle: Record<CommentStatus, ProjectStatus> = {
   pending: 'draft',
@@ -12,7 +18,12 @@ const commentStatusStyle: Record<CommentStatus, ProjectStatus> = {
 export function StatusPill({
   status,
 }: {
-  status: ProjectStatus | EnterpriseStatus | CommentStatus;
+  status:
+    | ProjectStatus
+    | EnterpriseStatus
+    | CommentStatus
+    | ProjectParticipant['status']
+    | ActivityCompletion['status'];
 }): JSX.Element {
   const styleStatus =
     status in commentStatusStyle ? commentStatusStyle[status as CommentStatus] : status;

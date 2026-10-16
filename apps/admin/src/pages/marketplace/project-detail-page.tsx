@@ -24,9 +24,18 @@ import { MediaEditor } from './editors/media-editor';
 import { ProjectStatusActions } from './editors/project-status-actions';
 import { TeamEditor } from './editors/team-editor';
 import { CommentModerationQueue } from './editors/comment-moderation-queue';
+import { ParticipantEditor } from './editors/participant-editor';
 
-type Tab = 'overview' | 'content' | 'media' | 'activities' | 'comments' | 'team';
-const tabs: Tab[] = ['overview', 'content', 'media', 'activities', 'comments', 'team'];
+type Tab = 'overview' | 'content' | 'media' | 'activities' | 'participants' | 'comments' | 'team';
+const tabs: Tab[] = [
+  'overview',
+  'content',
+  'media',
+  'activities',
+  'participants',
+  'comments',
+  'team',
+];
 const locales = ['es', 'en', 'th'] as const;
 
 function SectionState<T>({
@@ -347,7 +356,9 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
   const title =
     localizedProjectContent(snapshot.project)?.title ?? marketplaceCopy.common.notAvailable;
   const visibleTabs = tabs.filter(
-    (item) => item !== 'comments' || hasMarketplacePermission(roles, 'comments:read')
+    (item) =>
+      (item !== 'comments' || hasMarketplacePermission(roles, 'comments:read')) &&
+      (item !== 'participants' || hasMarketplacePermission(roles, 'participants:read'))
   );
   return (
     <div className='page-grid'>
@@ -468,6 +479,22 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
               <TeamEditor
                 project={snapshot.project}
                 memberships={memberships}
+                roles={roles}
+                onChanged={(message) => {
+                  setSuccess(message);
+                  load();
+                }}
+              />
+            )}
+          </SectionState>
+        ) : null}
+        {tab === 'participants' ? (
+          <SectionState result={snapshot.participants} empty={() => false} onRetry={load}>
+            {(participants) => (
+              <ParticipantEditor
+                project={snapshot.project}
+                participants={participants}
+                activities={snapshot.activities.kind === 'success' ? snapshot.activities.data : []}
                 roles={roles}
                 onChanged={(message) => {
                   setSuccess(message);

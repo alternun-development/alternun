@@ -83,6 +83,31 @@ export type ActivityCompletion = {
   awardedAirs: number | null;
 };
 
+export type ProjectParticipant = {
+  id: string;
+  projectId: string;
+  userId: string;
+  displayName: string;
+  email: string;
+  status: 'active' | 'removed';
+  addedAt: string;
+  removedAt: string | null;
+  completedActivities: number;
+  receivedAirs: number;
+};
+
+export type ParticipantHistory = {
+  id: string;
+  activityId: string;
+  activity: string;
+  status: 'pending' | 'awarded' | 'rejected' | 'reversed';
+  awardedAirs: number | null;
+  completedAt: string;
+  awardedAt: string | null;
+  rejectedAt: string | null;
+  reversedAt: string | null;
+};
+
 export type ProjectComment = {
   id: string;
   projectId: string;

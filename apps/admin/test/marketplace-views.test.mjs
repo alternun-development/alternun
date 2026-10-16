@@ -19,6 +19,9 @@ let completionActionAvailability;
 let commentActionAvailability;
 let commentReasonError;
 let commentsForStatus;
+let participantActionAvailability;
+let participantRemovalReasonError;
+let participantHistoryPath;
 
 const project = {
   id: 'project-1',
@@ -103,6 +106,20 @@ const comments = [
     updatedAt: '2026-10-14T12:00:00.000Z',
   },
 ];
+const participants = [
+  {
+    id: 'participant-1',
+    projectId: project.id,
+    userId: 'user-1',
+    displayName: 'Guest One',
+    email: 'guest@example.test',
+    status: 'active',
+    addedAt: '2026-10-16T12:00:00.000Z',
+    removedAt: null,
+    completedActivities: 3,
+    receivedAirs: 150,
+  },
+];
 
 before(async () => {
   viteServer = await createServer({
@@ -130,6 +147,8 @@ before(async () => {
   ));
   ({ commentActionAvailability, commentReasonError, commentsForStatus } =
     await viteServer.ssrLoadModule('/src/pages/marketplace/editors/comment-moderation-queue.tsx'));
+  ({ participantActionAvailability, participantRemovalReasonError, participantHistoryPath } =
+    await viteServer.ssrLoadModule('/src/pages/marketplace/editors/participant-editor.tsx'));
 });
 
 after(async () => {
@@ -149,6 +168,8 @@ function simulatedGet(overrides = {}) {
       return overrides.memberships ?? memberships;
     if (path === `/v1/admin/projects/${project.id}/comments?status=pending`)
       return overrides.comments ?? comments.filter((comment) => comment.status === 'pending');
+    if (path === `/v1/admin/projects/${project.id}/participants`)
+      return overrides.participants ?? participants;
     throw new Error(`Unexpected test path: ${path}`);
   };
 }
@@ -253,6 +274,28 @@ void test('comment queue filters by status and enforces moderation permissions a
   assert.equal(commentReasonError('reject', 'Duplicate comment'), null);
 });
 
+void test('participant actions use friendly validation, role rules, and history routes', () => {
+  assert.deepEqual(participantActionAvailability(['sub_admin']), { read: true, manage: true });
+  assert.deepEqual(participantActionAvailability(['moderator']), { read: false, manage: false });
+  assert.equal(
+    participantRemovalReasonError('   '),
+    marketplaceCopy.participants.reasonRequired
+  );
+  assert.equal(participantRemovalReasonError('Guest checked out'), null);
+  assert.equal(
+    participantHistoryPath(project.id, participants[0].id),
+    `/v1/admin/projects/${project.id}/participants/${participants[0].id}/history`
+  );
+  assert.equal(
+    marketplaceErrorMessage(new MarketplaceRequestError(409, 'PARTICIPANT_CONFLICT')),
+    'This person already participates in the project.'
+  );
+  assert.equal(
+    marketplaceErrorMessage(new MarketplaceRequestError(404, 'USER_NOT_FOUND')),
+    'No verified account exists with that email.'
+  );
+});
+
 void test('project detail loads successful sections and a complete publishing checklist', async () => {
   const detail = await loadProjectDetail(simulatedGet(), project.id);
   assert.equal(detail.enterprise.kind, 'success');
@@ -260,6 +303,8 @@ void test('project detail loads successful sections and a complete publishing ch
   assert.equal(detail.activities.kind, 'success');
   assert.equal(detail.memberships.kind, 'success');
   assert.equal(detail.comments.kind, 'success');
+  assert.equal(detail.participants.kind, 'success');
+  assert.equal(detail.participants.data[0].email, 'guest@example.test');
   assert.deepEqual(projectReadiness(project, media, activities), [
     { key: 'title', complete: true },
     { key: 'description', complete: true },
@@ -293,7 +338,8 @@ void test('a forbidden section does not hide the rest of project detail', async 
     if (
       path.endsWith('/media') ||
       path.includes('project-memberships') ||
-      path.includes('/comments')
+      path.includes('/comments') ||
+      path.includes('/participants')
     )
       throw forbidden;
     return get(path);
@@ -301,6 +347,7 @@ void test('a forbidden section does not hide the rest of project detail', async 
   assert.deepEqual(detail.media, { kind: 'forbidden' });
   assert.deepEqual(detail.memberships, { kind: 'forbidden' });
   assert.deepEqual(detail.comments, { kind: 'forbidden' });
+  assert.deepEqual(detail.participants, { kind: 'forbidden' });
   assert.equal(detail.enterprise.kind, 'success');
   assert.equal(detail.activities.kind, 'success');
 });
