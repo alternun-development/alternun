@@ -211,6 +211,20 @@ export interface PublicProject {
   updatedAt: string;
 }
 
+export interface PublicEnterprise {
+  id: string;
+  slug: string;
+  displayName: string;
+  logo: { url: string; altText: string } | null;
+  countryCode: string | null;
+  websiteUrl: string | null;
+  projectCount: number;
+}
+
+export interface PublicEnterpriseDetail extends PublicEnterprise {
+  projects: PublicProject[];
+}
+
 export interface AdminActor {
   issuer: string;
   subject: string;

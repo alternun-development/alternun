@@ -25,8 +25,16 @@ import {
   type ProjectMediaRecord,
   type ProjectRecord,
   type ProjectStatus,
+  type PublicEnterprise,
+  type PublicEnterpriseDetail,
   type PublicProject,
 } from './marketplace.types';
+
+type PublishedProjectRow = {
+  project: ProjectRecord;
+  enterprise: EnterpriseRecord;
+  media: ProjectMediaRecord[];
+};
 
 function isGlobal(principal: AdminPrincipal): boolean {
   return principal.roles.some((role) =>
@@ -89,12 +97,73 @@ function publicProject(
       slug: enterprise.slug,
       displayName: enterprise.displayName,
       countryCode: enterprise.countryCode,
-      websiteUrl: enterprise.websiteUrl,
+      websiteUrl: safePublicHttpsUrl(enterprise.websiteUrl),
     },
     media: media.filter((item) => item.isActive),
     firstPublishedAt: project.firstPublishedAt ?? project.publishedAt ?? '',
     updatedAt: project.updatedAt,
   };
+}
+
+function safePublicHttpsUrl(value: string | null): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && !url.username && !url.password ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function publicEnterprise(
+  rows: PublishedProjectRow[],
+  requested?: string,
+  acceptLanguage?: string
+): PublicEnterprise {
+  const { enterprise } = rows[0];
+  const logoRow = rows
+    .flatMap((row) => row.media.map((item) => ({ item, project: row.project })))
+    .find(
+      ({ item }) => item.kind === 'logo' && item.isActive && safePublicHttpsUrl(item.url) !== null
+    );
+  let logo: PublicEnterprise['logo'] = null;
+  if (logoRow) {
+    const logoLocale = resolveLocale(
+      logoRow.project.content,
+      requested,
+      acceptLanguage,
+      logoRow.project.defaultLocale
+    );
+    logo = {
+      url: safePublicHttpsUrl(logoRow.item.url)!,
+      altText:
+        logoRow.item.altText[logoLocale] ??
+        Object.values(logoRow.item.altText).find(Boolean) ??
+        enterprise.displayName,
+    };
+  }
+  return {
+    id: enterprise.id,
+    slug: enterprise.slug,
+    displayName: enterprise.displayName,
+    logo,
+    countryCode: enterprise.countryCode,
+    websiteUrl: safePublicHttpsUrl(enterprise.websiteUrl),
+    projectCount: rows.length,
+  };
+}
+
+function activeEnterpriseGroups(rows: PublishedProjectRow[]): PublishedProjectRow[][] {
+  const groups = new Map<string, PublishedProjectRow[]>();
+  for (const row of rows) {
+    if (row.project.status !== 'published' || row.enterprise.status !== 'active') continue;
+    const current = groups.get(row.enterprise.id) ?? [];
+    current.push(row);
+    groups.set(row.enterprise.id, current);
+  }
+  const result: PublishedProjectRow[][] = [];
+  groups.forEach((group) => result.push(group));
+  return result;
 }
 
 function validateContent(content: ProjectContent, defaultLocale: string): void {
@@ -186,6 +255,44 @@ export class MarketplacePublicService {
     const row = await this.repository.findPublishedBySlug(slug);
     if (!row || row.project.status !== 'published') marketplaceError('PROJECT_NOT_FOUND');
     return publicProject(row.project, row.enterprise, row.media, locale, acceptLanguage);
+  }
+
+  async listEnterprises(
+    locale?: string,
+    acceptLanguage?: string,
+    page = 1,
+    perPage = 20
+  ): Promise<{ data: PublicEnterprise[]; page: number; perPage: number; total: number }> {
+    const groups = activeEnterpriseGroups(await this.repository.listPublished());
+    const start = (page - 1) * perPage;
+    return {
+      data: groups
+        .slice(start, start + perPage)
+        .map((rows) => publicEnterprise(rows, locale, acceptLanguage)),
+      page,
+      perPage,
+      total: groups.length,
+    };
+  }
+
+  async findEnterpriseBySlug(
+    slug: string,
+    locale?: string,
+    acceptLanguage?: string
+  ): Promise<PublicEnterpriseDetail> {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length < 3 || slug.length > 80) {
+      marketplaceError('VALIDATION_FAILED');
+    }
+    const group = activeEnterpriseGroups(await this.repository.listPublished()).find(
+      (rows) => rows[0].enterprise.slug === slug
+    );
+    if (!group) marketplaceError('ENTERPRISE_NOT_FOUND');
+    return {
+      ...publicEnterprise(group, locale, acceptLanguage),
+      projects: group.map(({ project, enterprise, media }) =>
+        publicProject(project, enterprise, media, locale, acceptLanguage)
+      ),
+    };
   }
 }
 

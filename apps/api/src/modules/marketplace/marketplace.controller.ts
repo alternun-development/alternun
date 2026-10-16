@@ -40,6 +40,7 @@ import {
   CreateProjectDto,
   CreateProjectMediaDto,
   ListProjectsQueryDto,
+  ListEnterprisesQueryDto,
   LocaleQueryDto,
   ReorderProjectMediaDto,
   RejectActivityCompletionDto,
@@ -104,6 +105,36 @@ export class MarketplacePublicController {
     @Headers('accept-language') acceptLanguage?: string
   ) {
     return this.activityService.listPublished(slug, query.locale, acceptLanguage);
+  }
+}
+
+@ApiTags('enterprises')
+@ApiBadRequestResponse({ type: ApiErrorDto })
+@ApiNotFoundResponse({ type: ApiErrorDto })
+@Controller({ path: 'enterprises', version: '1' })
+@UseFilters(MarketplaceExceptionFilter)
+export class MarketplaceEnterprisePublicController {
+  constructor(private readonly service: MarketplacePublicService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'List active enterprises with published marketplace projects.' })
+  @ApiOkResponse({ description: 'Public enterprise directory.' })
+  list(
+    @Query() query: ListEnterprisesQueryDto,
+    @Headers('accept-language') acceptLanguage?: string
+  ) {
+    return this.service.listEnterprises(query.locale, acceptLanguage, query.page, query.perPage);
+  }
+
+  @Get(':slug')
+  @ApiOperation({ summary: 'Get an active enterprise and its published projects.' })
+  @ApiOkResponse({ description: 'Public enterprise detail.' })
+  find(
+    @Param('slug') slug: string,
+    @Query() query: LocaleQueryDto,
+    @Headers('accept-language') acceptLanguage?: string
+  ) {
+    return this.service.findEnterpriseBySlug(slug, query.locale, acceptLanguage);
   }
 }
 

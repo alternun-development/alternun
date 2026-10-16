@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AdminAuthGuard } from '../../common/admin-auth/admin-auth.nest.guard';
 import {
   MarketplaceEnterpriseAdminController,
+  MarketplaceEnterprisePublicController,
   MarketplaceActivityAdminController,
   MarketplaceCompletionAdminController,
   MarketplaceProjectAdminController,
@@ -44,6 +45,7 @@ import { MarketplaceAuditService } from './marketplace-audit.service';
 @Module({
   controllers: [
     MarketplacePublicController,
+    MarketplaceEnterprisePublicController,
     MarketplaceEnterpriseAdminController,
     MarketplaceProjectAdminController,
     MarketplaceActivityAdminController,

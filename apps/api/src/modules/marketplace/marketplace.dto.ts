@@ -228,6 +228,11 @@ export class ListProjectsQueryDto extends LocaleQueryDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) perPage = 20;
 }
 
+export class ListEnterprisesQueryDto extends LocaleQueryDto {
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) perPage = 20;
+}
+
 export class ListProjectCommentsQueryDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1;
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) perPage = 20;
