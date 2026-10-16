@@ -64,6 +64,26 @@ export function safeHttpsUrl(value: string | null | undefined): string | null {
   }
 }
 
+export function isDirectVideoUrl(value: string | null | undefined): boolean {
+  const safeUrl = safeHttpsUrl(value);
+  if (!safeUrl) return false;
+  const pathname = new URL(safeUrl).pathname.toLowerCase();
+  return ['.mp4', '.webm', '.mov', '.m3u8'].some((extension) => pathname.endsWith(extension));
+}
+
+function videoTarget(video: MarketplaceProjectMedia | undefined): {
+  directUrl: string | null;
+  externalUrl: string | null;
+} {
+  if (!video) return { directUrl: null, externalUrl: null };
+  const embedUrl = safeHttpsUrl(video.embedUrl);
+  if (isDirectVideoUrl(embedUrl)) return { directUrl: embedUrl, externalUrl: null };
+  const url = safeHttpsUrl(video.url);
+  return isDirectVideoUrl(url)
+    ? { directUrl: url, externalUrl: null }
+    : { directUrl: null, externalUrl: url };
+}
+
 function isPublicProject(value: unknown): value is MarketplacePublicProject {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const project = value as Partial<MarketplacePublicProject>;
@@ -162,6 +182,7 @@ export function MarketplaceProjectDetailView({
   const cover = media.find((item) => item.kind === 'cover');
   const gallery = media.filter((item) => item.kind === 'gallery_image');
   const video = media.find((item) => item.kind === 'video');
+  const resolvedVideo = videoTarget(video);
   const canva = media.find((item) => item.kind === 'canva');
 
   return (
@@ -296,13 +317,13 @@ export function MarketplaceProjectDetailView({
             </View>
           ) : null}
 
-          {video ? (
+          {resolvedVideo.directUrl ? (
             <View testID='project-detail-video' style={styles.section}>
               <Text style={[styles.sectionTitle, { color: palette.text }]}>
                 {t('explorer.detail.video')}
               </Text>
               <AirsIntroVideoCard
-                videoUri={safeHttpsUrl(video.embedUrl) ?? safeHttpsUrl(video.url)!}
+                videoUri={resolvedVideo.directUrl}
                 isMuted={videoMuted}
                 isScreenFocused
                 shouldPlayMainTrack
@@ -312,6 +333,18 @@ export function MarketplaceProjectDetailView({
                 style={styles.video}
               />
             </View>
+          ) : null}
+
+          {resolvedVideo.externalUrl ? (
+            <Pressable
+              testID='project-detail-video-external'
+              accessibilityRole='link'
+              onPress={() => void openUrl(resolvedVideo.externalUrl!)}
+              style={[styles.primaryButton, { backgroundColor: palette.primaryDeep }]}
+            >
+              <Text style={styles.primaryButtonText}>{t('explorer.detail.openVideo')}</Text>
+              <ExternalLink size={16} color='#effff7' />
+            </Pressable>
           ) : null}
 
           {canva ? (

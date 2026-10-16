@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import React from 'react';
+import { Linking } from 'react-native';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import {
   MarketplaceProjectDetailView,
@@ -9,7 +10,7 @@ import {
 
 jest.mock('../../components/onboarding/AirsIntroVideoCard', () => ({
   __esModule: true,
-  default: () => null,
+  default: 'MockVideoCard',
 }));
 
 jest.mock('../../components/marketplace/MarketplaceProjectComments', () => ({
@@ -75,7 +76,7 @@ const project: MarketplacePublicProject = {
     {
       id: 'video',
       kind: 'video',
-      url: 'https://cdn.example/video.mp4',
+      url: 'https://cdn.example/video.mp4?signature=example',
       embedUrl: null,
       altText: {},
       caption: {},
@@ -116,15 +117,40 @@ async function render(
 }
 
 describe('Marketplace project detail', () => {
-  it('renders all supported media', async () => {
+  it('uses the video player for a direct video file', async () => {
     const renderer = await render(() => Promise.resolve(project));
     expect(renderer.root.findByProps({ testID: 'project-detail-cover' })).toBeTruthy();
     expect(renderer.root.findByProps({ testID: 'project-detail-logo' })).toBeTruthy();
     expect(renderer.root.findByProps({ testID: 'project-detail-gallery' })).toBeTruthy();
     expect(renderer.root.findByProps({ testID: 'project-detail-video' })).toBeTruthy();
+    expect(renderer.root.findAllByType('MockVideoCard' as never)).toHaveLength(1);
+    expect(renderer.root.findAllByProps({ testID: 'project-detail-video-external' })).toHaveLength(
+      0
+    );
     expect(renderer.root.findByProps({ testID: 'project-detail-canva' })).toBeTruthy();
   });
 
+  it('opens a non-file video in the system browser', async () => {
+    jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const externalVideo = project.media.map((item) =>
+      item.kind === 'video'
+        ? {
+            ...item,
+            url: 'https://www.youtube.com/watch?v=example',
+            embedUrl: 'https://www.youtube.com/embed/example',
+          }
+        : item
+    );
+    const renderer = await render(() => Promise.resolve({ ...project, media: externalVideo }));
+    expect(renderer.root.findAllByType('MockVideoCard' as never)).toHaveLength(0);
+    await act(async () => {
+      renderer.root.findByProps({ testID: 'project-detail-video-external' }).props.onPress();
+      await Promise.resolve();
+    });
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(Linking.openURL).toHaveBeenCalledWith('https://www.youtube.com/watch?v=example');
+    jest.restoreAllMocks();
+  });
   it('omits media sections when none are available', async () => {
     const renderer = await render(() => Promise.resolve({ ...project, media: [] }));
     expect(renderer.root.findAllByProps({ testID: 'project-detail-gallery' })).toHaveLength(0);
@@ -155,9 +181,12 @@ describe('Marketplace project detail', () => {
   it('ignores non-https media URLs', async () => {
     const insecure = project.media.map((item) => ({
       ...item,
-      url: item.kind === 'cover' ? 'http://cdn.example/cover.png' : item.url,
+      url: item.kind === 'video' ? 'http://cdn.example/video.mp4' : item.url,
     }));
     const renderer = await render(() => Promise.resolve({ ...project, media: insecure }));
-    expect(renderer.root.findAllByProps({ testID: 'project-detail-cover' })).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: 'project-detail-video' })).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: 'project-detail-video-external' })).toHaveLength(
+      0
+    );
   });
 });
