@@ -8,6 +8,7 @@ import { DecapModule } from './modules/decap/decap.module';
 import { GeoModule } from './modules/geo/geo.module';
 import { HealthModule } from './modules/health/health.module';
 import { LegalModule } from './modules/legal/legal.module';
+import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
 import { WalletModule } from './modules/wallet/wallet.module';
@@ -23,6 +24,7 @@ import { WalletModule } from './modules/wallet/wallet.module';
     AdminModule,
     GeoModule,
     LegalModule,
+    MarketplaceModule,
     NotificationsModule,
     ReferralsModule,
     WalletModule,
