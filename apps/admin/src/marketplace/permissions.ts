@@ -23,6 +23,7 @@ export type MarketplacePermission =
   | 'comments:moderate'
   | 'participants:read'
   | 'participants:manage'
+  | 'audit:read'
   | 'project_memberships:assign'
   | 'project_memberships:revoke';
 
@@ -52,6 +53,7 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'audit:read',
     'project_memberships:assign',
     'project_memberships:revoke',
   ],
@@ -62,6 +64,7 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'completions:reject',
     'comments:read',
     'comments:moderate',
+    'audit:read',
   ],
   internal_admin: [
     'enterprises:create',
@@ -80,6 +83,7 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'audit:read',
     'project_memberships:assign',
     'project_memberships:revoke',
   ],
@@ -101,6 +105,7 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'audit:read',
     'project_memberships:assign',
     'project_memberships:revoke',
   ],

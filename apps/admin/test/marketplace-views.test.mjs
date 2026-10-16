@@ -22,6 +22,9 @@ let commentsForStatus;
 let participantActionAvailability;
 let participantRemovalReasonError;
 let participantHistoryPath;
+let auditFilterResult;
+let auditQueryPath;
+let auditEventMessage;
 
 const project = {
   id: 'project-1',
@@ -149,6 +152,9 @@ before(async () => {
     await viteServer.ssrLoadModule('/src/pages/marketplace/editors/comment-moderation-queue.tsx'));
   ({ participantActionAvailability, participantRemovalReasonError, participantHistoryPath } =
     await viteServer.ssrLoadModule('/src/pages/marketplace/editors/participant-editor.tsx'));
+  ({ auditFilterResult, auditQueryPath, auditEventMessage } = await viteServer.ssrLoadModule(
+    '/src/pages/marketplace/editors/audit-history.tsx'
+  ));
 });
 
 after(async () => {
@@ -293,6 +299,40 @@ void test('participant actions use friendly validation, role rules, and history 
   assert.equal(
     marketplaceErrorMessage(new MarketplaceRequestError(404, 'USER_NOT_FOUND')),
     'No verified account exists with that email.'
+  );
+});
+
+void test('audit history permissions, filters, and messages stay safe and friendly', () => {
+  assert.equal(hasMarketplacePermission(['platform_owner'], 'audit:read'), true);
+  assert.equal(hasMarketplacePermission(['internal_admin'], 'audit:read'), true);
+  assert.equal(hasMarketplacePermission(['partner_operator'], 'audit:read'), true);
+  assert.equal(hasMarketplacePermission(['moderator'], 'audit:read'), true);
+  assert.equal(hasMarketplacePermission(['sub_admin'], 'audit:read'), false);
+  assert.equal(hasMarketplacePermission(['partner_readonly'], 'audit:read'), false);
+  assert.equal(auditFilterResult('all'), undefined);
+  assert.equal(auditFilterResult('changes'), 'allowed');
+  assert.equal(auditFilterResult('denied'), 'denied');
+  assert.equal(
+    auditQueryPath(project.id, 'denied', 2),
+    `/v1/admin/projects/${project.id}/audit?page=2&perPage=20&result=denied`
+  );
+  assert.equal(
+    auditEventMessage({
+      actor: 'Anna',
+      action: 'completion.approved',
+      result: 'allowed',
+      reasonCode: null,
+    }),
+    'Anna approved a completion'
+  );
+  assert.equal(
+    auditEventMessage({
+      actor: 'hidden',
+      action: 'authorization.denied',
+      result: 'denied',
+      reasonCode: 'PROTECTED_FIELD_WRITE_DENIED',
+    }),
+    'Access denied: tried to change a protected field'
   );
 });
 

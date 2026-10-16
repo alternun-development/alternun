@@ -25,8 +25,17 @@ import { ProjectStatusActions } from './editors/project-status-actions';
 import { TeamEditor } from './editors/team-editor';
 import { CommentModerationQueue } from './editors/comment-moderation-queue';
 import { ParticipantEditor } from './editors/participant-editor';
+import { AuditHistory } from './editors/audit-history';
 
-type Tab = 'overview' | 'content' | 'media' | 'activities' | 'participants' | 'comments' | 'team';
+type Tab =
+  | 'overview'
+  | 'content'
+  | 'media'
+  | 'activities'
+  | 'participants'
+  | 'comments'
+  | 'team'
+  | 'history';
 const tabs: Tab[] = [
   'overview',
   'content',
@@ -35,6 +44,7 @@ const tabs: Tab[] = [
   'participants',
   'comments',
   'team',
+  'history',
 ];
 const locales = ['es', 'en', 'th'] as const;
 
@@ -358,7 +368,8 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
   const visibleTabs = tabs.filter(
     (item) =>
       (item !== 'comments' || hasMarketplacePermission(roles, 'comments:read')) &&
-      (item !== 'participants' || hasMarketplacePermission(roles, 'participants:read'))
+      (item !== 'participants' || hasMarketplacePermission(roles, 'participants:read')) &&
+      (item !== 'history' || hasMarketplacePermission(roles, 'audit:read'))
   );
   return (
     <div className='page-grid'>
@@ -515,6 +526,7 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
             }}
           />
         ) : null}
+        {tab === 'history' ? <AuditHistory project={snapshot.project} roles={roles} /> : null}
       </div>
     </div>
   );

@@ -119,6 +119,25 @@ export type ProjectComment = {
   updatedAt: string;
 };
 
+export type AuditRecord = {
+  id: string;
+  createdAt: string;
+  action: string;
+  result: 'allowed' | 'denied';
+  reasonCode: string | null;
+  actor: string;
+  targetType: string;
+  changedFields: string[];
+};
+
+export type AuditPage = {
+  data: AuditRecord[];
+  page: number;
+  perPage: number;
+  total: number;
+  hasMore: boolean;
+};
+
 export class MarketplaceRequestError extends Error {
   constructor(readonly status: number, readonly code?: string) {
     super('Marketplace request failed.');
