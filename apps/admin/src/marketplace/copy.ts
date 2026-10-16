@@ -308,7 +308,7 @@ export const marketplaceCopy = {
     viewHistory: 'View history',
     historyHeading: 'Activity and AIRS history',
     historyEmpty: 'This participant has no activity history yet.',
-    historyLoading: 'Loading historyâ€¦',
+    historyLoading: 'Loading history…',
     activity: 'Activity',
     result: 'Result',
     points: 'AIRS',

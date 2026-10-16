@@ -79,7 +79,7 @@ export function changedAuditFields(beforeValue: unknown, afterValue: unknown): s
 export function shortActorIdentifier(subject: unknown): string {
   const value = text(subject).trim();
   if (!value) return 'System';
-  return value.length <= 12 ? value : `${value.slice(0, 8)}â€¦${value.slice(-4)}`;
+  return value.length <= 12 ? value : `${value.slice(0, 8)}…${value.slice(-4)}`;
 }
 
 export function sanitizeAuditRow(row: Row, actorName?: string): AuditRecord {

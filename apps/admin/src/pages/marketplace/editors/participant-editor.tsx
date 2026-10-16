@@ -307,7 +307,7 @@ export function ParticipantEditor({
               <option value=''>{marketplaceCopy.participants.chooseParticipant}</option>
               {activeParticipants.map((participant) => (
                 <option key={participant.id} value={participant.id}>
-                  {participant.displayName} â€” {participant.email}
+                  {participant.displayName} — {participant.email}
                 </option>
               ))}
             </select>
