@@ -31,6 +31,9 @@ import {
   MarketplaceCommentService,
   marketplaceCommentUserResolver,
 } from './marketplace-comment.service';
+import { MarketplaceParticipantAdminController } from './marketplace-participant.controller';
+import { MarketplaceParticipantRepository } from './marketplace-participant.repository';
+import { MarketplaceParticipantService } from './marketplace-participant.service';
 
 @Module({
   controllers: [
@@ -42,6 +45,7 @@ import {
     MarketplaceMembershipAdminController,
     MarketplaceCommentPublicController,
     MarketplaceCommentAdminController,
+    MarketplaceParticipantAdminController,
   ],
   providers: [
     { provide: MARKETPLACE_SUPABASE, useFactory: () => createMarketplaceSupabaseClient() },
@@ -50,11 +54,13 @@ import {
     MarketplaceActivityRepository,
     MarketplaceMembershipRepository,
     MarketplaceCommentRepository,
+    MarketplaceParticipantRepository,
     MarketplacePublicService,
     MarketplaceAdminService,
     MarketplaceActivityService,
     MarketplaceMembershipService,
     MarketplaceCommentService,
+    MarketplaceParticipantService,
     {
       provide: MARKETPLACE_COMMENT_USER_RESOLVER,
       useValue: marketplaceCommentUserResolver,

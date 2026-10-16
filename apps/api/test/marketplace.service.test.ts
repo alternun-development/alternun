@@ -683,7 +683,12 @@ test('public activities expose localized copy without AIRS policy fields', async
     list: async () => [activity],
   } as unknown as MarketplaceActivityRepository;
   const { repository } = adminRepository();
-  const service = new MarketplaceActivityService(activityRepository, repository, publicRepository);
+  const service = new MarketplaceActivityService(
+    activityRepository,
+    repository,
+    publicRepository,
+    {} as never
+  );
   const [result] = await service.listPublished(project.slug, 'en');
   assert.equal(result.title, 'Walk');
   assert.equal('defaultAirsAmount' in result, false);
@@ -699,7 +704,8 @@ test('non-global activity read without a project membership is denied', async ()
   const service = new MarketplaceActivityService(
     activityRepository,
     repository,
-    {} as MarketplacePublicRepository
+    {} as MarketplacePublicRepository,
+    {} as never
   );
   await assert.rejects(
     service.list(principal('partner_readonly', ['e1']), 'no-membership', 'p1'),

@@ -17,6 +17,7 @@ import type {
 } from './marketplace.dto';
 import { marketplaceError } from './marketplace.errors';
 import { MarketplaceActivityRepository } from './marketplace-activity.repository';
+import { MarketplaceParticipantRepository } from './marketplace-participant.repository';
 import { MarketplaceAdminRepository, MarketplacePublicRepository } from './marketplace.repository';
 import {
   actorFromPrincipal,
@@ -178,7 +179,8 @@ export class MarketplaceActivityService {
   constructor(
     private readonly repository: MarketplaceActivityRepository,
     private readonly adminRepository: MarketplaceAdminRepository,
-    private readonly publicRepository: MarketplacePublicRepository
+    private readonly publicRepository: MarketplacePublicRepository,
+    private readonly participantRepository: MarketplaceParticipantRepository
   ) {}
 
   private async deny(
@@ -387,6 +389,8 @@ export class MarketplaceActivityService {
     await this.authorizeProject(principal, 'completions:create', requestId, projectId);
     const activity = await this.repository.find(projectId, activityId);
     if (!activity) marketplaceError('ACTIVITY_NOT_FOUND');
+    if (!(await this.participantRepository.isActive(projectId, input.userId)))
+      marketplaceError('PARTICIPANT_REQUIRED');
     validateEvidenceUrl(input.evidenceUrl);
     const completedAt = input.completedAt ? new Date(input.completedAt) : new Date();
     if (Number.isNaN(completedAt.getTime())) marketplaceError('VALIDATION_FAILED');
