@@ -1,18 +1,23 @@
 import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
 import { after, before, test } from 'node:test';
 import { createServer } from 'vite';
 
 let viteServer;
+let partnerCanUseAdminAction;
 let resolveAdminAccessProfile;
 
 before(async () => {
   viteServer = await createServer({
-    root: new URL('..', import.meta.url).pathname,
+    root: fileURLToPath(new URL('..', import.meta.url)),
     logLevel: 'silent',
     server: { middlewareMode: true },
   });
 
   ({ resolveAdminAccessProfile } = await viteServer.ssrLoadModule('/src/auth/oidc-client.ts'));
+  ({ partnerCanUseAdminAction } = await viteServer.ssrLoadModule(
+    '/src/providers/accessControlProvider.ts'
+  ));
 });
 
 after(async () => {
@@ -45,4 +50,22 @@ void test('partner readonly access exposes no internal admin resource links', ()
       `${internalOnlyResource} must remain available to internal administrators`
     );
   }
+});
+
+void test('moderator and sub-admin profiles expose only marketplace resources', () => {
+  for (const role of ['moderator', 'sub_admin']) {
+    const access = resolveAdminAccessProfile([role], ['assigned-enterprise']);
+    assert.ok(access);
+    assert.equal(access.surface, 'partner');
+    assert.deepEqual(access.allowedResources, ['marketplace-enterprises', 'marketplace-projects']);
+  }
+});
+
+void test('partner write access is limited to marketplace enterprise and project resources', () => {
+  assert.equal(partnerCanUseAdminAction('marketplace-projects', 'create'), true);
+  assert.equal(partnerCanUseAdminAction('marketplace-enterprises', 'edit'), true);
+  assert.equal(partnerCanUseAdminAction('organizations', 'list'), true);
+  assert.equal(partnerCanUseAdminAction('organizations', 'show'), true);
+  assert.equal(partnerCanUseAdminAction('organizations', 'create'), false);
+  assert.equal(partnerCanUseAdminAction('memberships', 'edit'), false);
 });
