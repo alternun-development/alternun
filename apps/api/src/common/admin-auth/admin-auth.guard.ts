@@ -39,7 +39,8 @@ export type AdminPermission =
   | 'comments:read'
   | 'comments:moderate'
   | 'participants:read'
-  | 'participants:manage';
+  | 'participants:manage'
+  | 'audit:read';
 
 export const ADMIN_ROLES = [
   'platform_owner',
@@ -168,6 +169,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'audit:read',
   ],
   moderator: [
     'enterprises:read',
@@ -183,6 +185,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'completions:reject',
     'comments:read',
     'comments:moderate',
+    'audit:read',
   ],
   internal_admin: [
     'allowances:read',
@@ -214,6 +217,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'audit:read',
   ],
   platform_owner: [
     'allowances:read',
@@ -247,6 +251,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'audit:read',
   ],
 };
 const knownAdminRoles = new Set<string>(ADMIN_ROLES);

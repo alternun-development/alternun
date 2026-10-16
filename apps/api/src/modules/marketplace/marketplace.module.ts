@@ -34,6 +34,12 @@ import {
 import { MarketplaceParticipantAdminController } from './marketplace-participant.controller';
 import { MarketplaceParticipantRepository } from './marketplace-participant.repository';
 import { MarketplaceParticipantService } from './marketplace-participant.service';
+import {
+  MarketplaceEnterpriseAuditAdminController,
+  MarketplaceProjectAuditAdminController,
+} from './marketplace-audit.controller';
+import { MarketplaceAuditRepository } from './marketplace-audit.repository';
+import { MarketplaceAuditService } from './marketplace-audit.service';
 
 @Module({
   controllers: [
@@ -46,6 +52,8 @@ import { MarketplaceParticipantService } from './marketplace-participant.service
     MarketplaceCommentPublicController,
     MarketplaceCommentAdminController,
     MarketplaceParticipantAdminController,
+    MarketplaceProjectAuditAdminController,
+    MarketplaceEnterpriseAuditAdminController,
   ],
   providers: [
     { provide: MARKETPLACE_SUPABASE, useFactory: () => createMarketplaceSupabaseClient() },
@@ -55,12 +63,14 @@ import { MarketplaceParticipantService } from './marketplace-participant.service
     MarketplaceMembershipRepository,
     MarketplaceCommentRepository,
     MarketplaceParticipantRepository,
+    MarketplaceAuditRepository,
     MarketplacePublicService,
     MarketplaceAdminService,
     MarketplaceActivityService,
     MarketplaceMembershipService,
     MarketplaceCommentService,
     MarketplaceParticipantService,
+    MarketplaceAuditService,
     {
       provide: MARKETPLACE_COMMENT_USER_RESOLVER,
       useValue: marketplaceCommentUserResolver,

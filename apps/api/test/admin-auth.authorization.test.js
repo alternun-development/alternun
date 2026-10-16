@@ -251,6 +251,12 @@ test('marketplace permission matrix preserves role-specific enterprise, project,
     assert.equal(can(role, 'participants:manage'), canManageParticipants);
   }
   for (const role of EXPECTED_ADMIN_ROLES) {
+    assert.equal(
+      can(role, 'audit:read'),
+      ['platform_owner', 'internal_admin', 'partner_operator', 'moderator'].includes(role)
+    );
+  }
+  for (const role of EXPECTED_ADMIN_ROLES) {
     assert.equal(can(role, 'project_memberships:read'), true);
     assert.equal(
       can(role, 'project_memberships:assign'),
