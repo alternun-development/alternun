@@ -27,7 +27,10 @@ function isTypeSource(filePath) {
 }
 
 export function collectTopLevelTypeNames(source, filePath = 'file.tsx') {
-  const parserFilePath = filePath.replaceAll('[', '_').replaceAll(']', '_');
+  // Framework route names such as `[slug].tsx` are valid filesystem paths but
+  // can be interpreted inconsistently by parser versions. Only the extension
+  // matters for this syntax-only check, so use a neutral virtual filename.
+  const parserFilePath = filePath.endsWith('.tsx') ? 'file.tsx' : 'file.ts';
   const ast = parser.parse(source, {
     ecmaVersion: 2022,
     filePath: parserFilePath,
