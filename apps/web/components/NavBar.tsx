@@ -3,22 +3,24 @@
 import { useRef, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
+import { AIRS_APP_URL } from '@/lib/site';
 
 gsap.registerPlugin(useGSAP);
-import { ChevronDown } from 'lucide-react';
 import UserMenu from './UserMenu';
 
 const NAV_LINKS = ['Home', 'El proyecto', 'Cómo funciona', 'Beneficios'];
 
 interface NavBarProps {
-  userName: string;
-  airsBalance: number;
+  userName?: string;
+  airsBalance?: number;
 }
 
 export default function NavBar({ userName, airsBalance }: NavBarProps) {
   const navRef = useRef<HTMLElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeLink, setActiveLink] = useState('Home');
+  const hasUser =
+    typeof userName === 'string' && userName.trim().length > 0 && typeof airsBalance === 'number';
 
   useGSAP(
     () => {
@@ -120,47 +122,65 @@ export default function NavBar({ userName, airsBalance }: NavBarProps) {
         {/* Divider */}
         <div className='h-6 w-px mx-2' style={{ background: 'rgba(28,203,161,0.3)' }} />
 
-        {/* User avatar button - larger and integrated */}
-        <button
-          onClick={() => setMenuOpen((v) => !v)}
-          className='nav-user-btn flex items-center justify-center p-1 mr-1 rounded-full transition-all duration-300'
-          style={{
-            background: menuOpen ? 'rgba(4,15,30,0.8)' : 'rgba(4,15,30,0.6)',
-            border: '1px solid rgba(28,203,161,0.4)',
-            width: '50px',
-            height: '50px',
-          }}
-          title={`${userName} - ${airsBalance.toLocaleString('es-ES')} Airs`}
-        >
-          {/* Avatar circle */}
-          <div
-            className='w-11 h-11 rounded-full flex items-center justify-center text-base font-bold transition-all duration-300'
-            style={{
-              background: 'linear-gradient(135deg, #1ccba1, #0d8a6e)',
-              color: '#041119',
-              boxShadow: menuOpen ? '0 0 16px rgba(28,203,161,0.4)' : 'none',
-            }}
-          >
-            {userName.charAt(0)}
-          </div>
-
-          {/* User info tooltip on hover - visible on medium screens and up */}
-          <div className='absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap'>
-            <div className='bg-black/80 backdrop-blur-sm text-white text-xs font-medium px-3 py-2 rounded-lg border border-teal/30'>
-              <div>{userName}</div>
-              <div className='text-teal text-[11px]'>
-                {airsBalance.toLocaleString('es-ES')} Airs
+        {hasUser ? (
+          <>
+            {/* User avatar button - larger and integrated */}
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className='nav-user-btn flex items-center justify-center p-1 mr-1 rounded-full transition-all duration-300'
+              style={{
+                background: menuOpen ? 'rgba(4,15,30,0.8)' : 'rgba(4,15,30,0.6)',
+                border: '1px solid rgba(28,203,161,0.4)',
+                width: '50px',
+                height: '50px',
+              }}
+              title={`${userName} - ${airsBalance.toLocaleString('es-ES')} Airs`}
+            >
+              {/* Avatar circle */}
+              <div
+                className='w-11 h-11 rounded-full flex items-center justify-center text-base font-bold transition-all duration-300'
+                style={{
+                  background: 'linear-gradient(135deg, #1ccba1, #0d8a6e)',
+                  color: '#041119',
+                  boxShadow: menuOpen ? '0 0 16px rgba(28,203,161,0.4)' : 'none',
+                }}
+              >
+                {userName.charAt(0)}
               </div>
-            </div>
-          </div>
-        </button>
 
-        <UserMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+              {/* User info tooltip on hover - visible on medium screens and up */}
+              <div className='absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap'>
+                <div className='bg-black/80 backdrop-blur-sm text-white text-xs font-medium px-3 py-2 rounded-lg border border-teal/30'>
+                  <div>{userName}</div>
+                  <div className='text-teal text-[11px]'>
+                    {airsBalance.toLocaleString('es-ES')} Airs
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            <UserMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+          </>
+        ) : (
+          <a
+            href={AIRS_APP_URL}
+            className='px-5 py-3 text-sm font-semibold text-white transition-colors hover:text-teal'
+          >
+            Sign in
+          </a>
+        )}
       </div>
 
       {/* Mobile menu toggle */}
-      <div className='md:hidden text-teal'>
-        <button className='p-2'>☰</button>
+      <div className='md:hidden flex items-center gap-2 text-teal'>
+        {!hasUser && (
+          <a href={AIRS_APP_URL} className='px-3 py-2 text-sm font-semibold text-white'>
+            Sign in
+          </a>
+        )}
+        <button className='p-2' aria-label='Open navigation menu'>
+          ☰
+        </button>
       </div>
     </nav>
   );

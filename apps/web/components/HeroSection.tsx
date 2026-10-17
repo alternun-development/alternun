@@ -3,11 +3,12 @@
 import { useRef, useEffect, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
+import { AIRS_APP_URL, SITE_DESCRIPTION, SITE_TITLE } from '@/lib/site';
 
 gsap.registerPlugin(useGSAP);
 import { Info } from 'lucide-react';
 
-interface HeroSectionProps {
+interface UserHeroData {
   userName: string;
   airsScore: number;
   updatedAt: string;
@@ -18,6 +19,8 @@ interface HeroSectionProps {
   progressTarget: number;
   nextTier: string;
 }
+
+type HeroSectionProps = Partial<UserHeroData>;
 
 function useCountUp(target: number, duration: number, shouldStart: boolean) {
   const [value, setValue] = useState(0);
@@ -44,7 +47,7 @@ const STATUS_COLORS: Record<string, string> = {
   SILVER: '#a8b8cc',
 };
 
-export default function HeroSection({
+function UserHeroContent({
   userName,
   airsScore,
   updatedAt,
@@ -54,7 +57,7 @@ export default function HeroSection({
   progressCurrent,
   progressTarget,
   nextTier,
-}: HeroSectionProps) {
+}: UserHeroData) {
   const heroRef = useRef<HTMLDivElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const [started, setStarted] = useState(false);
@@ -267,4 +270,72 @@ export default function HeroSection({
       </div>
     </div>
   );
+}
+
+function hasCompleteUserData(props: HeroSectionProps): props is UserHeroData {
+  return (
+    typeof props.userName === 'string' &&
+    props.userName.trim().length > 0 &&
+    typeof props.airsScore === 'number' &&
+    typeof props.updatedAt === 'string' &&
+    props.updatedAt.trim().length > 0 &&
+    typeof props.status === 'string' &&
+    typeof props.statusExpiry === 'string' &&
+    props.statusExpiry.trim().length > 0 &&
+    typeof props.progressPercent === 'number' &&
+    typeof props.progressCurrent === 'number' &&
+    typeof props.progressTarget === 'number' &&
+    typeof props.nextTier === 'string' &&
+    props.nextTier.trim().length > 0
+  );
+}
+
+function PublicHeroContent() {
+  return (
+    <div className='relative w-full min-h-[520px] flex flex-col justify-end overflow-hidden'>
+      <div
+        className='absolute inset-0 bg-cover bg-center bg-no-repeat'
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600&q=80')`,
+        }}
+      />
+
+      <div
+        className='absolute inset-0'
+        style={{
+          background:
+            'linear-gradient(to bottom, rgba(4,15,30,0.45) 0%, rgba(4,15,30,0.25) 30%, rgba(4,15,30,0.72) 70%, rgba(4,15,30,0.92) 100%)',
+        }}
+      />
+      <div
+        className='absolute inset-0'
+        style={{
+          background: 'linear-gradient(to right, rgba(4,15,30,0.6) 0%, transparent 60%)',
+        }}
+      />
+
+      <div className='relative z-10 px-8 pb-10 pt-16 max-w-3xl'>
+        <h1
+          className='text-4xl md:text-5xl font-bold mb-4'
+          style={{ color: '#d4b96a', textShadow: '0 2px 20px rgba(212,185,106,0.3)' }}
+        >
+          {SITE_TITLE}
+        </h1>
+        <p className='text-white/80 text-base md:text-lg font-medium mb-6 max-w-2xl'>
+          {SITE_DESCRIPTION}
+        </p>
+        <a
+          href={AIRS_APP_URL}
+          className='inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-navy transition-transform hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal'
+          style={{ background: 'linear-gradient(135deg, #1ccba1, #0fa880)' }}
+        >
+          Open the AIRS app
+        </a>
+      </div>
+    </div>
+  );
+}
+
+export default function HeroSection(props: HeroSectionProps) {
+  return hasCompleteUserData(props) ? <UserHeroContent {...props} /> : <PublicHeroContent />;
 }
