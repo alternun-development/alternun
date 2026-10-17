@@ -1,11 +1,5 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import type {
-  Project,
-  ProjectActivity,
-  ProjectMedia,
-  ProjectMembership,
-} from '../../marketplace/api';
 import { localizedProjectContent, requestMarketplace } from '../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../marketplace/copy';
 import { hasMarketplacePermission, useMarketplaceRoles } from '../../marketplace/permissions';
@@ -14,7 +8,6 @@ import {
   loadProjectDetail,
   projectReadiness,
   type ProjectDetailSnapshot,
-  type SectionResult,
 } from '../../marketplace/project-detail-model';
 import { ErrorPanel, LoadingPanel, SectionMessage, StatusPill } from './components';
 import { ContentEditor } from './editors/content-editor';
@@ -26,17 +19,17 @@ import { TeamEditor } from './editors/team-editor';
 import { CommentModerationQueue } from './editors/comment-moderation-queue';
 import { ParticipantEditor } from './editors/participant-editor';
 import { AuditHistory } from './editors/audit-history';
+import type {
+  ActivitiesProps,
+  ContentTabProps,
+  MediaItemsProps,
+  OverviewTabProps,
+  ProjectDetailTab,
+  SectionStateProps,
+  TeamProps,
+} from './project-detail-page.types';
 
-type Tab =
-  | 'overview'
-  | 'content'
-  | 'media'
-  | 'activities'
-  | 'participants'
-  | 'comments'
-  | 'team'
-  | 'history';
-const tabs: Tab[] = [
+const tabs: ProjectDetailTab[] = [
   'overview',
   'content',
   'media',
@@ -48,17 +41,7 @@ const tabs: Tab[] = [
 ];
 const locales = ['es', 'en', 'th'] as const;
 
-function SectionState<T>({
-  result,
-  empty,
-  onRetry,
-  children,
-}: {
-  result: SectionResult<T>;
-  empty: (data: T) => boolean;
-  onRetry: () => void;
-  children: (data: T) => ReactNode;
-}): JSX.Element {
+function SectionState<T>({ result, empty, onRetry, children }: SectionStateProps<T>): JSX.Element {
   if (result.kind === 'forbidden') {
     return <SectionMessage>{marketplaceCopy.errors.sectionForbidden}</SectionMessage>;
   }
@@ -82,15 +65,7 @@ function categoryLabel(code: string): string {
   );
 }
 
-function OverviewTab({
-  snapshot,
-  roles,
-  onChanged,
-}: {
-  snapshot: ProjectDetailSnapshot;
-  roles: Parameters<typeof ProjectStatusActions>[0]['roles'];
-  onChanged: (message: string) => void;
-}): JSX.Element {
+function OverviewTab({ snapshot, roles, onChanged }: OverviewTabProps): JSX.Element {
   const project = snapshot.project;
   const media = snapshot.media.kind === 'success' ? snapshot.media.data : [];
   const activities = snapshot.activities.kind === 'success' ? snapshot.activities.data : [];
@@ -174,7 +149,7 @@ function OverviewTab({
   );
 }
 
-export function ContentTab({ project }: { project: Project }): JSX.Element {
+export function ContentTab({ project }: ContentTabProps): JSX.Element {
   const [locale, setLocale] = useState<(typeof locales)[number]>(
     locales.includes(project.defaultLocale as (typeof locales)[number])
       ? (project.defaultLocale as (typeof locales)[number])
@@ -243,13 +218,7 @@ export function ContentTab({ project }: { project: Project }): JSX.Element {
   );
 }
 
-export function MediaItems({
-  project,
-  media,
-}: {
-  project: Project;
-  media: ProjectMedia[];
-}): JSX.Element {
+export function MediaItems({ project, media }: MediaItemsProps): JSX.Element {
   const active = media.filter((item) => item.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
   if (!active.length) {
     return <SectionMessage>{marketplaceCopy.projectDetail.media.empty}</SectionMessage>;
@@ -294,7 +263,7 @@ export function MediaItems({
   );
 }
 
-export function Activities({ activities }: { activities: ProjectActivity[] }): JSX.Element {
+export function Activities({ activities }: ActivitiesProps): JSX.Element {
   if (!activities.length) {
     return <SectionMessage>{marketplaceCopy.projectDetail.activities.empty}</SectionMessage>;
   }
@@ -318,7 +287,7 @@ export function Activities({ activities }: { activities: ProjectActivity[] }): J
   );
 }
 
-export function Team({ memberships }: { memberships: ProjectMembership[] }): JSX.Element {
+export function Team({ memberships }: TeamProps): JSX.Element {
   const active = memberships.filter((membership) => membership.status === 'active');
   if (!active.length) {
     return <SectionMessage>{marketplaceCopy.projectDetail.team.empty}</SectionMessage>;
@@ -339,7 +308,7 @@ export function Team({ memberships }: { memberships: ProjectMembership[] }): JSX
 
 export function MarketplaceProjectDetailPage(): JSX.Element {
   const { id = '' } = useParams();
-  const [tab, setTab] = useState<Tab>('overview');
+  const [tab, setTab] = useState<ProjectDetailTab>('overview');
   const [snapshot, setSnapshot] = useState<ProjectDetailSnapshot | null>(null);
   const [error, setError] = useState<unknown>();
   const [success, setSuccess] = useState<string>();

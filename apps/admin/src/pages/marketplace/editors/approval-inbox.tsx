@@ -3,20 +3,12 @@ import type { AdminRole } from '../../../auth/oidc-client';
 import {
   requestMarketplace,
   type ActivityCompletion,
-  type Project,
   type ProjectActivity,
 } from '../../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
 import { hasMarketplacePermission } from '../../../marketplace/permissions';
 import { SectionMessage } from '../components';
-
-type Props = {
-  project: Project;
-  activities: ProjectActivity[];
-  completions: ActivityCompletion[];
-  roles: readonly AdminRole[];
-  onChanged: (message: string) => void;
-};
+import type { ApprovalInboxProps } from './approval-inbox.types';
 
 export function completionActionAvailability(roles: readonly AdminRole[]): {
   approve: boolean;
@@ -45,7 +37,7 @@ export function ApprovalInbox({
   completions,
   roles,
   onChanged,
-}: Props): JSX.Element {
+}: ApprovalInboxProps): JSX.Element {
   const [error, setError] = useState<unknown>();
   const [savingId, setSavingId] = useState<string>();
   const [reversing, setReversing] = useState<ActivityCompletion>();

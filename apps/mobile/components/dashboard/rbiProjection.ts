@@ -1,14 +1,4 @@
-export interface RbiProjectionInput {
-  airs: number | null | undefined;
-  participationFactor: number | null | undefined;
-  communityEligibleAirs: number | null | undefined;
-}
-
-export interface RbiProjectionMetrics {
-  participationFactorPercent: number | null;
-  eligibleAirs: number | null;
-  aliquotPercent: number | null;
-}
+import type { RbiProjectionInput, RbiProjectionMetrics } from './types';
 
 function isNonNegativeFinite(value: number | null | undefined): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0;

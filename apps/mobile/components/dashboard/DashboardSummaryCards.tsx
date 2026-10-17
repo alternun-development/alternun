@@ -17,33 +17,12 @@ import { listWalletAccounts, type WalletAccountRecord } from '../wallet/walletAp
 import { resolveWalletSummaryState } from './walletSummary';
 import { getDashboardSummaryCardsLayout } from './dashboardSummaryCardsLayout';
 import { calculateRbiProjection } from './rbiProjection';
+import type { DashboardSummaryCardsProps, RewardAsset } from './types';
 
 const CoinsIcon = Coins as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
-
-interface AuthClient {
-  getSessionToken(): Promise<string | null>;
-}
-
-export interface RewardAsset {
-  id: string;
-  name: string;
-  value?: number | string | null;
-  icon: React.ReactNode;
-}
-
-interface DashboardSummaryCardsProps {
-  isDark: boolean;
-  onNavigate?: (key: string) => void;
-  client?: AuthClient;
-  signedIn?: boolean;
-  airsBalance?: number | null;
-  participationFactor?: number | null;
-  communityEligibleAirs?: number | null;
-  rewardAssets?: readonly RewardAsset[];
-}
 
 function getPalette(isDark: boolean): {
   cardBg: string;

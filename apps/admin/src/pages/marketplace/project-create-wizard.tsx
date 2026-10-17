@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { AdminRole } from '../../auth/oidc-client';
 import { requestMarketplace, type Enterprise, type Project } from '../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../marketplace/copy';
 import { hasMarketplacePermission } from '../../marketplace/permissions';
+import type { ProjectCreateWizardProps, ProjectDraft } from './project-create-wizard.types';
 
 const categoryCodes = [
   'hospitality_ecotourism',
@@ -16,19 +16,6 @@ const categoryCodes = [
 const languages = ['en', 'es', 'th'] as const;
 const timeZones = Object.keys(marketplaceCopy.create.timeZones);
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
-export type ProjectDraft = {
-  name: string;
-  slug: string;
-  categoryCode: string;
-  enterpriseId: string;
-  location: string;
-  timeZone: string;
-  defaultLocale: string;
-  theme: string;
-  description: string;
-  contribution: string;
-};
 
 export function slugFromName(name: string): string {
   const slug = name
@@ -74,21 +61,13 @@ export function validateProjectStep(draft: ProjectDraft, step: number): Record<s
   return errors;
 }
 
-type Props = {
-  enterprises: Enterprise[];
-  roles: readonly AdminRole[];
-  onCancel: () => void;
-  onCreated: (project: Project) => void;
-  onEnterpriseCreated: (enterprise: Enterprise) => void;
-};
-
 export function ProjectCreateWizard({
   enterprises,
   roles,
   onCancel,
   onCreated,
   onEnterpriseCreated,
-}: Props): JSX.Element {
+}: ProjectCreateWizardProps): JSX.Element {
   const [step, setStep] = useState(1);
   const [draft, setDraft] = useState<ProjectDraft>({
     name: '',

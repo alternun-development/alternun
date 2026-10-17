@@ -1,26 +1,10 @@
 import { useState } from 'react';
-import type { AdminRole } from '../../../auth/oidc-client';
-import { requestMarketplace, type Project, type ProjectActivity } from '../../../marketplace/api';
+import { requestMarketplace, type ProjectActivity } from '../../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
 import { hasMarketplacePermission } from '../../../marketplace/permissions';
 import { slugFromName } from '../project-create-wizard';
 import { SectionMessage, StatusPill } from '../components';
-
-type Props = {
-  project: Project;
-  activities: ProjectActivity[];
-  roles: readonly AdminRole[];
-  onChanged: (message: string) => void;
-};
-
-type ActivityDraft = {
-  id?: string;
-  title: string;
-  description: string;
-  defaultPoints: string;
-  maximumPoints: string;
-  content?: ProjectActivity['content'];
-};
+import type { ActivityDraft, ActivityEditorProps } from './activity-editor.types';
 
 const emptyDraft: ActivityDraft = {
   title: '',
@@ -29,7 +13,12 @@ const emptyDraft: ActivityDraft = {
   maximumPoints: '1',
 };
 
-export function ActivityEditor({ project, activities, roles, onChanged }: Props): JSX.Element {
+export function ActivityEditor({
+  project,
+  activities,
+  roles,
+  onChanged,
+}: ActivityEditorProps): JSX.Element {
   const [draft, setDraft] = useState<ActivityDraft>();
   const [error, setError] = useState<unknown>();
   const [fieldError, setFieldError] = useState('');

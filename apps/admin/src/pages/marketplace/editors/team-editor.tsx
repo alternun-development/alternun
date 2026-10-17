@@ -1,23 +1,20 @@
 import { useState } from 'react';
-import type { AdminRole } from '../../../auth/oidc-client';
 import { adminEnv } from '../../../config/env';
-import { requestMarketplace, type Project, type ProjectMembership } from '../../../marketplace/api';
+import { requestMarketplace, type ProjectMembership } from '../../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
 import {
   hasMarketplacePermission,
   membershipRolesGrantedBy,
 } from '../../../marketplace/permissions';
 import { SectionMessage } from '../components';
+import type { MembershipRole, TeamEditorProps } from './team-editor.types';
 
-type MembershipRole = ProjectMembership['role'];
-type Props = {
-  project: Project;
-  memberships: ProjectMembership[];
-  roles: readonly AdminRole[];
-  onChanged: (message: string) => void;
-};
-
-export function TeamEditor({ project, memberships, roles, onChanged }: Props): JSX.Element {
+export function TeamEditor({
+  project,
+  memberships,
+  roles,
+  onChanged,
+}: TeamEditorProps): JSX.Element {
   const allowedRoles = membershipRolesGrantedBy(roles);
   const [showAdd, setShowAdd] = useState(false);
   const [person, setPerson] = useState('');

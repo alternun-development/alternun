@@ -1,24 +1,15 @@
 import { useState } from 'react';
-import type { AdminRole } from '../../../auth/oidc-client';
 import { requestMarketplace, type Project, type ProjectStatus } from '../../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
-import {
-  hasMarketplacePermission,
-  type MarketplacePermission,
-} from '../../../marketplace/permissions';
-
-export type ProjectStatusAction = 'publish' | 'pause' | 'resume' | 'archive';
+import { hasMarketplacePermission } from '../../../marketplace/permissions';
+import type {
+  ProjectStatusAction,
+  ProjectStatusActionDefinition,
+  ProjectStatusActionsProps,
+} from './project-status-actions.types';
 
 export const projectStatusActions: Readonly<
-  Record<
-    ProjectStatusAction,
-    {
-      target: ProjectStatus;
-      permission: MarketplacePermission;
-      requiresReason: boolean;
-      effect: string;
-    }
-  >
+  Record<ProjectStatusAction, ProjectStatusActionDefinition>
 > = {
   publish: {
     target: 'published',
@@ -53,14 +44,12 @@ function availableActions(status: ProjectStatus): ProjectStatusAction[] {
   return [];
 }
 
-type Props = {
-  project: Project;
-  roles: readonly AdminRole[];
-  ready: boolean;
-  onChanged: (message: string) => void;
-};
-
-export function ProjectStatusActions({ project, roles, ready, onChanged }: Props): JSX.Element {
+export function ProjectStatusActions({
+  project,
+  roles,
+  ready,
+  onChanged,
+}: ProjectStatusActionsProps): JSX.Element {
   const [selected, setSelected] = useState<ProjectStatusAction>();
   const [reason, setReason] = useState('');
   const [error, setError] = useState<unknown>();

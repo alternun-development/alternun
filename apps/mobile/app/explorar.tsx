@@ -31,11 +31,19 @@ import {
   Users,
   type LucideProps,
 } from 'lucide-react-native';
-import type { Translator } from '@alternun/i18n';
 import { useAppTranslation } from '../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import ScreenShell from '../components/common/ScreenShell';
 import { MarketplaceEnterpriseBrowser } from '../components/marketplace/MarketplaceEnterpriseDirectory';
+import type {
+  LoadMarketplaceProjects,
+  MarketProject,
+  MarketplaceMedia,
+  MarketplaceProjectResponse,
+  Palette,
+  ProjectFilter,
+  Translate,
+} from './explorar.types';
 import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
 
 const CompassIcon = Compass as React.FC<LucideProps>;
@@ -56,56 +64,6 @@ const LightbulbIcon = Lightbulb as React.FC<LucideProps>;
 const GiftIcon = Gift as React.FC<LucideProps>;
 
 const TELEGRAM_URL = 'https://t.me/alternun_io';
-
-type ProjectFilter = string;
-type Translate = Translator['t'];
-
-export interface Palette {
-  background: string;
-  surface: string;
-  surfaceStrong: string;
-  border: string;
-  text: string;
-  muted: string;
-  primary: string;
-  primaryDeep: string;
-  mist: string;
-  hero: string;
-}
-
-interface MarketProject {
-  id: string;
-  slug: string;
-  title: string;
-  place: string;
-  categoryCode: string;
-  status: 'active';
-  theme: string;
-  description: string;
-  waysToContribute: string[];
-  imageUrl: string | null;
-}
-
-interface MarketplaceMedia {
-  kind: string;
-  url: string;
-  isActive: boolean;
-}
-
-interface MarketplaceProjectResponse {
-  id: string;
-  slug: string;
-  status: 'published';
-  categoryCode: string;
-  title: string;
-  location: string;
-  theme: string;
-  description: string;
-  waysToContribute: string[];
-  media: MarketplaceMedia[];
-}
-
-type LoadMarketplaceProjects = (locale: string, signal?: AbortSignal) => Promise<MarketProject[]>;
 
 function safeImageUrl(media: MarketplaceMedia[]): string | null {
   const preferredKinds = ['cover', 'gallery_image', 'logo'];
