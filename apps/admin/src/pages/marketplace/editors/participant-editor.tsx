@@ -4,28 +4,13 @@ import {
   MarketplaceRequestError,
   requestMarketplace,
   type ParticipantHistory,
-  type Project,
   type ProjectActivity,
   type ProjectParticipant,
 } from '../../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
 import { hasMarketplacePermission } from '../../../marketplace/permissions';
 import { SectionMessage, StatusPill } from '../components';
-
-type Props = {
-  project: Project;
-  participants: ProjectParticipant[];
-  activities: ProjectActivity[];
-  roles: readonly AdminRole[];
-  onChanged: (message: string) => void;
-};
-
-type HistoryState =
-  | { kind: 'idle' }
-  | { kind: 'loading' }
-  | { kind: 'success'; data: ParticipantHistory[] }
-  | { kind: 'forbidden' }
-  | { kind: 'error'; error: unknown };
+import type { HistoryState, ParticipantEditorProps } from './participant-editor.types';
 
 export function participantActionAvailability(roles: readonly AdminRole[]): {
   read: boolean;
@@ -66,7 +51,7 @@ export function ParticipantEditor({
   activities,
   roles,
   onChanged,
-}: Props): JSX.Element {
+}: ParticipantEditorProps): JSX.Element {
   const [adding, setAdding] = useState(false);
   const [email, setEmail] = useState('');
   const [removing, setRemoving] = useState<ProjectParticipant>();

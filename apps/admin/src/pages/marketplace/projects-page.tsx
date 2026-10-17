@@ -11,11 +11,7 @@ import { marketplaceCopy } from '../../marketplace/copy';
 import { hasMarketplacePermission, useMarketplaceRoles } from '../../marketplace/permissions';
 import { ErrorPanel, LoadingPanel, SectionMessage, StatusPill } from './components';
 import { ProjectCreateWizard } from './project-create-wizard';
-
-type ProjectListData = {
-  projects: Project[];
-  enterprises: Enterprise[];
-};
+import type { ProjectListData } from './projects-page.types';
 
 async function loadProjectList(): Promise<ProjectListData> {
   const [projects, enterprises] = await Promise.all([

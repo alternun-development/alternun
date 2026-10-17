@@ -4,8 +4,7 @@ import { authProvider } from '../auth/authProvider';
 import { extractAdminIdentity, getActiveAdminSession } from '../auth/oidc-client';
 import { adminEnv } from '../config/env';
 import { adminResources } from '../resources/catalog';
-
-type AdminIdentity = NonNullable<Awaited<ReturnType<typeof extractIdentity>>>;
+import type { AdminIdentity } from './app-shell.types';
 
 async function extractIdentity(): Promise<Awaited<ReturnType<typeof extractAdminIdentity>>> {
   const session = await getActiveAdminSession();

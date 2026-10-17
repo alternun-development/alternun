@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import type { AdminRole } from '../../../auth/oidc-client';
 import {
   requestMarketplace,
   type Project,
@@ -9,6 +8,7 @@ import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/c
 import { hasMarketplacePermission } from '../../../marketplace/permissions';
 import { isProjectLocaleComplete } from '../../../marketplace/project-detail-model';
 import { SectionMessage } from '../components';
+import type { ContentEditorProps } from './content-editor.types';
 
 const locales = ['es', 'en', 'th'] as const;
 const emptyContent: ProjectContentBlock = {
@@ -19,13 +19,7 @@ const emptyContent: ProjectContentBlock = {
   waysToContribute: [],
 };
 
-type Props = {
-  project: Project;
-  roles: readonly AdminRole[];
-  onSaved: () => void;
-};
-
-export function ContentEditor({ project, roles, onSaved }: Props): JSX.Element {
+export function ContentEditor({ project, roles, onSaved }: ContentEditorProps): JSX.Element {
   const [locale, setLocale] = useState<(typeof locales)[number]>(
     locales.includes(project.defaultLocale as (typeof locales)[number])
       ? (project.defaultLocale as (typeof locales)[number])

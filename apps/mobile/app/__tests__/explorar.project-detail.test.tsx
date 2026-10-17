@@ -5,8 +5,8 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import {
   MarketplaceProjectDetailView,
   MarketplaceProjectRequestError,
-  type MarketplacePublicProject,
 } from '../../components/marketplace/MarketplaceProjectDetail';
+import type { MarketplacePublicProject } from '../../components/marketplace/types';
 
 jest.mock('../../components/onboarding/AirsIntroVideoCard', () => ({
   __esModule: true,

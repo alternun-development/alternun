@@ -4,14 +4,16 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import {
   MarketplaceEnterpriseBrowser,
   loadMarketplaceEnterprises,
-  type MarketplaceEnterprise,
 } from '../../components/marketplace/MarketplaceEnterpriseDirectory';
 import {
   MarketplaceEnterpriseDetailView,
   MarketplaceEnterpriseRequestError,
   loadMarketplaceEnterprise,
-  type MarketplaceEnterpriseDetail,
 } from '../../components/marketplace/MarketplaceEnterpriseDetail';
+import type {
+  MarketplaceEnterprise,
+  MarketplaceEnterpriseDetail,
+} from '../../components/marketplace/types';
 
 jest.mock('../../components/onboarding/AirsIntroVideoCard', () => ({
   __esModule: true,

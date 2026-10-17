@@ -1,22 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { AdminRole } from '../../../auth/oidc-client';
 import {
   MarketplaceRequestError,
   requestMarketplace,
   type AuditPage,
   type AuditRecord,
-  type Project,
 } from '../../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
 import { hasMarketplacePermission } from '../../../marketplace/permissions';
 import { SectionMessage } from '../components';
-
-export type AuditFilter = 'all' | 'changes' | 'denied';
-type AuditState =
-  | { kind: 'loading' }
-  | { kind: 'forbidden' }
-  | { kind: 'error'; error: unknown }
-  | { kind: 'success'; page: AuditPage };
+import type { AuditFilter, AuditHistoryProps, AuditState } from './audit-history.types';
 
 const filters: AuditFilter[] = ['all', 'changes', 'denied'];
 
@@ -66,13 +58,7 @@ function auditDate(value: string): string {
     : new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
-export function AuditHistory({
-  project,
-  roles,
-}: {
-  project: Project;
-  roles: readonly AdminRole[];
-}): JSX.Element {
+export function AuditHistory({ project, roles }: AuditHistoryProps): JSX.Element {
   const [filter, setFilter] = useState<AuditFilter>('all');
   const [state, setState] = useState<AuditState>({ kind: 'loading' });
   const [loadingMore, setLoadingMore] = useState(false);

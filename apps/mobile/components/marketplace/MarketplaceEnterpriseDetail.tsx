@@ -8,24 +8,10 @@ import {
   RotateCcw,
 } from 'lucide-react-native';
 import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import type { Translator } from '@alternun/i18n';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
-import {
-  isPublicProject,
-  type DetailPalette,
-  type MarketplacePublicProject,
-} from './MarketplaceProjectDetail';
-import {
-  isMarketplaceEnterprise,
-  safeEnterpriseUrl,
-  type MarketplaceEnterprise,
-} from './MarketplaceEnterpriseDirectory';
-
-type Translate = Translator['t'];
-
-export interface MarketplaceEnterpriseDetail extends MarketplaceEnterprise {
-  projects: MarketplacePublicProject[];
-}
+import { isPublicProject } from './MarketplaceProjectDetail';
+import { isMarketplaceEnterprise, safeEnterpriseUrl } from './MarketplaceEnterpriseDirectory';
+import type { DetailPalette, MarketplaceEnterpriseDetail, Translate } from './types';
 
 export class MarketplaceEnterpriseRequestError extends Error {
   constructor(readonly status: number) {

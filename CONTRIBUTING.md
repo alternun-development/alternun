@@ -142,23 +142,29 @@ test(ui): add unit tests for button component
 
 - One component per file
 - Export components as default
-- Use TypeScript interfaces for props
+- Keep all top-level interfaces/types in a dedicated `types.ts` or `<component>.types.ts` module
+- Component files may use narrow inline types for one expression, but should not own reusable type declarations
+- Import component and shared types from their dedicated module instead of re-declaring them in components
 - Add JSDoc comments for public APIs
 - Include unit tests for utility functions
 
 ```typescript
+// Button.types.ts
+export interface ButtonProps {
+  children: React.ReactNode;
+  variant?: 'primary' | 'secondary';
+  onClick?: () => void;
+}
+
+// Button.tsx
+import type { ButtonProps } from './Button.types';
+
 /**
  * Button component with customizable styling
  * @param children - Button content
  * @param variant - Button style variant
  * @param onClick - Click handler
  */
-interface ButtonProps {
-  children: React.ReactNode;
-  variant?: 'primary' | 'secondary';
-  onClick?: () => void;
-}
-
 export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', onClick }) => {
   return (
     <button className={`btn btn-${variant}`} onClick={onClick}>
@@ -181,6 +187,9 @@ npm run test:watch
 
 # Run tests with coverage
 npm run test:coverage
+
+# Verify the component type boundary rule
+pnpm test:component-types
 ```
 
 ### Writing Tests

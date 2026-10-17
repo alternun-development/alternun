@@ -4,7 +4,7 @@ import ScreenShell from '../../../components/common/ScreenShell';
 import { useAppTranslation } from '../../../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../../../components/settings/AppPreferencesProvider';
 import { MarketplaceEnterpriseDetailView } from '../../../components/marketplace/MarketplaceEnterpriseDetail';
-import type { DetailPalette } from '../../../components/marketplace/MarketplaceProjectDetail';
+import type { DetailPalette } from '../../../components/marketplace/types';
 
 export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
   const params = useLocalSearchParams<{ slug?: string | string[] }>();

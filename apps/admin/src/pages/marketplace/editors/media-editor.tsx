@@ -1,14 +1,9 @@
 import { useMemo, useState } from 'react';
-import type { AdminRole } from '../../../auth/oidc-client';
-import {
-  requestMarketplace,
-  type MediaKind,
-  type Project,
-  type ProjectMedia,
-} from '../../../marketplace/api';
+import { requestMarketplace, type MediaKind, type ProjectMedia } from '../../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
 import { hasMarketplacePermission } from '../../../marketplace/permissions';
 import { SectionMessage } from '../components';
+import type { MediaEditorProps } from './media-editor.types';
 
 const kinds: MediaKind[] = ['logo', 'cover', 'gallery_image', 'video', 'canva'];
 const imageKinds = new Set<MediaKind>(['logo', 'cover', 'gallery_image']);
@@ -54,14 +49,7 @@ export function mediaUrlError(kind: MediaKind, value: string): string | null {
   }
 }
 
-type Props = {
-  project: Project;
-  media: ProjectMedia[];
-  roles: readonly AdminRole[];
-  onChanged: (message: string) => void;
-};
-
-export function MediaEditor({ project, media, roles, onChanged }: Props): JSX.Element {
+export function MediaEditor({ project, media, roles, onChanged }: MediaEditorProps): JSX.Element {
   const [kind, setKind] = useState<MediaKind>('cover');
   const [url, setUrl] = useState('');
   const [altText, setAltText] = useState('');

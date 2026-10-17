@@ -4,24 +4,19 @@ import {
   MarketplaceRequestError,
   requestMarketplace,
   type CommentStatus,
-  type Project,
   type ProjectComment,
 } from '../../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
 import { hasMarketplacePermission } from '../../../marketplace/permissions';
-import type { SectionResult } from '../../../marketplace/project-detail-model';
 import { SectionMessage, StatusPill } from '../components';
+import type {
+  CommentConfirmation,
+  CommentModerationQueueProps,
+  ModerationAction,
+  QueueState,
+} from './comment-moderation-queue.types';
 
 const statuses: CommentStatus[] = ['pending', 'visible', 'hidden', 'rejected'];
-type ModerationAction = 'approve' | 'reject' | 'hide' | 'restore';
-type QueueState = SectionResult<ProjectComment[]> | { kind: 'loading' };
-
-type Props = {
-  project: Project;
-  initialPending: SectionResult<ProjectComment[]>;
-  roles: readonly AdminRole[];
-  onChanged: (message: string, pendingDelta: number) => void;
-};
 
 export function commentsForStatus(
   comments: readonly ProjectComment[],
@@ -70,15 +65,12 @@ export function CommentModerationQueue({
   initialPending,
   roles,
   onChanged,
-}: Props): JSX.Element {
+}: CommentModerationQueueProps): JSX.Element {
   const [status, setStatus] = useState<CommentStatus>('pending');
   const [result, setResult] = useState<QueueState>(initialPending);
   const [actionError, setActionError] = useState<unknown>();
   const [savingId, setSavingId] = useState<string>();
-  const [confirmation, setConfirmation] = useState<{
-    comment: ProjectComment;
-    action: 'reject' | 'hide';
-  }>();
+  const [confirmation, setConfirmation] = useState<CommentConfirmation>();
   const [reason, setReason] = useState('');
   const [reasonError, setReasonError] = useState('');
 

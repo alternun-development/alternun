@@ -1,35 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Building2, ChevronRight, MapPin, RotateCcw } from 'lucide-react-native';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import type { Translator } from '@alternun/i18n';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
-
-type Translate = Translator['t'];
-
-export interface EnterprisePalette {
-  surface: string;
-  border: string;
-  text: string;
-  muted: string;
-  primary: string;
-  primaryDeep: string;
-  mist: string;
-}
-
-export interface MarketplaceEnterprise {
-  id: string;
-  slug: string;
-  displayName: string;
-  logo: { url: string; altText: string } | null;
-  countryCode: string | null;
-  websiteUrl: string | null;
-  projectCount: number;
-}
-
-type LoadMarketplaceEnterprises = (
-  locale: string,
-  signal?: AbortSignal
-) => Promise<MarketplaceEnterprise[]>;
+import type {
+  EnterprisePalette,
+  LoadMarketplaceEnterprises,
+  MarketplaceEnterprise,
+  Translate,
+} from './types';
 
 export function safeEnterpriseUrl(value: string | null | undefined): string | null {
   if (!value) return null;

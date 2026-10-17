@@ -1,24 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MessageCircle, RotateCcw } from 'lucide-react-native';
-import type { Translator } from '@alternun/i18n';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
-import type { DetailPalette } from './MarketplaceProjectDetail';
-
-type Translate = Translator['t'];
-
-export interface PublicProjectComment {
-  displayName: string;
-  body: string;
-  createdAt: string;
-}
-
-interface CommentsPage {
-  data: PublicProjectComment[];
-  page: number;
-  perPage: number;
-  total: number;
-}
+import type {
+  DetailPalette,
+  MarketplaceCommentsPage,
+  PublicProjectComment,
+  Translate,
+} from './types';
 
 export class MarketplaceCommentRequestError extends Error {
   constructor(readonly status: number, readonly code?: string) {
@@ -54,7 +43,7 @@ export async function loadProjectComments(
   page: number,
   perPage: number,
   signal?: AbortSignal
-): Promise<CommentsPage> {
+): Promise<MarketplaceCommentsPage> {
   const response = await fetch(
     `${resolveMobileApiBaseUrl()}/v1/projects/${encodeURIComponent(
       slug
@@ -66,7 +55,7 @@ export async function loadProjectComments(
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
     throw new MarketplaceCommentRequestError(502);
   }
-  const pageData = payload as Partial<CommentsPage>;
+  const pageData = payload as Partial<MarketplaceCommentsPage>;
   if (
     !Array.isArray(pageData.data) ||
     !pageData.data.every(isComment) ||
@@ -76,7 +65,7 @@ export async function loadProjectComments(
   ) {
     throw new MarketplaceCommentRequestError(502);
   }
-  return pageData as CommentsPage;
+  return pageData as MarketplaceCommentsPage;
 }
 
 export async function submitProjectComment(
