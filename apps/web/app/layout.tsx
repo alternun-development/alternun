@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import ReleaseUpdateBanner from '../components/release/ReleaseUpdateBanner';
 import ThemeProvider from '../components/ThemeProvider';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../lib/site';
 import './globals.css';
 
 const anekLatin = localFont({
@@ -11,9 +12,8 @@ const anekLatin = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'Alternun - Regenerative Impact Platform',
-  description:
-    'Track, verify, and monetize your environmental and social impact with AIRS (Alternun Impact Rating System). Join the regenerative economy.',
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   metadataBase: new URL('https://alternun.co'),
   alternates: {
     types: {
