@@ -274,25 +274,25 @@
           "city": "เมือง"
         },
         "rbi": {
-          "title": "ประมาณการ RBI",
-          "subtitle": "รายได้โดยประมาณสำหรับรอบถัดไป",
-          "estimatedPool": "กองทุน RBI โดยประมาณ:",
-          "eligibleUsers": "ผู้ใช้ที่มีสิทธิ์:",
-          "airsScore": "คะแนน Airs ของคุณ:",
+          "title": "การคาดการณ์ RBI",
+          "subtitle": "ปัจจัยการมีส่วนร่วม (FP)",
+          "eligibleAirs": "AIRS เทียบเท่า",
+          "eligibleUsers": "ผู้ใช้ที่มีสิทธิ์",
+          "aliquot": "สัดส่วนการจัดสรร",
+          "notAvailable": "ยังไม่มีข้อมูล",
+          "participationNote": "หากต้องการเข้าใจการทำงานของ FP โปรดอ่าน",
+          "termsAndConditions": "ข้อกำหนดและเงื่อนไข",
           "whatIsRbi": "RBI คืออะไร?",
           "explanation": "รายได้พื้นฐานเชิงฟื้นฟู (Regenerative Basic Income) คือรายได้ตามรอบที่แจกจ่ายให้กับผู้ใช้ Alternun ที่มีส่วนร่วมในระบบนิเวศ.\n\nมันไม่ได้ขึ้นอยู่กับว่าคุณมีเงินเท่าไร แต่ขึ้นอยู่กับการมีส่วนร่วม ความมุ่งมั่น และผลกระทบของคุณ ซึ่งวัดผ่านคะแนน AIRS ของคุณ.\n\nทุกครั้งที่ Alternun อำนวยความสะดวกในการชดเชย การขายจากพูลการชดเชย หรือกิจกรรมทางเศรษฐกิจภายในแพลตฟอร์ม มูลค่าบางส่วนจะถูกส่งตรงไปยังกองทุน RBI",
           "fullDocumentation": "เอกสารฉบับเต็ม"
         },
         "atn": {
-          "title": "ATN ของฉัน",
-          "subtitle": "โทเค็นเชิงฟื้นฟูของคุณ",
-          "availableLabel": "ATN ที่มีอยู่",
-          "availableDesc": "พร้อมใช้งาน",
-          "stackingLabel": "ATN ที่กำลังสเตก",
-          "stackingDesc": "กำลังมีส่วนร่วมในโครงการ",
-          "totalLabel": "ATN รวม",
-          "primaryWalletLabel": "วอลเล็ตหลัก",
-          "primaryWalletMeta": "ภายใน"
+          "title": "ATN และรางวัลเชิงฟื้นฟูของฉัน",
+          "subtitle": "ยอดคงเหลือรางวัลของคุณ",
+          "assetName": "ATN",
+          "primaryWalletLabel": "กระเป๋ารางวัลหลัก",
+          "primaryWalletMeta": "ภายใน",
+          "redeemAction": "แลกและใช้งาน"
         }
       }
     },
@@ -811,7 +811,7 @@
         "notConnected": "ยังไม่ได้เชื่อมต่อ",
         "createTitle": "สร้างวอลเล็ต Alternun ของคุณ",
         "createSubtitle": "กุญแจ multichain ของคุณ — Ethereum, Bitcoin และ Solana ในที่เดียว",
-        "createButton": "สร้างวอลเล็ต Alternun",
+        "createButton": "สร้างกระเป๋ารางวัล",
         "createFeature1": "ไม่มีผู้ดูแล: มีเพียงคุณที่ถือกุญแจ",
         "createFeature2": "Multichain: EVM, Bitcoin และ Solana",
         "createFeature3": "เข้ารหัสด้วย PIN ของคุณ สำรองข้อมูลโดยคุณ",
@@ -827,9 +827,9 @@
         "addressCopied": "คัดลอกที่อยู่แล้ว",
         "exportBackup": "ส่งออกข้อมูลสำรอง",
         "exportWarning": "นี่คือตัวเลือกการกู้คืนเดียวหากคุณสูญเสียอุปกรณ์",
-        "manageWallet": "จัดการวอลเล็ต",
+        "manageWallet": "จัดการกระเป๋ารางวัล",
         "manageWallets": "จัดการวอลเล็ตทั้งหมด",
-        "noWalletAccount": "ยังไม่มีข้อมูลวอลเล็ต",
+        "noWalletAccount": "ยังไม่มีข้อมูลกระเป๋ารางวัลของคุณ",
         "changePin": "เปลี่ยน PIN"
       },
       "accessMethods": {
