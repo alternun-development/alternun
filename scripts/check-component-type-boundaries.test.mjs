@@ -21,6 +21,15 @@ test('parses bracketed framework route filenames', () => {
   );
 });
 
+test('falls back to module-depth scanning when the parser rejects syntax', () => {
+  assert.deepEqual(
+    collectTopLevelTypeNames(
+      'interface RouteProps {}\nfunction Route() { type LocalState = string; }\nconst unsupported = 1.thing;'
+    ),
+    ['RouteProps']
+  );
+});
+
 test('flags component-local top-level types as well as exported types', () => {
   assert.deepEqual(
     validateTypeBoundary(

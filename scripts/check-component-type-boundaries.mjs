@@ -26,18 +26,132 @@ function isTypeSource(filePath) {
   return TYPE_FILE.test(filePath.replaceAll('\\', '/'));
 }
 
+function isIdentifierStart(character) {
+  return character !== undefined && /[A-Za-z_$]/.test(character);
+}
+
+function isIdentifierPart(character) {
+  return character !== undefined && /[A-Za-z0-9_$]/.test(character);
+}
+
+function skipQuotedText(source, index, quote) {
+  let cursor = index + 1;
+  while (cursor < source.length) {
+    if (source[cursor] === '\\') {
+      cursor += 2;
+      continue;
+    }
+    if (source[cursor] === quote) return cursor + 1;
+    cursor += 1;
+  }
+  return cursor;
+}
+
+function collectTopLevelTypeNamesFallback(source) {
+  const names = [];
+  let depth = 0;
+  let cursor = 0;
+
+  while (cursor < source.length) {
+    if (source.startsWith('//', cursor)) {
+      const lineEnd = source.indexOf('\n', cursor + 2);
+      cursor = lineEnd === -1 ? source.length : lineEnd + 1;
+      continue;
+    }
+    if (source.startsWith('/*', cursor)) {
+      const commentEnd = source.indexOf('*/', cursor + 2);
+      cursor = commentEnd === -1 ? source.length : commentEnd + 2;
+      continue;
+    }
+
+    const character = source[cursor];
+    if (character === '"' || character === "'" || character === '`') {
+      cursor = skipQuotedText(source, cursor, character);
+      continue;
+    }
+    if (character === '{') {
+      depth += 1;
+      cursor += 1;
+      continue;
+    }
+    if (character === '}') {
+      depth = Math.max(0, depth - 1);
+      cursor += 1;
+      continue;
+    }
+
+    if (depth !== 0 || !isIdentifierStart(character)) {
+      cursor += 1;
+      continue;
+    }
+
+    const wordStart = cursor;
+    cursor += 1;
+    while (isIdentifierPart(source[cursor])) cursor += 1;
+    const word = source.slice(wordStart, cursor);
+    if (word !== 'interface' && word !== 'type') continue;
+
+    while (source[cursor] !== undefined && /\s/.test(source[cursor])) cursor += 1;
+    if (!isIdentifierStart(source[cursor])) continue;
+
+    const nameStart = cursor;
+    cursor += 1;
+    while (isIdentifierPart(source[cursor])) cursor += 1;
+    const name = source.slice(nameStart, cursor);
+
+    if (word === 'interface') {
+      names.push(name);
+      continue;
+    }
+
+    let probe = cursor;
+    let foundAssignment = false;
+    while (probe < source.length) {
+      if (source.startsWith('//', probe) || source.startsWith('/*', probe)) break;
+      if (source[probe] === ';') break;
+      if (/\s/.test(source[probe])) {
+        probe += 1;
+        continue;
+      }
+      if (source[probe] === '=') {
+        foundAssignment = true;
+        break;
+      }
+      if (isIdentifierStart(source[probe])) {
+        const tokenStart = probe;
+        probe += 1;
+        while (isIdentifierPart(source[probe])) probe += 1;
+        if (source.slice(tokenStart, probe) === 'from') break;
+        continue;
+      }
+      probe += 1;
+    }
+    if (foundAssignment) names.push(name);
+  }
+
+  return names;
+}
+
 export function collectTopLevelTypeNames(source, filePath = 'file.tsx') {
   // Framework route names such as `[slug].tsx` are valid filesystem paths but
   // can be interpreted inconsistently by parser versions. Only the extension
   // matters for this syntax-only check, so use a neutral virtual filename.
   const parserFilePath = filePath.endsWith('.tsx') ? 'file.tsx' : 'file.ts';
-  const ast = parser.parse(source, {
-    ecmaVersion: 2022,
-    filePath: parserFilePath,
-    loc: true,
-    range: true,
-    sourceType: 'module',
-  });
+  let ast;
+  try {
+    ast = parser.parse(source, {
+      ecmaVersion: 2022,
+      filePath: parserFilePath,
+      loc: true,
+      range: true,
+      sourceType: 'module',
+    });
+  } catch {
+    // Keep the guard usable when a parser/TypeScript version rejects valid
+    // framework syntax. The fallback only recognizes declarations at module
+    // depth and still ignores comments, strings, and nested type bodies.
+    return collectTopLevelTypeNamesFallback(source);
+  }
 
   return ast.body
     .map((node) => (node.type === 'ExportNamedDeclaration' ? node.declaration : node))
