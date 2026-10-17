@@ -8,8 +8,7 @@ import {
 } from '../../marketplace/api';
 import { marketplaceCopy } from '../../marketplace/copy';
 import { ErrorPanel, LoadingPanel, SectionMessage, StatusPill } from './components';
-
-type EnterpriseDetail = { enterprise: Enterprise; projects: Project[] };
+import type { EnterpriseDetail } from './enterprise-detail-page.types';
 
 async function loadEnterprise(id: string): Promise<EnterpriseDetail> {
   const [enterprise, projects] = await Promise.all([

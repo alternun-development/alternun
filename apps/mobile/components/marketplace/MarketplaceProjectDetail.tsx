@@ -1,50 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ArrowLeft, Building2, ExternalLink, Leaf, MapPin, RotateCcw } from 'lucide-react-native';
-import type { Translator } from '@alternun/i18n';
 import AirsIntroVideoCard from '../onboarding/AirsIntroVideoCard';
 import MarketplaceProjectComments from './MarketplaceProjectComments';
+import type {
+  DetailPalette,
+  MarketplaceProjectMedia,
+  MarketplacePublicProject,
+  Translate,
+} from './types';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
-
-type Translate = Translator['t'];
-
-export interface MarketplaceProjectMedia {
-  id: string;
-  kind: 'logo' | 'cover' | 'gallery_image' | 'video' | 'canva';
-  url: string;
-  embedUrl: string | null;
-  altText: Record<string, string>;
-  caption: Record<string, string>;
-  sortOrder: number;
-  isActive: boolean;
-}
-
-export interface MarketplacePublicProject {
-  id: string;
-  slug: string;
-  status: 'published';
-  categoryCode: string;
-  locale: string;
-  availableLocales: string[];
-  title: string;
-  location: string;
-  theme: string;
-  description: string;
-  waysToContribute: string[];
-  enterprise: { slug: string; displayName: string };
-  media: MarketplaceProjectMedia[];
-}
-
-export interface DetailPalette {
-  background: string;
-  surface: string;
-  border: string;
-  text: string;
-  muted: string;
-  primary: string;
-  primaryDeep: string;
-  mist: string;
-}
 
 export class MarketplaceProjectRequestError extends Error {
   constructor(readonly status: number) {

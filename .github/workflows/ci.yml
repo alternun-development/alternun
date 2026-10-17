@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -41,7 +43,13 @@ jobs:
         run: pnpm --filter @alternun/web lint
 
       - name: Check targeted formatting
-        run: pnpm exec prettier --check .eslintrc.js .github/workflows/ci.yml .github/workflows/deploy.yml .github/workflows/test-deploy.yml package.json packages/auth/infra/email/scripts/01-generate-smtp-config.cjs packages/auth/infra/email/scripts/02-sync-supabase-smtp.cjs packages/auth/infra/email/scripts/03-status-report.cjs packages/email-templates/src/lib/i18n.ts
+        run: pnpm exec prettier --check .eslintrc.js .github/workflows/ci.yml .github/workflows/deploy.yml .github/workflows/test-deploy.yml package.json packages/auth/infra/email/scripts/01-generate-smtp-config.cjs packages/auth/infra/email/scripts/02-sync-supabase-smtp.cjs packages/auth/infra/email/scripts/03-status-report.cjs packages/email-templates/src/lib/i18n.ts scripts/check-component-type-boundaries.mjs scripts/check-component-type-boundaries.test.mjs
+
+      - name: Check component type boundaries
+        run: pnpm check:component-types -- --base "${{ github.event.pull_request.base.sha }}"
+
+      - name: Test component type boundary guard
+        run: pnpm test:component-types
 
   type-check:
     name: Type Check

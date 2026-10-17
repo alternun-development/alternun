@@ -4,15 +4,9 @@ import ScreenShell from '../../components/common/ScreenShell';
 import { useAuth } from '../../components/auth/AppAuthProvider';
 import { useAppTranslation } from '../../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../../components/settings/AppPreferencesProvider';
-import {
-  MarketplaceProjectDetailView,
-  type DetailPalette,
-} from '../../components/marketplace/MarketplaceProjectDetail';
-
-interface MarketplaceAuthContext {
-  user: unknown;
-  client: { getSessionToken(): Promise<string | null> };
-}
+import { MarketplaceProjectDetailView } from '../../components/marketplace/MarketplaceProjectDetail';
+import type { DetailPalette } from '../../components/marketplace/types';
+import type { MarketplaceAuthContext } from './[slug].types';
 
 export default function MarketplaceProjectDetailScreen(): React.JSX.Element {
   const params = useLocalSearchParams<{ slug?: string | string[] }>();

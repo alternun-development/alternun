@@ -4,23 +4,10 @@ import { useRef, useEffect, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { AIRS_APP_URL, SITE_DESCRIPTION, SITE_TITLE } from '@/lib/site';
+import type { HeroSectionProps, UserHeroData } from './HeroSection.types';
 
 gsap.registerPlugin(useGSAP);
 import { Info } from 'lucide-react';
-
-interface UserHeroData {
-  userName: string;
-  airsScore: number;
-  updatedAt: string;
-  status: 'GOLD' | 'PLATINUM' | 'SILVER';
-  statusExpiry: string;
-  progressPercent: number;
-  progressCurrent: number;
-  progressTarget: number;
-  nextTier: string;
-}
-
-type HeroSectionProps = Partial<UserHeroData>;
 
 function useCountUp(target: number, duration: number, shouldStart: boolean) {
   const [value, setValue] = useState(0);
