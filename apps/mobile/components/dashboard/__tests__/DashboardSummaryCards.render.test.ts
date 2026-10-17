@@ -21,10 +21,13 @@ jest.mock('../../wallet/walletApiClient', () => ({
 jest.mock('../../i18n/useAppTranslation', () => {
   const translationMap: Record<string, string> = {
     'dashboard.summaryCards.rbi.title': 'Proyección RBI',
-    'dashboard.summaryCards.rbi.subtitle': 'Tu proyección estimada',
-    'dashboard.summaryCards.rbi.estimatedPool': 'Pool RBI estimado:',
-    'dashboard.summaryCards.rbi.eligibleUsers': 'Usuarios elegibles:',
-    'dashboard.summaryCards.rbi.airsScore': 'Tu puntaje Airs:',
+    'dashboard.summaryCards.rbi.subtitle': 'Factor de participación (FP)',
+    'dashboard.summaryCards.rbi.eligibleAirs': 'AIRS equivalentes',
+    'dashboard.summaryCards.rbi.eligibleUsers': 'Usuarios elegibles',
+    'dashboard.summaryCards.rbi.aliquot': 'Alícuota',
+    'dashboard.summaryCards.rbi.notAvailable': 'Aún no disponible',
+    'dashboard.summaryCards.rbi.participationNote': 'Para entender cómo funciona el FP, lee los',
+    'dashboard.summaryCards.rbi.termsAndConditions': 'Términos y Condiciones',
     'dashboard.summaryCards.rbi.whatIsRbi': '¿Qué es el RBI?',
     'dashboard.summaryCards.rbi.explanation': 'RBI explanation',
     'dashboard.summaryCards.rbi.fullDocumentation': 'Full documentation',
@@ -186,7 +189,7 @@ describe('DashboardSummaryCards render', () => {
     );
 
     const narrowStatus = getElementByTestId(renderState.container, 'dashboard-rbi-status');
-    const narrowMetric = getElementByTestId(renderState.container, 'dashboard-rbi-estimated-pool');
+    const narrowMetric = getElementByTestId(renderState.container, 'dashboard-rbi-eligible-airs');
     const narrowAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-asset-atn');
 
     expect(narrowStatus.className).not.toBe('');
@@ -208,7 +211,7 @@ describe('DashboardSummaryCards render', () => {
     );
 
     const wideStatus = getElementByTestId(renderState.container, 'dashboard-rbi-status');
-    const wideMetric = getElementByTestId(renderState.container, 'dashboard-rbi-estimated-pool');
+    const wideMetric = getElementByTestId(renderState.container, 'dashboard-rbi-eligible-airs');
     const wideAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-asset-atn');
 
     expect(wideStatus.className).toBe(narrowStatus.className);
@@ -259,6 +262,77 @@ describe('DashboardSummaryCards render', () => {
 
     expect(renderState.container.textContent).toContain('Mis ATN');
     expect(renderState.container.textContent).toContain('Proyección RBI');
+  });
+
+  it('renders the participation factor marker, metrics, and terms link', () => {
+    mockWindowDimensions(1024);
+    const openUrlSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: false,
+        signedIn: false,
+        airsBalance: 200,
+        participationFactor: 0.15,
+        communityEligibleAirs: 300,
+      })
+    );
+
+    const factorBar = getElementByTestId(renderState.container, 'dashboard-rbi-status');
+    const factorMarker = getElementByTestId(renderState.container, 'dashboard-rbi-factor-marker');
+    expect(factorBar.getAttribute('role')).toBe('slider');
+    expect(factorBar.getAttribute('aria-valuetext')).toBe('FP 15 %');
+    expect(factorMarker.style.left).toBe('15%');
+    expect(
+      [0, 15, 50, 100].map(
+        (mark) =>
+          getElementByTestId(
+            renderState?.container ?? document.body,
+            `dashboard-rbi-factor-mark-${mark}`
+          ).textContent
+      )
+    ).toEqual(['0 %', '15 %', '50 %', '100 %']);
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-eligible-airs').textContent
+    ).toContain('30');
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-eligible-users').textContent
+    ).toContain('—');
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-aliquot').textContent
+    ).toContain('10.00 %');
+
+    clickElementByText(renderState.container, 'Términos y Condiciones');
+    expect(openUrlSpy).toHaveBeenCalledWith('https://docs.alternun.io/terms');
+  });
+
+  it('renders an unavailable neutral factor state without false values', () => {
+    mockWindowDimensions(375);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: true,
+        signedIn: false,
+        airsBalance: 200,
+        participationFactor: null,
+        communityEligibleAirs: null,
+      })
+    );
+
+    const factorBar = getElementByTestId(renderState.container, 'dashboard-rbi-status');
+    expect(factorBar.getAttribute('aria-valuetext')).toBe('Aún no disponible');
+    expect(factorBar.getAttribute('aria-disabled')).toBe('true');
+    expect(
+      renderState.container.querySelector('[data-testid="dashboard-rbi-factor-marker"]')
+    ).toBeNull();
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-eligible-airs').textContent
+    ).toContain('—');
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-aliquot').textContent
+    ).toContain('—');
+    expect(renderState.container.textContent).not.toContain('Pool RBI estimado');
+    expect(renderState.container.textContent).not.toContain('Tu puntaje Airs');
   });
 
   it('renders ATN first, appends reward assets, and keeps future actions disabled', () => {

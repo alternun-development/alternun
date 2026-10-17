@@ -28,6 +28,30 @@ describe('AIRS dashboard snapshots', () => {
     ).toMatchObject({ balanceAIRS: 0, lifetimeEarnedAIRS: 0 });
   });
 
+  it('normalizes optional RBI participation values without inventing defaults', () => {
+    expect(
+      normalizeAirsDashboardSnapshot({
+        userId: 'user-1',
+        balanceAIRS: 200,
+        participation_factor: 0.15,
+        community_eligible_airs: 300,
+      })
+    ).toMatchObject({
+      participationFactor: 0.15,
+      communityEligibleAirs: 300,
+    });
+
+    expect(
+      normalizeAirsDashboardSnapshot({
+        userId: 'user-1',
+        balanceAIRS: 200,
+      })
+    ).toMatchObject({
+      participationFactor: null,
+      communityEligibleAirs: null,
+    });
+  });
+
   it('loads the authoritative balance from the AIRS snapshot endpoint', async () => {
     const fetchImpl = jest.fn<typeof fetch>().mockResolvedValue({
       ok: true,

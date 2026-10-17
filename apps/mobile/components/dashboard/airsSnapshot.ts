@@ -135,6 +135,12 @@ export function normalizeAirsDashboardSnapshot(value: unknown): AirsDashboardSna
     lifetimeEarnedAIRS: asNumber(
       record.lifetimeEarnedAIRS ?? record.airsLifetimeEarned ?? record.airs_lifetime_earned
     ),
+    participationFactor: asRequiredNumber(
+      record.participationFactor ?? record.participation_factor
+    ),
+    communityEligibleAirs: asRequiredNumber(
+      record.communityEligibleAirs ?? record.community_eligible_airs
+    ),
     recentEntries: Array.isArray(record.recentEntries ?? record.recentLedgerEntries)
       ? ((record.recentEntries ?? record.recentLedgerEntries) as unknown[])
           .map(parseLedgerEntry)

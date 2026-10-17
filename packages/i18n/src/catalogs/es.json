@@ -275,10 +275,13 @@
         },
         "rbi": {
           "title": "Proyección RBI",
-          "subtitle": "Ingreso estimado próximo ciclo",
-          "estimatedPool": "Pool RBI estimado:",
-          "eligibleUsers": "Usuarios elegibles:",
-          "airsScore": "Tu puntaje Airs:",
+          "subtitle": "Factor de participación (FP)",
+          "eligibleAirs": "AIRS equivalentes",
+          "eligibleUsers": "Usuarios elegibles",
+          "aliquot": "Alícuota",
+          "notAvailable": "Aún no disponible",
+          "participationNote": "Para entender cómo funciona el FP, lee los",
+          "termsAndConditions": "Términos y Condiciones",
           "whatIsRbi": "¿Qué es el RBI?",
           "explanation": "El Regenerative Basic Income es un ingreso periódico que se distribuye entre los usuarios de Alternun que contribuyen al ecosistema.\n\nNo depende de cuánto dinero tengas, sino de tu participación, tu compromiso y tu impacto, medidos a través de tu puntaje AIRS.\n\nCada vez que Alternun facilita una compensación, una venta desde el compensation pool o una actividad económica dentro de la plataforma, una parte de ese valor se destina directamente al fondo del RBI.",
           "fullDocumentation": "Documentación completa"
