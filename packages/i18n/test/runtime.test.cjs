@@ -41,7 +41,10 @@ assert.equal(englishMobile.t('landing.beneficios.cards.eco.atn'), 'Variable');
 assert.equal(englishMobile.t('landing.beneficios.topRated'), 'Verified');
 assert.equal(englishMobile.t('dashboard.summaryCards.comingSoon'), 'Coming soon');
 assert.equal(spanishMobile.t('dashboard.summaryCards.comingSoon'), 'Próximamente');
-assert.equal(thaiMobile.t('dashboard.summaryCards.atn.primaryWalletLabel'), 'วอลเล็ตหลัก');
+assert.equal(
+  thaiMobile.t('dashboard.summaryCards.atn.primaryWalletLabel'),
+  'กระเป๋ารางวัลหลัก'
+);
 assert.equal(
   thaiMobile.t('landing.comoFunciona.sectionTitle'),
   'AIRS เปลี่ยนการกระทำของคุณให้เป็นผลงานสะสมอย่างไร'
