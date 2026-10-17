@@ -135,6 +135,7 @@ export default function MarketplaceProjectComments({
   const [body, setBody] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: 'success' | 'error'; key: string } | null>(null);
+  const bodyIsInvalid = body.trim().length === 0 || body.length > 1000;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -297,12 +298,12 @@ export default function MarketplaceProjectComments({
           <Text style={[styles.counter, { color: palette.muted }]}>{body.length}/1000</Text>
           <Pressable
             testID='project-comment-submit'
-            disabled={submitting}
+            disabled={submitting || bodyIsInvalid}
             onPress={() => void publish()}
             style={[
               styles.publishButton,
               { backgroundColor: palette.primaryDeep },
-              submitting && styles.disabled,
+              (submitting || bodyIsInvalid) && styles.disabled,
             ]}
           >
             <Text style={styles.buttonText}>
