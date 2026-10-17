@@ -25,6 +25,7 @@ let participantHistoryPath;
 let auditFilterResult;
 let auditQueryPath;
 let auditEventMessage;
+let toSafeMediaUrl;
 
 const project = {
   id: 'project-1',
@@ -155,6 +156,9 @@ before(async () => {
   ({ auditFilterResult, auditQueryPath, auditEventMessage } = await viteServer.ssrLoadModule(
     '/src/pages/marketplace/editors/audit-history.tsx'
   ));
+  ({ toSafeMediaUrl } = await viteServer.ssrLoadModule(
+    '/src/pages/marketplace/editors/media-editor.tsx'
+  ));
 });
 
 after(async () => {
@@ -200,6 +204,16 @@ void test('marketplace API errors always become friendly copy', () => {
   assert.equal(
     marketplaceErrorMessage(new MarketplaceRequestError(409, 'COMMENT_TRANSITION_INVALID')),
     'This comment has already changed. Refresh and try again.'
+  );
+});
+
+void test('media URLs are constrained before reaching DOM URL sinks', () => {
+  assert.equal(toSafeMediaUrl('javascript:alert(1)'), '');
+  assert.equal(toSafeMediaUrl('data:text/html,<script>alert(1)</script>'), '');
+  assert.equal(toSafeMediaUrl('not a URL'), '');
+  assert.equal(
+    toSafeMediaUrl('https://images.example/logo.png'),
+    'https://images.example/logo.png'
   );
 });
 

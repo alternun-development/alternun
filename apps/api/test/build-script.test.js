@@ -11,4 +11,6 @@ test('api build script builds email templates before compiling the Lambda bundle
   assert.match(source, /pnpm --filter @alternun\/email-templates run build/);
   assert.match(source, /tsc -p tsconfig\.build\.json/);
   assert.match(source, /esbuild "\$\{lambda_entry\}"/);
+  assert.match(source, /localized_dir="docusaurus-plugin-content-pages"/);
+  assert.match(source, /localized_dir="docusaurus-plugin-content-docs\/current"/);
 });

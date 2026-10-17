@@ -26,6 +26,18 @@ const supportedHosts: Partial<Record<MediaKind, readonly string[]>> = {
   canva: ['canva.com', 'www.canva.com'],
 };
 
+export function toSafeMediaUrl(value: string): string {
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.toString();
+    }
+  } catch {
+    // Invalid URL; treated as unsafe for DOM URL sinks.
+  }
+  return '';
+}
+
 export function mediaUrlError(kind: MediaKind, value: string): string | null {
   try {
     const url = new URL(value);
@@ -65,6 +77,7 @@ export function MediaEditor({ project, media, roles, onChanged }: Props): JSX.El
   );
   const gallery = active.filter((item) => item.kind === 'gallery_image');
   const validationMessage = url ? mediaUrlError(kind, url) : null;
+  const previewUrl = toSafeMediaUrl(url);
 
   async function add(): Promise<void> {
     const urlError = mediaUrlError(kind, url);
@@ -145,27 +158,26 @@ export function MediaEditor({ project, media, roles, onChanged }: Props): JSX.El
             const alt =
               item.altText[project.defaultLocale] ||
               marketplaceCopy.projectDetail.media.imageFallback;
+            const safeItemUrl = toSafeMediaUrl(item.url);
+            const safeItemLink = toSafeMediaUrl(item.embedUrl ?? item.url);
             const galleryIndex = gallery.findIndex((entry) => entry.id === item.id);
             return (
               <article className='metric-card marketplace-media-card' key={item.id}>
                 <h4>{label}</h4>
-                {imageKinds.has(item.kind) ? <img src={item.url} alt={alt} /> : null}
+                {imageKinds.has(item.kind) && safeItemUrl ? (
+                  <img src={safeItemUrl} alt={alt} />
+                ) : null}
                 {imageKinds.has(item.kind) ? (
                   <p>
                     <strong>{marketplaceCopy.projectDetail.media.altText}:</strong> {alt}
                   </p>
-                ) : (
-                  <a
-                    className='inline-link'
-                    href={item.embedUrl ?? item.url}
-                    rel='noreferrer'
-                    target='_blank'
-                  >
+                ) : safeItemLink ? (
+                  <a className='inline-link' href={safeItemLink} rel='noreferrer' target='_blank'>
                     {item.kind === 'video'
                       ? marketplaceCopy.projectDetail.media.openVideo
                       : marketplaceCopy.projectDetail.media.openCanva}
                   </a>
-                )}
+                ) : null}
                 {item.kind === 'gallery_image' && canWrite ? (
                   <div className='marketplace-compact-actions'>
                     <button
@@ -227,10 +239,13 @@ export function MediaEditor({ project, media, roles, onChanged }: Props): JSX.El
               <input value={altText} onChange={(event) => setAltText(event.target.value)} />
             </label>
           ) : null}
-          {url && !validationMessage && imageKinds.has(kind) ? (
+          {previewUrl && !validationMessage && imageKinds.has(kind) ? (
             <figure className='marketplace-preview'>
               <figcaption>{marketplaceCopy.mediaEditor.preview}</figcaption>
-              <img src={url} alt={altText || marketplaceCopy.projectDetail.media.imageFallback} />
+              <img
+                src={previewUrl}
+                alt={altText || marketplaceCopy.projectDetail.media.imageFallback}
+              />
             </figure>
           ) : null}
           {fieldError ? <strong className='error-text'>{fieldError}</strong> : null}
