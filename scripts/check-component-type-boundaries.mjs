@@ -27,9 +27,10 @@ function isTypeSource(filePath) {
 }
 
 export function collectTopLevelTypeNames(source, filePath = 'file.tsx') {
+  const parserFilePath = filePath.replaceAll('[', '_').replaceAll(']', '_');
   const ast = parser.parse(source, {
     ecmaVersion: 2022,
-    filePath,
+    filePath: parserFilePath,
     loc: true,
     range: true,
     sourceType: 'module',

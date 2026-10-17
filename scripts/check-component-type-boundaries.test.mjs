@@ -14,6 +14,13 @@ test('collects top-level interfaces and type aliases from TypeScript', () => {
   );
 });
 
+test('parses bracketed framework route filenames', () => {
+  assert.deepEqual(
+    collectTopLevelTypeNames('interface RouteProps {}', 'apps/mobile/app/explorar/[slug].tsx'),
+    ['RouteProps']
+  );
+});
+
 test('flags component-local top-level types as well as exported types', () => {
   assert.deepEqual(
     validateTypeBoundary(
