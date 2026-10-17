@@ -1040,9 +1040,8 @@
       "marketplace": "AIRS PROJECT MARKETPLACE",
       "heroTitle": "Explore where your energy becomes impact.",
       "live": "LIVE",
-      "presentation": "PROJECT PRESENTATION",
-      "presentationTitle": "Eco Tourism project presentation",
-      "launchProject": "LAUNCH PROJECT",
+      "featured": "FEATURED PROJECT",
+      "featuredProject": "FEATURED PROJECT",
       "heroDescription": "Discover the proposal and find a way to add your talent, network, or experience.",
       "collaborate": "I want to collaborate",
       "openMap": "OPENING THE MAP",
@@ -1057,11 +1056,80 @@
       "productive": "PRODUCTIVE",
       "waysToCollaborate": "Ways to collaborate",
       "participateAndEarn": "See how to participate and earn AIRS",
+      "directory": {
+        "label": "Choose what to explore",
+        "projects": "Projects",
+        "enterprises": "Enterprises"
+      },
+      "enterprises": {
+        "eyebrow": "ENTERPRISES",
+        "heading": "Enterprises creating impact",
+        "intro": "Meet the organizations behind published projects.",
+        "projectCount": "{{count}} published projects",
+        "loading": "Loading enterprises…",
+        "empty": "No enterprises are available yet.",
+        "error": "Enterprises could not be loaded.",
+        "retry": "Try again",
+        "detail": {
+          "back": "Back to enterprises",
+          "loading": "Loading enterprise…",
+          "unavailable": "Enterprise unavailable",
+          "error": "The enterprise could not be loaded.",
+          "website": "Visit website",
+          "projects": "Published projects"
+        }
+      },
       "filters": {
         "all": "All",
-        "active": "Active",
-        "productive": "Productive",
-        "conservation": "Conservation"
+        "active": "Active"
+      },
+      "categories": {
+        "hospitality_ecotourism": "Hospitality and ecotourism",
+        "conservation": "Conservation",
+        "productive_enterprise": "Productive enterprise",
+        "regenerative_agriculture": "Regenerative agriculture",
+        "community": "Community",
+        "education": "Education"
+      },
+      "marketplaceState": {
+        "loading": "Loading projects…",
+        "empty": "No published projects yet.",
+        "error": "Projects could not be loaded.",
+        "retry": "Try again"
+      },
+      "detail": {
+        "back": "Back to projects",
+        "loading": "Loading project…",
+        "unavailable": "Project unavailable",
+        "error": "The project could not be loaded.",
+        "retry": "Try again",
+        "waysToContribute": "Ways to contribute",
+        "gallery": "Gallery",
+        "video": "Video",
+        "openVideo": "View video",
+        "openPresentation": "View presentation",
+        "comments": {
+          "title": "Comments",
+          "loading": "Loading comments…",
+          "loadError": "Comments could not be loaded.",
+          "retry": "Try again",
+          "emptyList": "No comments yet",
+          "emptyInvite": "Be the first to share a thoughtful comment.",
+          "loadMore": "Load more",
+          "loadingMore": "Loading…",
+          "loadMoreError": "More comments could not be loaded.",
+          "placeholder": "Write a comment",
+          "publish": "Publish",
+          "publishing": "Publishing…",
+          "signInPrompt": "Sign in to leave a comment.",
+          "signIn": "Sign in",
+          "submitted": "Your comment will be published after it is reviewed.",
+          "rateLimited": "You have commented too often. Please try again later.",
+          "emptyBody": "Write a comment before publishing.",
+          "signInRequired": "Sign in to publish your comment.",
+          "projectUnavailable": "This project is no longer available.",
+          "submitError": "Your comment could not be sent. Please try again."
+        }
       },
       "intents": {
         "question": "What do you want to do today?",
@@ -1082,17 +1150,6 @@
       "submitBanner": {
         "title": "Your project can move AIRS too.",
         "description": "Present a productive or conservation initiative to Alternun's global community."
-      },
-      "project": {
-        "title": "Eco Tourism",
-        "place": "Colombia",
-        "theme": "Living economy and territory",
-        "description": "A conscious tourism project that activates collaboration, local experiences, and regenerative value.",
-        "contribute": {
-          "participate": "Participate",
-          "share": "Share",
-          "connectAllies": "Connect allies"
-        }
       },
       "empty": {
         "title": "No matches yet",

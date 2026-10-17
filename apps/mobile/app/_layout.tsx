@@ -76,7 +76,7 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
   const activeTab: DockTab =
     pathname === '/portafolio'
       ? 'portafolio'
-      : pathname === '/explorar'
+      : pathname.startsWith('/explorar')
       ? 'explorar'
       : pathname === '/mi-perfil'
       ? 'mi-perfil'
