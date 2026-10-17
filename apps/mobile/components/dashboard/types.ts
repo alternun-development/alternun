@@ -47,6 +47,8 @@ export interface AirsDashboardSnapshot {
   profileCompletedAt: string | null;
   balanceAIRS: number;
   lifetimeEarnedAIRS: number;
+  participationFactor?: number | null;
+  communityEligibleAirs?: number | null;
   recentEntries: AIRSEntry[];
 }
 
