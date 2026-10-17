@@ -1056,6 +1056,29 @@
       "productive": "PRODUCTIVE",
       "waysToCollaborate": "Ways to collaborate",
       "participateAndEarn": "See how to participate and earn AIRS",
+      "directory": {
+        "label": "Choose what to explore",
+        "projects": "Projects",
+        "enterprises": "Enterprises"
+      },
+      "enterprises": {
+        "eyebrow": "ENTERPRISES",
+        "heading": "Enterprises creating impact",
+        "intro": "Meet the organizations behind published projects.",
+        "projectCount": "{{count}} published projects",
+        "loading": "Loading enterprises…",
+        "empty": "No enterprises are available yet.",
+        "error": "Enterprises could not be loaded.",
+        "retry": "Try again",
+        "detail": {
+          "back": "Back to enterprises",
+          "loading": "Loading enterprise…",
+          "unavailable": "Enterprise unavailable",
+          "error": "The enterprise could not be loaded.",
+          "website": "Visit website",
+          "projects": "Published projects"
+        }
+      },
       "filters": {
         "all": "All",
         "active": "Active"

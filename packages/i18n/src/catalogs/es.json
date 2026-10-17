@@ -1056,6 +1056,29 @@
       "productive": "PRODUCTIVO",
       "waysToCollaborate": "Formas de colaborar",
       "participateAndEarn": "Ver cómo participar y ganar AIRS",
+      "directory": {
+        "label": "Elige qué explorar",
+        "projects": "Proyectos",
+        "enterprises": "Empresas"
+      },
+      "enterprises": {
+        "eyebrow": "EMPRESAS",
+        "heading": "Empresas que generan impacto",
+        "intro": "Conoce las organizaciones detrás de los proyectos publicados.",
+        "projectCount": "{{count}} proyectos publicados",
+        "loading": "Cargando empresas…",
+        "empty": "Aún no hay empresas disponibles.",
+        "error": "No se pudieron cargar las empresas.",
+        "retry": "Reintentar",
+        "detail": {
+          "back": "Volver a empresas",
+          "loading": "Cargando empresa…",
+          "unavailable": "Empresa no disponible",
+          "error": "No se pudo cargar la empresa.",
+          "website": "Visitar sitio web",
+          "projects": "Proyectos publicados"
+        }
+      },
       "filters": {
         "all": "Todos",
         "active": "Activos"

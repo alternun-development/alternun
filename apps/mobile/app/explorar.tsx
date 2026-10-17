@@ -35,6 +35,7 @@ import type { Translator } from '@alternun/i18n';
 import { useAppTranslation } from '../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import ScreenShell from '../components/common/ScreenShell';
+import { MarketplaceEnterpriseBrowser } from '../components/marketplace/MarketplaceEnterpriseDirectory';
 import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
 
 const CompassIcon = Compass as React.FC<LucideProps>;
@@ -59,7 +60,7 @@ const TELEGRAM_URL = 'https://t.me/alternun_io';
 type ProjectFilter = string;
 type Translate = Translator['t'];
 
-interface Palette {
+export interface Palette {
   background: string;
   surface: string;
   surfaceStrong: string;
@@ -791,6 +792,7 @@ export default function ExplorarScreen(): React.JSX.Element {
   const router = useRouter();
   const isDark = themeMode === 'dark';
   const [featuredProject, setFeaturedProject] = useState<MarketProject | null>(null);
+  const [directory, setDirectory] = useState<'projects' | 'enterprises'>('projects');
   const [projectFormOffset, setProjectFormOffset] = useState(0);
   const entrance = useRef(new Animated.Value(0)).current;
   const explorerScrollRef = useRef<ScrollView>(null);
@@ -873,18 +875,67 @@ export default function ExplorarScreen(): React.JSX.Element {
             featuredProject={featuredProject}
           />
 
-          <MarketplaceProjectBrowser
-            locale={language}
-            palette={palette}
-            t={t}
-            onFeaturedProjectChange={setFeaturedProject}
-            onOpenProject={(slug) =>
-              router.push({
-                pathname: '/explorar/[slug]',
-                params: { slug },
-              })
-            }
-          />
+          <View
+            accessibilityRole='tablist'
+            accessibilityLabel={t('explorer.directory.label')}
+            style={[
+              styles.directoryTabs,
+              { backgroundColor: palette.surface, borderColor: palette.border },
+            ]}
+          >
+            {(['projects', 'enterprises'] as const).map((item) => {
+              const selected = directory === item;
+              return (
+                <Pressable
+                  key={item}
+                  testID={`explorer-directory-${item}`}
+                  accessibilityRole='tab'
+                  accessibilityState={{ selected }}
+                  onPress={() => setDirectory(item)}
+                  style={[
+                    styles.directoryTab,
+                    selected && { backgroundColor: palette.primaryDeep },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.directoryTabText,
+                      { color: selected ? '#effff7' : palette.muted },
+                    ]}
+                  >
+                    {t(`explorer.directory.${item}`)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {directory === 'projects' ? (
+            <MarketplaceProjectBrowser
+              locale={language}
+              palette={palette}
+              t={t}
+              onFeaturedProjectChange={setFeaturedProject}
+              onOpenProject={(slug) =>
+                router.push({
+                  pathname: '/explorar/[slug]',
+                  params: { slug },
+                })
+              }
+            />
+          ) : (
+            <MarketplaceEnterpriseBrowser
+              locale={language}
+              palette={palette}
+              t={t}
+              onOpenEnterprise={(slug) =>
+                router.push({
+                  pathname: '/explorar/empresa/[slug]',
+                  params: { slug },
+                })
+              }
+            />
+          )}
 
           <View style={[styles.earnBanner, { backgroundColor: palette.primaryDeep }]}>
             <BadgeDollarSignIcon size={24} color='#1ee6b5' />
@@ -920,6 +971,15 @@ const styles = StyleSheet.create({
   },
   pageTitle: { fontFamily: 'Sculpin-Bold', fontSize: 25, letterSpacing: -0.6 },
   pageSubtitle: { fontSize: 12, marginTop: 1 },
+  directoryTabs: { borderWidth: 1, borderRadius: 16, padding: 4, flexDirection: 'row', gap: 4 },
+  directoryTab: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  directoryTabText: { fontSize: 14, fontWeight: '900' },
   heroBlock: { gap: 12 },
   heroHeading: {
     flexDirection: 'row',

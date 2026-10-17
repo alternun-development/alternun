@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 import React from 'react';
 import { Linking } from 'react-native';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
@@ -41,7 +41,7 @@ const project: MarketplacePublicProject = {
   theme: 'Naturaleza',
   description: 'Descanso que protege.',
   waysToContribute: ['Visitar'],
-  enterprise: { displayName: 'Bosque Vivo' },
+  enterprise: { slug: 'bosque-vivo', displayName: 'Bosque Vivo' },
   media: [
     {
       id: 'logo',
@@ -128,6 +128,29 @@ describe('Marketplace project detail', () => {
       0
     );
     expect(renderer.root.findByProps({ testID: 'project-detail-canva' })).toBeTruthy();
+  });
+
+  it('opens the enterprise detail from the project', async () => {
+    const onOpenEnterprise = jest.fn();
+    let renderer: ReactTestRenderer | undefined;
+    await act(async () => {
+      renderer = create(
+        <MarketplaceProjectDetailView
+          slug='forest-hotel'
+          locale='es'
+          palette={palette}
+          t={t}
+          loader={() => Promise.resolve(project)}
+          onBack={() => undefined}
+          onOpenEnterprise={onOpenEnterprise}
+        />
+      );
+      await Promise.resolve();
+    });
+    void act(() =>
+      renderer!.root.findByProps({ testID: 'project-detail-enterprise' }).props.onPress()
+    );
+    expect(onOpenEnterprise).toHaveBeenCalledWith('bosque-vivo');
   });
 
   it('opens a non-file video in the system browser', async () => {

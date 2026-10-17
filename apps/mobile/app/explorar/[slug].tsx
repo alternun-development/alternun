@@ -52,6 +52,12 @@ export default function MarketplaceProjectDetailScreen(): React.JSX.Element {
         palette={palette}
         t={t}
         onBack={() => router.back()}
+        onOpenEnterprise={(enterpriseSlug) =>
+          router.push({
+            pathname: '/explorar/empresa/[slug]',
+            params: { slug: enterpriseSlug },
+          })
+        }
         signedIn={Boolean(user)}
         getSessionToken={() => client.getSessionToken()}
         onSignIn={() =>

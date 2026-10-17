@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { ArrowLeft, ExternalLink, Leaf, MapPin, RotateCcw } from 'lucide-react-native';
+import { ArrowLeft, Building2, ExternalLink, Leaf, MapPin, RotateCcw } from 'lucide-react-native';
 import type { Translator } from '@alternun/i18n';
 import AirsIntroVideoCard from '../onboarding/AirsIntroVideoCard';
 import MarketplaceProjectComments from './MarketplaceProjectComments';
@@ -31,7 +31,7 @@ export interface MarketplacePublicProject {
   theme: string;
   description: string;
   waysToContribute: string[];
-  enterprise: { displayName: string };
+  enterprise: { slug: string; displayName: string };
   media: MarketplaceProjectMedia[];
 }
 
@@ -84,7 +84,7 @@ function videoTarget(video: MarketplaceProjectMedia | undefined): {
     : { directUrl: null, externalUrl: url };
 }
 
-function isPublicProject(value: unknown): value is MarketplacePublicProject {
+export function isPublicProject(value: unknown): value is MarketplacePublicProject {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const project = value as Partial<MarketplacePublicProject>;
   return (
@@ -96,6 +96,9 @@ function isPublicProject(value: unknown): value is MarketplacePublicProject {
     typeof project.theme === 'string' &&
     typeof project.description === 'string' &&
     typeof project.locale === 'string' &&
+    !!project.enterprise &&
+    typeof project.enterprise.slug === 'string' &&
+    typeof project.enterprise.displayName === 'string' &&
     Array.isArray(project.waysToContribute) &&
     Array.isArray(project.media)
   );
@@ -139,6 +142,7 @@ export function MarketplaceProjectDetailView({
   signedIn = false,
   getSessionToken = () => Promise.resolve(null),
   onSignIn = () => undefined,
+  onOpenEnterprise = () => undefined,
 }: {
   slug: string;
   locale: string;
@@ -150,6 +154,7 @@ export function MarketplaceProjectDetailView({
   signedIn?: boolean;
   getSessionToken?: () => Promise<string | null>;
   onSignIn?: () => void;
+  onOpenEnterprise?: (slug: string) => void;
 }): React.JSX.Element {
   const [project, setProject] = useState<MarketplacePublicProject | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'not-found' | 'error'>('loading');
@@ -261,6 +266,17 @@ export function MarketplaceProjectDetailView({
                   resizeMode='contain'
                 />
               ) : null}
+              <Pressable
+                testID='project-detail-enterprise'
+                accessibilityRole='button'
+                onPress={() => onOpenEnterprise(project.enterprise.slug)}
+                style={styles.enterpriseLink}
+              >
+                <Building2 size={16} color={palette.primaryDeep} />
+                <Text style={[styles.enterpriseName, { color: palette.primaryDeep }]}>
+                  {project.enterprise.displayName}
+                </Text>
+              </Pressable>
               <Text style={[styles.theme, { color: palette.primary }]}>{project.theme}</Text>
               <Text style={[styles.title, { color: palette.text }]}>{project.title}</Text>
               <View style={styles.locationRow}>
@@ -400,6 +416,14 @@ const styles = StyleSheet.create({
   cover: { width: '100%', aspectRatio: 16 / 9 },
   heroCopy: { padding: 20, gap: 10 },
   logo: { width: 76, height: 76, borderRadius: 16 },
+  enterpriseLink: {
+    minHeight: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    alignSelf: 'flex-start',
+  },
+  enterpriseName: { fontSize: 14, fontWeight: '900' },
   theme: { fontSize: 11, fontWeight: '900', letterSpacing: 1.1, textTransform: 'uppercase' },
   title: { fontFamily: 'Sculpin-Bold', fontSize: 30, lineHeight: 34 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
