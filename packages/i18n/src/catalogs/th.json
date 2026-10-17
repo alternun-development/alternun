@@ -284,15 +284,12 @@
           "fullDocumentation": "เอกสารฉบับเต็ม"
         },
         "atn": {
-          "title": "ATN ของฉัน",
-          "subtitle": "โทเค็นเชิงฟื้นฟูของคุณ",
-          "availableLabel": "ATN ที่มีอยู่",
-          "availableDesc": "พร้อมใช้งาน",
-          "stackingLabel": "ATN ที่กำลังสเตก",
-          "stackingDesc": "กำลังมีส่วนร่วมในโครงการ",
-          "totalLabel": "ATN รวม",
-          "primaryWalletLabel": "วอลเล็ตหลัก",
-          "primaryWalletMeta": "ภายใน"
+          "title": "ATN และรางวัลเชิงฟื้นฟูของฉัน",
+          "subtitle": "ยอดคงเหลือรางวัลของคุณ",
+          "assetName": "ATN",
+          "primaryWalletLabel": "กระเป๋ารางวัลหลัก",
+          "primaryWalletMeta": "ภายใน",
+          "redeemAction": "แลกและใช้งาน"
         }
       }
     },
@@ -811,7 +808,7 @@
         "notConnected": "ยังไม่ได้เชื่อมต่อ",
         "createTitle": "สร้างวอลเล็ต Alternun ของคุณ",
         "createSubtitle": "กุญแจ multichain ของคุณ — Ethereum, Bitcoin และ Solana ในที่เดียว",
-        "createButton": "สร้างวอลเล็ต Alternun",
+        "createButton": "สร้างกระเป๋ารางวัล",
         "createFeature1": "ไม่มีผู้ดูแล: มีเพียงคุณที่ถือกุญแจ",
         "createFeature2": "Multichain: EVM, Bitcoin และ Solana",
         "createFeature3": "เข้ารหัสด้วย PIN ของคุณ สำรองข้อมูลโดยคุณ",
@@ -827,9 +824,9 @@
         "addressCopied": "คัดลอกที่อยู่แล้ว",
         "exportBackup": "ส่งออกข้อมูลสำรอง",
         "exportWarning": "นี่คือตัวเลือกการกู้คืนเดียวหากคุณสูญเสียอุปกรณ์",
-        "manageWallet": "จัดการวอลเล็ต",
+        "manageWallet": "จัดการกระเป๋ารางวัล",
         "manageWallets": "จัดการวอลเล็ตทั้งหมด",
-        "noWalletAccount": "ยังไม่มีข้อมูลวอลเล็ต",
+        "noWalletAccount": "ยังไม่มีข้อมูลกระเป๋ารางวัลของคุณ",
         "changePin": "เปลี่ยน PIN"
       },
       "accessMethods": {

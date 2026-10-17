@@ -28,19 +28,16 @@ jest.mock('../../i18n/useAppTranslation', () => {
     'dashboard.summaryCards.rbi.whatIsRbi': '¿Qué es el RBI?',
     'dashboard.summaryCards.rbi.explanation': 'RBI explanation',
     'dashboard.summaryCards.rbi.fullDocumentation': 'Full documentation',
-    'dashboard.summaryCards.atn.title': 'Mis ATN',
-    'dashboard.summaryCards.atn.subtitle': 'Tus tokens regenerativos',
-    'dashboard.summaryCards.atn.availableLabel': 'ATN disponibles',
-    'dashboard.summaryCards.atn.availableDesc': 'Listos para usar',
-    'dashboard.summaryCards.atn.stackingLabel': 'ATN en stacking',
-    'dashboard.summaryCards.atn.stackingDesc': 'Participando en proyectos',
-    'dashboard.summaryCards.atn.totalLabel': 'ATN total',
-    'dashboard.summaryCards.atn.primaryWalletLabel': 'Wallet principal',
+    'dashboard.summaryCards.atn.title': 'Mis ATN y recompensas regenerativas',
+    'dashboard.summaryCards.atn.subtitle': 'Tus saldos de recompensas',
+    'dashboard.summaryCards.atn.assetName': 'ATN',
+    'dashboard.summaryCards.atn.primaryWalletLabel': 'Billetera de recompensas principal',
     'dashboard.summaryCards.atn.primaryWalletMeta': 'Interna',
+    'dashboard.summaryCards.atn.redeemAction': 'Redimir y operar',
     'dashboard.summaryCards.comingSoon': 'Próximamente',
-    'wallet.createButton': 'Create Alternun wallet',
-    'wallet.manageWallet': 'Manage wallet',
-    'wallet.noWalletAccount': 'No wallet data yet',
+    'wallet.createButton': 'Crear billetera de recompensas',
+    'wallet.manageWallet': 'Gestionar billetera de recompensas',
+    'wallet.noWalletAccount': 'Aún no hay datos de tu billetera de recompensas',
   };
 
   return {
@@ -190,7 +187,7 @@ describe('DashboardSummaryCards render', () => {
 
     const narrowStatus = getElementByTestId(renderState.container, 'dashboard-rbi-status');
     const narrowMetric = getElementByTestId(renderState.container, 'dashboard-rbi-estimated-pool');
-    const narrowAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-available');
+    const narrowAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-asset-atn');
 
     expect(narrowStatus.className).not.toBe('');
     expect(narrowMetric.className).not.toBe('');
@@ -212,7 +209,7 @@ describe('DashboardSummaryCards render', () => {
 
     const wideStatus = getElementByTestId(renderState.container, 'dashboard-rbi-status');
     const wideMetric = getElementByTestId(renderState.container, 'dashboard-rbi-estimated-pool');
-    const wideAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-available');
+    const wideAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-asset-atn');
 
     expect(wideStatus.className).toBe(narrowStatus.className);
     expect(wideMetric.className).not.toBe(narrowMetric.className);
@@ -264,6 +261,59 @@ describe('DashboardSummaryCards render', () => {
     expect(renderState.container.textContent).toContain('Proyección RBI');
   });
 
+  it('renders ATN first, appends reward assets, and keeps future actions disabled', () => {
+    mockWindowDimensions(1024);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: false,
+        signedIn: false,
+        airsBalance: null,
+        rewardAssets: [
+          {
+            id: 'future-reward',
+            name: 'Recompensa futura',
+            value: '—',
+            icon: React.createElement(ReactNative.View),
+          },
+          {
+            id: 'atn',
+            name: 'ATN',
+            value: null,
+            icon: React.createElement(ReactNative.View),
+          },
+        ],
+      })
+    );
+
+    const assetRows = Array.from(
+      renderState.container.querySelectorAll<HTMLElement>('[data-testid^="dashboard-atn-asset-"]')
+    );
+    expect(assetRows.map((row) => row.dataset.testid)).toEqual([
+      'dashboard-atn-asset-atn',
+      'dashboard-atn-asset-future-reward',
+    ]);
+    expect(assetRows[0]?.textContent).toContain('Próximamente');
+    expect(renderState.container.textContent).toContain('Recompensa futura');
+    expect(renderState.container.textContent).toContain('Mis ATN y recompensas regenerativas');
+    expect(
+      renderState.container.querySelector('[data-testid="dashboard-atn-stacking"]')
+    ).toBeNull();
+    expect(renderState.container.textContent).not.toContain('dashboard.summaryCards.atn.stacking');
+    expect(renderState.container.textContent).not.toContain(
+      'dashboard.summaryCards.atn.totalLabel'
+    );
+    expect(assetRows[0]?.querySelector('[role="img"][aria-label="ATN"]')).not.toBeNull();
+
+    const redeemAction = getElementByTestId(renderState.container, 'dashboard-atn-redeem-action');
+    expect(redeemAction.getAttribute('aria-disabled')).toBe('true');
+    expect(redeemAction.textContent).toContain('Redimir y operar');
+    expect(redeemAction.textContent).toContain('Próximamente');
+    expect(renderState.container.textContent).toContain('Billetera de recompensas principal');
+    expect(renderState.container.textContent).toContain('Crear billetera de recompensas');
+    expect(renderState.container.textContent?.toLowerCase()).not.toContain('wallet');
+  });
+
   it('loads wallet and leaderboard state when signed in and expands the RBI help panel', async () => {
     mockWindowDimensions(375);
     const walletAccount = createWalletAccount();
@@ -298,10 +348,12 @@ describe('DashboardSummaryCards render', () => {
       await flushEffects();
     });
 
-    expect(renderState.container.textContent).toContain('Manage wallet');
+    expect(renderState.container.textContent).toContain('Gestionar billetera de recompensas');
     expect(renderState.container.textContent).toContain('0x123456...345678');
     expect(renderState.container.textContent).toContain('27');
-    expect(renderState.container.textContent).not.toContain('No wallet data yet');
+    expect(renderState.container.textContent).not.toContain(
+      'Aún no hay datos de tu billetera de recompensas'
+    );
 
     clickElementByText(renderState.container, '¿Qué es el RBI?');
     expect(renderState.container.textContent).toContain('RBI explanation');
@@ -311,7 +363,7 @@ describe('DashboardSummaryCards render', () => {
       'https://docs.alternun.io/docs/tutorial-basics/airs-tu-huella-regenerativa'
     );
 
-    clickElementByText(renderState.container, 'Manage wallet');
+    clickElementByText(renderState.container, 'Gestionar billetera de recompensas');
     expect(navigationCalls).toContain('mi-perfil:wallet');
   });
 });

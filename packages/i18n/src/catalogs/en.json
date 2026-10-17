@@ -284,15 +284,12 @@
           "fullDocumentation": "Full Documentation"
         },
         "atn": {
-          "title": "My ATN",
-          "subtitle": "Your regenerative tokens",
-          "availableLabel": "Available ATN",
-          "availableDesc": "Ready to use",
-          "stackingLabel": "ATN in stacking",
-          "stackingDesc": "Participating in projects",
-          "totalLabel": "Total ATN",
-          "primaryWalletLabel": "Primary wallet",
-          "primaryWalletMeta": "Internal"
+          "title": "My ATN and regenerative rewards",
+          "subtitle": "Your rewards balances",
+          "assetName": "ATN",
+          "primaryWalletLabel": "Primary rewards wallet",
+          "primaryWalletMeta": "Internal",
+          "redeemAction": "Redeem and transact"
         }
       }
     },
@@ -811,7 +808,7 @@
         "notConnected": "Not connected",
         "createTitle": "Create your Alternun wallet",
         "createSubtitle": "Your multichain key — Ethereum, Bitcoin and Solana in one place.",
-        "createButton": "Create Alternun wallet",
+        "createButton": "Create rewards wallet",
         "createFeature1": "Non-custodial: only you hold the keys",
         "createFeature2": "Multi-chain: EVM, Bitcoin and Solana",
         "createFeature3": "Encrypted with your PIN, backed up by you",
@@ -828,9 +825,9 @@
         "exportBackup": "Export backup",
         "changePin": "Change PIN",
         "exportWarning": "This is your only recovery option if you lose your device.",
-        "manageWallet": "Manage wallet",
+        "manageWallet": "Manage rewards wallet",
         "manageWallets": "Manage wallets",
-        "noWalletAccount": "No wallet data yet"
+        "noWalletAccount": "There is no data for your rewards wallet yet"
       },
       "accessMethods": {
         "current": "Current: {{method}}",

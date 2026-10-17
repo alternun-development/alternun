@@ -8,14 +8,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import {
-  ChevronDown,
-  ChevronRight,
-  Coins,
-  TrendingUp,
-  Wallet,
-  type LucideProps,
-} from 'lucide-react-native';
+import { ChevronDown, ChevronRight, Coins, Wallet, type LucideProps } from 'lucide-react-native';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
@@ -24,7 +17,6 @@ import { resolveWalletSummaryState } from './walletSummary';
 import { getDashboardSummaryCardsLayout } from './dashboardSummaryCardsLayout';
 
 const CoinsIcon = Coins as React.FC<LucideProps>;
-const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
@@ -33,12 +25,20 @@ interface AuthClient {
   getSessionToken(): Promise<string | null>;
 }
 
+export interface RewardAsset {
+  id: string;
+  name: string;
+  value?: number | string | null;
+  icon: React.ReactNode;
+}
+
 interface DashboardSummaryCardsProps {
   isDark: boolean;
   onNavigate?: (key: string) => void;
   client?: AuthClient;
   signedIn?: boolean;
   airsBalance?: number | null;
+  rewardAssets?: readonly RewardAsset[];
 }
 
 function getPalette(isDark: boolean): {
@@ -478,6 +478,7 @@ function ATNCard({
   dense = false,
   onNavigate,
   walletAccount,
+  assets,
   minHeight,
 }: {
   p: ReturnType<typeof getPalette>;
@@ -486,6 +487,7 @@ function ATNCard({
   dense?: boolean;
   onNavigate?: (key: string) => void;
   walletAccount?: WalletAccountRecord | null;
+  assets?: readonly RewardAsset[];
   minHeight?: number;
 }): React.JSX.Element {
   const useDenseLayout = dense;
@@ -497,6 +499,19 @@ function ATNCard({
   const walletAddress = walletSummaryState.address
     ? truncateMiddle(walletSummaryState.address)
     : null;
+  const defaultAtnAsset: RewardAsset = {
+    id: 'atn',
+    name: t.t('dashboard.summaryCards.atn.assetName'),
+    value: null,
+    icon: <CoinsIcon size={18} color={p.accent} />,
+  };
+  const suppliedAssets = assets ?? [];
+  const suppliedAtn = suppliedAssets.find((asset) => asset.id.toLowerCase() === 'atn');
+  const orderedAssets = [
+    suppliedAtn ?? defaultAtnAsset,
+    ...suppliedAssets.filter((asset) => asset.id.toLowerCase() !== 'atn'),
+  ];
+  const redeemActionLabel = t.t('dashboard.summaryCards.atn.redeemAction');
 
   return (
     <SummaryCard
@@ -514,106 +529,53 @@ function ATNCard({
         mobile={mobile}
       />
 
-      <View
-        testID='dashboard-atn-available'
-        style={[
-          styles.tokenRow,
-          compact && styles.tokenRowCompact,
-          useDenseLayout && styles.tokenRowDense,
-          mobile && styles.tokenRowMobile,
-          mobile && { backgroundColor: p.panelBg, borderColor: p.panelBorder },
-        ]}
-      >
-        <View style={styles.tokenLabelBlock}>
-          <Text
-            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
-          >
-            {t.t('dashboard.summaryCards.atn.availableLabel')}
-          </Text>
-          <Text
-            style={[
-              styles.tokenSubLabel,
-              compact && styles.tokenSubLabelCompact,
-              { color: p.muted },
-            ]}
-          >
-            {t.t('dashboard.summaryCards.atn.availableDesc')}
-          </Text>
-        </View>
-        <Text
-          style={[
-            styles.tokenValue,
-            compact && styles.tokenValueCompact,
-            useDenseLayout && styles.tokenValueDense,
-            { color: p.title },
-          ]}
-        >
-          {comingSoonLabel}
-        </Text>
-      </View>
-      <Divider p={p} compact={compact} />
-      <View
-        testID='dashboard-atn-stacking'
-        style={[
-          styles.tokenRow,
-          compact && styles.tokenRowCompact,
-          useDenseLayout && styles.tokenRowDense,
-          mobile && styles.tokenRowMobile,
-          mobile && { backgroundColor: p.panelBg, borderColor: p.panelBorder },
-        ]}
-      >
-        <View style={styles.tokenLabelBlock}>
-          <Text
-            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
-          >
-            {t.t('dashboard.summaryCards.atn.stackingLabel')}
-          </Text>
-          <Text
-            style={[
-              styles.tokenSubLabel,
-              compact && styles.tokenSubLabelCompact,
-              { color: p.muted },
-            ]}
-          >
-            {t.t('dashboard.summaryCards.atn.stackingDesc')}
-          </Text>
-        </View>
-        <Text
-          style={[
-            styles.tokenValue,
-            compact && styles.tokenValueCompact,
-            useDenseLayout && styles.tokenValueDense,
-            { color: p.title },
-          ]}
-        >
-          {comingSoonLabel}
-        </Text>
-      </View>
-
-      <View
-        style={[
-          styles.totalRow,
-          compact && styles.totalRowCompact,
-          useDenseLayout && styles.totalRowDense,
-          mobile && styles.totalRowMobile,
-        ]}
-      >
-        <Text style={[styles.totalLabel, compact && styles.totalLabelCompact, { color: p.title }]}>
-          {t.t('dashboard.summaryCards.atn.totalLabel')}
-        </Text>
-        <View style={[styles.totalValueWrap, useDenseLayout && styles.totalValueWrapDense]}>
-          <TrendingUpIcon size={16} color={p.accent} />
-          <Text
-            style={[
-              styles.totalValue,
-              compact && styles.totalValueCompact,
-              useDenseLayout && styles.totalValueDense,
-              { color: p.accentStrong },
-            ]}
-          >
-            {comingSoonLabel}
-          </Text>
-        </View>
+      <View style={[styles.assetList, compact && styles.assetListCompact]}>
+        {orderedAssets.map((asset, index) => (
+          <React.Fragment key={asset.id}>
+            <View
+              testID={`dashboard-atn-asset-${asset.id}`}
+              style={[
+                styles.tokenRow,
+                compact && styles.tokenRowCompact,
+                useDenseLayout && styles.tokenRowDense,
+                mobile && styles.tokenRowMobile,
+                mobile && { backgroundColor: p.panelBg, borderColor: p.panelBorder },
+              ]}
+            >
+              <View style={styles.tokenIdentity}>
+                <View
+                  accessibilityRole='image'
+                  accessibilityLabel={asset.name}
+                  style={[styles.tokenIcon, { backgroundColor: p.accentSoft }]}
+                >
+                  {asset.icon}
+                </View>
+                <Text
+                  style={[
+                    styles.tokenLabel,
+                    compact && styles.tokenLabelCompact,
+                    { color: p.title },
+                  ]}
+                >
+                  {asset.name}
+                </Text>
+              </View>
+              <Text
+                style={[
+                  styles.tokenValue,
+                  compact && styles.tokenValueCompact,
+                  useDenseLayout && styles.tokenValueDense,
+                  { color: p.title },
+                ]}
+              >
+                {typeof asset.value === 'number'
+                  ? asset.value.toLocaleString()
+                  : asset.value ?? comingSoonLabel}
+              </Text>
+            </View>
+            {index < orderedAssets.length - 1 && <Divider p={p} compact={compact} />}
+          </React.Fragment>
+        ))}
       </View>
 
       <View
@@ -657,7 +619,11 @@ function ATNCard({
         >
           {walletSummaryState.mode === 'ready' && walletAddress
             ? walletAddress
-            : t.t('wallet.noWalletAccount', undefined, 'No wallet data yet')}
+            : t.t(
+                'wallet.noWalletAccount',
+                undefined,
+                'There is no data for your rewards wallet yet'
+              )}
         </Text>
 
         <View style={[styles.walletLinkDivider, { backgroundColor: p.accent, opacity: 0.18 }]} />
@@ -677,14 +643,30 @@ function ATNCard({
                 ]}
               >
                 {walletSummaryState.mode === 'ready'
-                  ? t.t('wallet.manageWallet', undefined, 'Manage wallet')
-                  : t.t('wallet.createButton', undefined, 'Create Alternun wallet')}
+                  ? t.t('wallet.manageWallet', undefined, 'Manage rewards wallet')
+                  : t.t('wallet.createButton', undefined, 'Create rewards wallet')}
               </Text>
             </View>
             <ChevronRightIcon size={14} color={p.accent} />
           </View>
         </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        testID='dashboard-atn-redeem-action'
+        accessibilityRole='button'
+        accessibilityLabel={`${redeemActionLabel}. ${comingSoonLabel}`}
+        accessibilityState={{ disabled: true }}
+        disabled
+        style={[
+          styles.redeemAction,
+          compact && styles.redeemActionCompact,
+          { backgroundColor: p.panelBg, borderColor: p.panelBorder },
+        ]}
+      >
+        <Text style={[styles.redeemActionText, { color: p.copy }]}>{redeemActionLabel}</Text>
+        <Text style={[styles.redeemActionStatus, { color: p.muted }]}>{comingSoonLabel}</Text>
+      </TouchableOpacity>
     </SummaryCard>
   );
 }
@@ -695,6 +677,7 @@ export default function DashboardSummaryCards({
   client,
   signedIn,
   airsBalance,
+  rewardAssets,
 }: DashboardSummaryCardsProps): React.JSX.Element {
   const p = getPalette(isDark);
   const { width, fontScale = 1 } = useWindowDimensions();
@@ -810,6 +793,7 @@ export default function DashboardSummaryCards({
             dense={isDenseAtnCard}
             onNavigate={onNavigate}
             walletAccount={walletAccount}
+            assets={rewardAssets}
             minHeight={desktopMinHeight}
           />
         </View>
@@ -1209,6 +1193,14 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
 
+  assetList: {
+    gap: 10,
+    marginBottom: 16,
+  },
+  assetListCompact: {
+    gap: 8,
+    marginBottom: 12,
+  },
   tokenRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1222,7 +1214,7 @@ const styles = StyleSheet.create({
   tokenRowDense: {
     flexDirection: 'column',
     alignItems: 'flex-start',
-    gap: 4,
+    gap: 8,
   },
   tokenRowMobile: {
     borderWidth: 1,
@@ -1231,10 +1223,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 11,
   },
-  tokenLabelBlock: {
+  tokenIdentity: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
-    gap: 3,
+    gap: 10,
     minWidth: 0,
+  },
+  tokenIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    flexShrink: 0,
   },
   tokenLabel: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -1246,17 +1248,6 @@ const styles = StyleSheet.create({
   tokenLabelCompact: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
-  },
-  tokenSubLabel: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '500',
-  },
-  tokenSubLabelCompact: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 11,
-    lineHeight: 14,
   },
   tokenValue: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -1274,67 +1265,7 @@ const styles = StyleSheet.create({
   },
   tokenValueDense: {
     textAlign: 'left',
-  },
-  totalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    marginBottom: 16,
-  },
-  totalRowCompact: {
-    marginTop: 12,
-    marginBottom: 12,
-  },
-  totalRowDense: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 6,
-  },
-  totalRowMobile: {
-    borderRadius: 14,
-    marginTop: 12,
-    marginBottom: 12,
-    paddingHorizontal: 4,
-    paddingVertical: 4,
-  },
-  totalLabel: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 17,
-    fontWeight: '900',
-    letterSpacing: -0.3,
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  totalLabelCompact: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 14,
-  },
-  totalValueWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  totalValueWrapDense: {
-    justifyContent: 'flex-start',
-  },
-  totalValue: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 26,
-    fontWeight: '900',
-    letterSpacing: -0.9,
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  totalValueCompact: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 18,
-    letterSpacing: -0.4,
-  },
-  totalValueDense: {
-    textAlign: 'left',
+    marginLeft: 46,
   },
   walletPanel: {
     borderWidth: 1,
@@ -1447,5 +1378,35 @@ const styles = StyleSheet.create({
   walletLinkTextCompact: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
+  },
+  redeemAction: {
+    width: '100%',
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    marginTop: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    opacity: 0.72,
+  },
+  redeemActionCompact: {
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  redeemActionText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 14,
+    fontWeight: '800',
+    flexShrink: 1,
+  },
+  redeemActionStatus: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 12,
+    fontWeight: '700',
+    flexShrink: 0,
   },
 });

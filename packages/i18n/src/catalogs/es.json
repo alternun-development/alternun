@@ -284,15 +284,12 @@
           "fullDocumentation": "Documentación completa"
         },
         "atn": {
-          "title": "Mis ATN",
-          "subtitle": "Tus tokens regenerativos",
-          "availableLabel": "ATN disponibles",
-          "availableDesc": "Listos para usar",
-          "stackingLabel": "ATN en stacking",
-          "stackingDesc": "Participando en proyectos",
-          "totalLabel": "ATN total",
-          "primaryWalletLabel": "Wallet principal",
-          "primaryWalletMeta": "Interna"
+          "title": "Mis ATN y recompensas regenerativas",
+          "subtitle": "Tus saldos de recompensas",
+          "assetName": "ATN",
+          "primaryWalletLabel": "Billetera de recompensas principal",
+          "primaryWalletMeta": "Interna",
+          "redeemAction": "Redimir y operar"
         }
       }
     },
@@ -811,7 +808,7 @@
         "notConnected": "No conectada",
         "createTitle": "Crea tu wallet Alternun",
         "createSubtitle": "Tu llave multichain — Ethereum, Bitcoin y Solana en un solo lugar.",
-        "createButton": "Crear wallet Alternun",
+        "createButton": "Crear billetera de recompensas",
         "createFeature1": "Sin custodia: solo tú tienes las llaves",
         "createFeature2": "Multichain: EVM, Bitcoin y Solana",
         "createFeature3": "Cifrada con tu PIN, respaldada por ti",
@@ -827,9 +824,9 @@
         "addressCopied": "Dirección copiada",
         "exportBackup": "Exportar respaldo",
         "exportWarning": "Esta es tu única opción de recuperación si pierdes tu dispositivo.",
-        "manageWallet": "Gestionar wallet",
+        "manageWallet": "Gestionar billetera de recompensas",
         "manageWallets": "Gestionar wallets",
-        "noWalletAccount": "Sin datos de wallet aún",
+        "noWalletAccount": "Aún no hay datos de tu billetera de recompensas",
         "changePin": "Cambiar PIN"
       },
       "accessMethods": {
