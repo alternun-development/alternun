@@ -61,3 +61,33 @@ test('activity writes fail closed when the internal API key is not configured', 
     else process.env.ACTIVITY_INTERNAL_API_KEY = originalKey;
   }
 });
+
+test('activity writes fail closed when only the public Supabase key is configured', async () => {
+  const originalEnv = {
+    ACTIVITY_INTERNAL_API_KEY: process.env.ACTIVITY_INTERNAL_API_KEY,
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+  };
+
+  process.env.ACTIVITY_INTERNAL_API_KEY = 'internal-key';
+  process.env.SUPABASE_URL = 'https://supabase.example';
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env.SUPABASE_ANON_KEY = 'anon-key';
+
+  try {
+    await assert.rejects(
+      () =>
+        new ActivityService().createActivity(
+          { userId: 'user-1', type: 'impact', message: 'test' },
+          'internal-key'
+        ),
+      /Supabase service-role key is configured/
+    );
+  } finally {
+    for (const [key, value] of Object.entries(originalEnv)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+});
