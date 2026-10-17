@@ -1,4 +1,9 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 export type ActivityVisibility = 'public' | 'followers' | 'private';
 
@@ -316,8 +321,9 @@ export class ActivityService {
 
     const cfg = resolveSupabaseConfig();
     if (!cfg) {
-      this.logger.warn('Skipping activity write because Supabase is not configured.');
-      return { ok: true };
+      throw new ServiceUnavailableException(
+        'Activity writes are disabled until the Supabase service-role key is configured.'
+      );
     }
 
     const res = await fetch(`${cfg.url}/rest/v1/user_activity`, {
