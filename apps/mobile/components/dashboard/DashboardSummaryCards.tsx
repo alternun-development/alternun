@@ -17,6 +17,7 @@ import { listWalletAccounts, type WalletAccountRecord } from '../wallet/walletAp
 import { resolveWalletSummaryState } from './walletSummary';
 import { getDashboardSummaryCardsLayout } from './dashboardSummaryCardsLayout';
 import { calculateRbiProjection } from './rbiProjection';
+import { MetricInfoTooltip } from './MetricInfoTooltip';
 import type { DashboardSummaryCardsProps, RewardAsset } from './types';
 
 const CoinsIcon = Coins as React.FC<LucideProps>;
@@ -42,6 +43,9 @@ function getPalette(isDark: boolean): {
   panelBorder: string;
   iconBg: string;
   iconColor: string;
+  factorTrack: string;
+  factorTick: string;
+  factorText: string;
 } {
   return isDark
     ? {
@@ -62,6 +66,9 @@ function getPalette(isDark: boolean): {
         panelBorder: 'rgba(128,146,184,0.18)',
         iconBg: 'rgba(58,78,124,0.28)',
         iconColor: '#9FB2FF',
+        factorTrack: '#71809E',
+        factorTick: '#F3F6FC',
+        factorText: '#D0D8E8',
       }
     : {
         cardBg: '#FBFCFE',
@@ -81,6 +88,9 @@ function getPalette(isDark: boolean): {
         panelBorder: 'rgba(119,126,155,0.22)',
         iconBg: 'rgba(49,58,145,0.08)',
         iconColor: '#313A91',
+        factorTrack: '#64748B',
+        factorTick: '#FFFFFF',
+        factorText: '#475569',
       };
 }
 
@@ -228,6 +238,7 @@ function RbiStatValue({
 }
 
 function RBICard({
+  isDark,
   p,
   compact = false,
   mobile = false,
@@ -240,6 +251,7 @@ function RBICard({
   communityEligibleAirs,
   minHeight,
 }: {
+  isDark: boolean;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
   mobile?: boolean;
@@ -255,6 +267,7 @@ function RBICard({
   const [isExpanded, setIsExpanded] = useState(false);
   const useDenseLayout = dense;
   const t = useAppTranslation();
+  const metricInfoCloseLabel = t.t('dashboard.summaryCards.metricInfo.closeLabel');
   const metrics = calculateRbiProjection({
     airs: airsScore,
     participationFactor,
@@ -272,18 +285,21 @@ function RBICard({
       label: t.t('dashboard.summaryCards.rbi.eligibleAirs'),
       value: formatMetricValue(metrics.eligibleAirs),
       loading: airsScoreLoading && participationFactor != null,
+      tooltipDescription: t.t('dashboard.summaryCards.metricInfo.eligibleAirs'),
     },
     {
       testID: 'dashboard-rbi-eligible-users',
       label: t.t('dashboard.summaryCards.rbi.eligibleUsers'),
       value: typeof eligibleUsers === 'number' ? eligibleUsers.toLocaleString() : null,
       loading: eligibleUsersLoading,
+      tooltipDescription: t.t('dashboard.summaryCards.metricInfo.eligibleUsers'),
     },
     {
       testID: 'dashboard-rbi-aliquot',
       label: t.t('dashboard.summaryCards.rbi.aliquot'),
       value: metrics.aliquotPercent === null ? null : `${metrics.aliquotPercent.toFixed(2)} %`,
       loading: false,
+      tooltipDescription: t.t('dashboard.summaryCards.metricInfo.aliquot'),
     },
   ];
 
@@ -324,25 +340,45 @@ function RBICard({
         ]}
       >
         <View style={styles.factorHeader}>
-          <Text style={[styles.factorLabel, { color: p.copy }]}>FP</Text>
+          <View style={styles.metricLabelGroup}>
+            <Text style={[styles.factorLabel, { color: p.factorText }]}>FP</Text>
+            <MetricInfoTooltip
+              testID='dashboard-metric-info-participation-factor'
+              title={t.t('dashboard.summaryCards.rbi.subtitle')}
+              accessibilityLabel={t.t('dashboard.summaryCards.metricInfo.openLabel', {
+                metric: 'FP',
+              })}
+              description={t.t('dashboard.summaryCards.metricInfo.participationFactor')}
+              closeLabel={metricInfoCloseLabel}
+              isDark={isDark}
+            />
+          </View>
           <Text
             testID='dashboard-rbi-factor-value'
-            style={[styles.factorValueText, { color: factorAvailable ? p.title : p.muted }]}
+            style={[styles.factorValueText, { color: factorAvailable ? p.title : p.factorText }]}
           >
             {factorValueText}
           </Text>
         </View>
         <View style={styles.factorTrackArea}>
-          <View style={styles.factorGradientTrack}>
-            <Svg width='100%' height='100%' viewBox='0 0 100 12' preserveAspectRatio='none'>
-              <Defs>
-                <LinearGradient id='rbi-factor-gradient' x1='0%' y1='0%' x2='100%' y2='0%'>
-                  <Stop offset='0%' stopColor={factorAvailable ? '#D6534D' : p.muted} />
-                  <Stop offset='100%' stopColor={factorAvailable ? '#219A70' : p.muted} />
-                </LinearGradient>
-              </Defs>
-              <Rect width='100' height='12' rx='6' fill='url(#rbi-factor-gradient)' />
-            </Svg>
+          <View
+            testID='dashboard-rbi-factor-track'
+            style={[
+              styles.factorGradientTrack,
+              !factorAvailable && { backgroundColor: p.factorTrack },
+            ]}
+          >
+            {factorAvailable && (
+              <Svg width='100%' height='100%' viewBox='0 0 100 12' preserveAspectRatio='none'>
+                <Defs>
+                  <LinearGradient id='rbi-factor-gradient' x1='0%' y1='0%' x2='100%' y2='0%'>
+                    <Stop offset='0%' stopColor='#D6534D' />
+                    <Stop offset='100%' stopColor='#219A70' />
+                  </LinearGradient>
+                </Defs>
+                <Rect width='100' height='12' rx='6' fill='url(#rbi-factor-gradient)' />
+              </Svg>
+            )}
           </View>
           {PARTICIPATION_FACTOR_MARKS.map((mark) => (
             <View
@@ -351,7 +387,7 @@ function RBICard({
                 styles.factorTick,
                 {
                   left: `${mark}%`,
-                  backgroundColor: factorAvailable ? '#FFFFFF' : p.cardBg,
+                  backgroundColor: p.factorTick,
                 },
               ]}
             />
@@ -388,7 +424,12 @@ function RBICard({
                   },
               ]}
             >
-              <Text style={[styles.factorMarkLabel, { color: p.muted }]}>{mark} %</Text>
+              <Text
+                testID={`dashboard-rbi-factor-mark-label-${mark}`}
+                style={[styles.factorMarkLabel, { color: p.factorText }]}
+              >
+                {mark} %
+              </Text>
             </View>
           ))}
         </View>
@@ -408,9 +449,23 @@ function RBICard({
               mobile && { backgroundColor: p.panelBg, borderColor: p.panelBorder },
             ]}
           >
-            <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
-              {row.label}
-            </Text>
+            <View style={styles.metricLabelGroup}>
+              <Text
+                style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}
+              >
+                {row.label}
+              </Text>
+              <MetricInfoTooltip
+                testID={`dashboard-metric-info-${row.testID.replace('dashboard-rbi-', '')}`}
+                title={row.label}
+                accessibilityLabel={t.t('dashboard.summaryCards.metricInfo.openLabel', {
+                  metric: row.label,
+                })}
+                description={row.tooltipDescription}
+                closeLabel={metricInfoCloseLabel}
+                isDark={isDark}
+              />
+            </View>
             <RbiStatValue
               value={row.value}
               loading={row.loading}
@@ -525,15 +580,8 @@ function RBICard({
   );
 }
 
-function truncateMiddle(value: string, start = 8, end = 6): string {
-  if (value.length <= start + end + 3) {
-    return value;
-  }
-
-  return `${value.slice(0, start)}...${value.slice(-end)}`;
-}
-
 function ATNCard({
+  isDark,
   p,
   compact = false,
   mobile = false,
@@ -541,8 +589,8 @@ function ATNCard({
   onNavigate,
   walletAccount,
   assets,
-  minHeight,
 }: {
+  isDark: boolean;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
   mobile?: boolean;
@@ -550,7 +598,6 @@ function ATNCard({
   onNavigate?: (key: string) => void;
   walletAccount?: WalletAccountRecord | null;
   assets?: readonly RewardAsset[];
-  minHeight?: number;
 }): React.JSX.Element {
   const useDenseLayout = dense;
   const t = useAppTranslation();
@@ -558,9 +605,6 @@ function ATNCard({
   const primaryWalletLabel = t.t('dashboard.summaryCards.atn.primaryWalletLabel');
   const primaryWalletMeta = t.t('dashboard.summaryCards.atn.primaryWalletMeta');
   const walletSummaryState = resolveWalletSummaryState(walletAccount ?? null);
-  const walletAddress = walletSummaryState.address
-    ? truncateMiddle(walletSummaryState.address)
-    : null;
   const defaultAtnAsset: RewardAsset = {
     id: 'atn',
     name: t.t('dashboard.summaryCards.atn.assetName'),
@@ -574,22 +618,38 @@ function ATNCard({
     ...suppliedAssets.filter((asset) => asset.id.toLowerCase() !== 'atn'),
   ];
   const redeemActionLabel = t.t('dashboard.summaryCards.atn.redeemAction');
+  const metricInfoCloseLabel = t.t('dashboard.summaryCards.metricInfo.closeLabel');
 
   return (
-    <SummaryCard
-      p={p}
-      compact={compact}
-      mobile={mobile}
-      testID='dashboard-atn-card'
-      minHeight={minHeight}
-    >
-      <CardTitle
-        label={t.t('dashboard.summaryCards.atn.title')}
-        sub={t.t('dashboard.summaryCards.atn.subtitle')}
-        p={p}
-        compact={compact}
-        mobile={mobile}
-      />
+    <SummaryCard p={p} compact={compact} mobile={mobile} testID='dashboard-atn-card'>
+      <View testID='dashboard-atn-header' style={styles.atnHeader}>
+        <View style={styles.atnTitleWrap}>
+          <CardTitle
+            label={t.t('dashboard.summaryCards.atn.title')}
+            sub={t.t('dashboard.summaryCards.atn.subtitle')}
+            p={p}
+            compact={compact}
+            mobile={mobile}
+          />
+        </View>
+        <TouchableOpacity
+          testID='dashboard-atn-redeem-action'
+          accessibilityRole='button'
+          accessibilityLabel={`${redeemActionLabel}. ${comingSoonLabel}`}
+          accessibilityState={{ disabled: true }}
+          disabled
+          style={[
+            styles.redeemAction,
+            compact && styles.redeemActionCompact,
+            { backgroundColor: p.panelBg, borderColor: p.panelBorder },
+          ]}
+        >
+          <Text style={[styles.redeemActionText, { color: p.copy }]}>{redeemActionLabel}</Text>
+          <Text style={[styles.redeemActionStatus, { color: p.factorText }]}>
+            {comingSoonLabel}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={[styles.assetList, compact && styles.assetListCompact]}>
         {orderedAssets.map((asset, index) => (
@@ -612,15 +672,29 @@ function ATNCard({
                 >
                   {asset.icon}
                 </View>
-                <Text
-                  style={[
-                    styles.tokenLabel,
-                    compact && styles.tokenLabelCompact,
-                    { color: p.title },
-                  ]}
-                >
-                  {asset.name}
-                </Text>
+                <View style={styles.metricLabelGroup}>
+                  <Text
+                    style={[
+                      styles.tokenLabel,
+                      compact && styles.tokenLabelCompact,
+                      { color: p.title },
+                    ]}
+                  >
+                    {asset.name}
+                  </Text>
+                  {asset.id.toLowerCase() === 'atn' && (
+                    <MetricInfoTooltip
+                      testID='dashboard-metric-info-atn-balance'
+                      title={t.t('dashboard.summaryCards.metricInfo.atnBalanceTitle')}
+                      accessibilityLabel={t.t('dashboard.summaryCards.metricInfo.openLabel', {
+                        metric: t.t('dashboard.summaryCards.metricInfo.atnBalanceTitle'),
+                      })}
+                      description={t.t('dashboard.summaryCards.metricInfo.atnBalance')}
+                      closeLabel={metricInfoCloseLabel}
+                      isDark={isDark}
+                    />
+                  )}
+                </View>
               </View>
               <Text
                 style={[
@@ -670,24 +744,6 @@ function ATNCard({
             {primaryWalletMeta}
           </Text>
         </View>
-        <Text
-          numberOfLines={useDenseLayout ? 2 : 1}
-          style={[
-            styles.walletAddress,
-            useDenseLayout && styles.walletAddressDense,
-            compact && styles.walletAddressCompact,
-            { color: p.copy },
-          ]}
-        >
-          {walletSummaryState.mode === 'ready' && walletAddress
-            ? walletAddress
-            : t.t(
-                'wallet.noWalletAccount',
-                undefined,
-                'There is no data for your rewards wallet yet'
-              )}
-        </Text>
-
         <View style={[styles.walletLinkDivider, { backgroundColor: p.accent, opacity: 0.18 }]} />
 
         <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet')} activeOpacity={0.7}>
@@ -705,30 +761,14 @@ function ATNCard({
                 ]}
               >
                 {walletSummaryState.mode === 'ready'
-                  ? t.t('wallet.manageWallet', undefined, 'Manage rewards wallet')
-                  : t.t('wallet.createButton', undefined, 'Create rewards wallet')}
+                  ? t.t('profile.wallet.manageWallet')
+                  : t.t('profile.wallet.createButton')}
               </Text>
             </View>
             <ChevronRightIcon size={14} color={p.accent} />
           </View>
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        testID='dashboard-atn-redeem-action'
-        accessibilityRole='button'
-        accessibilityLabel={`${redeemActionLabel}. ${comingSoonLabel}`}
-        accessibilityState={{ disabled: true }}
-        disabled
-        style={[
-          styles.redeemAction,
-          compact && styles.redeemActionCompact,
-          { backgroundColor: p.panelBg, borderColor: p.panelBorder },
-        ]}
-      >
-        <Text style={[styles.redeemActionText, { color: p.copy }]}>{redeemActionLabel}</Text>
-        <Text style={[styles.redeemActionStatus, { color: p.muted }]}>{comingSoonLabel}</Text>
-      </TouchableOpacity>
     </SummaryCard>
   );
 }
@@ -838,6 +878,7 @@ export default function DashboardSummaryCards({
       >
         <View style={[styles.cardSlot, isMobile && styles.cardSlotMobile]}>
           <RBICard
+            isDark={isDark}
             p={p}
             compact={isCompactMobile}
             mobile={isMobile}
@@ -853,6 +894,7 @@ export default function DashboardSummaryCards({
         </View>
         <View style={[styles.cardSlot, isMobile && styles.cardSlotMobile]}>
           <ATNCard
+            isDark={isDark}
             p={p}
             compact={isCompactMobile}
             mobile={isMobile}
@@ -860,7 +902,6 @@ export default function DashboardSummaryCards({
             onNavigate={onNavigate}
             walletAccount={walletAccount}
             assets={rewardAssets}
-            minHeight={desktopMinHeight}
           />
         </View>
       </View>
@@ -1002,6 +1043,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 10,
+  },
+  metricLabelGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    flexShrink: 1,
+    minWidth: 0,
   },
   factorLabel: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -1319,6 +1367,17 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 16,
   },
+  atnHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    minWidth: 0,
+  },
+  atnTitleWrap: {
+    flex: 1,
+    minWidth: 0,
+  },
   assetListCompact: {
     gap: 8,
     marginBottom: 12,
@@ -1446,22 +1505,6 @@ const styles = StyleSheet.create({
   walletPanelMetaCompact: {
     fontSize: 12,
   },
-  walletAddress: {
-    fontSize: 15,
-    fontWeight: '500',
-    letterSpacing: -0.1,
-    minWidth: 0,
-    flexShrink: 1,
-    flexWrap: 'wrap',
-  },
-  walletAddressDense: {
-    fontSize: 14,
-    lineHeight: 18,
-  },
-  walletAddressCompact: {
-    fontSize: 13,
-    lineHeight: 17,
-  },
   walletLinkDivider: {
     height: 1,
     width: '100%',
@@ -1502,33 +1545,33 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   redeemAction: {
-    width: '100%',
+    maxWidth: 160,
     borderWidth: 1,
     borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    marginTop: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-    opacity: 0.72,
+    paddingHorizontal: 11,
+    paddingVertical: 9,
+    alignItems: 'flex-end',
+    gap: 3,
+    opacity: 0.78,
+    flexShrink: 1,
   },
   redeemActionCompact: {
-    marginTop: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    maxWidth: 132,
+    paddingHorizontal: 9,
+    paddingVertical: 8,
   },
   redeemActionText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
     fontWeight: '800',
     flexShrink: 1,
+    textAlign: 'right',
   },
   redeemActionStatus: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '700',
     flexShrink: 0,
+    textAlign: 'right',
   },
 });
