@@ -144,7 +144,7 @@ For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub release
 - Internal ops: [`docs/`](docs/)
 - API blueprint: [`docs/alternun_nestjs_fastify_openapi_blueprint.md`](docs/alternun_nestjs_fastify_openapi_blueprint.md)
 - Contribution workflow: [`docs/contribution-workflow.md`](docs/contribution-workflow.md)
-- Public docs site: [alternun-development.github.io](https://alternun-development.github.io)
+- Public docs site: [docs.alternun.io](https://docs.alternun.io)
 
 ## Contributing
 
