@@ -1,8 +1,11 @@
+import { marketplaceCopy } from '../marketplace/copy';
+
 export interface AdminResourceDefinition {
   name: string;
   list: string;
   show?: string;
   surfaces: readonly ('internal' | 'partner')[];
+  showInNavigation?: boolean;
   meta: {
     title: string;
     description: string;
@@ -21,6 +24,31 @@ export const adminResources: AdminResourceDefinition[] = [
       description: 'Platform health, quick links, and operational visibility.',
       endpoint: '/v1/health',
       emptyState: 'Dashboard metrics will appear as backend observability endpoints land.',
+    },
+  },
+  {
+    name: 'marketplace-projects',
+    list: '/marketplace',
+    show: '/marketplace/projects/:id',
+    surfaces: ['internal', 'partner'],
+    meta: {
+      title: marketplaceCopy.navigation.title,
+      description: marketplaceCopy.navigation.description,
+      endpoint: '/v1/admin/projects',
+      emptyState: marketplaceCopy.projectsResource.empty,
+    },
+  },
+  {
+    name: 'marketplace-enterprises',
+    list: '/marketplace/enterprises',
+    show: '/marketplace/enterprises/:id',
+    surfaces: ['internal', 'partner'],
+    showInNavigation: false,
+    meta: {
+      title: marketplaceCopy.enterprisesResource.title,
+      description: marketplaceCopy.enterprisesResource.description,
+      endpoint: '/v1/admin/enterprises',
+      emptyState: marketplaceCopy.enterprisesResource.empty,
     },
   },
   {

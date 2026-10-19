@@ -44,7 +44,12 @@ cp "${repo_root}/apps/docs/src/pages/privacy.md" dist-lambda/legal/privacy.en.md
 cp "${repo_root}/apps/docs/src/pages/terms.md"   dist-lambda/legal/terms.en.md
 for locale in es th; do
   for doc in privacy terms; do
-    src="${repo_root}/apps/docs/i18n/${locale}/docusaurus-plugin-content-docs/current/${doc}.md"
+    if [ "$doc" = "terms" ]; then
+      localized_dir="docusaurus-plugin-content-pages"
+    else
+      localized_dir="docusaurus-plugin-content-docs/current"
+    fi
+    src="${repo_root}/apps/docs/i18n/${locale}/${localized_dir}/${doc}.md"
     [ -f "$src" ] && cp "$src" "dist-lambda/legal/${doc}.${locale}.md" || true
   done
 done

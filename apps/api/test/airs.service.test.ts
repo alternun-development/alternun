@@ -36,16 +36,12 @@ test('AirsService.leaderboard resolves the leaderboard page from RPC payload', a
 
   try {
     process.env.SUPABASE_URL = 'https://supabase.example';
-    process.env.SUPABASE_ANON_KEY = 'anon-key';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
     process.env.AUTH_BETTER_AUTH_URL = 'https://auth.example';
 
     global.fetch = createFetchQueue(
       [
-        createJsonResponse({
-          user: {
-            id: 'user-123',
-          },
-        }),
+        createJsonResponse({ id: 'user-123' }),
         createJsonResponse([
           {
             rank: 1,
@@ -93,16 +89,12 @@ test('AirsService.activity applies filters and maps RPC payload', async () => {
 
   try {
     process.env.SUPABASE_URL = 'https://supabase.example';
-    process.env.SUPABASE_ANON_KEY = 'anon-key';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
     process.env.AUTH_BETTER_AUTH_URL = 'https://auth.example';
 
     global.fetch = createFetchQueue(
       [
-        createJsonResponse({
-          user: {
-            id: 'user-123',
-          },
-        }),
+        createJsonResponse({ id: 'user-123' }),
         createJsonResponse({
           total_count: 8,
           page: 1,

@@ -275,24 +275,24 @@
         },
         "rbi": {
           "title": "Proyección RBI",
-          "subtitle": "Ingreso estimado próximo ciclo",
-          "estimatedPool": "Pool RBI estimado:",
-          "eligibleUsers": "Usuarios elegibles:",
-          "airsScore": "Tu puntaje Airs:",
+          "subtitle": "Factor de participación (FP)",
+          "eligibleAirs": "AIRS equivalentes",
+          "eligibleUsers": "Usuarios elegibles",
+          "aliquot": "Alícuota",
+          "notAvailable": "Aún no disponible",
+          "participationNote": "Para entender cómo funciona el FP, lee los",
+          "termsAndConditions": "Términos y Condiciones",
           "whatIsRbi": "¿Qué es el RBI?",
           "explanation": "El Regenerative Basic Income es un ingreso periódico que se distribuye entre los usuarios de Alternun que contribuyen al ecosistema.\n\nNo depende de cuánto dinero tengas, sino de tu participación, tu compromiso y tu impacto, medidos a través de tu puntaje AIRS.\n\nCada vez que Alternun facilita una compensación, una venta desde el compensation pool o una actividad económica dentro de la plataforma, una parte de ese valor se destina directamente al fondo del RBI.",
           "fullDocumentation": "Documentación completa"
         },
         "atn": {
-          "title": "Mis ATN",
-          "subtitle": "Tus tokens regenerativos",
-          "availableLabel": "ATN disponibles",
-          "availableDesc": "Listos para usar",
-          "stackingLabel": "ATN en stacking",
-          "stackingDesc": "Participando en proyectos",
-          "totalLabel": "ATN total",
-          "primaryWalletLabel": "Wallet principal",
-          "primaryWalletMeta": "Interna"
+          "title": "Mis ATN y recompensas regenerativas",
+          "subtitle": "Tus saldos de recompensas",
+          "assetName": "ATN",
+          "primaryWalletLabel": "Billetera de recompensas principal",
+          "primaryWalletMeta": "Interna",
+          "redeemAction": "Redimir y operar"
         }
       }
     },
@@ -811,7 +811,7 @@
         "notConnected": "No conectada",
         "createTitle": "Crea tu wallet Alternun",
         "createSubtitle": "Tu llave multichain — Ethereum, Bitcoin y Solana en un solo lugar.",
-        "createButton": "Crear wallet Alternun",
+        "createButton": "Crear billetera de recompensas",
         "createFeature1": "Sin custodia: solo tú tienes las llaves",
         "createFeature2": "Multichain: EVM, Bitcoin y Solana",
         "createFeature3": "Cifrada con tu PIN, respaldada por ti",
@@ -827,9 +827,9 @@
         "addressCopied": "Dirección copiada",
         "exportBackup": "Exportar respaldo",
         "exportWarning": "Esta es tu única opción de recuperación si pierdes tu dispositivo.",
-        "manageWallet": "Gestionar wallet",
+        "manageWallet": "Gestionar billetera de recompensas",
         "manageWallets": "Gestionar wallets",
-        "noWalletAccount": "Sin datos de wallet aún",
+        "noWalletAccount": "Aún no hay datos de tu billetera de recompensas",
         "changePin": "Cambiar PIN"
       },
       "accessMethods": {
@@ -1040,9 +1040,8 @@
       "marketplace": "MERCADO DE PROYECTOS AIRS",
       "heroTitle": "Explora donde tu energía se vuelve impacto.",
       "live": "EN VIVO",
-      "presentation": "PRESENTACIÓN DEL PROYECTO",
-      "presentationTitle": "Presentación del proyecto Eco Turismo",
-      "launchProject": "PROYECTO DE LANZAMIENTO",
+      "featured": "PROYECTO DESTACADO",
+      "featuredProject": "PROYECTO DESTACADO",
       "heroDescription": "Conoce la propuesta y encuentra la forma de sumar tu talento, red o experiencia.",
       "collaborate": "Quiero colaborar",
       "openMap": "ABRIMOS EL MAPA",
@@ -1057,11 +1056,80 @@
       "productive": "PRODUCTIVO",
       "waysToCollaborate": "Formas de colaborar",
       "participateAndEarn": "Ver cómo participar y ganar AIRS",
+      "directory": {
+        "label": "Elige qué explorar",
+        "projects": "Proyectos",
+        "enterprises": "Empresas"
+      },
+      "enterprises": {
+        "eyebrow": "EMPRESAS",
+        "heading": "Empresas que generan impacto",
+        "intro": "Conoce las organizaciones detrás de los proyectos publicados.",
+        "projectCount": "{{count}} proyectos publicados",
+        "loading": "Cargando empresas…",
+        "empty": "Aún no hay empresas disponibles.",
+        "error": "No se pudieron cargar las empresas.",
+        "retry": "Reintentar",
+        "detail": {
+          "back": "Volver a empresas",
+          "loading": "Cargando empresa…",
+          "unavailable": "Empresa no disponible",
+          "error": "No se pudo cargar la empresa.",
+          "website": "Visitar sitio web",
+          "projects": "Proyectos publicados"
+        }
+      },
       "filters": {
         "all": "Todos",
-        "active": "Activos",
-        "productive": "Productivos",
-        "conservation": "Conservación"
+        "active": "Activos"
+      },
+      "categories": {
+        "hospitality_ecotourism": "Hospitalidad y ecoturismo",
+        "conservation": "Conservación",
+        "productive_enterprise": "Empresa productiva",
+        "regenerative_agriculture": "Agricultura regenerativa",
+        "community": "Comunidad",
+        "education": "Educación"
+      },
+      "marketplaceState": {
+        "loading": "Cargando proyectos…",
+        "empty": "Aún no hay proyectos publicados.",
+        "error": "No se pudieron cargar los proyectos.",
+        "retry": "Reintentar"
+      },
+      "detail": {
+        "back": "Volver a proyectos",
+        "loading": "Cargando proyecto…",
+        "unavailable": "Proyecto no disponible",
+        "error": "No se pudo cargar el proyecto.",
+        "retry": "Reintentar",
+        "waysToContribute": "Formas de contribuir",
+        "gallery": "Galería",
+        "video": "Video",
+        "openVideo": "Ver video",
+        "openPresentation": "Ver presentación",
+        "comments": {
+          "title": "Comentarios",
+          "loading": "Cargando comentarios…",
+          "loadError": "No se pudieron cargar los comentarios.",
+          "retry": "Reintentar",
+          "emptyList": "Aún no hay comentarios",
+          "emptyInvite": "Sé la primera persona en compartir un comentario.",
+          "loadMore": "Cargar más",
+          "loadingMore": "Cargando…",
+          "loadMoreError": "No se pudieron cargar más comentarios.",
+          "placeholder": "Escribe un comentario",
+          "publish": "Publicar",
+          "publishing": "Publicando…",
+          "signInPrompt": "Inicia sesión para dejar un comentario.",
+          "signIn": "Iniciar sesión",
+          "submitted": "Tu comentario se publicará cuando sea revisado.",
+          "rateLimited": "Has comentado con demasiada frecuencia. Inténtalo más tarde.",
+          "emptyBody": "Escribe un comentario antes de publicarlo.",
+          "signInRequired": "Inicia sesión para publicar tu comentario.",
+          "projectUnavailable": "Este proyecto ya no está disponible.",
+          "submitError": "No se pudo enviar tu comentario. Inténtalo de nuevo."
+        }
       },
       "intents": {
         "question": "¿Qué quieres hacer hoy?",
@@ -1082,17 +1150,6 @@
       "submitBanner": {
         "title": "Tu proyecto también puede mover AIRS.",
         "description": "Presenta una iniciativa productiva o de conservación a la comunidad global de Alternun."
-      },
-      "project": {
-        "title": "Eco Turismo",
-        "place": "Colombia",
-        "theme": "Economía viva y territorio",
-        "description": "Un proyecto de turismo consciente para activar colaboración, experiencias locales y valor regenerativo.",
-        "contribute": {
-          "participate": "Participar",
-          "share": "Difundir",
-          "connectAllies": "Conectar aliados"
-        }
       },
       "empty": {
         "title": "Aún no hay coincidencias",

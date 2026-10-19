@@ -62,10 +62,11 @@ export class LegalService {
       return join(monorepoRoot, `apps/docs/src/pages/${type}.md`);
     }
 
-    // Localized paths follow docusaurus i18n convention
-    return join(
-      monorepoRoot,
-      `apps/docs/i18n/${locale}/docusaurus-plugin-content-docs/current/${type}.md`
-    );
+    // Localized docs and page translations use different Docusaurus roots.
+    const localizedDir =
+      type === 'terms'
+        ? 'docusaurus-plugin-content-pages'
+        : 'docusaurus-plugin-content-docs/current';
+    return join(monorepoRoot, `apps/docs/i18n/${locale}/${localizedDir}/${type}.md`);
   }
 }
