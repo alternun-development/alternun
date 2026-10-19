@@ -52,6 +52,7 @@ import { useAppTranslation } from '../i18n/useAppTranslation';
 import { createTypographyStyles } from '../theme/typography';
 import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { TOOLTIP_MODAL } from '../theme/tooltipModal';
 import { useAppPalette } from '../theme/useAppPalette';
 import AirsIntroExperience from '../onboarding/AirsIntroExperience';
 import AirsBrandMark from '../branding/AirsBrandMark';
@@ -1436,8 +1437,6 @@ function CommunityAirsCounter({
       : numberFormatter.format(totalAirs);
   const eligibleSpendReference =
     totalAirs == null ? null : usdFormatter.format(getEligibleSpendReference(totalAirs));
-  const tooltipSurfaceColor = isDark ? '#0b4d47' : '#ffffff';
-  const tooltipTextColor = isDark ? '#e8fff6' : '#083d39';
 
   return (
     <>
@@ -1469,13 +1468,14 @@ function CommunityAirsCounter({
           accessibilityRole='button'
           accessibilityLabel={t('landing.beneficios.communityTotal.infoLabel')}
           onPress={() => setIsInfoVisible(true)}
-          style={[
-            styles.communityAirsInfoButton,
-            { borderColor, backgroundColor: `${accentColor}14` },
-          ]}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={styles.communityAirsInfoButton}
+          hitSlop={TOOLTIP_MODAL.iconHitSlop}
         >
-          <InfoIcon size={16} color={accentColor} strokeWidth={2.5} />
+          <InfoIcon
+            size={TOOLTIP_MODAL.iconSize}
+            color={accentColor}
+            strokeWidth={TOOLTIP_MODAL.iconStrokeWidth}
+          />
         </TouchableOpacity>
       </View>
 
@@ -1490,36 +1490,31 @@ function CommunityAirsCounter({
           onPress={() => setIsInfoVisible(false)}
         />
         <View style={styles.communityAirsTooltipWrapper} pointerEvents='box-none'>
-          <View
-            style={[
-              styles.communityAirsTooltip,
-              { backgroundColor: tooltipSurfaceColor, borderColor },
-            ]}
-          >
+          <View style={styles.communityAirsTooltip}>
             <View style={styles.communityAirsTooltipHeader}>
-              <Text style={[styles.communityAirsTooltipTitle, { color: tooltipTextColor }]}>
+              <Text style={styles.communityAirsTooltipTitle}>
                 {t('landing.beneficios.communityTotal.tooltipTitle')}
               </Text>
               <TouchableOpacity
                 accessibilityRole='button'
                 accessibilityLabel={t('landing.beneficios.communityTotal.closeLabel')}
                 onPress={() => setIsInfoVisible(false)}
-                style={[styles.communityAirsTooltipClose, { backgroundColor: `${accentColor}14` }]}
+                style={styles.communityAirsTooltipClose}
               >
-                <CloseIcon size={16} color={accentColor} strokeWidth={2.5} />
+                <Text style={styles.communityAirsTooltipCloseText}>×</Text>
               </TouchableOpacity>
             </View>
-            <Text style={[styles.communityAirsTooltipBody, { color: mutedColor }]}>
+            <Text style={styles.communityAirsTooltipBody}>
               {t('landing.beneficios.communityTotal.tooltipMeaning')}
             </Text>
-            <Text style={[styles.communityAirsTooltipBody, { color: mutedColor }]}>
+            <Text style={styles.communityAirsTooltipBody}>
               {totalAirs == null
                 ? t('landing.beneficios.communityTotal.tooltipMoneyLoading')
                 : t('landing.beneficios.communityTotal.tooltipMoney', {
                     amount: eligibleSpendReference,
                   })}
             </Text>
-            <Text style={[styles.communityAirsTooltipBody, { color: mutedColor }]}>
+            <Text style={styles.communityAirsTooltipBody}>
               {t('landing.beneficios.communityTotal.tooltipImpact')}
             </Text>
           </View>
@@ -2583,10 +2578,8 @@ const styles = createTypographyStyles({
     paddingHorizontal: 16,
   },
   communityAirsInfoButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 1,
+    width: TOOLTIP_MODAL.iconSize,
+    height: TOOLTIP_MODAL.iconSize,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2604,7 +2597,7 @@ const styles = createTypographyStyles({
   },
   communityAirsTooltipBackdrop: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.48)',
+    backgroundColor: TOOLTIP_MODAL.backdropColor,
   },
   communityAirsTooltipWrapper: {
     flex: 1,
@@ -2614,43 +2607,53 @@ const styles = createTypographyStyles({
   },
   communityAirsTooltip: {
     width: '100%',
-    maxWidth: 380,
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 20,
-    gap: 12,
+    maxWidth: TOOLTIP_MODAL.maxWidth,
+    borderRadius: TOOLTIP_MODAL.borderRadius,
+    borderWidth: TOOLTIP_MODAL.borderWidth,
+    borderColor: TOOLTIP_MODAL.borderColor,
+    backgroundColor: TOOLTIP_MODAL.surfaceColor,
+    paddingHorizontal: TOOLTIP_MODAL.paddingHorizontal,
+    paddingVertical: TOOLTIP_MODAL.paddingVertical,
+    gap: 8,
     ...createShadowStyle({
       color: '#000',
       offsetX: 0,
-      offsetY: 12,
-      opacity: 0.28,
-      radius: 24,
-      elevation: 16,
+      offsetY: 4,
+      opacity: 0.2,
+      radius: 12,
+      elevation: 8,
     }),
   },
   communityAirsTooltipHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: 8,
   },
   communityAirsTooltipTitle: {
     flex: 1,
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: TOOLTIP_MODAL.titleFontSize,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: TOOLTIP_MODAL.titleColor,
   },
   communityAirsTooltipClose: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  communityAirsTooltipCloseText: {
+    color: TOOLTIP_MODAL.closeColor,
+    fontSize: 18,
+  },
   communityAirsTooltipBody: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: TOOLTIP_MODAL.bodyFontSize,
+    lineHeight: TOOLTIP_MODAL.bodyLineHeight,
+    color: TOOLTIP_MODAL.bodyColor,
   },
   communityAirsLabel: {
     fontFamily: ANEK_EXPANDED_FAMILY,
