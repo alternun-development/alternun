@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Info, type LucideProps } from 'lucide-react-native';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import type { MetricInfoTooltipProps } from './MetricInfoTooltip.types';
+
+const InfoIcon = Info as React.FC<LucideProps>;
 
 export function MetricInfoTooltip({
   testID,
@@ -32,7 +35,7 @@ export function MetricInfoTooltip({
         onPress={() => setIsVisible(true)}
         style={[styles.trigger, { borderColor, backgroundColor: surfaceColor }]}
       >
-        <Text style={[styles.triggerText, { color: bodyColor }]}>?</Text>
+        <InfoIcon size={16} color={bodyColor} strokeWidth={2} />
       </TouchableOpacity>
 
       {isVisible && (
@@ -77,12 +80,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
-  },
-  triggerText: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 14,
-    lineHeight: 18,
-    fontWeight: '900',
   },
   backdrop: {
     flex: 1,
