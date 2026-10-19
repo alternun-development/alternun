@@ -46,6 +46,17 @@ export interface AirsDashboardSnapshotInput {
   ledgerLimit?: number;
 }
 
+// PROVISIONAL: every user gets the initial 50 % participation factor (FP)
+// until the real per-user FP calculation exists. Replace this single value
+// with that calculation and drop the "estimated" flag when it ships.
+export const PROVISIONAL_PARTICIPATION_FACTOR = 0.5;
+
+export interface AirsDashboardSnapshotResponse
+  extends Awaited<ReturnType<typeof getAirsDashboardSnapshot>> {
+  participationFactor: number;
+  participationFactorEstimated: boolean;
+}
+
 export interface AirsOnboardingResult extends Awaited<ReturnType<typeof getAirsDashboardSnapshot>> {
   registrationBonusAwarded: boolean;
   registrationBonusClaimed: boolean;
@@ -221,7 +232,7 @@ export async function processAirsOnboarding(
 export async function processAirsDashboardSnapshot(
   input: AirsDashboardSnapshotInput,
   dependencies: AirsDashboardSnapshotDependencies
-): Promise<Awaited<ReturnType<typeof getAirsDashboardSnapshot>>> {
+): Promise<AirsDashboardSnapshotResponse> {
   const env = dependencies.env ?? process.env;
   const tokenClaims = await resolveSessionClaims(input.token, dependencies.verifySessionToken);
 
@@ -239,6 +250,8 @@ export async function processAirsDashboardSnapshot(
     email: snapshot.email ?? tokenClaims.email,
     displayName: snapshot.displayName ?? tokenClaims.displayName,
     locale: input.locale ?? snapshot.locale ?? null,
+    participationFactor: PROVISIONAL_PARTICIPATION_FACTOR,
+    participationFactorEstimated: true,
   };
 }
 
@@ -344,9 +357,7 @@ export class AirsService {
     });
   }
 
-  async snapshot(
-    input: AirsDashboardSnapshotInput
-  ): Promise<Awaited<ReturnType<typeof getAirsDashboardSnapshot>>> {
+  async snapshot(input: AirsDashboardSnapshotInput): Promise<AirsDashboardSnapshotResponse> {
     return processAirsDashboardSnapshot(input, {
       verifySessionToken: this.buildVerifySessionToken(),
       getDashboardSnapshot: getAirsDashboardSnapshot,
