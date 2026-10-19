@@ -33,6 +33,7 @@ import { RotateCcw, Info, type LucideProps } from 'lucide-react-native';
 import { palette } from '../tokens/colors';
 import { fontSize, radius, spacing } from '../tokens/spacing';
 import { ProgressBar } from './ProgressBar';
+import { calculateTierProgress } from './heroPanelProgress';
 import {
   ScoreNumberSkeleton,
   StatusBadgeSkeleton,
@@ -210,7 +211,7 @@ export function HeroPanel({
 
   const progressPct = useMemo(() => {
     if (tierSpec.max == null || previewMode || score == null) return 0;
-    return Math.min((safeScore - tierSpec.min) / (tierSpec.max - tierSpec.min), 1);
+    return calculateTierProgress(safeScore, tierSpec.min, tierSpec.max);
   }, [safeScore, tier, tierSpec, previewMode, score]);
   const showProgressSection =
     tierSpec.max != null && tierSpec.next != null && !previewMode && (isLoading || score != null);
