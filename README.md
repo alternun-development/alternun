@@ -124,29 +124,31 @@ Current version: **1.1.97**
 
 ## 📋 Latest Changes (v1.1.97)
 
-### Bug Fixes
+### Changes
 
-- **repo:** 🚀 ci: publish docs on version tags
-- **repo:** chore: release v1.1.96 (#257)
-- **repo:** feat(db): publish eco-turismo as marketplace project 1
-- **repo:** fix(mobile): polish ATN card and add metric tooltips
-- **repo:** fix: make component type guard parser tolerant
-
-### Bug Fixes
-
-- fail closed on activity write config ([0a8b562](https://github.com/alternun-development/alternun/commit/0a8b562d5269bdfd6286b3961895a403bc833bbc))
-- harden AIRS database privileges ([ee84137](https://github.com/alternun-development/alternun/commit/ee84137d3fc745b7c7bc9ca7700f5adc6a0d3360))
-- make component type guard parser tolerant ([c0fb47d](https://github.com/alternun-development/alternun/commit/c0fb47d0d61d19f34a05e5c3dc84491cb238972e))
-- **mobile:** polish ATN card and add metric tooltips ([228c5d8](https://github.com/alternun-development/alternun/commit/228c5d853f911db10f35950e34da75bfcbf7fc83))
-- normalize parser filenames ([068ae80](https://github.com/alternun-development/alternun/commit/068ae8076ced8b0fa53a8c750bdeb4b1fbc1eb85))
-- resolve legal paths and sanitize media URLs ([1662836](https://github.com/alternun-development/alternun/commit/166283621a662e24523117729233f5ca2d4ace57))
-- support route filenames in type guard ([26f409f](https://github.com/alternun-development/alternun/commit/26f409f66d91394eab7acdd47d44475d8a5f2237))
+- **repo:** sync reentry for v1.1.97 release ([807a78f](https://github.com/alternun-development/alternun/commit/807a78f31f06907757027955381f8bf82490aa46))
+- **repo:** 🚀 ci: publish docs on version tags ([528613b](https://github.com/alternun-development/alternun/commit/528613b69bd691c9e0ee09adde66594d57e30775))
+- **web:** remove mock user data from the home page (#259) ([75bb3c9](https://github.com/alternun-development/alternun/commit/75bb3c96e387757d16fa7a7f5786bc32c178973b))
 
 ### Features
 
 - **db:** publish eco-turismo as marketplace project 1 ([65ee576](https://github.com/alternun-development/alternun/commit/65ee5764a4153a12b9da691194ed1c7c0c8b0fe8))
-- **marketplace:** deliver scoped marketplace and Explorer workflows ([#260](https://github.com/alternun-development/alternun/issues/260)) ([80d98f8](https://github.com/alternun-development/alternun/commit/80d98f8d1ae23fb28c749108ddf91067e0dd42de)), closes [#257](https://github.com/alternun-development/alternun/issues/257)
-- **mobile:** redesign ATN and RBI projection dashboard cards ([#261](https://github.com/alternun-development/alternun/issues/261)) ([fc00f42](https://github.com/alternun-development/alternun/commit/fc00f426f9ccb9d2f32ef5dbe1d6ff73e486df06)), closes [#257](https://github.com/alternun-development/alternun/issues/257)
+- **mobile:** redesign ATN and RBI projection dashboard cards (#261) ([fc00f42](https://github.com/alternun-development/alternun/commit/fc00f426f9ccb9d2f32ef5dbe1d6ff73e486df06))
+- **marketplace:** deliver scoped marketplace and Explorer workflows (#260) ([80d98f8](https://github.com/alternun-development/alternun/commit/80d98f8d1ae23fb28c749108ddf91067e0dd42de))
+
+### Bug Fixes
+
+- **mobile:** polish ATN card and add metric tooltips ([228c5d8](https://github.com/alternun-development/alternun/commit/228c5d853f911db10f35950e34da75bfcbf7fc83))
+- **repo:** make component type guard parser tolerant ([c0fb47d](https://github.com/alternun-development/alternun/commit/c0fb47d0d61d19f34a05e5c3dc84491cb238972e))
+- **repo:** normalize parser filenames ([068ae80](https://github.com/alternun-development/alternun/commit/068ae8076ced8b0fa53a8c750bdeb4b1fbc1eb85))
+- **repo:** support route filenames in type guard ([26f409f](https://github.com/alternun-development/alternun/commit/26f409f66d91394eab7acdd47d44475d8a5f2237))
+- **repo:** fail closed on activity write config ([0a8b562](https://github.com/alternun-development/alternun/commit/0a8b562d5269bdfd6286b3961895a403bc833bbc))
+- **repo:** harden AIRS database privileges ([ee84137](https://github.com/alternun-development/alternun/commit/ee84137d3fc745b7c7bc9ca7700f5adc6a0d3360))
+- **repo:** resolve legal paths and sanitize media URLs ([1662836](https://github.com/alternun-development/alternun/commit/166283621a662e24523117729233f5ca2d4ace57))
+
+### Refactoring
+
+- **repo:** isolate component types and enforce boundary ([76d0401](https://github.com/alternun-development/alternun/commit/76d04011d1f3a8b6c499fb7792c8efd1ab77c241))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
