@@ -148,11 +148,7 @@ export function resolveAirsSupabaseConfig(
     env.EXPO_PUBLIC_SUPABASE_URL,
     env.SUPABASE_URL,
   ]);
-  const key = firstNonEmptyTrimmed([
-    env.SUPABASE_SERVICE_ROLE_KEY,
-    env.SUPABASE_ANON_KEY,
-    env.EXPO_PUBLIC_SUPABASE_KEY,
-  ]);
+  const key = firstNonEmptyTrimmed([env.SUPABASE_SERVICE_ROLE_KEY]);
 
   if (!url || !key) {
     return null;

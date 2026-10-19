@@ -8,7 +8,9 @@ const Fastify = require('fastify');
 const EXPECTED_ADMIN_ROLES = [
   'platform_owner',
   'internal_admin',
+  'moderator',
   'partner_operator',
+  'sub_admin',
   'partner_readonly',
 ];
 const AUTHENTIK_JWKS_URL = 'https://login.alternun.co/application/o/alternun-admin/jwks/';
@@ -181,6 +183,90 @@ test('admin guard exposes only the canonical admin roles', () => {
     'Step 2 must provide src/common/admin-auth/admin-auth.guard.ts before admin roles can be enforced'
   );
   assert.deepEqual(adminAuth.ADMIN_ROLES, EXPECTED_ADMIN_ROLES);
+});
+
+test('marketplace lifecycle permissions remain exclusive to platform roles', () => {
+  const adminAuth = loadAdminAuthContract();
+  const makePrincipal = (role) => ({
+    iss: 'issuer',
+    aud: 'admin',
+    sub: role,
+    roles: [role],
+    organizationIds: ['*'],
+  });
+
+  for (const permission of ['projects:publish', 'projects:pause', 'projects:archive']) {
+    assert.equal(adminAuth.hasPermission(makePrincipal('platform_owner'), permission), true);
+    assert.equal(adminAuth.hasPermission(makePrincipal('internal_admin'), permission), true);
+    assert.equal(adminAuth.hasPermission(makePrincipal('partner_operator'), permission), false);
+    assert.equal(adminAuth.hasPermission(makePrincipal('moderator'), permission), false);
+    assert.equal(adminAuth.hasPermission(makePrincipal('sub_admin'), permission), false);
+  }
+});
+
+test('marketplace permission matrix preserves role-specific enterprise, project, and media access', () => {
+  const adminAuth = loadAdminAuthContract();
+  const can = (role, permission) =>
+    adminAuth.hasPermission(
+      { iss: 'issuer', aud: 'admin', sub: role, roles: [role], organizationIds: ['scope-1'] },
+      permission
+    );
+
+  assert.equal(can('platform_owner', 'enterprises:create'), true);
+  assert.equal(can('internal_admin', 'enterprises:create'), true);
+  assert.equal(can('partner_operator', 'enterprises:update'), true);
+  assert.equal(can('partner_operator', 'enterprises:create'), false);
+  assert.equal(can('moderator', 'projects:update'), true);
+  assert.equal(can('moderator', 'project_media:write'), false);
+  assert.equal(can('moderator', 'project_media:moderate'), true);
+  assert.equal(can('sub_admin', 'projects:create'), false);
+  assert.equal(can('sub_admin', 'project_media:write'), true);
+  assert.equal(can('partner_readonly', 'projects:read'), true);
+  assert.equal(can('partner_readonly', 'projects:update'), false);
+  assert.equal(can('partner_readonly', 'activities:read'), true);
+  assert.equal(can('partner_readonly', 'activities:write'), false);
+  assert.equal(can('sub_admin', 'activities:write'), true);
+  assert.equal(can('sub_admin', 'activities:publish'), false);
+  assert.equal(can('partner_operator', 'activities:publish'), true);
+  assert.equal(can('partner_readonly', 'completions:award'), false);
+  assert.equal(can('sub_admin', 'completions:award'), false);
+  assert.equal(can('sub_admin', 'completions:reject'), true);
+  assert.equal(can('partner_operator', 'completions:award'), true);
+  for (const role of EXPECTED_ADMIN_ROLES) {
+    const canManageComments = role !== 'partner_readonly';
+    assert.equal(can(role, 'comments:read'), canManageComments);
+    assert.equal(can(role, 'comments:moderate'), canManageComments);
+  }
+  for (const role of EXPECTED_ADMIN_ROLES) {
+    assert.equal(can(role, 'completions:reverse'), role === 'platform_owner');
+  }
+  for (const role of EXPECTED_ADMIN_ROLES) {
+    const canManageParticipants = [
+      'platform_owner',
+      'internal_admin',
+      'partner_operator',
+      'sub_admin',
+    ].includes(role);
+    assert.equal(can(role, 'participants:read'), canManageParticipants);
+    assert.equal(can(role, 'participants:manage'), canManageParticipants);
+  }
+  for (const role of EXPECTED_ADMIN_ROLES) {
+    assert.equal(
+      can(role, 'audit:read'),
+      ['platform_owner', 'internal_admin', 'partner_operator', 'moderator'].includes(role)
+    );
+  }
+  for (const role of EXPECTED_ADMIN_ROLES) {
+    assert.equal(can(role, 'project_memberships:read'), true);
+    assert.equal(
+      can(role, 'project_memberships:assign'),
+      ['platform_owner', 'internal_admin', 'partner_operator'].includes(role)
+    );
+    assert.equal(
+      can(role, 'project_memberships:revoke'),
+      ['platform_owner', 'internal_admin', 'partner_operator'].includes(role)
+    );
+  }
 });
 
 test('partner_readonly admin receives 403 for an allowance mutation', async () => {

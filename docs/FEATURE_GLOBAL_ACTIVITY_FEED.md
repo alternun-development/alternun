@@ -25,7 +25,7 @@ This iteration delivers **Phase 1 (Core Feed MVP)** and foundational pieces for 
 - `GET /activity/stats`
   - Returns: total activities, active users in the last 24h, and top activity types.
 - `POST /activity`
-  - Header: `x-internal-api-key` (validated when `ACTIVITY_INTERNAL_API_KEY` is configured)
+  - Header: `x-internal-api-key` (required; writes fail closed when `ACTIVITY_INTERNAL_API_KEY` is missing)
   - Creates activity records for internal producers.
 
 ## Expected Supabase schema

@@ -8,12 +8,46 @@ import { UnauthorizedException } from '@nestjs/common';
 import type { JsonWebKey as NodeJsonWebKey } from 'node:crypto';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
-export type AdminPermission = 'allowances:read' | 'allowances:write';
+export type AdminPermission =
+  | 'allowances:read'
+  | 'allowances:write'
+  | 'enterprises:read'
+  | 'enterprises:create'
+  | 'enterprises:update'
+  | 'enterprises:status'
+  | 'projects:read'
+  | 'projects:create'
+  | 'projects:update'
+  | 'projects:publish'
+  | 'projects:pause'
+  | 'projects:archive'
+  | 'projects:transfer'
+  | 'project_media:read'
+  | 'project_media:write'
+  | 'project_media:moderate'
+  | 'project_memberships:read'
+  | 'project_memberships:assign'
+  | 'project_memberships:revoke'
+  | 'activities:read'
+  | 'activities:write'
+  | 'activities:publish'
+  | 'completions:read'
+  | 'completions:create'
+  | 'completions:award'
+  | 'completions:reject'
+  | 'completions:reverse'
+  | 'comments:read'
+  | 'comments:moderate'
+  | 'participants:read'
+  | 'participants:manage'
+  | 'audit:read';
 
 export const ADMIN_ROLES = [
   'platform_owner',
   'internal_admin',
+  'moderator',
   'partner_operator',
+  'sub_admin',
   'partner_readonly',
 ] as const;
 
@@ -83,10 +117,142 @@ type JwksDocument = {
 };
 
 const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = {
-  partner_readonly: ['allowances:read'],
-  partner_operator: ['allowances:read', 'allowances:write'],
-  internal_admin: ['allowances:read', 'allowances:write'],
-  platform_owner: ['allowances:read', 'allowances:write'],
+  partner_readonly: [
+    'allowances:read',
+    'enterprises:read',
+    'projects:read',
+    'project_media:read',
+    'project_memberships:read',
+    'activities:read',
+    'completions:read',
+  ],
+  sub_admin: [
+    'enterprises:read',
+    'projects:read',
+    'projects:update',
+    'project_media:read',
+    'project_media:write',
+    'project_media:moderate',
+    'project_memberships:read',
+    'activities:read',
+    'activities:write',
+    'completions:read',
+    'completions:create',
+    'completions:reject',
+    'comments:read',
+    'comments:moderate',
+    'participants:read',
+    'participants:manage',
+  ],
+  partner_operator: [
+    'allowances:read',
+    'allowances:write',
+    'enterprises:read',
+    'enterprises:update',
+    'projects:read',
+    'projects:create',
+    'projects:update',
+    'project_media:read',
+    'project_media:write',
+    'project_media:moderate',
+    'project_memberships:read',
+    'project_memberships:assign',
+    'project_memberships:revoke',
+    'activities:read',
+    'activities:write',
+    'activities:publish',
+    'completions:read',
+    'completions:create',
+    'completions:award',
+    'completions:reject',
+    'comments:read',
+    'comments:moderate',
+    'participants:read',
+    'participants:manage',
+    'audit:read',
+  ],
+  moderator: [
+    'enterprises:read',
+    'projects:read',
+    'projects:update',
+    'project_media:read',
+    'project_media:moderate',
+    'project_memberships:read',
+    'activities:read',
+    'completions:read',
+    'completions:create',
+    'completions:award',
+    'completions:reject',
+    'comments:read',
+    'comments:moderate',
+    'audit:read',
+  ],
+  internal_admin: [
+    'allowances:read',
+    'allowances:write',
+    'enterprises:read',
+    'enterprises:create',
+    'enterprises:update',
+    'enterprises:status',
+    'projects:read',
+    'projects:create',
+    'projects:update',
+    'projects:publish',
+    'projects:pause',
+    'projects:archive',
+    'project_media:read',
+    'project_media:write',
+    'project_media:moderate',
+    'project_memberships:read',
+    'project_memberships:assign',
+    'project_memberships:revoke',
+    'activities:read',
+    'activities:write',
+    'activities:publish',
+    'completions:read',
+    'completions:create',
+    'completions:award',
+    'completions:reject',
+    'comments:read',
+    'comments:moderate',
+    'participants:read',
+    'participants:manage',
+    'audit:read',
+  ],
+  platform_owner: [
+    'allowances:read',
+    'allowances:write',
+    'enterprises:read',
+    'enterprises:create',
+    'enterprises:update',
+    'enterprises:status',
+    'projects:read',
+    'projects:create',
+    'projects:update',
+    'projects:publish',
+    'projects:pause',
+    'projects:archive',
+    'projects:transfer',
+    'project_media:read',
+    'project_media:write',
+    'project_media:moderate',
+    'project_memberships:read',
+    'project_memberships:assign',
+    'project_memberships:revoke',
+    'activities:read',
+    'activities:write',
+    'activities:publish',
+    'completions:read',
+    'completions:create',
+    'completions:award',
+    'completions:reject',
+    'completions:reverse',
+    'comments:read',
+    'comments:moderate',
+    'participants:read',
+    'participants:manage',
+    'audit:read',
+  ],
 };
 const knownAdminRoles = new Set<string>(ADMIN_ROLES);
 const wildcardOrganizationId = '*';
@@ -141,6 +307,13 @@ function isExpectedAudience(audience: AdminPrincipal['aud'], expectedAudience: s
 
 export function hasPermission(principal: AdminPrincipal, permission: AdminPermission): boolean {
   return principal.roles.some((role) => permissionsByRole[role]?.includes(permission));
+}
+
+export function rolesWithPermission(
+  principal: AdminPrincipal,
+  permission: AdminPermission
+): string[] {
+  return principal.roles.filter((role) => permissionsByRole[role]?.includes(permission));
 }
 
 function hasKnownAdminRole(principal: AdminPrincipal): boolean {
