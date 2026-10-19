@@ -41,6 +41,10 @@ import {
 } from './marketplace-audit.controller';
 import { MarketplaceAuditRepository } from './marketplace-audit.repository';
 import { MarketplaceAuditService } from './marketplace-audit.service';
+import { ProjectProposalController } from './project-proposal.controller';
+import { ProjectProposalRepository } from './project-proposal.repository';
+import { PROJECT_PROPOSAL_EMAIL_SENDER, ProjectProposalService } from './project-proposal.service';
+import { sendAirsEmail } from '../airs/airs.email';
 
 @Module({
   controllers: [
@@ -56,6 +60,7 @@ import { MarketplaceAuditService } from './marketplace-audit.service';
     MarketplaceParticipantAdminController,
     MarketplaceProjectAuditAdminController,
     MarketplaceEnterpriseAuditAdminController,
+    ProjectProposalController,
   ],
   providers: [
     { provide: MARKETPLACE_SUPABASE, useFactory: () => createMarketplaceSupabaseClient() },
@@ -66,6 +71,7 @@ import { MarketplaceAuditService } from './marketplace-audit.service';
     MarketplaceCommentRepository,
     MarketplaceParticipantRepository,
     MarketplaceAuditRepository,
+    ProjectProposalRepository,
     MarketplacePublicService,
     MarketplaceAdminService,
     MarketplaceActivityService,
@@ -73,6 +79,8 @@ import { MarketplaceAuditService } from './marketplace-audit.service';
     MarketplaceCommentService,
     MarketplaceParticipantService,
     MarketplaceAuditService,
+    ProjectProposalService,
+    { provide: PROJECT_PROPOSAL_EMAIL_SENDER, useValue: sendAirsEmail },
     {
       provide: MARKETPLACE_COMMENT_USER_RESOLVER,
       useValue: marketplaceCommentUserResolver,

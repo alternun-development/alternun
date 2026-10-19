@@ -119,6 +119,9 @@ importers:
       '@alternun/email-templates':
         specifier: workspace:*
         version: link:../../packages/email-templates
+      '@alternun/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@aws-sdk/client-secrets-manager':
         specifier: ^3.940.0
         version: 3.1032.0

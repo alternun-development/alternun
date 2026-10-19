@@ -39,3 +39,9 @@ test('lambda proxy request forwards API Gateway v2 cookies to Fastify', () => {
   assert.equal(headers.cookie, 'existing=1; __Secure-better-auth.session_token=abc; other=two');
   assert.equal(headers['content-length'], undefined);
 });
+
+test('lambda proxy forwards API Gateway source IP as Fastify remoteAddress', () => {
+  const source = fs.readFileSync(lambdaPath, 'utf8');
+  assert.match(source, /event\.requestContext\?\.http\?\.sourceIp\?\.trim\(\)/);
+  assert.match(source, /remoteAddress \? \{ remoteAddress \} : \{\}/);
+});

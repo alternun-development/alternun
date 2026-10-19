@@ -201,6 +201,7 @@ export async function handler(
       : undefined;
 
     const requestHeaders = normalizeLambdaRequestHeaders(event);
+    const remoteAddress = event.requestContext?.http?.sourceIp?.trim();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const response = (await fastify.inject({
@@ -208,6 +209,7 @@ export async function handler(
       path: path + (event.rawQueryString ? `?${event.rawQueryString}` : ''),
       headers: requestHeaders,
       payload: body,
+      ...(remoteAddress ? { remoteAddress } : {}),
     })) as unknown as LightMyRequestResponse;
 
     // eslint-disable-next-line no-console, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
