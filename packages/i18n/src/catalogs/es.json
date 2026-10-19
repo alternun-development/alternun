@@ -263,6 +263,16 @@
       },
       "summaryCards": {
         "comingSoon": "Próximamente",
+        "metricInfo": {
+          "openLabel": "Más información sobre {{metric}}",
+          "closeLabel": "Cerrar",
+          "atnBalanceTitle": "Saldo ATN",
+          "atnBalance": "Es tu saldo ATN disponible, informado por tu cuenta de recompensas.",
+          "participationFactor": "Es el factor de participación aplicado a tus AIRS según los Términos y Condiciones.",
+          "eligibleAirs": "AIRS equivalentes = AIRS × FP.",
+          "eligibleUsers": "Es el total de usuarios elegibles informado por el sistema para la proyección RBI.",
+          "aliquot": "Alícuota = mis AIRS elegibles / suma de AIRS elegibles × 100 %."
+        },
         "position": {
           "title": "Tu posición",
           "subtitle": "Entre miembros de Airs By Alternun",
