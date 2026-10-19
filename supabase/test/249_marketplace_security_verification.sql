@@ -1,6 +1,7 @@
 -- Verification for issue #249 marketplace migrations.
--- Run after 0001 through 0005. Catalog queries are read-only; behavioral
--- assertions run in a transaction that is always rolled back.
+-- Run after the issue #249 migrations and 20261018_0001. Catalog queries are
+-- read-only; behavioral assertions run in a transaction that is always rolled
+-- back.
 
 -- Edward: record this result independently in testnet and production before a
 -- later migration adds any FK to public.users(id).
@@ -196,6 +197,120 @@ join pg_catalog.pg_namespace namespace on namespace.oid = sequence.relnamespace
 where dependency.deptype = 'a'
 order by namespace.nspname, sequence.relname;
 
+-- Eco Turismo must retain its original localized content, use Alternun as its
+-- primary owner without removing Hotel Piloto, and expose the original Canva
+-- presentation. The bounded audit counts verify that reapplying the migration
+-- does not create duplicate effects.
+with expected_content(content) as (
+  values ('{
+    "es": {
+      "title": "Eco Turismo",
+      "location": "Colombia",
+      "theme": "Economía viva y territorio",
+      "description": "Un proyecto de turismo consciente para activar colaboración, experiencias locales y valor regenerativo.",
+      "waysToContribute": ["Participar", "Difundir", "Conectar aliados"]
+    },
+    "en": {
+      "title": "Eco Tourism",
+      "location": "Colombia",
+      "theme": "Living economy and territory",
+      "description": "A conscious tourism project that activates collaboration, local experiences, and regenerative value.",
+      "waysToContribute": ["Participate", "Share", "Connect allies"]
+    },
+    "th": {
+      "title": "อีโคทัวริซึม",
+      "location": "โคลอมเบีย",
+      "theme": "เศรษฐกิจมีชีวิตและพื้นที่",
+      "description": "โครงการท่องเที่ยวอย่างมีสติเพื่อขับเคลื่อนความร่วมมือ ประสบการณ์ท้องถิ่น และคุณค่าเชิงฟื้นฟู",
+      "waysToContribute": ["เข้าร่วม", "เผยแพร่", "เชื่อมต่อพันธมิตร"]
+    }
+  }'::jsonb)
+), eco_project as (
+  select project.*
+  from public.projects project
+  where project.slug = 'eco-turismo'
+)
+select
+  (select count(*) = 1 from eco_project) as project_exists_once,
+  coalesce((
+    select project.status = 'published'
+      and project.first_published_at is not null
+      and project.published_at is not null
+    from eco_project project
+  ), false) as is_published,
+  coalesce((
+    select project.category_code = 'productive_enterprise'
+      and project.country_code = 'CO'
+      and project.time_zone = 'America/Bogota'
+      and project.default_locale = 'es'
+      and project.content = expected_content.content
+    from eco_project project
+    cross join expected_content
+  ), false) as localized_content_matches,
+  (
+    select count(*) = 1
+    from public.enterprise_projects relation
+    join public.enterprises enterprise on enterprise.id = relation.enterprise_id
+    join eco_project project on project.id = relation.project_id
+    where relation.relation = 'owner'
+      and relation.is_primary
+      and enterprise.slug = 'alternun'
+      and enterprise.display_name = 'Alternun'
+      and enterprise.status = 'active'
+  ) as alternun_is_primary_owner,
+  (
+    select count(*) = 1
+    from public.enterprise_projects relation
+    join public.enterprises enterprise on enterprise.id = relation.enterprise_id
+    join eco_project project on project.id = relation.project_id
+    where enterprise.slug = 'hotel-piloto'
+  ) as hotel_piloto_relation_preserved,
+  (
+    select count(*) = 1
+    from public.project_media media
+    join eco_project project on project.id = media.project_id
+    where media.kind = 'canva'
+      and media.is_active
+      and media.url = 'https://www.canva.com/design/DAHIGZY5d6Q/xOM9mNFn2qtqA8dd7WHrSQ/view?embed'
+      and media.embed_url = media.url
+      and media.alt_text = '{
+        "es": "Presentación del proyecto Eco Turismo",
+        "en": "Eco Tourism project presentation",
+        "th": "งานนำเสนอโครงการอีโคทัวริซึม"
+      }'::jsonb
+      and media.caption = '{
+        "es": "Presentación de Eco Turismo",
+        "en": "Eco Tourism presentation",
+        "th": "การนำเสนออีโคทัวริซึม"
+      }'::jsonb
+  ) as canva_media_matches,
+  (
+    select count(*) = 2
+    from public.project_media_allowed_hosts host
+    where host.media_kind = 'canva'
+      and host.host in ('canva.com', 'www.canva.com')
+  ) as canva_hosts_allowed,
+  (
+    select count(*) = 1
+    from public.admin_audit_log audit
+    join eco_project project on project.id = audit.project_id
+    where audit.request_id = 'migration-20261018-0001-configuration'
+      and audit.result = 'allowed'
+  ) as configuration_audited_once,
+  (
+    select not exists (
+      select audit.request_id
+      from public.admin_audit_log audit
+      join eco_project project on project.id = audit.project_id
+      where audit.request_id in (
+        'migration-20261018-0001-content',
+        'migration-20261018-0001-publish'
+      )
+      group by audit.request_id
+      having count(*) > 1
+    )
+  ) as rerun_has_no_duplicate_audits;
+
 -- Behavioral assertions. Fixed fixture IDs are isolated by the final rollback.
 begin;
 
@@ -206,6 +321,9 @@ declare
   v_membership_id uuid;
   v_comment_id uuid;
   v_participant_id uuid;
+  v_eco_project_id uuid;
+  v_eco_audit_count_before bigint;
+  v_eco_audit_count_after bigint;
   v_participant_user_id constant uuid := '24999999-0000-4000-8000-000000000004';
   v_content jsonb := '{
     "es": {
@@ -221,6 +339,38 @@ declare
   v_media_two constant uuid := '24999999-0000-4000-8000-000000000003';
   v_missing_id constant uuid := '24999999-0000-4000-8000-000000000099';
 begin
+  select project.id into strict v_eco_project_id
+  from public.projects project
+  where project.slug = 'eco-turismo';
+
+  select count(*) into v_eco_audit_count_before
+  from public.admin_audit_log audit
+  where audit.project_id = v_eco_project_id;
+
+  v_result := public.marketplace_transition_project_status(
+    v_eco_project_id,
+    'published',
+    'verification',
+    'eco-turismo-rerun',
+    array['platform_owner'],
+    'verification-eco-turismo-rerun',
+    null
+  );
+
+  if coalesce((v_result ->> 'ok')::boolean, false) is not true
+    or coalesce((v_result ->> 'idempotent')::boolean, false) is not true
+  then
+    raise exception 'eco-turismo rerun assertion failed: %', v_result;
+  end if;
+
+  select count(*) into v_eco_audit_count_after
+  from public.admin_audit_log audit
+  where audit.project_id = v_eco_project_id;
+
+  if v_eco_audit_count_after is distinct from v_eco_audit_count_before then
+    raise exception 'eco-turismo rerun created a duplicate audit row';
+  end if;
+
   insert into public.enterprises (
     id, slug, display_name, status, country_code,
     created_by_issuer, created_by_subject, updated_by_issuer, updated_by_subject
