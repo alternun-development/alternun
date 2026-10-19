@@ -1,3 +1,9 @@
+## [1.1.100](https://github.com/alternun-development/alternun/compare/v1.1.99...v1.1.100) (2026-10-18)
+
+### Bug Fixes
+
+- **mobile:** make tooltip surface opaque to match hero ([96d5ab3](https://github.com/alternun-development/alternun/commit/96d5ab3c89f41036bcbf7b869cce1894aea0ca71))
+
 ## [1.1.99](https://github.com/alternun-development/alternun/compare/v1.1.98...v1.1.99) (2026-10-18)
 
 ### Bug Fixes
