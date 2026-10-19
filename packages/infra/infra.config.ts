@@ -221,6 +221,7 @@ const expoPublicAuthentikProviderFlowSlugs = expoConfig.publicEnv.authentikProvi
 const expoPublicAuthentikAllowCustomProviderFlowSlugs =
   expoConfig.publicEnv.authentikAllowCustomProviderFlowSlugs ?? '';
 const expoPublicReleaseUpdateMode = expoConfig.publicEnv.releaseUpdateMode;
+const expoPublicMarketplaceContactEmail = expoConfig.publicEnv.marketplaceContactEmail;
 const enableAirsToDevRedirect = expoConfig.redirects.enableAirsToDev;
 const airsToDevSourceDomain = expoConfig.redirects.airsToDevSourceDomain;
 const airsToDevCertArn = expoConfig.redirects.airsToDevCertArn;
@@ -941,6 +942,7 @@ export function createInfrastructure() {
         EXPO_PUBLIC_AUTHENTIK_ALLOW_CUSTOM_PROVIDER_FLOW_SLUGS:
           expoPublicAuthentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_RELEASE_UPDATE_MODE: expoPublicReleaseUpdateMode,
+        EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL: expoPublicMarketplaceContactEmail,
         // Auto-derive the redirect URI from the deployed expo domain when not explicitly set.
         // This ensures the OIDC callback always points at the dedicated callback route
         // on the correct deployed origin.

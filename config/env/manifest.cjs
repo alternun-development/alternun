@@ -352,6 +352,14 @@ const variables = {
       mobileDev: 'EXPO_PUBLIC_AIRS_VIDEO_ES_URL',
     },
   },
+  MARKETPLACE_CONTACT_EMAIL: {
+    description: 'Shared mailbox for marketplace project proposals',
+    targets: {
+      api: 'MARKETPLACE_CONTACT_EMAIL',
+      mobile: 'EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL',
+      mobileDev: 'EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL',
+    },
+  },
   EXPO_PUBLIC_RELEASE_CHECK_INTERVAL_MS: {
     description: 'Mobile release check interval',
     example: '60000',
