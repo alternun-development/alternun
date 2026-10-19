@@ -520,7 +520,8 @@ describe('DashboardSummaryCards render', () => {
     for (const [metric, explanation] of metrics) {
       const baseTestID = `dashboard-metric-info-${metric}`;
       const trigger = getElementByTestId(renderState.container, `${baseTestID}-trigger`);
-      expect(trigger.textContent).toBe('?');
+      expect(trigger.textContent).toBe('');
+      expect(trigger.querySelector('rnsvgsvgview')).not.toBeNull();
       expect(trigger.getAttribute('aria-label')).toContain('Más información');
 
       act(() => {
