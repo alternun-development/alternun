@@ -1,3 +1,14 @@
+## [1.1.98](https://github.com/alternun-development/alternun/compare/v1.1.97...v1.1.98) (2026-10-18)
+
+### Changes
+
+- **repo:** refresh codebase-memory graph ([c88f478](https://github.com/alternun-development/alternun/commit/c88f4789029778a4d3c1334354f36c285d5d3976))
+
+### Bug Fixes
+
+- **repo:** artifact, graph.db, config, specs ([3df990f](https://github.com/alternun-development/alternun/commit/3df990f786fc8d83c9b1fbe69cb96fa86c96cd09))
+- **mobile:** use hero info icons on dashboard metrics ([51a3897](https://github.com/alternun-development/alternun/commit/51a38972074112d0d9be98a7281a3209040972ae))
+
 ## [1.1.97](https://github.com/alternun-development/alternun/compare/v1.1.96...v1.1.97) (2026-10-18)
 
 ### Changes
