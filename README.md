@@ -120,13 +120,35 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.96**
+Current version: **1.1.97**
 
-## 📋 Latest Changes (v1.1.96)
+## 📋 Latest Changes (v1.1.97)
+
+### Changes
+
+- **repo:** sync reentry for v1.1.97 release ([807a78f](https://github.com/alternun-development/alternun/commit/807a78f31f06907757027955381f8bf82490aa46))
+- **repo:** 🚀 ci: publish docs on version tags ([528613b](https://github.com/alternun-development/alternun/commit/528613b69bd691c9e0ee09adde66594d57e30775))
+- **web:** remove mock user data from the home page (#259) ([75bb3c9](https://github.com/alternun-development/alternun/commit/75bb3c96e387757d16fa7a7f5786bc32c178973b))
+
+### Features
+
+- **db:** publish eco-turismo as marketplace project 1 ([65ee576](https://github.com/alternun-development/alternun/commit/65ee5764a4153a12b9da691194ed1c7c0c8b0fe8))
+- **mobile:** redesign ATN and RBI projection dashboard cards (#261) ([fc00f42](https://github.com/alternun-development/alternun/commit/fc00f426f9ccb9d2f32ef5dbe1d6ff73e486df06))
+- **marketplace:** deliver scoped marketplace and Explorer workflows (#260) ([80d98f8](https://github.com/alternun-development/alternun/commit/80d98f8d1ae23fb28c749108ddf91067e0dd42de))
 
 ### Bug Fixes
 
-- **docs:** repair localized terms Markdown rendering ([23d9a98](https://github.com/alternun-development/alternun/commit/23d9a98909853e9cf3a76543bd2ca9d88114d9a0))
+- **mobile:** polish ATN card and add metric tooltips ([228c5d8](https://github.com/alternun-development/alternun/commit/228c5d853f911db10f35950e34da75bfcbf7fc83))
+- **repo:** make component type guard parser tolerant ([c0fb47d](https://github.com/alternun-development/alternun/commit/c0fb47d0d61d19f34a05e5c3dc84491cb238972e))
+- **repo:** normalize parser filenames ([068ae80](https://github.com/alternun-development/alternun/commit/068ae8076ced8b0fa53a8c750bdeb4b1fbc1eb85))
+- **repo:** support route filenames in type guard ([26f409f](https://github.com/alternun-development/alternun/commit/26f409f66d91394eab7acdd47d44475d8a5f2237))
+- **repo:** fail closed on activity write config ([0a8b562](https://github.com/alternun-development/alternun/commit/0a8b562d5269bdfd6286b3961895a403bc833bbc))
+- **repo:** harden AIRS database privileges ([ee84137](https://github.com/alternun-development/alternun/commit/ee84137d3fc745b7c7bc9ca7700f5adc6a0d3360))
+- **repo:** resolve legal paths and sanitize media URLs ([1662836](https://github.com/alternun-development/alternun/commit/166283621a662e24523117729233f5ca2d4ace57))
+
+### Refactoring
+
+- **repo:** isolate component types and enforce boundary ([76d0401](https://github.com/alternun-development/alternun/commit/76d04011d1f3a8b6c499fb7792c8efd1ab77c241))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
@@ -144,7 +166,7 @@ For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub release
 - Internal ops: [`docs/`](docs/)
 - API blueprint: [`docs/alternun_nestjs_fastify_openapi_blueprint.md`](docs/alternun_nestjs_fastify_openapi_blueprint.md)
 - Contribution workflow: [`docs/contribution-workflow.md`](docs/contribution-workflow.md)
-- Public docs site: [alternun-development.github.io](https://alternun-development.github.io)
+- Public docs site: [docs.alternun.io](https://docs.alternun.io)
 
 ## Contributing
 
