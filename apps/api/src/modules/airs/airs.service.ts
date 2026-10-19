@@ -49,6 +49,10 @@ export interface AirsDashboardSnapshotInput {
 // PROVISIONAL: every user gets the initial 50 % participation factor (FP)
 // until the real per-user FP calculation exists. Replace this single value
 // with that calculation and drop the "estimated" flag when it ships.
+// communityEligibleAirs is intentionally not returned yet, so the aliquot
+// stays "—". TODO: add an RPC summing users.airs_balance > 0 × FP (needs a
+// migration; pending Edward's approval). airs_get_community_total sums ledger
+// credits, not balances, so it is not a valid base.
 export const PROVISIONAL_PARTICIPATION_FACTOR = 0.5;
 
 export interface AirsDashboardSnapshotResponse
