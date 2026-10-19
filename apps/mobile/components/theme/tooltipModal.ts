@@ -5,7 +5,7 @@
  */
 export const TOOLTIP_MODAL = {
   backdropColor: 'rgba(0,0,0,0.25)',
-  surfaceColor: 'rgba(5,15,12,0.95)',
+  surfaceColor: '#050F0C',
   borderColor: 'rgba(30,230,181,0.16)',
   borderWidth: 0.5,
   borderRadius: 12,

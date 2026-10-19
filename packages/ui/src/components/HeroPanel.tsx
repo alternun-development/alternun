@@ -228,7 +228,7 @@ export function HeroPanel({
   const reloadIconColor = '#ffffff';
   const infoIconColor = '#ffffff';
   const tooltipTitleColor = '#ffffff';
-  const tooltipBackgroundColor = isDark ? 'rgba(5,15,12,0.95)' : 'rgba(5,15,12,0.92)';
+  const tooltipBackgroundColor = '#050F0C';
   const tooltipBorderColor = `${tierSpec.color}80`;
   const { width: viewportWidth } = useWindowDimensions();
   const tooltipWidth = Math.min(280, Math.max(0, viewportWidth - 32));
@@ -895,7 +895,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 0.5,
     borderColor: 'rgba(30,230,181,0.16)',
-    backgroundColor: 'rgba(5,15,12,0.95)',
+    backgroundColor: '#050F0C',
     shadowOpacity: 0.2,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
