@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Merge the v1.1.97 develop→master promotion PR, then sync master back to develop
+Next micro-step: Review fix/project-detail-canva-embed (web project detail embeds allowed Canva ?embed links in a sandboxed iframe; native keeps the button); then verify on testnet
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
