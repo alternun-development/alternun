@@ -25,10 +25,13 @@ test('project proposal migration keeps clients outside the data plane', () => {
   assert.doesNotMatch(migration, /create policy/i);
 });
 
-test('project proposal SQL verification covers insert, invalid input, and anon denial', () => {
+test('project proposal SQL verification covers insert, invalid input, rate limits, and client denial', () => {
   const sql = fs.readFileSync(sqlTestPath, 'utf8');
   assert.match(sql, /valid proposal was not stored/i);
   assert.match(sql, /PROJECT_PROPOSAL_INPUT_INVALID/);
   assert.match(sql, /set local role anon/i);
   assert.match(sql, /when insufficient_privilege then null/i);
+  assert.match(sql, /'authenticated',\s*'public\.marketplace_submit_project_proposal/);
+  assert.match(sql, /sixth proposal from one IP was not rate limited/);
+  assert.match(sql, /fourth proposal from one email was not rate limited/);
 });
