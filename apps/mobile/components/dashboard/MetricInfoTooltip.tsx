@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Info, type LucideProps } from 'lucide-react-native';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
+import { TOOLTIP_MODAL } from '../theme/tooltipModal';
 import type { MetricInfoTooltipProps } from './MetricInfoTooltip.types';
 
 const InfoIcon = Info as React.FC<LucideProps>;
@@ -15,11 +16,6 @@ export function MetricInfoTooltip({
   isDark,
 }: MetricInfoTooltipProps): React.JSX.Element {
   const [isVisible, setIsVisible] = useState(false);
-  const surfaceColor = isDark ? '#182231' : '#FFFFFF';
-  const borderColor = isDark ? '#71809E' : '#64748B';
-  const titleColor = isDark ? '#F3F6FC' : '#25304A';
-  const bodyColor = isDark ? '#D0D8E8' : '#475569';
-
   const close = (): void => {
     setIsVisible(false);
   };
@@ -33,9 +29,14 @@ export function MetricInfoTooltip({
         accessibilityState={{ expanded: isVisible }}
         activeOpacity={0.72}
         onPress={() => setIsVisible(true)}
-        style={[styles.trigger, { borderColor, backgroundColor: surfaceColor }]}
+        hitSlop={TOOLTIP_MODAL.iconHitSlop}
+        style={styles.trigger}
       >
-        <InfoIcon size={16} color={bodyColor} strokeWidth={2} />
+        <InfoIcon
+          size={TOOLTIP_MODAL.iconSize}
+          color={isDark ? '#D0D8E8' : '#475569'}
+          strokeWidth={TOOLTIP_MODAL.iconStrokeWidth}
+        />
       </TouchableOpacity>
 
       {isVisible && (
@@ -47,22 +48,21 @@ export function MetricInfoTooltip({
               accessibilityLabel={title}
               accessibilityViewIsModal
               onPress={(event) => event.stopPropagation()}
-              style={[styles.popover, { backgroundColor: surfaceColor, borderColor }]}
+              style={styles.popover}
             >
-              <View style={styles.copy}>
-                <Text style={[styles.title, { color: titleColor }]}>{title}</Text>
-                <Text style={[styles.description, { color: bodyColor }]}>{description}</Text>
+              <View style={styles.header}>
+                <Text style={styles.title}>{title}</Text>
+                <TouchableOpacity
+                  testID={`${testID}-close`}
+                  accessibilityRole='button'
+                  accessibilityLabel={closeLabel}
+                  onPress={close}
+                  style={styles.closeButton}
+                >
+                  <Text style={styles.closeText}>×</Text>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                testID={`${testID}-close`}
-                accessibilityRole='button'
-                accessibilityLabel={closeLabel}
-                activeOpacity={0.72}
-                onPress={close}
-                style={[styles.closeButton, { borderColor }]}
-              >
-                <Text style={[styles.closeText, { color: titleColor }]}>{closeLabel}</Text>
-              </TouchableOpacity>
+              <Text style={styles.description}>{description}</Text>
             </Pressable>
           </Pressable>
         </Modal>
@@ -73,56 +73,60 @@ export function MetricInfoTooltip({
 
 const styles = StyleSheet.create({
   trigger: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1,
+    width: 16,
+    height: 16,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.58)',
+    backgroundColor: TOOLTIP_MODAL.backdropColor,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    padding: TOOLTIP_MODAL.viewportPadding,
   },
   popover: {
     width: '100%',
-    maxWidth: 420,
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 18,
-    gap: 18,
-    boxShadow: '0px 16px 34px rgba(0,0,0,0.34)',
+    maxWidth: TOOLTIP_MODAL.maxWidth,
+    paddingHorizontal: TOOLTIP_MODAL.paddingHorizontal,
+    paddingVertical: TOOLTIP_MODAL.paddingVertical,
+    gap: 8,
+    borderRadius: TOOLTIP_MODAL.borderRadius,
+    borderWidth: TOOLTIP_MODAL.borderWidth,
+    borderColor: TOOLTIP_MODAL.borderColor,
+    backgroundColor: TOOLTIP_MODAL.surfaceColor,
+    boxShadow: '0px 4px 12px rgba(0,0,0,0.2)',
   },
-  copy: {
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     gap: 8,
   },
   title: {
+    flex: 1,
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 16,
-    lineHeight: 21,
-    fontWeight: '900',
+    fontSize: TOOLTIP_MODAL.titleFontSize,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: TOOLTIP_MODAL.titleColor,
   },
   description: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 14,
-    lineHeight: 21,
-    fontWeight: '500',
+    fontSize: TOOLTIP_MODAL.bodyFontSize,
+    lineHeight: TOOLTIP_MODAL.bodyLineHeight,
+    color: TOOLTIP_MODAL.bodyColor,
   },
   closeButton: {
-    alignSelf: 'flex-end',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   closeText: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 13,
-    lineHeight: 17,
-    fontWeight: '800',
+    color: TOOLTIP_MODAL.closeColor,
+    fontSize: 18,
   },
 });
