@@ -1118,6 +1118,7 @@
         "video": "วิดีโอ",
         "openVideo": "ดูวิดีโอ",
         "openPresentation": "ดูงานนำเสนอ",
+        "presentationTitle": "งานนำเสนอของ {{project}}",
         "comments": {
           "title": "ความคิดเห็น",
           "loading": "กำลังโหลดความคิดเห็น…",

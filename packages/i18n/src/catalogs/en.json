@@ -1118,6 +1118,7 @@
         "video": "Video",
         "openVideo": "View video",
         "openPresentation": "View presentation",
+        "presentationTitle": "{{project}} presentation",
         "comments": {
           "title": "Comments",
           "loading": "Loading comments…",
