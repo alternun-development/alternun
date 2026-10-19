@@ -5,16 +5,17 @@ import {
   getActiveAdminSession,
   getAdminRolesFromSession,
   oidcClient,
+  resolveAdminLandingPath,
 } from './oidc-client';
 import { buildAdminAuthentikRelayPath, startAdminHostedSignIn } from './authentikRelay';
 
 function currentReturnTo(): string {
   if (typeof window === 'undefined') {
-    return '/dashboard';
+    return '/';
   }
 
   const path = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-  return path === '/login' || path === '/auth/callback' ? '/dashboard' : path;
+  return path === '/login' || path === '/auth/callback' ? '/' : path;
 }
 
 export const authProvider: AuthProvider = {
@@ -24,7 +25,7 @@ export const authProvider: AuthProvider = {
     if (session && canAccessAdminDashboard(session)) {
       return {
         success: true,
-        redirectTo: '/dashboard',
+        redirectTo: resolveAdminLandingPath(getAdminRolesFromSession(session)),
       };
     }
 

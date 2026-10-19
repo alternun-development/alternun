@@ -1,4 +1,9 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 export type ActivityVisibility = 'public' | 'followers' | 'private';
 
@@ -90,7 +95,7 @@ const ACTIVITY_EMOJI_MAP: Record<string, string> = {
 
 function resolveSupabaseConfig(env: NodeJS.ProcessEnv = process.env): SupabaseConfig | null {
   const url = (env.SUPABASE_URL ?? '').trim();
-  const key = (env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_ANON_KEY ?? '').trim();
+  const key = (env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
 
   if (!url || !key) {
     return null;
@@ -304,14 +309,21 @@ export class ActivityService {
   ): Promise<{ ok: true }> {
     const expectedKey = (process.env.ACTIVITY_INTERNAL_API_KEY ?? '').trim();
 
-    if (expectedKey && internalApiKey?.trim() !== expectedKey) {
+    if (!expectedKey) {
+      throw new UnauthorizedException(
+        'Activity writes are disabled until the internal API key is configured.'
+      );
+    }
+
+    if (internalApiKey?.trim() !== expectedKey) {
       throw new UnauthorizedException('Invalid internal API key.');
     }
 
     const cfg = resolveSupabaseConfig();
     if (!cfg) {
-      this.logger.warn('Skipping activity write because Supabase is not configured.');
-      return { ok: true };
+      throw new ServiceUnavailableException(
+        'Activity writes are disabled until the Supabase service-role key is configured.'
+      );
     }
 
     const res = await fetch(`${cfg.url}/rest/v1/user_activity`, {
