@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-19T00:51:32.312Z",
+  "lastUpdated": "2026-10-19T23:22:52.875Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Merge the v1.1.97 develop→master promotion PR, then sync master back to develop",
+      "description": "Review fix/project-detail-canva-embed (web project detail embeds allowed Canva ?embed links in a sandboxed iframe; native keeps the button); then verify on testnet",
       "id": "next",
       "priority": 1
     }
