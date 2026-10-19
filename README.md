@@ -126,10 +126,6 @@ Current version: **1.1.99**
 
 ### Bug Fixes
 
-- **repo:** fix(mobile): unify tooltip icon and modal to hero style
-
-### Bug Fixes
-
 - **mobile:** unify tooltip icon and modal to hero style ([c28cc0f](https://github.com/alternun-development/alternun/commit/c28cc0f60c995589a2c38e2015c0e2429dffeb12))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
