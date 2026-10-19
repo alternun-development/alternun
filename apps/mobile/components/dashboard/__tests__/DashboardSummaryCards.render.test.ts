@@ -31,6 +31,18 @@ jest.mock('../../i18n/useAppTranslation', () => {
     'dashboard.summaryCards.rbi.whatIsRbi': '¿Qué es el RBI?',
     'dashboard.summaryCards.rbi.explanation': 'RBI explanation',
     'dashboard.summaryCards.rbi.fullDocumentation': 'Full documentation',
+    'dashboard.summaryCards.metricInfo.openLabel': 'Más información sobre {{metric}}',
+    'dashboard.summaryCards.metricInfo.closeLabel': 'Cerrar',
+    'dashboard.summaryCards.metricInfo.atnBalanceTitle': 'Saldo ATN',
+    'dashboard.summaryCards.metricInfo.atnBalance':
+      'Es tu saldo ATN disponible, informado por tu cuenta de recompensas.',
+    'dashboard.summaryCards.metricInfo.participationFactor':
+      'Es el factor de participación aplicado a tus AIRS según los Términos y Condiciones.',
+    'dashboard.summaryCards.metricInfo.eligibleAirs': 'AIRS equivalentes = AIRS × FP.',
+    'dashboard.summaryCards.metricInfo.eligibleUsers':
+      'Es el total de usuarios elegibles informado por el sistema para la proyección RBI.',
+    'dashboard.summaryCards.metricInfo.aliquot':
+      'Alícuota = mis AIRS elegibles / suma de AIRS elegibles × 100 %.',
     'dashboard.summaryCards.atn.title': 'Mis ATN y recompensas regenerativas',
     'dashboard.summaryCards.atn.subtitle': 'Tus saldos de recompensas',
     'dashboard.summaryCards.atn.assetName': 'ATN',
@@ -38,9 +50,8 @@ jest.mock('../../i18n/useAppTranslation', () => {
     'dashboard.summaryCards.atn.primaryWalletMeta': 'Interna',
     'dashboard.summaryCards.atn.redeemAction': 'Redimir y operar',
     'dashboard.summaryCards.comingSoon': 'Próximamente',
-    'wallet.createButton': 'Crear billetera de recompensas',
-    'wallet.manageWallet': 'Gestionar billetera de recompensas',
-    'wallet.noWalletAccount': 'Aún no hay datos de tu billetera de recompensas',
+    'profile.wallet.createButton': 'Crear billetera de recompensas',
+    'profile.wallet.manageWallet': 'Gestionar billetera de recompensas',
   };
 
   return {
@@ -262,6 +273,12 @@ describe('DashboardSummaryCards render', () => {
 
     expect(renderState.container.textContent).toContain('Mis ATN');
     expect(renderState.container.textContent).toContain('Proyección RBI');
+    expect(
+      getComputedStyle(getElementByTestId(renderState.container, 'dashboard-rbi-card')).minHeight
+    ).toBe('480px');
+    expect(
+      getComputedStyle(getElementByTestId(renderState.container, 'dashboard-atn-card')).minHeight
+    ).toBe('100px');
   });
 
   it('renders the participation factor marker, metrics, and terms link', () => {
@@ -320,8 +337,17 @@ describe('DashboardSummaryCards render', () => {
     );
 
     const factorBar = getElementByTestId(renderState.container, 'dashboard-rbi-status');
+    const neutralTrack = getElementByTestId(renderState.container, 'dashboard-rbi-factor-track');
     expect(factorBar.getAttribute('aria-valuetext')).toBe('Aún no disponible');
     expect(factorBar.getAttribute('aria-disabled')).toBe('true');
+    expect(getComputedStyle(neutralTrack).backgroundColor).toBe('rgb(113, 128, 158)');
+    for (const mark of [0, 15, 50, 100]) {
+      const label = getElementByTestId(
+        renderState.container,
+        `dashboard-rbi-factor-mark-label-${mark}`
+      );
+      expect(getComputedStyle(label).color).toBe('rgb(208, 216, 232)');
+    }
     expect(
       renderState.container.querySelector('[data-testid="dashboard-rbi-factor-marker"]')
     ).toBeNull();
@@ -333,6 +359,29 @@ describe('DashboardSummaryCards render', () => {
     ).toContain('—');
     expect(renderState.container.textContent).not.toContain('Pool RBI estimado');
     expect(renderState.container.textContent).not.toContain('Tu puntaje Airs');
+  });
+
+  it('uses the high-contrast neutral factor colors in the light theme', () => {
+    mockWindowDimensions(1024);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: false,
+        signedIn: false,
+        airsBalance: null,
+        participationFactor: null,
+      })
+    );
+
+    const neutralTrack = getElementByTestId(renderState.container, 'dashboard-rbi-factor-track');
+    expect(getComputedStyle(neutralTrack).backgroundColor).toBe('rgb(100, 116, 139)');
+    for (const mark of [0, 15, 50, 100]) {
+      const label = getElementByTestId(
+        renderState.container,
+        `dashboard-rbi-factor-mark-label-${mark}`
+      );
+      expect(getComputedStyle(label).color).toBe('rgb(71, 85, 105)');
+    }
   });
 
   it('renders ATN first, appends reward assets, and keeps future actions disabled', () => {
@@ -380,7 +429,9 @@ describe('DashboardSummaryCards render', () => {
     expect(assetRows[0]?.querySelector('[role="img"][aria-label="ATN"]')).not.toBeNull();
 
     const redeemAction = getElementByTestId(renderState.container, 'dashboard-atn-redeem-action');
+    const atnHeader = getElementByTestId(renderState.container, 'dashboard-atn-header');
     expect(redeemAction.getAttribute('aria-disabled')).toBe('true');
+    expect(atnHeader.contains(redeemAction)).toBe(true);
     expect(redeemAction.textContent).toContain('Redimir y operar');
     expect(redeemAction.textContent).toContain('Próximamente');
     expect(renderState.container.textContent).toContain('Billetera de recompensas principal');
@@ -423,7 +474,11 @@ describe('DashboardSummaryCards render', () => {
     });
 
     expect(renderState.container.textContent).toContain('Gestionar billetera de recompensas');
-    expect(renderState.container.textContent).toContain('0x123456...345678');
+    expect(renderState.container.textContent).not.toContain('Manage rewards wallet');
+    expect(renderState.container.textContent).not.toContain(
+      '0x1234567890abcdef1234567890abcdef12345678'
+    );
+    expect(renderState.container.textContent).not.toContain('0x123456...345678');
     expect(renderState.container.textContent).toContain('27');
     expect(renderState.container.textContent).not.toContain(
       'Aún no hay datos de tu billetera de recompensas'
@@ -439,5 +494,65 @@ describe('DashboardSummaryCards render', () => {
 
     clickElementByText(renderState.container, 'Gestionar billetera de recompensas');
     expect(navigationCalls).toContain('mi-perfil:wallet');
+  });
+
+  it('shows accessible help for every ATN and RBI metric', () => {
+    mockWindowDimensions(1024);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: false,
+        signedIn: false,
+        airsBalance: 200,
+        participationFactor: 0.15,
+        communityEligibleAirs: 300,
+      })
+    );
+
+    const metrics = [
+      ['atn-balance', 'Es tu saldo ATN disponible'],
+      ['participation-factor', 'factor de participación aplicado'],
+      ['eligible-airs', 'AIRS equivalentes = AIRS × FP'],
+      ['eligible-users', 'total de usuarios elegibles'],
+      ['aliquot', 'mis AIRS elegibles / suma de AIRS elegibles × 100 %'],
+    ] as const;
+
+    for (const [metric, explanation] of metrics) {
+      const baseTestID = `dashboard-metric-info-${metric}`;
+      const trigger = getElementByTestId(renderState.container, `${baseTestID}-trigger`);
+      expect(trigger.textContent).toBe('?');
+      expect(trigger.getAttribute('aria-label')).toContain('Más información');
+
+      act(() => {
+        trigger.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      });
+
+      const popover = getElementByTestId(document.body, `${baseTestID}-popover`);
+      expect(popover.textContent).toContain(explanation);
+
+      const closeButton = getElementByTestId(document.body, `${baseTestID}-close`);
+      act(() => {
+        closeButton.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      });
+      expect(document.body.querySelector(`[data-testid="${baseTestID}-popover"]`)).toBeNull();
+    }
+
+    const trigger = getElementByTestId(
+      renderState.container,
+      'dashboard-metric-info-atn-balance-trigger'
+    );
+    act(() => {
+      trigger.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    const backdrop = getElementByTestId(
+      document.body,
+      'dashboard-metric-info-atn-balance-backdrop'
+    );
+    act(() => {
+      backdrop.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    expect(
+      document.body.querySelector('[data-testid="dashboard-metric-info-atn-balance-popover"]')
+    ).toBeNull();
   });
 });

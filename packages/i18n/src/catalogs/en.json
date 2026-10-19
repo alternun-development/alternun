@@ -263,6 +263,16 @@
       },
       "summaryCards": {
         "comingSoon": "Coming soon",
+        "metricInfo": {
+          "openLabel": "More information about {{metric}}",
+          "closeLabel": "Close",
+          "atnBalanceTitle": "ATN balance",
+          "atnBalance": "Your available ATN balance, reported by your rewards account.",
+          "participationFactor": "The participation factor applied to your AIRS under the Terms and Conditions.",
+          "eligibleAirs": "Equivalent AIRS = AIRS × FP.",
+          "eligibleUsers": "The total eligible users reported by the system for the RBI projection.",
+          "aliquot": "Allocation share = my eligible AIRS / total eligible AIRS × 100%."
+        },
         "position": {
           "title": "Your Position",
           "subtitle": "Among Airs By Alternun members",

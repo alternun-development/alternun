@@ -41,9 +41,13 @@ assert.equal(englishMobile.t('landing.beneficios.cards.eco.atn'), 'Variable');
 assert.equal(englishMobile.t('landing.beneficios.topRated'), 'Verified');
 assert.equal(englishMobile.t('dashboard.summaryCards.comingSoon'), 'Coming soon');
 assert.equal(spanishMobile.t('dashboard.summaryCards.comingSoon'), 'Próximamente');
+assert.equal(spanishMobile.t('profile.wallet.manageWallet'), 'Gestionar billetera de recompensas');
+assert.equal(englishMobile.t('profile.wallet.manageWallet'), 'Manage rewards wallet');
+assert.equal(thaiMobile.t('profile.wallet.manageWallet'), 'จัดการกระเป๋ารางวัล');
+assert.equal(thaiMobile.t('dashboard.summaryCards.atn.primaryWalletLabel'), 'กระเป๋ารางวัลหลัก');
 assert.equal(
-  thaiMobile.t('dashboard.summaryCards.atn.primaryWalletLabel'),
-  'กระเป๋ารางวัลหลัก'
+  thaiMobile.t('dashboard.summaryCards.metricInfo.eligibleAirs'),
+  'AIRS เทียบเท่า = AIRS × FP'
 );
 assert.equal(
   thaiMobile.t('landing.comoFunciona.sectionTitle'),

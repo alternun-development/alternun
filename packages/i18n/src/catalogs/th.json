@@ -263,6 +263,16 @@
       },
       "summaryCards": {
         "comingSoon": "เร็วๆ นี้",
+        "metricInfo": {
+          "openLabel": "ข้อมูลเพิ่มเติมเกี่ยวกับ {{metric}}",
+          "closeLabel": "ปิด",
+          "atnBalanceTitle": "ยอดคงเหลือ ATN",
+          "atnBalance": "ยอดคงเหลือ ATN ที่ใช้ได้ ซึ่งรายงานจากบัญชีรางวัลของคุณ",
+          "participationFactor": "ปัจจัยการมีส่วนร่วมที่ใช้กับ AIRS ของคุณตามข้อกำหนดและเงื่อนไข",
+          "eligibleAirs": "AIRS เทียบเท่า = AIRS × FP",
+          "eligibleUsers": "จำนวนผู้ใช้ที่มีสิทธิ์ทั้งหมดซึ่งระบบรายงานสำหรับการคาดการณ์ RBI",
+          "aliquot": "สัดส่วนการจัดสรร = AIRS ที่มีสิทธิ์ของฉัน / ผลรวม AIRS ที่มีสิทธิ์ × 100 %"
+        },
         "position": {
           "title": "อันดับของคุณ",
           "subtitle": "ในกลุ่มสมาชิก Airs By Alternun",
