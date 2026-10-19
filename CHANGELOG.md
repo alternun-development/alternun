@@ -1,8 +1,4 @@
-## [1.1.99](https://github.com/alternun-development/alternun/compare/v1.1.98...v1.1.99) (2026-10-19)
-
-### Bug Fixes
-
-- **repo:** fix(mobile): unify tooltip icon and modal to hero style
+## [1.1.99](https://github.com/alternun-development/alternun/compare/v1.1.98...v1.1.99) (2026-10-18)
 
 ### Bug Fixes
 
