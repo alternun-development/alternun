@@ -4,6 +4,7 @@ import {
   getAdminRolesFromSession,
   type AdminRole,
 } from '../auth/oidc-client';
+import type { MediaKind } from './api';
 
 export type MarketplacePermission =
   | 'enterprises:create'
@@ -60,8 +61,6 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
   moderator: [
     'projects:update',
     'project_media:moderate',
-    'completions:award',
-    'completions:reject',
     'comments:read',
     'comments:moderate',
     'audit:read',
@@ -116,6 +115,16 @@ export function hasMarketplacePermission(
   permission: MarketplacePermission
 ): boolean {
   return roles.some((role) => permissionsByRole[role].includes(permission));
+}
+
+export const brandMediaKinds: ReadonlySet<MediaKind> = new Set<MediaKind>(['logo', 'cover']);
+
+// Mirrors the API: only global admins and the project's partner_operator change brand media.
+// The server also checks the partner_operator membership; this only hides controls.
+export function canChangeBrandMedia(roles: readonly AdminRole[]): boolean {
+  return roles.some(
+    (role) => role === 'platform_owner' || role === 'internal_admin' || role === 'partner_operator'
+  );
 }
 
 export function useMarketplaceRoles(): readonly AdminRole[] | null {
