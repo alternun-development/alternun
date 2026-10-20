@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-19T22:46:25.595Z",
+  "lastUpdated": "2026-10-20T00:03:46.031Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Review feat/marketplace-project-proposals-r2 (project proposals API, Explorer form, email contact); pending: confirm MARKETPLACE_CONTACT_EMAIL mailbox and add it to dev/testnet/prod, apply migration 20261019_0001",
+      "description": "Review feat/explorer-paginated-lists (Explorer enterprise directory: list 3/page, grid 4/page, compact 6/page); merge after feat/marketplace-project-proposals-r2",
       "id": "next",
       "priority": 1
     }
