@@ -1,6 +1,7 @@
 import { isIP } from 'node:net';
 import { Injectable } from '@nestjs/common';
 import {
+  grantsGlobally,
   hasPermission,
   rolesWithPermission,
   type AdminPermission,
@@ -339,7 +340,7 @@ export class MarketplaceAdminService {
         projectId
       );
     let hasScope = true;
-    if (enterpriseId && !isGlobal(principal)) {
+    if (enterpriseId && !grantsGlobally(principal, permission)) {
       try {
         hasScope = await this.repository.actorHasScope(
           actorFromPrincipal(principal),
@@ -624,6 +625,40 @@ export class MarketplaceAdminService {
     return this.repository.listMedia(projectId);
   }
 
+  // Logo and cover are brand assets: only global admins and the project's partner_operator may change them.
+  private async authorizeBrandAsset(
+    principal: AdminPrincipal,
+    requestId: string,
+    project: ProjectRecord,
+    kinds: readonly (string | undefined)[]
+  ): Promise<void> {
+    if (!kinds.some((kind) => kind === 'logo' || kind === 'cover')) return;
+    if (hasRole(principal, 'platform_owner', 'internal_admin')) return;
+    let allowed = false;
+    if (hasRole(principal, 'partner_operator')) {
+      try {
+        allowed = await this.repository.actorHasScope(
+          actorFromPrincipal(principal),
+          principal.roles,
+          project.enterpriseId,
+          project.id,
+          ['partner_operator']
+        );
+      } catch {
+        allowed = false;
+      }
+    }
+    if (!allowed)
+      await this.deny(
+        principal,
+        'BRAND_ASSET_WRITE_DENIED',
+        requestId,
+        'project_media',
+        project.enterpriseId,
+        project.id
+      );
+  }
+
   private async validateMedia(
     project: ProjectRecord,
     input: Partial<CreateProjectMediaDto>
@@ -683,6 +718,7 @@ export class MarketplaceAdminService {
       project.enterpriseId,
       project.id
     );
+    await this.authorizeBrandAsset(principal, requestId, project, [input.kind]);
     await this.validateMedia(project, input);
     const created = await this.repository.createMedia(
       projectId,
@@ -724,6 +760,7 @@ export class MarketplaceAdminService {
       project.enterpriseId,
       project.id
     );
+    await this.authorizeBrandAsset(principal, requestId, project, [before.kind, input.kind]);
     await this.validateMedia(project, {
       ...before,
       embedUrl: before.embedUrl ?? undefined,
