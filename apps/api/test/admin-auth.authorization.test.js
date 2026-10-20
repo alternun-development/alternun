@@ -590,6 +590,49 @@ test('legacy admin roles are rejected at the dedicated admin boundary', async ()
   }
 });
 
+test('Authentik group names and unknown roles in the token grant no admin access', async () => {
+  const app = createAdminApi();
+
+  try {
+    for (const roles of [
+      ['Alternun Moderator'],
+      ['Alternun Sub Admin'],
+      ['Alternun Platform Owner'],
+      ['super_admin'],
+      ['moderators'],
+    ]) {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/admin/organizations/partner-org-1/allowances',
+        headers: { authorization: `Bearer ${signAdminToken({ roles })}` },
+      });
+
+      assert.equal(response.statusCode, 403, `${roles.join(',')} must not grant admin access`);
+    }
+  } finally {
+    await app.close();
+  }
+});
+
+test('moderator and sub_admin role claims are read but unknown roles add no permission', async () => {
+  const adminAuth = loadAdminAuthContract();
+  const verify = adminAuth.createIssuerJwtAdminVerifier('test-signing-key');
+
+  for (const role of ['moderator', 'sub_admin']) {
+    const principal = await verify(`Bearer ${signAdminToken({ roles: [role] })}`);
+    assert.deepEqual(principal.roles, [role]);
+  }
+
+  const mixed = await verify(
+    `Bearer ${signAdminToken({ roles: ['sub_admin', 'Alternun Platform Owner', 'super_admin'] })}`
+  );
+  for (const permission of ['projects:publish', 'completions:award', 'completions:reverse']) {
+    assert.equal(adminAuth.hasPermission(mixed, permission), false, permission);
+    assert.equal(adminAuth.grantsGlobally(mixed, permission), false, permission);
+  }
+  assert.equal(adminAuth.grantsGlobally(mixed, 'project_media:write'), false);
+});
+
 test('the API example environment exposes a dedicated admin JWKS URL', () => {
   const environmentExample = readFileSync(join(__dirname, '../.env.example'), 'utf8');
 
