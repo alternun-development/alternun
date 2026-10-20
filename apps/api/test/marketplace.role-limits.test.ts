@@ -82,6 +82,10 @@ function activityService(hasScope = true) {
         writes.push('create');
         return completion;
       },
+      setStatus: async () => {
+        writes.push('pause');
+        return { ...activity, status: 'paused' };
+      },
     } as never,
     {
       findProject: async () => project,
@@ -141,6 +145,41 @@ for (const [action, run] of Object.entries(completionActions) as Array<
     });
   }
 }
+
+const pauseRoles = ['platform_owner', 'internal_admin', 'partner_operator', 'sub_admin'];
+
+for (const role of ROLES) {
+  const allowed = pauseRoles.includes(role);
+  test(`activity pause: ${role} is ${allowed ? 'allowed' : 'denied and audited'}`, async () => {
+    const { service, audits, writes } = activityService();
+    if (allowed) {
+      await service.pause(principal(role), 'request', 'p1', 'a1', 'Weather');
+      assert.deepEqual(writes, ['pause']);
+    } else {
+      await assert.rejects(
+        service.pause(principal(role), 'request', 'p1', 'a1', 'Weather'),
+        expectApiError('PERMISSION_DENIED')
+      );
+      assert.deepEqual(writes, []);
+      assert.equal(audits.at(-1)?.reasonCode, 'PERMISSION_DENIED');
+    }
+  });
+}
+
+test('moderator next to sub_admin still needs the sub_admin membership to pause', async () => {
+  const denied = activityService(false);
+  await assert.rejects(
+    denied.service.pause(principal('moderator', 'sub_admin'), 'request', 'p1', 'a1', 'Weather'),
+    expectApiError('PROJECT_SCOPE_DENIED')
+  );
+  assert.deepEqual(denied.writes, []);
+  assert.deepEqual(denied.scopeCalls, [['partner_operator', 'sub_admin']]);
+  assert.equal(denied.audits.at(-1)?.reasonCode, 'PROJECT_SCOPE_DENIED');
+
+  const scoped = activityService(true);
+  await scoped.service.pause(principal('moderator', 'sub_admin'), 'request', 'p1', 'a1', 'Weather');
+  assert.deepEqual(scoped.writes, ['pause']);
+});
 
 test('moderator next to partner_operator still needs the partner_operator membership to award', async () => {
   const denied = activityService(false);
