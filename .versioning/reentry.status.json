@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-19T00:51:32.312Z",
+  "lastUpdated": "2026-10-20T20:38:11.667Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Merge the v1.1.97 develop→master promotion PR, then sync master back to develop",
+      "description": "Admin simple panel PR 2: role-based marketplace home and summary counters (issue #249)",
       "id": "next",
       "priority": 1
     }
