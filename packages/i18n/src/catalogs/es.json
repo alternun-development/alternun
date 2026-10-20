@@ -1095,6 +1095,18 @@
         "empty": "Aún no hay empresas disponibles.",
         "error": "No se pudieron cargar las empresas.",
         "retry": "Reintentar",
+        "view": {
+          "label": "Vista del directorio",
+          "list": "Lista",
+          "grid": "Cuadrícula",
+          "compact": "Compacta"
+        },
+        "pagination": {
+          "label": "Páginas de empresas",
+          "previous": "Anterior",
+          "next": "Siguiente",
+          "page": "Página {{page}} de {{total}}"
+        },
         "detail": {
           "back": "Volver a empresas",
           "loading": "Cargando empresa…",
