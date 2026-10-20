@@ -2,7 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Building2, ChevronRight, MapPin, RotateCcw } from 'lucide-react-native';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
+import { EnterprisePagination, EnterpriseViewSwitcher } from './EnterpriseDirectoryControls';
+import {
+  enterprisePageCount,
+  enterprisePageItems,
+  getRememberedEnterpriseView,
+  rememberEnterpriseView,
+} from './enterpriseDirectoryPaging';
 import type {
+  EnterpriseDirectoryView,
   EnterprisePalette,
   LoadMarketplaceEnterprises,
   MarketplaceEnterprise,
@@ -69,51 +77,112 @@ export const loadMarketplaceEnterprises: LoadMarketplaceEnterprises = async (loc
   return enterprises.map(normalizeEnterprise);
 };
 
+function EnterpriseLogo({
+  enterprise,
+  palette,
+  size,
+}: {
+  enterprise: MarketplaceEnterprise;
+  palette: EnterprisePalette;
+  size: number;
+}): React.JSX.Element {
+  const frame = { width: size, height: size, borderRadius: Math.round(size / 4) };
+  return enterprise.logo ? (
+    <Image
+      source={{ uri: enterprise.logo.url }}
+      accessibilityLabel={enterprise.logo.altText || enterprise.displayName}
+      style={frame}
+      resizeMode='contain'
+    />
+  ) : (
+    <View style={[styles.logoFallback, frame, { backgroundColor: palette.mist }]}>
+      <Building2 size={Math.round(size * 0.43)} color={palette.primary} />
+    </View>
+  );
+}
+
 function EnterpriseCard({
   enterprise,
   palette,
   t,
+  view,
   onOpen,
 }: {
   enterprise: MarketplaceEnterprise;
   palette: EnterprisePalette;
   t: Translate;
+  view: EnterpriseDirectoryView;
   onOpen: (slug: string) => void;
 }): React.JSX.Element {
+  const projectCount = t('explorer.enterprises.projectCount', { count: enterprise.projectCount });
+  const country = enterprise.countryCode ? (
+    <View style={styles.countryRow}>
+      <MapPin size={14} color={palette.muted} />
+      <Text style={[styles.countryText, { color: palette.muted }]}>{enterprise.countryCode}</Text>
+    </View>
+  ) : null;
+  const cardProps = {
+    testID: `explorer-enterprise-${enterprise.id}`,
+    accessibilityRole: 'button' as const,
+    accessibilityLabel: `${enterprise.displayName}, ${projectCount}`,
+    onPress: () => onOpen(enterprise.slug),
+  };
+
+  if (view === 'grid') {
+    return (
+      <Pressable
+        {...cardProps}
+        style={[styles.gridCard, { backgroundColor: palette.surface, borderColor: palette.border }]}
+      >
+        <EnterpriseLogo enterprise={enterprise} palette={palette} size={48} />
+        <Text numberOfLines={2} style={[styles.gridTitle, { color: palette.text }]}>
+          {enterprise.displayName}
+        </Text>
+        {country}
+        <Text numberOfLines={2} style={[styles.projectCount, { color: palette.primaryDeep }]}>
+          {projectCount}
+        </Text>
+      </Pressable>
+    );
+  }
+
+  if (view === 'compact') {
+    return (
+      <Pressable
+        {...cardProps}
+        style={[
+          styles.compactRow,
+          { backgroundColor: palette.surface, borderColor: palette.border },
+        ]}
+      >
+        <EnterpriseLogo enterprise={enterprise} palette={palette} size={34} />
+        <View style={styles.cardTitleBlock}>
+          <Text numberOfLines={1} style={[styles.compactTitle, { color: palette.text }]}>
+            {enterprise.displayName}
+          </Text>
+          <Text numberOfLines={1} style={[styles.compactMeta, { color: palette.primaryDeep }]}>
+            {enterprise.countryCode ? `${enterprise.countryCode} · ${projectCount}` : projectCount}
+          </Text>
+        </View>
+        <ChevronRight size={17} color={palette.primaryDeep} />
+      </Pressable>
+    );
+  }
+
   return (
     <Pressable
-      testID={`explorer-enterprise-${enterprise.id}`}
-      accessibilityRole='button'
-      onPress={() => onOpen(enterprise.slug)}
+      {...cardProps}
       style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}
     >
       <View style={styles.cardHeader}>
-        {enterprise.logo ? (
-          <Image
-            source={{ uri: enterprise.logo.url }}
-            accessibilityLabel={enterprise.logo.altText || enterprise.displayName}
-            style={styles.logo}
-            resizeMode='contain'
-          />
-        ) : (
-          <View style={[styles.logoFallback, { backgroundColor: palette.mist }]}>
-            <Building2 size={25} color={palette.primary} />
-          </View>
-        )}
+        <EnterpriseLogo enterprise={enterprise} palette={palette} size={58} />
         <View style={styles.cardTitleBlock}>
           <Text style={[styles.cardTitle, { color: palette.text }]}>{enterprise.displayName}</Text>
-          {enterprise.countryCode ? (
-            <View style={styles.countryRow}>
-              <MapPin size={14} color={palette.muted} />
-              <Text style={{ color: palette.muted }}>{enterprise.countryCode}</Text>
-            </View>
-          ) : null}
+          {country}
         </View>
         <ChevronRight size={20} color={palette.primaryDeep} />
       </View>
-      <Text style={[styles.projectCount, { color: palette.primaryDeep }]}>
-        {t('explorer.enterprises.projectCount', { count: enterprise.projectCount })}
-      </Text>
+      <Text style={[styles.projectCount, { color: palette.primaryDeep }]}>{projectCount}</Text>
     </Pressable>
   );
 }
@@ -124,21 +193,42 @@ export function MarketplaceEnterpriseBrowser({
   t,
   loader = loadMarketplaceEnterprises,
   onOpenEnterprise = () => undefined,
+  onListNavigate = () => undefined,
 }: {
   locale: string;
   palette: EnterprisePalette;
   t: Translate;
   loader?: LoadMarketplaceEnterprises;
   onOpenEnterprise?: (slug: string) => void;
+  /** Called after the page or the view changes, so the screen can scroll back to the list. */
+  onListNavigate?: () => void;
 }): React.JSX.Element {
   const [enterprises, setEnterprises] = useState<MarketplaceEnterprise[]>([]);
   const [state, setState] = useState<'loading' | 'success' | 'error'>('loading');
   const [requestVersion, setRequestVersion] = useState(0);
+  const [view, setView] = useState<EnterpriseDirectoryView>(getRememberedEnterpriseView);
+  const [page, setPage] = useState(1);
+  const pageCount = enterprisePageCount(enterprises.length, view);
+  const currentPage = Math.min(page, pageCount);
+  const pageItems = enterprisePageItems(enterprises, view, currentPage);
+
+  const changeView = (next: EnterpriseDirectoryView): void => {
+    rememberEnterpriseView(next);
+    setView(next);
+    setPage(1);
+    onListNavigate();
+  };
+
+  const changePage = (next: number): void => {
+    setPage(next);
+    onListNavigate();
+  };
 
   useEffect(() => {
     const controller = new AbortController();
     setState('loading');
     setEnterprises([]);
+    setPage(1);
     void loader(locale, controller.signal)
       .then((items) => {
         if (controller.signal.aborted) return;
@@ -205,17 +295,39 @@ export function MarketplaceEnterpriseBrowser({
           </Text>
         </View>
       ) : null}
-      {state === 'success'
-        ? enterprises.map((enterprise) => (
-            <EnterpriseCard
-              key={enterprise.id}
-              enterprise={enterprise}
-              palette={palette}
-              t={t}
-              onOpen={onOpenEnterprise}
-            />
-          ))
-        : null}
+      {state === 'success' && enterprises.length > 0 ? (
+        <>
+          <EnterpriseViewSwitcher view={view} palette={palette} t={t} onChange={changeView} />
+          <View
+            testID={`enterprise-directory-${view}`}
+            style={
+              view === 'grid'
+                ? styles.gridLayout
+                : view === 'compact'
+                ? styles.compactLayout
+                : styles.listLayout
+            }
+          >
+            {pageItems.map((enterprise) => (
+              <EnterpriseCard
+                key={enterprise.id}
+                enterprise={enterprise}
+                palette={palette}
+                t={t}
+                view={view}
+                onOpen={onOpenEnterprise}
+              />
+            ))}
+          </View>
+          <EnterprisePagination
+            page={currentPage}
+            pageCount={pageCount}
+            palette={palette}
+            t={t}
+            onChange={changePage}
+          />
+        </>
+      ) : null}
     </View>
   );
 }
@@ -230,14 +342,37 @@ const styles = StyleSheet.create({
   cardTitleBlock: { flex: 1, gap: 5 },
   cardTitle: { fontFamily: 'Sculpin-Bold', fontSize: 19 },
   countryRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  logo: { width: 58, height: 58, borderRadius: 14 },
-  logoFallback: {
-    width: 58,
-    height: 58,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+  countryText: { fontSize: 13 },
+  logoFallback: { alignItems: 'center', justifyContent: 'center' },
+  listLayout: { gap: 14 },
+  gridLayout: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 12,
   },
+  gridCard: {
+    width: '48.5%',
+    minHeight: 178,
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 14,
+    gap: 8,
+  },
+  gridTitle: { fontFamily: 'Sculpin-Bold', fontSize: 16, lineHeight: 20 },
+  compactLayout: { gap: 8 },
+  compactRow: {
+    minHeight: 56,
+    borderWidth: 1,
+    borderRadius: 15,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+  },
+  compactTitle: { fontFamily: 'Sculpin-Bold', fontSize: 15 },
+  compactMeta: { fontSize: 12, fontWeight: '800' },
   projectCount: { fontSize: 13, fontWeight: '800' },
   state: {
     minHeight: 150,
