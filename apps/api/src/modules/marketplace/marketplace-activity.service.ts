@@ -334,18 +334,21 @@ export class MarketplaceActivityService {
     activityId: string,
     reason?: string
   ): Promise<ProjectActivityRecord> {
-    await this.authorizeProject(principal, 'activities:read', requestId, projectId);
-    if (
-      !hasRole(
-        principal,
-        'platform_owner',
-        'internal_admin',
-        'moderator',
-        'partner_operator',
-        'sub_admin'
-      )
-    )
-      await this.deny(principal, requestId, projectId, 'PERMISSION_DENIED');
+    const project = await this.authorizeProject(principal, 'activities:read', requestId, projectId);
+    // The global moderator may not pause activities. Scoped roles need their own
+    // membership here, because activities:read alone may come from a global role.
+    if (!hasRole(principal, 'platform_owner', 'internal_admin')) {
+      if (!hasRole(principal, 'partner_operator', 'sub_admin'))
+        await this.deny(principal, requestId, projectId, 'PERMISSION_DENIED');
+      const allowed = await this.adminRepository.actorHasScope(
+        actorFromPrincipal(principal),
+        principal.roles,
+        project.enterpriseId,
+        projectId,
+        ['partner_operator', 'sub_admin']
+      );
+      if (!allowed) await this.deny(principal, requestId, projectId, 'PROJECT_SCOPE_DENIED');
+    }
     const before = await this.repository.find(projectId, activityId);
     if (!before) marketplaceError('ACTIVITY_NOT_FOUND');
     if (!['published', 'paused'].includes(before.status))
