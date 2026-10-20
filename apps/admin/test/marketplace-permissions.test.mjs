@@ -87,13 +87,16 @@ void test('client permission matrix matches the API matrix for every role', () =
   }
 });
 
-void test('global moderator cannot approve, reject, or reverse activities', () => {
+void test('global moderator cannot approve, reject, reverse, or pause activities', () => {
   assert.deepEqual(completionActionAvailability(['moderator']), {
     approve: false,
     reject: false,
     reverse: false,
   });
   assert.equal(completionActionAvailability(['partner_operator']).approve, true);
+  // The activity editor enables publish and pause only with activities:publish.
+  assert.equal(client.hasMarketplacePermission(['moderator'], 'activities:publish'), false);
+  assert.equal(client.hasMarketplacePermission(['moderator'], 'activities:write'), false);
   assert.match(marketplaceCopy.permissions.award, /project administrator/);
 });
 
