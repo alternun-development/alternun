@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { isIP } from 'node:net';
 import { Injectable } from '@nestjs/common';
 import {
+  grantsGlobally,
   hasPermission,
   rolesWithPermission,
   type AdminPermission,
@@ -29,12 +30,6 @@ import {
   type ProjectRecord,
   type PublicProjectActivity,
 } from './marketplace.types';
-
-const GLOBAL_ROLES = new Set(['platform_owner', 'internal_admin', 'moderator']);
-
-function isGlobal(principal: AdminPrincipal): boolean {
-  return principal.roles.some((role) => GLOBAL_ROLES.has(role));
-}
 
 function hasRole(principal: AdminPrincipal, ...roles: string[]): boolean {
   return principal.roles.some((role) => roles.includes(role));
@@ -211,7 +206,7 @@ export class MarketplaceActivityService {
     if (!project) marketplaceError('PROJECT_NOT_FOUND');
     if (!hasPermission(principal, permission))
       await this.deny(principal, requestId, projectId, 'PERMISSION_DENIED');
-    if (!isGlobal(principal)) {
+    if (!grantsGlobally(principal, permission)) {
       const allowed = await this.adminRepository.actorHasScope(
         actorFromPrincipal(principal),
         principal.roles,
