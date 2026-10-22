@@ -45,6 +45,11 @@ import type {
   Translate,
 } from './explorar.types';
 import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
+import {
+  resolveMarketplaceContactMailto,
+  submitProjectProposal,
+  validateProjectProposalInput,
+} from '../services/projectProposal';
 
 const CompassIcon = Compass as React.FC<LucideProps>;
 const LeafIcon = Leaf as React.FC<LucideProps>;
@@ -62,8 +67,6 @@ const BadgeDollarSignIcon = BadgeDollarSign as React.FC<LucideProps>;
 const HandHeartIcon = HandHeart as React.FC<LucideProps>;
 const LightbulbIcon = Lightbulb as React.FC<LucideProps>;
 const GiftIcon = Gift as React.FC<LucideProps>;
-
-const TELEGRAM_URL = 'https://t.me/alternun_io';
 
 function safeImageUrl(media: MarketplaceMedia[]): string | null {
   const preferredKinds = ['cover', 'gallery_image', 'logo'];
@@ -153,14 +156,14 @@ function getIntentActions(t: Translate): {
   label: string;
   description: string;
   icon: React.FC<LucideProps>;
-  action: 'telegram' | 'form';
+  action: 'email' | 'form';
 }[] {
   return [
     {
       label: t('explorer.intents.collaborate.label'),
       description: t('explorer.intents.collaborate.description'),
       icon: HandHeartIcon,
-      action: 'telegram',
+      action: 'email',
     },
     {
       label: t('explorer.intents.propose.label'),
@@ -172,13 +175,14 @@ function getIntentActions(t: Translate): {
       label: t('explorer.intents.donate.label'),
       description: t('explorer.intents.donate.description'),
       icon: GiftIcon,
-      action: 'telegram',
+      action: 'email',
     },
   ];
 }
 
-function openTelegram(): void {
-  void Linking.openURL(TELEGRAM_URL);
+function openMarketplaceContact(): void {
+  const mailto = resolveMarketplaceContactMailto();
+  if (mailto) void Linking.openURL(mailto);
 }
 
 function IntentRotator({
@@ -239,7 +243,7 @@ function IntentRotator({
       >
         <Pressable
           style={[styles.intentAction, { backgroundColor: palette.primaryDeep }]}
-          onPress={intent.action === 'form' ? onProposeProject : openTelegram}
+          onPress={intent.action === 'form' ? onProposeProject : openMarketplaceContact}
           accessibilityLabel={intent.label}
         >
           <View style={styles.intentIconWrap}>
@@ -350,7 +354,7 @@ function HeroCarousel({
             <Text style={[styles.heroDescription, { color: launchDescriptionColor }]}>
               {featuredProject?.description ?? t('explorer.heroDescription')}
             </Text>
-            <Pressable style={styles.heroAction} onPress={openTelegram}>
+            <Pressable style={styles.heroAction} onPress={openMarketplaceContact}>
               <Text style={styles.heroActionText}>{t('explorer.collaborate')}</Text>
               <ArrowUpRightIcon size={16} color='#063c32' strokeWidth={2.6} />
             </Pressable>
@@ -372,7 +376,7 @@ function HeroCarousel({
           <Text style={styles.heroKicker}>{t('explorer.openMap')}</Text>
           <Text style={styles.submitTitle}>{t('explorer.submitBanner.title')}</Text>
           <Text style={styles.submitDescription}>{t('explorer.submitBanner.description')}</Text>
-          <Pressable style={styles.submitAction} onPress={openTelegram}>
+          <Pressable style={styles.submitAction} onPress={openMarketplaceContact}>
             <Text style={styles.submitActionText}>{t('explorer.submitProject')}</Text>
             <SendIcon size={15} color='#eafff4' />
           </Pressable>
@@ -661,10 +665,60 @@ export function MarketplaceProjectBrowser({
   );
 }
 
-function SubmitProject({ palette, t }: { palette: Palette; t: Translate }): React.JSX.Element {
+function SubmitProject({
+  language,
+  palette,
+  t,
+}: {
+  language: string;
+  palette: Palette;
+  t: Translate;
+}): React.JSX.Element {
   const [projectName, setProjectName] = useState('');
   const [projectType, setProjectType] = useState<'productive' | 'conservation'>('productive');
   const [location, setLocation] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [website, setWebsite] = useState('');
+  const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'sent' | 'error'>('idle');
+  const [submitMessage, setSubmitMessage] = useState('');
+
+  const handleSubmit = async (): Promise<void> => {
+    if (submitState === 'submitting') return;
+    const input = {
+      projectName,
+      location,
+      category: projectType,
+      message,
+      contactEmail,
+      contactName,
+      language: (['es', 'en', 'th'].includes(language) ? language : 'en') as 'es' | 'en' | 'th',
+      website,
+    };
+    if (!validateProjectProposalInput(input)) {
+      setSubmitState('error');
+      setSubmitMessage(t('explorer.form.validationError'));
+      return;
+    }
+
+    setSubmitState('submitting');
+    setSubmitMessage('');
+    try {
+      await submitProjectProposal(input);
+      setSubmitState('sent');
+      setSubmitMessage(t('explorer.form.sent'));
+      setProjectName('');
+      setLocation('');
+      setContactName('');
+      setContactEmail('');
+      setMessage('');
+      setWebsite('');
+    } catch {
+      setSubmitState('error');
+      setSubmitMessage(t('explorer.form.submitError'));
+    }
+  };
 
   return (
     <View
@@ -700,6 +754,47 @@ function SubmitProject({ palette, t }: { palette: Palette; t: Translate }): Reac
         placeholderTextColor={palette.muted}
         style={[styles.input, { color: palette.text, borderColor: palette.border }]}
       />
+      <TextInput
+        value={contactName}
+        onChangeText={setContactName}
+        placeholder={t('explorer.form.contactName')}
+        placeholderTextColor={palette.muted}
+        autoComplete='name'
+        style={[styles.input, { color: palette.text, borderColor: palette.border }]}
+      />
+      <TextInput
+        value={contactEmail}
+        onChangeText={setContactEmail}
+        placeholder={t('explorer.form.contactEmail')}
+        placeholderTextColor={palette.muted}
+        autoCapitalize='none'
+        autoComplete='email'
+        keyboardType='email-address'
+        style={[styles.input, { color: palette.text, borderColor: palette.border }]}
+      />
+      <TextInput
+        value={message}
+        onChangeText={setMessage}
+        placeholder={t('explorer.form.message')}
+        placeholderTextColor={palette.muted}
+        multiline
+        maxLength={2000}
+        style={[
+          styles.input,
+          styles.messageInput,
+          { color: palette.text, borderColor: palette.border },
+        ]}
+      />
+      <TextInput
+        value={website}
+        onChangeText={setWebsite}
+        testID='explorer-project-proposal-honeypot'
+        accessibilityElementsHidden
+        importantForAccessibility='no-hide-descendants'
+        autoComplete='off'
+        tabIndex={-1}
+        style={styles.honeypotInput}
+      />
       <View style={styles.typeSelector}>
         {(
           [
@@ -731,12 +826,32 @@ function SubmitProject({ palette, t }: { palette: Palette; t: Translate }): Reac
         })}
       </View>
       <Pressable
-        style={[styles.telegramSubmit, { backgroundColor: palette.primary }]}
-        onPress={openTelegram}
+        testID='explorer-project-proposal-submit'
+        style={[
+          styles.telegramSubmit,
+          { backgroundColor: palette.primary },
+          submitState === 'submitting' && styles.submitDisabled,
+        ]}
+        disabled={submitState === 'submitting'}
+        onPress={() => void handleSubmit()}
       >
         <SendIcon size={16} color='#063c32' />
-        <Text style={styles.telegramSubmitText}>{t('explorer.form.continueTelegram')}</Text>
+        <Text style={styles.telegramSubmitText}>
+          {t(submitState === 'submitting' ? 'explorer.form.submitting' : 'explorer.form.submit')}
+        </Text>
       </Pressable>
+      {submitMessage ? (
+        <Text
+          testID={`explorer-project-proposal-${submitState}`}
+          accessibilityRole='alert'
+          style={[
+            styles.formFeedback,
+            { color: submitState === 'sent' ? palette.primaryDeep : '#a61b1b' },
+          ]}
+        >
+          {submitMessage}
+        </Text>
+      ) : null}
       <Text style={[styles.formFinePrint, { color: palette.muted }]}>
         {t('explorer.form.finePrint')}
       </Text>
@@ -908,7 +1023,7 @@ export default function ExplorarScreen(): React.JSX.Element {
               setProjectFormOffset(event.nativeEvent.layout.y);
             }}
           >
-            <SubmitProject palette={palette} t={t} />
+            <SubmitProject language={language} palette={palette} t={t} />
           </View>
         </ScrollView>
       </Animated.View>
@@ -1243,6 +1358,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
     marginBottom: 9,
   },
+  messageInput: { minHeight: 88, textAlignVertical: 'top' },
+  honeypotInput: { position: 'absolute', left: -10000, width: 1, height: 1, opacity: 0 },
   typeSelector: { flexDirection: 'row', gap: 8, marginTop: 1 },
   typeButton: {
     flex: 1,
@@ -1262,5 +1379,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   telegramSubmitText: { color: '#063c32', fontSize: 12, fontWeight: '900' },
+  submitDisabled: { opacity: 0.65 },
+  formFeedback: { fontSize: 12, fontWeight: '700', lineHeight: 18 },
   formFinePrint: { fontSize: 10, textAlign: 'center', marginTop: 9 },
 });

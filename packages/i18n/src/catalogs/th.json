@@ -21,6 +21,21 @@
     },
     "templates": {
       "welcome": "ยินดีต้อนรับ, {{name}}"
+    },
+    "projectProposalEmail": {
+      "subject": "ข้อเสนอโครงการใหม่ในมาร์เก็ตเพลส",
+      "intro": "มีการส่งข้อเสนอโครงการใหม่จาก Explorer",
+      "projectName": "ชื่อโครงการ",
+      "location": "สถานที่",
+      "category": "หมวดหมู่",
+      "contactName": "ชื่อผู้ติดต่อ",
+      "contactEmail": "อีเมลติดต่อ",
+      "language": "ภาษา",
+      "message": "ข้อความ",
+      "categories": {
+        "productive": "โครงการสร้างผลผลิต",
+        "conservation": "การอนุรักษ์"
+      }
     }
   },
   "mobile": {
@@ -1178,8 +1193,15 @@
         "location": "ประเทศหรือพื้นที่",
         "productive": "สร้างสรรค์",
         "conservation": "การอนุรักษ์",
-        "continueTelegram": "ดำเนินการต่อใน Telegram",
-        "finePrint": "แบ่งปันรายละเอียดข้อเสนอของคุณกับ @alternun_io"
+        "contactName": "ชื่อผู้ติดต่อ",
+        "contactEmail": "อีเมลติดต่อ",
+        "message": "ข้อความ (ไม่บังคับ)",
+        "submit": "ส่งข้อเสนอ",
+        "submitting": "กำลังส่ง…",
+        "sent": "ส่งข้อเสนอของคุณแล้ว ขอบคุณที่แบ่งปัน",
+        "validationError": "โปรดตรวจสอบข้อมูลแล้วลองอีกครั้ง",
+        "submitError": "ไม่สามารถส่งข้อเสนอได้ โปรดลองอีกครั้ง",
+        "finePrint": "เราจะบันทึกข้อเสนอของคุณเพื่อให้ทีม Alternun ตรวจสอบ"
       }
     }
   },

@@ -21,6 +21,21 @@
     },
     "templates": {
       "welcome": "Welcome, {{name}}"
+    },
+    "projectProposalEmail": {
+      "subject": "New marketplace project proposal",
+      "intro": "A new project proposal was submitted from Explorer.",
+      "projectName": "Project name",
+      "location": "Location",
+      "category": "Category",
+      "contactName": "Contact name",
+      "contactEmail": "Contact email",
+      "language": "Language",
+      "message": "Message",
+      "categories": {
+        "productive": "Productive",
+        "conservation": "Conservation"
+      }
     }
   },
   "mobile": {
@@ -1178,8 +1193,15 @@
         "location": "Country or territory",
         "productive": "Productive",
         "conservation": "Conservation",
-        "continueTelegram": "Continue in Telegram",
-        "finePrint": "Share your proposal details with @alternun_io."
+        "contactName": "Contact name",
+        "contactEmail": "Contact email",
+        "message": "Message (optional)",
+        "submit": "Send proposal",
+        "submitting": "Sending…",
+        "sent": "Your proposal was sent. Thank you for sharing it.",
+        "validationError": "Review the fields and try again.",
+        "submitError": "We couldn't send your proposal. Please try again.",
+        "finePrint": "We will store your proposal so the Alternun team can review it."
       }
     }
   },

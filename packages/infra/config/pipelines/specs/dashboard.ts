@@ -78,6 +78,7 @@ export function buildDashboardPipelineSpecs({
           env.EXPO_PUBLIC_SUPABASE_KEY ?? env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
         INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY:
           env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+        MARKETPLACE_CONTACT_EMAIL: env.MARKETPLACE_CONTACT_EMAIL ?? '',
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlDev,
         INFRA_BACKEND_API_AUTH_SIGNUP_PROVIDER: 'better-auth',
         INFRA_BACKEND_API_DATABASE_URL: backendDatabaseUrl,
@@ -137,6 +138,7 @@ export function buildDashboardPipelineSpecs({
           env.EXPO_PUBLIC_SUPABASE_KEY ?? env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
         INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY:
           env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+        MARKETPLACE_CONTACT_EMAIL: env.MARKETPLACE_CONTACT_EMAIL ?? '',
         INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL: betterAuthUrlProd,
         // Production identities remain owned by the canonical Authentik OIDC flow.
         // Authentik remains the canonical issuer, while email/password stays on
