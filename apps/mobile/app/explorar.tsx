@@ -867,6 +867,7 @@ export default function ExplorarScreen(): React.JSX.Element {
   const [featuredProject, setFeaturedProject] = useState<MarketProject | null>(null);
   const [directory, setDirectory] = useState<'projects' | 'enterprises'>('projects');
   const [projectFormOffset, setProjectFormOffset] = useState(0);
+  const [enterpriseListOffset, setEnterpriseListOffset] = useState(0);
   const entrance = useRef(new Animated.Value(0)).current;
   const explorerScrollRef = useRef<ScrollView>(null);
 
@@ -899,6 +900,13 @@ export default function ExplorarScreen(): React.JSX.Element {
   React.useEffect(() => {
     Animated.timing(entrance, { toValue: 1, duration: 520, useNativeDriver: true }).start();
   }, [entrance]);
+
+  const scrollToEnterpriseList = (): void => {
+    explorerScrollRef.current?.scrollTo({
+      y: Math.max(enterpriseListOffset - 12, 0),
+      animated: true,
+    });
+  };
 
   const handleProposeProject = (): void => {
     explorerScrollRef.current?.scrollTo({
@@ -997,17 +1005,23 @@ export default function ExplorarScreen(): React.JSX.Element {
               }
             />
           ) : (
-            <MarketplaceEnterpriseBrowser
-              locale={language}
-              palette={palette}
-              t={t}
-              onOpenEnterprise={(slug) =>
-                router.push({
-                  pathname: '/explorar/empresa/[slug]',
-                  params: { slug },
-                })
-              }
-            />
+            <View
+              testID='explorer-enterprise-list'
+              onLayout={(event) => setEnterpriseListOffset(event.nativeEvent.layout.y)}
+            >
+              <MarketplaceEnterpriseBrowser
+                locale={language}
+                palette={palette}
+                t={t}
+                onListNavigate={scrollToEnterpriseList}
+                onOpenEnterprise={(slug) =>
+                  router.push({
+                    pathname: '/explorar/empresa/[slug]',
+                    params: { slug },
+                  })
+                }
+              />
+            </View>
           )}
 
           <View style={[styles.earnBanner, { backgroundColor: palette.primaryDeep }]}>

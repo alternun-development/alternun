@@ -1096,6 +1096,18 @@
         "empty": "No enterprises are available yet.",
         "error": "Enterprises could not be loaded.",
         "retry": "Try again",
+        "view": {
+          "label": "Directory view",
+          "list": "List",
+          "grid": "Grid",
+          "compact": "Compact"
+        },
+        "pagination": {
+          "label": "Enterprise pages",
+          "previous": "Previous",
+          "next": "Next",
+          "page": "Page {{page}} of {{total}}"
+        },
         "detail": {
           "back": "Back to enterprises",
           "loading": "Loading enterprise…",

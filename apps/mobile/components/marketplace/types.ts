@@ -75,6 +75,9 @@ export type LoadMarketplaceEnterprises = (
   signal?: AbortSignal
 ) => Promise<MarketplaceEnterprise[]>;
 
+/** Explorer enterprise directory layouts: list (3/page), 2x2 grid (4/page), compact (6/page). */
+export type EnterpriseDirectoryView = 'list' | 'grid' | 'compact';
+
 export interface MarketplaceCommentsPage {
   data: PublicProjectComment[];
   page: number;
