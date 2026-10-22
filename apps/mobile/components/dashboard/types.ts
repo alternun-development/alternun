@@ -1,4 +1,42 @@
+import type { ReactNode } from 'react';
+
 export type TokenState = 'Free' | 'Deposited' | 'Consumed';
+
+export interface RewardAsset {
+  id: string;
+  name: string;
+  value?: number | string | null;
+  icon: ReactNode;
+}
+
+export interface AuthClient {
+  getSessionToken(): Promise<string | null>;
+  getUser?: () => Promise<unknown>;
+}
+
+export interface DashboardSummaryCardsProps {
+  isDark: boolean;
+  onNavigate?: (key: string) => void;
+  client?: AuthClient;
+  signedIn?: boolean;
+  airsBalance?: number | null;
+  participationFactor?: number | null;
+  participationFactorEstimated?: boolean;
+  communityEligibleAirs?: number | null;
+  rewardAssets?: readonly RewardAsset[];
+}
+
+export interface RbiProjectionInput {
+  airs: number | null | undefined;
+  participationFactor: number | null | undefined;
+  communityEligibleAirs: number | null | undefined;
+}
+
+export interface RbiProjectionMetrics {
+  participationFactorPercent: number | null;
+  eligibleAirs: number | null;
+  aliquotPercent: number | null;
+}
 
 export interface ImpactToken {
   tokenId: string;
@@ -47,6 +85,9 @@ export interface AirsDashboardSnapshot {
   profileCompletedAt: string | null;
   balanceAIRS: number;
   lifetimeEarnedAIRS: number;
+  participationFactor?: number | null;
+  participationFactorEstimated?: boolean;
+  communityEligibleAirs?: number | null;
   recentEntries: AIRSEntry[];
 }
 

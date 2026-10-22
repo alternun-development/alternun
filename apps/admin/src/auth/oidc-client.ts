@@ -12,7 +12,9 @@ type ClaimBag = Record<string, unknown>;
 export const ADMIN_ROLES = [
   'platform_owner',
   'internal_admin',
+  'moderator',
   'partner_operator',
+  'sub_admin',
   'partner_readonly',
 ] as const;
 
@@ -32,16 +34,22 @@ const ADMIN_GROUP_ROLE_ALIASES: Map<string, AdminRole> = new Map([
   ['authentik admins', 'platform_owner'],
   ['alternun dashboard admins', 'internal_admin'],
   ['alternun internal admin', 'internal_admin'],
+  ['alternun moderator', 'moderator'],
   ['alternun platform owner', 'platform_owner'],
   ['alternun partner operator', 'partner_operator'],
   ['alternun partner read only', 'partner_readonly'],
+  ['alternun sub admin', 'sub_admin'],
 ]);
 const rolePriority: readonly AdminRole[] = [
   'platform_owner',
   'internal_admin',
+  'moderator',
   'partner_operator',
+  'sub_admin',
   'partner_readonly',
 ] as const;
+
+const MARKETPLACE_ONLY_RESOURCES = ['marketplace-enterprises', 'marketplace-projects'] as const;
 
 function createSettings(): UserManagerSettings {
   const origin = typeof window === 'undefined' ? 'http://localhost:4173' : window.location.origin;
@@ -176,7 +184,9 @@ export function resolveAdminAccessProfile(
 
   return {
     allowedResources:
-      surface === 'internal'
+      primaryRole === 'moderator' || primaryRole === 'sub_admin'
+        ? copyResourceNames(MARKETPLACE_ONLY_RESOURCES)
+        : surface === 'internal'
         ? copyResourceNames(internalAdminResourceNames)
         : copyResourceNames(partnerAdminResourceNames),
     organizationIds: copyResourceNames(organizationIds),
@@ -184,6 +194,11 @@ export function resolveAdminAccessProfile(
     roles: canonicalRoles,
     surface,
   };
+}
+
+export function resolveAdminLandingPath(roles: readonly AdminRole[]): string {
+  const accessProfile = resolveAdminAccessProfile(roles);
+  return accessProfile?.surface === 'partner' ? '/marketplace' : '/dashboard';
 }
 
 export function hasAdminRole(roles: readonly string[]): boolean {

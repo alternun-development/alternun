@@ -120,14 +120,13 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.91**
+Current version: **1.1.100**
 
-## 📋 Latest Changes (v1.1.91)
+## 📋 Latest Changes (v1.1.100)
 
-### Changes
+### Bug Fixes
 
-- **repo,mobile:** artifact, graph.db, HeroStats.navigation.test, TopNav.tier.test ([9acef4d](https://github.com/alternun-development/alternun/commit/9acef4d9b59d58938d3628b2006dfec57bf35b81))
-- **repo,mobile,i18n:** artifact, graph.db, tls-health, README ([71b6beb](https://github.com/alternun-development/alternun/commit/71b6beb63fbc70edbb2d230b1d3bd3cfe3b9be91))
+- **mobile:** make tooltip surface opaque to match hero ([96d5ab3](https://github.com/alternun-development/alternun/commit/96d5ab3c89f41036bcbf7b869cce1894aea0ca71))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
@@ -145,7 +144,7 @@ For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub release
 - Internal ops: [`docs/`](docs/)
 - API blueprint: [`docs/alternun_nestjs_fastify_openapi_blueprint.md`](docs/alternun_nestjs_fastify_openapi_blueprint.md)
 - Contribution workflow: [`docs/contribution-workflow.md`](docs/contribution-workflow.md)
-- Public docs site: [alternun-development.github.io](https://alternun-development.github.io)
+- Public docs site: [docs.alternun.io](https://docs.alternun.io)
 
 ## Contributing
 

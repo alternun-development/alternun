@@ -1,3 +1,128 @@
+## [1.1.100](https://github.com/alternun-development/alternun/compare/v1.1.99...v1.1.100) (2026-10-18)
+
+### Bug Fixes
+
+- **mobile:** make tooltip surface opaque to match hero ([96d5ab3](https://github.com/alternun-development/alternun/commit/96d5ab3c89f41036bcbf7b869cce1894aea0ca71))
+
+## [1.1.99](https://github.com/alternun-development/alternun/compare/v1.1.98...v1.1.99) (2026-10-18)
+
+### Bug Fixes
+
+- **mobile:** unify tooltip icon and modal to hero style ([c28cc0f](https://github.com/alternun-development/alternun/commit/c28cc0f60c995589a2c38e2015c0e2429dffeb12))
+
+## [1.1.98](https://github.com/alternun-development/alternun/compare/v1.1.97...v1.1.98) (2026-10-18)
+
+### Changes
+
+- **repo:** refresh codebase-memory graph ([c88f478](https://github.com/alternun-development/alternun/commit/c88f4789029778a4d3c1334354f36c285d5d3976))
+
+### Bug Fixes
+
+- **repo:** artifact, graph.db, config, specs ([3df990f](https://github.com/alternun-development/alternun/commit/3df990f786fc8d83c9b1fbe69cb96fa86c96cd09))
+- **mobile:** use hero info icons on dashboard metrics ([51a3897](https://github.com/alternun-development/alternun/commit/51a38972074112d0d9be98a7281a3209040972ae))
+
+## [1.1.97](https://github.com/alternun-development/alternun/compare/v1.1.96...v1.1.97) (2026-10-18)
+
+### Changes
+
+- **repo:** sync reentry for v1.1.97 release ([807a78f](https://github.com/alternun-development/alternun/commit/807a78f31f06907757027955381f8bf82490aa46))
+- **repo:** 🚀 ci: publish docs on version tags ([528613b](https://github.com/alternun-development/alternun/commit/528613b69bd691c9e0ee09adde66594d57e30775))
+- **web:** remove mock user data from the home page (#259) ([75bb3c9](https://github.com/alternun-development/alternun/commit/75bb3c96e387757d16fa7a7f5786bc32c178973b))
+
+### Features
+
+- **db:** publish eco-turismo as marketplace project 1 ([65ee576](https://github.com/alternun-development/alternun/commit/65ee5764a4153a12b9da691194ed1c7c0c8b0fe8))
+- **mobile:** redesign ATN and RBI projection dashboard cards (#261) ([fc00f42](https://github.com/alternun-development/alternun/commit/fc00f426f9ccb9d2f32ef5dbe1d6ff73e486df06))
+- **marketplace:** deliver scoped marketplace and Explorer workflows (#260) ([80d98f8](https://github.com/alternun-development/alternun/commit/80d98f8d1ae23fb28c749108ddf91067e0dd42de))
+
+### Bug Fixes
+
+- **mobile:** polish ATN card and add metric tooltips ([228c5d8](https://github.com/alternun-development/alternun/commit/228c5d853f911db10f35950e34da75bfcbf7fc83))
+- **repo:** make component type guard parser tolerant ([c0fb47d](https://github.com/alternun-development/alternun/commit/c0fb47d0d61d19f34a05e5c3dc84491cb238972e))
+- **repo:** normalize parser filenames ([068ae80](https://github.com/alternun-development/alternun/commit/068ae8076ced8b0fa53a8c750bdeb4b1fbc1eb85))
+- **repo:** support route filenames in type guard ([26f409f](https://github.com/alternun-development/alternun/commit/26f409f66d91394eab7acdd47d44475d8a5f2237))
+- **repo:** fail closed on activity write config ([0a8b562](https://github.com/alternun-development/alternun/commit/0a8b562d5269bdfd6286b3961895a403bc833bbc))
+- **repo:** harden AIRS database privileges ([ee84137](https://github.com/alternun-development/alternun/commit/ee84137d3fc745b7c7bc9ca7700f5adc6a0d3360))
+- **repo:** resolve legal paths and sanitize media URLs ([1662836](https://github.com/alternun-development/alternun/commit/166283621a662e24523117729233f5ca2d4ace57))
+
+### Refactoring
+
+- **repo:** isolate component types and enforce boundary ([76d0401](https://github.com/alternun-development/alternun/commit/76d04011d1f3a8b6c499fb7792c8efd1ab77c241))
+
+## [1.1.96](https://github.com/alternun-development/alternun/compare/v1.1.95...v1.1.96) (2026-10-09)
+
+### Bug Fixes
+
+- **docs:** repair localized terms Markdown rendering ([23d9a98](https://github.com/alternun-development/alternun/commit/23d9a98909853e9cf3a76543bd2ca9d88114d9a0))
+
+## [1.1.95](https://github.com/alternun-development/alternun/compare/v1.1.94...v1.1.95) (2026-10-09)
+
+### Documentation
+
+- **repo:** consolidate and translate AIRS terms (#253) ([89f6690](https://github.com/alternun-development/alternun/commit/89f66904edb0bdfa0f43bc51ad93216f7e03372a))
+
+### Changes
+
+- **auth:** cover callback provisioning failures ([d5b4cac](https://github.com/alternun-development/alternun/commit/d5b4cac4477f315f016d0f21122a2e7d5f4c7f91))
+- **auth:** make callback mock resolvable in CI ([d37b540](https://github.com/alternun-development/alternun/commit/d37b540f4bb73389de234e09e9f226289d944e8d))
+
+### Bug Fixes
+
+- **auth:** provision Authentik callbacks through API ([9982e3a](https://github.com/alternun-development/alternun/commit/9982e3a0c942c8268beb887dea9b13058d790ad2))
+
+## [1.1.94](https://github.com/alternun-development/alternun/compare/v1.1.92...v1.1.94) (2026-10-09)
+
+### Bug Fixes
+
+- **api:** correct milestone card counters and patch security audit ([6bb8b22](https://github.com/alternun-development/alternun/commit/6bb8b224f0fad8bfe07615cfc333da565affbecd))
+
+### Changes
+
+- **repo:** 🔒️ fix: restrict OIDC upsert function execution ([90a9953](https://github.com/alternun-development/alternun/commit/90a99537b0f1ca9e0955071f286f428d2fc06fb5))
+
+## [1.1.93](https://github.com/alternun-development/alternun/compare/v1.1.92...v1.1.93) (2026-10-09)
+
+### Bug Fixes
+
+- **repo:** 🔒️ fix: restrict OIDC upsert function execution
+
+## [1.1.92](https://github.com/alternun-development/alternun/compare/v1.1.91...v1.1.92) (2026-10-08)
+
+### Bug Fixes
+
+- **repo:** artifact, graph.db ([5292ceb](https://github.com/alternun-development/alternun/commit/5292cebb35d0acbd6242f80e6f56b0dd7cb35ff6))
+- **repo:** artifact, graph.db ([a59dd3c](https://github.com/alternun-development/alternun/commit/a59dd3c786668f51c7fd78a395b1cb6682a80b0d))
+- **repo:** artifact, graph.db ([fa16e3b](https://github.com/alternun-development/alternun/commit/fa16e3bc8d8814aa348009ffb10b1e0bd6a1eb89))
+- **repo:** artifact, graph.db ([2e75bb7](https://github.com/alternun-development/alternun/commit/2e75bb78dff289d784c58240f930fb2208fb873c))
+- **infra:** correct misleading 'reset to false' comment on identity secret adoption ([4471374](https://github.com/alternun-development/alternun/commit/447137402a3f174dbf7dce13d6cd4266970351f8))
+- **infra:** widen cert-preservation test fixture type to allow outputs field ([c506a3b](https://github.com/alternun-development/alternun/commit/c506a3bebdb1254aa27805b0fb2ad42d21eac0be))
+- **repo:** artifact, graph.db ([6034cdd](https://github.com/alternun-development/alternun/commit/6034cdd02aa585c3bfb5a8725e51e04c8ac797c6))
+- **repo:** artifact, graph.db ([ca5ea54](https://github.com/alternun-development/alternun/commit/ca5ea543fcfa1e0e491d4ca996f8e02c0db5da5a))
+- **repo:** artifact, graph.db ([7c553ab](https://github.com/alternun-development/alternun/commit/7c553abafe492e5967ceec9df7a7578b4b5dd6e2))
+- **infra:** ignore stale completed pending operations in cert state guard ([f6ab4b9](https://github.com/alternun-development/alternun/commit/f6ab4b940de4b5dd81e704e6013995b8020b4d93))
+- **repo:** artifact, graph.db ([1cbe022](https://github.com/alternun-development/alternun/commit/1cbe022b9be869788551c4fc3f494082e2a33890))
+- **repo:** artifact, graph.db ([817f4e2](https://github.com/alternun-development/alternun/commit/817f4e2ff6f69f51e220a2550141ee3e69664aad))
+- **infra:** monitor TLS for air.alternun.co and alternun.co redirects ([f244c8a](https://github.com/alternun-development/alternun/commit/f244c8a33ee4f0302a42f54b9efc95bb84391541))
+- **infra:** adopt retained identity secrets for identity-prod and identity-dev ([5d65320](https://github.com/alternun-development/alternun/commit/5d6532016e19ab54703f8b99428fa8ab0c53ed6c))
+- **infra:** ignore orphaned pending operations in cert state guard ([16b14e5](https://github.com/alternun-development/alternun/commit/16b14e5424b3735aa6a47362644d2847af764b05))
+- **security:** bump proxy-addr, shell-quote, simple-git past critical advisories ([8c2476a](https://github.com/alternun-development/alternun/commit/8c2476ac797718fef27036503548246a08371891))
+- **infra:** restore sourcing invocation in certificate-env-rotation test ([25b10fe](https://github.com/alternun-development/alternun/commit/25b10fe042d496e8893fddc8caa547c2502eca9b))
+- **api:** accept legacy exchange fields and ignore them (refs #100) ([73c0686](https://github.com/alternun-development/alternun/commit/73c068651738bc42af0fb03d049dd63a325e6a6f))
+
+### Documentation
+
+- **infra:** correct identity secret adoption guidance in .env.example ([ed15a67](https://github.com/alternun-development/alternun/commit/ed15a67cd091b523f143a1902aca5ddd8590b5d2))
+- **infra:** correct identity secret adoption runbook to match permanent-flag behavior ([96a2eee](https://github.com/alternun-development/alternun/commit/96a2eee731d2b829e046412cd911aa690d9d3e6c))
+- **auth:** record live testnet validation results (refs #100) ([e540c36](https://github.com/alternun-development/alternun/commit/e540c36faf1abd4dc1e24597676af1769c12dde5))
+- **auth:** record testnet smoke-check results (refs #100) ([d557dbf](https://github.com/alternun-development/alternun/commit/d557dbfd40551fa975fd1092a95a265cf64fcb75))
+- **auth:** add Better Auth testnet validation matrix (refs #100) ([4be16c7](https://github.com/alternun-development/alternun/commit/4be16c7c1d2f6ea5a044f5edb7e6b2ebc40baeb7))
+
+### Changes
+
+- **repo:** gitignore .pnpm-store ([95ffa28](https://github.com/alternun-development/alternun/commit/95ffa28ea911d0f367bb92ce8f9efb7c24ccc863))
+- **api:** cover remaining Better Auth callback cases; add smoke runbook (refs #100) ([538901d](https://github.com/alternun-development/alternun/commit/538901d3511479a009ab6653f905aa074f22e1b4))
+- **repo:** Potential fix for pull request finding 'CodeQL / Shell command built from environment values' ([c2b06b0](https://github.com/alternun-development/alternun/commit/c2b06b02b7c4da7dec8a57ec9c1524976d06739d))
+
 ## [1.1.91](https://github.com/alternun-development/alternun/compare/v1.1.89...v1.1.91) (2026-10-01)
 
 ### Changes

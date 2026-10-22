@@ -129,3 +129,58 @@ test('AuthExchangeService returns 503 after verification when the signing key is
     process.env = originalEnv;
   }
 });
+
+test('AuthExchangeService sends the legacy OIDC identity derived from the verified Supabase session', async (t) => {
+  const originalEnv = { ...process.env };
+  const rpcCalls = [];
+
+  try {
+    setEnv({
+      SUPABASE_URL: 'https://example.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+      AUTH_BETTER_AUTH_URL: undefined,
+    });
+    mockFetch(t, async (url, init) => {
+      if (String(url).includes('/auth/v1/user')) {
+        return Response.json({
+          id: 'supabase-user-1',
+          email: 'ada@example.com',
+          email_confirmed_at: '2026-01-01T00:00:00.000Z',
+          app_metadata: { provider: 'authentik' },
+          identities: [{ provider: 'authentik', id: 'authentik-user-1' }],
+        });
+      }
+
+      rpcCalls.push({ url: String(url), body: JSON.parse(init.body) });
+      return Response.json([{ id: 'legacy-app-user-42' }]);
+    });
+
+    const service = new AuthExchangeService();
+    const response = await service.exchangeIdentity(
+      {
+        externalIdentity: {
+          provider: 'authentik',
+          providerUserId: 'authentik-user-1',
+          email: 'ada@example.com',
+          emailVerified: true,
+          displayName: 'Ada Lovelace',
+          avatarUrl: null,
+          rawClaims: { sub: 'untrusted-client-sub', iss: 'https://old.sso.alternun.co/' },
+        },
+      },
+      { authorization: 'Bearer valid-supabase-session' }
+    );
+
+    assert.equal(response.appUserId, 'legacy-app-user-42');
+    assert.equal(rpcCalls.length, 1);
+    assert.equal(rpcCalls[0].url, 'https://example.supabase.co/rest/v1/rpc/upsert_oidc_user_compat');
+    // The legacy (sub, iss) key comes from the verified Supabase identity, never the body.
+    assert.equal(rpcCalls[0].body.p_legacy_sub, 'authentik-user-1');
+    assert.equal(
+      rpcCalls[0].body.p_legacy_iss,
+      'https://testnet.sso.alternun.co/application/o/alternun-mobile/'
+    );
+  } finally {
+    process.env = originalEnv;
+  }
+});
